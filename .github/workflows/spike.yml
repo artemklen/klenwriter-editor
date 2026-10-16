@@ -1,0 +1,33 @@
+name: Editing host spike
+on:
+  pull_request:
+  push:
+    branches: [main, spike/osr-58-editing-hosts]
+permissions:
+  contents: read
+jobs:
+  browser-evidence:
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install chromium firefox webkit
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_GC: '1'
+      - run: npm test
+      - run: node scripts/summarize-evidence.mjs
+        if: always()
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-observations
+          path: |
+            test-results/
+            playwright-report/
+            evidence/osr-58/automated/
+          retention-days: 14
