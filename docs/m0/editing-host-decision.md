@@ -4,7 +4,7 @@ Decision owner: primary architecture agent. Date: 2026-10-16.
 
 **Choose a single `contenteditable` host for the v1 document surface.** Blocks remain separate model nodes and stable DOM nodes inside that host. Block menus, handles and toolbar controls do not require separate editing roots.
 
-**Status: architecture choice recorded; OSR-58 and M0 are still in progress.** The DOM comparison is implemented and measured. Native Firefox input, real screen-reader use and several native input transitions remain unverified. This is not approval of a production renderer, Rust input reconciliation or a release.
+**Status: architecture choice recorded; OSR-58 and M0 are still in progress.** The DOM comparison is implemented and measured. Native Firefox input and several native input transitions remain unverified. Real screen-reader acceptance is deferred beyond v1 by the owner's 2026-10-16 decision; no support claim is made. This is not approval of a production renderer, Rust input reconciliation or a release.
 
 ## What was compared
 
@@ -74,7 +74,7 @@ The attraction of islands is local browser mutation scope: one editable paragrap
 2. Rust owns committed document state, validation, transactions and history. Browser DOM is a temporary input/rendering representation. Native undo in this spike is evidence about baseline browser behavior, not the production history design.
 3. TS maps DOM selection to stable model positions, reconciles bounded changed regions and preserves node identity. It must never replace the whole editing root per keystroke.
 4. During native composition, the active range remains browser-owned. Do not remount, normalize or reformat it. Reconcile committed text exactly once. **Blur/Escape are observations, not proof of cancellation.** An unresolved transition preserves available original/provisional text and rejects destructive remounts.
-5. Toolbar/dialog return uses explicit selection bookmarks and epochs. Block controls need keyboard and screen-reader contracts separate from document selection.
+5. Toolbar/dialog return uses explicit selection bookmarks and epochs. Keyboard access, visible focus, semantic labels and machine-checkable accessibility remain required in v1. Real VoiceOver/screen-reader acceptance is deferred beyond v1 by the owner; future support needs an explicit interaction contract and actual assistive-technology testing, not only axe/AX.
 6. No virtualization that unmounts offscreen text until native selection, browser Find, composition, scroll and AT are measured with it. The full-DOM baseline remains.
 7. v1 support target is desktop Chromium, Firefox and Safari with RU/EN input. No mobile, collaboration, CJK guarantee or arbitrary nested third-party editing roots. The document still stores valid Unicode; this boundary is a tested input promise, not a text encoding restriction.
 
@@ -90,7 +90,7 @@ Development dependencies: **Playwright** supplies repeatable three-engine input,
 
 - Native Firefox RU/EN/dead-key lane on a usable profile.
 - Clean, repeated dead-key Escape/blur/refocus and selection-replacement transitions in both modes across the three native browsers.
-- Real screen-reader smoke (at least agreed macOS/VoiceOver pair); AX/axe cannot close it.
+- Real screen-reader smoke is **DEFERRED beyond v1 by owner decision**, not a remaining M0 gate and not a passed check. AX/axe evidence remains in scope; it does not establish screen-reader support.
 - Native browser Find; mouse autoscroll across atom/nested content. The measured autoscroll above is keyboard selection.
 - Paste replacing a cross-block selection, Enter/Backspace structural boundaries, and subsequent model reconciliation: not implemented/measured here.
 - Independent review and matching CI at the candidate SHA. Production renderer acceptance stays behind OSR-58; this ADR does not close that gate.
