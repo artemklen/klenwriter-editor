@@ -1,0 +1,990 @@
+{
+  "projectId": 15,
+  "project": "local/klenwriter-cms",
+  "visibility": "private",
+  "defaultBranch": "master",
+  "baseline": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+  "capturedAt": "2026-10-16T21:40:30.821820+00:00",
+  "method": "Authenticated read-only GitLab file API at exact SHA; decoded bytes hashed in memory and checked against API content_sha256. No source body persisted. Header scan is factual presence check, not license determination.",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "8ff9723b582e647caba681b64fe725b08fcc8611e207e01bd6255893ef2da31a",
+      "gitBlobId": "4cbdc563e1fc1b5dc7584ca00063095d59e4bdc5",
+      "bytes": 5127,
+      "lineCount": 76,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/AGENTS.md",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "docs/agent_rules.md",
+      "sha256": "b4e3f96453c6f99802d2a3622498645d34de1a79cf83fd87524b4e2d32fa6643",
+      "gitBlobId": "91a0506f6e732fed24abbe0a1bf28e1e4bd329f5",
+      "bytes": 18152,
+      "lineCount": 259,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/docs/agent_rules.md",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "docs/documentation_policy.md",
+      "sha256": "febf1c64524d234c40bdd110fcc312acfa34e285de6df355b1441793d45f4280",
+      "gitBlobId": "a1850c4a2efad3ed162286a1030cbaf01136bb79",
+      "bytes": 13165,
+      "lineCount": 219,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/docs/documentation_policy.md",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256": "e4f683f6be07cc286fb255bcb70e3cf8d25186e86bfb88db6d22fa221669cef3",
+      "gitBlobId": "6a8422a2d3588f218c9d959b041ad6e4868a09b0",
+      "bytes": 771,
+      "lineCount": 29,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/Cargo.toml",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "crates/klenwriter_domain/Cargo.toml",
+      "sha256": "7996c3028c480fa7b7636e5f2a8f161e3568ab9f90f189f08e3f13d857b4c5fe",
+      "gitBlobId": "b65437f151ab0f932058e21ecb7d5a1ef3b062b9",
+      "bytes": 459,
+      "lineCount": 19,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/crates/klenwriter_domain/Cargo.toml",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "contracts/kwdj/v1/README.md",
+      "sha256": "a43d2e0c497562e1fbe79425d1e499637ad4b43d49369b4c905c6d58a54d4af5",
+      "gitBlobId": "e8ae02ea201dfd67db7408d602a953793f93d1b8",
+      "bytes": 20552,
+      "lineCount": 294,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/contracts/kwdj/v1/README.md",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "contracts/kwdj/v1/manifest.json",
+      "sha256": "987f6b0f12922d406a1e514c41ecd31c5c5187a762058d14d0eaf6472d892d5a",
+      "gitBlobId": "eb10d237d061aa52a0f19cae107933b0490eb33a",
+      "bytes": 4647,
+      "lineCount": 62,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/contracts/kwdj/v1/manifest.json",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "contracts/kwdj/v1/kwdj.schema.json",
+      "sha256": "40bec8f8b9c51f4d9440bb35615417b204e36f14a8aff9c057c76254a41d6a25",
+      "gitBlobId": "6b3881a814db66c957a455f19a23a7d3403060c5",
+      "bytes": 23080,
+      "lineCount": 1122,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/contracts/kwdj/v1/kwdj.schema.json",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "contracts/kwdj/v1/fixture.schema.json",
+      "sha256": "0de202b483e108f9f85cfa5fc7782d9725d55646a1cdded2c916824177ab143f",
+      "gitBlobId": "bf9a3e90d33792eef3578a71e6525f742b08885c",
+      "bytes": 14265,
+      "lineCount": 627,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/contracts/kwdj/v1/fixture.schema.json",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "contracts/kwdj/v1/fixtures/positive.json",
+      "sha256": "da7fca7fe9d38407b664b704775ac75ed5635c29eb0fcb40d8e9ca9a2394171b",
+      "gitBlobId": "fefc5210a80ede01d1428d0e887795e60edd773d",
+      "bytes": 50871,
+      "lineCount": 640,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/contracts/kwdj/v1/fixtures/positive.json",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "contracts/kwdj/v1/fixtures/negative.json",
+      "sha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f",
+      "gitBlobId": "f013883af1095f1e5c4693379a6be06cd6178bb2",
+      "bytes": 12378,
+      "lineCount": 170,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/contracts/kwdj/v1/fixtures/negative.json",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "contracts/kwdj/v1/fixtures/mixed.json",
+      "sha256": "f9e472176da723dedf812bff8a5a046946d554c5125e05977cab6a392b19f4a5",
+      "gitBlobId": "42d17d22ed65076ceea562444573eba18c3585f1",
+      "bytes": 40777,
+      "lineCount": 1083,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/contracts/kwdj/v1/fixtures/mixed.json",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "contracts/kwdj/v1/fixtures/deferred.json",
+      "sha256": "4499b474515516fd7aff7222a910f2115121eb483790e66a63d84b03dc87bf69",
+      "gitBlobId": "99a6e80b54e03d86fec8bb898a459e4c5d9eac70",
+      "bytes": 4409,
+      "lineCount": 63,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/contracts/kwdj/v1/fixtures/deferred.json",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "docs/contracts/kwdj_operational_policy_v1.md",
+      "sha256": "ded02dda87a60ef78baecc347410d6951a3b2626cd340cae91b02ddfeae8dd47",
+      "gitBlobId": "08647da49c11e8553fd1029787ce65932a70cb96",
+      "bytes": 12002,
+      "lineCount": 184,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/docs/contracts/kwdj_operational_policy_v1.md",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "docs/runtime/capability_inventory.md",
+      "sha256": "eb81e1e79cd1cc6053128103cb38f786beb7259bd34d62e89f81b8968a68abff",
+      "gitBlobId": "ad491efec6632892f500a06907e6845e6ed6efd1",
+      "bytes": 180204,
+      "lineCount": 556,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/docs/runtime/capability_inventory.md",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "docs/decisions/admin_spa_boundary.md",
+      "sha256": "0398ad0ebd620aabb22d91d05a830368634abaa55e3d39bcd348662b0007e18d",
+      "gitBlobId": "248532e78f87fe7d602faf210c2b85c16b536c82",
+      "bytes": 70442,
+      "lineCount": 495,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/docs/decisions/admin_spa_boundary.md",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "crates/klenwriter_domain/src/kwdj/mod.rs",
+      "sha256": "2f245f006db3b1ce12075ce5fc9b79231a17e4c086a5d4063f3cff6a6fb18748",
+      "gitBlobId": "b69130120ebcea0808623cd642e7fdffee719802",
+      "bytes": 19258,
+      "lineCount": 557,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/crates/klenwriter_domain/src/kwdj/mod.rs",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "crates/klenwriter_domain/tests/kwdj_contract.rs",
+      "sha256": "b6503df3890bbb8638e581de2dbfc3ea4c0ca3d268555b424145fa4280a64904",
+      "gitBlobId": "d2ee04b44292a54c1ac90a364f57f34f66dd6879",
+      "bytes": 16734,
+      "lineCount": 439,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/crates/klenwriter_domain/tests/kwdj_contract.rs",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "crates/klenwriter_domain/tests/kwdj_validator.rs",
+      "sha256": "5389561c826c4a72e193d7ddb0d4109ae792902608bfec594ee4f3402f634476",
+      "gitBlobId": "d6e9f525bdedf2f186a1fc9cf4ab1c38eb4d8c78",
+      "bytes": 15628,
+      "lineCount": 429,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/crates/klenwriter_domain/tests/kwdj_validator.rs",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "crates/klenwriter_domain/tests/kwdj_projection.rs",
+      "sha256": "8324d92741ee0f136d38c6022b4030dd6408246280d938977b255f9df9296c7b",
+      "gitBlobId": "4a64d96390c60373284ca2d7e173fef21b15fc02",
+      "bytes": 17980,
+      "lineCount": 507,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/crates/klenwriter_domain/tests/kwdj_projection.rs",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "crates/klenwriter_web/src/routes/admin_spa.rs",
+      "sha256": "23a10f9e6a9edb69a57036dbaa356d5eacb1e956fe3becc9a1f08c4f74d57a7a",
+      "gitBlobId": "815fca23d4efa541c1f1b3ce11c1bf9cdd7e3e34",
+      "bytes": 13272,
+      "lineCount": 355,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/crates/klenwriter_web/src/routes/admin_spa.rs",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "crates/klenwriter_web/src/auth/middleware.rs",
+      "sha256": "96cf595281b2bfa78987f01615999dc05122b6f6dd003965c96f05412ac2a5b6",
+      "gitBlobId": "fd1652648644600e34df70ed52592c4d1ca2db82",
+      "bytes": 12150,
+      "lineCount": 336,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/crates/klenwriter_web/src/auth/middleware.rs",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "crates/klenwriter_web/src/admin/mod.rs",
+      "sha256": "97ad611fddb67995d3781a82d3d88dfe02c84d629a6d4a4513aa9e99f8203297",
+      "gitBlobId": "0c9707c7ba0637c21e2b483cd7a04d8ce0284f5c",
+      "bytes": 24971,
+      "lineCount": 723,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/crates/klenwriter_web/src/admin/mod.rs",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/package.json",
+      "sha256": "4188ba5b14ea9ca810490dbe36c27c0aac01131c93c4eab7088f4a71fb92dffa",
+      "gitBlobId": "a1dae5c2493331e08c6fcb087794dd3d54a09869",
+      "bytes": 2781,
+      "lineCount": 62,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/package.json",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/editor/package.json",
+      "sha256": "a6bd3f60e335b3bfb89ab603c25371a07c749c93adfe813be448be0ded4c3bfe",
+      "gitBlobId": "ca08e6a323d11b18b2e0f9c8490f5e97a9e6ffc6",
+      "bytes": 1072,
+      "lineCount": 36,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/editor/package.json",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/editor/src/main.js",
+      "sha256": "64181fd51376695b70a05780484c623b244b9c1bc6c0191d769728d18897c9a3",
+      "gitBlobId": "142a0925dddb1ed7c4ad7ac17045b1ff83cf4bcb",
+      "bytes": 8530,
+      "lineCount": 259,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/editor/src/main.js",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "static/js/editor-shell.js",
+      "sha256": "1ee042ae5583fbed6bd022a93e4580e7c0c7c8bc07a446964e309830f748f85c",
+      "gitBlobId": "cf91a962d0eed9706e450d7229acdf8705d9bcda",
+      "bytes": 20462,
+      "lineCount": 539,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/static/js/editor-shell.js",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "templates/layouts/admin_editor.html",
+      "sha256": "b545ff70191bc5f03511f9e65b27c7463f1f663aff6c636a36b23db2bd7098ed",
+      "gitBlobId": "070a3e01df2af01936661bae6308715b66429597",
+      "bytes": 1905,
+      "lineCount": 44,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/templates/layouts/admin_editor.html",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "templates/admin/partials/wysiwyg_editor.html",
+      "sha256": "550a6dc695ff22d250d0c39240133977c33521014317415790efc3495d8624e0",
+      "gitBlobId": "b5ac5bdee058f218c12a68c646e5d36f7dad1d2f",
+      "bytes": 1196,
+      "lineCount": 22,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/templates/admin/partials/wysiwyg_editor.html",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "templates/admin/partials/wysiwyg_editor_description.html",
+      "sha256": "50c3ee93a513e6faf58df1b8466af14fdc8e1af051f6de83dc4a1a995852480b",
+      "gitBlobId": "65786692c52f6469f610e55194ed4a622b96821f",
+      "bytes": 691,
+      "lineCount": 15,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/templates/admin/partials/wysiwyg_editor_description.html",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "templates/admin/articles/form.html",
+      "sha256": "0f3ba8aeca551b3245659d0b4e16ba903d0b3e1bb0bd19744d9167d6948b3ef9",
+      "gitBlobId": "4a589fa36c15a52354bada18c9131c6027a2b17b",
+      "bytes": 7133,
+      "lineCount": 115,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/templates/admin/articles/form.html",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "templates/admin/chapters/form.html",
+      "sha256": "bfaa2b9f85f363ea22be2491e9c58a3f67a9284f4a5862bd54eb42a94da3bcc8",
+      "gitBlobId": "d0cb42b458e1a3933a60c7e87eb7237ce1965748",
+      "bytes": 8978,
+      "lineCount": 138,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/templates/admin/chapters/form.html",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "templates/admin/poems/form.html",
+      "sha256": "0ff7ea329e57db2d8fdf8478c79b5b0c27ec63641a3ac39ff769d209f43c4ab3",
+      "gitBlobId": "58ef16f93c4f11a7cf5aeeaea260014be23d6695",
+      "bytes": 8932,
+      "lineCount": 138,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/templates/admin/poems/form.html",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "templates/admin/reviews/form.html",
+      "sha256": "5551405474d4a475bb72740605d70706297c1aedb29a38acbe61e2cf45ee4ad0",
+      "gitBlobId": "321547e14ceeb193c3fc7d2df9eb0ec029f52f81",
+      "bytes": 10756,
+      "lineCount": 153,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/templates/admin/reviews/form.html",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "templates/admin/works/form.html",
+      "sha256": "b7fff69ed8391d6fd3df58a1a2b891e6f763c360c4621cea56407bdb5ae0dfa6",
+      "gitBlobId": "5e258e8db9ee913a07342e4a78bff09ff774c447",
+      "bytes": 11067,
+      "lineCount": 157,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/templates/admin/works/form.html",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/app.routes.ts",
+      "sha256": "4acfd491ce93066d7a04a0cb994c89e3b4d7c1056e11597513c3fc9cf419e924",
+      "gitBlobId": "886c070626cd9e749d67608ae20163f379e94286",
+      "bytes": 14186,
+      "lineCount": 337,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/app.routes.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/chapters/chapter-create.ts",
+      "sha256": "5717863088c2124817541ada282e8285bb1ed7331cca7de1494caab390873216",
+      "gitBlobId": "2141f2078d06d8fba6ca04fd4e720c90fed868e6",
+      "bytes": 37968,
+      "lineCount": 1160,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/chapters/chapter-create.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/chapters/chapter-create.html",
+      "sha256": "b3602cda12fb87efc3a7c8332dbe6d36309be2b8c4ef982727e776a8449fcad7",
+      "gitBlobId": "7bb4265d3c5b9bdcaf3ddd3746c7b83850bc8ae1",
+      "bytes": 9970,
+      "lineCount": 292,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/chapters/chapter-create.html",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/chapters/chapter-detail.ts",
+      "sha256": "40a89e7bb520e9bbfcb418fbacd511aee70a390553c314b9a57bac682b90e02a",
+      "gitBlobId": "595cce007bde4ae4d03dc8698657e7ac8c5b9190",
+      "bytes": 110627,
+      "lineCount": 3348,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/chapters/chapter-detail.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/chapters/chapter-detail.html",
+      "sha256": "c0644c71527147885bcbd7150ce56b27d61dc7c86f7386a0a938dcacbaf18c8b",
+      "gitBlobId": "81b449dd96c63a8597b2018bf2da33f639114697",
+      "bytes": 37294,
+      "lineCount": 935,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/chapters/chapter-detail.html",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/materials/material-detail.ts",
+      "sha256": "9f64d1afd06ec7ebf892772d1407a51973543f48441665cf84f7546e2fe0a394",
+      "gitBlobId": "065023b4d30e80daa5610f04e16fd596f5454568",
+      "bytes": 124810,
+      "lineCount": 3574,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/materials/material-detail.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/materials/material-detail.html",
+      "sha256": "13d5e6dda740133a666e5dc32888453e1ad0926b7636b928630d4c4ab372fcfd",
+      "gitBlobId": "85b67988727d66ee4822709a5b05b583affd77e6",
+      "bytes": 65400,
+      "lineCount": 1587,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/materials/material-detail.html",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/world/collection-create.ts",
+      "sha256": "fdfff6d13222a30d922889b6c44364176f5d566c1af5f52979ce3a0b528645e1",
+      "gitBlobId": "03d1a9ea12289eaa0fed6dd5d0f90ec3203a4111",
+      "bytes": 33759,
+      "lineCount": 888,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/world/collection-create.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/world/collection-create.html",
+      "sha256": "49de9e6ed0fb625d913f11106d3a8233cbec93ed2cbb2cef4b78dae0fe9a175d",
+      "gitBlobId": "9ac3a3dc61fbcd52fd9ebf39c8d6427087285622",
+      "bytes": 15933,
+      "lineCount": 423,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/world/collection-create.html",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/world/reference-entity-create.ts",
+      "sha256": "83c458556229b8a25edad740fcb24685e947d7adc6939a3af76131e536b8668c",
+      "gitBlobId": "e64048288e3b094e91f2cb441c3f3630c369972e",
+      "bytes": 44729,
+      "lineCount": 1189,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/world/reference-entity-create.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/world/reference-entity-create.html",
+      "sha256": "c6ce78376343fdf27c02594ae2144c1b740b3d8e63e8e280e03ac57c7a12aeee",
+      "gitBlobId": "3a793bc45cbb0990f3e971a2da436184f1796126",
+      "bytes": 17316,
+      "lineCount": 426,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/world/reference-entity-create.html",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/world/universe-create.ts",
+      "sha256": "638f39e480ade72f16aeef6e71d100f30038dc509bcc9f919ddf9c8d4cad5024",
+      "gitBlobId": "d499b4079bb01ddd2062216c1fb3c52e11ea373a",
+      "bytes": 36808,
+      "lineCount": 1117,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/world/universe-create.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/world/universe-create.html",
+      "sha256": "23216fdcdcb8a4b0a6f0e113c0dc7ee57d2965dd45825d2f2880c89c56e90f25",
+      "gitBlobId": "4a75a37f2b97e3c143af0e4932ca1abe12eadaf5",
+      "bytes": 12915,
+      "lineCount": 347,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/world/universe-create.html",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/world/world-detail.ts",
+      "sha256": "5a7eac2d14585fbf2b14c5cbb5cdd5694ac54e4bd132a042256d4d8da6b59595",
+      "gitBlobId": "e1d1f3d37d816664253555c4e1acf9951e0dbef9",
+      "bytes": 123941,
+      "lineCount": 3625,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/world/world-detail.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/world/world-detail.html",
+      "sha256": "fa4e7f263f6c71a046cb7070792f23f35d32415182fdb63cefc984bc1d93a985",
+      "gitBlobId": "ea830d58236716375a942dfc7fcf8a686ad71c43",
+      "bytes": 51337,
+      "lineCount": 1200,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/world/world-detail.html",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/chapters/chapter-create.models.ts",
+      "sha256": "d0891b75d00cc54f8ba0f9c3a3c7b8cb7f4d71c67fca1b90dd05994d2bb6450f",
+      "gitBlobId": "4bf9c236bbc1a9b6c9f52c274a5203b0b9510efe",
+      "bytes": 8469,
+      "lineCount": 172,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/chapters/chapter-create.models.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/chapters/chapter-working.parse.ts",
+      "sha256": "1c5ec16ce1a10fac8dce764c39cb17db8bf909ac7a18021819c9344261048994",
+      "gitBlobId": "3f137bcade281e608b2f80cfdc60b4d321195888",
+      "bytes": 9159,
+      "lineCount": 363,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/chapters/chapter-working.parse.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/chapters/recovery/chapter-draft-recovery.service.ts",
+      "sha256": "2c0444159bcbcb5e60116b67e58310fb85b9354cb7804381fcc8deca9f9fced7",
+      "gitBlobId": "f2da90954f8446d1c0a0def84aa699600612a67a",
+      "bytes": 9321,
+      "lineCount": 316,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/chapters/recovery/chapter-draft-recovery.service.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/materials/materials.models.ts",
+      "sha256": "46547a94ae056938f7a161b78b3d7fb8b2dc2fbc8c6e77a9e6d929f2b9b84025",
+      "gitBlobId": "501c0fa77c8bc9bfab91c485fcd7a724375fb80b",
+      "bytes": 3365,
+      "lineCount": 120,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/materials/materials.models.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/materials/working.parse.ts",
+      "sha256": "90e925f74589ce61cc76347712033ff52ddc0a0e62101c3c43e9100d5d80191e",
+      "gitBlobId": "33a2cf904d12f67a01e6109ed7b5a8f6f0055d1a",
+      "bytes": 27650,
+      "lineCount": 946,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/materials/working.parse.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/materials/recovery/material-draft-recovery.service.ts",
+      "sha256": "875d114088d78988ca34645c3b5261992025d5a952c20a369b997c7766d7be43",
+      "gitBlobId": "c2d100367f1b807abfd3e4deeac3ac1dd4dda804",
+      "bytes": 9688,
+      "lineCount": 298,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/materials/recovery/material-draft-recovery.service.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/world/world.models.ts",
+      "sha256": "fb6d97dac7ac312315ba383d65fee7b1f83eff0e5771c549f70ba19360f727fb",
+      "gitBlobId": "25893f932e2b8d79096c409b32cfcb88cf2b141e",
+      "bytes": 7766,
+      "lineCount": 282,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/world/world.models.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/world/world.parse.ts",
+      "sha256": "5376f7600ecd858164675a9ff30175a42888aeec3e7a86e0b75d246243a5e7d3",
+      "gitBlobId": "bb8a3bc7db19012e573d1c1cbfa1e810514b42d2",
+      "bytes": 25810,
+      "lineCount": 884,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/world/world.parse.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/world/universe-create.models.ts",
+      "sha256": "80451692500a5822cc8588997d650237e497149cbae682611b235636540dea6b",
+      "gitBlobId": "31e37ca2c2a0f268122075c9fedbbd97ecfb9bbc",
+      "bytes": 8508,
+      "lineCount": 168,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/world/universe-create.models.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/world/collection-create.models.ts",
+      "sha256": "f9256e8c04ecb4de7c855625de2bfed6bfae600ddc75af130a11fb2f6c88e1a2",
+      "gitBlobId": "5cf484ca79ebfbe8f0ba5f885d9fe379c42340d7",
+      "bytes": 6029,
+      "lineCount": 119,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/world/collection-create.models.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/world/reference-entity-create.models.ts",
+      "sha256": "7afe6c8038cfa99eac8269aaaca41906f497474becfd4f68454793833d3788b4",
+      "gitBlobId": "0c982e4d58e95adfe914a7b22859b7204fa822b0",
+      "bytes": 7060,
+      "lineCount": 137,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/world/reference-entity-create.models.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/world/recovery/world-draft-recovery.service.ts",
+      "sha256": "f080825972b907e385aa37f6f5178e92db8ba470260f6ad179e0a386119d9194",
+      "gitBlobId": "32cf80816e083ee11df7a589c113d9d381926832",
+      "bytes": 6871,
+      "lineCount": 225,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/world/recovery/world-draft-recovery.service.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/shared/draft-recovery-writes.ts",
+      "sha256": "b7651d96becd81f9a0d833fca9c266df25954c3e51ef2f484785dca9b08a2d70",
+      "gitBlobId": "e31497b69a822ee80f5ecbddf51f57be93711942",
+      "bytes": 2485,
+      "lineCount": 78,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/shared/draft-recovery-writes.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/editor/kwdj-document-editor.ts",
+      "sha256": "599fe6e12548bcf4ea93172437386cb6447af9ee68b46d9c45c5008dea448f29",
+      "gitBlobId": "c5e3f9d2f87d71021e52012a47d324209ec3ec3c",
+      "bytes": 51057,
+      "lineCount": 1526,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/editor/kwdj-document-editor.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/editor/kwdj-document-editor.html",
+      "sha256": "2832800e2415bb38b56a09eb8d671333bebe7c12b99dda6182a289a7ab52ba39",
+      "gitBlobId": "d49bbbf00f406e5df00b519e2b75c01168b83733",
+      "bytes": 17611,
+      "lineCount": 469,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/editor/kwdj-document-editor.html",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/editor/create-editable-kwdj-editor.ts",
+      "sha256": "3cc1040179392fa7aa8b462d2238b6edc667ca34d29145c615923620a90320df",
+      "gitBlobId": "a5186abb1597fb8f43f470c86f0a0f735e0aa10c",
+      "bytes": 7958,
+      "lineCount": 245,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/editor/create-editable-kwdj-editor.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/editor/formatting-commands.ts",
+      "sha256": "cfb3569dbd78c3db04cb80d169e4a2378f6cde03f568f20db44d10352b475578",
+      "gitBlobId": "4d91ea1442828f10d86ccf45b528a02cd580f161",
+      "bytes": 34974,
+      "lineCount": 1263,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/editor/formatting-commands.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/editor/block-editor-commands.ts",
+      "sha256": "176a9c60735a1217d61244d25b0eb91564b0844a8583f33a174edadea99e6e30",
+      "gitBlobId": "0fd46ebe0b0e9895f5281485c4c703bae66887f7",
+      "bytes": 23786,
+      "lineCount": 622,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/editor/block-editor-commands.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/editor/verse-editing.ts",
+      "sha256": "3ace8f6c85af28dbab25f2d3286e5b0684b836800f2295ed0dd2c0e206c8cbb8",
+      "gitBlobId": "92c1f8822345ed8e10b4c659a1782c7102cf1dca",
+      "bytes": 4498,
+      "lineCount": 121,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/editor/verse-editing.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/editor/kwdj/README.md",
+      "sha256": "00b390b2925c8cd7b11796a8c27856aba800561bb86cadfae774e8e5fe633047",
+      "gitBlobId": "f9f3cba4602a27b23c047c3b995310e92a20c5dc",
+      "bytes": 9497,
+      "lineCount": 114,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/editor/kwdj/README.md",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/editor/kwdj/schema.ts",
+      "sha256": "2da121e7f3ed6dc32f1d093572e3b23db177c4a3e9c8029e9a95e988be1a1818",
+      "gitBlobId": "1ae62a71c98d38b85a0bb8ae6dae566ceb704894",
+      "bytes": 9705,
+      "lineCount": 350,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/editor/kwdj/schema.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/editor/kwdj/corpus.ts",
+      "sha256": "10241a445954f548eba2519fd56ff8290b5ba9a7b253cf2684f129846f988ffa",
+      "gitBlobId": "73340a39412dde92d0c853486ee93638093e5416",
+      "bytes": 9017,
+      "lineCount": 289,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/editor/kwdj/corpus.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/editor/kwdj/adapter.corpus.spec.ts",
+      "sha256": "18762460334c8cbdf82593f4beb9e16fdf88934ba3e5424d927480b55a4d98d6",
+      "gitBlobId": "bc8073822e590c90358ea14790652e46072c139a",
+      "bytes": 2082,
+      "lineCount": 70,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/editor/kwdj/adapter.corpus.spec.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/editor/kwdj/adapter.edit.spec.ts",
+      "sha256": "a107c29c05df1d6842fa8455a044d84e70212aa2cf228ea4252a563bb1bfcbc9",
+      "gitBlobId": "14b1f233633d18bf973f6d1bb62cb895a2856f27",
+      "bytes": 5142,
+      "lineCount": 142,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/editor/kwdj/adapter.edit.spec.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/editor/kwdj/clipboard/clipboard.spec.ts",
+      "sha256": "8377832122dd93529642b373897f3d77a80b6a71cf99371e66f0a9cc1496dbbc",
+      "gitBlobId": "a828e34535e9d95d939b9e449a57959265144f06",
+      "bytes": 16232,
+      "lineCount": 518,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/editor/kwdj/clipboard/clipboard.spec.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/editor/paste.ts",
+      "sha256": "e59f026b7eff153bf55420c5833ad0e47346738890d7f42335e2badd7881d353",
+      "gitBlobId": "81034b4265cebdc55d1fb5bf030fb3f1810fa549",
+      "bytes": 11900,
+      "lineCount": 382,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/editor/paste.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/editor/link-editing.ts",
+      "sha256": "eb2e4738a68473951023d35d872192d0d63c2ccb7ea0c75f1be4f7e84f099399",
+      "gitBlobId": "d23e43204e3c75bdf5c79771c4c0cd7e58264815",
+      "bytes": 11668,
+      "lineCount": 448,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/editor/link-editing.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "frontend/admin-spa/src/app/editor/media-image-insertion.ts",
+      "sha256": "010ca62dfdebe736bd7d4f04674ef023a70f31098be0238d817ac132edda54df",
+      "gitBlobId": "a0a24812291e2d4e6bfa251a372bff6b59e31871",
+      "bytes": 10022,
+      "lineCount": 344,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/frontend/admin-spa/src/app/editor/media-image-insertion.ts",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "crates/klenwriter_domain/src/kwdj/normalize.rs",
+      "sha256": "b89ab32c6b8852282f3c9c9d654fd0cca5bceb2709e9202ff44665702ae6cdce",
+      "gitBlobId": "463a8722e5b5a988fd773de62fed6dc13affcbef",
+      "bytes": 11459,
+      "lineCount": 349,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/crates/klenwriter_domain/src/kwdj/normalize.rs",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "crates/klenwriter_domain/src/kwdj/render.rs",
+      "sha256": "261b24bfee198e4d48300b065d73e23f69ba4c412454c15e24f6164a72c00428",
+      "gitBlobId": "e5537565230d062a13fa042ea1c56546e737fea9",
+      "bytes": 21637,
+      "lineCount": 597,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/crates/klenwriter_domain/src/kwdj/render.rs",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    },
+    {
+      "path": "docs/runtime/kwdj_public_rendering.md",
+      "sha256": "9979aa4ae1b426a536e1acc85b0180642ff9da3ff6706fb74196331431005bd0",
+      "gitBlobId": "312681a2fcc25bf3a152e9e3a90a3ea0bafb59c0",
+      "bytes": 4779,
+      "lineCount": 86,
+      "permalink": "https://git.aklen.me/local/klenwriter-cms/-/blob/a7f8a081b7827dd31097ad6c9104654366ae6e04/docs/runtime/kwdj_public_rendering.md",
+      "licenseHeaderScanFirst80Lines": {
+        "spdxLines": [],
+        "copyrightLines": []
+      }
+    }
+  ],
+  "finalDefaultBranchReadback": {
+    "observedAt": "2026-10-16T21:45:36.284463+00:00",
+    "branch": "master",
+    "default": true,
+    "sha": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+    "method": "Authenticated GitLab GET projects/15/repository/branches/master; unchanged from audit baseline"
+  }
+}

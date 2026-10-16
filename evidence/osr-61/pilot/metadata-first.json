@@ -1,0 +1,182 @@
+{
+  "capturedAt": "2026-10-16T21:34:46.791Z",
+  "baseCommit": "922c5c6afc5772e114938a790c2abf0c75944108",
+  "sourceHashes": {
+    "scripts/m0-perf/build.mjs": "24af13f47e57393d31bf489ff04b7b71ba2cbce8c4e8f19e4026aa3c08cdab02",
+    "scripts/m0-perf/corpora.mjs": "d2b33bc8d789d7359353ee3a78401d8f269ab4a4db50b3793c1f7223f22935ce",
+    "scripts/m0-perf/server.mjs": "7fa5d15de25fbb0979d799dba6c3b86da6179daf2249ba9e5cd15e90b856a1ee",
+    "scripts/m0-perf/run.mjs": "25302b5640012a73bca39bda6c60ff9dbdb94318995031e9cd72db4c30beaacb",
+    "scripts/m0-perf/kernel/Cargo.toml": "baeb06bf3b2e7236fe0d69b1bd8fa3ca908a0b5720a4858dede01bdfcac9da16",
+    "scripts/m0-perf/kernel/Cargo.lock": "8ac3068b6e3902df97b0f72c8f0b4e67a071d5bf88b5825dbc21e1c443cd2a57",
+    "scripts/m0-perf/kernel/lib.rs": "21e3bc9b425e74740f9e2a45eff617ce15c286c216058a0608bfd6ef7d3d1596",
+    "spikes/performance/index.html": "fb196408c743801c7e3c3784119d79baa37249fa971b0659a272ee5389b71c01",
+    "spikes/performance/app.mjs": "4bd8bb0372be563dae3480a99d2382eccd045bd1a807f405e3e7027b7caed959",
+    "spikes/performance/kernel.wasm": "ae07738395de1e18bedcbb7063021b349fab322ee39e22e5aa7b58b275270c18",
+    "package-lock.json": "282e84e86a2fc27620cb182e33531df2744d3d9f39d7328b236d0d681fbc977f"
+  },
+  "hardware": {
+    "model": "Apple M5 Max",
+    "physicalCpu": 18,
+    "logicalCpu": 18,
+    "memoryBytes": 38654705664
+  },
+  "system": {
+    "platform": "darwin",
+    "release": "27.0.0",
+    "architecture": "arm64",
+    "swVers": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434"
+  },
+  "toolchain": {
+    "node": "v26.12.0",
+    "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: aarch64-apple-darwin\nrelease: 1.97.1\nLLVM version: 22.1.6",
+    "cargo": "cargo 1.97.1 (c980f4866 2026-06-30)",
+    "playwright": "1.64.1",
+    "build": "release opt-level3, LTO, codegen-units1, panic=abort, strip=symbols; no Rust dependencies"
+  },
+  "bundle": {
+    "wasmBytes": 29716,
+    "wasmGzipBytes": 12852,
+    "javascriptBytes": 6881,
+    "scope": "Calibration kernel only, not production SDK size or its 400KB candidate."
+  },
+  "corpora": [
+    {
+      "id": "long-paragraph",
+      "seed": 1640038382,
+      "structuralNodes": 1,
+      "nonemptyTextNodes": 1,
+      "totalModelLikeNodes": 2,
+      "maxDepthIncludingText": 2,
+      "textBytes": 262144,
+      "maxLeafBytes": 262144,
+      "calibrationJsonBytes": 262230,
+      "wireBytes": 262160,
+      "jsonSha256": "8454bf0e446ddab8b3ac21bd758ef32cee378115f015d10dffffc230914c8afb",
+      "wireSha256": "236fa4ed7d9c2cdb79425e126ee29ca7b6c169ceb8343c6079f29fed82a58f38",
+      "note": "One leaf at the CMS text-leaf reference ceiling; String middle-edit stress."
+    },
+    {
+      "id": "many-small-blocks",
+      "seed": 1640038382,
+      "structuralNodes": 10000,
+      "nonemptyTextNodes": 10000,
+      "totalModelLikeNodes": 20000,
+      "maxDepthIncludingText": 2,
+      "textBytes": 400000,
+      "maxLeafBytes": 40,
+      "calibrationJsonBytes": 750054,
+      "wireBytes": 520004,
+      "jsonSha256": "76091ba46925b7c8964dc187aa724acb5d2282c089d53aa72f7c25ca43b1d624",
+      "wireSha256": "cd0c3be2e7a0f09fd2c7bd38e223fc335f62d2dd74f10a729d5558120efa3315",
+      "note": "10,000 independent paragraphs; 20,000 structure+text nodes."
+    },
+    {
+      "id": "deep-tree",
+      "seed": 1640038382,
+      "structuralNodes": 31,
+      "nonemptyTextNodes": 1,
+      "totalModelLikeNodes": 32,
+      "maxDepthIncludingText": 32,
+      "textBytes": 256,
+      "maxLeafBytes": 256,
+      "calibrationJsonBytes": 1647,
+      "wireBytes": 632,
+      "jsonSha256": "0ac558a9267ff42aef836a3c07167da6107297217290c274f792815d8e0fe74d",
+      "wireSha256": "b6527783d6d0c88cb72e452d89d5e0f2191939cf706eaadf378f80b840ffa88f",
+      "note": "Depth 32 including text, counting root block as 1; no promise of constant-time ancestor traversal."
+    },
+    {
+      "id": "lists",
+      "seed": 1640038382,
+      "structuralNodes": 10050,
+      "nonemptyTextNodes": 5000,
+      "totalModelLikeNodes": 15050,
+      "maxDepthIncludingText": 4,
+      "textBytes": 320000,
+      "maxLeafBytes": 64,
+      "calibrationJsonBytes": 695614,
+      "wireBytes": 440604,
+      "jsonSha256": "402957287294ce750d32cc9a3e89b4975686eec79c6c6c4f170741d1af3ca896",
+      "wireSha256": "5375d44e2f31e456898d8272b94ff97931b1fe2f3321c9fb2322f2aa2146a852",
+      "note": "50 lists with 100 items each; paragraph inside each list item."
+    },
+    {
+      "id": "table-grid",
+      "seed": 1640038382,
+      "structuralNodes": 25001,
+      "nonemptyTextNodes": 24500,
+      "totalModelLikeNodes": 49501,
+      "maxDepthIncludingText": 4,
+      "textBytes": 24500,
+      "maxLeafBytes": 1,
+      "calibrationJsonBytes": 986659,
+      "wireBytes": 324516,
+      "jsonSha256": "ac75727a3c5362438f687dafb3f99213dbca9b03fa0811ebc2b36ba90f3e28fd",
+      "wireSha256": "c7e52ab5f2c6997d4f1375bf316231cc030df11a557e7b4d59d4d90fc7ecbda5",
+      "note": "500 rows ×49 columns, no spans; 49,501 structure+text nodes. A large grid below the reference node ceiling."
+    },
+    {
+      "id": "near-node-limit",
+      "seed": 1640038382,
+      "structuralNodes": 50000,
+      "nonemptyTextNodes": 0,
+      "totalModelLikeNodes": 50000,
+      "maxDepthIncludingText": 1,
+      "textBytes": 0,
+      "maxLeafBytes": 0,
+      "calibrationJsonBytes": 1750052,
+      "wireBytes": 600004,
+      "jsonSha256": "ee26dfd03d2aea97c2777632c07ca8e98b490eae02f01b62eee785a9f0324128",
+      "wireSha256": "9bb0b3b38df34939f3e932ee4d813754be1c84a126b3e82e0a66e0ab263d1cac",
+      "note": "50,000 empty structural blocks, no nonempty text leaves. A size-stress fixture, not a validated KWDJ document."
+    },
+    {
+      "id": "near-byte-limit",
+      "seed": 1640038382,
+      "structuralNodes": 8,
+      "nonemptyTextNodes": 8,
+      "totalModelLikeNodes": 16,
+      "maxDepthIncludingText": 2,
+      "textBytes": 2088000,
+      "maxLeafBytes": 261000,
+      "calibrationJsonBytes": 2088332,
+      "wireBytes": 2088100,
+      "jsonSha256": "87d1300a3aa73e314b674d6cb59b9d06ec23c37c38c97462bf3986abe95b2f74",
+      "wireSha256": "31b537747e9f061d53e32d04cc3f74b2c60aa5638bdbbf77da20c5d8e66adf6e",
+      "note": "2,088,000 text bytes in eight separate leaves; calibration JSON remains below 2MiB. Not KWDJ canonical serialization."
+    }
+  ],
+  "sampling": {
+    "independentBrowserLaunchesPerEngine": 1,
+    "crossing": {
+      "warmup": 10,
+      "samples": 200,
+      "operationsPerSample": 10000
+    },
+    "core": {
+      "warmup": 20,
+      "samples": 200,
+      "editPairsPerSample": 10
+    },
+    "exportAndCopy": {
+      "warmup": 5,
+      "samples": 50
+    },
+    "render": {
+      "warmup": 3,
+      "samples": 20
+    },
+    "typing": {
+      "warmup": 3,
+      "samples": 30
+    },
+    "memoryPollRequestedMs": 100
+  },
+  "limitations": [
+    "Headless isolated bundled engines; not installed Chrome/Safari/Firefox product acceptance.",
+    "Shared workstation, not thermally/power/background-load controlled.",
+    "Core result is one WASM call amortized over 10 String insert/remove pairs; no production validators, history, mapping, codecs or extensions.",
+    "Render forces full DOM construction and layout; typing uses native DOM and a second-rAF rendering-opportunity proxy.",
+    "Process-tree RSS sums shared mappings and includes runner; sampled maximum is not unique-memory peak or proof no transient peak occurred."
+  ]
+}

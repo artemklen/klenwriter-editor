@@ -1,0 +1,36 @@
+flowchart LR
+subgraph host ["Host: OSR-49/68/69"]
+cms["CMS: auth, dialogs, recovery"]
+vanilla["Independent host"]
+binding["Vanilla / Angular binding"]
+end
+subgraph browser ["Browser: OSR-39/40/41/63"]
+ui["UI and DOM adapter"]
+sdk["Versioned WASM SDK"]
+clipboard["Clipboard allowlist"]
+end
+subgraph rust ["Rust: OSR-29/33/34/36"]
+engine["Transactions and history"]
+kernel["Tree and typed positions"]
+registry["Frozen profile interfaces"]
+end
+subgraph profiles ["Profiles: OSR-30/64"]
+kwdj["KWDJ codec and validators"]
+notes["Independent notes profile"]
+native["Native server validation"]
+end
+cms -->|"Mounts"| binding
+vanilla -->|"Mounts"| binding
+binding -->|"Configures"| ui
+clipboard -->|"Validated fragment"| ui
+ui -->|"Command and tokens"| sdk
+sdk -->|"Dispatches synchronously"| engine
+engine -->|"Atomic changes"| kernel
+engine -->|"Validates candidate"| registry
+kwdj -.->|"Implements"| registry
+notes -.->|"Implements"| registry
+native -->|"Same pinned corpus"| kwdj
+style host fill:#FFECBD,stroke:#FFC943
+style browser fill:#C2E5FF,stroke:#3DADFF
+style rust fill:#DCCCFF,stroke:#874FFF
+style profiles fill:#C6FAF6,stroke:#5AD8CC

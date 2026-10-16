@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "seriesId": "2026-10-16T21:43:44.322Z-fa181a97bb68",
+  "sealedAt": "2026-10-16T22:03:31.709Z",
+  "startedAt": "2026-10-16T21:43:44.322Z",
+  "mainFinishedAt": "2026-10-16T22:00:13.289Z",
+  "paintFinishedAt": "2026-10-16T22:02:10.473Z",
+  "memoryFinishedAt": "2026-10-16T22:03:10.932Z",
+  "derivation": "Hashes bind these unchanged completed raw files. Each main run began after this metadata capture and finished before the supplemental series; no stale file substitution is allowed.",
+  "files": {
+    "metadata.json": {
+      "bytes": 7526,
+      "sha256": "fa181a97bb68745bd522d2fa10bf06b6245bd3118b299d4ac20bd38f3d371c00"
+    },
+    "chromium-run-1.json": {
+      "bytes": 698993,
+      "sha256": "56dde8f457988f24901f972161c1ae683e25130df808a11de8dc6d6ee0ae965e"
+    },
+    "chromium-run-2.json": {
+      "bytes": 675591,
+      "sha256": "1d96c6ffa3785596c19bd22dd1154603ec7fbf075708e28206038bbbf35df507"
+    },
+    "chromium-run-3.json": {
+      "bytes": 696010,
+      "sha256": "e938320406a2f617c6156f3b35fdd2eaed1849abedcbbc3055c99232a649cfa2"
+    },
+    "firefox-run-1.json": {
+      "bytes": 305442,
+      "sha256": "4143436adc996b3d6951ccd01c8a18a4054895dbc9024951e2fbc088ffe147b4"
+    },
+    "firefox-run-2.json": {
+      "bytes": 295730,
+      "sha256": "61337e5ea7db9462969c851cc4745b4ae1f2b0be82881119e8e3c836e7068168"
+    },
+    "firefox-run-3.json": {
+      "bytes": 309556,
+      "sha256": "befb068343a5facbb83a92a40ce1f49b3a3651e551239d863d24a8214c78a205"
+    },
+    "webkit-run-1.json": {
+      "bytes": 610550,
+      "sha256": "2db041f713e42dd8153dec7b0b62b26aed5c2db6eb4e2fa80984ac4fce15e82e"
+    },
+    "webkit-run-2.json": {
+      "bytes": 641712,
+      "sha256": "7322544b7199197618bbc25b1c538a12bd76bc7d75fdc6783d75f8ef6d580be2"
+    },
+    "webkit-run-3.json": {
+      "bytes": 624637,
+      "sha256": "da4aacacaeb6dff8c3a279bbd046e94828f4101c7170e6c352ba560f68102eb5"
+    },
+    "paint-supplement.json": {
+      "bytes": 1753042,
+      "sha256": "23f1aa6044e921bc9197801db2be2e9fcc11988af1b38abdf868707d3abafa8f"
+    },
+    "webkit-memory-supplement.json": {
+      "bytes": 328921,
+      "sha256": "d129b5eb1a534ab51decacef9dd29eca66f405e9d8c08dfbf8ec3e0aefe03eca"
+    }
+  }
+}

@@ -1,0 +1,696 @@
+{
+  "contract": "ADR-002",
+  "provenance": "Fresh synthetic examples authored for this repository; no CMS fixture/source copied. KWDJ field names are a minimal factual wire-format example, not a full codec implementation.",
+  "registryVersion": 1,
+  "profiles": [
+    {
+      "id": "org.klenwriter.kwdj",
+      "version": "1.0.0",
+      "wireVersion": 1,
+      "codec": "org.klenwriter.kwdj/json",
+      "extensionIds": [
+        "org.klenwriter.kwdj/base"
+      ],
+      "types": {
+        "paragraph": {
+          "kind": "text-block",
+          "children": [
+            "text"
+          ],
+          "min": 0,
+          "max": 100
+        },
+        "text": {
+          "kind": "text",
+          "marks": [
+            "strong"
+          ]
+        }
+      },
+      "marks": {
+        "strong": {}
+      },
+      "renderers": [
+        "paragraph",
+        "text"
+      ],
+      "sample": {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "A new example.",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          }
+        ]
+      },
+      "wire": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "A new example.",
+                "marks": [
+                  {
+                    "type": "strong"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expected": "admitted",
+      "scope": "Only these types exercise the generic contract; the production profile must cover the full pinned KWDJ schema/corpus.",
+      "extensionVersions": {
+        "org.klenwriter.kwdj/base": "1.0.0"
+      }
+    },
+    {
+      "id": "org.example.notes",
+      "version": "1.0.0",
+      "wireVersion": 1,
+      "codec": "org.example.notes/json",
+      "extensionIds": [
+        "org.example.notes/base",
+        "org.example.notes/callout"
+      ],
+      "types": {
+        "paragraph": {
+          "kind": "text-block",
+          "children": [
+            "text"
+          ],
+          "min": 0,
+          "max": 100
+        },
+        "text": {
+          "kind": "text",
+          "marks": [
+            "strong",
+            "highlight"
+          ]
+        },
+        "callout": {
+          "kind": "block-container",
+          "children": [
+            "paragraph"
+          ],
+          "min": 1,
+          "max": 10,
+          "attrs": {
+            "kind": [
+              "info",
+              "warning"
+            ],
+            "metadata": {
+              "kind": "object",
+              "optional": true,
+              "fields": {
+                "label": {
+                  "kind": "string",
+                  "maxBytes": 10
+                },
+                "tags": {
+                  "kind": "list",
+                  "maxItems": 2,
+                  "item": {
+                    "kind": "string",
+                    "maxBytes": 8
+                  }
+                },
+                "pinned": {
+                  "kind": "boolean"
+                },
+                "rank": {
+                  "kind": "integer",
+                  "min": 0,
+                  "max": 3
+                }
+              }
+            }
+          }
+        }
+      },
+      "marks": {
+        "strong": {},
+        "highlight": {
+          "color": [
+            "amber",
+            "mint"
+          ]
+        }
+      },
+      "renderers": [
+        "paragraph",
+        "text",
+        "callout"
+      ],
+      "sample": {
+        "type": "callout",
+        "attrs": {
+          "kind": "info"
+        },
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Independent notes.",
+                "marks": [
+                  {
+                    "type": "highlight",
+                    "attrs": {
+                      "color": "amber"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "wire": {
+        "format": "org.example.notes",
+        "version": 1,
+        "blocks": [
+          {
+            "type": "callout",
+            "attrs": {
+              "kind": "info"
+            },
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Independent notes.",
+                    "marks": [
+                      {
+                        "type": "highlight",
+                        "attrs": {
+                          "color": "amber"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expected": "admitted",
+      "scope": "Extra block and mark through the same admission API, no CMS branch.",
+      "extensionVersions": {
+        "org.example.notes/base": "1.0.0",
+        "org.example.notes/callout": "1.0.0"
+      },
+      "limits": {
+        "maxAttrBytes": 160
+      }
+    }
+  ],
+  "negative": [
+    {
+      "id": "unknown-node",
+      "profile": 0,
+      "sample": {
+        "type": "callout",
+        "content": []
+      },
+      "expected": "unknown-node"
+    },
+    {
+      "id": "unknown-mark",
+      "profile": 0,
+      "sample": {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "Keep me",
+            "marks": [
+              {
+                "type": "highlight",
+                "attrs": {
+                  "color": "amber"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expected": "unknown-mark"
+    },
+    {
+      "id": "missing-renderer",
+      "profile": 1,
+      "omitRenderer": "callout",
+      "expected": "renderer-missing"
+    },
+    {
+      "id": "unknown-profile-version",
+      "profile": 1,
+      "requestedVersion": "2.0.0",
+      "expected": "version-unsupported"
+    },
+    {
+      "id": "duplicate-extension",
+      "profile": 1,
+      "duplicateExtension": true,
+      "expected": "duplicate-id"
+    },
+    {
+      "id": "invalid-enum",
+      "profile": 1,
+      "sample": {
+        "type": "callout",
+        "attrs": {
+          "kind": "danger"
+        },
+        "content": [
+          {
+            "type": "paragraph",
+            "content": []
+          }
+        ]
+      },
+      "expected": "invalid-attribute"
+    },
+    {
+      "id": "wrong-child-kind",
+      "profile": 1,
+      "sample": {
+        "type": "callout",
+        "attrs": {
+          "kind": "info"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Not a paragraph"
+          }
+        ]
+      },
+      "expected": "invalid-child"
+    },
+    {
+      "id": "host-limit",
+      "profile": 1,
+      "maxNodes": 2,
+      "expected": "resource-limit-exceeded"
+    },
+    {
+      "id": "no-silent-unknown-attr",
+      "profile": 1,
+      "sample": {
+        "type": "callout",
+        "attrs": {
+          "kind": "info",
+          "surprise": "keep input"
+        },
+        "content": [
+          {
+            "type": "paragraph",
+            "content": []
+          }
+        ]
+      },
+      "expected": "invalid-attribute"
+    },
+    {
+      "id": "unknown-profile",
+      "profile": 1,
+      "requestedProfile": "org.other.notes",
+      "expected": "profile-unsupported"
+    },
+    {
+      "id": "unknown-codec",
+      "profile": 1,
+      "requestedCodec": "org.example.notes/yaml",
+      "expected": "codec-unsupported"
+    },
+    {
+      "id": "unknown-wire-version",
+      "profile": 1,
+      "requestedWireVersion": 2,
+      "expected": "wire-version-unsupported"
+    },
+    {
+      "id": "wire-version-type-not-coerced",
+      "profile": 1,
+      "requestedWireVersion": "1",
+      "expected": "wire-version-unsupported"
+    },
+    {
+      "id": "unknown-registry-version",
+      "profile": 1,
+      "requestedRegistryVersion": 2,
+      "expected": "registry-version-unsupported"
+    },
+    {
+      "id": "unknown-extension",
+      "profile": 1,
+      "requestedExtensions": [
+        {
+          "id": "org.other/custom",
+          "version": "1.0.0"
+        }
+      ],
+      "expected": "extension-unsupported"
+    },
+    {
+      "id": "unknown-extension-version",
+      "profile": 1,
+      "requestedExtensions": [
+        {
+          "id": "org.example.notes/callout",
+          "version": "2.0.0"
+        }
+      ],
+      "expected": "extension-version-unsupported"
+    },
+    {
+      "id": "utf8-string-attr-bound",
+      "profile": 1,
+      "sample": {
+        "type": "callout",
+        "attrs": {
+          "kind": "info",
+          "metadata": {
+            "label": "Привет",
+            "tags": [
+              "ru",
+              "note"
+            ],
+            "pinned": true,
+            "rank": 2
+          }
+        },
+        "content": [
+          {
+            "type": "paragraph",
+            "content": []
+          }
+        ]
+      },
+      "expected": "invalid-attribute"
+    },
+    {
+      "id": "list-attr-bound",
+      "profile": 1,
+      "sample": {
+        "type": "callout",
+        "attrs": {
+          "kind": "info",
+          "metadata": {
+            "label": "Тема",
+            "tags": [
+              "a",
+              "b",
+              "c"
+            ],
+            "pinned": true,
+            "rank": 2
+          }
+        },
+        "content": [
+          {
+            "type": "paragraph",
+            "content": []
+          }
+        ]
+      },
+      "expected": "invalid-attribute"
+    },
+    {
+      "id": "closed-object-attr",
+      "profile": 1,
+      "sample": {
+        "type": "callout",
+        "attrs": {
+          "kind": "info",
+          "metadata": {
+            "label": "Тема",
+            "tags": [
+              "ru",
+              "note"
+            ],
+            "pinned": true,
+            "rank": 2,
+            "extra": "preserve input"
+          }
+        },
+        "content": [
+          {
+            "type": "paragraph",
+            "content": []
+          }
+        ]
+      },
+      "expected": "invalid-attribute"
+    },
+    {
+      "id": "integer-range-bound",
+      "profile": 1,
+      "sample": {
+        "type": "callout",
+        "attrs": {
+          "kind": "info",
+          "metadata": {
+            "label": "Тема",
+            "tags": [
+              "ru",
+              "note"
+            ],
+            "pinned": true,
+            "rank": 4
+          }
+        },
+        "content": [
+          {
+            "type": "paragraph",
+            "content": []
+          }
+        ]
+      },
+      "expected": "invalid-attribute"
+    },
+    {
+      "id": "attr-byte-budget",
+      "profile": 1,
+      "sample": {
+        "type": "callout",
+        "attrs": {
+          "kind": "info",
+          "metadata": {
+            "label": "Тема",
+            "tags": [
+              "ru",
+              "note"
+            ],
+            "pinned": true,
+            "rank": 2
+          }
+        },
+        "content": [
+          {
+            "type": "paragraph",
+            "content": []
+          }
+        ]
+      },
+      "maxAttrBytes": 20,
+      "expected": "attribute-bytes-exceeded"
+    },
+    {
+      "id": "document-depth-budget",
+      "profile": 1,
+      "maxDepth": 1,
+      "expected": "resource-limit-exceeded"
+    },
+    {
+      "id": "prototype-name-is-not-node",
+      "profile": 0,
+      "sample": {
+        "type": "constructor",
+        "content": []
+      },
+      "expected": "unknown-node"
+    },
+    {
+      "id": "unbounded-string-descriptor-refused",
+      "profile": 1,
+      "overrideCalloutKindDescriptor": {
+        "kind": "string"
+      },
+      "expected": "invalid-attribute-schema"
+    },
+    {
+      "id": "invalid-list-descriptor-refused",
+      "profile": 1,
+      "overrideCalloutKindDescriptor": {
+        "kind": "list",
+        "maxItems": -1,
+        "item": {
+          "kind": "string",
+          "maxBytes": 8
+        }
+      },
+      "expected": "invalid-attribute-schema"
+    }
+  ],
+  "dependencyVectors": [
+    {
+      "extensions": [
+        {
+          "id": "b",
+          "depends": [
+            "a"
+          ]
+        },
+        {
+          "id": "a",
+          "depends": []
+        },
+        {
+          "id": "c",
+          "depends": []
+        }
+      ],
+      "expectedOrder": [
+        "a",
+        "b",
+        "c"
+      ]
+    },
+    {
+      "extensions": [
+        {
+          "id": "a",
+          "depends": [
+            "b"
+          ]
+        },
+        {
+          "id": "b",
+          "depends": [
+            "a"
+          ]
+        }
+      ],
+      "expectedRefusal": "dependency-cycle"
+    },
+    {
+      "extensions": [
+        {
+          "id": "a",
+          "depends": [
+            "missing"
+          ]
+        }
+      ],
+      "expectedRefusal": "dependency-missing"
+    },
+    {
+      "id": "exact-ascii-case-and-punctuation",
+      "extensions": [
+        {
+          "id": "org.a_1",
+          "depends": []
+        },
+        {
+          "id": "org.a",
+          "depends": []
+        },
+        {
+          "id": "org.A",
+          "depends": []
+        },
+        {
+          "id": "org.a-1",
+          "depends": []
+        }
+      ],
+      "expectedOrder": [
+        "org.A",
+        "org.a",
+        "org.a-1",
+        "org.a_1"
+      ]
+    },
+    {
+      "id": "duplicate-dependency-id",
+      "extensions": [
+        {
+          "id": "same",
+          "depends": []
+        },
+        {
+          "id": "same",
+          "depends": []
+        }
+      ],
+      "expectedRefusal": "duplicate-id"
+    },
+    {
+      "id": "non-ascii-id",
+      "extensions": [
+        {
+          "id": "org.заметка",
+          "depends": []
+        }
+      ],
+      "expectedRefusal": "invalid-id"
+    }
+  ],
+  "additionalPositive": [
+    {
+      "id": "bounded-structured-attrs",
+      "profile": 1,
+      "sample": {
+        "type": "callout",
+        "attrs": {
+          "kind": "info",
+          "metadata": {
+            "label": "Тема",
+            "tags": [
+              "ru",
+              "note"
+            ],
+            "pinned": true,
+            "rank": 2
+          }
+        },
+        "content": [
+          {
+            "type": "paragraph",
+            "content": []
+          }
+        ]
+      },
+      "requestedCodec": "org.example.notes/json",
+      "requestedWireVersion": 1,
+      "requestedExtensions": [
+        {
+          "id": "org.example.notes/callout",
+          "version": "1.0.0"
+        }
+      ],
+      "expected": "admitted"
+    }
+  ],
+  "referenceLimits": "ID length 128, attribute descriptor depth 8, default document depth 16 / node count 100 / attr bytes 256 are local reference-harness limits only; production distribution and profile limits remain separately pinned."
+}

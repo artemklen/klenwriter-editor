@@ -1,0 +1,40 @@
+{
+  "version": "M0 v2.0 2026-10-17",
+  "fileKey": "MfPnaBZYxczK6Yi9qd6fiv",
+  "url": "https://www.figma.com/board/MfPnaBZYxczK6Yi9qd6fiv",
+  "exports": [
+    {
+      "path": "figjam-modules.png",
+      "sha256": "6d57fd7e20ec18dd64d754e8978639478ccdc6857cbf8e24b43bca07bb939b63",
+      "nodeId": "12:413",
+      "url": "https://www.figma.com/board/MfPnaBZYxczK6Yi9qd6fiv?node-id=12-413",
+      "source": "docs/m0/diagrams/modules.mmd"
+    },
+    {
+      "path": "figjam-editing.png",
+      "sha256": "da1a03da7f1529ce37a998a99d6971ab8c0109641d051270f84aa96f75157fba",
+      "nodeId": "12:418",
+      "url": "https://www.figma.com/board/MfPnaBZYxczK6Yi9qd6fiv?node-id=12-418",
+      "source": "docs/m0/diagrams/editing.mmd"
+    },
+    {
+      "path": "figjam-async-lifecycle.png",
+      "sha256": "62390eee2909efce84b9d335f800110aebdab301b656fe7215b821c84e8a1539",
+      "nodeId": "12:423",
+      "url": "https://www.figma.com/board/MfPnaBZYxczK6Yi9qd6fiv?node-id=12-423",
+      "source": "docs/m0/diagrams/async-lifecycle.mmd"
+    },
+    {
+      "path": "figjam-decisions.png",
+      "sha256": "a3544cd967f96ecaa233fd2c19c9a5c5684783524326e5252b2b3f394a9483cf",
+      "nodeId": "12:428",
+      "url": "https://www.figma.com/board/MfPnaBZYxczK6Yi9qd6fiv?node-id=12-428",
+      "source": "docs/m0/decision-register.md"
+    }
+  ],
+  "readback": {
+    "path": "figjam-readback.xml",
+    "sha256": "ccde30dec24266a0ffdbf618a7e12bf1244be589229e86e5db18e422af0bc468"
+  },
+  "verification": "Editable board read-back plus visual inspection of all four exports; historical v1 sections preserved. Textual contracts define detailed semantics, diagrams are their overview. No runtime implementation claim."
+}

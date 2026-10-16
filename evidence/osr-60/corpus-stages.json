@@ -1,0 +1,1097 @@
+{
+  "baseline": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+  "sourceFiles": [
+    {
+      "path": "contracts/kwdj/v1/manifest.json",
+      "sha256": "987f6b0f12922d406a1e514c41ecd31c5c5187a762058d14d0eaf6472d892d5a",
+      "bytes": 4647,
+      "gitBlobId": "eb10d237d061aa52a0f19cae107933b0490eb33a"
+    },
+    {
+      "path": "contracts/kwdj/v1/fixtures/positive.json",
+      "sha256": "da7fca7fe9d38407b664b704775ac75ed5635c29eb0fcb40d8e9ca9a2394171b",
+      "bytes": 50871,
+      "gitBlobId": "fefc5210a80ede01d1428d0e887795e60edd773d"
+    },
+    {
+      "path": "contracts/kwdj/v1/fixtures/negative.json",
+      "sha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f",
+      "bytes": 12378,
+      "gitBlobId": "f013883af1095f1e5c4693379a6be06cd6178bb2"
+    },
+    {
+      "path": "contracts/kwdj/v1/fixtures/mixed.json",
+      "sha256": "f9e472176da723dedf812bff8a5a046946d554c5125e05977cab6a392b19f4a5",
+      "bytes": 40777,
+      "gitBlobId": "42d17d22ed65076ceea562444573eba18c3585f1"
+    },
+    {
+      "path": "contracts/kwdj/v1/fixtures/deferred.json",
+      "sha256": "4499b474515516fd7aff7222a910f2115121eb483790e66a63d84b03dc87bf69",
+      "bytes": 4409,
+      "gitBlobId": "99a6e80b54e03d86fec8bb898a459e4c5d9eac70"
+    }
+  ],
+  "fixtureCount": 34,
+  "caseCount": 59,
+  "stageCounts": {
+    "clipboard_plain_to_kwdj": 2,
+    "clipboard_rich_to_kwdj": 5,
+    "determinism": 59,
+    "editor_edit_save_reopen": 20,
+    "editor_round_trip_unchanged": 32,
+    "identity_manifest_extraction": 10,
+    "legacy_import_parse": 21,
+    "plain_text_projection": 30,
+    "public_render": 37,
+    "schema_upconversion": 2,
+    "validate_normalize": 59
+  },
+  "cases": [
+    {
+      "fixtureId": "DOC-001",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-002",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "append_text",
+      "hasKwdjCandidate": true,
+      "inputKind": "legacy_markdown",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-003",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "replace_text",
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-004",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "toggle_mark",
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-004",
+      "caseOrdinal": 1,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "validate_normalize",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-004",
+      "caseOrdinal": 2,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-006",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "identity_manifest_extraction",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "append_text",
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-007",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "append_text",
+      "hasKwdjCandidate": true,
+      "inputKind": "legacy_markdown",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-008",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "replace_text",
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-008",
+      "caseOrdinal": 1,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "validate_normalize",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-008",
+      "caseOrdinal": 2,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-009",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "append_text",
+      "hasKwdjCandidate": true,
+      "inputKind": "legacy_markdown",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-010",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "replace_text",
+      "hasKwdjCandidate": true,
+      "inputKind": "legacy_markdown",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-011",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "replace_text",
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-011",
+      "caseOrdinal": 1,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "validate_normalize",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-011",
+      "caseOrdinal": 2,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-013",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "identity_manifest_extraction",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "append_text",
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-015",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "identity_manifest_extraction",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "append_text",
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-016",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "identity_manifest_extraction",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "append_text",
+      "hasKwdjCandidate": true,
+      "inputKind": "legacy_markdown",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-017",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "identity_manifest_extraction",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "append_text",
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-019",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "append_text",
+      "hasKwdjCandidate": true,
+      "inputKind": "legacy_markdown",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-020",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "toggle_mark",
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-025",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-027",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "identity_manifest_extraction",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "append_text",
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-028",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "clipboard_plain_to_kwdj",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "append_text",
+      "hasKwdjCandidate": true,
+      "inputKind": "clipboard_plain",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-029",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "clipboard_plain_to_kwdj",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "append_text",
+      "hasKwdjCandidate": true,
+      "inputKind": "clipboard_plain",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-030",
+      "caseOrdinal": 0,
+      "classification": "positive",
+      "sourcePath": "contracts/kwdj/v1/fixtures/positive.json",
+      "stages": [
+        "clipboard_rich_to_kwdj",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "append_text",
+      "hasKwdjCandidate": true,
+      "inputKind": "clipboard_html",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-014",
+      "caseOrdinal": 0,
+      "classification": "negative",
+      "sourcePath": "contracts/kwdj/v1/fixtures/negative.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "identity_manifest_extraction",
+        "determinism"
+      ],
+      "expectedOutcome": "blocked",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "legacy_markdown",
+      "rustContractRunnerDisposition": "not-applicable-no-candidate"
+    },
+    {
+      "fixtureId": "DOC-018",
+      "caseOrdinal": 0,
+      "classification": "negative",
+      "sourcePath": "contracts/kwdj/v1/fixtures/negative.json",
+      "stages": [
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "public_render",
+        "schema_upconversion",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-018",
+      "caseOrdinal": 1,
+      "classification": "negative",
+      "sourcePath": "contracts/kwdj/v1/fixtures/negative.json",
+      "stages": [
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "public_render",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-018",
+      "caseOrdinal": 2,
+      "classification": "negative",
+      "sourcePath": "contracts/kwdj/v1/fixtures/negative.json",
+      "stages": [
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "public_render",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-018",
+      "caseOrdinal": 3,
+      "classification": "negative",
+      "sourcePath": "contracts/kwdj/v1/fixtures/negative.json",
+      "stages": [
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "public_render",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-021",
+      "caseOrdinal": 0,
+      "classification": "negative",
+      "sourcePath": "contracts/kwdj/v1/fixtures/negative.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "audit",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "legacy_markdown",
+      "rustContractRunnerDisposition": "not-applicable-no-candidate"
+    },
+    {
+      "fixtureId": "DOC-023",
+      "caseOrdinal": 0,
+      "classification": "negative",
+      "sourcePath": "contracts/kwdj/v1/fixtures/negative.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "audit",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "legacy_markdown",
+      "rustContractRunnerDisposition": "not-applicable-no-candidate"
+    },
+    {
+      "fixtureId": "DOC-031",
+      "caseOrdinal": 0,
+      "classification": "negative",
+      "sourcePath": "contracts/kwdj/v1/fixtures/negative.json",
+      "stages": [
+        "clipboard_rich_to_kwdj",
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "clipboard_html",
+      "rustContractRunnerDisposition": "not-applicable-no-candidate"
+    },
+    {
+      "fixtureId": "DOC-032",
+      "caseOrdinal": 0,
+      "classification": "negative",
+      "sourcePath": "contracts/kwdj/v1/fixtures/negative.json",
+      "stages": [
+        "clipboard_rich_to_kwdj",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "clipboard_html",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-033",
+      "caseOrdinal": 0,
+      "classification": "negative",
+      "sourcePath": "contracts/kwdj/v1/fixtures/negative.json",
+      "stages": [
+        "clipboard_rich_to_kwdj",
+        "validate_normalize",
+        "identity_manifest_extraction",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "clipboard_html",
+      "rustContractRunnerDisposition": "not-applicable-no-candidate"
+    },
+    {
+      "fixtureId": "DOC-034",
+      "caseOrdinal": 0,
+      "classification": "negative",
+      "sourcePath": "contracts/kwdj/v1/fixtures/negative.json",
+      "stages": [
+        "clipboard_rich_to_kwdj",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "clipboard_html",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-005",
+      "caseOrdinal": 0,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": "append_text",
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-005",
+      "caseOrdinal": 1,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "public_render",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-012",
+      "caseOrdinal": 0,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "public_render",
+        "plain_text_projection",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-012",
+      "caseOrdinal": 1,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "public_render",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-022",
+      "caseOrdinal": 0,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "public_render",
+        "plain_text_projection",
+        "identity_manifest_extraction",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-022",
+      "caseOrdinal": 1,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "public_render",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": true,
+      "inputKind": "kwdj",
+      "rustContractRunnerDisposition": "document-case"
+    },
+    {
+      "fixtureId": "DOC-026",
+      "caseOrdinal": 0,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "resource_boundary",
+      "rustContractRunnerDisposition": "resource-boundary"
+    },
+    {
+      "fixtureId": "DOC-026",
+      "caseOrdinal": 1,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "resource_boundary",
+      "rustContractRunnerDisposition": "resource-boundary"
+    },
+    {
+      "fixtureId": "DOC-026",
+      "caseOrdinal": 2,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "resource_boundary",
+      "rustContractRunnerDisposition": "resource-boundary"
+    },
+    {
+      "fixtureId": "DOC-026",
+      "caseOrdinal": 3,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "resource_boundary",
+      "rustContractRunnerDisposition": "resource-boundary"
+    },
+    {
+      "fixtureId": "DOC-026",
+      "caseOrdinal": 4,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "resource_boundary",
+      "rustContractRunnerDisposition": "resource-boundary"
+    },
+    {
+      "fixtureId": "DOC-026",
+      "caseOrdinal": 5,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "resource_boundary",
+      "rustContractRunnerDisposition": "resource-boundary"
+    },
+    {
+      "fixtureId": "DOC-026",
+      "caseOrdinal": 6,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "resource_boundary",
+      "rustContractRunnerDisposition": "resource-boundary"
+    },
+    {
+      "fixtureId": "DOC-026",
+      "caseOrdinal": 7,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "resource_boundary",
+      "rustContractRunnerDisposition": "resource-boundary"
+    },
+    {
+      "fixtureId": "DOC-026",
+      "caseOrdinal": 8,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "resource_boundary",
+      "rustContractRunnerDisposition": "resource-boundary"
+    },
+    {
+      "fixtureId": "DOC-026",
+      "caseOrdinal": 9,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "resource_boundary",
+      "rustContractRunnerDisposition": "resource-boundary"
+    },
+    {
+      "fixtureId": "DOC-026",
+      "caseOrdinal": 10,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "resource_boundary",
+      "rustContractRunnerDisposition": "resource-boundary"
+    },
+    {
+      "fixtureId": "DOC-026",
+      "caseOrdinal": 11,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "resource_boundary",
+      "rustContractRunnerDisposition": "resource-boundary"
+    },
+    {
+      "fixtureId": "DOC-026",
+      "caseOrdinal": 12,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "accepted",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "resource_boundary",
+      "rustContractRunnerDisposition": "resource-boundary"
+    },
+    {
+      "fixtureId": "DOC-026",
+      "caseOrdinal": 13,
+      "classification": "mixed",
+      "sourcePath": "contracts/kwdj/v1/fixtures/mixed.json",
+      "stages": [
+        "validate_normalize",
+        "determinism"
+      ],
+      "expectedOutcome": "rejected",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "resource_boundary",
+      "rustContractRunnerDisposition": "resource-boundary"
+    },
+    {
+      "fixtureId": "DOC-024",
+      "caseOrdinal": 0,
+      "classification": "deferred",
+      "sourcePath": "contracts/kwdj/v1/fixtures/deferred.json",
+      "stages": [
+        "schema_upconversion",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "public_render",
+        "plain_text_projection",
+        "identity_manifest_extraction",
+        "determinism"
+      ],
+      "expectedOutcome": "deferred",
+      "editOperation": null,
+      "hasKwdjCandidate": false,
+      "inputKind": "retained_revisions",
+      "rustContractRunnerDisposition": "deferred"
+    }
+  ],
+  "note": "Metadata only, no case names, documents, authored text, expected trees, identities or payloads copied. Stage assignment is contractual scope, not proof of executed coverage."
+}

@@ -1,0 +1,22 @@
+flowchart LR
+subgraph dialog ["F05: host dialog — OSR-63/68"]
+request["Capture bookmark and tokens"] --> reply["Host reply"]
+reply --> current{"Tokens current?"}
+current -->|"Yes"| apply["Dispatch validated command"]
+current -->|"No"| stale["Retain dialog input, refuse"]
+end
+subgraph save ["F06: save and conflict — OSR-69"]
+snapshot["Export snapshot r42"] --> send["Save with ETag"]
+send --> receipt{"Receipt or conflict?"}
+receipt -->|"Ack r42"| dirty["r43 remains dirty"]
+receipt -->|"Conflict or unknown"| recovery["Preserve local recovery"]
+end
+subgraph load ["F07: WASM lifecycle — OSR-31/63/67"]
+init["Load verified artifact pair"] --> compatible{"ABI and profile match?"}
+compatible -->|"Yes"| openSession["Open session"]
+compatible -->|"No or load failure"| original["Noneditable, retain original"]
+openSession -->|"Runtime trap"| poison["Poison handle, recover externally"]
+end
+style dialog fill:#C2E5FF,stroke:#3DADFF
+style save fill:#FFECBD,stroke:#FFC943
+style load fill:#DCCCFF,stroke:#874FFF

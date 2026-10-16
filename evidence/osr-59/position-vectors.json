@@ -1,0 +1,38 @@
+{
+  "contract": "ADR-003",
+  "purpose": "Hand-authored expected values; reference algorithms are not production engine acceptance",
+  "text": [
+    {"id":"ascii","value":"abc","utf16":[0,1,2,3],"utf8":[0,1,2,3],"graphemes":[0,1,2,3]},
+    {"id":"cyrillic","value":"Привет","utf16":[0,1,2,3,4,5,6],"utf8":[0,2,4,6,8,10,12],"graphemes":[0,1,2,3,4,5,6]},
+    {"id":"combining","value":"é","utf16":[0,1,2],"utf8":[0,1,3],"graphemes":[0,2],"rejectUserEditOffsets":[1]},
+    {"id":"emoji-zwj","value":"👩🏽‍💻","utf16":[0,2,4,5,7],"utf8":[0,4,8,11,15],"graphemes":[0,7],"rejectUtf16":[1,3,6],"rejectUserEditOffsets":[2,4,5]},
+    {"id":"rtl-logical","value":"שלום","utf16":[0,1,2,3,4],"utf8":[0,2,4,6,8],"graphemes":[0,1,2,3,4]},
+    {"id":"empty","value":"","utf16":[0],"utf8":[0],"graphemes":[0]},
+    {"id":"regional-pair","value":"🇷🇺","utf16":[0,2,4],"utf8":[0,4,8],"graphemes":[0,4],"rejectUtf16":[1,3],"rejectUserEditOffsets":[2]},
+    {"id":"mixed-bidi-logical","value":"aאבb","utf16":[0,1,2,3,4],"utf8":[0,1,3,5,6],"graphemes":[0,1,2,3,4]}
+  ],
+  "invalidStrings": ["\ud800", "x\udfff"],
+  "marksAcrossCluster": {"leaves":[{"id":"a","text":"e","marks":[]},{"id":"b","text":"́","marks":["strong"]}],"logical":"é","graphemes":[0,2],"refusedSplit":{"leaf":"b","utf16":0}},
+  "textMaps": [
+    {"id":"insert-before-affinity","op":{"kind":"replace","a":2,"b":2,"insertLength":3},"input":{"offset":2,"affinity":"before"},"expected":{"offset":2,"deleted":false}},
+    {"id":"insert-after-affinity","op":{"kind":"replace","a":2,"b":2,"insertLength":3},"input":{"offset":2,"affinity":"after"},"expected":{"offset":5,"deleted":false}},
+    {"id":"insert-later-position","op":{"kind":"replace","a":2,"b":2,"insertLength":3},"input":{"offset":5,"affinity":"before"},"expected":{"offset":8,"deleted":false}},
+    {"id":"delete-interior","op":{"kind":"replace","a":2,"b":5,"insertLength":0},"input":{"offset":3,"affinity":"after"},"expected":{"offset":2,"deleted":true}},
+    {"id":"replace-end","op":{"kind":"replace","a":2,"b":5,"insertLength":1},"input":{"offset":5,"affinity":"before"},"expected":{"offset":3,"deleted":false}},
+    {"id":"replace-interior-before","op":{"kind":"replace","a":2,"b":5,"insertLength":4},"input":{"offset":3,"affinity":"before"},"expected":{"offset":2,"deleted":true}},
+    {"id":"replace-interior-after","op":{"kind":"replace","a":2,"b":5,"insertLength":4},"input":{"offset":4,"affinity":"after"},"expected":{"offset":6,"deleted":true}},
+    {"id":"split-boundary-left","op":{"kind":"split","left":"p1:t","right":"p2:t","at":2},"input":{"leaf":"p1:t","offset":2,"affinity":"before"},"expected":{"leaf":"p1:t","offset":2}},
+    {"id":"split-boundary-right","op":{"kind":"split","left":"p1:t","right":"p2:t","at":2},"input":{"leaf":"p1:t","offset":2,"affinity":"after"},"expected":{"leaf":"p2:t","offset":0}},
+    {"id":"split-later","op":{"kind":"split","left":"p1:t","right":"p2:t","at":2},"input":{"leaf":"p1:t","offset":5,"affinity":"before"},"expected":{"leaf":"p2:t","offset":3}},
+    {"id":"join-right","op":{"kind":"join","left":"p1:t","right":"p2:t","leftLength":4},"input":{"leaf":"p2:t","offset":3,"affinity":"after"},"expected":{"leaf":"p1:t","offset":7}}
+  ],
+  "structuralMaps": [
+    {"id":"move-descendant-stable","tree":{"root":["p1","section","p3"],"section":["p2"],"p2":["t2"]},"move":{"node":"section","parent":"root","beforeIndex":3},"point":{"kind":"text","leaf":"t2","utf16":2,"affinity":"after"},"expectedChildren":["p1","p3","section"],"expectedPoint":{"kind":"text","leaf":"t2","utf16":2,"affinity":"after"}},
+    {"id":"delete-nested-fallback","tree":{"root":["p1","section","p3"],"section":["p2"],"p2":["t2"]},"delete":"section","point":{"kind":"text","leaf":"t2","utf16":2,"affinity":"after"},"expected":{"kind":"child","parent":"root","index":1,"affinity":"after","deleted":true}},
+    {"id":"delete-atom-gap","tree":{"root":["p1","image","p2"]},"delete":"image","point":{"kind":"edge","node":"image","side":"after"},"expected":{"kind":"child","parent":"root","index":1,"affinity":"after","deleted":true}},
+    {"id":"empty-container","tree":{"root":[]},"point":{"kind":"child","parent":"root","index":0,"affinity":"before"},"expectedValid":true}
+  ],
+  "reverseSelection": {"before":{"anchor":{"offset":6,"affinity":"after"},"focus":{"offset":2,"affinity":"before"}},"op":{"kind":"replace","a":0,"b":0,"insertLength":2},"after":{"anchor":{"offset":8,"deleted":false},"focus":{"offset":4,"deleted":false}},"direction":"reverse"},
+  "history": {"note":"Historical static illustration; executable operation/inverse/selection coverage is in operation-vectors.json.","initial":{"document":"abc","revision":"7","selection":{"anchor":3,"focus":1}},"commit":{"document":"aX","revision":"8","selection":{"anchor":2,"focus":2}},"undo":{"document":"abc","revision":"9","selection":{"anchor":3,"focus":1}},"redo":{"document":"aX","revision":"10","selection":{"anchor":2,"focus":2}},"refusal":{"revision":"10","document":"aX","historyEntriesAdded":0}},
+  "lifecycle": {"session":"session-A","generation":"mount-2","retiredId":"node-9","nextNewId":"node-10","undoRevives":"node-9","exportKeys":["schema","schema_version","profile","content"],"oldGenerationReply":{"generation":"mount-1","expected":"stale-session"}}
+}

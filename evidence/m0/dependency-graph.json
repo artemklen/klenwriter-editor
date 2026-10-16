@@ -1,0 +1,519 @@
+{
+  "source": "Linear Editor WASM live read 2026-10-17; all 48 issues, pagination exhausted",
+  "issues": [
+    {
+      "id": "OSR-26",
+      "title": "Утвердить архитектуру, scope v1 и критерии milestones",
+      "milestone": "M0 — Архитектура и доказательство выполнимости",
+      "blockedBy": [
+        "OSR-27",
+        "OSR-56"
+      ]
+    },
+    {
+      "id": "OSR-27",
+      "title": "Реестр решений: лицензия, corpus ownership и продуктовые границы",
+      "milestone": "M0 — Архитектура и доказательство выполнимости",
+      "blockedBy": []
+    },
+    {
+      "id": "OSR-28",
+      "title": "Репозиторий OSS: workspace, CI и воспроизводимая сборка",
+      "milestone": "M1 — Самостоятельная библиотека и KWDJ-профиль",
+      "blockedBy": [
+        "OSR-26"
+      ]
+    },
+    {
+      "id": "OSR-29",
+      "title": "Извлечь KWDJ-профиль и общее document core",
+      "milestone": "M1 — Самостоятельная библиотека и KWDJ-профиль",
+      "blockedBy": [
+        "OSR-28",
+        "OSR-57"
+      ]
+    },
+    {
+      "id": "OSR-30",
+      "title": "Corpus parity: native Rust, WASM и profile conformance",
+      "milestone": "M1 — Самостоятельная библиотека и KWDJ-профиль",
+      "blockedBy": [
+        "OSR-29"
+      ]
+    },
+    {
+      "id": "OSR-31",
+      "title": "CMS WASM delivery и узкий CSP-контракт",
+      "milestone": "M5 — Безопасный пилот в CMS",
+      "blockedBy": [
+        "OSR-27",
+        "OSR-63"
+      ]
+    },
+    {
+      "id": "OSR-32",
+      "title": "Заменить TS semantic mirrors после native/WASM parity",
+      "milestone": "M5 — Безопасный пилот в CMS",
+      "blockedBy": [
+        "OSR-30",
+        "OSR-31",
+        "OSR-63"
+      ]
+    },
+    {
+      "id": "OSR-33",
+      "title": "Session tree: идентичность, lifecycle и mapping",
+      "milestone": "M2 — Headless editing engine и SDK",
+      "blockedBy": [
+        "OSR-30",
+        "OSR-59"
+      ]
+    },
+    {
+      "id": "OSR-34",
+      "title": "Атомарные transactions и typed refusal",
+      "milestone": "M2 — Headless editing engine и SDK",
+      "blockedBy": [
+        "OSR-33",
+        "OSR-57"
+      ]
+    },
+    {
+      "id": "OSR-35",
+      "title": "Команды редактирования и capability API",
+      "milestone": "M2 — Headless editing engine и SDK",
+      "blockedBy": [
+        "OSR-34"
+      ]
+    },
+    {
+      "id": "OSR-36",
+      "title": "Undo/redo: document, selection и границы группировки",
+      "milestone": "M2 — Headless editing engine и SDK",
+      "blockedBy": [
+        "OSR-34",
+        "OSR-59"
+      ]
+    },
+    {
+      "id": "OSR-37",
+      "title": "Dirty revisions, render deltas и snapshot export",
+      "milestone": "M2 — Headless editing engine и SDK",
+      "blockedBy": [
+        "OSR-34"
+      ]
+    },
+    {
+      "id": "OSR-38",
+      "title": "Property/fuzz tests и performance regression gates",
+      "milestone": "M2 — Headless editing engine и SDK",
+      "blockedBy": [
+        "OSR-36",
+        "OSR-37",
+        "OSR-61",
+        "OSR-63",
+        "OSR-64"
+      ]
+    },
+    {
+      "id": "OSR-39",
+      "title": "DOM renderer основных блоков и reconciliation",
+      "milestone": "M3 — Доступный браузерный редактор и vanilla alpha",
+      "blockedBy": [
+        "OSR-35",
+        "OSR-58",
+        "OSR-63"
+      ]
+    },
+    {
+      "id": "OSR-40",
+      "title": "Selection controller: Unicode и границы блоков",
+      "milestone": "M3 — Доступный браузерный редактор и vanilla alpha",
+      "blockedBy": [
+        "OSR-39",
+        "OSR-59"
+      ]
+    },
+    {
+      "id": "OSR-41",
+      "title": "IME state machine и exactly-once composition commit",
+      "milestone": "M3 — Доступный браузерный редактор и vanilla alpha",
+      "blockedBy": [
+        "OSR-36",
+        "OSR-39",
+        "OSR-40"
+      ]
+    },
+    {
+      "id": "OSR-42",
+      "title": "Block chrome: toolbar, gutter и keyboard move",
+      "milestone": "M3 — Доступный браузерный редактор и vanilla alpha",
+      "blockedBy": [
+        "OSR-35",
+        "OSR-40",
+        "OSR-62"
+      ]
+    },
+    {
+      "id": "OSR-43",
+      "title": "Slash menu: контекстные команды и отказы",
+      "milestone": "M3 — Доступный браузерный редактор и vanilla alpha",
+      "blockedBy": [
+        "OSR-41",
+        "OSR-42"
+      ]
+    },
+    {
+      "id": "OSR-44",
+      "title": "Drag-and-drop блоков с доступной альтернативой",
+      "milestone": "M3 — Доступный браузерный редактор и vanilla alpha",
+      "blockedBy": [
+        "OSR-41",
+        "OSR-42"
+      ]
+    },
+    {
+      "id": "OSR-45",
+      "title": "Mounted E2E harness: corpus stages и три движка",
+      "milestone": "M3 — Доступный браузерный редактор и vanilla alpha",
+      "blockedBy": [
+        "OSR-39",
+        "OSR-63"
+      ]
+    },
+    {
+      "id": "OSR-46",
+      "title": "Virtualization с сохранением selection, IME и a11y",
+      "milestone": "M3 — Доступный браузерный редактор и vanilla alpha",
+      "blockedBy": [
+        "OSR-40",
+        "OSR-41",
+        "OSR-61",
+        "OSR-66"
+      ]
+    },
+    {
+      "id": "OSR-47",
+      "title": "Clipboard pipeline: безопасный decode и atomic insert",
+      "milestone": "M3 — Доступный браузерный редактор и vanilla alpha",
+      "blockedBy": [
+        "OSR-34",
+        "OSR-40",
+        "OSR-41"
+      ]
+    },
+    {
+      "id": "OSR-48",
+      "title": "Типографика как настраиваемые input rules",
+      "milestone": "M3 — Доступный браузерный редактор и vanilla alpha",
+      "blockedBy": [
+        "OSR-35",
+        "OSR-36",
+        "OSR-41"
+      ]
+    },
+    {
+      "id": "OSR-49",
+      "title": "Angular binding и chapter-detail pilot",
+      "milestone": "M5 — Безопасный пилот в CMS",
+      "blockedBy": [
+        "OSR-31",
+        "OSR-38",
+        "OSR-43",
+        "OSR-44",
+        "OSR-45",
+        "OSR-46",
+        "OSR-48",
+        "OSR-50",
+        "OSR-51",
+        "OSR-52",
+        "OSR-66",
+        "OSR-67",
+        "OSR-68",
+        "OSR-69"
+      ]
+    },
+    {
+      "id": "OSR-50",
+      "title": "KWDJ containers и доменные блоки",
+      "milestone": "M4 — Полное покрытие KWDJ и host-интеграций",
+      "blockedBy": [
+        "OSR-39",
+        "OSR-40",
+        "OSR-45",
+        "OSR-64"
+      ]
+    },
+    {
+      "id": "OSR-51",
+      "title": "Poetry profile: verse, stanza и Enter semantics",
+      "milestone": "M4 — Полное покрытие KWDJ и host-интеграций",
+      "blockedBy": [
+        "OSR-50"
+      ]
+    },
+    {
+      "id": "OSR-52",
+      "title": "Таблицы: grid operations и редактирование ячеек",
+      "milestone": "M4 — Полное покрытие KWDJ и host-интеграций",
+      "blockedBy": [
+        "OSR-50"
+      ]
+    },
+    {
+      "id": "OSR-53",
+      "title": "Удалить оба поколения Tiptap после полного cutover CMS",
+      "milestone": "M6 — Полный cutover CMS и удаление всего Tiptap",
+      "blockedBy": [
+        "OSR-46",
+        "OSR-70",
+        "OSR-72"
+      ]
+    },
+    {
+      "id": "OSR-54",
+      "title": "Имя, лицензия и package namespaces",
+      "milestone": "M1 — Самостоятельная библиотека и KWDJ-профиль",
+      "blockedBy": [
+        "OSR-26"
+      ]
+    },
+    {
+      "id": "OSR-55",
+      "title": "Документация, playground и путь внешнего contributor",
+      "milestone": "M7 — Open Source 1.0",
+      "blockedBy": [
+        "OSR-50",
+        "OSR-51",
+        "OSR-52",
+        "OSR-64",
+        "OSR-65",
+        "OSR-67"
+      ]
+    },
+    {
+      "id": "OSR-56",
+      "title": "Архитектура в Figma/FigJam: модули, потоки и ADR",
+      "milestone": "M0 — Архитектура и доказательство выполнимости",
+      "blockedBy": [
+        "OSR-57",
+        "OSR-58",
+        "OSR-59",
+        "OSR-60",
+        "OSR-61",
+        "OSR-62"
+      ]
+    },
+    {
+      "id": "OSR-57",
+      "title": "ADR: контракт расширений и граница KWDJ-профиля",
+      "milestone": "M0 — Архитектура и доказательство выполнимости",
+      "blockedBy": []
+    },
+    {
+      "id": "OSR-58",
+      "title": "Spike: single editing host против per-block islands",
+      "milestone": "M0 — Архитектура и доказательство выполнимости",
+      "blockedBy": []
+    },
+    {
+      "id": "OSR-59",
+      "title": "ADR: Unicode-позиции, selection mapping и история",
+      "milestone": "M0 — Архитектура и доказательство выполнимости",
+      "blockedBy": []
+    },
+    {
+      "id": "OSR-60",
+      "title": "Инвентаризация CMS: контракты, consumers и parity matrix",
+      "milestone": "M0 — Архитектура и доказательство выполнимости",
+      "blockedBy": []
+    },
+    {
+      "id": "OSR-61",
+      "title": "Протокол performance: baseline и бюджеты редактора",
+      "milestone": "M0 — Архитектура и доказательство выполнимости",
+      "blockedBy": []
+    },
+    {
+      "id": "OSR-62",
+      "title": "Figma: UX-контракт блокового редактора и состояний",
+      "milestone": "M0 — Архитектура и доказательство выполнимости",
+      "blockedBy": []
+    },
+    {
+      "id": "OSR-63",
+      "title": "WASM/TypeScript SDK: lifecycle, revisions и error contract",
+      "milestone": "M2 — Headless editing engine и SDK",
+      "blockedBy": [
+        "OSR-34",
+        "OSR-35",
+        "OSR-36",
+        "OSR-37"
+      ]
+    },
+    {
+      "id": "OSR-64",
+      "title": "Публичное extension API и независимый профиль",
+      "milestone": "M2 — Headless editing engine и SDK",
+      "blockedBy": [
+        "OSR-29",
+        "OSR-34",
+        "OSR-36",
+        "OSR-63"
+      ]
+    },
+    {
+      "id": "OSR-65",
+      "title": "Standalone vanilla API и устанавливаемый alpha-пример",
+      "milestone": "M3 — Доступный браузерный редактор и vanilla alpha",
+      "blockedBy": [
+        "OSR-38",
+        "OSR-39",
+        "OSR-40",
+        "OSR-41",
+        "OSR-45",
+        "OSR-54",
+        "OSR-63",
+        "OSR-64",
+        "OSR-66",
+        "OSR-67"
+      ]
+    },
+    {
+      "id": "OSR-66",
+      "title": "Доступность, keyboard navigation и локализация",
+      "milestone": "M3 — Доступный браузерный редактор и vanilla alpha",
+      "blockedBy": [
+        "OSR-40",
+        "OSR-41",
+        "OSR-42",
+        "OSR-43",
+        "OSR-44"
+      ]
+    },
+    {
+      "id": "OSR-67",
+      "title": "Безопасность DOM и состояния отказа браузерного SDK",
+      "milestone": "M3 — Доступный браузерный редактор и vanilla alpha",
+      "blockedBy": [
+        "OSR-39",
+        "OSR-47",
+        "OSR-63"
+      ]
+    },
+    {
+      "id": "OSR-68",
+      "title": "Host adapters: media, links и reference entities",
+      "milestone": "M4 — Полное покрытие KWDJ и host-интеграций",
+      "blockedBy": [
+        "OSR-35",
+        "OSR-50",
+        "OSR-63"
+      ]
+    },
+    {
+      "id": "OSR-69",
+      "title": "CMS save/recovery adapter без экспорта на каждый ввод",
+      "milestone": "M5 — Безопасный пилот в CMS",
+      "blockedBy": [
+        "OSR-32",
+        "OSR-37",
+        "OSR-60",
+        "OSR-63"
+      ]
+    },
+    {
+      "id": "OSR-70",
+      "title": "Миграция Angular consumers и rollback drill",
+      "milestone": "M6 — Полный cutover CMS и удаление всего Tiptap",
+      "blockedBy": [
+        "OSR-49",
+        "OSR-51",
+        "OSR-52",
+        "OSR-66",
+        "OSR-68",
+        "OSR-69"
+      ]
+    },
+    {
+      "id": "OSR-71",
+      "title": "Open Source 1.0: reproducible release и независимая интеграция",
+      "milestone": "M7 — Open Source 1.0",
+      "blockedBy": [
+        "OSR-38",
+        "OSR-53",
+        "OSR-55",
+        "OSR-64",
+        "OSR-66",
+        "OSR-67"
+      ]
+    },
+    {
+      "id": "OSR-72",
+      "title": "Перевести legacy consumers с Tiptap v2 на новый редактор",
+      "milestone": "M6 — Полный cutover CMS и удаление всего Tiptap",
+      "blockedBy": [
+        "OSR-49",
+        "OSR-60",
+        "OSR-65",
+        "OSR-68"
+      ]
+    },
+    {
+      "id": "OSR-73",
+      "title": "Firefox: gate перехода из experimental в supported после v1",
+      "milestone": "Post-v1",
+      "blockedBy": []
+    }
+  ],
+  "topologicalOrder": [
+    "OSR-27",
+    "OSR-57",
+    "OSR-58",
+    "OSR-59",
+    "OSR-60",
+    "OSR-61",
+    "OSR-62",
+    "OSR-73",
+    "OSR-56",
+    "OSR-26",
+    "OSR-28",
+    "OSR-54",
+    "OSR-29",
+    "OSR-30",
+    "OSR-33",
+    "OSR-34",
+    "OSR-35",
+    "OSR-36",
+    "OSR-37",
+    "OSR-63",
+    "OSR-31",
+    "OSR-39",
+    "OSR-64",
+    "OSR-32",
+    "OSR-38",
+    "OSR-40",
+    "OSR-45",
+    "OSR-41",
+    "OSR-42",
+    "OSR-50",
+    "OSR-69",
+    "OSR-43",
+    "OSR-44",
+    "OSR-47",
+    "OSR-48",
+    "OSR-51",
+    "OSR-52",
+    "OSR-68",
+    "OSR-66",
+    "OSR-67",
+    "OSR-46",
+    "OSR-65",
+    "OSR-49",
+    "OSR-55",
+    "OSR-70",
+    "OSR-72",
+    "OSR-53",
+    "OSR-71"
+  ]
+}

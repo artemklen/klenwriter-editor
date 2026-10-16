@@ -1,0 +1,150 @@
+{
+  "checks": 219,
+  "failures": 0,
+  "transactionResults": [
+    {
+      "id": "replace-zwj-reverse",
+      "operations": [
+        "replaceText"
+      ],
+      "checks": 5,
+      "passed": true
+    },
+    {
+      "id": "insert-affinity",
+      "operations": [
+        "replaceText"
+      ],
+      "checks": 5,
+      "passed": true
+    },
+    {
+      "id": "delete-text-interior-vs-end",
+      "operations": [
+        "replaceText"
+      ],
+      "checks": 5,
+      "passed": true
+    },
+    {
+      "id": "split-affinity-and-later",
+      "operations": [
+        "splitText"
+      ],
+      "checks": 5,
+      "passed": true
+    },
+    {
+      "id": "join-reverse-selection",
+      "operations": [
+        "joinText"
+      ],
+      "checks": 5,
+      "passed": true
+    },
+    {
+      "id": "move-forward-stable-descendant-and-gap",
+      "operations": [
+        "moveSubtree"
+      ],
+      "checks": 5,
+      "passed": true
+    },
+    {
+      "id": "move-backward-gap-affinity",
+      "operations": [
+        "moveSubtree"
+      ],
+      "checks": 5,
+      "passed": true
+    },
+    {
+      "id": "move-cross-parent-gaps",
+      "operations": [
+        "moveSubtree"
+      ],
+      "checks": 5,
+      "passed": true
+    },
+    {
+      "id": "delete-nested-subtree-fallback",
+      "operations": [
+        "deleteSubtree"
+      ],
+      "checks": 5,
+      "passed": true
+    },
+    {
+      "id": "cascade-deleted-parent-to-surviving-root",
+      "operations": [
+        "deleteSubtree",
+        "deleteSubtree",
+        "deleteSubtree"
+      ],
+      "checks": 5,
+      "passed": true
+    },
+    {
+      "id": "mark-split-reverse-selection",
+      "operations": [
+        "markText"
+      ],
+      "checks": 5,
+      "passed": true
+    },
+    {
+      "id": "atom-insert-structural-affinity",
+      "operations": [
+        "insertAtom"
+      ],
+      "checks": 5,
+      "passed": true
+    },
+    {
+      "id": "atom-delete-edge-and-gap",
+      "operations": [
+        "deleteSubtree"
+      ],
+      "checks": 5,
+      "passed": true
+    },
+    {
+      "id": "hard-break-is-structural",
+      "operations": [
+        "insertAtom"
+      ],
+      "checks": 5,
+      "passed": true
+    },
+    {
+      "id": "empty-text-insert",
+      "operations": [
+        "replaceText"
+      ],
+      "checks": 5,
+      "passed": true
+    },
+    {
+      "id": "combining-accent-insert-history",
+      "operations": [
+        "replaceText"
+      ],
+      "checks": 5,
+      "passed": true
+    }
+  ],
+  "operationRefusals": 8,
+  "profileCases": 28,
+  "dependencyCases": 6,
+  "lifecycleReplyCases": 5,
+  "node": "v26.12.0",
+  "icu": "78.3",
+  "unicode": "17.0",
+  "hashes": {
+    "evidence/osr-57/profile-vectors.json": "2c02147b10cb07adeadaac930f6949c45c81d2cea69355dd33df4b873ad23037",
+    "evidence/osr-59/position-vectors.json": "fb30084a44fa62d546f7ff4357d6ec14484e163fe3015aee61f6f90e2845e8db",
+    "evidence/osr-59/operation-vectors.json": "8b4bebb3d4ef97db1b4f0b3d6f4a86d44d87caf100c177fd3c5be53ff9cdb15d",
+    "scripts/check-m0-contracts.mjs": "63743bcea1d00059503d7a372982f779e32a0542059b4395d07712befef4924a"
+  },
+  "limitation": "M0 executable reference/vectors only. No production Rust, codec, DOM mapping, native/WASM parity or bidi-layout acceptance."
+}
