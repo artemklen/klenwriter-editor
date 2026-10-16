@@ -1,0 +1,107 @@
+{
+  "mode": "islands",
+  "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+  "startedAt": "2026-10-16T21:07:15.990Z",
+  "capturedAt": "2026-10-16T21:07:23.107Z",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+  "nativeMode": true,
+  "viewport": {
+    "scrollTop": 128,
+    "scrollHeight": 390,
+    "clientHeight": 180,
+    "rect": {
+      "x": 796.5,
+      "y": 389.625,
+      "width": 880,
+      "height": 182
+    }
+  },
+  "focusRect": {
+    "x": 900.5,
+    "y": 469.25,
+    "width": 0,
+    "height": 22.71875
+  },
+  "label": "",
+  "wasm": "allowed",
+  "composing": false,
+  "selection": {
+    "text": "Charlie",
+    "anchor": {
+      "block": "p3",
+      "node": "#text",
+      "path": [
+        0
+      ],
+      "offset": 0
+    },
+    "focus": {
+      "block": "p3",
+      "node": "#text",
+      "path": [
+        0
+      ],
+      "offset": 7
+    },
+    "collapsed": false
+  },
+  "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語.",
+  "html": "<p id=\"p1\" data-block=\"p1\" contenteditable=\"true\" role=\"textbox\" aria-label=\"Paragraph 1\" aria-multiline=\"true\" tabindex=\"0\">Alpha <strong>bold</strong> omega.</p><p id=\"p2\" data-block=\"p2\" contenteditable=\"true\" role=\"textbox\" aria-label=\"Paragraph 2\" aria-multiline=\"true\" tabindex=\"0\">Bravo café 👩🏽‍💻 é.</p><div class=\"atom\" data-block=\"card\" contenteditable=\"false\" role=\"group\" aria-label=\"Read-only reference card\">Reference card · atomic, not editable</div><blockquote><p id=\"p3\" data-block=\"p3\" contenteditable=\"true\" role=\"textbox\" aria-label=\"Paragraph 3\" aria-multiline=\"true\" tabindex=\"0\">Charlie nested paragraph. Русский текст. 日本語.</p></blockquote>",
+  "active": "",
+  "events": [
+    {
+      "seq": 1,
+      "t": 5711,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "Charlie",
+        "anchor": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 7
+        },
+        "collapsed": false
+      },
+      "active": ""
+    },
+    {
+      "seq": 2,
+      "t": 5711,
+      "type": "scroll",
+      "trusted": true,
+      "scrollTop": 128,
+      "selection": {
+        "text": "Charlie",
+        "anchor": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 7
+        },
+        "collapsed": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>M0 · Editing host comparison</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">KlenWriter Editor · M0 / OSR-58</p>
+      <h1>One document. Two editing models.</h1>
+      <p>Same fixture, styles and native editing. No custom selection, history or reconciliation.</p>
+    </header>
+    <nav aria-label="Editing model">
+      <a href="/?mode=single" id="single-link">Single editing host</a>
+      <a href="/?mode=islands" id="islands-link">Separate block fields</a>
+    </nav>
+    <h2 id="mode-heading"></h2>
+    <p id="instructions">Edit the sample. Try Shift + arrows across paragraphs, Select All, undo, and Tab. The card is not editable.</p>
+    <div class="actions">
+      <button id="before" type="button">Before editor</button>
+      <button id="reset" type="button">Reset sample</button>
+      <button id="export" type="button">Download event trace</button>
+    </div>
+    <div class="viewport"><div id="editor" aria-describedby="instructions"></div></div>
+    <button id="after" type="button">After editor</button>
+    <div id="native-controls" hidden><label for="focus-sink">Focus target for native blur tests</label><input id="focus-sink" autocomplete="off"></div>
+    <section id="diagnostics" aria-labelledby="diagnostics-heading">
+      <h2 id="diagnostics-heading">Diagnostics</h2>
+      <p>Local, in-memory recording only. Reset or reload clears the trace. Download contains sample text; do not enter private content.</p>
+      <label for="run-label">Manual run label (browser / input source / scenario)</label>
+      <input id="run-label" autocomplete="off" placeholder="Safari / ABC / dead-key commit">
+      <label for="clipboard-sink">Clipboard test destination</label>
+      <textarea id="clipboard-sink" rows="4"></textarea>
+      <p id="wasm-status">WASM CSP probe pending</p>
+      <output id="summary" aria-live="off"></output>
+      <details><summary>Recent events (not announced live)</summary><pre id="events"></pre></details>
+      <details><summary>Current trace JSON (for inspection)</summary><pre id="trace-json"></pre></details>
+    </section>
+  </main>
+</body>
+</html>

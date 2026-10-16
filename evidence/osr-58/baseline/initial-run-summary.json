@@ -1,0 +1,381 @@
+{
+  "stats": {
+    "startTime": "2026-10-16T20:09:59.803Z",
+    "duration": 18503.68,
+    "expected": 56,
+    "skipped": 0,
+    "unexpected": 4,
+    "flaky": 0
+  },
+  "note": "Initial executable run before explicit host tabindex and corrected Safari Tab expectation. Raw local report preserved separately.",
+  "results": [
+    {
+      "project": "chromium",
+      "title": "fixture, CSP and WASM loading",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "chromium",
+      "title": "typing and browser undo",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "chromium",
+      "title": "forward shift selection across paragraph boundary",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "chromium",
+      "title": "backward shift selection across paragraph boundary",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "chromium",
+      "title": "native select all scope",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "chromium",
+      "title": "mouse drag through two paragraphs",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "chromium",
+      "title": "tab order and accessible fields",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 52\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"description\": \"Ensure elements that have scrollable content are accessible by keyboard in Safari\",\u001b[39m\n\u001b[31m+     \"help\": \"Scrollable region must have keyboard access\",\u001b[39m\n\u001b[31m+     \"helpUrl\": \"https://dequeuniversity.com/rules/axe/4.14/scrollable-region-focusable?application=playwright\",\u001b[39m\n\u001b[31m+     \"id\": \"scrollable-region-focusable\",\u001b[39m\n\u001b[31m+     \"impact\": \"serious\",\u001b[39m\n\u001b[31m+     \"nodes\": Array [\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": null,\u001b[39m\n\u001b[31m+             \"id\": \"focusable-content\",\u001b[39m\n\u001b[31m+             \"impact\": \"serious\",\u001b[39m\n\u001b[31m+             \"message\": \"Element should have focusable content\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": null,\u001b[39m\n\u001b[31m+             \"id\": \"focusable-element\",\u001b[39m\n\u001b[31m+             \"impact\": \"serious\",\u001b[39m\n\u001b[31m+             \"message\": \"Element should be focusable\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Element should have focusable content\u001b[39m\n\u001b[31m+   Element should be focusable\",\u001b[39m\n\u001b[31m+         \"html\": \"<div class=\\\"viewport\\\">\",\u001b[39m\n\u001b[31m+         \"impact\": \"serious\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \".viewport\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+     \"tags\": Array [\u001b[39m\n\u001b[31m+       \"cat.keyboard\",\u001b[39m\n\u001b[31m+       \"wcag2a\",\u001b[39m\n\u001b[31m+       \"wcag211\",\u001b[39m\n\u001b[31m+       \"wcag213\",\u001b[39m\n\u001b[31m+       \"TTv5\",\u001b[39m\n\u001b[31m+       \"TT4.a\",\u001b[39m\n\u001b[31m+       \"EN-301-549\",\u001b[39m\n\u001b[31m+       \"EN-9.2.1.1\",\u001b[39m\n\u001b[31m+       \"EN-9.2.1.3\",\u001b[39m\n\u001b[31m+       \"RGAAv4\",\u001b[39m\n\u001b[31m+       \"RGAA-7.3.2\",\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  87 |       await info.attach('aria-tree', { body: aria, contentType: 'text/plain' });\n  88 |       const axe = await new AxeBuilder({ page }).analyze();\n> 89 |       expect(axe.violations).toEqual([]);\n     |                              ^\n  90 |       await record(page, info, 'keyboard-ax-axe', { stops, axeViolations: axe.violations, limitation: 'Not a real screen reader test' });\n  91 |     });\n  92 |     test('focus recovery by keyboard', async ({ page }, info) => {\n    at /Users/klen/projects/klenwriter-editor/tests/editing-hosts.spec.js:89:30"
+      ]
+    },
+    {
+      "project": "chromium",
+      "title": "focus recovery by keyboard",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "chromium",
+      "title": "Unicode insertion is not OS IME",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "chromium",
+      "title": "composition instrumentation synthetic control only",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "fixture, CSP and WASM loading",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "typing and browser undo",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "forward shift selection across paragraph boundary",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "backward shift selection across paragraph boundary",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "native select all scope",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "mouse drag through two paragraphs",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "tab order and accessible fields",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 52\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"description\": \"Ensure elements that have scrollable content are accessible by keyboard in Safari\",\u001b[39m\n\u001b[31m+     \"help\": \"Scrollable region must have keyboard access\",\u001b[39m\n\u001b[31m+     \"helpUrl\": \"https://dequeuniversity.com/rules/axe/4.14/scrollable-region-focusable?application=playwright\",\u001b[39m\n\u001b[31m+     \"id\": \"scrollable-region-focusable\",\u001b[39m\n\u001b[31m+     \"impact\": \"serious\",\u001b[39m\n\u001b[31m+     \"nodes\": Array [\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": null,\u001b[39m\n\u001b[31m+             \"id\": \"focusable-content\",\u001b[39m\n\u001b[31m+             \"impact\": \"serious\",\u001b[39m\n\u001b[31m+             \"message\": \"Element should have focusable content\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": null,\u001b[39m\n\u001b[31m+             \"id\": \"focusable-element\",\u001b[39m\n\u001b[31m+             \"impact\": \"serious\",\u001b[39m\n\u001b[31m+             \"message\": \"Element should be focusable\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Element should have focusable content\u001b[39m\n\u001b[31m+   Element should be focusable\",\u001b[39m\n\u001b[31m+         \"html\": \"<div class=\\\"viewport\\\">\",\u001b[39m\n\u001b[31m+         \"impact\": \"serious\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \".viewport\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+     \"tags\": Array [\u001b[39m\n\u001b[31m+       \"cat.keyboard\",\u001b[39m\n\u001b[31m+       \"wcag2a\",\u001b[39m\n\u001b[31m+       \"wcag211\",\u001b[39m\n\u001b[31m+       \"wcag213\",\u001b[39m\n\u001b[31m+       \"TTv5\",\u001b[39m\n\u001b[31m+       \"TT4.a\",\u001b[39m\n\u001b[31m+       \"EN-301-549\",\u001b[39m\n\u001b[31m+       \"EN-9.2.1.1\",\u001b[39m\n\u001b[31m+       \"EN-9.2.1.3\",\u001b[39m\n\u001b[31m+       \"RGAAv4\",\u001b[39m\n\u001b[31m+       \"RGAA-7.3.2\",\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  87 |       await info.attach('aria-tree', { body: aria, contentType: 'text/plain' });\n  88 |       const axe = await new AxeBuilder({ page }).analyze();\n> 89 |       expect(axe.violations).toEqual([]);\n     |                              ^\n  90 |       await record(page, info, 'keyboard-ax-axe', { stops, axeViolations: axe.violations, limitation: 'Not a real screen reader test' });\n  91 |     });\n  92 |     test('focus recovery by keyboard', async ({ page }, info) => {\n    at /Users/klen/projects/klenwriter-editor/tests/editing-hosts.spec.js:89:30"
+      ]
+    },
+    {
+      "project": "firefox",
+      "title": "focus recovery by keyboard",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "Unicode insertion is not OS IME",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "composition instrumentation synthetic control only",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "webkit",
+      "title": "fixture, CSP and WASM loading",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "webkit",
+      "title": "typing and browser undo",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "webkit",
+      "title": "forward shift selection across paragraph boundary",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "webkit",
+      "title": "backward shift selection across paragraph boundary",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "webkit",
+      "title": "native select all scope",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "webkit",
+      "title": "mouse drag through two paragraphs",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "webkit",
+      "title": "tab order and accessible fields",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m\"after\"\u001b[39m\nReceived array: \u001b[31m[\"editor\", \"run-label\", \"\", \"\", \"\"]\u001b[39m\n\n  83 |         stops.push(await page.evaluate(() => document.activeElement.id));\n  84 |       }\n> 85 |       expect(stops).toContain('after');\n     |                     ^\n  86 |       const aria = await page.locator('#editor').ariaSnapshot();\n  87 |       await info.attach('aria-tree', { body: aria, contentType: 'text/plain' });\n  88 |       const axe = await new AxeBuilder({ page }).analyze();\n    at /Users/klen/projects/klenwriter-editor/tests/editing-hosts.spec.js:85:21"
+      ]
+    },
+    {
+      "project": "webkit",
+      "title": "focus recovery by keyboard",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "webkit",
+      "title": "Unicode insertion is not OS IME",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "webkit",
+      "title": "composition instrumentation synthetic control only",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "chromium",
+      "title": "fixture, CSP and WASM loading",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "chromium",
+      "title": "typing and browser undo",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "chromium",
+      "title": "forward shift selection across paragraph boundary",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "chromium",
+      "title": "backward shift selection across paragraph boundary",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "chromium",
+      "title": "native select all scope",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "chromium",
+      "title": "mouse drag through two paragraphs",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "chromium",
+      "title": "tab order and accessible fields",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "chromium",
+      "title": "focus recovery by keyboard",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "chromium",
+      "title": "Unicode insertion is not OS IME",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "chromium",
+      "title": "composition instrumentation synthetic control only",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "fixture, CSP and WASM loading",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "typing and browser undo",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "forward shift selection across paragraph boundary",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "backward shift selection across paragraph boundary",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "native select all scope",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "mouse drag through two paragraphs",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "tab order and accessible fields",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "focus recovery by keyboard",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "Unicode insertion is not OS IME",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "firefox",
+      "title": "composition instrumentation synthetic control only",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "webkit",
+      "title": "fixture, CSP and WASM loading",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "webkit",
+      "title": "typing and browser undo",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "webkit",
+      "title": "forward shift selection across paragraph boundary",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "webkit",
+      "title": "backward shift selection across paragraph boundary",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "webkit",
+      "title": "native select all scope",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "webkit",
+      "title": "mouse drag through two paragraphs",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "webkit",
+      "title": "tab order and accessible fields",
+      "status": "failed",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m\"after\"\u001b[39m\nReceived array: \u001b[31m[\"p1\", \"p2\", \"p3\", \"run-label\", \"\"]\u001b[39m\n\n  83 |         stops.push(await page.evaluate(() => document.activeElement.id));\n  84 |       }\n> 85 |       expect(stops).toContain('after');\n     |                     ^\n  86 |       const aria = await page.locator('#editor').ariaSnapshot();\n  87 |       await info.attach('aria-tree', { body: aria, contentType: 'text/plain' });\n  88 |       const axe = await new AxeBuilder({ page }).analyze();\n    at /Users/klen/projects/klenwriter-editor/tests/editing-hosts.spec.js:85:21"
+      ]
+    },
+    {
+      "project": "webkit",
+      "title": "focus recovery by keyboard",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "webkit",
+      "title": "Unicode insertion is not OS IME",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "project": "webkit",
+      "title": "composition instrumentation synthetic control only",
+      "status": "passed",
+      "errors": []
+    }
+  ]
+}

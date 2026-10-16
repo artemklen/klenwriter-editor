@@ -1,0 +1,18 @@
+
+> test
+> playwright test --project=chromium --grep single.*typing and browser undo --repeat-each=3
+
+
+Running 3 tests using 1 worker
+
+(node:55577) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › tests/editing-hosts.spec.js:64:5 › single › typing and browser undo (381ms)
+(node:55583) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [chromium] › tests/editing-hosts.spec.js:64:5 › single › typing and browser undo (286ms)
+(node:55589) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [chromium] › tests/editing-hosts.spec.js:64:5 › single › typing and browser undo (267ms)
+
+  3 passed (2.2s)

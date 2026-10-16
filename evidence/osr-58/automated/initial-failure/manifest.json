@@ -1,0 +1,22 @@
+{
+  "error-context.md": {
+    "sha256": "79ddcc815bd1ee0179e1778cd4148d8273f403349a853ee44a85b54ae4f20a4d",
+    "bytes": 13940
+  },
+  "summary.json": {
+    "sha256": "8add1b8855df2fac64232a25a3017c17973e880c9877ce922fd2b3a40b618040",
+    "bytes": 4170
+  },
+  "test-failed-1.png": {
+    "sha256": "62eb3fcfee510090179bdb9cc56584456c743f2a18fca0346b675bab97f3ab4b",
+    "bytes": 92673
+  },
+  "trace.zip": {
+    "sha256": "a376543dc4eadbb408001dfc3e350901a34d550f4975d8c092c507abd98546f4",
+    "bytes": 1258961
+  },
+  "typing-undo-repeat.log": {
+    "sha256": "878edfa4017c6c9b17b916083f7442e3f546de60b19d6e15d9a0ccb05aac0af5",
+    "bytes": 957
+  }
+}

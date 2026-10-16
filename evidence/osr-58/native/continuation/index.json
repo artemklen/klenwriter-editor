@@ -1,0 +1,4178 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-16T21:11:26.098913+00:00",
+  "sourceDirectory": "Downloads",
+  "minimumTimestampInclusive": 1792183000000,
+  "maximumImportedTimestamp": 1792185005722,
+  "artifactCount": 45,
+  "designatedCleanCompositionCount": 18,
+  "missingDesignatedCleanTimestamps": [],
+  "classificationCounts": {
+    "clean-composition-session": 18,
+    "exploratory": 6,
+    "find": 6,
+    "drag": 7,
+    "RU-EN": 2,
+    "replacement": 6
+  },
+  "interpretation": {
+    "status": "OBSERVATIONS_ONLY; no scenario PASS is inferred by this index.",
+    "classification": "Clean composition set is operator-designated; other category names infer likely scenario from trace and carry their limitations in each entry.",
+    "endpointVisible": "Geometry only: nonzero-height collapsed focus range overlaps viewport vertically and its x lies within viewport bounds. Same predicate as automated mouse-autoscroll observation. Null means unavailable geometry; not a viewport failure.",
+    "endpointFullyVisible": "Additional geometry: complete focus rectangle lies within viewport bounds. Does not establish OS window visibility.",
+    "timestamps": "Distinct startedAt and event timing distinguish sessions; matching counts or composition sequences do not establish duplicate exports.",
+    "scroll": "A final scroll offset or page scroll event alone does not prove pointer-held native autoscroll."
+  },
+  "artifacts": [
+    {
+      "file": "osr-58-single-1792183787499.json",
+      "timestamp": 1792183787499,
+      "sha256": "b45cde37e37df14cfa3e7bdb61fde096386873aef8485a8131716538304e7fe6",
+      "classification": {
+        "category": "clean-composition-session",
+        "basis": "Explicit 18-session set designated by the primary operator; event measurements remain observations, not an automatic PASS.",
+        "certainty": "operator-designated"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0",
+      "mode": "single",
+      "startedAt": "2026-10-16T20:49:30.244Z",
+      "capturedAt": "2026-10-16T20:49:47.499Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 24,
+          "t": 12892,
+          "data": "é",
+          "trusted": true,
+          "target": "editor"
+        },
+        {
+          "seq": 45,
+          "t": 12912,
+          "data": "´",
+          "trusted": true,
+          "target": "editor"
+        },
+        {
+          "seq": 71,
+          "t": 12934,
+          "data": "´",
+          "trusted": true,
+          "target": "editor"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 90,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 16,
+        "keydown": 21,
+        "keyup": 16,
+        "compositionstart": 3,
+        "compositionupdate": 4,
+        "beforeinput": 10,
+        "input": 13,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 12849,
+      "lastEventTime": 17242,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 200,
+            "y": 337.5,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 451.48333740234375,
+        "y": 365,
+        "width": 0,
+        "height": 23
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792183824535.json",
+      "timestamp": 1792183824535,
+      "sha256": "272330efa3958893402c788ab78b03b35cbd7a2b0b3d204eaac5c742069f3589",
+      "classification": {
+        "category": "clean-composition-session",
+        "basis": "Explicit 18-session set designated by the primary operator; event measurements remain observations, not an automatic PASS.",
+        "certainty": "operator-designated"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0",
+      "mode": "single",
+      "startedAt": "2026-10-16T20:50:23.047Z",
+      "capturedAt": "2026-10-16T20:50:24.535Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 24,
+          "t": 36177,
+          "data": "é",
+          "trusted": true,
+          "target": "editor"
+        },
+        {
+          "seq": 45,
+          "t": 36209,
+          "data": "´",
+          "trusted": true,
+          "target": "editor"
+        },
+        {
+          "seq": 71,
+          "t": 36261,
+          "data": "´",
+          "trusted": true,
+          "target": "editor"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 90,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 16,
+        "keydown": 21,
+        "keyup": 16,
+        "compositionstart": 3,
+        "compositionupdate": 4,
+        "beforeinput": 10,
+        "input": 13,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 36140,
+      "lastEventTime": 36986,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 200,
+            "y": 337.5,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 451.48333740234375,
+        "y": 365,
+        "width": 0,
+        "height": 23
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792183827129.json",
+      "timestamp": 1792183827129,
+      "sha256": "aa736a11d8eb8d5558f6b2daec907913d731d4bbb723e1b129cb2b272265b631",
+      "classification": {
+        "category": "clean-composition-session",
+        "basis": "Explicit 18-session set designated by the primary operator; event measurements remain observations, not an automatic PASS.",
+        "certainty": "operator-designated"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0",
+      "mode": "single",
+      "startedAt": "2026-10-16T20:50:25.307Z",
+      "capturedAt": "2026-10-16T20:50:27.129Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 24,
+          "t": 1684,
+          "data": "é",
+          "trusted": true,
+          "target": "editor"
+        },
+        {
+          "seq": 45,
+          "t": 1717,
+          "data": "´",
+          "trusted": true,
+          "target": "editor"
+        },
+        {
+          "seq": 71,
+          "t": 1806,
+          "data": "´",
+          "trusted": true,
+          "target": "editor"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 90,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 16,
+        "keydown": 21,
+        "keyup": 16,
+        "compositionstart": 3,
+        "compositionupdate": 4,
+        "beforeinput": 10,
+        "input": 13,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 1633,
+      "lastEventTime": 2542,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 200,
+            "y": 337.5,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 451.48333740234375,
+        "y": 365,
+        "width": 0,
+        "height": 23
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792183841876.json",
+      "timestamp": 1792183841876,
+      "sha256": "d08f0b31706185a2755bd3f89ffa8d3aaee62c1b9857fcccac192c224797784c",
+      "classification": {
+        "category": "exploratory",
+        "basis": "Composition trace outside the operator-designated clean set; no acceptance inferred.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "mode": "single",
+      "startedAt": "2026-10-16T20:47:58.794Z",
+      "capturedAt": "2026-10-16T20:50:41.875Z",
+      "sourceFingerprint": "002fb84fc9a9ffd5495308631474945ee76253984155b5046adbaa0a372d0ab0",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´",
+      "compositionEnd": [
+        {
+          "seq": 17,
+          "t": 4252,
+          "data": "é",
+          "trusted": true,
+          "target": "editor"
+        },
+        {
+          "seq": 34,
+          "t": 4283,
+          "data": "´",
+          "trusted": true,
+          "target": "editor"
+        },
+        {
+          "seq": 63,
+          "t": 34294,
+          "data": "´",
+          "trusted": true,
+          "target": "editor"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 70,
+      "eventTypeCounts": {
+        "focusin": 3,
+        "selectionchange": 11,
+        "keydown": 11,
+        "compositionstart": 3,
+        "compositionupdate": 3,
+        "beforeinput": 12,
+        "input": 12,
+        "keyup": 9,
+        "compositionend": 3,
+        "focusout": 3
+      },
+      "firstEventTime": 4207,
+      "lastEventTime": 163091,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 796.5,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 817.5,
+        "y": 417.25,
+        "width": 0,
+        "height": 22.71875
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792183932372.json",
+      "timestamp": 1792183932372,
+      "sha256": "ed3ce7292aa5b9c5ad26925f49e827ab74710b8d681b006618bd39d50fe767ba",
+      "classification": {
+        "category": "exploratory",
+        "basis": "Composition trace outside the operator-designated clean set; no acceptance inferred.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "mode": "single",
+      "startedAt": "2026-10-16T20:47:58.794Z",
+      "capturedAt": "2026-10-16T20:52:12.371Z",
+      "sourceFingerprint": "002fb84fc9a9ffd5495308631474945ee76253984155b5046adbaa0a372d0ab0",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 17,
+          "t": 4252,
+          "data": "é",
+          "trusted": true,
+          "target": "editor"
+        },
+        {
+          "seq": 34,
+          "t": 4283,
+          "data": "´",
+          "trusted": true,
+          "target": "editor"
+        },
+        {
+          "seq": 63,
+          "t": 34294,
+          "data": "´",
+          "trusted": true,
+          "target": "editor"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 84,
+      "eventTypeCounts": {
+        "focusin": 5,
+        "selectionchange": 14,
+        "keydown": 14,
+        "compositionstart": 3,
+        "compositionupdate": 3,
+        "beforeinput": 13,
+        "input": 13,
+        "keyup": 11,
+        "compositionend": 3,
+        "focusout": 5
+      },
+      "firstEventTime": 4207,
+      "lastEventTime": 253586,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 796.5,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 1047.5,
+        "y": 417.25,
+        "width": 0,
+        "height": 22.71875
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792183935227.json",
+      "timestamp": 1792183935227,
+      "sha256": "7b4219fb245cf1a05533aae74411ca69d24744e8c5cb6ddffec86b116d48b5e3",
+      "classification": {
+        "category": "clean-composition-session",
+        "basis": "Explicit 18-session set designated by the primary operator; event measurements remain observations, not an automatic PASS.",
+        "certainty": "operator-designated"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "mode": "single",
+      "startedAt": "2026-10-16T20:52:13.825Z",
+      "capturedAt": "2026-10-16T20:52:15.226Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 15,
+          "t": 846,
+          "data": "é",
+          "trusted": true,
+          "target": "editor"
+        },
+        {
+          "seq": 35,
+          "t": 871,
+          "data": "´",
+          "trusted": true,
+          "target": "editor"
+        },
+        {
+          "seq": 56,
+          "t": 915,
+          "data": "",
+          "trusted": true,
+          "target": "editor"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 68,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 11,
+        "keydown": 13,
+        "compositionstart": 3,
+        "compositionupdate": 3,
+        "beforeinput": 11,
+        "input": 11,
+        "keyup": 9,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 804,
+      "lastEventTime": 1416,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 796.5,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "focus": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "focusRect": null,
+      "endpointVisible": null,
+      "endpointFullyVisible": null
+    },
+    {
+      "file": "osr-58-single-1792183950585.json",
+      "timestamp": 1792183950585,
+      "sha256": "e6236983f29cac9bc0ca13b38aaa01782e411763544ff883f4fcc8aba31595f0",
+      "classification": {
+        "category": "clean-composition-session",
+        "basis": "Explicit 18-session set designated by the primary operator; event measurements remain observations, not an automatic PASS.",
+        "certainty": "operator-designated"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "mode": "single",
+      "startedAt": "2026-10-16T20:52:29.320Z",
+      "capturedAt": "2026-10-16T20:52:30.585Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 15,
+          "t": 733,
+          "data": "é",
+          "trusted": true,
+          "target": "editor"
+        },
+        {
+          "seq": 34,
+          "t": 753,
+          "data": "´",
+          "trusted": true,
+          "target": "editor"
+        },
+        {
+          "seq": 56,
+          "t": 802,
+          "data": "",
+          "trusted": true,
+          "target": "editor"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 68,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 11,
+        "keydown": 13,
+        "compositionstart": 3,
+        "compositionupdate": 3,
+        "beforeinput": 11,
+        "input": 11,
+        "keyup": 9,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 668,
+      "lastEventTime": 1278,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 796.5,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "focus": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "focusRect": null,
+      "endpointVisible": null,
+      "endpointFullyVisible": null
+    },
+    {
+      "file": "osr-58-single-1792183952267.json",
+      "timestamp": 1792183952267,
+      "sha256": "2138379ef52e40d2db576bdf4a99bae3c1180702165e4268dd80fc118ea45c44",
+      "classification": {
+        "category": "clean-composition-session",
+        "basis": "Explicit 18-session set designated by the primary operator; event measurements remain observations, not an automatic PASS.",
+        "certainty": "operator-designated"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "mode": "single",
+      "startedAt": "2026-10-16T20:52:31.021Z",
+      "capturedAt": "2026-10-16T20:52:32.267Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 15,
+          "t": 711,
+          "data": "é",
+          "trusted": true,
+          "target": "editor"
+        },
+        {
+          "seq": 34,
+          "t": 744,
+          "data": "´",
+          "trusted": true,
+          "target": "editor"
+        },
+        {
+          "seq": 55,
+          "t": 787,
+          "data": "",
+          "trusted": true,
+          "target": "editor"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 67,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 10,
+        "keydown": 13,
+        "compositionstart": 3,
+        "compositionupdate": 3,
+        "beforeinput": 11,
+        "input": 11,
+        "keyup": 9,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 669,
+      "lastEventTime": 1253,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 796.5,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "focus": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "focusRect": null,
+      "endpointVisible": null,
+      "endpointFullyVisible": null
+    },
+    {
+      "file": "osr-58-islands-1792183958239.json",
+      "timestamp": 1792183958239,
+      "sha256": "84f94457bbd1cb10ebfcff3bd832c846798b708d2e149e757c6b12a90eff0360",
+      "classification": {
+        "category": "exploratory",
+        "basis": "Composition trace outside the operator-designated clean set; no acceptance inferred.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "mode": "islands",
+      "startedAt": "2026-10-16T20:52:37.089Z",
+      "capturedAt": "2026-10-16T20:52:38.239Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´e",
+      "compositionEnd": [
+        {
+          "seq": 15,
+          "t": 660,
+          "data": "é",
+          "trusted": true,
+          "target": "p1"
+        },
+        {
+          "seq": 43,
+          "t": 707,
+          "data": "",
+          "trusted": true,
+          "target": "p1"
+        }
+      ],
+      "compositionEndCount": 2,
+      "compositionStartCount": 2,
+      "composingAtCapture": false,
+      "eventCount": 55,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 8,
+        "keydown": 13,
+        "compositionstart": 2,
+        "compositionupdate": 3,
+        "beforeinput": 7,
+        "input": 7,
+        "keyup": 9,
+        "compositionend": 2,
+        "focusout": 2
+      },
+      "firstEventTime": 620,
+      "lastEventTime": 1158,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 796.5,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "focus": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "focusRect": null,
+      "endpointVisible": null,
+      "endpointFullyVisible": null
+    },
+    {
+      "file": "osr-58-islands-1792183959940.json",
+      "timestamp": 1792183959940,
+      "sha256": "836b03ed02416b33c3b1f0600be66601701e1d183973bdfadd4b05500a981f8d",
+      "classification": {
+        "category": "exploratory",
+        "basis": "Composition trace outside the operator-designated clean set; no acceptance inferred.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "mode": "islands",
+      "startedAt": "2026-10-16T20:52:38.697Z",
+      "capturedAt": "2026-10-16T20:52:39.939Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 15,
+          "t": 706,
+          "data": "é",
+          "trusted": true,
+          "target": "p1"
+        },
+        {
+          "seq": 35,
+          "t": 719,
+          "data": "´",
+          "trusted": true,
+          "target": "p1"
+        },
+        {
+          "seq": 56,
+          "t": 758,
+          "data": "",
+          "trusted": true,
+          "target": "p1"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 66,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 10,
+        "keydown": 13,
+        "compositionstart": 3,
+        "compositionupdate": 3,
+        "beforeinput": 11,
+        "input": 11,
+        "keyup": 8,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 657,
+      "lastEventTime": 1249,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 796.5,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "focus": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "focusRect": null,
+      "endpointVisible": null,
+      "endpointFullyVisible": null
+    },
+    {
+      "file": "osr-58-islands-1792183961654.json",
+      "timestamp": 1792183961654,
+      "sha256": "4881fb123f0b68f339c9884a0d19c8e8dc652d04d6c3494f5161c67871e6d30a",
+      "classification": {
+        "category": "exploratory",
+        "basis": "Composition trace outside the operator-designated clean set; no acceptance inferred.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "mode": "islands",
+      "startedAt": "2026-10-16T20:52:40.393Z",
+      "capturedAt": "2026-10-16T20:52:41.653Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é é´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 15,
+          "t": 705,
+          "data": "é",
+          "trusted": true,
+          "target": "p1"
+        },
+        {
+          "seq": 33,
+          "t": 722,
+          "data": "é",
+          "trusted": true,
+          "target": "p1"
+        },
+        {
+          "seq": 59,
+          "t": 795,
+          "data": "",
+          "trusted": true,
+          "target": "p1"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 71,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 12,
+        "keydown": 13,
+        "compositionstart": 3,
+        "compositionupdate": 3,
+        "beforeinput": 12,
+        "input": 12,
+        "keyup": 9,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 667,
+      "lastEventTime": 1271,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 796.5,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "focus": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "focusRect": null,
+      "endpointVisible": null,
+      "endpointFullyVisible": null
+    },
+    {
+      "file": "osr-58-islands-1792184010137.json",
+      "timestamp": 1792184010137,
+      "sha256": "8f15612d9851bae6da1a5b85f7e4c1bfbbcd667e2e309ba40e9c32bd9ff72cdc",
+      "classification": {
+        "category": "clean-composition-session",
+        "basis": "Explicit 18-session set designated by the primary operator; event measurements remain observations, not an automatic PASS.",
+        "certainty": "operator-designated"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "mode": "islands",
+      "startedAt": "2026-10-16T20:53:26.114Z",
+      "capturedAt": "2026-10-16T20:53:30.137Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 17,
+          "t": 1367,
+          "data": "é",
+          "trusted": true,
+          "target": "p1"
+        },
+        {
+          "seq": 37,
+          "t": 2207,
+          "data": "´",
+          "trusted": true,
+          "target": "p1"
+        },
+        {
+          "seq": 57,
+          "t": 3097,
+          "data": "",
+          "trusted": true,
+          "target": "p1"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 69,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 12,
+        "keydown": 13,
+        "compositionstart": 3,
+        "compositionupdate": 3,
+        "beforeinput": 11,
+        "input": 11,
+        "keyup": 9,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 647,
+      "lastEventTime": 4030,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 796.5,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "focus": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "focusRect": null,
+      "endpointVisible": null,
+      "endpointFullyVisible": null
+    },
+    {
+      "file": "osr-58-islands-1792184030695.json",
+      "timestamp": 1792184030695,
+      "sha256": "017780193918dfac06bf4eeeb18792b1a83d463ad7406b2c1b2eba8c88a0eead",
+      "classification": {
+        "category": "clean-composition-session",
+        "basis": "Explicit 18-session set designated by the primary operator; event measurements remain observations, not an automatic PASS.",
+        "certainty": "operator-designated"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "mode": "islands",
+      "startedAt": "2026-10-16T20:53:46.123Z",
+      "capturedAt": "2026-10-16T20:53:50.695Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 17,
+          "t": 1526,
+          "data": "é",
+          "trusted": true,
+          "target": "p1"
+        },
+        {
+          "seq": 37,
+          "t": 2930,
+          "data": "´",
+          "trusted": true,
+          "target": "p1"
+        },
+        {
+          "seq": 57,
+          "t": 3672,
+          "data": "",
+          "trusted": true,
+          "target": "p1"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 68,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 11,
+        "keydown": 13,
+        "compositionstart": 3,
+        "compositionupdate": 3,
+        "beforeinput": 11,
+        "input": 11,
+        "keyup": 9,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 648,
+      "lastEventTime": 4580,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 796.5,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "focus": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "focusRect": null,
+      "endpointVisible": null,
+      "endpointFullyVisible": null
+    },
+    {
+      "file": "osr-58-islands-1792184035416.json",
+      "timestamp": 1792184035416,
+      "sha256": "9426625cfe1b17fd72427018bc79e26b1828d8e434d51981db679c9b1a61b951",
+      "classification": {
+        "category": "clean-composition-session",
+        "basis": "Explicit 18-session set designated by the primary operator; event measurements remain observations, not an automatic PASS.",
+        "certainty": "operator-designated"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "mode": "islands",
+      "startedAt": "2026-10-16T20:53:51.294Z",
+      "capturedAt": "2026-10-16T20:53:55.416Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 17,
+          "t": 1495,
+          "data": "é",
+          "trusted": true,
+          "target": "p1"
+        },
+        {
+          "seq": 37,
+          "t": 2364,
+          "data": "´",
+          "trusted": true,
+          "target": "p1"
+        },
+        {
+          "seq": 57,
+          "t": 3233,
+          "data": "",
+          "trusted": true,
+          "target": "p1"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 69,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 12,
+        "keydown": 13,
+        "compositionstart": 3,
+        "compositionupdate": 3,
+        "beforeinput": 11,
+        "input": 11,
+        "keyup": 9,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 752,
+      "lastEventTime": 4130,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 796.5,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "focus": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "focusRect": null,
+      "endpointVisible": null,
+      "endpointFullyVisible": null
+    },
+    {
+      "file": "osr-58-islands-1792184053771.json",
+      "timestamp": 1792184053771,
+      "sha256": "336a6e5e661d6e423b8b54a77d9d7b5351b1c9885aaa117d68e9947b5a209440",
+      "classification": {
+        "category": "clean-composition-session",
+        "basis": "Explicit 18-session set designated by the primary operator; event measurements remain observations, not an automatic PASS.",
+        "certainty": "operator-designated"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0",
+      "mode": "islands",
+      "startedAt": "2026-10-16T20:54:11.760Z",
+      "capturedAt": "2026-10-16T20:54:13.770Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 24,
+          "t": 797,
+          "data": "é",
+          "trusted": true,
+          "target": "p1"
+        },
+        {
+          "seq": 45,
+          "t": 828,
+          "data": "´",
+          "trusted": true,
+          "target": "p1"
+        },
+        {
+          "seq": 71,
+          "t": 1005,
+          "data": "´",
+          "trusted": true,
+          "target": "p1"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 89,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 15,
+        "keydown": 21,
+        "keyup": 16,
+        "compositionstart": 3,
+        "compositionupdate": 4,
+        "beforeinput": 10,
+        "input": 13,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 660,
+      "lastEventTime": 1982,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 200,
+            "y": 392.66668701171875,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 451.48333740234375,
+        "y": 420.16668701171875,
+        "width": 0,
+        "height": 23
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-islands-1792184056641.json",
+      "timestamp": 1792184056641,
+      "sha256": "089a11b531a161a65ba53bc458af4ef949c2f64d67be2fab1a185bd26dcd6482",
+      "classification": {
+        "category": "clean-composition-session",
+        "basis": "Explicit 18-session set designated by the primary operator; event measurements remain observations, not an automatic PASS.",
+        "certainty": "operator-designated"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0",
+      "mode": "islands",
+      "startedAt": "2026-10-16T20:54:14.631Z",
+      "capturedAt": "2026-10-16T20:54:16.641Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 24,
+          "t": 1838,
+          "data": "é",
+          "trusted": true,
+          "target": "p1"
+        },
+        {
+          "seq": 45,
+          "t": 1859,
+          "data": "´",
+          "trusted": true,
+          "target": "p1"
+        },
+        {
+          "seq": 71,
+          "t": 2027,
+          "data": "´",
+          "trusted": true,
+          "target": "p1"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 89,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 15,
+        "keydown": 21,
+        "keyup": 16,
+        "compositionstart": 3,
+        "compositionupdate": 4,
+        "beforeinput": 10,
+        "input": 13,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 1700,
+      "lastEventTime": 2820,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 200,
+            "y": 392.66668701171875,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 451.48333740234375,
+        "y": 420.16668701171875,
+        "width": 0,
+        "height": 23
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-islands-1792184059249.json",
+      "timestamp": 1792184059249,
+      "sha256": "849f1af518119978d9d27d80951e603e488437644edee27fb1a6eeb427c9cfcf",
+      "classification": {
+        "category": "clean-composition-session",
+        "basis": "Explicit 18-session set designated by the primary operator; event measurements remain observations, not an automatic PASS.",
+        "certainty": "operator-designated"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0",
+      "mode": "islands",
+      "startedAt": "2026-10-16T20:54:17.346Z",
+      "capturedAt": "2026-10-16T20:54:19.248Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 24,
+          "t": 1653,
+          "data": "é",
+          "trusted": true,
+          "target": "p1"
+        },
+        {
+          "seq": 45,
+          "t": 1684,
+          "data": "´",
+          "trusted": true,
+          "target": "p1"
+        },
+        {
+          "seq": 71,
+          "t": 1741,
+          "data": "´",
+          "trusted": true,
+          "target": "p1"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 89,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 15,
+        "keydown": 21,
+        "keyup": 16,
+        "compositionstart": 3,
+        "compositionupdate": 4,
+        "beforeinput": 10,
+        "input": 13,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 1570,
+      "lastEventTime": 2562,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 200,
+            "y": 392.66668701171875,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 451.48333740234375,
+        "y": 420.16668701171875,
+        "width": 0,
+        "height": 23
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-islands-1792184329770.json",
+      "timestamp": 1792184329770,
+      "sha256": "295289bc6c852c08c3a1caf7eba2bf66b0ef3130fece2aa29b59eb79924c6fb3",
+      "classification": {
+        "category": "clean-composition-session",
+        "basis": "Explicit 18-session set designated by the primary operator; event measurements remain observations, not an automatic PASS.",
+        "certainty": "operator-designated"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "mode": "islands",
+      "startedAt": "2026-10-16T20:58:21.932Z",
+      "capturedAt": "2026-10-16T20:58:49.769Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 20,
+          "t": 1621.5,
+          "data": "é",
+          "trusted": false,
+          "target": "p1"
+        },
+        {
+          "seq": 38,
+          "t": 2987.4000000059605,
+          "data": "´",
+          "trusted": false,
+          "target": "p1"
+        },
+        {
+          "seq": 60,
+          "t": 4832.700000017881,
+          "data": "´",
+          "trusted": false,
+          "target": "p1"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 75,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 14,
+        "keydown": 14,
+        "keyup": 14,
+        "compositionstart": 3,
+        "compositionupdate": 5,
+        "beforeinput": 9,
+        "input": 9,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 916.3000000119209,
+      "lastEventTime": 6564.0999999940395,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 2000,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 2251.515625,
+        "y": 417.625,
+        "width": 0,
+        "height": 22
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-islands-1792184368559.json",
+      "timestamp": 1792184368559,
+      "sha256": "8fc4989fff1c5914920ec8f435f43f03501e18265a48081d6ed3dfdc3fdafff0",
+      "classification": {
+        "category": "clean-composition-session",
+        "basis": "Explicit 18-session set designated by the primary operator; event measurements remain observations, not an automatic PASS.",
+        "certainty": "operator-designated"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "mode": "islands",
+      "startedAt": "2026-10-16T20:59:23.661Z",
+      "capturedAt": "2026-10-16T20:59:28.558Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 20,
+          "t": 1440,
+          "data": "é",
+          "trusted": false,
+          "target": "p1"
+        },
+        {
+          "seq": 39,
+          "t": 2508.300000011921,
+          "data": "´",
+          "trusted": false,
+          "target": "p1"
+        },
+        {
+          "seq": 61,
+          "t": 3571.0999999940395,
+          "data": "´",
+          "trusted": false,
+          "target": "p1"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 76,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 15,
+        "keydown": 14,
+        "keyup": 14,
+        "compositionstart": 3,
+        "compositionupdate": 5,
+        "beforeinput": 9,
+        "input": 9,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 720.5,
+      "lastEventTime": 4859.200000017881,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 2000,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 2251.515625,
+        "y": 417.625,
+        "width": 0,
+        "height": 22
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-islands-1792184381217.json",
+      "timestamp": 1792184381217,
+      "sha256": "3cccf9dc5eb11673c14bcbc4958ff5b23e45aa7f12118f191cb8df4a45c79727",
+      "classification": {
+        "category": "clean-composition-session",
+        "basis": "Explicit 18-session set designated by the primary operator; event measurements remain observations, not an automatic PASS.",
+        "certainty": "operator-designated"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "mode": "islands",
+      "startedAt": "2026-10-16T20:59:36.899Z",
+      "capturedAt": "2026-10-16T20:59:41.216Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 20,
+          "t": 1367.9000000059605,
+          "data": "é",
+          "trusted": false,
+          "target": "p1"
+        },
+        {
+          "seq": 39,
+          "t": 2417.5999999940395,
+          "data": "´",
+          "trusted": false,
+          "target": "p1"
+        },
+        {
+          "seq": 61,
+          "t": 3511.4000000059605,
+          "data": "´",
+          "trusted": false,
+          "target": "p1"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 75,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 14,
+        "keydown": 14,
+        "keyup": 14,
+        "compositionstart": 3,
+        "compositionupdate": 5,
+        "beforeinput": 9,
+        "input": 9,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 883.9000000059605,
+      "lastEventTime": 4463.199999988079,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 2000,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 2251.515625,
+        "y": 417.625,
+        "width": 0,
+        "height": 22
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792184402629.json",
+      "timestamp": 1792184402629,
+      "sha256": "f3d622040d0461d42eee1e0415ce01d6178f780c8a57f11b49098bd19fcb13c0",
+      "classification": {
+        "category": "clean-composition-session",
+        "basis": "Explicit 18-session set designated by the primary operator; event measurements remain observations, not an automatic PASS.",
+        "certainty": "operator-designated"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "mode": "single",
+      "startedAt": "2026-10-16T20:59:58.074Z",
+      "capturedAt": "2026-10-16T21:00:02.629Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 20,
+          "t": 1161.699999988079,
+          "data": "é",
+          "trusted": false,
+          "target": "editor"
+        },
+        {
+          "seq": 39,
+          "t": 2230,
+          "data": "´",
+          "trusted": false,
+          "target": "editor"
+        },
+        {
+          "seq": 61,
+          "t": 3320.5,
+          "data": "´",
+          "trusted": false,
+          "target": "editor"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 76,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 15,
+        "keydown": 14,
+        "keyup": 14,
+        "compositionstart": 3,
+        "compositionupdate": 5,
+        "beforeinput": 9,
+        "input": 9,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 672.9000000059605,
+      "lastEventTime": 4515,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 2000,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 2251.515625,
+        "y": 417.625,
+        "width": 0,
+        "height": 22
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792184413083.json",
+      "timestamp": 1792184413083,
+      "sha256": "307cf22ecc036c0a34650c03a24e664f431fd18ca3d33aa42a0457113e35924c",
+      "classification": {
+        "category": "clean-composition-session",
+        "basis": "Explicit 18-session set designated by the primary operator; event measurements remain observations, not an automatic PASS.",
+        "certainty": "operator-designated"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "mode": "single",
+      "startedAt": "2026-10-16T21:00:08.782Z",
+      "capturedAt": "2026-10-16T21:00:13.082Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 20,
+          "t": 1178.300000011921,
+          "data": "é",
+          "trusted": false,
+          "target": "editor"
+        },
+        {
+          "seq": 39,
+          "t": 2480.5999999940395,
+          "data": "´",
+          "trusted": false,
+          "target": "editor"
+        },
+        {
+          "seq": 61,
+          "t": 3304.300000011921,
+          "data": "´",
+          "trusted": false,
+          "target": "editor"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 76,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 15,
+        "keydown": 14,
+        "keyup": 14,
+        "compositionstart": 3,
+        "compositionupdate": 5,
+        "beforeinput": 9,
+        "input": 9,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 702.1999999880791,
+      "lastEventTime": 4256.699999988079,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 2000,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 2251.515625,
+        "y": 417.625,
+        "width": 0,
+        "height": 22
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792184423064.json",
+      "timestamp": 1792184423064,
+      "sha256": "bb94f347df437168ac4cc18d8c369dc953237b12f7858e53570a26fdd6972480",
+      "classification": {
+        "category": "clean-composition-session",
+        "basis": "Explicit 18-session set designated by the primary operator; event measurements remain observations, not an automatic PASS.",
+        "certainty": "operator-designated"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "mode": "single",
+      "startedAt": "2026-10-16T21:00:18.486Z",
+      "capturedAt": "2026-10-16T21:00:23.063Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.é ´x ´e",
+      "compositionEnd": [
+        {
+          "seq": 20,
+          "t": 1392.4000000059605,
+          "data": "é",
+          "trusted": false,
+          "target": "editor"
+        },
+        {
+          "seq": 39,
+          "t": 2449.800000011921,
+          "data": "´",
+          "trusted": false,
+          "target": "editor"
+        },
+        {
+          "seq": 61,
+          "t": 3304.5,
+          "data": "´",
+          "trusted": false,
+          "target": "editor"
+        }
+      ],
+      "compositionEndCount": 3,
+      "compositionStartCount": 3,
+      "composingAtCapture": false,
+      "eventCount": 76,
+      "eventTypeCounts": {
+        "focusin": 2,
+        "selectionchange": 15,
+        "keydown": 14,
+        "keyup": 14,
+        "compositionstart": 3,
+        "compositionupdate": 5,
+        "beforeinput": 9,
+        "input": 9,
+        "compositionend": 3,
+        "focusout": 2
+      },
+      "firstEventTime": 695.9000000059605,
+      "lastEventTime": 4549.200000017881,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 2000,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 14
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 2251.515625,
+        "y": 417.625,
+        "width": 0,
+        "height": 22
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792184453701.json",
+      "timestamp": 1792184453701,
+      "sha256": "b8e7ecd82619fec448869a0a81d666cc8dbbb1f922554be29b36a8497ece78f2",
+      "classification": {
+        "category": "find",
+        "basis": "Unedited document, Charlie selected in p3 and scroll observed; browser Find UI itself is not recorded by page events.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "mode": "single",
+      "startedAt": "2026-10-16T21:00:28.973Z",
+      "capturedAt": "2026-10-16T21:00:53.700Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [],
+      "compositionEndCount": 0,
+      "compositionStartCount": 0,
+      "composingAtCapture": false,
+      "eventCount": 4,
+      "eventTypeCounts": {
+        "scroll": 1,
+        "focusin": 1,
+        "selectionchange": 1,
+        "focusout": 1
+      },
+      "firstEventTime": 9447.700000017881,
+      "lastEventTime": 24779.70000001788,
+      "scroll": {
+        "finalScrollTop": 128,
+        "viewport": {
+          "scrollTop": 128,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 2000,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": [
+          {
+            "seq": 1,
+            "t": 9447.700000017881,
+            "trusted": true,
+            "scrollTop": 128,
+            "selection": {
+              "text": "",
+              "anchor": {
+                "block": null,
+                "node": null,
+                "path": [],
+                "offset": 0
+              },
+              "focus": {
+                "block": null,
+                "node": null,
+                "path": [],
+                "offset": 0
+              },
+              "collapsed": true
+            }
+          }
+        ]
+      },
+      "selection": {
+        "text": "Charlie",
+        "anchor": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 7
+        },
+        "collapsed": false
+      },
+      "focusRect": {
+        "x": 2104,
+        "y": 469.625,
+        "width": 0,
+        "height": 22
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-islands-1792184477112.json",
+      "timestamp": 1792184477112,
+      "sha256": "5aa01f75e083aecbaeac2ca8e9d6166220de09eae02272aae800adf064cd4714",
+      "classification": {
+        "category": "find",
+        "basis": "Unedited document, Charlie selected in p3 and scroll observed; browser Find UI itself is not recorded by page events.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "mode": "islands",
+      "startedAt": "2026-10-16T21:01:11.257Z",
+      "capturedAt": "2026-10-16T21:01:17.111Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [],
+      "compositionEndCount": 0,
+      "compositionStartCount": 0,
+      "composingAtCapture": false,
+      "eventCount": 4,
+      "eventTypeCounts": {
+        "scroll": 1,
+        "focusin": 1,
+        "selectionchange": 1,
+        "focusout": 1
+      },
+      "firstEventTime": 734.1999999880791,
+      "lastEventTime": 5810.5999999940395,
+      "scroll": {
+        "finalScrollTop": 128,
+        "viewport": {
+          "scrollTop": 128,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 2000,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": [
+          {
+            "seq": 1,
+            "t": 734.1999999880791,
+            "trusted": true,
+            "scrollTop": 128,
+            "selection": {
+              "text": "",
+              "anchor": {
+                "block": null,
+                "node": null,
+                "path": [],
+                "offset": 0
+              },
+              "focus": {
+                "block": null,
+                "node": null,
+                "path": [],
+                "offset": 0
+              },
+              "collapsed": true
+            }
+          }
+        ]
+      },
+      "selection": {
+        "text": "Charlie",
+        "anchor": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 7
+        },
+        "collapsed": false
+      },
+      "focusRect": {
+        "x": 2104,
+        "y": 469.625,
+        "width": 0,
+        "height": 22
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-islands-1792184505414.json",
+      "timestamp": 1792184505414,
+      "sha256": "4a6d4c77063cee020739d616b52347bfe6252f838aab34a40a4964e135535b5e",
+      "classification": {
+        "category": "find",
+        "basis": "Unedited document, Charlie selected in p3 and scroll observed; browser Find UI itself is not recorded by page events.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0",
+      "mode": "islands",
+      "startedAt": "2026-10-16T21:01:36.935Z",
+      "capturedAt": "2026-10-16T21:01:45.414Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [],
+      "compositionEndCount": 0,
+      "compositionStartCount": 0,
+      "composingAtCapture": false,
+      "eventCount": 7,
+      "eventTypeCounts": {
+        "selectionchange": 6,
+        "scroll": 1
+      },
+      "firstEventTime": 444915,
+      "lastEventTime": 444941,
+      "scroll": {
+        "finalScrollTop": 128.75,
+        "viewport": {
+          "scrollTop": 128.75,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 200,
+            "y": 392.66668701171875,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": [
+          {
+            "seq": 2,
+            "t": 444924,
+            "trusted": true,
+            "scrollTop": 128.75,
+            "selection": {
+              "text": "Cha",
+              "anchor": {
+                "block": "p3",
+                "node": "#text",
+                "path": [
+                  0
+                ],
+                "offset": 0
+              },
+              "focus": {
+                "block": "p3",
+                "node": "#text",
+                "path": [
+                  0
+                ],
+                "offset": 3
+              },
+              "collapsed": false
+            }
+          }
+        ]
+      },
+      "selection": {
+        "text": "Charlie",
+        "anchor": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 7
+        },
+        "collapsed": false
+      },
+      "focusRect": {
+        "x": 304.01666259765625,
+        "y": 469.41668701171875,
+        "width": 0,
+        "height": 28.5
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792184518593.json",
+      "timestamp": 1792184518593,
+      "sha256": "559d63a67ab806a82c4a5d418f147e8d40ffb4377bdb1576d7019a44bcdeb864",
+      "classification": {
+        "category": "find",
+        "basis": "Unedited document, Charlie selected in p3 and scroll observed; browser Find UI itself is not recorded by page events.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0",
+      "mode": "single",
+      "startedAt": "2026-10-16T21:01:50.342Z",
+      "capturedAt": "2026-10-16T21:01:58.592Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [],
+      "compositionEndCount": 0,
+      "compositionStartCount": 0,
+      "composingAtCapture": false,
+      "eventCount": 2,
+      "eventTypeCounts": {
+        "selectionchange": 1,
+        "scroll": 1
+      },
+      "firstEventTime": 11788,
+      "lastEventTime": 11796,
+      "scroll": {
+        "finalScrollTop": 128.75,
+        "viewport": {
+          "scrollTop": 128.75,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 200,
+            "y": 392.66668701171875,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": [
+          {
+            "seq": 2,
+            "t": 11796,
+            "trusted": true,
+            "scrollTop": 128.75,
+            "selection": {
+              "text": "Charlie",
+              "anchor": {
+                "block": "p3",
+                "node": "#text",
+                "path": [
+                  0
+                ],
+                "offset": 0
+              },
+              "focus": {
+                "block": "p3",
+                "node": "#text",
+                "path": [
+                  0
+                ],
+                "offset": 7
+              },
+              "collapsed": false
+            }
+          }
+        ]
+      },
+      "selection": {
+        "text": "Charlie",
+        "anchor": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 7
+        },
+        "collapsed": false
+      },
+      "focusRect": {
+        "x": 304.01666259765625,
+        "y": 469.41668701171875,
+        "width": 0,
+        "height": 28.5
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792184658231.json",
+      "timestamp": 1792184658231,
+      "sha256": "321b33af36cb95a429d22bfb106bddbb123844f38513e0079b75f012c556895b",
+      "classification": {
+        "category": "drag",
+        "basis": "Selection/scroll observation without editing keys; raw trace alone does not establish pointer-button duration or that native autoscroll caused the scroll.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0",
+      "mode": "single",
+      "startedAt": "2026-10-16T21:04:12.723Z",
+      "capturedAt": "2026-10-16T21:04:18.231Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [],
+      "compositionEndCount": 0,
+      "compositionStartCount": 0,
+      "composingAtCapture": false,
+      "eventCount": 4,
+      "eventTypeCounts": {
+        "focusin": 1,
+        "selectionchange": 1,
+        "scroll": 1,
+        "focusout": 1
+      },
+      "firstEventTime": 1765,
+      "lastEventTime": 5474,
+      "scroll": {
+        "finalScrollTop": 18.33333396911621,
+        "viewport": {
+          "scrollTop": 18.33333396911621,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 200,
+            "y": 392.66668701171875,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": [
+          {
+            "seq": 3,
+            "t": 1769,
+            "trusted": true,
+            "scrollTop": 18.33333396911621,
+            "selection": {
+              "text": "",
+              "anchor": {
+                "block": "p1",
+                "node": "#text",
+                "path": [
+                  0
+                ],
+                "offset": 0
+              },
+              "focus": {
+                "block": "p1",
+                "node": "#text",
+                "path": [
+                  0
+                ],
+                "offset": 0
+              },
+              "collapsed": true
+            }
+          }
+        ]
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 221,
+        "y": 401.83331298828125,
+        "width": 0,
+        "height": 23
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792184705035.json",
+      "timestamp": 1792184705035,
+      "sha256": "0abc53f7066208ddf808666627cd70d79d8ece30af6d019f729dd2e601639720",
+      "classification": {
+        "category": "drag",
+        "basis": "Selection/scroll observation without editing keys; raw trace alone does not establish pointer-button duration or that native autoscroll caused the scroll.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0",
+      "mode": "single",
+      "startedAt": "2026-10-16T21:04:39.392Z",
+      "capturedAt": "2026-10-16T21:05:05.035Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [],
+      "compositionEndCount": 0,
+      "compositionStartCount": 0,
+      "composingAtCapture": false,
+      "eventCount": 5,
+      "eventTypeCounts": {
+        "focusin": 1,
+        "selectionchange": 2,
+        "scroll": 1,
+        "focusout": 1
+      },
+      "firstEventTime": 22537,
+      "lastEventTime": 46756,
+      "scroll": {
+        "finalScrollTop": 40.83333206176758,
+        "viewport": {
+          "scrollTop": 40.83333206176758,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 200,
+            "y": 392.66668701171875,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": [
+          {
+            "seq": 4,
+            "t": 22550,
+            "trusted": true,
+            "scrollTop": 40.83333206176758,
+            "selection": {
+              "text": "old omega.\n\nBravo café 👩🏽‍💻 é.\n",
+              "anchor": {
+                "block": "p1",
+                "node": "#text",
+                "path": [
+                  1,
+                  0
+                ],
+                "offset": 1
+              },
+              "focus": {
+                "block": "card",
+                "node": "#text",
+                "path": [
+                  0
+                ],
+                "offset": 0
+              },
+              "collapsed": false
+            }
+          }
+        ]
+      },
+      "selection": {
+        "text": "old omega.\n\nBravo café 👩🏽‍💻 é.\n",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            1,
+            0
+          ],
+          "offset": 1
+        },
+        "focus": {
+          "block": "card",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "collapsed": false
+      },
+      "focusRect": {
+        "x": 234,
+        "y": 497.83331298828125,
+        "width": 0,
+        "height": 19
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792184724955.json",
+      "timestamp": 1792184724955,
+      "sha256": "33bc8e6544329b8809894639e21852a45fdcc669d420bbab684b4ce282492b0f",
+      "classification": {
+        "category": "RU-EN",
+        "basis": "Cyrillic input data recorded; final text and keys distinguish the actual inserted text.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0",
+      "mode": "single",
+      "startedAt": "2026-10-16T21:05:05.558Z",
+      "capturedAt": "2026-10-16T21:05:24.955Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.привет hello",
+      "compositionEnd": [],
+      "compositionEndCount": 0,
+      "compositionStartCount": 0,
+      "composingAtCapture": false,
+      "eventCount": 77,
+      "eventTypeCounts": {
+        "focusin": 1,
+        "selectionchange": 15,
+        "keydown": 18,
+        "keyup": 18,
+        "beforeinput": 12,
+        "input": 12,
+        "focusout": 1
+      },
+      "firstEventTime": 1157,
+      "lastEventTime": 19879,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 200,
+            "y": 337.5,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 19
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 19
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 505.91668701171875,
+        "y": 365,
+        "width": 0,
+        "height": 23
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-islands-1792184733730.json",
+      "timestamp": 1792184733730,
+      "sha256": "945b437bbdf85d07899407586870932576dde09ab23ccde38fa3320eca23a8ce",
+      "classification": {
+        "category": "RU-EN",
+        "basis": "Cyrillic input data recorded; final text and keys distinguish the actual inserted text.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0",
+      "mode": "islands",
+      "startedAt": "2026-10-16T21:05:26.370Z",
+      "capturedAt": "2026-10-16T21:05:33.729Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.привет hello",
+      "compositionEnd": [],
+      "compositionEndCount": 0,
+      "compositionStartCount": 0,
+      "composingAtCapture": false,
+      "eventCount": 72,
+      "eventTypeCounts": {
+        "focusin": 1,
+        "selectionchange": 13,
+        "keydown": 16,
+        "keyup": 17,
+        "beforeinput": 12,
+        "input": 12,
+        "focusout": 1
+      },
+      "firstEventTime": 2089,
+      "lastEventTime": 8718,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 200,
+            "y": 392.66668701171875,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 19
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 19
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 505.91668701171875,
+        "y": 420.16668701171875,
+        "width": 0,
+        "height": 23
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-islands-1792184752965.json",
+      "timestamp": 1792184752965,
+      "sha256": "06008dec470ee5398817ded0bfa36421ca83ff926f670fbbd0a06ed88622caaf",
+      "classification": {
+        "category": "replacement",
+        "basis": "Composition and historyUndo events; selected text and intermediate DOM remain in the raw trace.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0",
+      "mode": "islands",
+      "startedAt": "2026-10-16T21:05:50.197Z",
+      "capturedAt": "2026-10-16T21:05:52.965Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [
+        {
+          "seq": 54,
+          "t": 18165,
+          "data": "é",
+          "trusted": true,
+          "target": "p1"
+        }
+      ],
+      "compositionEndCount": 1,
+      "compositionStartCount": 1,
+      "composingAtCapture": false,
+      "eventCount": 64,
+      "eventTypeCounts": {
+        "focusin": 1,
+        "selectionchange": 12,
+        "keydown": 21,
+        "keyup": 18,
+        "compositionstart": 1,
+        "compositionupdate": 2,
+        "beforeinput": 3,
+        "input": 4,
+        "compositionend": 1,
+        "focusout": 1
+      },
+      "firstEventTime": 17151,
+      "lastEventTime": 19181,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 200,
+            "y": 392.66668701171875,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 328.70001220703125,
+        "y": 420.16668701171875,
+        "width": 0,
+        "height": 23
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792184761090.json",
+      "timestamp": 1792184761090,
+      "sha256": "3430bb749efff25498e7d9015644254d54fd9d127528c820086ae484c101aac9",
+      "classification": {
+        "category": "replacement",
+        "basis": "Composition and historyUndo events; selected text and intermediate DOM remain in the raw trace.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0",
+      "mode": "single",
+      "startedAt": "2026-10-16T21:05:58.486Z",
+      "capturedAt": "2026-10-16T21:06:01.089Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [
+        {
+          "seq": 54,
+          "t": 1501,
+          "data": "é",
+          "trusted": true,
+          "target": "editor"
+        }
+      ],
+      "compositionEndCount": 1,
+      "compositionStartCount": 1,
+      "composingAtCapture": false,
+      "eventCount": 64,
+      "eventTypeCounts": {
+        "focusin": 1,
+        "selectionchange": 12,
+        "keydown": 21,
+        "keyup": 18,
+        "compositionstart": 1,
+        "compositionupdate": 2,
+        "beforeinput": 3,
+        "input": 4,
+        "compositionend": 1,
+        "focusout": 1
+      },
+      "firstEventTime": 673,
+      "lastEventTime": 2570,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 200,
+            "y": 337.5,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 328.70001220703125,
+        "y": 365,
+        "width": 0,
+        "height": 23
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-islands-1792184843107.json",
+      "timestamp": 1792184843107,
+      "sha256": "4ec268345f3705ac7c095ba142f62fa83f888dd4139623536a607be70fe7d796",
+      "classification": {
+        "category": "find",
+        "basis": "Unedited document, Charlie selected in p3 and scroll observed; browser Find UI itself is not recorded by page events.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "mode": "islands",
+      "startedAt": "2026-10-16T21:07:15.990Z",
+      "capturedAt": "2026-10-16T21:07:23.107Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [],
+      "compositionEndCount": 0,
+      "compositionStartCount": 0,
+      "composingAtCapture": false,
+      "eventCount": 2,
+      "eventTypeCounts": {
+        "selectionchange": 1,
+        "scroll": 1
+      },
+      "firstEventTime": 5711,
+      "lastEventTime": 5711,
+      "scroll": {
+        "finalScrollTop": 128,
+        "viewport": {
+          "scrollTop": 128,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 796.5,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": [
+          {
+            "seq": 2,
+            "t": 5711,
+            "trusted": true,
+            "scrollTop": 128,
+            "selection": {
+              "text": "Charlie",
+              "anchor": {
+                "block": "p3",
+                "node": "#text",
+                "path": [
+                  0
+                ],
+                "offset": 0
+              },
+              "focus": {
+                "block": "p3",
+                "node": "#text",
+                "path": [
+                  0
+                ],
+                "offset": 7
+              },
+              "collapsed": false
+            }
+          }
+        ]
+      },
+      "selection": {
+        "text": "Charlie",
+        "anchor": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 7
+        },
+        "collapsed": false
+      },
+      "focusRect": {
+        "x": 900.5,
+        "y": 469.25,
+        "width": 0,
+        "height": 22.71875
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792184862809.json",
+      "timestamp": 1792184862809,
+      "sha256": "1743bd642bcdbbc70dd9851cd444563a96bafbdf942301fd903545ffd465f8e5",
+      "classification": {
+        "category": "exploratory",
+        "basis": "No stronger scenario classification supported by the recorded events.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "mode": "single",
+      "startedAt": "2026-10-16T21:07:37.225Z",
+      "capturedAt": "2026-10-16T21:07:42.809Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [],
+      "compositionEndCount": 0,
+      "compositionStartCount": 0,
+      "composingAtCapture": false,
+      "eventCount": 0,
+      "eventTypeCounts": {},
+      "firstEventTime": null,
+      "lastEventTime": null,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 796.5,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "focus": {
+          "block": null,
+          "node": null,
+          "path": [],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "focusRect": null,
+      "endpointVisible": null,
+      "endpointFullyVisible": null
+    },
+    {
+      "file": "osr-58-single-1792184865788.json",
+      "timestamp": 1792184865788,
+      "sha256": "f0eb24f33384225b38de3cd8bea4b566587776f360b3435892af7493b30f8ebf",
+      "classification": {
+        "category": "replacement",
+        "basis": "Composition and historyUndo events; selected text and intermediate DOM remain in the raw trace.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "mode": "single",
+      "startedAt": "2026-10-16T21:07:43.220Z",
+      "capturedAt": "2026-10-16T21:07:45.788Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [
+        {
+          "seq": 35,
+          "t": 1499,
+          "data": "é",
+          "trusted": true,
+          "target": "editor"
+        }
+      ],
+      "compositionEndCount": 1,
+      "compositionStartCount": 1,
+      "composingAtCapture": false,
+      "eventCount": 43,
+      "eventTypeCounts": {
+        "focusin": 1,
+        "selectionchange": 11,
+        "keydown": 11,
+        "keyup": 8,
+        "compositionstart": 1,
+        "compositionupdate": 1,
+        "beforeinput": 4,
+        "input": 4,
+        "compositionend": 1,
+        "focusout": 1
+      },
+      "firstEventTime": 661,
+      "lastEventTime": 2529,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 796.5,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "omega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "collapsed": false
+      },
+      "focusRect": {
+        "x": 924.5,
+        "y": 417.25,
+        "width": 0,
+        "height": 22.71875
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-islands-1792184872965.json",
+      "timestamp": 1792184872965,
+      "sha256": "67dade62edcfdf5e12995aeea191a3ab75434256f0984720b1e34203e5021ff4",
+      "classification": {
+        "category": "replacement",
+        "basis": "Composition and historyUndo events; selected text and intermediate DOM remain in the raw trace.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "mode": "islands",
+      "startedAt": "2026-10-16T21:07:50.322Z",
+      "capturedAt": "2026-10-16T21:07:52.965Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [
+        {
+          "seq": 36,
+          "t": 1596,
+          "data": "é",
+          "trusted": true,
+          "target": "p1"
+        }
+      ],
+      "compositionEndCount": 1,
+      "compositionStartCount": 1,
+      "composingAtCapture": false,
+      "eventCount": 44,
+      "eventTypeCounts": {
+        "focusin": 1,
+        "selectionchange": 12,
+        "keydown": 11,
+        "keyup": 8,
+        "compositionstart": 1,
+        "compositionupdate": 1,
+        "beforeinput": 4,
+        "input": 4,
+        "compositionend": 1,
+        "focusout": 1
+      },
+      "firstEventTime": 730,
+      "lastEventTime": 2603,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 796.5,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "omega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "collapsed": false
+      },
+      "focusRect": {
+        "x": 924.5,
+        "y": 417.25,
+        "width": 0,
+        "height": 22.71875
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792184892985.json",
+      "timestamp": 1792184892985,
+      "sha256": "b8d07fe93a745b757d5b37e9571c464144ae21e7385c21647c459b9bd98092e5",
+      "classification": {
+        "category": "find",
+        "basis": "Unedited document, Charlie selected in p3 and scroll observed; browser Find UI itself is not recorded by page events.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "mode": "single",
+      "startedAt": "2026-10-16T21:08:10.423Z",
+      "capturedAt": "2026-10-16T21:08:12.985Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [],
+      "compositionEndCount": 0,
+      "compositionStartCount": 0,
+      "composingAtCapture": false,
+      "eventCount": 2,
+      "eventTypeCounts": {
+        "selectionchange": 1,
+        "scroll": 1
+      },
+      "firstEventTime": 1209,
+      "lastEventTime": 1209,
+      "scroll": {
+        "finalScrollTop": 128,
+        "viewport": {
+          "scrollTop": 128,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 796.5,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": [
+          {
+            "seq": 2,
+            "t": 1209,
+            "trusted": true,
+            "scrollTop": 128,
+            "selection": {
+              "text": "Charlie",
+              "anchor": {
+                "block": "p3",
+                "node": "#text",
+                "path": [
+                  0
+                ],
+                "offset": 0
+              },
+              "focus": {
+                "block": "p3",
+                "node": "#text",
+                "path": [
+                  0
+                ],
+                "offset": 7
+              },
+              "collapsed": false
+            }
+          }
+        ]
+      },
+      "selection": {
+        "text": "Charlie",
+        "anchor": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 7
+        },
+        "collapsed": false
+      },
+      "focusRect": {
+        "x": 900.5,
+        "y": 469.25,
+        "width": 0,
+        "height": 22.71875
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792184916823.json",
+      "timestamp": 1792184916823,
+      "sha256": "c1a4c4d56447e9a3d5495dd1733397548567d508932ae3322a6d9a8f60ec8124",
+      "classification": {
+        "category": "drag",
+        "basis": "Selection/scroll observation without editing keys; raw trace alone does not establish pointer-button duration or that native autoscroll caused the scroll.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "mode": "single",
+      "startedAt": "2026-10-16T21:08:13.382Z",
+      "capturedAt": "2026-10-16T21:08:36.822Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [],
+      "compositionEndCount": 0,
+      "compositionStartCount": 0,
+      "composingAtCapture": false,
+      "eventCount": 4,
+      "eventTypeCounts": {
+        "focusin": 1,
+        "selectionchange": 2,
+        "focusout": 1
+      },
+      "firstEventTime": 22873,
+      "lastEventTime": 23412,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 796.5,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "ld omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\nCharlie nested paragraph. Русский текст. 日本語.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            1,
+            0
+          ],
+          "offset": 2
+        },
+        "focus": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 45
+        },
+        "collapsed": false
+      },
+      "focusRect": {
+        "x": 1274.5,
+        "y": 597.25,
+        "width": 0,
+        "height": 22.71875
+      },
+      "endpointVisible": false,
+      "endpointFullyVisible": false
+    },
+    {
+      "file": "osr-58-islands-1792184925966.json",
+      "timestamp": 1792184925966,
+      "sha256": "13cec68475057792dd6f607724ece4a302a18b79d644abd8797a061134942cd1",
+      "classification": {
+        "category": "drag",
+        "basis": "Selection/scroll observation without editing keys; raw trace alone does not establish pointer-button duration or that native autoscroll caused the scroll.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "mode": "islands",
+      "startedAt": "2026-10-16T21:08:44.016Z",
+      "capturedAt": "2026-10-16T21:08:45.965Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [],
+      "compositionEndCount": 0,
+      "compositionStartCount": 0,
+      "composingAtCapture": false,
+      "eventCount": 4,
+      "eventTypeCounts": {
+        "focusin": 1,
+        "selectionchange": 2,
+        "focusout": 1
+      },
+      "firstEventTime": 1464,
+      "lastEventTime": 1910,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 796.5,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "ld omega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            1,
+            0
+          ],
+          "offset": 2
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "collapsed": false
+      },
+      "focusRect": {
+        "x": 988.5,
+        "y": 417.25,
+        "width": 0,
+        "height": 22.71875
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-islands-1792184929637.json",
+      "timestamp": 1792184929637,
+      "sha256": "c33cd86095851be93483b754319eb7b3c093f05a1a234a3b20aac22e8c10d12a",
+      "classification": {
+        "category": "replacement",
+        "basis": "Composition and historyUndo events; selected text and intermediate DOM remain in the raw trace.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "mode": "islands",
+      "startedAt": "2026-10-16T21:08:46.704Z",
+      "capturedAt": "2026-10-16T21:08:49.636Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [
+        {
+          "seq": 36,
+          "t": 1608.300000011921,
+          "data": "é",
+          "trusted": false,
+          "target": "p1"
+        }
+      ],
+      "compositionEndCount": 1,
+      "compositionStartCount": 1,
+      "composingAtCapture": false,
+      "eventCount": 44,
+      "eventTypeCounts": {
+        "focusin": 1,
+        "selectionchange": 10,
+        "keydown": 11,
+        "keyup": 11,
+        "compositionstart": 1,
+        "compositionupdate": 2,
+        "beforeinput": 3,
+        "input": 3,
+        "compositionend": 1,
+        "focusout": 1
+      },
+      "firstEventTime": 758.4000000059605,
+      "lastEventTime": 2888.9000000059605,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 400,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "o",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": false
+      },
+      "focusRect": {
+        "x": 539.484375,
+        "y": 417.625,
+        "width": 0,
+        "height": 22
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792184941020.json",
+      "timestamp": 1792184941020,
+      "sha256": "0ff5a73b080b4d6cce91ec91709e488f773b39bff0bc69a105207998cbde32f3",
+      "classification": {
+        "category": "replacement",
+        "basis": "Composition and historyUndo events; selected text and intermediate DOM remain in the raw trace.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "mode": "single",
+      "startedAt": "2026-10-16T21:08:57.913Z",
+      "capturedAt": "2026-10-16T21:09:01.019Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [
+        {
+          "seq": 36,
+          "t": 2084.699999988079,
+          "data": "é",
+          "trusted": false,
+          "target": "editor"
+        }
+      ],
+      "compositionEndCount": 1,
+      "compositionStartCount": 1,
+      "composingAtCapture": false,
+      "eventCount": 44,
+      "eventTypeCounts": {
+        "focusin": 1,
+        "selectionchange": 10,
+        "keydown": 11,
+        "keyup": 11,
+        "compositionstart": 1,
+        "compositionupdate": 2,
+        "beforeinput": 3,
+        "input": 3,
+        "compositionend": 1,
+        "focusout": 1
+      },
+      "firstEventTime": 701.5,
+      "lastEventTime": 3066.2999999821186,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 400,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "o",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": false
+      },
+      "focusRect": {
+        "x": 539.484375,
+        "y": 417.625,
+        "width": 0,
+        "height": 22
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-single-1792184971810.json",
+      "timestamp": 1792184971810,
+      "sha256": "9ec214f98d809cb07af7d0c9d815b448a2ae13660c01ba11434f79e1e6a39389",
+      "classification": {
+        "category": "drag",
+        "basis": "Selection/scroll observation without editing keys; raw trace alone does not establish pointer-button duration or that native autoscroll caused the scroll.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "mode": "single",
+      "startedAt": "2026-10-16T21:09:14.383Z",
+      "capturedAt": "2026-10-16T21:09:31.809Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [],
+      "compositionEndCount": 0,
+      "compositionStartCount": 0,
+      "composingAtCapture": false,
+      "eventCount": 4,
+      "eventTypeCounts": {
+        "focusin": 1,
+        "selectionchange": 2,
+        "focusout": 1
+      },
+      "firstEventTime": 16641.59999999404,
+      "lastEventTime": 17383.19999998808,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 400,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "d omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\nCharlie nested paragraph. Русский текст. 日本",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            1,
+            0
+          ],
+          "offset": 3
+        },
+        "focus": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 43
+        },
+        "collapsed": false
+      },
+      "focusRect": {
+        "x": 852.703125,
+        "y": 597.625,
+        "width": 0,
+        "height": 22
+      },
+      "endpointVisible": false,
+      "endpointFullyVisible": false
+    },
+    {
+      "file": "osr-58-islands-1792184983201.json",
+      "timestamp": 1792184983201,
+      "sha256": "d40f566ea7a22750ffe015840d27c0cf374e289d57d2ff8c7b220cb8ffc0a54b",
+      "classification": {
+        "category": "drag",
+        "basis": "Selection/scroll observation without editing keys; raw trace alone does not establish pointer-button duration or that native autoscroll caused the scroll.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "mode": "islands",
+      "startedAt": "2026-10-16T21:09:40.949Z",
+      "capturedAt": "2026-10-16T21:09:43.201Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [],
+      "compositionEndCount": 0,
+      "compositionStartCount": 0,
+      "composingAtCapture": false,
+      "eventCount": 4,
+      "eventTypeCounts": {
+        "focusin": 1,
+        "selectionchange": 2,
+        "focusout": 1
+      },
+      "firstEventTime": 1511.800000011921,
+      "lastEventTime": 2207.7000000178814,
+      "scroll": {
+        "finalScrollTop": 0,
+        "viewport": {
+          "scrollTop": 0,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 400,
+            "y": 389.625,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": []
+      },
+      "selection": {
+        "text": "d omega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            1,
+            0
+          ],
+          "offset": 3
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "collapsed": false
+      },
+      "focusRect": {
+        "x": 592.421875,
+        "y": 417.625,
+        "width": 0,
+        "height": 22
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": true
+    },
+    {
+      "file": "osr-58-islands-1792185005722.json",
+      "timestamp": 1792185005722,
+      "sha256": "b28590bd03f6f1843bc0898afc4bdf4a00584b46e5a23fca12ff5be8c0cb534d",
+      "classification": {
+        "category": "drag",
+        "basis": "Selection/scroll observation without editing keys; raw trace alone does not establish pointer-button duration or that native autoscroll caused the scroll.",
+        "certainty": "inferred-from-trace"
+      },
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0",
+      "mode": "islands",
+      "startedAt": "2026-10-16T21:10:03.762Z",
+      "capturedAt": "2026-10-16T21:10:05.722Z",
+      "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+      "nativeMode": true,
+      "finalP1Text": "Alpha bold omega.",
+      "compositionEnd": [],
+      "compositionEndCount": 0,
+      "compositionStartCount": 0,
+      "composingAtCapture": false,
+      "eventCount": 4,
+      "eventTypeCounts": {
+        "focusin": 1,
+        "selectionchange": 1,
+        "scroll": 1,
+        "focusout": 1
+      },
+      "firstEventTime": 244155,
+      "lastEventTime": 244578,
+      "scroll": {
+        "finalScrollTop": 40.83333206176758,
+        "viewport": {
+          "scrollTop": 40.83333206176758,
+          "scrollHeight": 390,
+          "clientHeight": 180,
+          "rect": {
+            "x": 200,
+            "y": 392.66668701171875,
+            "width": 880,
+            "height": 182
+          }
+        },
+        "events": [
+          {
+            "seq": 3,
+            "t": 244165,
+            "trusted": true,
+            "scrollTop": 40.83333206176758,
+            "selection": {
+              "text": "",
+              "anchor": {
+                "block": "p1",
+                "node": "#text",
+                "path": [
+                  1,
+                  0
+                ],
+                "offset": 1
+              },
+              "focus": {
+                "block": "p1",
+                "node": "#text",
+                "path": [
+                  1,
+                  0
+                ],
+                "offset": 1
+              },
+              "collapsed": true
+            }
+          }
+        ]
+      },
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            1,
+            0
+          ],
+          "offset": 1
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            1,
+            0
+          ],
+          "offset": 1
+        },
+        "collapsed": true
+      },
+      "focusRect": {
+        "x": 291.01666259765625,
+        "y": 379.33331298828125,
+        "width": 0,
+        "height": 23
+      },
+      "endpointVisible": true,
+      "endpointFullyVisible": false
+    }
+  ]
+}

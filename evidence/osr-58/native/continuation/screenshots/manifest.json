@@ -1,0 +1,127 @@
+{
+  "note": "Images are presentation crops/resizes of native screenshots, not new captures. Raw trace geometry remains in CSS pixels and is not measured from these rescaled images.",
+  "images": [
+    {
+      "file": "osr58-chrome-single-find.jpg",
+      "sourceFile": "/tmp/osr58-chrome-single-find.jpg",
+      "sourceSha256": "9c2702079b10eac5709164ef28ec5fb8917caf197db667db889ceef7e6640cd5",
+      "outputSha256": "77652fcaf1c5576eb3671a46e44487819e29cc9511f112fdc04e6ae92180a45c",
+      "sourceDimensions": [
+        10240,
+        2786
+      ],
+      "cropXYWidthHeight": [
+        1,
+        1,
+        5120,
+        1393
+      ],
+      "outputDimensions": [
+        2560,
+        696
+      ],
+      "transformation": "Separate sips crop followed by resize; 1px top/left offset because zero offsets produced center crop",
+      "visualInspection": "Native Find query Charlie, one match, selected nested paragraph and mode visible; no unrelated document or personal browsing content visible."
+    },
+    {
+      "file": "osr58-chrome-islands-find.jpg",
+      "sourceFile": "/tmp/osr58-chrome-islands-find.jpg",
+      "sourceSha256": "4388b2ff154de6f5bc7c5f6ae3a64bff85366de82d43fa3d082a8e1c054a76ff",
+      "outputSha256": "53e10f6c9df5ff59b997a71a771215d8b3928de6d312207ae68aa60ec0957f36",
+      "sourceDimensions": [
+        10240,
+        2786
+      ],
+      "cropXYWidthHeight": [
+        1,
+        1,
+        5120,
+        1393
+      ],
+      "outputDimensions": [
+        2560,
+        696
+      ],
+      "transformation": "Separate sips crop followed by resize; 1px top/left offset because zero offsets produced center crop",
+      "visualInspection": "Native Find query Charlie, one match, selected nested paragraph and mode visible; no unrelated document or personal browsing content visible."
+    },
+    {
+      "file": "osr58-firefox-single-find.jpg",
+      "sourceFile": "/tmp/osr58-firefox-single-find.jpg",
+      "sourceSha256": "15a5f9bed590b222bafedd4b248e1e3bc9f96d358802247257f1c2a6ed07d460",
+      "outputSha256": "b8b11cdc27137b0290906a8f2bd7e8ae9b7d5b89b3a58565b7e2715bb97ff84c",
+      "sourceDimensions": [
+        2560,
+        1708
+      ],
+      "cropXYWidthHeight": null,
+      "outputDimensions": [
+        1920,
+        1280
+      ],
+      "transformation": "sips resize only",
+      "visualInspection": "Native Find query Charlie, one match, selected nested paragraph and mode visible; no unrelated document or personal browsing content visible."
+    },
+    {
+      "file": "osr58-firefox-islands-find.jpg",
+      "sourceFile": "/tmp/osr58-firefox-islands-find.jpg",
+      "sourceSha256": "a589b764bc14577c4d60e17e52f6858817f91b05ea640371a2f1ad704d72db6d",
+      "outputSha256": "0d4ba5f2094b32a0d5962e8c69a692b856174c684d2ed618a96560f1f207ccfb",
+      "sourceDimensions": [
+        2560,
+        1708
+      ],
+      "cropXYWidthHeight": null,
+      "outputDimensions": [
+        1920,
+        1280
+      ],
+      "transformation": "sips resize only",
+      "visualInspection": "Native Find query Charlie, one match, selected nested paragraph and mode visible; no unrelated document or personal browsing content visible."
+    },
+    {
+      "file": "osr58-safari-single-find.jpg",
+      "sourceFile": "/tmp/osr58-safari-single-find.jpg",
+      "sourceSha256": "5b274f2e99e640b41cf6bffdc96d7da6d09f5b33cec45804ae95614d64903692",
+      "outputSha256": "7c731fc6861405ad1fcedc48b28b588e0ddf6ad0106d179be24b78da5d9153f1",
+      "sourceDimensions": [
+        4946,
+        2018
+      ],
+      "cropXYWidthHeight": [
+        1,
+        1,
+        2473,
+        1009
+      ],
+      "outputDimensions": [
+        2000,
+        816
+      ],
+      "transformation": "Separate sips crop followed by resize; 1px top/left offset because zero offsets produced center crop",
+      "visualInspection": "Native Find query Charlie, one match, selected nested paragraph and mode visible; no unrelated document or personal browsing content visible."
+    },
+    {
+      "file": "osr58-safari-islands-find.jpg",
+      "sourceFile": "/tmp/osr58-safari-islands-find.jpg",
+      "sourceSha256": "c903cb861c05f587cde367f7afe6f55f04fe8cc10b69fcdecd9f4fa2b348cb08",
+      "outputSha256": "1a2a5fa50e4e2141b5251fd6a9b64d1b7fae4205e7d2a53c237448eaaf4bde9c",
+      "sourceDimensions": [
+        4946,
+        2018
+      ],
+      "cropXYWidthHeight": [
+        1,
+        1,
+        2473,
+        1009
+      ],
+      "outputDimensions": [
+        2000,
+        816
+      ],
+      "transformation": "Separate sips crop followed by resize; 1px top/left offset because zero offsets produced center crop",
+      "visualInspection": "Native Find query Charlie, one match, selected nested paragraph and mode visible; no unrelated document or personal browsing content visible."
+    }
+  ]
+}
