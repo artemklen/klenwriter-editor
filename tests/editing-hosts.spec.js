@@ -114,10 +114,11 @@ for (const mode of modes) {
       await record(page, info, 'nested-scroll', { reachesNested: s.focus.block === 'p3', includesAtom: s.text.includes('Reference card'), scrolled: scrollTop > 0, scrollTop, selection: s });
     });
     test('native copy cut paste and undo scope', async ({ page }, info) => {
-      await caret(page, 'p2', true);
-      // A unique document marker rules out stale OS clipboard data from another case.
+      // Seed a unique fixture marker before any user edit/history. Typing it first
+      // conflates the cut/undo observation with browser typing-history grouping.
       const marker = ` clip-${randomUUID()}`;
-      await page.keyboard.type(marker);
+      await page.locator('#p2').evaluate((p, value) => p.append(document.createTextNode(value)), marker);
+      await caret(page, 'p2', true);
       const before = await page.locator('#editor').innerText();
       await page.keyboard.press('ControlOrMeta+a');
       const selected = await page.evaluate(() => getSelection().toString());
