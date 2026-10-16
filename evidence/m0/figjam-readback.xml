@@ -1,0 +1,232 @@
+<canvas id="0:1" name="Page 1" x="0" y="0" width="0" height="0">
+  <section id="1:12" name="Historical v1 · Потребители" x="-432" y="492" width="320" height="608">
+    <shape-with-text id="1:3" x="48" y="240" width="224" height="128" name="SQUARE">KlenWriter CMS</shape-with-text>
+    <shape-with-text id="1:6" x="48" y="432" width="224" height="128" name="SQUARE">Независимый пример</shape-with-text>
+    <shape-with-text id="1:9" x="48" y="48" width="224" height="128" name="SQUARE">Rust сервер</shape-with-text>
+  </section>
+  <section id="1:25" name="Historical v1 · Браузерный SDK" x="176" y="684" width="1056" height="416">
+    <shape-with-text id="1:13" x="48" y="48" width="224" height="128" name="SQUARE">Angular binding</shape-with-text>
+    <shape-with-text id="1:16" x="48" y="240" width="224" height="128" name="SQUARE">Vanilla API</shape-with-text>
+    <shape-with-text id="1:19" x="432" y="144" width="224" height="128" name="SQUARE">DOM и selection</shape-with-text>
+    <connector id="1:58" x="280" y="208" connectorStart="1:16" connectorStartCap="NONE" connectorEnd="1:19" connectorEndCap="ARROW_LINES">Монтирует</connector>
+    <connector id="1:54" x="280" y="112" connectorStart="1:13" connectorStartCap="NONE" connectorEnd="1:19" connectorEndCap="ARROW_LINES">Монтирует</connector>
+    <shape-with-text id="1:22" x="784" y="144" width="224" height="128" name="SQUARE">Версионируемый WASM API</shape-with-text>
+    <connector id="1:62" x="0" y="0" connectorStart="1:19" connectorStartCap="NONE" connectorEnd="1:22" connectorEndCap="ARROW_LINES">Команды и события</connector>
+  </section>
+  <section id="1:35" name="Historical v1 · Общее Rust ядро — проект" x="1552" y="249.5" width="800" height="515">
+    <shape-with-text id="1:26" x="48" y="339" width="224" height="128" name="SQUARE">Transactions и history</shape-with-text>
+    <shape-with-text id="1:29" x="528" y="242" width="224" height="128" name="SQUARE">Document model</shape-with-text>
+    <connector id="1:70" x="280" y="306" connectorStart="1:26" connectorStartCap="NONE" connectorEnd="1:29" connectorEndCap="ARROW_LINES">Изменяет атомарно</connector>
+    <shape-with-text id="1:32" x="528" y="50" width="224" height="128" name="SQUARE">Extension contracts</shape-with-text>
+    <connector id="1:74" x="280" y="114" connectorStart="1:26" connectorStartCap="NONE" connectorEnd="1:32" connectorEndCap="ARROW_LINES">Проверяет контракты</connector>
+  </section>
+  <section id="1:45" name="Historical v1 · Профили и расширения" x="789.3333740234375" y="-20" width="320" height="608">
+    <shape-with-text id="1:36" x="48.00004196166992" y="432" width="224" height="128" name="SQUARE">KWDJ v1 adapter</shape-with-text>
+    <shape-with-text id="1:39" x="48.00004196166992" y="240" width="224" height="128" name="SQUARE">Базовый OSS профиль</shape-with-text>
+    <shape-with-text id="1:42" x="48.00004196166992" y="48" width="224" height="128" name="SQUARE">Пример внешнего расширения</shape-with-text>
+  </section>
+  <connector id="1:46" x="-152" y="775.5" connectorStart="1:3" connectorStartCap="NONE" connectorEnd="1:13" connectorEndCap="ARROW_LINES">Подключает</connector>
+  <connector id="1:50" x="-152" y="967.5" connectorStart="1:6" connectorStartCap="NONE" connectorEnd="1:16" connectorEndCap="ARROW_LINES">Подключает</connector>
+  <connector id="1:66" x="1192" y="652.5" connectorStart="1:22" connectorStartCap="NONE" connectorEnd="1:26" connectorEndCap="ARROW_LINES">Вызывает</connector>
+  <connector id="1:78" x="1069.33349609375" y="363.5" connectorStart="1:36" connectorStartCap="NONE" connectorEnd="1:32" connectorEndCap="ARROW_LINES">Реализует</connector>
+  <connector id="1:82" x="1069.33349609375" y="266" connectorStart="1:39" connectorStartCap="NONE" connectorEnd="1:32" connectorEndCap="ARROW_LINES">Реализует</connector>
+  <connector id="1:86" x="1069.33349609375" y="92" connectorStart="1:42" connectorStartCap="NONE" connectorEnd="1:32" connectorEndCap="ARROW_LINES">Реализует</connector>
+  <connector id="1:90" x="-152" y="455.5" connectorStart="1:9" connectorStartCap="NONE" connectorEnd="1:36" connectorEndCap="ARROW_LINES">Проверяет KWDJ</connector>
+  <connector id="1:94" x="1069.33349609375" y="476" connectorStart="1:36" connectorStartCap="NONE" connectorEnd="1:29" connectorEndCap="ARROW_LINES">Преобразует без потерь</connector>
+  <connector id="1:98" x="1069.33349609375" y="284" connectorStart="1:39" connectorStartCap="NONE" connectorEnd="1:29" connectorEndCap="ARROW_LINES">Задаёт допустимое</connector>
+  <section id="4:70" name="Historical v1 · Editor WASM — transaction, snapshot and stale save" x="2480" y="108" width="1420" height="1580">
+    <shape-with-text id="4:71" x="50" y="50" width="200" height="100" name="SQUARE">Browser</shape-with-text>
+    <shape-with-text id="4:72" x="50" y="1430" width="200" height="100" name="SQUARE">Browser</shape-with-text>
+    <connector id="4:77" x="150" y="158" connectorStart="4:71" connectorStartCap="NONE" connectorEnd="4:72" connectorEndCap="NONE"></connector>
+    <shape-with-text id="4:78" x="330" y="50" width="200" height="100" name="SQUARE">DomAdapter</shape-with-text>
+    <shape-with-text id="4:79" x="330" y="1430" width="200" height="100" name="SQUARE">DomAdapter</shape-with-text>
+    <connector id="4:87" x="430" y="158" connectorStart="4:78" connectorStartCap="NONE" connectorEnd="4:79" connectorEndCap="NONE"></connector>
+    <shape-with-text id="4:88" x="610" y="50" width="200" height="100" name="SQUARE">RustEngine</shape-with-text>
+    <shape-with-text id="4:89" x="610" y="1430" width="200" height="100" name="SQUARE">RustEngine</shape-with-text>
+    <connector id="4:97" x="710" y="158" connectorStart="4:88" connectorStartCap="NONE" connectorEnd="4:89" connectorEndCap="NONE"></connector>
+    <shape-with-text id="4:98" x="890" y="50" width="200" height="100" name="SQUARE">Host</shape-with-text>
+    <shape-with-text id="4:99" x="890" y="1430" width="200" height="100" name="SQUARE">Host</shape-with-text>
+    <connector id="4:107" x="990" y="158" connectorStart="4:98" connectorStartCap="NONE" connectorEnd="4:99" connectorEndCap="NONE"></connector>
+    <shape-with-text id="4:108" x="1170" y="50" width="200" height="100" name="SQUARE">Server</shape-with-text>
+    <shape-with-text id="4:109" x="1170" y="1430" width="200" height="100" name="SQUARE">Server</shape-with-text>
+    <connector id="4:117" x="1270" y="158" connectorStart="4:108" connectorStartCap="NONE" connectorEnd="4:109" connectorEndCap="NONE"></connector>
+    <connector id="4:118" x="150" y="205.5" connectorStart="4:77" connectorStartCap="NONE" connectorEnd="4:87" connectorEndCap="ARROW_EQUILATERAL">beforeinput and selection</connector>
+    <connector id="4:125" x="430" y="285.5" connectorStart="4:87" connectorStartCap="NONE" connectorEnd="4:97" connectorEndCap="ARROW_EQUILATERAL">command with base revision</connector>
+    <connector id="4:129" x="50" y="50" connectorStart="0:1" connectorStartCap="NONE" connectorEnd="0:1" connectorEndCap="ARROW_EQUILATERAL"></connector>
+    <connector id="4:133" x="430" y="445.5" connectorStart="4:97" connectorStartCap="NONE" connectorEnd="4:87" connectorEndCap="ARROW_EQUILATERAL">Commit r42 and position map</connector>
+    <connector id="4:137" x="150" y="537.5" connectorStart="4:87" connectorStartCap="NONE" connectorEnd="4:77" connectorEndCap="ARROW_EQUILATERAL">Patch affected DOM</connector>
+    <connector id="4:141" x="430" y="617.5" connectorStart="4:87" connectorStartCap="NONE" connectorEnd="4:107" connectorEndCap="ARROW_EQUILATERAL">dirty revision r42</connector>
+    <connector id="4:145" x="710" y="697.5" connectorStart="4:107" connectorStartCap="NONE" connectorEnd="4:97" connectorEndCap="ARROW_EQUILATERAL">exportSnapshot</connector>
+    <connector id="4:149" x="710" y="777.5" connectorStart="4:97" connectorStartCap="NONE" connectorEnd="4:107" connectorEndCap="ARROW_EQUILATERAL">KWDJ and revision r42</connector>
+    <connector id="4:153" x="990" y="857.5" connectorStart="4:107" connectorStartCap="NONE" connectorEnd="4:117" connectorEndCap="ARROW_EQUILATERAL">Save r42 with ETag</connector>
+    <connector id="4:157" x="150" y="937.5" connectorStart="4:77" connectorStartCap="NONE" connectorEnd="4:87" connectorEndCap="ARROW_EQUILATERAL">Next input</connector>
+    <connector id="4:161" x="430" y="1017.5" connectorStart="4:87" connectorStartCap="NONE" connectorEnd="4:97" connectorEndCap="ARROW_EQUILATERAL">Next command</connector>
+    <connector id="4:165" x="430" y="1097.5" connectorStart="4:97" connectorStartCap="NONE" connectorEnd="4:87" connectorEndCap="ARROW_EQUILATERAL">Commit r43</connector>
+    <connector id="4:169" x="430" y="1177.5" connectorStart="4:87" connectorStartCap="NONE" connectorEnd="4:107" connectorEndCap="ARROW_EQUILATERAL">dirty revision r43</connector>
+    <connector id="4:173" x="990" y="1257.5" connectorStart="4:117" connectorStartCap="NONE" connectorEnd="4:107" connectorEndCap="ARROW_EQUILATERAL">Receipt for r42</connector>
+    <connector id="4:177" x="50" y="50" connectorStart="0:1" connectorStartCap="NONE" connectorEnd="0:1" connectorEndCap="ARROW_EQUILATERAL"></connector>
+  </section>
+  <shape-with-text id="5:151" x="4078" y="286" width="224" height="128" name="SQUARE">Одинаковый DOM fixture</shape-with-text>
+  <shape-with-text id="5:154" x="4430" y="264.6666564941406" width="224" height="128" name="SQUARE">Единый host</shape-with-text>
+  <shape-with-text id="5:157" x="4430" y="488.6666564941406" width="224" height="128" name="SQUARE">Отдельные поля</shape-with-text>
+  <shape-with-text id="5:160" x="5134" y="264.6666564941406" width="224" height="128" name="SQUARE">Межблочное выделение работает</shape-with-text>
+  <shape-with-text id="5:163" x="4782" y="488.6666564941406" width="224" height="128" name="SQUARE">Выделение ограничено полем</shape-with-text>
+  <shape-with-text id="5:166" x="5486" y="286" width="224" height="128" name="SQUARE">Выбран один
+editing host
+ADR-001</shape-with-text>
+  <shape-with-text id="5:169" x="5134" y="488.6666564941406" width="224" height="128" name="SQUARE">Нужен собственный selection controller</shape-with-text>
+  <shape-with-text id="5:172" x="5838" y="158" width="224" height="128" name="SQUARE">Reconciliation,
+bookmarks и scroll
+OSR-39 / OSR-40</shape-with-text>
+  <shape-with-text id="5:175" x="5838" y="382" width="224" height="128" name="SQUARE">RU/EN проверен
+DOM ≠ Rust commit
+OSR-41</shape-with-text>
+  <shape-with-text id="5:178" x="5838" y="606" width="224" height="128" name="SQUARE">Native-проверки
+завершены
+OSR-58</shape-with-text>
+  <shape-with-text id="5:181" x="6190" y="286" width="224" height="128" name="SQUARE">v1 Chrome/Safari
+Firefox 158 проверен
+experimental</shape-with-text>
+  <shape-with-text id="5:184" x="6190" y="510" width="224" height="128" name="SQUARE">Screen readers
+после v1
+не проверены</shape-with-text>
+  <shape-with-text id="5:187" x="6190" y="734" width="224" height="128" name="SQUARE">Blur/Escape
+не равны отмене
+3 повтора / режим</shape-with-text>
+  <connector id="5:190" x="4310" y="328.6666564941406" connectorStart="5:151" connectorStartCap="NONE" connectorEnd="5:154" connectorEndCap="ARROW_LINES"></connector>
+  <connector id="5:194" x="4310" y="350" connectorStart="5:151" connectorStartCap="NONE" connectorEnd="5:157" connectorEndCap="ARROW_LINES"></connector>
+  <connector id="5:198" x="4662" y="328.6666564941406" connectorStart="5:154" connectorStartCap="NONE" connectorEnd="5:160" connectorEndCap="ARROW_LINES"></connector>
+  <connector id="5:202" x="4662" y="552.6666259765625" connectorStart="5:157" connectorStartCap="NONE" connectorEnd="5:163" connectorEndCap="ARROW_LINES"></connector>
+  <connector id="5:206" x="5366" y="328.6666564941406" connectorStart="5:160" connectorStartCap="NONE" connectorEnd="5:166" connectorEndCap="ARROW_LINES"></connector>
+  <connector id="5:210" x="5014" y="552.6666259765625" connectorStart="5:163" connectorStartCap="NONE" connectorEnd="5:169" connectorEndCap="ARROW_LINES"></connector>
+  <connector id="5:214" x="5366" y="350" connectorStart="5:169" connectorStartCap="NONE" connectorEnd="5:166" connectorEndCap="ARROW_LINES"></connector>
+  <connector id="5:218" x="5718" y="222" connectorStart="5:166" connectorStartCap="NONE" connectorEnd="5:172" connectorEndCap="ARROW_LINES"></connector>
+  <connector id="5:222" x="5718" y="350" connectorStart="5:166" connectorStartCap="NONE" connectorEnd="5:175" connectorEndCap="ARROW_LINES"></connector>
+  <connector id="5:226" x="5718" y="350" connectorStart="5:166" connectorStartCap="NONE" connectorEnd="5:178" connectorEndCap="ARROW_LINES"></connector>
+  <connector id="5:230" x="6070" y="350" connectorStart="5:178" connectorStartCap="NONE" connectorEnd="5:181" connectorEndCap="ARROW_LINES"></connector>
+  <connector id="5:234" x="5598" y="422" connectorStart="5:166" connectorStartCap="NONE" connectorEnd="5:184" connectorEndCap="ARROW_LINES"></connector>
+  <connector id="5:238" x="6070" y="670" connectorStart="5:178" connectorStartCap="NONE" connectorEnd="5:187" connectorEndCap="ARROW_LINES"></connector>
+  <section id="12:413" name="M0 v2.0 · Modules and ownership" x="6550" y="-80" width="3152" height="1134">
+    <section id="9:225" name="Host: OSR-49/68/69" x="40" y="170" width="704" height="416">
+      <shape-with-text id="9:216" x="48" y="240" width="224" height="128" name="SQUARE">CMS: auth, dialogs, recovery</shape-with-text>
+      <shape-with-text id="9:219" x="48" y="48" width="224" height="128" name="SQUARE">Independent host</shape-with-text>
+      <shape-with-text id="9:222" x="432" y="144" width="224" height="128" name="SQUARE">Vanilla / Angular binding</shape-with-text>
+      <connector id="9:260" x="280" y="112" connectorStart="9:219" connectorStartCap="NONE" connectorEnd="9:222" connectorEndCap="ARROW_LINES">Mounts</connector>
+      <connector id="9:256" x="280" y="208" connectorStart="9:216" connectorStartCap="NONE" connectorEnd="9:222" connectorEndCap="ARROW_LINES">Mounts</connector>
+    </section>
+    <section id="9:235" name="Browser: OSR-39/40/41/63" x="1032" y="170" width="1056" height="272">
+      <shape-with-text id="9:226" x="432" y="96" width="224" height="128" name="SQUARE">UI and DOM adapter</shape-with-text>
+      <shape-with-text id="9:229" x="784" y="96" width="224" height="128" name="SQUARE">Versioned WASM SDK</shape-with-text>
+      <connector id="9:272" x="0" y="0" connectorStart="9:226" connectorStartCap="NONE" connectorEnd="9:229" connectorEndCap="ARROW_LINES">Command and tokens</connector>
+      <shape-with-text id="9:232" x="48" y="48" width="224" height="128" name="SQUARE">Clipboard allowlist</shape-with-text>
+      <connector id="9:268" x="251.5" y="91.5" connectorStart="9:232" connectorStartCap="NONE" connectorEnd="9:226" connectorEndCap="ARROW_LINES">Validated fragment</connector>
+    </section>
+    <section id="9:245" name="Rust: OSR-29/33/34/36" x="2376" y="346" width="736" height="416">
+      <shape-with-text id="9:236" x="48" y="106.16665649414062" width="224" height="128" name="SQUARE">Transactions and history</shape-with-text>
+      <shape-with-text id="9:239" x="464" y="48" width="224" height="128" name="SQUARE">Tree and typed positions</shape-with-text>
+      <connector id="9:280" x="280" y="91.5" connectorStart="9:236" connectorStartCap="NONE" connectorEnd="9:239" connectorEndCap="ARROW_LINES">Atomic changes</connector>
+      <shape-with-text id="9:242" x="464" y="240" width="224" height="128" name="SQUARE">Frozen profile interfaces</shape-with-text>
+      <connector id="9:284" x="280" y="170.16665649414062" connectorStart="9:236" connectorStartCap="NONE" connectorEnd="9:242" connectorEndCap="ARROW_LINES">Validates candidate</connector>
+    </section>
+    <section id="9:255" name="Profiles: OSR-30/64" x="1416" y="538" width="672" height="416">
+      <shape-with-text id="9:246" x="400" y="48" width="224" height="128" name="SQUARE">KWDJ codec and validators</shape-with-text>
+      <shape-with-text id="9:249" x="48" y="240" width="224" height="128" name="SQUARE">Independent notes profile</shape-with-text>
+      <shape-with-text id="9:252" x="48" y="48" width="224" height="128" name="SQUARE">Native server validation</shape-with-text>
+      <connector id="9:296" x="0" y="0" connectorStart="9:252" connectorStartCap="NONE" connectorEnd="9:246" connectorEndCap="ARROW_LINES">Same pinned corpus</connector>
+    </section>
+    <connector id="9:264" x="704" y="330" connectorStart="9:222" connectorStartCap="NONE" connectorEnd="9:226" connectorEndCap="ARROW_LINES">Configures</connector>
+    <connector id="9:276" x="2048" y="330" connectorStart="9:229" connectorStartCap="NONE" connectorEnd="9:236" connectorEndCap="ARROW_LINES">Dispatches synchronously</connector>
+    <connector id="9:288" x="2048" y="629.5" connectorStart="9:246" connectorStartCap="NONE" connectorEnd="9:242" connectorEndCap="ARROW_LINES">Implements</connector>
+    <connector id="9:292" x="1696" y="650" connectorStart="9:249" connectorStartCap="NONE" connectorEnd="9:242" connectorEndCap="ARROW_LINES">Implements</connector>
+    <text id="12:414" name="M0 v2.0 · Modules and ownership" x="40" y="24" width="3072" height="44" />
+    <text id="12:415" name="Generic Rust authority · frozen profiles · synchronous SDK · host-owned persistence" x="40" y="82" width="3072" height="27" />
+    <text id="12:416" name="Linear · OSR-56 architecture and acceptance" x="40" y="994" width="3072" height="27" />
+    <text id="12:417" name="Repository · v2.0 contracts, decisions and flow details" x="40" y="1034" width="3072" height="27" />
+  </section>
+  <section id="12:418" name="M0 v2.0 · F01–F04 input and atomic editing" x="9800" y="-80" width="4032" height="850">
+    <shape-with-text id="10:273" x="40" y="206" width="224" height="128" name="SQUARE">Native input and selection</shape-with-text>
+    <shape-with-text id="10:276" x="392" y="206" width="224" height="128" name="SQUARE">Capture lifecycle and range</shape-with-text>
+    <shape-with-text id="10:279" x="744" y="170" width="200" height="200" name="DIAMOND">Composing?</shape-with-text>
+    <shape-with-text id="10:282" x="2256" y="297.16668701171875" width="224" height="128" name="SQUARE">Prepare and normalize</shape-with-text>
+    <shape-with-text id="10:285" x="1200" y="297.16668701171875" width="224" height="128" name="SQUARE">Protect provisional DOM</shape-with-text>
+    <shape-with-text id="10:288" x="1552" y="297.16668701171875" width="224" height="128" name="SQUARE">Settle and read DOM delta</shape-with-text>
+    <shape-with-text id="10:291" x="2608" y="261.1666564941406" width="200" height="200" name="DIAMOND">Candidate valid?</shape-with-text>
+    <shape-with-text id="10:294" x="3064" y="206" width="224" height="128" name="SQUARE">Refuse, retain user input</shape-with-text>
+    <shape-with-text id="10:297" x="3416" y="206" width="224" height="128" name="SQUARE">Restore committed DOM and focus</shape-with-text>
+    <shape-with-text id="10:300" x="3064" y="430" width="224" height="128" name="SQUARE">Commit document, map, history</shape-with-text>
+    <shape-with-text id="10:303" x="3416" y="430" width="224" height="128" name="SQUARE">Publish revision, delta, map</shape-with-text>
+    <shape-with-text id="10:306" x="3768" y="318" width="224" height="128" name="SQUARE">Patch DOM, restore mapped selection</shape-with-text>
+    <shape-with-text id="10:309" x="3768" y="542" width="224" height="128" name="SQUARE">Notify host dirty revision</shape-with-text>
+    <shape-with-text id="10:312" x="1552" y="521.1666259765625" width="224" height="128" name="SQUARE">Undo or redo intention</shape-with-text>
+    <shape-with-text id="10:315" x="1904" y="521.1666259765625" width="224" height="128" name="SQUARE">Stored semantic inverse and selection</shape-with-text>
+    <connector id="10:318" x="272" y="270" connectorStart="10:273" connectorStartCap="NONE" connectorEnd="10:276" connectorEndCap="ARROW_LINES"></connector>
+    <connector id="10:322" x="624" y="270" connectorStart="10:276" connectorStartCap="NONE" connectorEnd="10:279" connectorEndCap="ARROW_LINES"></connector>
+    <connector id="10:326" x="952" y="247.66668701171875" connectorStart="10:279" connectorStartCap="NONE" connectorEnd="10:282" connectorEndCap="ARROW_LINES">No</connector>
+    <connector id="10:330" x="952" y="270" connectorStart="10:279" connectorStartCap="NONE" connectorEnd="10:285" connectorEndCap="ARROW_LINES">Yes</connector>
+    <connector id="10:334" x="1432" y="361.16668701171875" connectorStart="10:285" connectorStartCap="NONE" connectorEnd="10:288" connectorEndCap="ARROW_LINES"></connector>
+    <connector id="10:338" x="1784" y="340.66668701171875" connectorStart="10:288" connectorStartCap="NONE" connectorEnd="10:282" connectorEndCap="ARROW_LINES">Deduplicate trailing input</connector>
+    <connector id="10:342" x="2488" y="361.1666564941406" connectorStart="10:282" connectorStartCap="NONE" connectorEnd="10:291" connectorEndCap="ARROW_LINES"></connector>
+    <connector id="10:346" x="2816" y="249.5" connectorStart="10:291" connectorStartCap="NONE" connectorEnd="10:294" connectorEndCap="ARROW_LINES">No</connector>
+    <connector id="10:350" x="3296" y="270" connectorStart="10:294" connectorStartCap="NONE" connectorEnd="10:297" connectorEndCap="ARROW_LINES"></connector>
+    <connector id="10:354" x="2816" y="361.1666564941406" connectorStart="10:291" connectorStartCap="NONE" connectorEnd="10:300" connectorEndCap="ARROW_LINES">Yes</connector>
+    <connector id="10:358" x="3296" y="494" connectorStart="10:300" connectorStartCap="NONE" connectorEnd="10:303" connectorEndCap="ARROW_LINES"></connector>
+    <connector id="10:362" x="3648" y="382" connectorStart="10:303" connectorStartCap="NONE" connectorEnd="10:306" connectorEndCap="ARROW_LINES"></connector>
+    <connector id="10:366" x="3648" y="494" connectorStart="10:303" connectorStartCap="NONE" connectorEnd="10:309" connectorEndCap="ARROW_LINES"></connector>
+    <connector id="10:370" x="1784" y="585.1666259765625" connectorStart="10:312" connectorStartCap="NONE" connectorEnd="10:315" connectorEndCap="ARROW_LINES"></connector>
+    <connector id="10:374" x="2136" y="361.16668701171875" connectorStart="10:315" connectorStartCap="NONE" connectorEnd="10:282" connectorEndCap="ARROW_LINES"></connector>
+    <text id="12:419" name="M0 v2.0 · F01–F04 input and atomic editing" x="40" y="24" width="3952" height="44" />
+    <text id="12:420" name="OSR-34/36/37/39/40/41/63 · normalization and maps are part of one atomic commit" x="40" y="82" width="3952" height="27" />
+    <text id="12:421" name="Linear · OSR-56 architecture and acceptance" x="40" y="710" width="3952" height="27" />
+    <text id="12:422" name="Repository · v2.0 contracts, decisions and flow details" x="40" y="750" width="3952" height="27" />
+  </section>
+  <section id="12:423" name="M0 v2.0 · F05–F07 lifecycle and recovery" x="13928" y="-80" width="1400" height="1790">
+    <section id="11:363" name="F05: host dialog — OSR-63/68" x="72" y="170" width="1256" height="416">
+      <shape-with-text id="11:348" x="336" y="144" width="224" height="128" name="SQUARE">Host reply</shape-with-text>
+      <shape-with-text id="11:351" x="48" y="144" width="224" height="128" name="SQUARE">Capture bookmark and tokens</shape-with-text>
+      <connector id="11:396" x="280" y="208" connectorStart="11:351" connectorStartCap="NONE" connectorEnd="11:348" connectorEndCap="ARROW_LINES"></connector>
+      <shape-with-text id="11:354" x="624" y="108" width="200" height="200" name="DIAMOND">Tokens current?</shape-with-text>
+      <connector id="11:400" x="568" y="208" connectorStart="11:348" connectorStartCap="NONE" connectorEnd="11:354" connectorEndCap="ARROW_LINES"></connector>
+      <shape-with-text id="11:357" x="984" y="48" width="224" height="128" name="SQUARE">Dispatch validated command</shape-with-text>
+      <connector id="11:404" x="832" y="112" connectorStart="11:354" connectorStartCap="NONE" connectorEnd="11:357" connectorEndCap="ARROW_LINES">Yes</connector>
+      <shape-with-text id="11:360" x="984" y="240" width="224" height="128" name="SQUARE">Retain dialog input, refuse</shape-with-text>
+      <connector id="11:408" x="832" y="208" connectorStart="11:354" connectorStartCap="NONE" connectorEnd="11:360" connectorEndCap="ARROW_LINES">No</connector>
+    </section>
+    <section id="11:379" name="F06: save and conflict — OSR-69" x="72" y="682" width="1256" height="416">
+      <shape-with-text id="11:364" x="336" y="144" width="224" height="128" name="SQUARE">Save with ETag</shape-with-text>
+      <shape-with-text id="11:367" x="48" y="144" width="224" height="128" name="SQUARE">Export snapshot r42</shape-with-text>
+      <connector id="11:412" x="280" y="208" connectorStart="11:367" connectorStartCap="NONE" connectorEnd="11:364" connectorEndCap="ARROW_LINES"></connector>
+      <shape-with-text id="11:370" x="624" y="108" width="200" height="200" name="DIAMOND">Receipt or conflict?</shape-with-text>
+      <connector id="11:416" x="568" y="208" connectorStart="11:364" connectorStartCap="NONE" connectorEnd="11:370" connectorEndCap="ARROW_LINES"></connector>
+      <shape-with-text id="11:373" x="984" y="48" width="224" height="128" name="SQUARE">r43 remains dirty</shape-with-text>
+      <connector id="11:420" x="832" y="112" connectorStart="11:370" connectorStartCap="NONE" connectorEnd="11:373" connectorEndCap="ARROW_LINES">Ack r42</connector>
+      <shape-with-text id="11:376" x="984" y="240" width="224" height="128" name="SQUARE">Preserve local recovery</shape-with-text>
+      <connector id="11:424" x="788" y="208" connectorStart="11:370" connectorStartCap="NONE" connectorEnd="11:376" connectorEndCap="ARROW_LINES">Conflict or unknown</connector>
+    </section>
+    <section id="11:395" name="F07: WASM lifecycle — OSR-31/63/67" x="40" y="1194" width="1320" height="416">
+      <shape-with-text id="11:380" x="336" y="108" width="200" height="200" name="DIAMOND">ABI and profile match?</shape-with-text>
+      <shape-with-text id="11:383" x="48" y="144" width="224" height="128" name="SQUARE">Load verified artifact pair</shape-with-text>
+      <connector id="11:428" x="280" y="208" connectorStart="11:383" connectorStartCap="NONE" connectorEnd="11:380" connectorEndCap="ARROW_LINES"></connector>
+      <shape-with-text id="11:386" x="696" y="240" width="224" height="128" name="SQUARE">Open session</shape-with-text>
+      <connector id="11:432" x="544" y="208" connectorStart="11:380" connectorStartCap="NONE" connectorEnd="11:386" connectorEndCap="ARROW_LINES">Yes</connector>
+      <shape-with-text id="11:389" x="696" y="48" width="224" height="128" name="SQUARE">Noneditable, retain original</shape-with-text>
+      <connector id="11:436" x="511.5" y="112" connectorStart="11:380" connectorStartCap="NONE" connectorEnd="11:389" connectorEndCap="ARROW_LINES">No or load failure</connector>
+      <shape-with-text id="11:392" x="1048" y="240" width="224" height="128" name="SQUARE">Poison handle, recover externally</shape-with-text>
+      <connector id="11:440" x="0" y="0" connectorStart="11:386" connectorStartCap="NONE" connectorEnd="11:392" connectorEndCap="ARROW_LINES">Runtime trap</connector>
+    </section>
+    <text id="12:424" name="M0 v2.0 · F05–F07 lifecycle and recovery" x="40" y="24" width="1320" height="44" />
+    <text id="12:425" name="Stale reply refuses · receipt r42 does not clear r43 · original input survives load failure" x="40" y="82" width="1320" height="27" />
+    <text id="12:426" name="Linear · OSR-56 architecture and acceptance" x="40" y="1650" width="1320" height="27" />
+    <text id="12:427" name="Repository · v2.0 contracts, decisions and flow details" x="40" y="1690" width="1320" height="27" />
+  </section>
+  <section id="12:428" name="M0 v2.0 · Decisions and reading guide" x="6590" y="1400" width="3050" height="566">
+    <text id="12:429" name="M0 v2.0 · Decisions and reading guide" x="40" y="40" width="2970" height="48" />
+    <text id="12:430" name="Accepted technical choices: one editing host; generic Rust core; frozen profiles; UTF-16 boundary / UTF-8 storage / grapheme edits; sync main-thread WASM; full DOM baseline." x="40" y="112" width="2970" height="31" />
+    <text id="12:431" name="v1: Chrome/Safari required, RU/EN desktop. Firefox experimental with mandatory three-engine measurements. Real AT / CJK / mobile / collaboration are deferred, not tested." x="40" y="167" width="2970" height="31" />
+    <text id="12:432" name="MIT OR Apache-2.0 and bounded CMS source/synthetic-fixture transfer: owner confirmed 17.10.2026. Capacity limits are not interactive performance guarantees." x="40" y="222" width="2970" height="31" />
+    <text id="12:433" name="Detailed architecture, alternatives and dependencies" x="40" y="277" width="2970" height="29" />
+    <text id="12:434" name="Decision register, ownership and support matrix" x="40" y="330" width="2970" height="29" />
+    <text id="12:435" name="Milestone exits and full 48-issue dependency DAG" x="40" y="383" width="2970" height="29" />
+    <text id="12:436" name="Figma: eight editable UX scenarios" x="40" y="436" width="2970" height="29" />
+    <text id="12:437" name="OSR-26: review gate; diagrams do not claim production implementation" x="40" y="489" width="2970" height="29" />
+  </section>
+</canvas>

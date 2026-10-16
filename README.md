@@ -6,7 +6,13 @@ The repository is in M0 (feasibility and architecture). There is no production e
 
 GitHub is the canonical repository. No GitLab mirror is configured or planned.
 
-License and publication decisions remain part of M0; no license grant is implied by this scaffold.
+Original code and documentation are licensed under **MIT OR Apache-2.0**, at your option. See [license and provenance](docs/m0/licensing.md). No npm/crates package is published yet.
+
+## Architecture package
+
+Start with the [master plan](docs/m0/master-plan.md), [detailed architecture and rationale](docs/m0/architecture.md), [decision register](docs/m0/decision-register.md) and [milestone/task map](docs/m0/delivery-map.md). The [module and scenario contract](docs/m0/architecture-flows.md) links the textual ADRs, [FigJam](https://www.figma.com/board/MfPnaBZYxczK6Yi9qd6fiv) and [eight editable Figma UX scenarios](https://www.figma.com/design/4Mkb3kl1RU3wV5H1hNYH7S).
+
+Run `npm run test:contracts` for executable M0 profile/position reference vectors and `npm run check:m0` for artifact/traceability consistency. `npm run perf:verify` verifies sealed calibration sources, raw samples and derived reports without rerunning benchmarks. These do not prove production engine parity. The separate [performance calibration](docs/m0/performance-protocol.md) requires its pinned Rust toolchain; its tiny kernel is not the editor implementation.
 
 ## Run the M0 comparison
 

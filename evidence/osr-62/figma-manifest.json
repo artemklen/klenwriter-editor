@@ -1,0 +1,154 @@
+{
+  "version": "M0 2026-10-17",
+  "fileKey": "4Mkb3kl1RU3wV5H1hNYH7S",
+  "fileUrl": "https://www.figma.com/design/4Mkb3kl1RU3wV5H1hNYH7S",
+  "pageId": "0:1",
+  "wrapperId": "2:370",
+  "baseRevision": "922c5c6afc5772e114938a790c2abf0c75944108",
+  "frames": [
+    {
+      "number": "01",
+      "nodeId": "3:44",
+      "title": "Документ, выделение, toolbar",
+      "url": "https://www.figma.com/design/4Mkb3kl1RU3wV5H1hNYH7S?node-id=3-44",
+      "issues": [
+        "OSR-42",
+        "OSR-40",
+        "OSR-39"
+      ],
+      "acceptanceScripts": [
+        "UX-K01",
+        "UX-K02"
+      ]
+    },
+    {
+      "number": "02",
+      "nodeId": "3:112",
+      "title": "Вставка через slash",
+      "url": "https://www.figma.com/design/4Mkb3kl1RU3wV5H1hNYH7S?node-id=3-112",
+      "issues": [
+        "OSR-43",
+        "OSR-42"
+      ],
+      "acceptanceScripts": [
+        "UX-K03"
+      ]
+    },
+    {
+      "number": "03",
+      "nodeId": "3:173",
+      "title": "Перемещение без сюрпризов",
+      "url": "https://www.figma.com/design/4Mkb3kl1RU3wV5H1hNYH7S?node-id=3-173",
+      "issues": [
+        "OSR-44",
+        "OSR-42",
+        "OSR-40"
+      ],
+      "acceptanceScripts": [
+        "UX-K04",
+        "UX-K10"
+      ]
+    },
+    {
+      "number": "04",
+      "nodeId": "3:226",
+      "title": "Вложенность, таблицы, стихи",
+      "url": "https://www.figma.com/design/4Mkb3kl1RU3wV5H1hNYH7S?node-id=3-226",
+      "issues": [
+        "OSR-50",
+        "OSR-51",
+        "OSR-52"
+      ],
+      "acceptanceScripts": [
+        "UX-K05"
+      ]
+    },
+    {
+      "number": "05",
+      "nodeId": "3:312",
+      "title": "Состояния документа",
+      "url": "https://www.figma.com/design/4Mkb3kl1RU3wV5H1hNYH7S?node-id=3-312",
+      "issues": [
+        "OSR-63",
+        "OSR-67",
+        "OSR-66"
+      ],
+      "acceptanceScripts": [
+        "UX-K08"
+      ]
+    },
+    {
+      "number": "06",
+      "nodeId": "3:357",
+      "title": "Отказ и восстановление",
+      "url": "https://www.figma.com/design/4Mkb3kl1RU3wV5H1hNYH7S?node-id=3-357",
+      "issues": [
+        "OSR-41",
+        "OSR-67",
+        "OSR-69"
+      ],
+      "acceptanceScripts": [
+        "UX-K06",
+        "UX-K08"
+      ]
+    },
+    {
+      "number": "07",
+      "nodeId": "3:423",
+      "title": "Диалог принадлежит приложению",
+      "url": "https://www.figma.com/design/4Mkb3kl1RU3wV5H1hNYH7S?node-id=3-423",
+      "issues": [
+        "OSR-68",
+        "OSR-42",
+        "OSR-40"
+      ],
+      "acceptanceScripts": [
+        "UX-K07"
+      ]
+    },
+    {
+      "number": "08",
+      "nodeId": "3:466",
+      "title": "Клавиатура, язык и тема",
+      "url": "https://www.figma.com/design/4Mkb3kl1RU3wV5H1hNYH7S?node-id=3-466",
+      "issues": [
+        "OSR-66",
+        "OSR-45",
+        "OSR-71"
+      ],
+      "acceptanceScripts": [
+        "UX-K01",
+        "UX-K09",
+        "UX-K10"
+      ]
+    }
+  ],
+  "designEvidence": {
+    "editableTextNodes": 177,
+    "linkedComponentInstances": 34,
+    "imageFilledNodes": 0,
+    "fontFamilies": [
+      "SF Pro"
+    ],
+    "cssFontPolicy": "system-ui; Figma uses SF Pro for Mac desktop depiction; no runtime font dependency",
+    "runtimeAcceptance": "Not implemented or executed by this design task"
+  },
+  "sourceDiscovery": {
+    "codeConnectFiles": [],
+    "existingScreens": "Blank new file",
+    "library": "Simple Design System",
+    "buttonComponentSetKey": "cc8b558dc7d9684011b6b99ce8e6509399bc836b",
+    "inputComponentSetKey": "c28150b04d333d34ed9d2b77abd9f2f54e1a878a",
+    "fontSource": "spikes/editing-hosts/style.css system-ui",
+    "tokens": "Local scoped semantic defaults for OSS prototype; controls remain linked library instances with typography overrides"
+  },
+  "visualReview": "Initial sizing error repaired; eight-frame composition reviewed with no visible overlapping or clipped text. Final export hash is in README.",
+  "export": {
+    "path": "ux-contract-overview.png",
+    "sha256": "a3ff1c6497f658a6180bbfcb907275d10cc28195d96ef1462c983d86503de7f9",
+    "width": 2468,
+    "height": 4096,
+    "canvasWidth": 2600,
+    "canvasHeight": 4316
+  }
+}

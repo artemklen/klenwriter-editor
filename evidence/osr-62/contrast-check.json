@@ -1,0 +1,84 @@
+{
+  "kind": "design-token numeric contrast check, not DOM accessibility acceptance",
+  "checks": [
+    {
+      "foreground": "ink",
+      "background": "paper",
+      "ratio": 14.66,
+      "required": 4.5,
+      "pass": true
+    },
+    {
+      "foreground": "muted",
+      "background": "paper",
+      "ratio": 6.62,
+      "required": 4.5,
+      "pass": true
+    },
+    {
+      "foreground": "muted",
+      "background": "soft",
+      "ratio": 6.01,
+      "required": 4.5,
+      "pass": true
+    },
+    {
+      "foreground": "green",
+      "background": "greenSoft",
+      "ratio": 8.14,
+      "required": 4.5,
+      "pass": true
+    },
+    {
+      "foreground": "blue",
+      "background": "blueSoft",
+      "ratio": 5.23,
+      "required": 4.5,
+      "pass": true
+    },
+    {
+      "foreground": "red",
+      "background": "redSoft",
+      "ratio": 6.52,
+      "required": 4.5,
+      "pass": true
+    },
+    {
+      "foreground": "paper",
+      "background": "green",
+      "ratio": 9.7,
+      "required": 4.5,
+      "pass": true
+    },
+    {
+      "foreground": "line",
+      "background": "paper",
+      "ratio": 3.08,
+      "required": 3,
+      "pass": true
+    },
+    {
+      "foreground": "blue",
+      "background": "paper",
+      "ratio": 6.03,
+      "required": 3,
+      "pass": true
+    }
+  ],
+  "allPass": true,
+  "palette": {
+    "paper": "FFFFFF",
+    "ink": "192C28",
+    "muted": "4D615A",
+    "line": "85978E",
+    "soft": "F1F5F1",
+    "green": "174D3D",
+    "greenSoft": "E2EEE8",
+    "blue": "285CCB",
+    "blueSoft": "E8EFFF",
+    "amber": "795300",
+    "amberSoft": "FFF4D8",
+    "red": "9E3025",
+    "redSoft": "FFF0EC"
+  }
+}

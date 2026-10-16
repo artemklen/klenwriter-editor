@@ -1,0 +1,19 @@
+flowchart LR
+input["Native input and selection"] --> capture["Capture lifecycle and range"]
+capture --> composing{"Composing?"}
+composing -->|"No"| command["Prepare and normalize"]
+composing -->|"Yes"| provisional["Protect provisional DOM"]
+provisional --> settle["Settle and read DOM delta"]
+settle -->|"Deduplicate trailing input"| command
+command --> validate{"Candidate valid?"}
+validate -->|"No"| refuse["Refuse, retain user input"]
+refuse --> restore["Restore committed DOM and focus"]
+validate -->|"Yes"| commit["Commit document, map, history"]
+commit --> publish["Publish revision, delta, map"]
+publish --> render["Patch DOM, restore mapped selection"]
+publish --> dirty["Notify host dirty revision"]
+undo["Undo or redo intention"] --> inverse["Stored semantic inverse and selection"]
+inverse --> command
+style provisional fill:#FFECBD,stroke:#FFC943
+style refuse fill:#FFCDC2,stroke:#FF7556
+style commit fill:#CDF4D3,stroke:#66D575

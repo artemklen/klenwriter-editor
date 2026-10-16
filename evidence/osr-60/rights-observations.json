@@ -1,0 +1,22 @@
+{
+  "baseline": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+  "capturedAt": "2026-10-16T21:42:06.422744+00:00",
+  "recursiveTreeEntries": 3562,
+  "filenamePattern": "^(license|licence|copying|copyright|notice)([._-].*)?$ case-insensitive basename",
+  "filenameMatches": [
+    "templates/partials/public/notice.html"
+  ],
+  "classification": {
+    "templates/partials/public/notice.html": "Public UI template; not a license or redistribution notice"
+  },
+  "workspaceLicenseExpression": "MIT OR Apache-2.0",
+  "domainPackageLicenseDeclared": false,
+  "domainPackageLicenseWorkspaceInherited": false,
+  "angularNpmPrivate": true,
+  "angularNpmLicenseDeclared": false,
+  "legacyNpmPrivate": true,
+  "legacyNpmLicenseDeclared": false,
+  "corpusLicenseGrantFoundInInspectedManifestReadme": false,
+  "extractionRights": "UNKNOWN; owner decision required; metadata does not grant redistribution",
+  "sourceCopyPolicy": "No private code, fixture document payloads, case names or authored text copied into this repository. Fresh synthetic vectors may be authored independently; do not label them upstream corpus parity."
+}

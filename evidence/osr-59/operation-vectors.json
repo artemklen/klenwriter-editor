@@ -1,0 +1,4091 @@
+{
+  "contract": "ADR-003",
+  "provenance": "Synthetic expected documents and positions are hand-authored independently of scripts/check-m0-contracts.mjs. Shared fixture assembly only copies literal before/after values into undo/redo snapshots and fixed monotonic revisions.",
+  "model": "Small ordered tree with text/container/atom nodes. Explicit operation payloads use known IDs; text positions are UTF-16 scalar-valid and command ranges are grapheme checked using the printed ICU comparison version. History inverses are computed from prior local content, replayed, and selection snapshots restored.",
+  "transactions": [
+    {
+      "id": "replace-zwj-reverse",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "ab👩🏽‍💻cd",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 10,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 6,
+            "affinity": "before"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "replaceText",
+          "leaf": "t",
+          "from": 2,
+          "to": 9,
+          "insert": "Я"
+        }
+      ],
+      "expected": {
+        "after": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "abЯcd",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 4,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 2,
+              "affinity": "before"
+            }
+          },
+          "revision": "8"
+        },
+        "provenance": {
+          "anchor": "mapped",
+          "focus": "deleted"
+        },
+        "undo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "ab👩🏽‍💻cd",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 10,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 6,
+              "affinity": "before"
+            }
+          },
+          "revision": "9"
+        },
+        "redo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "abЯcd",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 4,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 2,
+              "affinity": "before"
+            }
+          },
+          "revision": "10"
+        }
+      }
+    },
+    {
+      "id": "insert-affinity",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "abc",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 1,
+            "affinity": "before"
+          },
+          "focus": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 1,
+            "affinity": "after"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "replaceText",
+          "leaf": "t",
+          "from": 1,
+          "to": 1,
+          "insert": "Ж"
+        }
+      ],
+      "expected": {
+        "after": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "aЖbc",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 1,
+              "affinity": "before"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 2,
+              "affinity": "after"
+            }
+          },
+          "revision": "8"
+        },
+        "provenance": {
+          "anchor": "mapped",
+          "focus": "mapped"
+        },
+        "undo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "abc",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 1,
+              "affinity": "before"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "revision": "9"
+        },
+        "redo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "aЖbc",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 1,
+              "affinity": "before"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 2,
+              "affinity": "after"
+            }
+          },
+          "revision": "10"
+        }
+      }
+    },
+    {
+      "id": "delete-text-interior-vs-end",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "abcdef",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 3,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 5,
+            "affinity": "before"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "replaceText",
+          "leaf": "t",
+          "from": 2,
+          "to": 5,
+          "insert": ""
+        }
+      ],
+      "expected": {
+        "after": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "abf",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 2,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 2,
+              "affinity": "before"
+            }
+          },
+          "revision": "8"
+        },
+        "provenance": {
+          "anchor": "deleted",
+          "focus": "mapped"
+        },
+        "undo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "abcdef",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 3,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 5,
+              "affinity": "before"
+            }
+          },
+          "revision": "9"
+        },
+        "redo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "abf",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 2,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 2,
+              "affinity": "before"
+            }
+          },
+          "revision": "10"
+        }
+      }
+    },
+    {
+      "id": "split-affinity-and-later",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "abЯz",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 2,
+            "affinity": "before"
+          },
+          "focus": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 4,
+            "affinity": "after"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "splitText",
+          "leaf": "t",
+          "right": "u",
+          "at": 2
+        }
+      ],
+      "expected": {
+        "after": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t",
+                  "u"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "ab",
+                "marks": []
+              },
+              "u": {
+                "kind": "text",
+                "text": "Яz",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 2,
+              "affinity": "before"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "u",
+              "utf16": 2,
+              "affinity": "after"
+            }
+          },
+          "revision": "8"
+        },
+        "provenance": {
+          "anchor": "mapped",
+          "focus": "mapped"
+        },
+        "undo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "abЯz",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 2,
+              "affinity": "before"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 4,
+              "affinity": "after"
+            }
+          },
+          "revision": "9"
+        },
+        "redo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t",
+                  "u"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "ab",
+                "marks": []
+              },
+              "u": {
+                "kind": "text",
+                "text": "Яz",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 2,
+              "affinity": "before"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "u",
+              "utf16": 2,
+              "affinity": "after"
+            }
+          },
+          "revision": "10"
+        }
+      }
+    },
+    {
+      "id": "join-reverse-selection",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "t",
+                "u"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "ab",
+              "marks": []
+            },
+            "u": {
+              "kind": "text",
+              "text": "Яz",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "leaf": "u",
+            "utf16": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 1,
+            "affinity": "before"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "joinText",
+          "left": "t",
+          "right": "u"
+        }
+      ],
+      "expected": {
+        "after": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "abЯz",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 4,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 1,
+              "affinity": "before"
+            }
+          },
+          "revision": "8"
+        },
+        "provenance": {
+          "anchor": "mapped",
+          "focus": "mapped"
+        },
+        "undo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t",
+                  "u"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "ab",
+                "marks": []
+              },
+              "u": {
+                "kind": "text",
+                "text": "Яz",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "u",
+              "utf16": 2,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 1,
+              "affinity": "before"
+            }
+          },
+          "revision": "9"
+        },
+        "redo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "abЯz",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 4,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 1,
+              "affinity": "before"
+            }
+          },
+          "revision": "10"
+        }
+      }
+    },
+    {
+      "id": "move-forward-stable-descendant-and-gap",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p",
+                "section",
+                "q"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "a"
+              ]
+            },
+            "a": {
+              "kind": "text",
+              "text": "A",
+              "marks": []
+            },
+            "section": {
+              "kind": "container",
+              "children": [
+                "n"
+              ]
+            },
+            "n": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "Привет",
+              "marks": []
+            },
+            "q": {
+              "kind": "container",
+              "children": [
+                "z"
+              ]
+            },
+            "z": {
+              "kind": "text",
+              "text": "Z",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 3,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "parent": "root",
+            "index": 3,
+            "affinity": "before"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "moveSubtree",
+          "node": "section",
+          "parent": "root",
+          "beforeIndex": 3
+        }
+      ],
+      "expected": {
+        "after": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "q",
+                  "section"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "A",
+                "marks": []
+              },
+              "section": {
+                "kind": "container",
+                "children": [
+                  "n"
+                ]
+              },
+              "n": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "Привет",
+                "marks": []
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "Z",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 3,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "child",
+              "parent": "root",
+              "index": 2,
+              "affinity": "before"
+            }
+          },
+          "revision": "8"
+        },
+        "provenance": {
+          "anchor": "mapped",
+          "focus": "mapped"
+        },
+        "undo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "section",
+                  "q"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "A",
+                "marks": []
+              },
+              "section": {
+                "kind": "container",
+                "children": [
+                  "n"
+                ]
+              },
+              "n": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "Привет",
+                "marks": []
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "Z",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 3,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "child",
+              "parent": "root",
+              "index": 3,
+              "affinity": "before"
+            }
+          },
+          "revision": "9"
+        },
+        "redo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "q",
+                  "section"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "A",
+                "marks": []
+              },
+              "section": {
+                "kind": "container",
+                "children": [
+                  "n"
+                ]
+              },
+              "n": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "Привет",
+                "marks": []
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "Z",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 3,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "child",
+              "parent": "root",
+              "index": 2,
+              "affinity": "before"
+            }
+          },
+          "revision": "10"
+        }
+      }
+    },
+    {
+      "id": "move-backward-gap-affinity",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p",
+                "section",
+                "q"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "a"
+              ]
+            },
+            "a": {
+              "kind": "text",
+              "text": "A",
+              "marks": []
+            },
+            "section": {
+              "kind": "container",
+              "children": [
+                "n"
+              ]
+            },
+            "n": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "Привет",
+              "marks": []
+            },
+            "q": {
+              "kind": "container",
+              "children": [
+                "z"
+              ]
+            },
+            "z": {
+              "kind": "text",
+              "text": "Z",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "child",
+            "parent": "root",
+            "index": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "leaf": "z",
+            "utf16": 1,
+            "affinity": "before"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "moveSubtree",
+          "node": "q",
+          "parent": "root",
+          "beforeIndex": 0
+        }
+      ],
+      "expected": {
+        "after": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "q",
+                  "p",
+                  "section"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "A",
+                "marks": []
+              },
+              "section": {
+                "kind": "container",
+                "children": [
+                  "n"
+                ]
+              },
+              "n": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "Привет",
+                "marks": []
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "Z",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "child",
+              "parent": "root",
+              "index": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "z",
+              "utf16": 1,
+              "affinity": "before"
+            }
+          },
+          "revision": "8"
+        },
+        "provenance": {
+          "anchor": "mapped",
+          "focus": "mapped"
+        },
+        "undo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "section",
+                  "q"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "A",
+                "marks": []
+              },
+              "section": {
+                "kind": "container",
+                "children": [
+                  "n"
+                ]
+              },
+              "n": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "Привет",
+                "marks": []
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "Z",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "child",
+              "parent": "root",
+              "index": 0,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "z",
+              "utf16": 1,
+              "affinity": "before"
+            }
+          },
+          "revision": "9"
+        },
+        "redo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "q",
+                  "p",
+                  "section"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "A",
+                "marks": []
+              },
+              "section": {
+                "kind": "container",
+                "children": [
+                  "n"
+                ]
+              },
+              "n": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "Привет",
+                "marks": []
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "Z",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "child",
+              "parent": "root",
+              "index": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "z",
+              "utf16": 1,
+              "affinity": "before"
+            }
+          },
+          "revision": "10"
+        }
+      }
+    },
+    {
+      "id": "move-cross-parent-gaps",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p",
+                "section",
+                "q"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "a"
+              ]
+            },
+            "a": {
+              "kind": "text",
+              "text": "A",
+              "marks": []
+            },
+            "section": {
+              "kind": "container",
+              "children": [
+                "n"
+              ]
+            },
+            "n": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "Привет",
+              "marks": []
+            },
+            "q": {
+              "kind": "container",
+              "children": [
+                "z"
+              ]
+            },
+            "z": {
+              "kind": "text",
+              "text": "Z",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "child",
+            "parent": "section",
+            "index": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "parent": "q",
+            "index": 1,
+            "affinity": "after"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "moveSubtree",
+          "node": "n",
+          "parent": "q",
+          "beforeIndex": 1
+        }
+      ],
+      "expected": {
+        "after": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "section",
+                  "q"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "A",
+                "marks": []
+              },
+              "section": {
+                "kind": "container",
+                "children": []
+              },
+              "n": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "Привет",
+                "marks": []
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z",
+                  "n"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "Z",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "child",
+              "parent": "section",
+              "index": 0,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "child",
+              "parent": "q",
+              "index": 2,
+              "affinity": "after"
+            }
+          },
+          "revision": "8"
+        },
+        "provenance": {
+          "anchor": "mapped",
+          "focus": "mapped"
+        },
+        "undo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "section",
+                  "q"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "A",
+                "marks": []
+              },
+              "section": {
+                "kind": "container",
+                "children": [
+                  "n"
+                ]
+              },
+              "n": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "Привет",
+                "marks": []
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "Z",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "child",
+              "parent": "section",
+              "index": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "child",
+              "parent": "q",
+              "index": 1,
+              "affinity": "after"
+            }
+          },
+          "revision": "9"
+        },
+        "redo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "section",
+                  "q"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "A",
+                "marks": []
+              },
+              "section": {
+                "kind": "container",
+                "children": []
+              },
+              "n": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "Привет",
+                "marks": []
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z",
+                  "n"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "Z",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "child",
+              "parent": "section",
+              "index": 0,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "child",
+              "parent": "q",
+              "index": 2,
+              "affinity": "after"
+            }
+          },
+          "revision": "10"
+        }
+      }
+    },
+    {
+      "id": "delete-nested-subtree-fallback",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p",
+                "section",
+                "q"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "a"
+              ]
+            },
+            "a": {
+              "kind": "text",
+              "text": "A",
+              "marks": []
+            },
+            "section": {
+              "kind": "container",
+              "children": [
+                "n"
+              ]
+            },
+            "n": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "Привет",
+              "marks": []
+            },
+            "q": {
+              "kind": "container",
+              "children": [
+                "z"
+              ]
+            },
+            "z": {
+              "kind": "text",
+              "text": "Z",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "leaf": "z",
+            "utf16": 1,
+            "affinity": "before"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "deleteSubtree",
+          "node": "section"
+        }
+      ],
+      "expected": {
+        "after": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "q"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "A",
+                "marks": []
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "Z",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "child",
+              "parent": "root",
+              "index": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "z",
+              "utf16": 1,
+              "affinity": "before"
+            }
+          },
+          "revision": "8"
+        },
+        "provenance": {
+          "anchor": "deleted",
+          "focus": "mapped"
+        },
+        "undo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "section",
+                  "q"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "A",
+                "marks": []
+              },
+              "section": {
+                "kind": "container",
+                "children": [
+                  "n"
+                ]
+              },
+              "n": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "Привет",
+                "marks": []
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "Z",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 2,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "z",
+              "utf16": 1,
+              "affinity": "before"
+            }
+          },
+          "revision": "9"
+        },
+        "redo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "q"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "A",
+                "marks": []
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "Z",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "child",
+              "parent": "root",
+              "index": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "z",
+              "utf16": 1,
+              "affinity": "before"
+            }
+          },
+          "revision": "10"
+        }
+      }
+    },
+    {
+      "id": "cascade-deleted-parent-to-surviving-root",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p",
+                "outer",
+                "q"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "a"
+              ]
+            },
+            "a": {
+              "kind": "text",
+              "text": "A",
+              "marks": []
+            },
+            "outer": {
+              "kind": "container",
+              "children": [
+                "inner"
+              ]
+            },
+            "inner": {
+              "kind": "container",
+              "children": [
+                "n"
+              ]
+            },
+            "n": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "Привет",
+              "marks": []
+            },
+            "q": {
+              "kind": "container",
+              "children": [
+                "z"
+              ]
+            },
+            "z": {
+              "kind": "text",
+              "text": "Z",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "parent": "inner",
+            "index": 0,
+            "affinity": "before"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "deleteSubtree",
+          "node": "n"
+        },
+        {
+          "kind": "deleteSubtree",
+          "node": "inner"
+        },
+        {
+          "kind": "deleteSubtree",
+          "node": "outer"
+        }
+      ],
+      "expected": {
+        "after": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "q"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "A",
+                "marks": []
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "Z",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "child",
+              "parent": "root",
+              "index": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "child",
+              "parent": "root",
+              "index": 1,
+              "affinity": "before"
+            }
+          },
+          "revision": "8"
+        },
+        "provenance": {
+          "anchor": "deleted",
+          "focus": "deleted"
+        },
+        "undo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "outer",
+                  "q"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "A",
+                "marks": []
+              },
+              "outer": {
+                "kind": "container",
+                "children": [
+                  "inner"
+                ]
+              },
+              "inner": {
+                "kind": "container",
+                "children": [
+                  "n"
+                ]
+              },
+              "n": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "Привет",
+                "marks": []
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "Z",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 2,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "child",
+              "parent": "inner",
+              "index": 0,
+              "affinity": "before"
+            }
+          },
+          "revision": "9"
+        },
+        "redo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "q"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "A",
+                "marks": []
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "Z",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "child",
+              "parent": "root",
+              "index": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "child",
+              "parent": "root",
+              "index": 1,
+              "affinity": "before"
+            }
+          },
+          "revision": "10"
+        }
+      }
+    },
+    {
+      "id": "mark-split-reverse-selection",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "abcdef",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 6,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 2,
+            "affinity": "after"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "markText",
+          "leaf": "t",
+          "from": 2,
+          "to": 4,
+          "mark": "strong",
+          "runIds": [
+            "t",
+            "m",
+            "s"
+          ]
+        }
+      ],
+      "expected": {
+        "after": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t",
+                  "m",
+                  "s"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "ab",
+                "marks": []
+              },
+              "m": {
+                "kind": "text",
+                "text": "cd",
+                "marks": [
+                  "strong"
+                ]
+              },
+              "s": {
+                "kind": "text",
+                "text": "ef",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "s",
+              "utf16": 2,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "m",
+              "utf16": 0,
+              "affinity": "after"
+            }
+          },
+          "revision": "8"
+        },
+        "provenance": {
+          "anchor": "mapped",
+          "focus": "mapped"
+        },
+        "undo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "abcdef",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 6,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 2,
+              "affinity": "after"
+            }
+          },
+          "revision": "9"
+        },
+        "redo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t",
+                  "m",
+                  "s"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "ab",
+                "marks": []
+              },
+              "m": {
+                "kind": "text",
+                "text": "cd",
+                "marks": [
+                  "strong"
+                ]
+              },
+              "s": {
+                "kind": "text",
+                "text": "ef",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "s",
+              "utf16": 2,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "m",
+              "utf16": 0,
+              "affinity": "after"
+            }
+          },
+          "revision": "10"
+        }
+      }
+    },
+    {
+      "id": "atom-insert-structural-affinity",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p",
+                "q"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "a"
+              ]
+            },
+            "a": {
+              "kind": "text",
+              "text": "aa",
+              "marks": []
+            },
+            "q": {
+              "kind": "container",
+              "children": [
+                "z"
+              ]
+            },
+            "z": {
+              "kind": "text",
+              "text": "bb",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "child",
+            "parent": "root",
+            "index": 1,
+            "affinity": "before"
+          },
+          "focus": {
+            "kind": "child",
+            "parent": "root",
+            "index": 1,
+            "affinity": "after"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "insertAtom",
+          "node": "image",
+          "type": "image",
+          "parent": "root",
+          "beforeIndex": 1
+        }
+      ],
+      "expected": {
+        "after": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "image",
+                  "q"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "aa",
+                "marks": []
+              },
+              "image": {
+                "kind": "atom",
+                "type": "image"
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "bb",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "child",
+              "parent": "root",
+              "index": 1,
+              "affinity": "before"
+            },
+            "focus": {
+              "kind": "child",
+              "parent": "root",
+              "index": 2,
+              "affinity": "after"
+            }
+          },
+          "revision": "8"
+        },
+        "provenance": {
+          "anchor": "mapped",
+          "focus": "mapped"
+        },
+        "undo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "q"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "aa",
+                "marks": []
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "bb",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "child",
+              "parent": "root",
+              "index": 1,
+              "affinity": "before"
+            },
+            "focus": {
+              "kind": "child",
+              "parent": "root",
+              "index": 1,
+              "affinity": "after"
+            }
+          },
+          "revision": "9"
+        },
+        "redo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "image",
+                  "q"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "aa",
+                "marks": []
+              },
+              "image": {
+                "kind": "atom",
+                "type": "image"
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "bb",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "child",
+              "parent": "root",
+              "index": 1,
+              "affinity": "before"
+            },
+            "focus": {
+              "kind": "child",
+              "parent": "root",
+              "index": 2,
+              "affinity": "after"
+            }
+          },
+          "revision": "10"
+        }
+      }
+    },
+    {
+      "id": "atom-delete-edge-and-gap",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p",
+                "image",
+                "q"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "a"
+              ]
+            },
+            "a": {
+              "kind": "text",
+              "text": "aa",
+              "marks": []
+            },
+            "image": {
+              "kind": "atom",
+              "type": "image"
+            },
+            "q": {
+              "kind": "container",
+              "children": [
+                "z"
+              ]
+            },
+            "z": {
+              "kind": "text",
+              "text": "bb",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "edge",
+            "node": "image",
+            "side": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "parent": "root",
+            "index": 2,
+            "affinity": "before"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "deleteSubtree",
+          "node": "image"
+        }
+      ],
+      "expected": {
+        "after": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "q"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "aa",
+                "marks": []
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "bb",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "child",
+              "parent": "root",
+              "index": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "child",
+              "parent": "root",
+              "index": 1,
+              "affinity": "before"
+            }
+          },
+          "revision": "8"
+        },
+        "provenance": {
+          "anchor": "deleted",
+          "focus": "mapped"
+        },
+        "undo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "image",
+                  "q"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "aa",
+                "marks": []
+              },
+              "image": {
+                "kind": "atom",
+                "type": "image"
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "bb",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "edge",
+              "node": "image",
+              "side": "after"
+            },
+            "focus": {
+              "kind": "child",
+              "parent": "root",
+              "index": 2,
+              "affinity": "before"
+            }
+          },
+          "revision": "9"
+        },
+        "redo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p",
+                  "q"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "a"
+                ]
+              },
+              "a": {
+                "kind": "text",
+                "text": "aa",
+                "marks": []
+              },
+              "q": {
+                "kind": "container",
+                "children": [
+                  "z"
+                ]
+              },
+              "z": {
+                "kind": "text",
+                "text": "bb",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "child",
+              "parent": "root",
+              "index": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "child",
+              "parent": "root",
+              "index": 1,
+              "affinity": "before"
+            }
+          },
+          "revision": "10"
+        }
+      }
+    },
+    {
+      "id": "hard-break-is-structural",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "abc",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "child",
+            "parent": "p",
+            "index": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 1,
+            "affinity": "before"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "insertAtom",
+          "node": "br",
+          "type": "hard-break",
+          "parent": "p",
+          "beforeIndex": 1
+        }
+      ],
+      "expected": {
+        "after": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t",
+                  "br"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "abc",
+                "marks": []
+              },
+              "br": {
+                "kind": "atom",
+                "type": "hard-break"
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "child",
+              "parent": "p",
+              "index": 2,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 1,
+              "affinity": "before"
+            }
+          },
+          "revision": "8"
+        },
+        "provenance": {
+          "anchor": "mapped",
+          "focus": "mapped"
+        },
+        "undo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "abc",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "child",
+              "parent": "p",
+              "index": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 1,
+              "affinity": "before"
+            }
+          },
+          "revision": "9"
+        },
+        "redo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t",
+                  "br"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "abc",
+                "marks": []
+              },
+              "br": {
+                "kind": "atom",
+                "type": "hard-break"
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "child",
+              "parent": "p",
+              "index": 2,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 1,
+              "affinity": "before"
+            }
+          },
+          "revision": "10"
+        }
+      }
+    },
+    {
+      "id": "empty-text-insert",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 0,
+            "affinity": "before"
+          },
+          "focus": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 0,
+            "affinity": "after"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "replaceText",
+          "leaf": "t",
+          "from": 0,
+          "to": 0,
+          "insert": "Я"
+        }
+      ],
+      "expected": {
+        "after": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "Я",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 0,
+              "affinity": "before"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "revision": "8"
+        },
+        "provenance": {
+          "anchor": "mapped",
+          "focus": "mapped"
+        },
+        "undo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 0,
+              "affinity": "before"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 0,
+              "affinity": "after"
+            }
+          },
+          "revision": "9"
+        },
+        "redo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "Я",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 0,
+              "affinity": "before"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "revision": "10"
+        }
+      }
+    },
+    {
+      "id": "combining-accent-insert-history",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "a",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 1,
+            "affinity": "after"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "replaceText",
+          "leaf": "t",
+          "from": 1,
+          "to": 1,
+          "insert": "́"
+        }
+      ],
+      "expected": {
+        "after": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "á",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 2,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 2,
+              "affinity": "after"
+            }
+          },
+          "revision": "8"
+        },
+        "provenance": {
+          "anchor": "mapped",
+          "focus": "mapped"
+        },
+        "undo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "a",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "revision": "9"
+        },
+        "redo": {
+          "document": {
+            "root": "root",
+            "nodes": {
+              "root": {
+                "kind": "container",
+                "children": [
+                  "p"
+                ]
+              },
+              "p": {
+                "kind": "container",
+                "children": [
+                  "t"
+                ]
+              },
+              "t": {
+                "kind": "text",
+                "text": "á",
+                "marks": []
+              }
+            }
+          },
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 2,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "leaf": "t",
+              "utf16": 2,
+              "affinity": "after"
+            }
+          },
+          "revision": "10"
+        }
+      }
+    }
+  ],
+  "refusals": [
+    {
+      "id": "half-surrogate-edit-refused",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "👩",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 2,
+            "affinity": "after"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "replaceText",
+          "leaf": "t",
+          "from": 1,
+          "to": 2,
+          "insert": "x"
+        }
+      ],
+      "expected": "invalid-text-position"
+    },
+    {
+      "id": "move-into-descendant-refused",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p",
+                "section",
+                "q"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "a"
+              ]
+            },
+            "a": {
+              "kind": "text",
+              "text": "A",
+              "marks": []
+            },
+            "section": {
+              "kind": "container",
+              "children": [
+                "n"
+              ]
+            },
+            "n": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "Привет",
+              "marks": []
+            },
+            "q": {
+              "kind": "container",
+              "children": [
+                "z"
+              ]
+            },
+            "z": {
+              "kind": "text",
+              "text": "Z",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 2,
+            "affinity": "after"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "moveSubtree",
+          "node": "section",
+          "parent": "n",
+          "beforeIndex": 0
+        }
+      ],
+      "expected": "move-into-descendant"
+    },
+    {
+      "id": "cluster-split-refused",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "é",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 2,
+            "affinity": "after"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "splitText",
+          "leaf": "t",
+          "right": "r",
+          "at": 1
+        }
+      ],
+      "expected": "invalid-grapheme-boundary"
+    },
+    {
+      "id": "cross-mark-cluster-edit-refused",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "t",
+                "u"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "e",
+              "marks": []
+            },
+            "u": {
+              "kind": "text",
+              "text": "́",
+              "marks": [
+                "strong"
+              ]
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "leaf": "u",
+            "utf16": 1,
+            "affinity": "after"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "markText",
+          "leaf": "u",
+          "from": 0,
+          "to": 1,
+          "mark": "highlight",
+          "runIds": [
+            "u"
+          ]
+        }
+      ],
+      "expected": "invalid-grapheme-boundary"
+    },
+    {
+      "id": "duplicate-atom-id-refused",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p",
+                "q"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "a"
+              ]
+            },
+            "a": {
+              "kind": "text",
+              "text": "aa",
+              "marks": []
+            },
+            "q": {
+              "kind": "container",
+              "children": [
+                "z"
+              ]
+            },
+            "z": {
+              "kind": "text",
+              "text": "bb",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "child",
+            "parent": "root",
+            "index": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "parent": "root",
+            "index": 1,
+            "affinity": "after"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "insertAtom",
+          "node": "p",
+          "type": "image",
+          "parent": "root",
+          "beforeIndex": 1
+        }
+      ],
+      "expected": "duplicate-node-id"
+    },
+    {
+      "id": "compound-refusal-discards-earlier-candidate-edit",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p",
+                "section",
+                "q"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "a"
+              ]
+            },
+            "a": {
+              "kind": "text",
+              "text": "A",
+              "marks": []
+            },
+            "section": {
+              "kind": "container",
+              "children": [
+                "n"
+              ]
+            },
+            "n": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "Привет",
+              "marks": []
+            },
+            "q": {
+              "kind": "container",
+              "children": [
+                "z"
+              ]
+            },
+            "z": {
+              "kind": "text",
+              "text": "Z",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 3,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "parent": "root",
+            "index": 3,
+            "affinity": "before"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "replaceText",
+          "leaf": "t",
+          "from": 0,
+          "to": 1,
+          "insert": "X"
+        },
+        {
+          "kind": "moveSubtree",
+          "node": "section",
+          "parent": "n",
+          "beforeIndex": 0
+        }
+      ],
+      "expected": "move-into-descendant"
+    },
+    {
+      "id": "user-combining-accent-delete-refused",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "á",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 2,
+            "affinity": "after"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "replaceText",
+          "leaf": "t",
+          "from": 1,
+          "to": 2,
+          "insert": ""
+        }
+      ],
+      "expected": "invalid-grapheme-boundary"
+    },
+    {
+      "id": "history-half-surrogate-edit-refused",
+      "lane": "history",
+      "before": {
+        "document": {
+          "root": "root",
+          "nodes": {
+            "root": {
+              "kind": "container",
+              "children": [
+                "p"
+              ]
+            },
+            "p": {
+              "kind": "container",
+              "children": [
+                "t"
+              ]
+            },
+            "t": {
+              "kind": "text",
+              "text": "👩",
+              "marks": []
+            }
+          }
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "leaf": "t",
+            "utf16": 2,
+            "affinity": "after"
+          }
+        },
+        "revision": "7"
+      },
+      "operations": [
+        {
+          "kind": "replaceText",
+          "leaf": "t",
+          "from": 1,
+          "to": 2,
+          "insert": ""
+        }
+      ],
+      "expected": "invalid-text-position"
+    }
+  ],
+  "lifecycleReplies": [
+    {
+      "id": "current-reply",
+      "current": {
+        "session": "session-A",
+        "generation": "mount-2",
+        "revision": "8",
+        "selectionEpoch": "3"
+      },
+      "captured": {
+        "session": "session-A",
+        "generation": "mount-2",
+        "revision": "8",
+        "selectionEpoch": "3"
+      },
+      "expected": "current"
+    },
+    {
+      "id": "old-mount-reply-refused",
+      "current": {
+        "session": "session-A",
+        "generation": "mount-2",
+        "revision": "8",
+        "selectionEpoch": "3"
+      },
+      "captured": {
+        "session": "session-A",
+        "generation": "mount-1",
+        "revision": "8",
+        "selectionEpoch": "3"
+      },
+      "expected": "stale-session"
+    },
+    {
+      "id": "other-session-reply-refused",
+      "current": {
+        "session": "session-A",
+        "generation": "mount-2",
+        "revision": "8",
+        "selectionEpoch": "3"
+      },
+      "captured": {
+        "session": "session-B",
+        "generation": "mount-2",
+        "revision": "8",
+        "selectionEpoch": "3"
+      },
+      "expected": "stale-session"
+    },
+    {
+      "id": "stale-revision-reply-refused",
+      "current": {
+        "session": "session-A",
+        "generation": "mount-2",
+        "revision": "8",
+        "selectionEpoch": "3"
+      },
+      "captured": {
+        "session": "session-A",
+        "generation": "mount-2",
+        "revision": "7",
+        "selectionEpoch": "3"
+      },
+      "expected": "stale-revision"
+    },
+    {
+      "id": "changed-selection-reply-refused",
+      "current": {
+        "session": "session-A",
+        "generation": "mount-2",
+        "revision": "8",
+        "selectionEpoch": "3"
+      },
+      "captured": {
+        "session": "session-A",
+        "generation": "mount-2",
+        "revision": "8",
+        "selectionEpoch": "2"
+      },
+      "expected": "stale-selection"
+    }
+  ]
+}

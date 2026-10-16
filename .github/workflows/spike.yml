@@ -19,6 +19,9 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - run: npm run test:contracts
+      - run: npm run check:m0
+      - run: npm run perf:verify
       - run: npx playwright install chromium firefox webkit
         env:
           PLAYWRIGHT_SKIP_BROWSER_GC: '1'

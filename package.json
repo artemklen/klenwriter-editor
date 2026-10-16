@@ -1,11 +1,16 @@
 {
   "name": "klenwriter-editor-m0",
   "private": true,
+  "license": "(MIT OR Apache-2.0)",
   "type": "module",
   "scripts": {
     "start": "node spikes/editing-hosts/server.mjs",
     "test": "playwright test",
     "test:headed": "playwright test --headed --workers=1",
+    "test:contracts": "node scripts/check-m0-contracts.mjs",
+    "check:m0": "node scripts/check-m0-artifacts.mjs",
+    "perf:capture": "node scripts/m0-perf/capture.mjs",
+    "perf:verify": "node scripts/m0-perf/summarize.mjs --check",
     "report": "playwright show-report"
   },
   "engines": { "node": ">=22" },
