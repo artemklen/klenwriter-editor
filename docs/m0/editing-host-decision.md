@@ -75,7 +75,7 @@ The attraction of islands is local browser mutation scope: one editable paragrap
 3. TS maps DOM selection to stable model positions, reconciles bounded changed regions and preserves node identity. It must never replace the whole editing root per keystroke.
 4. During native composition, the active range remains browser-owned. Do not remount, normalize or reformat it. Reconcile committed text exactly once. **Blur/Escape are observations, not proof of cancellation.** An unresolved transition preserves available original/provisional text and rejects destructive remounts.
 5. Toolbar/dialog return uses explicit selection bookmarks and epochs. Keyboard access, visible focus, semantic labels and machine-checkable accessibility remain required in v1. Real VoiceOver/screen-reader acceptance is deferred beyond v1 by the owner; future support needs an explicit interaction contract and actual assistive-technology testing, not only axe/AX.
-6. No virtualization that unmounts offscreen text until native selection, browser Find, composition, scroll and AT are measured with it. The full-DOM baseline remains.
+6. No virtualization that unmounts offscreen text until native selection, browser Find, composition, scroll, keyboard/focus, semantics and axe are measured with it. The full-DOM baseline remains. Screen-reader behavior remains unverified and needs future real AT acceptance before support can be claimed; it does not block v1.
 7. v1 support target is desktop Chromium, Firefox and Safari with RU/EN input. No mobile, collaboration, CJK guarantee or arbitrary nested third-party editing roots. The document still stores valid Unicode; this boundary is a tested input promise, not a text encoding restriction.
 
 ## Evolution and libraries
