@@ -36,6 +36,8 @@ Single-host nested-selection scroll offsets were 128px / 54px / 127px in Chromiu
 
 Typing and native undo retained sample text and the bold mark in all six combinations. Unicode insertion preserved the fixture text, but `insertText` is **not OS IME**. Synthetic composition events only checked instrumentation; they did not insert characters through an input method.
 
+Clipboard fidelity is a separate result: WebKit's native copy/paste changed the fixture's decomposed `e` + U+0301 into U+00E9 in both modes. The MET result above means document scope and cut/undo restoration, **not code-point-preserving clipboard serialization**. The production clipboard adapter needs an explicit format/normalization contract and regression vectors; native clipboard output cannot be treated as the canonical document representation.
+
 Accessible structure: axe 4.14.0 reports no violations in the final fixture in all six combinations. AX snapshots expose one document textbox versus three paragraph textboxes. This is structural evidence, **not a VoiceOver/NVDA pass**. Initial axe runs flagged the single-host scroll region; explicit tabindex on each editing host resolved it. The first failing run is preserved instead of being omitted.
 
 Tab topology differs: single enters one editor stop, islands three. WebKit's current macOS Tab policy skips buttons. A Tab-out/Shift-Tab-back probe reset the single-host caret in WebKit and the islands caret in all three engines; explicit `focus()` out/back retained it in this fixture. These are different operations. Production must maintain a model selection bookmark for toolbar/dialog return, not infer it from an incidental native focus result.
@@ -44,11 +46,13 @@ Tab topology differs: single enters one editor stop, islands three. WebKit's cur
 
 | Browser | RU physical keys → `привет` | U.S. Option+E, E → `é` | Real AT |
 | --- | --- | --- | --- |
-| Installed Chrome 155.0.8059.85 | Observed in both modes | Real composition start/update/end observed in both modes | NOT_RUN |
+| Installed Chrome 155.0.8059.85 | Observed in both modes | Native provisional/committed text observed; end-event trust caveat below | NOT_RUN |
 | Installed Safari 27.0.1 | Observed in both modes | Real composition observed in both modes | NOT_RUN |
 | Firefox 157.0, Playwright build, native UI attempt | NOT_RUN: profile creation failed | NOT_RUN | NOT_RUN |
 
 Firefox native startup returned `NS_ERROR_FILE_ACCESS_DENIED` while creating a profile; subsequent native accessibility calls timed out. The process started for this test was terminated. The automated Firefox results remain valid, but do not fill this native lane. No Japanese IME was installed; no VoiceOver setting was changed. The user's revised v1 input target is RU & EN. CJK can be added later with its own proof, rather than being implicitly supported today.
+
+In both Chrome traces, `compositionstart`, `compositionupdate` and input events were trusted, but `compositionend` was **untrusted**. Root re-read confirmed this after independent review. Its cause has not been isolated; neither the recorder nor this observation proves a fully native event lifecycle. Retain the text-insertion observation, but repeat this lane in a clean native environment before accepting composition-end ordering or exactly-once reconciliation. Do not silently discard the anomalous event or attribute it to Chrome itself without a differentiating test.
 
 Safari dead-key Escape/blur exploration produced spacing accents and, in one trace, a still-open composition flag after blur. Escape was not a universal text-removing cancel. This is one exploratory trace, not a fully repeated transition suite. It identifies a required follow-up; it does not prove a production exactly-once algorithm.
 
