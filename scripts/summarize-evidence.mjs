@@ -12,7 +12,7 @@ function visit(s) {
       const o = item.observation;
       const condition = { 'shift-forward':o.reachesNextBlock, 'shift-backward':o.reachesPreviousBlock,
         'select-all':o.wholeDocument && o.excludesChrome, 'mouse-cross-block':o.reachesNextBlock,
-        'nested-scroll':o.reachesNested && o.includesAtom && o.scrolled, 'clipboard':o.wholeDocumentCopied && o.restored,
+        'nested-scroll':o.reachesNested && o.includesAtom && o.scrolled, 'clipboard':o.wholeDocumentCopied && o.freshClipboard && o.nfcEquivalent && o.cutChanged && o.restored,
         'same-host-focus-return':o.caretRestored }[item.scenario];
       item.requirementStatus = condition === undefined ? 'OBSERVATION' : condition ? 'MET' : 'GAP';
       observations.push(item);

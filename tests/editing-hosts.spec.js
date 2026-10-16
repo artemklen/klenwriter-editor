@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { randomUUID } from 'node:crypto';
 
 const modes = ['single', 'islands'];
 // Only seeds the starting caret. The action being measured uses browser keyboard/mouse input.
@@ -113,7 +114,10 @@ for (const mode of modes) {
       await record(page, info, 'nested-scroll', { reachesNested: s.focus.block === 'p3', includesAtom: s.text.includes('Reference card'), scrolled: scrollTop > 0, scrollTop, selection: s });
     });
     test('native copy cut paste and undo scope', async ({ page }, info) => {
-      await caret(page, 'p2');
+      await caret(page, 'p2', true);
+      // A unique document marker rules out stale OS clipboard data from another case.
+      const marker = ` clip-${randomUUID()}`;
+      await page.keyboard.type(marker);
       const before = await page.locator('#editor').innerText();
       await page.keyboard.press('ControlOrMeta+a');
       const selected = await page.evaluate(() => getSelection().toString());
@@ -127,8 +131,15 @@ for (const mode of modes) {
       const afterCut = await page.locator('#editor').innerText();
       await page.keyboard.press('ControlOrMeta+z');
       const restored = await page.locator('#editor').innerText();
-      await record(page, info, 'clipboard', { selected, copied, afterCut, restored: restored === before, wholeDocumentCopied: copied.includes('Alpha') && copied.includes('Charlie'), clipboardAvailable: copied.length > 0 });
-      expect(copied.length).toBeGreaterThan(0);
+      const freshClipboard = copied.includes(marker);
+      const exactClipboard = selected === copied;
+      const nfcEquivalent = selected.normalize('NFC') === copied.normalize('NFC');
+      const cutChanged = afterCut !== before && !afterCut.includes(marker);
+      await record(page, info, 'clipboard', { selected, copied, afterCut, freshClipboard, exactClipboard, nfcEquivalent, cutChanged, restored: restored === before, wholeDocumentCopied: copied.includes('Alpha') && copied.includes('Charlie'), clipboardAvailable: copied.length > 0 });
+      expect(freshClipboard).toBe(true);
+      expect(nfcEquivalent).toBe(true);
+      expect(cutChanged).toBe(true);
+      expect(mode === 'single' ? afterCut.trim() === '' : !afterCut.includes('Bravo') && afterCut.includes('Alpha') && afterCut.includes('Charlie')).toBe(true);
       expect(restored).toBe(before);
     });
     test('explicit leave and return to same host', async ({ page }, info) => {
