@@ -1,0 +1,242 @@
+{
+  "mode": "islands",
+  "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+  "startedAt": "2026-10-16T21:01:36.935Z",
+  "capturedAt": "2026-10-16T21:01:45.414Z",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0",
+  "nativeMode": true,
+  "viewport": {
+    "scrollTop": 128.75,
+    "scrollHeight": 390,
+    "clientHeight": 180,
+    "rect": {
+      "x": 200,
+      "y": 392.66668701171875,
+      "width": 880,
+      "height": 182
+    }
+  },
+  "focusRect": {
+    "x": 304.01666259765625,
+    "y": 469.41668701171875,
+    "width": 0,
+    "height": 28.5
+  },
+  "label": "",
+  "wasm": "allowed",
+  "composing": false,
+  "selection": {
+    "text": "Charlie",
+    "anchor": {
+      "block": "p3",
+      "node": "#text",
+      "path": [
+        0
+      ],
+      "offset": 0
+    },
+    "focus": {
+      "block": "p3",
+      "node": "#text",
+      "path": [
+        0
+      ],
+      "offset": 7
+    },
+    "collapsed": false
+  },
+  "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語.",
+  "html": "<p id=\"p1\" data-block=\"p1\" contenteditable=\"true\" role=\"textbox\" aria-label=\"Paragraph 1\" aria-multiline=\"true\" tabindex=\"0\">Alpha <strong>bold</strong> omega.</p><p id=\"p2\" data-block=\"p2\" contenteditable=\"true\" role=\"textbox\" aria-label=\"Paragraph 2\" aria-multiline=\"true\" tabindex=\"0\">Bravo café 👩🏽‍💻 é.</p><div class=\"atom\" data-block=\"card\" contenteditable=\"false\" role=\"group\" aria-label=\"Read-only reference card\">Reference card · atomic, not editable</div><blockquote><p id=\"p3\" data-block=\"p3\" contenteditable=\"true\" role=\"textbox\" aria-label=\"Paragraph 3\" aria-multiline=\"true\" tabindex=\"0\">Charlie nested paragraph. Русский текст. 日本語.</p></blockquote>",
+  "active": "export",
+  "events": [
+    {
+      "seq": 1,
+      "t": 444915,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "Ch",
+        "anchor": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 2
+        },
+        "collapsed": false
+      },
+      "active": ""
+    },
+    {
+      "seq": 2,
+      "t": 444924,
+      "type": "scroll",
+      "trusted": true,
+      "scrollTop": 128.75,
+      "selection": {
+        "text": "Cha",
+        "anchor": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 3
+        },
+        "collapsed": false
+      }
+    },
+    {
+      "seq": 3,
+      "t": 444926,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "Cha",
+        "anchor": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 3
+        },
+        "collapsed": false
+      },
+      "active": ""
+    },
+    {
+      "seq": 4,
+      "t": 444927,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "Char",
+        "anchor": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 4
+        },
+        "collapsed": false
+      },
+      "active": ""
+    },
+    {
+      "seq": 5,
+      "t": 444929,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "Charl",
+        "anchor": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 5
+        },
+        "collapsed": false
+      },
+      "active": ""
+    },
+    {
+      "seq": 6,
+      "t": 444935,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "Charli",
+        "anchor": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 6
+        },
+        "collapsed": false
+      },
+      "active": ""
+    },
+    {
+      "seq": 7,
+      "t": 444941,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "Charlie",
+        "anchor": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p3",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 7
+        },
+        "collapsed": false
+      },
+      "active": ""
+    }
+  ]
+}

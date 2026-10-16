@@ -1,0 +1,2235 @@
+{
+  "mode": "islands",
+  "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+  "startedAt": "2026-10-16T21:05:50.197Z",
+  "capturedAt": "2026-10-16T21:05:52.965Z",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0",
+  "nativeMode": true,
+  "viewport": {
+    "scrollTop": 0,
+    "scrollHeight": 390,
+    "clientHeight": 180,
+    "rect": {
+      "x": 200,
+      "y": 392.66668701171875,
+      "width": 880,
+      "height": 182
+    }
+  },
+  "focusRect": {
+    "x": 328.70001220703125,
+    "y": 420.16668701171875,
+    "width": 0,
+    "height": 23
+  },
+  "label": "",
+  "wasm": "allowed",
+  "composing": false,
+  "selection": {
+    "text": "",
+    "anchor": {
+      "block": "p1",
+      "node": "#text",
+      "path": [
+        2
+      ],
+      "offset": 1
+    },
+    "focus": {
+      "block": "p1",
+      "node": "#text",
+      "path": [
+        2
+      ],
+      "offset": 1
+    },
+    "collapsed": true
+  },
+  "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語.",
+  "html": "<p id=\"p1\" data-block=\"p1\" contenteditable=\"true\" role=\"textbox\" aria-label=\"Paragraph 1\" aria-multiline=\"true\" tabindex=\"0\">Alpha <strong>bold</strong> omega.</p><p id=\"p2\" data-block=\"p2\" contenteditable=\"true\" role=\"textbox\" aria-label=\"Paragraph 2\" aria-multiline=\"true\" tabindex=\"0\">Bravo café 👩🏽‍💻 é.</p><div class=\"atom\" data-block=\"card\" contenteditable=\"false\" role=\"group\" aria-label=\"Read-only reference card\">Reference card · atomic, not editable</div><blockquote><p id=\"p3\" data-block=\"p3\" contenteditable=\"true\" role=\"textbox\" aria-label=\"Paragraph 3\" aria-multiline=\"true\" tabindex=\"0\">Charlie nested paragraph. Русский текст. 日本語.</p></blockquote>",
+  "active": "export",
+  "events": [
+    {
+      "seq": 1,
+      "t": 17151,
+      "type": "focusin",
+      "trusted": true,
+      "defaultPrevented": false,
+      "cancelable": false,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 2,
+      "t": 17151,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "collapsed": true
+      },
+      "active": "p1"
+    },
+    {
+      "seq": 3,
+      "t": 17239,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Meta",
+      "code": "MetaLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 4,
+      "t": 17241,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "ArrowUp",
+      "code": "ArrowUp",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": true,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 5,
+      "t": 17241,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "active": "p1"
+    },
+    {
+      "seq": 6,
+      "t": 17273,
+      "type": "keyup",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Meta",
+      "code": "MetaLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 7,
+      "t": 17273,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Meta",
+      "code": "MetaLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 8,
+      "t": 17275,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "ArrowRight",
+      "code": "ArrowRight",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": true,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 9,
+      "t": 17276,
+      "type": "keyup",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Meta",
+      "code": "MetaLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 10,
+      "t": 17276,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "collapsed": true
+      },
+      "active": "p1"
+    },
+    {
+      "seq": 11,
+      "t": 17276,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Shift",
+      "code": "ShiftLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 12,
+      "t": 17282,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "ArrowLeft",
+      "code": "ArrowLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": true,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 13,
+      "t": 17282,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": ".",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 6
+        },
+        "collapsed": false
+      },
+      "active": "p1"
+    },
+    {
+      "seq": 14,
+      "t": 17287,
+      "type": "keyup",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "ArrowLeft",
+      "code": "ArrowLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": true,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": ".",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 6
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 15,
+      "t": 17287,
+      "type": "keyup",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Shift",
+      "code": "ShiftLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": ".",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 6
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 16,
+      "t": 17287,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Shift",
+      "code": "ShiftLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": ".",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 6
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 17,
+      "t": 17294,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "ArrowLeft",
+      "code": "ArrowLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": true,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": ".",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 6
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 18,
+      "t": 17295,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "a.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 5
+        },
+        "collapsed": false
+      },
+      "active": "p1"
+    },
+    {
+      "seq": 19,
+      "t": 17300,
+      "type": "keyup",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "ArrowLeft",
+      "code": "ArrowLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": true,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "a.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 5
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 20,
+      "t": 17300,
+      "type": "keyup",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Shift",
+      "code": "ShiftLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "a.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 5
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 21,
+      "t": 17302,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Shift",
+      "code": "ShiftLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "a.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 5
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 22,
+      "t": 17304,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "ArrowLeft",
+      "code": "ArrowLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": true,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "a.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 5
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 23,
+      "t": 17305,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "ga.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 4
+        },
+        "collapsed": false
+      },
+      "active": "p1"
+    },
+    {
+      "seq": 24,
+      "t": 17311,
+      "type": "keyup",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "ArrowLeft",
+      "code": "ArrowLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": true,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "ga.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 4
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 25,
+      "t": 17311,
+      "type": "keyup",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Shift",
+      "code": "ShiftLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "ga.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 4
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 26,
+      "t": 17333,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Shift",
+      "code": "ShiftLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "ga.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 4
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 27,
+      "t": 17342,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "ArrowLeft",
+      "code": "ArrowLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": true,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "ga.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 4
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 28,
+      "t": 17343,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "ega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 3
+        },
+        "collapsed": false
+      },
+      "active": "p1"
+    },
+    {
+      "seq": 29,
+      "t": 17345,
+      "type": "keyup",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "ArrowLeft",
+      "code": "ArrowLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": true,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "ega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 3
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 30,
+      "t": 17345,
+      "type": "keyup",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Shift",
+      "code": "ShiftLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "ega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 3
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 31,
+      "t": 17384,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Shift",
+      "code": "ShiftLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "ega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 3
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 32,
+      "t": 17389,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "ArrowLeft",
+      "code": "ArrowLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": true,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "ega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 3
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 33,
+      "t": 17390,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "mega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": false
+      },
+      "active": "p1"
+    },
+    {
+      "seq": 34,
+      "t": 17391,
+      "type": "keyup",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "ArrowLeft",
+      "code": "ArrowLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": true,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "mega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 35,
+      "t": 17391,
+      "type": "keyup",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Shift",
+      "code": "ShiftLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "mega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 36,
+      "t": 17419,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Shift",
+      "code": "ShiftLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "mega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 37,
+      "t": 17431,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "ArrowLeft",
+      "code": "ArrowLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": true,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "mega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 38,
+      "t": 17433,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "omega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "collapsed": false
+      },
+      "active": "p1"
+    },
+    {
+      "seq": 39,
+      "t": 17433,
+      "type": "keyup",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "ArrowLeft",
+      "code": "ArrowLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": true,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "omega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 40,
+      "t": 17433,
+      "type": "keyup",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Shift",
+      "code": "ShiftLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "omega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 41,
+      "t": 17804,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Alt",
+      "code": "AltLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "omega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 42,
+      "t": 17826,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Dead",
+      "code": "KeyE",
+      "altKey": true,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "omega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 43,
+      "t": 17826,
+      "type": "compositionstart",
+      "trusted": true,
+      "defaultPrevented": false,
+      "data": "omega.",
+      "cancelable": false,
+      "target": "p1",
+      "selection": {
+        "text": "omega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 44,
+      "t": 17826,
+      "type": "compositionupdate",
+      "trusted": true,
+      "defaultPrevented": false,
+      "data": "´",
+      "cancelable": false,
+      "target": "p1",
+      "selection": {
+        "text": "omega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 45,
+      "t": 17826,
+      "type": "beforeinput",
+      "trusted": true,
+      "defaultPrevented": false,
+      "inputType": "insertCompositionText",
+      "data": "´",
+      "isComposing": true,
+      "cancelable": false,
+      "target": "p1",
+      "selection": {
+        "text": "omega.",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 7
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "collapsed": false
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 46,
+      "t": 17826,
+      "type": "input",
+      "trusted": true,
+      "defaultPrevented": false,
+      "inputType": "insertCompositionText",
+      "data": "´",
+      "isComposing": true,
+      "cancelable": false,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold ´\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 47,
+      "t": 17827,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": true
+      },
+      "active": "p1"
+    },
+    {
+      "seq": 48,
+      "t": 17829,
+      "type": "keyup",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "´",
+      "code": "KeyE",
+      "altKey": true,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": true,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold ´\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 49,
+      "t": 17829,
+      "type": "keyup",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Alt",
+      "code": "AltLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": true,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold ´\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 50,
+      "t": 18165,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "é",
+      "code": "KeyE",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": true,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold ´\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 51,
+      "t": 18165,
+      "type": "compositionupdate",
+      "trusted": true,
+      "defaultPrevented": false,
+      "data": "é",
+      "cancelable": false,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold ´\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 52,
+      "t": 18165,
+      "type": "beforeinput",
+      "trusted": true,
+      "defaultPrevented": false,
+      "inputType": "insertCompositionText",
+      "data": "é",
+      "isComposing": true,
+      "cancelable": false,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold ´\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 53,
+      "t": 18165,
+      "type": "input",
+      "trusted": true,
+      "defaultPrevented": false,
+      "inputType": "insertCompositionText",
+      "data": "é",
+      "isComposing": true,
+      "cancelable": false,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold é\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 54,
+      "t": 18165,
+      "type": "compositionend",
+      "trusted": true,
+      "defaultPrevented": false,
+      "data": "é",
+      "cancelable": false,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold é\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 55,
+      "t": 18165,
+      "type": "input",
+      "trusted": true,
+      "defaultPrevented": false,
+      "inputType": "insertCompositionText",
+      "data": "é",
+      "isComposing": false,
+      "cancelable": false,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold é\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 56,
+      "t": 18165,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": true
+      },
+      "active": "p1"
+    },
+    {
+      "seq": 57,
+      "t": 18166,
+      "type": "keyup",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "e",
+      "code": "KeyE",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold é\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 58,
+      "t": 18528,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Meta",
+      "code": "MetaLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold é\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 59,
+      "t": 18532,
+      "type": "keydown",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "z",
+      "code": "KeyZ",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": true,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold é\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 60,
+      "t": 18532,
+      "type": "beforeinput",
+      "trusted": true,
+      "defaultPrevented": false,
+      "inputType": "historyUndo",
+      "data": null,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 2
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold é\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 61,
+      "t": 18532,
+      "type": "input",
+      "trusted": true,
+      "defaultPrevented": false,
+      "inputType": "historyUndo",
+      "data": null,
+      "isComposing": false,
+      "cancelable": false,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 62,
+      "t": 18533,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "collapsed": true
+      },
+      "active": "p1"
+    },
+    {
+      "seq": 63,
+      "t": 18539,
+      "type": "keyup",
+      "trusted": true,
+      "defaultPrevented": false,
+      "key": "Meta",
+      "code": "MetaLeft",
+      "altKey": false,
+      "ctrlKey": false,
+      "metaKey": false,
+      "shiftKey": false,
+      "isComposing": false,
+      "cancelable": true,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 64,
+      "t": 19181,
+      "type": "focusout",
+      "trusted": true,
+      "defaultPrevented": false,
+      "cancelable": false,
+      "target": "p1",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            2
+          ],
+          "offset": 1
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    }
+  ]
+}

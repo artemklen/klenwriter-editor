@@ -1,5 +1,7 @@
 const mode = new URLSearchParams(location.search).get('mode') === 'islands' ? 'islands' : 'single';
+const nativeMode = new URLSearchParams(location.search).get('native') === '1';
 const editor = document.querySelector('#editor');
+const viewport = document.querySelector('.viewport');
 const events = [];
 let composing = false;
 let paintQueued = false;
@@ -22,7 +24,17 @@ function selection() {
   return { text: s?.toString() ?? '', anchor: point(s?.anchorNode, s?.anchorOffset), focus: point(s?.focusNode, s?.focusOffset), collapsed: s?.isCollapsed ?? true };
 }
 function snapshot() {
+  const s = getSelection();
+  const rect = viewport.getBoundingClientRect();
+  let focusRect = null;
+  if (s?.focusNode && editor.contains(s.focusNode)) {
+    const range = document.createRange();
+    range.setStart(s.focusNode, s.focusOffset); range.collapse(true);
+    const r = range.getBoundingClientRect();
+    focusRect = { x: r.x, y: r.y, width: r.width, height: r.height };
+  }
   return { mode, sourceFingerprint, startedAt, capturedAt: new Date().toISOString(), userAgent: navigator.userAgent,
+    nativeMode, viewport: { scrollTop: viewport.scrollTop, scrollHeight: viewport.scrollHeight, clientHeight: viewport.clientHeight, rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height } }, focusRect,
     label: document.querySelector('#run-label').value, wasm, composing, selection: selection(),
     text: editor.innerText, html: editor.innerHTML, active: document.activeElement?.id,
     events: [...events] };
@@ -72,7 +84,7 @@ for (const type of ['keydown','keyup','beforeinput','input','compositionstart','
   editor.addEventListener(type, e => {
     if (type === 'compositionstart') composing = true;
     if (type === 'compositionend') composing = false;
-    events.push({ seq: ++eventSeq, t: performance.now(), type, trusted: e.isTrusted, defaultPrevented: e.defaultPrevented, key: e.key, inputType: e.inputType, data: e.data, isComposing: e.isComposing, cancelable: e.cancelable,
+    events.push({ seq: ++eventSeq, t: performance.now(), type, trusted: e.isTrusted, defaultPrevented: e.defaultPrevented, key: e.key, code: e.code, altKey: e.altKey, ctrlKey: e.ctrlKey, metaKey: e.metaKey, shiftKey: e.shiftKey, inputType: e.inputType, data: e.data, isComposing: e.isComposing, cancelable: e.cancelable,
       target: e.target.id, selection: selection(), text: editor.innerText });
     if (events.length > 3000) events.shift();
     display();
@@ -85,6 +97,19 @@ document.addEventListener('selectionchange', e => {
   }
   display();
 });
+viewport.addEventListener('scroll', e => {
+  events.push({ seq: ++eventSeq, t: performance.now(), type: 'scroll', trusted: e.isTrusted, scrollTop: viewport.scrollTop, selection: selection() });
+  if (events.length > 3000) events.shift();
+  display();
+});
+// Keep copied document text out of native Find. Recording and downloads continue.
+if (nativeMode) {
+  document.querySelector('#diagnostics').hidden = true;
+  document.querySelector('#native-controls').hidden = false;
+  for (const id of ['single-link', 'islands-link']) {
+    document.querySelector(`#${id}`).href += '&native=1';
+  }
+}
 document.querySelector('#reset').addEventListener('click', reset);
 document.querySelector('#export').addEventListener('click', () => {
   const url = URL.createObjectURL(new Blob([JSON.stringify(snapshot(), null, 2)], { type: 'application/json' }));

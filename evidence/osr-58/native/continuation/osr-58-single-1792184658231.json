@@ -1,0 +1,167 @@
+{
+  "mode": "single",
+  "sourceFingerprint": "e79fbe53e91e8d30b5ffc7421dc13771eb2a2428dbe4cc17df2977da32454eb1",
+  "startedAt": "2026-10-16T21:04:12.723Z",
+  "capturedAt": "2026-10-16T21:04:18.231Z",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:158.0) Gecko/20100101 Firefox/158.0",
+  "nativeMode": true,
+  "viewport": {
+    "scrollTop": 18.33333396911621,
+    "scrollHeight": 390,
+    "clientHeight": 180,
+    "rect": {
+      "x": 200,
+      "y": 392.66668701171875,
+      "width": 880,
+      "height": 182
+    }
+  },
+  "focusRect": {
+    "x": 221,
+    "y": 401.83331298828125,
+    "width": 0,
+    "height": 23
+  },
+  "label": "",
+  "wasm": "allowed",
+  "composing": false,
+  "selection": {
+    "text": "",
+    "anchor": {
+      "block": "p1",
+      "node": "#text",
+      "path": [
+        0
+      ],
+      "offset": 0
+    },
+    "focus": {
+      "block": "p1",
+      "node": "#text",
+      "path": [
+        0
+      ],
+      "offset": 0
+    },
+    "collapsed": true
+  },
+  "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語.",
+  "html": "<p id=\"p1\" data-block=\"p1\">Alpha <strong>bold</strong> omega.</p><p id=\"p2\" data-block=\"p2\">Bravo café 👩🏽‍💻 é.</p><div class=\"atom\" data-block=\"card\" contenteditable=\"false\" role=\"group\" aria-label=\"Read-only reference card\">Reference card · atomic, not editable</div><blockquote><p id=\"p3\" data-block=\"p3\">Charlie nested paragraph. Русский текст. 日本語.</p></blockquote>",
+  "active": "export",
+  "events": [
+    {
+      "seq": 1,
+      "t": 1765,
+      "type": "focusin",
+      "trusted": true,
+      "defaultPrevented": false,
+      "cancelable": false,
+      "target": "editor",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    },
+    {
+      "seq": 2,
+      "t": 1766,
+      "type": "selectionchange",
+      "trusted": true,
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "active": "editor"
+    },
+    {
+      "seq": 3,
+      "t": 1769,
+      "type": "scroll",
+      "trusted": true,
+      "scrollTop": 18.33333396911621,
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "collapsed": true
+      }
+    },
+    {
+      "seq": 4,
+      "t": 5474,
+      "type": "focusout",
+      "trusted": true,
+      "defaultPrevented": false,
+      "cancelable": false,
+      "target": "editor",
+      "selection": {
+        "text": "",
+        "anchor": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "focus": {
+          "block": "p1",
+          "node": "#text",
+          "path": [
+            0
+          ],
+          "offset": 0
+        },
+        "collapsed": true
+      },
+      "text": "Alpha bold omega.\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語."
+    }
+  ]
+}

@@ -1,4 +1,6 @@
-# Native trace provenance
+# Initial native trace provenance
+
+**Historical first-run record.** The continuation supersedes the unknown Firefox/Chrome status below: see [native continuation](continuation/README.md) and [diagnosis](../../../docs/m0/firefox-launch-diagnosis.md). Original files and caveats are preserved, not relabelled.
 
 Captured 2026-10-16 with native macOS CUA key input. OS: macOS 27.0.1 build 26A434. Browser versions verified from app bundles: Safari 27.0.1, Chrome 155.0.8059.85 (UA intentionally reduces Chrome version). Existing sources: U.S., RussianWin. No CJK source added, no VoiceOver toggled.
 

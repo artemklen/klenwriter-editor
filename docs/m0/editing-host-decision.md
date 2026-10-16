@@ -1,10 +1,10 @@
 # ADR-001 — One editing host per document surface
 
-Decision owner: primary architecture agent. Date: 2026-10-16.
+Decision owner: primary architecture agent. Updated: 2026-10-17 (Europe/Moscow).
 
 **Choose a single `contenteditable` host for the v1 document surface.** Blocks remain separate model nodes and stable DOM nodes inside that host. Block menus, handles and toolbar controls do not require separate editing roots.
 
-**Status: architecture choice recorded; OSR-58 and M0 are still in progress.** The DOM comparison is implemented and measured. Native Firefox input and several native input transitions remain unverified. Real screen-reader acceptance is deferred beyond v1 by the owner's 2026-10-16 decision; no support claim is made. This is not approval of a production renderer, Rust input reconciliation or a release.
+**Status: comparison and architecture decision complete; implementation remains gated separately.** OSR-58 records both successful primitives and missing behavior, including mouse autoscroll. This is a DOM-only spike, not acceptance of a production renderer, Rust reconciliation or release. M0 still contains extension/Unicode contracts, performance protocol, CMS inventory and architecture acceptance. Review and matching CI are recorded in the PR/Linear closeout. Real screen-reader acceptance remains deferred beyond v1 by the owner; no support claim is made.
 
 ## What was compared
 
@@ -18,9 +18,9 @@ This spike isolates browser topology. The eventual authoritative state is still 
 
 Local platform: macOS 27.0.1 (26A434), arm64, Node 26.12.0. Playwright 1.64.1: Chromium 156.0.8078.4, Firefox 157.0, WebKit 27.2. Headless, one worker to avoid clipboard races. Lockfile and source hashes accompany the evidence.
 
-Final run: **78 harness cases completed with no harness/assertion failures**. Of the 42 explicitly evaluated document-level comparison observations: **24 MET, 18 GAP**. Another 36 are observations, fixture checks or instrumentation controls. A green harness case can deliberately record a missing behavior; it does not mean the editor requirement passed.
+Expanded run: **102 harness cases** (17 scenarios × 2 modes × 3 engines): **28 MET, 26 GAP, 48 OBSERVATION**, zero harness failures. Exact counts and any harness failures are in the [machine-readable result](../../evidence/osr-58/automated/observations.json). MET/GAP evaluates a particular baseline requirement; OBSERVATION covers probes without a product pass predicate. A successful harness can record a missing behavior. The original 78-case run is historical evidence, not the current matrix.
 
-All three engines produced the same comparison below:
+All three engines agree on the original document-topology comparison below:
 
 | Requirement | Single host | Per-block fields |
 | --- | --- | --- |
@@ -34,7 +34,7 @@ All three engines produced the same comparison below:
 
 Single-host nested-selection scroll offsets were 128px / 54px / 127px in Chromium / Firefox / WebKit. Different offsets are not an error: the required outcome is selection visibility and correct endpoints.
 
-Typing and native undo retained sample text and the bold mark in all six combinations. Unicode insertion preserved the fixture text, but `insertText` is **not OS IME**. Synthetic composition events only checked instrumentation; they did not insert characters through an input method.
+Typing retained the original text and bold mark. Native Undo grouping is not deterministic enough to define the product contract: the first expanded Chromium run removed only the last character of ` test` in one Undo, while three unchanged targeted repeats restored the whole insertion. The first failure is retained; the cause of the grouping difference remains unknown. The final probe records one-Undo restoration separately and checks that Undo removes only a suffix of the inserted text, preserving original text, marks and other blocks. Unicode insertion preserved the fixture text, but `insertText` is **not OS IME**. Synthetic composition events only checked instrumentation; they did not insert characters through an input method.
 
 Clipboard fidelity is a separate result: WebKit's native copy/paste changed the fixture's decomposed `e` + U+0301 into U+00E9 in both modes. The MET result above means document scope and cut/undo restoration, **not code-point-preserving clipboard serialization**. The production clipboard adapter needs an explicit format/normalization contract and regression vectors; native clipboard output cannot be treated as the canonical document representation.
 
@@ -46,21 +46,42 @@ Accessible structure: axe 4.14.0 reports no violations in the final fixture in a
 
 Tab topology differs: single enters one editor stop, islands three. WebKit's current macOS Tab policy skips buttons. A Tab-out/Shift-Tab-back probe reset the single-host caret in WebKit and the islands caret in all three engines; explicit `focus()` out/back retained it in this fixture. These are different operations. Production must maintain a model selection bookmark for toolbar/dialog return, not infer it from an incidental native focus result.
 
-## Native OS input observations
+## Expanded boundary and autoscroll observations
 
-| Browser | RU physical keys → `привет` | U.S. Option+E, E → `é` | Real AT |
+- Fresh clipboard marker pasted over an actual cross-block Range: single host MET in all three engines; islands GAP because selection cannot span the boundary. Exact replacement and subsequent Undo are checked independently of clipboard freshness.
+- Enter at the end of p1, then Backspace to rejoin: Chromium/WebKit temporarily duplicate `id=p1` when splitting the native paragraph. Firefox does not duplicate it in this fixture. All restore the initial HTML after joining. Native DOM IDs are therefore not authoritative model IDs: the adapter must allocate/validate identity when reconciling structural edits.
+- Mouse held outside the lower viewport until the complete caret is visible, or 20 polls at 100ms (actual held duration is recorded): Playwright WebKit single-host MET; Chromium single-host GAP because the caret is clipped at the top despite reaching p3; Firefox single-host GAP because selection stops on the atomic card instead of p3. Full visibility requires the complete caret rectangle inside the client viewport, excluding borders/scrollbars, with zero tolerance. The earlier intersection-only oracle stopped too early and incorrectly classified Chromium MET; intersection and full visibility are now recorded separately. All islands fail document-level selection. The trace records before/held/after geometry; scroll alone cannot count as success.
+- Installed-browser CUA drag is a different, shorter gesture, without a controllable two-second hold. Chrome/Safari reach p3 but leave the endpoint below the viewport; Firefox stops at the card. Islands stay within p1 (Firefox's brief gesture ends collapsed). These are native limitations/observations, not a passing pointer-held test. Do not equate the WebKit result with installed Safari.
+
+**Consequence:** OSR-40 owns explicit edge autoscroll and endpoint visibility, in both directions, across atoms/nesting, with pointer cancellation and focus return. OSR-39 owns bounded structural reconciliation and unique model/DOM identity. These are required for production acceptance; the spike does not implement them.
+
+## Native OS input and Find observations
+
+Environment: macOS 27.0.1 (26A434), existing U.S. and RussianWin sources. Installed Chrome 155.0.8059.85, Safari 27.0.1, official Mozilla-signed Firefox 158.0. [Version/signature/source diagnosis](firefox-launch-diagnosis.md) explains the earlier Firefox startup failure and Chrome trust bit. No Japanese input source or VoiceOver was enabled; U.S. was restored.
+
+| Probe, both topologies | Chrome | Safari | Firefox |
 | --- | --- | --- | --- |
-| Installed Chrome 155.0.8059.85 | Observed in both modes | Native provisional/committed text observed; end-event trust caveat below | NOT_RUN |
-| Installed Safari 27.0.1 | Observed in both modes | Real composition observed in both modes | NOT_RUN |
-| Firefox 157.0, Playwright build, native UI attempt | NOT_RUN: profile creation failed | NOT_RUN | NOT_RUN |
+| Physical RussianWin → `привет`, U.S. input | Observed (initial native lane) | Observed (initial native lane) | Observed in new lane |
+| Option+E, E; Escape then x; blur then refocus/reposition + e | Three clean sessions | Three clean sessions | Three clean sessions |
+| Select `omega.`, compose é, Undo | Replacement once; original text restored | Replacement once; original text restored | Replacement once; original text restored |
+| Native Find `Charlie`, navigate to nested p3 | One match, visible endpoint | One match, visible endpoint | One match, visible endpoint |
+| Real screen reader | Deferred beyond v1 | Deferred beyond v1 | Deferred beyond v1 |
 
-Firefox native startup returned `NS_ERROR_FILE_ACCESS_DENIED` while creating a profile; subsequent native accessibility calls timed out. The process started for this test was terminated. The automated Firefox results remain valid, but do not fill this native lane. No Japanese IME was installed; no VoiceOver setting was changed. The user's revised v1 input target is RU & EN. CJK can be added later with its own proof, rather than being implicitly supported today.
+The 18 designated composition sessions each finish with `Alpha bold omega.é ´x ´e`: committed é, spacing accent after Escape, spacing accent after blur, then a separate e. This is a sequence of observed native DOM edits, **not a Rust exactly-once commit test**. Refocus includes explicit caret repositioning; it does not prove automatic caret recovery. The six replacement probes cover an intra-paragraph selection; production composition across a paragraph/atom boundary remains an OSR-41 acceptance vector.
 
-In both Chrome traces, `compositionstart`, `compositionupdate` and input events were trusted, but `compositionend` was **untrusted**. Root re-read confirmed this after independent review. Its cause has not been isolated; neither the recorder nor this observation proves a fully native event lifecycle. Retain the text-insertion observation, but repeat this lane in a clean native environment before accepting composition-end ordering or exactly-once reconciliation. Do not silently discard the anomalous event or attribute it to Chrome itself without a differentiating test.
+Chrome repeats used a separate Incognito window. `compositionend.trusted` remains false while start/update/input are trusted. Inspection of the exact Chromium version shows a scoped dispatch path that does not set the trust bit; see the linked diagnosis and raw values. This corroborates the result and avoids mistaking `false` for proof of synthetic input. It is not runtime debugging of the installed binary. Production must not drop a valid composition end solely on that bit.
 
-Safari dead-key Escape/blur exploration produced spacing accents and, in one trace, a still-open composition flag after blur. Escape was not a universal text-removing cancel. This is one exploratory trace, not a fully repeated transition suite. It identifies a required follow-up; it does not prove a production exactly-once algorithm.
+Safari can report an empty `compositionend.data` after blur even though the spacing accent remains in the DOM. Thus neither end-event data, Escape nor blur alone decides whether text was cancelled. The adapter snapshots original/provisional text and model range, reads the bounded final DOM delta, and reconciles it once using a session/revision token. Trailing input must not create a second transaction; a genuinely cancelled unchanged range creates none. Conflict/destroy policies preserve recoverable text and refuse destructive remounts.
 
-One islands run was contaminated by residual native composition after navigation, and a rapid language-switch batch initially delivered its first key in the old layout. These are retained as test setup failures. Clean RU runs followed explicit confirmation of the selected input source. The contaminated run must not be used to rank the editing topologies.
+Exploratory Safari fast batches missed characters or duplicated an accent. They are retained, not counted as clean comparative runs; their individual cause is unproven. Three fresh checkpointed islands repeats agreed. A later inactive Safari-window attempt could edit some text but did not perform application shortcuts reliably; ordinary activation via Finder restored Find and composition. The rejected attempt is not evidence of a browser input defect. Each accepted native run has a fresh fixture and trace provenance. Clicking Download itself blurs the editor before the final snapshot; intermediate phases require the checkpoints/events captured before export. The native `endpointVisible` flag means vertical intersection, not full-caret visibility; inspect raw geometry and screenshots.
+
+Find uses `native=1`: diagnostic copies of document text are hidden, preventing false extra matches. After opening Find with a reused query, activate the match (Return) before taking the screenshot/export. An earlier Safari single export without that step has no selected match and remains exploratory.
+
+## Browser support decision
+
+**v1 required: desktop Chrome and Safari, RU/EN input. Firefox: experimental compatibility, outside the v1 support promise.** This supersedes the initial three-browser promise with the owner's authorization to prioritize Chrome/Safari. Firefox remains in the same three-engine measurement harness; honest GAP observations remain visible and must not be converted to success. A broken collector is still a CI failure, while experimental product gaps do not by themselves block v1 release.
+
+The launch problem alone was not a reason to exclude Firefox: the official signed app works, and RU/EN/Find/composition were exercised. The complete matrix then exposed an additional Gecko selection/atomic-boundary path, beyond the shared need for explicit edge autoscroll. Deferring its support reduces the mandatory first-release validation/remediation scope. It does not remove Chrome/Safari autoscroll work or claim Firefox is unusable. Promote Firefox only after an installed-browser acceptance run of the production adapter, including atoms, both drag directions, viewport-edge hold, correct visible endpoint, Find, RU/EN composition, clipboard/history and focus; no browser-name hacks belong in the Rust core.
 
 ## Why choose this approach
 
@@ -76,7 +97,7 @@ The attraction of islands is local browser mutation scope: one editable paragrap
 4. During native composition, the active range remains browser-owned. Do not remount, normalize or reformat it. Reconcile committed text exactly once. **Blur/Escape are observations, not proof of cancellation.** An unresolved transition preserves available original/provisional text and rejects destructive remounts.
 5. Toolbar/dialog return uses explicit selection bookmarks and epochs. Keyboard access, visible focus, semantic labels and machine-checkable accessibility remain required in v1. Real VoiceOver/screen-reader acceptance is deferred beyond v1 by the owner; future support needs an explicit interaction contract and actual assistive-technology testing, not only axe/AX.
 6. No virtualization that unmounts offscreen text until native selection, browser Find, composition, scroll, keyboard/focus, semantics and axe are measured with it. The full-DOM baseline remains. Screen-reader behavior remains unverified and needs future real AT acceptance before support can be claimed; it does not block v1.
-7. v1 support target is desktop Chromium, Firefox and Safari with RU/EN input. No mobile, collaboration, CJK guarantee or arbitrary nested third-party editing roots. The document still stores valid Unicode; this boundary is a tested input promise, not a text encoding restriction.
+7. v1 support target is desktop Chrome and Safari with RU/EN input; Firefox is experimental until its separate acceptance gate. No mobile, collaboration, CJK guarantee or arbitrary nested third-party editing roots. The document still stores valid Unicode; this boundary is a tested input promise, not a text encoding restriction.
 
 ## Evolution and libraries
 
@@ -86,20 +107,24 @@ Runtime dependencies in this spike: **none**. Browser APIs expose the behavior w
 
 Development dependencies: **Playwright** supplies repeatable three-engine input, traces and screenshots; without it this matrix is manual and more difficult to reproduce. **axe-core via @axe-core/playwright** catches machine-detectable accessibility defects; without it these checks need separate tooling/manual review. Neither replaces OS input or assistive technology. Production Rust dependency choices remain in the main architecture document and are not validated by this spike.
 
-## Remaining M0 gates
+## Follow-through and remaining gates
 
-- Native Firefox RU/EN/dead-key lane on a usable profile.
-- Clean, repeated dead-key Escape/blur/refocus and selection-replacement transitions in both modes across the three native browsers.
-- Real screen-reader smoke is **DEFERRED beyond v1 by owner decision**, not a remaining M0 gate and not a passed check. AX/axe evidence remains in scope; it does not establish screen-reader support.
-- Native browser Find; mouse autoscroll across atom/nested content. The measured autoscroll above is keyboard selection.
-- Paste replacing a cross-block selection, Enter/Backspace structural boundaries, and subsequent model reconciliation: not implemented/measured here.
-- Independent review and matching CI at the candidate SHA. Production renderer acceptance stays behind OSR-58; this ADR does not close that gate.
+OSR-58 answers the topology question with versioned evidence, including failures. It does not require implementing a production editor to finish a feasibility comparison.
+
+- OSR-39: bounded DOM reconciliation, stable identity and split/join validation, no whole-root remount.
+- OSR-40: model selection mapping/bookmarks, explicit edge scroll, visible endpoint, atomic/nested boundaries.
+- OSR-41: exactly-once model commits, native event ordering/deduplication, Escape/blur/replacement including cross-block vectors.
+- OSR-47: clipboard format and normalization contract; arbitrary DOM is not canonical data.
+- OSR-45/OSR-71: Chrome/Safari release acceptance; three-engine observation harness; [Firefox promotion OSR-73](https://linear.app/klenwriter/issue/OSR-73) separately.
+- OSR-56/OSR-26 and the other M0 contract/performance/inventory/license tasks remain open. Real screen readers are deferred beyond v1, not a hidden remaining M0 gate.
 
 ## Evidence
 
 - [Automated observations with source hashes](../../evidence/osr-58/automated/observations.json)
 - [Served source fingerprint and CSP](../../evidence/osr-58/source-manifest.json)
-- [Native traces and their provenance](../../evidence/osr-58/native/README.md)
+- [Native continuation: operator matrix, 45 raw exports and Find screenshots](../../evidence/osr-58/native/continuation/README.md)
+- [Initial native traces and provenance](../../evidence/osr-58/native/README.md)
+- [First expanded Undo failure](../../evidence/osr-58/automated/initial-failure/README.md)
 - [Initial failing harness run](../../evidence/osr-58/baseline/initial-run-summary.json)
 - [Native protocol](native-protocol.md)
 

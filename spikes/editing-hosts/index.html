@@ -27,7 +27,8 @@
     </div>
     <div class="viewport"><div id="editor" aria-describedby="instructions"></div></div>
     <button id="after" type="button">After editor</button>
-    <section aria-labelledby="diagnostics-heading">
+    <div id="native-controls" hidden><label for="focus-sink">Focus target for native blur tests</label><input id="focus-sink" autocomplete="off"></div>
+    <section id="diagnostics" aria-labelledby="diagnostics-heading">
       <h2 id="diagnostics-heading">Diagnostics</h2>
       <p>Local, in-memory recording only. Reset or reload clears the trace. Download contains sample text; do not enter private content.</p>
       <label for="run-label">Manual run label (browser / input source / scenario)</label>

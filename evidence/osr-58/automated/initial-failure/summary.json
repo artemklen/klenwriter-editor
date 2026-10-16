@@ -1,0 +1,81 @@
+{
+  "provenance": "Extracted from first expanded 102-case report; failed observation is preserved, not replaced by later reruns.",
+  "run": {
+    "startTime": "2026-10-16T21:09:12.853Z",
+    "durationMs": 57400.923,
+    "harnessExpected": 101,
+    "unexpected": 1,
+    "os": {
+      "platform": "darwin",
+      "release": "27.0.0",
+      "arch": "arm64"
+    },
+    "sourceHashes": {
+      "spikes/editing-hosts/index.html": "28c85c89175c38a86eb01ba0617e83dfabc51343903eb9c197ef1fe6d9410fd4",
+      "spikes/editing-hosts/app.js": "20db3ac034dbf67f9cab96a087f275ad908d2a1ebf4e1b72eb37e62d3ef5d91c",
+      "spikes/editing-hosts/style.css": "1e46bb29d0e2242f9ed952287ccfe27b9b17d47b02c4e13d31752aee068ac85c",
+      "spikes/editing-hosts/server.mjs": "0de843f52a1a2dc301ac43ebff1c6bedcf55ec7dc93cbd53c84f00a62d35c999",
+      "tests/editing-hosts.spec.js": "afe49c1cb10a33fa061d8ffede6ca67978b870554e1e28b3fb95cb41dad3c71f",
+      "playwright.config.js": "a06dd3aa57166eb36069c946193fe8257a695ea5b5bd585392f932918c5f3fca",
+      "package-lock.json": "282e84e86a2fc27620cb182e33531df2744d3d9f39d7328b236d0d681fbc977f"
+    }
+  },
+  "stats": {
+    "startTime": "2026-10-16T21:09:12.853Z",
+    "duration": 57400.923,
+    "expected": 101,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "failures": [
+    {
+      "titlePath": [
+        "editing-hosts.spec.js",
+        "single",
+        "typing and browser undo"
+      ],
+      "project": "chromium",
+      "status": "failed",
+      "durationMs": 5296,
+      "startTime": "2026-10-16T21:09:14.126Z",
+      "retry": 0,
+      "errors": [
+        {
+          "location": {
+            "file": "/Users/klen/projects/klenwriter-editor/tests/editing-hosts.spec.js",
+            "column": 45,
+            "line": 70
+          },
+          "message": "Error: expect(locator).toHaveText(expected) failed\n\nLocator: locator('#editor')\nTimeout: 5000ms\n- Expected  - 1\n+ Received  + 1\n\n@@ -1,6 +1,6 @@\n- Alpha bold omega.\n+ Alpha bold omega. tes\n\n  Bravo café 👩🏽‍💻 é.\n\n  Reference card · atomic, not editable\n  ↵\n\nCall log:\n  - Expect \"toHaveText\" locator('#editor') with timeout 5000ms\n  - waiting for locator('#editor')\n    14 × locator resolved to <div id=\"editor\" tabindex=\"0\" role=\"textbox\" aria-multiline=\"true\" contenteditable=\"true\" aria-label=\"Sample document\" aria-describedby=\"instructions\">…</div>\n       - unexpected value \"Alpha bold omega. tes\n\nBravo café 👩🏽‍💻 é.\n\nReference card · atomic, not editable\n\nCharlie nested paragraph. Русский текст. 日本語.\"\n\n\n  68 |       await expect(page.locator('#p1')).toHaveText('Alpha bold omega. test');\n  69 |       await page.keyboard.press('ControlOrMeta+z');\n> 70 |       await expect(page.locator('#editor')).toHaveText(before, { useInnerText: true });\n     |                                             ^\n  71 |       await expect(page.locator('#p1 strong')).toHaveText('bold');\n  72 |       await record(page, info, 'typing-undo', { restoredTextAndMark: true });\n  73 |     });\n    at /Users/klen/projects/klenwriter-editor/tests/editing-hosts.spec.js:70:45"
+        }
+      ],
+      "errorLocation": {
+        "file": "/Users/klen/projects/klenwriter-editor/tests/editing-hosts.spec.js",
+        "column": 45,
+        "line": 70
+      },
+      "preservedAttachments": [
+        "trace.zip",
+        "error-context.md",
+        "test-failed-1.png"
+      ]
+    }
+  ],
+  "followUp": {
+    "artifact": "typing-undo-repeat.log",
+    "observed": "Three isolated repeats of the same Chromium single-host typing/undo test passed.",
+    "limit": "Passing repeats do not explain the initial failure or prove native undo grouping deterministic."
+  },
+  "omittedDuplicateReports": {
+    "results.json": {
+      "sha256": "ea459207417a4741ca7f32a9f32477456b614482388f7819cbaa6cf20baca562",
+      "bytes": 3981941
+    },
+    "observations.json": {
+      "sha256": "54a6d66a1864dc96cf1e009c6725301473d09adc1dc0b13d9e305435385ef4a0",
+      "bytes": 3198387
+    }
+  },
+  "omittedVideo": "The failure trace already contains screencast frames; separate video.webm is not duplicated."
+}
