@@ -1,0 +1,1122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:klenwriter:kwdj:v1",
+  "title": "KlenWriter Document JSON v1",
+  "description": "Closed structural schema for a normalized KWDJ v1 document. Rules that require tree context, identity resolution, URL parsing, resource limits, or table geometry are defined in README.md and enforced by the future semantic validator.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schema_version",
+    "profile",
+    "content"
+  ],
+  "properties": {
+    "schema": {
+      "const": "klenwriter.document"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "profile": {
+      "enum": [
+        "prose",
+        "poetry"
+      ]
+    },
+    "content": {
+      "type": "array",
+      "minItems": 1
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "profile": {
+            "const": "prose"
+          }
+        },
+        "required": [
+          "profile"
+        ]
+      },
+      "then": {
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/proseBlock"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile": {
+            "const": "poetry"
+          }
+        },
+        "required": [
+          "profile"
+        ]
+      },
+      "then": {
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/poetryRootBlock"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "safeHref": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?:https?://|/(?:$|[^/]))"
+    },
+    "inlineContent": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/text"
+          },
+          {
+            "$ref": "#/$defs/hardBreak"
+          }
+        ]
+      }
+    },
+    "text": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "text"
+      ],
+      "properties": {
+        "type": {
+          "const": "text"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "marks": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/mark"
+          }
+        }
+      }
+    },
+    "mark": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/strongMark"
+        },
+        {
+          "$ref": "#/$defs/emphasisMark"
+        },
+        {
+          "$ref": "#/$defs/strikeMark"
+        },
+        {
+          "$ref": "#/$defs/codeMark"
+        },
+        {
+          "$ref": "#/$defs/subscriptMark"
+        },
+        {
+          "$ref": "#/$defs/superscriptMark"
+        },
+        {
+          "$ref": "#/$defs/textColorMark"
+        },
+        {
+          "$ref": "#/$defs/highlightMark"
+        },
+        {
+          "$ref": "#/$defs/linkMark"
+        },
+        {
+          "$ref": "#/$defs/referenceLinkMark"
+        }
+      ]
+    },
+    "strongMark": {
+      "$ref": "#/$defs/markStrong"
+    },
+    "emphasisMark": {
+      "$ref": "#/$defs/markEmphasis"
+    },
+    "strikeMark": {
+      "$ref": "#/$defs/markStrike"
+    },
+    "codeMark": {
+      "$ref": "#/$defs/markCode"
+    },
+    "subscriptMark": {
+      "$ref": "#/$defs/markSubscript"
+    },
+    "superscriptMark": {
+      "$ref": "#/$defs/markSuperscript"
+    },
+    "markStrong": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "strong"
+        }
+      }
+    },
+    "markEmphasis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "emphasis"
+        }
+      }
+    },
+    "markStrike": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "strike"
+        }
+      }
+    },
+    "markCode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "code"
+        }
+      }
+    },
+    "markSubscript": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "subscript"
+        }
+      }
+    },
+    "markSuperscript": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "superscript"
+        }
+      }
+    },
+    "textColorMark": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "attrs"
+      ],
+      "properties": {
+        "type": {
+          "const": "text_color"
+        },
+        "attrs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "token"
+          ],
+          "properties": {
+            "token": {
+              "enum": [
+                "muted",
+                "accent",
+                "manuscript",
+                "warning",
+                "success",
+                "danger"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "highlightMark": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "attrs"
+      ],
+      "properties": {
+        "type": {
+          "const": "highlight"
+        },
+        "attrs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "token"
+          ],
+          "properties": {
+            "token": {
+              "enum": [
+                "accent",
+                "manuscript",
+                "warning"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "linkMark": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "attrs"
+      ],
+      "properties": {
+        "type": {
+          "const": "link"
+        },
+        "attrs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "href"
+          ],
+          "properties": {
+            "href": {
+              "$ref": "#/$defs/safeHref"
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "referenceLinkMark": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "attrs"
+      ],
+      "properties": {
+        "type": {
+          "const": "reference_link"
+        },
+        "attrs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "reference_entity_id"
+          ],
+          "properties": {
+            "reference_entity_id": {
+              "$ref": "#/$defs/uuid"
+            }
+          }
+        }
+      }
+    },
+    "paragraphAttrs": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "align": {
+          "enum": [
+            "left",
+            "center",
+            "right",
+            "justify"
+          ]
+        },
+        "first_line_indent": {
+          "const": true
+        }
+      }
+    },
+    "paragraph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "paragraph"
+        },
+        "attrs": {
+          "$ref": "#/$defs/paragraphAttrs"
+        },
+        "content": {
+          "$ref": "#/$defs/inlineContent"
+        }
+      }
+    },
+    "heading": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "attrs",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "heading"
+        },
+        "attrs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "level"
+          ],
+          "properties": {
+            "level": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 6
+            },
+            "align": {
+              "enum": [
+                "left",
+                "center",
+                "right",
+                "justify"
+              ]
+            },
+            "first_line_indent": {
+              "const": true
+            }
+          }
+        },
+        "content": {
+          "$ref": "#/$defs/inlineContent"
+        }
+      }
+    },
+    "hardBreak": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "hard_break"
+        }
+      }
+    },
+    "sceneBreak": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "scene_break"
+        }
+      }
+    },
+    "codeBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "code_block"
+        },
+        "attrs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "language"
+          ],
+          "properties": {
+            "language": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9_+.-]+$"
+            }
+          }
+        },
+        "content": {
+          "type": "array",
+          "maxItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "text"
+            ],
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "blockquote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "blockquote"
+        },
+        "content": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/proseBlock"
+          }
+        }
+      }
+    },
+    "listItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "list_item"
+        },
+        "content": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/proseBlock"
+          }
+        }
+      }
+    },
+    "taskItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "attrs",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "task_item"
+        },
+        "attrs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "checked"
+          ],
+          "properties": {
+            "checked": {
+              "type": "boolean"
+            }
+          }
+        },
+        "content": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/proseBlock"
+          }
+        }
+      }
+    },
+    "bulletList": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "bullet_list"
+        },
+        "content": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/listItem"
+          }
+        }
+      }
+    },
+    "orderedList": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "ordered_list"
+        },
+        "attrs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "start"
+          ],
+          "properties": {
+            "start": {
+              "type": "integer",
+              "minimum": 2
+            }
+          }
+        },
+        "content": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/listItem"
+          }
+        }
+      }
+    },
+    "taskList": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "task_list"
+        },
+        "content": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/taskItem"
+          }
+        }
+      }
+    },
+    "tableCellAttrs": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "colspan": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "rowspan": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "align": {
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        }
+      }
+    },
+    "tableHeader": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "table_header"
+        },
+        "attrs": {
+          "$ref": "#/$defs/tableCellAttrs"
+        },
+        "content": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/proseBlock"
+          }
+        }
+      }
+    },
+    "tableCell": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "table_cell"
+        },
+        "attrs": {
+          "$ref": "#/$defs/tableCellAttrs"
+        },
+        "content": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/proseBlock"
+          }
+        }
+      }
+    },
+    "tableRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "table_row"
+        },
+        "content": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/tableHeader"
+              },
+              {
+                "$ref": "#/$defs/tableCell"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "table": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "table"
+        },
+        "content": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/tableRow"
+          }
+        }
+      }
+    },
+    "mediaImage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "attrs"
+      ],
+      "properties": {
+        "type": {
+          "const": "media_image"
+        },
+        "attrs": {
+          "allOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "media_asset_id",
+                "align"
+              ],
+              "properties": {
+                "media_asset_id": {
+                  "$ref": "#/$defs/uuid"
+                },
+                "alt": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "decorative": {
+                  "const": true
+                },
+                "align": {
+                  "enum": [
+                    "none",
+                    "center",
+                    "wide"
+                  ]
+                }
+              }
+            },
+            {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "alt": {}
+                  },
+                  "required": [
+                    "alt"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "decorative": {}
+                  },
+                  "required": [
+                    "decorative"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "content": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/paragraph"
+          }
+        }
+      }
+    },
+    "literaryBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "attrs",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "literary_block"
+        },
+        "attrs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "author_note",
+                "letter",
+                "epigraph",
+                "world_note",
+                "chronicle_quote",
+                "archive_fragment"
+              ]
+            }
+          }
+        },
+        "content": {
+          "$ref": "#/$defs/containerContent"
+        }
+      }
+    },
+    "warning": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "attrs",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "warning"
+        },
+        "attrs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "general",
+                "content"
+              ]
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "content": {
+          "$ref": "#/$defs/containerContent"
+        }
+      }
+    },
+    "spoiler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "attrs",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "spoiler"
+        },
+        "attrs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "label"
+          ],
+          "properties": {
+            "label": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "content": {
+          "$ref": "#/$defs/containerContent"
+        }
+      }
+    },
+    "disclosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "attrs",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "disclosure"
+        },
+        "attrs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "label"
+          ],
+          "properties": {
+            "label": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "content": {
+          "$ref": "#/$defs/containerContent"
+        }
+      }
+    },
+    "verseLine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "verse_line"
+        },
+        "content": {
+          "$ref": "#/$defs/inlineContent"
+        }
+      }
+    },
+    "stanzaBreak": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "attrs"
+      ],
+      "properties": {
+        "type": {
+          "const": "stanza_break"
+        },
+        "attrs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "blank_lines"
+          ],
+          "properties": {
+            "blank_lines": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    },
+    "verse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "verse"
+        },
+        "content": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/verseLine"
+              },
+              {
+                "$ref": "#/$defs/stanzaBreak"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "containerContent": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/proseBlock"
+          },
+          {
+            "$ref": "#/$defs/verse"
+          }
+        ]
+      }
+    },
+    "proseBlock": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/paragraph"
+        },
+        {
+          "$ref": "#/$defs/heading"
+        },
+        {
+          "$ref": "#/$defs/blockquote"
+        },
+        {
+          "$ref": "#/$defs/bulletList"
+        },
+        {
+          "$ref": "#/$defs/orderedList"
+        },
+        {
+          "$ref": "#/$defs/taskList"
+        },
+        {
+          "$ref": "#/$defs/codeBlock"
+        },
+        {
+          "$ref": "#/$defs/sceneBreak"
+        },
+        {
+          "$ref": "#/$defs/table"
+        },
+        {
+          "$ref": "#/$defs/mediaImage"
+        },
+        {
+          "$ref": "#/$defs/literaryBlock"
+        },
+        {
+          "$ref": "#/$defs/warning"
+        },
+        {
+          "$ref": "#/$defs/spoiler"
+        },
+        {
+          "$ref": "#/$defs/disclosure"
+        }
+      ]
+    },
+    "poetryRootBlock": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/proseBlock"
+        },
+        {
+          "$ref": "#/$defs/verse"
+        }
+      ]
+    }
+  }
+}

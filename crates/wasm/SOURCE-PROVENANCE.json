@@ -7,8 +7,7 @@
   "excluded": [
     "kwdj/audit.rs: CMS audit/reading-time policy",
     "kwdj/render.rs: existing server renderer",
-    "private/user payloads",
-    "authoritative corpus: transfer is OSR-30 after provenance/parity"
+    "private/user payloads"
   ],
   "files": [
     {
@@ -84,5 +83,6 @@
       "path": "crates/kwdj/src/lib.rs",
       "change": "Strict native scan rejects extra fields on empty node/mark variants before Serde; valid JSON and public Rust model syntax unchanged"
     }
-  ]
+  ],
+  "corpusProvenance": "provenance/kwdj-corpus.json"
 }

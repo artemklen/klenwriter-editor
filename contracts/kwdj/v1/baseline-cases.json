@@ -1,0 +1,243 @@
+{
+  "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+  "packageVersion": "1.0.0",
+  "fixtureCount": 34,
+  "cases": [
+    {
+      "id": "DOC-001/empty_prose",
+      "sha256": "a49c5d0dc7f2678554fcc25202c58a1c415a43a60e72aef679bb8d871815d3e9"
+    },
+    {
+      "id": "DOC-002/unicode_whitespace_hard_break",
+      "sha256": "c142f50d3d6683f0a88ff08409399fdd7814da6d21c124ffd3bfa13741511307"
+    },
+    {
+      "id": "DOC-003/headings_and_layout",
+      "sha256": "bd5904289f78adc12bec8d737a485fa3e74b3e45ec6ebe0bfc45bab2b33ee925"
+    },
+    {
+      "id": "DOC-004/nested_compatible_marks",
+      "sha256": "063f523a60615a3d46a5d6ac011577b313b7353b6420bc33e406a4be79b62e3c"
+    },
+    {
+      "id": "DOC-004/pre_normalized_empty_marks_removed",
+      "sha256": "0baa9f09f49f088747e9bd8e34a6cb37bf4bdea34d573d6496339137162bbd23"
+    },
+    {
+      "id": "DOC-004/normalized_empty_marks_rejected",
+      "sha256": "e1ee64d212d33d8c5c1e64c7762f358c0287c9f62fcf66adccdb17bc364a7844"
+    },
+    {
+      "id": "DOC-006/reference_slug_changed",
+      "sha256": "db562eec65c98874a2cf17e4c849ee562bbbeb93d3fb319bf77806ee42a443c8"
+    },
+    {
+      "id": "DOC-007/multi_paragraph_blockquote",
+      "sha256": "ee3f19126517aa93fcf96a6da4750c441038281a9c40e0c505b1d9e8eb0e54b9"
+    },
+    {
+      "id": "DOC-008/lists_tasks_ordered_start",
+      "sha256": "e14a44401d38c5c9b46e5a4067f2b559403952cf8cf75727ae4dc5c2b42afc3b"
+    },
+    {
+      "id": "DOC-008/pre_normalized_ordered_start_default_removed",
+      "sha256": "c76225de243a224c906805f513f456cf8c0081807132eb9c9f54799b3b6c0d21"
+    },
+    {
+      "id": "DOC-008/normalized_ordered_start_one_rejected",
+      "sha256": "df248bfbae1f52f62e9c9c5a88feff9487beb145f591124bc808a3f9e4878daf"
+    },
+    {
+      "id": "DOC-009/literal_code",
+      "sha256": "3eb30b6d3d07c1c90f06137b32f083717202008ea0a4ee761cd580ae71046ea0"
+    },
+    {
+      "id": "DOC-010/rectangular_table",
+      "sha256": "73f65a573544ea3c1cf60a18fb5e09791bb5ec5a1a6e9db5d2ecd6e6bb88d39a"
+    },
+    {
+      "id": "DOC-011/table_spans_alignment",
+      "sha256": "36343059270b68f804f1184b5295b117bcc30de5d25ba3f8a84a547ee793024a"
+    },
+    {
+      "id": "DOC-011/pre_normalized_unit_spans_removed",
+      "sha256": "6e23ab32c2d82992aed6bc76d6c3dde70a69c61dd2ae341e2d5eb2d7e379d509"
+    },
+    {
+      "id": "DOC-011/normalized_unit_spans_rejected",
+      "sha256": "79e601f8eb9564648e1c350134ae3b87715e7020e9493d8133db099c9b0cc2d1"
+    },
+    {
+      "id": "DOC-013/resolved_media_image",
+      "sha256": "c131e1791902b9570ae06723e401c89578ed56acebae825831c3bfc91b3586cb"
+    },
+    {
+      "id": "DOC-015/all_literary_kinds",
+      "sha256": "92776004a5006ac2fee8cee8f70bc7e4d12e44218ebb23a6fa18334ba11a84d4"
+    },
+    {
+      "id": "DOC-016/warning_kinds",
+      "sha256": "102fe8a5e06b00f11192d886ef5f66a2dbd032cd5471a05f3f0ca00c284f20e0"
+    },
+    {
+      "id": "DOC-017/spoiler_and_disclosure",
+      "sha256": "696e361aaca751520616a9190ae5eb62250c1b1ccc6886de3b8e4bafd2a50664"
+    },
+    {
+      "id": "DOC-019/poetry_stanzas",
+      "sha256": "e683cbf552d2e40e73f910651682b75102c3ee3bfc5edceb9761ea27adf4cda5"
+    },
+    {
+      "id": "DOC-020/poetry_marks",
+      "sha256": "c3add198df737d99aa09c278dd5193facb687e64c0c353f1ceebf930c3887993"
+    },
+    {
+      "id": "DOC-025/projection_determinism",
+      "sha256": "aef482f9a681bc2aaa62d812064e257d9588ea737fdd3c95ecd7d5581acc96b8"
+    },
+    {
+      "id": "DOC-027/mixed_poetry_blocks",
+      "sha256": "7aee169971e714e7c89706058fd37d21680db959f1fc2abc78a63ffc70271128"
+    },
+    {
+      "id": "DOC-028/plain_prose_paragraphs",
+      "sha256": "db413e393733d8ae8c66bbbfab3c4b82274d47ccc764273bc3970a644b8dc35d"
+    },
+    {
+      "id": "DOC-029/plain_poetry_clipboard",
+      "sha256": "9576e8d14440b971b37cf953324563376f35d0246f2b7faf8fdada5c848c03ba"
+    },
+    {
+      "id": "DOC-030/supported_rich_clipboard",
+      "sha256": "35f66ec10025d0bc292df4d5fbed84c0c146e7a7b7dc6c688345f33d839f80a9"
+    },
+    {
+      "id": "DOC-014/missing_media_identity",
+      "sha256": "926bd03bd7efa30f470c3b825b0d8cd829f940361dde60581f989870818fb6b6"
+    },
+    {
+      "id": "DOC-018/future_schema_version",
+      "sha256": "f7e3e3b7954e7244df29b36ffd5dd9af5146ed362a8bd22dd70de19e62dec68b"
+    },
+    {
+      "id": "DOC-018/unknown_node",
+      "sha256": "f4d6a581d4c64d7199a86e236cddc18db91e8b5508d7f876a6ea9c0170c85865"
+    },
+    {
+      "id": "DOC-018/unknown_mark",
+      "sha256": "3d8c86d4e0d2b4ba711b18a7d43b698f78bfaf0500306cc754a4635fd4e9da07"
+    },
+    {
+      "id": "DOC-018/unknown_attribute",
+      "sha256": "810b64bf241456fef7d251642c9989ae46bb17ab3053217ae235a4077f8540a4"
+    },
+    {
+      "id": "DOC-021/spaced_directive_attributes",
+      "sha256": "e3c75dca2fae6377965447f942a4334fa19797c35d87c15644e25acef69bedf3"
+    },
+    {
+      "id": "DOC-023/wordpress_source_artifacts",
+      "sha256": "02e26cd80e8db828a0564c008456860103e23574ead8f01650c5fe90874e5c06"
+    },
+    {
+      "id": "DOC-031/unsupported_rich_semantics",
+      "sha256": "bb479e9fbbe58579476151d6daa5060d5e33789590b800cabf35efe5dd0c4105"
+    },
+    {
+      "id": "DOC-032/active_html_plain_fallback",
+      "sha256": "71cf0cad01bf36688d4a2017ab99684c60b7bfc93f0510ee96811993c142cd1f"
+    },
+    {
+      "id": "DOC-033/clipboard_media_items",
+      "sha256": "be23e74c37a160a9a537a9f3f988c97e72fbce26991924f562ae2dee2d3a2942"
+    },
+    {
+      "id": "DOC-034/editor_metadata_ignored",
+      "sha256": "8a46fff3182082e3ae108563cf0c8920e773eaf91fdf55fcd1c695ff3ca65274"
+    },
+    {
+      "id": "DOC-005/safe_links",
+      "sha256": "894b22dd298d50eedb330de38f6058f5066e806da150b04705abd998d6a1c9ad"
+    },
+    {
+      "id": "DOC-005/unsafe_link_scheme",
+      "sha256": "15d6c8fa7cc12d218bd7f3d54b7917492c0ce85dbd90cb13e891116063c26a8d"
+    },
+    {
+      "id": "DOC-012/valid_effective_grid",
+      "sha256": "c65dff8bdd5b2a3f3ba7959b23dde7cd8b33d2c849a1fa741bbd9891cad4211b"
+    },
+    {
+      "id": "DOC-012/malformed_effective_grid",
+      "sha256": "79741b714aac89b9ade9f86da3a41dfcebd702ebc854081c201c0878c5b0dd14"
+    },
+    {
+      "id": "DOC-022/escaped_strings",
+      "sha256": "9893202af15c0d6dcca3173bae21cf3e923837d974d1cc53e9e4c4ee1fc663bf"
+    },
+    {
+      "id": "DOC-022/active_link_target",
+      "sha256": "ea428491d7afc4c704f05691c217990a20ed82bbf1a10c8d4178e175afa3441a"
+    },
+    {
+      "id": "DOC-026/just_below_document_bytes",
+      "sha256": "c2b4ae0b027992ba62e08123c6c756025d4cd4872b9d2e945d00ba1fe48bde20"
+    },
+    {
+      "id": "DOC-026/over_document_bytes",
+      "sha256": "1ed614040a3cc42a7fea41a6cda5fc7ac660f8f7bbaed1e984c7e95fab605a03"
+    },
+    {
+      "id": "DOC-026/just_below_tree_depth",
+      "sha256": "243ecbf91b45d11b8ea282c287b5cf592940e075aa5afed002ef442dd17ac39f"
+    },
+    {
+      "id": "DOC-026/over_tree_depth",
+      "sha256": "19b4bedd88eb758a0575d0ad623f5585af123a9d82d536002f0ce911d494d0bf"
+    },
+    {
+      "id": "DOC-026/just_below_node_count",
+      "sha256": "cad42269529d0eb72da94e43f6348ff0a7d4157ed10ff5f6b3198e0ed8ead331"
+    },
+    {
+      "id": "DOC-026/over_node_count",
+      "sha256": "45b5c856f3182015bac0bae298dc0eeabcda8c032127bce16764147a0a1d535f"
+    },
+    {
+      "id": "DOC-026/just_below_text_length",
+      "sha256": "d9c77e4dbc886ae28d359f3e0d8e58eb47db825db54a9f954fcf4d187c008259"
+    },
+    {
+      "id": "DOC-026/over_text_length",
+      "sha256": "e866ba7bd5dbf8e4bce44d662e8629c6172b029bfcd48a4f30f8578f36e46844"
+    },
+    {
+      "id": "DOC-026/just_below_table_rows",
+      "sha256": "e7ef991a5e0613b2ba7399b2c157fcdc4bd2484858a8f6478727810bd41a6ed9"
+    },
+    {
+      "id": "DOC-026/over_table_rows",
+      "sha256": "b65f5dbff1903271afa6302d01d1efa4c3f04c3dc24470608319e5d7706a6dff"
+    },
+    {
+      "id": "DOC-026/just_below_table_effective_columns",
+      "sha256": "a8b2ebed703b7fe3724f6b8989b6e3bbbef0363c345a233bc34578457a76110a"
+    },
+    {
+      "id": "DOC-026/over_table_effective_columns",
+      "sha256": "469775dd19e7805853f796b9b273cfda01f1924fffaf26d1893f0297208f7340"
+    },
+    {
+      "id": "DOC-026/just_below_attribute_length",
+      "sha256": "1bf4fe4f91b1fb2115cd2fdf3ad59da4671a9098f069373461340276be533ef8"
+    },
+    {
+      "id": "DOC-026/over_attribute_length",
+      "sha256": "20ce65d1d42d3318f4d735b6adde0950d7cfd65d8cdc8d8902917f0b64f421c4"
+    },
+    {
+      "id": "DOC-024/mixed_schema_restore",
+      "sha256": "d7cc99b28edcdf6075128e88483a9682220a77866c5002df73eb098768b017c7"
+    }
+  ]
+}

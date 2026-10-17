@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-// Temporary immutable snapshot adapter; no CMS/DOM/import/render implementation.
+// Single-authority corpus adapter; no CMS/DOM/import/render implementation.
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { canonicalizeRaw } from '../../scripts/canonical-reference/reference.mjs';
+import { validateCorpus } from '../../scripts/validate-corpus.mjs';
 
 export const options = extra => JSON.stringify({ abi: 'kwdj-codec/1', identities: { media: [], references: [] }, ...extra });
 export const document = content => ({ schema: 'klenwriter.document', schema_version: 1, profile: 'prose', content });
@@ -49,12 +50,13 @@ function measure(name, doc) {
 }
 
 export function corpus() {
-  const provenance = JSON.parse(readFileSync('provenance/codec-fixtures.json'));
-  assert.equal(provenance.sourceRevision, 'a7f8a081b7827dd31097ad6c9104654366ae6e04');
+  const { pkg } = validateCorpus();
   const inputs = [], dispositions = [];
   let documents = 0, resourceCases = 0, resourceMeasurements = 0, deferred = 0, noCandidate = 0;
-  for (const file of provenance.files) {
-    const bytes = readFileSync(file.destination);
+  for (const name of pkg.manifest.fixture_files) {
+    const file = pkg.files.find(row => row.path === name);
+    assert.ok(file, 'Fixture absent from pinned package');
+    const bytes = readFileSync(`contracts/kwdj/v1/${name}`);
     assert.equal(createHash('sha256').update(bytes).digest('hex'), file.sha256);
     assert.equal(bytes.length, file.bytes);
     for (const fixture of JSON.parse(bytes).fixtures) for (const c of fixture.cases) {
@@ -70,7 +72,7 @@ export function corpus() {
           assert.equal(measure(recipe.limit_name, doc), point.measured_value);
           const hostName = { text_length: 'text_leaf_bytes', attribute_length: 'authored_attribute_bytes' }[recipe.limit_name] ?? recipe.limit_name;
           // Attempted increases must still obey all seven normative ceilings.
-          inputs.push({ id: `${id}/${point.position}`, input: JSON.stringify(doc), primary: 'normalize', options: options({ limits: { [hostName]: '18446744073709551615' } }),
+          inputs.push({ id: `${id}/${point.position}`, caseId: id, input: JSON.stringify(doc), primary: 'normalize', options: options({ limits: { [hostName]: '18446744073709551615' } }),
             expectedStatus: point.position === 'over_limit' ? 'refused' : 'accepted',
             resource: { name: recipe.limit_name, maximum: String(recipe.limit_value), observed: String(point.measured_value) } });
           resourceMeasurements++;
@@ -81,11 +83,11 @@ export function corpus() {
         const preNormalized = c.input.kind === 'kwdj' && Object.hasOwn(c.input, 'value');
         const state = c.input.identity_state ?? {};
         const catalog = { media: (state.existing_media_ids ?? []).map(id => ({ id, status: 'exists' })), references: (state.existing_reference_ids ?? []).map(id => ({ id, status: 'exists' })) };
-        inputs.push({ id, input: JSON.stringify(preNormalized ? c.input.value : c.kwdj), primary: preNormalized ? 'normalize' : 'validate', options: options({ identities: catalog }),
+        inputs.push({ id, caseId: id, input: JSON.stringify(preNormalized ? c.input.value : c.kwdj), primary: preNormalized ? 'normalize' : 'validate', options: options({ identities: catalog }),
           expectedStatus: c.expected.outcome === 'accepted' ? 'accepted' : 'refused', expectedCanonical: c.expected.outcome === 'accepted' ? canonical(c.kwdj) : null,
           expectedCodes: c.expected.diagnostic_codes.filter(code => code.startsWith('kwdj.')), expectedManifests: { media: c.expected.media_manifest, references: c.expected.reference_manifest } });
       }
-      dispositions.push({ id, status: 'codec_input', nonCodecStages: nonCodecStages.map(stage => ({ stage, status: 'not_executed', reason: 'Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners' })) });
+      dispositions.push({ id, status: 'codec_input', nonCodecStages: nonCodecStages.map(stage => ({ stage, status: 'not_executed', reason: 'Not a separate stage assertion in this codec-only report; see OSR-30 stage report for actual runtime applicability' })) });
     }
   }
   assert.deepEqual({ documents, resourceCases, resourceMeasurements, deferred, noCandidate }, { documents: 39, resourceCases: 14, resourceMeasurements: 21, deferred: 1, noCandidate: 5 });
