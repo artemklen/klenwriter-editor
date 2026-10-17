@@ -22,4 +22,5 @@ http.createServer(async (req, res) => {
   if (!route) { res.writeHead(404); res.end(); return; }
   try { res.setHeader('Content-Type', route[1]); res.end(await readFile(new URL(route[0], root))); }
   catch { res.writeHead(500); res.end('Build the workspace before running this fixture'); }
-}).listen(4190, '127.0.0.1');
+// 4190 is a restricted port in Firefox/WebKit (ManageSieve); use an HTTP dev port.
+}).listen(4174, '127.0.0.1');

@@ -28,7 +28,7 @@ jobs:
       - run: npm run check
       - run: npm test
       - run: node scripts/summarize-evidence.mjs
-        if: always()
+        if: always() && hashFiles('test-results/results.json') != ''
       - uses: actions/upload-artifact@v4
         if: always()
         with:
