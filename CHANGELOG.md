@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- OSR-75: raw JSON и borrowed snapshots проверяются по отдельным operational
+  бюджетам до parser/copies; типизированный отказ сохраняет данные и v1 semantics.
+
 - OSR-74: ограничена работа текстовых проекций KWDJ; превышение бюджета возвращает типизированный отказ без изменения документа.
 
 - OSR-54: owner-confirmed KlenWriter Editor identity, `klenwriter-editor-*` Rust

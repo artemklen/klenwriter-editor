@@ -1,10 +1,11 @@
 //! Full snapshot import/export between a profile codec and the generic document.
 //! Used at admission/snapshot boundaries, not as a per-keystroke transaction path.
 
+use editor_core::admission::preflight_snapshot;
 use editor_core::document::{Attribute, Attributes, Document, Mark, Node, TreeNode};
 use serde::Serialize;
 
-use crate::{Limits, NormalizedDocument, model};
+use crate::{AdmissionBudget, Limits, NormalizedDocument, model};
 
 impl NormalizedDocument {
     pub fn to_core_document(&self) -> Document {
@@ -95,11 +96,29 @@ pub fn admit_core_document(
     identities: &dyn crate::IdentityResolver,
     limits: Limits,
 ) -> Result<crate::ValidatedDocument, crate::KwdjError> {
+    admit_core_document_with_budget(
+        document,
+        profile,
+        identities,
+        limits,
+        AdmissionBudget::default(),
+    )
+}
+
+pub fn admit_core_document_with_budget(
+    document: &Document,
+    profile: model::Profile,
+    identities: &dyn crate::IdentityResolver,
+    limits: Limits,
+    budget: AdmissionBudget,
+) -> Result<crate::ValidatedDocument, crate::KwdjError> {
     use crate::{KwdjError, KwdjErrorCode};
     let limits = limits.effective();
-    let metrics = editor_core::document::measure(&document.children);
+    // No full UTF-8 scalar / UTF-16 metric scan, frontier allocation or snapshot
+    // clone before this bounded borrowed pass. Only node/depth metrics are needed.
+    let metrics = preflight_snapshot(document, budget.preflight).map_err(KwdjError::operational)?;
     for (name, maximum, observed) in [
-        ("tree_depth", limits.tree_depth, metrics.depth),
+        ("tree_depth", limits.tree_depth, metrics.tree_depth),
         ("node_count", limits.node_count, metrics.nodes),
     ] {
         editor_core::limits::check(name, maximum, observed)
@@ -112,11 +131,9 @@ pub fn admit_core_document(
         .map(|(i, n)| encode_node(n, &format!("/content/{i}")))
         .collect::<Result<Vec<_>, _>>()?;
     let value = serde_json::json!({"schema":"klenwriter.document","schema_version":1,"profile":profile,"content":content});
-    let admitted = crate::validate_normalized_json_with_limits(
-        &serde_json::to_vec(&value).expect("JSON values serialize"),
-        identities,
-        limits,
-    )?;
+    // This is a borrowed-snapshot route, not a raw-byte input. Avoid a redundant
+    // generated JSON serialization/parse roundtrip; use the same closed codec.
+    let admitted = crate::validate_normalized_value(value, identities, limits, budget)?;
     if admitted.document().to_core_document() != *document {
         return Err(KwdjError::new(KwdjErrorCode::InvalidStructure, ""));
     }

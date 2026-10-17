@@ -1,0 +1,41 @@
+{
+  "task": "OSR-75",
+  "runtimeSource": "8ac9c3d7c11536ddf499424f078d2da452ea8bae",
+  "checks": {
+    "nativeWorkspace": "pass",
+    "clippyAllTargets": "pass",
+    "buildMetadataPackagesContractsArtifactsPerf": "pass",
+    "nativeMSRV": "pass",
+    "compiledBrowserChecks": 9,
+    "m0BrowserChecks": 102,
+    "initialLocalFailure": "Firefox app-data macOS #42768; browser-only repeat with documented process-local CFFIXED_USER_HOME passed; no source or assertion change",
+    "differential": "264 ordinary equal; same OSR-74 inherited panic fix retained; no new semantic difference"
+  },
+  "evidence": [
+    {
+      "path": "/tmp/osr-75-editor-check.log",
+      "sha256": "8442b689c941e7353f43f7e7bc4d85aeee8f818fb9127fcf14a76f1c76d178d2",
+      "bytes": 21794
+    },
+    {
+      "path": "/tmp/osr-75-browser-fixed-environment.log",
+      "sha256": "7535d18c9935b9b39eba9ce37b3448e16f8a6d0b78ca6b7b332d640d3db1663c",
+      "bytes": 2139
+    },
+    {
+      "path": "/tmp/osr-75-msrv.log",
+      "sha256": "d9342db8d97fb63f0d972ce603b11cb760c945cf1231c07ae2eb471f8965a9ea",
+      "bytes": 3588
+    },
+    {
+      "path": "/tmp/osr-75-m0-browser.log",
+      "sha256": "d7adb11e3ecb9162c375b0f80e8b7e963d1bb28ae5e7647424524cd6bcf73e0b",
+      "bytes": 13767
+    },
+    {
+      "path": "/tmp/osr-75-native-differential.json",
+      "sha256": "9aaa34ad88eff20cfaf3845a6e69578d2abdd3b0872ebd003fa7de6f29acdaae",
+      "bytes": 325745
+    }
+  ]
+}

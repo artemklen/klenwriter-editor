@@ -37,3 +37,7 @@ uuid = { version = "=1.23.3", default-features = false }
 [[example]]
 name = "projection_budget_probe"
 crate-type = ["cdylib"]
+
+[[example]]
+name = "admission_budget_probe"
+crate-type = ["cdylib"]

@@ -25,6 +25,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--cms', type=pathlib.Path, required=True)
     parser.add_argument('--output', type=pathlib.Path, required=True)
+    parser.add_argument('--issue', choices=['OSR-74', 'OSR-75'], default='OSR-74')
     args = parser.parse_args()
     def source(path):
         return command(['git', '-C', str(args.cms), 'show', f'{BASELINE}:{path}'])
@@ -97,6 +98,7 @@ sha2 = "0.10"
         assert not results[-1]['equal'], 'OSR-74 must fix the inherited panic'
         assert results[-1]['baseline']['projections'] == {'panicked': True}, 'recheck OSR-74 status'
         report = {'schema': 1, 'issue': 'OSR-74', 'baseline': BASELINE, 'toolchain': command(['rustc', '+1.89.0', '--version']).decode().strip(), 'binarySha256': sha(binary.read_bytes()), 'runnerLockSha256': sha((runner / 'Cargo.lock').read_bytes()), 'cmsLockSha256': sha(source('Cargo.lock')), 'editorLockSha256': sha((ROOT / 'Cargo.lock').read_bytes()), 'corpusAuthority': 'CMS; full transfer/conformance deferred to OSR-30', 'sources': sources, 'cases': [{**origin, **outcome} for origin, outcome in zip(origins, results)], 'summary': {'cases': len(results), 'equal': sum(r['equal'] for r in results), 'admitted': sum(r['baseline']['kind'] == 'admitted' for r in results), 'refused': sum(r['baseline']['kind'] == 'refused' for r in results), 'intentionalDifferences': 1, 'baselinePanics': 1, 'extractedPanics': 0, 'fixedDefect': 'OSR-74; typed bounded refusal preserves admitted canonical bytes'}}
+        report['issue'] = args.issue
         # A combined oracle unifies registry dependencies. Separately verify the
         # real editor lock closure uses the same native semantic versions.
         editor_meta = json.loads(command(['cargo', 'metadata', '--locked', '--format-version=1'], cwd=ROOT))

@@ -5,9 +5,11 @@
 //! This module owns the closed canonical document contract. It intentionally has
 //! no dependency on HTTP, persistence, the editor, or public rendering.
 
+mod admission;
 mod core_bridge;
 pub mod model;
-pub use core_bridge::admit_core_document;
+pub use admission::{AdmissionBudget, RAW_INPUT_BYTE_CEILING};
+pub use core_bridge::{admit_core_document, admit_core_document_with_budget};
 mod normalize;
 mod project;
 mod validate;
@@ -273,6 +275,7 @@ pub enum KwdjErrorCode {
     MissingReferenceIdentity,
     IdentityResolutionFailed,
     ResourceLimitExceeded,
+    OperationalBudgetExceeded,
 }
 
 impl KwdjErrorCode {
@@ -306,6 +309,7 @@ impl KwdjErrorCode {
             Self::MissingReferenceIdentity => "kwdj.reference_identity_unresolved",
             Self::IdentityResolutionFailed => "kwdj.identity_resolution_failed",
             Self::ResourceLimitExceeded => "kwdj.resource_limit_exceeded",
+            Self::OperationalBudgetExceeded => "kwdj.admission_budget_exceeded",
         }
     }
 }
@@ -327,6 +331,19 @@ pub struct KwdjError {
 }
 
 impl KwdjError {
+    pub(crate) fn operational(error: editor_core::limits::LimitExceeded) -> Self {
+        Self {
+            code: KwdjErrorCode::OperationalBudgetExceeded,
+            path: String::new(),
+            context: ErrorContext {
+                category: Some("operational_admission"),
+                limit: Some(error.name),
+                maximum: Some(error.maximum),
+                observed: Some(error.observed),
+            },
+        }
+    }
+
     pub(crate) fn new(code: KwdjErrorCode, path: impl Into<String>) -> Self {
         Self {
             code,
@@ -379,8 +396,43 @@ pub fn decode_candidate_with_limits(
     input: &[u8],
     limits: Limits,
 ) -> Result<CandidateDocument, KwdjError> {
-    let value: Value = serde_json::from_slice(input)
-        .map_err(|_| KwdjError::new(KwdjErrorCode::InvalidJson, ""))?;
+    decode_candidate_with_limits_and_budget(input, limits, AdmissionBudget::default())
+}
+
+pub fn decode_candidate_with_limits_and_budget(
+    input: &[u8],
+    limits: Limits,
+    budget: AdmissionBudget,
+) -> Result<CandidateDocument, KwdjError> {
+    let value = admission::parse_raw(input, budget)?;
+    admission::check_value(&value, budget)?;
+    decode_checked_value(value, limits)
+}
+
+/// Admit an already-parsed borrowed value without serializing and parsing it
+/// again. Operational accounting precedes every snapshot copy. Raw-byte policy
+/// belongs to the caller's transport; this route has no raw input bytes.
+pub fn decode_candidate_value(input: &Value) -> Result<CandidateDocument, KwdjError> {
+    decode_candidate_value_with_limits_and_budget(
+        input,
+        Limits::default(),
+        AdmissionBudget::default(),
+    )
+}
+
+pub fn decode_candidate_value_with_limits_and_budget(
+    input: &Value,
+    limits: Limits,
+    budget: AdmissionBudget,
+) -> Result<CandidateDocument, KwdjError> {
+    admission::check_value(input, budget)?;
+    preflight(input)?;
+    decode_checked_value(input.clone(), limits)
+}
+
+// Value is owned and has already passed the borrowed operational preflight.
+// Opaque candidates cannot be constructed or mutated outside this module.
+fn decode_checked_value(value: Value, limits: Limits) -> Result<CandidateDocument, KwdjError> {
     preflight(&value)?;
     let mut probe = value.clone();
     let mut ignored = Vec::new();
@@ -409,7 +461,24 @@ pub fn decode_normalize_validate(
     input: &[u8],
     identities: &dyn IdentityResolver,
 ) -> Result<ValidatedDocument, KwdjError> {
-    normalize_and_validate(decode_candidate(input)?, identities)
+    decode_normalize_validate_with_limits_and_budget(
+        input,
+        identities,
+        Limits::default(),
+        AdmissionBudget::default(),
+    )
+}
+
+pub fn decode_normalize_validate_with_limits_and_budget(
+    input: &[u8],
+    identities: &dyn IdentityResolver,
+    limits: Limits,
+    budget: AdmissionBudget,
+) -> Result<ValidatedDocument, KwdjError> {
+    normalize_and_validate(
+        decode_candidate_with_limits_and_budget(input, limits, budget)?,
+        identities,
+    )
 }
 
 /// Decode a value that already claims to be normalized canonical KWDJ.
@@ -426,8 +495,31 @@ pub fn validate_normalized_json_with_limits(
     identities: &dyn IdentityResolver,
     limits: Limits,
 ) -> Result<ValidatedDocument, KwdjError> {
-    let value: Value = serde_json::from_slice(input)
-        .map_err(|_| KwdjError::new(KwdjErrorCode::InvalidJson, ""))?;
+    validate_normalized_json_with_limits_and_budget(
+        input,
+        identities,
+        limits,
+        AdmissionBudget::default(),
+    )
+}
+
+pub fn validate_normalized_json_with_limits_and_budget(
+    input: &[u8],
+    identities: &dyn IdentityResolver,
+    limits: Limits,
+    budget: AdmissionBudget,
+) -> Result<ValidatedDocument, KwdjError> {
+    let value = admission::parse_raw(input, budget)?;
+    validate_normalized_value(value, identities, limits, budget)
+}
+
+pub(crate) fn validate_normalized_value(
+    value: Value,
+    identities: &dyn IdentityResolver,
+    limits: Limits,
+    budget: AdmissionBudget,
+) -> Result<ValidatedDocument, KwdjError> {
+    admission::check_value(&value, budget)?;
     preflight(&value)?;
     normalize::ensure_normalized(&value, "")?;
     let document = decode_document(value)?;
