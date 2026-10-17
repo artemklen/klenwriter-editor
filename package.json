@@ -18,10 +18,11 @@
     "check:packages": "node scripts/check-packages.mjs",
     "test:workspace": "node --test tests/workspace.node.mjs",
     "check:rust": "cargo fmt --all --check && cargo clippy --workspace --all-targets --locked -- -D warnings && cargo test --workspace --locked",
-    "check": "npm run check:rust && npm run build && npm run check:metadata && npm run check:workspace && npm run check:packages && npm run test:workspace && npm run test:contracts && npm run check:m0 && npm run perf:verify && npm run test:workspace:browser",
+    "check": "npm run check:rust && npm run test:canonical && npm run build && npm run check:metadata && npm run check:workspace && npm run check:packages && npm run test:workspace && npm run test:contracts && npm run check:m0 && npm run perf:verify && npm run test:workspace:browser",
     "test:workspace:browser": "playwright test --config playwright.workspace.config.js",
     "check:metadata": "node scripts/check-package-metadata.mjs",
-    "sync:provenance": "node scripts/sync-package-provenance.mjs"
+    "sync:provenance": "node scripts/sync-package-provenance.mjs",
+    "test:canonical": "node --test tests/canonical.node.mjs"
   },
   "engines": {
     "node": ">=24.22.0 <25 || >=26 <27"

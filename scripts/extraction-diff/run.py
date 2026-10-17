@@ -25,7 +25,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--cms', type=pathlib.Path, required=True)
     parser.add_argument('--output', type=pathlib.Path, required=True)
-    parser.add_argument('--issue', choices=['OSR-74', 'OSR-75'], default='OSR-74')
+    parser.add_argument('--issue', choices=['OSR-74', 'OSR-75', 'OSR-77'], default='OSR-74')
     args = parser.parse_args()
     def source(path):
         return command(['git', '-C', str(args.cms), 'show', f'{BASELINE}:{path}'])
@@ -88,17 +88,42 @@ sha2 = "0.10"
         stanza = {'schema': 'klenwriter.document', 'schema_version': 1, 'profile': 'poetry', 'content': [{'type': 'verse', 'content': [{'type': 'verse_line', 'content': [{'type': 'text', 'text': 'a'}]}, {'type': 'stanza_break', 'attrs': {'blank_lines': 2**64-1}}, {'type': 'verse_line', 'content': [{'type': 'text', 'text': 'b'}]}]}]}
         cases.append({'id': len(cases), 'input': stanza})
         origins.append({'synthetic': 'OSR-74 u64::MAX debug overflow reproduction'})
+        projection_case = len(cases) - 1
+        if args.issue == 'OSR-77':
+            # Independently authored regression inputs, not copied CMS corpus.
+            # Internally tagged unit variants used to silently discard fields.
+            for kind in ['hard_break', 'scene_break', 'strong', 'emphasis', 'strike', 'code', 'subscript', 'superscript']:
+                for key in ['unexpected_ascii', '\U0001f600']:
+                    unit = {'type': kind, key: False}
+                    if kind == 'scene_break':
+                        content = [unit]
+                    elif kind == 'hard_break':
+                        content = [{'type': 'paragraph', 'content': [unit]}]
+                    else:
+                        content = [{'type': 'paragraph', 'content': [{'type': 'text', 'text': 'synthetic', 'marks': [unit]}]}]
+                    for normalize in [False, True]:
+                        for identities in [False, True]:
+                            document = {'schema': 'klenwriter.document', 'schema_version': 1, 'profile': 'prose', 'content': content}
+                            cases.append({'id': len(cases), 'input': document, 'normalize': normalize, 'identities': identities})
+                            origins.append({'synthetic': 'OSR-77 closed empty variant', 'kind': kind, 'extraKey': key, 'normalize': normalize, 'identities': identities})
         binary = runner / 'target/debug/osr29-differential'
         result = subprocess.run([str(binary)], input=''.join(json.dumps(c) + '\n' for c in cases), text=True, capture_output=True, check=True, timeout=120)
         results = [json.loads(line) for line in result.stdout.splitlines()]
         assert len(results) == len(cases)
-        assert all(r['equal'] for r in results[:-1]), 'ordinary baseline/extraction parity mismatch'
-        assert results[-1]['extracted']['projections'] == {'refused': 'kwdj.projection_arithmetic_overflow'}
-        assert {k:v for k,v in results[-1]['baseline'].items() if k != 'projections'} == {k:v for k,v in results[-1]['extracted'].items() if k != 'projections'}, 'storage semantics changed'
-        assert not results[-1]['equal'], 'OSR-74 must fix the inherited panic'
-        assert results[-1]['baseline']['projections'] == {'panicked': True}, 'recheck OSR-74 status'
+        assert all(r['equal'] for r in results[:projection_case]), 'ordinary baseline/extraction parity mismatch'
+        projection = results[projection_case]
+        assert projection['extracted']['projections'] == {'refused': 'kwdj.projection_arithmetic_overflow'}
+        assert {k:v for k,v in projection['baseline'].items() if k != 'projections'} == {k:v for k,v in projection['extracted'].items() if k != 'projections'}, 'storage semantics changed'
+        assert not projection['equal'], 'OSR-74 must fix the inherited panic'
+        assert projection['baseline']['projections'] == {'panicked': True}, 'recheck OSR-74 status'
+        for outcome in results[projection_case + 1:]:
+            assert outcome['baseline']['kind'] == 'admitted', 'recheck inherited unit-field discard'
+            assert outcome['extracted']['kind'] == 'refused' and outcome['extracted']['code'] == 'kwdj.unknown_attribute'
         report = {'schema': 1, 'issue': 'OSR-74', 'baseline': BASELINE, 'toolchain': command(['rustc', '+1.89.0', '--version']).decode().strip(), 'binarySha256': sha(binary.read_bytes()), 'runnerLockSha256': sha((runner / 'Cargo.lock').read_bytes()), 'cmsLockSha256': sha(source('Cargo.lock')), 'editorLockSha256': sha((ROOT / 'Cargo.lock').read_bytes()), 'corpusAuthority': 'CMS; full transfer/conformance deferred to OSR-30', 'sources': sources, 'cases': [{**origin, **outcome} for origin, outcome in zip(origins, results)], 'summary': {'cases': len(results), 'equal': sum(r['equal'] for r in results), 'admitted': sum(r['baseline']['kind'] == 'admitted' for r in results), 'refused': sum(r['baseline']['kind'] == 'refused' for r in results), 'intentionalDifferences': 1, 'baselinePanics': 1, 'extractedPanics': 0, 'fixedDefect': 'OSR-74; typed bounded refusal preserves admitted canonical bytes'}}
         report['issue'] = args.issue
+        if args.issue == 'OSR-77':
+            report['summary'].update(intentionalDifferences=1 + len(results[projection_case + 1:]), fixedDefect='OSR-74 projection refusal retained; OSR-77 rejects formerly discarded invalid empty-variant fields')
+            report['compatibilityClassification'] = {'ordinaryCases': projection_case, 'ordinaryEqual': projection_case, 'priorProjectionFix': 1, 'newInvalidFieldRefusals': len(results[projection_case + 1:]), 'validCanonicalBytesChanged': False}
         # A combined oracle unifies registry dependencies. Separately verify the
         # real editor lock closure uses the same native semantic versions.
         editor_meta = json.loads(command(['cargo', 'metadata', '--locked', '--format-version=1'], cwd=ROOT))

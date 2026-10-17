@@ -36,7 +36,8 @@ Linux дополнительно требует Playwright system dependencies (
 CI запускается на macOS 15 и выполняет ту же последовательность; OS browser input
 проверяется отдельными implementation gates, bootstrap smoke этого не доказывает.
 
-`npm run check` включает fmt/clippy/native tests, native + wasm32 release build,
+`npm run check` включает fmt/clippy/native tests, independent canonical JS/native
+reference vectors (`npm run test:canonical`, [ADR-004](docs/adr/004-canonical-json-v1.md)), native + wasm32 release build,
 TypeScript project references, generated web glue, transitive architecture closure,
 license/version/MSRV/target/size inventory, упаковку шести private пакетов, установку
 их tarballs во внешний временный проект и WASM smoke во всех трёх движках, затем

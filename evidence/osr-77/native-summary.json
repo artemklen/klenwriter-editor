@@ -1,0 +1,231 @@
+{
+  "schema": 1,
+  "issue": "OSR-77",
+  "baseline": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+  "toolchain": "rustc 1.89.0 (29483883e 2025-08-04)",
+  "summary": {
+    "cases": 329,
+    "equal": 264,
+    "admitted": 261,
+    "refused": 68,
+    "intentionalDifferences": 65,
+    "baselinePanics": 1,
+    "extractedPanics": 0,
+    "fixedDefect": "OSR-74 projection refusal retained; OSR-77 rejects formerly discarded invalid empty-variant fields"
+  },
+  "compatibilityClassification": {
+    "ordinaryCases": 264,
+    "ordinaryEqual": 264,
+    "priorProjectionFix": 1,
+    "newInvalidFieldRefusals": 64,
+    "validCanonicalBytesChanged": false
+  },
+  "nativeSemanticDependencies": [
+    {
+      "name": "displaydoc",
+      "version": "0.2.6"
+    },
+    {
+      "name": "form_urlencoded",
+      "version": "1.2.2"
+    },
+    {
+      "name": "icu_collections",
+      "version": "2.2.0"
+    },
+    {
+      "name": "icu_locale_core",
+      "version": "2.2.0"
+    },
+    {
+      "name": "icu_normalizer",
+      "version": "2.2.0"
+    },
+    {
+      "name": "icu_normalizer_data",
+      "version": "2.2.0"
+    },
+    {
+      "name": "icu_properties",
+      "version": "2.2.0"
+    },
+    {
+      "name": "icu_properties_data",
+      "version": "2.2.0"
+    },
+    {
+      "name": "icu_provider",
+      "version": "2.2.0"
+    },
+    {
+      "name": "idna",
+      "version": "1.1.0"
+    },
+    {
+      "name": "idna_adapter",
+      "version": "1.2.2"
+    },
+    {
+      "name": "itoa",
+      "version": "1.0.18"
+    },
+    {
+      "name": "litemap",
+      "version": "0.8.2"
+    },
+    {
+      "name": "memchr",
+      "version": "2.8.2"
+    },
+    {
+      "name": "percent-encoding",
+      "version": "2.3.2"
+    },
+    {
+      "name": "potential_utf",
+      "version": "0.1.5"
+    },
+    {
+      "name": "proc-macro2",
+      "version": "1.0.106"
+    },
+    {
+      "name": "quote",
+      "version": "1.0.45"
+    },
+    {
+      "name": "serde",
+      "version": "1.0.228"
+    },
+    {
+      "name": "serde_core",
+      "version": "1.0.228"
+    },
+    {
+      "name": "serde_derive",
+      "version": "1.0.228"
+    },
+    {
+      "name": "serde_json",
+      "version": "1.0.150"
+    },
+    {
+      "name": "serde_path_to_error",
+      "version": "0.1.20"
+    },
+    {
+      "name": "smallvec",
+      "version": "1.15.2"
+    },
+    {
+      "name": "stable_deref_trait",
+      "version": "1.2.1"
+    },
+    {
+      "name": "syn",
+      "version": "2.0.118"
+    },
+    {
+      "name": "synstructure",
+      "version": "0.13.2"
+    },
+    {
+      "name": "thiserror",
+      "version": "1.0.69"
+    },
+    {
+      "name": "thiserror-impl",
+      "version": "1.0.69"
+    },
+    {
+      "name": "tinystr",
+      "version": "0.8.3"
+    },
+    {
+      "name": "unicode-ident",
+      "version": "1.0.24"
+    },
+    {
+      "name": "url",
+      "version": "2.5.8"
+    },
+    {
+      "name": "utf8_iter",
+      "version": "1.0.4"
+    },
+    {
+      "name": "uuid",
+      "version": "1.23.3"
+    },
+    {
+      "name": "writeable",
+      "version": "0.6.3"
+    },
+    {
+      "name": "yoke",
+      "version": "0.8.3"
+    },
+    {
+      "name": "yoke-derive",
+      "version": "0.8.2"
+    },
+    {
+      "name": "zerofrom",
+      "version": "0.1.8"
+    },
+    {
+      "name": "zerofrom-derive",
+      "version": "0.1.7"
+    },
+    {
+      "name": "zerotrie",
+      "version": "0.2.4"
+    },
+    {
+      "name": "zerovec",
+      "version": "0.11.6"
+    },
+    {
+      "name": "zerovec-derive",
+      "version": "0.11.3"
+    },
+    {
+      "name": "zmij",
+      "version": "1.0.21"
+    }
+  ],
+  "nativeSemanticVersionsMatchBaseline": true,
+  "sourceProvenanceVerified": true,
+  "extractedSourceSha256": {
+    "crates/core/Cargo.toml": "649840fa30d3f9c0cd795c3dbc766e36360f8ef5b6201b0169cbbce2d88350d2",
+    "crates/core/examples/canonical_vectors.rs": "e9f4bd601e9601e2ce29abea5fb294a18da294611d9e083d6b77179b0ea81e18",
+    "crates/core/src/admission.rs": "0e792a4fb108d134aefa31366fe8fecde7b1c76206564d40060ca6e899aea8d9",
+    "crates/core/src/document.rs": "d8e7f3cd3860da9db9b0842899ed0b4e1df623437d8aee485dfbb11606518651",
+    "crates/core/src/json.rs": "ed6e39e6d42e6a21e3f3dfc022e90bbb03833f42bc22ae36a26e89700208507b",
+    "crates/core/src/lib.rs": "e16bc7714da109cbc08b0516eb357eccb6188a1043c0b429fdec3b6a55bf34ec",
+    "crates/core/src/limits.rs": "8c16687b2c071d493fded114b892a00149e6af3b65260673f7d50e1cacbb340d",
+    "crates/core/tests/canonical_vectors.rs": "b953752465b61a46d24ff512458cee291a2b14894bef382645453da9c2b3c879",
+    "crates/kwdj/Cargo.toml": "423d9158dba46e137726599e4742f7d138b7ae952e3144e7aafe21ee764b75a3",
+    "crates/kwdj/src/admission.rs": "9bc3d3c282e91a40ab86cfedc582b17748fcb671d7b38e0ca63c7a4a78a40991",
+    "crates/kwdj/src/core_bridge.rs": "c219f6236e6596da526606e15eeec9b52fb0e31229c7be33b4c5be9733531d20",
+    "crates/kwdj/src/lib.rs": "1839f0e8192a64269d6ac3911865471caf4a799e2f522f7875e7ae0c87a784ee",
+    "crates/kwdj/src/model.rs": "5162a1f19c899922a032afcecc3227f65c19f05a530d1ba6a178f11e6cf635ce",
+    "crates/kwdj/src/normalize.rs": "37cbbb357bd231438a7e35d38035ceb60357c63abc72ea3d2c2fa92f694b8314",
+    "crates/kwdj/src/project.rs": "fa5924ae5708f3b824abcfd5cecc0feedea4146c77da2684649fb20af6ec2aee",
+    "crates/kwdj/src/validate.rs": "61dafb08b156c0dc8825e66e017dba4c02657caa3ea2a898b6aa2f802fce5802",
+    "crates/kwdj/tests/admission_budget.rs": "d5e3bca677ececa446d6addf608fe096e7391265511eeb8f8e171724a9018eba",
+    "crates/kwdj/tests/core_boundary.rs": "a0adece46897dc8ae0e176d87c26f21146fa0172bffca340eab3053c2802b545",
+    "crates/kwdj/tests/native_regressions.rs": "72d9ebbb71f24fe6a02f4342aba961286293695c3df16df3d4fccd504dc2b9fa",
+    "crates/kwdj/tests/projection_budget.rs": "fb86a85f42db27c1ffe6c262c52e0238f67058c35f4f6f608963f6ae7009ed37",
+    "crates/kwdj/tests/support/admission_budget_cases.rs": "477a52e2289a77ca1455d6fc2e7240c1b79ffc6e6774c467ee9fc51679797b42",
+    "crates/kwdj/tests/support/projection_budget_cases.rs": "4eb20aa6e1b68ac2753d4a3d0d4e5450f14dfa0dd2a3e218fe6b9849c095bfce"
+  },
+  "runtimePin": "d757762466e270f3c062baf329181ec1695a1327",
+  "fullReport": {
+    "sha256": "a64080079c0fc6a97da8168360ff208b5cd697a274359d2b5087f9cb92b0fb63",
+    "bytes": 388727,
+    "gzipSHA256": "3fb30c380a5b385868bd2505261797579583592557cb87e1359c888d745b0308",
+    "gzipBytes": 15121,
+    "corpusAuthority": "CMS; only origin pointers/hashes and closed results copied; source/user payloads absent"
+  }
+}
