@@ -123,6 +123,11 @@ sha2 = "0.10"
         report['issue'] = args.issue
         if args.issue == 'OSR-77':
             report['summary'].update(intentionalDifferences=1 + len(results[projection_case + 1:]), fixedDefect='OSR-74 projection refusal retained; OSR-77 rejects formerly discarded invalid empty-variant fields')
+            report['summary']['admissionCountsSource'] = 'baseline; not a count of currently valid inputs'
+            report['admissionCounts'] = {
+                side: {kind: sum(result[side]['kind'] == kind for result in results) for kind in ['admitted', 'refused']}
+                for side in ['baseline', 'extracted']
+            }
             report['compatibilityClassification'] = {'ordinaryCases': projection_case, 'ordinaryEqual': projection_case, 'priorProjectionFix': 1, 'newInvalidFieldRefusals': len(results[projection_case + 1:]), 'validCanonicalBytesChanged': False}
         # A combined oracle unifies registry dependencies. Separately verify the
         # real editor lock closure uses the same native semantic versions.

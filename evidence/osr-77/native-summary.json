@@ -11,7 +11,8 @@
     "intentionalDifferences": 65,
     "baselinePanics": 1,
     "extractedPanics": 0,
-    "fixedDefect": "OSR-74 projection refusal retained; OSR-77 rejects formerly discarded invalid empty-variant fields"
+    "fixedDefect": "OSR-74 projection refusal retained; OSR-77 rejects formerly discarded invalid empty-variant fields",
+    "admissionCountsSource": "baseline; not a count of currently valid inputs"
   },
   "compatibilityClassification": {
     "ordinaryCases": 264,
@@ -222,10 +223,20 @@
   },
   "runtimePin": "d757762466e270f3c062baf329181ec1695a1327",
   "fullReport": {
-    "sha256": "a64080079c0fc6a97da8168360ff208b5cd697a274359d2b5087f9cb92b0fb63",
-    "bytes": 388727,
-    "gzipSHA256": "3fb30c380a5b385868bd2505261797579583592557cb87e1359c888d745b0308",
-    "gzipBytes": 15121,
+    "sha256": "8fcc1c2f92c10944195596b72628179c2cd901ac8dddec720ce8a3acdb19e857",
+    "bytes": 388972,
+    "gzipSHA256": "a216d62d76d43d9ede4a9c0aae34991e4fc8e337d2cd84023226da7475c61dd7",
+    "gzipBytes": 15203,
     "corpusAuthority": "CMS; only origin pointers/hashes and closed results copied; source/user payloads absent"
+  },
+  "admissionCounts": {
+    "baseline": {
+      "admitted": 261,
+      "refused": 68
+    },
+    "extracted": {
+      "admitted": 197,
+      "refused": 132
+    }
   }
 }
