@@ -59,3 +59,8 @@ npm run report
 Tests use native browser clipboard shortcuts and run sequentially because the OS clipboard is shared. They put sample text on the clipboard. Browser builds and test tools are pinned in the lockfile. `test-results/` contains traces, screenshots and videos; CI uploads them as a 14-day artifact.
 
 Read the [decision and results](docs/m0/editing-host-decision.md) and the [native RU/EN and accessibility protocol](docs/m0/native-protocol.md). Successful test execution is distinct from a fulfilled editor requirement; negative observations are retained. Playwright WebKit is not installed Safari, Unicode insertion is not OS IME, and axe/AX snapshots are not a real screen-reader acceptance test.
+## Unstable codec transport (OSR-76)
+
+The prebuilt WASM artifact now exposes versioned KWDJ validate/normalize/canonical
+entry points for corpus parity. This is not the stable editing SDK (OSR-63).
+See [ABI, input bounds, exact u64 and temporary test corpus](docs/codec-v1.md).

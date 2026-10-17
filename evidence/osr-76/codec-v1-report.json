@@ -1,0 +1,2769 @@
+{
+  "abi": "kwdj-codec/1",
+  "source": "provenance/codec-fixtures.json",
+  "sourceHashes": {
+    "crates/wasm/src/codec.rs": "2bf2766834a7dc5a6964c194858b57819475518182233725f97a539cbb057a4a",
+    "crates/wasm/src/codec_browser.rs": "6f05104cdb945f51ea76f1fb22373bbbefd790ebd4872b57e040318b0676b843",
+    "crates/wasm/examples/codec.rs": "07c62a667aedb222db24d570f63d5358f6ffa9c279fffd2f1be4bc92ce2e0c7d",
+    "packages/wasm/src/codec.ts": "863c25b57ae38f57498573195586ba24f69f55e0f1688c636d2aa52b1a9e82f9",
+    "tests/codec.node.mjs": "825cf7604ff2eef6eb9a484db582ac8e86f0356139ccea0c6b2cbf16b05cb7ed",
+    "tests/support/codec-fixtures.mjs": "d9c3869c4c7f7a19d01aab46f722e5b81da73f3f91c0cee11de33f30422f13ce",
+    "provenance/codec-fixtures.json": "a35536133eb928f72e27449422fae41aac28d9e788a98a12ed3c6d890f020d9c"
+  },
+  "wasmSha256": "720120badf9ab32c0555b927bf486fdc54cb2b97149b85e830e40bcabb6ac27b",
+  "summary": {
+    "documents": 39,
+    "resourceCases": 14,
+    "resourceMeasurements": 21,
+    "deferred": 1,
+    "noCandidate": 5,
+    "expandedCodecInputs": 60,
+    "nativeWasmComparisons": 180,
+    "primaryAccepted": 43,
+    "primaryRefused": 17
+  },
+  "dispositions": [
+    {
+      "id": "DOC-001/empty_prose",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-002/unicode_whitespace_hard_break",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "legacy_import_parse",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-003/headings_and_layout",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-004/nested_compatible_marks",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-004/pre_normalized_empty_marks_removed",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-004/normalized_empty_marks_rejected",
+      "status": "codec_input",
+      "nonCodecStages": []
+    },
+    {
+      "id": "DOC-006/reference_slug_changed",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "legacy_import_parse",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "identity_manifest_extraction",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-007/multi_paragraph_blockquote",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "legacy_import_parse",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-008/lists_tasks_ordered_start",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "legacy_import_parse",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-008/pre_normalized_ordered_start_default_removed",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-008/normalized_ordered_start_one_rejected",
+      "status": "codec_input",
+      "nonCodecStages": []
+    },
+    {
+      "id": "DOC-009/literal_code",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "legacy_import_parse",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-010/rectangular_table",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "legacy_import_parse",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-011/table_spans_alignment",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "legacy_import_parse",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-011/pre_normalized_unit_spans_removed",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-011/normalized_unit_spans_rejected",
+      "status": "codec_input",
+      "nonCodecStages": []
+    },
+    {
+      "id": "DOC-013/resolved_media_image",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "legacy_import_parse",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "identity_manifest_extraction",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-015/all_literary_kinds",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "legacy_import_parse",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "identity_manifest_extraction",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-016/warning_kinds",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "legacy_import_parse",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "identity_manifest_extraction",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-017/spoiler_and_disclosure",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "legacy_import_parse",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "identity_manifest_extraction",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-019/poetry_stanzas",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "legacy_import_parse",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-020/poetry_marks",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "legacy_import_parse",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-025/projection_determinism",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-027/mixed_poetry_blocks",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "identity_manifest_extraction",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-028/plain_prose_paragraphs",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "clipboard_plain_to_kwdj",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-029/plain_poetry_clipboard",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "clipboard_plain_to_kwdj",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-030/supported_rich_clipboard",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "clipboard_rich_to_kwdj",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-014/missing_media_identity",
+      "status": "no_candidate",
+      "reason": "Adapter/migration/clipboard stage has no KWDJ candidate",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "identity_manifest_extraction",
+        "determinism"
+      ]
+    },
+    {
+      "id": "DOC-018/future_schema_version",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "schema_upconversion",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-018/unknown_node",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-018/unknown_mark",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-018/unknown_attribute",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-021/spaced_directive_attributes",
+      "status": "no_candidate",
+      "reason": "Adapter/migration/clipboard stage has no KWDJ candidate",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "determinism"
+      ]
+    },
+    {
+      "id": "DOC-023/wordpress_source_artifacts",
+      "status": "no_candidate",
+      "reason": "Adapter/migration/clipboard stage has no KWDJ candidate",
+      "stages": [
+        "legacy_import_parse",
+        "validate_normalize",
+        "determinism"
+      ]
+    },
+    {
+      "id": "DOC-031/unsupported_rich_semantics",
+      "status": "no_candidate",
+      "reason": "Adapter/migration/clipboard stage has no KWDJ candidate",
+      "stages": [
+        "clipboard_rich_to_kwdj",
+        "validate_normalize",
+        "determinism"
+      ]
+    },
+    {
+      "id": "DOC-032/active_html_plain_fallback",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "clipboard_rich_to_kwdj",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-033/clipboard_media_items",
+      "status": "no_candidate",
+      "reason": "Adapter/migration/clipboard stage has no KWDJ candidate",
+      "stages": [
+        "clipboard_rich_to_kwdj",
+        "validate_normalize",
+        "identity_manifest_extraction",
+        "determinism"
+      ]
+    },
+    {
+      "id": "DOC-034/editor_metadata_ignored",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "clipboard_rich_to_kwdj",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-005/safe_links",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "legacy_import_parse",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_edit_save_reopen",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-005/unsafe_link_scheme",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "legacy_import_parse",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-012/valid_effective_grid",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-012/malformed_effective_grid",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "legacy_import_parse",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-022/escaped_strings",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "legacy_import_parse",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "editor_round_trip_unchanged",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "plain_text_projection",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "identity_manifest_extraction",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-022/active_link_target",
+      "status": "codec_input",
+      "nonCodecStages": [
+        {
+          "stage": "legacy_import_parse",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        },
+        {
+          "stage": "public_render",
+          "status": "not_executed",
+          "reason": "Outside codec ABI76; full stage-aware gate belongs to OSR-30 and later owners"
+        }
+      ]
+    },
+    {
+      "id": "DOC-026/just_below_document_bytes",
+      "status": "codec_input",
+      "nonCodecStages": []
+    },
+    {
+      "id": "DOC-026/over_document_bytes",
+      "status": "codec_input",
+      "nonCodecStages": []
+    },
+    {
+      "id": "DOC-026/just_below_tree_depth",
+      "status": "codec_input",
+      "nonCodecStages": []
+    },
+    {
+      "id": "DOC-026/over_tree_depth",
+      "status": "codec_input",
+      "nonCodecStages": []
+    },
+    {
+      "id": "DOC-026/just_below_node_count",
+      "status": "codec_input",
+      "nonCodecStages": []
+    },
+    {
+      "id": "DOC-026/over_node_count",
+      "status": "codec_input",
+      "nonCodecStages": []
+    },
+    {
+      "id": "DOC-026/just_below_text_length",
+      "status": "codec_input",
+      "nonCodecStages": []
+    },
+    {
+      "id": "DOC-026/over_text_length",
+      "status": "codec_input",
+      "nonCodecStages": []
+    },
+    {
+      "id": "DOC-026/just_below_table_rows",
+      "status": "codec_input",
+      "nonCodecStages": []
+    },
+    {
+      "id": "DOC-026/over_table_rows",
+      "status": "codec_input",
+      "nonCodecStages": []
+    },
+    {
+      "id": "DOC-026/just_below_table_effective_columns",
+      "status": "codec_input",
+      "nonCodecStages": []
+    },
+    {
+      "id": "DOC-026/over_table_effective_columns",
+      "status": "codec_input",
+      "nonCodecStages": []
+    },
+    {
+      "id": "DOC-026/just_below_attribute_length",
+      "status": "codec_input",
+      "nonCodecStages": []
+    },
+    {
+      "id": "DOC-026/over_attribute_length",
+      "status": "codec_input",
+      "nonCodecStages": []
+    },
+    {
+      "id": "DOC-024/mixed_schema_restore",
+      "status": "deferred",
+      "reason": "Real later schema/converter absent; DOC-024 is not a codec pass",
+      "stages": [
+        "schema_upconversion",
+        "validate_normalize",
+        "editor_round_trip_unchanged",
+        "public_render",
+        "plain_text_projection",
+        "identity_manifest_extraction",
+        "determinism"
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "id": "DOC-001/empty_prose",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "aca2886f336f05ba1451469e7cc8de578bda2efbd22c0700d34da80ce59bf8e1",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-001/empty_prose",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "aca2886f336f05ba1451469e7cc8de578bda2efbd22c0700d34da80ce59bf8e1",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-001/empty_prose",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "aca2886f336f05ba1451469e7cc8de578bda2efbd22c0700d34da80ce59bf8e1",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-002/unicode_whitespace_hard_break",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "cafd60ee71da6c9f048721c9de591c4674145ea67f3a74ac95e0d23dbfe6ccd7",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-002/unicode_whitespace_hard_break",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "cafd60ee71da6c9f048721c9de591c4674145ea67f3a74ac95e0d23dbfe6ccd7",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-002/unicode_whitespace_hard_break",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "cafd60ee71da6c9f048721c9de591c4674145ea67f3a74ac95e0d23dbfe6ccd7",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-003/headings_and_layout",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "3c0546222d07de7d3a25e5b8f3fcda59d5d20585007ee34b6f1caf5a15c5983d",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-003/headings_and_layout",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "3c0546222d07de7d3a25e5b8f3fcda59d5d20585007ee34b6f1caf5a15c5983d",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-003/headings_and_layout",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "3c0546222d07de7d3a25e5b8f3fcda59d5d20585007ee34b6f1caf5a15c5983d",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-004/nested_compatible_marks",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "5d04dfe363c0d99de656360d4ff8a01fee46e78ba415ebcf33e35225fbb0f245",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-004/nested_compatible_marks",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "5d04dfe363c0d99de656360d4ff8a01fee46e78ba415ebcf33e35225fbb0f245",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-004/nested_compatible_marks",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "5d04dfe363c0d99de656360d4ff8a01fee46e78ba415ebcf33e35225fbb0f245",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-004/pre_normalized_empty_marks_removed",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.non_normalized_empty_marks",
+        "path": "/content/0/content/0/marks",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-004/pre_normalized_empty_marks_removed",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "9f9d6ee2e6b5b90f75155b40b929e9839e7649db53c7339f34f908271986b17f",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-004/pre_normalized_empty_marks_removed",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.non_normalized_empty_marks",
+        "path": "/content/0/content/0/marks",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-004/normalized_empty_marks_rejected",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.non_normalized_empty_marks",
+        "path": "/content/0/content/0/marks",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-004/normalized_empty_marks_rejected",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "9f9d6ee2e6b5b90f75155b40b929e9839e7649db53c7339f34f908271986b17f",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-004/normalized_empty_marks_rejected",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.non_normalized_empty_marks",
+        "path": "/content/0/content/0/marks",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-006/reference_slug_changed",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "7841b514421bdf112241e4e4fcea016af37f3132f843fce4518dfedc1955f7db",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-006/reference_slug_changed",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "7841b514421bdf112241e4e4fcea016af37f3132f843fce4518dfedc1955f7db",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-006/reference_slug_changed",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "7841b514421bdf112241e4e4fcea016af37f3132f843fce4518dfedc1955f7db",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-007/multi_paragraph_blockquote",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "1f7ed3bd17b633633b477a04187b78bce62f43f183c869d17ea40fb2db81b41c",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-007/multi_paragraph_blockquote",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "1f7ed3bd17b633633b477a04187b78bce62f43f183c869d17ea40fb2db81b41c",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-007/multi_paragraph_blockquote",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "1f7ed3bd17b633633b477a04187b78bce62f43f183c869d17ea40fb2db81b41c",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-008/lists_tasks_ordered_start",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "bf64e302d38862159c61502dec1e5c827f2b96ae599d1aa9cb7b4d162b6a9b12",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-008/lists_tasks_ordered_start",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "bf64e302d38862159c61502dec1e5c827f2b96ae599d1aa9cb7b4d162b6a9b12",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-008/lists_tasks_ordered_start",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "bf64e302d38862159c61502dec1e5c827f2b96ae599d1aa9cb7b4d162b6a9b12",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-008/pre_normalized_ordered_start_default_removed",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.non_normalized_ordered_start_default",
+        "path": "/content/0/attrs/start",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-008/pre_normalized_ordered_start_default_removed",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "16f8b54589b18e512b15c6b12f7afaa114931c4dae57e504aac3c05ec1b35bf7",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-008/pre_normalized_ordered_start_default_removed",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.non_normalized_ordered_start_default",
+        "path": "/content/0/attrs/start",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-008/normalized_ordered_start_one_rejected",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.non_normalized_ordered_start_default",
+        "path": "/content/0/attrs/start",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-008/normalized_ordered_start_one_rejected",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "16f8b54589b18e512b15c6b12f7afaa114931c4dae57e504aac3c05ec1b35bf7",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-008/normalized_ordered_start_one_rejected",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.non_normalized_ordered_start_default",
+        "path": "/content/0/attrs/start",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-009/literal_code",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "fa5e3665bad899ef962d78a3695b90f62317a12dcfe855878e726098c71090e2",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-009/literal_code",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "fa5e3665bad899ef962d78a3695b90f62317a12dcfe855878e726098c71090e2",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-009/literal_code",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "fa5e3665bad899ef962d78a3695b90f62317a12dcfe855878e726098c71090e2",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-010/rectangular_table",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "b55c9b778fa102cbd67137e1a9b8cd8df8ebc211fa10706d0e76df9141c2d5c8",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-010/rectangular_table",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "b55c9b778fa102cbd67137e1a9b8cd8df8ebc211fa10706d0e76df9141c2d5c8",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-010/rectangular_table",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "b55c9b778fa102cbd67137e1a9b8cd8df8ebc211fa10706d0e76df9141c2d5c8",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-011/table_spans_alignment",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "e9cd27dd0eec8b1e3c30d99a2ee5d7573cad3ec21acb9f887f321689052a294b",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-011/table_spans_alignment",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "e9cd27dd0eec8b1e3c30d99a2ee5d7573cad3ec21acb9f887f321689052a294b",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-011/table_spans_alignment",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "e9cd27dd0eec8b1e3c30d99a2ee5d7573cad3ec21acb9f887f321689052a294b",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-011/pre_normalized_unit_spans_removed",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.non_normalized_unit_span",
+        "path": "/content/0/content/0/content/0/attrs/rowspan",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-011/pre_normalized_unit_spans_removed",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "11989a175a019b607b383f5577c14361f676f2673c5287c33eead5a2e87aed00",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-011/pre_normalized_unit_spans_removed",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.non_normalized_unit_span",
+        "path": "/content/0/content/0/content/0/attrs/rowspan",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-011/normalized_unit_spans_rejected",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.non_normalized_unit_span",
+        "path": "/content/0/content/0/content/0/attrs/rowspan",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-011/normalized_unit_spans_rejected",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "0b421ec6a2943edf24bc572a00423f3932e55b05dc77b634b003ee56e92bfbe0",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-011/normalized_unit_spans_rejected",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.non_normalized_unit_span",
+        "path": "/content/0/content/0/content/0/attrs/rowspan",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-013/resolved_media_image",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "9e22e3c95daf555f73709ea16e78d3b7312f9b3d5e1a95e2ad0543570bf891f4",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-013/resolved_media_image",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "9e22e3c95daf555f73709ea16e78d3b7312f9b3d5e1a95e2ad0543570bf891f4",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-013/resolved_media_image",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "9e22e3c95daf555f73709ea16e78d3b7312f9b3d5e1a95e2ad0543570bf891f4",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-015/all_literary_kinds",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "99501ccf162d1641f75db6c8e731c73f6c93809763f8fa6dadf5ebd91f14995f",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-015/all_literary_kinds",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "99501ccf162d1641f75db6c8e731c73f6c93809763f8fa6dadf5ebd91f14995f",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-015/all_literary_kinds",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "99501ccf162d1641f75db6c8e731c73f6c93809763f8fa6dadf5ebd91f14995f",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-016/warning_kinds",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "e30114d648460a3367543c87ba0640814de64a2dd0f7d94ed66d94df8e1dd48b",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-016/warning_kinds",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "e30114d648460a3367543c87ba0640814de64a2dd0f7d94ed66d94df8e1dd48b",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-016/warning_kinds",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "e30114d648460a3367543c87ba0640814de64a2dd0f7d94ed66d94df8e1dd48b",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-017/spoiler_and_disclosure",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "96448c7dce0aa5385a6f626b4598b6a41fcd478b8cee42d6ce4555be526d5698",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-017/spoiler_and_disclosure",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "96448c7dce0aa5385a6f626b4598b6a41fcd478b8cee42d6ce4555be526d5698",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-017/spoiler_and_disclosure",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "96448c7dce0aa5385a6f626b4598b6a41fcd478b8cee42d6ce4555be526d5698",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-019/poetry_stanzas",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "2c5f7d5724889886c1b3786a43b64ab04efa725f6d4d5969be7a1bba93e2ea8c",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-019/poetry_stanzas",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "2c5f7d5724889886c1b3786a43b64ab04efa725f6d4d5969be7a1bba93e2ea8c",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-019/poetry_stanzas",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "2c5f7d5724889886c1b3786a43b64ab04efa725f6d4d5969be7a1bba93e2ea8c",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-020/poetry_marks",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "49cacc15e10dbd435476f7b393d692b480b7728e776b2e6a555853d61dba8ca4",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-020/poetry_marks",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "49cacc15e10dbd435476f7b393d692b480b7728e776b2e6a555853d61dba8ca4",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-020/poetry_marks",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "49cacc15e10dbd435476f7b393d692b480b7728e776b2e6a555853d61dba8ca4",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-025/projection_determinism",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "c8befa3d8d985ab3c69943c6be281398c781374d1fb0ba1e9cef2bc6d3b71f0d",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-025/projection_determinism",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "c8befa3d8d985ab3c69943c6be281398c781374d1fb0ba1e9cef2bc6d3b71f0d",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-025/projection_determinism",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "c8befa3d8d985ab3c69943c6be281398c781374d1fb0ba1e9cef2bc6d3b71f0d",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-027/mixed_poetry_blocks",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "a6492405dfdc56f59c62d36c8fc61cd4a005b5427497d56674f193270ad77f3c",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-027/mixed_poetry_blocks",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "a6492405dfdc56f59c62d36c8fc61cd4a005b5427497d56674f193270ad77f3c",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-027/mixed_poetry_blocks",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "a6492405dfdc56f59c62d36c8fc61cd4a005b5427497d56674f193270ad77f3c",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-028/plain_prose_paragraphs",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "814e3316352352f6b25369219c7e02c393ebb850cd1a130664dae94fe052c4ba",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-028/plain_prose_paragraphs",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "814e3316352352f6b25369219c7e02c393ebb850cd1a130664dae94fe052c4ba",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-028/plain_prose_paragraphs",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "814e3316352352f6b25369219c7e02c393ebb850cd1a130664dae94fe052c4ba",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-029/plain_poetry_clipboard",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "b78e155dcaa9cbb6f82125f23529abe770e115c72f5f3192b53ad88a15c1c41f",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-029/plain_poetry_clipboard",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "b78e155dcaa9cbb6f82125f23529abe770e115c72f5f3192b53ad88a15c1c41f",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-029/plain_poetry_clipboard",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "b78e155dcaa9cbb6f82125f23529abe770e115c72f5f3192b53ad88a15c1c41f",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-030/supported_rich_clipboard",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "7a3b3b2527af1fcc8f9ac4b937d261551f01b86581747de5b450c2e7a13da123",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-030/supported_rich_clipboard",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "7a3b3b2527af1fcc8f9ac4b937d261551f01b86581747de5b450c2e7a13da123",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-030/supported_rich_clipboard",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "7a3b3b2527af1fcc8f9ac4b937d261551f01b86581747de5b450c2e7a13da123",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-018/future_schema_version",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.unsupported_schema_version",
+        "path": "/schema_version",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-018/future_schema_version",
+      "operation": "normalize",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.unsupported_schema_version",
+        "path": "/schema_version",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-018/future_schema_version",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.unsupported_schema_version",
+        "path": "/schema_version",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-018/unknown_node",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.unknown_node",
+        "path": "/content/0/type",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-018/unknown_node",
+      "operation": "normalize",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.unknown_node",
+        "path": "/content/0/type",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-018/unknown_node",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.unknown_node",
+        "path": "/content/0/type",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-018/unknown_mark",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.unknown_mark",
+        "path": "/content/0/content/0/marks/0/type",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-018/unknown_mark",
+      "operation": "normalize",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.unknown_mark",
+        "path": "/content/0/content/0/marks/0/type",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-018/unknown_mark",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.unknown_mark",
+        "path": "/content/0/content/0/marks/0/type",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-018/unknown_attribute",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.unknown_attribute",
+        "path": "/content/0/class",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-018/unknown_attribute",
+      "operation": "normalize",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.unknown_attribute",
+        "path": "/content/0/class",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-018/unknown_attribute",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.unknown_attribute",
+        "path": "/content/0/class",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-032/active_html_plain_fallback",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "680671c21b429e3c8395502cfcd65593999fd0e09dc3d9131e8bae5f5682d069",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-032/active_html_plain_fallback",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "680671c21b429e3c8395502cfcd65593999fd0e09dc3d9131e8bae5f5682d069",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-032/active_html_plain_fallback",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "680671c21b429e3c8395502cfcd65593999fd0e09dc3d9131e8bae5f5682d069",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-034/editor_metadata_ignored",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "680671c21b429e3c8395502cfcd65593999fd0e09dc3d9131e8bae5f5682d069",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-034/editor_metadata_ignored",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "680671c21b429e3c8395502cfcd65593999fd0e09dc3d9131e8bae5f5682d069",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-034/editor_metadata_ignored",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "680671c21b429e3c8395502cfcd65593999fd0e09dc3d9131e8bae5f5682d069",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-005/safe_links",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "7bd281306e88b83ccefea00d276c7d67cc87be53eefecefc4f8220651efd5d8e",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-005/safe_links",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "7bd281306e88b83ccefea00d276c7d67cc87be53eefecefc4f8220651efd5d8e",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-005/safe_links",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "7bd281306e88b83ccefea00d276c7d67cc87be53eefecefc4f8220651efd5d8e",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-005/unsafe_link_scheme",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.unsafe_url",
+        "path": "/content/0/content/0/marks/0/attrs/href",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-005/unsafe_link_scheme",
+      "operation": "normalize",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.unsafe_url",
+        "path": "/content/0/content/0/marks/0/attrs/href",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-005/unsafe_link_scheme",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.unsafe_url",
+        "path": "/content/0/content/0/marks/0/attrs/href",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-012/valid_effective_grid",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "8d02fec4bdd4b062d2e92b7da285ddc3b1f9da47b1358efe25608c16dd86513b",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-012/valid_effective_grid",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "8d02fec4bdd4b062d2e92b7da285ddc3b1f9da47b1358efe25608c16dd86513b",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-012/valid_effective_grid",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "8d02fec4bdd4b062d2e92b7da285ddc3b1f9da47b1358efe25608c16dd86513b",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-012/malformed_effective_grid",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.table_not_rectangular",
+        "path": "/content/0",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-012/malformed_effective_grid",
+      "operation": "normalize",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.table_not_rectangular",
+        "path": "/content/0",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-012/malformed_effective_grid",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.table_not_rectangular",
+        "path": "/content/0",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-022/escaped_strings",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "76491364286577bc5e260180422d6311a785f041ab6a280ceec832deced0017a",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-022/escaped_strings",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "76491364286577bc5e260180422d6311a785f041ab6a280ceec832deced0017a",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-022/escaped_strings",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "76491364286577bc5e260180422d6311a785f041ab6a280ceec832deced0017a",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-022/active_link_target",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.unsafe_url",
+        "path": "/content/0/content/0/marks/0/attrs/href",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-022/active_link_target",
+      "operation": "normalize",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.unsafe_url",
+        "path": "/content/0/content/0/marks/0/attrs/href",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-022/active_link_target",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.unsafe_url",
+        "path": "/content/0/content/0/marks/0/attrs/href",
+        "category": null,
+        "limit": null,
+        "maximum": null,
+        "observed": null
+      }
+    },
+    {
+      "id": "DOC-026/just_below_document_bytes/just_below",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "1c263d9ce7797f369534bb1dccb2627b9b220b3570dcac32126a938ad82c5eb2",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_document_bytes/just_below",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "1c263d9ce7797f369534bb1dccb2627b9b220b3570dcac32126a938ad82c5eb2",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_document_bytes/just_below",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "1c263d9ce7797f369534bb1dccb2627b9b220b3570dcac32126a938ad82c5eb2",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_document_bytes/at_limit",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "d0f768f7f34dd2233bf1e9d2a9c124d50947633da81a774840b7cf75b458b587",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_document_bytes/at_limit",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "d0f768f7f34dd2233bf1e9d2a9c124d50947633da81a774840b7cf75b458b587",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_document_bytes/at_limit",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "d0f768f7f34dd2233bf1e9d2a9c124d50947633da81a774840b7cf75b458b587",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/over_document_bytes/over_limit",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "",
+        "category": null,
+        "limit": "document_bytes",
+        "maximum": "2097152",
+        "observed": "2097153"
+      }
+    },
+    {
+      "id": "DOC-026/over_document_bytes/over_limit",
+      "operation": "normalize",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "",
+        "category": null,
+        "limit": "document_bytes",
+        "maximum": "2097152",
+        "observed": "2097153"
+      }
+    },
+    {
+      "id": "DOC-026/over_document_bytes/over_limit",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "",
+        "category": null,
+        "limit": "document_bytes",
+        "maximum": "2097152",
+        "observed": "2097153"
+      }
+    },
+    {
+      "id": "DOC-026/just_below_tree_depth/just_below",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "3a6001de535c8d8050da3e63bf6ad8a4bc5c48728ac45db3a9468f4824e86837",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_tree_depth/just_below",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "3a6001de535c8d8050da3e63bf6ad8a4bc5c48728ac45db3a9468f4824e86837",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_tree_depth/just_below",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "3a6001de535c8d8050da3e63bf6ad8a4bc5c48728ac45db3a9468f4824e86837",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_tree_depth/at_limit",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "cd70ab315fd57b7c435de3932117ac9ef6d77d02f80e2e1a4643bb949c578209",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_tree_depth/at_limit",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "cd70ab315fd57b7c435de3932117ac9ef6d77d02f80e2e1a4643bb949c578209",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_tree_depth/at_limit",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "cd70ab315fd57b7c435de3932117ac9ef6d77d02f80e2e1a4643bb949c578209",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/over_tree_depth/over_limit",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0",
+        "category": null,
+        "limit": "tree_depth",
+        "maximum": "32",
+        "observed": "33"
+      }
+    },
+    {
+      "id": "DOC-026/over_tree_depth/over_limit",
+      "operation": "normalize",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0",
+        "category": null,
+        "limit": "tree_depth",
+        "maximum": "32",
+        "observed": "33"
+      }
+    },
+    {
+      "id": "DOC-026/over_tree_depth/over_limit",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0/content/0",
+        "category": null,
+        "limit": "tree_depth",
+        "maximum": "32",
+        "observed": "33"
+      }
+    },
+    {
+      "id": "DOC-026/just_below_node_count/just_below",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "d4ab114ea961318a60f17acee674d951ed0cdfa666020dede40e1a8db5fd4630",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_node_count/just_below",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "d4ab114ea961318a60f17acee674d951ed0cdfa666020dede40e1a8db5fd4630",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_node_count/just_below",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "d4ab114ea961318a60f17acee674d951ed0cdfa666020dede40e1a8db5fd4630",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_node_count/at_limit",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "7344a0aea540b49d7b2f862e61ab5b77bcd0598738802340d00dccdeb77a9a14",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_node_count/at_limit",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "7344a0aea540b49d7b2f862e61ab5b77bcd0598738802340d00dccdeb77a9a14",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_node_count/at_limit",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "7344a0aea540b49d7b2f862e61ab5b77bcd0598738802340d00dccdeb77a9a14",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/over_node_count/over_limit",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "/content/25000/content/0",
+        "category": null,
+        "limit": "node_count",
+        "maximum": "50000",
+        "observed": "50001"
+      }
+    },
+    {
+      "id": "DOC-026/over_node_count/over_limit",
+      "operation": "normalize",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "/content/25000/content/0",
+        "category": null,
+        "limit": "node_count",
+        "maximum": "50000",
+        "observed": "50001"
+      }
+    },
+    {
+      "id": "DOC-026/over_node_count/over_limit",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "/content/25000/content/0",
+        "category": null,
+        "limit": "node_count",
+        "maximum": "50000",
+        "observed": "50001"
+      }
+    },
+    {
+      "id": "DOC-026/just_below_text_length/just_below",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "65c61093e02d51832a75315caa24462c072f153fdc863115f90a89d9846c521c",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_text_length/just_below",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "65c61093e02d51832a75315caa24462c072f153fdc863115f90a89d9846c521c",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_text_length/just_below",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "65c61093e02d51832a75315caa24462c072f153fdc863115f90a89d9846c521c",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_text_length/at_limit",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "899400990f6d818bc962f1fab4db2cb7651a0a793a0345576dabd69b9bb4a46e",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_text_length/at_limit",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "899400990f6d818bc962f1fab4db2cb7651a0a793a0345576dabd69b9bb4a46e",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_text_length/at_limit",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "899400990f6d818bc962f1fab4db2cb7651a0a793a0345576dabd69b9bb4a46e",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/over_text_length/over_limit",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "/content/0/content/0",
+        "category": null,
+        "limit": "text_length",
+        "maximum": "262144",
+        "observed": "262145"
+      }
+    },
+    {
+      "id": "DOC-026/over_text_length/over_limit",
+      "operation": "normalize",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "/content/0/content/0",
+        "category": null,
+        "limit": "text_length",
+        "maximum": "262144",
+        "observed": "262145"
+      }
+    },
+    {
+      "id": "DOC-026/over_text_length/over_limit",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "/content/0/content/0",
+        "category": null,
+        "limit": "text_length",
+        "maximum": "262144",
+        "observed": "262145"
+      }
+    },
+    {
+      "id": "DOC-026/just_below_table_rows/just_below",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "5d77e625381763fdde3d38ea90d93ebdc392b7ed1c6bfb91f5be7c5e961a91c0",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_table_rows/just_below",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "5d77e625381763fdde3d38ea90d93ebdc392b7ed1c6bfb91f5be7c5e961a91c0",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_table_rows/just_below",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "5d77e625381763fdde3d38ea90d93ebdc392b7ed1c6bfb91f5be7c5e961a91c0",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_table_rows/at_limit",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "ec78c078a13c7034e0e7a0a1a20980d1184933afbd8a0e997c9a8b4559e36114",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_table_rows/at_limit",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "ec78c078a13c7034e0e7a0a1a20980d1184933afbd8a0e997c9a8b4559e36114",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_table_rows/at_limit",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "ec78c078a13c7034e0e7a0a1a20980d1184933afbd8a0e997c9a8b4559e36114",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/over_table_rows/over_limit",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "/content/0",
+        "category": null,
+        "limit": "table_rows",
+        "maximum": "500",
+        "observed": "501"
+      }
+    },
+    {
+      "id": "DOC-026/over_table_rows/over_limit",
+      "operation": "normalize",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "/content/0",
+        "category": null,
+        "limit": "table_rows",
+        "maximum": "500",
+        "observed": "501"
+      }
+    },
+    {
+      "id": "DOC-026/over_table_rows/over_limit",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "/content/0",
+        "category": null,
+        "limit": "table_rows",
+        "maximum": "500",
+        "observed": "501"
+      }
+    },
+    {
+      "id": "DOC-026/just_below_table_effective_columns/just_below",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "b6342af0aedae8a4364706af52302204181ab0da02e24b3cd5f14ee46818e636",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_table_effective_columns/just_below",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "b6342af0aedae8a4364706af52302204181ab0da02e24b3cd5f14ee46818e636",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_table_effective_columns/just_below",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "b6342af0aedae8a4364706af52302204181ab0da02e24b3cd5f14ee46818e636",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_table_effective_columns/at_limit",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "c051f5c85fa5e2475ebb144c661f72c69f49afe6d75a62573968e4aaaba33d3b",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_table_effective_columns/at_limit",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "c051f5c85fa5e2475ebb144c661f72c69f49afe6d75a62573968e4aaaba33d3b",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_table_effective_columns/at_limit",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "c051f5c85fa5e2475ebb144c661f72c69f49afe6d75a62573968e4aaaba33d3b",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/over_table_effective_columns/over_limit",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "/content/0/content/0/content/50/attrs/colspan",
+        "category": null,
+        "limit": "table_effective_columns",
+        "maximum": "50",
+        "observed": "51"
+      }
+    },
+    {
+      "id": "DOC-026/over_table_effective_columns/over_limit",
+      "operation": "normalize",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "/content/0/content/0/content/50/attrs/colspan",
+        "category": null,
+        "limit": "table_effective_columns",
+        "maximum": "50",
+        "observed": "51"
+      }
+    },
+    {
+      "id": "DOC-026/over_table_effective_columns/over_limit",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "/content/0/content/0/content/50/attrs/colspan",
+        "category": null,
+        "limit": "table_effective_columns",
+        "maximum": "50",
+        "observed": "51"
+      }
+    },
+    {
+      "id": "DOC-026/just_below_attribute_length/just_below",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "fa89e5b0992b1b2796fe674acafcb7390f2101e5c061a1c6b7ca1b7aeb1f2faa",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_attribute_length/just_below",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "fa89e5b0992b1b2796fe674acafcb7390f2101e5c061a1c6b7ca1b7aeb1f2faa",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_attribute_length/just_below",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "fa89e5b0992b1b2796fe674acafcb7390f2101e5c061a1c6b7ca1b7aeb1f2faa",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_attribute_length/at_limit",
+      "operation": "validate",
+      "status": "accepted",
+      "canonicalSha256": "5a20bb0a9ff1df450d8758a5ca3917d49ff5c5be6b27ffe7ad486792d1ad9f88",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_attribute_length/at_limit",
+      "operation": "normalize",
+      "status": "accepted",
+      "canonicalSha256": "5a20bb0a9ff1df450d8758a5ca3917d49ff5c5be6b27ffe7ad486792d1ad9f88",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/just_below_attribute_length/at_limit",
+      "operation": "canonical",
+      "status": "accepted",
+      "canonicalSha256": "5a20bb0a9ff1df450d8758a5ca3917d49ff5c5be6b27ffe7ad486792d1ad9f88",
+      "diagnostic": null
+    },
+    {
+      "id": "DOC-026/over_attribute_length/over_limit",
+      "operation": "validate",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "/content/0/content/0/marks/0/attrs/title",
+        "category": null,
+        "limit": "attribute_length",
+        "maximum": "8192",
+        "observed": "8193"
+      }
+    },
+    {
+      "id": "DOC-026/over_attribute_length/over_limit",
+      "operation": "normalize",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "/content/0/content/0/marks/0/attrs/title",
+        "category": null,
+        "limit": "attribute_length",
+        "maximum": "8192",
+        "observed": "8193"
+      }
+    },
+    {
+      "id": "DOC-026/over_attribute_length/over_limit",
+      "operation": "canonical",
+      "status": "refused",
+      "canonicalSha256": null,
+      "diagnostic": {
+        "code": "kwdj.resource_limit_exceeded",
+        "path": "/content/0/content/0/marks/0/attrs/title",
+        "category": null,
+        "limit": "attribute_length",
+        "maximum": "8192",
+        "observed": "8193"
+      }
+    }
+  ]
+}

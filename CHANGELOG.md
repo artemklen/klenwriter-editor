@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- OSR-76: bounded borrowed-Uint8Array validate/normalize/canonical WASM exports,
+  explicit identity facts and lossless u64 transport; native/Node-WASM parity on
+  an immutable licensed synthetic snapshot, stage dispositions and boundary tests.
+
 - OSR-77: закреплено custom canonical JSON v1 без смены valid bytes; независимые
   lossless JS/native vectors; неизвестные поля пустых node/mark variants теперь
   отказывают, вместо молчаливого удаления.

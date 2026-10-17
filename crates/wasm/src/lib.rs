@@ -1,5 +1,9 @@
-//! Distribution boundary; the bootstrap exposes build identity, not an editor.
+//! Distribution boundary: build identity and unstable versioned codec, not an editor.
 #![forbid(unsafe_code)]
+
+pub mod codec;
+#[cfg(target_arch = "wasm32")]
+mod codec_browser;
 
 use serde::{Deserialize, Serialize};
 

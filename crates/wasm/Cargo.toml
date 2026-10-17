@@ -25,14 +25,12 @@ editor_engine.workspace = true
 editor_kwdj.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+uuid = { version = "=1.23.3", default-features = false }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen.workspace = true
 js-sys.workspace = true
 serde-wasm-bindgen.workspace = true
-
-[dev-dependencies]
-uuid = { version = "=1.23.3", default-features = false }
 
 [[example]]
 name = "projection_budget_probe"
