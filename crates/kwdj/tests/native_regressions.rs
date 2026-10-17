@@ -2,7 +2,7 @@
 // Synthetic source cases; provenance/source-files.json.
 use std::cell::Cell;
 
-use editor_internal_kwdj::{
+use klenwriter_editor_kwdj::{
     IdentityResolver, IdentityResolverError, IdentityStatus, KwdjErrorCode,
     MAX_TABLE_EFFECTIVE_COLUMNS, decode_normalize_validate, validate_normalized_json,
 };
@@ -366,7 +366,7 @@ fn canonical_serialization_sorts_keys_and_has_no_whitespace() {
 }
 
 fn assert_resolution(
-    result: Result<editor_internal_kwdj::ValidatedDocument, editor_internal_kwdj::KwdjError>,
+    result: Result<klenwriter_editor_kwdj::ValidatedDocument, klenwriter_editor_kwdj::KwdjError>,
     expected_code: Option<KwdjErrorCode>,
     category: &str,
 ) {

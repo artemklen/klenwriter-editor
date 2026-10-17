@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { gzipSync } from 'node:zlib';
 import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { identity } from './package-identity.mjs';
 
 function output(command, args) {
   const result = spawnSync(command, args, { encoding: 'utf8' });
@@ -14,7 +15,7 @@ const byId = new Map(metadata.packages.map(pkg => [pkg.id, pkg]));
 const members = new Set(metadata.workspace_members);
 const resolved = new Map(metadata.resolve.nodes.map(node => [node.id, node]));
 // Enforce the architectural boundary on the full transitive closure, not just imports.
-for (const name of ['editor-internal-core', 'editor-internal-engine', 'editor-internal-kwdj']) {
+for (const name of ['klenwriter-editor-core', 'klenwriter-editor-engine', 'klenwriter-editor-kwdj']) {
   const pkg = metadata.packages.find(pkg => pkg.name === name);
   const closure = new Set();
   function visit(id) {
@@ -25,16 +26,16 @@ for (const name of ['editor-internal-core', 'editor-internal-engine', 'editor-in
   visit(pkg.id);
   for (const id of closure) {
     const dep = byId.get(id);
-    assert(!/^(wasm-bindgen|js-sys|web-sys|sqlx|tokio|editor-internal-wasm)/.test(dep.name), `${name} imports host/runtime ${dep.name}`);
-    if (name === 'editor-internal-engine') assert.notEqual(dep.name, 'editor-internal-kwdj');
-    if (name === 'editor-internal-core') assert(!/^editor-internal-(engine|kwdj)$/.test(dep.name));
+    assert(!/^(wasm-bindgen|js-sys|web-sys|sqlx|tokio|klenwriter-editor-wasm)/.test(dep.name), `${name} imports host/runtime ${dep.name}`);
+    if (name === 'klenwriter-editor-engine') assert.notEqual(dep.name, 'klenwriter-editor-kwdj');
+    if (name === 'klenwriter-editor-core') assert(!/^klenwriter-editor-(engine|kwdj)$/.test(dep.name));
   }
 }
 for (const pkg of metadata.packages) {
   assert(pkg.license, `Missing dependency license for ${pkg.name}`);
   assert(!pkg.source || pkg.source.startsWith('registry+https://github.com/rust-lang/crates.io-index'), `Nonpublic source ${pkg.name}`);
   if (members.has(pkg.id)) {
-    assert.deepEqual(pkg.publish, [], `${pkg.name} must not publish before OSR-54`);
+    assert.deepEqual(pkg.publish, [], `${pkg.name} must not publish before OSR-71`);
     assert.equal(pkg.license, 'MIT OR Apache-2.0');
   }
 }
@@ -42,7 +43,7 @@ const lock = JSON.parse(readFileSync('package-lock.json', 'utf8'));
 const packageGraph = { wasm: [], sdk: ['wasm'], dom: ['sdk'], kwdj: ['sdk'], vanilla: ['dom'], angular: ['vanilla'] };
 for (const [name, allowed] of Object.entries(packageGraph)) {
   const manifest = JSON.parse(readFileSync(`packages/${name}/package.json`, 'utf8'));
-  assert.deepEqual(Object.keys(manifest.dependencies).sort(), allowed.map(name => `@editor-internal/${name}`).sort(),
+  assert.deepEqual(Object.keys(manifest.dependencies).sort(), allowed.map(name => identity.web[name].name).sort(),
     `${name}: review a changed runtime dependency boundary against the ADR`);
 }
 for (const [path, pkg] of Object.entries(lock.packages)) {

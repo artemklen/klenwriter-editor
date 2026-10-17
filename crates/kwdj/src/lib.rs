@@ -93,13 +93,13 @@ pub struct CandidateDocument {
 /// `serde::Deserialize` implementation.
 ///
 /// ```compile_fail,E0424,E0451
-/// use editor_internal_kwdj::NormalizedDocument;
+/// use klenwriter_editor_kwdj::NormalizedDocument;
 /// // Private field: external crates cannot assemble an unchecked document.
 /// let _ = NormalizedDocument { inner: unimplemented!() };
 /// ```
 ///
 /// ```compile_fail
-/// use editor_internal_kwdj::NormalizedDocument;
+/// use klenwriter_editor_kwdj::NormalizedDocument;
 /// // No Deserialize: unchecked JSON cannot become NormalizedDocument.
 /// fn _parse(s: &str) -> NormalizedDocument {
 ///     serde_json::from_str(s).unwrap()

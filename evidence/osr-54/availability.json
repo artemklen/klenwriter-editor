@@ -1,0 +1,123 @@
+{
+  "issue": "OSR-54",
+  "observedAt": "2026-10-17T07:00:09.529964+00:00",
+  "productName": "KlenWriter Editor",
+  "records": [
+    {
+      "registry": "crates.io",
+      "name": "klenwriter-editor-core",
+      "url": "https://crates.io/api/v1/crates/klenwriter-editor-core",
+      "status": 404,
+      "serverDate": "Sat, 17 Oct 2026 07:00:08 GMT",
+      "bodySha256": "39bc09cba8836787cbccc34ca541f47b855dbf8c3ecd97fa0f3ca8c5d084235b",
+      "observation": "public record absent; no reservation or ownership claim"
+    },
+    {
+      "registry": "crates.io",
+      "name": "klenwriter-editor-engine",
+      "url": "https://crates.io/api/v1/crates/klenwriter-editor-engine",
+      "status": 404,
+      "serverDate": "Sat, 17 Oct 2026 07:00:08 GMT",
+      "bodySha256": "0bfc39290754a6a81699709609e43135482da7318960af2dffaa5f8f32790161",
+      "observation": "public record absent; no reservation or ownership claim"
+    },
+    {
+      "registry": "crates.io",
+      "name": "klenwriter-editor-kwdj",
+      "url": "https://crates.io/api/v1/crates/klenwriter-editor-kwdj",
+      "status": 404,
+      "serverDate": "Sat, 17 Oct 2026 07:00:08 GMT",
+      "bodySha256": "211f6f6d30e457b39f6277f69fbb17eccc80436b87d93feb5e7745b5a4d17201",
+      "observation": "public record absent; no reservation or ownership claim"
+    },
+    {
+      "registry": "crates.io",
+      "name": "klenwriter-editor-wasm",
+      "url": "https://crates.io/api/v1/crates/klenwriter-editor-wasm",
+      "status": 404,
+      "serverDate": "Sat, 17 Oct 2026 07:00:08 GMT",
+      "bodySha256": "00772ad48bf3d05afb30f294d4549a385ef451890c7bb3f60c34a661d74f4630",
+      "observation": "public record absent; no reservation or ownership claim"
+    },
+    {
+      "registry": "npm",
+      "name": "@klenwriter/editor",
+      "url": "https://registry.npmjs.org/%40klenwriter%2Feditor",
+      "status": 404,
+      "serverDate": "Sat, 17 Oct 2026 07:00:08 GMT",
+      "bodySha256": "c8d3eae160a892e32837db3dcae515e843e5383fef52b8141940c8bcf8b6d59f",
+      "observation": "public record absent; no reservation or ownership claim"
+    },
+    {
+      "registry": "npm",
+      "name": "@klenwriter/editor-wasm",
+      "url": "https://registry.npmjs.org/%40klenwriter%2Feditor-wasm",
+      "status": 404,
+      "serverDate": "Sat, 17 Oct 2026 07:00:09 GMT",
+      "bodySha256": "c8d3eae160a892e32837db3dcae515e843e5383fef52b8141940c8bcf8b6d59f",
+      "observation": "public record absent; no reservation or ownership claim"
+    },
+    {
+      "registry": "npm",
+      "name": "@klenwriter/editor-sdk",
+      "url": "https://registry.npmjs.org/%40klenwriter%2Feditor-sdk",
+      "status": 404,
+      "serverDate": "Sat, 17 Oct 2026 07:00:09 GMT",
+      "bodySha256": "c8d3eae160a892e32837db3dcae515e843e5383fef52b8141940c8bcf8b6d59f",
+      "observation": "public record absent; no reservation or ownership claim"
+    },
+    {
+      "registry": "npm",
+      "name": "@klenwriter/editor-dom",
+      "url": "https://registry.npmjs.org/%40klenwriter%2Feditor-dom",
+      "status": 404,
+      "serverDate": "Sat, 17 Oct 2026 07:00:09 GMT",
+      "bodySha256": "c8d3eae160a892e32837db3dcae515e843e5383fef52b8141940c8bcf8b6d59f",
+      "observation": "public record absent; no reservation or ownership claim"
+    },
+    {
+      "registry": "npm",
+      "name": "@klenwriter/editor-angular",
+      "url": "https://registry.npmjs.org/%40klenwriter%2Feditor-angular",
+      "status": 404,
+      "serverDate": "Sat, 17 Oct 2026 07:00:09 GMT",
+      "bodySha256": "c8d3eae160a892e32837db3dcae515e843e5383fef52b8141940c8bcf8b6d59f",
+      "observation": "public record absent; no reservation or ownership claim"
+    },
+    {
+      "registry": "npm",
+      "name": "@klenwriter/editor-kwdj",
+      "url": "https://registry.npmjs.org/%40klenwriter%2Feditor-kwdj",
+      "status": 404,
+      "serverDate": "Sat, 17 Oct 2026 07:00:09 GMT",
+      "bodySha256": "c8d3eae160a892e32837db3dcae515e843e5383fef52b8141940c8bcf8b6d59f",
+      "observation": "public record absent; no reservation or ownership claim"
+    }
+  ],
+  "scope": "Read-only exact-name public registry records; no publishing, namespace reservation, publisher authentication or trademark clearance.",
+  "repository": {
+    "isPrivate": false,
+    "licenseInfo": {
+      "key": "apache-2.0",
+      "name": "Apache License 2.0",
+      "nickname": ""
+    },
+    "nameWithOwner": "artemklen/klenwriter-editor",
+    "url": "https://github.com/artemklen/klenwriter-editor",
+    "viewerPermission": "ADMIN"
+  },
+  "publisherAuthorization": {
+    "githubRepository": "ADMIN",
+    "npmCli": "ENEEDAUTH; no authenticated publisher assertion",
+    "cratesIo": "No authenticated publish attempt; no publisher assertion",
+    "npmScopePages": "Public org/user pages returned403 to web reader; ownership unverified",
+    "publication": "Not attempted; OSR-71 gate"
+  },
+  "namingSearch": {
+    "queries": [
+      "\"KlenWriter Editor\"",
+      "\"klenwriter-editor\" npm crates"
+    ],
+    "result": "No indexed exact-name results returned; not an exhaustive conflict or trademark clearance"
+  }
+}

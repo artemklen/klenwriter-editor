@@ -1,8 +1,8 @@
 {
-  "name": "@editor-internal/sdk",
+  "name": "@klenwriter/editor-sdk",
   "version": "0.0.0",
   "private": true,
-  "description": "Internal sdk boundary; no editor implementation yet",
+  "description": "KlenWriter Editor: generic lifecycle sdk boundary; unpublished bootstrap",
   "type": "module",
   "license": "MIT OR Apache-2.0",
   "repository": {
@@ -15,7 +15,8 @@
     "LICENSE-MIT",
     "LICENSE-APACHE",
     "NOTICE",
-    "src"
+    "src",
+    "SOURCE-PROVENANCE.json"
   ],
   "exports": {
     ".": {
@@ -24,6 +25,11 @@
     }
   },
   "dependencies": {
-    "@editor-internal/wasm": "0.0.0"
+    "@klenwriter/editor-wasm": "0.0.0"
+  },
+  "klenwriterEditor": {
+    "role": "sdk",
+    "sourceProvenance": "SOURCE-PROVENANCE.json",
+    "publicApiStability": "bootstrap"
   }
 }

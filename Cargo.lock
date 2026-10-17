@@ -26,24 +26,24 @@ dependencies = [
 ]
 
 [[package]]
-name = "editor-internal-core"
+name = "klenwriter-editor-core"
 version = "0.0.0"
 dependencies = [
  "serde_json",
 ]
 
 [[package]]
-name = "editor-internal-engine"
+name = "klenwriter-editor-engine"
 version = "0.0.0"
 dependencies = [
- "editor-internal-core",
+ "klenwriter-editor-core",
 ]
 
 [[package]]
-name = "editor-internal-kwdj"
+name = "klenwriter-editor-kwdj"
 version = "0.0.0"
 dependencies = [
- "editor-internal-core",
+ "klenwriter-editor-core",
  "serde",
  "serde_json",
  "serde_path_to_error",
@@ -53,12 +53,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "editor-internal-wasm"
+name = "klenwriter-editor-wasm"
 version = "0.0.0"
 dependencies = [
- "editor-internal-core",
- "editor-internal-engine",
- "editor-internal-kwdj",
+ "klenwriter-editor-core",
+ "klenwriter-editor-engine",
+ "klenwriter-editor-kwdj",
  "js-sys",
  "serde",
  "serde-wasm-bindgen",

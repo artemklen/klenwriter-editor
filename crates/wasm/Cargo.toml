@@ -1,15 +1,20 @@
 [package]
-name = "editor-internal-wasm"
+name = "klenwriter-editor-wasm"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 publish.workspace = true
-description = "Internal wasm workspace boundary; pre-alpha bootstrap"
+description = "KlenWriter Editor WASM composition root; pre-alpha bootstrap"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
+
+[package.metadata.klenwriter-editor]
+role = "wasm"
+source-provenance = "SOURCE-PROVENANCE.json"
+public-api-stability = "bootstrap"
 
 [lints]
 workspace = true

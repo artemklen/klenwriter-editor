@@ -1,8 +1,8 @@
 {
-  "name": "@editor-internal/angular",
+  "name": "@klenwriter/editor-angular",
   "version": "0.0.0",
   "private": true,
-  "description": "Internal angular boundary; no editor implementation yet",
+  "description": "KlenWriter Editor: angular editor binding boundary; unpublished bootstrap",
   "type": "module",
   "license": "MIT OR Apache-2.0",
   "repository": {
@@ -15,7 +15,8 @@
     "LICENSE-MIT",
     "LICENSE-APACHE",
     "NOTICE",
-    "src"
+    "src",
+    "SOURCE-PROVENANCE.json"
   ],
   "exports": {
     ".": {
@@ -24,6 +25,11 @@
     }
   },
   "dependencies": {
-    "@editor-internal/vanilla": "0.0.0"
+    "@klenwriter/editor": "0.0.0"
+  },
+  "klenwriterEditor": {
+    "role": "angular",
+    "sourceProvenance": "SOURCE-PROVENANCE.json",
+    "publicApiStability": "bootstrap"
   }
 }

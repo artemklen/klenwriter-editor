@@ -1,5 +1,5 @@
 [package]
-name = "editor-internal-kwdj"
+name = "klenwriter-editor-kwdj"
 version.workspace = true
 edition.workspace = true
 rust-version = "1.89.0"
@@ -7,6 +7,13 @@ license.workspace = true
 repository.workspace = true
 publish.workspace = true
 description = "Closed KWDJ v1 profile, native codec and generic document admission"
+
+[package.metadata.klenwriter-editor]
+role = "kwdj"
+source-provenance = "SOURCE-PROVENANCE.json"
+public-api-stability = "bootstrap"
+profile-id = "org.klenwriter.kwdj"
+stored-schema-version = 1
 
 [lints]
 workspace = true

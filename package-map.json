@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "productName": "KlenWriter Editor",
+  "license": "MIT OR Apache-2.0",
+  "repository": "https://github.com/artemklen/klenwriter-editor",
+  "stage": "unpublished-bootstrap",
+  "versions": {
+    "packageSemver": "0.0.0",
+    "publicHostApiRevision": null,
+    "nativeWireProtocolRevision": null,
+    "kwdjSchemaVersion": 1,
+    "kwdjProfileId": "org.klenwriter.kwdj",
+    "wasmBindgenAbi": "0.2.129"
+  },
+  "publishingGate": "OSR-71",
+  "rust": {
+    "core": {
+      "name": "klenwriter-editor-core",
+      "legacyName": "editor-internal-core",
+      "path": "crates/core",
+      "role": "Generic semantic primitives"
+    },
+    "engine": {
+      "name": "klenwriter-editor-engine",
+      "legacyName": "editor-internal-engine",
+      "path": "crates/engine",
+      "role": "Generic session/transaction engine boundary"
+    },
+    "kwdj": {
+      "name": "klenwriter-editor-kwdj",
+      "legacyName": "editor-internal-kwdj",
+      "path": "crates/kwdj",
+      "role": "KWDJ v1 profile and codec"
+    },
+    "wasm": {
+      "name": "klenwriter-editor-wasm",
+      "legacyName": "editor-internal-wasm",
+      "path": "crates/wasm",
+      "role": "Generic WASM composition root"
+    }
+  },
+  "web": {
+    "wasm": {
+      "name": "@klenwriter/editor-wasm",
+      "legacyName": "@editor-internal/wasm",
+      "path": "packages/wasm",
+      "role": "Prebuilt generic WASM artifact and glue"
+    },
+    "sdk": {
+      "name": "@klenwriter/editor-sdk",
+      "legacyName": "@editor-internal/sdk",
+      "path": "packages/sdk",
+      "role": "Generic lifecycle SDK boundary"
+    },
+    "dom": {
+      "name": "@klenwriter/editor-dom",
+      "legacyName": "@editor-internal/dom",
+      "path": "packages/dom",
+      "role": "Generic DOM/input adapter boundary"
+    },
+    "vanilla": {
+      "name": "@klenwriter/editor",
+      "legacyName": "@editor-internal/vanilla",
+      "path": "packages/vanilla",
+      "role": "Framework-free editor binding boundary"
+    },
+    "angular": {
+      "name": "@klenwriter/editor-angular",
+      "legacyName": "@editor-internal/angular",
+      "path": "packages/angular",
+      "role": "Angular editor binding boundary"
+    },
+    "kwdj": {
+      "name": "@klenwriter/editor-kwdj",
+      "legacyName": "@editor-internal/kwdj",
+      "path": "packages/kwdj",
+      "role": "Optional KWDJ profile boundary"
+    }
+  }
+}

@@ -1,12 +1,17 @@
 [package]
-name = "editor-internal-core"
+name = "klenwriter-editor-core"
 version.workspace = true
 edition.workspace = true
 rust-version = "1.89.0"
 license.workspace = true
 repository.workspace = true
 publish.workspace = true
-description = "Internal core workspace boundary; pre-alpha bootstrap"
+description = "KlenWriter Editor generic semantic primitives; pre-alpha bootstrap"
+
+[package.metadata.klenwriter-editor]
+role = "core"
+source-provenance = "SOURCE-PROVENANCE.json"
+public-api-stability = "bootstrap"
 
 [lints]
 workspace = true

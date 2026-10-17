@@ -1,8 +1,8 @@
 {
-  "name": "@editor-internal/wasm",
+  "name": "@klenwriter/editor-wasm",
   "version": "0.0.0",
   "private": true,
-  "description": "Internal wasm boundary; no editor implementation yet",
+  "description": "KlenWriter Editor: prebuilt generic wasm artifact and glue; unpublished bootstrap",
   "type": "module",
   "license": "MIT OR Apache-2.0",
   "repository": {
@@ -16,7 +16,8 @@
     "LICENSE-APACHE",
     "NOTICE",
     "src",
-    "THIRD-PARTY-NOTICES"
+    "THIRD-PARTY-NOTICES",
+    "SOURCE-PROVENANCE.json"
   ],
   "exports": {
     ".": {
@@ -29,5 +30,10 @@
     },
     "./artifact.wasm": "./dist/editor_wasm_bg.wasm"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "klenwriterEditor": {
+    "role": "wasm",
+    "sourceProvenance": "SOURCE-PROVENANCE.json",
+    "publicApiStability": "bootstrap"
+  }
 }

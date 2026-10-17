@@ -1,12 +1,17 @@
 [package]
-name = "editor-internal-engine"
+name = "klenwriter-editor-engine"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 publish.workspace = true
-description = "Internal engine workspace boundary; pre-alpha bootstrap"
+description = "KlenWriter Editor generic engine boundary; pre-alpha bootstrap"
+
+[package.metadata.klenwriter-editor]
+role = "engine"
+source-provenance = "SOURCE-PROVENANCE.json"
+public-api-stability = "bootstrap"
 
 [lints]
 workspace = true

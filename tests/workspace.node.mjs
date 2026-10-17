@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { resolve, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { capturedSourceHash } from '../scripts/m0-perf/source-integrity.mjs';
+import { identity } from '../scripts/package-identity.mjs';
 
 test('calibration verifies the historical lock and detects tampering independently of workspace updates', () => {
   const root = mkdtempSync(join(tmpdir(), 'editor-calibration-'));
@@ -45,14 +46,14 @@ test('all packed JS boundaries install in an external project with no checkout/t
     const program = `
       import assert from 'node:assert/strict';
       import { readFileSync } from 'node:fs';
-      for (const name of ['sdk','dom','kwdj','vanilla','angular']) {
-        const pkg = await import('@editor-internal/' + name);
+      for (const name of ${JSON.stringify(['sdk','dom','kwdj','vanilla','angular'].map(id => identity.web[id].name))}) {
+        const pkg = await import(name);
         assert.equal(pkg.artifactStage, 'workspace-bootstrap');
       }
-      const wasm = await import('@editor-internal/wasm/artifact');
-      await wasm.default({ module_or_path: readFileSync(new URL(import.meta.resolve('@editor-internal/wasm/artifact.wasm'))) });
+      const wasm = await import('@klenwriter/editor-wasm/artifact');
+      await wasm.default({ module_or_path: readFileSync(new URL(import.meta.resolve('@klenwriter/editor-wasm/artifact.wasm'))) });
       assert.equal(wasm.buildInfo().stage, 'workspace-bootstrap');
-      assert.match(readFileSync(new URL(import.meta.resolve('@editor-internal/dom/style.css')), 'utf8'), /:focus-visible/);
+      assert.match(readFileSync(new URL(import.meta.resolve('@klenwriter/editor-dom/style.css')), 'utf8'), /:focus-visible/);
     `;
     const consumer = join(dir, 'consumer.mjs');
     writeFileSync(consumer, program);
@@ -72,10 +73,10 @@ name = "editor-native-consumer"
 version = "0.0.0"
 edition = "2024"
 [dependencies]
-editor_core = { package = "editor-internal-core", path = ${JSON.stringify(resolve('crates/core'))} }
-editor_kwdj = { package = "editor-internal-kwdj", path = ${JSON.stringify(resolve('crates/kwdj'))} }
+klenwriter-editor-core = { path = ${JSON.stringify(resolve('crates/core'))} }
+klenwriter-editor-kwdj = { path = ${JSON.stringify(resolve('crates/kwdj'))} }
 `);
-    writeFileSync(join(dir, 'src/main.rs'), 'fn main() { println!("{} {}", editor_core::PACKAGE_VERSION, editor_kwdj::PROFILE_ID); }');
+    writeFileSync(join(dir, 'src/main.rs'), 'fn main() { println!("{} {}", klenwriter_editor_core::PACKAGE_VERSION, klenwriter_editor_kwdj::PROFILE_ID); }');
     const result = spawnSync('cargo', ['+1.97.1', 'run', '--offline', '--quiet', '--manifest-path', join(dir, 'Cargo.toml')], {
       cwd: dir, encoding: 'utf8', env: { ...process.env, CARGO_TARGET_DIR: join(dir, 'target') },
     });

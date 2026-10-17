@@ -3,6 +3,7 @@ import { copyFileSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { writeDependencyNotices } from './dependency-notices.mjs';
+import { identity } from './package-identity.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 process.chdir(root);
@@ -30,12 +31,12 @@ for (const name of packages) {
   rmSync(`packages/${name}/tsconfig.tsbuildinfo`, { force: true });
 }
 run(process.execPath, ['node_modules/typescript/bin/tsc', '-b', '--force']);
-run(bindgen, ['target/wasm32-unknown-unknown/release/editor_internal_wasm.wasm',
+run(bindgen, [`target/wasm32-unknown-unknown/release/${identity.rust.wasm.name.replaceAll('-', '_')}.wasm`,
   '--target', 'web', '--out-dir', 'packages/wasm/dist', '--out-name', 'editor_wasm']);
 copyFileSync('packages/dom/src/style.css', 'packages/dom/dist/style.css');
 mkdirSync('artifacts', { recursive: true });
 // Input to a separate native/WASM agreement check; not a semantic parity claim.
-run('cargo', ['run', '--locked', '--quiet', '-p', 'editor-internal-wasm', '--example', 'build_info']);
+run('cargo', ['run', '--locked', '--quiet', '-p', identity.rust.wasm.name, '--example', 'build_info']);
 // Keep the documented toolchain contract in step with the artifact builder.
 const manifest = readFileSync('rust-toolchain.toml', 'utf8');
 if (!manifest.includes('channel = "1.97.1"')) throw new Error('Update the build/toolchain contract together');

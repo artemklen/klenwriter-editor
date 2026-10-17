@@ -57,8 +57,10 @@ linker входят в build environment; production size budgets провери
 
 Все Rust crates имеют `publish = false`, JS packages — `private: true`.
 Ни один install/build/check hook не публикует пакеты и не разворачивает CMS.
-Окончательное имя и права registry — OSR-54; publishing — OSR-71.
-Нельзя публиковать internal tarballs как alpha. Native codec извлечён в OSR-29;
+Имена, package map и version namespaces закреплены [OSR-54](docs/identity.md).
+Проверка npm CLI сейчас даёт ENEEDAUTH; publisher authorization не заявляется.
+Registry write/проверка фактических прав перед publish — OSR-71.
+Нельзя публиковать bootstrap tarballs как alpha. Native codec извлечён в OSR-29;
 web packages пока содержат границы и диагностический build identity. Реальные
 session/DOM/Angular APIs — будущие задачи.
 
@@ -75,3 +77,6 @@ runtime dependency требует основания из ADR; Angular толь�
 только после clipboard browser proof, test/generation tools не в browser runtime.
 Перед переносом CMS исходников/fixtures нужны per-file provenance и сохранение
 notices; пользовательские документы/секреты не входят в grant владельца.
+Пакеты включают точную копию `provenance/source-files.json`. После отдельной
+проверки изменения owner grant выполните `npm run sync:provenance`; metadata lint
+отказывает при stale копии или расхождении лицензий с корнем.
