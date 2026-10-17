@@ -1,0 +1,27 @@
+{
+  "issue": "OSR-35",
+  "encoding": "gzip; exact unedited generated observation bytes",
+  "rawBytes": 3255658,
+  "rawSha256": "94612834ca99d12d85dc702a79bae057dd9f8ad07c0fe0389ad1d7a75ff3e34d",
+  "gzipBytes": 102785,
+  "gzipSha256": "4e995a7d71e8e805811183d62bf23ec198a2b94121cf8a23097ed6362fdbf241",
+  "observations": 102,
+  "failures": 0,
+  "sourceHashes": {
+    "spikes/editing-hosts/index.html": "28c85c89175c38a86eb01ba0617e83dfabc51343903eb9c197ef1fe6d9410fd4",
+    "spikes/editing-hosts/app.js": "20db3ac034dbf67f9cab96a087f275ad908d2a1ebf4e1b72eb37e62d3ef5d91c",
+    "spikes/editing-hosts/style.css": "1e46bb29d0e2242f9ed952287ccfe27b9b17d47b02c4e13d31752aee068ac85c",
+    "spikes/editing-hosts/server.mjs": "0de843f52a1a2dc301ac43ebff1c6bedcf55ec7dc93cbd53c84f00a62d35c999",
+    "tests/editing-hosts.spec.js": "aabe9aab7a76d75c774b974dc5690e2a3cf2d09803a0dfc2a13c5d254244865c",
+    "playwright.config.js": "827bf5bafe5caadaaa3815e0b67051d9db080d6731320664983c40ceb1822c40",
+    "package-lock.json": "e34b0bf3150073f2f670f8eaedb1569794013915cef9fdc74203a7d0a82bc1ab"
+  },
+  "scope": "Required unchanged M0 browser regression; does not establish production engine/mounted/OS IME behavior",
+  "frozenOriginalRestored": "evidence/osr-58/automated/observations.json from source HEAD ac80d99babfc2bb47128b5ad683c17766f63a303",
+  "requirementClassifications": {
+    "MET": 28,
+    "GAP": 26,
+    "OBSERVATION": 48
+  },
+  "classificationNote": "Historical M0 document-level requirements across both single/islands probes; harness passes mean observations collected. No production editor/OS IME acceptance."
+}

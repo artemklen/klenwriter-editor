@@ -1,0 +1,2747 @@
+{
+  "format": "klenwriter-command-vectors/1",
+  "version": 1,
+  "source_head": "48a11fec45d07c39c7fb9f327da2443d6e25a78f",
+  "status": "independent_literal_authority_for_OSR-35; executable results pending",
+  "authority_note": "Literal synthetic before/intent/after expectations chosen during OSR-35 Refine, independently of command implementation. Historical feature classification follows OSR-60 source audit; exact policies are new acceptance expectations. Codec authority remains contracts/kwdj/v1. No mounted browser/host acceptance is claimed.",
+  "schema_source": "/Users/artem/projects/klenwriter-editor/contracts/kwdj/v1/kwdj.schema.json",
+  "corpus_source": "/Users/artem/projects/klenwriter-editor/contracts/kwdj/v1/manifest.json",
+  "policy_sources": [
+    "/tmp/osr-35-contract-proposal.md",
+    "/Users/artem/projects/klenwriter-editor/docs/m0/cms-inventory.md",
+    "/Users/artem/projects/klenwriter-editor/docs/m0/unicode-positions.md",
+    "/Users/artem/projects/klenwriter-editor/docs/m0/ux-contract.md"
+  ],
+  "conventions": {
+    "document": "Every before/expected document is a full KWDJ v1 prose envelope. Object order is insignificant; expected canonicalization uses existing codec rules. Empty text leaves and empty marks arrays are not authored.",
+    "anchors": "Paths are canonical semantic JSON-pointer node paths, not SDK IDs. Text utf16 is a literal UTF-16 code-unit offset; child path names its parent and index its child gap; edge path names its atomic node. A caret denotes identical anchor/focus. Selection explicitly retains direction/affinity. Surviving identity requirements are separate from these semantic paths.",
+    "intents": "Semantic strings deliberately do not freeze future command/provider IDs or DTOs. Refusal reason_semantic values are proposed categories, not claims that a stable machine code already exists.",
+    "facts": "Historical60 classification means the feature is source-inventoried; every exact golden policy here is synthetic/proposed, not a historical measured command result. New nested/task authoring and Unicode boundary capabilities are explicitly labelled new.",
+    "query_equivalence": "Availability predicts the full result for exactly the supplied payload, limits, captured state and identity facts. Query changes no state or allocator high-water; real refusal preserves all committed facets.",
+    "state": "Unless explicit, document commands preserve stored-mark override policy from the accepted35 contract. Changed advances document revision once and adds exactly one journal entry; selection epoch changes only when the resulting selection/state facet changes. Refused and dismiss preserve document/selection/epoch/stored marks/revision/journal/maps/dirty. Execution may consume abandoned fresh IDs under34; capability query never may.",
+    "u64": "The value18446744073709551615 is an exact JSON integer literal in vector24; do not round it through a JS Number.",
+    "coverage_limit": "Illustrative24 vectors are not the complete35 acceptance suite. Stored marks+future typing, query allocator purity, generated invariants, move/duplicate/remove, all limit/refusal variants and native/WASM/mounted proof are still required by their accepted tasks."
+  },
+  "vectors": [
+    {
+      "id": "KW35-001",
+      "name": "paragraph_enter_middle_preserves_layout_and_marks",
+      "status": "independent_golden",
+      "feature_class": "historical60_feature_exact_policy_proposed",
+      "corpus_schema_examples": [
+        "DOC-003/headings_and_layout",
+        "DOC-004/nested_compatible_marks"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "align": "right",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "a😀b",
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "enter"
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "align": "right",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "a",
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "attrs": {
+                "align": "right",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "😀b",
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/1/content/0",
+          "utf16": 0,
+          "affinity": "after"
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": [
+        "UTF-16 offset1 is after ASCII a and before the whole emoji. Neither copy loses align/first_line_indent or strong."
+      ]
+    },
+    {
+      "id": "KW35-002",
+      "name": "empty_paragraph_enter_uses_valid_empty_child_gap",
+      "status": "independent_golden",
+      "feature_class": "historical60_feature_exact_policy_proposed",
+      "corpus_schema_examples": [
+        "DOC-001/empty_prose"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": []
+            }
+          ]
+        },
+        "caret": {
+          "kind": "child",
+          "path": "/content/0",
+          "index": 0,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "enter"
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": []
+            },
+            {
+              "type": "paragraph",
+              "content": []
+            }
+          ]
+        },
+        "caret": {
+          "kind": "child",
+          "path": "/content/1",
+          "index": 0,
+          "affinity": "after"
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": [
+        "No empty text leaf is persisted; both empty paragraphs are valid semantic nodes."
+      ]
+    },
+    {
+      "id": "KW35-003",
+      "name": "enter_replaces_selected_range_then_splits_once",
+      "status": "independent_golden",
+      "feature_class": "historical60_feature_exact_policy_proposed",
+      "corpus_schema_examples": [
+        "DOC-028/plain_prose_paragraphs"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "abcd"
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "path": "/content/0/content/0",
+            "utf16": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "path": "/content/0/content/0",
+            "utf16": 3,
+            "affinity": "before"
+          }
+        }
+      },
+      "intent": {
+        "semantic": "enter"
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "a"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "d"
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/1/content/0",
+          "utf16": 0,
+          "affinity": "after"
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": [
+        "Only bc is replaced; prefix a and suffix d survive in separate paragraphs in one document revision."
+      ]
+    },
+    {
+      "id": "KW35-004",
+      "name": "heading_enter_start_inserts_layout_paragraph_before_heading",
+      "status": "independent_golden",
+      "feature_class": "historical60_feature_exact_policy_proposed",
+      "corpus_schema_examples": [
+        "DOC-003/headings_and_layout"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "heading",
+              "attrs": {
+                "level": 2,
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Title"
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "utf16": 0,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "enter"
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": []
+            },
+            {
+              "type": "heading",
+              "attrs": {
+                "level": 2,
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Title"
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/1/content/0",
+          "utf16": 0,
+          "affinity": "after"
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": [
+        "Proposed start-boundary policy: inserted empty paragraph precedes the original heading; caret stays at the surviving heading start. Historical60 identifies heading/Enter features, not this measured exact behavior."
+      ]
+    },
+    {
+      "id": "KW35-005",
+      "name": "heading_enter_middle_preserves_type_level_layout_and_marks",
+      "status": "independent_golden",
+      "feature_class": "historical60_feature_exact_policy_proposed",
+      "corpus_schema_examples": [
+        "DOC-003/headings_and_layout",
+        "DOC-004/nested_compatible_marks"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "heading",
+              "attrs": {
+                "level": 3,
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "abcd",
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "utf16": 2,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "enter"
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "heading",
+              "attrs": {
+                "level": 3,
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "ab",
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "heading",
+              "attrs": {
+                "level": 3,
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "cd",
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/1/content/0",
+          "utf16": 0,
+          "affinity": "after"
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": []
+    },
+    {
+      "id": "KW35-006",
+      "name": "heading_enter_end_creates_compatible_layout_paragraph",
+      "status": "independent_golden",
+      "feature_class": "historical60_feature_exact_policy_proposed",
+      "corpus_schema_examples": [
+        "DOC-003/headings_and_layout"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "heading",
+              "attrs": {
+                "level": 2,
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Title"
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "utf16": 5,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "enter"
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "heading",
+              "attrs": {
+                "level": 2,
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Title"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "attrs": {
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": []
+            }
+          ]
+        },
+        "caret": {
+          "kind": "child",
+          "path": "/content/1",
+          "index": 0,
+          "affinity": "after"
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": [
+        "The new paragraph retains compatible layout; heading-only level is absent there."
+      ]
+    },
+    {
+      "id": "KW35-007",
+      "name": "empty_heading_enter_becomes_layout_paragraph",
+      "status": "independent_golden",
+      "feature_class": "historical60_feature_exact_policy_proposed",
+      "corpus_schema_examples": [
+        "DOC-003/headings_and_layout",
+        "DOC-001/empty_prose"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "heading",
+              "attrs": {
+                "level": 2,
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": []
+            }
+          ]
+        },
+        "caret": {
+          "kind": "child",
+          "path": "/content/0",
+          "index": 0,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "enter"
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": []
+            }
+          ]
+        },
+        "caret": {
+          "kind": "child",
+          "path": "/content/0",
+          "index": 0,
+          "affinity": "after"
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": [
+        "Type conversion explicitly removes the source-only heading level and preserves layout."
+      ]
+    },
+    {
+      "id": "KW35-008",
+      "name": "code_enter_is_literal_newline",
+      "status": "independent_golden",
+      "feature_class": "historical60_feature_exact_policy_proposed",
+      "corpus_schema_examples": [
+        "DOC-009/literal_code"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "code_block",
+              "attrs": {
+                "language": "rust"
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "a😀b"
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "utf16": 3,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "enter"
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "code_block",
+              "attrs": {
+                "language": "rust"
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "a😀\nb"
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "utf16": 4,
+          "affinity": "after"
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": [
+        "Caret UTF-16 moves3→4. No rich hard_break, marks, typography, CR or Unicode normalization is introduced."
+      ]
+    },
+    {
+      "id": "KW35-009",
+      "name": "shift_enter_inserts_bare_break_and_preserves_styled_fragments",
+      "status": "independent_golden",
+      "feature_class": "historical60_feature_exact_policy_proposed",
+      "corpus_schema_examples": [
+        "DOC-002/unicode_whitespace_hard_break",
+        "DOC-004/nested_compatible_marks"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "ab",
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "shift_enter"
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "a",
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ]
+                },
+                {
+                  "type": "hard_break"
+                },
+                {
+                  "type": "text",
+                  "text": "b",
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "edge",
+          "path": "/content/0/content/1",
+          "side": "after"
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": [
+        "The hard_break wire object has only type. Its after edge is an explicit structural caret, not a fake character offset."
+      ]
+    },
+    {
+      "id": "KW35-010",
+      "name": "bullet_nonempty_item_enter_splits_item",
+      "status": "independent_golden",
+      "feature_class": "historical60_feature_exact_policy_proposed",
+      "corpus_schema_examples": [
+        "DOC-008/lists_tasks_ordered_start"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "bullet_list",
+              "content": [
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "ab"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0/content/0/content/0",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "enter"
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "bullet_list",
+              "content": [
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "a"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "b"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/1/content/0/content/0",
+          "utf16": 0,
+          "affinity": "after"
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": []
+    },
+    {
+      "id": "KW35-011",
+      "name": "ordered_empty_middle_item_exit_preserves_original_ordinals",
+      "status": "independent_golden",
+      "feature_class": "historical60_feature_exact_policy_proposed",
+      "corpus_schema_examples": [
+        "DOC-008/lists_tasks_ordered_start"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "ordered_list",
+              "attrs": {
+                "start": 7
+              },
+              "content": [
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "A"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": []
+                    }
+                  ]
+                },
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "C"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "child",
+          "path": "/content/0/content/1/content/0",
+          "index": 0,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "enter"
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "ordered_list",
+              "attrs": {
+                "start": 7
+              },
+              "content": [
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "A"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": []
+            },
+            {
+              "type": "ordered_list",
+              "attrs": {
+                "start": 9
+              },
+              "content": [
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "C"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "child",
+          "path": "/content/1",
+          "index": 0,
+          "affinity": "after"
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": [
+        "Before ordinals are7,8,9; the exited empty8 becomes paragraph and existing C retains9. The trailing list is neither reset to1 nor flattened."
+      ]
+    },
+    {
+      "id": "KW35-012",
+      "name": "nested_ordered_item_split_moves_all_trailing_descendants",
+      "status": "independent_golden",
+      "feature_class": "new_capability_not_historical60_authoring_parity",
+      "corpus_schema_examples": [
+        "DOC-008/lists_tasks_ordered_start",
+        "DOC-007/multi_paragraph_blockquote"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "bullet_list",
+              "content": [
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Parent"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ordered_list",
+                      "attrs": {
+                        "start": 3
+                      },
+                      "content": [
+                        {
+                          "type": "list_item",
+                          "content": [
+                            {
+                              "type": "paragraph",
+                              "content": [
+                                {
+                                  "type": "text",
+                                  "text": "ab"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "blockquote",
+                              "content": [
+                                {
+                                  "type": "paragraph",
+                                  "content": [
+                                    {
+                                      "type": "text",
+                                      "text": "tail"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "task_list",
+                              "content": [
+                                {
+                                  "type": "task_item",
+                                  "attrs": {
+                                    "checked": true
+                                  },
+                                  "content": [
+                                    {
+                                      "type": "paragraph",
+                                      "content": [
+                                        {
+                                          "type": "text",
+                                          "text": "done"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0/content/1/content/0/content/0/content/0",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "enter"
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "bullet_list",
+              "content": [
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Parent"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ordered_list",
+                      "attrs": {
+                        "start": 3
+                      },
+                      "content": [
+                        {
+                          "type": "list_item",
+                          "content": [
+                            {
+                              "type": "paragraph",
+                              "content": [
+                                {
+                                  "type": "text",
+                                  "text": "a"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "list_item",
+                          "content": [
+                            {
+                              "type": "paragraph",
+                              "content": [
+                                {
+                                  "type": "text",
+                                  "text": "b"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "blockquote",
+                              "content": [
+                                {
+                                  "type": "paragraph",
+                                  "content": [
+                                    {
+                                      "type": "text",
+                                      "text": "tail"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "task_list",
+                              "content": [
+                                {
+                                  "type": "task_item",
+                                  "attrs": {
+                                    "checked": true
+                                  },
+                                  "content": [
+                                    {
+                                      "type": "paragraph",
+                                      "content": [
+                                        {
+                                          "type": "text",
+                                          "text": "done"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0/content/1/content/1/content/0/content/0",
+          "utf16": 0,
+          "affinity": "after"
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": [
+        "Original ordered start3 stays. tail and checked=true done move intact after b; no descendant flattening, copy-as-text or task metadata reset. This is new nested authoring, not claimed historical60 parity."
+      ]
+    },
+    {
+      "id": "KW35-013",
+      "name": "nested_empty_item_lift_preserves_inner_tail_and_outer_tail_order",
+      "status": "independent_golden",
+      "feature_class": "new_capability_not_historical60_authoring_parity",
+      "corpus_schema_examples": [
+        "DOC-008/lists_tasks_ordered_start"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "bullet_list",
+              "content": [
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Parent"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "bullet_list",
+                      "content": [
+                        {
+                          "type": "list_item",
+                          "content": [
+                            {
+                              "type": "paragraph",
+                              "content": [
+                                {
+                                  "type": "text",
+                                  "text": "before"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "list_item",
+                          "content": [
+                            {
+                              "type": "paragraph",
+                              "content": []
+                            }
+                          ]
+                        },
+                        {
+                          "type": "list_item",
+                          "content": [
+                            {
+                              "type": "paragraph",
+                              "content": [
+                                {
+                                  "type": "text",
+                                  "text": "after"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "task_list",
+                              "content": [
+                                {
+                                  "type": "task_item",
+                                  "attrs": {
+                                    "checked": true
+                                  },
+                                  "content": [
+                                    {
+                                      "type": "paragraph",
+                                      "content": [
+                                        {
+                                          "type": "text",
+                                          "text": "nested done"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Parent tail"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Next"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "child",
+          "path": "/content/0/content/0/content/1/content/1/content/0",
+          "index": 0,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "enter"
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "bullet_list",
+              "content": [
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Parent"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "bullet_list",
+                      "content": [
+                        {
+                          "type": "list_item",
+                          "content": [
+                            {
+                              "type": "paragraph",
+                              "content": [
+                                {
+                                  "type": "text",
+                                  "text": "before"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": []
+                    },
+                    {
+                      "type": "bullet_list",
+                      "content": [
+                        {
+                          "type": "list_item",
+                          "content": [
+                            {
+                              "type": "paragraph",
+                              "content": [
+                                {
+                                  "type": "text",
+                                  "text": "after"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "task_list",
+                              "content": [
+                                {
+                                  "type": "task_item",
+                                  "attrs": {
+                                    "checked": true
+                                  },
+                                  "content": [
+                                    {
+                                      "type": "paragraph",
+                                      "content": [
+                                        {
+                                          "type": "text",
+                                          "text": "nested done"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Parent tail"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "Next"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "child",
+          "path": "/content/0/content/1/content/0",
+          "index": 0,
+          "affinity": "after"
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": [
+        "Lift exactly one list level. The old empty inner item becomes the middle outer item. Trailing inner after/nested done and trailing outer Parent tail stay after the lifted caret in the same reading order; Next remains last."
+      ]
+    },
+    {
+      "id": "KW35-014",
+      "name": "task_item_split_preserves_original_checked_and_initializes_new_item",
+      "status": "independent_golden",
+      "feature_class": "new_capability_not_historical60_authoring_parity",
+      "corpus_schema_examples": [
+        "DOC-008/lists_tasks_ordered_start"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "task_list",
+              "content": [
+                {
+                  "type": "task_item",
+                  "attrs": {
+                    "checked": true
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "ab"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "task_item",
+                  "attrs": {
+                    "checked": false
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "next"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0/content/0/content/0",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "enter"
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "task_list",
+              "content": [
+                {
+                  "type": "task_item",
+                  "attrs": {
+                    "checked": true
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "a"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "task_item",
+                  "attrs": {
+                    "checked": false
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "b"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "task_item",
+                  "attrs": {
+                    "checked": false
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "next"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/1/content/0/content/0",
+          "utf16": 0,
+          "affinity": "after"
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": [
+        "Existing checked=true and checked=false states are preserved. New task item unchecked is an explicit proposed policy; current60 audit did not establish task authoring."
+      ]
+    },
+    {
+      "id": "KW35-015",
+      "name": "paragraph_to_heading_preserves_layout_and_ordinary_link",
+      "status": "independent_golden",
+      "feature_class": "historical60_feature_exact_policy_proposed",
+      "corpus_schema_examples": [
+        "DOC-003/headings_and_layout",
+        "DOC-004/nested_compatible_marks"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "align": "right",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Link",
+                  "marks": [
+                    {
+                      "type": "link",
+                      "attrs": {
+                        "href": "https://example.org/a",
+                        "title": "Title"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "utf16": 2,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "transform_block",
+        "target_path": "/content/0",
+        "target": "heading",
+        "level": 2
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "heading",
+              "attrs": {
+                "level": 2,
+                "align": "right",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Link",
+                  "marks": [
+                    {
+                      "type": "link",
+                      "attrs": {
+                        "href": "https://example.org/a",
+                        "title": "Title"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "utf16": 2,
+          "affinity": "after"
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": [
+        "The explicit type/level changes; exact href/title/text/layout and surviving node addressing remain."
+      ]
+    },
+    {
+      "id": "KW35-016",
+      "name": "reverse_unicode_range_formats_whole_emoji_and_combining_cluster",
+      "status": "independent_golden",
+      "feature_class": "new_capability_not_historical60_authoring_parity",
+      "corpus_schema_examples": [
+        "DOC-002/unicode_whitespace_hard_break",
+        "DOC-004/nested_compatible_marks"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "A😀éZ"
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "path": "/content/0/content/0",
+            "utf16": 5,
+            "affinity": "before"
+          },
+          "focus": {
+            "kind": "text",
+            "path": "/content/0/content/0",
+            "utf16": 1,
+            "affinity": "after"
+          }
+        }
+      },
+      "intent": {
+        "semantic": "add_mark",
+        "mark": "strong"
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "A"
+                },
+                {
+                  "type": "text",
+                  "text": "😀é",
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Z"
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "path": "/content/0/content/1",
+            "utf16": 4,
+            "affinity": "before"
+          },
+          "focus": {
+            "kind": "text",
+            "path": "/content/0/content/1",
+            "utf16": 0,
+            "affinity": "after"
+          }
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": [
+        "Input code points are0041 1F600 0065 0301 005A; UTF-16 boundaries0,1,3,4,5,6. Reverse selection5→1 becomes marked-run4→0; no NFC conversion."
+      ]
+    },
+    {
+      "id": "KW35-017",
+      "name": "complete_grapheme_across_styled_leaves_can_be_formatted_as_one_range",
+      "status": "independent_golden",
+      "feature_class": "new_capability_not_historical60_authoring_parity",
+      "corpus_schema_examples": [
+        "DOC-002/unicode_whitespace_hard_break",
+        "DOC-004/nested_compatible_marks"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "e"
+                },
+                {
+                  "type": "text",
+                  "text": "́",
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "!"
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "path": "/content/0/content/0",
+            "utf16": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "path": "/content/0/content/1",
+            "utf16": 1,
+            "affinity": "before"
+          }
+        }
+      },
+      "intent": {
+        "semantic": "add_mark",
+        "mark": "emphasis"
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "e",
+                  "marks": [
+                    {
+                      "type": "emphasis"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "́",
+                  "marks": [
+                    {
+                      "type": "strong"
+                    },
+                    {
+                      "type": "emphasis"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "!"
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "path": "/content/0/content/0",
+            "utf16": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "path": "/content/0/content/1",
+            "utf16": 1,
+            "affinity": "before"
+          }
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": [
+        "User range endpoints enclose the complete e+U0301 grapheme although the old style boundary is inside it. Original strong on U0301 survives. This vector intentionally prevents a provider from treating each styled leaf end as a required new user range endpoint."
+      ]
+    },
+    {
+      "id": "KW35-018",
+      "name": "scalar_valid_but_grapheme_interior_format_endpoint_refuses",
+      "status": "independent_golden",
+      "feature_class": "new_capability_not_historical60_authoring_parity",
+      "corpus_schema_examples": [
+        "DOC-002/unicode_whitespace_hard_break",
+        "DOC-004/nested_compatible_marks"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "A😀éZ"
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "path": "/content/0/content/0",
+            "utf16": 3,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "path": "/content/0/content/0",
+            "utf16": 4,
+            "affinity": "before"
+          }
+        }
+      },
+      "intent": {
+        "semantic": "add_mark",
+        "mark": "strong"
+      },
+      "expected_availability": {
+        "enabled": false,
+        "reason_semantic": "not_grapheme_boundary"
+      },
+      "expected": {
+        "outcome": "Refused",
+        "reason_semantic": "not_grapheme_boundary",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "A😀éZ"
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "path": "/content/0/content/0",
+            "utf16": 3,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "path": "/content/0/content/0",
+            "utf16": 4,
+            "affinity": "before"
+          }
+        },
+        "preserve_all_session_facets": true,
+        "document_revision_delta": 0,
+        "journal_entry_added": false
+      },
+      "notes": [
+        "Range3..4 selects e without its U0301; both are scalar boundaries but end4 is inside the grapheme. Refuse without expansion or text mutation."
+      ]
+    },
+    {
+      "id": "KW35-019",
+      "name": "ordinary_link_command_cannot_replace_reference_link",
+      "status": "independent_golden",
+      "feature_class": "historical60_feature_exact_policy_proposed",
+      "corpus_schema_examples": [
+        "DOC-006/reference_slug_changed"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Name",
+                  "marks": [
+                    {
+                      "type": "reference_link",
+                      "attrs": {
+                        "reference_entity_id": "550e8400-e29b-41d4-a716-446655440006"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "path": "/content/0/content/0",
+            "utf16": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "path": "/content/0/content/0",
+            "utf16": 4,
+            "affinity": "before"
+          }
+        },
+        "identity_facts": {
+          "references": {
+            "550e8400-e29b-41d4-a716-446655440006": "exists"
+          }
+        }
+      },
+      "intent": {
+        "semantic": "set_ordinary_link",
+        "href": "https://example.org/replacement",
+        "title": "New"
+      },
+      "expected_availability": {
+        "enabled": false,
+        "reason_semantic": "reference_link_protected"
+      },
+      "expected": {
+        "outcome": "Refused",
+        "reason_semantic": "reference_link_protected",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Name",
+                  "marks": [
+                    {
+                      "type": "reference_link",
+                      "attrs": {
+                        "reference_entity_id": "550e8400-e29b-41d4-a716-446655440006"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "path": "/content/0/content/0",
+            "utf16": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "path": "/content/0/content/0",
+            "utf16": 4,
+            "affinity": "before"
+          }
+        },
+        "preserve_all_session_facets": true,
+        "document_revision_delta": 0,
+        "journal_entry_added": false
+      },
+      "notes": [
+        "The reference stores only its UUID, never the ordinary href/title. A resolved reference is still protected; changing its external slug cannot justify replacement."
+      ]
+    },
+    {
+      "id": "KW35-020",
+      "name": "slash_accept_preserves_literal_prefix_suffix_atomically",
+      "status": "independent_golden",
+      "feature_class": "historical60_feature_exact_policy_proposed",
+      "corpus_schema_examples": [
+        "DOC-001/empty_prose",
+        "DOC-003/headings_and_layout"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "pre /scene tail"
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "utf16": 10,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "accept_slash_block",
+        "candidate": "scene_break",
+        "captured_query": {
+          "from": {
+            "kind": "text",
+            "path": "/content/0/content/0",
+            "utf16": 4,
+            "affinity": "after"
+          },
+          "to": {
+            "kind": "text",
+            "path": "/content/0/content/0",
+            "utf16": 10,
+            "affinity": "before"
+          },
+          "literal": "/scene"
+        },
+        "insertion_policy": "split_textblock_around_captured_query"
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "pre "
+                }
+              ]
+            },
+            {
+              "type": "scene_break"
+            },
+            {
+              "type": "paragraph",
+              "attrs": {
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": " tail"
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/2/content/0",
+          "utf16": 0,
+          "affinity": "after"
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": [
+        "Proposed explicit mid-block insertion policy. Exactly /scene UTF-16[4,10) disappears; the prefix trailing SPACE and suffix leading SPACE stay. One atomic revision/history entry; no prior query-deletion dispatch."
+      ]
+    },
+    {
+      "id": "KW35-021",
+      "name": "slash_late_journal_refusal_retains_query_prefix_suffix_and_caret",
+      "status": "independent_golden",
+      "feature_class": "historical60_feature_exact_policy_proposed",
+      "corpus_schema_examples": [
+        "DOC-001/empty_prose",
+        "DOC-003/headings_and_layout"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "pre /scene tail"
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "utf16": 10,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "accept_slash_block",
+        "candidate": "scene_break",
+        "captured_query": {
+          "from": {
+            "kind": "text",
+            "path": "/content/0/content/0",
+            "utf16": 4,
+            "affinity": "after"
+          },
+          "to": {
+            "kind": "text",
+            "path": "/content/0/content/0",
+            "utf16": 10,
+            "affinity": "before"
+          },
+          "literal": "/scene"
+        },
+        "insertion_policy": "split_textblock_around_captured_query",
+        "host_limits": {
+          "journal_entries": 0
+        }
+      },
+      "expected_availability": {
+        "enabled": false,
+        "reason_semantic": "journal_limit"
+      },
+      "expected": {
+        "outcome": "Refused",
+        "reason_semantic": "journal_limit",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "pre /scene tail"
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "utf16": 10,
+          "affinity": "after"
+        },
+        "preserve_all_session_facets": true,
+        "document_revision_delta": 0,
+        "journal_entry_added": false
+      },
+      "notes": [
+        "Availability on this actual payload+limit must also refuse. The command is structurally supported; final history capacity is the reason, not a contextual enabled hint."
+      ]
+    },
+    {
+      "id": "KW35-022",
+      "name": "slash_escape_retains_committed_query_without_dispatch",
+      "status": "independent_golden",
+      "feature_class": "historical60_feature_exact_policy_proposed",
+      "corpus_schema_examples": [
+        "DOC-001/empty_prose"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "pre /scene tail"
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "utf16": 10,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "dismiss_slash",
+        "cause": "escape"
+      },
+      "expected_availability": {
+        "kind": "not_a_document_command"
+      },
+      "expected": {
+        "outcome": "Unchanged",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "pre /scene tail"
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "utf16": 10,
+          "affinity": "after"
+        },
+        "preserve_all_session_facets": true,
+        "document_revision_delta": 0,
+        "journal_entry_added": false
+      },
+      "notes": [
+        "This is a headless boundary fact for later UI43: dismissing the picker changes no model state and does not erase slash/query text. It is not a mounted keyboard/focus test."
+      ]
+    },
+    {
+      "id": "KW35-023",
+      "name": "code_shift_enter_is_literal_newline_too",
+      "status": "independent_golden",
+      "feature_class": "historical60_feature_exact_policy_proposed",
+      "corpus_schema_examples": [
+        "DOC-009/literal_code"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "code_block",
+              "attrs": {
+                "language": "rust"
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "ab"
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "shift_enter"
+      },
+      "expected_availability": {
+        "enabled": true,
+        "would_change": true
+      },
+      "expected": {
+        "outcome": "Changed",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "code_block",
+              "attrs": {
+                "language": "rust"
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "a\nb"
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "utf16": 2,
+          "affinity": "after"
+        },
+        "document_revision_delta": 1,
+        "journal_entry_added": true,
+        "dirty_after": true
+      },
+      "notes": [
+        "Both code key intentions preserve language, literal text and the one-text-child grammar."
+      ]
+    },
+    {
+      "id": "KW35-024",
+      "name": "ordered_empty_middle_exit_refuses_exact_u64_numbering_overflow",
+      "status": "independent_golden",
+      "feature_class": "new_capability_not_historical60_authoring_parity",
+      "corpus_schema_examples": [
+        "DOC-008/lists_tasks_ordered_start"
+      ],
+      "before": {
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "ordered_list",
+              "attrs": {
+                "start": 18446744073709551615
+              },
+              "content": [
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "A"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": []
+                    }
+                  ]
+                },
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "C"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "child",
+          "path": "/content/0/content/1/content/0",
+          "index": 0,
+          "affinity": "after"
+        }
+      },
+      "intent": {
+        "semantic": "enter"
+      },
+      "expected_availability": {
+        "enabled": false,
+        "reason_semantic": "ordered_start_overflow"
+      },
+      "expected": {
+        "outcome": "Refused",
+        "reason_semantic": "ordered_start_overflow",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "ordered_list",
+              "attrs": {
+                "start": 18446744073709551615
+              },
+              "content": [
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "A"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": []
+                    }
+                  ]
+                },
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "C"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "caret": {
+          "kind": "child",
+          "path": "/content/0/content/1/content/0",
+          "index": 0,
+          "affinity": "after"
+        },
+        "preserve_all_session_facets": true,
+        "document_revision_delta": 0,
+        "journal_entry_added": false
+      },
+      "notes": [
+        "The admitted start is an exact u64 max; computing a trailing start+2 must refuse without wrapping, floating-point rounding, start reset or partial exit. The exact eventual machine error code remains primary Refine/API work."
+      ]
+    }
+  ]
+}

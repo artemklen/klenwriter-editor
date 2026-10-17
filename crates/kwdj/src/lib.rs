@@ -7,6 +7,7 @@
 
 mod admission;
 mod candidate_validate;
+pub mod commands;
 mod core_bridge;
 mod edit_normalize;
 pub mod model;
@@ -285,6 +286,17 @@ pub enum KwdjErrorCode {
     IdentityResolutionFailed,
     ResourceLimitExceeded,
     OperationalBudgetExceeded,
+    CommandSelectionRequired,
+    CommandUnsupportedContext,
+    CommandUnknown,
+    CommandPoetryUnavailable,
+    CommandTableUnavailable,
+    CommandHostRequired,
+    CommandLossyTransform,
+    CommandReferenceProtected,
+    CommandQueryMismatch,
+    CommandOrderedOverflow,
+    CommandInvalidTarget,
 }
 
 impl KwdjErrorCode {
@@ -319,6 +331,17 @@ impl KwdjErrorCode {
             Self::IdentityResolutionFailed => "kwdj.identity_resolution_failed",
             Self::ResourceLimitExceeded => "kwdj.resource_limit_exceeded",
             Self::OperationalBudgetExceeded => "kwdj.admission_budget_exceeded",
+            Self::CommandSelectionRequired => "kwdj.command_selection_required",
+            Self::CommandUnsupportedContext => "kwdj.command_unsupported_context",
+            Self::CommandUnknown => "kwdj.command_unknown",
+            Self::CommandPoetryUnavailable => "kwdj.command_poetry_unavailable",
+            Self::CommandTableUnavailable => "kwdj.command_table_unavailable",
+            Self::CommandHostRequired => "kwdj.command_host_required",
+            Self::CommandLossyTransform => "kwdj.command_lossy_transform",
+            Self::CommandReferenceProtected => "kwdj.command_reference_protected",
+            Self::CommandQueryMismatch => "kwdj.command_query_mismatch",
+            Self::CommandOrderedOverflow => "kwdj.command_ordered_overflow",
+            Self::CommandInvalidTarget => "kwdj.command_invalid_target",
         }
     }
 }

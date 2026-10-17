@@ -6,15 +6,16 @@
 
 use std::cell::Cell;
 use std::collections::{BTreeMap, BTreeSet};
+use std::marker::PhantomData;
 
 use editor_core::admission::{PreflightBudget, preflight_node_fields, preflight_snapshot};
 use editor_core::candidate::{BorrowedNode, CandidateRead};
 use editor_core::document::{Attribute, Attributes, Document, Mark, Node, Primitive};
 use editor_core::positions::{
-    BoundaryPolicy, InlineSpan, Position, PositionError, Utf16Offset, utf16_to_utf8,
-    validate_inline_boundary,
+    Affinity, BoundaryPolicy, Edge, InlineSpan, Position, PositionError, Selection, Utf16Offset,
+    utf16_to_utf8, validate_inline_boundary,
 };
-use editor_core::transaction::{Operation, WorkMeter};
+use editor_core::transaction::{MarkEdit, Operation, WorkMeter};
 
 use crate::identity::{NodeId, SessionKey};
 use crate::mapping::StepMap;
@@ -23,6 +24,42 @@ const MAX_DEPTH: usize = 128;
 const MAX_STEPS: usize = 4096;
 const MAX_TEXT_BYTES: usize = 16 * 1024 * 1024;
 const MAX_PREPARED_COPY_BYTES: usize = 16 * 1024 * 1024;
+
+mod allocation_sealed {
+    pub trait Sealed {}
+}
+
+/// Closed allocation policies. Preview cursors cannot publish their patches.
+#[doc(hidden)]
+pub trait Allocation: allocation_sealed::Sealed {
+    fn reserve(&self, real: &Cell<u64>, count: u64) -> Result<u64, TreeError>;
+}
+#[derive(Debug, Clone, Copy, Default)]
+pub struct RealAllocation;
+#[derive(Debug)]
+pub(crate) struct PreviewAllocation {
+    next: Cell<u64>,
+}
+impl allocation_sealed::Sealed for RealAllocation {}
+impl allocation_sealed::Sealed for PreviewAllocation {}
+fn reserve_ids(cursor: &Cell<u64>, count: u64) -> Result<u64, TreeError> {
+    let start = cursor.get();
+    let end = start
+        .checked_add(count)
+        .ok_or(TreeError::CounterExhausted)?;
+    cursor.set(end);
+    Ok(start)
+}
+impl Allocation for RealAllocation {
+    fn reserve(&self, real: &Cell<u64>, count: u64) -> Result<u64, TreeError> {
+        reserve_ids(real, count)
+    }
+}
+impl Allocation for PreviewAllocation {
+    fn reserve(&self, _: &Cell<u64>, count: u64) -> Result<u64, TreeError> {
+        reserve_ids(&self.next, count)
+    }
+}
 
 /// Only trusted profile normalization may address scalar interiors. This token
 /// is crate-private and cannot be supplied by an SDK operation payload.
@@ -112,6 +149,33 @@ fn record_copy_cost(
         .ok_or(TreeError::ResourceLimit)
 }
 
+fn range_marks(marks: &[Mark], work: &mut WorkMeter) -> Result<(), TreeError> {
+    let left = work.limits();
+    let spent = work.usage();
+    let usage = preflight_node_fields(
+        "",
+        None,
+        &Attributes::new(),
+        marks,
+        0,
+        PreflightBudget {
+            payload_bytes: left.bytes.saturating_sub(spent.bytes),
+            values: left.units.saturating_sub(spent.units),
+            depth: MAX_DEPTH as u64,
+        },
+    )
+    .map_err(|_| TreeError::ResourceLimit)?;
+    work.charge_units(usage.values)
+        .map_err(|_| TreeError::ResourceLimit)?;
+    work.charge_bytes(
+        usage
+            .payload_bytes
+            .saturating_mul(8)
+            .saturating_add(usage.values.saturating_mul(128)),
+    )
+    .map_err(|_| TreeError::ResourceLimit)
+}
+
 impl TreeNode {
     pub fn id(&self) -> NodeId {
         self.id
@@ -165,7 +229,7 @@ impl CandidateRead for AddressTree {
     }
 }
 
-impl CandidateRead for TreeDraft<'_> {
+impl<A: Allocation> CandidateRead for TreeDraft<'_, A> {
     type Id = NodeId;
     fn root(&self) -> NodeId {
         self.root()
@@ -219,7 +283,7 @@ impl CommitMaterial {
 /// Fully prepared memory, with no externally writable fields. Only the Session
 /// owner may publish after final candidate/profile/map validation.
 #[derive(Debug)]
-pub(crate) struct PreparedTreePatch {
+pub(crate) struct PreparedTreePatch<A = RealAllocation> {
     key: SessionKey,
     writes: BTreeMap<NodeId, TreeNode>,
     removed: BTreeSet<NodeId>,
@@ -227,8 +291,9 @@ pub(crate) struct PreparedTreePatch {
     changed_ids: Vec<NodeId>,
     material: CommitMaterial,
     prepared_copy_bytes: usize,
+    allocation: PhantomData<A>,
 }
-impl PreparedTreePatch {
+impl<A> PreparedTreePatch<A> {
     pub(crate) fn changed(&self) -> bool {
         !self.changed_ids.is_empty()
     }
@@ -333,9 +398,7 @@ impl AddressTree {
     }
 
     fn allocate(&self) -> Result<NodeId, TreeError> {
-        let serial = self.next_id.get();
-        self.next_id
-            .set(serial.checked_add(1).ok_or(TreeError::CounterExhausted)?);
+        let serial = RealAllocation.reserve(&self.next_id, 1)?;
         Ok(NodeId::new(self.key, serial))
     }
 
@@ -384,8 +447,19 @@ impl AddressTree {
     }
 
     pub(crate) fn prepare(&self) -> TreeDraft<'_> {
+        self.prepare_with(RealAllocation)
+    }
+
+    pub(crate) fn prepare_preview(&self) -> TreeDraft<'_, PreviewAllocation> {
+        self.prepare_with(PreviewAllocation {
+            next: Cell::new(self.next_id.get()),
+        })
+    }
+
+    fn prepare_with<A: Allocation>(&self, allocation: A) -> TreeDraft<'_, A> {
         TreeDraft {
             base: self,
+            allocation,
             writes: BTreeMap::new(),
             removed: BTreeSet::new(),
             steps: Vec::new(),
@@ -532,8 +606,9 @@ pub struct RestoreJoinError {
 
 /// A sparse candidate. Reads borrow untouched nodes; writes copy affected nodes.
 /// Draft data has no admission proof and cannot replace a committed Session.
-pub struct TreeDraft<'a> {
+pub struct TreeDraft<'a, A = RealAllocation> {
     base: &'a AddressTree,
+    allocation: A,
     writes: BTreeMap<NodeId, TreeNode>,
     removed: BTreeSet<NodeId>,
     steps: Vec<StepMap<NodeId>>,
@@ -541,7 +616,729 @@ pub struct TreeDraft<'a> {
     copy_budget: usize,
 }
 
-impl TreeDraft<'_> {
+impl<A: Allocation> TreeDraft<'_, A> {
+    fn range_boundary(
+        &self,
+        leaf: NodeId,
+        offset: Utf16Offset,
+        work: &mut WorkMeter,
+    ) -> Result<(), TreeError> {
+        let parent = self.node(leaf)?.parent.ok_or(TreeError::RootMutation)?;
+        let children = &self.node(parent)?.children;
+        work.charge_units(children.len() as u64)
+            .map_err(|_| TreeError::ResourceLimit)?;
+        work.charge_bytes(
+            (children.len() * std::mem::size_of::<InlineSpan<'_, NodeId>>() * 2) as u64,
+        )
+        .map_err(|_| TreeError::ResourceLimit)?;
+        for id in children {
+            work.charge_bytes(self.node(*id)?.text().map_or(0, |text| text.len()) as u64)
+                .map_err(|_| TreeError::ResourceLimit)?;
+        }
+        self.boundary(leaf, offset, BoundaryPolicy::Grapheme)?;
+        Ok(())
+    }
+
+    fn range_endpoint(
+        &self,
+        point: Position<NodeId>,
+        work: &mut WorkMeter,
+    ) -> Result<(), TreeError> {
+        work.charge_units(1).map_err(|_| TreeError::ResourceLimit)?;
+        match point {
+            Position::Text { leaf, utf16, .. } => self.range_boundary(leaf, utf16, work),
+            Position::Child { parent, index, .. } => {
+                self.validate_position(point)?;
+                let node = self.node(parent)?;
+                if node.primitive() == Some(Primitive::TextBlock) {
+                    if index > 0
+                        && let Some(text) = self.node(node.children[index - 1])?.text()
+                    {
+                        work.charge_bytes(text.len() as u64)
+                            .map_err(|_| TreeError::ResourceLimit)?;
+                        self.range_boundary(
+                            node.children[index - 1],
+                            Utf16Offset::new(text.encode_utf16().count()),
+                            work,
+                        )?;
+                    } else if index < node.children.len()
+                        && self.node(node.children[index])?.text().is_some()
+                    {
+                        self.range_boundary(node.children[index], Utf16Offset::new(0), work)?;
+                    }
+                }
+                Ok(())
+            }
+            Position::Edge { node, side } => {
+                if let Some(text) = self.node(node)?.text() {
+                    work.charge_bytes(text.len() as u64)
+                        .map_err(|_| TreeError::ResourceLimit)?;
+                    let offset = if side == Edge::Before {
+                        0
+                    } else {
+                        text.encode_utf16().count()
+                    };
+                    self.range_boundary(node, Utf16Offset::new(offset), work)?;
+                }
+                Ok(())
+            }
+        }
+    }
+
+    fn selected_text(
+        &self,
+        range: Selection<NodeId>,
+        work: &mut WorkMeter,
+    ) -> Result<Vec<(NodeId, usize, usize)>, TreeError> {
+        self.range_endpoint(range.anchor, work)?;
+        self.range_endpoint(range.focus, work)?;
+        struct Scan<'a> {
+            points: [(Position<NodeId>, Option<u64>); 2],
+            leaves: Vec<(NodeId, u64, usize)>,
+            cursor: u64,
+            work: &'a mut WorkMeter,
+        }
+        fn walk<A: Allocation>(
+            draft: &TreeDraft<'_, A>,
+            id: NodeId,
+            depth: usize,
+            state: &mut Scan<'_>,
+        ) -> Result<(), TreeError> {
+            if depth > MAX_DEPTH {
+                return Err(TreeError::ResourceLimit);
+            }
+            state
+                .work
+                .charge_units(1)
+                .map_err(|_| TreeError::ResourceLimit)?;
+            let node = draft.node(id)?;
+            for (point, cut) in &mut state.points {
+                if matches!(point,Position::Edge{node,side:Edge::Before} if *node==id) {
+                    *cut = Some(state.cursor);
+                }
+            }
+            state.cursor = state
+                .cursor
+                .checked_add(1)
+                .ok_or(TreeError::ResourceLimit)?;
+            if let Some(text) = node.text() {
+                state
+                    .work
+                    .charge_bytes(text.len() as u64)
+                    .map_err(|_| TreeError::ResourceLimit)?;
+                let length = text.encode_utf16().count();
+                for (point, cut) in &mut state.points {
+                    if let Position::Text { leaf, utf16, .. } = point
+                        && *leaf == id
+                    {
+                        *cut = Some(state.cursor + utf16.get() as u64);
+                    }
+                }
+                state
+                    .work
+                    .charge_bytes((std::mem::size_of::<(NodeId, u64, usize)>() * 2) as u64)
+                    .map_err(|_| TreeError::ResourceLimit)?;
+                state.leaves.push((id, state.cursor, length));
+                state.cursor = state
+                    .cursor
+                    .checked_add(length as u64)
+                    .ok_or(TreeError::ResourceLimit)?;
+            }
+            for index in 0..=node.children.len() {
+                for (point, cut) in &mut state.points {
+                    if matches!(point,Position::Child{parent,index:i,..} if *parent==id && *i==index)
+                    {
+                        *cut = Some(state.cursor);
+                    }
+                }
+                if index < node.children.len() {
+                    walk(draft, node.children[index], depth + 1, state)?;
+                }
+            }
+            state.cursor = state
+                .cursor
+                .checked_add(1)
+                .ok_or(TreeError::ResourceLimit)?;
+            for (point, cut) in &mut state.points {
+                if matches!(point,Position::Edge{node,side:Edge::After} if *node==id) {
+                    *cut = Some(state.cursor);
+                }
+            }
+            Ok(())
+        }
+        let mut state = Scan {
+            points: [(range.anchor, None), (range.focus, None)],
+            leaves: Vec::new(),
+            cursor: 0,
+            work,
+        };
+        walk(self, self.root(), 0, &mut state)?;
+        let a = state.points[0].1.ok_or(TreeError::MissingNode)?;
+        let b = state.points[1].1.ok_or(TreeError::MissingNode)?;
+        let (left, right) = (a.min(b), a.max(b));
+        let mut selected = Vec::new();
+        for (id, start, length) in state.leaves {
+            let from = left.saturating_sub(start).min(length as u64) as usize;
+            let to = right.saturating_sub(start).min(length as u64) as usize;
+            if from < to {
+                state
+                    .work
+                    .charge_bytes((std::mem::size_of::<(NodeId, usize, usize)>() * 2) as u64)
+                    .map_err(|_| TreeError::ResourceLimit)?;
+                selected.push((id, from, to));
+            }
+        }
+        Ok(selected)
+    }
+
+    fn range_step<R>(
+        &mut self,
+        work: &mut WorkMeter,
+        action: impl FnOnce(&mut Self) -> Result<R, TreeError>,
+    ) -> Result<R, TreeError> {
+        let before = self.prepared_copy_bytes;
+        let remaining = work.limits().bytes.saturating_sub(work.usage().bytes);
+        self.tighten_copy_budget(
+            before.saturating_add(usize::try_from(remaining).unwrap_or(usize::MAX)),
+        );
+        let result = action(self)?;
+        work.charge_bytes((self.prepared_copy_bytes - before) as u64)
+            .map_err(|_| TreeError::ResourceLimit)?;
+        Ok(result)
+    }
+
+    fn atomic_range<R>(
+        &mut self,
+        affected: &[NodeId],
+        work: &mut WorkMeter,
+        action: impl FnOnce(&mut Self, &mut Vec<NodeId>, &mut WorkMeter) -> Result<R, TreeError>,
+    ) -> Result<R, TreeError> {
+        work.charge_units(affected.len() as u64)
+            .map_err(|_| TreeError::ResourceLimit)?;
+        work.charge_bytes(
+            (affected.len() * std::mem::size_of::<(NodeId, Option<TreeNode>)>() * 2) as u64,
+        )
+        .map_err(|_| TreeError::ResourceLimit)?;
+        let mut unique = BTreeSet::new();
+        let mut backup = Vec::new();
+        let mut backup_cost = 0usize;
+        for id in affected {
+            work.charge_bytes((std::mem::size_of::<NodeId>() * 4) as u64)
+                .map_err(|_| TreeError::ResourceLimit)?;
+            if unique.insert(*id)
+                && let Some(node) = self.writes.get(id)
+            {
+                backup_cost = backup_cost
+                    .checked_add(node.copy_cost)
+                    .ok_or(TreeError::ResourceLimit)?;
+            }
+        }
+        self.copy_room(backup_cost)?;
+        work.charge_bytes(backup_cost as u64)
+            .map_err(|_| TreeError::ResourceLimit)?;
+        for id in unique {
+            backup.push((id, self.writes.get(&id).cloned()));
+        }
+        let before_copy = self.prepared_copy_bytes;
+        let before_steps = self.steps.len();
+        let before_budget = self.copy_budget;
+        self.prepared_copy_bytes += backup_cost;
+        let mut created = Vec::new();
+        let result = action(self, &mut created, work);
+        if result.is_err() {
+            for id in created {
+                self.writes.remove(&id);
+                self.removed.remove(&id);
+            }
+            for (id, node) in backup {
+                self.removed.remove(&id);
+                if let Some(node) = node {
+                    self.writes.insert(id, node);
+                } else {
+                    self.writes.remove(&id);
+                }
+            }
+            self.steps.truncate(before_steps);
+            self.prepared_copy_bytes = before_copy;
+            self.copy_budget = before_budget;
+        }
+        result
+    }
+
+    fn range_split(
+        &mut self,
+        id: NodeId,
+        at: usize,
+        created: &mut Vec<NodeId>,
+        work: &mut WorkMeter,
+    ) -> Result<NodeId, TreeError> {
+        work.charge_units(1).map_err(|_| TreeError::ResourceLimit)?;
+        work.charge_bytes((std::mem::size_of::<NodeId>() * 2) as u64)
+            .map_err(|_| TreeError::ResourceLimit)?;
+        let right = self.range_step(work, |draft| {
+            draft.split_text_policy(id, Utf16Offset::new(at), BoundaryPolicy::Scalar)
+        })?;
+        created.push(right);
+        Ok(right)
+    }
+
+    /// The only authorization is the original outer EGC-safe range. The same
+    /// exact-key delta applies uniformly to every covered text run.
+    pub(crate) fn patch_mark_range(
+        &mut self,
+        range: Selection<NodeId>,
+        edits: &[MarkEdit],
+        work: &mut WorkMeter,
+    ) -> Result<(), TreeError> {
+        work.charge_units(edits.len() as u64)
+            .map_err(|_| TreeError::ResourceLimit)?;
+        let mut keys = BTreeSet::new();
+        for edit in edits {
+            let key = match edit {
+                MarkEdit::Upsert(mark) => &mark.type_id,
+                MarkEdit::Remove { type_id } => type_id,
+            };
+            work.charge_bytes((key.len() + std::mem::size_of::<&str>() * 4) as u64)
+                .map_err(|_| TreeError::ResourceLimit)?;
+            if key.is_empty() || !keys.insert(key.as_str()) {
+                return Err(TreeError::InvalidStructure);
+            }
+            if let MarkEdit::Upsert(mark) = edit {
+                range_marks(std::slice::from_ref(mark), work)?;
+            }
+        }
+        let selected = self.selected_text(range, work)?;
+        if edits.is_empty() || selected.is_empty() {
+            return Ok(());
+        }
+        work.charge_bytes((selected.len() * std::mem::size_of::<NodeId>() * 4) as u64)
+            .map_err(|_| TreeError::ResourceLimit)?;
+        let mut affected = Vec::new();
+        for (id, _, _) in &selected {
+            affected.push(*id);
+            affected.push(self.node(*id)?.parent.ok_or(TreeError::RootMutation)?);
+        }
+        self.atomic_range(&affected, work, |draft, created, work| {
+            for (id, from, to) in selected {
+                let text = draft.node(id)?.text().ok_or(TreeError::InvalidStructure)?;
+                work.charge_bytes(text.len() as u64)
+                    .map_err(|_| TreeError::ResourceLimit)?;
+                let length = text.encode_utf16().count();
+                let old = draft.node(id)?.marks();
+                range_marks(old, work)?;
+                work.charge_units((old.len() as u64).saturating_mul(edits.len() as u64))
+                    .map_err(|_| TreeError::ResourceLimit)?;
+                let compared = old
+                    .iter()
+                    .fold(0u64, |sum, mark| {
+                        sum.saturating_add(mark.type_id.len() as u64)
+                    })
+                    .saturating_mul(edits.len() as u64);
+                work.charge_bytes(compared)
+                    .map_err(|_| TreeError::ResourceLimit)?;
+                let mut marks = old.to_vec();
+                for edit in edits {
+                    let key = match edit {
+                        MarkEdit::Upsert(mark) => &mark.type_id,
+                        MarkEdit::Remove { type_id } => type_id,
+                    };
+                    marks.retain(|mark| mark.type_id != *key);
+                    if let MarkEdit::Upsert(mark) = edit {
+                        range_marks(std::slice::from_ref(mark), work)?;
+                        marks.push(mark.clone());
+                    }
+                }
+                if draft.node(id)?.marks() != marks {
+                    if to < length {
+                        draft.range_split(id, to, created, work)?;
+                    }
+                    let target = if from > 0 {
+                        draft.range_split(id, from, created, work)?
+                    } else {
+                        id
+                    };
+                    let mut cost = MetadataCost::default();
+                    cost.marks(&marks)?;
+                    draft.range_step(work, |draft| {
+                        draft.update_data(target, cost.bytes, |data| data.marks = marks)
+                    })?;
+                }
+            }
+            Ok(())
+        })
+    }
+
+    fn inline_point(
+        &self,
+        point: Position<NodeId>,
+        work: &mut WorkMeter,
+    ) -> Result<(NodeId, Position<NodeId>), TreeError> {
+        match point {
+            Position::Text { leaf, .. } => Ok((
+                self.node(leaf)?.parent.ok_or(TreeError::RootMutation)?,
+                point,
+            )),
+            Position::Child { parent, .. }
+                if self.node(parent)?.primitive() == Some(Primitive::TextBlock) =>
+            {
+                Ok((parent, point))
+            }
+            Position::Edge { node, side } => {
+                let record = self.node(node)?;
+                if record.primitive() == Some(Primitive::TextBlock) {
+                    return Ok((
+                        node,
+                        Position::Child {
+                            parent: node,
+                            index: if side == Edge::Before {
+                                0
+                            } else {
+                                record.children.len()
+                            },
+                            affinity: Affinity::After,
+                        },
+                    ));
+                }
+                let parent = self.node(node)?.parent.ok_or(TreeError::RootMutation)?;
+                work.charge_units(self.node(parent)?.children.len() as u64)
+                    .map_err(|_| TreeError::ResourceLimit)?;
+                let (parent, index) = self.parent_index(node)?;
+                if let Some(text) = record.text() {
+                    work.charge_bytes(text.len() as u64)
+                        .map_err(|_| TreeError::ResourceLimit)?;
+                    Ok((
+                        parent,
+                        Position::Text {
+                            leaf: node,
+                            utf16: Utf16Offset::new(if side == Edge::Before {
+                                0
+                            } else {
+                                text.encode_utf16().count()
+                            }),
+                            affinity: Affinity::After,
+                        },
+                    ))
+                } else {
+                    Ok((
+                        parent,
+                        Position::Child {
+                            parent,
+                            index: index + usize::from(side == Edge::After),
+                            affinity: Affinity::After,
+                        },
+                    ))
+                }
+            }
+            _ => Err(TreeError::InvalidStructure),
+        }
+    }
+
+    fn inline_order(
+        &self,
+        point: Position<NodeId>,
+        work: &mut WorkMeter,
+    ) -> Result<(usize, usize), TreeError> {
+        match point {
+            Position::Text { leaf, utf16, .. } => {
+                let parent = self.node(leaf)?.parent.ok_or(TreeError::RootMutation)?;
+                work.charge_units(self.node(parent)?.children.len() as u64)
+                    .map_err(|_| TreeError::ResourceLimit)?;
+                Ok((self.parent_index(leaf)?.1, utf16.get()))
+            }
+            Position::Child { index, .. } => Ok((index, 0)),
+            _ => Err(TreeError::InvalidStructure),
+        }
+    }
+    fn inline_gap(
+        &self,
+        point: Position<NodeId>,
+        work: &mut WorkMeter,
+    ) -> Result<usize, TreeError> {
+        match point {
+            Position::Child { index, .. } => Ok(index),
+            Position::Text { leaf, utf16, .. } => {
+                let parent = self.node(leaf)?.parent.ok_or(TreeError::RootMutation)?;
+                work.charge_units(self.node(parent)?.children.len() as u64)
+                    .map_err(|_| TreeError::ResourceLimit)?;
+                work.charge_bytes(self.node(leaf)?.text().map_or(0, |text| text.len()) as u64)
+                    .map_err(|_| TreeError::ResourceLimit)?;
+                let index = self.parent_index(leaf)?.1;
+                if utf16.get() == 0 {
+                    Ok(index)
+                } else if self
+                    .node(leaf)?
+                    .text()
+                    .ok_or(TreeError::InvalidStructure)?
+                    .encode_utf16()
+                    .count()
+                    == utf16.get()
+                {
+                    Ok(index + 1)
+                } else {
+                    Err(TreeError::InvalidRange)
+                }
+            }
+            _ => Err(TreeError::InvalidStructure),
+        }
+    }
+
+    /// Same-inline-parent replacement, with one optional profile-supplied inline
+    /// leaf. Only the original outer range grants internal splice authority;
+    /// deleting a barrier may temporarily join a new grapheme before insertion.
+    pub(crate) fn replace_inline_range(
+        &mut self,
+        range: Selection<NodeId>,
+        inserted: Option<&Node>,
+        work: &mut WorkMeter,
+    ) -> Result<Vec<NodeId>, TreeError> {
+        self.range_endpoint(range.anchor, work)?;
+        self.range_endpoint(range.focus, work)?;
+        if let Some(node) = inserted {
+            let left = work.limits();
+            let spent = work.usage();
+            let usage = preflight_node_fields(
+                &node.type_id,
+                node.text.as_deref(),
+                &node.attributes,
+                &node.marks,
+                node.children.len(),
+                PreflightBudget {
+                    payload_bytes: left.bytes.saturating_sub(spent.bytes),
+                    values: left.units.saturating_sub(spent.units),
+                    depth: MAX_DEPTH as u64,
+                },
+            )
+            .map_err(|_| TreeError::ResourceLimit)?;
+            work.charge_units(usage.values)
+                .map_err(|_| TreeError::ResourceLimit)?;
+            work.charge_bytes(
+                usage
+                    .payload_bytes
+                    .saturating_mul(8)
+                    .saturating_add(usage.values.saturating_mul(128)),
+            )
+            .map_err(|_| TreeError::ResourceLimit)?;
+            if !matches!(
+                node.primitive,
+                Primitive::Text | Primitive::HardBreak | Primitive::InlineAtom
+            ) || (node.primitive == Primitive::Text) != node.text.is_some()
+                || !node.children.is_empty()
+                || node.type_id.is_empty()
+            {
+                return Err(TreeError::InvalidStructure);
+            }
+        }
+        let (parent, mut a) = self.inline_point(range.anchor, work)?;
+        let (other, mut b) = self.inline_point(range.focus, work)?;
+        if parent != other || self.node(parent)?.primitive() != Some(Primitive::TextBlock) {
+            return Err(TreeError::InvalidStructure);
+        }
+        let children = &self.node(parent)?.children;
+        work.charge_units(children.len() as u64)
+            .map_err(|_| TreeError::ResourceLimit)?;
+        work.charge_bytes((children.len() * std::mem::size_of::<NodeId>() * 4) as u64)
+            .map_err(|_| TreeError::ResourceLimit)?;
+        let a_order = self.inline_order(a, work)?;
+        let b_order = self.inline_order(b, work)?;
+        if a_order == b_order && inserted.is_none() {
+            return Ok(Vec::new());
+        }
+        if a_order > b_order {
+            std::mem::swap(&mut a, &mut b);
+        }
+        if let Position::Text { affinity, .. } = &mut a {
+            *affinity = Affinity::After;
+        }
+        if let Position::Text { affinity, .. } = &mut b {
+            *affinity = Affinity::Before;
+        }
+        if let Position::Child { affinity, .. } = &mut b {
+            *affinity = Affinity::After;
+        }
+        let mut affected = children.to_vec();
+        affected.push(parent);
+        self.atomic_range(&affected, work, |draft, created, work| {
+            for end in [true, false] {
+                let point = if end { b } else { a };
+                if let Position::Text { leaf, utf16, .. } = point {
+                    let text = draft
+                        .node(leaf)?
+                        .text()
+                        .ok_or(TreeError::InvalidStructure)?;
+                    work.charge_bytes(text.len() as u64)
+                        .map_err(|_| TreeError::ResourceLimit)?;
+                    if utf16.get() > 0 && utf16.get() < text.encode_utf16().count() {
+                        let start = draft.steps.len();
+                        draft.range_split(leaf, utf16.get(), created, work)?;
+                        for step in &draft.steps[start..] {
+                            a = step.map(a).position().ok_or(TreeError::InvalidRange)?;
+                            b = step.map(b).position().ok_or(TreeError::InvalidRange)?;
+                        }
+                    }
+                }
+            }
+            let from = draft.inline_gap(a, work)?;
+            let to = draft.inline_gap(b, work)?;
+            if from > to {
+                return Err(TreeError::InvalidRange);
+            }
+            let remove = &draft.node(parent)?.children[from..to];
+            work.charge_units(remove.len() as u64)
+                .map_err(|_| TreeError::ResourceLimit)?;
+            work.charge_bytes(std::mem::size_of_val(remove) as u64)
+                .map_err(|_| TreeError::ResourceLimit)?;
+            let remove = remove.to_vec();
+            for id in remove {
+                draft.range_step(work, |draft| draft.detach(id).map(|_| ()))?;
+            }
+            let Some(node) = inserted else {
+                return Ok(Vec::new());
+            };
+            work.charge_bytes((std::mem::size_of::<NodeId>() * 2) as u64)
+                .map_err(|_| TreeError::ResourceLimit)?;
+            let fragment = Document {
+                children: vec![node.clone()],
+            };
+            let roots = draft.range_step(work, |draft| {
+                draft.insert_fragment(parent, from, &fragment, EditOrigin::Normalization)
+            })?;
+            created.extend(roots.iter().copied());
+            Ok(roots)
+        })
+    }
+
+    /// Move one contiguous inline group with only its original outer gaps
+    /// admitted as user boundaries; all node IDs and payload remain intact.
+    pub(crate) fn move_inline_group(
+        &mut self,
+        nodes: &[NodeId],
+        parent: NodeId,
+        before_index: usize,
+        work: &mut WorkMeter,
+    ) -> Result<(), TreeError> {
+        work.charge_units(nodes.len() as u64)
+            .map_err(|_| TreeError::ResourceLimit)?;
+        work.charge_bytes((std::mem::size_of_val(nodes) * 4) as u64)
+            .map_err(|_| TreeError::ResourceLimit)?;
+        let first = *nodes.first().ok_or(TreeError::InvalidRange)?;
+        let source = self.node(first)?.parent.ok_or(TreeError::RootMutation)?;
+        let from = self.node(source)?;
+        let destination = self.node(parent)?;
+        if from.primitive() != Some(Primitive::TextBlock)
+            || destination.primitive() != Some(Primitive::TextBlock)
+        {
+            return Err(TreeError::InvalidStructure);
+        }
+        work.charge_units((from.children.len() + destination.children.len()) as u64)
+            .map_err(|_| TreeError::ResourceLimit)?;
+        let index = from
+            .children
+            .iter()
+            .position(|id| *id == first)
+            .ok_or(TreeError::InvalidStructure)?;
+        let end = index
+            .checked_add(nodes.len())
+            .ok_or(TreeError::InvalidRange)?;
+        if end > from.children.len()
+            || &from.children[index..end] != nodes
+            || before_index > destination.children.len()
+        {
+            return Err(TreeError::InvalidRange);
+        }
+        for id in nodes {
+            let record = self.node(*id)?;
+            if record.parent != Some(source)
+                || !matches!(
+                    record.primitive(),
+                    Some(Primitive::Text | Primitive::HardBreak | Primitive::InlineAtom)
+                )
+                || !record.children.is_empty()
+            {
+                return Err(TreeError::InvalidStructure);
+            }
+        }
+        for (parent, index) in [(source, index), (source, end)] {
+            self.range_endpoint(
+                Position::Child {
+                    parent,
+                    index,
+                    affinity: Affinity::After,
+                },
+                work,
+            )?;
+        }
+        if source == parent && (index..=end).contains(&before_index) {
+            return Ok(());
+        }
+        self.range_endpoint(
+            Position::Child {
+                parent,
+                index: before_index,
+                affinity: Affinity::After,
+            },
+            work,
+        )?;
+        let to_index = if source == parent && before_index > end {
+            before_index - nodes.len()
+        } else {
+            before_index
+        };
+        let (from_len, to_len) = (from.children.len(), destination.children.len());
+        let mut affected = nodes.to_vec();
+        affected.push(source);
+        affected.push(parent);
+        self.atomic_range(&affected, work, |draft, _, work| {
+            draft.range_step(work, |draft| {
+                draft.room(1)?;
+                let mut cost = draft.node(source)?.copy_cost;
+                if source != parent {
+                    cost = cost
+                        .checked_add(draft.node(parent)?.copy_cost)
+                        .ok_or(TreeError::ResourceLimit)?;
+                }
+                for id in nodes {
+                    cost = cost
+                        .checked_add(draft.node(*id)?.copy_cost)
+                        .ok_or(TreeError::ResourceLimit)?;
+                }
+                draft.copy_room(cost)?;
+                let mut changed_source = draft.node(source)?.clone();
+                changed_source.children.drain(index..end);
+                if source == parent {
+                    changed_source
+                        .children
+                        .splice(to_index..to_index, nodes.iter().copied());
+                    draft.writes.insert(source, changed_source);
+                } else {
+                    let mut changed_destination = draft.node(parent)?.clone();
+                    changed_destination
+                        .children
+                        .splice(to_index..to_index, nodes.iter().copied());
+                    changed_source.copy_cost -= std::mem::size_of_val(nodes);
+                    changed_destination.copy_cost += std::mem::size_of_val(nodes);
+                    draft.writes.insert(source, changed_source);
+                    draft.writes.insert(parent, changed_destination);
+                }
+                for id in nodes {
+                    let mut changed = draft.node(*id)?.clone();
+                    changed.parent = Some(parent);
+                    draft.writes.insert(*id, changed);
+                }
+                draft.steps.push(StepMap::ChildMove {
+                    from_parent: source,
+                    from_index: index,
+                    to_parent: parent,
+                    to_index,
+                    count: nodes.len(),
+                    from_len,
+                    to_len,
+                });
+                draft.prepared_copy_bytes += cost;
+                Ok(())
+            })
+        })
+    }
+
     pub fn root(&self) -> NodeId {
         self.base.root
     }
@@ -568,8 +1365,8 @@ impl TreeDraft<'_> {
     /// Closed primitives preserve reachability; depth and parent checks also
     /// prevent a malformed internal link from causing unbounded recursion.
     pub(crate) fn validate_structure(&self, work: &mut WorkMeter) -> Result<(), TreeError> {
-        fn visit(
-            draft: &TreeDraft<'_>,
+        fn visit<A: Allocation>(
+            draft: &TreeDraft<'_, A>,
             id: NodeId,
             parent: Option<NodeId>,
             family: Option<Primitive>,
@@ -834,7 +1631,10 @@ impl TreeDraft<'_> {
         l.copy_cost -= old_bytes - byte;
         r.copy_cost -= byte;
         let mut p = self.node(parent)?.clone();
-        let right = self.base.allocate()?; // Last fallible step; abandoned IDs are never recycled.
+        let right = NodeId::new(
+            self.base.key,
+            self.allocation.reserve(&self.base.next_id, 1)?,
+        );
         r.id = right;
         p.children.insert(index + 1, right);
         p.copy_cost += std::mem::size_of::<NodeId>();
@@ -1280,7 +2080,533 @@ impl TreeDraft<'_> {
     }
 }
 
-impl TreeDraft<'_> {
+#[cfg(test)]
+mod command_range_tests {
+    use super::*;
+    use crate::mapping::PositionMap;
+    use editor_core::transaction::WorkLimits;
+
+    fn marks(name: &str) -> Vec<Mark> {
+        vec![Mark {
+            type_id: format!("org.example/{name}"),
+            attributes: Attributes::new(),
+        }]
+    }
+    fn text(value: &str, marks: Vec<Mark>) -> Node {
+        Node {
+            type_id: "org.example/text".into(),
+            primitive: Primitive::Text,
+            attributes: Attributes::new(),
+            marks,
+            text: Some(value.into()),
+            children: vec![],
+        }
+    }
+    fn block(content: Vec<Node>) -> Node {
+        Node {
+            type_id: "org.example/paragraph".into(),
+            primitive: Primitive::TextBlock,
+            attributes: Attributes::new(),
+            marks: vec![],
+            text: None,
+            children: content,
+        }
+    }
+    fn tree(content: Vec<Node>) -> AddressTree {
+        AddressTree::from_document(
+            SessionKey::allocate().unwrap(),
+            Document {
+                children: vec![block(content), block(vec![])],
+            },
+        )
+        .unwrap()
+    }
+    fn point(leaf: NodeId, offset: usize) -> Position<NodeId> {
+        Position::Text {
+            leaf,
+            utf16: Utf16Offset::new(offset),
+            affinity: Affinity::After,
+        }
+    }
+    fn gap(parent: NodeId, index: usize) -> Position<NodeId> {
+        Position::Child {
+            parent,
+            index,
+            affinity: Affinity::After,
+        }
+    }
+    fn edge(node: NodeId, side: Edge) -> Position<NodeId> {
+        Position::Edge { node, side }
+    }
+    fn selection(anchor: Position<NodeId>, focus: Position<NodeId>) -> Selection<NodeId> {
+        Selection { anchor, focus }
+    }
+    fn meter() -> WorkMeter {
+        WorkMeter::new(WorkLimits::default())
+    }
+    fn parents(base: &AddressTree) -> (NodeId, NodeId) {
+        let children = base.node(base.root()).unwrap().children();
+        (children[0], children[1])
+    }
+
+    #[test]
+    fn preview_allocation_is_pure_for_split_fragment_duplicate_and_exhaustion() {
+        let base = tree(vec![text("abcd", vec![])]);
+        let (parent, _) = parents(&base);
+        let leaf = base.node(parent).unwrap().children[0];
+        let high = base.next_id.get();
+        let original = base.document();
+        let run = |draft: &mut TreeDraft<'_, PreviewAllocation>| {
+            let right = draft.split_text(leaf, Utf16Offset::new(2)).unwrap();
+            let fragment = draft
+                .insert_fragment(
+                    draft.root(),
+                    1,
+                    &Document {
+                        children: vec![block(vec![text("new", vec![])])],
+                    },
+                    EditOrigin::User,
+                )
+                .unwrap();
+            let duplicate = draft
+                .duplicate(parent, draft.root(), 2, EditOrigin::User)
+                .unwrap();
+            (right, fragment, duplicate, draft.candidate_document())
+        };
+        let first = run(&mut base.prepare_preview());
+        let second = run(&mut base.prepare_preview());
+        assert_eq!(first, second);
+        assert_eq!(base.next_id.get(), high);
+        assert_eq!(base.document(), original);
+        let mut real = base.prepare();
+        assert_eq!(real.split_text(leaf, Utf16Offset::new(2)).unwrap(), first.0);
+        assert_eq!(
+            real.insert_fragment(
+                real.root(),
+                1,
+                &Document {
+                    children: vec![block(vec![text("new", vec![])])]
+                },
+                EditOrigin::User
+            )
+            .unwrap(),
+            first.1
+        );
+        assert_eq!(
+            real.duplicate(parent, real.root(), 2, EditOrigin::User)
+                .unwrap(),
+            first.2
+        );
+        assert_eq!(real.candidate_document(), first.3);
+        assert!(base.next_id.get() > high);
+        drop(real);
+        base.next_id.set(u64::MAX - 1);
+        let mut preview = base.prepare_preview();
+        preview.split_text(leaf, Utf16Offset::new(1)).unwrap();
+        assert_eq!(
+            preview.split_text(leaf, Utf16Offset::new(0)),
+            Err(TreeError::CounterExhausted)
+        );
+        assert_eq!(base.next_id.get(), u64::MAX - 1);
+        let mut preview = base.prepare_preview();
+        assert_eq!(
+            preview.insert_fragment(
+                preview.root(),
+                0,
+                &Document {
+                    children: vec![block(vec![text("new", vec![])])]
+                },
+                EditOrigin::User
+            ),
+            Err(TreeError::CounterExhausted)
+        );
+        assert_eq!(preview.written_nodes(), 0);
+        assert_eq!(base.next_id.get(), u64::MAX - 1);
+    }
+
+    #[test]
+    fn uniform_mark_delta_admits_whole_styled_grapheme_for_all_outer_endpoint_forms() {
+        let base = tree(vec![
+            text("e", vec![]),
+            text("\u{301}", marks("strong")),
+            text("!", vec![]),
+        ]);
+        let (parent, _) = parents(&base);
+        let ids = base.node(parent).unwrap().children();
+        for range in [
+            selection(point(ids[0], 0), point(ids[1], 1)),
+            selection(gap(parent, 0), gap(parent, 2)),
+            selection(edge(ids[0], Edge::Before), edge(ids[1], Edge::After)),
+        ] {
+            let mut draft = base.prepare();
+            draft
+                .patch_mark_range(
+                    range,
+                    &[MarkEdit::Upsert(marks("emphasis").remove(0))],
+                    &mut meter(),
+                )
+                .unwrap();
+            assert_eq!(draft.node(ids[0]).unwrap().marks(), marks("emphasis"));
+            assert_eq!(
+                draft.node(ids[1]).unwrap().marks(),
+                [marks("strong").remove(0), marks("emphasis").remove(0)]
+            );
+            assert!(draft.node(ids[2]).unwrap().marks().is_empty());
+            assert_eq!(draft.node(parent).unwrap().children(), ids);
+            assert!(draft.steps().is_empty());
+        }
+        for start in [
+            point(ids[0], 1),
+            gap(parent, 1),
+            edge(ids[0], Edge::After),
+            edge(ids[1], Edge::Before),
+        ] {
+            let mut draft = base.prepare();
+            let original = draft.candidate_document();
+            assert_eq!(
+                draft.patch_mark_range(
+                    selection(start, point(ids[1], 1)),
+                    &[MarkEdit::Upsert(marks("emphasis").remove(0))],
+                    &mut meter()
+                ),
+                Err(TreeError::Position(PositionError::NotGraphemeBoundary))
+            );
+            assert_eq!(draft.candidate_document(), original);
+            assert_eq!(draft.written_nodes(), 0);
+        }
+    }
+
+    #[test]
+    fn reverse_partial_unicode_marks_preserve_text_and_map_direction() {
+        let base = tree(vec![text("A😀e\u{301}Z", vec![])]);
+        let (parent, _) = parents(&base);
+        let leaf = base.node(parent).unwrap().children[0];
+        let range = selection(
+            Position::Text {
+                leaf,
+                utf16: Utf16Offset::new(5),
+                affinity: Affinity::Before,
+            },
+            point(leaf, 1),
+        );
+        let mut draft = base.prepare();
+        draft
+            .patch_mark_range(
+                range,
+                &[MarkEdit::Upsert(marks("strong").remove(0))],
+                &mut meter(),
+            )
+            .unwrap();
+        let ids = draft.node(parent).unwrap().children();
+        assert_eq!(ids.len(), 3);
+        assert_eq!(draft.node(ids[0]).unwrap().text(), Some("A"));
+        assert_eq!(draft.node(ids[1]).unwrap().text(), Some("😀e\u{301}"));
+        assert_eq!(draft.node(ids[2]).unwrap().text(), Some("Z"));
+        assert_eq!(draft.node(ids[1]).unwrap().marks(), marks("strong"));
+        let map = PositionMap::new(0, 1, draft.steps().to_vec()).unwrap();
+        assert_eq!(
+            map.map(range.anchor).position(),
+            Some(Position::Text {
+                leaf: ids[1],
+                utf16: Utf16Offset::new(4),
+                affinity: Affinity::Before
+            })
+        );
+        assert_eq!(map.map(range.focus).position(), Some(point(ids[1], 0)));
+    }
+
+    #[test]
+    fn late_range_budget_failure_restores_prior_draft_and_maps_after_private_splits() {
+        let mut large = marks("strong");
+        large[0]
+            .attributes
+            .insert("payload".into(), Attribute::String("x".repeat(2048)));
+        let base = tree(vec![text("ab", vec![]), text("cd", large)]);
+        let (parent, _) = parents(&base);
+        let ids = base.node(parent).unwrap().children();
+        let mut draft = base.prepare();
+        draft
+            .apply_operation(
+                &Operation::SetAttribute {
+                    node: parent,
+                    key: "old".into(),
+                    value: Some(Attribute::Boolean(true)),
+                },
+                EditOrigin::User,
+            )
+            .unwrap();
+        let original = draft.candidate_document();
+        let writes = draft.written_nodes();
+        let copied = draft.prepared_copy_bytes();
+        let high = base.next_id.get();
+        let mut work = WorkMeter::new(WorkLimits {
+            units: 1_000_000,
+            bytes: 16000,
+        });
+        assert_eq!(
+            draft.patch_mark_range(
+                selection(point(ids[0], 1), point(ids[1], 1)),
+                &[MarkEdit::Upsert(marks("emphasis").remove(0))],
+                &mut work
+            ),
+            Err(TreeError::ResourceLimit)
+        );
+        assert!(
+            base.next_id.get() > high,
+            "first affected leaf was split before later refusal"
+        );
+        assert_eq!(draft.candidate_document(), original);
+        assert_eq!(draft.written_nodes(), writes);
+        assert_eq!(draft.prepared_copy_bytes(), copied);
+        assert!(draft.steps().is_empty());
+    }
+
+    #[test]
+    fn inline_replacement_removes_exact_styles_and_barriers_with_bounded_fresh_root() {
+        let atom = Node {
+            type_id: "org.example/atom".into(),
+            primitive: Primitive::InlineAtom,
+            attributes: Attributes::from([(
+                "payload".into(),
+                Attribute::String("preserved unless selected".into()),
+            )]),
+            marks: vec![],
+            text: None,
+            children: vec![],
+        };
+        let hard = Node {
+            type_id: "org.example/break".into(),
+            primitive: Primitive::HardBreak,
+            attributes: Attributes::new(),
+            marks: vec![],
+            text: None,
+            children: vec![],
+        };
+        let base = tree(vec![
+            text("ab", vec![]),
+            hard,
+            atom,
+            text("cd", marks("strong")),
+        ]);
+        let (parent, other) = parents(&base);
+        let ids = base.node(parent).unwrap().children();
+        let mut draft = base.prepare();
+        let inserted = text("Q", marks("emphasis"));
+        let roots = draft
+            .replace_inline_range(
+                selection(point(ids[0], 1), point(ids[3], 1)),
+                Some(&inserted),
+                &mut meter(),
+            )
+            .unwrap();
+        assert_eq!(roots.len(), 1);
+        let after = draft.node(parent).unwrap().children();
+        assert_eq!(after.len(), 3);
+        assert_eq!(after[0], ids[0]);
+        assert_eq!(after[1], roots[0]);
+        assert_eq!(draft.node(after[0]).unwrap().text(), Some("a"));
+        assert_eq!(draft.node(after[1]).unwrap().text(), Some("Q"));
+        assert_eq!(draft.node(after[2]).unwrap().text(), Some("d"));
+        assert_eq!(draft.node(after[2]).unwrap().marks(), marks("strong"));
+        assert_eq!(draft.node(ids[1]), Err(TreeError::MissingNode));
+        assert_eq!(draft.node(ids[2]), Err(TreeError::MissingNode));
+        let mut refused = base.prepare();
+        let original = refused.candidate_document();
+        let high = base.next_id.get();
+        assert_eq!(
+            refused.replace_inline_range(
+                selection(point(ids[0], 1), gap(other, 0)),
+                None,
+                &mut meter()
+            ),
+            Err(TreeError::InvalidStructure)
+        );
+        assert_eq!(refused.candidate_document(), original);
+        assert_eq!(base.next_id.get(), high);
+        let mut malformed = inserted;
+        malformed.children.push(text("hidden", vec![]));
+        assert_eq!(
+            refused.replace_inline_range(
+                selection(point(ids[0], 0), point(ids[0], 1)),
+                Some(&malformed),
+                &mut meter()
+            ),
+            Err(TreeError::InvalidStructure)
+        );
+        assert_eq!(refused.candidate_document(), original);
+    }
+
+    #[test]
+    fn inline_replacement_admits_whole_grapheme_and_refuses_hidden_child_gap_cut() {
+        let base = tree(vec![
+            text("e", vec![]),
+            text("\u{301}", marks("strong")),
+            text("!", vec![]),
+        ]);
+        let (parent, _) = parents(&base);
+        let ids = base.node(parent).unwrap().children();
+        let mut draft = base.prepare();
+        let prototype = text("X", vec![]);
+        let roots = draft
+            .replace_inline_range(
+                selection(edge(ids[0], Edge::Before), edge(ids[1], Edge::After)),
+                Some(&prototype),
+                &mut meter(),
+            )
+            .unwrap();
+        assert_eq!(draft.node(parent).unwrap().children(), &[roots[0], ids[2]]);
+        assert_eq!(draft.node(ids[2]).unwrap().text(), Some("!"));
+        let mut refused = base.prepare();
+        assert_eq!(
+            refused.replace_inline_range(
+                selection(gap(parent, 1), gap(parent, 2)),
+                None,
+                &mut meter()
+            ),
+            Err(TreeError::Position(PositionError::NotGraphemeBoundary))
+        );
+        assert_eq!(refused.written_nodes(), 0);
+    }
+
+    #[test]
+    fn inline_leaf_replacement_uses_original_barrier_proof_and_preserves_failure_counters() {
+        let hard = Node {
+            type_id: "org.example/break".into(),
+            primitive: Primitive::HardBreak,
+            attributes: Attributes::new(),
+            marks: vec![],
+            text: None,
+            children: vec![],
+        };
+        let atom = Node {
+            type_id: "org.example/atom".into(),
+            primitive: Primitive::InlineAtom,
+            attributes: Attributes::from([("label".into(), Attribute::String("object".into()))]),
+            marks: vec![],
+            text: None,
+            children: vec![],
+        };
+        let base = tree(vec![
+            text("e", vec![]),
+            hard.clone(),
+            text("\u{301}", marks("strong")),
+        ]);
+        let (parent, _) = parents(&base);
+        let ids = base.node(parent).unwrap().children();
+        let range = selection(gap(parent, 1), gap(parent, 2));
+        for prototype in [&hard, &atom] {
+            let mut draft = base.prepare();
+            let roots = draft
+                .replace_inline_range(range, Some(prototype), &mut meter())
+                .unwrap();
+            assert_eq!(roots.len(), 1);
+            assert_ne!(roots[0], ids[1]);
+            assert_eq!(
+                draft.node(parent).unwrap().children(),
+                &[ids[0], roots[0], ids[2]]
+            );
+            assert_eq!(draft.node(ids[0]).unwrap().text(), Some("e"));
+            assert_eq!(draft.node(ids[2]).unwrap().text(), Some("\u{301}"));
+            assert_eq!(
+                draft.node(roots[0]).unwrap().primitive(),
+                Some(prototype.primitive)
+            );
+            assert_eq!(
+                draft.node(roots[0]).unwrap().attributes(),
+                Some(&prototype.attributes)
+            );
+            draft.validate_structure(&mut meter()).unwrap();
+        }
+        base.next_id.set(u64::MAX);
+        let mut draft = base.prepare();
+        let original = draft.candidate_document();
+        let copied = draft.prepared_copy_bytes();
+        let high = base.next_id.get();
+        assert_eq!(
+            draft.replace_inline_range(range, Some(&hard), &mut meter()),
+            Err(TreeError::CounterExhausted)
+        );
+        assert_eq!(draft.candidate_document(), original);
+        assert_eq!(draft.prepared_copy_bytes(), copied);
+        assert_eq!(base.next_id.get(), high);
+        assert!(draft.steps().is_empty());
+        assert_eq!(draft.written_nodes(), 0);
+        let mut budget = WorkMeter::new(WorkLimits {
+            units: 1_000_000,
+            bytes: 1,
+        });
+        assert_eq!(
+            draft.replace_inline_range(range, Some(&atom), &mut budget),
+            Err(TreeError::ResourceLimit)
+        );
+        assert_eq!(draft.candidate_document(), original);
+        assert_eq!(draft.prepared_copy_bytes(), copied);
+        assert_eq!(base.next_id.get(), high);
+        assert!(draft.steps().is_empty());
+    }
+
+    #[test]
+    fn inline_group_move_preserves_ids_and_one_counted_map_with_outer_gap_guards() {
+        let base = tree(vec![
+            text("A", vec![]),
+            text("e", marks("emphasis")),
+            text("\u{301}", marks("strong")),
+            text("B", vec![]),
+        ]);
+        let (parent, other) = parents(&base);
+        let ids = base.node(parent).unwrap().children();
+        let mut draft = base.prepare();
+        draft
+            .move_inline_group(&ids[1..3], other, 0, &mut meter())
+            .unwrap();
+        assert_eq!(draft.node(parent).unwrap().children(), &[ids[0], ids[3]]);
+        assert_eq!(draft.node(other).unwrap().children(), &ids[1..3]);
+        assert_eq!(draft.node(ids[1]).unwrap().parent(), Some(other));
+        assert_eq!(draft.node(ids[2]).unwrap().marks(), marks("strong"));
+        assert!(matches!(
+            draft.steps(),
+            [StepMap::ChildMove {
+                count: 2,
+                from_index: 1,
+                to_index: 0,
+                ..
+            }]
+        ));
+        let mut same = base.prepare();
+        same.move_inline_group(&ids[1..3], parent, 4, &mut meter())
+            .unwrap();
+        assert_eq!(
+            same.node(parent).unwrap().children(),
+            &[ids[0], ids[3], ids[1], ids[2]]
+        );
+        assert!(matches!(
+            same.steps(),
+            [StepMap::ChildMove {
+                count: 2,
+                to_index: 2,
+                ..
+            }]
+        ));
+        let mut no_op = base.prepare();
+        no_op
+            .move_inline_group(&ids[1..3], parent, 2, &mut meter())
+            .unwrap();
+        assert_eq!(no_op.written_nodes(), 0);
+        let mut refused = base.prepare();
+        assert_eq!(
+            refused.move_inline_group(&ids[1..2], other, 0, &mut meter()),
+            Err(TreeError::Position(PositionError::NotGraphemeBoundary))
+        );
+        assert_eq!(refused.written_nodes(), 0);
+        assert_eq!(
+            refused.move_inline_group(&[ids[2], ids[1]], other, 0, &mut meter()),
+            Err(TreeError::InvalidRange)
+        );
+        assert_eq!(refused.written_nodes(), 0);
+    }
+}
+
+impl<A: Allocation> TreeDraft<'_, A> {
     fn user_leaf_boundary(&self, id: NodeId, origin: EditOrigin) -> Result<(), TreeError> {
         if origin == EditOrigin::User
             && let Some(text) = self.node(id)?.text()
@@ -1412,13 +2738,9 @@ impl TreeDraft<'_> {
             .and_then(|n| n.checked_add(parent_node.copy_cost))
             .ok_or(TreeError::ResourceLimit)?;
         self.copy_room(cost)?;
-        let start = self.base.next_id.get();
-        let end = start
-            .checked_add(metrics.nodes)
-            .ok_or(TreeError::CounterExhausted)?;
         // All expected failures are now resolved. IDs are consumed once for the
         // entire insertion and never recycled if its enclosing batch is refused.
-        self.base.next_id.set(end);
+        let start = self.allocation.reserve(&self.base.next_id, metrics.nodes)?;
         let mut serial = start;
         let mut records = BTreeMap::new();
         fn build(
@@ -1466,7 +2788,7 @@ impl TreeDraft<'_> {
             .iter()
             .map(|node| build(node, parent, self.base.key, &mut serial, &mut records))
             .collect::<Vec<_>>();
-        debug_assert_eq!(serial, end);
+        debug_assert_eq!(serial, start + metrics.nodes);
         let mut changed_parent = parent_node.clone();
         let old_len = changed_parent.children.len();
         changed_parent
@@ -1519,15 +2841,11 @@ impl TreeDraft<'_> {
                 .ok_or(TreeError::ResourceLimit)?;
             self.copy_room(cost)
         })?;
-        let start = self.base.next_id.get();
-        let end = start
-            .checked_add(count)
-            .ok_or(TreeError::CounterExhausted)?;
-        self.base.next_id.set(end);
+        let start = self.allocation.reserve(&self.base.next_id, count)?;
         let mut serial = start;
         let mut records = BTreeMap::new();
-        fn build(
-            draft: &TreeDraft<'_>,
+        fn build<A: Allocation>(
+            draft: &TreeDraft<'_, A>,
             source: NodeId,
             parent: NodeId,
             serial: &mut u64,
@@ -1554,7 +2872,7 @@ impl TreeDraft<'_> {
             id
         }
         let fresh = build(self, id, parent, &mut serial, &mut records);
-        debug_assert_eq!(serial, end);
+        debug_assert_eq!(serial, start + count);
         let mut changed_parent = destination.clone();
         let old_len = changed_parent.children.len();
         changed_parent.children.insert(index, fresh);
@@ -1579,6 +2897,9 @@ impl TreeDraft<'_> {
         origin: EditOrigin,
     ) -> Result<Vec<NodeId>, TreeError> {
         match operation {
+            Operation::PatchMarkRange { .. }
+            | Operation::ReplaceInlineRange { .. }
+            | Operation::MoveInlineGroup { .. } => return Err(TreeError::InvalidStructure),
             Operation::ReplaceText {
                 leaf,
                 from,
@@ -1683,7 +3004,7 @@ impl TreeDraft<'_> {
 
     /// Full-snapshot normalization is never used here. Only sparse affected
     /// records are compared and copied; cache estimates do not create commits.
-    pub(crate) fn prepare_patch(mut self) -> Result<PreparedTreePatch, TreeError> {
+    pub(crate) fn prepare_patch(mut self) -> Result<PreparedTreePatch<A>, TreeError> {
         self.writes.retain(|id, changed| {
             self.base
                 .nodes
@@ -1740,6 +3061,7 @@ impl TreeDraft<'_> {
             self.steps.clear();
         }
         Ok(PreparedTreePatch {
+            allocation: PhantomData,
             key: self.base.key,
             writes: self.writes,
             removed: self.removed,

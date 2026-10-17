@@ -2,19 +2,24 @@
 //! The only document publication path: prepare, normalize, validate, publish.
 
 use editor_core::admission::{PreflightBudget, preflight_snapshot};
-use editor_core::document::{Attribute, Attributes, Mark};
+use editor_core::commands::StoredMarksUpdate;
+use editor_core::document::{Attribute, Attributes, Mark, Primitive};
 use editor_core::limits::{LimitExceeded, check};
 use editor_core::positions::{Position, Selection};
-use editor_core::transaction::{Operation, TransactionProfile, WorkMeter};
+use editor_core::transaction::{
+    MarkEdit, Operation, TransactionProfile, ValidationStats, WorkMeter, WorkUsage,
+};
 
 use super::{AccessMode, Session, SessionState, StateError};
 use crate::identity::NodeId;
 use crate::mapping::{MapError, PositionMap, StepMap};
 use crate::transaction::{
-    CommitEvent, DispatchOutcome, JournalEntry, NodeRef, SelectionUpdate, Transaction,
+    CommitEvent, DispatchOutcome, JournalEntry, JournalPlan, NodeRef, SelectionUpdate, Transaction,
     TransactionError,
 };
-use crate::tree::{EditOrigin, TreeDraft, TreeError};
+use crate::tree::{
+    Allocation, EditOrigin, PreparedTreePatch, RealAllocation, TreeDraft, TreeError,
+};
 
 fn string(work: &mut WorkMeter, value: &str) -> Result<(), LimitExceeded> {
     work.charge_bytes(value.len() as u64)
@@ -80,6 +85,16 @@ fn reference<E>(value: &NodeRef, work: &mut WorkMeter) -> Result<(), Transaction
     }
     Ok(())
 }
+fn input_position<E>(
+    position: &Position<NodeRef>,
+    work: &mut WorkMeter,
+) -> Result<(), TransactionError<E>> {
+    match position {
+        Position::Text { leaf, .. } => reference(leaf, work),
+        Position::Child { parent, .. } => reference(parent, work),
+        Position::Edge { node, .. } => reference(node, work),
+    }
+}
 fn payload<E>(
     operation: &Operation<NodeRef>,
     work: &mut WorkMeter,
@@ -102,6 +117,45 @@ fn payload<E>(
             string(work, key)?;
             if let Some(value) = value {
                 attribute(work, value, 1)?;
+            }
+        }
+        Operation::PatchMarkRange { range, edits } => {
+            input_position(&range.anchor, work)?;
+            input_position(&range.focus, work)?;
+            work.charge_units(edits.len() as u64)?;
+            for edit in edits {
+                match edit {
+                    MarkEdit::Upsert(value) => marks(work, std::slice::from_ref(value))?,
+                    MarkEdit::Remove { type_id } => string(work, type_id)?,
+                }
+            }
+        }
+        Operation::ReplaceInlineRange { range, inserted } => {
+            input_position(&range.anchor, work)?;
+            input_position(&range.focus, work)?;
+            if let Some(node) = inserted {
+                let inline_shape = match node.primitive {
+                    Primitive::Text => node.text.is_some(),
+                    Primitive::HardBreak | Primitive::InlineAtom => node.text.is_none(),
+                    _ => false,
+                };
+                if !inline_shape || !node.children.is_empty() {
+                    return Err(TreeError::InvalidStructure.into());
+                }
+                string(work, &node.type_id)?;
+                attributes(work, &node.attributes, 1)?;
+                marks(work, &node.marks)?;
+                if let Some(text) = node.text.as_deref() {
+                    string(work, text)?;
+                }
+            }
+        }
+        Operation::MoveInlineGroup { nodes, parent, .. } => {
+            work.charge_units(nodes.len() as u64)?;
+            work.charge_bytes(std::mem::size_of_val(nodes.as_slice()) as u64)?;
+            reference(parent, work)?;
+            for node in nodes {
+                reference(node, work)?;
             }
         }
         Operation::SetMarks {
@@ -139,10 +193,10 @@ fn payload<E>(
     }
     Ok(())
 }
-fn resolve<E>(
+fn resolve<E, A: Allocation>(
     reference: NodeRef,
     created: &[Vec<NodeId>],
-    draft: &TreeDraft<'_>,
+    draft: &TreeDraft<'_, A>,
 ) -> Result<NodeId, TransactionError<E>> {
     match reference {
         NodeRef::Existing(id) => Ok(id),
@@ -166,10 +220,10 @@ fn resolve<E>(
         }
     }
 }
-fn resolve_position<E>(
+fn resolve_position<E, A: Allocation>(
     position: Position<NodeRef>,
     created: &[Vec<NodeId>],
-    draft: &TreeDraft<'_>,
+    draft: &TreeDraft<'_, A>,
     work: &mut WorkMeter,
 ) -> Result<Position<NodeId>, TransactionError<E>> {
     Ok(match position {
@@ -206,8 +260,8 @@ fn resolve_position<E>(
         }
     })
 }
-fn inline_work<E>(
-    draft: &TreeDraft<'_>,
+fn inline_work<E, A: Allocation>(
+    draft: &TreeDraft<'_, A>,
     parent: NodeId,
     work: &mut WorkMeter,
 ) -> Result<(), TransactionError<E>> {
@@ -220,8 +274,8 @@ fn inline_work<E>(
     }
     Ok(())
 }
-fn subtree_work<E>(
-    draft: &TreeDraft<'_>,
+fn subtree_work<E, A: Allocation>(
+    draft: &TreeDraft<'_, A>,
     id: NodeId,
     depth: usize,
     work: &mut WorkMeter,
@@ -237,13 +291,33 @@ fn subtree_work<E>(
     }
     Ok(())
 }
-fn apply<E>(
-    draft: &mut TreeDraft<'_>,
+fn apply<E, A: Allocation>(
+    draft: &mut TreeDraft<'_, A>,
     operation: &Operation<NodeId>,
     origin: EditOrigin,
     work: &mut WorkMeter,
 ) -> Result<Vec<NodeId>, TransactionError<E>> {
     work.charge_units(1)?;
+    // Closed range methods own their scan/copy accounting on this SAME meter.
+    // Their legacy, unmetered primitive entry points reject these variants.
+    match operation {
+        Operation::PatchMarkRange { range, edits } => {
+            draft.patch_mark_range(*range, edits, work)?;
+            return Ok(Vec::new());
+        }
+        Operation::ReplaceInlineRange { range, inserted } => {
+            return Ok(draft.replace_inline_range(*range, inserted.as_ref(), work)?);
+        }
+        Operation::MoveInlineGroup {
+            nodes,
+            parent,
+            before_index,
+        } => {
+            draft.move_inline_group(nodes, *parent, *before_index, work)?;
+            return Ok(Vec::new());
+        }
+        _ => {}
+    }
     match operation {
         Operation::ReplaceText { leaf, .. }
         | Operation::SplitText { leaf, .. }
@@ -271,6 +345,9 @@ fn apply<E>(
             subtree_work(draft, *node, 1, work)?;
         }
         Operation::SetAttribute { .. } | Operation::Transform { .. } => {}
+        Operation::PatchMarkRange { .. }
+        | Operation::ReplaceInlineRange { .. }
+        | Operation::MoveInlineGroup { .. } => unreachable!("metered ranges returned above"),
     }
     let before = draft.prepared_copy_bytes();
     let remaining = work.limits().bytes - work.usage().bytes;
@@ -301,11 +378,125 @@ fn map_bytes(steps: &[StepMap<NodeId>]) -> Result<usize, TreeError> {
     Ok(bytes)
 }
 
+/// Raw transactions clear typing overrides on real doc/selection changes;
+/// command plans explicitly select an override and validate its FINAL context.
+pub(super) enum TypingPolicy {
+    Raw,
+    Command(StoredMarksUpdate),
+}
+
+pub(super) struct Prepared<A: Allocation> {
+    patch: PreparedTreePatch<A>,
+    map: PositionMap<NodeId>,
+    retained_map: Option<PositionMap<NodeId>>,
+    journal_plan: Option<JournalPlan>,
+    journal_bytes: usize,
+    selection: Option<Selection<NodeId>>,
+    stored_marks: Option<Vec<Mark>>,
+    journal_marks_before: Option<Vec<Mark>>,
+    journal_marks_after: Option<Vec<Mark>>,
+    event_marks_after: Option<Vec<Mark>>,
+    epoch: u64,
+    revision: u64,
+    pub(super) selection_changed: bool,
+    pub(super) stored_marks_changed: bool,
+    changed_nodes: Vec<NodeId>,
+    normalization_operations: usize,
+    validation: ValidationStats,
+    work: WorkUsage,
+}
+impl<A: Allocation> Prepared<A> {
+    pub(super) fn changed(&self) -> bool {
+        self.patch.changed()
+    }
+}
+
+/// Charge the owned metadata material before cloning it. This logical bound
+/// includes container/value overhead and is independent of historic edits.
+fn copy_marks<E>(
+    source: Option<&[Mark]>,
+    work: &mut WorkMeter,
+) -> Result<(Option<Vec<Mark>>, usize), TransactionError<E>> {
+    let Some(source) = source else {
+        return Ok((None, 0));
+    };
+    let left = work.limits();
+    let spent = work.usage();
+    let usage = editor_core::admission::preflight_node_fields(
+        "",
+        None,
+        &Attributes::new(),
+        source,
+        0,
+        PreflightBudget {
+            payload_bytes: left.bytes.saturating_sub(spent.bytes),
+            values: left.units.saturating_sub(spent.units),
+            depth: 128,
+        },
+    )?;
+    let bytes = source
+        .len()
+        .checked_mul(std::mem::size_of::<Mark>())
+        .and_then(|n| n.checked_add(usize::try_from(usage.payload_bytes).ok()?))
+        .and_then(|n| {
+            n.checked_add(
+                usize::try_from(usage.values)
+                    .ok()?
+                    .checked_mul(std::mem::size_of::<Attribute>())?,
+            )
+        })
+        .ok_or(TreeError::ResourceLimit)?;
+    work.charge_units(usage.values)?;
+    work.charge_bytes(bytes as u64)?;
+    Ok((Some(source.to_vec()), bytes))
+}
+fn map_selection<E>(
+    map: &PositionMap<NodeId>,
+    selection: Option<Selection<NodeId>>,
+) -> Result<Option<Selection<NodeId>>, TransactionError<E>> {
+    selection
+        .map(|selection| {
+            Ok(Selection {
+                anchor: map
+                    .map(selection.anchor)
+                    .position()
+                    .ok_or(MapError::UnresolvedRetiredNode)?,
+                focus: map
+                    .map(selection.focus)
+                    .position()
+                    .ok_or(MapError::UnresolvedRetiredNode)?,
+            })
+        })
+        .transpose()
+}
+fn resolve_selection<E, A: Allocation>(
+    selection: Option<Selection<NodeRef>>,
+    created: &[Vec<NodeId>],
+    draft: &TreeDraft<'_, A>,
+    work: &mut WorkMeter,
+) -> Result<Option<Selection<NodeId>>, TransactionError<E>> {
+    selection
+        .map(|selection| {
+            Ok(Selection {
+                anchor: resolve_position(selection.anchor, created, draft, work)?,
+                focus: resolve_position(selection.focus, created, draft, work)?,
+            })
+        })
+        .transpose()
+}
+
 impl<P: TransactionProfile> Session<P> {
     pub fn dispatch(&mut self, transaction: Transaction) -> DispatchOutcome<P::Error> {
         let mut work = WorkMeter::new(transaction.limits.work);
-        match self.dispatch_inner(transaction, &mut work) {
-            Ok(result) => result,
+        let prepared = self.prepare_transaction(
+            transaction,
+            self.tree.prepare(),
+            TypingPolicy::Raw,
+            &mut work,
+            |_, _, proposed, work| copy_marks(proposed, work).map(|(marks, _)| marks),
+        );
+        match prepared {
+            Ok(prepared) => self.publish_prepared(prepared),
             Err(error) => DispatchOutcome::Refused {
                 error,
                 map: PositionMap::identity(self.revision),
@@ -314,11 +505,21 @@ impl<P: TransactionProfile> Session<P> {
         }
     }
 
-    fn dispatch_inner(
-        &mut self,
+    /// One publication-free preparer for raw dispatch, full capability preview
+    /// and command execution. Preview's mode makes its patch unpublishable.
+    pub(super) fn prepare_transaction<A: Allocation>(
+        &self,
         transaction: Transaction,
+        mut draft: TreeDraft<'_, A>,
+        typing: TypingPolicy,
         work: &mut WorkMeter,
-    ) -> Result<DispatchOutcome<P::Error>, TransactionError<P::Error>> {
+        finalize_marks: impl FnOnce(
+            &TreeDraft<'_, A>,
+            Option<Selection<NodeId>>,
+            Option<&[Mark]>,
+            &mut WorkMeter,
+        ) -> Result<Option<Vec<Mark>>, TransactionError<P::Error>>,
+    ) -> Result<Prepared<A>, TransactionError<P::Error>> {
         self.guard(transaction.session, Some(transaction.revision))?;
         if transaction
             .selection_epoch
@@ -338,77 +539,63 @@ impl<P: TransactionProfile> Session<P> {
             transaction.operations.len() as u64,
         )?;
         work.charge_units(transaction.operations.len() as u64)?;
-        // Borrow every untrusted payload before copying any of it into a draft.
         for operation in &transaction.operations {
             payload(operation, work)?;
         }
-        let mut draft = self.tree.prepare();
-        if transaction.operations.is_empty() {
-            // An admitted, unchanged document needs no domain/identity lookup
-            // just to select it. This path also serves read-only sessions.
-            let selection = match transaction.selection {
-                SelectionUpdate::MapCurrent => self.selection,
-                SelectionUpdate::Set(None) => None,
-                SelectionUpdate::Set(Some(selection)) => Some(Selection {
-                    anchor: resolve_position(selection.anchor, &[], &draft, work)?,
-                    focus: resolve_position(selection.focus, &[], &draft, work)?,
-                }),
-            };
-            validate_selection(&draft, selection, work)?;
-            let selection_changed = selection != self.selection;
-            let selection_epoch = if selection_changed {
-                self.selection_epoch
-                    .checked_add(1)
-                    .ok_or(StateError::CounterExhausted)?
-            } else {
-                self.selection_epoch
-            };
-            self.selection = selection;
-            self.selection_epoch = selection_epoch;
-            return Ok(DispatchOutcome::Unchanged {
-                revision: self.revision,
-                selection_epoch,
-                selection_changed,
-                map: PositionMap::identity(self.revision),
-                work: work.usage(),
-            });
-        }
+        work.charge_bytes(
+            (transaction.operations.len() as u64)
+                .saturating_mul(std::mem::size_of::<Vec<NodeId>>() as u64),
+        )?;
         let mut created = Vec::with_capacity(transaction.operations.len());
+        let has_user_operations = !transaction.operations.is_empty();
         for operation in transaction.operations {
             let operation = operation.try_map_ids(|id| resolve(id, &created, &draft))?;
             created.push(apply(&mut draft, &operation, EditOrigin::User, work)?);
         }
+        let (selection_after_user, selection_intent) = match transaction.selection {
+            SelectionUpdate::MapFromUserResult(selection) => {
+                let resolved = resolve_selection(selection, &created, &draft, work)?;
+                // Normalization may retire a created leaf and map every address
+                // on it to a parent gap. Validate its user-frame coordinates
+                // first, so that mapping cannot launder an invalid offset/kind.
+                validate_selection(&draft, resolved, work)?;
+                (Some(resolved), SelectionUpdate::MapCurrent)
+            }
+            other => (None, other),
+        };
+        let normalization_start = draft.steps().len();
         let mut normalization_operations = 0usize;
-        let mut passes = 0usize;
-        loop {
-            let operations = self
+        let mut validation = ValidationStats::default();
+        if has_user_operations {
+            let mut passes = 0usize;
+            loop {
+                let operations = self
+                    .profile
+                    .normalize_candidate(&self.context, &draft, work)
+                    .map_err(TransactionError::Profile)?;
+                if operations.is_empty() {
+                    break;
+                }
+                if passes >= limits.normalization_passes {
+                    return Err(TransactionError::NormalizationLimit);
+                }
+                passes += 1;
+                check(
+                    "normalization_operations",
+                    4096,
+                    (normalization_operations as u64).saturating_add(operations.len() as u64),
+                )?;
+                for operation in operations {
+                    apply(&mut draft, &operation, EditOrigin::Normalization, work)?;
+                    normalization_operations += 1;
+                }
+            }
+            draft.validate_structure(work)?;
+            validation = self
                 .profile
-                .normalize_candidate(&self.context, &draft, work)
+                .validate_candidate(&self.context, &draft, work)
                 .map_err(TransactionError::Profile)?;
-            if operations.is_empty() {
-                break;
-            }
-            if passes >= limits.normalization_passes {
-                return Err(TransactionError::NormalizationLimit);
-            }
-            passes += 1;
-            check(
-                "normalization_operations",
-                4096,
-                (normalization_operations as u64).saturating_add(operations.len() as u64),
-            )?;
-            for operation in operations {
-                apply(&mut draft, &operation, EditOrigin::Normalization, work)?;
-                normalization_operations += 1;
-            }
         }
-        draft.validate_structure(work)?;
-        let validation = self
-            .profile
-            .validate_candidate(&self.context, &draft, work)
-            .map_err(TransactionError::Profile)?;
-        // Net equality is borrowed and sparse. A no-op never increments a
-        // counter or exposes the speculative maps used while preparing it.
         let changed = draft.has_changes();
         let next_revision = if changed {
             self.revision
@@ -428,106 +615,161 @@ impl<P: TransactionProfile> Session<P> {
         } else {
             PositionMap::identity(self.revision)
         };
-        let requested_selection = match transaction.selection {
-            SelectionUpdate::MapCurrent => match self.selection {
-                Some(selection) => Some(Selection {
-                    anchor: map
-                        .map(selection.anchor)
-                        .position()
-                        .ok_or(MapError::UnresolvedRetiredNode)?,
-                    focus: map
-                        .map(selection.focus)
-                        .position()
-                        .ok_or(MapError::UnresolvedRetiredNode)?,
-                }),
-                None => None,
-            },
-            SelectionUpdate::Set(selection) => match selection {
-                Some(selection) => Some(Selection {
-                    anchor: resolve_position(selection.anchor, &created, &draft, work)?,
-                    focus: resolve_position(selection.focus, &created, &draft, work)?,
-                }),
-                None => None,
-            },
+        let selection = if let Some(selection) = selection_after_user {
+            let suffix = &draft.steps()[normalization_start..];
+            work.charge_bytes(map_bytes(suffix)? as u64)?;
+            // These are private frame coordinates, not a document revision.
+            let suffix_map = if suffix.is_empty() {
+                PositionMap::identity(0)
+            } else {
+                PositionMap::new(0, 1, suffix.to_vec())?
+            };
+            map_selection(&suffix_map, selection)?
+        } else {
+            match selection_intent {
+                SelectionUpdate::MapCurrent => map_selection(&map, self.selection)?,
+                SelectionUpdate::Set(selection) => {
+                    resolve_selection(selection, &created, &draft, work)?
+                }
+                SelectionUpdate::MapFromUserResult(_) => unreachable!("resolved in the user frame"),
+            }
         };
-        validate_selection(&draft, requested_selection, work)?;
-        let before_copy = draft.prepared_copy_bytes();
-        let remaining = work.limits().bytes - work.usage().bytes;
-        draft.tighten_copy_budget(
-            before_copy.saturating_add(usize::try_from(remaining).unwrap_or(usize::MAX)),
-        );
-        let patch = draft.prepare_patch()?;
-        work.charge_bytes((patch.prepared_copy_bytes() - before_copy) as u64)?;
-        debug_assert_eq!(changed, patch.changed());
-        debug_assert_eq!(map.steps(), patch.steps());
-        let selection = requested_selection;
+        validate_selection(&draft, selection, work)?;
         let selection_changed = selection != self.selection;
-        let selection_epoch = if selection_changed {
+        let proposed = match &typing {
+            TypingPolicy::Raw if changed || selection_changed => None,
+            TypingPolicy::Raw | TypingPolicy::Command(StoredMarksUpdate::Keep) => {
+                self.stored_marks.as_deref()
+            }
+            TypingPolicy::Command(StoredMarksUpdate::Inherit) => None,
+            TypingPolicy::Command(StoredMarksUpdate::Set(marks)) => Some(marks.as_slice()),
+        };
+        let stored_marks = finalize_marks(&draft, selection, proposed, work)?;
+        let stored_marks_changed = stored_marks != self.stored_marks;
+        if self.state == SessionState::Open(AccessMode::ReadOnly) && stored_marks_changed {
+            return Err(StateError::ReadOnly.into());
+        }
+        let epoch = if selection_changed || stored_marks_changed {
             self.selection_epoch
                 .checked_add(1)
                 .ok_or(StateError::CounterExhausted)?
         } else {
             self.selection_epoch
         };
-        if !changed {
-            self.selection = selection;
-            self.selection_epoch = selection_epoch;
-            return Ok(DispatchOutcome::Unchanged {
-                revision: self.revision,
-                selection_epoch,
-                selection_changed,
-                map: PositionMap::identity(self.revision),
-                work: work.usage(),
-            });
-        }
-        if self.state == SessionState::Open(AccessMode::ReadOnly) {
-            return Err(StateError::ReadOnly.into());
-        }
-        let bytes = patch
-            .material_bytes()
-            .checked_add(mapping_bytes)
-            .and_then(|value| value.checked_add(std::mem::size_of::<JournalEntry>()))
-            .ok_or(TreeError::ResourceLimit)?;
-        let journal_plan = self.journal.plan(bytes, limits)?;
-        work.charge_bytes(std::mem::size_of_val(patch.changed_ids()) as u64)?;
-        let changed_nodes = patch.changed_ids().to_vec();
-        let retained_map = map.clone();
-        let before = self.selection;
-        // Commit boundary: all expected errors and all expensive preparation
-        // have completed. An allocator panic/trap is fatal, never Refused.
-        let material = self.tree.publish(patch);
-        self.journal.publish(
-            JournalEntry {
-                material,
-                map: retained_map,
-                before,
-                after: selection,
-                bytes,
-            },
-            journal_plan,
+        let before_copy = draft.prepared_copy_bytes();
+        let remaining = work.limits().bytes.saturating_sub(work.usage().bytes);
+        draft.tighten_copy_budget(
+            before_copy.saturating_add(usize::try_from(remaining).unwrap_or(usize::MAX)),
         );
-        self.revision = next_revision;
-        self.selection = selection;
-        self.selection_epoch = selection_epoch;
-        self.dirty = true;
-        Ok(DispatchOutcome::Changed(CommitEvent {
-            revision: self.revision,
-            selection_epoch,
-            selection_before: before,
-            selection_after: selection,
+        let patch = draft.prepare_patch()?;
+        work.charge_bytes((patch.prepared_copy_bytes() - before_copy) as u64)?;
+        debug_assert_eq!(changed, patch.changed());
+        debug_assert_eq!(map.steps(), if changed { patch.steps() } else { &[] });
+        let mut journal_plan = None;
+        let mut journal_bytes = 0;
+        let mut journal_marks_before = None;
+        let mut journal_marks_after = None;
+        let mut event_marks_after = None;
+        let mut changed_nodes = Vec::new();
+        let mut retained_map = None;
+        if changed {
+            let (before, before_bytes) = copy_marks(self.stored_marks.as_deref(), work)?;
+            let (after, after_bytes) = copy_marks(stored_marks.as_deref(), work)?;
+            event_marks_after = copy_marks(stored_marks.as_deref(), work)?.0;
+            journal_marks_before = before;
+            journal_marks_after = after;
+            journal_bytes = patch
+                .material_bytes()
+                .checked_add(mapping_bytes)
+                .and_then(|n| n.checked_add(std::mem::size_of::<JournalEntry>()))
+                .and_then(|n| n.checked_add(before_bytes))
+                .and_then(|n| n.checked_add(after_bytes))
+                .ok_or(TreeError::ResourceLimit)?;
+            journal_plan = Some(self.journal.plan(journal_bytes, limits)?);
+            work.charge_bytes(std::mem::size_of_val(patch.changed_ids()) as u64)?;
+            changed_nodes = patch.changed_ids().to_vec();
+            retained_map = Some(map.clone());
+        }
+        Ok(Prepared {
+            patch,
             map,
+            retained_map,
+            journal_plan,
+            journal_bytes,
+            selection,
+            stored_marks,
+            journal_marks_before,
+            journal_marks_after,
+            event_marks_after,
+            epoch,
+            revision: next_revision,
+            selection_changed,
+            stored_marks_changed,
             changed_nodes,
-            journal: self.journal.summary(self.revision),
             normalization_operations,
             validation,
             work: work.usage(),
+        })
+    }
+
+    /// Only a real prepared patch can reach this publication method.
+    pub(super) fn publish_prepared(
+        &mut self,
+        prepared: Prepared<RealAllocation>,
+    ) -> DispatchOutcome<P::Error> {
+        let changed = prepared.changed();
+        if !changed {
+            self.selection = prepared.selection;
+            self.stored_marks = prepared.stored_marks;
+            self.selection_epoch = prepared.epoch;
+            return DispatchOutcome::Unchanged {
+                revision: self.revision,
+                selection_epoch: self.selection_epoch,
+                selection_changed: prepared.selection_changed,
+                stored_marks_changed: prepared.stored_marks_changed,
+                map: prepared.map,
+                work: prepared.work,
+            };
+        }
+        let before = self.selection;
+        let marks_before = std::mem::replace(&mut self.stored_marks, prepared.stored_marks);
+        let material = self.tree.publish(prepared.patch);
+        self.journal.publish(
+            JournalEntry {
+                material,
+                map: prepared.retained_map.expect("prepared retained map"),
+                before,
+                after: prepared.selection,
+                marks_before: prepared.journal_marks_before,
+                marks_after: prepared.journal_marks_after,
+                bytes: prepared.journal_bytes,
+            },
+            prepared.journal_plan.expect("prepared retention plan"),
+        );
+        self.revision = prepared.revision;
+        self.selection = prepared.selection;
+        self.selection_epoch = prepared.epoch;
+        self.dirty = true;
+        DispatchOutcome::Changed(CommitEvent {
+            revision: self.revision,
+            selection_epoch: self.selection_epoch,
+            selection_before: before,
+            selection_after: self.selection,
+            stored_marks_before: marks_before,
+            stored_marks_after: prepared.event_marks_after,
+            map: prepared.map,
+            changed_nodes: prepared.changed_nodes,
+            journal: self.journal.summary(self.revision),
+            normalization_operations: prepared.normalization_operations,
+            validation: prepared.validation,
+            work: prepared.work,
             dirty: self.dirty,
-        }))
+        })
     }
 }
 
-fn validate_selection<E>(
-    draft: &TreeDraft<'_>,
+fn validate_selection<E, A: Allocation>(
+    draft: &TreeDraft<'_, A>,
     selection: Option<Selection<NodeId>>,
     work: &mut WorkMeter,
 ) -> Result<(), TransactionError<E>> {
