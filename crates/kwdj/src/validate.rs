@@ -167,7 +167,7 @@ fn visit(
             }
             visit_children(content, path, depth, Expected::Inline, ancestry, state)?;
         }
-        Node::HardBreak {} | Node::SceneBreak {} => {}
+        Node::HardBreak | Node::SceneBreak => {}
         Node::CodeBlock { attrs, content } => {
             if let Some(attrs) = attrs {
                 check_attribute(
@@ -384,7 +384,7 @@ fn visit_children(
 
 fn allowed(node: &Node, expected: Expected) -> bool {
     match expected {
-        Expected::Inline => matches!(node, Node::Text { .. } | Node::HardBreak {}),
+        Expected::Inline => matches!(node, Node::Text { .. } | Node::HardBreak),
         Expected::VerseChild => matches!(node, Node::VerseLine { .. } | Node::StanzaBreak { .. }),
         Expected::ListItem => matches!(node, Node::ListItem { .. }),
         Expected::TaskItem => matches!(node, Node::TaskItem { .. }),
@@ -408,7 +408,7 @@ fn is_prose_block(node: &Node) -> bool {
             | Node::OrderedList { .. }
             | Node::TaskList { .. }
             | Node::CodeBlock { .. }
-            | Node::SceneBreak {}
+            | Node::SceneBreak
             | Node::Table { .. }
             | Node::MediaImage { .. }
             | Node::LiteraryBlock { .. }
