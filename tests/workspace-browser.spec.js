@@ -28,3 +28,16 @@ test('compiled Rust projection budgets refuse expansion and preserve canonical d
   expect(completed).toBe(6);
   expect(errors).toEqual([]);
 });
+
+test('compiled Rust admission refuses before parse and snapshot copies', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/');
+  const completed = await page.evaluate(async () => {
+    const { default: init, runAdmissionBudgetCases } = await import('/admission-budget/probe.js');
+    await init();
+    return runAdmissionBudgetCases();
+  });
+  expect(completed).toBe(9);
+  expect(errors).toEqual([]);
+});

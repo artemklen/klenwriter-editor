@@ -8,6 +8,8 @@ const routes = new Map([
   ['/editor_wasm_bg.wasm', ['packages/wasm/dist/editor_wasm_bg.wasm', 'application/wasm']],
   ['/projection-budget/probe.js', ['artifacts/projection-budget/probe.js', 'text/javascript']],
   ['/projection-budget/probe_bg.wasm', ['artifacts/projection-budget/probe_bg.wasm', 'application/wasm']],
+  ['/admission-budget/probe.js', ['artifacts/admission-budget/probe.js', 'text/javascript']],
+  ['/admission-budget/probe_bg.wasm', ['artifacts/admission-budget/probe_bg.wasm', 'application/wasm']],
   ['/style.css', ['packages/dom/dist/style.css', 'text/css']],
 ]);
 http.createServer(async (req, res) => {
