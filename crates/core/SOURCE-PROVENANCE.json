@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "issue": "OSR-29",
+  "upstreamRepository": "local/klenwriter-cms",
+  "upstreamRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+  "ownerGrant": "docs/m0/decision-register.md D10/D11",
+  "excluded": [
+    "kwdj/audit.rs: CMS audit/reading-time policy",
+    "kwdj/render.rs: existing server renderer",
+    "private/user payloads",
+    "authoritative corpus: transfer is OSR-30 after provenance/parity"
+  ],
+  "files": [
+    {
+      "source": "crates/klenwriter_domain/src/kwdj/model.rs",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sha256": "fd3ad345cc3b0db939c395d5a1d65bf38b53801c185a4a1e085e7f2e4882d37a",
+      "destination": "crates/kwdj/src/model.rs",
+      "grant": "Owner D10/D11, accepted 2026-10-17; owner-controlled Rust semantics only",
+      "license": "MIT OR Apache-2.0",
+      "thirdPartyHeaders": [],
+      "sourcePayload": "Rust source; no user documents or production captures",
+      "adaptations": "Namespace/read-only model seam and generic core helpers; domain semantic rules preserved and checked differentially"
+    },
+    {
+      "source": "crates/klenwriter_domain/src/kwdj/normalize.rs",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sha256": "b89ab32c6b8852282f3c9c9d654fd0cca5bceb2709e9202ff44665702ae6cdce",
+      "destination": "crates/kwdj/src/normalize.rs",
+      "grant": "Owner D10/D11, accepted 2026-10-17; owner-controlled Rust semantics only",
+      "license": "MIT OR Apache-2.0",
+      "thirdPartyHeaders": [],
+      "sourcePayload": "Rust source; no user documents or production captures",
+      "adaptations": "Namespace/read-only model seam and generic core helpers; domain semantic rules preserved and checked differentially"
+    },
+    {
+      "source": "crates/klenwriter_domain/src/kwdj/project.rs",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sha256": "83422f7aa7a967086f5e881d020ca59c3467f8ade72e33ceb517713ab2095d87",
+      "destination": "crates/kwdj/src/project.rs",
+      "grant": "Owner D10/D11, accepted 2026-10-17; owner-controlled Rust semantics only",
+      "license": "MIT OR Apache-2.0",
+      "thirdPartyHeaders": [],
+      "sourcePayload": "Rust source; no user documents or production captures",
+      "adaptations": "Namespace/read-only model seam and generic core helpers; domain semantic rules preserved and checked differentially"
+    },
+    {
+      "source": "crates/klenwriter_domain/src/kwdj/validate.rs",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sha256": "a6f20e524a29a8c78699a1687e15db2d5d1ad75ae8ed84c687163410326b5385",
+      "destination": "crates/kwdj/src/validate.rs",
+      "grant": "Owner D10/D11, accepted 2026-10-17; owner-controlled Rust semantics only",
+      "license": "MIT OR Apache-2.0",
+      "thirdPartyHeaders": [],
+      "sourcePayload": "Rust source; no user documents or production captures",
+      "adaptations": "Namespace/read-only model seam and generic core helpers; domain semantic rules preserved and checked differentially"
+    },
+    {
+      "source": "crates/klenwriter_domain/src/kwdj/mod.rs",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sha256": "2f245f006db3b1ce12075ce5fc9b79231a17e4c086a5d4063f3cff6a6fb18748",
+      "destination": "crates/kwdj/src/lib.rs",
+      "grant": "Owner D10/D11, accepted 2026-10-17; owner-controlled Rust semantics only",
+      "license": "MIT OR Apache-2.0",
+      "thirdPartyHeaders": [],
+      "sourcePayload": "Rust source; no user documents or production captures",
+      "adaptations": "Namespace/read-only model seam and generic core helpers; domain semantic rules preserved and checked differentially",
+      "additionalDestination": "crates/core/src/json.rs (schema-independent canonical_value and JSON Pointer helpers)"
+    },
+    {
+      "source": "crates/klenwriter_domain/tests/kwdj_validator.rs",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sha256": "5389561c826c4a72e193d7ddb0d4109ae792902608bfec594ee4f3402f634476",
+      "destination": "crates/kwdj/tests/native_regressions.rs",
+      "license": "MIT OR Apache-2.0",
+      "grant": "D10/D11, owner-controlled synthetic tests",
+      "sourcePayload": "Synthetic JSON builders, example.test URLs, fixed UUIDs; no file input or production data",
+      "adaptations": "crate import only"
+    }
+  ]
+}

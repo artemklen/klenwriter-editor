@@ -12,9 +12,9 @@ repository = "https://github.com/artemklen/klenwriter-editor"
 publish = false
 
 [workspace.dependencies]
-editor_core = { package = "editor-internal-core", path = "crates/core", version = "=0.0.0" }
-editor_engine = { package = "editor-internal-engine", path = "crates/engine", version = "=0.0.0" }
-editor_kwdj = { package = "editor-internal-kwdj", path = "crates/kwdj", version = "=0.0.0" }
+editor_core = { package = "klenwriter-editor-core", path = "crates/core", version = "=0.0.0" }
+editor_engine = { package = "klenwriter-editor-engine", path = "crates/engine", version = "=0.0.0" }
+editor_kwdj = { package = "klenwriter-editor-kwdj", path = "crates/kwdj", version = "=0.0.0" }
 serde = { version = "=1.0.228", features = ["derive"] }
 serde_json = "=1.0.150"
 unicode-segmentation = "=1.13.3"

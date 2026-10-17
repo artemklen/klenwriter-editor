@@ -1,7 +1,9 @@
 # Workspace M1 / OSR-28–29
 
 Статус: автономная build foundation и извлечённые native semantics ([границы](extraction.md)).
-Session/transaction/browser editing API появятся в своих задачах; `0.0.0` и private names не являются публичной совместимостью или alpha.
+Session/transaction/browser editing API появятся в своих задачах; `0.0.0` не является публичной совместимостью или alpha.
+OSR-54 закрепляет [имена и version namespaces](identity.md); [`package-map.json`](../package-map.json)
+связывает public distribution names с каталогами. Publish/private guards сохраняются.
 
 | Пакет | Владелец ответственности | Прямая внутренняя зависимость |
 | --- | --- | --- |

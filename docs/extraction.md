@@ -7,13 +7,13 @@ license, adaptations and exclusions. No private documents or production captures
 are imported. The authoritative corpus remains in CMS until OSR-30 completes
 its provenance/parity transfer; this extraction does not create a second corpus.
 
-`editor-internal-core` contains schema-independent draft trees, borrowed structural
+`klenwriter-editor-core` contains schema-independent draft trees, borrowed structural
 metrics, canonical JSON/Pointer helpers and limit primitives. It has no KWDJ node
 names, authored CMS identity fields, resolver, renderer or reading-time policy.
 A draft tree is untrusted. It cannot construct a normalized profile capability or
 a committed editing session. The session/transaction API belongs to later work.
 
-`editor-internal-kwdj` owns the closed v1 wire DTO, decoding, normalization,
+`klenwriter-editor-kwdj` owns the closed v1 wire DTO, decoding, normalization,
 validation, equality, manifests and the three text projections. Its public DTOs
 are untrusted; `NormalizedDocument` stays opaque and has no Deserialize, Default
 or unchecked constructor. Its `model()` is a read-only borrowed view for native
@@ -41,7 +41,7 @@ ABI dependencies retain their newer pins.
 
 ## Verification
 
-- `cargo +1.89.0 test --locked -p editor-internal-core -p editor-internal-kwdj`
+- `cargo +1.89.0 test --locked -p klenwriter-editor-core -p klenwriter-editor-kwdj`
 - `npm run check` (native, WASM build, dependency closure, packaging and browser smoke)
 - `python3 scripts/extraction-diff/run.py --cms /path/to/klenwriter-cms --output /tmp/native-differential.json`
 

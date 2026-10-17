@@ -1,8 +1,8 @@
 {
-  "name": "@editor-internal/vanilla",
+  "name": "@klenwriter/editor",
   "version": "0.0.0",
   "private": true,
-  "description": "Internal vanilla boundary; no editor implementation yet",
+  "description": "KlenWriter Editor: framework-free editor binding boundary; unpublished bootstrap",
   "type": "module",
   "license": "MIT OR Apache-2.0",
   "repository": {
@@ -15,7 +15,8 @@
     "LICENSE-MIT",
     "LICENSE-APACHE",
     "NOTICE",
-    "src"
+    "src",
+    "SOURCE-PROVENANCE.json"
   ],
   "exports": {
     ".": {
@@ -24,6 +25,11 @@
     }
   },
   "dependencies": {
-    "@editor-internal/dom": "0.0.0"
+    "@klenwriter/editor-dom": "0.0.0"
+  },
+  "klenwriterEditor": {
+    "role": "vanilla",
+    "sourceProvenance": "SOURCE-PROVENANCE.json",
+    "publicApiStability": "bootstrap"
   }
 }

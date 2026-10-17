@@ -1,8 +1,8 @@
 {
-  "name": "@editor-internal/dom",
+  "name": "@klenwriter/editor-dom",
   "version": "0.0.0",
   "private": true,
-  "description": "Internal dom boundary; no editor implementation yet",
+  "description": "KlenWriter Editor: generic dom/input adapter boundary; unpublished bootstrap",
   "type": "module",
   "license": "MIT OR Apache-2.0",
   "repository": {
@@ -15,7 +15,8 @@
     "LICENSE-MIT",
     "LICENSE-APACHE",
     "NOTICE",
-    "src"
+    "src",
+    "SOURCE-PROVENANCE.json"
   ],
   "exports": {
     ".": {
@@ -25,6 +26,11 @@
     "./style.css": "./dist/style.css"
   },
   "dependencies": {
-    "@editor-internal/sdk": "0.0.0"
+    "@klenwriter/editor-sdk": "0.0.0"
+  },
+  "klenwriterEditor": {
+    "role": "dom",
+    "sourceProvenance": "SOURCE-PROVENANCE.json",
+    "publicApiStability": "bootstrap"
   }
 }

@@ -1,2 +1,2 @@
 /** Angular package boundary. Runtime implementation belongs to later tasks. */
-export { artifactStage } from '@editor-internal/vanilla';
+export { artifactStage } from '@klenwriter/editor';

@@ -8,6 +8,11 @@ GitHub is the canonical repository. No GitLab mirror is configured or planned.
 
 Original code and documentation are licensed under **MIT OR Apache-2.0**, at your option. See [license and provenance](docs/m0/licensing.md). No npm/crates package is published yet.
 
+The owner-confirmed [distribution identity](docs/identity.md) is **KlenWriter Editor**:
+`klenwriter-editor-*` Rust crates and `@klenwriter/editor*` web packages. Names and
+versions are recorded in [package-map.json](package-map.json). The packages remain
+unpublished bootstrap artifacts; registry observations do not reserve names.
+
 ## Build the standalone workspace
 
 Use Node 24.22.0, npm 11.14.0 and rustup (Rust 1.97.1 is pinned automatically):

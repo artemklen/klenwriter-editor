@@ -1,0 +1,53 @@
+{
+  "issue": "OSR-54",
+  "base": "8b74ca1a96bb0850cd797b5d138596da87ee1f34",
+  "scope": "Namespace/metadata/provenance packaging; no storage or editor runtime changes",
+  "toolchains": {
+    "rust": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+    "node": "v24.22.0",
+    "npm": "11.14.0",
+    "bindgen": "wasm-bindgen 0.2.129"
+  },
+  "checks": {
+    "npm run check": "passed",
+    "minimumRust1.89Tests": 16,
+    "workspaceRustTestsIncludingDoctests": 17,
+    "nodeConsumerTests": 4,
+    "m0BrowserProbes": 102,
+    "compiledWasmBrowserSmoke": 3,
+    "m0Contracts": 219,
+    "m0ArtifactChecks": 420,
+    "metadataDistributionIdentities": 10,
+    "nativePackageListings": 4,
+    "webTarballsInstalledExternally": 6,
+    "nativeDifferentialEqual": 265,
+    "nativeSemanticDependencyVersions": 43,
+    "frozenM0Artifacts": "unchanged",
+    "externalNpmDependencyVersionIntegrity": "unchanged"
+  },
+  "logs": {
+    "fullCheck": {
+      "path": "/tmp/osr-54-check-final.log",
+      "sha256": "47133d5c2964e2e51c7205dc17f5354fc7045227442c8aafdc4adc14beb3b508"
+    },
+    "m0Browser": {
+      "path": "/tmp/osr-54-m0-browser.log",
+      "sha256": "d130d8e9785f562c95373dd06db4f19a7c342163ce74a77ed9a8d770403f4732"
+    },
+    "minimumRust": {
+      "path": "/tmp/osr-54-msrv.log",
+      "sha256": "b9ad61fa93f3018d1bc3f82bd7db70eb6f0273d033fea048f18e5890f92aff71"
+    },
+    "nativeDifferential": {
+      "path": "/tmp/osr-54-differential.log",
+      "sha256": "d266181ddb5df89ad2964a0712f82221ded4893396bab1d12462c1275ecce78c"
+    }
+  },
+  "limitations": [
+    "Public registry404 is not reservation/ownership",
+    "npm CLI ENEEDAUTH; no publisher authorization claim",
+    "Public host API/native wire revision not implemented; no alpha claim",
+    "Known OSR-74 projection and OSR-75 byte-preflight hardening remain separate",
+    "No public publish, token creation or registry write"
+  ]
+}

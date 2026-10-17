@@ -1,7 +1,7 @@
 use std::collections::BTreeSet;
 
 use editor_core::document::{Attribute, Primitive};
-use editor_internal_kwdj::{
+use klenwriter_editor_kwdj::{
     IdentityResolver, IdentityResolverError, IdentityStatus, KwdjErrorCode, Limits, Profile,
     admit_core_document, decode_candidate_with_limits, decode_normalize_validate,
     normalize_and_validate, validate_normalized_json_with_limits,

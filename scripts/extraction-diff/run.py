@@ -54,7 +54,7 @@ rust-version = "1.89.0"
 resolver = "3"
 [dependencies]
 klenwriter_domain = {{ path = {json.dumps(str(baseline / 'crates/klenwriter_domain'))} }}
-editor_kwdj = {{ package = "editor-internal-kwdj", path = {json.dumps(str(ROOT / 'crates/kwdj'))} }}
+editor_kwdj = {{ package = "klenwriter-editor-kwdj", path = {json.dumps(str(ROOT / 'crates/kwdj'))} }}
 serde_json = "=1.0.150"
 uuid = "=1.23.3"
 sha2 = "0.10"
@@ -99,7 +99,7 @@ sha2 = "0.10"
         editor_meta = json.loads(command(['cargo', 'metadata', '--locked', '--format-version=1'], cwd=ROOT))
         packages = {p['id']: p for p in editor_meta['packages']}
         graph = {n['id']: n['dependencies'] for n in editor_meta['resolve']['nodes']}
-        profile = next(p for p in packages.values() if p['name'] == 'editor-internal-kwdj')
+        profile = next(p for p in packages.values() if p['name'] == 'klenwriter-editor-kwdj')
         closure = set()
         def visit(package):
             if package in closure:
