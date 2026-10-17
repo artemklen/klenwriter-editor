@@ -19,8 +19,11 @@ test('actual KWDJ command availability and execution match literal expectations 
   assert.equal(wasm.future_typing.state_only_toggles,2);assert.equal(wasm.future_typing.typing_commits,2);
   assert.ok(wasm.future_typing.explicit_plain_distinguished_from_inherit&&wasm.future_typing.actual_journal_mark_before_after&&wasm.future_typing.navigation_clears_override);
   assert.equal(wasm.future_typing.ordinary_snapshot_codec_calls,0);
-  assert.equal(wasm.structural.status,'passed');assert.equal(wasm.structural.group_total,7);
+  assert.equal(wasm.structural.status,'passed');assert.equal(wasm.structural.group_total,8);
   for(const group of wasm.structural.groups)assert.equal(group.status,'passed');
+  const maps=wasm.structural.groups.find(group=>group.id==='normalization_position_maps');
+  assert.equal(maps.case_total,6);assert.equal(maps.cases.length,6);
+  for(const c of maps.cases)assert.equal(c.status,'passed');
   assert.equal(wasm.inline.status,'passed');assert.equal(Object.keys(wasm.inline.groups).length,8);
   for(const group of Object.values(wasm.inline.groups))assert.equal(group.status,'passed');
   for(const c of wasm.literal_cases){
@@ -32,7 +35,7 @@ test('actual KWDJ command availability and execution match literal expectations 
   assert.match(wasm.literal_cases[23].canonical_json,/18446744073709551615/);
   const paths=['Cargo.lock','crates/wasm/Cargo.toml','contracts/commands/v1/vectors.json',
     'crates/core/src/commands.rs','crates/core/src/transaction.rs','crates/core/src/positions.rs',
-    'crates/engine/src/commands.rs','crates/engine/src/dispatch.rs','crates/engine/src/session.rs','crates/engine/src/tree.rs','crates/engine/src/transaction.rs',
+    'crates/engine/src/commands.rs','crates/engine/src/dispatch.rs','crates/engine/src/session.rs','crates/engine/src/tree.rs','crates/engine/src/transaction.rs','crates/engine/src/mapping.rs',
     'crates/kwdj/src/commands/mod.rs','crates/kwdj/src/commands/block.rs','crates/kwdj/src/commands/inline.rs',
     'crates/kwdj/src/candidate_validate.rs','crates/kwdj/src/edit_normalize.rs','crates/kwdj/src/session_profile.rs','crates/kwdj/src/validate.rs',
     'crates/wasm/examples/support/command_inline.rs','crates/wasm/tests/command_inline.rs',
