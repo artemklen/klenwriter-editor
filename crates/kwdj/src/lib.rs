@@ -12,7 +12,13 @@ pub use admission::{AdmissionBudget, RAW_INPUT_BYTE_CEILING};
 pub use core_bridge::{admit_core_document, admit_core_document_with_budget};
 mod normalize;
 mod project;
+mod session_profile;
 mod validate;
+
+pub use session_profile::{
+    KWDJ_BASE_EXTENSION_ID, KWDJ_BASE_EXTENSION_VERSION, KWDJ_CODEC_ID, KWDJ_PROFILE_VERSION,
+    KwdjProfile, KwdjProfileError,
+};
 
 use serde_json::Value;
 use thiserror::Error;

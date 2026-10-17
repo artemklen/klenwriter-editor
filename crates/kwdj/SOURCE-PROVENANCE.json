@@ -84,5 +84,28 @@
       "change": "Strict native scan rejects extra fields on empty node/mark variants before Serde; valid JSON and public Rust model syntax unchanged"
     }
   ],
-  "corpusProvenance": "provenance/kwdj-corpus.json"
+  "corpusProvenance": "provenance/kwdj-corpus.json",
+  "originalSessionFoundation": {
+    "issue": "OSR-33",
+    "source": "Original implementation and owner-controlled synthetic fixtures in this repository; no third-party source copied",
+    "license": "MIT OR Apache-2.0",
+    "paths": [
+      "crates/core/src/profile.rs",
+      "crates/core/src/positions.rs",
+      "crates/engine/src/identity.rs",
+      "crates/engine/src/tree.rs",
+      "crates/engine/src/session.rs",
+      "crates/engine/src/mapping.rs",
+      "crates/kwdj/src/session_profile.rs",
+      "crates/kwdj/tests/session_profile.rs",
+      "crates/wasm/examples/support/session_observer.rs",
+      "crates/wasm/examples/session_native.rs",
+      "crates/wasm/examples/session_probe.rs",
+      "crates/wasm/tests/session_foundation.rs",
+      "tests/session.node.mjs"
+    ],
+    "adaptedLocalHelpers": ["crates/core/src/admission.rs"],
+    "dependencies": "unicode-segmentation = 1.13.3 (MIT OR Apache-2.0), Unicode 17.0.0; linked dependency, notices generated at build",
+    "privacy": "Literal generated fixtures only; no private documents, browser captures or production payloads"
+  }
 }

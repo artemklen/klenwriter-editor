@@ -1,0 +1,175 @@
+{
+  "nativeWasmEqual": true,
+  "sourceHashes": {
+    "Cargo.lock": "6c4d917f290c330312b17fcd88c6207cc3aa243c30fc420793eb07d16ce6aaa2",
+    "crates/core/src/admission.rs": "80b41096f21d7bc1e528d9d02aac30e0aced56aebbd708f90b34587df655430a",
+    "crates/core/src/positions.rs": "94ce04c115a062a6b203c2e124afcaa295ad6d9b26a4c0aaaa7bf155fcac50ff",
+    "crates/core/src/profile.rs": "c8443db0fbb1d81d0eff6d237cca8af461153e24c7a5b12007e7cac97d3be6fa",
+    "crates/engine/src/identity.rs": "4fb8834799e7a9f0e634b3bcc347893abd681406b8c57c52e80724df0275b921",
+    "crates/engine/src/session.rs": "ae1fe7a9f56f6cf27c956f7c3434294420464d5beb61048735214ba00c32f473",
+    "crates/engine/src/tree.rs": "81fb0380a044d10376a0d0bfb386ec9b09133811bd822192926c1797da71a6fc",
+    "crates/engine/src/mapping.rs": "0b15c150b43d40abe05dc7fc05cd2a8e5a558f45e9cb4c1a1bb08cc3fc11847a",
+    "crates/kwdj/src/session_profile.rs": "6a16fd7b6e2b71d7326546190beb5066f5111cc21a909a715accc9c6e7dcdceb",
+    "crates/wasm/examples/session_native.rs": "25cbfc92bec520246a78c308cb4762a3ef6dbff6a4f0b3a7d85e7b16052146a8",
+    "crates/wasm/examples/session_probe.rs": "6d4f71a7fe2a8b78667b701d3d4adb6a8a9e938dcc5b5f06e5f3f7fd11179620",
+    "crates/wasm/examples/support/session_observer.rs": "14a01169d91b0c94dbfc9e6541aa1b589b08bb2c60e2e443510df91e8b5d07b1",
+    "artifacts/session-foundation/probe_bg.wasm": "fd6530a934d1cc4209569441ddac676dbff76ad65801d993f8fe2c61716bea65",
+    "tests/session.node.mjs": "112299fd688f86f659ca2989a29957e27c363a38cb4ce88d601586e6e4e76d6e"
+  },
+  "deferred": {
+    "second_production_profile": "OSR-64",
+    "transactions": "OSR-34",
+    "user_history": "OSR-36"
+  },
+  "groups": {
+    "binding_refusals": {
+      "cases": [
+        {
+          "case": "profile",
+          "code": "profile.unsupported_profile"
+        },
+        {
+          "case": "profile-version",
+          "code": "profile.unsupported_profile_version"
+        },
+        {
+          "case": "codec",
+          "code": "profile.unsupported_codec"
+        },
+        {
+          "case": "wire-version",
+          "code": "profile.unsupported_wire_version"
+        },
+        {
+          "case": "missing-extension",
+          "code": "profile.missing_extension"
+        },
+        {
+          "case": "unknown-extension",
+          "code": "profile.unknown_extension"
+        },
+        {
+          "case": "extension-version",
+          "code": "profile.unsupported_extension_version"
+        },
+        {
+          "case": "persisted-version",
+          "code": "kwdj.unsupported_schema_version"
+        },
+        {
+          "case": "uninstalled-node",
+          "code": "kwdj.unknown_node"
+        },
+        {
+          "case": "session-metadata-input",
+          "code": "kwdj.unknown_attribute"
+        }
+      ],
+      "status": "passed"
+    },
+    "cross_mark_graphemes": {
+      "cross_mark_boundary": "refused",
+      "failed_operations_writes": 0,
+      "hard_break_boundary": "accepted",
+      "scalar_read": "accepted",
+      "status": "passed"
+    },
+    "lifecycle_selection": {
+      "document_revision": 0,
+      "failed_remount_preserved_state": true,
+      "guards": [
+        "read-only",
+        "stale-revision",
+        "stale-session",
+        "closed",
+        "poisoned"
+      ],
+      "readonly_scalar_focus": 6,
+      "remount_reset_selection": true,
+      "reverse_anchor": 10,
+      "selection_epoch": 1,
+      "status": "passed"
+    },
+    "retained_maps": {
+      "after_delete": "abf",
+      "after_insert": "aЖbf",
+      "composed_offset": 3,
+      "endpoint_deleted": false,
+      "endpoint_offset": 2,
+      "evicted_chain": "stale",
+      "interior_deleted": true,
+      "session_revision": 0,
+      "status": "passed"
+    },
+    "snapshots": {
+      "cases": [
+        {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"Яé👩🏽‍💻 שלום\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "case": "prose-unicode",
+          "generation_advanced": true,
+          "runtime_metadata_exported": false
+        },
+        {
+          "canonical": "{\"content\":[{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"Строка\",\"type\":\"text\"}],\"type\":\"verse_line\"},{\"attrs\":{\"blank_lines\":2},\"type\":\"stanza_break\"},{\"content\":[{\"text\":\"次\",\"type\":\"text\"}],\"type\":\"verse_line\"}],\"type\":\"verse\"}],\"profile\":\"poetry\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "case": "poetry-root-context",
+          "generation_advanced": true,
+          "runtime_metadata_exported": false
+        },
+        {
+          "canonical": "{\"content\":[{\"content\":[{\"content\":[{\"text\":\"e\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"́\",\"type\":\"text\"},{\"type\":\"hard_break\"},{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"attrs\":{\"align\":\"center\",\"alt\":\"fixture\",\"media_asset_id\":\"11111111-1111-4111-8111-111111111111\"},\"type\":\"media_image\"},{\"content\":[{\"text\":\"end\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "case": "nested-marks-atoms",
+          "generation_advanced": true,
+          "runtime_metadata_exported": false
+        }
+      ],
+      "status": "passed"
+    },
+    "structural_drafts": {
+      "atom_deleted_fallback": 3,
+      "cycle": "refused",
+      "delete_fallback": 2,
+      "foreign_revival": "refused",
+      "gap_before": 2,
+      "invalid_revival_retains_ownership": true,
+      "move_order": [
+        "P",
+        "Q",
+        "section",
+        "image"
+      ],
+      "revival": "same-owned-identities",
+      "session_changed": false,
+      "status": "passed"
+    },
+    "text_drafts": {
+      "abandoned_id_reused": false,
+      "boundary_after": [
+        "right",
+        0
+      ],
+      "boundary_before": [
+        "left",
+        2
+      ],
+      "candidate": "abXz",
+      "committed": "abЯz",
+      "joined": "abЯz",
+      "restored_join_right_identity": true,
+      "restored_join_text": [
+        "ab",
+        "Яz"
+      ],
+      "retired_right_missing": true,
+      "split_text": [
+        "ab",
+        "Яz"
+      ],
+      "split_written_nodes": 3,
+      "status": "passed"
+    }
+  },
+  "production_profile": "org.klenwriter.kwdj",
+  "schema": 1,
+  "scope": "Rust foundation composition; no public session ABI, commit, dispatch or user history",
+  "task": "OSR-33"
+}

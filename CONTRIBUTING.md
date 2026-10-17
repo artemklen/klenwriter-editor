@@ -53,6 +53,13 @@ integrity, baseline/additive rules и stage-aware native/WASM projections;
 публикует отдельные hardening/extension reports и data-only bundle. Единственный
 источник — `contracts/kwdj/v1`; CMS использует immutable artifact с pin/hash.
 
+`npm run test:session` после build исполняет shared native/compiled-WASM witness
+на настоящем Rust `Session<KwdjProfile>`, отдельно от distributable codec ABI.
+Lane входит в `npm run check`; source/artifact hashes и target comparison —
+`artifacts/session-foundation-report.json`. Rust unit/integration tests проверяют
+Unicode, mapping, identity, lifecycle и bounded preparation. [Контракт OSR-33](docs/session-foundation.md)
+отделяет эту foundation от dispatch/history/public SDK последующих задач.
+
 ## Артефакты и ограничения
 
 `artifacts/dependencies.json` содержит зафиксированные direct/transitive версии,
