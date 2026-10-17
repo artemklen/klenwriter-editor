@@ -1,0 +1,128 @@
+{
+  "issue": "OSR-35",
+  "iteration": 2,
+  "base": "bcd1b9440089653a26c5ee7aff5f79eddbe0dca6",
+  "scope": "Repaired working source; exact committed source prepared CI and fresh review follow",
+  "result": "PASS",
+  "checks": [
+    {
+      "name": "msrv",
+      "command": [
+        "cargo",
+        "+1.89.0",
+        "test",
+        "--locked",
+        "-p",
+        "klenwriter-editor-core",
+        "-p",
+        "klenwriter-editor-kwdj"
+      ],
+      "startedAt": "2026-10-17T22:38:02.322356+00:00",
+      "exitCode": 0,
+      "seconds": 1.42,
+      "log": "/tmp/osr-35-r2-local-msrv.log",
+      "bytes": 11104,
+      "sha256": "40a7724278df5de2a113f9e6347c52fdf313da13dc5d26742e7007b1c1f8c2fb"
+    },
+    {
+      "name": "workspace",
+      "command": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "startedAt": "2026-10-17T22:38:38.042850+00:00",
+      "exitCode": 0,
+      "seconds": 90.17,
+      "log": "/tmp/osr-35-r2-local-workspace-final.log",
+      "bytes": 30410,
+      "sha256": "a42b3659706ed5274a373327fe74cda0aea2ef5312b1ff699e0c511abe6e0c7a"
+    },
+    {
+      "name": "m0-browser",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 0,
+      "log": "/tmp/osr-35-m0-test.log",
+      "bytes": 13769,
+      "sha256": "2a3de61b7e721f8a37adf6230031b80e7326bf075bbd461faf3bc5659fabe7a0",
+      "scope": "Historical iteration-1 M0 run reused only after exact input hashes reverified unchanged; not an r2 execution"
+    },
+    {
+      "name": "summary",
+      "command": [
+        "node",
+        "scripts/summarize-evidence.mjs"
+      ],
+      "exitCode": 0,
+      "log": "/tmp/osr-35-m0-summary.log",
+      "bytes": 86,
+      "sha256": "a355364952cc8ac890fcd4c86e4246dad93920c4fb10991c8f514908a4bdbc53",
+      "scope": "Historical iteration-1 M0 run reused only after exact input hashes reverified unchanged; not an r2 execution"
+    }
+  ],
+  "repairs": [
+    "MoveInlineGroup emits original pre-operation destination; direct forward/backward/no-op EGC map red-to-green",
+    "JoinText maps EdgeAfter(left) to old left UTF-16 seam; direct non-ASCII Edge/Text red-to-green"
+  ],
+  "summary": {
+    "rustTestsIncludingDoctests": 171,
+    "rustGroupCounts": [
+      16,
+      1,
+      60,
+      52,
+      9,
+      3,
+      9,
+      6,
+      5,
+      2,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      2,
+      0
+    ],
+    "commandLiteralCases": 24,
+    "generatedEnterCases": 64,
+    "generatedInteriorRefusals": 4,
+    "actualStructuralGroups": 8,
+    "normalizationMapCases": 6,
+    "actualInlineGroups": 8,
+    "futureTypingCommits": 2,
+    "genericNonKwdjCommandTests": 9,
+    "nativeWasmEqual": true,
+    "sourceAndArtifactHashes": 31,
+    "browserSmoke": 12,
+    "codecComparisons": 180,
+    "m0BrowserScenarios": 102,
+    "m0Failures": 0
+  },
+  "historicalEvidence": "Original command-report.json and local-verification.json remain iteration-1 evidence for source627f0a7982d342bf23a0a59c0b019f2828f5b79d. Their successful checks/review do not approve this repair. M0 is separately labeled historical reuse with identical inputs.",
+  "limits": "No new public command ABI/history/DOM/CMS acceptance. Native/WASM portable semantics are equal; binary hashes may differ across hosts.",
+  "initialLocalCheck": {
+    "result": "FAILED on stale aggregate structural group count7 after eighth observer group was added; corrected assertion to8 before any r2 CI",
+    "log": "/tmp/osr-35-r2-local-workspace.log",
+    "sha256": "72c44d714efb6e44d96b4a379857f5a86e368f42372f4b9a189e0f23525ecf99",
+    "ciTriggered": false
+  },
+  "targetedRegressionProofs": {
+    "moveInlineGroup": {
+      "redLog": "/tmp/osr-35-r2-inline-group-map-red.log",
+      "greenLog": "/tmp/osr-35-r2-inline-group-map-green.log",
+      "result": "red101 then green0 on strengthened whole-EGC map test"
+    },
+    "joinText": {
+      "proof": "/tmp/osr-35-r2-join-map-proof.json",
+      "result": "red101 then12 mapping tests green0",
+      "provenance": "Saved logs preserve full tool-returned transcripts, not original raw process-stream bytes. Final workspace log is a direct process capture."
+    }
+  }
+}
