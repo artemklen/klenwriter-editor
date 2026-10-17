@@ -58,7 +58,14 @@ integrity, baseline/additive rules и stage-aware native/WASM projections;
 Lane входит в `npm run check`; source/artifact hashes и target comparison —
 `artifacts/session-foundation-report.json`. Rust unit/integration tests проверяют
 Unicode, mapping, identity, lifecycle и bounded preparation. [Контракт OSR-33](docs/session-foundation.md)
-отделяет эту foundation от dispatch/history/public SDK последующих задач.
+отделяет эту foundation от последующих задач.
+
+`npm run test:transactions` проверяет атомарный Rust dispatch на native и compiled
+WASM с настоящим KWDJ-профилем: содержимое, metadata, normalization maps, selection,
+owned journal и typed refusals. Lane входит в `npm run check`, сохраняет
+`artifacts/transaction-report.json`; [контракт OSR-34](docs/atomic-transactions.md)
+описывает лимиты и publication gate. User-facing undo/grouping и typed SDK
+выполняются в OSR-36/63.
 
 ## Артефакты и ограничения
 

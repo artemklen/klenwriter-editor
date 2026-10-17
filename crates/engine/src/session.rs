@@ -5,7 +5,12 @@ use editor_core::positions::{Position, Selection};
 use editor_core::profile::{AdmissionMode, BindingError, FrozenProfile, ProfileBinding};
 
 use crate::identity::{NodeId, SessionKey};
+use crate::mapping::{MapError, MapResult};
+use crate::transaction::{CommitJournal, JournalEntrySummary, JournalSummary};
 use crate::tree::{AddressTree, TreeDraft, TreeError, TreeNode};
+
+#[path = "dispatch.rs"]
+mod dispatch;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AccessMode {
@@ -24,6 +29,7 @@ pub enum SessionState {
 pub enum StateError {
     StaleSession,
     StaleRevision,
+    StaleSelectionEpoch,
     Closed,
     Poisoned,
     ReadOnly,
@@ -51,7 +57,7 @@ impl<E> From<TreeError> for SessionError<E> {
 }
 
 /// Fields are private; neither drafts nor unchecked Documents can publish state.
-/// OSR-33 intentionally exposes no dispatch/commit/history API.
+/// Only validated dispatch owns document publication; drafts remain unadmitted.
 pub struct Session<P: FrozenProfile> {
     profile: P,
     binding: ProfileBinding,
@@ -62,6 +68,8 @@ pub struct Session<P: FrozenProfile> {
     revision: u64,
     selection: Option<Selection<NodeId>>,
     selection_epoch: u64,
+    journal: CommitJournal,
+    dirty: bool,
 }
 
 impl<P: FrozenProfile> Session<P> {
@@ -92,6 +100,8 @@ impl<P: FrozenProfile> Session<P> {
             revision: 0,
             selection: None,
             selection_epoch: 0,
+            journal: CommitJournal::default(),
+            dirty: false,
         })
     }
 
@@ -109,6 +119,32 @@ impl<P: FrozenProfile> Session<P> {
     }
     pub fn binding(&self) -> &ProfileBinding {
         &self.binding
+    }
+
+    /// Conservative local dirty state. Save acknowledgement/baselines are OSR-37.
+    pub fn dirty(&self) -> bool {
+        self.dirty
+    }
+    pub fn journal_summary(&self) -> JournalSummary {
+        self.journal.summary(self.revision)
+    }
+    pub fn journal_entries(&self) -> Vec<JournalEntrySummary> {
+        self.journal.entry_summaries()
+    }
+    pub fn map_position(
+        &self,
+        key: SessionKey,
+        from: u64,
+        position: Position<NodeId>,
+    ) -> Result<MapResult<NodeId>, SessionError<P::Error>> {
+        self.guard(key, None)?;
+        let result = self.journal.map(from, self.revision, position);
+        if let Some(mapped) = result.position()
+            && self.tree.prepare().validate_position(mapped).is_err()
+        {
+            return Ok(MapResult::Invalid(MapError::OffsetOutOfBounds));
+        }
+        Ok(result)
     }
 
     fn guard(&self, key: SessionKey, revision: Option<u64>) -> Result<(), StateError> {
@@ -237,6 +273,8 @@ impl<P: FrozenProfile> Session<P> {
         self.revision = 0;
         self.selection = None;
         self.selection_epoch = 0;
+        self.journal = CommitJournal::default();
+        self.dirty = false;
         Ok(next_key)
     }
 
@@ -537,4 +575,6 @@ mod tests {
         ));
         assert_eq!(calls.get(), 0);
     }
+
+    include!("transaction_tests.rs");
 }

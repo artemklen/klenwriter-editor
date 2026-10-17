@@ -44,6 +44,12 @@ run('cargo', ['build', '--locked', '--release', '--target', 'wasm32-unknown-unkn
   '-p', identity.rust.wasm.name, '--example', 'session_probe']);
 run(bindgen, ['target/wasm32-unknown-unknown/release/examples/session_probe.wasm',
   '--target', 'web', '--out-dir', 'artifacts/session-foundation', '--out-name', 'probe']);
+// Atomic transaction composition uses the same real profile and engine on both
+// targets, outside the installed codec/SDK surface.
+run('cargo', ['build', '--locked', '--release', '--target', 'wasm32-unknown-unknown',
+  '-p', identity.rust.wasm.name, '--example', 'transaction_probe']);
+run(bindgen, ['target/wasm32-unknown-unknown/release/examples/transaction_probe.wasm',
+  '--target', 'web', '--out-dir', 'artifacts/transactions', '--out-name', 'probe']);
 writeDependencyNotices();
 // Clean all emitted package files so stale declarations/assets cannot mask omissions.
 const packages = ['wasm', 'sdk', 'dom', 'kwdj', 'vanilla', 'angular'];

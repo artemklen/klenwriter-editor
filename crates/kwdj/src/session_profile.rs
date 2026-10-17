@@ -6,10 +6,12 @@
 //! package `0.0.0`, persisted KWDJ schema version 1, and codec WASM ABI. It does
 //! not announce a registry release or a stable public session SDK.
 
+use editor_core::candidate::CandidateRead;
 use editor_core::document::Document;
 use editor_core::profile::{
     AdmissionMode, BindingError, ExtensionBinding, FrozenProfile, ProfileBinding,
 };
+use editor_core::transaction::{Operation, TransactionProfile, ValidationStats, WorkMeter};
 use thiserror::Error;
 
 use crate::{
@@ -142,5 +144,41 @@ impl FrozenProfile for KwdjProfile<'_> {
 
     fn canonical<'a>(&self, admitted: &'a Self::Admitted) -> &'a [u8] {
         admitted.canonical_json()
+    }
+}
+
+impl TransactionProfile for KwdjProfile<'_> {
+    fn normalize_candidate<V: CandidateRead>(
+        &self,
+        context: &Self::Context,
+        candidate: &V,
+        work: &mut WorkMeter,
+    ) -> Result<Vec<Operation<V::Id>>, Self::Error> {
+        let operations = crate::edit_normalize::normalize_candidate(*context, candidate, work)?;
+        crate::candidate_validate::check_discarded_metadata(
+            candidate,
+            &operations,
+            self.identities,
+            self.limits,
+            self.budget,
+            work,
+        )?;
+        Ok(operations)
+    }
+
+    fn validate_candidate<V: CandidateRead>(
+        &self,
+        context: &Self::Context,
+        candidate: &V,
+        work: &mut WorkMeter,
+    ) -> Result<ValidationStats, Self::Error> {
+        Ok(crate::candidate_validate::validate_candidate(
+            *context,
+            candidate,
+            self.identities,
+            self.limits,
+            self.budget,
+            work,
+        )?)
     }
 }

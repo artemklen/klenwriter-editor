@@ -1,0 +1,88 @@
+{
+  "issue": "OSR-34",
+  "base": "99d516c5b8ed647fe8f27da1980313de4fdeb437",
+  "scope": "local working tree; exact-source CI follows",
+  "checks": [
+    {
+      "name": "msrv",
+      "command": [
+        "cargo",
+        "+1.89.0",
+        "test",
+        "--locked",
+        "-p",
+        "klenwriter-editor-core",
+        "-p",
+        "klenwriter-editor-kwdj"
+      ],
+      "exitCode": 0,
+      "seconds": 1.28,
+      "log": "/tmp/osr-34-local-msrv.log",
+      "bytes": 7057,
+      "sha256": "4efeb45f3ff0b78eed3108fd0916ec43eef5335049cd713b7ccbbf4768928305"
+    },
+    {
+      "name": "workspace",
+      "command": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "seconds": 79.06,
+      "log": "/tmp/osr-34-local-workspace.log",
+      "bytes": 23218,
+      "sha256": "ff07f14651aa594d19c7904bbcab0350d77c9c5a16f5cd443554e9ffb48625d0"
+    },
+    {
+      "name": "m0-browser",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 0,
+      "seconds": 70.81,
+      "log": "/tmp/osr-34-local-m0-browser.log",
+      "bytes": 13770,
+      "sha256": "3b02df2acfaa86c4ba8f56d334ad618f9a3863393aaa9465ff922a5a913b0f83"
+    },
+    {
+      "name": "summary",
+      "command": [
+        "node",
+        "scripts/summarize-evidence.mjs"
+      ],
+      "exitCode": 0,
+      "seconds": 0.08,
+      "log": "/tmp/osr-34-local-summary.log",
+      "bytes": 86,
+      "sha256": "a355364952cc8ac890fcd4c86e4246dad93920c4fb10991c8f514908a4bdbc53"
+    }
+  ],
+  "result": "PASS",
+  "exactScope": "Frozen repaired working source and literal/generated fixtures committed together; matching final source CI follows",
+  "summary": {
+    "rustTestsIncludingDoctests": 112,
+    "engineTests": 42,
+    "kwdjTests": 52,
+    "borrowedNativeAcceptedCheckpoints": 29,
+    "normativeLimitsCompared": 7,
+    "transactionNativeWasmEqual": true,
+    "transactionGroups": 5,
+    "typedTransactionRefusals": 11,
+    "transactionSourceAndArtifactHashes": 26,
+    "generatedLateRollbackCasesWithExistingHistory": 128,
+    "existingGeneratedSplitJoinCycles": 2048,
+    "kernelMetadataRecurrenceCommits": 1800,
+    "realProfileMetadataRecurrenceCommitsPerTarget": 512,
+    "publicPostFixHarnessCommitsPerCap": 10000,
+    "publicPostFixHarnessCaps": 3,
+    "codecComparisons": 180,
+    "sessionFoundationGroups": 7,
+    "browserSmoke": 12,
+    "m0": 102,
+    "m0Failures": 0
+  },
+  "limits": "Logical overhead/work sizes are target-dependent; persisted bytes, normative validation and shared witness semantic outputs are compared exactly. No mounted editing-host/SDK/user-undo acceptance claimed.",
+  "repairReason": "Persistent metadata copy-cost drift found after initial source7bd CI; source repair recorded in Linear comment d9814852-0e7a-4ebc-be60-2f28cb52e8ce before next CI trigger."
+}

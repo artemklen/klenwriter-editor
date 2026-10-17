@@ -1,0 +1,309 @@
+{
+  "issue": "OSR-34",
+  "defect": "Cached record copy cost accumulated replaced metadata across independent transactions; fixed159B document falsely exhausted a tightened work cap",
+  "repair": "Shared borrowed current-record accounting after conservative pre-copy validation; cumulative per-transaction preparation accounting preserved",
+  "before": {
+    "source_head": "7bdcb27eb44e06e1c08669bb108b6f2a436dec15",
+    "method": "Public Session<KwdjProfile>, heading.level alternating 1/2, one operation per dispatch, journal_entries=1; no repository changes",
+    "canonical_bytes": 159,
+    "work_units_per_dispatch": 34,
+    "first_success_work_bytes": 6518,
+    "increment_per_committed_edit_bytes": 152,
+    "runs": [
+      {
+        "host_work_bytes": 32768,
+        "first_refusal_iteration": 174,
+        "committed_revision": 173,
+        "last_success_work_bytes": 32662,
+        "refusal_work_bytes": 18546,
+        "error": "Tree(ResourceLimit)"
+      },
+      {
+        "host_work_bytes": 65536,
+        "first_refusal_iteration": 390,
+        "committed_revision": 389,
+        "last_success_work_bytes": 65494,
+        "refusal_work_bytes": 34962,
+        "error": "Tree(ResourceLimit)"
+      },
+      {
+        "host_work_bytes": 67108864,
+        "committed_revision": 10000,
+        "last_success_work_bytes": 1526366,
+        "journal_entries": 1,
+        "reported_journal_bytes": 761236,
+        "canonical_returns_to_initial": true,
+        "error": null
+      }
+    ],
+    "cause": "TreeDraft::update_data persists old copy_cost + added metadata cost even when replacing or removing old metadata; prepare_patch and journal material reuse the growing estimate",
+    "harness": "/tmp/osr-34-copycost-repro/src/main.rs"
+  },
+  "after": {
+    "source": {
+      "kind": "uncommitted working-tree repair",
+      "base_head": "7bdcb27eb44e06e1c08669bb108b6f2a436dec15",
+      "note": "This is the frozen working-tree repair atop 7bdcb27eb44e06e1c08669bb108b6f2a436dec15, not a new source commit.",
+      "tree_rs_sha256": "5df216986d53d30af1368844db6d8315f9f44519920143623530fdb55131885e"
+    },
+    "method": "Public Session<KwdjProfile>, heading.level alternating 1/2, one operation per dispatch, journal_entries=1; no repository changes",
+    "harness_source_sha256": "63e0f66e95d97fd0457ca050fd11c5727cae6b2a8ab45ca1c36c394f62d71f6a",
+    "raw_log": "/tmp/osr-34-copycost-repro/after-run.log",
+    "sampling_note": "All10000 dispatches per cap completed. Work and journal sizes are recorded at commits1,2,10,100,1000,10000; canonical equality with the initial bytes is asserted after every completed run. Separate repository512-commit witness asserts constant work/journal every commit.",
+    "runs": [
+      {
+        "host_work_bytes": 32768,
+        "committed_revision": 10000,
+        "first_refusal_iteration": null,
+        "canonical_bytes": 159,
+        "canonical_returns_to_initial": true,
+        "sampled_work_bytes": 6480,
+        "sampled_journal_bytes": 1274,
+        "samples": [
+          {
+            "host_work_bytes": 32768,
+            "commit": 1,
+            "work_units": 34,
+            "work_bytes": 6480,
+            "journal_entries": 1,
+            "journal_bytes": 1274,
+            "evicted": 0,
+            "oldest_revision": 0
+          },
+          {
+            "host_work_bytes": 32768,
+            "commit": 2,
+            "work_units": 34,
+            "work_bytes": 6480,
+            "journal_entries": 1,
+            "journal_bytes": 1274,
+            "evicted": 1,
+            "oldest_revision": 1
+          },
+          {
+            "host_work_bytes": 32768,
+            "commit": 10,
+            "work_units": 34,
+            "work_bytes": 6480,
+            "journal_entries": 1,
+            "journal_bytes": 1274,
+            "evicted": 9,
+            "oldest_revision": 9
+          },
+          {
+            "host_work_bytes": 32768,
+            "commit": 100,
+            "work_units": 34,
+            "work_bytes": 6480,
+            "journal_entries": 1,
+            "journal_bytes": 1274,
+            "evicted": 99,
+            "oldest_revision": 99
+          },
+          {
+            "host_work_bytes": 32768,
+            "commit": 1000,
+            "work_units": 34,
+            "work_bytes": 6480,
+            "journal_entries": 1,
+            "journal_bytes": 1274,
+            "evicted": 999,
+            "oldest_revision": 999
+          },
+          {
+            "host_work_bytes": 32768,
+            "commit": 10000,
+            "work_units": 34,
+            "work_bytes": 6480,
+            "journal_entries": 1,
+            "journal_bytes": 1274,
+            "evicted": 9999,
+            "oldest_revision": 9999
+          }
+        ],
+        "before": {
+          "host_work_bytes": 32768,
+          "first_refusal_iteration": 174,
+          "committed_revision": 173,
+          "last_success_work_bytes": 32662,
+          "refusal_work_bytes": 18546,
+          "error": "Tree(ResourceLimit)"
+        }
+      },
+      {
+        "host_work_bytes": 65536,
+        "committed_revision": 10000,
+        "first_refusal_iteration": null,
+        "canonical_bytes": 159,
+        "canonical_returns_to_initial": true,
+        "sampled_work_bytes": 6480,
+        "sampled_journal_bytes": 1274,
+        "samples": [
+          {
+            "host_work_bytes": 65536,
+            "commit": 1,
+            "work_units": 34,
+            "work_bytes": 6480,
+            "journal_entries": 1,
+            "journal_bytes": 1274,
+            "evicted": 0,
+            "oldest_revision": 0
+          },
+          {
+            "host_work_bytes": 65536,
+            "commit": 2,
+            "work_units": 34,
+            "work_bytes": 6480,
+            "journal_entries": 1,
+            "journal_bytes": 1274,
+            "evicted": 1,
+            "oldest_revision": 1
+          },
+          {
+            "host_work_bytes": 65536,
+            "commit": 10,
+            "work_units": 34,
+            "work_bytes": 6480,
+            "journal_entries": 1,
+            "journal_bytes": 1274,
+            "evicted": 9,
+            "oldest_revision": 9
+          },
+          {
+            "host_work_bytes": 65536,
+            "commit": 100,
+            "work_units": 34,
+            "work_bytes": 6480,
+            "journal_entries": 1,
+            "journal_bytes": 1274,
+            "evicted": 99,
+            "oldest_revision": 99
+          },
+          {
+            "host_work_bytes": 65536,
+            "commit": 1000,
+            "work_units": 34,
+            "work_bytes": 6480,
+            "journal_entries": 1,
+            "journal_bytes": 1274,
+            "evicted": 999,
+            "oldest_revision": 999
+          },
+          {
+            "host_work_bytes": 65536,
+            "commit": 10000,
+            "work_units": 34,
+            "work_bytes": 6480,
+            "journal_entries": 1,
+            "journal_bytes": 1274,
+            "evicted": 9999,
+            "oldest_revision": 9999
+          }
+        ],
+        "before": {
+          "host_work_bytes": 65536,
+          "first_refusal_iteration": 390,
+          "committed_revision": 389,
+          "last_success_work_bytes": 65494,
+          "refusal_work_bytes": 34962,
+          "error": "Tree(ResourceLimit)"
+        }
+      },
+      {
+        "host_work_bytes": 67108864,
+        "committed_revision": 10000,
+        "first_refusal_iteration": null,
+        "canonical_bytes": 159,
+        "canonical_returns_to_initial": true,
+        "sampled_work_bytes": 6480,
+        "sampled_journal_bytes": 1274,
+        "samples": [
+          {
+            "host_work_bytes": 67108864,
+            "commit": 1,
+            "work_units": 34,
+            "work_bytes": 6480,
+            "journal_entries": 1,
+            "journal_bytes": 1274,
+            "evicted": 0,
+            "oldest_revision": 0
+          },
+          {
+            "host_work_bytes": 67108864,
+            "commit": 2,
+            "work_units": 34,
+            "work_bytes": 6480,
+            "journal_entries": 1,
+            "journal_bytes": 1274,
+            "evicted": 1,
+            "oldest_revision": 1
+          },
+          {
+            "host_work_bytes": 67108864,
+            "commit": 10,
+            "work_units": 34,
+            "work_bytes": 6480,
+            "journal_entries": 1,
+            "journal_bytes": 1274,
+            "evicted": 9,
+            "oldest_revision": 9
+          },
+          {
+            "host_work_bytes": 67108864,
+            "commit": 100,
+            "work_units": 34,
+            "work_bytes": 6480,
+            "journal_entries": 1,
+            "journal_bytes": 1274,
+            "evicted": 99,
+            "oldest_revision": 99
+          },
+          {
+            "host_work_bytes": 67108864,
+            "commit": 1000,
+            "work_units": 34,
+            "work_bytes": 6480,
+            "journal_entries": 1,
+            "journal_bytes": 1274,
+            "evicted": 999,
+            "oldest_revision": 999
+          },
+          {
+            "host_work_bytes": 67108864,
+            "commit": 10000,
+            "work_units": 34,
+            "work_bytes": 6480,
+            "journal_entries": 1,
+            "journal_bytes": 1274,
+            "evicted": 9999,
+            "oldest_revision": 9999
+          }
+        ],
+        "before": {
+          "host_work_bytes": 67108864,
+          "committed_revision": 10000,
+          "last_success_work_bytes": 1526366,
+          "journal_entries": 1,
+          "reported_journal_bytes": 761236,
+          "canonical_returns_to_initial": true,
+          "error": null
+        }
+      }
+    ]
+  },
+  "committedRegressionEvidence": {
+    "kernel": "600 commits each for attributes replacement/removal, marks and type; per-phase cost matches fresh admission; total1800",
+    "nativeAndCompiledWasm": {
+      "all_changed": true,
+      "canonical_bytes": 159,
+      "canonical_restored": true,
+      "commits": 512,
+      "identities_preserved": true,
+      "journal_entry_limit": 1,
+      "work_and_retained_bytes_stable": true,
+      "work_cap_bytes": 32768
+    },
+    "fullTargetEquality": true
+  },
+  "ciPolicy": "Initial prepared39066784978 success is retained as superseded evidence; new prepared run is justified by this actual source repair, no unchanged-SHA rerun"
+}

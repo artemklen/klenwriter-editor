@@ -7,12 +7,14 @@
 use std::cell::Cell;
 use std::collections::{BTreeMap, BTreeSet};
 
-use editor_core::admission::{PreflightBudget, preflight_node_metadata, preflight_snapshot};
-use editor_core::document::{Attributes, Document, Mark, Node, Primitive};
+use editor_core::admission::{PreflightBudget, preflight_node_fields, preflight_snapshot};
+use editor_core::candidate::{BorrowedNode, CandidateRead};
+use editor_core::document::{Attribute, Attributes, Document, Mark, Node, Primitive};
 use editor_core::positions::{
     BoundaryPolicy, InlineSpan, Position, PositionError, Utf16Offset, utf16_to_utf8,
     validate_inline_boundary,
 };
+use editor_core::transaction::{Operation, WorkMeter};
 
 use crate::identity::{NodeId, SessionKey};
 use crate::mapping::StepMap;
@@ -21,6 +23,23 @@ const MAX_DEPTH: usize = 128;
 const MAX_STEPS: usize = 4096;
 const MAX_TEXT_BYTES: usize = 16 * 1024 * 1024;
 const MAX_PREPARED_COPY_BYTES: usize = 16 * 1024 * 1024;
+
+/// Only trusted profile normalization may address scalar interiors. This token
+/// is crate-private and cannot be supplied by an SDK operation payload.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum EditOrigin {
+    User,
+    Normalization,
+}
+
+impl EditOrigin {
+    fn boundary(self) -> BoundaryPolicy {
+        match self {
+            Self::User => BoundaryPolicy::Grapheme,
+            Self::Normalization => BoundaryPolicy::Scalar,
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TreeError {
@@ -65,6 +84,34 @@ pub struct TreeNode {
     copy_cost: usize,
 }
 
+/// Current record size under the shared logical copy policy. Only borrowed
+/// metadata and child-reference width are measured; child records and text
+/// contents are never cloned or scanned for Unicode to refresh this cache.
+fn record_copy_cost(
+    type_id: &str,
+    text: Option<&str>,
+    attributes: &Attributes,
+    marks: &[Mark],
+    child_count: usize,
+) -> Result<usize, TreeError> {
+    let usage = preflight_node_fields(
+        type_id,
+        text,
+        attributes,
+        marks,
+        child_count,
+        PreflightBudget::default(),
+    )
+    .map_err(|_| TreeError::ResourceLimit)?;
+    let payload = usize::try_from(usage.payload_bytes).map_err(|_| TreeError::ResourceLimit)?;
+    let values = usize::try_from(usage.values).map_err(|_| TreeError::ResourceLimit)?;
+    std::mem::size_of::<TreeNode>()
+        .checked_add(payload)
+        .and_then(|cost| cost.checked_add(values.checked_mul(std::mem::size_of::<Attribute>())?))
+        .and_then(|cost| cost.checked_add(child_count.checked_mul(std::mem::size_of::<NodeId>())?))
+        .ok_or(TreeError::ResourceLimit)
+}
+
 impl TreeNode {
     pub fn id(&self) -> NodeId {
         self.id
@@ -89,6 +136,113 @@ impl TreeNode {
     }
     pub fn text(&self) -> Option<&str> {
         self.data.as_ref()?.text.as_ref().map(|t| t.0.as_str())
+    }
+}
+
+fn borrowed(node: &TreeNode) -> Option<BorrowedNode<'_, NodeId>> {
+    let data = node.data.as_ref()?;
+    Some(BorrowedNode {
+        type_id: &data.type_id,
+        primitive: data.primitive,
+        attributes: &data.attributes,
+        marks: &data.marks,
+        text: node.text(),
+        children: &node.children,
+        parent: node.parent?,
+    })
+}
+
+impl CandidateRead for AddressTree {
+    type Id = NodeId;
+    fn root(&self) -> NodeId {
+        self.root
+    }
+    fn roots(&self) -> &[NodeId] {
+        &self.nodes[&self.root].children
+    }
+    fn node(&self, id: NodeId) -> Option<BorrowedNode<'_, NodeId>> {
+        borrowed(AddressTree::node(self, id).ok()?)
+    }
+}
+
+impl CandidateRead for TreeDraft<'_> {
+    type Id = NodeId;
+    fn root(&self) -> NodeId {
+        self.root()
+    }
+    fn roots(&self) -> &[NodeId] {
+        &self.node(self.root()).expect("synthetic root").children
+    }
+    fn node(&self, id: NodeId) -> Option<BorrowedNode<'_, NodeId>> {
+        borrowed(TreeDraft::node(self, id).ok()?)
+    }
+}
+
+fn same_record(a: &TreeNode, b: &TreeNode) -> bool {
+    a.id == b.id && a.parent == b.parent && a.data == b.data && a.children == b.children
+}
+
+#[derive(Debug)]
+struct ChangedRecord {
+    id: NodeId,
+    before: Option<TreeNode>,
+    after: Option<TreeNode>,
+}
+
+/// Owned sparse journal substrate. It carries no public restore authority.
+#[derive(Debug)]
+pub(crate) struct CommitMaterial {
+    records: Vec<ChangedRecord>,
+    estimated_bytes: usize,
+}
+impl CommitMaterial {
+    pub(crate) fn estimated_bytes(&self) -> usize {
+        self.estimated_bytes
+    }
+    pub(crate) fn changed_count(&self) -> usize {
+        debug_assert!(self.records.iter().all(|record| {
+            [&record.before, &record.after]
+                .into_iter()
+                .flatten()
+                .all(|node| node.id == record.id)
+        }));
+        self.records.len()
+    }
+    pub(crate) fn before_count(&self) -> usize {
+        self.records.iter().filter(|r| r.before.is_some()).count()
+    }
+    pub(crate) fn after_count(&self) -> usize {
+        self.records.iter().filter(|r| r.after.is_some()).count()
+    }
+}
+
+/// Fully prepared memory, with no externally writable fields. Only the Session
+/// owner may publish after final candidate/profile/map validation.
+#[derive(Debug)]
+pub(crate) struct PreparedTreePatch {
+    key: SessionKey,
+    writes: BTreeMap<NodeId, TreeNode>,
+    removed: BTreeSet<NodeId>,
+    steps: Vec<StepMap<NodeId>>,
+    changed_ids: Vec<NodeId>,
+    material: CommitMaterial,
+    prepared_copy_bytes: usize,
+}
+impl PreparedTreePatch {
+    pub(crate) fn changed(&self) -> bool {
+        !self.changed_ids.is_empty()
+    }
+    pub(crate) fn steps(&self) -> &[StepMap<NodeId>] {
+        &self.steps
+    }
+    pub(crate) fn changed_ids(&self) -> &[NodeId] {
+        &self.changed_ids
+    }
+    pub(crate) fn material_bytes(&self) -> usize {
+        self.material.estimated_bytes()
+    }
+    pub(crate) fn prepared_copy_bytes(&self) -> usize {
+        self.prepared_copy_bytes
     }
 }
 
@@ -131,6 +285,20 @@ fn check_shape(node: &Node, parent: Option<Primitive>, depth: usize) -> Result<(
 }
 
 impl AddressTree {
+    /// Infallible expected-error phase. The exclusive Session owner validates a
+    /// patch against this tree immediately before publication; no callbacks run.
+    pub(crate) fn publish(&mut self, patch: PreparedTreePatch) -> CommitMaterial {
+        assert_eq!(
+            patch.key, self.key,
+            "Session owner published a foreign patch"
+        );
+        for id in patch.removed {
+            self.nodes.remove(&id);
+        }
+        self.nodes.extend(patch.writes);
+        patch.material
+    }
+
     pub(crate) fn from_document(key: SessionKey, document: Document) -> Result<Self, TreeError> {
         preflight_snapshot(&document, PreflightBudget::default())
             .map_err(|_| TreeError::ResourceLimit)?;
@@ -172,14 +340,13 @@ impl AddressTree {
     }
 
     fn adopt(&mut self, node: Node, parent: NodeId) -> Result<NodeId, TreeError> {
-        let usage = preflight_node_metadata(&node, PreflightBudget::default())
-            .map_err(|_| TreeError::ResourceLimit)?;
-        // Logical copy accounting, not an exact allocator/RSS measurement.
-        // Includes scalar payload plus conservative closed-value/child overhead.
-        let copy_cost = std::mem::size_of::<TreeNode>()
-            + usage.payload_bytes as usize
-            + usage.values as usize * std::mem::size_of::<editor_core::document::Attribute>()
-            + node.children.len() * std::mem::size_of::<NodeId>();
+        let copy_cost = record_copy_cost(
+            &node.type_id,
+            node.text.as_deref(),
+            &node.attributes,
+            &node.marks,
+            node.children.len(),
+        )?;
         let id = self.allocate()?;
         let children = node
             .children
@@ -251,6 +418,83 @@ impl AddressTree {
     }
 }
 
+/// Borrowed metadata accounting before equality walks or cloning operation
+/// payloads. Logical overhead is conservative, not an allocator measurement.
+#[derive(Default)]
+struct MetadataCost {
+    bytes: usize,
+    values: usize,
+}
+impl MetadataCost {
+    fn add(&mut self, bytes: usize) -> Result<(), TreeError> {
+        self.bytes = self
+            .bytes
+            .checked_add(bytes)
+            .ok_or(TreeError::ResourceLimit)?;
+        if self.bytes > MAX_PREPARED_COPY_BYTES {
+            return Err(TreeError::ResourceLimit);
+        }
+        Ok(())
+    }
+    fn visit(&mut self, depth: usize) -> Result<(), TreeError> {
+        self.values += 1;
+        if depth > MAX_DEPTH || self.values > 1_000_000 {
+            return Err(TreeError::ResourceLimit);
+        }
+        self.add(std::mem::size_of::<Attribute>())
+    }
+    fn attrs(&mut self, attrs: &Attributes, depth: usize) -> Result<(), TreeError> {
+        if attrs.len() > 1_000_000usize.saturating_sub(self.values) {
+            return Err(TreeError::ResourceLimit);
+        }
+        for (key, value) in attrs {
+            self.add(key.len())?;
+            self.attribute(value, depth)?;
+        }
+        Ok(())
+    }
+    fn attribute(&mut self, value: &Attribute, depth: usize) -> Result<(), TreeError> {
+        self.visit(depth)?;
+        match value {
+            Attribute::Null => self.add(4),
+            Attribute::Boolean(_) => self.add(5),
+            Attribute::String(s) => self.add(s.len()),
+            Attribute::Number(n) => {
+                // Display streams into this bounded sink even if another
+                // dependency enables serde_json/arbitrary_precision.
+                use std::fmt::Write;
+                write!(self, "{n}").map_err(|_| TreeError::ResourceLimit)
+            }
+            Attribute::List(values) => {
+                if values.len() > 1_000_000usize.saturating_sub(self.values) {
+                    return Err(TreeError::ResourceLimit);
+                }
+                for value in values {
+                    self.attribute(value, depth + 1)?;
+                }
+                Ok(())
+            }
+            Attribute::Object(values) => self.attrs(values, depth + 1),
+        }
+    }
+    fn marks(&mut self, marks: &[Mark]) -> Result<(), TreeError> {
+        if marks.len() > 1_000_000 {
+            return Err(TreeError::ResourceLimit);
+        }
+        for mark in marks {
+            self.visit(1)?;
+            self.add(mark.type_id.len() + std::mem::size_of::<Mark>())?;
+            self.attrs(&mark.attributes, 2)?;
+        }
+        Ok(())
+    }
+}
+impl std::fmt::Write for MetadataCost {
+    fn write_str(&mut self, s: &str) -> std::fmt::Result {
+        self.add(s.len()).map_err(|_| std::fmt::Error)
+    }
+}
+
 /// Owned historical material, neither Clone nor constructible from external IDs.
 /// A successful revival consumes it. Failed revival returns ownership intact.
 ///
@@ -307,8 +551,68 @@ impl TreeDraft<'_> {
     pub fn written_nodes(&self) -> usize {
         self.writes.len()
     }
+    /// Borrowed net semantic/identity comparison. Cache estimates, transient
+    /// identities and speculative maps alone do not require a new revision.
+    pub(crate) fn has_changes(&self) -> bool {
+        self.removed
+            .iter()
+            .any(|id| self.base.nodes.contains_key(id))
+            || self.writes.iter().any(|(id, changed)| {
+                self.base
+                    .nodes
+                    .get(id)
+                    .is_none_or(|old| !same_record(old, changed))
+            })
+    }
+    /// Final borrowed generic-shape gate after all operations/normalization.
+    /// Closed primitives preserve reachability; depth and parent checks also
+    /// prevent a malformed internal link from causing unbounded recursion.
+    pub(crate) fn validate_structure(&self, work: &mut WorkMeter) -> Result<(), TreeError> {
+        fn visit(
+            draft: &TreeDraft<'_>,
+            id: NodeId,
+            parent: Option<NodeId>,
+            family: Option<Primitive>,
+            depth: usize,
+            work: &mut WorkMeter,
+        ) -> Result<(), TreeError> {
+            if depth > MAX_DEPTH {
+                return Err(TreeError::ResourceLimit);
+            }
+            work.charge_units(1).map_err(|_| TreeError::ResourceLimit)?;
+            let node = draft.node(id)?;
+            if node.id != id || node.parent != parent {
+                return Err(TreeError::InvalidStructure);
+            }
+            if let Some(data) = &node.data {
+                if parent.is_none()
+                    || data.type_id.is_empty()
+                    || !allowed_child(family, data.primitive)
+                    || (data.primitive == Primitive::Text) != data.text.is_some()
+                    || (data.primitive != Primitive::Text && !data.marks.is_empty())
+                    || (!matches!(data.primitive, Primitive::Container | Primitive::TextBlock)
+                        && !node.children.is_empty())
+                {
+                    return Err(TreeError::InvalidStructure);
+                }
+            } else if id != draft.root() || parent.is_some() {
+                return Err(TreeError::InvalidStructure);
+            }
+            work.charge_units(node.children.len() as u64)
+                .map_err(|_| TreeError::ResourceLimit)?;
+            for child in &node.children {
+                visit(draft, *child, Some(id), node.primitive(), depth + 1, work)?;
+            }
+            Ok(())
+        }
+        visit(self, self.root(), None, None, 0, work)
+    }
     pub fn prepared_copy_bytes(&self) -> usize {
         self.prepared_copy_bytes
+    }
+    /// Host work limits can only tighten the absolute cumulative allowance.
+    pub(crate) fn tighten_copy_budget(&mut self, total: usize) {
+        self.copy_budget = self.copy_budget.min(total);
     }
     pub fn node(&self, id: NodeId) -> Result<&TreeNode, TreeError> {
         if id.session() != self.base.key {
@@ -433,12 +737,23 @@ impl TreeDraft<'_> {
         to: Utf16Offset,
         inserted: &str,
     ) -> Result<(), TreeError> {
+        self.replace_text_policy(leaf, from, to, inserted, BoundaryPolicy::Grapheme)
+    }
+
+    fn replace_text_policy(
+        &mut self,
+        leaf: NodeId,
+        from: Utf16Offset,
+        to: Utf16Offset,
+        inserted: &str,
+        policy: BoundaryPolicy,
+    ) -> Result<(), TreeError> {
         self.room(1)?;
         if from.get() > to.get() {
             return Err(TreeError::InvalidRange);
         }
-        let a = self.boundary(leaf, from, BoundaryPolicy::Grapheme)?;
-        let b = self.boundary(leaf, to, BoundaryPolicy::Grapheme)?;
+        let a = self.boundary(leaf, from, policy)?;
+        let b = self.boundary(leaf, to, policy)?;
         let text = self.node(leaf)?.text().ok_or(TreeError::InvalidStructure)?;
         let len = text
             .len()
@@ -482,8 +797,17 @@ impl TreeDraft<'_> {
     }
 
     pub fn split_text(&mut self, left: NodeId, at: Utf16Offset) -> Result<NodeId, TreeError> {
+        self.split_text_policy(left, at, BoundaryPolicy::Grapheme)
+    }
+
+    fn split_text_policy(
+        &mut self,
+        left: NodeId,
+        at: Utf16Offset,
+        policy: BoundaryPolicy,
+    ) -> Result<NodeId, TreeError> {
         self.room(2)?;
-        let byte = self.boundary(left, at, BoundaryPolicy::Grapheme)?;
+        let byte = self.boundary(left, at, policy)?;
         let (parent, index) = self.parent_index(left)?;
         let node = self.node(left)?;
         let cost =
@@ -953,6 +1277,1150 @@ impl TreeDraft<'_> {
             text: d.text.as_ref().map(|t| t.0.clone()),
             children: node.children.iter().map(|id| self.encode(*id)).collect(),
         }
+    }
+}
+
+impl TreeDraft<'_> {
+    fn user_leaf_boundary(&self, id: NodeId, origin: EditOrigin) -> Result<(), TreeError> {
+        if origin == EditOrigin::User
+            && let Some(text) = self.node(id)?.text()
+        {
+            self.boundary(id, Utf16Offset::new(0), BoundaryPolicy::Grapheme)?;
+            self.boundary(
+                id,
+                Utf16Offset::new(text.encode_utf16().count()),
+                BoundaryPolicy::Grapheme,
+            )?;
+        }
+        Ok(())
+    }
+
+    fn insertion_boundary(
+        &self,
+        parent: NodeId,
+        index: usize,
+        origin: EditOrigin,
+    ) -> Result<(), TreeError> {
+        let children = &self.node(parent)?.children;
+        if index > children.len() {
+            return Err(TreeError::InvalidIndex);
+        }
+        if origin == EditOrigin::User {
+            if index > 0
+                && let Some(text) = self.node(children[index - 1])?.text()
+            {
+                self.boundary(
+                    children[index - 1],
+                    Utf16Offset::new(text.encode_utf16().count()),
+                    BoundaryPolicy::Grapheme,
+                )?;
+            }
+            if index < children.len() && self.node(children[index])?.text().is_some() {
+                self.boundary(
+                    children[index],
+                    Utf16Offset::new(0),
+                    BoundaryPolicy::Grapheme,
+                )?;
+            }
+        }
+        Ok(())
+    }
+
+    fn update_data(
+        &mut self,
+        id: NodeId,
+        added_cost: usize,
+        update: impl FnOnce(&mut Data),
+    ) -> Result<(), TreeError> {
+        self.room(1)?;
+        let node = self.node(id)?;
+        if node.data.is_none() {
+            return Err(TreeError::RootMutation);
+        }
+        let upper_cost = node
+            .copy_cost
+            .checked_add(added_cost)
+            .ok_or(TreeError::ResourceLimit)?;
+        let cost = node
+            .copy_cost
+            .checked_add(upper_cost)
+            .ok_or(TreeError::ResourceLimit)?;
+        self.copy_room(cost)?;
+        let mut changed = node.clone();
+        let data = changed.data.as_mut().expect("semantic data");
+        update(data);
+        // The preparation charge retains its conservative upper bound, while
+        // the persisted cache describes only the resulting live record. Old
+        // replaced/removed metadata must not accumulate across future commits.
+        changed.copy_cost = record_copy_cost(
+            &data.type_id,
+            data.text.as_ref().map(|text| text.0.as_str()),
+            &data.attributes,
+            &data.marks,
+            changed.children.len(),
+        )?;
+        self.writes.insert(id, changed);
+        self.prepared_copy_bytes += cost;
+        Ok(())
+    }
+
+    /// Full fragment preflight precedes all copies and one atomic ID-range
+    /// reservation. The caller's Document remains borrowed and unchanged.
+    fn insert_fragment(
+        &mut self,
+        parent: NodeId,
+        index: usize,
+        fragment: &Document,
+        origin: EditOrigin,
+    ) -> Result<Vec<NodeId>, TreeError> {
+        self.room(1)?;
+        let metrics = preflight_snapshot(fragment, PreflightBudget::default())
+            .map_err(|_| TreeError::ResourceLimit)?;
+        let parent_node = self.node(parent)?;
+        if !matches!(
+            parent_node.primitive(),
+            None | Some(Primitive::Container | Primitive::TextBlock)
+        ) {
+            return Err(TreeError::InvalidStructure);
+        }
+        self.insertion_boundary(parent, index, origin)?;
+        let mut depth = 0;
+        let mut ancestor = Some(parent);
+        while let Some(id) = ancestor {
+            depth += 1;
+            if depth > MAX_DEPTH {
+                return Err(TreeError::ResourceLimit);
+            }
+            ancestor = self.node(id)?.parent;
+        }
+        for node in &fragment.children {
+            check_shape(node, parent_node.primitive(), depth)?;
+        }
+        if fragment.children.is_empty() {
+            return Ok(Vec::new());
+        }
+        let count = usize::try_from(metrics.nodes).map_err(|_| TreeError::ResourceLimit)?;
+        let overhead = std::mem::size_of::<TreeNode>() + std::mem::size_of::<NodeId>() * 3;
+        let cost = count
+            .checked_mul(overhead)
+            .and_then(|n| n.checked_add(metrics.usage.payload_bytes as usize))
+            .and_then(|n| {
+                n.checked_add(
+                    (metrics.usage.values as usize).checked_mul(std::mem::size_of::<Attribute>())?,
+                )
+            })
+            .and_then(|n| n.checked_add(parent_node.copy_cost))
+            .ok_or(TreeError::ResourceLimit)?;
+        self.copy_room(cost)?;
+        let start = self.base.next_id.get();
+        let end = start
+            .checked_add(metrics.nodes)
+            .ok_or(TreeError::CounterExhausted)?;
+        // All expected failures are now resolved. IDs are consumed once for the
+        // entire insertion and never recycled if its enclosing batch is refused.
+        self.base.next_id.set(end);
+        let mut serial = start;
+        let mut records = BTreeMap::new();
+        fn build(
+            node: &Node,
+            parent: NodeId,
+            key: SessionKey,
+            serial: &mut u64,
+            records: &mut BTreeMap<NodeId, TreeNode>,
+        ) -> NodeId {
+            let id = NodeId::new(key, *serial);
+            *serial += 1;
+            let children = node
+                .children
+                .iter()
+                .map(|child| build(child, id, key, serial, records))
+                .collect::<Vec<_>>();
+            let copy_cost = record_copy_cost(
+                &node.type_id,
+                node.text.as_deref(),
+                &node.attributes,
+                &node.marks,
+                children.len(),
+            )
+            .expect("whole fragment preflight and copy budget");
+            records.insert(
+                id,
+                TreeNode {
+                    id,
+                    parent: Some(parent),
+                    children,
+                    copy_cost,
+                    data: Some(Data {
+                        type_id: node.type_id.clone(),
+                        primitive: node.primitive,
+                        attributes: node.attributes.clone(),
+                        marks: node.marks.clone(),
+                        text: node.text.as_ref().map(|s| TextStore(s.clone())),
+                    }),
+                },
+            );
+            id
+        }
+        let roots = fragment
+            .children
+            .iter()
+            .map(|node| build(node, parent, self.base.key, &mut serial, &mut records))
+            .collect::<Vec<_>>();
+        debug_assert_eq!(serial, end);
+        let mut changed_parent = parent_node.clone();
+        let old_len = changed_parent.children.len();
+        changed_parent
+            .children
+            .splice(index..index, roots.iter().copied());
+        changed_parent.copy_cost += roots.len() * std::mem::size_of::<NodeId>();
+        self.writes.extend(records);
+        self.writes.insert(parent, changed_parent);
+        self.steps.push(StepMap::ChildInsert {
+            parent,
+            index,
+            count: roots.len(),
+            old_len,
+        });
+        self.prepared_copy_bytes += cost;
+        Ok(roots)
+    }
+
+    fn duplicate(
+        &mut self,
+        id: NodeId,
+        parent: NodeId,
+        index: usize,
+        origin: EditOrigin,
+    ) -> Result<Vec<NodeId>, TreeError> {
+        self.room(1)?;
+        let source = self.node(id)?;
+        let primitive = source.primitive().ok_or(TreeError::RootMutation)?;
+        let destination = self.node(parent)?;
+        if !allowed_child(destination.primitive(), primitive) {
+            return Err(TreeError::InvalidStructure);
+        }
+        self.user_leaf_boundary(id, origin)?;
+        self.insertion_boundary(parent, index, origin)?;
+        let mut depth = 0;
+        let mut ancestor = Some(parent);
+        while let Some(current) = ancestor {
+            depth += 1;
+            if depth > MAX_DEPTH {
+                return Err(TreeError::ResourceLimit);
+            }
+            ancestor = self.node(current)?.parent;
+        }
+        let mut cost = destination.copy_cost + std::mem::size_of::<NodeId>() * 2;
+        let mut count = 0u64;
+        self.walk_subtree(id, depth, &mut |node, _| {
+            count = count.checked_add(1).ok_or(TreeError::ResourceLimit)?;
+            cost = cost
+                .checked_add(node.copy_cost + std::mem::size_of::<NodeId>())
+                .ok_or(TreeError::ResourceLimit)?;
+            self.copy_room(cost)
+        })?;
+        let start = self.base.next_id.get();
+        let end = start
+            .checked_add(count)
+            .ok_or(TreeError::CounterExhausted)?;
+        self.base.next_id.set(end);
+        let mut serial = start;
+        let mut records = BTreeMap::new();
+        fn build(
+            draft: &TreeDraft<'_>,
+            source: NodeId,
+            parent: NodeId,
+            serial: &mut u64,
+            records: &mut BTreeMap<NodeId, TreeNode>,
+        ) -> NodeId {
+            let old = draft.node(source).expect("borrowed preflight");
+            let id = NodeId::new(draft.base.key, *serial);
+            *serial += 1;
+            let children = old
+                .children
+                .iter()
+                .map(|child| build(draft, *child, id, serial, records))
+                .collect();
+            records.insert(
+                id,
+                TreeNode {
+                    id,
+                    parent: Some(parent),
+                    data: old.data.clone(),
+                    children,
+                    copy_cost: old.copy_cost,
+                },
+            );
+            id
+        }
+        let fresh = build(self, id, parent, &mut serial, &mut records);
+        debug_assert_eq!(serial, end);
+        let mut changed_parent = destination.clone();
+        let old_len = changed_parent.children.len();
+        changed_parent.children.insert(index, fresh);
+        changed_parent.copy_cost += std::mem::size_of::<NodeId>();
+        self.writes.extend(records);
+        self.writes.insert(parent, changed_parent);
+        self.steps.push(StepMap::ChildInsert {
+            parent,
+            index,
+            count: 1,
+            old_len,
+        });
+        self.prepared_copy_bytes += cost;
+        Ok(vec![fresh])
+    }
+
+    /// User payloads cannot obtain Normalization origin. Profile operations are
+    /// still validated before publication and cannot bypass scalar boundaries.
+    pub(crate) fn apply_operation(
+        &mut self,
+        operation: &Operation<NodeId>,
+        origin: EditOrigin,
+    ) -> Result<Vec<NodeId>, TreeError> {
+        match operation {
+            Operation::ReplaceText {
+                leaf,
+                from,
+                to,
+                inserted,
+            } => self.replace_text_policy(*leaf, *from, *to, inserted, origin.boundary())?,
+            Operation::SplitText { leaf, at } => {
+                return self
+                    .split_text_policy(*leaf, *at, origin.boundary())
+                    .map(|right| vec![right]);
+            }
+            Operation::JoinText { left, right } => {
+                self.join_text(*left, *right)?;
+            }
+            Operation::SetAttribute { node, key, value } => {
+                let current = self
+                    .node(*node)?
+                    .data
+                    .as_ref()
+                    .ok_or(TreeError::RootMutation)?;
+                let mut account = MetadataCost::default();
+                account.add(key.len())?;
+                if let Some(value) = value {
+                    account.attribute(value, 1)?;
+                }
+                if current.attributes.get(key) == value.as_ref() {
+                    return Ok(Vec::new());
+                }
+                self.update_data(*node, account.bytes, |data| {
+                    if let Some(value) = value {
+                        data.attributes.insert(key.clone(), value.clone());
+                    } else {
+                        data.attributes.remove(key);
+                    }
+                })?;
+            }
+            Operation::SetMarks { leaf, marks } => {
+                let node = self.node(*leaf)?;
+                if node.primitive() != Some(Primitive::Text) {
+                    return Err(TreeError::InvalidStructure);
+                }
+                self.user_leaf_boundary(*leaf, origin)?;
+                let mut account = MetadataCost::default();
+                account.marks(marks)?;
+                if node.marks() == marks {
+                    return Ok(Vec::new());
+                }
+                self.update_data(*leaf, account.bytes, |data| data.marks = marks.clone())?;
+            }
+            Operation::Transform {
+                node,
+                type_id,
+                primitive,
+            } => {
+                if type_id.is_empty() {
+                    return Err(TreeError::InvalidStructure);
+                }
+                let old = self
+                    .node(*node)?
+                    .data
+                    .as_ref()
+                    .ok_or(TreeError::RootMutation)?;
+                if type_id.len() > MAX_PREPARED_COPY_BYTES {
+                    return Err(TreeError::ResourceLimit);
+                }
+                if old.type_id == *type_id && old.primitive == *primitive {
+                    return Ok(Vec::new());
+                }
+                // Payload/children deliberately remain intact. The final
+                // profile phase rejects any incompatible resulting shape.
+                self.update_data(*node, type_id.len(), |data| {
+                    data.type_id = type_id.clone();
+                    data.primitive = *primitive;
+                })?;
+            }
+            Operation::InsertFragment {
+                parent,
+                index,
+                fragment,
+            } => return self.insert_fragment(*parent, *index, fragment, origin),
+            Operation::Move {
+                node,
+                parent,
+                before_index,
+            } => {
+                self.user_leaf_boundary(*node, origin)?;
+                self.insertion_boundary(*parent, *before_index, origin)?;
+                self.move_node(*node, *parent, *before_index)?;
+            }
+            Operation::Duplicate {
+                node,
+                parent,
+                index,
+            } => return self.duplicate(*node, *parent, *index, origin),
+            Operation::Remove { node } => {
+                self.user_leaf_boundary(*node, origin)?;
+                self.detach(*node)?;
+            }
+        }
+        Ok(Vec::new())
+    }
+
+    /// Full-snapshot normalization is never used here. Only sparse affected
+    /// records are compared and copied; cache estimates do not create commits.
+    pub(crate) fn prepare_patch(mut self) -> Result<PreparedTreePatch, TreeError> {
+        self.writes.retain(|id, changed| {
+            self.base
+                .nodes
+                .get(id)
+                .is_none_or(|old| !same_record(old, changed))
+        });
+        self.removed.retain(|id| self.base.nodes.contains_key(id));
+        let count = self
+            .writes
+            .len()
+            .checked_add(self.removed.len())
+            .ok_or(TreeError::ResourceLimit)?;
+        let id_bytes = count
+            .checked_mul(std::mem::size_of::<NodeId>())
+            .ok_or(TreeError::ResourceLimit)?;
+        // Preflight temporary changed-ID storage as well as owned records.
+        self.copy_room(id_bytes)?;
+        let mut changed_ids = self
+            .writes
+            .keys()
+            .chain(self.removed.iter())
+            .copied()
+            .collect::<Vec<_>>();
+        changed_ids.sort_unstable();
+        debug_assert!(changed_ids.windows(2).all(|pair| pair[0] != pair[1]));
+        let mut material_bytes = 0usize;
+        for id in &changed_ids {
+            material_bytes = material_bytes
+                .checked_add(std::mem::size_of::<ChangedRecord>())
+                .ok_or(TreeError::ResourceLimit)?;
+            for node in [self.base.nodes.get(id), self.writes.get(id)]
+                .into_iter()
+                .flatten()
+            {
+                material_bytes = material_bytes
+                    .checked_add(node.copy_cost)
+                    .ok_or(TreeError::ResourceLimit)?;
+            }
+            self.copy_room(
+                material_bytes
+                    .checked_add(id_bytes)
+                    .ok_or(TreeError::ResourceLimit)?,
+            )?;
+        }
+        let records = changed_ids
+            .iter()
+            .map(|id| ChangedRecord {
+                id: *id,
+                before: self.base.nodes.get(id).cloned(),
+                after: self.writes.get(id).cloned(),
+            })
+            .collect();
+        if changed_ids.is_empty() {
+            self.steps.clear();
+        }
+        Ok(PreparedTreePatch {
+            key: self.base.key,
+            writes: self.writes,
+            removed: self.removed,
+            steps: self.steps,
+            changed_ids,
+            material: CommitMaterial {
+                records,
+                estimated_bytes: material_bytes,
+            },
+            prepared_copy_bytes: self.prepared_copy_bytes + material_bytes + id_bytes,
+        })
+    }
+}
+
+#[cfg(test)]
+mod transaction_kernel_tests {
+    use super::*;
+    fn leaf(value: &str) -> Node {
+        Node {
+            type_id: "org.example/text".into(),
+            primitive: Primitive::Text,
+            attributes: Attributes::new(),
+            marks: vec![],
+            text: Some(value.into()),
+            children: vec![],
+        }
+    }
+    fn paragraph(value: &str) -> Node {
+        Node {
+            type_id: "org.example/paragraph".into(),
+            primitive: Primitive::TextBlock,
+            attributes: Attributes::new(),
+            marks: vec![],
+            text: None,
+            children: vec![leaf(value)],
+        }
+    }
+    fn tree() -> AddressTree {
+        AddressTree::from_document(
+            SessionKey::allocate().unwrap(),
+            Document {
+                children: vec![paragraph("abcdef"), paragraph("last")],
+            },
+        )
+        .unwrap()
+    }
+    fn ids(tree: &AddressTree) -> (NodeId, NodeId, NodeId) {
+        let root = tree.root();
+        let parent = tree.node(root).unwrap().children[0];
+        (root, parent, tree.node(parent).unwrap().children[0])
+    }
+    fn strong() -> Vec<Mark> {
+        vec![Mark {
+            type_id: "org.example/strong".into(),
+            attributes: Attributes::new(),
+        }]
+    }
+
+    #[test]
+    fn borrowed_change_detection_agrees_with_prepared_patch_for_each_net_noop() {
+        for case in ["replace", "move", "split-join"] {
+            let base = tree();
+            let (root, parent, leaf) = ids(&base);
+            let mut draft = base.prepare();
+            assert!(!draft.has_changes());
+            match case {
+                "replace" => {
+                    draft
+                        .replace_text(leaf, Utf16Offset::new(0), Utf16Offset::new(1), "A")
+                        .unwrap();
+                    assert!(draft.has_changes());
+                    draft
+                        .replace_text(leaf, Utf16Offset::new(0), Utf16Offset::new(1), "a")
+                        .unwrap();
+                }
+                "move" => {
+                    draft.move_node(parent, root, 2).unwrap();
+                    assert!(draft.has_changes());
+                    draft.move_node(parent, root, 0).unwrap();
+                }
+                "split-join" => {
+                    let right = draft.split_text(leaf, Utf16Offset::new(2)).unwrap();
+                    assert!(draft.has_changes());
+                    draft.join_text(leaf, right).unwrap();
+                }
+                _ => unreachable!(),
+            }
+            assert!(!draft.has_changes(), "net-noop {case}");
+            assert!(!draft.prepare_patch().unwrap().changed());
+            let mut changed = base.prepare();
+            changed
+                .replace_text(leaf, Utf16Offset::new(0), Utf16Offset::new(1), "A")
+                .unwrap();
+            assert!(changed.has_changes());
+            assert!(changed.prepare_patch().unwrap().changed());
+            let mut removed = base.prepare();
+            removed.detach(parent).unwrap();
+            assert!(removed.has_changes());
+            assert!(removed.prepare_patch().unwrap().changed());
+        }
+    }
+
+    #[test]
+    fn final_structure_gate_checks_transforms_parent_links_and_scan_budget() {
+        use editor_core::transaction::WorkLimits;
+        let base = tree();
+        let (_, parent, leaf) = ids(&base);
+        let mut draft = base.prepare();
+        let meter = || WorkMeter::new(WorkLimits::default());
+        draft.validate_structure(&mut meter()).unwrap();
+        apply(
+            &mut draft,
+            Operation::Transform {
+                node: parent,
+                type_id: "org.example/container".into(),
+                primitive: Primitive::Container,
+            },
+        );
+        assert_eq!(
+            draft.validate_structure(&mut meter()),
+            Err(TreeError::InvalidStructure)
+        );
+        apply(
+            &mut draft,
+            Operation::Transform {
+                node: parent,
+                type_id: "org.example/paragraph".into(),
+                primitive: Primitive::TextBlock,
+            },
+        );
+        draft.validate_structure(&mut meter()).unwrap();
+        apply(
+            &mut draft,
+            Operation::SetMarks {
+                leaf,
+                marks: strong(),
+            },
+        );
+        apply(
+            &mut draft,
+            Operation::Transform {
+                node: leaf,
+                type_id: "org.example/atom".into(),
+                primitive: Primitive::InlineAtom,
+            },
+        );
+        assert_eq!(
+            draft.validate_structure(&mut meter()),
+            Err(TreeError::InvalidStructure)
+        );
+        let mut malformed = base.prepare();
+        let mut changed = malformed.node(leaf).unwrap().clone();
+        changed.parent = Some(malformed.root());
+        malformed.writes.insert(leaf, changed);
+        assert_eq!(
+            malformed.validate_structure(&mut meter()),
+            Err(TreeError::InvalidStructure)
+        );
+        let pristine = base.prepare();
+        let mut zero = WorkMeter::new(WorkLimits { units: 0, bytes: 0 });
+        assert_eq!(
+            pristine.validate_structure(&mut zero),
+            Err(TreeError::ResourceLimit)
+        );
+        assert_eq!(zero.usage().units, 0);
+        let mut wide = WorkMeter::new(WorkLimits { units: 1, bytes: 0 });
+        assert_eq!(
+            pristine.validate_structure(&mut wide),
+            Err(TreeError::ResourceLimit)
+        );
+        assert_eq!(
+            wide.usage().units,
+            1,
+            "child width refused before descending"
+        );
+    }
+    fn apply(d: &mut TreeDraft<'_>, op: Operation<NodeId>) -> Vec<NodeId> {
+        d.apply_operation(&op, EditOrigin::User).unwrap()
+    }
+
+    #[test]
+    fn borrowed_candidate_view_excludes_synthetic_root_and_keeps_parent_identity() {
+        let base = tree();
+        let (root, parent, text) = ids(&base);
+        assert!(CandidateRead::node(&base, root).is_none());
+        assert_eq!(
+            CandidateRead::roots(&base),
+            base.node(root).unwrap().children()
+        );
+        let mut d = base.prepare();
+        apply(
+            &mut d,
+            Operation::SetAttribute {
+                node: parent,
+                key: "level".into(),
+                value: Some(Attribute::Number(2.into())),
+            },
+        );
+        let borrowed = CandidateRead::node(&d, parent).unwrap();
+        assert_eq!(borrowed.parent, root);
+        assert_eq!(borrowed.children, &[text]);
+        assert_eq!(borrowed.attributes["level"], Attribute::Number(2.into()));
+        assert!(CandidateRead::node(&d, root).is_none());
+        let foreign = tree();
+        assert!(CandidateRead::node(&d, foreign.root()).is_none());
+        assert!(base.node(parent).unwrap().attributes().unwrap().is_empty());
+    }
+
+    #[test]
+    fn full_operation_algebra_builds_sparse_patch_and_owned_before_after_material() {
+        let mut base = tree();
+        let (root, parent, text) = ids(&base);
+        let untouched = base.node(root).unwrap().children[1];
+        let mut d = base.prepare();
+        apply(
+            &mut d,
+            Operation::SetAttribute {
+                node: parent,
+                key: "level".into(),
+                value: Some(Attribute::Number(2.into())),
+            },
+        );
+        apply(
+            &mut d,
+            Operation::Transform {
+                node: parent,
+                type_id: "org.example/heading".into(),
+                primitive: Primitive::TextBlock,
+            },
+        );
+        apply(
+            &mut d,
+            Operation::SetMarks {
+                leaf: text,
+                marks: strong(),
+            },
+        );
+        apply(
+            &mut d,
+            Operation::ReplaceText {
+                leaf: text,
+                from: Utf16Offset::new(0),
+                to: Utf16Offset::new(1),
+                inserted: "A".into(),
+            },
+        );
+        let split = apply(
+            &mut d,
+            Operation::SplitText {
+                leaf: text,
+                at: Utf16Offset::new(3),
+            },
+        );
+        assert_eq!(split.len(), 1);
+        apply(
+            &mut d,
+            Operation::JoinText {
+                left: text,
+                right: split[0],
+            },
+        );
+        let duplicate = apply(
+            &mut d,
+            Operation::Duplicate {
+                node: parent,
+                parent: root,
+                index: 1,
+            },
+        )[0];
+        let duplicate_text = d.node(duplicate).unwrap().children[0];
+        assert_ne!(duplicate_text, text);
+        assert_eq!(d.node(duplicate_text).unwrap().text(), Some("Abcdef"));
+        assert_eq!(d.node(duplicate_text).unwrap().marks(), strong());
+        let fragment = Document {
+            children: vec![paragraph("one"), paragraph("two")],
+        };
+        let created = apply(
+            &mut d,
+            Operation::InsertFragment {
+                parent: root,
+                index: 2,
+                fragment,
+            },
+        );
+        assert_eq!(created.len(), 2);
+        apply(
+            &mut d,
+            Operation::Move {
+                node: duplicate,
+                parent: root,
+                before_index: 5,
+            },
+        );
+        apply(&mut d, Operation::Remove { node: created[0] });
+        assert_eq!(
+            d.node(root).unwrap().children(),
+            &[parent, created[1], untouched, duplicate]
+        );
+        let expected = d.candidate_document();
+        let patch = d.prepare_patch().unwrap();
+        assert!(patch.changed());
+        assert!(!patch.steps().is_empty());
+        assert!(!patch.changed_ids().contains(&untouched));
+        assert!(patch.material_bytes() > 0);
+        assert!(patch.prepared_copy_bytes() > patch.material_bytes());
+        assert_eq!(base.node(text).unwrap().text(), Some("abcdef"));
+        let bytes = patch.material_bytes();
+        let count = patch.changed_ids().len();
+        let material = base.publish(patch);
+        assert_eq!(base.document(), expected);
+        assert_eq!(material.estimated_bytes(), bytes);
+        assert_eq!(material.changed_count(), count);
+        assert!(material.before_count() < material.after_count());
+        let record = material.records.iter().find(|r| r.id == text).unwrap();
+        assert_eq!(record.before.as_ref().unwrap().text(), Some("abcdef"));
+        assert_eq!(record.after.as_ref().unwrap().text(), Some("Abcdef"));
+        assert!(material.records.iter().all(|r| r.id != split[0]));
+    }
+
+    #[test]
+    fn net_noop_restores_cache_and_ignores_retired_transient_ids_and_all_maps() {
+        let mut base = tree();
+        let original = base.document();
+        let (root, parent, text) = ids(&base);
+        let mut d = base.prepare();
+        apply(
+            &mut d,
+            Operation::SetAttribute {
+                node: parent,
+                key: "x".into(),
+                value: Some(Attribute::Null),
+            },
+        );
+        apply(
+            &mut d,
+            Operation::SetAttribute {
+                node: parent,
+                key: "x".into(),
+                value: None,
+            },
+        );
+        apply(
+            &mut d,
+            Operation::SetMarks {
+                leaf: text,
+                marks: strong(),
+            },
+        );
+        apply(
+            &mut d,
+            Operation::SetMarks {
+                leaf: text,
+                marks: vec![],
+            },
+        );
+        apply(
+            &mut d,
+            Operation::Transform {
+                node: parent,
+                type_id: "org.example/heading".into(),
+                primitive: Primitive::TextBlock,
+            },
+        );
+        apply(
+            &mut d,
+            Operation::Transform {
+                node: parent,
+                type_id: "org.example/paragraph".into(),
+                primitive: Primitive::TextBlock,
+            },
+        );
+        let right = apply(
+            &mut d,
+            Operation::SplitText {
+                leaf: text,
+                at: Utf16Offset::new(2),
+            },
+        )[0];
+        apply(&mut d, Operation::JoinText { left: text, right });
+        apply(
+            &mut d,
+            Operation::Move {
+                node: parent,
+                parent: root,
+                before_index: 2,
+            },
+        );
+        apply(
+            &mut d,
+            Operation::Move {
+                node: parent,
+                parent: root,
+                before_index: 0,
+            },
+        );
+        assert_eq!(
+            d.node(parent).unwrap().copy_cost,
+            base.node(parent).unwrap().copy_cost
+        );
+        let patch = d.prepare_patch().unwrap();
+        assert!(!patch.changed());
+        assert!(patch.steps().is_empty());
+        assert!(patch.changed_ids().is_empty());
+        assert_eq!(patch.material_bytes(), 0);
+        assert_eq!(base.publish(patch).changed_count(), 0);
+        assert_eq!(base.document(), original);
+        assert!(!base.nodes.contains_key(&right));
+    }
+
+    #[test]
+    fn repeated_metadata_commits_keep_copy_work_bounded_by_current_payload() {
+        for case in ["attributes", "marks", "type"] {
+            let mut base = tree();
+            let original = base.document();
+            let (_, parent, text) = ids(&base);
+            let mut phase_costs = BTreeMap::new();
+            for iteration in 0..600 {
+                let phase = iteration % if case == "attributes" { 3 } else { 2 };
+                let operation = match case {
+                    "attributes" => Operation::SetAttribute {
+                        node: parent,
+                        key: "level".into(),
+                        value: match phase {
+                            0 => Some(Attribute::Number(1.into())),
+                            1 => Some(Attribute::Number(2.into())),
+                            _ => None,
+                        },
+                    },
+                    "marks" => Operation::SetMarks {
+                        leaf: text,
+                        marks: if phase == 0 { strong() } else { Vec::new() },
+                    },
+                    "type" => Operation::Transform {
+                        node: parent,
+                        type_id: if phase == 0 {
+                            "org.example/longer_heading"
+                        } else {
+                            "org.example/paragraph"
+                        }
+                        .into(),
+                        primitive: Primitive::TextBlock,
+                    },
+                    _ => unreachable!(),
+                };
+                let mut draft = base.prepare();
+                draft.tighten_copy_budget(32 * 1024);
+                apply(&mut draft, operation);
+                let patch = draft.prepare_patch().unwrap();
+                assert!(patch.changed());
+                let cost = patch.prepared_copy_bytes();
+                assert!(cost <= 32 * 1024);
+                if let Some(expected) = phase_costs.insert(phase, cost) {
+                    assert_eq!(cost, expected, "{case} phase {phase}, commit {iteration}");
+                }
+                base.publish(patch);
+
+                // The same semantic document admitted afresh has the same
+                // record size, independently of how many edits produced it.
+                let fresh =
+                    AddressTree::from_document(SessionKey::allocate().unwrap(), base.document())
+                        .unwrap();
+                let (_, fresh_parent, fresh_text) = ids(&fresh);
+                for (actual, expected) in [(parent, fresh_parent), (text, fresh_text)] {
+                    assert_eq!(
+                        base.node(actual).unwrap().copy_cost,
+                        fresh.node(expected).unwrap().copy_cost,
+                        "{case} commit {iteration}"
+                    );
+                }
+            }
+            assert_eq!(
+                base.document(),
+                original,
+                "{case} returns to original payload"
+            );
+        }
+    }
+
+    #[test]
+    fn whole_fragment_counter_reservation_and_preflight_fail_without_partial_write() {
+        let base = tree();
+        let (root, _, _) = ids(&base);
+        let mut d = base.prepare();
+        let snapshot = d.candidate_document();
+        let next = base.next_id.get();
+        let fragment = Document {
+            children: vec![paragraph("new"), leaf("invalid-root-text")],
+        };
+        assert_eq!(
+            d.apply_operation(
+                &Operation::InsertFragment {
+                    parent: root,
+                    index: 0,
+                    fragment
+                },
+                EditOrigin::User
+            ),
+            Err(TreeError::InvalidStructure)
+        );
+        assert_eq!(base.next_id.get(), next);
+        assert_eq!(d.candidate_document(), snapshot);
+        base.next_id.set(u64::MAX - 2);
+        let fragment = Document {
+            children: vec![paragraph("new"), paragraph("second")],
+        };
+        assert_eq!(
+            d.apply_operation(
+                &Operation::InsertFragment {
+                    parent: root,
+                    index: 0,
+                    fragment
+                },
+                EditOrigin::User
+            ),
+            Err(TreeError::CounterExhausted)
+        );
+        assert_eq!(base.next_id.get(), u64::MAX - 2);
+        assert_eq!(d.written_nodes(), 0);
+        assert!(d.steps().is_empty());
+        assert_eq!(d.candidate_document(), snapshot);
+    }
+
+    #[test]
+    fn user_cluster_guards_and_trusted_normalization_scalar_interior_are_distinct() {
+        let mut run = paragraph("e");
+        let mut accent = leaf("\u{301}");
+        accent.marks = strong();
+        run.children.push(accent);
+        let base = AddressTree::from_document(
+            SessionKey::allocate().unwrap(),
+            Document {
+                children: vec![run],
+            },
+        )
+        .unwrap();
+        let (root, parent, first) = ids(&base);
+        let second = base.node(parent).unwrap().children[1];
+        let mut d = base.prepare();
+        for op in [
+            Operation::SetMarks {
+                leaf: second,
+                marks: vec![],
+            },
+            Operation::Remove { node: second },
+            Operation::Move {
+                node: first,
+                parent,
+                before_index: 2,
+            },
+            Operation::InsertFragment {
+                parent,
+                index: 1,
+                fragment: Document {
+                    children: vec![leaf("x")],
+                },
+            },
+        ] {
+            assert_eq!(
+                d.apply_operation(&op, EditOrigin::User),
+                Err(TreeError::Position(PositionError::NotGraphemeBoundary))
+            );
+        }
+        assert_eq!(d.written_nodes(), 0);
+        assert!(d.steps().is_empty());
+        d.apply_operation(
+            &Operation::ReplaceText {
+                leaf: second,
+                from: Utf16Offset::new(0),
+                to: Utf16Offset::new(1),
+                inserted: "".into(),
+            },
+            EditOrigin::Normalization,
+        )
+        .unwrap();
+        assert_eq!(d.node(second).unwrap().text(), Some(""));
+        assert_eq!(d.node(root).unwrap().children(), &[parent]);
+        assert_eq!(base.node(second).unwrap().text(), Some("\u{301}"));
+    }
+
+    #[test]
+    fn metadata_and_material_copy_budgets_refuse_before_mutation_or_publication() {
+        let base = tree();
+        let (_, parent, text) = ids(&base);
+        let mut d = base.prepare();
+        d.tighten_copy_budget(1);
+        d.tighten_copy_budget(MAX_PREPARED_COPY_BYTES);
+        assert_eq!(
+            d.copy_budget, 1,
+            "a host cannot loosen an earlier copy limit"
+        );
+        for op in [
+            Operation::SetAttribute {
+                node: parent,
+                key: "x".into(),
+                value: Some(Attribute::Null),
+            },
+            Operation::SetMarks {
+                leaf: text,
+                marks: strong(),
+            },
+            Operation::Duplicate {
+                node: parent,
+                parent: d.root(),
+                index: 0,
+            },
+        ] {
+            assert_eq!(
+                d.apply_operation(&op, EditOrigin::User),
+                Err(TreeError::ResourceLimit)
+            );
+        }
+        assert_eq!(d.written_nodes(), 0);
+        assert_eq!(d.prepared_copy_bytes(), 0);
+        drop(d);
+        let mut d = base.prepare();
+        apply(
+            &mut d,
+            Operation::ReplaceText {
+                leaf: text,
+                from: Utf16Offset::new(0),
+                to: Utf16Offset::new(1),
+                inserted: "A".into(),
+            },
+        );
+        d.tighten_copy_budget(d.prepared_copy_bytes());
+        assert!(matches!(d.prepare_patch(), Err(TreeError::ResourceLimit)));
+        assert_eq!(base.node(text).unwrap().text(), Some("abcdef"));
+    }
+
+    #[test]
+    fn borrowed_payload_depth_refuses_and_transform_preserves_data_for_final_validation() {
+        let base = tree();
+        let (_, parent, text) = ids(&base);
+        let mut d = base.prepare();
+        let mut deep = Attribute::Null;
+        for _ in 0..MAX_DEPTH + 1 {
+            deep = Attribute::List(vec![deep]);
+        }
+        assert_eq!(
+            d.apply_operation(
+                &Operation::SetAttribute {
+                    node: parent,
+                    key: "x".into(),
+                    value: Some(deep)
+                },
+                EditOrigin::User
+            ),
+            Err(TreeError::ResourceLimit)
+        );
+        assert_eq!(d.written_nodes(), 0);
+        apply(
+            &mut d,
+            Operation::Transform {
+                node: parent,
+                type_id: "org.example/container".into(),
+                primitive: Primitive::Container,
+            },
+        );
+        assert_eq!(d.node(parent).unwrap().children(), &[text]);
+        assert_eq!(d.node(text).unwrap().text(), Some("abcdef"));
+        assert_eq!(
+            d.node(parent).unwrap().primitive(),
+            Some(Primitive::Container)
+        );
+        // This deliberately invalid profile shape has no publication authority;
+        // Session's final profile validation must refuse it.
+        assert_eq!(
+            base.node(parent).unwrap().primitive(),
+            Some(Primitive::TextBlock)
+        );
+        assert!(matches!(
+            d.apply_operation(
+                &Operation::Duplicate {
+                    node: d.root(),
+                    parent: d.root(),
+                    index: 0
+                },
+                EditOrigin::User
+            ),
+            Err(TreeError::RootMutation)
+        ));
     }
 }
 

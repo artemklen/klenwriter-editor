@@ -140,7 +140,7 @@ pub fn admit_core_document_with_budget(
     Ok(admitted)
 }
 
-fn local_name<'a>(
+pub(crate) fn local_name<'a>(
     value: &'a str,
     path: &str,
     code: crate::KwdjErrorCode,
@@ -150,7 +150,7 @@ fn local_name<'a>(
         .ok_or_else(|| crate::KwdjError::new(code, path))
 }
 
-fn encode_attributes(
+pub(crate) fn encode_attributes(
     attrs: &Attributes,
     path: &str,
 ) -> Result<serde_json::Value, crate::KwdjError> {
