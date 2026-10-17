@@ -8,7 +8,7 @@
     "crates/core/src/admission.rs": "bab6926eb8be7010a2a7440e91ba668ec951757ae94c73c0c6d9decb35e87639",
     "crates/core/src/positions.rs": "94ce04c115a062a6b203c2e124afcaa295ad6d9b26a4c0aaaa7bf155fcac50ff",
     "crates/core/src/profile.rs": "c8443db0fbb1d81d0eff6d237cca8af461153e24c7a5b12007e7cac97d3be6fa",
-    "crates/engine/src/tree.rs": "5603d4d511dc52f65c2082b23c0b22c02fdda7d01467f7689aee1779016e7090",
+    "crates/engine/src/tree.rs": "5df216986d53d30af1368844db6d8315f9f44519920143623530fdb55131885e",
     "crates/engine/src/session.rs": "38ee36661ee9d9c271081777c1e70957ede48092a8c7a7dd1744c58198ef00b1",
     "crates/engine/src/dispatch.rs": "acb3fa93570eb7c087a4f8f35d6b32f2e75d4b4191480aaf0255a48b4430930f",
     "crates/engine/src/transaction.rs": "a8eca54087dae07bd4f9716750a27a321e5d48393be1cdcb76f4f63520faf99a",
@@ -19,12 +19,12 @@
     "crates/kwdj/src/validate.rs": "4449346f17a7a696393dd4d694d959158510327c736da547ba1c880c8c3acc72",
     "crates/kwdj/src/normalize.rs": "9da4b8d258023dbd9076f8807a86d7a8db45573aea0e9bb56f1a405c0f97690f",
     "crates/kwdj/src/core_bridge.rs": "6546cb233eacfe73a1231ea395b926f4283b29533cc0ebfed6c418b7e5cf3da7",
-    "crates/wasm/examples/support/transaction_observer.rs": "6db48ca84edfcaa2f5cc51e5b466141b3c78832cada38bdbd9b1a45f35ef879c",
+    "crates/wasm/examples/support/transaction_observer.rs": "ece2edbb38d7f8dda540c9506e155750264b11b10c5ce0f885d5d4524a78d054",
     "crates/wasm/examples/transaction_native.rs": "95e231b8a04844821142faeeb417880e4b2a9ef777d3046b7e0691cf66f26f1e",
     "crates/wasm/examples/transaction_probe.rs": "2b5948958190b8d62b59cc69250978c4e7a380c67f612e572e4edc1f3e2d8298",
-    "crates/wasm/tests/transactions.rs": "f4d934863e64dbffb757552c696dd5aafb8ac1c4828cda2bf9cd0988895129f7",
-    "artifacts/transactions/probe_bg.wasm": "986daab4c4b87d3583634fd623d55ee602a480f64e58879eea7a0d9a800b59ff",
-    "tests/transactions.node.mjs": "dde536d998004242e01fc8618febdef162875d620eab3c4e87622c716ff837ea",
+    "crates/wasm/tests/transactions.rs": "6bd8ff929f2b3104e13a2a77e2844c774491f51af04f339e9e30c9126777f1a5",
+    "artifacts/transactions/probe_bg.wasm": "f2a69f0086cfe7052262266b013f50fdadf5d671ab6d23b9b7547a5e5880325d",
+    "tests/transactions.node.mjs": "c373bab6f30f86d6ca10512ee1e03fae62e977f6cfdf07a288a77e2b1c57d4e8",
     "scripts/build-workspace.mjs": "6d2420903680d832bc352e2a1a7cce1d0002a3fb5389c62f873194494ae31720",
     "package.json": "5cf9ae21be0c3614c761535148f8b50244b7f9141c058b2c1d7e28e3f3404469"
   },
@@ -166,6 +166,16 @@
         "schema_version": 1
       },
       "normalization_explicit": true,
+      "repeated_metadata": {
+        "all_changed": true,
+        "canonical_bytes": 159,
+        "canonical_restored": true,
+        "commits": 512,
+        "identities_preserved": true,
+        "journal_entry_limit": 1,
+        "work_and_retained_bytes_stable": true,
+        "work_cap_bytes": 32768
+      },
       "revision": 1,
       "status": "passed"
     },

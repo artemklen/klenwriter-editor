@@ -56,6 +56,9 @@ metadata/header allocations, normalization proposals, maps и journal material; 
 conservative logical accounting, не точное RSS. KWDJ продолжает применять семь собственных
 более строгих document limits. Overhead зависит от Rust representation target: byte work
 и journal size diagnostics могут отличаться между native/WASM при одинаковом содержимом.
+Cache размера записи отражает текущие поля, включая замену/удаление metadata.
+Накопительный work относится к одной подготовке; прежние commit не увеличивают цену
+будущих одинаковых правок.
 Exhaustion/nonconvergence/counter overflow — typed refusal.
 
 Commit journal хранит реальные sparse before/after records, включая IDs, metadata,

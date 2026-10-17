@@ -222,7 +222,80 @@ fn attributes_marks_spans() -> Value {
         event.map.map(point(id, 4, Affinity::After)),
         MapResult::Mapped(point(id, 4, Affinity::After))
     );
-    json!({"status":"passed","canonical":doc(&s),"revision":s.revision(),"normalization_explicit":true})
+    json!({"status":"passed","canonical":doc(&s),"revision":s.revision(),"normalization_explicit":true,
+        "repeated_metadata":repeated_metadata_commits()})
+}
+
+/// A fixed-size live document and one retained entry must not acquire a larger
+/// logical copy cost merely because the session has committed many replacements.
+/// Compare costs within each target; only portable facts enter native/WASM JSON.
+fn repeated_metadata_commits() -> Value {
+    const COMMITS: u64 = 512;
+    const BYTE_CAP: u64 = 32 * 1024;
+    let value = wire(json!([{
+        "type":"heading","attrs":{"level":1},"content":[{"type":"text","text":"x"}]
+    }]));
+    let mut s = open(&value);
+    let k = s.key();
+    let heading = children(&s, root(&s))[0];
+    let text = leaf(&s);
+    let initial = s.export_snapshot(k, 0).unwrap();
+    assert_eq!(initial.len(), 159);
+    let mut first_cost = None;
+    for iteration in 1..=COMMITS {
+        let level = if iteration % 2 == 1 { 2u64 } else { 1u64 };
+        let mut request = tx(
+            &s,
+            vec![Operation::SetAttribute {
+                node: heading.into(),
+                key: "level".into(),
+                value: Some(Attribute::Number(level.into())),
+            }],
+        );
+        request.limits.work.bytes = BYTE_CAP;
+        request.limits.journal_entries = 1;
+        request.limits.journal_bytes = BYTE_CAP as usize;
+        let result = s.dispatch(request);
+        let DispatchOutcome::Changed(event) = result else {
+            panic!(
+                "fixed-size metadata commit {iteration} falsely refused or became no-op: {result:?}"
+            );
+        };
+        assert_eq!(event.revision, iteration);
+        assert!(event.dirty);
+        assert_eq!(event.normalization_operations, 0);
+        assert_eq!(event.validation.canonical_bytes, 159);
+        assert!(event.work.bytes <= BYTE_CAP);
+        assert_eq!(event.journal.entries, 1);
+        assert!(event.journal.bytes <= BYTE_CAP as usize);
+        assert_eq!(event.journal.evicted, iteration - 1);
+        assert_eq!(event.journal.oldest_revision, iteration - 1);
+        let entry = s.journal_entries();
+        assert_eq!(entry.len(), 1);
+        assert_eq!(entry[0].before_revision, iteration - 1);
+        assert_eq!(entry[0].after_revision, iteration);
+        let current_cost = (event.work, event.journal.bytes, entry[0].bytes);
+        if let Some(first) = first_cost {
+            assert_eq!(
+                current_cost, first,
+                "fixed-size costs grew at commit {iteration}"
+            );
+        } else {
+            first_cost = Some(current_cost);
+        }
+        assert_eq!(
+            event.map.map(point(text, 1, Affinity::After)),
+            MapResult::Mapped(point(text, 1, Affinity::After))
+        );
+    }
+    assert_eq!(s.revision(), COMMITS);
+    assert_eq!(s.selection_epoch(), 0);
+    assert_eq!(s.node(k, root(&s)).unwrap().children(), &[heading]);
+    assert_eq!(s.node(k, heading).unwrap().children(), &[text]);
+    assert_eq!(s.export_snapshot(k, s.revision()).unwrap(), initial);
+    json!({"commits":COMMITS,"canonical_bytes":159,"work_cap_bytes":BYTE_CAP,
+        "journal_entry_limit":1,"canonical_restored":true,"all_changed":true,
+        "work_and_retained_bytes_stable":true,"identities_preserved":true})
 }
 
 fn fragment_local_references() -> Value {

@@ -17,6 +17,10 @@ test('real KWDJ transaction outputs and typed atomic refusals agree on native an
   assert.equal(wasm.groups.text_selection_journal.old_bookmark,'stale');
   assert.equal(wasm.groups.normalization_noops.canonical.content[0].content[0].text,'a\nb');
   assert.equal(wasm.groups.normalization_noops.split_join,'net-noop');
+  assert.deepEqual(wasm.groups.attributes_marks_spans.repeated_metadata, {
+    commits:512,canonical_bytes:159,work_cap_bytes:32768,journal_entry_limit:1,
+    canonical_restored:true,all_changed:true,work_and_retained_bytes_stable:true,identities_preserved:true,
+  });
   assert.deepEqual(wasm.groups.fragments_local_references.canonical.content.filter(p=>p.type==='paragraph').map(p=>p.content[0].text),['A','A','Z','Y']);
   assert.equal(wasm.groups.fragments_local_references.canonical.content.at(-1).type,'scene_break');
   assert.equal(wasm.groups.atomic_refusals.cases.length,11);

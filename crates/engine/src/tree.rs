@@ -7,7 +7,7 @@
 use std::cell::Cell;
 use std::collections::{BTreeMap, BTreeSet};
 
-use editor_core::admission::{PreflightBudget, preflight_node_metadata, preflight_snapshot};
+use editor_core::admission::{PreflightBudget, preflight_node_fields, preflight_snapshot};
 use editor_core::candidate::{BorrowedNode, CandidateRead};
 use editor_core::document::{Attribute, Attributes, Document, Mark, Node, Primitive};
 use editor_core::positions::{
@@ -82,6 +82,34 @@ pub struct TreeNode {
     data: Option<Data>, // None is the synthetic session root, never encoded.
     children: Vec<NodeId>,
     copy_cost: usize,
+}
+
+/// Current record size under the shared logical copy policy. Only borrowed
+/// metadata and child-reference width are measured; child records and text
+/// contents are never cloned or scanned for Unicode to refresh this cache.
+fn record_copy_cost(
+    type_id: &str,
+    text: Option<&str>,
+    attributes: &Attributes,
+    marks: &[Mark],
+    child_count: usize,
+) -> Result<usize, TreeError> {
+    let usage = preflight_node_fields(
+        type_id,
+        text,
+        attributes,
+        marks,
+        child_count,
+        PreflightBudget::default(),
+    )
+    .map_err(|_| TreeError::ResourceLimit)?;
+    let payload = usize::try_from(usage.payload_bytes).map_err(|_| TreeError::ResourceLimit)?;
+    let values = usize::try_from(usage.values).map_err(|_| TreeError::ResourceLimit)?;
+    std::mem::size_of::<TreeNode>()
+        .checked_add(payload)
+        .and_then(|cost| cost.checked_add(values.checked_mul(std::mem::size_of::<Attribute>())?))
+        .and_then(|cost| cost.checked_add(child_count.checked_mul(std::mem::size_of::<NodeId>())?))
+        .ok_or(TreeError::ResourceLimit)
 }
 
 impl TreeNode {
@@ -312,14 +340,13 @@ impl AddressTree {
     }
 
     fn adopt(&mut self, node: Node, parent: NodeId) -> Result<NodeId, TreeError> {
-        let usage = preflight_node_metadata(&node, PreflightBudget::default())
-            .map_err(|_| TreeError::ResourceLimit)?;
-        // Logical copy accounting, not an exact allocator/RSS measurement.
-        // Includes scalar payload plus conservative closed-value/child overhead.
-        let copy_cost = std::mem::size_of::<TreeNode>()
-            + usage.payload_bytes as usize
-            + usage.values as usize * std::mem::size_of::<editor_core::document::Attribute>()
-            + node.children.len() * std::mem::size_of::<NodeId>();
+        let copy_cost = record_copy_cost(
+            &node.type_id,
+            node.text.as_deref(),
+            &node.attributes,
+            &node.marks,
+            node.children.len(),
+        )?;
         let id = self.allocate()?;
         let children = node
             .children
@@ -1310,18 +1337,28 @@ impl TreeDraft<'_> {
         if node.data.is_none() {
             return Err(TreeError::RootMutation);
         }
-        let new_cost = node
+        let upper_cost = node
             .copy_cost
             .checked_add(added_cost)
             .ok_or(TreeError::ResourceLimit)?;
         let cost = node
             .copy_cost
-            .checked_add(new_cost)
+            .checked_add(upper_cost)
             .ok_or(TreeError::ResourceLimit)?;
         self.copy_room(cost)?;
         let mut changed = node.clone();
-        update(changed.data.as_mut().expect("semantic data"));
-        changed.copy_cost = new_cost;
+        let data = changed.data.as_mut().expect("semantic data");
+        update(data);
+        // The preparation charge retains its conservative upper bound, while
+        // the persisted cache describes only the resulting live record. Old
+        // replaced/removed metadata must not accumulate across future commits.
+        changed.copy_cost = record_copy_cost(
+            &data.type_id,
+            data.text.as_ref().map(|text| text.0.as_str()),
+            &data.attributes,
+            &data.marks,
+            changed.children.len(),
+        )?;
         self.writes.insert(id, changed);
         self.prepared_copy_bytes += cost;
         Ok(())
@@ -1398,12 +1435,14 @@ impl TreeDraft<'_> {
                 .iter()
                 .map(|child| build(child, id, key, serial, records))
                 .collect::<Vec<_>>();
-            let usage = preflight_node_metadata(node, PreflightBudget::default())
-                .expect("whole fragment preflight");
-            let copy_cost = std::mem::size_of::<TreeNode>()
-                + usage.payload_bytes as usize
-                + usage.values as usize * std::mem::size_of::<Attribute>()
-                + children.len() * std::mem::size_of::<NodeId>();
+            let copy_cost = record_copy_cost(
+                &node.type_id,
+                node.text.as_deref(),
+                &node.attributes,
+                &node.marks,
+                children.len(),
+            )
+            .expect("whole fragment preflight and copy budget");
             records.insert(
                 id,
                 TreeNode {
@@ -2021,7 +2060,7 @@ mod transaction_kernel_tests {
     }
 
     #[test]
-    fn net_noop_ignores_cache_growth_retired_transient_ids_and_all_maps() {
+    fn net_noop_restores_cache_and_ignores_retired_transient_ids_and_all_maps() {
         let mut base = tree();
         let original = base.document();
         let (root, parent, text) = ids(&base);
@@ -2096,7 +2135,10 @@ mod transaction_kernel_tests {
                 before_index: 0,
             },
         );
-        assert!(d.node(parent).unwrap().copy_cost > base.node(parent).unwrap().copy_cost);
+        assert_eq!(
+            d.node(parent).unwrap().copy_cost,
+            base.node(parent).unwrap().copy_cost
+        );
         let patch = d.prepare_patch().unwrap();
         assert!(!patch.changed());
         assert!(patch.steps().is_empty());
@@ -2105,6 +2147,75 @@ mod transaction_kernel_tests {
         assert_eq!(base.publish(patch).changed_count(), 0);
         assert_eq!(base.document(), original);
         assert!(!base.nodes.contains_key(&right));
+    }
+
+    #[test]
+    fn repeated_metadata_commits_keep_copy_work_bounded_by_current_payload() {
+        for case in ["attributes", "marks", "type"] {
+            let mut base = tree();
+            let original = base.document();
+            let (_, parent, text) = ids(&base);
+            let mut phase_costs = BTreeMap::new();
+            for iteration in 0..600 {
+                let phase = iteration % if case == "attributes" { 3 } else { 2 };
+                let operation = match case {
+                    "attributes" => Operation::SetAttribute {
+                        node: parent,
+                        key: "level".into(),
+                        value: match phase {
+                            0 => Some(Attribute::Number(1.into())),
+                            1 => Some(Attribute::Number(2.into())),
+                            _ => None,
+                        },
+                    },
+                    "marks" => Operation::SetMarks {
+                        leaf: text,
+                        marks: if phase == 0 { strong() } else { Vec::new() },
+                    },
+                    "type" => Operation::Transform {
+                        node: parent,
+                        type_id: if phase == 0 {
+                            "org.example/longer_heading"
+                        } else {
+                            "org.example/paragraph"
+                        }
+                        .into(),
+                        primitive: Primitive::TextBlock,
+                    },
+                    _ => unreachable!(),
+                };
+                let mut draft = base.prepare();
+                draft.tighten_copy_budget(32 * 1024);
+                apply(&mut draft, operation);
+                let patch = draft.prepare_patch().unwrap();
+                assert!(patch.changed());
+                let cost = patch.prepared_copy_bytes();
+                assert!(cost <= 32 * 1024);
+                if let Some(expected) = phase_costs.insert(phase, cost) {
+                    assert_eq!(cost, expected, "{case} phase {phase}, commit {iteration}");
+                }
+                base.publish(patch);
+
+                // The same semantic document admitted afresh has the same
+                // record size, independently of how many edits produced it.
+                let fresh =
+                    AddressTree::from_document(SessionKey::allocate().unwrap(), base.document())
+                        .unwrap();
+                let (_, fresh_parent, fresh_text) = ids(&fresh);
+                for (actual, expected) in [(parent, fresh_parent), (text, fresh_text)] {
+                    assert_eq!(
+                        base.node(actual).unwrap().copy_cost,
+                        fresh.node(expected).unwrap().copy_cost,
+                        "{case} commit {iteration}"
+                    );
+                }
+            }
+            assert_eq!(
+                base.document(),
+                original,
+                "{case} returns to original payload"
+            );
+        }
     }
 
     #[test]
