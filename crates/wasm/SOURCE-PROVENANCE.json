@@ -77,5 +77,12 @@
       "sourcePayload": "Synthetic JSON builders, example.test URLs, fixed UUIDs; no file input or production data",
       "adaptations": "crate import only"
     }
+  ],
+  "localAdaptations": [
+    {
+      "issue": "OSR-77",
+      "path": "crates/kwdj/src/lib.rs",
+      "change": "Strict native scan rejects extra fields on empty node/mark variants before Serde; valid JSON and public Rust model syntax unchanged"
+    }
   ]
 }

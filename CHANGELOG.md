@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- OSR-77: закреплено custom canonical JSON v1 без смены valid bytes; независимые
+  lossless JS/native vectors; неизвестные поля пустых node/mark variants теперь
+  отказывают, вместо молчаливого удаления.
+
 - OSR-75: raw JSON и borrowed snapshots проверяются по отдельным operational
   бюджетам до parser/copies; типизированный отказ сохраняет данные и v1 semantics.
 

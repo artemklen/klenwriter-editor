@@ -25,6 +25,9 @@ npm run check
 npm test
 ```
 
+Canonical bytes and number representation: [ADR-004](docs/adr/004-canonical-json-v1.md);
+independent reference vectors: `npm run test:canonical`.
+
 Native extraction, compatibility and inherited limitations: [OSR-29 extraction](docs/extraction.md).
 
 See [contribution workflow](CONTRIBUTING.md), [package map](docs/workspace.md) and

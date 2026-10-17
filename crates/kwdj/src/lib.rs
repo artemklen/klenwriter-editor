@@ -610,6 +610,22 @@ fn unknown_field_name(message: &str) -> Option<&str> {
     tail.split('`').next()
 }
 
+// Serde's internally tagged unit variants ignore extra fields even with
+// deny_unknown_fields on the enum. Preserve the public model's unit variants,
+// but close their wire objects before typed decoding can discard authored data.
+fn check_empty_variant_fields(
+    object: &serde_json::Map<String, Value>,
+    path: &str,
+) -> Result<(), KwdjError> {
+    if let Some(key) = object.keys().find(|key| key.as_str() != "type") {
+        return Err(KwdjError::new(
+            KwdjErrorCode::UnknownAttribute,
+            key_path(path, key),
+        ));
+    }
+    Ok(())
+}
+
 fn scan_known_types(value: &Value, path: &str) -> Result<(), KwdjError> {
     match value {
         Value::Array(values) => {
@@ -639,6 +655,18 @@ fn scan_known_types(value: &Value, path: &str) -> Result<(), KwdjError> {
                             KwdjErrorCode::UnknownMark,
                             key_path(&index_path(&key_path(path, "marks"), index), "type"),
                         ));
+                    }
+                    if matches!(
+                        mark.get("type").and_then(Value::as_str),
+                        Some(
+                            "strong" | "emphasis" | "strike" | "code" | "subscript" | "superscript"
+                        )
+                    ) && let Some(fields) = mark.as_object()
+                    {
+                        check_empty_variant_fields(
+                            fields,
+                            &index_path(&key_path(path, "marks"), index),
+                        )?;
                     }
                 }
             }
@@ -675,6 +703,12 @@ fn scan_known_types(value: &Value, path: &str) -> Result<(), KwdjError> {
                     KwdjErrorCode::UnknownNode,
                     key_path(path, "type"),
                 ));
+            }
+            if matches!(
+                object.get("type").and_then(Value::as_str),
+                Some("hard_break" | "scene_break")
+            ) {
+                check_empty_variant_fields(object, path)?;
             }
             for (key, value) in object {
                 if key != "marks" {
