@@ -1,7 +1,7 @@
-# Workspace M1 / OSR-28
+# Workspace M1 / OSR-28–29
 
-Статус: автономная build foundation. API/codecs/editor semantics появятся в своих
-задачах; `0.0.0` и private names не являются публичной совместимостью или alpha.
+Статус: автономная build foundation и извлечённые native semantics ([границы](extraction.md)).
+Session/transaction/browser editing API появятся в своих задачах; `0.0.0` и private names не являются публичной совместимостью или alpha.
 
 | Пакет | Владелец ответственности | Прямая внутренняя зависимость |
 | --- | --- | --- |
@@ -35,7 +35,8 @@ parse5, ts-rs, Angular и property/fuzz/benchmark tooling подключаютс
 
 Оригинальный код лицензирован MIT OR Apache-2.0; root/crate/npm LICENSE и NOTICE
 входят в source/distributable layout. Runtime dependency notices генерируются при
-сборке и включаются в WASM package. Никакой CMS код не скопирован в OSR-28.
+сборке и включаются в WASM package. OSR-28 не копировал CMS код; OSR-29 переносит owner-controlled semantics с
+[per-file provenance](../provenance/source-files.json), сохраняя audit/reading-time и renderer в CMS.
 Выбранная схема workspace опирается на [Cargo workspaces](https://doc.rust-lang.org/cargo/reference/workspaces.html),
 web glue — на [wasm-bindgen deployment](https://wasm-bindgen.github.io/wasm-bindgen/reference/deployment.html).
 

@@ -12,8 +12,8 @@ build tools для Rust. CMS checkout, DB, private registry и секреты н
 1. Установите Node **24.22.0** (CI pin `.node-version`) и npm **11.14.0**.
    Node 26 допускается для разработки, но acceptance lane использует Node 24.
 2. Установите rustup. `rust-toolchain.toml` закрепляет Rust **1.97.1**, rustfmt,
-   clippy и `wasm32-unknown-unknown`. Поддерживаемый MSRV сейчас равен этому pin;
-   более старые компиляторы не заявлены.
+   clippy и `wasm32-unknown-unknown`. Release builder использует этот pin; native core/profile дополнительно
+   поддерживают Rust **1.89.0** и проверяются на нём в CI.
 3. Выполните из корня:
 
 ```sh
@@ -24,6 +24,13 @@ npm run check
 npm test
 node scripts/summarize-evidence.mjs
 ```
+
+На macOS 27 Firefox 157 может завершиться до теста из-за обращения к защищённому
+каталогу реального Firefox ([upstream #42768](https://github.com/microsoft/playwright/issues/42768)).
+Для локальных прогонов можно создать отдельный пустой каталог и передать
+`CFFIXED_USER_HOME=/absolute/path/to/test-browser-appdata` только тестовому процессу.
+Это изолирует app-data; browser build, CSP и assertions остаются прежними.
+CI macOS 15 использует обычный запуск.
 
 Linux дополнительно требует Playwright system dependencies (`npx playwright install --with-deps`).
 CI запускается на macOS 15 и выполняет ту же последовательность; OS browser input
@@ -51,8 +58,9 @@ linker входят в build environment; production size budgets провери
 Все Rust crates имеют `publish = false`, JS packages — `private: true`.
 Ни один install/build/check hook не публикует пакеты и не разворачивает CMS.
 Окончательное имя и права registry — OSR-54; publishing — OSR-71.
-Нельзя публиковать internal tarballs как alpha: они содержат только границы и
-диагностический build identity. Реальные codec/session/DOM/Angular APIs — будущие задачи.
+Нельзя публиковать internal tarballs как alpha. Native codec извлечён в OSR-29;
+web packages пока содержат границы и диагностический build identity. Реальные
+session/DOM/Angular APIs — будущие задачи.
 
 ## Изменения
 

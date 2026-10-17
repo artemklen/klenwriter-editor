@@ -25,6 +25,8 @@ jobs:
       - run: npx playwright install chromium firefox webkit
         env:
           PLAYWRIGHT_SKIP_BROWSER_GC: '1'
+      - run: rustup toolchain install 1.89.0 --profile minimal
+      - run: cargo +1.89.0 test --locked -p editor-internal-core -p editor-internal-kwdj
       - run: npm run check
       - run: npm test
       - run: node scripts/summarize-evidence.mjs

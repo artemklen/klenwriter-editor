@@ -2,7 +2,7 @@
 
 Rust/WASM editor: a general core with extensions, with KWDJ as the first CMS profile.
 
-M0 architecture is accepted; M1 now supplies a native/WASM/TypeScript workspace bootstrap. There is no production editor or published package yet. Desktop Chrome and Safari are the v1 support target. Firefox remains an experimental compatibility lane with recorded results, not a v1 release guarantee; its acceptance gate is separate. Mobile input and collaboration are later work.
+M0 architecture is accepted; M1 supplies the workspace foundation and extracted native document semantics. There is no production editor or published package yet. Desktop Chrome and Safari are the v1 support target. Firefox remains an experimental compatibility lane with recorded results, not a v1 release guarantee; its acceptance gate is separate. Mobile input and collaboration are later work.
 
 GitHub is the canonical repository. No GitLab mirror is configured or planned.
 
@@ -19,6 +19,8 @@ PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install chromium firefox webkit
 npm run check
 npm test
 ```
+
+Native extraction, compatibility and inherited limitations: [OSR-29 extraction](docs/extraction.md).
 
 See [contribution workflow](CONTRIBUTING.md), [package map](docs/workspace.md) and
 [versioned contracts](contracts/README.md). No CMS, database, private registry or

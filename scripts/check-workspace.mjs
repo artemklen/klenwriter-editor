@@ -62,7 +62,7 @@ function inspect(path) {
 }
 for (const name of ['wasm', 'sdk', 'dom', 'kwdj', 'vanilla', 'angular']) inspect(`packages/${name}/dist`);
 const report = {
-  stage: 'OSR-28 bootstrap; sizes are not production editor budgets',
+  stage: 'OSR-29 extracted native semantics; sizes are not production editor budgets',
   toolchains: { rust: output('rustc', ['--version']).trim(), node: process.version, npm: output('npm', ['--version']).trim(),
     bindgen: output('.tools/bin/wasm-bindgen', ['--version']).trim() },
   targets: ['native', 'wasm32-unknown-unknown'],
