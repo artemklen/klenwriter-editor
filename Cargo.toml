@@ -1,0 +1,31 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+exclude = ["scripts/m0-perf/kernel"]
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.97.1"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/artemklen/klenwriter-editor"
+publish = false
+
+[workspace.dependencies]
+editor_core = { package = "editor-internal-core", path = "crates/core", version = "=0.0.0" }
+editor_engine = { package = "editor-internal-engine", path = "crates/engine", version = "=0.0.0" }
+editor_kwdj = { package = "editor-internal-kwdj", path = "crates/kwdj", version = "=0.0.0" }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.154"
+unicode-segmentation = "=1.13.3"
+wasm-bindgen = "=0.2.129"
+js-sys = "=0.3.106"
+serde-wasm-bindgen = "=0.6.5"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = "s"

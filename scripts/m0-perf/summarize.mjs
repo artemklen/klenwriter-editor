@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
+import { capturedSourceHash } from './source-integrity.mjs';
 const root=resolve(import.meta.dirname,'../..');
 const checkOnly=process.argv.includes('--check');
 const dir=resolve(root,'evidence/osr-61');
@@ -32,8 +33,8 @@ for(const [name,record]of Object.entries(series.files)){const data=readFileSync(
 for(const name of ['metadata.json','paint-supplement.json','webkit-memory-supplement.json',...runFiles])if(!series.files[name])throw new Error(`Raw file is not part of sealed series: ${name}`);
 if(series.startedAt!==metadata.capturedAt||runs.some(run=>Date.parse(run.startedAt)<Date.parse(metadata.capturedAt)||Date.parse(run.finishedAt)>Date.parse(paintSupplement.startedAt)))throw new Error('Stale/mixed/out-of-order run provenance');
 for(const sourceMap of [paintSupplement.sourceHashes,memorySupplement.sourceHashes])for(const [path,expected]of Object.entries(metadata.sourceHashes))if(sourceMap[path]&&sourceMap[path]!==expected)throw new Error(`Source overlap mismatch: ${path}`);
-const sourceVerification=[['baseline',metadata.sourceHashes],['paint',paintSupplement.sourceHashes],['memory',memorySupplement.sourceHashes]].flatMap(([capture,sourceMap])=>Object.entries(sourceMap).map(([path,expected])=>({capture,path,expected,actual:sha(readFileSync(resolve(root,path)))})));
-if(sourceVerification.some(row=>row.actual!==row.expected))throw new Error('Measurement source fingerprint differs from checkout');
+const sourceVerification=[['baseline',metadata.sourceHashes],['paint',paintSupplement.sourceHashes],['memory',memorySupplement.sourceHashes]].flatMap(([capture,sourceMap])=>Object.entries(sourceMap).map(([path,expected])=>({capture,path,expected,actual:capturedSourceHash(root,path)})));
+if(sourceVerification.some(row=>row.actual!==row.expected))throw new Error('Measurement source fingerprint differs from sealed source');
 function aggregate(values){
   const sorted=[...values].sort((a,b)=>a-b),mean=values.reduce((sum,value)=>sum+value,0)/values.length;
   const sd=Math.sqrt(values.reduce((sum,value)=>sum+(value-mean)**2,0)/(values.length-1));

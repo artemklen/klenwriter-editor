@@ -1,0 +1,15 @@
+[package]
+name = "editor-internal-kwdj"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+description = "Internal kwdj workspace boundary; pre-alpha bootstrap"
+
+[lints]
+workspace = true
+
+[dependencies]
+editor_core.workspace = true

@@ -1,0 +1,5 @@
+KlenWriter Editor workspace bootstrap
+Copyright 2026 Artem Klen and contributors
+Original code: MIT OR Apache-2.0, at your option.
+No CMS source, corpus or third-party editor implementation has been copied here.
+Dependency notices are generated separately with `npm run check:workspace`.

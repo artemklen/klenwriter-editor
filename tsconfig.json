@@ -1,0 +1,23 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "packages/wasm"
+    },
+    {
+      "path": "packages/sdk"
+    },
+    {
+      "path": "packages/dom"
+    },
+    {
+      "path": "packages/kwdj"
+    },
+    {
+      "path": "packages/vanilla"
+    },
+    {
+      "path": "packages/angular"
+    }
+  ]
+}
