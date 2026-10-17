@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "issue": "OSR-30",
+  "sourceRepository": "local/klenwriter-cms",
+  "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+  "ownerGrant": "docs/m0/decision-register.md D10/D11",
+  "authority": "Editor contracts/kwdj/v1 is the versioned corpus authority after OSR-30 acceptance; CMS consumes a pinned verified artifact. Temporary OSR-76 data snapshot is replaced.",
+  "files": [
+    {
+      "source": "contracts/kwdj/v1/manifest.json",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sourceSha256": "987f6b0f12922d406a1e514c41ecd31c5c5187a762058d14d0eaf6472d892d5a",
+      "destination": "contracts/kwdj/v1/manifest.json",
+      "license": "MIT OR Apache-2.0",
+      "grant": "Owner D10/D11 approved rights/transfer2026-10-17",
+      "review": "Owner-controlled contract/schema or synthetic fixture data. Reviewed technical grammar, metadata and fixed synthetic payloads; no third-party headers/user documents/secrets/production captures. Schema URI references are identifiers, not copied third-party payloads.",
+      "destinationSha256": "987f6b0f12922d406a1e514c41ecd31c5c5187a762058d14d0eaf6472d892d5a"
+    },
+    {
+      "source": "contracts/kwdj/v1/kwdj.schema.json",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sourceSha256": "40bec8f8b9c51f4d9440bb35615417b204e36f14a8aff9c057c76254a41d6a25",
+      "destination": "contracts/kwdj/v1/kwdj.schema.json",
+      "license": "MIT OR Apache-2.0",
+      "grant": "Owner D10/D11 approved rights/transfer2026-10-17",
+      "review": "Owner-controlled contract/schema or synthetic fixture data. Reviewed technical grammar, metadata and fixed synthetic payloads; no third-party headers/user documents/secrets/production captures. Schema URI references are identifiers, not copied third-party payloads.",
+      "destinationSha256": "40bec8f8b9c51f4d9440bb35615417b204e36f14a8aff9c057c76254a41d6a25"
+    },
+    {
+      "source": "contracts/kwdj/v1/fixture.schema.json",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sourceSha256": "0de202b483e108f9f85cfa5fc7782d9725d55646a1cdded2c916824177ab143f",
+      "destination": "contracts/kwdj/v1/fixture.schema.json",
+      "license": "MIT OR Apache-2.0",
+      "grant": "Owner D10/D11 approved rights/transfer2026-10-17",
+      "review": "Owner-controlled contract/schema or synthetic fixture data. Reviewed technical grammar, metadata and fixed synthetic payloads; no third-party headers/user documents/secrets/production captures. Schema URI references are identifiers, not copied third-party payloads.",
+      "destinationSha256": "0de202b483e108f9f85cfa5fc7782d9725d55646a1cdded2c916824177ab143f"
+    },
+    {
+      "source": "contracts/kwdj/v1/README.md",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sourceSha256": "a43d2e0c497562e1fbe79425d1e499637ad4b43d49369b4c905c6d58a54d4af5",
+      "destination": "contracts/kwdj/v1/README.md",
+      "license": "MIT OR Apache-2.0",
+      "grant": "Owner D10/D11 approved rights/transfer2026-10-17",
+      "review": "Owner-controlled contract/schema or synthetic fixture data. Reviewed technical grammar, metadata and fixed synthetic payloads; no third-party headers/user documents/secrets/production captures. Schema URI references are identifiers, not copied third-party payloads.",
+      "destinationSha256": "acd0ab722f91e4fd769e939f59eecccf09b130c54a982e3229171ab8efb150f5",
+      "adaptations": "Authority/version/pin/additive rules and current Rust status clarified; original normative content retained."
+    },
+    {
+      "source": "contracts/kwdj/v1/fixtures/positive.json",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sourceSha256": "da7fca7fe9d38407b664b704775ac75ed5635c29eb0fcb40d8e9ca9a2394171b",
+      "destination": "contracts/kwdj/v1/fixtures/positive.json",
+      "license": "MIT OR Apache-2.0",
+      "grant": "Owner D10/D11 approved rights/transfer2026-10-17",
+      "review": "Owner-controlled contract/schema or synthetic fixture data. Reviewed technical grammar, metadata and fixed synthetic payloads; no third-party headers/user documents/secrets/production captures. Schema URI references are identifiers, not copied third-party payloads.",
+      "destinationSha256": "da7fca7fe9d38407b664b704775ac75ed5635c29eb0fcb40d8e9ca9a2394171b"
+    },
+    {
+      "source": "contracts/kwdj/v1/fixtures/negative.json",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sourceSha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f",
+      "destination": "contracts/kwdj/v1/fixtures/negative.json",
+      "license": "MIT OR Apache-2.0",
+      "grant": "Owner D10/D11 approved rights/transfer2026-10-17",
+      "review": "Owner-controlled contract/schema or synthetic fixture data. Reviewed technical grammar, metadata and fixed synthetic payloads; no third-party headers/user documents/secrets/production captures. Schema URI references are identifiers, not copied third-party payloads.",
+      "destinationSha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f"
+    },
+    {
+      "source": "contracts/kwdj/v1/fixtures/mixed.json",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sourceSha256": "f9e472176da723dedf812bff8a5a046946d554c5125e05977cab6a392b19f4a5",
+      "destination": "contracts/kwdj/v1/fixtures/mixed.json",
+      "license": "MIT OR Apache-2.0",
+      "grant": "Owner D10/D11 approved rights/transfer2026-10-17",
+      "review": "Owner-controlled contract/schema or synthetic fixture data. Reviewed technical grammar, metadata and fixed synthetic payloads; no third-party headers/user documents/secrets/production captures. Schema URI references are identifiers, not copied third-party payloads.",
+      "destinationSha256": "f9e472176da723dedf812bff8a5a046946d554c5125e05977cab6a392b19f4a5"
+    },
+    {
+      "source": "contracts/kwdj/v1/fixtures/deferred.json",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sourceSha256": "4499b474515516fd7aff7222a910f2115121eb483790e66a63d84b03dc87bf69",
+      "destination": "contracts/kwdj/v1/fixtures/deferred.json",
+      "license": "MIT OR Apache-2.0",
+      "grant": "Owner D10/D11 approved rights/transfer2026-10-17",
+      "review": "Owner-controlled contract/schema or synthetic fixture data. Reviewed technical grammar, metadata and fixed synthetic payloads; no third-party headers/user documents/secrets/production captures. Schema URI references are identifiers, not copied third-party payloads.",
+      "destinationSha256": "4499b474515516fd7aff7222a910f2115121eb483790e66a63d84b03dc87bf69"
+    }
+  ],
+  "localFiles": [
+    {
+      "path": "contracts/kwdj/v1/extension-vectors.json",
+      "source": "evidence/osr-57/profile-vectors.json",
+      "license": "MIT OR Apache-2.0",
+      "grant": "Owner D10; independently authored synthetic M0 extension reference vectors; not production extension acceptance64"
+    }
+  ]
+}

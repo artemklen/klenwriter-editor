@@ -63,4 +63,4 @@ Read the [decision and results](docs/m0/editing-host-decision.md) and the [nativ
 
 The prebuilt WASM artifact now exposes versioned KWDJ validate/normalize/canonical
 entry points for corpus parity. This is not the stable editing SDK (OSR-63).
-See [ABI, input bounds, exact u64 and temporary test corpus](docs/codec-v1.md).
+See [ABI, input bounds, exact u64 and versioned test corpus](docs/codec-v1.md).

@@ -104,18 +104,17 @@ Closed transport codes are `codec.invalid_input_type`,
 `codec.input_unavailable`. Profile failures retain their native `kwdj.*` code,
 path and limit context, rather than being reinterpreted by JS.
 
-## Verification and temporary test artifact
+## Verification and versioned corpus
 
 `npm run build && npm run test:codec` builds the real WASM artifact and runs
 four Node tests. `npm run check` includes this lane after building. The
 native example `codec` is a JSONL test transport, not an installed SDK API.
 
-[Provenance](../provenance/codec-fixtures.json) records per-file hashes, rights
-and privacy inspection of four immutable synthetic data files from CMS baseline
-`a7f8a081b7827dd31097ad6c9104654366ae6e04`. This temporary snapshot is **not a
-second corpus authority**. CMS remains authoritative; OSR-30 replaces it with
-the single versioned authority/pin. No CMS checkout or private access is needed
-to run these tests or CI. Original files and expected fields are not rewritten.
+The single versioned corpus authority is [contracts/kwdj/v1](../contracts/kwdj/v1/README.md).
+[Provenance](../provenance/kwdj-corpus.json) records the original CMS source,
+per-file rights and privacy inspection. CMS consumes a verified immutable artifact
+pinned to an editor commit, package version and content digest. A standalone
+checkout needs no CMS access. Expected values remain unchanged.
 
 39 document cases and 14 resource recipes expand to 60 codec inputs (21 resource
 measurements). All three operations receive identical raw inputs in native and
@@ -132,7 +131,23 @@ The report `artifacts/codec-v1-report.json` distinguishes **1 deferred case**
 (DOC-024, no real later schema) and **5 cases without a KWDJ candidate**. Other
 stages—clipboard/import, editor operations, public rendering, projection and
 upconversion—are named as not executed here. Their presence in a fixture does
-not make them codec passes or complete OSR-30.
+not make them codec passes. `test:corpus` records these owners separately.
 
 Rollback reverts codec, transport and test-artifact additions. Persisted v1 data,
 canonical serializer, normative maxima and CMS runtime/pin stay unchanged.
+
+`npm run test:corpus` verifies schemas, the 34-ID/59-case baseline and additive
+change rules, then emits `artifacts/corpus-stage-report.json`: 277 declared stage
+memberships in each of three runtime lanes. Native projection and a separate
+compiled-WASM test observer are compared; this observer is never shipped as a
+public export. Production codec exports are exercised separately. Deferred,
+not-owned and not-exposed stages are explicit and never counted as passes.
+Hardening74/75, invalid-field77 and extension dispositions have separate reports.
+The frozen M0 descriptor reference executes once inside this lane; it does not
+claim the production extension registry or notes profile (OSR-64).
+
+The data-only `artifacts/kwdj-corpus-1.0.0.json.gz` bundle contains the index and
+its exact indexed bytes. `scripts/export-corpus.mjs` verifies the committed
+index before exporting. `scripts/build-corpus-package.mjs` is an explicit
+authoring step, never an automatic CI repair. See the corpus README for digest,
+licensing, additive-change and CMS pin rules.

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- OSR-30: one licensed versioned KWDJ corpus with verified CMS artifact pins,
+  strict schema/integrity/additive guards and explicit native/WASM stage results;
+  projections, resource refusals and extension reference evidence stay distinct
+  from unimplemented editing, rendering and extension runtime stages.
+
 - OSR-76: bounded borrowed-Uint8Array validate/normalize/canonical WASM exports,
   explicit identity facts and lossless u64 transport; native/Node-WASM parity on
   an immutable licensed synthetic snapshot, stage dispositions and boundary tests.

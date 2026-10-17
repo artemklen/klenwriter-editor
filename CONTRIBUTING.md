@@ -45,10 +45,13 @@ license/version/MSRV/target/size inventory, упаковку шести private 
 `npm test` сохраняет 102 browser scenarios M0 spike отдельно от workspace smoke.
 
 `npm run test:codec` после build запускает настоящий Node/WASM codec ABI v1
-против native на pinned synthetic snapshot: 60 codec inputs / 180 comparisons,
+против native на versioned corpus: 60 codec inputs / 180 comparisons,
 typed admission/identity/u64 boundaries. Lane включён в `npm run check`;
 [контракт](docs/codec-v1.md) отделяет 1 deferred и 5 no-candidate cases и
-неисполняемые non-codec stages от pass. Temporary snapshot заменяется в OSR-30.
+неисполняемые non-codec stages от pass. `npm run test:corpus` проверяет package
+integrity, baseline/additive rules и stage-aware native/WASM projections;
+публикует отдельные hardening/extension reports и data-only bundle. Единственный
+источник — `contracts/kwdj/v1`; CMS использует immutable artifact с pin/hash.
 
 ## Артефакты и ограничения
 

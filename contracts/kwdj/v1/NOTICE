@@ -1,0 +1,7 @@
+KlenWriter Editor — KWDJ v1 corpus
+
+Contract/schema and synthetic DOC fixtures derive from owner-controlled KlenWriter CMS
+baseline a7f8a081b7827dd31097ad6c9104654366ae6e04 under the owner's explicit D10/D11
+grant, MIT OR Apache-2.0. Extension vectors and integration documentation are
+independently authored for KlenWriter Editor. No user documents or third-party
+payloads are included. Preserve both license texts and this notice.

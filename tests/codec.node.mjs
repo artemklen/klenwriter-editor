@@ -68,9 +68,9 @@ test('pinned codec inputs agree in native and real Node WASM, with contract outc
   }
   assert.equal(index, 180); assert.ok(accepted > 0 && refused > 0);
   mkdirSync('artifacts', { recursive: true });
-  const paths = ['crates/wasm/src/codec.rs', 'crates/wasm/src/codec_browser.rs', 'crates/wasm/examples/codec.rs', 'packages/wasm/src/codec.ts', 'tests/codec.node.mjs', 'tests/support/codec-fixtures.mjs', 'provenance/codec-fixtures.json'];
+  const paths = ['crates/wasm/src/codec.rs', 'crates/wasm/src/codec_browser.rs', 'crates/wasm/examples/codec.rs', 'packages/wasm/src/codec.ts', 'tests/codec.node.mjs', 'tests/support/codec-fixtures.mjs', 'provenance/kwdj-corpus.json', 'contracts/kwdj/v1/corpus-package.json'];
   const sourceHashes = Object.fromEntries(paths.map(path => [path, hash(readFileSync(path))]));
-  writeFileSync('artifacts/codec-v1-report.json', JSON.stringify({ abi: 'kwdj-codec/1', source: 'provenance/codec-fixtures.json', sourceHashes,
+  writeFileSync('artifacts/codec-v1-report.json', JSON.stringify({ abi: 'kwdj-codec/1', source: 'contracts/kwdj/v1/corpus-package.json', sourceHashes,
     wasmSha256: hash(readFileSync('packages/wasm/dist/editor_wasm_bg.wasm')),
     summary: { ...summary, expandedCodecInputs: inputs.length, nativeWasmComparisons: index, primaryAccepted: accepted, primaryRefused: refused }, dispositions, observations }, null, 2) + '\n');
 });

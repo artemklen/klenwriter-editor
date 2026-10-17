@@ -33,6 +33,11 @@ run('cargo', ['build', '--locked', '--release', '--target', 'wasm32-unknown-unkn
   '-p', identity.rust.wasm.name, '--example', 'admission_budget_probe']);
 run(bindgen, ['target/wasm32-unknown-unknown/release/examples/admission_budget_probe.wasm',
   '--target', 'web', '--out-dir', 'artifacts/admission-budget', '--out-name', 'probe']);
+// Trusted test-only corpus/projection observer, never copied into npm dist.
+run('cargo', ['build', '--locked', '--release', '--target', 'wasm32-unknown-unknown',
+  '-p', identity.rust.wasm.name, '--example', 'corpus_probe']);
+run(bindgen, ['target/wasm32-unknown-unknown/release/examples/corpus_probe.wasm',
+  '--target', 'web', '--out-dir', 'artifacts/corpus-observer', '--out-name', 'probe']);
 writeDependencyNotices();
 // Clean all emitted package files so stale declarations/assets cannot mask omissions.
 const packages = ['wasm', 'sdk', 'dom', 'kwdj', 'vanilla', 'angular'];
