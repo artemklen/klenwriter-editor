@@ -2,7 +2,7 @@
 name = "editor-internal-core"
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
+rust-version = "1.89.0"
 license.workspace = true
 repository.workspace = true
 publish.workspace = true
@@ -10,3 +10,6 @@ description = "Internal core workspace boundary; pre-alpha bootstrap"
 
 [lints]
 workspace = true
+
+[dependencies]
+serde_json.workspace = true

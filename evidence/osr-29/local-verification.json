@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "issue": "OSR-29",
+  "scope": "local source extraction; CI/review/CMS integration tracked in Linear before acceptance",
+  "checks": [
+    {
+      "name": "native-profile-msrv",
+      "command": "cargo +1.89.0 test --locked -p editor-internal-core -p editor-internal-kwdj",
+      "status": "passed",
+      "logSha256": "f7bc8ea0b8864bc896bb1f4ec5b4389acc9aa21e0373979918e12bc9469e860a",
+      "rustTestCountIncludingCompileFail": 16
+    },
+    {
+      "name": "workspace",
+      "command": "npm run check",
+      "status": "passed",
+      "logSha256": "4f1e301ce8c28db9660340b627d3de2063e20908fcb5596703ac3ac40ddd0711",
+      "rustTestCountIncludingCompileFail": 17
+    },
+    {
+      "name": "m0-browser-regression",
+      "command": "npm test",
+      "status": "passed",
+      "logSha256": "78eed310f5793a7704f8122a175c9eabf788d15cfe3b040beeffa8307bf1c9bc",
+      "rustTestCountIncludingCompileFail": null
+    }
+  ],
+  "environment": {
+    "node": "24.22.0",
+    "npm": "11.14.0",
+    "releaseRust": "1.97.1",
+    "nativeMSRV": "1.89.0",
+    "browserHost": "macOS 27.0.1",
+    "firefoxAppData": "CFFIXED_USER_HOME points to dedicated task test app-data; no system permission change",
+    "upstream": "https://github.com/microsoft/playwright/issues/42768"
+  },
+  "limitations": [
+    "OSR-74 inherited stanza expansion/overflow release blocker",
+    "Full native/WASM corpus transfer and parity is OSR-30",
+    "No editor runtime, actual Safari or OS IME acceptance from smoke"
+  ]
+}

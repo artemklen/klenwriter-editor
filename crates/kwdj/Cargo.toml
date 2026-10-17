@@ -2,14 +2,20 @@
 name = "editor-internal-kwdj"
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
+rust-version = "1.89.0"
 license.workspace = true
 repository.workspace = true
 publish.workspace = true
-description = "Internal kwdj workspace boundary; pre-alpha bootstrap"
+description = "Closed KWDJ v1 profile, native codec and generic document admission"
 
 [lints]
 workspace = true
 
 [dependencies]
 editor_core.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_path_to_error = "=0.1.20"
+thiserror = "=1.0.69"
+uuid = { version = "=1.23.3", features = ["serde"], default-features = false }
+url = "=2.5.8"
