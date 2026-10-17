@@ -2,10 +2,17 @@
 //! Generic operation algebra and trusted profile phases, independent of engine.
 
 use crate::candidate::CandidateRead;
-use crate::document::{Attribute, Document, Mark, Primitive};
+use crate::document::{Attribute, Document, Mark, Node, Primitive};
 use crate::limits::{LimitExceeded, check};
-use crate::positions::Utf16Offset;
+use crate::positions::{Position, Selection, Utf16Offset};
 use crate::profile::FrozenProfile;
+
+/// One exact-key delta applied uniformly to every selected text run.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MarkEdit {
+    Upsert(Mark),
+    Remove { type_id: String },
+}
 
 /// All variants prepare candidates; only the engine owns publication. Transform
 /// preserves text/marks/children; incompatible final shapes refuse atomically.
@@ -33,6 +40,22 @@ pub enum Operation<I> {
     SetMarks {
         leaf: I,
         marks: Vec<Mark>,
+    },
+    PatchMarkRange {
+        range: Selection<I>,
+        edits: Vec<MarkEdit>,
+    },
+    /// Replace one inline-parent range with an optional single leaf prototype:
+    /// Text has text; HardBreak/InlineAtom have none; every prototype is childless.
+    /// The profile supplies type/metadata and final semantic validation.
+    ReplaceInlineRange {
+        range: Selection<I>,
+        inserted: Option<Node>,
+    },
+    MoveInlineGroup {
+        nodes: Vec<I>,
+        parent: I,
+        before_index: usize,
     },
     Transform {
         node: I,
@@ -65,6 +88,35 @@ impl<I> Operation<I> {
         self,
         mut resolve: impl FnMut(I) -> Result<J, E>,
     ) -> Result<Operation<J>, E> {
+        fn position<I, J, E>(
+            position: Position<I>,
+            resolve: &mut impl FnMut(I) -> Result<J, E>,
+        ) -> Result<Position<J>, E> {
+            Ok(match position {
+                Position::Text {
+                    leaf,
+                    utf16,
+                    affinity,
+                } => Position::Text {
+                    leaf: resolve(leaf)?,
+                    utf16,
+                    affinity,
+                },
+                Position::Child {
+                    parent,
+                    index,
+                    affinity,
+                } => Position::Child {
+                    parent: resolve(parent)?,
+                    index,
+                    affinity,
+                },
+                Position::Edge { node, side } => Position::Edge {
+                    node: resolve(node)?,
+                    side,
+                },
+            })
+        }
         Ok(match self {
             Self::ReplaceText {
                 leaf,
@@ -93,6 +145,32 @@ impl<I> Operation<I> {
             Self::SetMarks { leaf, marks } => Operation::SetMarks {
                 leaf: resolve(leaf)?,
                 marks,
+            },
+            Self::PatchMarkRange { range, edits } => Operation::PatchMarkRange {
+                range: Selection {
+                    anchor: position(range.anchor, &mut resolve)?,
+                    focus: position(range.focus, &mut resolve)?,
+                },
+                edits,
+            },
+            Self::ReplaceInlineRange { range, inserted } => Operation::ReplaceInlineRange {
+                range: Selection {
+                    anchor: position(range.anchor, &mut resolve)?,
+                    focus: position(range.focus, &mut resolve)?,
+                },
+                inserted,
+            },
+            Self::MoveInlineGroup {
+                nodes,
+                parent,
+                before_index,
+            } => Operation::MoveInlineGroup {
+                nodes: nodes
+                    .into_iter()
+                    .map(&mut resolve)
+                    .collect::<Result<Vec<_>, _>>()?,
+                parent: resolve(parent)?,
+                before_index,
             },
             Self::Transform {
                 node,

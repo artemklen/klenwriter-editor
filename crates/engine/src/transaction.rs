@@ -4,6 +4,8 @@
 
 use std::collections::VecDeque;
 
+use editor_core::commands::{LocalRef, SelectionIntent};
+use editor_core::document::Mark;
 use editor_core::limits::LimitExceeded;
 use editor_core::positions::{Position, Selection};
 use editor_core::transaction::{Operation, ValidationStats, WorkLimits, WorkUsage};
@@ -15,23 +17,8 @@ use crate::tree::{CommitMaterial, TreeError};
 
 /// A path begins with a root returned by an earlier operation, then child
 /// indices. It cannot supply fabricated session IDs or refer forward in a batch.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum NodeRef {
-    Existing(NodeId),
-    Created { operation: usize, path: Vec<usize> },
-}
-impl From<NodeId> for NodeRef {
-    fn from(id: NodeId) -> Self {
-        Self::Existing(id)
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
-pub enum SelectionUpdate {
-    #[default]
-    MapCurrent,
-    Set(Option<Selection<NodeRef>>),
-}
+pub type NodeRef = LocalRef<NodeId>;
+pub type SelectionUpdate = SelectionIntent<NodeId>;
 
 /// Every host setting tightens a distribution ceiling. The journal's actual
 /// retained bound also applies when an individual transaction requests more.
@@ -131,7 +118,7 @@ pub struct JournalSummary {
     pub evicted: u64,
     pub oldest_revision: u64,
 }
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct JournalEntrySummary {
     pub before_revision: u64,
     pub after_revision: u64,
@@ -141,6 +128,8 @@ pub struct JournalEntrySummary {
     pub bytes: usize,
     pub selection_before: Option<Selection<NodeId>>,
     pub selection_after: Option<Selection<NodeId>>,
+    pub stored_marks_before: Option<Vec<Mark>>,
+    pub stored_marks_after: Option<Vec<Mark>>,
 }
 
 /// Returned after coherent publication. There are no callbacks inside dispatch.
@@ -150,6 +139,8 @@ pub struct CommitEvent {
     pub selection_epoch: u64,
     pub selection_before: Option<Selection<NodeId>>,
     pub selection_after: Option<Selection<NodeId>>,
+    pub stored_marks_before: Option<Vec<Mark>>,
+    pub stored_marks_after: Option<Vec<Mark>>,
     pub map: PositionMap<NodeId>,
     pub changed_nodes: Vec<NodeId>,
     pub journal: JournalSummary,
@@ -171,6 +162,7 @@ pub enum DispatchOutcome<E> {
         revision: u64,
         selection_epoch: u64,
         selection_changed: bool,
+        stored_marks_changed: bool,
         map: PositionMap<NodeId>,
         work: WorkUsage,
     },
@@ -186,6 +178,8 @@ pub(crate) struct JournalEntry {
     pub(crate) map: PositionMap<NodeId>,
     pub(crate) before: Option<Selection<NodeId>>,
     pub(crate) after: Option<Selection<NodeId>>,
+    pub(crate) marks_before: Option<Vec<Mark>>,
+    pub(crate) marks_after: Option<Vec<Mark>>,
     pub(crate) bytes: usize,
 }
 impl JournalEntry {
@@ -199,6 +193,8 @@ impl JournalEntry {
             bytes: self.bytes,
             selection_before: self.before,
             selection_after: self.after,
+            stored_marks_before: self.marks_before.clone(),
+            stored_marks_after: self.marks_after.clone(),
         }
     }
 }

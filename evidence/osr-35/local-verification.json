@@ -1,0 +1,115 @@
+{
+  "issue": "OSR-35",
+  "base": "ac80d99babfc2bb47128b5ad683c17766f63a303",
+  "scope": "Final implementation working source; exact committed source CI follows",
+  "checks": [
+    {
+      "name": "msrv",
+      "command": [
+        "cargo",
+        "+1.89.0",
+        "test",
+        "--locked",
+        "-p",
+        "klenwriter-editor-core",
+        "-p",
+        "klenwriter-editor-kwdj"
+      ],
+      "startedAt": "2026-10-17T21:54:08.609360+00:00",
+      "exitCode": 0,
+      "seconds": 4.88,
+      "log": "/tmp/osr-35-local-msrv.log",
+      "bytes": 11201,
+      "sha256": "4fdb0b41f1fb24f48138fe67bce4fd946c662b7302a08e79372e645b08cfbbe2"
+    },
+    {
+      "name": "workspace",
+      "command": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "startedAt": "2026-10-17T21:54:13.487279+00:00",
+      "exitCode": 0,
+      "seconds": 109.53,
+      "log": "/tmp/osr-35-local-workspace.log",
+      "bytes": 31015,
+      "sha256": "9fd4d499895f38dcfc7bec8327cdac5b26eb3ea8d04b32e4ff1c8cc29802bbea"
+    },
+    {
+      "name": "m0-browser",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 0,
+      "log": "/tmp/osr-35-m0-test.log",
+      "bytes": 13769,
+      "sha256": "2a3de61b7e721f8a37adf6230031b80e7326bf075bbd461faf3bc5659fabe7a0",
+      "scope": "M0 input source hashes unchanged; captured report start/duration and success verified independently"
+    },
+    {
+      "name": "summary",
+      "command": [
+        "node",
+        "scripts/summarize-evidence.mjs"
+      ],
+      "exitCode": 0,
+      "log": "/tmp/osr-35-m0-summary.log",
+      "bytes": 86,
+      "sha256": "a355364952cc8ac890fcd4c86e4246dad93920c4fb10991c8f514908a4bdbc53",
+      "scope": "M0 input source hashes unchanged; captured report start/duration and success verified independently"
+    }
+  ],
+  "result": "PASS",
+  "summary": {
+    "commandLiteralCases": 24,
+    "generatedEnterCases": 64,
+    "generatedInteriorRefusals": 4,
+    "fullQueryRepetitionsPerLiteralOrGenerated": 4,
+    "actualStructuralGroups": 7,
+    "actualInlineGroups": 8,
+    "futureTypingCommits": 2,
+    "genericNonKwdjCommandTests": 9,
+    "nativeWasmEqual": true,
+    "sourceAndArtifactHashes": 30,
+    "ordinarySnapshotCodecHooks": 0,
+    "zeroHookInstrumentationScope": "24 literal +68 generated +future typing; supplemental structural/inline use plain actual KWDJ profile",
+    "m0BrowserScenarios": 102,
+    "m0Failures": 0,
+    "rustTestsIncludingDoctests": 170,
+    "rustGroupCounts": [
+      16,
+      1,
+      59,
+      52,
+      9,
+      3,
+      9,
+      6,
+      5,
+      2,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      2,
+      0
+    ],
+    "browserSmoke": 12,
+    "codecComparisons": 180,
+    "sessionFoundationGroups": 7,
+    "transactionGroups": 5,
+    "typedTransactionRefusals": 11
+  },
+  "limits": "Portable semantics compared exactly; target-dependent work/journal byte counts compared only within each target. No public SDK/descriptor/mounted input/host/history acceptance claimed.",
+  "initialLocalCheck": {
+    "result": "Local all-target clippy fixture type-complexity failure; fixed with test-only RunFixture/BlockFixture aliases before final successful run",
+    "log": "/tmp/osr-35-initial-local-workspace.log",
+    "sha256": "726edf5aa81b35a3cfae90f938d76fc1b963312ef50c9ff134aa276fa981fbb0",
+    "ciTriggered": false
+  }
+}

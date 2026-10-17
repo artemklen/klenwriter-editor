@@ -60,6 +60,10 @@ impl<'a> KwdjProfile<'a> {
         }
     }
 
+    pub(crate) fn identities(&self) -> &dyn IdentityResolver {
+        self.identities
+    }
+
     pub fn limits(&self) -> Limits {
         self.limits
     }

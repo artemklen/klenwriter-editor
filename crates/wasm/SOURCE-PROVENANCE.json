@@ -92,6 +92,11 @@
       "issue": "OSR-34",
       "path": "crates/kwdj/src/normalize.rs",
       "change": "Pure canonical newline/UUID/mark decisions shared with explicit editing normalization; import checkpoint remains separate"
+    },
+    {
+      "issue": "OSR-35",
+      "path": "crates/kwdj/src/validate.rs",
+      "change": "Expose one crate-private closed authoritative mark-set validator to command/final typing policy; existing document walker rules are shared, not copied"
     }
   ],
   "corpusProvenance": "provenance/kwdj-corpus.json",
@@ -147,5 +152,39 @@
     ],
     "privacy": "Literal/generated synthetic fixtures only; no private documents, production captures or credentials",
     "dependencies": "No new runtime dependencies; pinned Unicode segmentation inherited from OSR-33"
+  },
+  "originalCommands": {
+    "issue": "OSR-35",
+    "source": "Original implementation and independent synthetic literal/generated fixtures in this repository; no third-party or CMS implementation copied",
+    "license": "MIT OR Apache-2.0",
+    "paths": [
+      "crates/core/src/commands.rs",
+      "crates/engine/src/commands.rs",
+      "crates/engine/src/command_tests.rs",
+      "crates/kwdj/src/commands/mod.rs",
+      "crates/kwdj/src/commands/inline.rs",
+      "crates/kwdj/src/commands/block.rs",
+      "contracts/commands/v1/vectors.json",
+      "crates/wasm/examples/support/command_observer.rs",
+      "crates/wasm/examples/support/command_structural.rs",
+      "crates/wasm/examples/support/command_inline.rs",
+      "crates/wasm/examples/command_native.rs",
+      "crates/wasm/examples/command_probe.rs",
+      "crates/wasm/tests/commands.rs",
+      "tests/commands.node.mjs",
+      "crates/wasm/tests/command_structural.rs",
+      "crates/wasm/tests/command_inline.rs"
+    ],
+    "extendedOriginalFoundation": [
+      "crates/core/src/transaction.rs",
+      "crates/engine/src/tree.rs",
+      "crates/engine/src/session.rs",
+      "crates/engine/src/dispatch.rs",
+      "crates/engine/src/transaction.rs",
+      "crates/kwdj/src/session_profile.rs"
+    ],
+    "dependencies": "No new runtime dependencies; pinned Unicode segmentation inherited from OSR-33",
+    "privacy": "Generated/literal synthetic documents, fixed fixture UUIDs and example URLs only; no private documents, production captures or credentials",
+    "authority": "Historical feature disposition references OSR-60 source audit; exact command goldens are independently authored, not CMS mounted acceptance. Codec authority remains contracts/kwdj/v1."
   }
 }

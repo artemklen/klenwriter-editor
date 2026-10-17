@@ -50,6 +50,12 @@ run('cargo', ['build', '--locked', '--release', '--target', 'wasm32-unknown-unkn
   '-p', identity.rust.wasm.name, '--example', 'transaction_probe']);
 run(bindgen, ['target/wasm32-unknown-unknown/release/examples/transaction_probe.wasm',
   '--target', 'web', '--out-dir', 'artifacts/transactions', '--out-name', 'probe']);
+// Command capabilities run the same publication-free prepare and real execute.
+// This observer is test-only and never enters npm dist.
+run('cargo', ['build', '--locked', '--release', '--target', 'wasm32-unknown-unknown',
+  '-p', identity.rust.wasm.name, '--example', 'command_probe']);
+run(bindgen, ['target/wasm32-unknown-unknown/release/examples/command_probe.wasm',
+  '--target', 'web', '--out-dir', 'artifacts/commands', '--out-name', 'probe']);
 writeDependencyNotices();
 // Clean all emitted package files so stale declarations/assets cannot mask omissions.
 const packages = ['wasm', 'sdk', 'dom', 'kwdj', 'vanilla', 'angular'];

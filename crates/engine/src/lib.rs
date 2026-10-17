@@ -8,6 +8,10 @@ pub mod transaction;
 pub mod tree;
 
 pub use identity::{NodeId, SessionKey};
+pub use session::commands;
+pub use session::commands::{
+    CommandAvailability, CommandEffect, CommandError, CommandOutcome, CommandRequest,
+};
 pub use session::{AccessMode, Session, SessionError, SessionState, StateError};
 pub use transaction::{
     CommitEvent, DispatchOutcome, JournalEntrySummary, JournalSummary, NodeRef, SelectionUpdate,

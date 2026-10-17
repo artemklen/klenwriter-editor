@@ -6,6 +6,7 @@ pub const PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub mod admission;
 pub mod candidate;
+pub mod commands;
 pub mod document;
 pub mod json;
 pub mod limits;

@@ -555,6 +555,143 @@ pub(crate) fn validate_discarded_metadata<'n>(
     Ok(())
 }
 
+/// Stored typing marks use the same canonicalizer, closed wire Mark model and
+/// authoritative mark rules as document text. No synthetic node/document is
+/// admitted, and all metadata copying is charged before it occurs.
+pub(crate) fn canonical_command_marks(
+    marks: &[editor_core::document::Mark],
+    identities: &dyn IdentityResolver,
+    limits: Limits,
+    work: &mut WorkMeter,
+) -> Result<Vec<editor_core::document::Mark>, KwdjError> {
+    use editor_core::admission::{PreflightBudget, preflight_node_fields};
+    use editor_core::document::{Attribute, Attributes};
+    use serde_json::{Map, Value};
+    let remaining = work.limits();
+    let spent = work.usage();
+    let bounded = PreflightBudget {
+        values: remaining.units.saturating_sub(spent.units),
+        payload_bytes: remaining.bytes.saturating_sub(spent.bytes),
+        depth: PreflightBudget::default().depth,
+    };
+    let usage = preflight_node_fields("", None, &Attributes::new(), marks, 0, bounded)
+        .map_err(KwdjError::operational)?;
+    work.charge_units(usage.values)
+        .map_err(KwdjError::operational)?;
+    work.charge_bytes(
+        usage
+            .payload_bytes
+            .saturating_mul(16)
+            .saturating_add(usage.values.saturating_mul(256)),
+    )
+    .map_err(KwdjError::operational)?;
+    let mut values = Vec::with_capacity(marks.len());
+    for mark in marks {
+        let kind = crate::core_bridge::local_name(
+            &mark.type_id,
+            "/stored_marks/type",
+            KwdjErrorCode::UnknownMark,
+        )?;
+        let mut value = Map::new();
+        value.insert("type".into(), Value::String(kind.into()));
+        if !mark.attributes.is_empty() {
+            value.insert(
+                "attrs".into(),
+                crate::core_bridge::encode_attributes(&mark.attributes, "/stored_marks/attrs")?,
+            );
+        }
+        values.push(Value::Object(value));
+    }
+    let mut envelope = serde_json::json!({"marks": values});
+    // This envelope contains only mark metadata; scan_known_types retains the
+    // existing explicit unit-variant unknown-field guard before normalization.
+    crate::scan_known_types(&envelope, "/stored_marks")?;
+    // Absent color tokens may normalize away, but malformed attributes must
+    // still pass the same closed Mark shape before that erasure.
+    for value in envelope
+        .get("marks")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+    {
+        let mut shape = value.clone();
+        crate::normalize::normalize_value(&mut shape, "/stored_marks", &mut Vec::new())?;
+        let kind = shape
+            .get("type")
+            .and_then(Value::as_str)
+            .unwrap_or("")
+            .to_owned();
+        let token = shape
+            .get("attrs")
+            .and_then(|attrs| attrs.get("token"))
+            .and_then(Value::as_str);
+        if crate::normalize::absent_token_mark(&kind, token) {
+            shape["attrs"]["token"] = Value::String(
+                if kind == "text_color" {
+                    "muted"
+                } else {
+                    "accent"
+                }
+                .into(),
+            );
+        }
+        serde_json::from_value::<Mark>(shape)
+            .map_err(|_| KwdjError::new(KwdjErrorCode::InvalidStructure, "/stored_marks"))?;
+    }
+    crate::normalize::normalize_value(&mut envelope, "/stored_marks", &mut Vec::new())?;
+    let normalized = envelope
+        .get("marks")
+        .and_then(Value::as_array)
+        .map(Vec::as_slice)
+        .unwrap_or_default();
+    let mut typed = Vec::with_capacity(normalized.len());
+    for value in normalized {
+        typed.push(
+            serde_json::from_value::<Mark>(value.clone())
+                .map_err(|_| KwdjError::new(KwdjErrorCode::InvalidStructure, "/stored_marks"))?,
+        );
+    }
+    let mut state = State {
+        profile: Profile::Prose,
+        identities,
+        node_count: 0,
+        limits: limits.effective(),
+        media: Vec::new(),
+        references: Vec::new(),
+        resolved_media: HashSet::new(),
+        resolved_references: HashSet::new(),
+        work: Some(work),
+    };
+    if !typed.is_empty() {
+        validate_marks(Some(&typed), "/stored_marks", &mut state)?;
+    }
+    let mut result = Vec::with_capacity(typed.len());
+    for (mark, value) in typed.iter().zip(normalized) {
+        let mut attributes = Attributes::new();
+        if let Some(attrs) = value.get("attrs").and_then(Value::as_object) {
+            for (key, value) in attrs {
+                let value = match value {
+                    Value::Bool(value) => Attribute::Boolean(*value),
+                    Value::Number(value) => Attribute::Number(value.clone()),
+                    Value::String(value) => Attribute::String(value.clone()),
+                    _ => {
+                        return Err(KwdjError::new(
+                            KwdjErrorCode::InvalidStructure,
+                            "/stored_marks/attrs",
+                        ));
+                    }
+                };
+                attributes.insert(key.clone(), value);
+            }
+        }
+        result.push(editor_core::document::Mark {
+            type_id: format!("{}/{}", crate::PROFILE_ID, mark.kind()),
+            attributes,
+        });
+    }
+    Ok(result)
+}
+
 fn validate_stanza_blank_lines(blank_lines: u64, path: &str) -> Result<(), KwdjError> {
     if blank_lines == 0 {
         return Err(KwdjError::new(KwdjErrorCode::InvalidVerse, path));

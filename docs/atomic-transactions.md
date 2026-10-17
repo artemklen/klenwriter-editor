@@ -10,7 +10,8 @@ Engine зависит только от generic core; KWDJ реализует bo
 сохранение payload при transform, fragments, move/duplicate/remove. `NodeRef::Created`
 адресует результат предыдущей операции по bounded child path. Прямые NodeId остаются
 непрозрачными; forward refs и stale session/generation/revision отказываются.
-Range marks выражаются split → set marks → normalization. User text/marks/leaf removal
+OSR-34 range marks выражались split → set marks → normalization; OSR-35 добавляет
+[bounded uniform range operations](commands.md), включая whole EGC через styled leaves. User text/marks/leaf removal
 используют EGC boundaries через соседние styled leaves. Scalar privilege доступна
 только внутреннему normalization origin.
 

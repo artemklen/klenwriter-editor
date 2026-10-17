@@ -67,6 +67,13 @@ owned journal и typed refusals. Lane входит в `npm run check`, сохр�
 описывает лимиты и publication gate. User-facing undo/grouping и typed SDK
 выполняются в OSR-36/63.
 
+`npm run test:commands` сравнивает настоящий KWDJ command/capability prepare и
+execute на native/compiled WASM с независимыми literal vectors, future typing,
+Unicode и отказами. Lane входит в `npm run check`; report с hashes —
+`artifacts/command-report.json`. [Контракт OSR-35](docs/commands.md) и
+[baseline disposition](docs/command-parity.md) отделяют headless доказательства
+от будущих mounted/SDK/host gates.
+
 ## Артефакты и ограничения
 
 `artifacts/dependencies.json` содержит зафиксированные direct/transitive версии,

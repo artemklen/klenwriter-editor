@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 //! Admission, immutable profile context, lifecycle and guarded read/preparation.
 
+use editor_core::document::Mark;
 use editor_core::positions::{Position, Selection};
 use editor_core::profile::{AdmissionMode, BindingError, FrozenProfile, ProfileBinding};
 
@@ -9,6 +10,8 @@ use crate::mapping::{MapError, MapResult};
 use crate::transaction::{CommitJournal, JournalEntrySummary, JournalSummary};
 use crate::tree::{AddressTree, TreeDraft, TreeError, TreeNode};
 
+#[path = "commands.rs"]
+pub mod commands;
 #[path = "dispatch.rs"]
 mod dispatch;
 
@@ -67,6 +70,7 @@ pub struct Session<P: FrozenProfile> {
     state: SessionState,
     revision: u64,
     selection: Option<Selection<NodeId>>,
+    stored_marks: Option<Vec<Mark>>,
     selection_epoch: u64,
     journal: CommitJournal,
     dirty: bool,
@@ -99,6 +103,7 @@ impl<P: FrozenProfile> Session<P> {
             state: SessionState::Open(access),
             revision: 0,
             selection: None,
+            stored_marks: None,
             selection_epoch: 0,
             journal: CommitJournal::default(),
             dirty: false,
@@ -116,6 +121,13 @@ impl<P: FrozenProfile> Session<P> {
     }
     pub fn selection_epoch(&self) -> u64 {
         self.selection_epoch
+    }
+
+    /// Future typing override; None inherits the profile's caret policy, while
+    /// Some(empty) explicitly requests plain text. This is session-local state.
+    pub fn stored_marks(&self, key: SessionKey) -> Result<Option<&[Mark]>, SessionError<P::Error>> {
+        self.guard(key, None)?;
+        Ok(self.stored_marks.as_deref())
     }
     pub fn binding(&self) -> &ProfileBinding {
         &self.binding
@@ -208,6 +220,7 @@ impl<P: FrozenProfile> Session<P> {
             .checked_add(1)
             .ok_or(StateError::CounterExhausted)?;
         self.selection = Some(selection);
+        self.stored_marks = None;
         self.selection_epoch = epoch;
         Ok(())
     }
@@ -272,6 +285,7 @@ impl<P: FrozenProfile> Session<P> {
         self.state = SessionState::Open(access);
         self.revision = 0;
         self.selection = None;
+        self.stored_marks = None;
         self.selection_epoch = 0;
         self.journal = CommitJournal::default();
         self.dirty = false;
@@ -281,6 +295,7 @@ impl<P: FrozenProfile> Session<P> {
     pub fn close(&mut self, key: SessionKey) -> Result<(), SessionError<P::Error>> {
         self.guard(key, None)?;
         self.state = SessionState::Closed;
+        self.stored_marks = None;
         Ok(())
     }
 
