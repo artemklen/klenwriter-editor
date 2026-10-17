@@ -4,11 +4,11 @@
 use editor_core::document::Mark;
 use editor_core::positions::{Affinity, Edge, Position, Selection, Utf16Offset};
 use editor_core::profile::{AdmissionMode, FrozenProfile};
-use editor_core::transaction::WorkUsage;
+use editor_core::transaction::{Operation, WorkUsage};
 use editor_engine::mapping::MapResult;
 use editor_engine::{
     AccessMode, CommandAvailability, CommandEffect, CommandOutcome, CommandRequest,
-    DispatchOutcome, JournalEntrySummary, JournalSummary, NodeId, Session,
+    DispatchOutcome, JournalEntrySummary, JournalSummary, NodeId, Session, Transaction,
 };
 use editor_kwdj::commands::{BlockTarget, KWDJ_SLASH_CANDIDATES, KwdjIntent, ListKind};
 use editor_kwdj::{
@@ -765,6 +765,192 @@ fn wrapper_selection_contexts() -> Value {
     json!({"id":"whole_selection_wrapper_context","status":"passed","cases":cases})
 }
 
+fn normalization_map_regressions() -> Value {
+    let mut cases = Vec::new();
+    for forward in [true, false] {
+        let original = wire(json!([{"type":"paragraph","content":[
+            {"type":"text","text":"A"},
+            {"type":"text","text":"e","marks":[{"type":"strong"}]},
+            {"type":"text","text":"\u{301}","marks":[{"type":"emphasis"}]},
+            {"type":"text","text":"B"}
+        ]}]));
+        let mut session = open(&original);
+        let parent = at(&session, &[0]);
+        let [a, base, accent, b] = [0, 1, 2, 3].map(|i| at(&session, &[0, i]));
+        let before = session.revision();
+        let old_caret = Position::Child {
+            parent,
+            index: if forward { 4 } else { 0 },
+            affinity: Affinity::Before,
+        };
+        select(&mut session, caret(old_caret));
+        let transaction = Transaction::new(
+            session.key(),
+            before,
+            vec![Operation::MoveInlineGroup {
+                nodes: vec![base.into(), accent.into()],
+                parent: parent.into(),
+                before_index: if forward { 4 } else { 0 },
+            }],
+        );
+        let DispatchOutcome::Changed(event) = session.dispatch(transaction) else {
+            panic!("whole EGC move did not commit");
+        };
+        let content = if forward {
+            json!([
+                {"type":"text","text":"AB"},
+                original["content"][0]["content"][1],
+                original["content"][0]["content"][2]
+            ])
+        } else {
+            json!([
+                original["content"][0]["content"][1],
+                original["content"][0]["content"][2],
+                {"type":"text","text":"AB"}
+            ])
+        };
+        assert_eq!(
+            doc(&session),
+            wire(json!([{"type":"paragraph","content":content}]))
+        );
+        assert_eq!(at(&session, &[0, if forward { 0 } else { 2 }]), a);
+        assert_eq!(at(&session, &[0, if forward { 1 } else { 0 }]), base);
+        assert_eq!(at(&session, &[0, if forward { 2 } else { 1 }]), accent);
+        assert!(session.node(session.key(), b).is_err());
+        assert!(event.normalization_operations > 0);
+        let before_gaps = if forward {
+            [0, 1, 1, 1, 1]
+        } else {
+            [0, 3, 3, 3, 3]
+        };
+        let after_gaps = if forward {
+            [0, 1, 1, 1, 3]
+        } else {
+            [2, 3, 3, 3, 3]
+        };
+        for (affinity, indices) in [
+            (Affinity::Before, before_gaps),
+            (Affinity::After, after_gaps),
+        ] {
+            for (index, mapped_index) in indices.into_iter().enumerate() {
+                let old = Position::Child {
+                    parent,
+                    index,
+                    affinity,
+                };
+                let expected = MapResult::Mapped(Position::Child {
+                    parent,
+                    index: mapped_index,
+                    affinity,
+                });
+                assert_eq!(event.map.map(old), expected);
+                assert_eq!(
+                    session.map_position(session.key(), before, old).unwrap(),
+                    expected
+                );
+            }
+        }
+        let expected_caret = Position::Child {
+            parent,
+            index: if forward { 1 } else { 0 },
+            affinity: Affinity::Before,
+        };
+        assert_eq!(event.selection_before, Some(caret(old_caret)));
+        assert_eq!(event.selection_after, Some(caret(expected_caret)));
+        assert_eq!(
+            session.selection(session.key()).unwrap(),
+            event.selection_after
+        );
+        assert_eq!(
+            session
+                .map_position(
+                    session.key(),
+                    before,
+                    Position::Text {
+                        leaf: b,
+                        utf16: Utf16Offset::new(0),
+                        affinity: Affinity::Before
+                    }
+                )
+                .unwrap(),
+            MapResult::Mapped(Position::Text {
+                leaf: a,
+                utf16: Utf16Offset::new(1),
+                affinity: Affinity::Before
+            })
+        );
+        cases.push(json!({"id":if forward {"same_parent_group_forward"} else {"same_parent_group_backward"},"status":"passed","original_parent_gaps_checked":10,"event_and_journal_maps_equal":true,"whole_egc_ids_and_marks_preserved":true,"joined_right_leaf_retired":true,"selection_matches_map":true,"canonical_json":doc(&session)}));
+    }
+    for edge in [false, true] {
+        for reverse in [false, true] {
+            let mut session = open(&wire(json!([{"type":"paragraph","content":[
+                {"type":"text","text":"𝄞"},
+                {"type":"text","text":"b","marks":[{"type":"strong"}]}
+            ]}])));
+            let left = at(&session, &[0, 0]);
+            let right = at(&session, &[0, 1]);
+            let start = if edge {
+                Position::Edge {
+                    node: left,
+                    side: Edge::After,
+                }
+            } else {
+                text(left, 2)
+            };
+            let end = text(right, 1);
+            let before = session.revision();
+            select(
+                &mut session,
+                if reverse {
+                    Selection {
+                        anchor: end,
+                        focus: start,
+                    }
+                } else {
+                    Selection {
+                        anchor: start,
+                        focus: end,
+                    }
+                },
+            );
+            let req = request(
+                &session,
+                KwdjIntent::ToggleMark {
+                    mark: Mark {
+                        type_id: "org.klenwriter.kwdj/strong".into(),
+                        attributes: Default::default(),
+                    },
+                },
+            );
+            changed(&mut session, &req);
+            let expected_start = text(left, 2);
+            let expected_end = text(left, 3);
+            assert_eq!(doc(&session), wire(json!([p("𝄞b")])));
+            assert_eq!(
+                session.selection(session.key()).unwrap(),
+                Some(if reverse {
+                    Selection {
+                        anchor: expected_end,
+                        focus: expected_start,
+                    }
+                } else {
+                    Selection {
+                        anchor: expected_start,
+                        focus: expected_end,
+                    }
+                })
+            );
+            assert_eq!(
+                session.map_position(session.key(), before, start).unwrap(),
+                MapResult::Mapped(expected_start)
+            );
+            assert!(session.node(session.key(), right).is_err());
+            cases.push(json!({"id":format!("join_seam_{}_{}",if edge {"edge"} else {"text"},if reverse {"reverse"} else {"forward"}),"status":"passed","command":"toggle-mark","query_execute_equal":true,"anchor_utf16":if reverse {3} else {2},"focus_utf16":if reverse {2} else {3},"canonical_json":doc(&session)}));
+        }
+    }
+    json!({"id":"normalization_position_maps","status":"passed","cases":cases,"case_total":6})
+}
+
 pub fn observe() -> Value {
     let groups = vec![
         structural_payload(),
@@ -774,6 +960,7 @@ pub fn observe() -> Value {
         refusals(),
         late_limits(),
         wrapper_selection_contexts(),
+        normalization_map_regressions(),
     ];
-    json!({"format":"klenwriter-editor-command-structural-observations","version":1,"status":"passed","groups":groups,"group_total":7,"scope":"Actual Session<KwdjProfile> structural and refusal witnesses; explicit checkpoint snapshots only"})
+    json!({"format":"klenwriter-editor-command-structural-observations","version":1,"status":"passed","groups":groups,"group_total":8,"scope":"Actual Session<KwdjProfile> structural/refusal commands and raw whole-EGC move map witnesses; explicit checkpoint snapshots only"})
 }

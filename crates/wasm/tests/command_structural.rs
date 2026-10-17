@@ -6,5 +6,5 @@ mod observer;
 fn actual_kwdj_structural_commands_preserve_payload_and_atomicity() {
     let report = observer::observe();
     assert_eq!(report["status"], "passed", "{report:#}");
-    assert_eq!(report["group_total"], 7);
+    assert_eq!(report["group_total"], 8);
 }

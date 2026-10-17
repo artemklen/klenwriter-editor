@@ -380,6 +380,20 @@ impl<N: Copy + Eq> StepMap<N> {
                 ))
             }
             (
+                Self::JoinText { left, left_len, .. },
+                Position::Edge {
+                    node,
+                    side: Edge::After,
+                },
+            ) if *left == node => Ok((
+                Position::Text {
+                    leaf: *left,
+                    utf16: Utf16Offset::new(*left_len),
+                    affinity: Affinity::After,
+                },
+                false,
+            )),
+            (
                 Self::JoinText {
                     left,
                     right,
@@ -802,6 +816,50 @@ mod tests {
             map.map(selection.focus),
             MapResult::Mapped(text("t", 4, Before))
         );
+    }
+
+    #[test]
+    fn join_preserves_left_end_edge_at_the_original_utf16_boundary() {
+        use Affinity::{After, Before};
+        // Literal text dimensions: left "Я😀" is 3 UTF-16 units and right
+        // "e\u{301}💻" is 4. The old left end is offset 3, not joined end 7.
+        let joined = PositionMap::new(
+            7,
+            8,
+            vec![
+                StepMap::JoinText {
+                    left: "left",
+                    right: "right",
+                    left_len: 3,
+                    right_len: 4,
+                },
+                StepMap::ChildDelete {
+                    parent: "p",
+                    index: 1,
+                    count: 1,
+                    old_len: 2,
+                },
+                StepMap::Retire {
+                    nodes: vec!["right"],
+                    parent: "p",
+                    index: 1,
+                },
+            ],
+        )
+        .unwrap();
+        let edge = |node, side| Position::Edge { node, side };
+        for (before, after) in [
+            (edge("left", Edge::After), text("left", 3, After)),
+            (text("left", 3, After), text("left", 3, After)),
+            (edge("left", Edge::Before), edge("left", Edge::Before)),
+            (text("left", 0, Before), text("left", 0, Before)),
+            (edge("right", Edge::Before), text("left", 3, Before)),
+            (text("right", 0, Before), text("left", 3, Before)),
+            (edge("right", Edge::After), edge("left", Edge::After)),
+            (text("right", 4, After), text("left", 7, After)),
+        ] {
+            assert_eq!(joined.map(before), MapResult::Mapped(after), "{before:?}");
+        }
     }
 
     #[test]

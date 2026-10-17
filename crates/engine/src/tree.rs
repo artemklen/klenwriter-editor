@@ -1328,7 +1328,7 @@ impl<A: Allocation> TreeDraft<'_, A> {
                     from_parent: source,
                     from_index: index,
                     to_parent: parent,
-                    to_index,
+                    to_index: before_index,
                     count: nodes.len(),
                     from_len,
                     to_len,
@@ -2083,7 +2083,7 @@ impl<A: Allocation> TreeDraft<'_, A> {
 #[cfg(test)]
 mod command_range_tests {
     use super::*;
-    use crate::mapping::PositionMap;
+    use crate::mapping::{MapResult, PositionMap};
     use editor_core::transaction::WorkLimits;
 
     fn marks(name: &str) -> Vec<Mark> {
@@ -2579,19 +2579,108 @@ mod command_range_tests {
             same.node(parent).unwrap().children(),
             &[ids[0], ids[3], ids[1], ids[2]]
         );
+        let parent_gap = |index, affinity| Position::Child {
+            parent,
+            index,
+            affinity,
+        };
+        let forward = PositionMap::new(0, 1, same.steps().to_vec()).unwrap();
+        assert_eq!(
+            forward.map(parent_gap(4, Affinity::Before)),
+            MapResult::Mapped(parent_gap(2, Affinity::Before)),
+            "the original destination gap must be adjusted exactly once"
+        );
+        // Parent gaps use the established remove+insert mapping. Source
+        // interiors collapse at the removed range; they do not follow IDs.
+        for (affinity, expected) in [
+            (Affinity::Before, [0, 1, 1, 1, 2]),
+            (Affinity::After, [0, 1, 1, 1, 4]),
+        ] {
+            for (index, expected) in expected.into_iter().enumerate() {
+                assert_eq!(
+                    forward.map(parent_gap(index, affinity)),
+                    MapResult::Mapped(parent_gap(expected, affinity)),
+                    "forward gap {index} {affinity:?}"
+                );
+            }
+        }
         assert!(matches!(
             same.steps(),
             [StepMap::ChildMove {
                 count: 2,
-                to_index: 2,
+                to_index: 4,
                 ..
             }]
         ));
-        let mut no_op = base.prepare();
-        no_op
-            .move_inline_group(&ids[1..3], parent, 2, &mut meter())
+        let mut backward = base.prepare();
+        backward
+            .move_inline_group(&ids[1..3], parent, 0, &mut meter())
             .unwrap();
-        assert_eq!(no_op.written_nodes(), 0);
+        assert_eq!(
+            backward.node(parent).unwrap().children(),
+            &[ids[1], ids[2], ids[0], ids[3]]
+        );
+        assert!(matches!(
+            backward.steps(),
+            [StepMap::ChildMove {
+                count: 2,
+                to_index: 0,
+                ..
+            }]
+        ));
+        let backward_map = PositionMap::new(0, 1, backward.steps().to_vec()).unwrap();
+        for (affinity, expected) in [
+            (Affinity::Before, [0, 3, 3, 3, 4]),
+            (Affinity::After, [2, 3, 3, 3, 4]),
+        ] {
+            for (index, expected) in expected.into_iter().enumerate() {
+                assert_eq!(
+                    backward_map.map(parent_gap(index, affinity)),
+                    MapResult::Mapped(parent_gap(expected, affinity)),
+                    "backward gap {index} {affinity:?}"
+                );
+            }
+        }
+        for (candidate, map) in [(&same, &forward), (&backward, &backward_map)] {
+            for id in &ids[1..3] {
+                assert_eq!(candidate.node(*id).unwrap().parent(), Some(parent));
+                assert_eq!(
+                    candidate.node(*id).unwrap().text(),
+                    base.node(*id).unwrap().text()
+                );
+                assert_eq!(
+                    candidate.node(*id).unwrap().marks(),
+                    base.node(*id).unwrap().marks()
+                );
+                for affinity in [Affinity::Before, Affinity::After] {
+                    for utf16 in 0..=1 {
+                        let position = Position::Text {
+                            leaf: *id,
+                            utf16: Utf16Offset::new(utf16),
+                            affinity,
+                        };
+                        assert_eq!(map.map(position), MapResult::Mapped(position));
+                    }
+                }
+            }
+        }
+        for before_index in 1..=3 {
+            let mut no_op = base.prepare();
+            no_op
+                .move_inline_group(&ids[1..3], parent, before_index, &mut meter())
+                .unwrap();
+            assert_eq!(no_op.written_nodes(), 0);
+            assert_eq!(no_op.prepared_copy_bytes(), 0);
+            assert!(no_op.steps().is_empty());
+            assert_eq!(no_op.node(parent).unwrap().children(), ids);
+            let identity = PositionMap::identity(0);
+            for affinity in [Affinity::Before, Affinity::After] {
+                for index in 0..=4 {
+                    let position = parent_gap(index, affinity);
+                    assert_eq!(identity.map(position), MapResult::Mapped(position));
+                }
+            }
+        }
         let mut refused = base.prepare();
         assert_eq!(
             refused.move_inline_group(&ids[1..2], other, 0, &mut meter()),

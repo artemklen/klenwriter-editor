@@ -1,5 +1,28 @@
 # OSR-35 local evidence
 
+## Mapping repair, iteration 2
+
+`repair-r2-command-report.json` and `repair-r2-local-verification.json` record
+the corrected source based on merge `bcd1b9440089653a26c5ee7aff5f79eddbe0dca6`.
+The actual native/WASM observer now has8 structural groups, including6 new map
+cases: forward/backward whole-EGC moves through KWDJ normalization and four
+ToggleMark cases comparing Edge/Text seams in both selection directions. The
+report binds31 source/artifact hashes, including `engine/src/mapping.rs`.
+
+The repair preserves the original destination in `MoveInlineGroup` maps and
+the original UTF-16 seam of `EdgeAfter(left)` during `JoinText`. Focused map
+regressions reproduced both defects before their fixes. Exact prepared CI and
+a fresh independent review of the repaired commit are required; the earlier
+review does not approve this source. The historical M0 run is reused locally
+only after its exact input hashes are reverified unchanged; it is explicitly
+labeled as an earlier execution.
+
+## Historical iteration 1
+
+The following original files remain unchanged evidence for source
+`627f0a7982d342bf23a0a59c0b019f2828f5b79d`. Successful checks and review missed
+the two mapping defects above and do not establish the repair's acceptance.
+
 `command-report.json` is emitted by `npm run test:commands` inside the full
 workspace gate. It compares actual native and compiled-WASM Session/provider
 behavior, including24 independent literal documents/carets,64 generated Unicode/
