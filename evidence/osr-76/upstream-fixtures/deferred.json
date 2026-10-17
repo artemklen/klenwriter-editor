@@ -1,0 +1,63 @@
+{
+  "fixture_schema_version": 1,
+  "fixtures": [
+    {
+      "id": "DOC-024",
+      "purpose": "Ten retained revisions may span schema versions; restore upconverts into a new revision without rewriting originals or exceeding the Content Model v2 cap.",
+      "classification": "deferred",
+      "cases": [
+        {
+          "name": "mixed_schema_restore",
+          "polarity": "positive",
+          "input": {
+            "kind": "retained_revisions",
+            "value": {
+              "revisions": [
+                { "sequence": 1, "schema_version": 1, "document": { "schema": "klenwriter.document", "schema_version": 1, "profile": "prose", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Revision 1" }] }] } },
+                { "sequence": 2, "schema_version": 2, "document": { "schema": "klenwriter.document", "schema_version": 2, "profile": "prose", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Future schema placeholder 2" }] }] } },
+                { "sequence": 3, "schema_version": 1, "document": { "schema": "klenwriter.document", "schema_version": 1, "profile": "prose", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Revision 3" }] }] } },
+                { "sequence": 4, "schema_version": 2, "document": { "schema": "klenwriter.document", "schema_version": 2, "profile": "prose", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Future schema placeholder 4" }] }] } },
+                { "sequence": 5, "schema_version": 1, "document": { "schema": "klenwriter.document", "schema_version": 1, "profile": "prose", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Revision 5" }] }] } },
+                { "sequence": 6, "schema_version": 2, "document": { "schema": "klenwriter.document", "schema_version": 2, "profile": "prose", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Future schema placeholder 6" }] }] } },
+                { "sequence": 7, "schema_version": 1, "document": { "schema": "klenwriter.document", "schema_version": 1, "profile": "prose", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Revision 7" }] }] } },
+                { "sequence": 8, "schema_version": 2, "document": { "schema": "klenwriter.document", "schema_version": 2, "profile": "prose", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Future schema placeholder 8" }] }] } },
+                { "sequence": 9, "schema_version": 1, "document": { "schema": "klenwriter.document", "schema_version": 1, "profile": "prose", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Revision 9" }] }] } },
+                { "sequence": 10, "schema_version": 2, "document": { "schema": "klenwriter.document", "schema_version": 2, "profile": "prose", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Future schema placeholder 10" }] }] } }
+              ],
+              "restore_sequence": 2
+            }
+          },
+          "kwdj": null,
+          "edit": null,
+          "expected": {
+            "outcome": "deferred",
+            "diagnostic_codes": [
+              "fixture.future_schema_not_defined",
+              "fixture.upconverter_not_available"
+            ],
+            "normalized_kwdj": null,
+            "public_html": null,
+            "full_text": null,
+            "search_index_text": null, "public_snippet_text": null,
+            "media_manifest": [],
+            "reference_manifest": [],
+            "notes": [
+              "KWDJ v1 is the first schema, so no real mixed-version restore can be asserted yet.",
+              "The schema_version=2 documents are non-normative placeholders and must be replaced by real v2 fixtures when v2 and v1-to-v2 upconversion are approved.",
+              "The eventual test must create a new current-version revision, keep original revision bytes unchanged, and apply KWC-39 pointer-safe pruning so no transaction commits eleven retained revisions."
+            ]
+          },
+          "pipeline_stages": [
+            "schema_upconversion",
+            "validate_normalize",
+            "editor_round_trip_unchanged",
+            "public_render",
+            "plain_text_projection",
+            "identity_manifest_extraction",
+            "determinism"
+          ]
+        }
+      ]
+    }
+  ]
+}

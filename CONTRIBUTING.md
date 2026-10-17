@@ -44,6 +44,12 @@ license/version/MSRV/target/size inventory, упаковку шести private 
 существующие M0 contract/artifact/performance-integrity checks.
 `npm test` сохраняет 102 browser scenarios M0 spike отдельно от workspace smoke.
 
+`npm run test:codec` после build запускает настоящий Node/WASM codec ABI v1
+против native на pinned synthetic snapshot: 60 codec inputs / 180 comparisons,
+typed admission/identity/u64 boundaries. Lane включён в `npm run check`;
+[контракт](docs/codec-v1.md) отделяет 1 deferred и 5 no-candidate cases и
+неисполняемые non-codec stages от pass. Temporary snapshot заменяется в OSR-30.
+
 ## Артефакты и ограничения
 
 `artifacts/dependencies.json` содержит зафиксированные direct/transitive версии,

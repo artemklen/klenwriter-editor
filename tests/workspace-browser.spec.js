@@ -1,6 +1,31 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 
+test('versioned codec transport preserves u64 and structured refusals under browser CSP', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/');
+  const observations = await page.evaluate(async () => {
+    const module = await import('/editor_wasm.js');
+    await module.default();
+    const options = JSON.stringify({ abi: 'kwdj-codec/1', identities: { media: [], references: [] } });
+    const raw = '{"schema":"klenwriter.document","schema_version":1,"profile":"poetry","content":[{"type":"verse","content":[{"type":"verse_line","content":[{"type":"text","text":"a"}]},{"type":"stanza_break","attrs":{"blank_lines":18446744073709551615}},{"type":"verse_line","content":[{"type":"text","text":"b"}]}]}]}';
+    return ['kwdjValidateV1', 'kwdjNormalizeV1', 'kwdjCanonicalV1'].map(name => ({
+      accepted: JSON.parse(module[name](new TextEncoder().encode(raw), options)),
+      refused: JSON.parse(module[name](new TextEncoder().encode(raw), JSON.stringify({ abi: 'kwdj-codec/1', identities: { media: [], references: [] }, budget: { raw_input_bytes: '0' } }))),
+      invalid: JSON.parse(module[name]({}, options)),
+    }));
+  });
+  for (const result of observations) {
+    expect(result.accepted.status).toBe('accepted');
+    expect(result.accepted.canonical_json).toContain('"blank_lines":18446744073709551615');
+    expect(result.refused.diagnostic.limit).toBe('raw_input_bytes');
+    expect(result.refused.diagnostic.maximum).toBe('0');
+    expect(result.invalid.diagnostic.code).toBe('codec.invalid_input_type');
+  }
+  expect(errors).toEqual([]);
+});
+
 test('compiled Rust artifact loads through web glue under CSP with static CSS', async ({ page }) => {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
