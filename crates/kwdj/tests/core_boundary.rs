@@ -88,7 +88,10 @@ fn every_profile_node_and_mark_round_trips_through_generic_snapshot() {
         assert_eq!(source.canonical_json(), restored.canonical_json());
         assert_eq!(source.media_manifest(), restored.media_manifest());
         assert_eq!(source.reference_manifest(), restored.reference_manifest());
-        assert_eq!(source.project_text(), restored.project_text());
+        assert_eq!(
+            source.project_text().unwrap(),
+            restored.project_text().unwrap()
+        );
         assert_eq!(
             source.document().structural_metrics(),
             editor_core::document::measure(&generic.children)

@@ -1,7 +1,15 @@
 use std::io::{self, BufRead};
 use serde_json::{json, Value};
-mod baseline { use klenwriter_domain::kwdj as api; include!("probe.rs"); }
-mod extracted { use editor_kwdj as api; include!("probe.rs"); }
+mod baseline {
+    use klenwriter_domain::kwdj as api;
+    fn project_document(doc: &api::ValidatedDocument) -> Result<api::ProjectionResult, &'static str> { Ok(doc.project_text()) }
+    include!("probe.rs");
+}
+mod extracted {
+    use editor_kwdj as api;
+    fn project_document(doc: &api::ValidatedDocument) -> Result<api::ProjectionResult, &'static str> { doc.project_text().map_err(|e| e.code()) }
+    include!("probe.rs");
+}
 fn main() {
     std::panic::set_hook(Box::new(|_| {}));
     for line in io::stdin().lock().lines() {

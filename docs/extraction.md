@@ -76,3 +76,10 @@ its lock update, restoring the original local domain modules. No data migration
 or storage-version rollback is necessary. Update core/profile and the native pin
 together in later reviewed changes; never substitute a floating branch or path
 in the delivered CMS dependency.
+
+Операционная обработка отказов проекций: [OSR-74](projection-budgets.md).
+
+Начиная с OSR-74 differential runner ожидает одну преднамеренную разницу: прежняя
+проекция u64::MAX паниковала, новая возвращает типизированный отказ при прежнем
+canonical JSON. Остальные 264 наблюдения должны точно совпадать; старые OSR-29/54
+evidence остаются историческими и не переписываются.

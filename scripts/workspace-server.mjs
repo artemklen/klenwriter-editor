@@ -6,6 +6,8 @@ const root = new URL('../', import.meta.url);
 const routes = new Map([
   ['/editor_wasm.js', ['packages/wasm/dist/editor_wasm.js', 'text/javascript']],
   ['/editor_wasm_bg.wasm', ['packages/wasm/dist/editor_wasm_bg.wasm', 'application/wasm']],
+  ['/projection-budget/probe.js', ['artifacts/projection-budget/probe.js', 'text/javascript']],
+  ['/projection-budget/probe_bg.wasm', ['artifacts/projection-budget/probe_bg.wasm', 'application/wasm']],
   ['/style.css', ['packages/dom/dist/style.css', 'text/css']],
 ]);
 http.createServer(async (req, res) => {

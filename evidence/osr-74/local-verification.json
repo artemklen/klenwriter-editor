@@ -1,0 +1,49 @@
+{
+  "issue": "OSR-74",
+  "sourceCommit": "c5679d8511bd87f3cb1f8acf06d3f69b3d11e1ba",
+  "logs": [
+    {
+      "path": "/tmp/osr-74-editor-check.log",
+      "bytes": 12431,
+      "sha256": "92d0a65a741b8133a1fae53e1eb1ed5d144d1c8b5f78b4088aa6ce8fd4bab3c2"
+    },
+    {
+      "path": "/tmp/osr-74-editor-clippy-final.log",
+      "bytes": 266,
+      "sha256": "0e4d965812f4320d49dad5728526c32c8d73e656807c972dfbec04484575971b"
+    },
+    {
+      "path": "/tmp/osr-74-editor-msrv-final.log",
+      "bytes": 2871,
+      "sha256": "a7e0f2161fc3a190d3f69f8f041874838cf639f83018f890f1437c6914c98f7c"
+    },
+    {
+      "path": "/tmp/osr-74-editor-projection-browser.log",
+      "bytes": 2091,
+      "sha256": "5941cbaa3f7a5430d6406eeeeaea6ec9160a0e8cddd52635ce8165785592fa39"
+    },
+    {
+      "path": "/tmp/osr-74-editor-m0-browser.log",
+      "bytes": 13857,
+      "sha256": "360c7d1c385f4152ec564e8e09fe7e3c47aaf07feeeeb6ef5c345304a5e7df8e"
+    },
+    {
+      "path": "/tmp/osr-74-native-differential.log",
+      "bytes": 3083,
+      "sha256": "035265d1a745142af77ef6b445fa5341d3f64fae541fe8669da4482e4bedd9a0"
+    }
+  ],
+  "results": {
+    "fullWorkspaceCheck": "pass before adding the sixth test-only shared scenario; runtime source identical",
+    "finalClippyAllTargets": "pass",
+    "nativeMinimumRust": "22 passed including six new budget scenarios",
+    "finalCompiledWasm": "six shared Rust cases in each of Chromium/Firefox/WebKit; six Playwright tests total including build smoke",
+    "m0Browser": "102 passed; 102 observations, zero failures; MET28/GAP26/OBS48",
+    "differential": "264 ordinary equal; one intentional typed refusal instead of inherited panic; canonical unchanged"
+  },
+  "limitations": [
+    "No public projection/session WASM API introduced; test-only module is outside package dist",
+    "No production performance SLA or memory-RSS assertion",
+    "CMS integration and independent review are separate delivery gates"
+  ]
+}

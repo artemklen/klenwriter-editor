@@ -22,8 +22,9 @@ pub fn run(input: &[u8], normalize: bool, identities: bool, project: bool) -> Va
             "category":e.context.category,"limit":e.context.limit,"maximum":e.context.maximum,"observed":e.context.observed}),
         Ok(doc) => {
             let projection = if project {
-                match std::panic::catch_unwind(|| doc.project_text()) {
-                    Ok(p) => json!({"full":digest(p.full_text.as_bytes()),"search":digest(p.search_index_text.as_bytes()),"snippet":digest(p.public_snippet_text.as_bytes())}),
+                match std::panic::catch_unwind(|| project_document(&doc)) {
+                    Ok(Ok(p)) => json!({"full":digest(p.full_text.as_bytes()),"search":digest(p.search_index_text.as_bytes()),"snippet":digest(p.public_snippet_text.as_bytes())}),
+                    Ok(Err(code)) => json!({"refused":code}),
                     Err(_) => json!({"panicked":true}),
                 }
             } else { json!({"skipped":"explicit probe budget"}) };

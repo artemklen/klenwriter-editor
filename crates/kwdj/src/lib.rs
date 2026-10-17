@@ -18,7 +18,7 @@ use uuid::Uuid;
 
 use model::Document;
 pub use model::Profile;
-pub use project::ProjectionResult;
+pub use project::{ProjectionBudget, ProjectionBudgetKind, ProjectionError, ProjectionResult};
 
 pub const MAX_CANONICAL_DOCUMENT_BYTES: u64 = 2_097_152;
 pub const MAX_TREE_DEPTH: u64 = 32;
@@ -192,8 +192,16 @@ impl ValidatedDocument {
     /// `public_snippet_text`) derived only from the validated normalized document.
     ///
     /// This is the primary projection entry point for production callers.
-    pub fn project_text(&self) -> ProjectionResult {
-        project::project_document(&self.document.inner)
+    pub fn project_text(&self) -> Result<ProjectionResult, ProjectionError> {
+        self.project_text_with_budget(ProjectionBudget::default())
+    }
+
+    /// Apply tighter operational limits without changing document admission.
+    pub fn project_text_with_budget(
+        &self,
+        budget: ProjectionBudget,
+    ) -> Result<ProjectionResult, ProjectionError> {
+        project::project_document(&self.document.inner, budget)
     }
 }
 
@@ -205,8 +213,16 @@ impl NormalizedDocument {
     /// `&NormalizedDocument` from [`ValidatedDocument::document`] need not keep
     /// the outer wrapper. It is still capability-safe: unchecked KWDJ cannot
     /// construct `NormalizedDocument`.
-    pub fn project_text(&self) -> ProjectionResult {
-        project::project_document(&self.inner)
+    pub fn project_text(&self) -> Result<ProjectionResult, ProjectionError> {
+        self.project_text_with_budget(ProjectionBudget::default())
+    }
+
+    /// Apply tighter operational limits without changing document admission.
+    pub fn project_text_with_budget(
+        &self,
+        budget: ProjectionBudget,
+    ) -> Result<ProjectionResult, ProjectionError> {
+        project::project_document(&self.inner, budget)
     }
 }
 

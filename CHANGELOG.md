@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- OSR-74: ограничена работа текстовых проекций KWDJ; превышение бюджета возвращает типизированный отказ без изменения документа.
+
 - OSR-54: owner-confirmed KlenWriter Editor identity, `klenwriter-editor-*` Rust
   crates and `@klenwriter/editor*` web packages; development imports/metadata/locks
   migrated before public release. Package/API/storage versions stay separate;
