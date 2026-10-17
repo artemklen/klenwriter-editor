@@ -41,7 +41,7 @@ fn normalize_object(
     lowercase_string(object, "type");
 
     if let Some(Value::String(text)) = object.get_mut("text") {
-        *text = text.replace("\r\n", "\n");
+        *text = normalize_newlines(text);
     }
 
     if let Some(Value::Object(attrs)) = object.get_mut("attrs") {
@@ -53,7 +53,7 @@ fn normalize_object(
         }
         for key in ["alt", "label", "title", "language"] {
             if let Some(Value::String(value)) = attrs.get_mut(key) {
-                *value = value.replace("\r\n", "\n");
+                *value = normalize_newlines(value);
             }
         }
     }
@@ -143,9 +143,7 @@ fn lowercase_string(object: &mut Map<String, Value>, key: &str) {
 
 fn canonicalize_uuid_string(object: &mut Map<String, Value>, key: &str) {
     if let Some(Value::String(value)) = object.get_mut(key) {
-        *value = uuid::Uuid::parse_str(value)
-            .map(|uuid| uuid.to_string())
-            .unwrap_or_else(|_| value.to_lowercase());
+        *value = canonical_uuid(value);
     }
 }
 
@@ -161,20 +159,48 @@ fn is_absent_token_mark(value: &Value) -> bool {
     let Some(object) = value.as_object() else {
         return false;
     };
-    if !matches!(
-        object.get("type").and_then(Value::as_str),
-        Some("text_color" | "highlight")
-    ) {
-        return false;
-    }
-    matches!(
+    absent_token_mark(
+        object.get("type").and_then(Value::as_str).unwrap_or(""),
         object
             .get("attrs")
             .and_then(Value::as_object)
             .and_then(|attrs| attrs.get("token"))
             .and_then(Value::as_str),
-        Some("default" | "none")
     )
+}
+
+/// Shared canonical decisions for wire import and explicit editing proposals.
+/// Callers meter borrowed scanning/output allocation before invoking helpers.
+pub(crate) fn normalize_newlines(value: &str) -> String {
+    value.replace("\r\n", "\n")
+}
+
+pub(crate) fn canonical_uuid(value: &str) -> String {
+    uuid::Uuid::parse_str(value)
+        .map(|uuid| uuid.to_string())
+        .unwrap_or_else(|_| value.to_lowercase())
+}
+
+pub(crate) fn absent_token_mark(kind: &str, token: Option<&str>) -> bool {
+    matches!(kind, "text_color" | "highlight") && matches!(token, Some("default" | "none"))
+}
+
+pub(crate) fn incompatible_mark_kinds(kinds: &[&str]) -> bool {
+    (kinds.contains(&"subscript") && kinds.contains(&"superscript"))
+        || (kinds.contains(&"link") && kinds.contains(&"reference_link"))
+        || (kinds.contains(&"code")
+            && kinds.iter().any(|kind| {
+                matches!(
+                    *kind,
+                    "strong"
+                        | "emphasis"
+                        | "strike"
+                        | "subscript"
+                        | "superscript"
+                        | "text_color"
+                        | "highlight"
+                )
+            }))
 }
 
 fn validate_and_sort_marks(marks: &mut [Value], path: &str) -> Result<(), KwdjError> {
@@ -196,22 +222,7 @@ fn validate_and_sort_marks(marks: &mut [Value], path: &str) -> Result<(), KwdjEr
         }
         kinds.push(kind);
     }
-    if (kinds.contains(&"subscript") && kinds.contains(&"superscript"))
-        || (kinds.contains(&"link") && kinds.contains(&"reference_link"))
-        || (kinds.contains(&"code")
-            && kinds.iter().any(|kind| {
-                matches!(
-                    *kind,
-                    "strong"
-                        | "emphasis"
-                        | "strike"
-                        | "subscript"
-                        | "superscript"
-                        | "text_color"
-                        | "highlight"
-                )
-            }))
-    {
+    if incompatible_mark_kinds(&kinds) {
         return Err(KwdjError::categorized(
             KwdjErrorCode::IncompatibleMarks,
             path,
@@ -223,21 +234,26 @@ fn validate_and_sort_marks(marks: &mut [Value], path: &str) -> Result<(), KwdjEr
 }
 
 fn mark_precedence(mark: &Value) -> u8 {
-    match mark
-        .as_object()
-        .and_then(|object| object.get("type"))
-        .and_then(Value::as_str)
-    {
-        Some("code") => 0,
-        Some("strong") => 1,
-        Some("emphasis") => 2,
-        Some("strike") => 3,
-        Some("subscript") => 4,
-        Some("superscript") => 5,
-        Some("text_color") => 6,
-        Some("highlight") => 7,
-        Some("link") => 8,
-        Some("reference_link") => 9,
+    mark_kind_precedence(
+        mark.as_object()
+            .and_then(|object| object.get("type"))
+            .and_then(Value::as_str)
+            .unwrap_or(""),
+    )
+}
+
+pub(crate) fn mark_kind_precedence(kind: &str) -> u8 {
+    match kind {
+        "code" => 0,
+        "strong" => 1,
+        "emphasis" => 2,
+        "strike" => 3,
+        "subscript" => 4,
+        "superscript" => 5,
+        "text_color" => 6,
+        "highlight" => 7,
+        "link" => 8,
+        "reference_link" => 9,
         _ => u8::MAX,
     }
 }

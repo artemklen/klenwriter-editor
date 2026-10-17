@@ -6,7 +6,7 @@ use std::fmt::{self, Write};
 
 use serde_json::{Number, Value};
 
-use crate::document::{Attribute, Attributes, Document, Node};
+use crate::document::{Attribute, Attributes, Document, Mark, Node};
 use crate::limits::{LimitExceeded, check, effective};
 
 /// Distribution ceilings for one borrowed preflight. These are operational
@@ -184,18 +184,37 @@ impl Account {
     // The caller visits the node itself, then shares exactly this metadata
     // accounting between a full walk and an individual record-copy guard.
     fn node_metadata(&mut self, node: &Node, depth: u64) -> Result<(), LimitExceeded> {
-        self.string(&node.type_id)?;
-        if let Some(text) = &node.text {
+        self.node_fields(
+            &node.type_id,
+            node.text.as_deref(),
+            &node.attributes,
+            &node.marks,
+            node.children.len(),
+            depth,
+        )
+    }
+
+    fn node_fields(
+        &mut self,
+        type_id: &str,
+        text: Option<&str>,
+        attributes: &Attributes,
+        marks: &[Mark],
+        child_count: usize,
+        depth: u64,
+    ) -> Result<(), LimitExceeded> {
+        self.string(type_id)?;
+        if let Some(text) = text {
             self.string(text)?;
         }
-        self.attributes(&node.attributes, depth + 1)?;
-        self.collection(node.marks.len())?;
-        for mark in &node.marks {
+        self.attributes(attributes, depth + 1)?;
+        self.collection(marks.len())?;
+        for mark in marks {
             self.visit(depth + 1)?;
             self.string(&mark.type_id)?;
             self.attributes(&mark.attributes, depth + 2)?;
         }
-        self.collection(node.children.len())
+        self.collection(child_count)
     }
 
     fn nodes(
@@ -249,6 +268,22 @@ pub fn preflight_node_metadata(
     Ok(account.usage)
 }
 
+/// The same single-record preflight for a borrowed view that has no owned Node.
+/// No field, text, mark, attribute or child ID is cloned to perform this check.
+pub fn preflight_node_fields(
+    type_id: &str,
+    text: Option<&str>,
+    attributes: &Attributes,
+    marks: &[Mark],
+    child_count: usize,
+    budget: PreflightBudget,
+) -> Result<PreflightUsage, LimitExceeded> {
+    let mut account = Account::new(budget);
+    account.visit(1)?;
+    account.node_fields(type_id, text, attributes, marks, child_count, 1)?;
+    Ok(account.usage)
+}
+
 /// Bounds a parsed JSON value before normalizers/codec passes copy or traverse
 /// it. Parsing itself needs a separate raw-byte check before it starts.
 pub fn preflight_json(
@@ -298,6 +333,18 @@ mod tests {
             attributes: Attributes::from([("tone".into(), Attribute::String("x".into()))]),
         });
         let usage = preflight_node_metadata(&source, PreflightBudget::default()).unwrap();
+        assert_eq!(
+            preflight_node_fields(
+                &source.type_id,
+                source.text.as_deref(),
+                &source.attributes,
+                &source.marks,
+                source.children.len(),
+                PreflightBudget::default()
+            )
+            .unwrap(),
+            usage
+        );
         assert_eq!(
             usage,
             PreflightUsage {

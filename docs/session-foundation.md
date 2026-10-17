@@ -1,7 +1,7 @@
 # OSR-33 — session tree foundation
 
 Статус: Rust foundation для admission, адресации, подготовки дерева и mapping.
-Публичный dispatch/atomic publication — OSR-34; команды — OSR-35; журнал undo/redo —
+Atomic dispatch описан в [OSR-34](atomic-transactions.md); команды — OSR-35; undo/redo —
 OSR-36; typed WASM/TypeScript lifecycle SDK — OSR-63. Test-only WASM observer не
 входит в npm distribution и не заменяет эти задачи.
 

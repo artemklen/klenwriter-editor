@@ -1,0 +1,11 @@
+{
+  "issue": "OSR-34",
+  "encoding": "gzip; exact unedited generated observation bytes",
+  "rawBytes": 3256657,
+  "rawSha256": "22278c9c8e7452ac75d36ce8fc135f01c38d16b6358458f08e4175403192b8d5",
+  "gzipBytes": 102863,
+  "gzipSha256": "febd4789265444cf42ac993b7beaa51d79c05e5beb0cf0effae8cf8e556879c4",
+  "observations": 102,
+  "failures": 0,
+  "frozenOriginalRestored": "evidence/osr-58/automated/observations.json from source HEAD"
+}

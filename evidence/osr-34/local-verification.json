@@ -1,0 +1,119 @@
+{
+  "issue": "OSR-34",
+  "base": "99d516c5b8ed647fe8f27da1980313de4fdeb437",
+  "scope": "local working tree; exact-source CI follows",
+  "checks": [
+    {
+      "name": "msrv",
+      "command": [
+        "cargo",
+        "+1.89.0",
+        "test",
+        "--locked",
+        "-p",
+        "klenwriter-editor-core",
+        "-p",
+        "klenwriter-editor-kwdj"
+      ],
+      "exitCode": 0,
+      "seconds": 7.02,
+      "log": "/tmp/osr-34-local-msrv.log",
+      "bytes": 7251,
+      "sha256": "f93b4a45be5878be5e7961b508979ea5ddf034d6276f39d29097725335121439"
+    },
+    {
+      "name": "workspace",
+      "command": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "seconds": 86.97,
+      "log": "/tmp/osr-34-local-workspace.log",
+      "bytes": 23582,
+      "sha256": "9830841594d6b95aeb101ffd9bf5a39fa17f33342ffbe45b0ef0af41072dccc3"
+    },
+    {
+      "name": "m0-browser",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 0,
+      "seconds": 71.34,
+      "log": "/tmp/osr-34-local-m0-browser.log",
+      "bytes": 13769,
+      "sha256": "527aefed347cf63c8a0b1129eae9046383a75bed4ff1bccdaf166194fbf116e8"
+    },
+    {
+      "name": "summary",
+      "command": [
+        "node",
+        "scripts/summarize-evidence.mjs"
+      ],
+      "exitCode": 0,
+      "seconds": 0.08,
+      "log": "/tmp/osr-34-local-summary.log",
+      "bytes": 86,
+      "sha256": "a355364952cc8ac890fcd4c86e4246dad93920c4fb10991c8f514908a4bdbc53"
+    },
+    {
+      "name": "final-rollback-vectors",
+      "purpose": "Vary all128 candidate Unicode insertions/invalid offsets rather than repeat two identical payloads; implementation and target witness source inputs unchanged",
+      "commands": [
+        [
+          "cargo",
+          "fmt",
+          "--all",
+          "--check"
+        ],
+        [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "klenwriter-editor-engine",
+          "--all-targets",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        [
+          "cargo",
+          "test",
+          "--locked",
+          "-p",
+          "klenwriter-editor-engine",
+          "--lib"
+        ]
+      ],
+      "exitCode": 0,
+      "seconds": 2.97,
+      "log": "/tmp/osr-34-local-final-rollback-vectors.log",
+      "bytes": 4739,
+      "sha256": "abc9cf1786190ea0337573d6c88f31bcabe3f6ca22a510db4b67d9ef91aa5976"
+    }
+  ],
+  "result": "PASS",
+  "exactScope": "Working source and literal/generated test fixtures subsequently committed together; exact commit CI follows",
+  "summary": {
+    "rustTestsIncludingDoctests": 111,
+    "engineTests": 41,
+    "kwdjTests": 52,
+    "borrowedNativeAcceptedCheckpoints": 29,
+    "normativeLimitsCompared": 7,
+    "transactionNativeWasmEqual": true,
+    "transactionGroups": 5,
+    "typedTransactionRefusals": 11,
+    "transactionSourceAndArtifactHashes": 26,
+    "generatedLateRollbackCasesWithExistingHistory": 128,
+    "existingGeneratedSplitJoinCycles": 2048,
+    "codecComparisons": 180,
+    "sessionFoundationGroups": 7,
+    "browserSmoke": 12,
+    "m0": 102,
+    "m0Failures": 0
+  },
+  "limits": "Logical overhead/work sizes are target-dependent; persisted bytes, normative validation and shared witness semantic outputs are compared exactly. No mounted editing-host/SDK/undo acceptance claimed."
+}
