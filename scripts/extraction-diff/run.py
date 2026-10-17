@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""OSR-29: compare exact CMS baseline source against extracted native codec.
+"""OSR-74: compare exact CMS baseline against the bounded extracted codec.
 
 Only paths, hashes and closed diagnostic facts enter the report. Corpus remains
 in the CMS repository until OSR-30. No private checkout is required by editor CI.
@@ -91,9 +91,12 @@ sha2 = "0.10"
         result = subprocess.run([str(binary)], input=''.join(json.dumps(c) + '\n' for c in cases), text=True, capture_output=True, check=True, timeout=120)
         results = [json.loads(line) for line in result.stdout.splitlines()]
         assert len(results) == len(cases)
-        assert all(r['equal'] for r in results), 'baseline/extraction parity mismatch'
+        assert all(r['equal'] for r in results[:-1]), 'ordinary baseline/extraction parity mismatch'
+        assert results[-1]['extracted']['projections'] == {'refused': 'kwdj.projection_arithmetic_overflow'}
+        assert {k:v for k,v in results[-1]['baseline'].items() if k != 'projections'} == {k:v for k,v in results[-1]['extracted'].items() if k != 'projections'}, 'storage semantics changed'
+        assert not results[-1]['equal'], 'OSR-74 must fix the inherited panic'
         assert results[-1]['baseline']['projections'] == {'panicked': True}, 'recheck OSR-74 status'
-        report = {'schema': 1, 'issue': 'OSR-29', 'baseline': BASELINE, 'toolchain': command(['rustc', '+1.89.0', '--version']).decode().strip(), 'binarySha256': sha(binary.read_bytes()), 'runnerLockSha256': sha((runner / 'Cargo.lock').read_bytes()), 'cmsLockSha256': sha(source('Cargo.lock')), 'editorLockSha256': sha((ROOT / 'Cargo.lock').read_bytes()), 'corpusAuthority': 'CMS; full transfer/conformance deferred to OSR-30', 'sources': sources, 'cases': [{**origin, **outcome} for origin, outcome in zip(origins, results)], 'summary': {'cases': len(results), 'equal': sum(r['equal'] for r in results), 'admitted': sum(r['baseline']['kind'] == 'admitted' for r in results), 'refused': sum(r['baseline']['kind'] == 'refused' for r in results), 'knownPanics': 1, 'knownDefect': 'OSR-74; debug probe only; no production safety claim'}}
+        report = {'schema': 1, 'issue': 'OSR-74', 'baseline': BASELINE, 'toolchain': command(['rustc', '+1.89.0', '--version']).decode().strip(), 'binarySha256': sha(binary.read_bytes()), 'runnerLockSha256': sha((runner / 'Cargo.lock').read_bytes()), 'cmsLockSha256': sha(source('Cargo.lock')), 'editorLockSha256': sha((ROOT / 'Cargo.lock').read_bytes()), 'corpusAuthority': 'CMS; full transfer/conformance deferred to OSR-30', 'sources': sources, 'cases': [{**origin, **outcome} for origin, outcome in zip(origins, results)], 'summary': {'cases': len(results), 'equal': sum(r['equal'] for r in results), 'admitted': sum(r['baseline']['kind'] == 'admitted' for r in results), 'refused': sum(r['baseline']['kind'] == 'refused' for r in results), 'intentionalDifferences': 1, 'baselinePanics': 1, 'extractedPanics': 0, 'fixedDefect': 'OSR-74; typed bounded refusal preserves admitted canonical bytes'}}
         # A combined oracle unifies registry dependencies. Separately verify the
         # real editor lock closure uses the same native semantic versions.
         editor_meta = json.loads(command(['cargo', 'metadata', '--locked', '--format-version=1'], cwd=ROOT))

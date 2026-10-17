@@ -23,6 +23,12 @@ if (version.status !== 0 || version.stdout.trim() !== 'wasm-bindgen 0.2.129') {
 }
 run('cargo', ['build', '--workspace', '--locked', '--release']);
 run('cargo', ['build', '--workspace', '--locked', '--release', '--target', 'wasm32-unknown-unknown']);
+// Test-only WASM module: exercises the same Rust budget cases as native tests.
+// Kept outside distributable package dist and installed consumer APIs.
+run('cargo', ['build', '--locked', '--release', '--target', 'wasm32-unknown-unknown',
+  '-p', identity.rust.wasm.name, '--example', 'projection_budget_probe']);
+run(bindgen, ['target/wasm32-unknown-unknown/release/examples/projection_budget_probe.wasm',
+  '--target', 'web', '--out-dir', 'artifacts/projection-budget', '--out-name', 'probe']);
 writeDependencyNotices();
 // Clean all emitted package files so stale declarations/assets cannot mask omissions.
 const packages = ['wasm', 'sdk', 'dom', 'kwdj', 'vanilla', 'angular'];

@@ -1,34 +1,77 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // Derived from owner-controlled KlenWriter CMS source; see provenance/source-files.json.
-//! Deterministic plain-text projections from validated/normalized KWDJ.
+//! Deterministic, bounded plain-text projections from admitted KWDJ.
 //!
-//! Pure, no I/O. Marks never contribute characters. Spoiler body is
-//! included in `full_text` / `search_index_text` and excluded from
-//! `public_snippet_text` per `docs/contracts/kwdj_operational_policy_v1.md` §5.
-//!
-//! # Output bounds (no truncation policy)
-//!
-//! Operational policy §4: over-limit validation emits **no** projections.
-//! Policy §5 defines spoiler inclusion only — it does **not** define snippet
-//! truncation, ellipsis, or a maximum projected-string length. This builder
-//! therefore never truncates and never inserts `…`.
-//!
-//! Known inherited exception: stanza_break.blank_lines can expand without a work
-//! budget and overflow in project_verse. Tracked by OSR-74; extraction parity
-//! preserves this behavior and does not certify bounded hostile projections.
-//! The estimate below excludes authored stanza expansion.
-//!
-//! For a validated document without stanza expansion:
-//! ```text
-//! |projection| ≤ Σ|text leaves|
-//!            + Σ|authored attrs projected| (alt, spoiler/disclosure/warning labels)
-//!            + Σ|server literary/warning default labels|
-//!            + node_count          // ≤1 separator byte per node join
-//! ```
-//! with each leaf ≤ `MAX_TEXT_LEAF_BYTES`, each authored attr ≤
-//! `MAX_AUTHORED_ATTRIBUTE_BYTES`, and `node_count` ≤ `MAX_NODE_COUNT`.
+//! Marks contribute no characters. Spoilers contribute their body to full/search
+//! text and their label alone to public snippets. Authored text is never truncated.
+//! A valid stored document may exceed an operational projection budget: callers
+//! receive a typed refusal and keep the original canonical document unchanged.
 
 use super::model::{Document, LiteraryKind, Node, WarningAttrs, WarningKind};
+
+/// Operational ceilings, independent of the seven normative stored-v1 maxima.
+/// Hosts can tighten each ceiling; larger values are clamped to these defaults.
+/// Output bytes bound each intermediate/final string. Work bytes count every
+/// byte copied/appended, including nested joins and the separate search copy.
+/// Node visits also bound work on empty strings. No wall-clock timing is used.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ProjectionBudget {
+    pub output_bytes: u64,
+    pub work_bytes: u64,
+    pub node_visits: u64,
+}
+
+impl Default for ProjectionBudget {
+    fn default() -> Self {
+        Self {
+            output_bytes: 4 * 1024 * 1024,
+            work_bytes: 128 * 1024 * 1024,
+            node_visits: 200_000,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ProjectionBudgetKind {
+    OutputBytes,
+    WorkBytes,
+    NodeVisits,
+}
+
+/// Refusal contains no authored content and never returns partial projections.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
+pub enum ProjectionError {
+    #[error("projection budget exceeded: {budget:?} (limit {limit})")]
+    BudgetExceeded {
+        budget: ProjectionBudgetKind,
+        limit: u64,
+    },
+    #[error("projection length arithmetic overflow")]
+    ArithmeticOverflow,
+    #[error("projection allocation unavailable")]
+    AllocationUnavailable,
+}
+
+impl ProjectionError {
+    pub fn code(self) -> &'static str {
+        match self {
+            Self::BudgetExceeded {
+                budget: ProjectionBudgetKind::OutputBytes,
+                ..
+            } => "kwdj.projection_output_budget_exceeded",
+            Self::BudgetExceeded {
+                budget: ProjectionBudgetKind::WorkBytes,
+                ..
+            } => "kwdj.projection_work_budget_exceeded",
+            Self::BudgetExceeded {
+                budget: ProjectionBudgetKind::NodeVisits,
+                ..
+            } => "kwdj.projection_node_budget_exceeded",
+            Self::ArithmeticOverflow => "kwdj.projection_arithmetic_overflow",
+            Self::AllocationUnavailable => "kwdj.projection_allocation_unavailable",
+        }
+    }
+}
 
 /// Typed plain-text projection trio derived from one normalized document.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -40,165 +83,260 @@ pub struct ProjectionResult {
 
 #[derive(Clone, Copy)]
 enum Mode {
-    /// Include spoiler label and body (full semantic text / search index).
     IncludeSpoilerBody,
-    /// Include spoiler label only; recursively exclude spoiler body.
     ExcludeSpoilerBody,
 }
 
-/// Project plain-text surfaces from a normalized document.
-///
-/// The document must already be validated/normalized; this function does not
-/// re-validate, touch manifests, or perform I/O.
-pub(crate) fn project_document(document: &Document) -> ProjectionResult {
-    let full = project_nodes(&document.content, Mode::IncludeSpoilerBody);
-    let snippet = project_nodes(&document.content, Mode::ExcludeSpoilerBody);
-    ProjectionResult {
-        full_text: full.clone(),
-        search_index_text: full,
-        public_snippet_text: snippet,
+type Projected = Result<String, ProjectionError>;
+
+struct Work {
+    budget: ProjectionBudget,
+    copied: u64,
+    visited: u64,
+}
+
+impl Work {
+    fn new(requested: ProjectionBudget) -> Self {
+        let ceiling = ProjectionBudget::default();
+        Self {
+            budget: ProjectionBudget {
+                output_bytes: requested.output_bytes.min(ceiling.output_bytes),
+                work_bytes: requested.work_bytes.min(ceiling.work_bytes),
+                node_visits: requested.node_visits.min(ceiling.node_visits),
+            },
+            copied: 0,
+            visited: 0,
+        }
+    }
+
+    fn visit(&mut self) -> Result<(), ProjectionError> {
+        self.visited = self
+            .visited
+            .checked_add(1)
+            .ok_or(ProjectionError::ArithmeticOverflow)?;
+        Self::check(
+            self.visited,
+            self.budget.node_visits,
+            ProjectionBudgetKind::NodeVisits,
+        )
+    }
+
+    fn check(
+        observed: u64,
+        limit: u64,
+        budget: ProjectionBudgetKind,
+    ) -> Result<(), ProjectionError> {
+        if observed > limit {
+            Err(ProjectionError::BudgetExceeded { budget, limit })
+        } else {
+            Ok(())
+        }
+    }
+
+    /// Check before reserve, usize conversion, or expansion. The cumulative
+    /// counter includes intermediate copies, bounding even deeply nested joins.
+    fn reserve(&mut self, out: &mut String, count: u64) -> Result<usize, ProjectionError> {
+        let length = (out.len() as u64)
+            .checked_add(count)
+            .ok_or(ProjectionError::ArithmeticOverflow)?;
+        Self::check(
+            length,
+            self.budget.output_bytes,
+            ProjectionBudgetKind::OutputBytes,
+        )?;
+        self.copied = self
+            .copied
+            .checked_add(count)
+            .ok_or(ProjectionError::ArithmeticOverflow)?;
+        Self::check(
+            self.copied,
+            self.budget.work_bytes,
+            ProjectionBudgetKind::WorkBytes,
+        )?;
+        let count = usize::try_from(count).map_err(|_| ProjectionError::ArithmeticOverflow)?;
+        // Amortized reserve avoids reallocating once per text leaf. The allocator
+        // may round capacity up; requested string lengths obey the exact ceiling.
+        out.try_reserve(count)
+            .map_err(|_| ProjectionError::AllocationUnavailable)?;
+        Ok(count)
+    }
+
+    fn append(&mut self, out: &mut String, text: &str) -> Result<(), ProjectionError> {
+        self.reserve(out, text.len() as u64)?;
+        out.push_str(text);
+        Ok(())
+    }
+
+    fn newlines(&mut self, out: &mut String, count: u64) -> Result<(), ProjectionError> {
+        let count = self.reserve(out, count)?;
+        for _ in 0..count {
+            out.push('\n');
+        }
+        Ok(())
+    }
+
+    fn text(&mut self, text: &str) -> Projected {
+        let mut out = String::new();
+        self.append(&mut out, text)?;
+        Ok(out)
     }
 }
 
-fn project_nodes(nodes: &[Node], mode: Mode) -> String {
-    nodes
-        .iter()
-        .map(|node| project_node(node, mode))
-        .collect::<Vec<_>>()
-        .join("\n")
+pub(crate) fn project_document(
+    document: &Document,
+    budget: ProjectionBudget,
+) -> Result<ProjectionResult, ProjectionError> {
+    let mut work = Work::new(budget);
+    let full_text = project_nodes(&document.content, Mode::IncludeSpoilerBody, &mut work)?;
+    let public_snippet_text =
+        project_nodes(&document.content, Mode::ExcludeSpoilerBody, &mut work)?;
+    let search_index_text = work.text(&full_text)?;
+    Ok(ProjectionResult {
+        full_text,
+        search_index_text,
+        public_snippet_text,
+    })
 }
 
-fn project_node(node: &Node, mode: Mode) -> String {
+fn project_nodes(nodes: &[Node], mode: Mode, work: &mut Work) -> Projected {
+    let mut out = String::new();
+    for (index, node) in nodes.iter().enumerate() {
+        if index != 0 {
+            work.append(&mut out, "\n")?;
+        }
+        let part = project_node(node, mode, work)?;
+        work.append(&mut out, &part)?;
+    }
+    Ok(out)
+}
+
+fn project_node(node: &Node, mode: Mode, work: &mut Work) -> Projected {
+    work.visit()?;
     match node {
-        Node::Text { text, .. } => text.clone(),
-        Node::HardBreak => "\n".to_string(),
-        Node::SceneBreak => String::new(),
+        Node::Text { text, .. } => work.text(text),
+        Node::HardBreak => work.text("\n"),
+        Node::SceneBreak | Node::StanzaBreak { .. } => Ok(String::new()),
         Node::Paragraph { content, .. }
         | Node::Heading { content, .. }
         | Node::CodeBlock { content, .. }
-        | Node::VerseLine { content, .. } => project_inline(content, mode),
+        | Node::VerseLine { content, .. } => project_inline(content, mode, work),
         Node::ListItem { content, .. }
         | Node::TaskItem { content, .. }
         | Node::Blockquote { content }
         | Node::BulletList { content }
         | Node::OrderedList { content, .. }
-        | Node::TaskList { content } => project_nodes(content, mode),
-        Node::Table { content } => project_table(content, mode),
-        Node::TableRow { content } => project_table_row(content, mode),
-        Node::TableHeader { content, .. } | Node::TableCell { content, .. } => {
-            project_nodes(content, mode)
-        }
+        | Node::TaskList { content }
+        | Node::TableHeader { content, .. }
+        | Node::TableCell { content, .. }
+        | Node::Table { content } => project_nodes(content, mode, work),
+        Node::TableRow { content } => project_table_row(content, mode, work),
         Node::MediaImage { attrs, content } => {
-            let mut parts = Vec::new();
-            if let Some(alt) = attrs.alt.as_ref()
-                && !alt.is_empty()
-            {
-                parts.push(alt.clone());
+            let mut out = String::new();
+            if let Some(alt) = attrs.alt.as_ref().filter(|s| !s.is_empty()) {
+                work.append(&mut out, alt)?;
             }
-            let caption = project_nodes(content, mode);
+            let caption = project_nodes(content, mode, work)?;
             if !caption.is_empty() {
-                parts.push(caption);
+                if !out.is_empty() {
+                    work.append(&mut out, "\n")?;
+                }
+                work.append(&mut out, &caption)?;
             }
-            parts.join("\n")
+            Ok(out)
         }
         Node::LiteraryBlock { attrs, content } => {
-            join_label_and_body(literary_label(attrs.kind), project_nodes(content, mode))
+            let body = project_nodes(content, mode, work)?;
+            join_label_and_body(literary_label(attrs.kind), body, work)
         }
         Node::Warning { attrs, content } => {
-            join_label_and_body(warning_label(attrs), project_nodes(content, mode))
+            let body = project_nodes(content, mode, work)?;
+            join_label_and_body(warning_label(attrs), body, work)
         }
         Node::Spoiler { attrs, content } => match mode {
             Mode::IncludeSpoilerBody => {
-                join_label_and_body(&attrs.label, project_nodes(content, mode))
+                let body = project_nodes(content, mode, work)?;
+                join_label_and_body(&attrs.label, body, work)
             }
-            Mode::ExcludeSpoilerBody => attrs.label.clone(),
+            Mode::ExcludeSpoilerBody => work.text(&attrs.label),
         },
         Node::Disclosure { attrs, content } => {
-            join_label_and_body(&attrs.label, project_nodes(content, mode))
+            let body = project_nodes(content, mode, work)?;
+            join_label_and_body(&attrs.label, body, work)
         }
-        Node::Verse { content } => project_verse(content, mode),
-        Node::StanzaBreak { .. } => String::new(),
+        Node::Verse { content } => project_verse(content, mode, work),
     }
 }
 
-fn project_inline(nodes: &[Node], mode: Mode) -> String {
+fn project_inline(nodes: &[Node], mode: Mode, work: &mut Work) -> Projected {
     let mut out = String::new();
     for node in nodes {
+        work.visit()?;
         match node {
-            Node::Text { text, .. } => out.push_str(text),
-            Node::HardBreak => out.push('\n'),
-            // Nested blocks inside inline contexts are not schema-legal for most
-            // parents, but cells/captions may contain paragraphs — project as text.
-            other => out.push_str(&project_node(other, mode)),
+            Node::Text { text, .. } => work.append(&mut out, text)?,
+            Node::HardBreak => work.append(&mut out, "\n")?,
+            other => {
+                let part = project_node(other, mode, work)?;
+                work.append(&mut out, &part)?;
+            }
         }
     }
-    out
+    Ok(out)
 }
 
-fn project_table(rows: &[Node], mode: Mode) -> String {
-    rows.iter()
-        .map(|row| match row {
-            Node::TableRow { content } => project_table_row(content, mode),
-            other => project_node(other, mode),
-        })
-        .collect::<Vec<_>>()
-        .join("\n")
+fn project_table_row(cells: &[Node], mode: Mode, work: &mut Work) -> Projected {
+    let mut out = String::new();
+    for (index, cell) in cells.iter().enumerate() {
+        if index != 0 {
+            work.append(&mut out, "\t")?;
+        }
+        let part = project_node(cell, mode, work)?;
+        work.append(&mut out, &part)?;
+    }
+    Ok(out)
 }
 
-fn project_table_row(cells: &[Node], mode: Mode) -> String {
-    cells
-        .iter()
-        .map(|cell| match cell {
-            Node::TableHeader { content, .. } | Node::TableCell { content, .. } => {
-                // Cell content is one or more prose blocks; join block texts without
-                // inventing span placeholders (authored cells only, document order).
-                project_nodes(content, mode)
-            }
-            other => project_node(other, mode),
-        })
-        .collect::<Vec<_>>()
-        .join("\t")
-}
-
-fn project_verse(nodes: &[Node], mode: Mode) -> String {
+fn project_verse(nodes: &[Node], mode: Mode, work: &mut Work) -> Projected {
     let mut out = String::new();
     let mut pending_blank_lines: Option<u64> = None;
     for node in nodes {
+        work.visit()?;
         match node {
             Node::VerseLine { content } => {
-                let line = project_inline(content, mode);
+                let line = project_inline(content, mode, work)?;
                 if !out.is_empty() {
-                    let blanks = pending_blank_lines.unwrap_or(0);
-                    // One separating newline plus `blank_lines` blank lines.
-                    for _ in 0..(1 + blanks) {
-                        out.push('\n');
-                    }
+                    let count = pending_blank_lines
+                        .unwrap_or(0)
+                        .checked_add(1)
+                        .ok_or(ProjectionError::ArithmeticOverflow)?;
+                    work.newlines(&mut out, count)?;
                 }
-                out.push_str(&line);
+                work.append(&mut out, &line)?;
                 pending_blank_lines = None;
             }
-            Node::StanzaBreak { attrs } => {
-                pending_blank_lines = Some(attrs.blank_lines);
-            }
+            Node::StanzaBreak { attrs } => pending_blank_lines = Some(attrs.blank_lines),
             other => {
                 if !out.is_empty() {
-                    out.push('\n');
+                    work.append(&mut out, "\n")?;
                 }
-                out.push_str(&project_node(other, mode));
+                let part = project_node(other, mode, work)?;
+                work.append(&mut out, &part)?;
                 pending_blank_lines = None;
             }
         }
     }
-    out
+    Ok(out)
 }
 
-fn join_label_and_body(label: &str, body: String) -> String {
+fn join_label_and_body(label: &str, body: String, work: &mut Work) -> Projected {
     if body.is_empty() {
-        label.to_string()
+        work.text(label)
     } else if label.is_empty() {
-        body
+        Ok(body)
     } else {
-        format!("{label}\n{body}")
+        let mut out = work.text(label)?;
+        work.append(&mut out, "\n")?;
+        work.append(&mut out, &body)?;
+        Ok(out)
     }
 }
 
@@ -386,7 +524,7 @@ mod exhaustive_coverage {
             profile: crate::Profile::Prose,
             content: nodes,
         };
-        let result = project_document(&doc);
+        let result = project_document(&doc, ProjectionBudget::default()).unwrap();
         assert!(result.full_text.contains("secret"));
         assert!(!result.public_snippet_text.contains("secret"));
         assert!(result.public_snippet_text.contains('S'));
