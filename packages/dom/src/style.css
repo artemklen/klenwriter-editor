@@ -1,0 +1,11 @@
+/* Static, opt-in editor surface foundation. No global resets or runtime injection. */
+.editor-surface {
+  --editor-focus-color: Highlight;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  tab-size: 4;
+}
+.editor-surface:focus-visible {
+  outline: 2px solid var(--editor-focus-color);
+  outline-offset: 2px;
+}

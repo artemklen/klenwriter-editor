@@ -1,6 +1,7 @@
 import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
+  testMatch: '**/editing-hosts.spec.js',
   fullyParallel: true,
   // Native clipboard is shared by browsers on macOS: keep copy/cut/paste deterministic.
   workers: 1,

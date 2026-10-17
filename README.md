@@ -2,11 +2,27 @@
 
 Rust/WASM editor: a general core with extensions, with KWDJ as the first CMS profile.
 
-The repository is in M0 (feasibility and architecture). There is no production editor or published package yet. Desktop Chrome and Safari are the v1 support target. Firefox remains an experimental compatibility lane with recorded results, not a v1 release guarantee; its acceptance gate is separate. Mobile input and collaboration are later work.
+M0 architecture is accepted; M1 now supplies a native/WASM/TypeScript workspace bootstrap. There is no production editor or published package yet. Desktop Chrome and Safari are the v1 support target. Firefox remains an experimental compatibility lane with recorded results, not a v1 release guarantee; its acceptance gate is separate. Mobile input and collaboration are later work.
 
 GitHub is the canonical repository. No GitLab mirror is configured or planned.
 
 Original code and documentation are licensed under **MIT OR Apache-2.0**, at your option. See [license and provenance](docs/m0/licensing.md). No npm/crates package is published yet.
+
+## Build the standalone workspace
+
+Use Node 24.22.0, npm 11.14.0 and rustup (Rust 1.97.1 is pinned automatically):
+
+```sh
+npm ci --ignore-scripts
+cargo install wasm-bindgen-cli --version 0.2.129 --locked --root .tools
+PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install chromium firefox webkit
+npm run check
+npm test
+```
+
+See [contribution workflow](CONTRIBUTING.md), [package map](docs/workspace.md) and
+[versioned contracts](contracts/README.md). No CMS, database, private registry or
+secrets are needed. These commands create local artifacts; they never publish.
 
 ## Architecture package
 

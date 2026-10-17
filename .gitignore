@@ -2,3 +2,9 @@ node_modules/
 test-results/
 playwright-report/
 .DS_Store
+
+/target/
+/.tools/
+/artifacts/
+packages/*/dist/
+*.tsbuildinfo

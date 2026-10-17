@@ -1,7 +1,7 @@
 {
-  "name": "klenwriter-editor-m0",
+  "name": "editor-internal-workspace",
   "private": true,
-  "license": "(MIT OR Apache-2.0)",
+  "license": "MIT OR Apache-2.0",
   "type": "module",
   "scripts": {
     "start": "node spikes/editing-hosts/server.mjs",
@@ -11,11 +11,27 @@
     "check:m0": "node scripts/check-m0-artifacts.mjs",
     "perf:capture": "node scripts/m0-perf/capture.mjs",
     "perf:verify": "node scripts/m0-perf/summarize.mjs --check",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "build": "node scripts/build-workspace.mjs",
+    "typecheck": "tsc -b --pretty false",
+    "check:workspace": "node scripts/check-workspace.mjs",
+    "check:packages": "node scripts/check-packages.mjs",
+    "test:workspace": "node --test tests/workspace.node.mjs",
+    "check:rust": "cargo fmt --all --check && cargo clippy --workspace --all-targets --locked -- -D warnings && cargo test --workspace --locked",
+    "check": "npm run check:rust && npm run build && npm run check:workspace && npm run check:packages && npm run test:workspace && npm run test:contracts && npm run check:m0 && npm run perf:verify && npm run test:workspace:browser",
+    "test:workspace:browser": "playwright test --config playwright.workspace.config.js"
   },
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=24.22.0 <25 || >=26 <27"
+  },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
-    "@playwright/test": "1.64.1"
-  }
+    "@playwright/test": "1.64.1",
+    "typescript": "7.0.2"
+  },
+  "version": "0.0.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "packageManager": "npm@11.14.0"
 }

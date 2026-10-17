@@ -12,3 +12,13 @@
 This directory is calibration evidence for M0. It does not establish production editor performance, KWDJ validity, installed-browser release acceptance or physical display latency. See [the protocol](../../docs/m0/performance-protocol.md) for reproduction, rejected candidate budgets and the controlled regression policy.
 
 The raw traces contain synthetic text only. Bundled headless browsers use new temporary contexts; no native user profile or personal UI is captured.
+
+## OSR-28: immutable dependency source
+
+The measured `package-lock.json` is archived verbatim in `sources/package-lock.json`
+from M0 commit `8d08f8e1afa15a8e673c8412bc847e1a836be770`. Its SHA-256 must equal
+the original sealed metadata source hash. `perf:verify` uses that historical lock
+for calibration integrity; the active workspace lock is independently checked by
+OSR-28. All other captured sources still verify against their original paths.
+No raw samples, metadata hashes, sealed series or derived statistics changed.
+This does not claim the historical measurements describe the new workspace.

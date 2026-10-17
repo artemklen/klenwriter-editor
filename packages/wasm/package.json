@@ -1,0 +1,33 @@
+{
+  "name": "@editor-internal/wasm",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Internal wasm boundary; no editor implementation yet",
+  "type": "module",
+  "license": "MIT OR Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artemklen/klenwriter-editor.git",
+    "directory": "packages/wasm"
+  },
+  "files": [
+    "dist",
+    "LICENSE-MIT",
+    "LICENSE-APACHE",
+    "NOTICE",
+    "src",
+    "THIRD-PARTY-NOTICES"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./artifact": {
+      "types": "./dist/editor_wasm.d.ts",
+      "import": "./dist/editor_wasm.js"
+    },
+    "./artifact.wasm": "./dist/editor_wasm_bg.wasm"
+  },
+  "dependencies": {}
+}
