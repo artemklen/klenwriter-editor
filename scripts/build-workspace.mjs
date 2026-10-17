@@ -38,6 +38,12 @@ run('cargo', ['build', '--locked', '--release', '--target', 'wasm32-unknown-unkn
   '-p', identity.rust.wasm.name, '--example', 'corpus_probe']);
 run(bindgen, ['target/wasm32-unknown-unknown/release/examples/corpus_probe.wasm',
   '--target', 'web', '--out-dir', 'artifacts/corpus-observer', '--out-name', 'probe']);
+// Session foundation proof invokes the real generic engine + KWDJ profile.
+// It remains a test-only module outside all distributable package dist paths.
+run('cargo', ['build', '--locked', '--release', '--target', 'wasm32-unknown-unknown',
+  '-p', identity.rust.wasm.name, '--example', 'session_probe']);
+run(bindgen, ['target/wasm32-unknown-unknown/release/examples/session_probe.wasm',
+  '--target', 'web', '--out-dir', 'artifacts/session-foundation', '--out-name', 'probe']);
 writeDependencyNotices();
 // Clean all emitted package files so stale declarations/assets cannot mask omissions.
 const packages = ['wasm', 'sdk', 'dom', 'kwdj', 'vanilla', 'angular'];

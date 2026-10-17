@@ -28,6 +28,7 @@ for (const name of ['klenwriter-editor-core', 'klenwriter-editor-engine', 'klenw
     const dep = byId.get(id);
     assert(!/^(wasm-bindgen|js-sys|web-sys|sqlx|tokio|klenwriter-editor-wasm)/.test(dep.name), `${name} imports host/runtime ${dep.name}`);
     if (name === 'klenwriter-editor-engine') assert.notEqual(dep.name, 'klenwriter-editor-kwdj');
+    if (name === 'klenwriter-editor-kwdj') assert.notEqual(dep.name, 'klenwriter-editor-engine');
     if (name === 'klenwriter-editor-core') assert(!/^klenwriter-editor-(engine|kwdj)$/.test(dep.name));
   }
 }
@@ -73,7 +74,8 @@ const report = {
   npm: Object.entries(lock.packages).map(([path, pkg]) => ({ path, version: pkg.version, license: pkg.license,
     dev: pkg.dev ?? false, link: pkg.link ?? false, dependencies: pkg.dependencies ?? {}, integrity: pkg.integrity })),
   artifacts: files.sort((a,b) => a.path.localeCompare(b.path)),
-  plannedNotInstalled: ['unicode-segmentation (engine, OSR-33+)', 'parse5 (clipboard proof, OSR-47)',
+  unicode: { implementation: 'unicode-segmentation', version: '1.13.3', unicodeVersion: '17.0.0', scope: 'logical extended grapheme boundaries; no browser layout proof' },
+  plannedNotInstalled: ['parse5 (clipboard proof, OSR-47)',
     'ts-rs (generation, OSR-63)', 'Angular (peer only at binding implementation, OSR-49)', 'property/fuzz/benchmark tools (OSR-38)'],
 };
 mkdirSync('artifacts', { recursive: true });

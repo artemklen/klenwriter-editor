@@ -43,3 +43,7 @@ crate-type = ["cdylib"]
 [[example]]
 name = "corpus_probe"
 crate-type = ["cdylib"]
+
+[[example]]
+name = "session_probe"
+crate-type = ["cdylib"]

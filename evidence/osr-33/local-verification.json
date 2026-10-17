@@ -1,0 +1,109 @@
+{
+  "issue": "OSR-33",
+  "base": "da152cce69be98b797a31687eb6add32b6bf22ca",
+  "scope": "Prepared local source working tree; final source SHA and mandatory CI/review are recorded in Linear and the PR",
+  "checks": [
+    {
+      "name": "msrv",
+      "command": [
+        "cargo",
+        "+1.89.0",
+        "test",
+        "--locked",
+        "-p",
+        "klenwriter-editor-core",
+        "-p",
+        "klenwriter-editor-kwdj"
+      ],
+      "exitCode": 0,
+      "seconds": 6.78,
+      "log": "/tmp/osr-33-local-msrv.log",
+      "bytes": 5534,
+      "sha256": "6a5566e3ba286b7650b57e1c344c33e6e9c15e0296a44d10b32e4e943ceaf441"
+    },
+    {
+      "name": "workspace",
+      "command": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "seconds": 79.94,
+      "log": "/tmp/osr-33-local-workspace.log",
+      "bytes": 19250,
+      "sha256": "94d059225e968f08acb9fdd0f9b693c16160d0672e2da88d8efca5232f8c4e6f"
+    },
+    {
+      "name": "m0-browser",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 0,
+      "seconds": 70.96,
+      "log": "/tmp/osr-33-local-m0-browser.log",
+      "bytes": 13769,
+      "sha256": "c8144d8a39443abefa7dfa55662b1cea4c7f8a42a69b19bccfe980cab91db8b0"
+    },
+    {
+      "name": "summary",
+      "command": [
+        "node",
+        "scripts/summarize-evidence.mjs"
+      ],
+      "exitCode": 0,
+      "seconds": 0.08,
+      "log": "/tmp/osr-33-local-summary.log",
+      "bytes": 86,
+      "sha256": "a355364952cc8ac890fcd4c86e4246dad93920c4fb10991c8f514908a4bdbc53"
+    }
+  ],
+  "summary": {
+    "rustTestsIncludingCompileFail": 78,
+    "engineTests": 26,
+    "mappingTests": 11,
+    "generatedSplitJoinCycles": 2048,
+    "realKwdjFoundationGroups": 7,
+    "snapshotFixtures": 3,
+    "typedBindingCodecRefusals": 10,
+    "codecInputs": 60,
+    "nativeWasmCodecComparisons": 180,
+    "workspaceRealBrowserScenarios": 12,
+    "m0BrowserScenarios": 102
+  },
+  "environment": {
+    "node": "24.22.0",
+    "npm": "11.14.0",
+    "releaseRust": "1.97.1",
+    "coreProfileMSRV": "1.89.0",
+    "unicodeSegmentation": "1.13.3",
+    "unicodeVersion": "17.0.0",
+    "firefoxLocalAppData": "CFFIXED_USER_HOME=.tools/firefox-appdata"
+  },
+  "sourceHashes": {
+    "Cargo.lock": "6c4d917f290c330312b17fcd88c6207cc3aa243c30fc420793eb07d16ce6aaa2",
+    "crates/core/src/admission.rs": "80b41096f21d7bc1e528d9d02aac30e0aced56aebbd708f90b34587df655430a",
+    "crates/core/src/positions.rs": "94ce04c115a062a6b203c2e124afcaa295ad6d9b26a4c0aaaa7bf155fcac50ff",
+    "crates/core/src/profile.rs": "c8443db0fbb1d81d0eff6d237cca8af461153e24c7a5b12007e7cac97d3be6fa",
+    "crates/engine/src/identity.rs": "4fb8834799e7a9f0e634b3bcc347893abd681406b8c57c52e80724df0275b921",
+    "crates/engine/src/session.rs": "ae1fe7a9f56f6cf27c956f7c3434294420464d5beb61048735214ba00c32f473",
+    "crates/engine/src/tree.rs": "81fb0380a044d10376a0d0bfb386ec9b09133811bd822192926c1797da71a6fc",
+    "crates/engine/src/mapping.rs": "0b15c150b43d40abe05dc7fc05cd2a8e5a558f45e9cb4c1a1bb08cc3fc11847a",
+    "crates/kwdj/src/session_profile.rs": "6a16fd7b6e2b71d7326546190beb5066f5111cc21a909a715accc9c6e7dcdceb",
+    "crates/wasm/examples/session_native.rs": "25cbfc92bec520246a78c308cb4762a3ef6dbff6a4f0b3a7d85e7b16052146a8",
+    "crates/wasm/examples/session_probe.rs": "6d4f71a7fe2a8b78667b701d3d4adb6a8a9e938dcc5b5f06e5f3f7fd11179620",
+    "crates/wasm/examples/support/session_observer.rs": "14a01169d91b0c94dbfc9e6541aa1b589b08bb2c60e2e443510df91e8b5d07b1",
+    "artifacts/session-foundation/probe_bg.wasm": "fd6530a934d1cc4209569441ddac676dbff76ad65801d993f8fe2c61716bea65",
+    "tests/session.node.mjs": "112299fd688f86f659ca2989a29957e27c363a38cb4ce88d601586e6e4e76d6e"
+  },
+  "limitations": [
+    "Rust foundation only; no public commit/dispatch/history/session SDK or DOM implementation",
+    "Read-only admitted state differs from refusal of unsupported/invalid grammar",
+    "Prepared copy accounting bounds logical cost, not exact RSS",
+    "Generated split/join sequences supplement literal cases; generalized fuzz/property infrastructure remains OSR-38",
+    "Compiled-WASM witness is test-only outside public ABI; native/WebAssembly agree on semantic observations, not cross-host binary reproducibility",
+    "M0 browser observations remain historical proof of spike behavior, not this new engine or OS IME acceptance",
+    "No CMS changes, production deployment, registry publication or second production profile"
+  ]
+}

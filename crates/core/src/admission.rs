@@ -181,6 +181,23 @@ impl Account {
         }
     }
 
+    // The caller visits the node itself, then shares exactly this metadata
+    // accounting between a full walk and an individual record-copy guard.
+    fn node_metadata(&mut self, node: &Node, depth: u64) -> Result<(), LimitExceeded> {
+        self.string(&node.type_id)?;
+        if let Some(text) = &node.text {
+            self.string(text)?;
+        }
+        self.attributes(&node.attributes, depth + 1)?;
+        self.collection(node.marks.len())?;
+        for mark in &node.marks {
+            self.visit(depth + 1)?;
+            self.string(&mark.type_id)?;
+            self.attributes(&mark.attributes, depth + 2)?;
+        }
+        self.collection(node.children.len())
+    }
+
     fn nodes(
         &mut self,
         nodes: &[Node],
@@ -192,17 +209,7 @@ impl Account {
             self.visit(depth)?;
             metrics.nodes += 1;
             metrics.tree_depth = metrics.tree_depth.max(depth);
-            self.string(&node.type_id)?;
-            if let Some(text) = &node.text {
-                self.string(text)?;
-            }
-            self.attributes(&node.attributes, depth + 1)?;
-            self.collection(node.marks.len())?;
-            for mark in &node.marks {
-                self.visit(depth + 1)?;
-                self.string(&mark.type_id)?;
-                self.attributes(&mark.attributes, depth + 2)?;
-            }
+            self.node_metadata(node, depth)?;
             self.nodes(&node.children, depth + 1, metrics)?;
         }
         Ok(())
@@ -223,6 +230,25 @@ pub fn preflight_snapshot(
     Ok(metrics)
 }
 
+/// Accounts for one borrowed node record without visiting its children.
+///
+/// Type ID, text, attribute keys/values and mark metadata use the same accounting
+/// as [`preflight_snapshot`], with this node at depth 1. Text is measured by byte
+/// length, never copied or scanned for Unicode. Child collection width is checked
+/// before a caller could copy child references; child records and their payloads
+/// are excluded. Width checks reserve no work units: `values` counts only the
+/// visited node, marks and attribute values. Structural storage overhead belongs
+/// to the caller's separate copy policy. This does not confer schema validity.
+pub fn preflight_node_metadata(
+    node: &Node,
+    budget: PreflightBudget,
+) -> Result<PreflightUsage, LimitExceeded> {
+    let mut account = Account::new(budget);
+    account.visit(1)?;
+    account.node_metadata(node, 1)?;
+    Ok(account.usage)
+}
+
 /// Bounds a parsed JSON value before normalizers/codec passes copy or traverse
 /// it. Parsing itself needs a separate raw-byte check before it starts.
 pub fn preflight_json(
@@ -232,4 +258,185 @@ pub fn preflight_json(
     let mut account = Account::new(budget);
     account.json(value, 1)?;
     Ok(account.usage)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::document::{Mark, Primitive};
+
+    fn node() -> Node {
+        Node {
+            type_id: "note".into(),
+            primitive: Primitive::Text,
+            attributes: Attributes::new(),
+            marks: vec![],
+            text: None,
+            children: vec![],
+        }
+    }
+
+    #[test]
+    fn node_metadata_counts_nested_attributes_and_marks_like_the_full_walk() {
+        let mut source = node();
+        source.text = Some("Я".into());
+        source
+            .attributes
+            .insert("title".into(), Attribute::String("hi".into()));
+        source.attributes.insert(
+            "meta".into(),
+            Attribute::Object(Attributes::from([
+                ("flag".into(), Attribute::Boolean(true)),
+                (
+                    "nums".into(),
+                    Attribute::List(vec![Attribute::Null, Attribute::Number(7.into())]),
+                ),
+            ])),
+        );
+        source.marks.push(Mark {
+            type_id: "m".into(),
+            attributes: Attributes::from([("tone".into(), Attribute::String("x".into()))]),
+        });
+        let usage = preflight_node_metadata(&source, PreflightBudget::default()).unwrap();
+        assert_eq!(
+            usage,
+            PreflightUsage {
+                payload_bytes: 40,
+                values: 9,
+                depth: 4
+            }
+        );
+        let document = Document {
+            children: vec![source],
+        };
+        assert_eq!(
+            preflight_snapshot(&document, PreflightBudget::default())
+                .unwrap()
+                .usage,
+            usage
+        );
+    }
+
+    #[test]
+    fn borrowed_text_is_counted_at_its_exact_byte_limit() {
+        let mut source = node();
+        source.text = Some("😀".repeat(16_384));
+        let expected = (source.type_id.len() + source.text.as_ref().unwrap().len()) as u64;
+        let exact = PreflightBudget {
+            payload_bytes: expected,
+            ..PreflightBudget::default()
+        };
+        let usage = preflight_node_metadata(&source, exact).unwrap();
+        assert_eq!(usage.payload_bytes, expected);
+        assert_eq!(usage.values, 1);
+        assert_eq!(usage.depth, 1);
+        let error = preflight_node_metadata(
+            &source,
+            PreflightBudget {
+                payload_bytes: expected - 1,
+                ..exact
+            },
+        )
+        .unwrap_err();
+        assert_eq!(
+            error,
+            LimitExceeded {
+                name: "preflight_payload_bytes",
+                maximum: expected - 1,
+                observed: expected
+            }
+        );
+    }
+
+    #[test]
+    fn children_are_not_visited_but_their_collection_width_is_guarded() {
+        let mut source = node();
+        let mut child = node();
+        child.text = Some("x".repeat(65_536));
+        let mut nested = Attribute::Null;
+        for _ in 0..16 {
+            nested = Attribute::List(vec![nested]);
+        }
+        child.attributes.insert("deep".into(), nested);
+        source.children.push(child);
+        let budget = PreflightBudget {
+            payload_bytes: 4,
+            values: 2,
+            depth: 1,
+        };
+        assert_eq!(
+            preflight_node_metadata(&source, budget).unwrap(),
+            PreflightUsage {
+                payload_bytes: 4,
+                values: 1,
+                depth: 1
+            }
+        );
+        let error = preflight_node_metadata(
+            &source,
+            PreflightBudget {
+                values: 1,
+                ..budget
+            },
+        )
+        .unwrap_err();
+        assert_eq!(
+            error,
+            LimitExceeded {
+                name: "preflight_values",
+                maximum: 1,
+                observed: 2
+            }
+        );
+        assert!(
+            preflight_snapshot(
+                &Document {
+                    children: vec![source]
+                },
+                budget
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn metadata_budget_refuses_before_deep_attribute_contents() {
+        let mut source = node();
+        let mut nested = Attribute::Null;
+        for _ in 0..16 {
+            nested = Attribute::List(vec![nested]);
+        }
+        source.attributes.insert("key".into(), nested);
+        let budget = PreflightBudget {
+            payload_bytes: 4,
+            values: 1,
+            depth: 1,
+        };
+        // Attribute collection width refuses before reading its key or nested
+        // values, which would fail other budgets if they were reached.
+        assert_eq!(
+            preflight_node_metadata(&source, budget).unwrap_err(),
+            LimitExceeded {
+                name: "preflight_values",
+                maximum: 1,
+                observed: 2
+            }
+        );
+        let error = preflight_node_metadata(
+            &source,
+            PreflightBudget {
+                values: 64,
+                ..budget
+            },
+        )
+        .unwrap_err();
+        assert_eq!(
+            error,
+            LimitExceeded {
+                name: "preflight_payload_bytes",
+                maximum: 4,
+                observed: 7
+            }
+        );
+    }
 }

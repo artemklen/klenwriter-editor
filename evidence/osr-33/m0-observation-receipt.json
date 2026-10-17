@@ -1,0 +1,12 @@
+{
+  "issue": "OSR-33",
+  "source": "npm test; node scripts/summarize-evidence.mjs",
+  "scope": "M0 spike regression observations; not new engine/OS IME acceptance",
+  "encoding": "gzip JSON; deterministic mtime=0",
+  "path": "evidence/osr-33/m0-observations.json.gz",
+  "rawBytes": 3257075,
+  "rawSha256": "203d024070107bc26ece0478d680c197be8d830d7b7317b00418560720154cb0",
+  "gzipBytes": 102373,
+  "gzipSha256": "ece583fee744d42e4f7561cc5b5e005c35b0045d7f16275b04c52f6f3092ba5f",
+  "crcAndExactDecompressionVerified": true
+}
