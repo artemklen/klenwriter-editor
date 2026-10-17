@@ -20,7 +20,7 @@
       "license": "MIT OR Apache-2.0",
       "thirdPartyHeaders": [],
       "sourcePayload": "Rust source; no user documents or production captures",
-      "adaptations": "Namespace/read-only model seam and generic core helpers; domain semantic rules preserved and checked differentially"
+      "adaptations": "Namespace/read-only model seam and generic core helpers; domain semantic rules preserved and checked differentially; OSR-77: empty node/mark variants are closed empty struct variants, valid serialized JSON unchanged; formerly discarded unknown fields now UnknownAttribute refusal"
     },
     {
       "source": "crates/klenwriter_domain/src/kwdj/normalize.rs",
@@ -42,7 +42,7 @@
       "license": "MIT OR Apache-2.0",
       "thirdPartyHeaders": [],
       "sourcePayload": "Rust source; no user documents or production captures",
-      "adaptations": "Namespace/read-only model seam and generic core helpers; domain semantic rules preserved and checked differentially"
+      "adaptations": "Namespace/read-only model seam and generic core helpers; domain semantic rules preserved and checked differentially; OSR-77: empty node/mark variants are closed empty struct variants, valid serialized JSON unchanged; formerly discarded unknown fields now UnknownAttribute refusal"
     },
     {
       "source": "crates/klenwriter_domain/src/kwdj/validate.rs",
@@ -53,7 +53,7 @@
       "license": "MIT OR Apache-2.0",
       "thirdPartyHeaders": [],
       "sourcePayload": "Rust source; no user documents or production captures",
-      "adaptations": "Namespace/read-only model seam and generic core helpers; domain semantic rules preserved and checked differentially"
+      "adaptations": "Namespace/read-only model seam and generic core helpers; domain semantic rules preserved and checked differentially; OSR-77: empty node/mark variants are closed empty struct variants, valid serialized JSON unchanged; formerly discarded unknown fields now UnknownAttribute refusal"
     },
     {
       "source": "crates/klenwriter_domain/src/kwdj/mod.rs",

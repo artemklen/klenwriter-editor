@@ -25,6 +25,49 @@ fn envelope(profile: &str, content: Vec<Value>) -> Vec<u8> {
     serde_json::to_vec(&json!({"schema":"klenwriter.document","schema_version":1,"profile":profile,"content":content})).unwrap()
 }
 
+// OSR-77: every object across all 24 node / 10 mark kinds is closed. An
+// unknown supplementary key must be rejected, rather than dropped by a decoder.
+fn assert_closed_ascii_keys(document: Value) {
+    fn objects(value: &Value, path: &str, paths: &mut Vec<String>) {
+        match value {
+            Value::Object(fields) => {
+                paths.push(path.to_owned());
+                for (key, child) in fields {
+                    assert!(key.is_ascii(), "non-ASCII persisted key at {path}");
+                    objects(child, &editor_core::json::key_path(path, key), paths);
+                }
+            }
+            Value::Array(values) => {
+                for (index, child) in values.iter().enumerate() {
+                    objects(child, &editor_core::json::index_path(path, index), paths);
+                }
+            }
+            _ => {}
+        }
+    }
+    let mut paths = Vec::new();
+    objects(&document, "", &mut paths);
+    assert!(!paths.is_empty());
+    for path in paths {
+        for extra in ["unexpected_ascii", "😀"] {
+            let mut changed = document.clone();
+            changed
+                .pointer_mut(&path)
+                .unwrap()
+                .as_object_mut()
+                .unwrap()
+                .insert(extra.to_owned(), json!(false));
+            let raw = serde_json::to_vec(&changed).unwrap();
+            let refusal = decode_candidate_with_limits(&raw, Limits::default()).unwrap_err();
+            assert_eq!(
+                refusal.code,
+                KwdjErrorCode::UnknownAttribute,
+                "{path}: {extra}"
+            );
+        }
+    }
+}
+
 #[test]
 fn every_profile_node_and_mark_round_trips_through_generic_snapshot() {
     let p = paragraph();
@@ -75,6 +118,7 @@ fn every_profile_node_and_mark_round_trips_through_generic_snapshot() {
             content,
         );
         let source = decode_normalize_validate(&bytes, &Identities).unwrap();
+        assert_closed_ascii_keys(source.document().to_json_value());
         let generic = source.document().to_core_document();
         let mut pending: Vec<_> = generic.children.iter().collect();
         while let Some(n) = pending.pop() {

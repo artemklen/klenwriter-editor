@@ -214,8 +214,8 @@ fn project_node(node: &Node, mode: Mode, work: &mut Work) -> Projected {
     work.visit()?;
     match node {
         Node::Text { text, .. } => work.text(text),
-        Node::HardBreak => work.text("\n"),
-        Node::SceneBreak | Node::StanzaBreak { .. } => Ok(String::new()),
+        Node::HardBreak {} => work.text("\n"),
+        Node::SceneBreak {} | Node::StanzaBreak { .. } => Ok(String::new()),
         Node::Paragraph { content, .. }
         | Node::Heading { content, .. }
         | Node::CodeBlock { content, .. }
@@ -273,7 +273,7 @@ fn project_inline(nodes: &[Node], mode: Mode, work: &mut Work) -> Projected {
         work.visit()?;
         match node {
             Node::Text { text, .. } => work.append(&mut out, text)?,
-            Node::HardBreak => work.append(&mut out, "\n")?,
+            Node::HardBreak {} => work.append(&mut out, "\n")?,
             other => {
                 let part = project_node(other, mode, work)?;
                 work.append(&mut out, &part)?;
@@ -398,12 +398,12 @@ mod exhaustive_coverage {
                 content: vec![text(
                     "h",
                     Some(vec![
-                        Mark::Code,
-                        Mark::Strong,
-                        Mark::Emphasis,
-                        Mark::Strike,
-                        Mark::Subscript,
-                        Mark::Superscript,
+                        Mark::Code {},
+                        Mark::Strong {},
+                        Mark::Emphasis {},
+                        Mark::Strike {},
+                        Mark::Subscript {},
+                        Mark::Superscript {},
                         Mark::TextColor {
                             attrs: ColorAttrs {
                                 token: ColorToken::Accent,
@@ -428,8 +428,8 @@ mod exhaustive_coverage {
                     ]),
                 )],
             },
-            Node::HardBreak,
-            Node::SceneBreak,
+            Node::HardBreak {},
+            Node::SceneBreak {},
             Node::CodeBlock {
                 attrs: Some(CodeBlockAttrs {
                     language: "text".into(),

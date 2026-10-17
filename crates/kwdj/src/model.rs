@@ -183,8 +183,8 @@ pub enum Node {
         attrs: HeadingAttrs,
         content: Vec<Node>,
     },
-    HardBreak,
-    SceneBreak,
+    HardBreak {},
+    SceneBreak {},
     CodeBlock {
         #[serde(skip_serializing_if = "Option::is_none")]
         attrs: Option<CodeBlockAttrs>,
@@ -265,8 +265,8 @@ impl Node {
             Self::Text { .. } => "text",
             Self::Paragraph { .. } => "paragraph",
             Self::Heading { .. } => "heading",
-            Self::HardBreak => "hard_break",
-            Self::SceneBreak => "scene_break",
+            Self::HardBreak {} => "hard_break",
+            Self::SceneBreak {} => "scene_break",
             Self::CodeBlock { .. } => "code_block",
             Self::Blockquote { .. } => "blockquote",
             Self::ListItem { .. } => "list_item",
@@ -293,12 +293,12 @@ impl Node {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields, tag = "type", rename_all = "snake_case")]
 pub enum Mark {
-    Strong,
-    Emphasis,
-    Strike,
-    Code,
-    Subscript,
-    Superscript,
+    Strong {},
+    Emphasis {},
+    Strike {},
+    Code {},
+    Subscript {},
+    Superscript {},
     TextColor { attrs: ColorAttrs },
     Highlight { attrs: HighlightAttrs },
     Link { attrs: LinkAttrs },
@@ -308,12 +308,12 @@ pub enum Mark {
 impl Mark {
     pub fn kind(&self) -> &'static str {
         match self {
-            Self::Strong => "strong",
-            Self::Emphasis => "emphasis",
-            Self::Strike => "strike",
-            Self::Code => "code",
-            Self::Subscript => "subscript",
-            Self::Superscript => "superscript",
+            Self::Strong {} => "strong",
+            Self::Emphasis {} => "emphasis",
+            Self::Strike {} => "strike",
+            Self::Code {} => "code",
+            Self::Subscript {} => "subscript",
+            Self::Superscript {} => "superscript",
             Self::TextColor { .. } => "text_color",
             Self::Highlight { .. } => "highlight",
             Self::Link { .. } => "link",
@@ -323,12 +323,12 @@ impl Mark {
 
     pub fn precedence(&self) -> u8 {
         match self {
-            Self::Code => 0,
-            Self::Strong => 1,
-            Self::Emphasis => 2,
-            Self::Strike => 3,
-            Self::Subscript => 4,
-            Self::Superscript => 5,
+            Self::Code {} => 0,
+            Self::Strong {} => 1,
+            Self::Emphasis {} => 2,
+            Self::Strike {} => 3,
+            Self::Subscript {} => 4,
+            Self::Superscript {} => 5,
             Self::TextColor { .. } => 6,
             Self::Highlight { .. } => 7,
             Self::Link { .. } => 8,
@@ -371,8 +371,8 @@ impl editor_core::document::TreeNode for Node {
         use editor_core::document::Primitive;
         match self {
             Self::Text { .. } => Primitive::Text,
-            Self::HardBreak => Primitive::HardBreak,
-            Self::SceneBreak | Self::StanzaBreak { .. } => Primitive::BlockAtom,
+            Self::HardBreak {} => Primitive::HardBreak,
+            Self::SceneBreak {} | Self::StanzaBreak { .. } => Primitive::BlockAtom,
             Self::Paragraph { .. }
             | Self::Heading { .. }
             | Self::CodeBlock { .. }
@@ -382,9 +382,10 @@ impl editor_core::document::TreeNode for Node {
     }
     fn children(&self) -> &[Self] {
         match self {
-            Self::Text { .. } | Self::HardBreak | Self::SceneBreak | Self::StanzaBreak { .. } => {
-                &[]
-            }
+            Self::Text { .. }
+            | Self::HardBreak {}
+            | Self::SceneBreak {}
+            | Self::StanzaBreak { .. } => &[],
             Self::Paragraph { content, .. }
             | Self::Heading { content, .. }
             | Self::CodeBlock { content, .. }
