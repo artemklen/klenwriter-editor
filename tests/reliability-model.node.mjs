@@ -19,6 +19,7 @@ test('finite model agrees with hand-authored UTF16/Unicode/isolated history trac
     assert.deepEqual(checkpoints.map(item => item.history.undo_units), name.undo);
     assert.deepEqual(checkpoints.map(item => item.history.redo_units), name.redo);
     assert.deepEqual(checkpoints.map(item => item.document_revision), name.revisions);
+    assert.deepEqual(checkpoints.map(item => item.dirty), name.dirty);
   }
 });
 test('seeded exploration is reproducible, stratified, bounded and retains sentinel/Unicode boundaries', () => {

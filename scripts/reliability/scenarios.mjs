@@ -46,10 +46,10 @@ function binding(context, registry) {
 
 export function makeScenario({ id, seed = 0, context, initialText, edits }) {
   const registry_json = registryFor(context), registry = JSON.parse(registry_json);
-  let text = initialText, selection = null, revision = 0;
+  let text = initialText, selection = null, revision = 0, dirty = false;
   const undo = [], redo = [], actions = [];
   const expected = effect => ({ effect, canonical_json: canonical(documentValue(context, text)),
-    selection: clone(selection), history: { undo_units: undo.length, redo_units: redo.length }, dirty: text !== initialText,
+    selection: clone(selection), history: { undo_units: undo.length, redo_units: redo.length }, dirty,
     document_revision: String(revision) });
   const initialExpected = expected('unchanged');
   for (const edit of edits) {
@@ -62,7 +62,7 @@ export function makeScenario({ id, seed = 0, context, initialText, edits }) {
     if (next === text) throw new Error('generated nontrivial replacement required');
     text = next; selection = { anchor_utf16: from + inserted.length, focus_utf16: from + inserted.length };
     const after = { text, selection: clone(selection) };
-    undo.push({ before, after }); redo.length = 0; revision++;
+    undo.push({ before, after }); redo.length = 0; revision++; dirty = true;
     actions.push({ op: 'insert_text', text: inserted, isolated: true, expected: expected('changed') });
   }
   const count = undo.length;

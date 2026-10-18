@@ -28,7 +28,7 @@ and native-operation fixtures remain separate.
 
 `initialExpected` and every action's `expected` have complete `canonical_json`,
 logical `selection:null|{anchor_utf16,focus_utf16}`, history undo/redo unit counts,
-dirty baseline identity and document revision string. These values are computed
+conservative dirty flag and document revision string. Dirty remains true after the first document commit; undo does not reconcile saved content. This scenario has no save/reconcile action. These values are computed
 before calling the engine. Logical selection must map to an actually valid
 physical position; it is not permission to ignore invalid DTOs or identity.
 `effect:state` denotes the model's selection navigation; it is not a new SDK
