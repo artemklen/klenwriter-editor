@@ -1,0 +1,935 @@
+{
+  "format": "klenwriter-notes-native-command-vectors/1",
+  "license": "MIT OR Apache-2.0",
+  "source": "Independent synthetic command inputs/expected literal templates frozen before Notes CommandProvider implementation; no product execution used. Codec53 packet remains immutable.",
+  "pathConvention": "Paths are child indices relative to the semantic document root (not the engine synthetic root). All offsets are UTF16 code units. Runtime IDs bind by these paths within each run.",
+  "queryContract": "Query uses exact same captured payload/context as execution, preserves all state and next visible ID; availability/effect/work agree. Refused/unchanged events0,changed events1.",
+  "historyContract": "Every changed case undo restores complete input/selection/storedMarks and original IDs, redo restores expected result. Refused/unchanged do not add a unit or destroy existing redo.",
+  "cases": [
+    {
+      "id": "NC001-insert-nbsp",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/insert-text",
+        "payload": {
+          "text": " "
+        }
+      },
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"a b\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "path": [
+              0,
+              0
+            ],
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "path": [
+              0,
+              0
+            ],
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        "storedMarks": null,
+        "documentRevisionDelta": 1,
+        "historyUnitDelta": 1,
+        "events": 1
+      }
+    },
+    {
+      "id": "NC002-reverse-range",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"abcd\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/insert-text",
+        "payload": {
+          "text": "x"
+        }
+      },
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"axd\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "path": [
+              0,
+              0
+            ],
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "path": [
+              0,
+              0
+            ],
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        "storedMarks": null,
+        "documentRevisionDelta": 1,
+        "historyUnitDelta": 1,
+        "events": 1
+      }
+    },
+    {
+      "id": "NC003-empty-paragraph-child-gap",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "child",
+          "path": [
+            0
+          ],
+          "index": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "child",
+          "path": [
+            0
+          ],
+          "index": 0,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/insert-text",
+        "payload": {
+          "text": "x"
+        }
+      },
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"x\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "path": [
+              0,
+              0
+            ],
+            "offset": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "path": [
+              0,
+              0
+            ],
+            "offset": 1,
+            "affinity": "after"
+          }
+        },
+        "storedMarks": null,
+        "documentRevisionDelta": 1,
+        "historyUnitDelta": 1,
+        "events": 1
+      }
+    },
+    {
+      "id": "NC004-textblock-edge-before",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "edge",
+          "path": [
+            0
+          ],
+          "side": "before"
+        },
+        "focus": {
+          "kind": "edge",
+          "path": [
+            0
+          ],
+          "side": "before"
+        }
+      },
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/insert-text",
+        "payload": {
+          "text": "x"
+        }
+      },
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"xab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "path": [
+              0,
+              0
+            ],
+            "offset": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "path": [
+              0,
+              0
+            ],
+            "offset": 1,
+            "affinity": "after"
+          }
+        },
+        "storedMarks": null,
+        "documentRevisionDelta": 1,
+        "historyUnitDelta": 1,
+        "events": 1
+      }
+    },
+    {
+      "id": "NC005-textblock-edge-after",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "edge",
+          "path": [
+            0
+          ],
+          "side": "after"
+        },
+        "focus": {
+          "kind": "edge",
+          "path": [
+            0
+          ],
+          "side": "after"
+        }
+      },
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/insert-text",
+        "payload": {
+          "text": "x"
+        }
+      },
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"abx\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "path": [
+              0,
+              0
+            ],
+            "offset": 3,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "path": [
+              0,
+              0
+            ],
+            "offset": 3,
+            "affinity": "after"
+          }
+        },
+        "storedMarks": null,
+        "documentRevisionDelta": 1,
+        "historyUnitDelta": 1,
+        "events": 1
+      }
+    },
+    {
+      "id": "NC006-egc-safe-end-inherits-highlight",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[{\"attrs\":{\"color\":\"mint\"},\"type\":\"org.example.notes/highlight\"}],\"text\":\"é👩‍💻\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 7,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 7,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/insert-text",
+        "payload": {
+          "text": "!"
+        }
+      },
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[{\"attrs\":{\"color\":\"mint\"},\"type\":\"org.example.notes/highlight\"}],\"text\":\"é👩‍💻!\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "path": [
+              0,
+              0
+            ],
+            "offset": 8,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "path": [
+              0,
+              0
+            ],
+            "offset": 8,
+            "affinity": "after"
+          }
+        },
+        "storedMarks": null,
+        "documentRevisionDelta": 1,
+        "historyUnitDelta": 1,
+        "events": 1
+      }
+    },
+    {
+      "id": "NC007-explicit-plain-override",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[{\"attrs\":{\"color\":\"sun\"},\"type\":\"org.example.notes/highlight\"}],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": [],
+      "command": {
+        "id": "org.example.notes/command/insert-text",
+        "payload": {
+          "text": "x"
+        }
+      },
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[{\"attrs\":{\"color\":\"sun\"},\"type\":\"org.example.notes/highlight\"}],\"text\":\"a\",\"type\":\"org.example.notes/text\"},{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"x\",\"type\":\"org.example.notes/text\"},{\"attrs\":{},\"children\":[],\"marks\":[{\"attrs\":{\"color\":\"sun\"},\"type\":\"org.example.notes/highlight\"}],\"text\":\"b\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "path": [
+              0,
+              1
+            ],
+            "offset": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "path": [
+              0,
+              1
+            ],
+            "offset": 1,
+            "affinity": "after"
+          }
+        },
+        "storedMarks": [],
+        "documentRevisionDelta": 1,
+        "historyUnitDelta": 1,
+        "events": 1
+      }
+    },
+    {
+      "id": "NC008-explicit-highlight-override",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": [
+        {
+          "type": "org.example.notes/highlight",
+          "attrs": {
+            "color": "mint"
+          }
+        }
+      ],
+      "command": {
+        "id": "org.example.notes/command/insert-text",
+        "payload": {
+          "text": "x"
+        }
+      },
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"a\",\"type\":\"org.example.notes/text\"},{\"attrs\":{},\"children\":[],\"marks\":[{\"attrs\":{\"color\":\"mint\"},\"type\":\"org.example.notes/highlight\"}],\"text\":\"x\",\"type\":\"org.example.notes/text\"},{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"b\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "path": [
+              0,
+              1
+            ],
+            "offset": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "path": [
+              0,
+              1
+            ],
+            "offset": 1,
+            "affinity": "after"
+          }
+        },
+        "storedMarks": [
+          {
+            "type": "org.example.notes/highlight",
+            "attrs": {
+              "color": "mint"
+            }
+          }
+        ],
+        "documentRevisionDelta": 1,
+        "historyUnitDelta": 1,
+        "events": 1
+      }
+    },
+    {
+      "id": "NC009-delete-selected-range",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"abcd\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/insert-text",
+        "payload": {
+          "text": ""
+        }
+      },
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ad\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "path": [
+              0,
+              0
+            ],
+            "offset": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "path": [
+              0,
+              0
+            ],
+            "offset": 1,
+            "affinity": "after"
+          }
+        },
+        "storedMarks": null,
+        "documentRevisionDelta": 1,
+        "historyUnitDelta": 1,
+        "events": 1
+      }
+    },
+    {
+      "id": "NC010-empty-equivalent-range-noop",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "edge",
+          "path": [
+            0
+          ],
+          "side": "before"
+        }
+      },
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/insert-text",
+        "payload": {
+          "text": ""
+        }
+      },
+      "expected": {
+        "kind": "unchanged",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": "same_as_before",
+        "storedMarks": null,
+        "documentRevisionDelta": 0,
+        "historyUnitDelta": 0,
+        "events": 0
+      }
+    },
+    {
+      "id": "NC011-root-title-owned-metadata",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/set-title",
+        "payload": {
+          "title": "new title"
+        }
+      },
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"new title\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": "same_as_before",
+        "storedMarks": null,
+        "documentRevisionDelta": 1,
+        "historyUnitDelta": 1,
+        "events": 1
+      }
+    },
+    {
+      "id": "NC012-root-tags-order-and-duplicates",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/set-tags",
+        "payload": {
+          "tags": [
+            "z",
+            "",
+            "z",
+            "Я"
+          ]
+        }
+      },
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[\"z\",\"\",\"z\",\"Я\"],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": "same_as_before",
+        "storedMarks": null,
+        "documentRevisionDelta": 1,
+        "historyUnitDelta": 1,
+        "events": 1
+      }
+    },
+    {
+      "id": "NC013-identical-title-noop",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/set-title",
+        "payload": {
+          "title": ""
+        }
+      },
+      "expected": {
+        "kind": "unchanged",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": "same_as_before",
+        "storedMarks": null,
+        "documentRevisionDelta": 0,
+        "historyUnitDelta": 0,
+        "events": 0
+      }
+    },
+    {
+      "id": "NC014-title-257-byte-refusal",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/set-title",
+        "payload": {
+          "title": "ééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééa"
+        }
+      },
+      "expected": {
+        "kind": "refused",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": "same_as_before",
+        "storedMarks": null,
+        "documentRevisionDelta": 0,
+        "historyUnitDelta": 0,
+        "events": 0,
+        "code": "notes.invalid_attribute",
+        "path": "/root/attrs/title"
+      }
+    },
+    {
+      "id": "NC015-tags-17-item-refusal",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/set-tags",
+        "payload": {
+          "tags": [
+            "t",
+            "t",
+            "t",
+            "t",
+            "t",
+            "t",
+            "t",
+            "t",
+            "t",
+            "t",
+            "t",
+            "t",
+            "t",
+            "t",
+            "t",
+            "t",
+            "t"
+          ]
+        }
+      },
+      "expected": {
+        "kind": "refused",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": "same_as_before",
+        "storedMarks": null,
+        "documentRevisionDelta": 0,
+        "historyUnitDelta": 0,
+        "events": 0,
+        "code": "notes.invalid_attribute",
+        "path": "/root/attrs/tags"
+      }
+    },
+    {
+      "id": "NC016-cross-parent-range-refusal",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"},{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"cd\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": [
+            1,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/insert-text",
+        "payload": {
+          "text": "x"
+        }
+      },
+      "expected": {
+        "kind": "refused",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"},{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"cd\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": "same_as_before",
+        "storedMarks": null,
+        "documentRevisionDelta": 0,
+        "historyUnitDelta": 0,
+        "events": 0,
+        "code": "notes.command_unsupported_context",
+        "path": "/selection"
+      }
+    },
+    {
+      "id": "NC017-selection-required",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": null,
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/insert-text",
+        "payload": {
+          "text": "x"
+        }
+      },
+      "expected": {
+        "kind": "refused",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": "same_as_before",
+        "storedMarks": null,
+        "documentRevisionDelta": 0,
+        "historyUnitDelta": 0,
+        "events": 0,
+        "code": "notes.command_selection_required",
+        "path": "/selection"
+      }
+    },
+    {
+      "id": "NC018-egc-interior-atomically-refused",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"é\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/insert-text",
+        "payload": {
+          "text": "x"
+        }
+      },
+      "expected": {
+        "kind": "refused",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"é\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": "same_as_before",
+        "storedMarks": null,
+        "documentRevisionDelta": 0,
+        "historyUnitDelta": 0,
+        "events": 0,
+        "code": "position.invalid",
+        "path": null
+      }
+    }
+  ]
+}

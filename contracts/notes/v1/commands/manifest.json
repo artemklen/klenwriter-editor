@@ -1,0 +1,21 @@
+{
+  "format": "klenwriter-notes-command-literal-manifest/1",
+  "license": "MIT OR Apache-2.0",
+  "codecOracleCommit": "39fe1c0",
+  "source": "New independent18-case command oracle frozen before native command implementation. Existing codec53 files unchanged.",
+  "cases": 18,
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 3222,
+      "sha256": "cda737ba82c67da9c1770c2ab8e5ba1e5d7618ee5d43efa32ac4f9b6b70315ee"
+    },
+    {
+      "path": "vectors.json",
+      "bytes": 34354,
+      "sha256": "43d060a1e3a07d1c44d9eaa9e57d7aa47347d8f13790e8641acbd38aad20e4f9"
+    }
+  ],
+  "manifestSelfExcluded": true,
+  "implementationRun": false
+}
