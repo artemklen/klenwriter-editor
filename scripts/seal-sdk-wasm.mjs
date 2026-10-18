@@ -64,7 +64,7 @@ export function encodeSdkWasmSeal(raw, identity) {
 /** Called only by the artifact builder, with the actual native Rust manifest. */
 export function sealPackagedSdkWasm(wasmPath, nativeManifest, expectedBuildId) {
   const root = fileURLToPath(new URL('../', import.meta.url));
-  const wire = readFileSync(resolve(root, 'crates/wasm/src/sdk_wire.rs'), 'utf8');
+  const wire = readFileSync(resolve(root, 'crates/protocol/src/lib.rs'), 'utf8');
   const abi = [...wire.matchAll(/pub const SDK_ABI: &str = "([^"]+)";/g)];
   need(abi.length === 1 && nativeManifest.abi === abi[0][1], 'Native compiled ABI differs from authoritative Rust constant');
   need(nativeManifest.build_id === expectedBuildId && /^sha256:[0-9a-f]{64}$/.test(expectedBuildId), 'Native/source build identities differ');

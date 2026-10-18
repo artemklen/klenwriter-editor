@@ -19,10 +19,15 @@ assert.equal(identity.versions.kwdjProfileId, 'org.klenwriter.kwdj');
 // OSR-63 defines editor-sdk/1 separately from package SemVer/KWDJ schema.
 // A server native RPC protocol remains undefined; the shared DTO harness is not RPC.
 assert.equal(identity.versions.publicHostApiRevision, 1);
+assert.deepEqual(identity.versions.supportedPublicHostApiRevisions, [1, 2]);
 assert.equal(identity.versions.nativeWireProtocolRevision, null);
 assert.equal(identity.versions.wasmBindgenAbi, '0.2.129');
-assert.deepEqual(Object.keys(identity.rust).sort(), ['core', 'engine', 'kwdj', 'wasm']);
+const originalRust = ['core', 'engine', 'kwdj', 'wasm'];
+const extensionRust = ['bridge', 'extensions', 'kwdj-sdk', 'notes', 'notes-sdk', 'protocol', 'registry'];
+assert.deepEqual(Object.keys(identity.rust).sort(), [...originalRust, ...extensionRust].sort());
 assert.deepEqual(Object.keys(identity.web).sort(), ['angular', 'dom', 'kwdj', 'sdk', 'vanilla', 'wasm']);
+assert.deepEqual(cargo.packages.map(pkg => pkg.name).sort(),
+  Object.values(identity.rust).map(entry => entry.name).sort(), 'Each workspace crate has one distribution identity');
 
 const names = new Set();
 const nativeInventory = [];
@@ -79,10 +84,21 @@ for (const [kind, entries] of Object.entries({ rust: identity.rust, web: identit
     assert(notice.includes('SOURCE-PROVENANCE.json'));
   }
 }
-const observation = readJson('evidence/osr-54/availability.json');
-assert.deepEqual(observation.records.map(item => item.name).sort(), [...names].sort());
-assert(observation.records.every(item => item.status === 404));
-assert(Number.isFinite(Date.parse(observation.observedAt)));
+// Preserve the original ten-name observation; later additions have their own dated receipt.
+const observations = [
+  [readJson('evidence/osr-54/availability.json'),
+    [...originalRust.map(id => identity.rust[id].name), ...Object.values(identity.web).map(entry => entry.name)]],
+  [readJson('evidence/osr-64/package-name-availability.json'), extensionRust.map(id => identity.rust[id].name)],
+];
+const observedNames = [];
+for (const [observation, expectedNames] of observations) {
+  assert.deepEqual(observation.records.map(item => item.name).sort(), expectedNames.sort());
+  assert(observation.records.every(item => item.status === 404));
+  assert(Number.isFinite(Date.parse(observation.observedAt)));
+  observedNames.push(...observation.records.map(item => item.name));
+}
+assert.equal(new Set(observedNames).size, observedNames.length, 'Name observations must not overlap');
+assert.deepEqual(observedNames.sort(), [...names].sort());
 mkdirSync('artifacts', { recursive: true });
 writeFileSync('artifacts/native-package-inventory.json', JSON.stringify(nativeInventory, null, 2) + '\n');
-console.log('10 distribution identities: names, independent version namespaces, SPDX, license texts and bundled provenance verified; publishing remains gated');
+console.log(`${names.size} distribution identities (11 Rust, 6 web): original 10 plus 7 separately observed names, independent version namespaces, SPDX, license texts and bundled provenance verified; publishing remains gated`);

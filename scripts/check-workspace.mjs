@@ -14,22 +14,63 @@ const metadata = JSON.parse(output('cargo', ['metadata', '--format-version=1', '
 const byId = new Map(metadata.packages.map(pkg => [pkg.id, pkg]));
 const members = new Set(metadata.workspace_members);
 const resolved = new Map(metadata.resolve.nodes.map(node => [node.id, node]));
-// Enforce the architectural boundary on the full transitive closure, not just imports.
-for (const name of ['klenwriter-editor-core', 'klenwriter-editor-engine', 'klenwriter-editor-kwdj']) {
-  const pkg = metadata.packages.find(pkg => pkg.name === name);
+const packageByName = new Map(metadata.packages.map(pkg => [pkg.name, pkg]));
+// Dev-only consumer tests may use the engine; they do not become profile runtime dependencies.
+function normalDependencies(id) {
+  return resolved.get(id).deps.filter(dep => dep.dep_kinds.some(kind => kind.kind === null));
+}
+function normalClosure(name) {
+  const pkg = packageByName.get(name);
+  assert(pkg, `Missing workspace package ${name}`);
   const closure = new Set();
   function visit(id) {
     if (closure.has(id)) return;
     closure.add(id);
-    for (const dep of resolved.get(id).dependencies) visit(dep);
+    for (const dep of normalDependencies(id)) visit(dep.pkg);
   }
   visit(pkg.id);
-  for (const id of closure) {
-    const dep = byId.get(id);
+  return [...closure].map(id => byId.get(id));
+}
+const genericRoles = ['core', 'engine', 'registry', 'extensions', 'protocol', 'bridge'];
+const hostlessRoles = [...genericRoles, 'kwdj', 'notes'];
+// Enforce the architectural boundary on the entire normal closure, including target-specific edges.
+for (const role of hostlessRoles) {
+  const name = identity.rust[role].name;
+  const closure = normalClosure(name);
+  for (const dep of closure) {
     assert(!/^(wasm-bindgen|js-sys|web-sys|sqlx|tokio|klenwriter-editor-wasm)/.test(dep.name), `${name} imports host/runtime ${dep.name}`);
-    if (name === 'klenwriter-editor-engine') assert.notEqual(dep.name, 'klenwriter-editor-kwdj');
-    if (name === 'klenwriter-editor-kwdj') assert.notEqual(dep.name, 'klenwriter-editor-engine');
-    if (name === 'klenwriter-editor-core') assert(!/^klenwriter-editor-(engine|kwdj)$/.test(dep.name));
+    if (genericRoles.includes(role)) assert(!/^klenwriter-editor-(kwdj|notes)(?:-sdk)?$/.test(dep.name),
+      `${name} imports concrete profile ${dep.name}`);
+    if (['kwdj', 'notes', 'registry', 'extensions', 'protocol'].includes(role)) {
+      assert.notEqual(dep.name, identity.rust.engine.name, `${name} imports engine through a normal dependency`);
+    }
+    if (role === 'core') assert(!/^klenwriter-editor-/.test(dep.name) || dep.name === name,
+      `Generic core imports sibling ${dep.name}`);
+    if (role === 'kwdj') assert(!/^klenwriter-editor-notes(?:-sdk)?$/.test(dep.name));
+    if (role === 'notes') assert(!/^klenwriter-editor-kwdj(?:-sdk)?$/.test(dep.name));
+  }
+}
+const msrvRoles = ['core', 'kwdj', 'registry', 'extensions', 'protocol', 'notes'];
+function rustVersion(version) {
+  const parts = version.split('.').map(Number);
+  assert(parts.every(Number.isSafeInteger), `Invalid Rust MSRV ${version}`);
+  return [parts[0], parts[1] ?? 0, parts[2] ?? 0];
+}
+function aboveMsrv(version) {
+  const ceiling = [1, 89, 0];
+  const parts = rustVersion(version);
+  for (let i = 0; i < ceiling.length; i++) {
+    if (parts[i] !== ceiling[i]) return parts[i] > ceiling[i];
+  }
+  return false;
+}
+for (const role of msrvRoles) {
+  const name = identity.rust[role].name;
+  assert.equal(packageByName.get(name).rust_version, '1.89.0', `${name}: public native MSRV`);
+  const closure = normalClosure(name);
+  for (const id of closure) {
+    if (id.rust_version) assert(!aboveMsrv(id.rust_version),
+      `${name}: normal dependency ${id.name} declares Rust ${id.rust_version}, above 1.89.0`);
   }
 }
 for (const pkg of metadata.packages) {
@@ -70,7 +111,12 @@ const report = {
   targets: ['native', 'wasm32-unknown-unknown'],
   rust: metadata.packages.map(pkg => ({ name: pkg.name, version: pkg.version, license: pkg.license,
     msrv: pkg.rust_version, source: pkg.source, targets: pkg.targets.map(target => target.kind),
-    dependencies: resolved.get(pkg.id).deps.map(dep => byId.get(dep.pkg).name) })).sort((a,b) => a.name.localeCompare(b.name)),
+    dependencies: resolved.get(pkg.id).deps.map(dep => byId.get(dep.pkg).name),
+    normalDependencies: normalDependencies(pkg.id).map(dep => byId.get(dep.pkg).name) })).sort((a,b) => a.name.localeCompare(b.name)),
+  normalArchitecture: { genericRoles, hostlessRoles, msrvRoles,
+    declaredMsrvCeiling: '1.89.0', scope: 'Normal dep_kinds only, all resolved targets; actual compiler checks are separate',
+    closures: Object.fromEntries(hostlessRoles.map(role => [role,
+      normalClosure(identity.rust[role].name).map(pkg => pkg.name).sort()])) },
   npm: Object.entries(lock.packages).map(([path, pkg]) => ({ path, version: pkg.version, license: pkg.license,
     dev: pkg.dev ?? false, link: pkg.link ?? false, dependencies: pkg.dependencies ?? {}, integrity: pkg.integrity })),
   artifacts: files.sort((a,b) => a.path.localeCompare(b.path)),

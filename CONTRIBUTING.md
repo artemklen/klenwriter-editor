@@ -98,6 +98,14 @@ generated TypeScript с Rust DTO; генератор — native-only optional bu
 lossless transport, bounded callbacks/snapshot handles и fatal-after-commit.
 Чистый JS consumer и отдельный strict-CSP SDK host используют prebuilt packages.
 
+`npm run test:extensions` проверяет явный SDK2, frozen runtime registry и отдельные
+notes-only/KWDJ-only native/WASM consumers через публичные crates. D0/D1,
+53 notes codec literals,18 команд и JSON recipe используют настоящий Session;
+[руководство автора](docs/extensions.md) описывает границы и test kit.
+SDK1 и его36 DTO сохраняются; SDK2 выбирается явно. Rust1.89 дополнительно
+проверяет normal closures registry/protocol/notes/extensions; engine/adapters
+и основной builder используют1.97.1.
+
 ## Артефакты и ограничения
 
 `artifacts/dependencies.json` содержит зафиксированные direct/transitive версии,

@@ -10,7 +10,11 @@
     "nativeWireProtocolRevision": null,
     "kwdjSchemaVersion": 1,
     "kwdjProfileId": "org.klenwriter.kwdj",
-    "wasmBindgenAbi": "0.2.129"
+    "wasmBindgenAbi": "0.2.129",
+    "supportedPublicHostApiRevisions": [
+      1,
+      2
+    ]
   },
   "publishingGate": "OSR-71",
   "rust": {
@@ -37,6 +41,41 @@
       "legacyName": "editor-internal-wasm",
       "path": "crates/wasm",
       "role": "Generic WASM composition root"
+    },
+    "registry": {
+      "name": "klenwriter-editor-registry",
+      "path": "crates/registry",
+      "role": "Bounded public frozen extension registry and schema compiler"
+    },
+    "protocol": {
+      "name": "klenwriter-editor-protocol",
+      "path": "crates/protocol",
+      "role": "Profile-independent shared bridge protocol"
+    },
+    "bridge": {
+      "name": "klenwriter-editor-bridge",
+      "path": "crates/bridge",
+      "role": "Typed generic Session bridge and endpoint factories"
+    },
+    "kwdj-sdk": {
+      "name": "klenwriter-editor-kwdj-sdk",
+      "path": "crates/kwdj-sdk",
+      "role": "Optional KWDJ SDK profile adapter"
+    },
+    "notes": {
+      "name": "klenwriter-editor-notes",
+      "path": "crates/notes",
+      "role": "Independent original notes profile and codec"
+    },
+    "extensions": {
+      "name": "klenwriter-editor-extensions",
+      "path": "crates/extensions",
+      "role": "Finite runtime command recipe provider"
+    },
+    "notes-sdk": {
+      "name": "klenwriter-editor-notes-sdk",
+      "path": "crates/notes-sdk",
+      "role": "Independent notes SDK profile adapter"
     }
   },
   "web": {
