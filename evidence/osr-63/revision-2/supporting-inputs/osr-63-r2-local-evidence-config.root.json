@@ -1,0 +1,43 @@
+{
+  "issue": "OSR-63",
+  "iteration": 2,
+  "reviewAttempt": 2,
+  "base": "62a52bb054b09f0e850762124b53229e2b195d14",
+  "parentSource": "8f09e211badfcf5fe7e7d1403f9bff465352ff0a",
+  "sourceSnapshot": "/tmp/osr-63-r2-local-source-closure-before-gates.json",
+  "collectorSha256": "b30a1925fc9e8728431347a2e75b337bd574197ef451900d31908698603bd7a3",
+  "sdkSupportSha256": "e518b55f4a1bafa846d0f64dc9019bd7594e533a601efc84775743709f06d2cf",
+  "gates": {
+    "workspace_check": "/tmp/osr-63-r2-local-full-check.log.actual-exit.json",
+    "msrv": "/tmp/osr-63-local-msrv.log.actual-exit.json",
+    "m0": "/tmp/osr-63-local-m0-browser.log.actual-exit.json",
+    "m0_summary": "/tmp/osr-63-local-m0-summary.log.actual-exit.json"
+  },
+  "msrvEquivalence": "/tmp/osr-63-msrv-source-equivalence.json",
+  "m0Observations": "/tmp/osr-63-local-m0-observations.json",
+  "m0SourceSnapshot": "/tmp/osr-63-local-source-closure-during-rust.json",
+  "frozenRestorationReceipt": "/tmp/osr-63-frozen58-restoration.json",
+  "supportingInputs": [
+    "/tmp/osr-63-r2-command-helper-fix-receipt.json",
+    "/tmp/osr-63-r2-controller-fatal-fix-receipt.json",
+    "/tmp/osr-63-r2-full-gate-source-confirmation.json",
+    "/tmp/osr-63-r2-prior-review-1-history-root-readback.json",
+    "/tmp/osr-63-r2-command-types-green.log.actual-exit.json",
+    "/tmp/osr-63-r2-event-fatal-red.log.actual-exit.json",
+    "/tmp/osr-63-r2-kwdj-command-data-red.log.actual-exit.json",
+    "/tmp/osr-63-r2-listener-event-fatal-final-green.log.actual-exit.json",
+    "/tmp/osr-63-r2-listener-fatal-green.log.actual-exit.json",
+    "/tmp/osr-63-r2-listener-fatal-red.log.actual-exit.json",
+    "/tmp/osr-63-r2-listener-fatal-sdk-tsc.log.actual-exit.json",
+    "/tmp/osr-63-r2-ts-compile.log.actual-exit.json",
+    "/tmp/osr-63-r2-binder-private-history-offline-proof.json",
+    "/tmp/osr-63-r2-original-helper-preservation.json",
+    "/tmp/osr-63-r2-fix-plan-write.json"
+  ],
+  "priorHistory": {
+    "zip": "/tmp/osr-63-r2-prior-review-1-history.zip",
+    "manifest": "/tmp/osr-63-r2-prior-review-1-history-manifest.json",
+    "receipt": "/tmp/osr-63-r2-prior-review-1-history-receipt.json"
+  },
+  "scope": "Root actual iteration2 builder config after full workspace exit0, exact unchanged328-source closure, qualified historical MSRV/M0 target equivalence and independent prior-history ZIP readback. Native/history ZIP inputs are private and must not be versioned."
+}

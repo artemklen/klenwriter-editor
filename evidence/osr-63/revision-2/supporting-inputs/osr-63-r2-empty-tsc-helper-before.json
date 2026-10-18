@@ -1,0 +1,11 @@
+{
+  "scope": "Actual helper failure recovery only; no product/source/gate changes. Original helper preserved before narrow empty-successful-tsc support fix.",
+  "before": {
+    "path": "/tmp/osr-63-r2-build-local-evidence.py",
+    "bytes": 37003,
+    "sha256": "f8659e0d7903b29238cd7c46124cbc9205b25ff973e8baf45bcf69ab503be79e"
+  },
+  "backup": "/tmp/osr-63-r2-build-local-evidence.before-empty-tsc.py",
+  "actualFailureLog": "/tmp/osr-63-r2-local-evidence-build.log",
+  "actualFailureExitReceipt": "/tmp/osr-63-r2-local-evidence-build.log.actual-exit.json"
+}

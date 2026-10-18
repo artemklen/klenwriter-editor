@@ -1,0 +1,35 @@
+{
+  "scope": "Actual binder nested function exercised with synthetic metadata, plus pure actual private ZIP validator; no builder/binder mains, Git/network or input changes.",
+  "passed": 6,
+  "failed": 0,
+  "checks": [
+    {
+      "case": "only-exact-private-proof-skipped-public-still-verified",
+      "status": "passed"
+    },
+    {
+      "case": "private-path-under-public-archive-still-refused",
+      "status": "passed",
+      "result": "refused"
+    },
+    {
+      "case": "renamed-private-subtree-not-exempt",
+      "status": "passed",
+      "result": "refused"
+    },
+    {
+      "case": "top-level-private-archive-not-exempt",
+      "status": "passed",
+      "result": "refused"
+    },
+    {
+      "case": "dedicated-actual-private-validator-checks-full642-files-requestchanges",
+      "status": "passed"
+    },
+    {
+      "case": "dedicated-validator-refuses-tampered-private-metadata",
+      "status": "passed",
+      "result": "refused"
+    }
+  ]
+}

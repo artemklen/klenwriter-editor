@@ -134,7 +134,10 @@ After ready, idle reads/query/submit are synchronous main-thread operations:
   selection/document. Release unused host requests explicitly.
 
 `kwdjCommand` constructs a namespaced generic command envelope from the generated
-profile-specific intent type. It does not perform validation. All15 compiled
+profile-specific intent type. It rejects accessors, `toJSON`, cycles and other
+unsupported data before serialization. `createCommand(id, payload)` applies the
+same bounded plain-data ownership check for a generic command envelope. Neither
+helper performs semantic validation. All15 compiled
 KWDJ command families, their actual query/execute and native history policy remain
 in Rust. There is no external restoration/replay privilege or semantic TS mirror.
 
@@ -149,6 +152,11 @@ Successful external remount first admits the whole replacement, then rotates
 generation, resets history/maps/events/baseline and cancels old ownership. Failed
 remount preserves the old Session. It never merges two documents or silently
 normalizes unknown data by dropping it.
+Remount carries `input_json` inside the request JSON. Its effective byte ceiling
+is the intersection of the profile/native input bound and the encoded request
+bound (at most16MiB, including escaping, envelope and captured stamp). A document
+accepted as initial input can therefore exceed the remount transport bound.
+That case returns a typed refusal and preserves the old Session/generation.
 
 ## Events and reentrancy
 
@@ -164,6 +172,9 @@ Listener mutations wait until the delivery fence and native acknowledgement.
 A thrown listener error is isolated and reported by a bounded error channel; it
 does not roll back or relabel the edit. Returning a Promise does not extend the
 fence. No external callback runs while a Rust Session is borrowed or preparing.
+If a listener's permitted read/query instead encounters a native fatal or
+transport failure after publication, the enclosing edit ticket is Fatal with
+`may_have_committed:true`; it cannot report an atomic refusal for that edit.
 
 Hard maxima are128 pending mutations,16MiB/request,32MiB queued payload and64
 listeners; controller options can reduce them. Tickets settle once and internal

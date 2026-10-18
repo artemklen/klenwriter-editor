@@ -1,0 +1,11 @@
+{
+  "issue": "OSR-63",
+  "iteration": 2,
+  "helpersAndConfig": {
+    "/tmp/osr-63-r2-build-local-evidence.py": "f8659e0d7903b29238cd7c46124cbc9205b25ff973e8baf45bcf69ab503be79e",
+    "/tmp/osr-63-r2-bind-local-validation.py": "14d406755fbe8cdede9430f7b5bcb8feb252f9fa86fcde41bf865ec694f41bca",
+    "/tmp/osr-63-r2-collect-prepared.py": "b30a1925fc9e8728431347a2e75b337bd574197ef451900d31908698603bd7a3",
+    "/tmp/osr-63-r2-collector-sdk.py": "e518b55f4a1bafa846d0f64dc9019bd7594e533a601efc84775743709f06d2cf",
+    "/tmp/osr-63-r2-local-evidence-config.root.json": "7b62bc30b0671c8334144c4f07a366cc220054330ffd9391c2286274020ad62e"
+  }
+}

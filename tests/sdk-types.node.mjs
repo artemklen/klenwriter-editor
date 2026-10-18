@@ -11,11 +11,15 @@ test('generated SDK declarations and controller surface reject invalid wire type
   const directory = mkdtempSync(join(tmpdir(), 'editor-sdk-types-'));
   try {
     const sdk = resolve('packages/sdk/dist/index.js').replaceAll('\\', '/');
-    const source = `import type { AttributeDto, HistoryHintDto, OpenOptions, SdkRequest, StampDto, EditorController, MutationRequest } from ${JSON.stringify(sdk)};
+    const source = `import { createCommand } from ${JSON.stringify(sdk)};
+import type { AttributeDto, HistoryHintDto, OpenOptions, SdkRequest, StampDto, EditorController, MutationRequest, CommandDto } from ${JSON.stringify(sdk)};
 const stamp: StampDto = {session:'opaque',generation:'1',revision:'18446744073709551615',selection_epoch:'0',history_epoch:'0'};
 const number: AttributeDto = {kind:'number',value:'18446744073709551615'};
 const hint: HistoryHintDto = {kind:'typing',token:'18446744073709551615',class:'delete_backward'};
 const request: SdkRequest = {kind:'command',stamp,command:{id:'custom.command',payload_json:'{}'},history_hint:hint};
+const genericCommand: CommandDto = createCommand('org.example.notes/command/insert', {text:'Я 😀'});
+// @ts-expect-error command IDs are strings, not rounded counters.
+createCommand(1, {});
 const options: OpenOptions = {abi:'editor-sdk/1',build_id:'sha256:fixture',profile:{profile_id:'x.y',profile_version:'1.0.0',codec_id:'x.y/json',wire_version:1,extensions:[]},admission:'validate',access:'editable',identities:{media:[],references:[]},limits:null};
 declare const editor: EditorController;
 editor.read({kind:'node',stamp,node:'opaque'});
@@ -43,7 +47,7 @@ editor.read({kind:'barrier',stamp});
 const missingMarks: MutationRequest = {kind:'set_stored_marks',stamp};
 // @ts-expect-error ProfileLimitsDto is explicit nullable, not omitted.
 const missingLimits: OpenOptions = {abi:'editor-sdk/1',build_id:'x',profile:options.profile,admission:'validate',access:'editable',identities:options.identities};
-void [number,options,badStamp,badNumber,badKind,badHint,badToken,missingSelection,missingMarks,missingLimits];
+void [number,options,genericCommand,badStamp,badNumber,badKind,badHint,badToken,missingSelection,missingMarks,missingLimits];
 `;
     writeFileSync(join(directory, 'fixture.mts'), source);
     writeFileSync(join(directory, 'tsconfig.json'), JSON.stringify({ compilerOptions: { target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', strict: true, noEmit: true, skipLibCheck: false }, files: ['fixture.mts'] }));

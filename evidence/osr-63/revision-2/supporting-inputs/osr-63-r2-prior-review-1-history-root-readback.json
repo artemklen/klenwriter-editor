@@ -1,0 +1,11 @@
+{
+  "issue": "OSR-63",
+  "iteration": 2,
+  "scope": "Independent root readback of private historical request-changes archive; no approval/close/removal.",
+  "zipSha256": "3c9ab144448f106415aa37760246983b606897b0240aa7b2ca900adacb0e5da2",
+  "entryCount": 643,
+  "indexedFiles": 642,
+  "indexedBytes": 67987886,
+  "allMemberHashesAndCRCVerified": true,
+  "embeddedManifestExact": true
+}

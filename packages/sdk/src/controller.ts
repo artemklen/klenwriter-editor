@@ -7,6 +7,7 @@ import { decodeResponse } from './response.js';
 
 export type DeepReadonly<T> = T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]> } : T;
 export type Response = DeepReadonly<SdkResponse>;
+type FatalResponse = DeepReadonly<Extract<SdkResponse, { status: 'fatal' }>>;
 export type Lifecycle = 'loading' | 'ready' | 'disposing' | 'destroyed' | 'fatal';
 export type ReadRequest = Extract<SdkRequest, { kind: 'state' | 'catalog' | 'node' | 'map_position' | 'resources' }>;
 export type QueryRequest = Extract<SdkRequest, { kind: 'query_command' | 'query_history' }>;
@@ -56,6 +57,7 @@ export class EditorController {
   #continuation: ReturnType<typeof setTimeout> | null = null;
   #callbackErrors: CallbackError[] = [];
   #onCallbackError: ((error: CallbackError) => void) | undefined;
+  #terminalFailure: FatalResponse | null = null;
   #limits = { pending: 128, requestBytes: HARD_REQUEST_BYTES, queuedBytes: 32 * 1024 * 1024, listeners: 64 };
 
   constructor(configuration: CreateEditorOptions) {
@@ -226,7 +228,11 @@ export class EditorController {
   #unavailable(): Response { return this.#refusal(this.#destroyRequested || this.#lifecycle === 'destroyed' ? 'sdk.disposed' : this.#lifecycle === 'fatal' ? 'sdk.fatal' : 'sdk.not_ready'); }
   #fatal(code: string, mayHaveCommitted: boolean, preserveOriginal = false): Response {
     const response = freezeData({ status: 'fatal' as const, diagnostic: { code, path: '', category: 'transport', details: {}, stamp: this.#state?.stamp ?? null, may_have_committed: mayHaveCommitted } });
+    this.#terminalFailure = response;
     this.#dispose('fatal', preserveOriginal); return response;
+  }
+  #deliveryFatal(failure: FatalResponse): Response {
+    return freezeData({ status: 'fatal', diagnostic: { ...failure.diagnostic, may_have_committed: true } });
   }
   #readonly(request: ReadRequest | QueryRequest, allowed: Set<string>): Response {
     if (this.#lifecycle !== 'ready' || this.#destroyRequested) return this.#unavailable();
@@ -240,7 +246,7 @@ export class EditorController {
   #wire(json: string, mutation: boolean): SdkResponse {
     try {
       const response = decodeResponse(this.#raw!.call(json));
-      if (response.status === 'fatal') this.#dispose('fatal');
+      if (response.status === 'fatal') { this.#terminalFailure = response; this.#dispose('fatal'); }
       return response;
     } catch { return this.#fatal('sdk.transport_failure', mutation) as SdkResponse; }
   }
@@ -267,7 +273,7 @@ export class EditorController {
   }
   #deliver(): Response | null {
     const batch = this.#wire('{"kind":"events"}', true);
-    if (batch.status !== 'ok') return batch.status === 'fatal' ? batch : this.#fatal('sdk.event_delivery_failure', true);
+    if (batch.status !== 'ok') return batch.status === 'fatal' ? this.#deliveryFatal(batch) : this.#fatal('sdk.event_delivery_failure', true);
     if (batch.value.kind !== 'events' || batch.value.gap) return this.#fatal('sdk.event_gap', true);
     if (!batch.value.events.length) return null;
     for (const event of batch.value.events) {
@@ -282,10 +288,16 @@ export class EditorController {
           if (returned instanceof Promise) void returned.catch(() => this.#callbackError(id));
         } catch { this.#callbackError(id); }
       }
-      if (this.#lifecycle !== 'ready') return this.#unavailable();
+      if (this.#lifecycle !== 'ready') {
+        // This event proves publication already happened. A failing readonly
+        // listener call keeps its own provenance, while the enclosing ticket
+        // must not suggest that retrying the published mutation is safe.
+        if (this.#lifecycle === 'fatal' && this.#terminalFailure) return this.#deliveryFatal(this.#terminalFailure);
+        return this.#unavailable();
+      }
     }
     const ack = this.#wire(JSON.stringify({ kind: 'acknowledge_events', cursor: batch.value.cursor }), true);
-    if (ack.status !== 'ok' || ack.value.kind !== 'released') return ack.status === 'fatal' ? ack : this.#fatal('sdk.event_acknowledgement_failure', true);
+    if (ack.status !== 'ok' || ack.value.kind !== 'released') return ack.status === 'fatal' ? this.#deliveryFatal(ack) : this.#fatal('sdk.event_acknowledgement_failure', true);
     return null;
   }
   #callbackError(listener: string) {

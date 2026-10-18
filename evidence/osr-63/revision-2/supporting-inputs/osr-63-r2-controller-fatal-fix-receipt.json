@@ -1,0 +1,105 @@
+{
+  "issue": "OSR-63",
+  "scope": "Supporting implementer focused controller repair for official review1 AC3 blocker. Controlled JS-only transport tests, not real Session/native acceptance. Whole coherent build/CI/new independent review remain separate.",
+  "changedSourceHashes": {
+    "packages/sdk/src/controller.ts": "636e8c7cc2188fd3ff1c701c41ec999176ec60e39487cd8a0c7ec91a50496195",
+    "tests/sdk-controller.node.mjs": "8c0a0ffbfe121087a5663456614663746a08b13ce9a8242cddd46b9389b627b1"
+  },
+  "ownedFiles": [
+    "packages/sdk/src/controller.ts",
+    "tests/sdk-controller.node.mjs"
+  ],
+  "fakeHelperEdited": false,
+  "actualFirstRed": {
+    "total": 21,
+    "passed": 17,
+    "failed": 4,
+    "witness": "Separate postcommit read/query RuntimeError or nativeFatal(false), actual controlledpublishedrevision1 then incorrect outerRefused."
+  },
+  "actualAdditionalRed": {
+    "total": 23,
+    "passed": 21,
+    "failed": 2,
+    "witness": "NativeFatal(false) during events or acknowledge_events after controlledpublication1."
+  },
+  "actualFinalGreen": {
+    "total": 23,
+    "passed": 23,
+    "failed": 0,
+    "newRegressionFamilies": 6,
+    "listenerScenarios": 12,
+    "eventPumpScenarios": 2
+  },
+  "implementation": "Keep one bounded immutable terminalFatal diagnostic; promote only the enclosing event-delivery ticket to Fatal/may_have_committed:true, preserving code/path/category/details/stamp. Read/query retains original false, pending notrun tickets Refusedfalse. No callback/raw payload retained.",
+  "coverage": [
+    "direct and queued document tickets",
+    "state-only selection/marks publication",
+    "read and query",
+    "transport trap and native fatal",
+    "event poll and acknowledgement native fatal",
+    "original diagnostic provenance and immutable result",
+    "pending notexecuted tickets and laterlistener fencing",
+    "destroy/free and all existing17 controller regression tests"
+  ],
+  "actualProofs": [
+    {
+      "path": "/tmp/osr-63-r2-listener-fatal-red.log.actual-exit.json",
+      "sha256": "73d99d75e4fce77d61c6baedef4ad934d0cff8007a279caa0b5327d98f060e08",
+      "actualReturnCode": 1,
+      "productionSourceUnchanged": true,
+      "rawLog": "/tmp/osr-63-r2-listener-fatal-red.log",
+      "rawLogBytes": 5184,
+      "rawLogSha256": "0ffa1cb464686dcfc1b78898b339c2919f465e6578d0c54db820275275d36d6e"
+    },
+    {
+      "path": "/tmp/osr-63-r2-listener-fatal-sdk-tsc.log.actual-exit.json",
+      "sha256": "a224c55d24c3b867ef198515fbb41c3667ffa8009fb055d8331abd9a0232b3cd",
+      "actualReturnCode": 0,
+      "productionSourceUnchanged": true,
+      "rawLog": "/tmp/osr-63-r2-listener-fatal-sdk-tsc.log",
+      "rawLogBytes": 0,
+      "rawLogSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/tmp/osr-63-r2-listener-fatal-green.log.actual-exit.json",
+      "sha256": "a51a9f56ac122caab6ab2780e9380a4009c678022e43b0902f5bc28571fd9cce",
+      "actualReturnCode": 0,
+      "productionSourceUnchanged": true,
+      "rawLog": "/tmp/osr-63-r2-listener-fatal-green.log",
+      "rawLogBytes": 2390,
+      "rawLogSha256": "4f13c6993c27dad34b3c96cfcd798218811ba6d0a2a1cc0f1d7d8e5cfbbd9d9c"
+    },
+    {
+      "path": "/tmp/osr-63-r2-event-fatal-red.log.actual-exit.json",
+      "sha256": "4c21abfa8de4aafc6a7743043a3865908b24e80e6e1719c711e127713d65f5f3",
+      "actualReturnCode": 1,
+      "productionSourceUnchanged": true,
+      "rawLog": "/tmp/osr-63-r2-event-fatal-red.log",
+      "rawLogBytes": 3997,
+      "rawLogSha256": "3a333c125b4a4fa74a4cc6d2e6f955e6312d8b7f0a591ca901e406da407ba99d"
+    },
+    {
+      "path": "/tmp/osr-63-r2-ts-compile.log.actual-exit.json",
+      "sha256": "9cf4bc4117f1d09012a7f4b423c2049a058247e71c6db88ec9903439fb9a9bc3",
+      "actualReturnCode": 0,
+      "productionSourceUnchanged": true,
+      "rawLog": "/tmp/osr-63-r2-ts-compile.log",
+      "rawLogBytes": 0,
+      "rawLogSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/tmp/osr-63-r2-listener-event-fatal-final-green.log.actual-exit.json",
+      "sha256": "32bdadb009c6077c2c8b565752df619c848170d2abddbe05da9c2324e68a1aea",
+      "actualReturnCode": 0,
+      "productionSourceUnchanged": true,
+      "rawLog": "/tmp/osr-63-r2-listener-event-fatal-final-green.log",
+      "rawLogBytes": 2630,
+      "rawLogSha256": "67e20dd3dab469d7b298930377077859bf257ccebcd761032b00734bdb8f9437"
+    }
+  ],
+  "qualifications": [
+    "Earlier targeted compile/green and two reds retain distinct sourceBefore/sourceAfter production identities, including parallel root edits in other authorized files. Each actual receipt is unchanged and per-run sourceUnchanged is recorded.",
+    "First four regression bodies remain unchanged in final test source; two event-pump families were appended before final23 run. Exact first-red test-file snapshot was not separately retained; final source+full gate provide final authoritative binding.",
+    "Final controlled run uses rebuilt JS SDK against existing packaged-module identity; no new whole native/WASM build or actualSession acceptance is claimed."
+  ]
+}

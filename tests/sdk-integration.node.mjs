@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { createEditor, loadSdk } from '../packages/sdk/dist/index.js';
+import { createCommand, createEditor, loadSdk } from '../packages/sdk/dist/index.js';
 import { kwdjCommand } from '../packages/kwdj/dist/index.js';
 
 let modulePromise;
@@ -32,6 +32,50 @@ const snapshot = editor => {
 const release = (editor, handle) => accepted(completed(editor.submit({ kind: 'release_snapshot', handle })));
 const canonical = editor => { const receipt = snapshot(editor); const value = receipt.canonical_json; release(editor, receipt.handle); return value; };
 const counts = module => JSON.parse(module.resourceCounts());
+
+test('packaged KWDJ helper: rejects accessors without invoking them', () => {
+  let reads = 0;
+  const kindGetter = { get kind() { reads++; return 'insert_text'; }, text: 'keep' };
+  assert.throws(() => kwdjCommand(kindGetter));
+  assert.equal(reads, 0);
+  const nestedGetter = { kind: 'toggle_mark', mark: { type_id: 'org.klenwriter.kwdj/strong', attributes: {
+    get extra() { reads++; return { kind: 'string', value: 'keep' }; },
+  } } };
+  assert.throws(() => kwdjCommand(nestedGetter));
+  assert.equal(reads, 0);
+});
+
+test('packaged KWDJ helper: rejects toJSON without invoking it', () => {
+  let calls = 0;
+  const intent = { kind: 'insert_text', text: 'keep', toJSON() { calls++; return { kind: 'insert_text', text: 'changed' }; } };
+  assert.throws(() => kwdjCommand(intent));
+  assert.equal(calls, 0);
+});
+
+test('packaged KWDJ helper: owns plain data and rejects inherited command names', () => {
+  const intent = Object.assign(Object.create(null), { kind: 'insert_text', text: 'Я 😀\u00a0e\u0301' });
+  const command = kwdjCommand(intent);
+  intent.text = 'later';
+  assert.deepEqual(command, { id: 'org.klenwriter.kwdj/command/insert-text', payload_json: '{"kind":"insert_text","text":"Я 😀\u00a0e\u0301"}' });
+  for (const kind of ['toString', 'constructor', '__proto__', 'unknown']) assert.throws(() => kwdjCommand({ kind }));
+  const mark = kwdjCommand({ kind: 'toggle_mark', mark: { type_id: 'org.klenwriter.kwdj/strong', attributes: {
+    count: { kind: 'number', value: '18446744073709551615' },
+  } } });
+  assert.equal(JSON.parse(mark.payload_json).mark.attributes.count.value, '18446744073709551615');
+});
+
+test('packaged command helper: captures payload before caller mutation without executing hooks', () => {
+  const payload = { text: 'keep', nested: [{ value: '18446744073709551615' }] };
+  const command = createCommand('org.example.notes/command/insert', payload);
+  payload.text = 'changed'; payload.nested[0].value = '0';
+  assert.deepEqual(JSON.parse(command.payload_json), { text: 'keep', nested: [{ value: '18446744073709551615' }] });
+  let calls = 0;
+  assert.throws(() => createCommand('org.example.notes/command/insert', { get text() { calls++; return 'unsafe'; } }));
+  assert.throws(() => createCommand('org.example.notes/command/insert', { toJSON() { calls++; return {}; } }));
+  assert.equal(calls, 0);
+  const cyclic = {}; cyclic.self = cyclic;
+  assert.throws(() => createCommand('org.example.notes/command/insert', cyclic));
+});
 
 async function open(input = document('abc'), optionOverrides = {}, controllerOverrides = {}) {
   const module = await productionModule(), baseline = counts(module), callbackErrors = [];

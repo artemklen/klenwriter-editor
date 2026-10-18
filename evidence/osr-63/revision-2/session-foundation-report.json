@@ -1,0 +1,182 @@
+{
+  "nativeWasmEqual": true,
+  "sourceHashes": {
+    "crates/core/src/history.rs": "5bc12b4773a7285f1f28080e63fb92e076600dfcfedc7f836930a1028c37bd49",
+    "crates/core/src/transaction.rs": "37ecc69684c532b90386a04af294d35a7e232bf3b11eeb2a5b6c911b3eee815f",
+    "crates/engine/src/history.rs": "43a28d7fc3e48138d71f4e0cb2889a572fa25dc545b39e6a0e793ae6d610382d",
+    "crates/engine/src/grouping.rs": "74768c0057ed06622deab548f1820724bb6c3db8a260bd49196f30a68a0c0c69",
+    "crates/engine/src/history_dispatch.rs": "0c483ac67dabe1ddeb60908a091d082ae33b36dec3e3ed10eb7855523e7120c6",
+    "crates/engine/src/dispatch.rs": "493a390af0ba25832e0be378a176d29f61ebe5cb47d6c81ca434f71777708c3a",
+    "crates/engine/src/transaction.rs": "34e628108dff27be15ab8ba1787ecf0132125ecf91d40d6ef38b438f7ac5260d",
+    "Cargo.lock": "bfbdc181539c4075ea62745cb2d87f6d3fc7e1714e7f159ceef1555c29d5a152",
+    "crates/core/src/admission.rs": "bab6926eb8be7010a2a7440e91ba668ec951757ae94c73c0c6d9decb35e87639",
+    "crates/core/src/positions.rs": "94ce04c115a062a6b203c2e124afcaa295ad6d9b26a4c0aaaa7bf155fcac50ff",
+    "crates/core/src/profile.rs": "1118c0164410a3471ea554e6f86276a641d6facdd0890ebf7b716fec805b29d5",
+    "crates/engine/src/identity.rs": "132ac933c9b3636bc2cac03cbdf43916226a11ea583cd1283172aa6f9f2bcf83",
+    "crates/engine/src/session.rs": "966c50828dec6928f87f50d962d9cbe2404866917b0736ea17c6db767e5c0da4",
+    "crates/engine/src/tree.rs": "d1bc2205af12063d4b3b6386f0198830d321ba35b8f2a1d4ae4962d075caedda",
+    "crates/engine/src/mapping.rs": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54",
+    "crates/kwdj/src/session_profile.rs": "96bcc4c5d8b070212e547345e880f4a6ffd7423ff4a8b8bebb5a4d22acc3b747",
+    "crates/wasm/examples/session_native.rs": "25cbfc92bec520246a78c308cb4762a3ef6dbff6a4f0b3a7d85e7b16052146a8",
+    "crates/wasm/examples/session_probe.rs": "6d4f71a7fe2a8b78667b701d3d4adb6a8a9e938dcc5b5f06e5f3f7fd11179620",
+    "crates/wasm/examples/support/session_observer.rs": "14a01169d91b0c94dbfc9e6541aa1b589b08bb2c60e2e443510df91e8b5d07b1",
+    "artifacts/session-foundation/probe_bg.wasm": "4de610c7d0e4f7f81e6ab9b4c0610bcdcb5249777316ea1ea719b0a5206708d9",
+    "tests/session.node.mjs": "a10d305003f3e629f13655cb70c7ac098c009a5b8cbf43133e8915328adba069"
+  },
+  "deferred": {
+    "second_production_profile": "OSR-64",
+    "transactions": "OSR-34",
+    "user_history": "OSR-36"
+  },
+  "groups": {
+    "binding_refusals": {
+      "cases": [
+        {
+          "case": "profile",
+          "code": "profile.unsupported_profile"
+        },
+        {
+          "case": "profile-version",
+          "code": "profile.unsupported_profile_version"
+        },
+        {
+          "case": "codec",
+          "code": "profile.unsupported_codec"
+        },
+        {
+          "case": "wire-version",
+          "code": "profile.unsupported_wire_version"
+        },
+        {
+          "case": "missing-extension",
+          "code": "profile.missing_extension"
+        },
+        {
+          "case": "unknown-extension",
+          "code": "profile.unknown_extension"
+        },
+        {
+          "case": "extension-version",
+          "code": "profile.unsupported_extension_version"
+        },
+        {
+          "case": "persisted-version",
+          "code": "kwdj.unsupported_schema_version"
+        },
+        {
+          "case": "uninstalled-node",
+          "code": "kwdj.unknown_node"
+        },
+        {
+          "case": "session-metadata-input",
+          "code": "kwdj.unknown_attribute"
+        }
+      ],
+      "status": "passed"
+    },
+    "cross_mark_graphemes": {
+      "cross_mark_boundary": "refused",
+      "failed_operations_writes": 0,
+      "hard_break_boundary": "accepted",
+      "scalar_read": "accepted",
+      "status": "passed"
+    },
+    "lifecycle_selection": {
+      "document_revision": 0,
+      "failed_remount_preserved_state": true,
+      "guards": [
+        "read-only",
+        "stale-revision",
+        "stale-session",
+        "closed",
+        "poisoned"
+      ],
+      "readonly_scalar_focus": 6,
+      "remount_reset_selection": true,
+      "reverse_anchor": 10,
+      "selection_epoch": 1,
+      "status": "passed"
+    },
+    "retained_maps": {
+      "after_delete": "abf",
+      "after_insert": "aЖbf",
+      "composed_offset": 3,
+      "endpoint_deleted": false,
+      "endpoint_offset": 2,
+      "evicted_chain": "stale",
+      "interior_deleted": true,
+      "session_revision": 0,
+      "status": "passed"
+    },
+    "snapshots": {
+      "cases": [
+        {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"Яé👩🏽‍💻 שלום\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "case": "prose-unicode",
+          "generation_advanced": true,
+          "runtime_metadata_exported": false
+        },
+        {
+          "canonical": "{\"content\":[{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"Строка\",\"type\":\"text\"}],\"type\":\"verse_line\"},{\"attrs\":{\"blank_lines\":2},\"type\":\"stanza_break\"},{\"content\":[{\"text\":\"次\",\"type\":\"text\"}],\"type\":\"verse_line\"}],\"type\":\"verse\"}],\"profile\":\"poetry\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "case": "poetry-root-context",
+          "generation_advanced": true,
+          "runtime_metadata_exported": false
+        },
+        {
+          "canonical": "{\"content\":[{\"content\":[{\"content\":[{\"text\":\"e\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"́\",\"type\":\"text\"},{\"type\":\"hard_break\"},{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"attrs\":{\"align\":\"center\",\"alt\":\"fixture\",\"media_asset_id\":\"11111111-1111-4111-8111-111111111111\"},\"type\":\"media_image\"},{\"content\":[{\"text\":\"end\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "case": "nested-marks-atoms",
+          "generation_advanced": true,
+          "runtime_metadata_exported": false
+        }
+      ],
+      "status": "passed"
+    },
+    "structural_drafts": {
+      "atom_deleted_fallback": 3,
+      "cycle": "refused",
+      "delete_fallback": 2,
+      "foreign_revival": "refused",
+      "gap_before": 2,
+      "invalid_revival_retains_ownership": true,
+      "move_order": [
+        "P",
+        "Q",
+        "section",
+        "image"
+      ],
+      "revival": "same-owned-identities",
+      "session_changed": false,
+      "status": "passed"
+    },
+    "text_drafts": {
+      "abandoned_id_reused": false,
+      "boundary_after": [
+        "right",
+        0
+      ],
+      "boundary_before": [
+        "left",
+        2
+      ],
+      "candidate": "abXz",
+      "committed": "abЯz",
+      "joined": "abЯz",
+      "restored_join_right_identity": true,
+      "restored_join_text": [
+        "ab",
+        "Яz"
+      ],
+      "retired_right_missing": true,
+      "split_text": [
+        "ab",
+        "Яz"
+      ],
+      "split_written_nodes": 3,
+      "status": "passed"
+    }
+  },
+  "production_profile": "org.klenwriter.kwdj",
+  "schema": 1,
+  "scope": "Rust foundation composition; no public session ABI, commit, dispatch or user history",
+  "task": "OSR-33"
+}

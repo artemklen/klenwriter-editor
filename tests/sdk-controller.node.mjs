@@ -267,3 +267,81 @@ test('controller-only: post-commit malformed transport and traps are fatal, neve
     assert.equal(code(editor.submit(mutation(editor)).response), 'sdk.fatal'); editor.destroy();
   }
 });
+
+for (const readonlyKind of ['read', 'query']) {
+  for (const failureKind of ['trap', 'native_fatal']) {
+    test(`controller-only: post-commit ${readonlyKind} ${failureKind} preserves mutation-ticket publication provenance`, async () => {
+      for (const mode of ['direct_document', 'queued_document', 'state_only']) {
+        let armed = false;
+        const { editor, fixture } = await open({}, { call(request, session) {
+          if (!armed || request.kind !== (readonlyKind === 'read' ? 'state' : 'query_command')) return;
+          if (failureKind === 'trap') throw new WebAssembly.RuntimeError('controlled readonly failure after publication');
+          return JSON.stringify({ status: 'fatal', diagnostic: { code: 'fixture.readonly_fatal', path: 'fixture.readonly', category: 'fixture_native', details: { request: request.kind }, stamp: session.state.stamp, may_have_committed: false } });
+        } });
+        let firstQueued, pending, readonlyResponse, laterListeners = 0;
+        const observed = [];
+        editor.subscribe(event => {
+          observed.push([event.after.revision, event.after.selection_epoch]);
+          if (mode === 'queued_document' && event.after.revision === '1') {
+            firstQueued = editor.submit(mutation(editor));
+            return;
+          }
+          pending = editor.submit(mutation(editor));
+          armed = true;
+          readonlyResponse = readonlyKind === 'read'
+            ? editor.read({ kind: 'state' })
+            : editor.query({ kind: 'query_command', stamp: editor.capture(), command: { id: 'fixture.insert', payload_json: '{}' } });
+        });
+        editor.subscribe(() => laterListeners++);
+        const submitted = editor.submit(mode === 'state_only'
+          ? { kind: 'set_stored_marks', stamp: editor.capture(), marks: [] }
+          : mutation(editor));
+        const outcome = mode === 'queued_document' ? await result(firstQueued) : submitted.response;
+        const revision = mode === 'state_only' ? '0' : mode === 'queued_document' ? '2' : '1';
+        const selectionEpoch = mode === 'queued_document' ? '2' : '1';
+        assert.equal(fixture.instances[0].state.stamp.revision, revision, 'controlled transport already published');
+        assert.equal(fixture.instances[0].state.stamp.selection_epoch, selectionEpoch);
+        assert.equal(readonlyResponse.status, 'fatal');
+        assert.equal(readonlyResponse.diagnostic.may_have_committed, false, 'readonly call itself cannot publish');
+        assert.equal(outcome.status, 'fatal', 'published mutation must never be relabelled as Refused');
+        assert.equal(outcome.diagnostic.may_have_committed, true);
+        assert.equal(outcome.diagnostic.code, failureKind === 'trap' ? 'sdk.transport_failure' : 'fixture.readonly_fatal');
+        for (const field of ['code', 'path', 'category']) assert.equal(outcome.diagnostic[field], readonlyResponse.diagnostic[field], field);
+        assert.deepEqual(outcome.diagnostic.details, readonlyResponse.diagnostic.details);
+        assert.deepEqual(outcome.diagnostic.stamp, readonlyResponse.diagnostic.stamp);
+        assert.equal(outcome.diagnostic.stamp.revision, revision);
+        assert.equal(outcome.diagnostic.stamp.selection_epoch, selectionEpoch);
+        assert.equal(Object.isFrozen(outcome), true); assert.equal(Object.isFrozen(outcome.diagnostic), true);
+        assert.equal(pending.status, 'queued');
+        const cancelled = await result(pending);
+        assert.equal(cancelled.status, 'refused'); assert.equal(cancelled.diagnostic.code, 'sdk.fatal');
+        assert.equal(cancelled.diagnostic.may_have_committed, false, 'pending ticket never executed');
+        assert.equal(fixture.log.filter(request => request.kind === 'command').length, mode === 'queued_document' ? 2 : mode === 'state_only' ? 0 : 1);
+        assert.equal(laterListeners, mode === 'queued_document' ? 1 : 0);
+        assert.equal(observed.length, mode === 'queued_document' ? 2 : 1);
+        assert.equal(editor.lifecycle, 'fatal'); assert.deepEqual(fixture.counts(), { live: 0, destroyed: 1, freed: 1 });
+        for (const field of ['sessions', 'listeners', 'queued_mutations', 'queued_bytes', 'pending_tickets', 'host_requests', 'task_continuations', 'callback_error_handlers']) assert.equal(editor.resources()[field], 0, field);
+        assert.equal(editor.submit(mutation(editor)).response.diagnostic.may_have_committed, false);
+        editor.destroy(); assert.deepEqual(fixture.counts(), { live: 0, destroyed: 1, freed: 1 });
+      }
+    });
+  }
+}
+
+for (const phase of ['events', 'acknowledge_events']) {
+  test(`controller-only: post-commit ${phase} native fatal preserves mutation-ticket publication provenance`, async () => {
+    const { editor, fixture } = await open({}, { call(request, session) {
+      if (session.state.stamp.revision === '1' && request.kind === phase) return JSON.stringify({ status: 'fatal', diagnostic: { code: 'fixture.event_fatal', path: phase, category: 'fixture_native', details: {}, stamp: session.state.stamp, may_have_committed: false } });
+    } });
+    let callbacks = 0;
+    editor.subscribe(() => callbacks++);
+    const outcome = editor.submit(mutation(editor)).response;
+    assert.equal(fixture.instances[0].state.stamp.revision, '1');
+    assert.equal(outcome.status, 'fatal'); assert.equal(outcome.diagnostic.may_have_committed, true);
+    assert.equal(outcome.diagnostic.code, 'fixture.event_fatal'); assert.equal(outcome.diagnostic.path, phase);
+    assert.equal(outcome.diagnostic.stamp.revision, '1');
+    assert.equal(callbacks, phase === 'events' ? 0 : 1);
+    assert.equal(editor.lifecycle, 'fatal'); assert.deepEqual(fixture.counts(), { live: 0, destroyed: 1, freed: 1 });
+    editor.destroy(); assert.deepEqual(fixture.counts(), { live: 0, destroyed: 1, freed: 1 });
+  });
+}

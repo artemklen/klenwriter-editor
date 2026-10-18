@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 /** Profile-specific command construction; all semantic checks remain in Rust. */
 export { artifactStage } from '@klenwriter/editor-sdk';
+import { createCommand } from '@klenwriter/editor-sdk';
 import type { CommandDto, KwdjIntentDto } from '@klenwriter/editor-sdk';
 
 export type { KwdjIntentDto, BlockTargetDto, ListKindDto, MarkDto } from '@klenwriter/editor-sdk';
@@ -15,7 +16,10 @@ const commandNames: Record<KwdjIntentDto['kind'], string> = {
 
 /** Numeric metadata, revision/group tokens and ordered-list starts remain strings. */
 export function kwdjCommand(intent: KwdjIntentDto): CommandDto {
-  const name = commandNames[intent.kind];
-  if (name === undefined) throw new TypeError('sdk.invalid_command_kind');
-  return { id: `org.klenwriter.kwdj/command/${name}`, payload_json: JSON.stringify(intent) };
+  const kind = intent && typeof intent === 'object' ? Object.getOwnPropertyDescriptor(intent, 'kind') : undefined;
+  if (!kind || !('value' in kind) || typeof kind.value !== 'string' || !Object.hasOwn(commandNames, kind.value)) {
+    throw new TypeError('sdk.invalid_command_kind');
+  }
+  const name = commandNames[kind.value as KwdjIntentDto['kind']];
+  return createCommand(`org.klenwriter.kwdj/command/${name}`, intent);
 }
