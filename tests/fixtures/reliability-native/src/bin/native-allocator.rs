@@ -11,6 +11,9 @@ fn main() {
         // One fresh process/one profiler; no all-time-peak subtraction.
         let profiler = dhat::Profiler::builder()
             .file_name("dhat-heap.json")
+            // Supported minimum depth; global allocation/live/peak accounting
+            // is retained while call-site attribution may merge.
+            .trim_backtraces(Some(4))
             .build();
         support::main(true);
         drop(profiler);
