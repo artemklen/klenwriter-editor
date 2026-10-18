@@ -1,5 +1,11 @@
 # Ordinary reliability check
 
+This lane is a local pre-send gate under the current repository policy; CI only
+builds artifacts. OSR-38 closure uses the explicit
+[owner acceptance exception](../evidence/osr-38/owner-acceptance-exception.md)
+for the stopped additional block and inconclusive performance evidence. Ordinary
+success does not turn either missing result into a pass.
+
 Use the pinned Node in `.node-version` and Rust1.97.1. Run `npm run build` first
 so the actual sealed WASM, generated declarations and packaged SDK match the
 current source. Then run `node scripts/reliability/check.mjs`. This is an

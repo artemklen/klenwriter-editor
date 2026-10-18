@@ -57,3 +57,19 @@ operation before candidate timing; every refused control remains evidence.
 Semantic ceilings and finite operational capacity remain distinct. No production
 limit/API change or private-codec telemetry is inferred. Candidate cannot select
 a smaller input. These dimensional/capacity decisions preserve the original4AC.
+
+## Owner acceptance exception and current delivery policy · 19.10.2026
+
+The owner explicitly instructed: «Зафиксируй пропущенный шаг, закрой задачу,
+смержи и продолжай цель». The exact instruction and limitations are recorded in
+[owner-acceptance-exception.md](owner-acceptance-exception.md). AC3's stopped block
+has no execution evidence; AC4 remains noisy/inconclusive without adopted floors
+or candidate comparison, with a separate historical executable witness gap.
+The owner accepts closure of this task with those disclosed exceptions. None is
+relabeled passed; future release gates retain their own contracts.
+
+Upstream OPS-632/PR19 changes the applicable delivery mode: exact-SHA local checks,
+one prepared build-only CI and one post-merge build-only CI. Independent exact-SHA
+review, normal merge, evidence preservation and cleanup remain required. This
+later decision supersedes the earlier requirement to execute tests in CI; no
+test assertions or ordinary local test scope are removed.

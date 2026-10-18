@@ -120,7 +120,7 @@ SDK1 и его36 DTO сохраняются; SDK2 выбирается явно.
 `node scripts/reliability/check.mjs` выполняет отдельную ordinary reliability
 lane после build: независимый finite model, reducer/comparator checks,
 native public-API replay и actual packaged SDK, границы лимитов и dependency
-inventory. Она входит в CI отдельным шагом; [контракт и команды](docs/reliability.md)
+inventory. Она входит в локальный pre-send gate; [контракт и команды](docs/reliability.md)
 описывают source/build pins и отдельные performance measurements.
 
 ## Артефакты и ограничения
@@ -129,7 +129,8 @@ inventory. Она входит в CI отдельным шагом; [контр�
 лицензии, заявленные зависимости MSRV, targets, размеры raw/gzip и SHA-256 сборки.
 `artifacts/package-inventory.json` и `artifacts/packages/*.tgz` доказывают содержимое
 упаковки. `artifacts/browser.json` — результаты Chrome-engine/Firefox/WebKit smoke,
-не установленного Safari. CI сохраняет эти файлы вместе с browser evidence.
+не установленного Safari. Локальные прогоны сохраняют browser evidence отдельно
+от build-артефактов CI.
 Lockfiles обязательны; `--locked` запрещает тихое разрешение новых Rust версий.
 Reproducible здесь означает чистую сборку одинакового pinned source/toolchain/lock,
 а не обещание идентичных native binaries на разных OS/CPU. Rust std/CLI и системный

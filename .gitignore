@@ -4,6 +4,7 @@ playwright-report/
 .DS_Store
 
 /target/
+/tests/fixtures/reliability-native/target/
 /.tools/
 /artifacts/
 packages/*/dist/
