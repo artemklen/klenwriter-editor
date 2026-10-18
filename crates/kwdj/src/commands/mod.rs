@@ -247,6 +247,7 @@ impl CommandProvider for KwdjProfile<'_> {
         match error {
             KwdjProfileError::Document(error) => error.code.as_str(),
             KwdjProfileError::Binding(_) => "kwdj.command_binding_mismatch",
+            KwdjProfileError::Registry(error) => error.code.as_str(),
         }
     }
 }

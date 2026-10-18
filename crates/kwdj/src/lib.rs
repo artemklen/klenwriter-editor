@@ -18,6 +18,7 @@ pub use core_bridge::{admit_core_document, admit_core_document_with_budget};
 mod normalize;
 mod project;
 mod session_profile;
+pub mod registry;
 mod validate;
 mod wire_view;
 

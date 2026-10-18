@@ -7,13 +7,13 @@
 //! not announce a registry release or a stable public session SDK.
 
 use std::rc::Rc;
+use std::sync::Arc;
 
 use editor_core::candidate::CandidateRead;
 use editor_core::document::Document;
-use editor_core::profile::{
-    AdmissionMode, BindingError, ExtensionBinding, FrozenProfile, ProfileBinding,
-};
+use editor_core::profile::{AdmissionMode, BindingError, FrozenProfile, ProfileBinding};
 use editor_core::transaction::{Operation, TransactionProfile, ValidationStats, WorkMeter};
+use editor_registry::{CompilerLimits, FrozenRegistry, RegistryDescriptor, RegistryDiagnostic};
 use thiserror::Error;
 
 use crate::{
@@ -34,10 +34,11 @@ enum ResolverBacking<'a> {
 
 /// Trusted compiled KWDJ semantics with borrowed or owned synchronous services.
 ///
-/// The base extension identifies this compiled codec/profile capability; no
-/// runtime descriptor compiler or alternate production profile is implemented.
+/// Its public frozen schema is compiled through the same registration API used
+/// by external profiles. The normative codec still owns all KWDJ domain rules.
 pub struct KwdjProfile<'a> {
     binding: ProfileBinding,
+    registry: Arc<FrozenRegistry>,
     identities: ResolverBacking<'a>,
     limits: Limits,
     budget: AdmissionBudget,
@@ -57,18 +58,11 @@ impl<'a> KwdjProfile<'a> {
         limits: Limits,
         budget: AdmissionBudget,
     ) -> Self {
-        let extension = ExtensionBinding::new(KWDJ_BASE_EXTENSION_ID, KWDJ_BASE_EXTENSION_VERSION)
-            .expect("compiled KWDJ extension identity is valid");
-        let binding = ProfileBinding::new(
-            PROFILE_ID,
-            KWDJ_PROFILE_VERSION,
-            KWDJ_CODEC_ID,
-            1,
-            &[extension],
-        )
-        .expect("compiled KWDJ profile identity is valid");
+        let registry = crate::registry::default_registry();
+        let binding = registry.binding().clone();
         Self {
             binding,
+            registry,
             identities,
             limits: limits.effective(),
             budget: budget.effective(),
@@ -88,6 +82,63 @@ impl<'a> KwdjProfile<'a> {
 
     pub fn budget(&self) -> AdmissionBudget {
         self.budget
+    }
+
+    pub fn registry(&self) -> &FrozenRegistry {
+        &self.registry
+    }
+    pub fn registry_handle(&self) -> Arc<FrozenRegistry> {
+        Arc::clone(&self.registry)
+    }
+
+    /// Consumes an unmounted profile. Mandatory KWDJ definitions always come
+    /// from this compiled module; host JSON cannot replace them. No Session
+    /// exposes its owned profile for reconfiguration.
+    pub fn with_registry_json(
+        self,
+        input: &[u8],
+        limits: CompilerLimits,
+        work: &mut WorkMeter,
+    ) -> Result<Self, KwdjProfileError> {
+        let registry = editor_registry::compile_json(
+            input,
+            &[crate::registry::base_registration()],
+            limits,
+            work,
+        )?;
+        self.with_compiled_registry(registry)
+    }
+
+    pub fn with_registry_descriptor(
+        self,
+        descriptor: &RegistryDescriptor,
+        limits: CompilerLimits,
+        work: &mut WorkMeter,
+    ) -> Result<Self, KwdjProfileError> {
+        let registry = editor_registry::compile_descriptor(
+            descriptor,
+            &[crate::registry::base_registration()],
+            limits,
+            work,
+        )?;
+        self.with_compiled_registry(registry)
+    }
+
+    fn with_compiled_registry(
+        mut self,
+        registry: FrozenRegistry,
+    ) -> Result<Self, KwdjProfileError> {
+        let expected = ProfileBinding::new(
+            PROFILE_ID,
+            KWDJ_PROFILE_VERSION,
+            KWDJ_CODEC_ID,
+            1,
+            registry.binding().extensions(),
+        )?;
+        expected.ensure_matches(registry.binding())?;
+        self.binding = registry.binding().clone();
+        self.registry = Arc::new(registry);
+        Ok(self)
     }
 }
 
@@ -121,13 +172,15 @@ pub enum KwdjProfileError {
     Binding(#[from] BindingError),
     #[error("{0}")]
     Document(#[from] KwdjError),
+    #[error("{0}")]
+    Registry(#[from] RegistryDiagnostic),
 }
 
 impl FrozenProfile for KwdjProfile<'_> {
     type Context = Profile;
     type Admitted = ValidatedDocument;
     type Error = KwdjProfileError;
-    type Cache<I: Copy + Eq + Ord> = crate::KwdjCache<I>;
+    type Cache<I: Copy + Eq + Ord> = crate::registry::KwdjProfileCache<I>;
 
     fn seed_cache<V: CandidateRead>(
         &self,
@@ -135,13 +188,17 @@ impl FrozenProfile for KwdjProfile<'_> {
         view: &V,
         work: &mut WorkMeter,
     ) -> Result<Self::Cache<V::Id>, Self::Error> {
-        Ok(crate::candidate_cache::seed(
+        let domain = crate::candidate_cache::seed(
             admitted.document().profile(),
             view,
             self.limits,
             self.budget,
             work,
-        )?)
+        )?;
+        let prepared = self.registry.validate_full(view, work)?;
+        let mut schema = Default::default();
+        prepared.cache.publish(&mut schema);
+        Ok(crate::registry::KwdjProfileCache { domain, schema })
     }
 
     fn binding(&self) -> &ProfileBinding {
@@ -209,7 +266,7 @@ impl TransactionProfile for KwdjProfile<'_> {
         Ok(crate::candidate_cache::normalize(
             *context,
             view,
-            cache,
+            &cache.domain,
             self.identities(),
             self.limits,
             self.budget,
@@ -223,15 +280,23 @@ impl TransactionProfile for KwdjProfile<'_> {
         cache: &Self::Cache<V::Id>,
         work: &mut WorkMeter,
     ) -> Result<editor_core::cache::PreparedValidation<Self::Cache<V::Id>>, Self::Error> {
-        Ok(crate::candidate_cache::validate(
+        let domain = crate::candidate_cache::validate(
             *context,
             view,
-            cache,
+            &cache.domain,
             self.identities(),
             self.limits,
             self.budget,
             work,
-        )?)
+        )?;
+        let schema = self.registry.validate_scoped(view, &cache.schema, work)?;
+        Ok(editor_core::cache::PreparedValidation {
+            stats: domain.stats,
+            cache: editor_core::cache::CacheUpdate::Patch(crate::registry::KwdjProfileCachePatch {
+                domain: domain.cache,
+                schema: schema.cache,
+            }),
+        })
     }
     fn normalize_candidate<V: CandidateRead>(
         &self,
@@ -257,14 +322,16 @@ impl TransactionProfile for KwdjProfile<'_> {
         candidate: &V,
         work: &mut WorkMeter,
     ) -> Result<ValidationStats, Self::Error> {
-        Ok(crate::candidate_validate::validate_candidate(
+        let stats = crate::candidate_validate::validate_candidate(
             *context,
             candidate,
             self.identities(),
             self.limits,
             self.budget,
             work,
-        )?)
+        )?;
+        self.registry.validate_full(candidate, work)?;
+        Ok(stats)
     }
 }
 
