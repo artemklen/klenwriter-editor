@@ -1,16 +1,24 @@
 //! Generic sessions, atomic validated dispatch and local position maps.
 #![forbid(unsafe_code)]
 
+mod grouping;
+pub mod history;
 pub mod identity;
 pub mod mapping;
 pub mod session;
 pub mod transaction;
 pub mod tree;
 
+pub use history::{
+    HistoryDirection, HistoryError, HistoryHint, HistoryLimits, HistorySummary, TypingClass,
+};
 pub use identity::{NodeId, SessionKey};
 pub use session::commands;
 pub use session::commands::{
     CommandAvailability, CommandEffect, CommandError, CommandOutcome, CommandRequest,
+};
+pub use session::history_dispatch::{
+    HistoryAvailability, HistoryBoundaryEvent, HistoryOutcome, HistoryRequest,
 };
 pub use session::{AccessMode, Session, SessionError, SessionState, StateError};
 pub use transaction::{

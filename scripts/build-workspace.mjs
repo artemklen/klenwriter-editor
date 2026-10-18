@@ -56,6 +56,12 @@ run('cargo', ['build', '--locked', '--release', '--target', 'wasm32-unknown-unkn
   '-p', identity.rust.wasm.name, '--example', 'command_probe']);
 run(bindgen, ['target/wasm32-unknown-unknown/release/examples/command_probe.wasm',
   '--target', 'web', '--out-dir', 'artifacts/commands', '--out-name', 'probe']);
+// History shares actual production replay on native and wasm32. The observer
+// stays outside distributable packages and exposes no restore authority.
+run('cargo', ['build', '--locked', '--release', '--target', 'wasm32-unknown-unknown',
+  '-p', identity.rust.wasm.name, '--example', 'history_probe']);
+run(bindgen, ['target/wasm32-unknown-unknown/release/examples/history_probe.wasm',
+  '--target', 'web', '--out-dir', 'artifacts/history', '--out-name', 'probe']);
 writeDependencyNotices();
 // Clean all emitted package files so stale declarations/assets cannot mask omissions.
 const packages = ['wasm', 'sdk', 'dom', 'kwdj', 'vanilla', 'angular'];

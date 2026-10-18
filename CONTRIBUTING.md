@@ -74,6 +74,13 @@ Unicode и отказами. Lane входит в `npm run check`; report с has
 [baseline disposition](docs/command-parity.md) отделяют headless доказательства
 от будущих mounted/SDK/host gates.
 
+`npm run test:history` после build сравнивает actual native/compiled-WASM history
+на независимых литералах и generated sequences. Headless replay, grouping,
+границы памяти и query/execute проверяются на Session с KWDJ и generic profile;
+счётчики u64::MAX проверяются отдельным private engine fixture без публичного
+setter. Report — `artifacts/history-report.json`, контракт —
+[OSR-36](docs/history.md). Browser history/input adapters остаются отдельными gates.
+
 ## Артефакты и ограничения
 
 `artifacts/dependencies.json` содержит зафиксированные direct/transitive версии,

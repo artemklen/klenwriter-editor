@@ -186,5 +186,48 @@
     "dependencies": "No new runtime dependencies; pinned Unicode segmentation inherited from OSR-33",
     "privacy": "Generated/literal synthetic documents, fixed fixture UUIDs and example URLs only; no private documents, production captures or credentials",
     "authority": "Historical feature disposition references OSR-60 source audit; exact command goldens are independently authored, not CMS mounted acceptance. Codec authority remains contracts/kwdj/v1."
+  },
+  "originalHistory": {
+    "issue": "OSR-36",
+    "source": "Original implementation and independently authored synthetic literal/generated history fixtures in this repository; no third-party or CMS source copied",
+    "license": "MIT OR Apache-2.0",
+    "paths": [
+      "crates/core/src/history.rs",
+      "crates/engine/src/history.rs",
+      "crates/engine/src/grouping.rs",
+      "crates/engine/src/history_dispatch.rs",
+      "crates/engine/src/history_tests.rs",
+      "contracts/history/v1/vectors.json",
+      "contracts/history/v1/manifest.json",
+      "contracts/history/v1/adr-embedding.json",
+      "crates/wasm/examples/support/history_observer.rs",
+      "crates/wasm/examples/support/history_adr.rs",
+      "crates/wasm/examples/history_native.rs",
+      "crates/wasm/examples/history_probe.rs",
+      "crates/wasm/tests/history.rs",
+      "tests/history.node.mjs",
+      "crates/engine/src/history_profile_tests.rs",
+      "crates/wasm/examples/support/history_sequences.rs",
+      "crates/wasm/examples/support/history_facts.rs",
+      "crates/wasm/examples/support/history_generated.rs"
+    ],
+    "extendedOriginalFoundation": [
+      "crates/core/src/transaction.rs",
+      "crates/engine/src/tree.rs",
+      "crates/engine/src/session.rs",
+      "crates/engine/src/dispatch.rs",
+      "crates/engine/src/transaction.rs",
+      "crates/engine/src/commands.rs"
+    ],
+    "seedProvenance": "Unchanged owner-controlled ADR-003 operation/position vectors pinned by contracts/history/v1/manifest.json; 15 direct seeds and one declared structural embedding with separate full physical oracle",
+    "privacy": "Synthetic documents and public example.test identifiers only; no user documents, production captures, credentials or session IDs persisted",
+    "dependencies": "No new runtime dependency; immutable std Arc handles are internal on native and wasm32",
+    "extendedWitnesses": [
+      "crates/wasm/examples/support/transaction_observer.rs",
+      "crates/wasm/tests/transactions.rs",
+      "tests/transactions.node.mjs",
+      "tests/commands.node.mjs",
+      "tests/session.node.mjs"
+    ]
   }
 }

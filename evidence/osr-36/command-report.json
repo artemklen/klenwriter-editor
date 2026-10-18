@@ -1,0 +1,2068 @@
+{
+  "nativeWasmEqual": true,
+  "sourceHashes": {
+    "Cargo.lock": "6c4d917f290c330312b17fcd88c6207cc3aa243c30fc420793eb07d16ce6aaa2",
+    "crates/wasm/Cargo.toml": "577b24619780b554708ebb395a85fdabce39f3a0ed95caf5b0371a82fec910fd",
+    "contracts/commands/v1/vectors.json": "1a067f1ca197ccc1aa7a4689e950db250973c269314bf3d38d143b97c248cb3f",
+    "crates/core/src/history.rs": "5bc12b4773a7285f1f28080e63fb92e076600dfcfedc7f836930a1028c37bd49",
+    "crates/engine/src/history.rs": "a16c1922ab5e3c9483305e086d9e791c4f4f27396a8918f39f397d5cb3a9a4b0",
+    "crates/engine/src/grouping.rs": "74768c0057ed06622deab548f1820724bb6c3db8a260bd49196f30a68a0c0c69",
+    "crates/engine/src/history_dispatch.rs": "8254edb8397f319ac574d2a02cdff5a28ff1b09bf4a66ac6f20dabad971ebf36",
+    "crates/core/src/commands.rs": "a9d552aa45cd6220d1d457b3414236502c0fb314b040887c83e53608a5007558",
+    "crates/core/src/transaction.rs": "9eb0e1a7b93ba44be147a5c37784d50c82f570270bc85d737313cc0b0699ecc5",
+    "crates/core/src/positions.rs": "94ce04c115a062a6b203c2e124afcaa295ad6d9b26a4c0aaaa7bf155fcac50ff",
+    "crates/engine/src/commands.rs": "6c77d87549872b25c34f9d75981079182682fd131235140f17dcbeb0d091e14c",
+    "crates/engine/src/dispatch.rs": "d7d79fd85b6c9a6811fa7d4e9151efb288d7c5f297fe18b5914341288e1aaa0a",
+    "crates/engine/src/session.rs": "d90b18367414216382d7f485a4cc113fe084e31914ee716ebdb3af3dab910984",
+    "crates/engine/src/tree.rs": "cfd996b56a6f8823493c8d679ac7fb0b5ce2b09370798a7d0e187d70a2afc002",
+    "crates/engine/src/transaction.rs": "eedc32fd85f12afd1e712a4270296ddc9238cac74dab516a76d097040515734b",
+    "crates/engine/src/mapping.rs": "9146ce6d3b28889af4dd6b9cc9ba672522003b83fc0d222d73ee61e85a2df357",
+    "crates/kwdj/src/commands/mod.rs": "8e74902a6d1fd48dc8b490270569fc9aabf026f1f81ace6cb1d17f3af6681ae2",
+    "crates/kwdj/src/commands/block.rs": "901da02897beaaaf904b0421f01740e8d08723e87ef91b972e184948c0719c29",
+    "crates/kwdj/src/commands/inline.rs": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394",
+    "crates/kwdj/src/candidate_validate.rs": "9c6cca8896cdde1e6f60ed75bd6f3d5c70770ccf8f62ad0eb979b8eca0fa6885",
+    "crates/kwdj/src/edit_normalize.rs": "e7dafeedb57870a53cca1b404f388429e79e6c49a9bad7baa87585f79b5805df",
+    "crates/kwdj/src/session_profile.rs": "1397b528e72cd9fcef3f6eb251532cc60d6f3115c7325202fb476850d136d748",
+    "crates/kwdj/src/validate.rs": "921cb88641a61237d0ae767a71d009d8f96a3a2bbf3dea87d42bfdd949f1a3a6",
+    "crates/wasm/examples/support/command_inline.rs": "af146b714e5febabb833b261579e252bb6d67c6c8a50dee4f86f2062cd4f7d7f",
+    "crates/wasm/tests/command_inline.rs": "f112ba50e5577371732fe416ffb0582cc02a67b29d3787362954af43adca8606",
+    "crates/wasm/examples/support/command_structural.rs": "bf51a429efaf4e2b7a83c941156b5b9a204e59ac3b4ec057af3b129eb8f492b6",
+    "crates/wasm/tests/command_structural.rs": "1f645496fdebad4dac918deb4d30ea72b87ee659fe24994656e913b9b0132cb7",
+    "crates/wasm/examples/support/command_observer.rs": "49af22db2531e122fdf3203da92aeccaacc2b8d16f06ff3bc3991bf2a082226e",
+    "crates/wasm/examples/command_native.rs": "77489a2b481ddbe05c600864742c21a615ca97b8e5b7343f6b823106f8de32cf",
+    "crates/wasm/examples/command_probe.rs": "e25a83025ada35ad6120d9fe64f30416efb3204bfd38c8c10af359246d81f19a",
+    "crates/wasm/tests/commands.rs": "bfbc756e7f4535be52a8aca8e88b268db79a239d2d4cebd938387850586e63df",
+    "tests/commands.node.mjs": "3bf06d71dd9a2c17e95de6a3573fb06ee8698685277323b90d2504fe8409a3b2",
+    "scripts/build-workspace.mjs": "00a87b773615dc636a675b7da063a47d327ab451bb80c71d1df7d192f00dd13f",
+    "package.json": "0fd192acb245466e77f77ed0f2290c09ef7ef4a38714f9b0d90df4313a2bb170",
+    "artifacts/commands/probe_bg.wasm": "1a6481a2832ea6ce64c851595fba4a1821736c80e083c159e6b6ad287d005822"
+  },
+  "format": "klenwriter-editor-command-observations",
+  "future_typing": {
+    "actual_journal_mark_before_after": true,
+    "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"x\",\"type\":\"text\"},{\"text\":\"yb\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+    "explicit_plain_distinguished_from_inherit": true,
+    "navigation_clears_override": true,
+    "ordinary_snapshot_codec_calls": 0,
+    "state_only_toggles": 2,
+    "status": "passed",
+    "typing_commits": 2
+  },
+  "generated": {
+    "enter_cases": 64,
+    "interior_refusals": 4,
+    "oracle": "parameterized literal split/text/layout/mark and original EGC boundaries",
+    "query_execute_equal": true,
+    "snapshot_codec_calls": 0,
+    "status": "passed"
+  },
+  "inline": {
+    "format": "klenwriter-editor-command-inline-observations",
+    "groups": {
+      "atomic_link_refusals": {
+        "preexisting_history_preserved": true,
+        "reference_protected_cases": 2,
+        "status": "passed",
+        "typed_refusals": [
+          {
+            "all_committed_facets_preserved": true,
+            "current_revision_map_identity": true,
+            "query_execute_equal": true,
+            "reason": "kwdj.unsafe_url"
+          },
+          {
+            "all_committed_facets_preserved": true,
+            "current_revision_map_identity": true,
+            "query_execute_equal": true,
+            "reason": "kwdj.unsafe_url"
+          },
+          {
+            "all_committed_facets_preserved": true,
+            "current_revision_map_identity": true,
+            "query_execute_equal": true,
+            "reason": "kwdj.unsafe_url"
+          },
+          {
+            "all_committed_facets_preserved": true,
+            "current_revision_map_identity": true,
+            "query_execute_equal": true,
+            "reason": "kwdj.unsafe_url"
+          },
+          {
+            "all_committed_facets_preserved": true,
+            "current_revision_map_identity": true,
+            "query_execute_equal": true,
+            "reason": "kwdj.unsafe_url"
+          },
+          {
+            "all_committed_facets_preserved": true,
+            "current_revision_map_identity": true,
+            "query_execute_equal": true,
+            "reason": "kwdj.unsafe_url"
+          },
+          {
+            "all_committed_facets_preserved": true,
+            "current_revision_map_identity": true,
+            "query_execute_equal": true,
+            "reason": "kwdj.command_reference_protected"
+          },
+          {
+            "all_committed_facets_preserved": true,
+            "current_revision_map_identity": true,
+            "query_execute_equal": true,
+            "reason": "kwdj.command_reference_protected"
+          }
+        ],
+        "unsafe_url_cases": 6
+      },
+      "equivalent_carets": {
+        "equivalent_representations": [
+          {
+            "canonical_json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"X\",\"type\":\"text\"},{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "empty_typing_noop": true,
+            "state_only_override": true,
+            "variant": 0
+          },
+          {
+            "canonical_json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"X\",\"type\":\"text\"},{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "empty_typing_noop": true,
+            "state_only_override": true,
+            "variant": 1
+          },
+          {
+            "canonical_json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"X\",\"type\":\"text\"},{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "empty_typing_noop": true,
+            "state_only_override": true,
+            "variant": 2
+          },
+          {
+            "canonical_json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"X\",\"type\":\"text\"},{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "empty_typing_noop": true,
+            "state_only_override": true,
+            "variant": 3
+          }
+        ],
+        "link_override_at_equivalent_caret": true,
+        "no_neighbor_leaf_mark_edit": true,
+        "status": "passed"
+      },
+      "final_context": {
+        "classification": "Test-only compiled wrapper proposes Keep; actual KWDJ admission, normalization, final schema and final typing validator delegate unchanged",
+        "refusal": {
+          "all_committed_facets_preserved": true,
+          "current_revision_map_identity": true,
+          "query_execute_equal": true,
+          "reason": "kwdj.command_unsupported_context"
+        },
+        "schema_valid_code_candidate_rejected_by_final_typing_context": true,
+        "status": "passed"
+      },
+      "formatting_states": {
+        "active_sequence": [
+          "mixed",
+          "all",
+          "none"
+        ],
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"bcd\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"},{\"type\":\"emphasis\"}],\"text\":\"e\",\"type\":\"text\"},{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"f\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "query_execute_equal": true,
+        "reverse_partial_range": true,
+        "status": "passed"
+      },
+      "mark_policy": {
+        "formatting_kinds": [
+          "strong",
+          "emphasis",
+          "strike",
+          "code",
+          "subscript",
+          "superscript",
+          "text_color",
+          "highlight"
+        ],
+        "link_and_reference_policy_tested_separately": true,
+        "status": "passed",
+        "typed_refusals": [
+          {
+            "all_committed_facets_preserved": true,
+            "current_revision_map_identity": true,
+            "query_execute_equal": true,
+            "reason": "kwdj.incompatible_marks"
+          },
+          {
+            "all_committed_facets_preserved": true,
+            "current_revision_map_identity": true,
+            "query_execute_equal": true,
+            "reason": "kwdj.incompatible_marks"
+          },
+          {
+            "all_committed_facets_preserved": true,
+            "current_revision_map_identity": true,
+            "query_execute_equal": true,
+            "reason": "kwdj.command_unsupported_context"
+          },
+          {
+            "all_committed_facets_preserved": true,
+            "current_revision_map_identity": true,
+            "query_execute_equal": true,
+            "reason": "kwdj.command_invalid_target"
+          }
+        ]
+      },
+      "ordinary_links": {
+        "other_marks_preserved": true,
+        "safe_relative_url": true,
+        "set_canonical_json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"},{\"attrs\":{\"href\":\"/safe/a?b=1#c\",\"title\":\"one\\ntwo\"},\"type\":\"link\"}],\"text\":\"bcd\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"e\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "shared_title_newlines": true,
+        "status": "passed",
+        "unset_canonical_json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"abcde\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}"
+      },
+      "typing_replacement": {
+        "cross_block_reverse_replacement": true,
+        "cross_canonical_json": "{\"content\":[{\"attrs\":{\"align\":\"center\"},\"content\":[{\"text\":\"pre Xe\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"́\",\"type\":\"text\"},{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\" tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "same_block_normalized_caret": true,
+        "same_block_reverse_replacement": true,
+        "same_canonical_json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"aX\",\"type\":\"text\"},{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"d\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "status": "passed",
+        "surviving_styled_accent_identity": true
+      },
+      "unicode_ranges": {
+        "canonical_json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"emphasis\"},{\"type\":\"strike\"}],\"text\":\"e\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"},{\"type\":\"emphasis\"},{\"type\":\"strike\"}],\"text\":\"́\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strike\"}],\"text\":\"!\",\"type\":\"text\"},{\"type\":\"hard_break\"},{\"marks\":[{\"type\":\"strong\"},{\"type\":\"strike\"}],\"text\":\"👩\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"},{\"type\":\"emphasis\"},{\"type\":\"strike\"}],\"text\":\"🏽‍💻\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"marks\":[{\"type\":\"strike\"}],\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "cross_basic_blocks": true,
+        "hard_break_preserved": true,
+        "reverse_direction_preserved": true,
+        "status": "passed",
+        "whole_combining_cluster": true,
+        "whole_zwj_cluster": true
+      }
+    },
+    "query_execute_equal": true,
+    "scope": "Actual Session<KwdjProfile> command behavior with explicit snapshot checkpoints; one labeled test-only final-context probe. No mounted UI/public SDK ABI claim.",
+    "status": "passed",
+    "version": 1
+  },
+  "literal_cases": [
+    {
+      "canonical_json": "{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"😀b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-001",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"content\":[],\"type\":\"paragraph\"},{\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-002",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"d\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-003",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true},\"content\":[],\"type\":\"paragraph\"},{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true,\"level\":2},\"content\":[{\"text\":\"Title\",\"type\":\"text\"}],\"type\":\"heading\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-004",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true,\"level\":3},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true,\"level\":3},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"cd\",\"type\":\"text\"}],\"type\":\"heading\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-005",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true,\"level\":2},\"content\":[{\"text\":\"Title\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true},\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-006",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true},\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-007",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"attrs\":{\"language\":\"rust\"},\"content\":[{\"text\":\"a😀\\nb\",\"type\":\"text\"}],\"type\":\"code_block\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-008",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"},{\"type\":\"hard_break\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-009",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"content\":[{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"},{\"content\":[{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"}],\"type\":\"bullet_list\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-010",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"attrs\":{\"start\":7},\"content\":[{\"content\":[{\"content\":[{\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"}],\"type\":\"ordered_list\"},{\"content\":[],\"type\":\"paragraph\"},{\"attrs\":{\"start\":9},\"content\":[{\"content\":[{\"content\":[{\"text\":\"C\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"}],\"type\":\"ordered_list\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-011",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"content\":[{\"content\":[{\"content\":[{\"text\":\"Parent\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"attrs\":{\"start\":3},\"content\":[{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"},{\"content\":[{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"content\":[{\"attrs\":{\"checked\":true},\"content\":[{\"content\":[{\"text\":\"done\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"task_item\"}],\"type\":\"task_list\"}],\"type\":\"list_item\"}],\"type\":\"ordered_list\"}],\"type\":\"list_item\"}],\"type\":\"bullet_list\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-012",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"content\":[{\"content\":[{\"content\":[{\"text\":\"Parent\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"content\":[{\"text\":\"before\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"}],\"type\":\"bullet_list\"}],\"type\":\"list_item\"},{\"content\":[{\"content\":[],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"content\":[{\"text\":\"after\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"attrs\":{\"checked\":true},\"content\":[{\"content\":[{\"text\":\"nested done\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"task_item\"}],\"type\":\"task_list\"}],\"type\":\"list_item\"}],\"type\":\"bullet_list\"},{\"content\":[{\"text\":\"Parent tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"},{\"content\":[{\"content\":[{\"text\":\"Next\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"}],\"type\":\"bullet_list\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-013",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"content\":[{\"attrs\":{\"checked\":true},\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"task_item\"},{\"attrs\":{\"checked\":false},\"content\":[{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"task_item\"},{\"attrs\":{\"checked\":false},\"content\":[{\"content\":[{\"text\":\"next\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"task_item\"}],\"type\":\"task_list\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-014",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true,\"level\":2},\"content\":[{\"marks\":[{\"attrs\":{\"href\":\"https://example.org/a\",\"title\":\"Title\"},\"type\":\"link\"}],\"text\":\"Link\",\"type\":\"text\"}],\"type\":\"heading\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-015",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"A\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"😀é\",\"type\":\"text\"},{\"text\":\"Z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-016",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"e\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"},{\"type\":\"emphasis\"}],\"text\":\"́\",\"type\":\"text\"},{\"text\":\"!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-017",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"A😀éZ\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-018",
+      "journal_entries_added": 0,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Refused",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": "position.invalid",
+      "revision_delta": 0,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"content\":[{\"marks\":[{\"attrs\":{\"reference_entity_id\":\"550e8400-e29b-41d4-a716-446655440006\"},\"type\":\"reference_link\"}],\"text\":\"Name\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-019",
+      "journal_entries_added": 0,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Refused",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": "kwdj.command_reference_protected",
+      "revision_delta": 0,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true},\"content\":[{\"text\":\"pre \",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"type\":\"scene_break\"},{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true},\"content\":[{\"text\":\" tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-020",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true},\"content\":[{\"text\":\"pre /scene tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-021",
+      "journal_entries_added": 0,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Refused",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": "transaction.journal_limit",
+      "revision_delta": 0,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true},\"content\":[{\"text\":\"pre /scene tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-022",
+      "journal_entries_added": 0,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Unchanged",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 0,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"attrs\":{\"language\":\"rust\"},\"content\":[{\"text\":\"a\\nb\",\"type\":\"text\"}],\"type\":\"code_block\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-023",
+      "journal_entries_added": 1,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Changed",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": null,
+      "revision_delta": 1,
+      "status": "passed",
+      "work_bounded": true
+    },
+    {
+      "canonical_json": "{\"content\":[{\"attrs\":{\"start\":18446744073709551615},\"content\":[{\"content\":[{\"content\":[{\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"},{\"content\":[{\"content\":[],\"type\":\"paragraph\"}],\"type\":\"list_item\"},{\"content\":[{\"content\":[{\"text\":\"C\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"}],\"type\":\"ordered_list\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "full_query_execute_equal": true,
+      "id": "KW35-024",
+      "journal_entries_added": 0,
+      "literal_caret_matches": true,
+      "ordinary_snapshot_codec_calls": 0,
+      "outcome": "Refused",
+      "query_preserves_all_facets": true,
+      "query_repetitions": 4,
+      "reason": "kwdj.command_ordered_overflow",
+      "revision_delta": 0,
+      "status": "passed",
+      "work_bounded": true
+    }
+  ],
+  "literal_passed": 24,
+  "literal_total": 24,
+  "scope": "Actual native/bootstrap Session<KwdjProfile>; no public transport or mounted UI claim",
+  "status": "passed",
+  "structural": {
+    "format": "klenwriter-editor-command-structural-observations",
+    "group_total": 8,
+    "groups": [
+      {
+        "canonical_json": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "lead",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "attrs": {
+                        "align": "center",
+                        "first_line_indent": true
+                      },
+                      "content": [
+                        {
+                          "marks": [
+                            {
+                              "type": "strong"
+                            },
+                            {
+                              "attrs": {
+                                "reference_entity_id": "550e8400-e29b-41d4-a716-446655440006"
+                              },
+                              "type": "reference_link"
+                            }
+                          ],
+                          "text": "linked task",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    },
+                    {
+                      "content": [
+                        {
+                          "attrs": {
+                            "checked": true
+                          },
+                          "content": [
+                            {
+                              "content": [
+                                {
+                                  "text": "checked",
+                                  "type": "text"
+                                }
+                              ],
+                              "type": "paragraph"
+                            },
+                            {
+                              "content": [
+                                {
+                                  "content": [
+                                    {
+                                      "text": "nested tail",
+                                      "type": "text"
+                                    }
+                                  ],
+                                  "type": "paragraph"
+                                }
+                              ],
+                              "type": "blockquote"
+                            }
+                          ],
+                          "type": "task_item"
+                        }
+                      ],
+                      "type": "task_list"
+                    }
+                  ],
+                  "type": "list_item"
+                }
+              ],
+              "type": "bullet_list"
+            },
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "attrs": {
+                        "align": "center",
+                        "colspan": 2
+                      },
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "text": "wide header",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "table_header"
+                    }
+                  ],
+                  "type": "table_row"
+                },
+                {
+                  "content": [
+                    {
+                      "attrs": {
+                        "align": "right"
+                      },
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "text": "left",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "table_cell"
+                    },
+                    {
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "text": "right",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "table_cell"
+                    }
+                  ],
+                  "type": "table_row"
+                }
+              ],
+              "type": "table"
+            },
+            {
+              "content": [
+                {
+                  "text": "tail",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "duplicate_ids_disjoint": true,
+        "duplicated_complete_subtrees": 2,
+        "id": "nested_task_table_move_duplicate_remove",
+        "moves": 2,
+        "payload_attrs_marks_and_existing_ids_preserved": true,
+        "status": "passed"
+      },
+      {
+        "canonical_json": {
+          "content": [
+            {
+              "content": [],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "caret_valid": true,
+        "id": "last_root_remove_has_valid_paragraph_fallback",
+        "old_subtree_retired": true,
+        "status": "passed"
+      },
+      {
+        "id": "registered_slash_and_insert",
+        "insert_block": {
+          "canonical_json": {
+            "content": [
+              {
+                "attrs": {
+                  "align": "right",
+                  "first_line_indent": true
+                },
+                "content": [
+                  {
+                    "text": "pre ",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              },
+              {
+                "attrs": {
+                  "language": "rust"
+                },
+                "content": [],
+                "type": "code_block"
+              },
+              {
+                "attrs": {
+                  "align": "right",
+                  "first_line_indent": true
+                },
+                "content": [
+                  {
+                    "text": "tail",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              }
+            ],
+            "profile": "prose",
+            "schema": "klenwriter.document",
+            "schema_version": 1
+          },
+          "id": "insert_code_block_retains_language_and_both_layout_headers",
+          "status": "passed"
+        },
+        "slash_candidates": [
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "attrs": {
+                    "align": "right",
+                    "first_line_indent": true
+                  },
+                  "content": [
+                    {
+                      "text": "pre ",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [],
+                  "type": "paragraph"
+                },
+                {
+                  "attrs": {
+                    "align": "right",
+                    "first_line_indent": true
+                  },
+                  "content": [
+                    {
+                      "text": " tail",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "org.klenwriter.kwdj/slash/paragraph",
+            "literal_caret_matches": true,
+            "query_removed_only_on_success": true,
+            "single_commit": true,
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "attrs": {
+                    "align": "right",
+                    "first_line_indent": true
+                  },
+                  "content": [
+                    {
+                      "text": "pre ",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "attrs": {
+                    "level": 2
+                  },
+                  "content": [],
+                  "type": "heading"
+                },
+                {
+                  "attrs": {
+                    "align": "right",
+                    "first_line_indent": true
+                  },
+                  "content": [
+                    {
+                      "text": " tail",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "org.klenwriter.kwdj/slash/heading2",
+            "literal_caret_matches": true,
+            "query_removed_only_on_success": true,
+            "single_commit": true,
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "attrs": {
+                    "align": "right",
+                    "first_line_indent": true
+                  },
+                  "content": [
+                    {
+                      "text": "pre ",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "attrs": {
+                    "level": 3
+                  },
+                  "content": [],
+                  "type": "heading"
+                },
+                {
+                  "attrs": {
+                    "align": "right",
+                    "first_line_indent": true
+                  },
+                  "content": [
+                    {
+                      "text": " tail",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "org.klenwriter.kwdj/slash/heading3",
+            "literal_caret_matches": true,
+            "query_removed_only_on_success": true,
+            "single_commit": true,
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "attrs": {
+                    "align": "right",
+                    "first_line_indent": true
+                  },
+                  "content": [
+                    {
+                      "text": "pre ",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "content": [],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "blockquote"
+                },
+                {
+                  "attrs": {
+                    "align": "right",
+                    "first_line_indent": true
+                  },
+                  "content": [
+                    {
+                      "text": " tail",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "org.klenwriter.kwdj/slash/blockquote",
+            "literal_caret_matches": true,
+            "query_removed_only_on_success": true,
+            "single_commit": true,
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "attrs": {
+                    "align": "right",
+                    "first_line_indent": true
+                  },
+                  "content": [
+                    {
+                      "text": "pre ",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "content": [],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "list_item"
+                    }
+                  ],
+                  "type": "bullet_list"
+                },
+                {
+                  "attrs": {
+                    "align": "right",
+                    "first_line_indent": true
+                  },
+                  "content": [
+                    {
+                      "text": " tail",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "org.klenwriter.kwdj/slash/bullet-list",
+            "literal_caret_matches": true,
+            "query_removed_only_on_success": true,
+            "single_commit": true,
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "attrs": {
+                    "align": "right",
+                    "first_line_indent": true
+                  },
+                  "content": [
+                    {
+                      "text": "pre ",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "content": [],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "list_item"
+                    }
+                  ],
+                  "type": "ordered_list"
+                },
+                {
+                  "attrs": {
+                    "align": "right",
+                    "first_line_indent": true
+                  },
+                  "content": [
+                    {
+                      "text": " tail",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "org.klenwriter.kwdj/slash/ordered-list",
+            "literal_caret_matches": true,
+            "query_removed_only_on_success": true,
+            "single_commit": true,
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "attrs": {
+                    "align": "right",
+                    "first_line_indent": true
+                  },
+                  "content": [
+                    {
+                      "text": "pre ",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "attrs": {
+                        "checked": false
+                      },
+                      "content": [
+                        {
+                          "content": [],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "task_item"
+                    }
+                  ],
+                  "type": "task_list"
+                },
+                {
+                  "attrs": {
+                    "align": "right",
+                    "first_line_indent": true
+                  },
+                  "content": [
+                    {
+                      "text": " tail",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "org.klenwriter.kwdj/slash/task-list",
+            "literal_caret_matches": true,
+            "query_removed_only_on_success": true,
+            "single_commit": true,
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "attrs": {
+                    "align": "right",
+                    "first_line_indent": true
+                  },
+                  "content": [
+                    {
+                      "text": "pre ",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [],
+                  "type": "code_block"
+                },
+                {
+                  "attrs": {
+                    "align": "right",
+                    "first_line_indent": true
+                  },
+                  "content": [
+                    {
+                      "text": " tail",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "org.klenwriter.kwdj/slash/code-block",
+            "literal_caret_matches": true,
+            "query_removed_only_on_success": true,
+            "single_commit": true,
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "attrs": {
+                    "align": "right",
+                    "first_line_indent": true
+                  },
+                  "content": [
+                    {
+                      "text": "pre ",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "type": "scene_break"
+                },
+                {
+                  "attrs": {
+                    "align": "right",
+                    "first_line_indent": true
+                  },
+                  "content": [
+                    {
+                      "text": " tail",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "org.klenwriter.kwdj/slash/scene-break",
+            "literal_caret_matches": true,
+            "query_removed_only_on_success": true,
+            "single_commit": true,
+            "status": "passed"
+          }
+        ],
+        "status": "passed"
+      },
+      {
+        "cases": [
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "e",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "́",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "enter_selected_break_before_accent",
+            "outside_leaf_ids_preserved": true,
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "e",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "type": "scene_break"
+                },
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "́",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "insert_block_selected_break_before_accent",
+            "outside_leaf_ids_preserved": true,
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "content": [],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "text": "ab",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "enter_equivalent_zero_range_coordinates_0",
+            "literal_caret_matches": true,
+            "outside_leaf_ids_preserved": true,
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "content": [],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "text": "ab",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "enter_equivalent_zero_range_coordinates_1",
+            "literal_caret_matches": true,
+            "outside_leaf_ids_preserved": true,
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "content": [],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "text": "ab",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "enter_equivalent_zero_range_coordinates_2",
+            "literal_caret_matches": true,
+            "outside_leaf_ids_preserved": true,
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "content": [],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "text": "ab",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "enter_equivalent_zero_range_coordinates_3",
+            "literal_caret_matches": true,
+            "outside_leaf_ids_preserved": true,
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "ab",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "enter_equivalent_zero_range_coordinates_4",
+            "literal_caret_matches": true,
+            "outside_leaf_ids_preserved": true,
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "ab",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "enter_equivalent_zero_range_coordinates_5",
+            "literal_caret_matches": true,
+            "outside_leaf_ids_preserved": true,
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "ab",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "enter_equivalent_zero_range_coordinates_6",
+            "literal_caret_matches": true,
+            "outside_leaf_ids_preserved": true,
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "ab",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "id": "enter_equivalent_zero_range_coordinates_7",
+            "literal_caret_matches": true,
+            "outside_leaf_ids_preserved": true,
+            "status": "passed"
+          }
+        ],
+        "id": "original_unicode_boundary_recipes",
+        "status": "passed"
+      },
+      {
+        "cases": [
+          {
+            "all_facets_preserved": true,
+            "id": "insert_refusal_0",
+            "reason": "kwdj.command_table_unavailable"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "insert_refusal_1",
+            "reason": "kwdj.command_poetry_unavailable"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "insert_refusal_2",
+            "reason": "kwdj.command_host_required"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "insert_refusal_3",
+            "reason": "kwdj.command_invalid_target"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "insert_refusal_4",
+            "reason": "kwdj.command_invalid_target"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "insert_refusal_5",
+            "reason": "kwdj.command_invalid_target"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "unregistered_slash_6",
+            "reason": "kwdj.command_invalid_target"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "unregistered_slash_7",
+            "reason": "kwdj.command_invalid_target"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "slash_exact_literal_mismatch",
+            "reason": "kwdj.command_query_mismatch"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "read_only_slash",
+            "reason": "session.read_only"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "stale_revision",
+            "reason": "session.stale_revision"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "stale_selection_epoch",
+            "reason": "session.stale_selection_epoch"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "stale_session",
+            "reason": "session.stale_session"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "structural_payload_refusal_13",
+            "reason": "tree.cycle"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "structural_payload_refusal_14",
+            "reason": "tree.invalid_index"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "structural_payload_refusal_15",
+            "reason": "tree.invalid_index"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "structural_payload_refusal_16",
+            "reason": "kwdj.command_invalid_target"
+          }
+        ],
+        "id": "typed_refusals_and_tokens",
+        "status": "passed",
+        "total": 17
+      },
+      {
+        "canonical_json": {
+          "content": [
+            {
+              "attrs": {
+                "align": "right",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "text": "pre ",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "type": "scene_break"
+            },
+            {
+              "attrs": {
+                "align": "right",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "text": " tail",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "id": "slash_atomic_late_limits",
+        "journal_reason": "transaction.journal_limit",
+        "late_work_reason": "resource_limit_exceeded",
+        "query_and_full_facets_preserved_on_refusal": true,
+        "same_intent_succeeds_with_default_limits": true,
+        "status": "passed"
+      },
+      {
+        "cases": [
+          {
+            "all_facets_preserved": true,
+            "id": "quote_mixed_outside_paragraph",
+            "reason": "kwdj.command_unsupported_context",
+            "status": "passed"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "quote_mixed_second_wrapper",
+            "reason": "kwdj.command_unsupported_context",
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "a",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "text": "b",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "text": "outside",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "c",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    },
+                    {
+                      "content": [
+                        {
+                          "text": "d",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "blockquote"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "existing_payload_ids_preserved": true,
+            "id": "quote_same_wrapper_unwrap",
+            "status": "passed"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "list_mixed_outside_paragraph",
+            "reason": "kwdj.command_unsupported_context",
+            "status": "passed"
+          },
+          {
+            "all_facets_preserved": true,
+            "id": "list_mixed_second_wrapper",
+            "reason": "kwdj.command_unsupported_context",
+            "status": "passed"
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "a",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "text": "b",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "text": "outside",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "text": "c",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "list_item"
+                    },
+                    {
+                      "content": [
+                        {
+                          "content": [
+                            {
+                              "text": "d",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "type": "list_item"
+                    }
+                  ],
+                  "type": "bullet_list"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "existing_payload_ids_preserved": true,
+            "id": "list_same_wrapper_unwrap",
+            "status": "passed"
+          }
+        ],
+        "id": "whole_selection_wrapper_context",
+        "status": "passed"
+      },
+      {
+        "case_total": 6,
+        "cases": [
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "AB",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "e",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "emphasis"
+                        }
+                      ],
+                      "text": "́",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "event_and_journal_maps_equal": true,
+            "id": "same_parent_group_forward",
+            "joined_right_leaf_retired": true,
+            "original_parent_gaps_checked": 10,
+            "selection_matches_map": true,
+            "status": "passed",
+            "whole_egc_ids_and_marks_preserved": true
+          },
+          {
+            "canonical_json": {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ],
+                      "text": "e",
+                      "type": "text"
+                    },
+                    {
+                      "marks": [
+                        {
+                          "type": "emphasis"
+                        }
+                      ],
+                      "text": "́",
+                      "type": "text"
+                    },
+                    {
+                      "text": "AB",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "event_and_journal_maps_equal": true,
+            "id": "same_parent_group_backward",
+            "joined_right_leaf_retired": true,
+            "original_parent_gaps_checked": 10,
+            "selection_matches_map": true,
+            "status": "passed",
+            "whole_egc_ids_and_marks_preserved": true
+          },
+          {
+            "anchor_utf16": 2,
+            "canonical_json": {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "𝄞b",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "command": "toggle-mark",
+            "focus_utf16": 3,
+            "id": "join_seam_text_forward",
+            "query_execute_equal": true,
+            "status": "passed"
+          },
+          {
+            "anchor_utf16": 3,
+            "canonical_json": {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "𝄞b",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "command": "toggle-mark",
+            "focus_utf16": 2,
+            "id": "join_seam_text_reverse",
+            "query_execute_equal": true,
+            "status": "passed"
+          },
+          {
+            "anchor_utf16": 2,
+            "canonical_json": {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "𝄞b",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "command": "toggle-mark",
+            "focus_utf16": 3,
+            "id": "join_seam_edge_forward",
+            "query_execute_equal": true,
+            "status": "passed"
+          },
+          {
+            "anchor_utf16": 3,
+            "canonical_json": {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "𝄞b",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "profile": "prose",
+              "schema": "klenwriter.document",
+              "schema_version": 1
+            },
+            "command": "toggle-mark",
+            "focus_utf16": 2,
+            "id": "join_seam_edge_reverse",
+            "query_execute_equal": true,
+            "status": "passed"
+          }
+        ],
+        "id": "normalization_position_maps",
+        "status": "passed"
+      }
+    ],
+    "scope": "Actual Session<KwdjProfile> structural/refusal commands and raw whole-EGC move map witnesses; explicit checkpoint snapshots only",
+    "status": "passed",
+    "version": 1
+  },
+  "version": 1
+}

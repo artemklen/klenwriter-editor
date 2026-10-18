@@ -7,6 +7,8 @@
 use std::cell::Cell;
 use std::collections::{BTreeMap, BTreeSet};
 use std::marker::PhantomData;
+use std::ops::Range;
+use std::sync::Arc;
 
 use editor_core::admission::{PreflightBudget, preflight_node_fields, preflight_snapshot};
 use editor_core::candidate::{BorrowedNode, CandidateRead};
@@ -23,7 +25,7 @@ use crate::mapping::StepMap;
 const MAX_DEPTH: usize = 128;
 const MAX_STEPS: usize = 4096;
 const MAX_TEXT_BYTES: usize = 16 * 1024 * 1024;
-const MAX_PREPARED_COPY_BYTES: usize = 16 * 1024 * 1024;
+pub(crate) const MAX_PREPARED_COPY_BYTES: usize = 16 * 1024 * 1024;
 
 mod allocation_sealed {
     pub trait Sealed {}
@@ -90,6 +92,7 @@ pub enum TreeError {
     IncompatibleText,
     ResourceLimit,
     CounterExhausted,
+    ReplayMismatch,
     Position(PositionError),
 }
 
@@ -253,11 +256,102 @@ struct ChangedRecord {
     after: Option<TreeNode>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum ReplayDirection {
+    Undo,
+    Redo,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub(crate) struct ReplayCost {
+    pub(crate) units: u64,
+    pub(crate) bytes: u64,
+}
+
+/// One admitted primitive frame. Backward chunks are traversed in reverse
+/// order, but each chunk's steps retain their semantic order.
+#[derive(Debug)]
+struct InverseChunk {
+    forward: Range<usize>,
+    backward: Vec<StepMap<NodeId>>,
+}
+
+struct PreparedMaps {
+    forward: Vec<StepMap<NodeId>>,
+    backward: Vec<StepMap<NodeId>>,
+    bytes: usize,
+}
+
+fn steps_bytes(steps: &[StepMap<NodeId>]) -> Result<usize, TreeError> {
+    let mut bytes = std::mem::size_of_val(steps);
+    for step in steps {
+        let ids = match step {
+            StepMap::Retire { nodes, .. } | StepMap::Revive { nodes } => nodes.len(),
+            _ => 0,
+        };
+        bytes = bytes
+            .checked_add(
+                ids.checked_mul(std::mem::size_of::<NodeId>())
+                    .ok_or(TreeError::ResourceLimit)?,
+            )
+            .ok_or(TreeError::ResourceLimit)?;
+    }
+    Ok(bytes)
+}
+
+fn inverse_move(step: &StepMap<NodeId>) -> StepMap<NodeId> {
+    let StepMap::ChildMove {
+        from_parent,
+        from_index,
+        to_parent,
+        to_index,
+        count,
+        from_len,
+        to_len,
+    } = *step
+    else {
+        unreachable!("only a prepared move has a move inverse")
+    };
+    let destination = if from_parent == to_parent && to_index > from_index + count {
+        to_index - count
+    } else {
+        to_index
+    };
+    let target = if from_parent == to_parent && destination < from_index {
+        from_index + count
+    } else {
+        from_index
+    };
+    StepMap::ChildMove {
+        from_parent: to_parent,
+        from_index: destination,
+        to_parent: from_parent,
+        to_index: target,
+        count,
+        from_len: if from_parent == to_parent {
+            from_len
+        } else {
+            to_len + count
+        },
+        to_len: if from_parent == to_parent {
+            to_len
+        } else {
+            from_len - count
+        },
+    }
+}
+
 /// Owned sparse journal substrate. It carries no public restore authority.
 #[derive(Debug)]
 pub(crate) struct CommitMaterial {
+    key: SessionKey,
+    root: NodeId,
     records: Vec<ChangedRecord>,
+    forward: Vec<StepMap<NodeId>>,
+    inverse: Vec<InverseChunk>,
+    inverse_steps: usize,
     estimated_bytes: usize,
+    replay_cost: ReplayCost,
 }
 impl CommitMaterial {
     pub(crate) fn estimated_bytes(&self) -> usize {
@@ -278,6 +372,28 @@ impl CommitMaterial {
     pub(crate) fn after_count(&self) -> usize {
         self.records.iter().filter(|r| r.after.is_some()).count()
     }
+    pub(crate) fn map_count(&self, direction: ReplayDirection) -> usize {
+        match direction {
+            ReplayDirection::Redo => self.forward.len(),
+            ReplayDirection::Undo => self.inverse_steps,
+        }
+    }
+    pub(crate) fn replay_cost(&self, _direction: ReplayDirection) -> ReplayCost {
+        // Payload equality, sparse target copies and both map directions are
+        // charged before traversal. This intentionally bounds repeated replay
+        // without using an ever-growing historical copy-cost estimate.
+        self.replay_cost
+    }
+    /// Staging charges one material envelope. Final sparse before/after records
+    /// and both map directions fit another; changed-ID scratch is additional.
+    /// Summing member bounds also bounds a group's final net sparse union.
+    pub(crate) fn replay_copy_bound(&self) -> usize {
+        self.estimated_bytes.saturating_mul(2).saturating_add(
+            self.records
+                .len()
+                .saturating_mul(std::mem::size_of::<NodeId>()),
+        )
+    }
 }
 
 /// Fully prepared memory, with no externally writable fields. Only the Session
@@ -289,7 +405,7 @@ pub(crate) struct PreparedTreePatch<A = RealAllocation> {
     removed: BTreeSet<NodeId>,
     steps: Vec<StepMap<NodeId>>,
     changed_ids: Vec<NodeId>,
-    material: CommitMaterial,
+    material: Arc<CommitMaterial>,
     prepared_copy_bytes: usize,
     allocation: PhantomData<A>,
 }
@@ -305,6 +421,9 @@ impl<A> PreparedTreePatch<A> {
     }
     pub(crate) fn material_bytes(&self) -> usize {
         self.material.estimated_bytes()
+    }
+    pub(crate) fn material(&self) -> &Arc<CommitMaterial> {
+        &self.material
     }
     pub(crate) fn prepared_copy_bytes(&self) -> usize {
         self.prepared_copy_bytes
@@ -352,7 +471,7 @@ fn check_shape(node: &Node, parent: Option<Primitive>, depth: usize) -> Result<(
 impl AddressTree {
     /// Infallible expected-error phase. The exclusive Session owner validates a
     /// patch against this tree immediately before publication; no callbacks run.
-    pub(crate) fn publish(&mut self, patch: PreparedTreePatch) -> CommitMaterial {
+    pub(crate) fn publish(&mut self, patch: PreparedTreePatch) -> Arc<CommitMaterial> {
         assert_eq!(
             patch.key, self.key,
             "Session owner published a foreign patch"
@@ -463,6 +582,8 @@ impl AddressTree {
             writes: BTreeMap::new(),
             removed: BTreeSet::new(),
             steps: Vec::new(),
+            inverse: Vec::new(),
+            inverse_steps: 0,
             prepared_copy_bytes: 0,
             copy_budget: MAX_PREPARED_COPY_BYTES,
         }
@@ -612,6 +733,8 @@ pub struct TreeDraft<'a, A = RealAllocation> {
     writes: BTreeMap<NodeId, TreeNode>,
     removed: BTreeSet<NodeId>,
     steps: Vec<StepMap<NodeId>>,
+    inverse: Vec<InverseChunk>,
+    inverse_steps: usize,
     prepared_copy_bytes: usize,
     copy_budget: usize,
 }
@@ -841,6 +964,8 @@ impl<A: Allocation> TreeDraft<'_, A> {
         }
         let before_copy = self.prepared_copy_bytes;
         let before_steps = self.steps.len();
+        let before_inverse = self.inverse.len();
+        let before_inverse_steps = self.inverse_steps;
         let before_budget = self.copy_budget;
         self.prepared_copy_bytes += backup_cost;
         let mut created = Vec::new();
@@ -859,6 +984,8 @@ impl<A: Allocation> TreeDraft<'_, A> {
                 }
             }
             self.steps.truncate(before_steps);
+            self.inverse.truncate(before_inverse);
+            self.inverse_steps = before_inverse_steps;
             self.prepared_copy_bytes = before_copy;
             self.copy_budget = before_budget;
         }
@@ -1301,7 +1428,17 @@ impl<A: Allocation> TreeDraft<'_, A> {
                         .checked_add(draft.node(*id)?.copy_cost)
                         .ok_or(TreeError::ResourceLimit)?;
                 }
-                draft.copy_room(cost)?;
+                let forward = StepMap::ChildMove {
+                    from_parent: source,
+                    from_index: index,
+                    to_parent: parent,
+                    to_index: before_index,
+                    count: nodes.len(),
+                    from_len,
+                    to_len,
+                };
+                let backward = inverse_move(&forward);
+                let maps = draft.prepare_maps(vec![forward], vec![backward], cost)?;
                 let mut changed_source = draft.node(source)?.clone();
                 changed_source.children.drain(index..end);
                 if source == parent {
@@ -1324,15 +1461,7 @@ impl<A: Allocation> TreeDraft<'_, A> {
                     changed.parent = Some(parent);
                     draft.writes.insert(*id, changed);
                 }
-                draft.steps.push(StepMap::ChildMove {
-                    from_parent: source,
-                    from_index: index,
-                    to_parent: parent,
-                    to_index: before_index,
-                    count: nodes.len(),
-                    from_len,
-                    to_len,
-                });
+                draft.append_maps(maps);
                 draft.prepared_copy_bytes += cost;
                 Ok(())
             })
@@ -1435,6 +1564,182 @@ impl<A: Allocation> TreeDraft<'_, A> {
         } else {
             Ok(())
         }
+    }
+
+    fn prepare_maps(
+        &self,
+        forward: Vec<StepMap<NodeId>>,
+        backward: Vec<StepMap<NodeId>>,
+        other_copy: usize,
+    ) -> Result<PreparedMaps, TreeError> {
+        self.room(forward.len())?;
+        if self
+            .inverse_steps
+            .checked_add(backward.len())
+            .is_none_or(|n| n > MAX_STEPS)
+        {
+            return Err(TreeError::ResourceLimit);
+        }
+        for step in forward.iter().chain(&backward) {
+            step.validate().map_err(|_| TreeError::InvalidRange)?;
+        }
+        let bytes = steps_bytes(&forward)?
+            .checked_add(steps_bytes(&backward)?)
+            .and_then(|n| n.checked_add(std::mem::size_of::<InverseChunk>()))
+            .ok_or(TreeError::ResourceLimit)?;
+        self.copy_room(
+            other_copy
+                .checked_add(bytes)
+                .ok_or(TreeError::ResourceLimit)?,
+        )?;
+        Ok(PreparedMaps {
+            forward,
+            backward,
+            bytes,
+        })
+    }
+
+    fn map_storage_room(
+        &self,
+        forward: usize,
+        backward: usize,
+        ids: usize,
+        other_copy: usize,
+    ) -> Result<(), TreeError> {
+        self.room(forward)?;
+        if self
+            .inverse_steps
+            .checked_add(backward)
+            .is_none_or(|n| n > MAX_STEPS)
+        {
+            return Err(TreeError::ResourceLimit);
+        }
+        let bytes = forward
+            .checked_add(backward)
+            .and_then(|n| n.checked_mul(std::mem::size_of::<StepMap<NodeId>>()))
+            .and_then(|n| n.checked_add(ids.checked_mul(std::mem::size_of::<NodeId>())?))
+            .and_then(|n| n.checked_add(std::mem::size_of::<InverseChunk>()))
+            .and_then(|n| n.checked_add(other_copy))
+            .ok_or(TreeError::ResourceLimit)?;
+        self.copy_room(bytes)
+    }
+
+    fn append_maps(&mut self, maps: PreparedMaps) {
+        let start = self.steps.len();
+        self.steps.extend(maps.forward);
+        self.inverse_steps += maps.backward.len();
+        self.inverse.push(InverseChunk {
+            forward: start..self.steps.len(),
+            backward: maps.backward,
+        });
+        self.prepared_copy_bytes += maps.bytes;
+    }
+
+    /// Exact closed replay of owned sparse material. No fresh ID reservation or
+    /// user-boundary check occurs here. The Session still validates the final
+    /// candidate, selection and typing state before publication.
+    pub(crate) fn stage_replay(
+        &mut self,
+        material: &CommitMaterial,
+        direction: ReplayDirection,
+        work: &mut WorkMeter,
+    ) -> Result<(), TreeError> {
+        if material.key != self.base.key || material.root != self.root() {
+            return Err(TreeError::ForeignSession);
+        }
+        let cost = material.replay_cost(direction);
+        work.charge_units(cost.units)
+            .map_err(|_| TreeError::ResourceLimit)?;
+        work.charge_bytes(cost.bytes)
+            .map_err(|_| TreeError::ResourceLimit)?;
+        self.room(material.map_count(direction))?;
+        let opposite = match direction {
+            ReplayDirection::Undo => ReplayDirection::Redo,
+            ReplayDirection::Redo => ReplayDirection::Undo,
+        };
+        if self
+            .inverse_steps
+            .checked_add(material.map_count(opposite))
+            .is_none_or(|n| n > MAX_STEPS)
+        {
+            return Err(TreeError::ResourceLimit);
+        }
+        self.copy_room(material.estimated_bytes)?;
+        let mut last = None;
+        for record in &material.records {
+            if record.id.session() != self.base.key || last.is_some_and(|id| id >= record.id) {
+                return Err(TreeError::ReplayMismatch);
+            }
+            last = Some(record.id);
+            let (expected, _) = match direction {
+                ReplayDirection::Undo => (&record.after, &record.before),
+                ReplayDirection::Redo => (&record.before, &record.after),
+            };
+            let actual = match self.node(record.id) {
+                Ok(node) => Some(node),
+                Err(TreeError::MissingNode) => None,
+                Err(error) => return Err(error),
+            };
+            if !match (actual, expected) {
+                (None, None) => true,
+                (Some(actual), Some(expected)) => same_record(actual, expected),
+                _ => false,
+            } {
+                return Err(TreeError::ReplayMismatch);
+            }
+        }
+        // Complete all fallible work before touching even this local draft.
+        let mut next = 0;
+        for chunk in &material.inverse {
+            if chunk.forward.start != next {
+                return Err(TreeError::ReplayMismatch);
+            }
+            let forward = material
+                .forward
+                .get(chunk.forward.clone())
+                .ok_or(TreeError::ReplayMismatch)?;
+            next = chunk.forward.end;
+            for step in forward.iter().chain(&chunk.backward) {
+                step.validate().map_err(|_| TreeError::ReplayMismatch)?;
+            }
+        }
+        if next != material.forward.len() {
+            return Err(TreeError::ReplayMismatch);
+        }
+        for record in &material.records {
+            let target = match direction {
+                ReplayDirection::Undo => &record.before,
+                ReplayDirection::Redo => &record.after,
+            };
+            if let Some(target) = target {
+                self.removed.remove(&record.id);
+                self.writes.insert(record.id, target.clone());
+            } else {
+                self.writes.remove(&record.id);
+                self.removed.insert(record.id);
+            }
+        }
+        for index in 0..material.inverse.len() {
+            let index = match direction {
+                ReplayDirection::Undo => material.inverse.len() - 1 - index,
+                ReplayDirection::Redo => index,
+            };
+            let chunk = &material.inverse[index];
+            let original = &material.forward[chunk.forward.clone()];
+            let (forward, backward) = match direction {
+                ReplayDirection::Undo => (&chunk.backward[..], original),
+                ReplayDirection::Redo => (original, &chunk.backward[..]),
+            };
+            let start = self.steps.len();
+            self.steps.extend_from_slice(forward);
+            self.inverse_steps += backward.len();
+            self.inverse.push(InverseChunk {
+                forward: start..self.steps.len(),
+                backward: backward.to_vec(),
+            });
+        }
+        self.prepared_copy_bytes += material.estimated_bytes;
+        Ok(())
     }
 
     fn copy_room(&self, cost: usize) -> Result<(), TreeError> {
@@ -1569,7 +1874,21 @@ impl<A: Allocation> TreeDraft<'_, A> {
         let cost = old_cost
             .checked_add(new_cost)
             .ok_or(TreeError::ResourceLimit)?;
-        self.copy_room(cost)?;
+        let forward = StepMap::ReplaceText {
+            leaf,
+            from,
+            to,
+            inserted: inserted.encode_utf16().count(),
+            old_len,
+        };
+        let backward = StepMap::ReplaceText {
+            leaf,
+            from,
+            to: Utf16Offset::new(from.get() + inserted.encode_utf16().count()),
+            inserted: to.get() - from.get(),
+            old_len: old_len - (to.get() - from.get()) + inserted.encode_utf16().count(),
+        };
+        let maps = self.prepare_maps(vec![forward], vec![backward], cost)?;
         let mut changed = self.node(leaf)?.clone();
         changed
             .data
@@ -1582,13 +1901,7 @@ impl<A: Allocation> TreeDraft<'_, A> {
             .replace_range(a..b, inserted);
         changed.copy_cost = new_cost;
         self.writes.insert(leaf, changed);
-        self.steps.push(StepMap::ReplaceText {
-            leaf,
-            from,
-            to,
-            inserted: inserted.encode_utf16().count(),
-            old_len,
-        });
+        self.append_maps(maps);
         self.prepared_copy_bytes += cost;
         Ok(())
     }
@@ -1610,12 +1923,53 @@ impl<A: Allocation> TreeDraft<'_, A> {
         let cost =
             node.copy_cost * 3 + self.node(parent)?.copy_cost + std::mem::size_of::<NodeId>() * 2;
         self.copy_room(cost)?;
-        let mut l = node.clone();
-        let old_len = l
+        let old_len = node
             .text()
             .ok_or(TreeError::InvalidStructure)?
             .encode_utf16()
             .count();
+        let parent_old_len = self.node(parent)?.children.len();
+        let right = NodeId::new(
+            self.base.key,
+            self.allocation.reserve(&self.base.next_id, 1)?,
+        );
+        let maps = self.prepare_maps(
+            vec![
+                StepMap::SplitText {
+                    left,
+                    right,
+                    at,
+                    old_len,
+                },
+                StepMap::ChildInsert {
+                    parent,
+                    index: index + 1,
+                    count: 1,
+                    old_len: parent_old_len,
+                },
+            ],
+            vec![
+                StepMap::JoinText {
+                    left,
+                    right,
+                    left_len: at.get(),
+                    right_len: old_len - at.get(),
+                },
+                StepMap::ChildDelete {
+                    parent,
+                    index: index + 1,
+                    count: 1,
+                    old_len: parent_old_len + 1,
+                },
+                StepMap::Retire {
+                    nodes: vec![right],
+                    parent,
+                    index: index + 1,
+                },
+            ],
+            cost,
+        )?;
+        let mut l = node.clone();
         let old_bytes = l.text().expect("checked text").len();
         let mut r = l.clone();
         let right_text = l
@@ -1631,29 +1985,13 @@ impl<A: Allocation> TreeDraft<'_, A> {
         l.copy_cost -= old_bytes - byte;
         r.copy_cost -= byte;
         let mut p = self.node(parent)?.clone();
-        let right = NodeId::new(
-            self.base.key,
-            self.allocation.reserve(&self.base.next_id, 1)?,
-        );
         r.id = right;
         p.children.insert(index + 1, right);
         p.copy_cost += std::mem::size_of::<NodeId>();
-        let parent_old_len = p.children.len() - 1;
         self.writes.insert(left, l);
         self.writes.insert(right, r);
         self.writes.insert(parent, p);
-        self.steps.push(StepMap::SplitText {
-            left,
-            right,
-            at,
-            old_len,
-        });
-        self.steps.push(StepMap::ChildInsert {
-            parent,
-            index: index + 1,
-            count: 1,
-            old_len: parent_old_len,
-        });
+        self.append_maps(maps);
         self.prepared_copy_bytes += cost;
         Ok(right)
     }
@@ -1685,16 +2023,52 @@ impl<A: Allocation> TreeDraft<'_, A> {
             return Err(TreeError::ResourceLimit);
         }
         let cost = (ln.copy_cost + r.copy_cost) * 3 + self.node(parent)?.copy_cost;
-        self.copy_room(cost)?;
+        let (left_len, right_len) = (a.encode_utf16().count(), b.encode_utf16().count());
+        let old_len = self.node(parent)?.children.len();
+        let maps = self.prepare_maps(
+            vec![
+                StepMap::JoinText {
+                    left,
+                    right,
+                    left_len,
+                    right_len,
+                },
+                StepMap::ChildDelete {
+                    parent,
+                    index: index + 1,
+                    count: 1,
+                    old_len,
+                },
+                StepMap::Retire {
+                    nodes: vec![right],
+                    parent,
+                    index: index + 1,
+                },
+            ],
+            vec![
+                StepMap::Revive { nodes: vec![right] },
+                StepMap::SplitText {
+                    left,
+                    right,
+                    at: Utf16Offset::new(left_len),
+                    old_len: left_len + right_len,
+                },
+                StepMap::ChildInsert {
+                    parent,
+                    index: index + 1,
+                    count: 1,
+                    old_len: old_len - 1,
+                },
+            ],
+            cost,
+        )?;
         let receipt = JoinedText {
             key: self.base.key,
             left_before: ln.clone(),
             right: r.clone(),
         };
-        let (left_len, right_len) = (a.encode_utf16().count(), b.encode_utf16().count());
         let mut l = ln.clone();
         let mut p = self.node(parent)?.clone();
-        let old_len = p.children.len();
         l.data
             .as_mut()
             .expect("text data")
@@ -1710,23 +2084,7 @@ impl<A: Allocation> TreeDraft<'_, A> {
         self.writes.insert(parent, p);
         self.writes.remove(&right);
         self.removed.insert(right);
-        self.steps.push(StepMap::JoinText {
-            left,
-            right,
-            left_len,
-            right_len,
-        });
-        self.steps.push(StepMap::ChildDelete {
-            parent,
-            index: index + 1,
-            count: 1,
-            old_len,
-        });
-        self.steps.push(StepMap::Retire {
-            nodes: vec![right],
-            parent,
-            index: index + 1,
-        });
+        self.append_maps(maps);
         self.prepared_copy_bytes += cost;
         Ok(receipt)
     }
@@ -1791,27 +2149,60 @@ impl<A: Allocation> TreeDraft<'_, A> {
             }
         };
         let (left, right) = (joined.left_before.id, joined.right.id);
+        let parent_old_len = self.node(parent).expect("checked parent").children.len();
+        let maps = match self.prepare_maps(
+            vec![
+                StepMap::Revive { nodes: vec![right] },
+                StepMap::SplitText {
+                    left,
+                    right,
+                    at: Utf16Offset::new(at),
+                    old_len,
+                },
+                StepMap::ChildInsert {
+                    parent,
+                    index: index + 1,
+                    count: 1,
+                    old_len: parent_old_len,
+                },
+            ],
+            vec![
+                StepMap::JoinText {
+                    left,
+                    right,
+                    left_len: at,
+                    right_len: old_len - at,
+                },
+                StepMap::ChildDelete {
+                    parent,
+                    index: index + 1,
+                    count: 1,
+                    old_len: parent_old_len + 1,
+                },
+                StepMap::Retire {
+                    nodes: vec![right],
+                    parent,
+                    index: index + 1,
+                },
+            ],
+            cost,
+        ) {
+            Ok(maps) => maps,
+            Err(cause) => {
+                return Err(RestoreJoinError {
+                    cause,
+                    joined: Box::new(joined),
+                });
+            }
+        };
         let mut p = self.node(parent).expect("checked parent").clone();
-        let parent_old_len = p.children.len();
         p.children.insert(index + 1, right);
         p.copy_cost += std::mem::size_of::<NodeId>();
         self.writes.insert(left, joined.left_before);
         self.writes.insert(right, joined.right);
         self.removed.remove(&right);
         self.writes.insert(parent, p);
-        self.steps.push(StepMap::Revive { nodes: vec![right] });
-        self.steps.push(StepMap::SplitText {
-            left,
-            right,
-            at: Utf16Offset::new(at),
-            old_len,
-        });
-        self.steps.push(StepMap::ChildInsert {
-            parent,
-            index: index + 1,
-            count: 1,
-            old_len: parent_old_len,
-        });
+        self.append_maps(maps);
         self.prepared_copy_bytes += cost;
         Ok(right)
     }
@@ -1837,39 +2228,66 @@ impl<A: Allocation> TreeDraft<'_, A> {
         self.room(2)?;
         let (parent, index) = self.parent_index(root)?;
         let mut cost = self.node(parent)?.copy_cost;
+        let mut node_count = 0usize;
         self.walk_subtree(root, 1, &mut |node, _| {
+            node_count = node_count.checked_add(1).ok_or(TreeError::ResourceLimit)?;
             cost = cost
                 .checked_add(node.copy_cost + std::mem::size_of::<NodeId>() * 2)
                 .ok_or(TreeError::ResourceLimit)?;
             self.copy_room(cost)
         })?;
         self.copy_room(cost)?;
+        let old_len = self.node(parent)?.children.len();
+        self.map_storage_room(
+            2,
+            2,
+            node_count.checked_mul(2).ok_or(TreeError::ResourceLimit)?,
+            cost,
+        )?;
+        let mut ids = Vec::new();
+        self.walk_subtree(root, 1, &mut |node, _| {
+            ids.push(node.id);
+            Ok(())
+        })?;
+        let maps = self.prepare_maps(
+            vec![
+                StepMap::ChildDelete {
+                    parent,
+                    index,
+                    count: 1,
+                    old_len,
+                },
+                StepMap::Retire {
+                    nodes: ids.clone(),
+                    parent,
+                    index,
+                },
+            ],
+            vec![
+                StepMap::Revive { nodes: ids.clone() },
+                StepMap::ChildInsert {
+                    parent,
+                    index,
+                    count: 1,
+                    old_len: old_len - 1,
+                },
+            ],
+            cost,
+        )?;
         let mut nodes = Vec::new();
         self.walk_subtree(root, 1, &mut |node, _| {
             nodes.push(node.clone());
             Ok(())
         })?;
         let mut p = self.node(parent)?.clone();
-        let old_len = p.children.len();
         p.children.remove(index);
         p.copy_cost -= std::mem::size_of::<NodeId>();
-        let ids = nodes.iter().map(|n| n.id).collect::<Vec<_>>();
         self.writes.insert(parent, p);
         for id in &ids {
             self.writes.remove(id);
             self.removed.insert(*id);
         }
-        self.steps.push(StepMap::ChildDelete {
-            parent,
-            index,
-            count: 1,
-            old_len,
-        });
-        self.steps.push(StepMap::Retire {
-            nodes: ids,
-            parent,
-            index,
-        });
+        self.append_maps(maps);
         self.prepared_copy_bytes += cost;
         Ok(RetiredSubtree {
             key: self.base.key,
@@ -1922,12 +2340,46 @@ impl<A: Allocation> TreeDraft<'_, A> {
         if let Err(cause) = check {
             return Err(RevivalError { cause, retired });
         }
+        let old_len = self.node(parent).expect("checked parent").children.len();
+        if let Err(cause) = self.map_storage_room(2, 2, retired.nodes.len().saturating_mul(2), cost)
+        {
+            return Err(RevivalError { cause, retired });
+        }
+        let revived = retired.nodes.iter().map(|node| node.id).collect::<Vec<_>>();
+        let maps = match self.prepare_maps(
+            vec![
+                StepMap::Revive {
+                    nodes: revived.clone(),
+                },
+                StepMap::ChildInsert {
+                    parent,
+                    index,
+                    count: 1,
+                    old_len,
+                },
+            ],
+            vec![
+                StepMap::ChildDelete {
+                    parent,
+                    index,
+                    count: 1,
+                    old_len: old_len + 1,
+                },
+                StepMap::Retire {
+                    nodes: revived,
+                    parent,
+                    index,
+                },
+            ],
+            cost,
+        ) {
+            Ok(maps) => maps,
+            Err(cause) => return Err(RevivalError { cause, retired }),
+        };
         let mut p = self.node(parent).expect("checked parent").clone();
-        let old_len = p.children.len();
         let root = retired.root;
         p.children.insert(index, root);
         p.copy_cost += std::mem::size_of::<NodeId>();
-        let revived = retired.nodes.iter().map(|node| node.id).collect();
         for mut node in retired.nodes.drain(..) {
             if node.id == root {
                 node.parent = Some(parent);
@@ -1936,13 +2388,7 @@ impl<A: Allocation> TreeDraft<'_, A> {
             self.writes.insert(node.id, node);
         }
         self.writes.insert(parent, p);
-        self.steps.push(StepMap::Revive { nodes: revived });
-        self.steps.push(StepMap::ChildInsert {
-            parent,
-            index,
-            count: 1,
-            old_len,
-        });
+        self.append_maps(maps);
         self.prepared_copy_bytes += cost;
         Ok(root)
     }
@@ -2020,10 +2466,20 @@ impl<A: Allocation> TreeDraft<'_, A> {
             } else {
                 d.copy_cost + self.node(root)?.copy_cost + std::mem::size_of::<NodeId>()
             };
-        self.copy_room(cost)?;
-        let mut s = self.node(source)?.clone();
-        let from_len = s.children.len();
+        let from_len = self.node(source)?.children.len();
         let to_len = d.children.len();
+        let forward = StepMap::ChildMove {
+            from_parent: source,
+            from_index: index,
+            to_parent: destination,
+            to_index: before_index,
+            count: 1,
+            from_len,
+            to_len,
+        };
+        let backward = inverse_move(&forward);
+        let maps = self.prepare_maps(vec![forward], vec![backward], cost)?;
+        let mut s = self.node(source)?.clone();
         s.children.remove(index);
         if source == destination {
             let adjusted = before_index - usize::from(before_index > index);
@@ -2040,15 +2496,7 @@ impl<A: Allocation> TreeDraft<'_, A> {
             self.writes.insert(destination, d);
             self.writes.insert(root, moved);
         }
-        self.steps.push(StepMap::ChildMove {
-            from_parent: source,
-            from_index: index,
-            to_parent: destination,
-            to_index: before_index,
-            count: 1,
-            from_len,
-            to_len,
-        });
+        self.append_maps(maps);
         self.prepared_copy_bytes += cost;
         Ok(())
     }
@@ -2830,6 +3278,33 @@ impl<A: Allocation> TreeDraft<'_, A> {
         // All expected failures are now resolved. IDs are consumed once for the
         // entire insertion and never recycled if its enclosing batch is refused.
         let start = self.allocation.reserve(&self.base.next_id, metrics.nodes)?;
+        let old_len = parent_node.children.len();
+        self.map_storage_room(1, 2, count, cost)?;
+        let ids = (start..start + metrics.nodes)
+            .map(|serial| NodeId::new(self.base.key, serial))
+            .collect();
+        let maps = self.prepare_maps(
+            vec![StepMap::ChildInsert {
+                parent,
+                index,
+                count: fragment.children.len(),
+                old_len,
+            }],
+            vec![
+                StepMap::ChildDelete {
+                    parent,
+                    index,
+                    count: fragment.children.len(),
+                    old_len: old_len + fragment.children.len(),
+                },
+                StepMap::Retire {
+                    nodes: ids,
+                    parent,
+                    index,
+                },
+            ],
+            cost,
+        )?;
         let mut serial = start;
         let mut records = BTreeMap::new();
         fn build(
@@ -2879,19 +3354,13 @@ impl<A: Allocation> TreeDraft<'_, A> {
             .collect::<Vec<_>>();
         debug_assert_eq!(serial, start + metrics.nodes);
         let mut changed_parent = parent_node.clone();
-        let old_len = changed_parent.children.len();
         changed_parent
             .children
             .splice(index..index, roots.iter().copied());
         changed_parent.copy_cost += roots.len() * std::mem::size_of::<NodeId>();
         self.writes.extend(records);
         self.writes.insert(parent, changed_parent);
-        self.steps.push(StepMap::ChildInsert {
-            parent,
-            index,
-            count: roots.len(),
-            old_len,
-        });
+        self.append_maps(maps);
         self.prepared_copy_bytes += cost;
         Ok(roots)
     }
@@ -2931,6 +3400,38 @@ impl<A: Allocation> TreeDraft<'_, A> {
             self.copy_room(cost)
         })?;
         let start = self.allocation.reserve(&self.base.next_id, count)?;
+        let old_len = destination.children.len();
+        self.map_storage_room(
+            1,
+            2,
+            usize::try_from(count).map_err(|_| TreeError::ResourceLimit)?,
+            cost,
+        )?;
+        let ids = (start..start + count)
+            .map(|serial| NodeId::new(self.base.key, serial))
+            .collect();
+        let maps = self.prepare_maps(
+            vec![StepMap::ChildInsert {
+                parent,
+                index,
+                count: 1,
+                old_len,
+            }],
+            vec![
+                StepMap::ChildDelete {
+                    parent,
+                    index,
+                    count: 1,
+                    old_len: old_len + 1,
+                },
+                StepMap::Retire {
+                    nodes: ids,
+                    parent,
+                    index,
+                },
+            ],
+            cost,
+        )?;
         let mut serial = start;
         let mut records = BTreeMap::new();
         fn build<A: Allocation>(
@@ -2963,17 +3464,11 @@ impl<A: Allocation> TreeDraft<'_, A> {
         let fresh = build(self, id, parent, &mut serial, &mut records);
         debug_assert_eq!(serial, start + count);
         let mut changed_parent = destination.clone();
-        let old_len = changed_parent.children.len();
         changed_parent.children.insert(index, fresh);
         changed_parent.copy_cost += std::mem::size_of::<NodeId>();
         self.writes.extend(records);
         self.writes.insert(parent, changed_parent);
-        self.steps.push(StepMap::ChildInsert {
-            parent,
-            index,
-            count: 1,
-            old_len,
-        });
+        self.append_maps(maps);
         self.prepared_copy_bytes += cost;
         Ok(vec![fresh])
     }
@@ -3120,6 +3615,7 @@ impl<A: Allocation> TreeDraft<'_, A> {
         changed_ids.sort_unstable();
         debug_assert!(changed_ids.windows(2).all(|pair| pair[0] != pair[1]));
         let mut material_bytes = 0usize;
+        let mut replay_units = count as u64;
         for id in &changed_ids {
             material_bytes = material_bytes
                 .checked_add(std::mem::size_of::<ChangedRecord>())
@@ -3131,6 +3627,9 @@ impl<A: Allocation> TreeDraft<'_, A> {
                 material_bytes = material_bytes
                     .checked_add(node.copy_cost)
                     .ok_or(TreeError::ResourceLimit)?;
+                replay_units = replay_units
+                    .checked_add((node.copy_cost - node.text().map_or(0, str::len)) as u64)
+                    .ok_or(TreeError::ResourceLimit)?;
             }
             self.copy_room(
                 material_bytes
@@ -3138,6 +3637,40 @@ impl<A: Allocation> TreeDraft<'_, A> {
                     .ok_or(TreeError::ResourceLimit)?,
             )?;
         }
+        if changed_ids.is_empty() {
+            self.steps.clear();
+            self.inverse.clear();
+            self.inverse_steps = 0;
+        }
+        let mut recipe_bytes = steps_bytes(&self.steps)?;
+        for chunk in &self.inverse {
+            recipe_bytes = recipe_bytes
+                .checked_add(steps_bytes(&chunk.backward)?)
+                .and_then(|n| n.checked_add(std::mem::size_of::<InverseChunk>()))
+                .ok_or(TreeError::ResourceLimit)?;
+        }
+        material_bytes = material_bytes
+            .checked_add(recipe_bytes)
+            .and_then(|n| {
+                n.checked_add(
+                    std::mem::size_of::<CommitMaterial>() + std::mem::size_of::<usize>() * 2,
+                )
+            })
+            .ok_or(TreeError::ResourceLimit)?;
+        self.copy_room(
+            material_bytes
+                .checked_add(id_bytes)
+                .ok_or(TreeError::ResourceLimit)?,
+        )?;
+        replay_units = replay_units
+            .checked_add(recipe_bytes as u64)
+            .ok_or(TreeError::ResourceLimit)?;
+        let replay_cost = ReplayCost {
+            units: replay_units,
+            bytes: (material_bytes as u64)
+                .checked_mul(3)
+                .ok_or(TreeError::ResourceLimit)?,
+        };
         let records = changed_ids
             .iter()
             .map(|id| ChangedRecord {
@@ -3146,9 +3679,22 @@ impl<A: Allocation> TreeDraft<'_, A> {
                 after: self.writes.get(id).cloned(),
             })
             .collect();
-        if changed_ids.is_empty() {
-            self.steps.clear();
-        }
+        let material = Arc::new(CommitMaterial {
+            key: self.base.key,
+            root: self.base.root,
+            records,
+            forward: self.steps.clone(),
+            inverse: self.inverse,
+            inverse_steps: self.inverse_steps,
+            // A net-noop has no retained history payload. The temporary empty
+            // Arc still contributes to this preparation's allocation work.
+            estimated_bytes: if count == 0 { 0 } else { material_bytes },
+            replay_cost: if count == 0 {
+                ReplayCost::default()
+            } else {
+                replay_cost
+            },
+        });
         Ok(PreparedTreePatch {
             allocation: PhantomData,
             key: self.base.key,
@@ -3156,10 +3702,7 @@ impl<A: Allocation> TreeDraft<'_, A> {
             removed: self.removed,
             steps: self.steps,
             changed_ids,
-            material: CommitMaterial {
-                records,
-                estimated_bytes: material_bytes,
-            },
+            material,
             prepared_copy_bytes: self.prepared_copy_bytes + material_bytes + id_bytes,
         })
     }
@@ -4137,7 +4680,11 @@ mod tests {
         let first = first_leaf(&d);
         let p = d.node(d.root()).unwrap().children[1];
         let second = d.node(p).unwrap().children[0];
-        d.copy_budget = d.node(first).unwrap().copy_cost * 2;
+        // One text record copy and its sealed forward/backward map pair fit;
+        // a second affected record must refuse before any additional copy.
+        d.copy_budget = d.node(first).unwrap().copy_cost * 2
+            + std::mem::size_of::<StepMap<NodeId>>() * 2
+            + std::mem::size_of::<InverseChunk>();
         d.replace_text(first, Utf16Offset::new(0), Utf16Offset::new(1), "A")
             .unwrap();
         assert_eq!(d.prepared_copy_bytes(), d.copy_budget);
@@ -4181,5 +4728,688 @@ mod tests {
         assert_eq!(d.candidate_document(), before);
         assert_eq!(error.joined.right.id, right);
         invariant(&d);
+    }
+}
+
+#[cfg(test)]
+mod history_replay_tests {
+    use super::*;
+    use crate::mapping::{MapResult, PositionMap};
+    use editor_core::transaction::WorkLimits;
+
+    fn text(value: &str) -> Node {
+        Node {
+            type_id: "org.test/text".into(),
+            primitive: Primitive::Text,
+            attributes: Attributes::new(),
+            marks: vec![],
+            text: Some(value.into()),
+            children: vec![],
+        }
+    }
+    fn block(children: Vec<Node>) -> Node {
+        Node {
+            type_id: "org.test/paragraph".into(),
+            primitive: Primitive::TextBlock,
+            attributes: Attributes::new(),
+            marks: vec![],
+            text: None,
+            children,
+        }
+    }
+    fn tree() -> AddressTree {
+        AddressTree::from_document(
+            SessionKey::allocate().unwrap(),
+            Document {
+                children: vec![
+                    block(vec![text("abcdef"), text("tail")]),
+                    block(vec![text("last")]),
+                ],
+            },
+        )
+        .unwrap()
+    }
+    fn meter() -> WorkMeter {
+        WorkMeter::new(WorkLimits::default())
+    }
+    fn assert_records(tree: &AddressTree, expected: &BTreeMap<NodeId, TreeNode>) {
+        assert_eq!(tree.nodes.len(), expected.len());
+        for (id, before) in expected {
+            assert!(
+                same_record(tree.node(*id).unwrap(), before),
+                "record {id:?}"
+            );
+            assert_eq!(tree.node(*id).unwrap().copy_cost, before.copy_cost);
+        }
+    }
+    fn roundtrip(mut base: AddressTree, action: impl FnOnce(&mut TreeDraft<'_>)) {
+        let before = base.nodes.clone();
+        let mut draft = base.prepare();
+        action(&mut draft);
+        draft.validate_structure(&mut meter()).unwrap();
+        let patch = draft.prepare_patch().unwrap();
+        assert!(patch.changed());
+        let material = Arc::clone(patch.material());
+        let published = base.publish(patch);
+        assert!(Arc::ptr_eq(&published, &material));
+        let after = base.nodes.clone();
+        let highwater = base.next_id.get();
+        let mut undo = base.prepare();
+        let mut work = meter();
+        undo.stage_replay(&material, ReplayDirection::Undo, &mut work)
+            .unwrap();
+        assert_eq!(
+            work.usage().units,
+            material.replay_cost(ReplayDirection::Undo).units
+        );
+        assert_eq!(
+            work.usage().bytes,
+            material.replay_cost(ReplayDirection::Undo).bytes
+        );
+        assert_eq!(undo.steps.len(), material.map_count(ReplayDirection::Undo));
+        undo.validate_structure(&mut meter()).unwrap();
+        PositionMap::new(1, 2, undo.steps.clone()).unwrap();
+        let patch = undo.prepare_patch().unwrap();
+        assert!(patch.prepared_copy_bytes() <= material.replay_copy_bound());
+        let undo_material = Arc::clone(patch.material());
+        base.publish(patch);
+        assert_records(&base, &before);
+        assert_eq!(base.next_id.get(), highwater);
+        let mut redo = base.prepare_preview();
+        redo.stage_replay(&material, ReplayDirection::Redo, &mut meter())
+            .unwrap();
+        assert_eq!(redo.steps, material.forward);
+        assert_eq!(
+            redo.candidate_document(),
+            Document {
+                children: after[&base.root]
+                    .children
+                    .iter()
+                    .map(|id| {
+                        fn encode(id: NodeId, nodes: &BTreeMap<NodeId, TreeNode>) -> Node {
+                            let node = &nodes[&id];
+                            let data = node.data.as_ref().unwrap();
+                            Node {
+                                type_id: data.type_id.clone(),
+                                primitive: data.primitive,
+                                attributes: data.attributes.clone(),
+                                marks: data.marks.clone(),
+                                text: node.text().map(str::to_owned),
+                                children: node
+                                    .children
+                                    .iter()
+                                    .map(|id| encode(*id, nodes))
+                                    .collect(),
+                            }
+                        }
+                        encode(*id, &after)
+                    })
+                    .collect()
+            }
+        );
+        assert_eq!(base.next_id.get(), highwater);
+        // Inverting the newly prepared undo commit must also reproduce redo;
+        // this catches one-way receipts that stop working after the first undo.
+        let mut redo = base.prepare();
+        redo.stage_replay(&undo_material, ReplayDirection::Undo, &mut meter())
+            .unwrap();
+        redo.validate_structure(&mut meter()).unwrap();
+        PositionMap::new(2, 3, redo.steps.clone()).unwrap();
+        base.publish(redo.prepare_patch().unwrap());
+        assert_records(&base, &after);
+        assert_eq!(base.next_id.get(), highwater);
+    }
+
+    #[test]
+    fn sparse_replay_covers_every_primitive_family_and_metadata() {
+        for case in [
+            "replace",
+            "split",
+            "join",
+            "detach",
+            "revive",
+            "move_forward",
+            "move_backward",
+            "move_parent",
+            "fragment",
+            "duplicate",
+            "attribute",
+            "marks",
+            "transform",
+        ] {
+            roundtrip(tree(), |draft| {
+                let root = draft.root();
+                let p = draft.node(root).unwrap().children[0];
+                let q = draft.node(root).unwrap().children[1];
+                let leaf = draft.node(p).unwrap().children[0];
+                let right = draft.node(p).unwrap().children[1];
+                match case {
+                    "replace" => draft
+                        .replace_text(leaf, Utf16Offset::new(2), Utf16Offset::new(4), "XY")
+                        .unwrap(),
+                    "split" => {
+                        draft.split_text(leaf, Utf16Offset::new(2)).unwrap();
+                    }
+                    "join" => {
+                        draft.join_text(leaf, right).unwrap();
+                    }
+                    "detach" => {
+                        draft.detach(p).unwrap();
+                    }
+                    "revive" => {
+                        let retired = draft.detach(p).unwrap();
+                        draft.revive(root, 1, retired).unwrap();
+                    }
+                    "move_forward" => draft.move_node(p, root, 2).unwrap(),
+                    "move_backward" => draft.move_node(q, root, 0).unwrap(),
+                    "move_parent" => draft.move_node(leaf, q, 1).unwrap(),
+                    "fragment" => {
+                        draft
+                            .insert_fragment(
+                                root,
+                                1,
+                                &Document {
+                                    children: vec![block(vec![text("new"), text("child")])],
+                                },
+                                EditOrigin::User,
+                            )
+                            .unwrap();
+                    }
+                    "duplicate" => {
+                        draft.duplicate(p, root, 2, EditOrigin::User).unwrap();
+                    }
+                    "attribute" => {
+                        draft
+                            .apply_operation(
+                                &Operation::SetAttribute {
+                                    node: p,
+                                    key: "layout".into(),
+                                    value: Some(Attribute::String("wide".into())),
+                                },
+                                EditOrigin::User,
+                            )
+                            .unwrap();
+                    }
+                    "marks" => {
+                        draft
+                            .apply_operation(
+                                &Operation::SetMarks {
+                                    leaf,
+                                    marks: vec![Mark {
+                                        type_id: "org.test/strong".into(),
+                                        attributes: Attributes::new(),
+                                    }],
+                                },
+                                EditOrigin::User,
+                            )
+                            .unwrap();
+                    }
+                    "transform" => {
+                        draft
+                            .apply_operation(
+                                &Operation::Transform {
+                                    node: p,
+                                    type_id: "org.test/heading".into(),
+                                    primitive: Primitive::TextBlock,
+                                },
+                                EditOrigin::User,
+                            )
+                            .unwrap();
+                    }
+                    _ => unreachable!(),
+                }
+            });
+        }
+    }
+
+    #[test]
+    fn replay_scalar_inverse_inside_new_grapheme_and_exact_deleted_mapping() {
+        let mut base = AddressTree::from_document(
+            SessionKey::allocate().unwrap(),
+            Document {
+                children: vec![block(vec![text("a")])],
+            },
+        )
+        .unwrap();
+        let parent = base.node(base.root).unwrap().children[0];
+        let leaf = base.node(parent).unwrap().children[0];
+        let mut draft = base.prepare();
+        draft
+            .replace_text(leaf, Utf16Offset::new(1), Utf16Offset::new(1), "\u{301}")
+            .unwrap();
+        let material = base.publish(draft.prepare_patch().unwrap());
+        base.next_id.set(u64::MAX);
+        let mut undo = base.prepare();
+        assert!(matches!(
+            undo.replace_text(leaf, Utf16Offset::new(1), Utf16Offset::new(2), ""),
+            Err(TreeError::Position(_))
+        ));
+        undo.stage_replay(&material, ReplayDirection::Undo, &mut meter())
+            .unwrap();
+        assert_eq!(undo.node(leaf).unwrap().text(), Some("a"));
+        let map = PositionMap::new(1, 2, undo.steps.clone()).unwrap();
+        assert_eq!(
+            map.map(Position::Text {
+                leaf,
+                utf16: Utf16Offset::new(2),
+                affinity: Affinity::After
+            }),
+            MapResult::Mapped(Position::Text {
+                leaf,
+                utf16: Utf16Offset::new(1),
+                affinity: Affinity::After
+            })
+        );
+        base.publish(undo.prepare_patch().unwrap());
+        let mut redo = base.prepare();
+        redo.stage_replay(&material, ReplayDirection::Redo, &mut meter())
+            .unwrap();
+        assert_eq!(redo.node(leaf).unwrap().text(), Some("a\u{301}"));
+    }
+
+    #[test]
+    fn replay_preserves_transient_split_ids_and_normalization_chunk_order() {
+        roundtrip(tree(), |draft| {
+            let p = draft.node(draft.root()).unwrap().children[0];
+            let left = draft.node(p).unwrap().children[0];
+            let temporary = draft.split_text(left, Utf16Offset::new(2)).unwrap();
+            draft
+                .replace_text(temporary, Utf16Offset::new(0), Utf16Offset::new(1), "C")
+                .unwrap();
+            draft.join_text(left, temporary).unwrap();
+            assert!(matches!(draft.node(temporary), Err(TreeError::MissingNode)));
+        });
+    }
+
+    #[test]
+    fn replay_refuses_expected_side_foreign_generation_and_budget_without_draft_mutation() {
+        let mut base = tree();
+        let p = base.node(base.root).unwrap().children[0];
+        let leaf = base.node(p).unwrap().children[0];
+        let mut change = base.prepare();
+        change
+            .replace_text(leaf, Utf16Offset::new(0), Utf16Offset::new(1), "A")
+            .unwrap();
+        let material = base.publish(change.prepare_patch().unwrap());
+        let mut draft = base.prepare();
+        draft
+            .replace_text(leaf, Utf16Offset::new(0), Utf16Offset::new(1), "B")
+            .unwrap();
+        let before = draft.candidate_document();
+        let steps = draft.steps.clone();
+        let bytes = draft.prepared_copy_bytes;
+        assert_eq!(
+            draft.stage_replay(&material, ReplayDirection::Undo, &mut meter()),
+            Err(TreeError::ReplayMismatch)
+        );
+        assert_eq!(draft.candidate_document(), before);
+        assert_eq!(draft.steps, steps);
+        assert_eq!(draft.prepared_copy_bytes, bytes);
+        let mut draft = base.prepare();
+        let highwater = base.next_id.get();
+        let mut tiny = WorkMeter::new(WorkLimits { units: 0, bytes: 0 });
+        assert_eq!(
+            draft.stage_replay(&material, ReplayDirection::Undo, &mut tiny),
+            Err(TreeError::ResourceLimit)
+        );
+        assert!(draft.writes.is_empty() && draft.steps.is_empty() && draft.inverse.is_empty());
+        assert_eq!(base.next_id.get(), highwater);
+        let mut copy_limited = base.prepare();
+        copy_limited.copy_budget = material.estimated_bytes() - 1;
+        assert_eq!(
+            copy_limited.stage_replay(&material, ReplayDirection::Undo, &mut meter()),
+            Err(TreeError::ResourceLimit)
+        );
+        assert!(copy_limited.writes.is_empty() && copy_limited.inverse.is_empty());
+        assert_eq!(base.next_id.get(), highwater);
+        let other = tree();
+        let mut foreign = other.prepare();
+        assert_eq!(
+            foreign.stage_replay(&material, ReplayDirection::Undo, &mut meter()),
+            Err(TreeError::ForeignSession)
+        );
+        assert!(foreign.writes.is_empty());
+    }
+    #[test]
+    fn replay_closed_ranges_preserve_whole_styled_clusters_and_inline_barriers() {
+        for case in [
+            "marks",
+            "replace_break",
+            "delete_break",
+            "group_forward",
+            "group_backward",
+            "group_parent",
+        ] {
+            let mut e = text("e");
+            e.marks.push(Mark {
+                type_id: "org.test/strong".into(),
+                attributes: Attributes::new(),
+            });
+            let separator = Node {
+                type_id: "org.test/break".into(),
+                primitive: Primitive::HardBreak,
+                attributes: Attributes::new(),
+                marks: vec![],
+                text: None,
+                children: vec![],
+            };
+            let children = if matches!(case, "replace_break" | "delete_break") {
+                vec![e, separator, text("\u{301}")]
+            } else {
+                vec![text("A"), e, text("\u{301}"), text("B")]
+            };
+            let base = AddressTree::from_document(
+                SessionKey::allocate().unwrap(),
+                Document {
+                    children: vec![block(children), block(vec![text("last")])],
+                },
+            )
+            .unwrap();
+            roundtrip(base, |draft| {
+                let p = draft.node(draft.root()).unwrap().children[0];
+                let q = draft.node(draft.root()).unwrap().children[1];
+                let ids = draft.node(p).unwrap().children.clone();
+                let mut work = meter();
+                match case {
+                    "marks" => draft
+                        .patch_mark_range(
+                            Selection {
+                                anchor: Position::Text {
+                                    leaf: ids[1],
+                                    utf16: Utf16Offset::new(0),
+                                    affinity: Affinity::Before,
+                                },
+                                focus: Position::Text {
+                                    leaf: ids[2],
+                                    utf16: Utf16Offset::new(1),
+                                    affinity: Affinity::After,
+                                },
+                            },
+                            &[MarkEdit::Upsert(Mark {
+                                type_id: "org.test/em".into(),
+                                attributes: Attributes::new(),
+                            })],
+                            &mut work,
+                        )
+                        .unwrap(),
+                    "replace_break" | "delete_break" => {
+                        let inserted = (case == "replace_break").then(|| Node {
+                            type_id: "org.test/atom".into(),
+                            primitive: Primitive::InlineAtom,
+                            attributes: Attributes::new(),
+                            marks: vec![],
+                            text: None,
+                            children: vec![],
+                        });
+                        draft
+                            .replace_inline_range(
+                                Selection {
+                                    anchor: Position::Child {
+                                        parent: p,
+                                        index: 1,
+                                        affinity: Affinity::Before,
+                                    },
+                                    focus: Position::Child {
+                                        parent: p,
+                                        index: 2,
+                                        affinity: Affinity::After,
+                                    },
+                                },
+                                inserted.as_ref(),
+                                &mut work,
+                            )
+                            .unwrap();
+                    }
+                    "group_forward" => draft
+                        .move_inline_group(&ids[1..3], p, 4, &mut work)
+                        .unwrap(),
+                    "group_backward" => draft
+                        .move_inline_group(&ids[1..3], p, 0, &mut work)
+                        .unwrap(),
+                    "group_parent" => draft
+                        .move_inline_group(&ids[1..3], q, 1, &mut work)
+                        .unwrap(),
+                    _ => unreachable!(),
+                }
+            });
+        }
+    }
+
+    #[test]
+    fn replay_expected_side_checks_every_semantic_facet_and_presence() {
+        let mut base = tree();
+        let p = base.node(base.root).unwrap().children[0];
+        let leaf = base.node(p).unwrap().children[0];
+        let mut draft = base.prepare();
+        draft
+            .replace_text(leaf, Utf16Offset::new(0), Utf16Offset::new(1), "A")
+            .unwrap();
+        let material = base.publish(draft.prepare_patch().unwrap());
+        for facet in [
+            "parent",
+            "type",
+            "primitive",
+            "attrs",
+            "marks",
+            "text",
+            "children",
+            "absence",
+        ] {
+            let mut draft = base.prepare();
+            let mut changed = draft.node(leaf).unwrap().clone();
+            let data = changed.data.as_mut().unwrap();
+            match facet {
+                "parent" => changed.parent = Some(base.root),
+                "type" => data.type_id.push_str(".different"),
+                "primitive" => data.primitive = Primitive::InlineAtom,
+                "attrs" => {
+                    data.attributes
+                        .insert("extra".into(), Attribute::Boolean(true));
+                }
+                "marks" => data.marks.push(Mark {
+                    type_id: "org.test/em".into(),
+                    attributes: Attributes::new(),
+                }),
+                "text" => data.text.as_mut().unwrap().0.push('x'),
+                "children" => changed.children.push(p),
+                "absence" => {
+                    draft.removed.insert(leaf);
+                }
+                _ => unreachable!(),
+            }
+            if facet != "absence" {
+                draft.writes.insert(leaf, changed);
+            }
+            let writes = draft.writes.clone();
+            let removed = draft.removed.clone();
+            assert_eq!(
+                draft.stage_replay(&material, ReplayDirection::Undo, &mut meter()),
+                Err(TreeError::ReplayMismatch),
+                "{facet}"
+            );
+            assert_eq!(draft.writes, writes);
+            assert_eq!(draft.removed, removed);
+            assert!(draft.steps.is_empty() && draft.inverse.is_empty());
+        }
+        let mut inserted = base.prepare();
+        inserted
+            .insert_fragment(
+                base.root,
+                1,
+                &Document {
+                    children: vec![block(vec![text("new")])],
+                },
+                EditOrigin::User,
+            )
+            .unwrap();
+        let insertion = base.publish(inserted.prepare_patch().unwrap());
+        // Redo expects new IDs absent, so unexpectedly live IDs cannot be reused.
+        let mut draft = base.prepare();
+        assert_eq!(
+            draft.stage_replay(&insertion, ReplayDirection::Redo, &mut meter()),
+            Err(TreeError::ReplayMismatch)
+        );
+        assert!(draft.writes.is_empty());
+        let next_generation =
+            AddressTree::from_document(base.key.next_generation().unwrap(), base.document())
+                .unwrap();
+        assert_eq!(
+            next_generation
+                .prepare()
+                .stage_replay(&insertion, ReplayDirection::Undo, &mut meter()),
+            Err(TreeError::ForeignSession)
+        );
+    }
+    #[test]
+    fn replay_move_inverse_gap_maps_use_original_indices_once() {
+        for (direction, expected_source_before, expected_source_after) in [
+            ("forward", vec![0, 1, 4, 4, 4], vec![0, 3, 4, 4, 4]),
+            ("backward", vec![0, 0, 0, 1, 4], vec![0, 0, 0, 3, 4]),
+            ("parent", vec![0, 1, 1, 1], vec![0, 1, 1, 1]),
+        ] {
+            let mut base = AddressTree::from_document(
+                SessionKey::allocate().unwrap(),
+                Document {
+                    children: vec![
+                        block(vec![text("A"), text("e"), text("\u{301}"), text("B")]),
+                        block(vec![text("last")]),
+                    ],
+                },
+            )
+            .unwrap();
+            let p = base.node(base.root).unwrap().children[0];
+            let q = base.node(base.root).unwrap().children[1];
+            let ids = base.node(p).unwrap().children.clone();
+            let mut draft = base.prepare();
+            match direction {
+                "forward" => draft
+                    .move_inline_group(&ids[1..3], p, 4, &mut meter())
+                    .unwrap(),
+                "backward" => draft
+                    .move_inline_group(&ids[1..3], p, 0, &mut meter())
+                    .unwrap(),
+                "parent" => draft
+                    .move_inline_group(&ids[1..3], q, 1, &mut meter())
+                    .unwrap(),
+                _ => unreachable!(),
+            }
+            let material = base.publish(draft.prepare_patch().unwrap());
+            let mut undo = base.prepare();
+            undo.stage_replay(&material, ReplayDirection::Undo, &mut meter())
+                .unwrap();
+            let map = PositionMap::new(1, 2, undo.steps.clone()).unwrap();
+            let source = if direction == "parent" { q } else { p };
+            for (affinity, expected) in [
+                (Affinity::Before, &expected_source_before),
+                (Affinity::After, &expected_source_after),
+            ] {
+                for (index, expected) in expected.iter().enumerate() {
+                    assert_eq!(
+                        map.map(Position::Child {
+                            parent: source,
+                            index,
+                            affinity
+                        }),
+                        MapResult::Mapped(Position::Child {
+                            parent: source,
+                            index: *expected,
+                            affinity
+                        }),
+                        "{direction} {index} {affinity:?}"
+                    );
+                }
+            }
+            if direction == "parent" {
+                for (affinity, expected) in
+                    [(Affinity::Before, [0, 1, 4]), (Affinity::After, [0, 3, 4])]
+                {
+                    for (index, expected) in expected.iter().enumerate() {
+                        assert_eq!(
+                            map.map(Position::Child {
+                                parent: p,
+                                index,
+                                affinity
+                            }),
+                            MapResult::Mapped(Position::Child {
+                                parent: p,
+                                index: *expected,
+                                affinity
+                            })
+                        );
+                    }
+                }
+            }
+            for id in &ids[1..3] {
+                assert_eq!(
+                    map.map(Position::Text {
+                        leaf: *id,
+                        utf16: Utf16Offset::new(1),
+                        affinity: Affinity::After
+                    }),
+                    MapResult::Mapped(Position::Text {
+                        leaf: *id,
+                        utf16: Utf16Offset::new(1),
+                        affinity: Affinity::After
+                    })
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn replay_join_maps_left_end_edge_and_revives_original_right_boundary() {
+        let mut base = AddressTree::from_document(
+            SessionKey::allocate().unwrap(),
+            Document {
+                children: vec![block(vec![text("a"), text("b")])],
+            },
+        )
+        .unwrap();
+        let p = base.node(base.root).unwrap().children[0];
+        let left = base.node(p).unwrap().children[0];
+        let right = base.node(p).unwrap().children[1];
+        let mut draft = base.prepare();
+        draft.join_text(left, right).unwrap();
+        let material = base.publish(draft.prepare_patch().unwrap());
+        let forward = PositionMap::new(0, 1, material.forward.clone()).unwrap();
+        assert_eq!(
+            forward.map(Position::Edge {
+                node: left,
+                side: Edge::After
+            }),
+            MapResult::Mapped(Position::Text {
+                leaf: left,
+                utf16: Utf16Offset::new(1),
+                affinity: Affinity::After
+            })
+        );
+        let mut undo = base.prepare();
+        undo.stage_replay(&material, ReplayDirection::Undo, &mut meter())
+            .unwrap();
+        let map = PositionMap::new(1, 2, undo.steps.clone()).unwrap();
+        for (affinity, leaf, utf16) in [(Affinity::Before, left, 1), (Affinity::After, right, 0)] {
+            assert_eq!(
+                map.map(Position::Text {
+                    leaf: left,
+                    utf16: Utf16Offset::new(1),
+                    affinity
+                }),
+                MapResult::Mapped(Position::Text {
+                    leaf,
+                    utf16: Utf16Offset::new(utf16),
+                    affinity
+                })
+            );
+        }
+        assert_eq!(
+            map.map(Position::Edge {
+                node: left,
+                side: Edge::After
+            }),
+            MapResult::Mapped(Position::Edge {
+                node: right,
+                side: Edge::After
+            })
+        );
     }
 }

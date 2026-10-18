@@ -5,7 +5,7 @@ use super::super::{AccessMode, SessionState};
 use super::*;
 use crate::mapping::{MapResult, StepMap};
 use crate::transaction::{CommitEvent, JournalEntrySummary, JournalSummary};
-use crate::tree::EditOrigin;
+use crate::tree::{EditOrigin, TreeError};
 use editor_core::candidate::CandidateRead;
 use editor_core::commands::{CommandDescriptor, LocalRef, SelectionIntent, StoredMarksUpdate};
 use editor_core::document::{Attributes, Document, Mark, Node, Primitive};

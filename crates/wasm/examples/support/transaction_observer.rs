@@ -226,8 +226,8 @@ fn attributes_marks_spans() -> Value {
         "repeated_metadata":repeated_metadata_commits()})
 }
 
-/// A fixed-size live document and one retained entry must not acquire a larger
-/// logical copy cost merely because the session has committed many replacements.
+/// A fixed-size live document, one chronological entry and one action unit must
+/// have stable costs after the two explicit initial allocation/ownership states.
 /// Compare costs within each target; only portable facts enter native/WASM JSON.
 fn repeated_metadata_commits() -> Value {
     const COMMITS: u64 = 512;
@@ -254,6 +254,7 @@ fn repeated_metadata_commits() -> Value {
         );
         request.limits.work.bytes = BYTE_CAP;
         request.limits.journal_entries = 1;
+        request.limits.history.actions = 1;
         request.limits.journal_bytes = BYTE_CAP as usize;
         let result = s.dispatch(request);
         let DispatchOutcome::Changed(event) = result else {
@@ -274,8 +275,20 @@ fn repeated_metadata_commits() -> Value {
         assert_eq!(entry.len(), 1);
         assert_eq!(entry[0].before_revision, iteration - 1);
         assert_eq!(entry[0].after_revision, iteration);
-        let current_cost = (event.work, event.journal.bytes, entry[0].bytes);
-        if let Some(first) = first_cost {
+        let current_cost = (
+            event.work,
+            event.journal.bytes,
+            entry[0].bytes,
+            s.history_summary().retained_bytes,
+        );
+        assert_eq!(s.history_summary().undo_units, 1);
+        assert_eq!(s.history_summary().redo_units, 0);
+        assert_eq!(s.history_summary().evicted_undo_units, iteration - 1);
+        if iteration <= 2 {
+            // OSR-36 introduces an independently bounded action store. Empty,
+            // first retained and steady retained plans have different work;
+            // payload copy-cost stability is checked after this stated warmup.
+        } else if let Some(first) = first_cost {
             assert_eq!(
                 current_cost, first,
                 "fixed-size costs grew at commit {iteration}"
@@ -295,7 +308,8 @@ fn repeated_metadata_commits() -> Value {
     assert_eq!(s.export_snapshot(k, s.revision()).unwrap(), initial);
     json!({"commits":COMMITS,"canonical_bytes":159,"work_cap_bytes":BYTE_CAP,
         "journal_entry_limit":1,"canonical_restored":true,"all_changed":true,
-        "work_and_retained_bytes_stable":true,"identities_preserved":true})
+        "history_action_limit":1,"allocation_warmup_commits":2,"steady_commits":510,
+        "steady_work_and_retained_bytes_stable":true,"identities_preserved":true})
 }
 
 fn fragment_local_references() -> Value {

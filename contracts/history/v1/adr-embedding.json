@@ -1,0 +1,497 @@
+{
+  "format": "klenwriter-history-adr-embedding/1",
+  "version": 1,
+  "seed_id": "move-cross-parent-gaps",
+  "source": "evidence/osr-59/operation-vectors.json",
+  "source_sha256": "8b4bebb3d4ef97db1b4f0b3d6f4a86d44d87caf100c177fd3c5be53ff9cdb15d",
+  "reason": "The ADR ordered generic model allows mixed direct Text and block children under q. Production core correctly separates TextBlock inline children from Container block children; shape policy is not weakened.",
+  "declared_wrapper": {
+    "label": "__adr36_q_text",
+    "parent": "q",
+    "primitive": "TextBlock",
+    "type_id": "org.example.history/textblock",
+    "children": [
+      "z"
+    ],
+    "lifecycle": "Admitted once before apply; same wrapper identity remains live through move/undo/redo."
+  },
+  "projection": "Only the exact declared wrapper is removed when comparing the original ADR graph: q child wrapper stands for its single original z text. All q child-gap indices are unchanged. No other wrapper, node, payload or identity is hidden.",
+  "checkpoints": {
+    "before": {
+      "actual_revision": "0",
+      "seed_revision": "7",
+      "physical_document": {
+        "root": "root",
+        "nodes": {
+          "root": {
+            "type_id": null,
+            "primitive": null,
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "p",
+              "section",
+              "q"
+            ],
+            "parent": null
+          },
+          "p": {
+            "type_id": "org.example.history/textblock",
+            "primitive": "TextBlock",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "a"
+            ],
+            "parent": "root"
+          },
+          "a": {
+            "type_id": "org.example.history/text",
+            "primitive": "Text",
+            "attrs": {},
+            "marks": [],
+            "text": "A",
+            "children": [],
+            "parent": "p"
+          },
+          "section": {
+            "type_id": "org.example.history/container",
+            "primitive": "Container",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "n"
+            ],
+            "parent": "root"
+          },
+          "n": {
+            "type_id": "org.example.history/textblock",
+            "primitive": "TextBlock",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "t"
+            ],
+            "parent": "section"
+          },
+          "t": {
+            "type_id": "org.example.history/text",
+            "primitive": "Text",
+            "attrs": {},
+            "marks": [],
+            "text": "Привет",
+            "children": [],
+            "parent": "n"
+          },
+          "q": {
+            "type_id": "org.example.history/container",
+            "primitive": "Container",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "__adr36_q_text"
+            ],
+            "parent": "root"
+          },
+          "z": {
+            "type_id": "org.example.history/text",
+            "primitive": "Text",
+            "attrs": {},
+            "marks": [],
+            "text": "Z",
+            "children": [],
+            "parent": "__adr36_q_text"
+          },
+          "__adr36_q_text": {
+            "type_id": "org.example.history/textblock",
+            "primitive": "TextBlock",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "z"
+            ],
+            "parent": "q"
+          }
+        }
+      },
+      "selection": {
+        "anchor": {
+          "kind": "child",
+          "parent": "section",
+          "index": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "child",
+          "parent": "q",
+          "index": 1,
+          "affinity": "after"
+        }
+      }
+    },
+    "apply": {
+      "actual_revision": "1",
+      "seed_revision": "8",
+      "physical_document": {
+        "root": "root",
+        "nodes": {
+          "root": {
+            "type_id": null,
+            "primitive": null,
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "p",
+              "section",
+              "q"
+            ],
+            "parent": null
+          },
+          "p": {
+            "type_id": "org.example.history/textblock",
+            "primitive": "TextBlock",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "a"
+            ],
+            "parent": "root"
+          },
+          "a": {
+            "type_id": "org.example.history/text",
+            "primitive": "Text",
+            "attrs": {},
+            "marks": [],
+            "text": "A",
+            "children": [],
+            "parent": "p"
+          },
+          "section": {
+            "type_id": "org.example.history/container",
+            "primitive": "Container",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [],
+            "parent": "root"
+          },
+          "n": {
+            "type_id": "org.example.history/textblock",
+            "primitive": "TextBlock",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "t"
+            ],
+            "parent": "q"
+          },
+          "t": {
+            "type_id": "org.example.history/text",
+            "primitive": "Text",
+            "attrs": {},
+            "marks": [],
+            "text": "Привет",
+            "children": [],
+            "parent": "n"
+          },
+          "q": {
+            "type_id": "org.example.history/container",
+            "primitive": "Container",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "__adr36_q_text",
+              "n"
+            ],
+            "parent": "root"
+          },
+          "z": {
+            "type_id": "org.example.history/text",
+            "primitive": "Text",
+            "attrs": {},
+            "marks": [],
+            "text": "Z",
+            "children": [],
+            "parent": "__adr36_q_text"
+          },
+          "__adr36_q_text": {
+            "type_id": "org.example.history/textblock",
+            "primitive": "TextBlock",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "z"
+            ],
+            "parent": "q"
+          }
+        }
+      },
+      "selection": {
+        "anchor": {
+          "kind": "child",
+          "parent": "section",
+          "index": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "child",
+          "parent": "q",
+          "index": 2,
+          "affinity": "after"
+        }
+      }
+    },
+    "undo": {
+      "actual_revision": "2",
+      "seed_revision": "9",
+      "physical_document": {
+        "root": "root",
+        "nodes": {
+          "root": {
+            "type_id": null,
+            "primitive": null,
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "p",
+              "section",
+              "q"
+            ],
+            "parent": null
+          },
+          "p": {
+            "type_id": "org.example.history/textblock",
+            "primitive": "TextBlock",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "a"
+            ],
+            "parent": "root"
+          },
+          "a": {
+            "type_id": "org.example.history/text",
+            "primitive": "Text",
+            "attrs": {},
+            "marks": [],
+            "text": "A",
+            "children": [],
+            "parent": "p"
+          },
+          "section": {
+            "type_id": "org.example.history/container",
+            "primitive": "Container",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "n"
+            ],
+            "parent": "root"
+          },
+          "n": {
+            "type_id": "org.example.history/textblock",
+            "primitive": "TextBlock",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "t"
+            ],
+            "parent": "section"
+          },
+          "t": {
+            "type_id": "org.example.history/text",
+            "primitive": "Text",
+            "attrs": {},
+            "marks": [],
+            "text": "Привет",
+            "children": [],
+            "parent": "n"
+          },
+          "q": {
+            "type_id": "org.example.history/container",
+            "primitive": "Container",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "__adr36_q_text"
+            ],
+            "parent": "root"
+          },
+          "z": {
+            "type_id": "org.example.history/text",
+            "primitive": "Text",
+            "attrs": {},
+            "marks": [],
+            "text": "Z",
+            "children": [],
+            "parent": "__adr36_q_text"
+          },
+          "__adr36_q_text": {
+            "type_id": "org.example.history/textblock",
+            "primitive": "TextBlock",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "z"
+            ],
+            "parent": "q"
+          }
+        }
+      },
+      "selection": {
+        "anchor": {
+          "kind": "child",
+          "parent": "section",
+          "index": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "child",
+          "parent": "q",
+          "index": 1,
+          "affinity": "after"
+        }
+      }
+    },
+    "redo": {
+      "actual_revision": "3",
+      "seed_revision": "10",
+      "physical_document": {
+        "root": "root",
+        "nodes": {
+          "root": {
+            "type_id": null,
+            "primitive": null,
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "p",
+              "section",
+              "q"
+            ],
+            "parent": null
+          },
+          "p": {
+            "type_id": "org.example.history/textblock",
+            "primitive": "TextBlock",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "a"
+            ],
+            "parent": "root"
+          },
+          "a": {
+            "type_id": "org.example.history/text",
+            "primitive": "Text",
+            "attrs": {},
+            "marks": [],
+            "text": "A",
+            "children": [],
+            "parent": "p"
+          },
+          "section": {
+            "type_id": "org.example.history/container",
+            "primitive": "Container",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [],
+            "parent": "root"
+          },
+          "n": {
+            "type_id": "org.example.history/textblock",
+            "primitive": "TextBlock",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "t"
+            ],
+            "parent": "q"
+          },
+          "t": {
+            "type_id": "org.example.history/text",
+            "primitive": "Text",
+            "attrs": {},
+            "marks": [],
+            "text": "Привет",
+            "children": [],
+            "parent": "n"
+          },
+          "q": {
+            "type_id": "org.example.history/container",
+            "primitive": "Container",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "__adr36_q_text",
+              "n"
+            ],
+            "parent": "root"
+          },
+          "z": {
+            "type_id": "org.example.history/text",
+            "primitive": "Text",
+            "attrs": {},
+            "marks": [],
+            "text": "Z",
+            "children": [],
+            "parent": "__adr36_q_text"
+          },
+          "__adr36_q_text": {
+            "type_id": "org.example.history/textblock",
+            "primitive": "TextBlock",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": [
+              "z"
+            ],
+            "parent": "q"
+          }
+        }
+      },
+      "selection": {
+        "anchor": {
+          "kind": "child",
+          "parent": "section",
+          "index": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "child",
+          "parent": "q",
+          "index": 2,
+          "affinity": "after"
+        }
+      }
+    }
+  },
+  "assertions": [
+    "Compare entire physical actual core graph against physical_document at every checkpoint, including all parent links/type/primitive/attrs/marks/text/ordered children and wrapper ID equality.",
+    "Separately compare projected original graph, selection direction/affinity, provenance and revision-label translation to unchanged ADR seed. Projection alone is insufficient.",
+    "Report 16 executed seed contracts:15 direct,1 declared structural embedding. Do not claim16 byte-identical physical generic trees."
+  ],
+  "expected_values": "Compiled structural embedding chosen independently before history execution; not an implementation-output oracle."
+}

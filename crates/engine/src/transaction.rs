@@ -3,6 +3,7 @@
 //! No SDK/serde contract and no unchecked history restoration authority.
 
 use std::collections::VecDeque;
+use std::sync::Arc;
 
 use editor_core::commands::{LocalRef, SelectionIntent};
 use editor_core::document::Mark;
@@ -10,6 +11,7 @@ use editor_core::limits::LimitExceeded;
 use editor_core::positions::{Position, Selection};
 use editor_core::transaction::{Operation, ValidationStats, WorkLimits, WorkUsage};
 
+use crate::history::{HistoryError, HistoryHint, HistoryLimits, ProjectedMap};
 use crate::identity::{NodeId, SessionKey};
 use crate::mapping::{MapError, MapResult, PositionMap};
 use crate::session::StateError;
@@ -29,6 +31,7 @@ pub struct TransactionLimits {
     pub work: WorkLimits,
     pub journal_entries: usize,
     pub journal_bytes: usize,
+    pub history: HistoryLimits,
 }
 impl Default for TransactionLimits {
     fn default() -> Self {
@@ -38,6 +41,7 @@ impl Default for TransactionLimits {
             work: WorkLimits::default(),
             journal_entries: 64,
             journal_bytes: 32 * 1024 * 1024,
+            history: HistoryLimits::default(),
         }
     }
 }
@@ -51,8 +55,15 @@ impl TransactionLimits {
                 units: self.work.units.min(hard.work.units),
                 bytes: self.work.bytes.min(hard.work.bytes),
             },
-            journal_entries: self.journal_entries.min(hard.journal_entries),
-            journal_bytes: self.journal_bytes.min(hard.journal_bytes),
+            journal_entries: self
+                .journal_entries
+                .min(hard.journal_entries)
+                .min(self.history.effective().chronological_entries),
+            journal_bytes: self
+                .journal_bytes
+                .min(hard.journal_bytes)
+                .min(self.history.effective().aggregate_bytes),
+            history: self.history.effective(),
         }
     }
 }
@@ -62,6 +73,8 @@ pub struct Transaction {
     pub session: SessionKey,
     pub revision: u64,
     pub selection_epoch: Option<u64>,
+    pub history_epoch: Option<u64>,
+    pub history_hint: HistoryHint,
     pub operations: Vec<Operation<NodeRef>>,
     pub selection: SelectionUpdate,
     pub limits: TransactionLimits,
@@ -72,6 +85,8 @@ impl Transaction {
             session,
             revision,
             selection_epoch: None,
+            history_epoch: None,
+            history_hint: HistoryHint::Isolated,
             operations,
             selection: SelectionUpdate::MapCurrent,
             limits: TransactionLimits::default(),
@@ -89,6 +104,7 @@ pub enum TransactionError<E> {
     InvalidLocalReference,
     NormalizationLimit,
     JournalLimit,
+    History(HistoryError),
 }
 impl<E> From<TreeError> for TransactionError<E> {
     fn from(error: TreeError) -> Self {
@@ -108,6 +124,50 @@ impl<E> From<StateError> for TransactionError<E> {
 impl<E> From<MapError> for TransactionError<E> {
     fn from(error: MapError) -> Self {
         Self::Mapping(error)
+    }
+}
+impl<E> From<HistoryError> for TransactionError<E> {
+    fn from(error: HistoryError) -> Self {
+        Self::History(error)
+    }
+}
+
+pub(crate) fn error_code<E>(
+    error: &TransactionError<E>,
+    profile: impl FnOnce(&E) -> &'static str,
+) -> &'static str {
+    match error {
+        TransactionError::State(error) => match error {
+            StateError::StaleSession => "session.stale_session",
+            StateError::StaleRevision => "session.stale_revision",
+            StateError::StaleSelectionEpoch => "session.stale_selection_epoch",
+            StateError::StaleHistoryEpoch => "session.stale_history_epoch",
+            StateError::Closed => "session.closed",
+            StateError::Poisoned => "session.poisoned",
+            StateError::ReadOnly => "session.read_only",
+            StateError::CounterExhausted => "session.counter_exhausted",
+        },
+        TransactionError::Tree(error) => match error {
+            TreeError::MissingNode => "tree.missing_node",
+            TreeError::ForeignSession => "tree.foreign_session",
+            TreeError::InvalidStructure => "tree.invalid_structure",
+            TreeError::InvalidIndex => "tree.invalid_index",
+            TreeError::InvalidRange => "tree.invalid_range",
+            TreeError::RootMutation => "tree.root_mutation",
+            TreeError::Cycle => "tree.cycle",
+            TreeError::IncompatibleText => "tree.incompatible_text",
+            TreeError::ResourceLimit => "resource_limit_exceeded",
+            TreeError::CounterExhausted => "session.counter_exhausted",
+            TreeError::Position(_) => "position.invalid",
+            TreeError::ReplayMismatch => "history.expected_side_mismatch",
+        },
+        TransactionError::Profile(error) => profile(error),
+        TransactionError::Limit(_) => "resource_limit_exceeded",
+        TransactionError::Mapping(_) => "mapping.invalid",
+        TransactionError::InvalidLocalReference => "transaction.invalid_local_reference",
+        TransactionError::NormalizationLimit => "transaction.normalization_limit",
+        TransactionError::JournalLimit => "transaction.journal_limit",
+        TransactionError::History(error) => error.as_str(),
     }
 }
 
@@ -174,7 +234,7 @@ pub enum DispatchOutcome<E> {
 }
 
 pub(crate) struct JournalEntry {
-    pub(crate) material: CommitMaterial,
+    pub(crate) material: Arc<CommitMaterial>,
     pub(crate) map: PositionMap<NodeId>,
     pub(crate) before: Option<Selection<NodeId>>,
     pub(crate) after: Option<Selection<NodeId>>,
@@ -199,14 +259,25 @@ impl JournalEntry {
     }
 }
 
-#[derive(Default)]
 pub(crate) struct CommitJournal {
     entries: VecDeque<JournalEntry>,
     bytes: usize,
     evicted: u64,
 }
+impl Default for CommitJournal {
+    fn default() -> Self {
+        // The bounded chronological ring is allocated at admission/remount.
+        // Publication pops its projected prefix before pushing into this fixed
+        // capacity, so no expected allocation gate remains after tree publish.
+        Self {
+            entries: VecDeque::with_capacity(TransactionLimits::default().journal_entries),
+            bytes: 0,
+            evicted: 0,
+        }
+    }
+}
 pub(crate) struct JournalPlan {
-    evict: usize,
+    pub(crate) evict: usize,
     bytes: usize,
     evicted: u64,
 }
@@ -230,6 +301,14 @@ impl CommitJournal {
         new_bytes: usize,
         limits: TransactionLimits,
     ) -> Result<JournalPlan, TransactionError<E>> {
+        self.plan_at_least(new_bytes, limits, 0)
+    }
+    pub(crate) fn plan_at_least<E>(
+        &self,
+        new_bytes: usize,
+        limits: TransactionLimits,
+        minimum_evictions: usize,
+    ) -> Result<JournalPlan, TransactionError<E>> {
         if limits.journal_entries == 0 || new_bytes > limits.journal_bytes {
             return Err(TransactionError::JournalLimit);
         }
@@ -241,6 +320,7 @@ impl CommitJournal {
         for entry in &self.entries {
             if self.entries.len() + 1 - evict <= limits.journal_entries
                 && bytes <= limits.journal_bytes
+                && evict >= minimum_evictions
             {
                 break;
             }
@@ -257,11 +337,41 @@ impl CommitJournal {
             evicted,
         })
     }
+    /// The oldest prefix was already projected by the chronological cap. The
+    /// history planner may release a further prefix for the shared byte bound.
+    pub(crate) fn projected_maps<'a>(
+        &'a self,
+        new_material: &'a Arc<CommitMaterial>,
+        new_bytes: usize,
+        plan: &JournalPlan,
+    ) -> Vec<ProjectedMap<'a>> {
+        self.entries
+            .iter()
+            .skip(plan.evict)
+            .map(|entry| ProjectedMap {
+                material: &entry.material,
+                metadata_bytes: entry.bytes
+                    - entry.material.estimated_bytes()
+                    - std::mem::size_of::<JournalEntry>(),
+            })
+            .chain(std::iter::once(ProjectedMap {
+                material: new_material,
+                // Charge the real ring allocation exactly once on the protected
+                // newest map. Eviction frees payload, never the ring's slots.
+                metadata_bytes: new_bytes
+                    - new_material.estimated_bytes()
+                    - std::mem::size_of::<JournalEntry>()
+                    + self.entries.capacity() * std::mem::size_of::<JournalEntry>()
+                    + std::mem::size_of::<CommitJournal>(),
+            }))
+            .collect()
+    }
     /// All fallible arithmetic and retention decisions were prepared earlier.
     pub(crate) fn publish(&mut self, entry: JournalEntry, plan: JournalPlan) {
         for _ in 0..plan.evict {
             self.entries.pop_front();
         }
+        debug_assert!(self.entries.len() < self.entries.capacity());
         self.entries.push_back(entry);
         self.bytes = plan.bytes;
         self.evicted = plan.evicted;

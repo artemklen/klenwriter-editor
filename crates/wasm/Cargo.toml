@@ -55,3 +55,7 @@ crate-type = ["cdylib"]
 [[example]]
 name = "command_probe"
 crate-type = ["cdylib"]
+
+[[example]]
+name = "history_probe"
+crate-type = ["cdylib"]

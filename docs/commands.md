@@ -44,12 +44,15 @@ explicit. `LocalRef` permits only prior-operation created roots and bounded path
 Collapsed formatting changes a session-local future typing override: `None`
 inherits, `Some([])` means explicit plain text. The companion `InsertText` consumes
 this policy. State-only toggles advance the context epoch once, leave document
-revision/dirty/history unchanged, and do not mark an adjacent leaf. Navigation,
+revision/dirty/action count unchanged, and do not mark an adjacent leaf. Actual
+state-only context changes seal an open [typing group](history.md) atomically.
+Navigation,
 remount and close clear it; identical navigation/no-op retains it. Raw dispatch
 resets to inheritance on an actual document/selection change. Command Keep/Set/
 Inherit is revalidated against the final candidate and entire final selection,
 including code/reference policy. Document commits own actual before/after mark
-state in event and retained journal for OSR-36; unchecked restore is not exposed.
+state in event and retained journal used by [OSR-36 replay](history.md); unchecked
+restore is not exposed.
 
 Three generic bounded range operations close ordinary composition gaps:
 `PatchMarkRange` applies one uniform exact-key mark delta to all selected text;

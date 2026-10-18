@@ -1,0 +1,63 @@
+{
+  "format": "klenwriter-history-contract/1",
+  "version": 1,
+  "source_base": "e31707f6573fb6f2164a5c2e025df5b92d542b39",
+  "literal_file": "vectors.json",
+  "literal_sha256": "22882d577677eb409172ba33ae675bc2e3754dcda2c8198f0c4468e719f07a08",
+  "case_total": 30,
+  "shared_native_wasm_cases": 29,
+  "private_engine_cases": [
+    "H23"
+  ],
+  "unchanged_adr_seeds": {
+    "path": "evidence/osr-59/operation-vectors.json",
+    "sha256": "8b4bebb3d4ef97db1b4f0b3d6f4a86d44d87caf100c177fd3c5be53ff9cdb15d",
+    "transactions": 16,
+    "refusals": 8,
+    "lifecycle_replies": 5,
+    "expectations": "byte-exact source; fixture adapter translates seed revision labels7 to public revision0 explicitly",
+    "direct_contracts": 15,
+    "declared_structural_embeddings": 1,
+    "negative_counts_scope": "8 refusals and5 lifecycle replies describe unchanged source corpus inventory, not a claim that those legacy reply tables are executed by the16 history seed loop. Current negative/lifecycle witnesses are separately named."
+  },
+  "position_authority": {
+    "path": "evidence/osr-59/position-vectors.json",
+    "sha256": "fb30084a44fa62d546f7ff4357d6ec14484e163fe3015aee61f6f90e2845e8db"
+  },
+  "policy_provenance": {
+    "original_draft_sha256": "625f4e694b16622262b23d773275c5905aca7b1b19c3f95a63efa55fca2eea58",
+    "policy_draft_sha256": "2d6ed811238bc37586986e367915deaf95dcb8c314e2aa50cc0a76b6b6eac37f",
+    "raw_execution_proposal_sha256": "36c1b64fe8efd9f847482e2e92f3ad96d3e53bcb0e7890f19c6b6ad189ee7249"
+  },
+  "separation": "Generic ADR16 production-Session lane:15 direct contracts and1 declared structural embedding with full physical checkpoints plus unchanged seed projection. Real KWDJ lane independently follows its normalization. No oracle is relaxed.",
+  "status": "independent test authority; result/report/evidence are separate; no passing claim",
+  "adr_embedding": {
+    "path": "adr-embedding.json",
+    "sha256": "2f7ee1731a9e890fc9676c4c6eb70249b263e434d64ba3bd0e9c5af3535dd891",
+    "seed": "move-cross-parent-gaps",
+    "full_physical_checkpoints": 4
+  },
+  "accepted_contract": {
+    "path": "evidence/osr-36/execution-contract.md",
+    "sha256": "251bee723fadc0e2939055771ea6514405ff1e982a6ca46b2f607787fd8f896c",
+    "authority": "Actual accepted live-body/versioned artifact; raw proposal hashes are provenance only."
+  },
+  "supplements": {
+    "shared": [
+      "H04 member cap2 seal/start",
+      "H04 stale history epoch after manual boundary",
+      "H21 zero-byte whole-group refusal/retry (not fixed-Q proof)",
+      "H22 actual Closed/Poisoned/ReadOnly",
+      "HP-only honest/rewrite",
+      "real KWDJ identity retry",
+      "8 generated literal Unicode pair cycles",
+      "512 actual KWDJ heading edit/undo/redo cycles;1536 publications;phase-specific stable costs",
+      "32 seeded6–10step InsertText/Enter sequences;255apply/255undo/255redo;797 independent checkpoints"
+    ],
+    "separate_engine": [
+      "H23 private checked counters",
+      "HP finalizer Err, NotNormal, mutable generic validator and all private lifecycle facets",
+      "H21 nonzero Q: each of3 single-member replays fits; combined3-member replay refuses atomically, then sufficient-budget retry (engine history_profile_tests)"
+    ]
+  }
+}

@@ -13,7 +13,7 @@ Engine зависит только от generic core; KWDJ реализует bo
 OSR-34 range marks выражались split → set marks → normalization; OSR-35 добавляет
 [bounded uniform range operations](commands.md), включая whole EGC через styled leaves. User text/marks/leaf removal
 используют EGC boundaries через соседние styled leaves. Scalar privilege доступна
-только внутреннему normalization origin.
+внутреннему normalization origin и закрытому engine-owned [history replay](history.md).
 
 Dispatch выполняет borrowed payload preflight, sparse preparation, deterministic
 normalization, generic structure validation и profile/schema/limit/normality validation.
@@ -58,8 +58,12 @@ conservative logical accounting, не точное RSS. KWDJ продолжае�
 более строгих document limits. Overhead зависит от Rust representation target: byte work
 и journal size diagnostics могут отличаться между native/WASM при одинаковом содержимом.
 Cache размера записи отражает текущие поля, включая замену/удаление metadata.
-Накопительный work относится к одной подготовке; прежние commit не увеличивают цену
-будущих одинаковых правок.
+Накопительный work относится к одной подготовке; node copy-cost cache не накапливает
+стоимость прежних замен. Полный prepare также проверяет текущую bounded history:
+его работа зависит от реально удержанных units/maps. В OSR-36 recurrence witness
+проверяет 512 metadata commits с одним map и одной action: два явно выделенных
+начальных allocation/ownership состояния, затем 510 commits со стабильными work,
+entry bytes и aggregate retained bytes. Все 512 проверяют caps, IDs и maps.
 Exhaustion/nonconvergence/counter overflow — typed refusal.
 
 Commit journal хранит реальные sparse before/after records, включая IDs, metadata,
@@ -67,8 +71,13 @@ children/text, ordered maps и selections. Public unchecked restore отсутс
 Максимум64 entries/32 MiB; per-transaction tighter bound применяется только при успешном
 commit. Entry, не помещающаяся целиком, отказывается; предыдущие entries вытесняются
 по заранее рассчитанному плану. Summary явно сообщает bytes/entries/evictions/oldest revision.
-Maps удерживаются вместе с entries; отсутствующий chain даёт Stale. Undo/redo, grouping,
-historical replay и branch policy — OSR-36.
+Maps удерживаются вместе с entries; отсутствующий chain даёт Stale. OSR-36 разделяет
+immutable Arc material между action и chronological owners. Ring заранее выделяет
+64 slots на admission/remount; aggregate history accounting учитывает реальную
+capacity один раз, eviction не объявляет освобождение этих slots. JournalSummary
+bytes описывает logical retained entries; это отдельная область от aggregate
+unique history bytes. [Undo/redo, grouping и branch policy](history.md) реализованы
+в общей record/replay path; старые source-bound evidence OSR-34 сохранены.
 
 Проверки: native engine isolation tests и real-profile native/WASM witness
 (`npm run test:transactions`) сравнивают literal canonical outputs, metadata, selection,
