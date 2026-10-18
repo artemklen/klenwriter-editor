@@ -1,0 +1,753 @@
+{
+  "format": "osr-38-published-tooling-candidates/1",
+  "observedAt": "2026-10-18T16:20:28.458757+00:00",
+  "scope": "Read-only official publication/index/tag metadata only. No crate archive or toolchain payload downloaded; no install/build/test/CI/source changes. Nightly checks to follow in this same selected-facts file.",
+  "candidates": [
+    {
+      "name": "proptest",
+      "requestedVersion": "1.12.0",
+      "registryAPI": {
+        "url": "https://crates.io/api/v1/crates/proptest/1.12.0",
+        "resolvedUrl": "https://crates.io/api/v1/crates/proptest/1.12.0",
+        "httpStatus": 200,
+        "bytes": 2160,
+        "sha256": "932db70697a94c922c3e0008e9ccb05aa6d4644809e2865df6423f3349e24af6",
+        "etag": null,
+        "lastModified": null
+      },
+      "sparseIndex": {
+        "url": "https://index.crates.io/pr/op/proptest",
+        "resolvedUrl": "https://index.crates.io/pr/op/proptest",
+        "httpStatus": 200,
+        "bytes": 85893,
+        "sha256": "a086ea43657af5069d4d32f263e093728de98685b32a6fcbe7a967ba5f8caf36",
+        "etag": "\"05ef80383cfa8cb498ce57d7903ab0f9\"",
+        "lastModified": "Sat, 10 Oct 2026 18:18:07 GMT"
+      },
+      "tagRefsSource": {
+        "url": "https://api.github.com/repos/proptest-rs/proptest/git/matching-refs/tags/",
+        "resolvedUrl": "https://api.github.com/repos/proptest-rs/proptest/git/matching-refs/tags/",
+        "httpStatus": 200,
+        "bytes": 26097,
+        "sha256": "bdd6c15198feb1e1d6e8287d196b6ec739f11cc19862a1e13157026fd61ad358",
+        "etag": "W/\"2baa68b7cc8544de8cd619ae728d95e5be7aac63155e80e926de8c65ab69a528\"",
+        "lastModified": "Sun, 18 Oct 2026 13:07:39 GMT"
+      },
+      "publishedVersion": {
+        "id": 3459488,
+        "crate": "proptest",
+        "num": "1.12.0",
+        "updated_at": "2026-10-10T18:18:05.623491Z",
+        "created_at": "2026-10-10T18:18:05.623491Z",
+        "features": {
+          "alloc": [],
+          "atomic64bit": [],
+          "attr-macro": [
+            "proptest-macro"
+          ],
+          "bit-set": [
+            "dep:bit-set",
+            "dep:bit-vec"
+          ],
+          "default": [
+            "std",
+            "fork",
+            "timeout",
+            "bit-set"
+          ],
+          "default-code-coverage": [
+            "std",
+            "fork",
+            "timeout",
+            "bit-set"
+          ],
+          "f16": [],
+          "fork": [
+            "std",
+            "rusty-fork",
+            "tempfile"
+          ],
+          "handle-panics": [
+            "std"
+          ],
+          "hardware-rng": [
+            "x86"
+          ],
+          "no_std": [
+            "num-traits/libm"
+          ],
+          "std": [
+            "rand/std",
+            "rand/sys_rng",
+            "regex-syntax",
+            "num-traits/std"
+          ],
+          "timeout": [
+            "fork",
+            "rusty-fork/timeout"
+          ],
+          "unstable": [
+            "f16"
+          ]
+        },
+        "yanked": false,
+        "license": "MIT OR Apache-2.0",
+        "links": {
+          "dependencies": "/api/v1/crates/proptest/1.12.0/dependencies",
+          "version_downloads": "/api/v1/crates/proptest/1.12.0/downloads",
+          "authors": "/api/v1/crates/proptest/1.12.0/authors"
+        },
+        "checksum": "b8530004ccb15eae51c7e40009fbe317f341f804db54dc033eec1c50be28cfa0",
+        "rust_version": "1.88",
+        "edition": "2021",
+        "repository": "https://github.com/proptest-rs/proptest"
+      },
+      "publishedIndexRecord": {
+        "name": "proptest",
+        "vers": "1.12.0",
+        "cksum": "b8530004ccb15eae51c7e40009fbe317f341f804db54dc033eec1c50be28cfa0",
+        "yanked": false,
+        "rust_version": "1.88",
+        "features": {
+          "alloc": [],
+          "atomic64bit": [],
+          "attr-macro": [
+            "proptest-macro"
+          ],
+          "f16": [],
+          "fork": [
+            "std",
+            "rusty-fork",
+            "tempfile"
+          ],
+          "handle-panics": [
+            "std"
+          ],
+          "hardware-rng": [
+            "x86"
+          ],
+          "no_std": [
+            "num-traits/libm"
+          ],
+          "std": [
+            "rand/std",
+            "rand/sys_rng",
+            "regex-syntax",
+            "num-traits/std"
+          ],
+          "timeout": [
+            "fork",
+            "rusty-fork/timeout"
+          ],
+          "unstable": [
+            "f16"
+          ]
+        },
+        "features2": {
+          "bit-set": [
+            "dep:bit-set",
+            "dep:bit-vec"
+          ],
+          "default": [
+            "std",
+            "fork",
+            "timeout",
+            "bit-set"
+          ],
+          "default-code-coverage": [
+            "std",
+            "fork",
+            "timeout",
+            "bit-set"
+          ]
+        },
+        "v": 2
+      },
+      "matchingTagRefs": [
+        {
+          "ref": "refs/tags/v1.12.0",
+          "node_id": "MDM6UmVmOTQ3MDI4OTg6cmVmcy90YWdzL3YxLjEyLjA=",
+          "url": "https://api.github.com/repos/proptest-rs/proptest/git/refs/tags/v1.12.0",
+          "object": {
+            "sha": "7b8ffb747fc5bae43914581128a7394f15c3b42f",
+            "type": "tag",
+            "url": "https://api.github.com/repos/proptest-rs/proptest/git/tags/7b8ffb747fc5bae43914581128a7394f15c3b42f"
+          }
+        }
+      ],
+      "tagObject": {
+        "sha": "7b8ffb747fc5bae43914581128a7394f15c3b42f",
+        "type": "tag",
+        "url": "https://api.github.com/repos/proptest-rs/proptest/git/tags/7b8ffb747fc5bae43914581128a7394f15c3b42f"
+      },
+      "annotatedTag": {
+        "url": "https://api.github.com/repos/proptest-rs/proptest/git/tags/7b8ffb747fc5bae43914581128a7394f15c3b42f",
+        "resolvedUrl": "https://api.github.com/repos/proptest-rs/proptest/git/tags/7b8ffb747fc5bae43914581128a7394f15c3b42f",
+        "httpStatus": 200,
+        "bytes": 686,
+        "sha256": "5e4c3136b6576127c5df667e2732bfd8e76109bfdff672515448392936b2fe25",
+        "etag": "W/\"313bce5e6949fc0681870b05d4c1e98b245b3f7c6de9dffcc6d6d731fc60c2a0\"",
+        "lastModified": "Sun, 18 Oct 2026 13:07:39 GMT"
+      },
+      "tagCommit": {
+        "sha": "70cf37d46b7d83393b6ed94c611f8c52209f585d",
+        "type": "commit",
+        "url": "https://api.github.com/repos/proptest-rs/proptest/git/commits/70cf37d46b7d83393b6ed94c611f8c52209f585d"
+      },
+      "taggedManifest": {
+        "url": "https://raw.githubusercontent.com/proptest-rs/proptest/70cf37d46b7d83393b6ed94c611f8c52209f585d/proptest/Cargo.toml",
+        "resolvedUrl": "https://raw.githubusercontent.com/proptest-rs/proptest/70cf37d46b7d83393b6ed94c611f8c52209f585d/proptest/Cargo.toml",
+        "httpStatus": 200,
+        "bytes": 2650,
+        "sha256": "f7c4e8d38c982326c8b08e30d3b7a282fbc3b8b20475c207bfa21991c0acc96b",
+        "etag": "\"4848cd58d90fe19a83f14870576f787798e4ea3b4df04472bab6da30c8c6df9b\"",
+        "lastModified": null
+      },
+      "taggedPackage": {
+        "name": "proptest",
+        "version": "1.12.0",
+        "license": "MIT OR Apache-2.0",
+        "repository": "https://github.com/proptest-rs/proptest",
+        "edition": "2021",
+        "rust-version": "1.88"
+      },
+      "verification": {
+        "publishedVersionExact": true,
+        "publishedBeforeCurrentDate": true,
+        "notYanked": true,
+        "registryAPISparseIndexChecksumEqual": true,
+        "taggedManifestVersionAndLicenseEqualRegistry": true,
+        "declaredMSRVEqualRegistryAndTag": true,
+        "declaredMSRV": "1.88",
+        "msrvQualification": "Package-declared lower bound only; resolved transitive graph/toolchain compatibility is not built or independently established.",
+        "crateArchiveDownloaded": false,
+        "crateArchiveBytesHashVerified": false,
+        "checksumQualification": "Exact archive checksum observed consistently in official registry API and sparse index; archive bytes intentionally not downloaded."
+      },
+      "tagRef": "refs/tags/v1.12.0",
+      "tagCommitSha": "70cf37d46b7d83393b6ed94c611f8c52209f585d"
+    },
+    {
+      "name": "cargo-fuzz",
+      "requestedVersion": "0.13.2",
+      "registryAPI": {
+        "url": "https://crates.io/api/v1/crates/cargo-fuzz/0.13.2",
+        "resolvedUrl": "https://crates.io/api/v1/crates/cargo-fuzz/0.13.2",
+        "httpStatus": 200,
+        "bytes": 1605,
+        "sha256": "1ee08cf9f1e87b1eb57209679e88b234adb502cc2e200c4465adb338aeefbae1",
+        "etag": null,
+        "lastModified": null
+      },
+      "sparseIndex": {
+        "url": "https://index.crates.io/ca/rg/cargo-fuzz",
+        "resolvedUrl": "https://index.crates.io/ca/rg/cargo-fuzz",
+        "httpStatus": 200,
+        "bytes": 38291,
+        "sha256": "92ea708ed28890c36d68a765a67d15fc03d43fdbc1b3726f7f2ae72ad8cf4b26",
+        "etag": "\"f083f1ee6c105873ba0aae6bf95dbcee\"",
+        "lastModified": "Tue, 09 Jun 2026 18:37:28 GMT"
+      },
+      "tagRefsSource": {
+        "url": "https://api.github.com/repos/rust-fuzz/cargo-fuzz/git/matching-refs/tags/",
+        "resolvedUrl": "https://api.github.com/repos/rust-fuzz/cargo-fuzz/git/matching-refs/tags/",
+        "httpStatus": 200,
+        "bytes": 13129,
+        "sha256": "0f2b26229a84d5ec1869f811f39b1cb5a0a454da7a1c63203c0e5864ecb3ef8e",
+        "etag": "W/\"5d16deb9dfd96e006a5842adad1fc7f1f7fa69c49bf529727c90228fe71eacc6\"",
+        "lastModified": "Sun, 18 Oct 2026 12:06:06 GMT"
+      },
+      "publishedVersion": {
+        "id": 2540274,
+        "crate": "cargo-fuzz",
+        "num": "0.13.2",
+        "updated_at": "2026-06-09T18:37:27.158092Z",
+        "created_at": "2026-06-09T18:37:27.158092Z",
+        "features": {},
+        "yanked": false,
+        "license": "MIT OR Apache-2.0",
+        "links": {
+          "dependencies": "/api/v1/crates/cargo-fuzz/0.13.2/dependencies",
+          "version_downloads": "/api/v1/crates/cargo-fuzz/0.13.2/downloads",
+          "authors": "/api/v1/crates/cargo-fuzz/0.13.2/authors"
+        },
+        "checksum": "5acfd01930e49823e58c30dd8012d3338a620377d7c7d4cc140ca4b2169400e2",
+        "rust_version": null,
+        "edition": "2021",
+        "repository": "https://github.com/rust-fuzz/cargo-fuzz/"
+      },
+      "publishedIndexRecord": {
+        "name": "cargo-fuzz",
+        "vers": "0.13.2",
+        "cksum": "5acfd01930e49823e58c30dd8012d3338a620377d7c7d4cc140ca4b2169400e2",
+        "yanked": false,
+        "features": {}
+      },
+      "matchingTagRefs": [
+        {
+          "ref": "refs/tags/0.13.2",
+          "node_id": "MDM6UmVmODI2MzQ1MzA6cmVmcy90YWdzLzAuMTMuMg==",
+          "url": "https://api.github.com/repos/rust-fuzz/cargo-fuzz/git/refs/tags/0.13.2",
+          "object": {
+            "sha": "984c861c8dfea28055254c5f1d2659ab2cd63f76",
+            "type": "commit",
+            "url": "https://api.github.com/repos/rust-fuzz/cargo-fuzz/git/commits/984c861c8dfea28055254c5f1d2659ab2cd63f76"
+          }
+        }
+      ],
+      "tagObject": {
+        "sha": "984c861c8dfea28055254c5f1d2659ab2cd63f76",
+        "type": "commit",
+        "url": "https://api.github.com/repos/rust-fuzz/cargo-fuzz/git/commits/984c861c8dfea28055254c5f1d2659ab2cd63f76"
+      },
+      "tagCommit": {
+        "sha": "984c861c8dfea28055254c5f1d2659ab2cd63f76",
+        "type": "commit",
+        "url": "https://api.github.com/repos/rust-fuzz/cargo-fuzz/git/commits/984c861c8dfea28055254c5f1d2659ab2cd63f76"
+      },
+      "taggedManifest": {
+        "url": "https://raw.githubusercontent.com/rust-fuzz/cargo-fuzz/984c861c8dfea28055254c5f1d2659ab2cd63f76/Cargo.toml",
+        "resolvedUrl": "https://raw.githubusercontent.com/rust-fuzz/cargo-fuzz/984c861c8dfea28055254c5f1d2659ab2cd63f76/Cargo.toml",
+        "httpStatus": 200,
+        "bytes": 669,
+        "sha256": "26132b1acda063cc70364cee6fbefc4dbc7bad80f99e43d550dfd0a0534e6174",
+        "etag": "\"cd2fe5545d1e77976f8a9272f025452c0a5400074fea1136c423700f68d71102\"",
+        "lastModified": null
+      },
+      "taggedPackage": {
+        "name": "cargo-fuzz",
+        "version": "0.13.2",
+        "license": "MIT OR Apache-2.0",
+        "repository": "https://github.com/rust-fuzz/cargo-fuzz/",
+        "edition": "2021"
+      },
+      "verification": {
+        "publishedVersionExact": true,
+        "publishedBeforeCurrentDate": true,
+        "notYanked": true,
+        "registryAPISparseIndexChecksumEqual": true,
+        "taggedManifestVersionAndLicenseEqualRegistry": true,
+        "declaredMSRVEqualRegistryAndTag": true,
+        "declaredMSRV": null,
+        "msrvQualification": "Not declared in registry metadata or tagged package manifest. Do not infer an MSRV from edition, date or another package.",
+        "crateArchiveDownloaded": false,
+        "crateArchiveBytesHashVerified": false,
+        "checksumQualification": "Exact archive checksum observed consistently in official registry API and sparse index; archive bytes intentionally not downloaded."
+      },
+      "tagRef": "refs/tags/0.13.2",
+      "tagCommitSha": "984c861c8dfea28055254c5f1d2659ab2cd63f76"
+    },
+    {
+      "name": "libfuzzer-sys",
+      "requestedVersion": "0.4.13",
+      "registryAPI": {
+        "url": "https://crates.io/api/v1/crates/libfuzzer-sys/0.4.13",
+        "resolvedUrl": "https://crates.io/api/v1/crates/libfuzzer-sys/0.4.13",
+        "httpStatus": 200,
+        "bytes": 1872,
+        "sha256": "ae1f20702f63b7dbc3926046e88965daf91f5e2ccdc1b43324a8ea77811321a3",
+        "etag": null,
+        "lastModified": null
+      },
+      "sparseIndex": {
+        "url": "https://index.crates.io/li/bf/libfuzzer-sys",
+        "resolvedUrl": "https://index.crates.io/li/bf/libfuzzer-sys",
+        "httpStatus": 200,
+        "bytes": 14964,
+        "sha256": "24f9df2d46acb912c1a28d5b1fd400e092694e155199a99609e881e7b0c4da7d",
+        "etag": "\"066c5987fdc5d4dd45a83c2645e57e9c\"",
+        "lastModified": "Thu, 04 Jun 2026 18:55:36 GMT"
+      },
+      "tagRefsSource": {
+        "url": "https://api.github.com/repos/rust-fuzz/libfuzzer/git/matching-refs/tags/",
+        "resolvedUrl": "https://api.github.com/repos/rust-fuzz/libfuzzer/git/matching-refs/tags/",
+        "httpStatus": 200,
+        "bytes": 7207,
+        "sha256": "ef6b6af9d47c4c0534e20eb47d75c45d73b03794e426ab4132db95c22966fb7b",
+        "etag": "W/\"8f97b3e3bc73f0dda74707815bc06004845c24688faa9aff9057207ebe9548ab\"",
+        "lastModified": "Wed, 14 Oct 2026 02:22:02 GMT"
+      },
+      "publishedVersion": {
+        "id": 2514274,
+        "crate": "libfuzzer-sys",
+        "num": "0.4.13",
+        "updated_at": "2026-06-04T18:55:34.718132Z",
+        "created_at": "2026-06-04T18:55:34.718132Z",
+        "features": {
+          "arbitrary-derive": [
+            "arbitrary/derive"
+          ],
+          "default": [
+            "link_libfuzzer"
+          ],
+          "link_libfuzzer": []
+        },
+        "yanked": false,
+        "license": "(MIT OR Apache-2.0) AND NCSA",
+        "links": {
+          "dependencies": "/api/v1/crates/libfuzzer-sys/0.4.13/dependencies",
+          "version_downloads": "/api/v1/crates/libfuzzer-sys/0.4.13/downloads",
+          "authors": "/api/v1/crates/libfuzzer-sys/0.4.13/authors"
+        },
+        "checksum": "a9fd2f41a1cba099f79a0b6b6c35656cf7c03351a7bae8ff0f28f25270f929d2",
+        "rust_version": null,
+        "edition": "2018",
+        "repository": "https://github.com/rust-fuzz/libfuzzer"
+      },
+      "publishedIndexRecord": {
+        "name": "libfuzzer-sys",
+        "vers": "0.4.13",
+        "cksum": "a9fd2f41a1cba099f79a0b6b6c35656cf7c03351a7bae8ff0f28f25270f929d2",
+        "yanked": false,
+        "features": {
+          "arbitrary-derive": [
+            "arbitrary/derive"
+          ],
+          "default": [
+            "link_libfuzzer"
+          ],
+          "link_libfuzzer": []
+        }
+      },
+      "matchingTagRefs": [
+        {
+          "ref": "refs/tags/0.4.13",
+          "node_id": "MDM6UmVmODIzNDYwMjk6cmVmcy90YWdzLzAuNC4xMw==",
+          "url": "https://api.github.com/repos/rust-fuzz/libfuzzer/git/refs/tags/0.4.13",
+          "object": {
+            "sha": "719e4efb9b8857ebaa782ae59376c8cbb78fed0f",
+            "type": "commit",
+            "url": "https://api.github.com/repos/rust-fuzz/libfuzzer/git/commits/719e4efb9b8857ebaa782ae59376c8cbb78fed0f"
+          }
+        }
+      ],
+      "tagObject": {
+        "sha": "719e4efb9b8857ebaa782ae59376c8cbb78fed0f",
+        "type": "commit",
+        "url": "https://api.github.com/repos/rust-fuzz/libfuzzer/git/commits/719e4efb9b8857ebaa782ae59376c8cbb78fed0f"
+      },
+      "tagCommit": {
+        "sha": "719e4efb9b8857ebaa782ae59376c8cbb78fed0f",
+        "type": "commit",
+        "url": "https://api.github.com/repos/rust-fuzz/libfuzzer/git/commits/719e4efb9b8857ebaa782ae59376c8cbb78fed0f"
+      },
+      "taggedManifest": {
+        "url": "https://raw.githubusercontent.com/rust-fuzz/libfuzzer/719e4efb9b8857ebaa782ae59376c8cbb78fed0f/Cargo.toml",
+        "resolvedUrl": "https://raw.githubusercontent.com/rust-fuzz/libfuzzer/719e4efb9b8857ebaa782ae59376c8cbb78fed0f/Cargo.toml",
+        "httpStatus": 200,
+        "bytes": 1237,
+        "sha256": "987722013feb2bb74beb739e6792ea8a8bc715af673c986f501ff3424c7b2160",
+        "etag": "\"ec538ac6f236a4572a65056f8d1fa03285d64f163235964ac82075cc3c48a4c4\"",
+        "lastModified": null
+      },
+      "taggedPackage": {
+        "edition": "2018",
+        "license": "(MIT OR Apache-2.0) AND NCSA",
+        "name": "libfuzzer-sys",
+        "repository": "https://github.com/rust-fuzz/libfuzzer",
+        "version": "0.4.13"
+      },
+      "verification": {
+        "publishedVersionExact": true,
+        "publishedBeforeCurrentDate": true,
+        "notYanked": true,
+        "registryAPISparseIndexChecksumEqual": true,
+        "taggedManifestVersionAndLicenseEqualRegistry": true,
+        "declaredMSRVEqualRegistryAndTag": true,
+        "declaredMSRV": null,
+        "msrvQualification": "Not declared in registry metadata or tagged package manifest. Do not infer an MSRV from edition, date or another package.",
+        "crateArchiveDownloaded": false,
+        "crateArchiveBytesHashVerified": false,
+        "checksumQualification": "Exact archive checksum observed consistently in official registry API and sparse index; archive bytes intentionally not downloaded."
+      },
+      "tagRef": "refs/tags/0.4.13",
+      "tagCommitSha": "719e4efb9b8857ebaa782ae59376c8cbb78fed0f"
+    },
+    {
+      "name": "dhat",
+      "requestedVersion": "0.3.3",
+      "registryAPI": {
+        "url": "https://crates.io/api/v1/crates/dhat/0.3.3",
+        "resolvedUrl": "https://crates.io/api/v1/crates/dhat/0.3.3",
+        "httpStatus": 200,
+        "bytes": 1617,
+        "sha256": "adb63e2b6fd46c010257c8ce17fa17198bb79c8e356424932f4150fe44255dda",
+        "etag": null,
+        "lastModified": null
+      },
+      "sparseIndex": {
+        "url": "https://index.crates.io/dh/at/dhat",
+        "resolvedUrl": "https://index.crates.io/dh/at/dhat",
+        "httpStatus": 200,
+        "bytes": 14234,
+        "sha256": "c95858ea249531129fa18754fec20ccc009bc0b7c7e0f3854edb4e69e493ddd4",
+        "etag": "\"e5e913a3032eaaf7b52311dfac300d17\"",
+        "lastModified": "Sun, 01 Feb 2026 11:41:43 GMT"
+      },
+      "tagRefsSource": {
+        "url": "https://api.github.com/repos/nnethercote/dhat-rs/git/matching-refs/tags/",
+        "resolvedUrl": "https://api.github.com/repos/nnethercote/dhat-rs/git/matching-refs/tags/",
+        "httpStatus": 200,
+        "bytes": 4539,
+        "sha256": "1009fe2cf3e1cb002812017851b13cb5ed59bef740331a1b3696fd7738d52c50",
+        "etag": "W/\"04257aeb2c5bfd77b16dc7ff953986c9a523003b5894f26bc86e2b4e88fcfca4\"",
+        "lastModified": "Fri, 16 Oct 2026 14:34:49 GMT"
+      },
+      "publishedVersion": {
+        "id": 1038718,
+        "crate": "dhat",
+        "num": "0.3.3",
+        "updated_at": "2024-02-04T03:47:29.691826Z",
+        "created_at": "2024-02-04T03:47:29.691826Z",
+        "features": {},
+        "yanked": false,
+        "license": "MIT OR Apache-2.0",
+        "links": {
+          "dependencies": "/api/v1/crates/dhat/0.3.3/dependencies",
+          "version_downloads": "/api/v1/crates/dhat/0.3.3/downloads",
+          "authors": "/api/v1/crates/dhat/0.3.3/authors"
+        },
+        "checksum": "98cd11d84628e233de0ce467de10b8633f4ddaecafadefc86e13b84b8739b827",
+        "rust_version": null,
+        "edition": "2021",
+        "repository": "https://github.com/nnethercote/dhat-rs"
+      },
+      "publishedIndexRecord": {
+        "name": "dhat",
+        "vers": "0.3.3",
+        "cksum": "98cd11d84628e233de0ce467de10b8633f4ddaecafadefc86e13b84b8739b827",
+        "yanked": false,
+        "features": {}
+      },
+      "matchingTagRefs": [
+        {
+          "ref": "refs/tags/0.3.3",
+          "node_id": "MDM6UmVmMzE5MTY4MTY5OnJlZnMvdGFncy8wLjMuMw==",
+          "url": "https://api.github.com/repos/nnethercote/dhat-rs/git/refs/tags/0.3.3",
+          "object": {
+            "sha": "b536631fd9d9103d7191b63181f67755b5958ab5",
+            "type": "commit",
+            "url": "https://api.github.com/repos/nnethercote/dhat-rs/git/commits/b536631fd9d9103d7191b63181f67755b5958ab5"
+          }
+        }
+      ],
+      "tagObject": {
+        "sha": "b536631fd9d9103d7191b63181f67755b5958ab5",
+        "type": "commit",
+        "url": "https://api.github.com/repos/nnethercote/dhat-rs/git/commits/b536631fd9d9103d7191b63181f67755b5958ab5"
+      },
+      "tagCommit": {
+        "sha": "b536631fd9d9103d7191b63181f67755b5958ab5",
+        "type": "commit",
+        "url": "https://api.github.com/repos/nnethercote/dhat-rs/git/commits/b536631fd9d9103d7191b63181f67755b5958ab5"
+      },
+      "taggedManifest": {
+        "url": "https://raw.githubusercontent.com/nnethercote/dhat-rs/b536631fd9d9103d7191b63181f67755b5958ab5/Cargo.toml",
+        "resolvedUrl": "https://raw.githubusercontent.com/nnethercote/dhat-rs/b536631fd9d9103d7191b63181f67755b5958ab5/Cargo.toml",
+        "httpStatus": 200,
+        "bytes": 1100,
+        "sha256": "e6c60107094e7869f07f410e3f54586d569e6d3ebf7e9d5d9b383c11f760c11a",
+        "etag": "\"7d37c095667ff5c8c21f90196bf1541af807d95184663d00ce0323ec814ae5cf\"",
+        "lastModified": null
+      },
+      "taggedPackage": {
+        "name": "dhat",
+        "version": "0.3.3",
+        "license": "MIT OR Apache-2.0",
+        "edition": "2021",
+        "repository": "https://github.com/nnethercote/dhat-rs"
+      },
+      "verification": {
+        "publishedVersionExact": true,
+        "publishedBeforeCurrentDate": true,
+        "notYanked": true,
+        "registryAPISparseIndexChecksumEqual": true,
+        "taggedManifestVersionAndLicenseEqualRegistry": true,
+        "declaredMSRVEqualRegistryAndTag": true,
+        "declaredMSRV": null,
+        "msrvQualification": "Not declared in registry metadata or tagged package manifest. Do not infer an MSRV from edition, date or another package.",
+        "crateArchiveDownloaded": false,
+        "crateArchiveBytesHashVerified": false,
+        "checksumQualification": "Exact archive checksum observed consistently in official registry API and sparse index; archive bytes intentionally not downloaded."
+      },
+      "tagRef": "refs/tags/0.3.3",
+      "tagCommitSha": "b536631fd9d9103d7191b63181f67755b5958ab5"
+    }
+  ],
+  "nightly": {
+    "toolchain": "nightly-2026-10-17",
+    "manifest": {
+      "url": "https://static.rust-lang.org/dist/2026-10-17/channel-rust-nightly.toml",
+      "httpStatus": 200,
+      "bytes": 923466,
+      "sha256": "5e87d004b989db293416a5595c0564bef052dca8d773f2c95cd165ee2ddce6db",
+      "etag": "\"75341f80b82976e8f4b4945c31b28a50\"",
+      "lastModified": "Sat, 17 Oct 2026 01:11:37 GMT"
+    },
+    "checksumFile": {
+      "url": "https://static.rust-lang.org/dist/2026-10-17/channel-rust-nightly.toml.sha256",
+      "httpStatus": 200,
+      "bytes": 92,
+      "sha256": "ac2a9ffa55ce7b04d5054e24229485a33ae863184426e8d21ea851e3b83e9280",
+      "etag": "\"5f4ac0a9745bc98b3be46e4b43a09f44\"",
+      "lastModified": "Sat, 17 Oct 2026 01:11:37 GMT",
+      "body": "5e87d004b989db293416a5595c0564bef052dca8d773f2c95cd165ee2ddce6db  channel-rust-nightly.toml\n"
+    },
+    "manifestSha256Verified": true,
+    "manifestDate": "2026-10-17",
+    "rustVersion": "1.101.0-nightly (5d8fec066 2026-10-16)",
+    "selectionStatus": "Published/available candidate only; not installed, compiled or chosen for acceptance.",
+    "components": {
+      "rust": {
+        "version": "1.101.0-nightly (5d8fec066 2026-10-16)",
+        "targets": {
+          "aarch64-apple-darwin": {
+            "available": true,
+            "url": "https://static.rust-lang.org/dist/2026-10-17/rust-nightly-aarch64-apple-darwin.tar.gz",
+            "hash": "aedf5f232ed5defda812931b072ea2b332e7dadfd94977d3906e31f2089d22dd",
+            "xz_url": "https://static.rust-lang.org/dist/2026-10-17/rust-nightly-aarch64-apple-darwin.tar.xz",
+            "xz_hash": "ffebc8d947c97535153664048895e12a71ee4ad468018cc8e0cb4bf827437054"
+          },
+          "x86_64-unknown-linux-gnu": {
+            "available": true,
+            "url": "https://static.rust-lang.org/dist/2026-10-17/rust-nightly-x86_64-unknown-linux-gnu.tar.gz",
+            "hash": "aa19c5bccfc8b198bf21fa6e8b268384bdc37634626f435692d24fe75bdf31e1",
+            "xz_url": "https://static.rust-lang.org/dist/2026-10-17/rust-nightly-x86_64-unknown-linux-gnu.tar.xz",
+            "xz_hash": "2070c0801da1ecaf1d7baed35e7d384bce94eae2617e76d5bcb2c8ebc666dd42"
+          }
+        }
+      },
+      "rustc": {
+        "version": "1.101.0-nightly (5d8fec066 2026-10-16)",
+        "targets": {
+          "aarch64-apple-darwin": {
+            "available": true,
+            "url": "https://static.rust-lang.org/dist/2026-10-17/rustc-nightly-aarch64-apple-darwin.tar.gz",
+            "hash": "b60da84a93e518f72cde8dc108ae10466df5e0eb94bc4058dabc9e83c43b7f2e",
+            "xz_url": "https://static.rust-lang.org/dist/2026-10-17/rustc-nightly-aarch64-apple-darwin.tar.xz",
+            "xz_hash": "0425e8de598997eb4c2004f1ccd3346a2235a9580908e7f970ae22b1cd7d7f20"
+          },
+          "x86_64-unknown-linux-gnu": {
+            "available": true,
+            "url": "https://static.rust-lang.org/dist/2026-10-17/rustc-nightly-x86_64-unknown-linux-gnu.tar.gz",
+            "hash": "37134de66986b442366be645a2e97acc612724fbcb12af070e941cc0c2e30095",
+            "xz_url": "https://static.rust-lang.org/dist/2026-10-17/rustc-nightly-x86_64-unknown-linux-gnu.tar.xz",
+            "xz_hash": "368aaf0bdb0ebb5b06adef78129540d7fae28189ce1758f07660d9132c3894ac"
+          }
+        }
+      },
+      "cargo": {
+        "version": "0.102.0-nightly (3960fa69b 2026-10-12)",
+        "targets": {
+          "aarch64-apple-darwin": {
+            "available": true,
+            "url": "https://static.rust-lang.org/dist/2026-10-17/cargo-nightly-aarch64-apple-darwin.tar.gz",
+            "hash": "5a40af260288c0eb222d820ee5d8411cff9a3becef5af7cb35493a62d88de1e5",
+            "xz_url": "https://static.rust-lang.org/dist/2026-10-17/cargo-nightly-aarch64-apple-darwin.tar.xz",
+            "xz_hash": "bcaf7edbac8aca60b6c160f47c207f92a79cdb7e5f8b371370063180ad3b47c5"
+          },
+          "x86_64-unknown-linux-gnu": {
+            "available": true,
+            "url": "https://static.rust-lang.org/dist/2026-10-17/cargo-nightly-x86_64-unknown-linux-gnu.tar.gz",
+            "hash": "c5fcb76f1e89da99a2dfd0f9cb5f873e850f505d46b097f854e1dc201f5e896f",
+            "xz_url": "https://static.rust-lang.org/dist/2026-10-17/cargo-nightly-x86_64-unknown-linux-gnu.tar.xz",
+            "xz_hash": "cd98b02d00bc519d4dbf439d0d125688ebe81c2129ab5dd83a53a960cf57d95e"
+          }
+        }
+      },
+      "rust-std": {
+        "version": "1.101.0-nightly (5d8fec066 2026-10-16)",
+        "targets": {
+          "aarch64-apple-darwin": {
+            "available": true,
+            "url": "https://static.rust-lang.org/dist/2026-10-17/rust-std-nightly-aarch64-apple-darwin.tar.gz",
+            "hash": "fcbf444f9b8d38227398b023260b335ae716fea4a919a856231b832d704aaea0",
+            "xz_url": "https://static.rust-lang.org/dist/2026-10-17/rust-std-nightly-aarch64-apple-darwin.tar.xz",
+            "xz_hash": "1bf52fe353845737e07effcb4a1100a0b436bc30152695058985f332260ffac1"
+          },
+          "x86_64-unknown-linux-gnu": {
+            "available": true,
+            "url": "https://static.rust-lang.org/dist/2026-10-17/rust-std-nightly-x86_64-unknown-linux-gnu.tar.gz",
+            "hash": "a0aafab5d90712306057d035a873cdd813fb5f53a116bbc674848524b00cbad9",
+            "xz_url": "https://static.rust-lang.org/dist/2026-10-17/rust-std-nightly-x86_64-unknown-linux-gnu.tar.xz",
+            "xz_hash": "f072cbc3d3bcb0668decdab02f203eff447d45dc05dab3d00c8876f695718417"
+          }
+        }
+      },
+      "rust-src": {
+        "version": "1.101.0-nightly (5d8fec066 2026-10-16)",
+        "targets": {
+          "*": {
+            "available": true,
+            "url": "https://static.rust-lang.org/dist/2026-10-17/rust-src-nightly.tar.gz",
+            "hash": "e3b8df196592f286d402068aca3884910064c58bdd6bf1ab35f01e3c7f0ab19d",
+            "xz_url": "https://static.rust-lang.org/dist/2026-10-17/rust-src-nightly.tar.xz",
+            "xz_hash": "dc1f489de3053060387a96afa12d75378d998aa3351cfda6691151d05b8182af"
+          }
+        }
+      },
+      "llvm-tools-preview": {
+        "version": "1.101.0-nightly (5d8fec066 2026-10-16)",
+        "targets": {
+          "aarch64-apple-darwin": {
+            "available": true,
+            "url": "https://static.rust-lang.org/dist/2026-10-17/llvm-tools-nightly-aarch64-apple-darwin.tar.gz",
+            "hash": "7eccbf23348201efacdc9432f76f79bf8157b74f6fe5ec3872394149bbfb5a17",
+            "xz_url": "https://static.rust-lang.org/dist/2026-10-17/llvm-tools-nightly-aarch64-apple-darwin.tar.xz",
+            "xz_hash": "b69d2c8c0f3d62a58f3b83529241b6a547c16393ef129fe542121496836e5b8c"
+          },
+          "x86_64-unknown-linux-gnu": {
+            "available": true,
+            "url": "https://static.rust-lang.org/dist/2026-10-17/llvm-tools-nightly-x86_64-unknown-linux-gnu.tar.gz",
+            "hash": "05bb0e92c95228d7dfd3af3147715ffb5afa3d3c63fe18094b9f1e34a5a024f1",
+            "xz_url": "https://static.rust-lang.org/dist/2026-10-17/llvm-tools-nightly-x86_64-unknown-linux-gnu.tar.xz",
+            "xz_hash": "631dfc3e1dbb0243c02e60ae4954018b2ee6e159ea40271c24d91d9360b93c1c"
+          }
+        }
+      }
+    },
+    "nightlySanitizerSource": {
+      "url": "https://raw.githubusercontent.com/rust-lang/rust/5d8fec0669a64607db9ccbf663e7c23125bf4748/src/doc/unstable-book/src/compiler-flags/sanitizer.md",
+      "httpStatus": 200,
+      "bytes": 42646,
+      "sha256": "dbcbb7a6cc40ff9e79f18ef0ce37a3fbeaa0b22344be134fcd0bc5a02290a6c0",
+      "etag": "\"1f4cb682aad2b3d1560ed79d0526843d70e7840e7f1a1a908b78cda2db534f2f\"",
+      "lastModified": null
+    },
+    "addressSanitizerDocumentedTargets": [
+      "aarch64-apple-darwin",
+      "x86_64-unknown-linux-gnu"
+    ],
+    "nightlySanitizerSourceTargetsVerified": true,
+    "payloadsDownloaded": false,
+    "availabilityQualification": "Manifest available=true and its own SHA file were verified; rustc/cargo/std/src/LLVM archive URLs/hashes are metadata only. No toolchain archive was fetched and no sanitizer binary was linked/run."
+  },
+  "sanitizerPlan": {
+    "hostMac": "aarch64-apple-darwin",
+    "candidateLinuxCI": "x86_64-unknown-linux-gnu",
+    "sanitizer": "address",
+    "docs": [
+      "https://rust-fuzz.github.io/book/cargo-fuzz/setup.html",
+      "https://doc.rust-lang.org/unstable-book/compiler-flags/sanitizer.html"
+    ],
+    "nightlyRequired": true,
+    "cppCompilerRequired": "C++11-capable compiler/LLVM sanitizer runtime",
+    "existingCIScope": "Current repository workflow is macos-15. A Linux fuzz job would be a new test-only job, not an already observed Linux build.",
+    "actualSanitizerRun": false,
+    "wasmQualification": "Native sanitizer fuzz targets do not prove wasm32 sanitization; actual packaged-WASM/JS replay remains separate.",
+    "leakQualification": "Do not infer LeakSanitizer support/results from AddressSanitizer target availability; allocator/LSan measurement needs its own checked runtime configuration."
+  },
+  "recommendations": {
+    "proptest": "Published1.12.0 is a viable exact test-only candidate; declared1.88 is below production libraries MSRV1.89, but future resolved dev-graph check is still required. Native generation plus serialized actual-WASM replay avoids native fork feature leakage.",
+    "fuzz": "Published cargo-fuzz0.13.2 +libfuzzer-sys0.4.13 are viable exact isolated fuzz-tool candidates; keep a separate lock/toolchain, include NCSA bundled-runtime notice and validate actual nightly build/run after OSR64 closes.",
+    "nightly": "nightly-2026-10-17 is a dated available candidate for both requested hosts with source/LLVM tools if needed; retain production1.97.1 and libraryMSRV1.89 unchanged. Availability is not a successful fuzz compilation/run.",
+    "dhat": "Published0.3.3 can be evaluated only as an isolated optional native allocator-instrumentation candidate; undeclared MSRV/experimental implementation remain explicit. Do not combine its timings with uninstrumented release latency or make it the sole memory acceptance proof."
+  },
+  "limits": [
+    "No source/Linear/Git/config/CI changes, installs, crate archives or toolchain payloads. Only metadata/manifests/docs fetched.",
+    "Publication and metadata checks do not establish resolved transitive compatibility, sanitizer linking, real fuzz execution or allocator fidelity.",
+    "No dependency pin or Ready/start decision is made here; fresh Refine after actual OSR64 close remains required."
+  ],
+  "completedAt": "2026-10-18T16:22:06.339677+00:00",
+  "evidenceQualification": "Raw-response byte count/SHA and selected parsed facts retained. No crate archive digest is independently checked because crate downloads were explicitly outside scope. API and sparse index checksums agree."
+}
