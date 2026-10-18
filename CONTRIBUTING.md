@@ -14,7 +14,7 @@ build tools для Rust. CMS checkout, DB, private registry и секреты н
    Node 26 допускается для разработки, но acceptance lane использует Node 24.
 2. Установите rustup. `rust-toolchain.toml` закрепляет Rust **1.97.1**, rustfmt,
    clippy и `wasm32-unknown-unknown`. Release builder использует этот pin; native core/profile дополнительно
-   поддерживают Rust **1.89.0** и проверяются на нём в CI.
+   поддерживают Rust **1.89.0** и проверяются на нём локально перед отправкой.
 3. Выполните из корня:
 
 ```sh
@@ -32,11 +32,21 @@ node scripts/summarize-evidence.mjs
 Для локальных прогонов можно создать отдельный пустой каталог и передать
 `CFFIXED_USER_HOME=/absolute/path/to/test-browser-appdata` только тестовому процессу.
 Это изолирует app-data; browser build, CSP и assertions остаются прежними.
-CI macOS 15 использует обычный запуск.
+Локальный macOS 15 использует обычный запуск.
 
 Linux дополнительно требует Playwright system dependencies (`npx playwright install --with-deps`).
-CI запускается на macOS 15 и выполняет ту же последовательность; OS browser input
-проверяется отдельными implementation gates, bootstrap smoke этого не доказывает.
+
+## Локальный pre-send gate (OPS-625)
+
+Агент обязан выполнить команды выше на точной отправляемой ревизии и записать
+команды, результаты, окружение и `git rev-parse HEAD`. CI (`.github/workflows/spike.yml`)
+выполняет только `npm ci --ignore-scripts` и `npm run build`; Rust/npm/Playwright/check
+tests и test-evidence upload из CI удалены.
+
+Недоступный browser/Playwright, Rust toolchain или npm registry — blocker в Linear,
+не silent skip и не повод вернуть тесты в CI. Meaningful code change аннулирует
+соответствующее evidence; неизменённый SHA можно не перепроверять. Тесты и assertions
+не удалять и не ослаблять; новых тестов ради галочки не добавлять.
 
 `npm run check` включает fmt/clippy/native tests, independent canonical JS/native
 reference vectors (`npm run test:canonical`, [ADR-004](docs/adr/004-canonical-json-v1.md)), native + wasm32 release build,
@@ -137,11 +147,12 @@ mount APIs остаются отдельными задачами; пакеты 
 
 ## Изменения
 
-Ветка по ID задачи; logical commit с ID; PR включает scope, команды проверок и
-матрицу AC/evidence. Для standalone и финала эпика нужен один подготовленный CI
-run и независимый review точного SHA, затем merge и успешный post-merge CI.
-Повтор CI — после относящегося к ошибке исправления. Не ставьте Done по одному
-локальному тесту. Rollback bootstrap: revert PR; persisted documents не меняются.
+Ветка по ID задачи (`ops-625` для эпика OPS-625); logical commit с ID; PR включает
+scope, локальные команды проверок и матрицу AC/evidence. Локальные тесты обязательны
+на exact SHA до отправки; независимый review точного SHA и merge сохраняются. CI
+даёт build-артефакт, а не test-гейт. Повтор CI — после относящегося к ошибке
+исправления. Не ставьте Done по одному локальному тесту. Rollback bootstrap:
+revert PR; persisted documents не меняются.
 
 Dependency updates меняют manifest + lock + dependency evidence вместе. Новая
 runtime dependency требует основания из ADR; Angular только в binding, parse5

@@ -61,7 +61,7 @@ node scripts/summarize-evidence.mjs
 npm run report
 ```
 
-Tests use native browser clipboard shortcuts and run sequentially because the OS clipboard is shared. They put sample text on the clipboard. Browser builds and test tools are pinned in the lockfile. `test-results/` contains traces, screenshots and videos; CI uploads them as a 14-day artifact.
+Tests use native browser clipboard shortcuts and run sequentially because the OS clipboard is shared. They put sample text on the clipboard. Browser builds and test tools are pinned in the lockfile. `test-results/` contains traces, screenshots and videos for local runs; CI is build-only and does not upload test artifacts (OPS-625).
 
 Read the [decision and results](docs/m0/editing-host-decision.md) and the [native RU/EN and accessibility protocol](docs/m0/native-protocol.md). Successful test execution is distinct from a fulfilled editor requirement; negative observations are retained. Playwright WebKit is not installed Safari, Unicode insertion is not OS IME, and axe/AX snapshots are not a real screen-reader acceptance test.
 ## Unstable codec transport (OSR-76)

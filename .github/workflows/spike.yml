@@ -1,4 +1,4 @@
-name: Editor CI
+name: Editor build
 on:
   pull_request:
   push:
@@ -9,9 +9,9 @@ concurrency:
 permissions:
   contents: read
 jobs:
-  workspace-and-browser:
+  build:
     runs-on: macos-15
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,25 +22,12 @@ jobs:
       - run: rustup toolchain install 1.97.1 --profile minimal --component rustfmt,clippy --target wasm32-unknown-unknown
       - run: cargo install wasm-bindgen-cli --version 0.2.129 --locked --root .tools
       - run: npm ci --ignore-scripts
-      - run: npx playwright install chromium firefox webkit
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_GC: '1'
-      - run: rustup toolchain install 1.89.0 --profile minimal
-      - run: cargo +1.89.0 test --locked -p klenwriter-editor-core -p klenwriter-editor-kwdj -p klenwriter-editor-registry -p klenwriter-editor-protocol
-      - run: cargo +1.89.0 check --locked --lib -p klenwriter-editor-notes -p klenwriter-editor-extensions
-      - run: npm run check
-      - name: Native and packaged SDK reliability
-        run: node scripts/reliability/check.mjs
-      - run: npm test
-      - run: node scripts/summarize-evidence.mjs
-        if: always() && hashFiles('test-results/results.json') != ''
+      - run: npm run build
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: success()
         with:
-          name: browser-observations
+          name: editor-build
           path: |
+            packages/*/dist/
             artifacts/
-            test-results/
-            playwright-report/
-            evidence/osr-58/automated/
           retention-days: 14
