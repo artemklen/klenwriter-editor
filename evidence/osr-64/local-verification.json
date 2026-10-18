@@ -1,9 +1,9 @@
 {
   "format": "editor-osr64-local-validation/1",
-  "scope": "Actual local gates on the frozen production closure; split commands cover npm check. Prepared CI, independent review, merge, post-merge CI and cleanup remain separate pending delivery gates.",
-  "testedGitHead": "2bb54dbd67053dfd9c6116179108544cc47024d1",
-  "productionCommit": "b17b96a0d04d3b55b43e1c80b76c4ca92d963e26",
-  "producerBuildId": "sha256:f426f85146ca8c14a0e8a919a02c11361f69705aa617146c9797c7335e97c248",
+  "scope": "Actual B3 compiled/runtime/package/browser local gates after the standalone cold-cache producer repair. Prior native/MSRV/canonical/M0 receipts are retained with exact relevant-source equivalence, not represented as new executions. Prepared CI retry, independent review, merge, post-merge CI and cleanup remain pending.",
+  "testedGitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb",
+  "productionCommit": "8a66939783861975cb5b1d54f296a50f9ca9ecbb",
+  "producerBuildId": "sha256:a5886a244ba4e4204e58e5616fe254581ece9563d6c31a1cb5e2064778ae91ac",
   "sourceHashes": {
     "Cargo.lock": "6be8489be73a34cf123e671838911359a1c1d07923f93a9a2c69c5955183997b",
     "Cargo.toml": "020875dbf026b842a5d4c1cb12d3d9d302f20eb6439dc35708df2d7b498e435b",
@@ -135,7 +135,7 @@
     "provenance/licenses/sdk-generator-license-sources.json": "3e23b2fc4bb59720d2eb1e1d055228abd71b2e5739d29cf8ef71196d14383f77",
     "provenance/licenses/ts-rs-12.0.1-MIT.txt": "db7f7f8e7236a2d0b41b855b2501b7b913caebbcda6ce498637a304ad1706ce1",
     "rust-toolchain.toml": "8426022dcf3cbd6b106cda60c0aa89ad194a12d2a0931b0e8f580d4f0f3c5fa5",
-    "scripts/build-extensions-consumers.mjs": "91878b67c5ecbd365b61e54ba7bbcac2e096d0d987abebab0764c692cdd0c0cf",
+    "scripts/build-extensions-consumers.mjs": "d5a5bd861d115653f31770383dea05b63ede06f972b41c191a544edf0e985847",
     "scripts/build-workspace.mjs": "e5f6a3e1bdd876cc419e1f1c8c0ac2784cfac3b0fa08f52ea759a1275bf7034e",
     "scripts/dependency-notices.mjs": "5a6d6d189bffb5443153c97960b2a6a7c75b5b95656722a90899b8b40b91fb51",
     "scripts/generate-sdk-types.mjs": "56efc4ef21723be6fe71df09fc749c8460250f67f6a668d658e172f13b4c243e",
@@ -148,31 +148,34 @@
   "runtimeWasm": {
     "path": "packages/wasm/dist/editor_wasm_bg.wasm",
     "bytes": 6526024,
-    "sha256": "2437f219197939265c2de94231f45c314ab21318bd01c21b93724402de77b67c"
+    "sha256": "f551ea8410dc1b40be1deb02c9f3751b426b9651597108fcb9e1c39a4dd206a4"
   },
   "receipts": {
-    "osr-64-root-build-second.json": {
+    "osr-64-root-build-third.json": {
       "command": [
         "node",
         "scripts/build-workspace.mjs"
       ],
       "exit_code": 0,
-      "log": "/tmp/osr-64-root-build-second.log",
-      "log_sha256": "a88b66398045321be2f276c68011254dabc70c92344f8dd17f036a15a24573b7",
-      "elapsed_seconds": 461.25971698760986,
-      "git_head_after": "2bb54dbd67053dfd9c6116179108544cc47024d1"
+      "log": "/tmp/osr-64-root-build-third.log",
+      "log_sha256": "4ac515b45b3e146da9feddd8f59913909c50cdf2d6ae3786e3375a93220bf87a",
+      "elapsed_seconds": 226.69972610473633,
+      "git_head_before": "8a66939783861975cb5b1d54f296a50f9ca9ecbb",
+      "git_head_after": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
     },
-    "osr-64-root-extensions-second.json": {
+    "osr-64-root-extensions-third.json": {
       "command": [
         "node",
         "scripts/test-extensions.mjs"
       ],
       "exit_code": 0,
-      "log": "/tmp/osr-64-root-extensions-second.log",
+      "log": "/tmp/osr-64-root-extensions-third.log",
       "log_sha256": "e859eb8a83a39e2d1ec3a364a62dd74b4b98a592b3a4dcdcebe8ab8ce4df92f9",
-      "elapsed_seconds": 48.82990884780884
+      "elapsed_seconds": 12.779238939285278,
+      "git_head_before": "8a66939783861975cb5b1d54f296a50f9ca9ecbb",
+      "git_head_after": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
     },
-    "osr-64-root-local-final.json": [
+    "osr-64-root-local-third.json": [
       {
         "name": "test:codec",
         "command": [
@@ -181,9 +184,10 @@
           "test:codec"
         ],
         "exit_code": 0,
-        "log": "/tmp/osr-64-root-local-final-00.log",
-        "log_sha256": "a2fb6ee9fdb83a32269d8cc8056af1023b0824add05e86fc1808ca688149abf6",
-        "elapsed_seconds": 101.04444694519043
+        "log": "/tmp/osr-64-root-local-third-00.log",
+        "log_sha256": "5c27edd32880620f021e7f89e6ba4525b39d71f1946667c2fdea03403f077f19",
+        "elapsed_seconds": 21.6559100151062,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
       },
       {
         "name": "test:corpus",
@@ -193,9 +197,10 @@
           "test:corpus"
         ],
         "exit_code": 0,
-        "log": "/tmp/osr-64-root-local-final-01.log",
-        "log_sha256": "acbfa708bcb895b49ab217fcb619fe05b28b8ccf7b5b410305f7671c4ab1410c",
-        "elapsed_seconds": 102.65056109428406
+        "log": "/tmp/osr-64-root-local-third-01.log",
+        "log_sha256": "19d0c0ba88a9f5865f87358b76c712c09b8c311fd9eecaaee57ae2584f843f74",
+        "elapsed_seconds": 20.455060958862305,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
       },
       {
         "name": "test:session",
@@ -205,9 +210,10 @@
           "test:session"
         ],
         "exit_code": 0,
-        "log": "/tmp/osr-64-root-local-final-02.log",
-        "log_sha256": "970972ecdf35b8cba5347595928bccc9c4879e148272b452776506e2c21a4892",
-        "elapsed_seconds": 5.00350284576416
+        "log": "/tmp/osr-64-root-local-third-02.log",
+        "log_sha256": "ce26ad696249939304eff4b8a8f5ed6ff75ac5d62ac3f575ccd512121bd6079a",
+        "elapsed_seconds": 1.1278998851776123,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
       },
       {
         "name": "test:transactions",
@@ -217,9 +223,10 @@
           "test:transactions"
         ],
         "exit_code": 0,
-        "log": "/tmp/osr-64-root-local-final-03.log",
-        "log_sha256": "8171265a7233d26569e7a595f0133136afadbf5f6c93a9489bb992bb6ce5973b",
-        "elapsed_seconds": 5.292486906051636
+        "log": "/tmp/osr-64-root-local-third-03.log",
+        "log_sha256": "b51e11d1e74c44804bd73d23172ba3bd71fdb9f032fb73d3cf6336b31d52f195",
+        "elapsed_seconds": 1.435697078704834,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
       },
       {
         "name": "test:commands",
@@ -229,9 +236,10 @@
           "test:commands"
         ],
         "exit_code": 0,
-        "log": "/tmp/osr-64-root-local-final-04.log",
-        "log_sha256": "d7c17dfb17f3fecfd21da2c1ae736adf20ae8fac3a2c3514602f9f879a038e42",
-        "elapsed_seconds": 8.850519180297852
+        "log": "/tmp/osr-64-root-local-third-04.log",
+        "log_sha256": "d821c233a091f2148ab07339a7d6eca02b88cc5a20bcbad665b6bbd6ece9408d",
+        "elapsed_seconds": 2.172982692718506,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
       },
       {
         "name": "test:history",
@@ -241,9 +249,10 @@
           "test:history"
         ],
         "exit_code": 0,
-        "log": "/tmp/osr-64-root-local-final-05.log",
-        "log_sha256": "cdafa92b112b87e382c6f93da387eb05b0469e007109a1482ceee8af1bf8d68f",
-        "elapsed_seconds": 15.084627866744995
+        "log": "/tmp/osr-64-root-local-third-05.log",
+        "log_sha256": "4f860c1262d154d1eaf141106309c6cf275d4e157fd8f43b3ed43cf191733c71",
+        "elapsed_seconds": 4.166799783706665,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
       },
       {
         "name": "test:deltas",
@@ -253,9 +262,10 @@
           "test:deltas"
         ],
         "exit_code": 0,
-        "log": "/tmp/osr-64-root-local-final-06.log",
+        "log": "/tmp/osr-64-root-local-third-06.log",
         "log_sha256": "844a42c1f6886e1f47cf7c1e2705cf7653d8c96d7bc20058d2c85449417e5f9d",
-        "elapsed_seconds": 68.63101696968079
+        "elapsed_seconds": 42.23652625083923,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
       },
       {
         "name": "test:sdk",
@@ -265,9 +275,10 @@
           "test:sdk"
         ],
         "exit_code": 0,
-        "log": "/tmp/osr-64-root-local-final-07.log",
-        "log_sha256": "1f6125ab0a06ae8e4b1b904c0b641cb3d41420c2376a349c846c2699c670e6bc",
-        "elapsed_seconds": 8.483021974563599
+        "log": "/tmp/osr-64-root-local-third-07.log",
+        "log_sha256": "439afe12520fea822e0667d9c3de8802dd293e922e32c0aade193a3bf3c81192",
+        "elapsed_seconds": 5.307663679122925,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
       },
       {
         "name": "check:metadata",
@@ -277,9 +288,10 @@
           "check:metadata"
         ],
         "exit_code": 0,
-        "log": "/tmp/osr-64-root-local-final-08.log",
+        "log": "/tmp/osr-64-root-local-third-08.log",
         "log_sha256": "3b05447078c90cb0541e6e06cbb416f4a00d824cce2c41ba0eac8e7b133c147f",
-        "elapsed_seconds": 1.298846960067749
+        "elapsed_seconds": 0.8763668537139893,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
       },
       {
         "name": "check:workspace",
@@ -289,9 +301,10 @@
           "check:workspace"
         ],
         "exit_code": 0,
-        "log": "/tmp/osr-64-root-local-final-09.log",
+        "log": "/tmp/osr-64-root-local-third-09.log",
         "log_sha256": "c3f8f8bb7a612a0f6ae60920927c443d170d4473db0f7f004b9587c2a181ef44",
-        "elapsed_seconds": 0.7654149532318115
+        "elapsed_seconds": 0.45067715644836426,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
       },
       {
         "name": "check:packages",
@@ -301,9 +314,10 @@
           "check:packages"
         ],
         "exit_code": 0,
-        "log": "/tmp/osr-64-root-local-final-10.log",
+        "log": "/tmp/osr-64-root-local-third-10.log",
         "log_sha256": "ce462499bbbf0afc1bbd44933c7dcac1b4694b33c6e90699f67cb3d3a8cc096c",
-        "elapsed_seconds": 3.636331081390381
+        "elapsed_seconds": 2.02988600730896,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
       },
       {
         "name": "test:sdk:consumer",
@@ -313,9 +327,10 @@
           "test:sdk:consumer"
         ],
         "exit_code": 0,
-        "log": "/tmp/osr-64-root-local-final-11.log",
-        "log_sha256": "bca60b1af0f759f9f1efab962e6a0aa2295f630c93a02ba281b788ba8dc6c819",
-        "elapsed_seconds": 1.6664659976959229
+        "log": "/tmp/osr-64-root-local-third-11.log",
+        "log_sha256": "6a97d92519c16019bc3373428d52b68a36254beae0273fd64607f3456488c1b5",
+        "elapsed_seconds": 1.0753321647644043,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
       },
       {
         "name": "test:workspace",
@@ -325,9 +340,10 @@
           "test:workspace"
         ],
         "exit_code": 0,
-        "log": "/tmp/osr-64-root-local-final-12.log",
-        "log_sha256": "900d5c76121eaff31fd73404bfeba19d0292061205b23f282278e9d0c921cb7d",
-        "elapsed_seconds": 31.923639059066772
+        "log": "/tmp/osr-64-root-local-third-12.log",
+        "log_sha256": "514edd44bfa028924d362829d955be420bbfbeaef6fba42c680f9d56851f7f1a",
+        "elapsed_seconds": 20.077844858169556,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
       },
       {
         "name": "check:m0",
@@ -337,9 +353,10 @@
           "check:m0"
         ],
         "exit_code": 0,
-        "log": "/tmp/osr-64-root-local-final-13.log",
+        "log": "/tmp/osr-64-root-local-third-13.log",
         "log_sha256": "b754ac041c668a4a41635c6b887f60ffd79500d5aee39611b982e551d9f3f1ec",
-        "elapsed_seconds": 0.2821309566497803
+        "elapsed_seconds": 0.22055792808532715,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
       },
       {
         "name": "perf:verify",
@@ -349,22 +366,23 @@
           "perf:verify"
         ],
         "exit_code": 0,
-        "log": "/tmp/osr-64-root-local-final-14.log",
+        "log": "/tmp/osr-64-root-local-third-14.log",
         "log_sha256": "85de2eff315216a5ed99e382810f78fc3426440815c17622b2d750ffc7e0a00f",
-        "elapsed_seconds": 0.30024003982543945
+        "elapsed_seconds": 0.23149800300598145,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
       }
     ],
-    "osr-64-browser-actual-second.json": {
-      "scope": "Actual OSR64 18-test CSP browser lane after freshbuild2; actual child exit and immutable logs/full parsed reports, not CI or review evidence.",
+    "osr-64-browser-actual-third.json": {
+      "scope": "Actual OSR64 18-test CSP browser lane after freshbuild3 following narrow offlinefixture-fetch repair; actual child exit and immutable logs/full parsed reports, not CI/review evidence. PreviousB2 proofs unchanged.",
       "argv": [
         "npm",
         "run",
         "test:workspace:browser"
       ],
       "cwd": "/Users/artem/projects/klenwriter-editor",
-      "startedAt": "2026-10-18T15:27:31.227565+00:00",
-      "completedAt": "2026-10-18T15:28:14.922266+00:00",
-      "elapsedSeconds": 43.69482779502869,
+      "startedAt": "2026-10-18T16:06:31.882947+00:00",
+      "completedAt": "2026-10-18T16:06:46.131979+00:00",
+      "elapsedSeconds": 14.249082803726196,
       "returnCode": 0,
       "toolchain": {
         "node": "v24.22.0",
@@ -375,12 +393,12 @@
         "PLAYWRIGHT_SKIP_BROWSER_GC": "1"
       },
       "rawLog": {
-        "path": "/tmp/osr-64-browser-actual-second.log",
-        "bytes": 3627,
-        "sha256": "8b5942770a13ed1163551b540d6da030d29e56b6838a0e545561387d9fd32f8c"
+        "path": "/tmp/osr-64-browser-actual-third.log",
+        "bytes": 3632,
+        "sha256": "8b5be56cf4310eb6806b62bb4f88b6278751e6c49ebf1131aa0c45b499866b3a"
       },
       "sourceBefore": {
-        "buildId": "sha256:f426f85146ca8c14a0e8a919a02c11361f69705aa617146c9797c7335e97c248",
+        "buildId": "sha256:a5886a244ba4e4204e58e5616fe254581ece9563d6c31a1cb5e2064778ae91ac",
         "sourceHashes": {
           "Cargo.lock": "6be8489be73a34cf123e671838911359a1c1d07923f93a9a2c69c5955183997b",
           "Cargo.toml": "020875dbf026b842a5d4c1cb12d3d9d302f20eb6439dc35708df2d7b498e435b",
@@ -512,7 +530,7 @@
           "provenance/licenses/sdk-generator-license-sources.json": "3e23b2fc4bb59720d2eb1e1d055228abd71b2e5739d29cf8ef71196d14383f77",
           "provenance/licenses/ts-rs-12.0.1-MIT.txt": "db7f7f8e7236a2d0b41b855b2501b7b913caebbcda6ce498637a304ad1706ce1",
           "rust-toolchain.toml": "8426022dcf3cbd6b106cda60c0aa89ad194a12d2a0931b0e8f580d4f0f3c5fa5",
-          "scripts/build-extensions-consumers.mjs": "91878b67c5ecbd365b61e54ba7bbcac2e096d0d987abebab0764c692cdd0c0cf",
+          "scripts/build-extensions-consumers.mjs": "d5a5bd861d115653f31770383dea05b63ede06f972b41c191a544edf0e985847",
           "scripts/build-workspace.mjs": "e5f6a3e1bdd876cc419e1f1c8c0ac2784cfac3b0fa08f52ea759a1275bf7034e",
           "scripts/dependency-notices.mjs": "5a6d6d189bffb5443153c97960b2a6a7c75b5b95656722a90899b8b40b91fb51",
           "scripts/generate-sdk-types.mjs": "56efc4ef21723be6fe71df09fc749c8460250f67f6a668d658e172f13b4c243e",
@@ -524,7 +542,7 @@
         }
       },
       "sourceAfter": {
-        "buildId": "sha256:f426f85146ca8c14a0e8a919a02c11361f69705aa617146c9797c7335e97c248",
+        "buildId": "sha256:a5886a244ba4e4204e58e5616fe254581ece9563d6c31a1cb5e2064778ae91ac",
         "sourceHashes": {
           "Cargo.lock": "6be8489be73a34cf123e671838911359a1c1d07923f93a9a2c69c5955183997b",
           "Cargo.toml": "020875dbf026b842a5d4c1cb12d3d9d302f20eb6439dc35708df2d7b498e435b",
@@ -656,7 +674,7 @@
           "provenance/licenses/sdk-generator-license-sources.json": "3e23b2fc4bb59720d2eb1e1d055228abd71b2e5739d29cf8ef71196d14383f77",
           "provenance/licenses/ts-rs-12.0.1-MIT.txt": "db7f7f8e7236a2d0b41b855b2501b7b913caebbcda6ce498637a304ad1706ce1",
           "rust-toolchain.toml": "8426022dcf3cbd6b106cda60c0aa89ad194a12d2a0931b0e8f580d4f0f3c5fa5",
-          "scripts/build-extensions-consumers.mjs": "91878b67c5ecbd365b61e54ba7bbcac2e096d0d987abebab0764c692cdd0c0cf",
+          "scripts/build-extensions-consumers.mjs": "d5a5bd861d115653f31770383dea05b63ede06f972b41c191a544edf0e985847",
           "scripts/build-workspace.mjs": "e5f6a3e1bdd876cc419e1f1c8c0ac2784cfac3b0fa08f52ea759a1275bf7034e",
           "scripts/dependency-notices.mjs": "5a6d6d189bffb5443153c97960b2a6a7c75b5b95656722a90899b8b40b91fb51",
           "scripts/generate-sdk-types.mjs": "56efc4ef21723be6fe71df09fc749c8460250f67f6a668d658e172f13b4c243e",
@@ -747,12 +765,12 @@
         "artifacts/sdk-build-identity.json": {
           "path": "/Users/artem/projects/klenwriter-editor/artifacts/sdk-build-identity.json",
           "bytes": 14927,
-          "sha256": "6d5b66482d620fc90fdd82c500f4cd61d681bd22164c6aed919f1004bad284db"
+          "sha256": "068cc68edde0d99c55de5955181cbbb4a31bb1b7ff75da3ef428b4982f5f858b"
         },
         "packages/wasm/dist/editor_wasm_bg.wasm": {
           "path": "/Users/artem/projects/klenwriter-editor/packages/wasm/dist/editor_wasm_bg.wasm",
           "bytes": 6526024,
-          "sha256": "2437f219197939265c2de94231f45c314ab21318bd01c21b93724402de77b67c"
+          "sha256": "f551ea8410dc1b40be1deb02c9f3751b426b9651597108fcb9e1c39a4dd206a4"
         },
         "artifacts/extensions/packet.json": {
           "path": "/Users/artem/projects/klenwriter-editor/artifacts/extensions/packet.json",
@@ -764,12 +782,12 @@
         "artifacts/sdk-build-identity.json": {
           "path": "/Users/artem/projects/klenwriter-editor/artifacts/sdk-build-identity.json",
           "bytes": 14927,
-          "sha256": "6d5b66482d620fc90fdd82c500f4cd61d681bd22164c6aed919f1004bad284db"
+          "sha256": "068cc68edde0d99c55de5955181cbbb4a31bb1b7ff75da3ef428b4982f5f858b"
         },
         "packages/wasm/dist/editor_wasm_bg.wasm": {
           "path": "/Users/artem/projects/klenwriter-editor/packages/wasm/dist/editor_wasm_bg.wasm",
           "bytes": 6526024,
-          "sha256": "2437f219197939265c2de94231f45c314ab21318bd01c21b93724402de77b67c"
+          "sha256": "f551ea8410dc1b40be1deb02c9f3751b426b9651597108fcb9e1c39a4dd206a4"
         },
         "artifacts/extensions/packet.json": {
           "path": "/Users/artem/projects/klenwriter-editor/artifacts/extensions/packet.json",
@@ -779,8 +797,8 @@
       },
       "artifactsUnchanged": true,
       "playwrightStats": {
-        "startTime": "2026-10-18T15:27:33.040Z",
-        "duration": 41490.843,
+        "startTime": "2026-10-18T16:06:32.291Z",
+        "duration": 13676.275,
         "expected": 18,
         "skipped": 0,
         "unexpected": 0,
@@ -790,79 +808,79 @@
         {
           "original": {
             "path": "/Users/artem/projects/klenwriter-editor/artifacts/browser.json",
-            "bytes": 26807,
-            "sha256": "9312ff3521d609b818bf51ee0a5d258bef97d5d02eb88ff38d3cb2a918d7c0db"
+            "bytes": 26798,
+            "sha256": "921a2fa3c7323c0704bb39bb052641688091f8e030ab7dc6997ce9f47ff66b44"
           },
           "preserved": {
-            "path": "/tmp/osr-64-browser-actual-second-artifacts/artifacts/browser.json",
-            "bytes": 26807,
-            "sha256": "9312ff3521d609b818bf51ee0a5d258bef97d5d02eb88ff38d3cb2a918d7c0db"
+            "path": "/tmp/osr-64-browser-actual-third-artifacts/artifacts/browser.json",
+            "bytes": 26798,
+            "sha256": "921a2fa3c7323c0704bb39bb052641688091f8e030ab7dc6997ce9f47ff66b44"
           }
         },
         {
           "original": {
             "path": "/Users/artem/projects/klenwriter-editor/artifacts/extensions/browser-chromium.json",
             "bytes": 1610386,
-            "sha256": "ed6c8d354762664cd5bcad962c0a7a6749bd6bd0d3558c4045b177e36fa27616"
+            "sha256": "f842b944abf7565a9aec593e86cf0433eea0f66895dbf961516d58762c2d1ba0"
           },
           "preserved": {
-            "path": "/tmp/osr-64-browser-actual-second-artifacts/artifacts/extensions/browser-chromium.json",
+            "path": "/tmp/osr-64-browser-actual-third-artifacts/artifacts/extensions/browser-chromium.json",
             "bytes": 1610386,
-            "sha256": "ed6c8d354762664cd5bcad962c0a7a6749bd6bd0d3558c4045b177e36fa27616"
+            "sha256": "f842b944abf7565a9aec593e86cf0433eea0f66895dbf961516d58762c2d1ba0"
           }
         },
         {
           "original": {
             "path": "/Users/artem/projects/klenwriter-editor/artifacts/extensions/browser-firefox.json",
             "bytes": 1610385,
-            "sha256": "9cff5ed4bcf79b4c30207b28101f4c548dd8ea7029617488be9d9dbea19c52e5"
+            "sha256": "bf249bf5c2b4a7e4fcb14cd173225fa8a459bbbedfe30da8ae68015da9014154"
           },
           "preserved": {
-            "path": "/tmp/osr-64-browser-actual-second-artifacts/artifacts/extensions/browser-firefox.json",
+            "path": "/tmp/osr-64-browser-actual-third-artifacts/artifacts/extensions/browser-firefox.json",
             "bytes": 1610385,
-            "sha256": "9cff5ed4bcf79b4c30207b28101f4c548dd8ea7029617488be9d9dbea19c52e5"
+            "sha256": "bf249bf5c2b4a7e4fcb14cd173225fa8a459bbbedfe30da8ae68015da9014154"
           }
         },
         {
           "original": {
             "path": "/Users/artem/projects/klenwriter-editor/artifacts/extensions/browser-webkit.json",
             "bytes": 1610384,
-            "sha256": "534348b75200e9eac81a4c30d0c6ce2a46b726872ec1747cf43a8b8c01010f20"
+            "sha256": "66d11cbd285cb0400236bba01cb9c18101ad481fe3a090a6eeb6ba6c0070b9bd"
           },
           "preserved": {
-            "path": "/tmp/osr-64-browser-actual-second-artifacts/artifacts/extensions/browser-webkit.json",
+            "path": "/tmp/osr-64-browser-actual-third-artifacts/artifacts/extensions/browser-webkit.json",
             "bytes": 1610384,
-            "sha256": "534348b75200e9eac81a4c30d0c6ce2a46b726872ec1747cf43a8b8c01010f20"
+            "sha256": "66d11cbd285cb0400236bba01cb9c18101ad481fe3a090a6eeb6ba6c0070b9bd"
           }
         }
       ],
       "buildInputReceipt": {
-        "path": "/tmp/osr-64-root-build-second.json",
-        "bytes": 322,
-        "sha256": "b489584e383b0d2f20407c758a7f5a9e89bc69fc922a75ed5a191ba504fdb207"
+        "path": "/tmp/osr-64-root-build-third.json",
+        "bytes": 386,
+        "sha256": "a34717d19b3577d5382928e4b11fa2296ead683029531f82d1ecd73cb9a8fe4b"
       },
       "extensionsInputReceipt": {
-        "path": "/tmp/osr-64-root-extensions-second.json",
-        "bytes": 262,
-        "sha256": "368e384d6813186825f78679f6a994a9f27881202c89ed6297fdd06bd4d35164"
+        "path": "/tmp/osr-64-root-extensions-third.json",
+        "bytes": 391,
+        "sha256": "8250d18a3b9e2acfaf0fc404b68ca85666293802635fa4acdd2fc191dbdd0c4c"
       }
     },
-    "osr-64-browser-actual-second-proof.json": {
-      "scope": "Actual parsed18test browser results and byte-exact saved perengine outputs; supporting local gate evidence only, not CI/review.",
+    "osr-64-browser-actual-third-proof.json": {
+      "scope": "Actual parsed18test browser results and byte-exact saved perengine outputs afterB3. Supporting local gate only, not CI/review. No source changes; B2proofs remain byteexact.",
       "actualExitReceipt": {
-        "path": "/tmp/osr-64-browser-actual-second.json",
-        "bytes": 38213,
-        "sha256": "0d47b2dff2d63697d49c676c1235f27481956f799a11e353cf3116322516ddf1"
+        "path": "/tmp/osr-64-browser-actual-third.json",
+        "bytes": 38278,
+        "sha256": "d3a7409f4df8b7c2dc31eeca4c7a5b93815d4a2f4df52a33996cf415b0baf66c"
       },
       "actualReturnCode": 0,
       "rawLog": {
-        "path": "/tmp/osr-64-browser-actual-second.log",
-        "bytes": 3627,
-        "sha256": "8b5942770a13ed1163551b540d6da030d29e56b6838a0e545561387d9fd32f8c"
+        "path": "/tmp/osr-64-browser-actual-third.log",
+        "bytes": 3632,
+        "sha256": "8b5be56cf4310eb6806b62bb4f88b6278751e6c49ebf1131aa0c45b499866b3a"
       },
       "stats": {
-        "startTime": "2026-10-18T15:27:33.040Z",
-        "duration": 41490.843,
+        "startTime": "2026-10-18T16:06:32.291Z",
+        "duration": 13676.275,
         "expected": 18,
         "skipped": 0,
         "unexpected": 0,
@@ -1060,17 +1078,17 @@
         {
           "project": "chromium",
           "report": {
-            "path": "/tmp/osr-64-browser-actual-second-artifacts/artifacts/extensions/browser-chromium.json",
+            "path": "/tmp/osr-64-browser-actual-third-artifacts/artifacts/extensions/browser-chromium.json",
             "bytes": 1610386,
-            "sha256": "ed6c8d354762664cd5bcad962c0a7a6749bd6bd0d3558c4045b177e36fa27616"
+            "sha256": "f842b944abf7565a9aec593e86cf0433eea0f66895dbf961516d58762c2d1ba0"
           },
           "codecLiterals": 53,
           "commandLiterals": 18,
           "runtimeRecipe": "passed",
           "simultaneousFrozenD0D1": true,
           "actualSharedV1V2RustCounters": true,
-          "buildId": "sha256:f426f85146ca8c14a0e8a919a02c11361f69705aa617146c9797c7335e97c248",
-          "wasmSha256": "2437f219197939265c2de94231f45c314ab21318bd01c21b93724402de77b67c",
+          "buildId": "sha256:a5886a244ba4e4204e58e5616fe254581ece9563d6c31a1cb5e2064778ae91ac",
+          "wasmSha256": "f551ea8410dc1b40be1deb02c9f3751b426b9651597108fcb9e1c39a4dd206a4",
           "packetSha256": "81e10a3cd9e1229566b357e919736670f3a675950411d868242080ee2e1fdbdf",
           "nativeFinal": {
             "sessions": 0,
@@ -1096,17 +1114,17 @@
         {
           "project": "firefox",
           "report": {
-            "path": "/tmp/osr-64-browser-actual-second-artifacts/artifacts/extensions/browser-firefox.json",
+            "path": "/tmp/osr-64-browser-actual-third-artifacts/artifacts/extensions/browser-firefox.json",
             "bytes": 1610385,
-            "sha256": "9cff5ed4bcf79b4c30207b28101f4c548dd8ea7029617488be9d9dbea19c52e5"
+            "sha256": "bf249bf5c2b4a7e4fcb14cd173225fa8a459bbbedfe30da8ae68015da9014154"
           },
           "codecLiterals": 53,
           "commandLiterals": 18,
           "runtimeRecipe": "passed",
           "simultaneousFrozenD0D1": true,
           "actualSharedV1V2RustCounters": true,
-          "buildId": "sha256:f426f85146ca8c14a0e8a919a02c11361f69705aa617146c9797c7335e97c248",
-          "wasmSha256": "2437f219197939265c2de94231f45c314ab21318bd01c21b93724402de77b67c",
+          "buildId": "sha256:a5886a244ba4e4204e58e5616fe254581ece9563d6c31a1cb5e2064778ae91ac",
+          "wasmSha256": "f551ea8410dc1b40be1deb02c9f3751b426b9651597108fcb9e1c39a4dd206a4",
           "packetSha256": "81e10a3cd9e1229566b357e919736670f3a675950411d868242080ee2e1fdbdf",
           "nativeFinal": {
             "sessions": 0,
@@ -1132,17 +1150,17 @@
         {
           "project": "webkit",
           "report": {
-            "path": "/tmp/osr-64-browser-actual-second-artifacts/artifacts/extensions/browser-webkit.json",
+            "path": "/tmp/osr-64-browser-actual-third-artifacts/artifacts/extensions/browser-webkit.json",
             "bytes": 1610384,
-            "sha256": "534348b75200e9eac81a4c30d0c6ce2a46b726872ec1747cf43a8b8c01010f20"
+            "sha256": "66d11cbd285cb0400236bba01cb9c18101ad481fe3a090a6eeb6ba6c0070b9bd"
           },
           "codecLiterals": 53,
           "commandLiterals": 18,
           "runtimeRecipe": "passed",
           "simultaneousFrozenD0D1": true,
           "actualSharedV1V2RustCounters": true,
-          "buildId": "sha256:f426f85146ca8c14a0e8a919a02c11361f69705aa617146c9797c7335e97c248",
-          "wasmSha256": "2437f219197939265c2de94231f45c314ab21318bd01c21b93724402de77b67c",
+          "buildId": "sha256:a5886a244ba4e4204e58e5616fe254581ece9563d6c31a1cb5e2064778ae91ac",
+          "wasmSha256": "f551ea8410dc1b40be1deb02c9f3751b426b9651597108fcb9e1c39a4dd206a4",
           "packetSha256": "81e10a3cd9e1229566b357e919736670f3a675950411d868242080ee2e1fdbdf",
           "nativeFinal": {
             "sessions": 0,
@@ -1168,7 +1186,20 @@
       ],
       "sourceBeforeAfterEqual": true,
       "harnessBeforeAfterEqual": true,
-      "artifactsBeforeAfterEqual": true
+      "artifactsBeforeAfterEqual": true,
+      "priorB2Preservation": {
+        "receipt": {
+          "path": "/tmp/osr-64-browser-actual-second.json",
+          "bytes": 38213,
+          "sha256": "0d47b2dff2d63697d49c676c1235f27481956f799a11e353cf3116322516ddf1"
+        },
+        "proof": {
+          "path": "/tmp/osr-64-browser-actual-second-proof.json",
+          "bytes": 9697,
+          "sha256": "69607ed0a0289631c23bcff23591dd287fa5ef4a9d23a33f2978f2898575687f"
+        },
+        "rawLogAndFourSavedOutputsVerified": true
+      }
     },
     "osr-64-root-rust-final3.json": [
       {
@@ -1321,82 +1352,82 @@
     {
       "path": "artifacts/sdk-build-identity.json",
       "bytes": 14927,
-      "sha256": "6d5b66482d620fc90fdd82c500f4cd61d681bd22164c6aed919f1004bad284db"
+      "sha256": "068cc68edde0d99c55de5955181cbbb4a31bb1b7ff75da3ef428b4982f5f858b"
     },
     {
       "path": "artifacts/sdk-native-manifest.json",
       "bytes": 421,
-      "sha256": "6331b814314f83eb2b8d9ce6a15edbcbbf40e7d66b28909029f54fcaab4b2be5"
+      "sha256": "099047923a62709bcfa6687c441c8fc45625a38e40644db920cd3088a6c667d8"
     },
     {
       "path": "artifacts/sdk-native-manifest-v2.json",
       "bytes": 759,
-      "sha256": "4cac6cc4c8b3cfb57464ed32e7fa7a045501d9a276d4c67537fc1ca4c81a6ced"
+      "sha256": "504f2b1d875e70c44f347e7a89afe4cf01bcbeea38143c3de4ed4ebedcbdbf1e"
     },
     {
       "path": "artifacts/extensions/report.json",
       "bytes": 95221,
-      "sha256": "d900acbfcd21ab2c6bbc6dd6deed0a6ab404ec73d55d0f1f4571d38d51af5b4e"
+      "sha256": "c155a991b1599a43fea38ee5f488fcab27d4b0a7bcf795b7030d954d90c93917"
     },
     {
       "path": "artifacts/extensions/consumers/notes-only/build.json",
-      "bytes": 43116,
-      "sha256": "97b496d014feeaeadcf76ded98712a9aef455ef4e548ed55f883bd31257b852f"
+      "bytes": 44185,
+      "sha256": "b691205c5c14e2fdcf305b34209454149c0316bf8f3b2b53f02925ebc032dd7b"
     },
     {
       "path": "artifacts/extensions/consumers/kwdj-only/build.json",
-      "bytes": 43083,
-      "sha256": "8237df2d161035b90e479517493d6804dfe9c65de5f28ea9797a6f19b9d6dc5f"
+      "bytes": 44150,
+      "sha256": "5120c11f6096eefb99bdcdb0e49ae1fc12f29b62630de4656325d26cdddf55c5"
     },
     {
       "path": "artifacts/codec-v1-report.json",
       "bytes": 96165,
-      "sha256": "4652127151d6d1d8df82af230f5751f8be746e5fd7f1e781235a236b97a21c87"
+      "sha256": "385945353a42c10c2045e94f1a556a8269bbb22cad8131d7c15fa007b44ae52e"
     },
     {
       "path": "artifacts/codec-import-closed-report.json",
       "bytes": 19097,
-      "sha256": "f6b3d3b3810bed14a1ac9e7e5e78a1122d3ccd893004cf53e476e0c9f2eabfcc"
+      "sha256": "8e7a0b57bb810f27663aaa970665727ec9bd1425d11c40e845c45175d20e21d3"
     },
     {
       "path": "artifacts/codec-import-root-budget-report.json",
       "bytes": 10747,
-      "sha256": "6e3c8147f45e740f9e5988b1e06c18e801095e1112b0d5d086695979e5e16ae6"
+      "sha256": "c1bc1b593da93fa39f363e6a7c5795aec3da85b06a6f75b2ca78ecd43fb4071b"
     },
     {
       "path": "artifacts/sdk-clean-consumer-report.json",
       "bytes": 1871998,
-      "sha256": "ec21cb10e9349e93fc77004719d3a2d5d064729e6e5c588dfa69fd7c459cfb85"
+      "sha256": "4596ce6471d1429a48e715c9491dc9a2e6fa582732aa6dcfdb94be793eb190df"
     },
     {
       "path": "artifacts/browser.json",
-      "bytes": 26807,
-      "sha256": "9312ff3521d609b818bf51ee0a5d258bef97d5d02eb88ff38d3cb2a918d7c0db"
+      "bytes": 26798,
+      "sha256": "921a2fa3c7323c0704bb39bb052641688091f8e030ab7dc6997ce9f47ff66b44"
     },
     {
       "path": "artifacts/extensions/browser-chromium.json",
       "bytes": 1610386,
-      "sha256": "ed6c8d354762664cd5bcad962c0a7a6749bd6bd0d3558c4045b177e36fa27616"
+      "sha256": "f842b944abf7565a9aec593e86cf0433eea0f66895dbf961516d58762c2d1ba0"
     },
     {
       "path": "artifacts/extensions/browser-firefox.json",
       "bytes": 1610385,
-      "sha256": "9cff5ed4bcf79b4c30207b28101f4c548dd8ea7029617488be9d9dbea19c52e5"
+      "sha256": "bf249bf5c2b4a7e4fcb14cd173225fa8a459bbbedfe30da8ae68015da9014154"
     },
     {
       "path": "artifacts/extensions/browser-webkit.json",
       "bytes": 1610384,
-      "sha256": "534348b75200e9eac81a4c30d0c6ce2a46b726872ec1747cf43a8b8c01010f20"
+      "sha256": "66d11cbd285cb0400236bba01cb9c18101ad481fe3a090a6eeb6ba6c0070b9bd"
     },
     {
       "path": "artifacts/dependencies.json",
       "bytes": 77166,
-      "sha256": "064195ecc37cf3fe4803787629c3aab8bb5dc2d158bc5ceaeb3859019c42a0ee"
+      "sha256": "64b4692547edb8d8e94149b4ec9626d56c63c78aef7b41cb5ad9b8c868541cea"
     },
     {
       "path": "artifacts/package-inventory.json",
       "bytes": 13430,
-      "sha256": "d74e1ad3f4cdf9b4a139f5bf6b86c5c3933d7020d267db69fdcc18d4e734910e"
+      "sha256": "fb2fa7a8fab74031959cb7b5913c06ab20fd6b5b0a6abf5b30b7a1fc66b2c78c"
     },
     {
       "path": "artifacts/native-package-inventory.json",
@@ -1406,12 +1437,12 @@
     {
       "path": "artifacts/sdk-report.json",
       "bytes": 27976,
-      "sha256": "73da2255f7a7295450e69d28748118c4c27d2501d63fe75a3fb1c2c6a47a717a"
+      "sha256": "51b34e12660ad362112e880a694a7c5e5f6ddd2948c8c546183595b0ed747aaa"
     },
     {
       "path": "artifacts/corpus-stage-report.json",
       "bytes": 347602,
-      "sha256": "2bb1c405bddf818dd8f80762d4e668c4aab2b0a7c6f2e8e79c30eb2e3ebb99b3"
+      "sha256": "5793918ae48baf071f2eac90e2d5f9cb6dc921a205d66de143d978429dec15cb"
     },
     {
       "path": "artifacts/corpus-hardening-report.json",
@@ -1421,7 +1452,7 @@
     {
       "path": "artifacts/corpus-extension-report.json",
       "bytes": 18230,
-      "sha256": "55db59d396eef68787a39db0b1c5d3bb4e88198e11fd7ebde8863900a28ba556"
+      "sha256": "2733d1ec5198bcb36d7cb020a7d60e7715b46a0e9536cff756db2ea06bbcacb2"
     },
     {
       "path": "artifacts/corpus-invalid-fields-report.json",
@@ -1451,26 +1482,67 @@
     {
       "path": "artifacts/deltas-report.json",
       "bytes": 202493,
-      "sha256": "d275f2af8124150a91d826cab8963be6d5429da5501d2bbe5626e78cfd0668c2"
+      "sha256": "642894882db7255e722225c9f44e994e5ee854b8b0484a8bc2c4fbcfd96b58be"
     },
     {
       "path": "artifacts/extensions/consumers/builds.json",
       "bytes": 935,
-      "sha256": "55dc7d965af984e8a18971ceae9593c03a7655af75cbeaed931533ca74c5cef2"
+      "sha256": "e04a66c9f6e7cf00ae30e4a329365dbb6f3041b394b24b7fc0179a50c8992678"
     }
   ],
   "portableSupportingInputs": {
-    "path": "evidence/osr-64/supporting-inputs.json",
-    "originalHashesRemainAuthoritative": true
+    "path": "evidence/osr-64/third-build/index.json",
+    "earlierSources": "evidence/osr-64/supporting-inputs.json",
+    "originalHashesRemainAuthoritative": true,
+    "sha256": "476dda1d2b39258e0d06dada53dc059c4f5ce74f1b22f8b40574f37c570f7400",
+    "files": 137,
+    "originalBytes": 54675191
   },
   "limitations": [
     "M0 102 passes describe MET28/GAP26/OBS48; they do not imply product input acceptance.",
     "Browser engines are Chromium, Firefox and Playwright WebKit; no installed Safari, Windows, IME, assistive-technology or mounted production UI acceptance.",
     "No publish/deploy or independent review approval is asserted."
   ],
+  "historicalPreviousBuild": {
+    "receipt": {
+      "path": "/Users/artem/projects/klenwriter-editor/evidence/osr-64/local-verification-second.json",
+      "bytes": 82427,
+      "sha256": "97a2c0755aafc6ce5dda8683bcb9cab031aaf2858b90c97e99e43d70c6ccc210"
+    },
+    "scope": "Byte-exact B2 local-verification document, historical only; original gzip supporting inputs are unchanged.",
+    "snapshot": {
+      "archive": "/tmp/osr-64-second-compiled-snapshot.zip",
+      "bytes": 9631934,
+      "sha256": "69c8b3fb6d8a091342bdb5bdd6f9e405df514b32b1c04af8db336e3b9226e2d8",
+      "files": 229,
+      "buildId": "sha256:f426f85146ca8c14a0e8a919a02c11361f69705aa617146c9797c7335e97c248",
+      "defaultWasmSha256": "2437f219197939265c2de94231f45c314ab21318bd01c21b93724402de77b67c"
+    }
+  },
+  "priorReceiptReuse": {
+    "equivalence": {
+      "testedHeadBefore": "65fdf800be0ca0818ed0c3b42a5fabd2eb36ec6e",
+      "unchangedProductionInputs": 138,
+      "changed": [
+        {
+          "path": "scripts/build-extensions-consumers.mjs",
+          "before": "91878b67c5ecbd365b61e54ba7bbcac2e096d0d987abebab0764c692cdd0c0cf",
+          "after": "d5a5bd861d115653f31770383dea05b63ede06f972b41c191a544edf0e985847"
+        }
+      ],
+      "scope": "Rust/TS source and lockfiles unchanged; new producer BuildID requires fresh compiled/runtime/packaged gates. Prior native/MSRV/canonical/M0 semantic checks retain exact relevant inputs."
+    },
+    "explanation": "Rust/TypeScript sources and lockfiles are unchanged; the only production-identity change is standalone consumer fetching. Native375/MSRV151/canonical/M0 semantics remain supported by their original raw receipts. B3 build/runtime/packaged/browser gates were actually rerun for the new build identity."
+  },
+  "coldCacheFailureAndRepair": {
+    "path": "evidence/osr-64/cold-cache/index.json",
+    "failedRun": 39141373334,
+    "failedHead": "65fdf800be0ca0818ed0c3b42a5fabd2eb36ec6e",
+    "repairCommit": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+  },
   "supportingRuntimeAudit": {
-    "original": "/tmp/osr-64-fresh-runtime-evidence-audit.json",
-    "sha256": "8173a190417b0bd4e1d62497a737de532277bf4447064903bfad5f29a0aae7e3",
-    "scope": "Read-only consistency audit, no repeated executions or formal review verdict; precise raw-log/simultaneous-session scope is stated in the audit. Offline packed consumer is separately covered by the actual root gate receipt."
+    "original": "/tmp/osr-64-fresh-third-runtime-evidence-audit.json",
+    "sha256": "f709aa810d5ee1571934240404c5f08fb0b5047ac1a600f9be0db0274e912848",
+    "scope": "Read-only B3 evidence consistency audit: exact source/consumer/artifact/raw log/manifests/graphs/case bindings; no repeated runtime executions, browser/offline consumer audit or formal review verdict."
   }
 }
