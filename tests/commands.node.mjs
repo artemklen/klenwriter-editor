@@ -34,6 +34,7 @@ test('actual KWDJ command availability and execution match literal expectations 
   }
   assert.match(wasm.literal_cases[23].canonical_json,/18446744073709551615/);
   const paths=['Cargo.lock','crates/wasm/Cargo.toml','contracts/commands/v1/vectors.json',
+    'crates/core/src/history.rs','crates/engine/src/history.rs','crates/engine/src/grouping.rs','crates/engine/src/history_dispatch.rs',
     'crates/core/src/commands.rs','crates/core/src/transaction.rs','crates/core/src/positions.rs',
     'crates/engine/src/commands.rs','crates/engine/src/dispatch.rs','crates/engine/src/session.rs','crates/engine/src/tree.rs','crates/engine/src/transaction.rs','crates/engine/src/mapping.rs',
     'crates/kwdj/src/commands/mod.rs','crates/kwdj/src/commands/block.rs','crates/kwdj/src/commands/inline.rs',

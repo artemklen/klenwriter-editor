@@ -4,7 +4,9 @@
 use editor_core::document::Mark;
 use editor_core::positions::{Position, Selection};
 use editor_core::profile::{AdmissionMode, BindingError, FrozenProfile, ProfileBinding};
+use editor_core::transaction::{WorkLimits, WorkMeter};
 
+use crate::history::{HistoryError, HistoryStore, HistorySummary};
 use crate::identity::{NodeId, SessionKey};
 use crate::mapping::{MapError, MapResult};
 use crate::transaction::{CommitJournal, JournalEntrySummary, JournalSummary};
@@ -13,7 +15,9 @@ use crate::tree::{AddressTree, TreeDraft, TreeError, TreeNode};
 #[path = "commands.rs"]
 pub mod commands;
 #[path = "dispatch.rs"]
-mod dispatch;
+pub(crate) mod dispatch;
+#[path = "history_dispatch.rs"]
+pub mod history_dispatch;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AccessMode {
@@ -33,6 +37,7 @@ pub enum StateError {
     StaleSession,
     StaleRevision,
     StaleSelectionEpoch,
+    StaleHistoryEpoch,
     Closed,
     Poisoned,
     ReadOnly,
@@ -45,6 +50,7 @@ pub enum SessionError<E> {
     Profile(E),
     State(StateError),
     Tree(TreeError),
+    History(HistoryError),
 }
 
 impl<E> From<StateError> for SessionError<E> {
@@ -73,6 +79,7 @@ pub struct Session<P: FrozenProfile> {
     stored_marks: Option<Vec<Mark>>,
     selection_epoch: u64,
     journal: CommitJournal,
+    history: HistoryStore,
     dirty: bool,
 }
 
@@ -106,6 +113,7 @@ impl<P: FrozenProfile> Session<P> {
             stored_marks: None,
             selection_epoch: 0,
             journal: CommitJournal::default(),
+            history: HistoryStore::default(),
             dirty: false,
         })
     }
@@ -139,6 +147,41 @@ impl<P: FrozenProfile> Session<P> {
     }
     pub fn journal_summary(&self) -> JournalSummary {
         self.journal.summary(self.revision)
+    }
+    pub fn history_summary(&self) -> HistorySummary {
+        self.history.summary()
+    }
+    /// An explicit host boundary seals a live typing group. Repeating an
+    /// already sealed boundary is a true no-op, including at a counter limit.
+    pub fn seal_history(
+        &mut self,
+        key: SessionKey,
+        revision: u64,
+        selection_epoch: u64,
+        history_epoch: u64,
+        limits: WorkLimits,
+    ) -> Result<
+        history_dispatch::HistoryBoundaryEvent,
+        crate::transaction::TransactionError<P::Error>,
+    > {
+        self.guard(key, Some(revision))?;
+        if selection_epoch != self.selection_epoch {
+            return Err(StateError::StaleSelectionEpoch.into());
+        }
+        if history_epoch != self.history.summary().epoch {
+            return Err(StateError::StaleHistoryEpoch.into());
+        }
+        let mut work = WorkMeter::new(limits);
+        let plan = self.history.plan_barrier(&mut work)?;
+        let changed = plan.is_some();
+        if let Some(plan) = plan {
+            self.history.publish(plan);
+        }
+        Ok(history_dispatch::HistoryBoundaryEvent {
+            changed,
+            history: self.history.summary(),
+            work: work.usage(),
+        })
     }
     pub fn journal_entries(&self) -> Vec<JournalEntrySummary> {
         self.journal.entry_summaries()
@@ -219,9 +262,16 @@ impl<P: FrozenProfile> Session<P> {
             .selection_epoch
             .checked_add(1)
             .ok_or(StateError::CounterExhausted)?;
+        let history = self
+            .history
+            .plan_barrier(&mut WorkMeter::new(WorkLimits::default()))
+            .map_err(SessionError::History)?;
         self.selection = Some(selection);
         self.stored_marks = None;
         self.selection_epoch = epoch;
+        if let Some(plan) = history {
+            self.history.publish(plan);
+        }
         Ok(())
     }
 
@@ -288,6 +338,7 @@ impl<P: FrozenProfile> Session<P> {
         self.stored_marks = None;
         self.selection_epoch = 0;
         self.journal = CommitJournal::default();
+        self.history = HistoryStore::default();
         self.dirty = false;
         Ok(next_key)
     }
@@ -307,6 +358,10 @@ impl<P: FrozenProfile> Session<P> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "history_profile_tests.rs"]
+mod history_profile_tests;
 
 #[cfg(test)]
 mod tests {
@@ -592,4 +647,5 @@ mod tests {
     }
 
     include!("transaction_tests.rs");
+    include!("history_tests.rs");
 }

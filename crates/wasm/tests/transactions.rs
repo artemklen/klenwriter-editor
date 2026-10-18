@@ -18,10 +18,13 @@ fn real_kwdj_dispatch_preserves_literal_outputs_and_refusal_state() {
     assert_eq!(repeated["canonical_bytes"], 159);
     assert_eq!(repeated["work_cap_bytes"], 32768);
     assert_eq!(repeated["journal_entry_limit"], 1);
+    assert_eq!(repeated["history_action_limit"], 1);
+    assert_eq!(repeated["allocation_warmup_commits"], 2);
+    assert_eq!(repeated["steady_commits"], 510);
     for property in [
         "canonical_restored",
         "all_changed",
-        "work_and_retained_bytes_stable",
+        "steady_work_and_retained_bytes_stable",
         "identities_preserved",
     ] {
         assert_eq!(repeated[property], true);

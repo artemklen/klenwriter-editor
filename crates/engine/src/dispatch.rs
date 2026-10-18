@@ -11,6 +11,7 @@ use editor_core::transaction::{
 };
 
 use super::{AccessMode, Session, SessionState, StateError};
+use crate::history::{HistoryBoundary, HistoryPlan, PreparedHistoryChange};
 use crate::identity::NodeId;
 use crate::mapping::{MapError, PositionMap, StepMap};
 use crate::transaction::{
@@ -358,7 +359,7 @@ fn apply<E, A: Allocation>(
     work.charge_bytes((draft.prepared_copy_bytes() - before) as u64)?;
     Ok(result)
 }
-fn map_bytes(steps: &[StepMap<NodeId>]) -> Result<usize, TreeError> {
+pub(super) fn map_bytes(steps: &[StepMap<NodeId>]) -> Result<usize, TreeError> {
     let mut bytes = steps
         .len()
         .checked_mul(std::mem::size_of::<StepMap<NodeId>>())
@@ -386,24 +387,25 @@ pub(super) enum TypingPolicy {
 }
 
 pub(super) struct Prepared<A: Allocation> {
-    patch: PreparedTreePatch<A>,
-    map: PositionMap<NodeId>,
-    retained_map: Option<PositionMap<NodeId>>,
-    journal_plan: Option<JournalPlan>,
-    journal_bytes: usize,
-    selection: Option<Selection<NodeId>>,
-    stored_marks: Option<Vec<Mark>>,
-    journal_marks_before: Option<Vec<Mark>>,
-    journal_marks_after: Option<Vec<Mark>>,
-    event_marks_after: Option<Vec<Mark>>,
-    epoch: u64,
-    revision: u64,
+    pub(super) patch: PreparedTreePatch<A>,
+    pub(super) map: PositionMap<NodeId>,
+    pub(super) retained_map: Option<PositionMap<NodeId>>,
+    pub(super) journal_plan: Option<JournalPlan>,
+    pub(super) history_plan: Option<HistoryPlan>,
+    pub(super) journal_bytes: usize,
+    pub(super) selection: Option<Selection<NodeId>>,
+    pub(super) stored_marks: Option<Vec<Mark>>,
+    pub(super) journal_marks_before: Option<Vec<Mark>>,
+    pub(super) journal_marks_after: Option<Vec<Mark>>,
+    pub(super) event_marks_after: Option<Vec<Mark>>,
+    pub(super) epoch: u64,
+    pub(super) revision: u64,
     pub(super) selection_changed: bool,
     pub(super) stored_marks_changed: bool,
-    changed_nodes: Vec<NodeId>,
-    normalization_operations: usize,
-    validation: ValidationStats,
-    work: WorkUsage,
+    pub(super) changed_nodes: Vec<NodeId>,
+    pub(super) normalization_operations: usize,
+    pub(super) validation: ValidationStats,
+    pub(super) work: WorkUsage,
 }
 impl<A: Allocation> Prepared<A> {
     pub(super) fn changed(&self) -> bool {
@@ -413,7 +415,7 @@ impl<A: Allocation> Prepared<A> {
 
 /// Charge the owned metadata material before cloning it. This logical bound
 /// includes container/value overhead and is independent of historic edits.
-fn copy_marks<E>(
+pub(crate) fn copy_marks<E>(
     source: Option<&[Mark]>,
     work: &mut WorkMeter,
 ) -> Result<(Option<Vec<Mark>>, usize), TransactionError<E>> {
@@ -527,6 +529,12 @@ impl<P: TransactionProfile> Session<P> {
         {
             return Err(StateError::StaleSelectionEpoch.into());
         }
+        if transaction
+            .history_epoch
+            .is_some_and(|epoch| epoch != self.history.summary().epoch)
+        {
+            return Err(StateError::StaleHistoryEpoch.into());
+        }
         if self.state == SessionState::Open(AccessMode::ReadOnly)
             && !transaction.operations.is_empty()
         {
@@ -548,8 +556,21 @@ impl<P: TransactionProfile> Session<P> {
         )?;
         let mut created = Vec::with_capacity(transaction.operations.len());
         let has_user_operations = !transaction.operations.is_empty();
+        let simple = transaction.operations.len() == 1;
+        let hint = transaction.history_hint;
+        let mut grouping = None;
         for operation in transaction.operations {
             let operation = operation.try_map_ids(|id| resolve(id, &created, &draft))?;
+            if simple {
+                grouping = crate::grouping::prepare(
+                    &draft,
+                    &operation,
+                    hint,
+                    self.selection,
+                    self.stored_marks.as_deref(),
+                    work,
+                )?;
+            }
             created.push(apply(&mut draft, &operation, EditOrigin::User, work)?);
         }
         let (selection_after_user, selection_intent) = match transaction.selection {
@@ -586,6 +607,12 @@ impl<P: TransactionProfile> Session<P> {
                     (normalization_operations as u64).saturating_add(operations.len() as u64),
                 )?;
                 for operation in operations {
+                    if grouping
+                        .as_ref()
+                        .is_some_and(|proof| !proof.permits_normalization(&draft, &operation))
+                    {
+                        grouping = None;
+                    }
                     apply(&mut draft, &operation, EditOrigin::Normalization, work)?;
                     normalization_operations += 1;
                 }
@@ -646,6 +673,10 @@ impl<P: TransactionProfile> Session<P> {
         };
         let stored_marks = finalize_marks(&draft, selection, proposed, work)?;
         let stored_marks_changed = stored_marks != self.stored_marks;
+        let footprint = grouping
+            .map(|proof| proof.finish(&draft, selection, stored_marks.as_deref(), work))
+            .transpose()?
+            .flatten();
         if self.state == SessionState::Open(AccessMode::ReadOnly) && stored_marks_changed {
             return Err(StateError::ReadOnly.into());
         }
@@ -666,6 +697,7 @@ impl<P: TransactionProfile> Session<P> {
         debug_assert_eq!(changed, patch.changed());
         debug_assert_eq!(map.steps(), if changed { patch.steps() } else { &[] });
         let mut journal_plan = None;
+        let mut history_plan = None;
         let mut journal_bytes = 0;
         let mut journal_marks_before = None;
         let mut journal_marks_after = None;
@@ -685,16 +717,49 @@ impl<P: TransactionProfile> Session<P> {
                 .and_then(|n| n.checked_add(before_bytes))
                 .and_then(|n| n.checked_add(after_bytes))
                 .ok_or(TreeError::ResourceLimit)?;
-            journal_plan = Some(self.journal.plan(journal_bytes, limits)?);
+            let initial = self.journal.plan(journal_bytes, limits)?;
+            work.charge_units((self.journal.summary(self.revision).entries + 1) as u64)?;
+            work.charge_bytes(
+                ((self.journal.summary(self.revision).entries + 1)
+                    * std::mem::size_of::<crate::history::ProjectedMap<'_>>())
+                    as u64,
+            )?;
+            let projected = self
+                .journal
+                .projected_maps(patch.material(), journal_bytes, &initial);
+            let change = PreparedHistoryChange {
+                material: std::sync::Arc::clone(patch.material()),
+                before: HistoryBoundary {
+                    selection: self.selection,
+                    stored_marks: copy_marks(self.stored_marks.as_deref(), work)?.0,
+                },
+                after: HistoryBoundary {
+                    selection,
+                    stored_marks: copy_marks(stored_marks.as_deref(), work)?.0,
+                },
+                footprint,
+            };
+            let plan = self
+                .history
+                .plan_record(change, hint, &projected, limits.history, work)?;
+            journal_plan = Some(self.journal.plan_at_least(
+                journal_bytes,
+                limits,
+                initial.evict + plan.chronological_evictions(),
+            )?);
+            history_plan = Some(plan);
             work.charge_bytes(std::mem::size_of_val(patch.changed_ids()) as u64)?;
             changed_nodes = patch.changed_ids().to_vec();
             retained_map = Some(map.clone());
+        } else if selection_changed || stored_marks_changed {
+            history_plan = self.history.plan_barrier(work)?;
         }
         Ok(Prepared {
             patch,
             map,
             retained_map,
             journal_plan,
+            history_plan,
             journal_bytes,
             selection,
             stored_marks,
@@ -722,6 +787,9 @@ impl<P: TransactionProfile> Session<P> {
             self.selection = prepared.selection;
             self.stored_marks = prepared.stored_marks;
             self.selection_epoch = prepared.epoch;
+            if let Some(plan) = prepared.history_plan {
+                self.history.publish(plan);
+            }
             return DispatchOutcome::Unchanged {
                 revision: self.revision,
                 selection_epoch: self.selection_epoch,
@@ -746,6 +814,8 @@ impl<P: TransactionProfile> Session<P> {
             },
             prepared.journal_plan.expect("prepared retention plan"),
         );
+        self.history
+            .publish(prepared.history_plan.expect("prepared history record"));
         self.revision = prepared.revision;
         self.selection = prepared.selection;
         self.selection_epoch = prepared.epoch;
@@ -768,7 +838,7 @@ impl<P: TransactionProfile> Session<P> {
     }
 }
 
-fn validate_selection<E, A: Allocation>(
+pub(super) fn validate_selection<E, A: Allocation>(
     draft: &TreeDraft<'_, A>,
     selection: Option<Selection<NodeId>>,
     work: &mut WorkMeter,

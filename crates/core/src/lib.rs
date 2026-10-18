@@ -8,6 +8,7 @@ pub mod admission;
 pub mod candidate;
 pub mod commands;
 pub mod document;
+pub mod history;
 pub mod json;
 pub mod limits;
 pub mod positions;

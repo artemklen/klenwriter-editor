@@ -48,6 +48,9 @@ test('bounded real-profile Session foundation is identical on native and compile
   }
   assert.deepEqual(wasm.deferred, { transactions: 'OSR-34', user_history: 'OSR-36', second_production_profile: 'OSR-64' });
   const paths = [
+    'crates/core/src/history.rs', 'crates/core/src/transaction.rs',
+    'crates/engine/src/history.rs', 'crates/engine/src/grouping.rs',
+    'crates/engine/src/history_dispatch.rs', 'crates/engine/src/dispatch.rs', 'crates/engine/src/transaction.rs',
     'Cargo.lock', 'crates/core/src/admission.rs', 'crates/core/src/positions.rs', 'crates/core/src/profile.rs',
     'crates/engine/src/identity.rs', 'crates/engine/src/session.rs',
     'crates/engine/src/tree.rs', 'crates/engine/src/mapping.rs',

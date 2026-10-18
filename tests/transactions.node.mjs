@@ -19,7 +19,8 @@ test('real KWDJ transaction outputs and typed atomic refusals agree on native an
   assert.equal(wasm.groups.normalization_noops.split_join,'net-noop');
   assert.deepEqual(wasm.groups.attributes_marks_spans.repeated_metadata, {
     commits:512,canonical_bytes:159,work_cap_bytes:32768,journal_entry_limit:1,
-    canonical_restored:true,all_changed:true,work_and_retained_bytes_stable:true,identities_preserved:true,
+    history_action_limit:1,allocation_warmup_commits:2,steady_commits:510,
+    canonical_restored:true,all_changed:true,steady_work_and_retained_bytes_stable:true,identities_preserved:true,
   });
   assert.deepEqual(wasm.groups.fragments_local_references.canonical.content.filter(p=>p.type==='paragraph').map(p=>p.content[0].text),['A','A','Z','Y']);
   assert.equal(wasm.groups.fragments_local_references.canonical.content.at(-1).type,'scene_break');
@@ -33,6 +34,7 @@ test('real KWDJ transaction outputs and typed atomic refusals agree on native an
   });
   assert.ok(wasm.groups.atomic_refusals.cases.every(r=>r.canonical_and_state_preserved&&r.identity_map));
   const paths=['Cargo.lock','crates/wasm/Cargo.toml',
+    'crates/core/src/history.rs','crates/engine/src/history.rs','crates/engine/src/grouping.rs','crates/engine/src/history_dispatch.rs',
     'crates/core/src/candidate.rs','crates/core/src/transaction.rs','crates/core/src/admission.rs','crates/core/src/positions.rs','crates/core/src/profile.rs',
     'crates/engine/src/tree.rs','crates/engine/src/session.rs','crates/engine/src/dispatch.rs','crates/engine/src/transaction.rs',
     'crates/kwdj/src/candidate_validate.rs','crates/kwdj/src/edit_normalize.rs','crates/kwdj/src/session_profile.rs',

@@ -9,9 +9,10 @@ use editor_core::transaction::{WorkMeter, WorkUsage};
 
 use super::dispatch::{Prepared, TypingPolicy};
 use super::{Session, StateError};
+use crate::history::HistoryHint;
 use crate::identity::{NodeId, SessionKey};
 use crate::transaction::{DispatchOutcome, Transaction, TransactionError, TransactionLimits};
-use crate::tree::{Allocation, TreeDraft, TreeError};
+use crate::tree::{Allocation, TreeDraft};
 
 #[cfg(test)]
 #[path = "command_tests.rs"]
@@ -23,6 +24,8 @@ pub struct CommandRequest<I> {
     pub session: SessionKey,
     pub revision: u64,
     pub selection_epoch: u64,
+    pub history_epoch: Option<u64>,
+    pub history_hint: HistoryHint,
     pub intent: I,
     pub limits: TransactionLimits,
 }
@@ -32,6 +35,8 @@ impl<I> CommandRequest<I> {
             session,
             revision,
             selection_epoch,
+            history_epoch: None,
+            history_hint: HistoryHint::Isolated,
             intent,
             limits: TransactionLimits::default(),
         }
@@ -93,36 +98,7 @@ fn reason<P: CommandProvider>(error: &CommandError<P::Error>) -> &'static str {
     match error {
         CommandError::Catalog(error) => error.as_str(),
         CommandError::UnknownCommand => "command.unknown",
-        CommandError::Transaction(error) => match error {
-            TransactionError::State(error) => match error {
-                StateError::StaleSession => "session.stale_session",
-                StateError::StaleRevision => "session.stale_revision",
-                StateError::StaleSelectionEpoch => "session.stale_selection_epoch",
-                StateError::Closed => "session.closed",
-                StateError::Poisoned => "session.poisoned",
-                StateError::ReadOnly => "session.read_only",
-                StateError::CounterExhausted => "session.counter_exhausted",
-            },
-            TransactionError::Tree(error) => match error {
-                TreeError::MissingNode => "tree.missing_node",
-                TreeError::ForeignSession => "tree.foreign_session",
-                TreeError::InvalidStructure => "tree.invalid_structure",
-                TreeError::InvalidIndex => "tree.invalid_index",
-                TreeError::InvalidRange => "tree.invalid_range",
-                TreeError::RootMutation => "tree.root_mutation",
-                TreeError::Cycle => "tree.cycle",
-                TreeError::IncompatibleText => "tree.incompatible_text",
-                TreeError::ResourceLimit => "resource_limit_exceeded",
-                TreeError::CounterExhausted => "session.counter_exhausted",
-                TreeError::Position(_) => "position.invalid",
-            },
-            TransactionError::Profile(error) => P::error_code(error),
-            TransactionError::Limit(_) => "resource_limit_exceeded",
-            TransactionError::Mapping(_) => "mapping.invalid",
-            TransactionError::InvalidLocalReference => "transaction.invalid_local_reference",
-            TransactionError::NormalizationLimit => "transaction.normalization_limit",
-            TransactionError::JournalLimit => "transaction.journal_limit",
-        },
+        CommandError::Transaction(error) => crate::transaction::error_code(error, P::error_code),
     }
 }
 
@@ -138,6 +114,14 @@ impl<P: CommandProvider> Session<P> {
         if request.selection_epoch != self.selection_epoch {
             return Err(CommandError::Transaction(TransactionError::State(
                 StateError::StaleSelectionEpoch,
+            )));
+        }
+        if request
+            .history_epoch
+            .is_some_and(|epoch| epoch != self.history.summary().epoch)
+        {
+            return Err(CommandError::Transaction(TransactionError::State(
+                StateError::StaleHistoryEpoch,
             )));
         }
         // Catalog is a compiled associated constant. Meter the bounded duplicate
@@ -174,6 +158,8 @@ impl<P: CommandProvider> Session<P> {
             session: request.session,
             revision: request.revision,
             selection_epoch: Some(request.selection_epoch),
+            history_epoch: request.history_epoch,
+            history_hint: request.history_hint,
             operations: plan.operations,
             selection: plan.selection,
             limits: request.limits,

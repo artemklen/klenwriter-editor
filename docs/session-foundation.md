@@ -73,7 +73,7 @@ cost. Cost проверяется до copies: payload + closed-value/record/chi
 суммирует также повторное копирование и historical/map material. Максимальная
 длина одного candidate text leaf — 16 MiB, глубина — 128; KWDJ при admission и
 будущем commit по-прежнему применяет более строгие собственные maxima. Borrowed
-metadata preflight не обходит children, не сериализует числа и не сканирует
+metadata preflight не обходит children, считает spelling чисел без serialized buffer и не сканирует
 Unicode. Grapheme preparation ограничивает временную span metadata до allocation.
 
 ## Позиции и maps
