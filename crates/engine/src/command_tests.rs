@@ -672,6 +672,13 @@ fn runtime_catalog_query_and_execute_use_the_instance_id_without_publication_on_
     let mut profile = FixtureProfile::new("ab", false);
     profile.runtime_catalog = Some(vec![id.clone()]);
     let mut s = open_profile(profile);
+    assert_eq!(
+        s.command_catalog(s.key())
+            .unwrap()
+            .ids()
+            .collect::<Vec<_>>(),
+        vec!["org.example.external/type"]
+    );
     let leaf = first_leaf(&s);
     let before = facets(&s, leaf);
     let runtime = request(
@@ -709,6 +716,12 @@ fn runtime_catalog_query_and_execute_use_the_instance_id_without_publication_on_
     assert_eq!(s.journal_entries().len(), 1);
 
     let mut other = open("ab", false);
+    assert!(matches!(
+        s.command_catalog(other.key()),
+        Err(crate::session::SessionError::State(
+            StateError::StaleSession
+        ))
+    ));
     let other_leaf = first_leaf(&other);
     let unregistered = request(
         &other,
@@ -721,6 +734,11 @@ fn runtime_catalog_query_and_execute_use_the_instance_id_without_publication_on_
         same_refusal(&mut other, &unregistered, other_leaf),
         "command.unknown"
     );
+    other.close(other.key()).unwrap();
+    assert!(matches!(
+        other.command_catalog(other.key()),
+        Err(crate::session::SessionError::State(StateError::Closed))
+    ));
 }
 
 #[test]

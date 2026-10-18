@@ -1,0 +1,21 @@
+{
+  "job_id": "4d896c398ca13d7340413e9846406b39",
+  "task_id": "editor-wasm-9c177f4b74e2",
+  "profile": "coding",
+  "state": "failed",
+  "error": "OpenBao point-of-use read failed",
+  "source_revision": "sha256:807fa92f0fa92aa1eb2c980739ea5fb490f4e629f52ff13499c8ffbb5e22a9d7",
+  "input_sha256": "807fa92f0fa92aa1eb2c980739ea5fb490f4e629f52ff13499c8ffbb5e22a9d7",
+  "model": null,
+  "usage": null,
+  "estimated_peak_usd": null,
+  "reserved_peak_usd": 0.1583664,
+  "task_reserved_peak_usd": 0.1583664,
+  "task_budget_usd": 1.0,
+  "verified_model_answer": false,
+  "model_answer_received": false,
+  "automatic_retry": false,
+  "outcome": "OpenBao consumer failed before a model result. Primary/registry implementer continue against independent preimplementation numeric literals. No provider output accepted.",
+  "raw_prompt_retained_in_evidence": false,
+  "initial_submit_path_refusal": "The first submit refused the macOS /var symlink parent before creating a job; the identical payload then submitted once using its canonical /private/var path."
+}

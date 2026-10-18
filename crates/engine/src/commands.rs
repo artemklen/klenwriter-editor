@@ -2,14 +2,14 @@
 //! Full command availability and execution share one publication-free prepare.
 
 use editor_core::commands::{
-    CatalogError, CommandPresentation, CommandProvider, CommandState, MAX_COMMANDS, PlanBuilder,
-    StoredMarksUpdate, validate_catalog,
+    CatalogError, CommandCatalog, CommandPresentation, CommandProvider, CommandState, MAX_COMMANDS,
+    PlanBuilder, StoredMarksUpdate,
 };
 use editor_core::document::Mark;
 use editor_core::transaction::{WorkMeter, WorkUsage};
 
 use super::dispatch::{PreparedFor, TypingPolicy};
-use super::{AccessMode, Session, SessionState, StateError};
+use super::{AccessMode, Session, SessionError, SessionState, StateError};
 use crate::history::HistoryHint;
 use crate::identity::{NodeId, SessionKey};
 use crate::mapping::PositionMap;
@@ -110,6 +110,17 @@ fn reason<P: CommandProvider>(error: &CommandError<P::Error>) -> &'static str {
 }
 
 impl<P: CommandProvider> Session<P> {
+    /// Borrow the current frozen provider's IDs after the ordinary read guard.
+    /// Consumers meter enumeration/serialization; this view grants no command
+    /// availability, and query/execute still validate the catalog and stamps.
+    pub fn command_catalog(
+        &self,
+        key: SessionKey,
+    ) -> Result<CommandCatalog<'_>, SessionError<P::Error>> {
+        self.guard(key, None)?;
+        Ok(self.profile.command_catalog())
+    }
+
     /// Set the explicit future-typing marks (`Some`, including an empty list),
     /// or restore context inheritance (`None`). The final profile hook validates
     /// the marks against the current selection before one atomic publication.
@@ -175,19 +186,20 @@ impl<P: CommandProvider> Session<P> {
                 StateError::StaleHistoryEpoch,
             )));
         }
-        // Catalog is a compiled associated constant. Meter the bounded duplicate
-        // comparison before inspecting it; there is no mutable registry/cache.
-        let count = P::COMMANDS.len();
+        // Both static and instance catalogs are immutable profile-owned views.
+        // Meter the bounded duplicate comparison before inspecting their IDs.
+        let catalog = self.profile.command_catalog();
+        let count = catalog.len();
         if count > MAX_COMMANDS {
             return Err(CommandError::Catalog(CatalogError::TooManyCommands));
         }
         work.charge_units((count as u64).saturating_mul(count as u64 + 1))
             .map_err(|error| CommandError::Transaction(TransactionError::Limit(error)))?;
-        work.charge_bytes(P::COMMANDS.iter().map(|d| d.id.len().min(129) as u64).sum())
+        work.charge_bytes(catalog.ids().map(|id| id.len().min(129) as u64).sum())
             .map_err(|error| CommandError::Transaction(TransactionError::Limit(error)))?;
-        validate_catalog(P::COMMANDS).map_err(CommandError::Catalog)?;
+        catalog.validate().map_err(CommandError::Catalog)?;
         let id = P::command_id(&request.intent);
-        if !P::COMMANDS.iter().any(|entry| entry.id == id) {
+        if !catalog.ids().any(|entry| entry == id) {
             return Err(CommandError::UnknownCommand);
         }
         let mut builder = PlanBuilder::new(work, request.limits.operations);
