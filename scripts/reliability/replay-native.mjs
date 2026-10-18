@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { lstatSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { resolve, relative } from 'node:path';
+import { resolve, relative, dirname } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
 import { readScenarios } from './replay-sdk.mjs';
@@ -21,6 +21,7 @@ function regular(path, maximum = 32 * 1024 * 1024) {
   return readFileSync(path);
 }
 function pin(path, maximum) { const bytes = regular(path, maximum); return { path: resolve(path), bytes: bytes.length, sha256: hash(bytes) }; }
+function binaryPin(path) { return { ...pin(path, 512 * 1024 * 1024), mode: lstatSync(path).mode & 0o777 }; }
 function walk(path) {
   return readdirSync(path, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name, 'en')).flatMap(entry => {
     assert.equal(entry.isSymbolicLink(), false, `symlink source: ${entry.name}`);
@@ -97,18 +98,30 @@ export async function buildNativeReplay({ outputRoot = resolve(root, 'artifacts/
     if (actual.failure) break;
   }
   const after = replaySourceHashes(), lockAfter = pin(lockBefore.path), success = commands.length === 3 && commands.every(command => command.returnCode === 0 && !command.failure);
-  const binaryPath = resolve(targetDirectory, 'debug', process.platform === 'win32' ? 'replay.exe' : 'replay');
-  const value = { format: 'editor-reliability-native-replay-build/1', runId, status: success ? 'passed' : 'failed', sourceRoot: root,
+  const filename = process.platform === 'win32' ? 'replay.exe' : 'replay';
+  const producedPath = resolve(targetDirectory, 'debug', filename), binaryPath = resolve(directory, filename);
+  let producedBinary = null, binary = null;
+  if (success) {
+    producedBinary = binaryPin(producedPath);
+    // Cargo's shared target may be rebuilt by later test/all-feature commands.
+    // Retain the exact just-built bytes under this unique build's ownership.
+    writeFileSync(binaryPath, regular(producedPath, 512 * 1024 * 1024), { flag: 'wx', mode: 0o500 });
+    binary = binaryPin(binaryPath);
+    assert.equal(binary.bytes, producedBinary.bytes); assert.equal(binary.sha256, producedBinary.sha256);
+    assert.equal(binary.mode, 0o500, 'snapshot must be owner-readable/executable without write bits');
+    assert.deepEqual(binaryPin(producedPath), producedBinary, 'produced target changed during snapshot creation');
+  }
+  const value = { format: 'editor-reliability-native-replay-build/2', runId, status: success ? 'passed' : 'failed', sourceRoot: root,
     sourceBefore: before, sourceAfter: after, sourceUnchanged: JSON.stringify(before) === JSON.stringify(after),
-    lockBefore, lockAfter, commands, binary: success ? pin(binaryPath, 512 * 1024 * 1024) : null,
-    qualification: 'Ordinary debug native replay, pinned Rust1.97.1; explicit locked fetch precedes locked offline build. Measurement-only bins/support excluded; no release/performance claim.' };
+    lockBefore, lockAfter, commands, producedBinary, binary,
+    qualification: 'Ordinary debug native replay, pinned Rust1.97.1; explicit locked fetch precedes locked offline build. Exact produced bytes are retained as an exclusive0500 executable snapshot; the original shared Cargo target may later change. Measurement-only bins/support excluded; no release/performance claim.' };
   const receipt = save(resolve(directory, 'build-receipt.json'), json(value));
   assert.equal(success, true, `native build failed: ${receipt.path}`); assert.deepEqual(after, before, 'source changed during native build'); assert.equal(lockAfter.sha256, lockBefore.sha256, 'locked fetch/build changed lock');
   return { binary: binaryPath, buildReceipt: receipt.path, receipt, value };
 }
 
 function verifyBuild(binary, receiptPath) {
-  const raw = regular(receiptPath), receipt = JSON.parse(raw); assert.equal(receipt.format, 'editor-reliability-native-replay-build/1');
+  const raw = regular(receiptPath), receipt = JSON.parse(raw); assert.equal(receipt.format, 'editor-reliability-native-replay-build/2');
   assert.equal(receipt.status, 'passed'); assert.equal(receipt.sourceUnchanged, true); assert.equal(resolve(receipt.sourceRoot), resolve(root));
   assert.deepEqual(receipt.sourceBefore, receipt.sourceAfter); assert.deepEqual(replaySourceHashes(), receipt.sourceAfter, 'built source differs from current replay closure');
   assert.equal(receipt.commands.length, 3); for (const command of receipt.commands) {
@@ -119,8 +132,12 @@ function verifyBuild(binary, receiptPath) {
   assert.deepEqual(receipt.commands[1].argv, ['cargo', '+1.97.1', 'fetch', '--locked', '--manifest-path', `${fixture}/Cargo.toml`]);
   assert.deepEqual(receipt.commands[2].argv.slice(0, -1), ['cargo', '+1.97.1', 'build', '--locked', '--offline', '--manifest-path', `${fixture}/Cargo.toml`, '--bin', 'replay', '--target-dir']);
   assert.deepEqual(pin(receipt.lockAfter.path), receipt.lockAfter); assert.equal(receipt.lockBefore.sha256, receipt.lockAfter.sha256);
-  const artifact = pin(binary, 512 * 1024 * 1024); assert.deepEqual(artifact, receipt.binary, 'binary does not match exact build receipt');
-  assert.equal(artifact.path, resolve(receipt.commands[2].argv.at(-1), 'debug', process.platform === 'win32' ? 'replay.exe' : 'replay'), 'binary is not the recorded build target');
+  const filename = process.platform === 'win32' ? 'replay.exe' : 'replay';
+  assert.equal(receipt.producedBinary.path, resolve(receipt.commands[2].argv.at(-1), 'debug', filename), 'origin is not the recorded build target');
+  const artifact = binaryPin(binary); assert.deepEqual(artifact, receipt.binary, 'snapshot does not match exact build receipt');
+  assert.equal(artifact.path, resolve(dirname(receiptPath), filename), 'snapshot is not owned by this UUID build');
+  assert.equal(artifact.mode, 0o500); assert.equal(artifact.bytes, receipt.producedBinary.bytes); assert.equal(artifact.sha256, receipt.producedBinary.sha256);
+  assert.notEqual(artifact.path, receipt.producedBinary.path);
   return { receipt: { path: resolve(receiptPath), bytes: raw.length, sha256: hash(raw) }, binary: artifact, sourceHashes: receipt.sourceAfter };
 }
 

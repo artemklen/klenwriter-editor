@@ -9,6 +9,13 @@ unchanged lock/source hashes. Fetch failure never falls back to an unlocked or
 online build. This is an ordinary debug consumer, separate from release timing
 and sanitizer/coverage-guided fuzz builds.
 
+Immediately after the build, the exact produced executable is copied
+exclusively into that build's UUID directory with owner read/execute permissions
+and no write bits (`0500`). Its byte size/SHA must equal the recorded produced
+target at creation. Replay executes this retained snapshot. Later Cargo tests
+or all-feature builds may legitimately replace the original shared
+`target/debug/replay`; that mutable target is provenance, not the replay handle.
+
 The default replay reads the same frozen sealed oracle as the SDK adapter with
 `readScenarios({perContext:256})`:1024 generated plus12 hand literals. Actual
 saved regular `contracts/reliability/v1/regressions/*.jsonl` cases run first and
@@ -42,7 +49,10 @@ used native lib/model/properties/replay entrypoint, embedded operation/Notes
 oracles, driver imports and raw selected oracle/lock/binary pins. Unused native
 measurement binaries and their support module are explicitly excluded because
 they are not compiled by `--bin replay`. Before/after equality and exact build
-receipt/binary readback are required. Source/build hashes prove the declared
+receipt/snapshot readback are required. Verification checks the produced origin
+against the recorded Cargo target path and the snapshot against its saved bytes,
+permissions and UUID location; it does not require the mutable target to remain
+unchanged after snapshot creation. Source/build hashes prove the declared
 consumer/artifact pairing; they do not establish a release performance claim.
 
 For a focused check use `node scripts/reliability/replay-native.mjs --literal-only`.
@@ -56,5 +66,7 @@ build build-config.json` accepts `{outputRoot?,targetDirectory?}` and prints
 replay-config.json` accepts `{binary,buildReceipt,perContext?,operations?,
 failFast?,outputRoot?,regressionDirectory?}`. A stale, missing or unsuccessful
 build receipt refuses before scenario execution. The receipt uses
-`editor-reliability-native-replay-build/1`; external callers may supply that
-schema only with actual captured commands and matching source/binary/raw hashes.
+`editor-reliability-native-replay-build/2`, with required `producedBinary` origin
+and `binary` snapshot pins. Earlier format1 receipts remain historical evidence;
+new replay refuses them. External callers may supply format2 only with actual
+captured commands, matching source/raw hashes and the preserved executable.
