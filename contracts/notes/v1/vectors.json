@@ -1,0 +1,732 @@
+{
+  "format": "klenwriter-notes-codec-vectors/1",
+  "profile": {
+    "id": "org.example.notes",
+    "version": "1.0.0",
+    "codecId": "org.example.notes/json",
+    "wireVersion": 1
+  },
+  "provenance": {
+    "license": "MIT OR Apache-2.0",
+    "origin": "Independently authored synthetic notes fixtures before codec implementation; no CMS/KWDJ/user payload copied",
+    "expected": "Authored canonical literal/templates, never notes implementation output",
+    "semanticAuthority": "Complete parsed expected canonical literal; opaque engine IDs are intentionally absent"
+  },
+  "registries": {
+    "D0": {
+      "extensions": [
+        {
+          "id": "org.example.notes/base",
+          "version": "1.0.0"
+        }
+      ]
+    },
+    "D1": {
+      "extensions": [
+        {
+          "id": "org.example.notes/base",
+          "version": "1.0.0"
+        },
+        {
+          "id": "org.example.notes/callout",
+          "version": "1.0.0"
+        },
+        {
+          "id": "org.example.notes/highlight",
+          "version": "1.0.0"
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "id": "N001-empty-document",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N001-empty-document.json",
+      "description": "Semantic document root is retained even with no block children.",
+      "expected": {
+        "kind": "accepted",
+        "canonical": "expected/N001-empty-document.canonical.json",
+        "semantic": "parsed_canonical_literal",
+        "normalized": false
+      }
+    },
+    {
+      "id": "N002-unicode-and-metadata",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N002-unicode-and-metadata.json",
+      "description": "Exact SPACE U+0020,NBSP U+00A0,NFD e+U+0301,ZWJ emoji,CRLF and ordered duplicate tags.",
+      "expected": {
+        "kind": "accepted",
+        "canonical": "expected/N002-unicode-and-metadata.canonical.json",
+        "semantic": "parsed_canonical_literal",
+        "normalized": false
+      }
+    },
+    {
+      "id": "N003-hard-break-barrier",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N003-hard-break-barrier.json",
+      "description": "Hard break is retained between e and combining accent; no text join across it.",
+      "expected": {
+        "kind": "accepted",
+        "canonical": "expected/N003-hard-break-barrier.canonical.json",
+        "semantic": "parsed_canonical_literal",
+        "normalized": false
+      }
+    },
+    {
+      "id": "N004-callout-and-highlight",
+      "registry": "D1",
+      "mode": "strict",
+      "input": "inputs/N004-callout-and-highlight.json",
+      "description": "D1 selected runtime node+mark,required nullable callout title,complete metadata.",
+      "expected": {
+        "kind": "accepted",
+        "canonical": "expected/N004-callout-and-highlight.canonical.json",
+        "semantic": "parsed_canonical_literal",
+        "normalized": false
+      }
+    },
+    {
+      "id": "N005-highlight-only",
+      "registry": "D1",
+      "mode": "strict",
+      "input": "inputs/N005-highlight-only.json",
+      "description": "",
+      "expected": {
+        "kind": "accepted",
+        "canonical": "expected/N005-highlight-only.canonical.json",
+        "semantic": "parsed_canonical_literal",
+        "normalized": false
+      }
+    },
+    {
+      "id": "N006-unequal-mark-payloads",
+      "registry": "D1",
+      "mode": "strict",
+      "input": "inputs/N006-unequal-mark-payloads.json",
+      "description": "Different highlight color attrs preserve adjacent text seam.",
+      "expected": {
+        "kind": "accepted",
+        "canonical": "expected/N006-unequal-mark-payloads.canonical.json",
+        "semantic": "parsed_canonical_literal",
+        "normalized": false
+      }
+    },
+    {
+      "id": "N007-root-title-and-tags-boundary",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N007-root-title-and-tags-boundary.json",
+      "description": "Title128×é=256UTF8 bytes;16 tags each21×界+a=64UTF8 bytes.",
+      "expected": {
+        "kind": "accepted",
+        "canonical": "expected/N007-root-title-and-tags-boundary.canonical.json",
+        "semantic": "parsed_canonical_literal",
+        "normalized": false
+      }
+    },
+    {
+      "id": "N008-callout-title-boundary",
+      "registry": "D1",
+      "mode": "strict",
+      "input": "inputs/N008-callout-title-boundary.json",
+      "description": "85×界+a=256UTF8 bytes and empty callout accepted.",
+      "expected": {
+        "kind": "accepted",
+        "canonical": "expected/N008-callout-title-boundary.canonical.json",
+        "semantic": "parsed_canonical_literal",
+        "normalized": false
+      }
+    },
+    {
+      "id": "N009-standalone-empty-text",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N009-standalone-empty-text.json",
+      "description": "Sole empty text is retained; no empty-node removal normalization.",
+      "expected": {
+        "kind": "accepted",
+        "canonical": "expected/N009-standalone-empty-text.canonical.json",
+        "semantic": "parsed_canonical_literal",
+        "normalized": false
+      }
+    },
+    {
+      "id": "N010-nested-callout",
+      "registry": "D1",
+      "mode": "strict",
+      "input": "inputs/N010-nested-callout.json",
+      "description": "Recursive node-type shape with empty paragraph and exact nested attrs.",
+      "expected": {
+        "kind": "accepted",
+        "canonical": "expected/N010-nested-callout.canonical.json",
+        "semantic": "parsed_canonical_literal",
+        "normalized": false
+      }
+    },
+    {
+      "id": "N011-import-lossless-text-join",
+      "registry": "D0",
+      "mode": "import",
+      "input": "inputs/N011-import-lossless-text-join.json",
+      "description": "Only adjacent exact-type/attrs/marks text leaves concatenate; no Unicode or newline rewrite.",
+      "expected": {
+        "kind": "accepted",
+        "canonical": "expected/N011-import-lossless-text-join.canonical.json",
+        "semantic": "parsed_canonical_literal",
+        "normalized": true
+      }
+    },
+    {
+      "id": "N012-import-marked-text-join",
+      "registry": "D1",
+      "mode": "import",
+      "input": "inputs/N012-import-marked-text-join.json",
+      "description": "Highlight attrs survive the lossless join.",
+      "expected": {
+        "kind": "accepted",
+        "canonical": "expected/N012-import-marked-text-join.canonical.json",
+        "semantic": "parsed_canonical_literal",
+        "normalized": true
+      }
+    },
+    {
+      "id": "N013-import-empty-adjacent-text",
+      "registry": "D0",
+      "mode": "import",
+      "input": "inputs/N013-import-empty-adjacent-text.json",
+      "description": "Empty leaf participates in an exact join; no independent empty-leaf deletion.",
+      "expected": {
+        "kind": "accepted",
+        "canonical": "expected/N013-import-empty-adjacent-text.canonical.json",
+        "semantic": "parsed_canonical_literal",
+        "normalized": true
+      }
+    },
+    {
+      "id": "N014-import-canonical-fixed-point",
+      "registry": "D1",
+      "mode": "import",
+      "input": "inputs/N014-import-canonical-fixed-point.json",
+      "description": "Canonical semantic input requires no text normalization; output is byte-identical literal.",
+      "expected": {
+        "kind": "accepted",
+        "canonical": "expected/N014-import-canonical-fixed-point.canonical.json",
+        "semantic": "parsed_canonical_literal",
+        "normalized": false
+      }
+    },
+    {
+      "id": "N101-strict-adjacent-plain",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N011-import-lossless-text-join.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.not_normal",
+        "path": "/root/children/0/children/1",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N102-strict-adjacent-marked",
+      "registry": "D1",
+      "mode": "strict",
+      "input": "inputs/N012-import-marked-text-join.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.not_normal",
+        "path": "/root/children/0/children/1",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N103-d0-rejects-d1-callout",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N004-callout-and-highlight.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.unknown_node",
+        "path": "/root/children/0/type",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N104-d0-rejects-d1-highlight",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N005-highlight-only.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.unknown_mark",
+        "path": "/root/children/0/children/0/marks/0/type",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N105-unknown-wire-version",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N105-unknown-wire-version.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.unsupported_version",
+        "path": "/schema_version",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N106-floating-wire-version",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N106-floating-wire-version.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_structure",
+        "path": "/schema_version",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N107-missing-required-marks",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N107-missing-required-marks.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.missing_field",
+        "path": "/root/marks",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N108-authored-primitive-forbidden",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N108-authored-primitive-forbidden.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.unknown_field",
+        "path": "/root/primitive",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N109-unknown-envelope-field",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N109-unknown-envelope-field.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.unknown_field",
+        "path": "/extra",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N110-nullable-is-still-required",
+      "registry": "D1",
+      "mode": "strict",
+      "input": "inputs/N110-nullable-is-still-required.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_attribute",
+        "path": "/root/children/0/attrs/title",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N111-callout-enum-case",
+      "registry": "D1",
+      "mode": "strict",
+      "input": "inputs/N111-callout-enum-case.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_attribute",
+        "path": "/root/children/0/attrs/kind",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N112-highlight-enum-case",
+      "registry": "D1",
+      "mode": "strict",
+      "input": "inputs/N112-highlight-enum-case.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_attribute",
+        "path": "/root/children/0/children/0/marks/0/attrs/color",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N113-duplicate-mark-type",
+      "registry": "D1",
+      "mode": "strict",
+      "input": "inputs/N113-duplicate-mark-type.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.duplicate_mark",
+        "path": "/root/children/0/children/0/marks/1/type",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N114-node-id-case-sensitive",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N114-node-id-case-sensitive.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.unknown_node",
+        "path": "/root/children/0/type",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N115-mark-id-case-sensitive",
+      "registry": "D1",
+      "mode": "strict",
+      "input": "inputs/N115-mark-id-case-sensitive.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.unknown_mark",
+        "path": "/root/children/0/children/0/marks/0/type",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N116-wrong-semantic-root",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N116-wrong-semantic-root.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_structure",
+        "path": "/root/type",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N117-block-in-inline-parent",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N117-block-in-inline-parent.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_child",
+        "path": "/root/children/0/children/0/type",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N118-text-cannot-have-children",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N118-text-cannot-have-children.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_structure",
+        "path": "/root/children/0/children/0/children",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N119-text-requires-string",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N119-text-requires-string.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_structure",
+        "path": "/root/children/0/children/0/text",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N120-nontext-requires-null",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N120-nontext-requires-null.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_structure",
+        "path": "/root/children/0/text",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N121-mark-not-allowed-on-block",
+      "registry": "D1",
+      "mode": "strict",
+      "input": "inputs/N121-mark-not-allowed-on-block.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_structure",
+        "path": "/root/children/0/marks",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N122-unknown-numeric-attribute",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N122-unknown-numeric-attribute.json",
+      "description": "Canonical-v1 u64 support does not admit an undeclared numeric attr.",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_attribute",
+        "path": "/root/children/0/children/0/attrs/extra",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N123-import-never-hides-unknown-attrs",
+      "registry": "D0",
+      "mode": "import",
+      "input": "inputs/N123-import-never-hides-unknown-attrs.json",
+      "description": "Full attr validation precedes any possible text join; unsupported data cannot disappear.",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_attribute",
+        "path": "/root/children/0/children/0/attrs/extra",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N124-root-title-one-byte-over",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N124-root-title-one-byte-over.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_attribute",
+        "path": "/root/attrs/title",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N125-tags-one-item-over",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N125-tags-one-item-over.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_attribute",
+        "path": "/root/attrs/tags",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N126-tag-one-byte-over",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N126-tag-one-byte-over.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_attribute",
+        "path": "/root/attrs/tags/0",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N127-callout-title-one-byte-over",
+      "registry": "D1",
+      "mode": "strict",
+      "input": "inputs/N127-callout-title-one-byte-over.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_attribute",
+        "path": "/root/children/0/attrs/title",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N128-root-tags-required",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N128-root-tags-required.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_attribute",
+        "path": "/root/attrs/tags",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N129-unknown-root-metadata",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N129-unknown-root-metadata.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_attribute",
+        "path": "/root/attrs/author",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N130-duplicate-envelope-key",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N130-duplicate-envelope-key.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.duplicate_key",
+        "path": "/schema_version",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N131-duplicate-escaped-attribute-key",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N131-duplicate-escaped-attribute-key.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.duplicate_key",
+        "path": "/root/attrs/title",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N132-duplicate-nested-mark-key",
+      "registry": "D1",
+      "mode": "strict",
+      "input": "inputs/N132-duplicate-nested-mark-key.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.duplicate_key",
+        "path": "/root/children/0/children/0/marks/0/attrs/color",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N133-invalid-unpaired-surrogate",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N133-invalid-unpaired-surrogate.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_json",
+        "path": "",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N134-invalid-trailing-comma",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N134-invalid-trailing-comma.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_json",
+        "path": "",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N135-unknown-mark-unit-field",
+      "registry": "D1",
+      "mode": "strict",
+      "input": "inputs/N135-unknown-mark-unit-field.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.unknown_field",
+        "path": "/root/children/0/children/0/marks/0/primitive",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N136-required-nullable-text-presence",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N136-required-nullable-text-presence.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.missing_field",
+        "path": "/root/children/0/children/0/text",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N137-tags-require-list",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N137-tags-require-list.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_attribute",
+        "path": "/root/attrs/tags",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N138-nullable-title-rejects-number",
+      "registry": "D1",
+      "mode": "strict",
+      "input": "inputs/N138-nullable-title-rejects-number.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.invalid_attribute",
+        "path": "/root/children/0/attrs/title",
+        "originalInputRetained": true
+      }
+    },
+    {
+      "id": "N139-authored-id-forbidden",
+      "registry": "D0",
+      "mode": "strict",
+      "input": "inputs/N139-authored-id-forbidden.json",
+      "description": "",
+      "expected": {
+        "kind": "refused",
+        "code": "notes.unknown_field",
+        "path": "/root/id",
+        "originalInputRetained": true
+      }
+    }
+  ]
+}

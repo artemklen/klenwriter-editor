@@ -1,0 +1,40 @@
+{
+  "root": {
+    "attrs": {
+      "tags": [],
+      "title": ""
+    },
+    "children": [
+      {
+        "attrs": {},
+        "children": [
+          {
+            "attrs": {
+              "extra": "must survive refusal"
+            },
+            "children": [],
+            "marks": [],
+            "text": " A ",
+            "type": "org.example.notes/text"
+          },
+          {
+            "attrs": {
+              "extra": "must survive refusal"
+            },
+            "children": [],
+            "marks": [],
+            "text": "é👩‍💻\r\nB ",
+            "type": "org.example.notes/text"
+          }
+        ],
+        "marks": [],
+        "text": null,
+        "type": "org.example.notes/paragraph"
+      }
+    ],
+    "marks": [],
+    "text": null,
+    "type": "org.example.notes/document"
+  },
+  "schema_version": 1
+}

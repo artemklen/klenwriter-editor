@@ -1,0 +1,43 @@
+{
+  "root": {
+    "attrs": {
+      "tags": [],
+      "title": ""
+    },
+    "children": [
+      {
+        "attrs": {},
+        "children": [
+          {
+            "attrs": {},
+            "children": [],
+            "marks": [
+              {
+                "attrs": {
+                  "color": "mint"
+                },
+                "type": "org.example.notes/highlight"
+              }
+            ],
+            "text": "x",
+            "type": "org.example.notes/text"
+          }
+        ],
+        "marks": [
+          {
+            "attrs": {
+              "color": "mint"
+            },
+            "type": "org.example.notes/highlight"
+          }
+        ],
+        "text": null,
+        "type": "org.example.notes/paragraph"
+      }
+    ],
+    "marks": [],
+    "text": null,
+    "type": "org.example.notes/document"
+  },
+  "schema_version": 1
+}

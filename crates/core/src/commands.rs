@@ -318,6 +318,38 @@ mod tests {
     use crate::positions::{Affinity, Utf16Offset};
     use crate::transaction::{MarkEdit, WorkLimits};
 
+    // OSR-64: literal expectations frozen before the borrowed catalog seam.
+    #[test]
+    fn runtime_catalog_uses_borrowed_exact_ids_and_the_legacy_bounds() {
+        let ids = vec![
+            ["org.example.external", "type"].join("/"),
+            ["org.example.external", "Type"].join("/"),
+        ];
+        let catalog = CommandCatalog::Runtime(&ids);
+        assert_eq!(
+            catalog.ids().collect::<Vec<_>>(),
+            vec!["org.example.external/type", "org.example.external/Type"]
+        );
+        assert_eq!(catalog.validate(), Ok(()));
+        assert_eq!(catalog.get(2), None);
+        assert_eq!(CommandCatalog::Runtime(&[]).validate(), Ok(()));
+        let duplicates = vec!["org.example.external/type".to_owned(); 2];
+        assert_eq!(
+            CommandCatalog::Runtime(&duplicates).validate(),
+            Err(CatalogError::DuplicateId)
+        );
+        let invalid = vec!["org.example.external/type space".to_owned()];
+        assert_eq!(
+            CommandCatalog::Runtime(&invalid).validate(),
+            Err(CatalogError::InvalidId)
+        );
+        let too_many = vec!["org.example.external/type".to_owned(); 257];
+        assert_eq!(
+            CommandCatalog::Runtime(&too_many).validate(),
+            Err(CatalogError::TooManyCommands)
+        );
+    }
+
     #[test]
     fn catalog_is_bounded_exact_and_case_sensitive() {
         assert_eq!(

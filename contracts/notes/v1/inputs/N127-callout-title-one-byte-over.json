@@ -1,0 +1,24 @@
+{
+  "root": {
+    "attrs": {
+      "tags": [],
+      "title": ""
+    },
+    "children": [
+      {
+        "attrs": {
+          "kind": "warning",
+          "title": "界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界ab"
+        },
+        "children": [],
+        "marks": [],
+        "text": null,
+        "type": "org.example.notes/callout"
+      }
+    ],
+    "marks": [],
+    "text": null,
+    "type": "org.example.notes/document"
+  },
+  "schema_version": 1
+}

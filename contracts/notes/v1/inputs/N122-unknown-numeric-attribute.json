@@ -1,0 +1,31 @@
+{
+  "root": {
+    "attrs": {
+      "tags": [],
+      "title": ""
+    },
+    "children": [
+      {
+        "attrs": {},
+        "children": [
+          {
+            "attrs": {
+              "extra": 18446744073709551615
+            },
+            "children": [],
+            "marks": [],
+            "text": "x",
+            "type": "org.example.notes/text"
+          }
+        ],
+        "marks": [],
+        "text": null,
+        "type": "org.example.notes/paragraph"
+      }
+    ],
+    "marks": [],
+    "text": null,
+    "type": "org.example.notes/document"
+  },
+  "schema_version": 1
+}

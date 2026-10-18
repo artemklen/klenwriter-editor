@@ -1,0 +1,14 @@
+{
+  "root": {
+    "attrs": {
+      "tags": [],
+      "title": ""
+    },
+    "children": [],
+    "marks": [],
+    "text": null,
+    "type": "org.example.notes/document",
+    "id": "authored-session-id"
+  },
+  "schema_version": 1
+}

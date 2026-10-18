@@ -1,0 +1,49 @@
+{
+  "root": {
+    "attrs": {
+      "tags": [
+        "one"
+      ],
+      "title": "Notes"
+    },
+    "children": [
+      {
+        "attrs": {
+          "kind": "Info",
+          "title": null
+        },
+        "children": [
+          {
+            "attrs": {},
+            "children": [
+              {
+                "attrs": {},
+                "children": [],
+                "marks": [
+                  {
+                    "attrs": {
+                      "color": "sun"
+                    },
+                    "type": "org.example.notes/highlight"
+                  }
+                ],
+                "text": "Note",
+                "type": "org.example.notes/text"
+              }
+            ],
+            "marks": [],
+            "text": null,
+            "type": "org.example.notes/paragraph"
+          }
+        ],
+        "marks": [],
+        "text": null,
+        "type": "org.example.notes/callout"
+      }
+    ],
+    "marks": [],
+    "text": null,
+    "type": "org.example.notes/document"
+  },
+  "schema_version": 1
+}
