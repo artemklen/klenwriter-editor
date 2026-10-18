@@ -1,0 +1,4031 @@
+{
+  "format": "editor-reliability-native-operation-literals/1",
+  "license": "MIT OR Apache-2.0",
+  "authorship": "Independent synthetic documents/maps/identity/history expectations authored before native operation adapter execution; no production exports or runtime outputs used. JSON string serialization here only encodes authored ASCII-key/string-only literal trees under existing ADR004; it does not call production canonicalization.",
+  "authority": [
+    "evidence/osr-38/execution-contract.md",
+    "evidence/osr-38/native-api-map.md",
+    "evidence/osr-59/operation-vectors.json (unchanged ADR003 baseline)",
+    "docs/adr/004-canonical-json-v1.md"
+  ],
+  "phase": "pre-adapter oracle freeze candidate; actual execution status belongs to later report",
+  "path_convention": "Initial/expected paths relative to engine synthetic root. Existing labels bind once before dispatch. Created labels bind once from actual commit changed_nodes IDs at expected final paths, never invented serials; redo must revive those exact IDs.",
+  "selection_policy": "All start with a collapsed After caret on guard leaf z at UTF16=1. Selection setup event drained before baseline. Expected guard label identity follows block movement; no raw-transaction query API is claimed.",
+  "committed_facets": [
+    "guarded full authored/synthetic records and IDs",
+    "stamp/revision/selection/history epochs",
+    "selection/stored_marks",
+    "dirty/saved_revision",
+    "history summary and journal entries",
+    "event status/protected cursor where held"
+  ],
+  "allocator_policy": "Queries must be pure; refused real dispatch can reserve/burn identities for ABA safety. No allocator rewind/next-ID claim for execute refusal.",
+  "late_refusal_policy": "Append exactly one reversed range on separate stable guard leaf AFTER primary batch; compare all public committed facets and identity map; repeat while redo exists after apply→undo. Expected code tree.invalid_range is from closed public native taxonomy.",
+  "history_policy": "Isolated changed batch is exactly one history unit. Undo/redo advance document revision2/3 and restore exact saved IDs/content/marks/selection; dirty stays conservatively true. Default bounded retention is sufficient for these1-unit fixtures.",
+  "cases": [
+    {
+      "id": "OP01-ReplaceText",
+      "operation_variant": "ReplaceText",
+      "context": "kwdj-prose",
+      "batch_witness": "single operation with nontrivial published effect",
+      "admission": "strict",
+      "input_json": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "initial_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "ab"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "z"
+              }
+            ]
+          }
+        ]
+      },
+      "initial_labels": {
+        "root": [],
+        "p": [
+          0
+        ],
+        "t": [
+          0,
+          0
+        ],
+        "guard": [
+          1
+        ],
+        "g": [
+          1,
+          0
+        ]
+      },
+      "initial_selection": {
+        "anchor": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "initial_stored_marks": null,
+      "operations": [
+        {
+          "kind": "replace_text",
+          "leaf": {
+            "existing": "t"
+          },
+          "from": 1,
+          "to": 1,
+          "inserted": " "
+        }
+      ],
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"content\":[{\"content\":[{\"text\":\"a b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "a b"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "z"
+                }
+              ]
+            }
+          ]
+        },
+        "retained_ids_at_paths": {
+          "root": [],
+          "p": [
+            0
+          ],
+          "t": [
+            0,
+            0
+          ],
+          "guard": [
+            1
+          ],
+          "g": [
+            1,
+            0
+          ]
+        },
+        "new_ids_at_paths": {},
+        "retired_labels": [],
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "revision": 1,
+        "undo_units": 1,
+        "redo_units": 0,
+        "document_events": 1,
+        "dirty": true,
+        "map_probes": [
+          {
+            "before": {
+              "kind": "text",
+              "label": "t",
+              "utf16": 2,
+              "affinity": "after"
+            },
+            "after": {
+              "kind": "text",
+              "label": "t",
+              "utf16": 3,
+              "affinity": "after"
+            },
+            "deleted": false
+          }
+        ]
+      },
+      "late_refusal": {
+        "append_operation": {
+          "kind": "replace_text",
+          "leaf": {
+            "existing": "g"
+          },
+          "from": 1,
+          "to": 0,
+          "inserted": ""
+        },
+        "expected_code": "tree.invalid_range",
+        "phase": "after all primary user operations in private candidate, before final publication",
+        "expectation": "all captured committed facets byte/typed-equal; identity refusal map; zero new events; redo retained; no allocator rewind assertion",
+        "run_from": "initial checkpoint AND after successful apply then undo (one retained redo unit)"
+      },
+      "history": {
+        "undo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ab"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 2,
+          "undo_units": 0,
+          "redo_units": 1,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_all_initial_ids": true,
+          "dirty": true
+        },
+        "redo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"a b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "a b"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 3,
+          "undo_units": 1,
+          "redo_units": 0,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_exact_success_ids_including_created": true,
+          "dirty": true
+        }
+      },
+      "applicability": {
+        "kwdj-prose": "direct public Session dispatch under default KWDJ frozen registry",
+        "kwdj-poetry": "not exercised by this literal; separate generated prose/poetry command lane",
+        "notes-d0": "not exercised by this KWDJ-encoded literal; no claim of unsupported generic operation",
+        "notes-d1": "not exercised by this KWDJ-encoded literal; separate Notes generated/style/recipe lane"
+      }
+    },
+    {
+      "id": "OP02-SplitText",
+      "operation_variant": "SplitText",
+      "context": "kwdj-prose",
+      "batch_witness": "Split creates right ID, SetMarks preserves visible split against mandatory adjacent-equal-text join normalization; not a split-only netnoop claim",
+      "admission": "strict",
+      "input_json": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "initial_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "ab"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "z"
+              }
+            ]
+          }
+        ]
+      },
+      "initial_labels": {
+        "root": [],
+        "p": [
+          0
+        ],
+        "t": [
+          0,
+          0
+        ],
+        "guard": [
+          1
+        ],
+        "g": [
+          1,
+          0
+        ]
+      },
+      "initial_selection": {
+        "anchor": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "initial_stored_marks": null,
+      "operations": [
+        {
+          "kind": "split_text",
+          "leaf": {
+            "existing": "t"
+          },
+          "at": 1
+        },
+        {
+          "kind": "set_marks",
+          "leaf": {
+            "created": {
+              "operation": 0,
+              "path": [
+                0
+              ]
+            }
+          },
+          "marks": [
+            {
+              "type": "org.klenwriter.kwdj/strong",
+              "attrs": {}
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "a"
+                },
+                {
+                  "type": "text",
+                  "text": "b",
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "z"
+                }
+              ]
+            }
+          ]
+        },
+        "retained_ids_at_paths": {
+          "root": [],
+          "p": [
+            0
+          ],
+          "t": [
+            0,
+            0
+          ],
+          "guard": [
+            1
+          ],
+          "g": [
+            1,
+            0
+          ]
+        },
+        "new_ids_at_paths": {
+          "right": [
+            0,
+            1
+          ]
+        },
+        "retired_labels": [],
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "revision": 1,
+        "undo_units": 1,
+        "redo_units": 0,
+        "document_events": 1,
+        "dirty": true,
+        "map_probes": [
+          {
+            "before": {
+              "kind": "text",
+              "label": "t",
+              "utf16": 1,
+              "affinity": "before"
+            },
+            "after": {
+              "kind": "text",
+              "label": "t",
+              "utf16": 1,
+              "affinity": "before"
+            },
+            "deleted": false
+          },
+          {
+            "before": {
+              "kind": "text",
+              "label": "t",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "after": {
+              "kind": "text",
+              "label": "right",
+              "utf16": 0,
+              "affinity": "after"
+            },
+            "deleted": false
+          },
+          {
+            "before": {
+              "kind": "text",
+              "label": "t",
+              "utf16": 2,
+              "affinity": "after"
+            },
+            "after": {
+              "kind": "text",
+              "label": "right",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "deleted": false
+          }
+        ]
+      },
+      "late_refusal": {
+        "append_operation": {
+          "kind": "replace_text",
+          "leaf": {
+            "existing": "g"
+          },
+          "from": 1,
+          "to": 0,
+          "inserted": ""
+        },
+        "expected_code": "tree.invalid_range",
+        "phase": "after all primary user operations in private candidate, before final publication",
+        "expectation": "all captured committed facets byte/typed-equal; identity refusal map; zero new events; redo retained; no allocator rewind assertion",
+        "run_from": "initial checkpoint AND after successful apply then undo (one retained redo unit)"
+      },
+      "history": {
+        "undo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ab"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 2,
+          "undo_units": 0,
+          "redo_units": 1,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_all_initial_ids": true,
+          "dirty": true
+        },
+        "redo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "a"
+                  },
+                  {
+                    "type": "text",
+                    "text": "b",
+                    "marks": [
+                      {
+                        "type": "strong"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 3,
+          "undo_units": 1,
+          "redo_units": 0,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_exact_success_ids_including_created": true,
+          "dirty": true
+        }
+      },
+      "applicability": {
+        "kwdj-prose": "direct public Session dispatch under default KWDJ frozen registry",
+        "kwdj-poetry": "not exercised by this literal; separate generated prose/poetry command lane",
+        "notes-d0": "not exercised by this KWDJ-encoded literal; no claim of unsupported generic operation",
+        "notes-d1": "not exercised by this KWDJ-encoded literal; separate Notes generated/style/recipe lane"
+      }
+    },
+    {
+      "id": "OP03-JoinText",
+      "operation_variant": "JoinText",
+      "context": "kwdj-prose",
+      "batch_witness": "Split supplies a legal same-mark right sibling inside one batch; Replace changes content; explicit Join retains left and retires transient right. Final doc differs, unlike split/join netnoop. Transient right ID is not fabricated/observed after retirement.",
+      "admission": "strict",
+      "input_json": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "initial_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "ab"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "z"
+              }
+            ]
+          }
+        ]
+      },
+      "initial_labels": {
+        "root": [],
+        "p": [
+          0
+        ],
+        "t": [
+          0,
+          0
+        ],
+        "guard": [
+          1
+        ],
+        "g": [
+          1,
+          0
+        ]
+      },
+      "initial_selection": {
+        "anchor": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "initial_stored_marks": null,
+      "operations": [
+        {
+          "kind": "split_text",
+          "leaf": {
+            "existing": "t"
+          },
+          "at": 1
+        },
+        {
+          "kind": "replace_text",
+          "leaf": {
+            "existing": "t"
+          },
+          "from": 0,
+          "to": 1,
+          "inserted": "x"
+        },
+        {
+          "kind": "join_text",
+          "left": {
+            "existing": "t"
+          },
+          "right": {
+            "created": {
+              "operation": 0,
+              "path": [
+                0
+              ]
+            }
+          }
+        }
+      ],
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"content\":[{\"content\":[{\"text\":\"xb\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "xb"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "z"
+                }
+              ]
+            }
+          ]
+        },
+        "retained_ids_at_paths": {
+          "root": [],
+          "p": [
+            0
+          ],
+          "t": [
+            0,
+            0
+          ],
+          "guard": [
+            1
+          ],
+          "g": [
+            1,
+            0
+          ]
+        },
+        "new_ids_at_paths": {},
+        "retired_labels": [],
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "revision": 1,
+        "undo_units": 1,
+        "redo_units": 0,
+        "document_events": 1,
+        "dirty": true,
+        "map_probes": [
+          {
+            "before": {
+              "kind": "text",
+              "label": "t",
+              "utf16": 2,
+              "affinity": "after"
+            },
+            "after": {
+              "kind": "text",
+              "label": "t",
+              "utf16": 2,
+              "affinity": "after"
+            },
+            "deleted": false
+          }
+        ]
+      },
+      "late_refusal": {
+        "append_operation": {
+          "kind": "replace_text",
+          "leaf": {
+            "existing": "g"
+          },
+          "from": 1,
+          "to": 0,
+          "inserted": ""
+        },
+        "expected_code": "tree.invalid_range",
+        "phase": "after all primary user operations in private candidate, before final publication",
+        "expectation": "all captured committed facets byte/typed-equal; identity refusal map; zero new events; redo retained; no allocator rewind assertion",
+        "run_from": "initial checkpoint AND after successful apply then undo (one retained redo unit)"
+      },
+      "history": {
+        "undo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ab"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 2,
+          "undo_units": 0,
+          "redo_units": 1,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_all_initial_ids": true,
+          "dirty": true
+        },
+        "redo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"xb\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "xb"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 3,
+          "undo_units": 1,
+          "redo_units": 0,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_exact_success_ids_including_created": true,
+          "dirty": true
+        }
+      },
+      "applicability": {
+        "kwdj-prose": "direct public Session dispatch under default KWDJ frozen registry",
+        "kwdj-poetry": "not exercised by this literal; separate generated prose/poetry command lane",
+        "notes-d0": "not exercised by this KWDJ-encoded literal; no claim of unsupported generic operation",
+        "notes-d1": "not exercised by this KWDJ-encoded literal; separate Notes generated/style/recipe lane"
+      }
+    },
+    {
+      "id": "OP04-SetAttribute",
+      "operation_variant": "SetAttribute",
+      "context": "kwdj-prose",
+      "batch_witness": "single operation with nontrivial published effect",
+      "admission": "strict",
+      "input_json": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "initial_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "ab"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "z"
+              }
+            ]
+          }
+        ]
+      },
+      "initial_labels": {
+        "root": [],
+        "p": [
+          0
+        ],
+        "t": [
+          0,
+          0
+        ],
+        "guard": [
+          1
+        ],
+        "g": [
+          1,
+          0
+        ]
+      },
+      "initial_selection": {
+        "anchor": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "initial_stored_marks": null,
+      "operations": [
+        {
+          "kind": "set_attribute",
+          "node": {
+            "existing": "p"
+          },
+          "key": "align",
+          "value": {
+            "kind": "string",
+            "value": "right"
+          }
+        }
+      ],
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"content\":[{\"attrs\":{\"align\":\"right\"},\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "ab"
+                }
+              ],
+              "attrs": {
+                "align": "right"
+              }
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "z"
+                }
+              ]
+            }
+          ]
+        },
+        "retained_ids_at_paths": {
+          "root": [],
+          "p": [
+            0
+          ],
+          "t": [
+            0,
+            0
+          ],
+          "guard": [
+            1
+          ],
+          "g": [
+            1,
+            0
+          ]
+        },
+        "new_ids_at_paths": {},
+        "retired_labels": [],
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "revision": 1,
+        "undo_units": 1,
+        "redo_units": 0,
+        "document_events": 1,
+        "dirty": true,
+        "map_probes": [
+          {
+            "before": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 0,
+              "affinity": "after"
+            },
+            "after": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 0,
+              "affinity": "after"
+            },
+            "deleted": false
+          }
+        ]
+      },
+      "late_refusal": {
+        "append_operation": {
+          "kind": "replace_text",
+          "leaf": {
+            "existing": "g"
+          },
+          "from": 1,
+          "to": 0,
+          "inserted": ""
+        },
+        "expected_code": "tree.invalid_range",
+        "phase": "after all primary user operations in private candidate, before final publication",
+        "expectation": "all captured committed facets byte/typed-equal; identity refusal map; zero new events; redo retained; no allocator rewind assertion",
+        "run_from": "initial checkpoint AND after successful apply then undo (one retained redo unit)"
+      },
+      "history": {
+        "undo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ab"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 2,
+          "undo_units": 0,
+          "redo_units": 1,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_all_initial_ids": true,
+          "dirty": true
+        },
+        "redo": {
+          "canonical": "{\"content\":[{\"attrs\":{\"align\":\"right\"},\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ab"
+                  }
+                ],
+                "attrs": {
+                  "align": "right"
+                }
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 3,
+          "undo_units": 1,
+          "redo_units": 0,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_exact_success_ids_including_created": true,
+          "dirty": true
+        }
+      },
+      "applicability": {
+        "kwdj-prose": "direct public Session dispatch under default KWDJ frozen registry",
+        "kwdj-poetry": "not exercised by this literal; separate generated prose/poetry command lane",
+        "notes-d0": "not exercised by this KWDJ-encoded literal; no claim of unsupported generic operation",
+        "notes-d1": "not exercised by this KWDJ-encoded literal; separate Notes generated/style/recipe lane"
+      }
+    },
+    {
+      "id": "OP05-SetMarks",
+      "operation_variant": "SetMarks",
+      "context": "kwdj-prose",
+      "batch_witness": "single operation with nontrivial published effect",
+      "admission": "strict",
+      "input_json": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "initial_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "ab"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "z"
+              }
+            ]
+          }
+        ]
+      },
+      "initial_labels": {
+        "root": [],
+        "p": [
+          0
+        ],
+        "t": [
+          0,
+          0
+        ],
+        "guard": [
+          1
+        ],
+        "g": [
+          1,
+          0
+        ]
+      },
+      "initial_selection": {
+        "anchor": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "initial_stored_marks": null,
+      "operations": [
+        {
+          "kind": "set_marks",
+          "leaf": {
+            "existing": "t"
+          },
+          "marks": [
+            {
+              "type": "org.klenwriter.kwdj/strong",
+              "attrs": {}
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "ab",
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "z"
+                }
+              ]
+            }
+          ]
+        },
+        "retained_ids_at_paths": {
+          "root": [],
+          "p": [
+            0
+          ],
+          "t": [
+            0,
+            0
+          ],
+          "guard": [
+            1
+          ],
+          "g": [
+            1,
+            0
+          ]
+        },
+        "new_ids_at_paths": {},
+        "retired_labels": [],
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "revision": 1,
+        "undo_units": 1,
+        "redo_units": 0,
+        "document_events": 1,
+        "dirty": true,
+        "map_probes": [
+          {
+            "before": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 0,
+              "affinity": "after"
+            },
+            "after": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 0,
+              "affinity": "after"
+            },
+            "deleted": false
+          }
+        ]
+      },
+      "late_refusal": {
+        "append_operation": {
+          "kind": "replace_text",
+          "leaf": {
+            "existing": "g"
+          },
+          "from": 1,
+          "to": 0,
+          "inserted": ""
+        },
+        "expected_code": "tree.invalid_range",
+        "phase": "after all primary user operations in private candidate, before final publication",
+        "expectation": "all captured committed facets byte/typed-equal; identity refusal map; zero new events; redo retained; no allocator rewind assertion",
+        "run_from": "initial checkpoint AND after successful apply then undo (one retained redo unit)"
+      },
+      "history": {
+        "undo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ab"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 2,
+          "undo_units": 0,
+          "redo_units": 1,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_all_initial_ids": true,
+          "dirty": true
+        },
+        "redo": {
+          "canonical": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ab",
+                    "marks": [
+                      {
+                        "type": "strong"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 3,
+          "undo_units": 1,
+          "redo_units": 0,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_exact_success_ids_including_created": true,
+          "dirty": true
+        }
+      },
+      "applicability": {
+        "kwdj-prose": "direct public Session dispatch under default KWDJ frozen registry",
+        "kwdj-poetry": "not exercised by this literal; separate generated prose/poetry command lane",
+        "notes-d0": "not exercised by this KWDJ-encoded literal; no claim of unsupported generic operation",
+        "notes-d1": "not exercised by this KWDJ-encoded literal; separate Notes generated/style/recipe lane"
+      }
+    },
+    {
+      "id": "OP06-PatchMarkRange",
+      "operation_variant": "PatchMarkRange",
+      "context": "kwdj-prose",
+      "batch_witness": "single operation with nontrivial published effect",
+      "admission": "strict",
+      "input_json": "{\"content\":[{\"content\":[{\"text\":\"abcd\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "initial_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "abcd"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "z"
+              }
+            ]
+          }
+        ]
+      },
+      "initial_labels": {
+        "root": [],
+        "p": [
+          0
+        ],
+        "t": [
+          0,
+          0
+        ],
+        "guard": [
+          1
+        ],
+        "g": [
+          1,
+          0
+        ]
+      },
+      "initial_selection": {
+        "anchor": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "initial_stored_marks": null,
+      "operations": [
+        {
+          "kind": "patch_mark_range",
+          "range": {
+            "anchor": {
+              "kind": "text",
+              "label": "t",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "t",
+              "utf16": 3,
+              "affinity": "after"
+            }
+          },
+          "edits": [
+            {
+              "kind": "upsert",
+              "mark": {
+                "type": "org.klenwriter.kwdj/strong",
+                "attrs": {}
+              }
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"bc\",\"type\":\"text\"},{\"text\":\"d\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "a"
+                },
+                {
+                  "type": "text",
+                  "text": "bc",
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "d"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "z"
+                }
+              ]
+            }
+          ]
+        },
+        "retained_ids_at_paths": {
+          "root": [],
+          "p": [
+            0
+          ],
+          "t": [
+            0,
+            0
+          ],
+          "guard": [
+            1
+          ],
+          "g": [
+            1,
+            0
+          ]
+        },
+        "new_ids_at_paths": {
+          "middle": [
+            0,
+            1
+          ],
+          "suffix": [
+            0,
+            2
+          ]
+        },
+        "retired_labels": [],
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "revision": 1,
+        "undo_units": 1,
+        "redo_units": 0,
+        "document_events": 1,
+        "dirty": true,
+        "map_probes": [
+          {
+            "before": {
+              "kind": "text",
+              "label": "t",
+              "utf16": 4,
+              "affinity": "after"
+            },
+            "after": {
+              "kind": "text",
+              "label": "suffix",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "deleted": false
+          }
+        ]
+      },
+      "late_refusal": {
+        "append_operation": {
+          "kind": "replace_text",
+          "leaf": {
+            "existing": "g"
+          },
+          "from": 1,
+          "to": 0,
+          "inserted": ""
+        },
+        "expected_code": "tree.invalid_range",
+        "phase": "after all primary user operations in private candidate, before final publication",
+        "expectation": "all captured committed facets byte/typed-equal; identity refusal map; zero new events; redo retained; no allocator rewind assertion",
+        "run_from": "initial checkpoint AND after successful apply then undo (one retained redo unit)"
+      },
+      "history": {
+        "undo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"abcd\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "abcd"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 2,
+          "undo_units": 0,
+          "redo_units": 1,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_all_initial_ids": true,
+          "dirty": true
+        },
+        "redo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"bc\",\"type\":\"text\"},{\"text\":\"d\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "a"
+                  },
+                  {
+                    "type": "text",
+                    "text": "bc",
+                    "marks": [
+                      {
+                        "type": "strong"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "text",
+                    "text": "d"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 3,
+          "undo_units": 1,
+          "redo_units": 0,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_exact_success_ids_including_created": true,
+          "dirty": true
+        }
+      },
+      "applicability": {
+        "kwdj-prose": "direct public Session dispatch under default KWDJ frozen registry",
+        "kwdj-poetry": "not exercised by this literal; separate generated prose/poetry command lane",
+        "notes-d0": "not exercised by this KWDJ-encoded literal; no claim of unsupported generic operation",
+        "notes-d1": "not exercised by this KWDJ-encoded literal; separate Notes generated/style/recipe lane"
+      }
+    },
+    {
+      "id": "OP07-ReplaceInlineRange",
+      "operation_variant": "ReplaceInlineRange",
+      "context": "kwdj-prose",
+      "batch_witness": "Sealed whole-inline-range replacement; mandatory joins canonicalize prefix/insert/suffix to original nonempty prefix ID. Internal inserted/suffix IDs retire; no guessed serial IDs.",
+      "admission": "strict",
+      "input_json": "{\"content\":[{\"content\":[{\"text\":\"abcd\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "initial_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "abcd"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "z"
+              }
+            ]
+          }
+        ]
+      },
+      "initial_labels": {
+        "root": [],
+        "p": [
+          0
+        ],
+        "t": [
+          0,
+          0
+        ],
+        "guard": [
+          1
+        ],
+        "g": [
+          1,
+          0
+        ]
+      },
+      "initial_selection": {
+        "anchor": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "initial_stored_marks": null,
+      "operations": [
+        {
+          "kind": "replace_inline_range",
+          "range": {
+            "anchor": {
+              "kind": "text",
+              "label": "t",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "t",
+              "utf16": 3,
+              "affinity": "after"
+            }
+          },
+          "inserted": {
+            "type": "org.klenwriter.kwdj/text",
+            "primitive": "text",
+            "attrs": {},
+            "marks": [],
+            "text": "X",
+            "children": []
+          }
+        }
+      ],
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"content\":[{\"content\":[{\"text\":\"aXd\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "aXd"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "z"
+                }
+              ]
+            }
+          ]
+        },
+        "retained_ids_at_paths": {
+          "root": [],
+          "p": [
+            0
+          ],
+          "t": [
+            0,
+            0
+          ],
+          "guard": [
+            1
+          ],
+          "g": [
+            1,
+            0
+          ]
+        },
+        "new_ids_at_paths": {},
+        "retired_labels": [],
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "revision": 1,
+        "undo_units": 1,
+        "redo_units": 0,
+        "document_events": 1,
+        "dirty": true,
+        "map_probes": [
+          {
+            "before": {
+              "kind": "text",
+              "label": "t",
+              "utf16": 4,
+              "affinity": "after"
+            },
+            "after": {
+              "kind": "text",
+              "label": "t",
+              "utf16": 3,
+              "affinity": "after"
+            },
+            "deleted": false
+          }
+        ]
+      },
+      "late_refusal": {
+        "append_operation": {
+          "kind": "replace_text",
+          "leaf": {
+            "existing": "g"
+          },
+          "from": 1,
+          "to": 0,
+          "inserted": ""
+        },
+        "expected_code": "tree.invalid_range",
+        "phase": "after all primary user operations in private candidate, before final publication",
+        "expectation": "all captured committed facets byte/typed-equal; identity refusal map; zero new events; redo retained; no allocator rewind assertion",
+        "run_from": "initial checkpoint AND after successful apply then undo (one retained redo unit)"
+      },
+      "history": {
+        "undo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"abcd\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "abcd"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 2,
+          "undo_units": 0,
+          "redo_units": 1,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_all_initial_ids": true,
+          "dirty": true
+        },
+        "redo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"aXd\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "aXd"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 3,
+          "undo_units": 1,
+          "redo_units": 0,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_exact_success_ids_including_created": true,
+          "dirty": true
+        }
+      },
+      "applicability": {
+        "kwdj-prose": "direct public Session dispatch under default KWDJ frozen registry",
+        "kwdj-poetry": "not exercised by this literal; separate generated prose/poetry command lane",
+        "notes-d0": "not exercised by this KWDJ-encoded literal; no claim of unsupported generic operation",
+        "notes-d1": "not exercised by this KWDJ-encoded literal; separate Notes generated/style/recipe lane"
+      }
+    },
+    {
+      "id": "OP08-MoveInlineGroup",
+      "operation_variant": "MoveInlineGroup",
+      "context": "kwdj-prose",
+      "batch_witness": "Same-parent destination3 is PRE-operation gap; remove two and adjust exactly once to1. Child gap probe distinguishes erroneous already-adjusted map destination.",
+      "admission": "strict",
+      "input_json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"},{\"text\":\"b\",\"type\":\"text\"},{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"c\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "initial_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "a",
+                "marks": [
+                  {
+                    "type": "strong"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": "b"
+              },
+              {
+                "type": "text",
+                "text": "c",
+                "marks": [
+                  {
+                    "type": "emphasis"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "z"
+              }
+            ]
+          }
+        ]
+      },
+      "initial_labels": {
+        "root": [],
+        "p": [
+          0
+        ],
+        "a": [
+          0,
+          0
+        ],
+        "b": [
+          0,
+          1
+        ],
+        "c": [
+          0,
+          2
+        ],
+        "guard": [
+          1
+        ],
+        "g": [
+          1,
+          0
+        ]
+      },
+      "initial_selection": {
+        "anchor": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "initial_stored_marks": null,
+      "operations": [
+        {
+          "kind": "move_inline_group",
+          "nodes": [
+            {
+              "existing": "a"
+            },
+            {
+              "existing": "b"
+            }
+          ],
+          "parent": {
+            "existing": "p"
+          },
+          "before_index": 3
+        }
+      ],
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"c\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"},{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "c",
+                  "marks": [
+                    {
+                      "type": "emphasis"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "a",
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "b"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "z"
+                }
+              ]
+            }
+          ]
+        },
+        "retained_ids_at_paths": {
+          "root": [],
+          "p": [
+            0
+          ],
+          "a": [
+            0,
+            1
+          ],
+          "b": [
+            0,
+            2
+          ],
+          "c": [
+            0,
+            0
+          ],
+          "guard": [
+            1
+          ],
+          "g": [
+            1,
+            0
+          ]
+        },
+        "new_ids_at_paths": {},
+        "retired_labels": [],
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "revision": 1,
+        "undo_units": 1,
+        "redo_units": 0,
+        "document_events": 1,
+        "dirty": true,
+        "map_probes": [
+          {
+            "before": {
+              "kind": "child",
+              "label": "p",
+              "index": 2,
+              "affinity": "before"
+            },
+            "after": {
+              "kind": "child",
+              "label": "p",
+              "index": 0,
+              "affinity": "before"
+            },
+            "deleted": false
+          },
+          {
+            "before": {
+              "kind": "text",
+              "label": "a",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "after": {
+              "kind": "text",
+              "label": "a",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "deleted": false
+          }
+        ]
+      },
+      "late_refusal": {
+        "append_operation": {
+          "kind": "replace_text",
+          "leaf": {
+            "existing": "g"
+          },
+          "from": 1,
+          "to": 0,
+          "inserted": ""
+        },
+        "expected_code": "tree.invalid_range",
+        "phase": "after all primary user operations in private candidate, before final publication",
+        "expectation": "all captured committed facets byte/typed-equal; identity refusal map; zero new events; redo retained; no allocator rewind assertion",
+        "run_from": "initial checkpoint AND after successful apply then undo (one retained redo unit)"
+      },
+      "history": {
+        "undo": {
+          "canonical": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"},{\"text\":\"b\",\"type\":\"text\"},{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"c\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "a",
+                    "marks": [
+                      {
+                        "type": "strong"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "text",
+                    "text": "b"
+                  },
+                  {
+                    "type": "text",
+                    "text": "c",
+                    "marks": [
+                      {
+                        "type": "emphasis"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 2,
+          "undo_units": 0,
+          "redo_units": 1,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_all_initial_ids": true,
+          "dirty": true
+        },
+        "redo": {
+          "canonical": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"c\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"},{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "c",
+                    "marks": [
+                      {
+                        "type": "emphasis"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "text",
+                    "text": "a",
+                    "marks": [
+                      {
+                        "type": "strong"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "text",
+                    "text": "b"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 3,
+          "undo_units": 1,
+          "redo_units": 0,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_exact_success_ids_including_created": true,
+          "dirty": true
+        }
+      },
+      "applicability": {
+        "kwdj-prose": "direct public Session dispatch under default KWDJ frozen registry",
+        "kwdj-poetry": "not exercised by this literal; separate generated prose/poetry command lane",
+        "notes-d0": "not exercised by this KWDJ-encoded literal; no claim of unsupported generic operation",
+        "notes-d1": "not exercised by this KWDJ-encoded literal; separate Notes generated/style/recipe lane"
+      }
+    },
+    {
+      "id": "OP09-Transform",
+      "operation_variant": "Transform",
+      "context": "kwdj-prose",
+      "batch_witness": "Paragraph TextBlock→CodeBlock TextBlock preserves compatible plain content/empty attrs/IDs; attrs omitted canonically. Full KWDJ profile still validates the transformed block.",
+      "admission": "strict",
+      "input_json": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "initial_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "ab"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "z"
+              }
+            ]
+          }
+        ]
+      },
+      "initial_labels": {
+        "root": [],
+        "p": [
+          0
+        ],
+        "t": [
+          0,
+          0
+        ],
+        "guard": [
+          1
+        ],
+        "g": [
+          1,
+          0
+        ]
+      },
+      "initial_selection": {
+        "anchor": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "initial_stored_marks": null,
+      "operations": [
+        {
+          "kind": "transform",
+          "node": {
+            "existing": "p"
+          },
+          "type": "org.klenwriter.kwdj/code_block",
+          "primitive": "text_block"
+        }
+      ],
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"code_block\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "code_block",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "ab"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "z"
+                }
+              ]
+            }
+          ]
+        },
+        "retained_ids_at_paths": {
+          "root": [],
+          "p": [
+            0
+          ],
+          "t": [
+            0,
+            0
+          ],
+          "guard": [
+            1
+          ],
+          "g": [
+            1,
+            0
+          ]
+        },
+        "new_ids_at_paths": {},
+        "retired_labels": [],
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "revision": 1,
+        "undo_units": 1,
+        "redo_units": 0,
+        "document_events": 1,
+        "dirty": true,
+        "map_probes": [
+          {
+            "before": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 0,
+              "affinity": "after"
+            },
+            "after": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 0,
+              "affinity": "after"
+            },
+            "deleted": false
+          }
+        ]
+      },
+      "late_refusal": {
+        "append_operation": {
+          "kind": "replace_text",
+          "leaf": {
+            "existing": "g"
+          },
+          "from": 1,
+          "to": 0,
+          "inserted": ""
+        },
+        "expected_code": "tree.invalid_range",
+        "phase": "after all primary user operations in private candidate, before final publication",
+        "expectation": "all captured committed facets byte/typed-equal; identity refusal map; zero new events; redo retained; no allocator rewind assertion",
+        "run_from": "initial checkpoint AND after successful apply then undo (one retained redo unit)"
+      },
+      "history": {
+        "undo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ab"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 2,
+          "undo_units": 0,
+          "redo_units": 1,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_all_initial_ids": true,
+          "dirty": true
+        },
+        "redo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"code_block\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "code_block",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ab"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 3,
+          "undo_units": 1,
+          "redo_units": 0,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_exact_success_ids_including_created": true,
+          "dirty": true
+        }
+      },
+      "applicability": {
+        "kwdj-prose": "direct public Session dispatch under default KWDJ frozen registry",
+        "kwdj-poetry": "not exercised by this literal; separate generated prose/poetry command lane",
+        "notes-d0": "not exercised by this KWDJ-encoded literal; no claim of unsupported generic operation",
+        "notes-d1": "not exercised by this KWDJ-encoded literal; separate Notes generated/style/recipe lane"
+      }
+    },
+    {
+      "id": "OP10-InsertFragment",
+      "operation_variant": "InsertFragment",
+      "context": "kwdj-prose",
+      "batch_witness": "single operation with nontrivial published effect",
+      "admission": "strict",
+      "input_json": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "initial_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "ab"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "z"
+              }
+            ]
+          }
+        ]
+      },
+      "initial_labels": {
+        "root": [],
+        "p": [
+          0
+        ],
+        "t": [
+          0,
+          0
+        ],
+        "guard": [
+          1
+        ],
+        "g": [
+          1,
+          0
+        ]
+      },
+      "initial_selection": {
+        "anchor": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "initial_stored_marks": null,
+      "operations": [
+        {
+          "kind": "insert_fragment",
+          "parent": {
+            "existing": "root"
+          },
+          "index": 1,
+          "fragment": {
+            "children": [
+              {
+                "type": "org.klenwriter.kwdj/paragraph",
+                "primitive": "text_block",
+                "attrs": {},
+                "marks": [],
+                "text": null,
+                "children": [
+                  {
+                    "type": "org.klenwriter.kwdj/text",
+                    "primitive": "text",
+                    "attrs": {},
+                    "marks": [],
+                    "text": "new",
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"new\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "ab"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "new"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "z"
+                }
+              ]
+            }
+          ]
+        },
+        "retained_ids_at_paths": {
+          "root": [],
+          "p": [
+            0
+          ],
+          "t": [
+            0,
+            0
+          ],
+          "guard": [
+            2
+          ],
+          "g": [
+            2,
+            0
+          ]
+        },
+        "new_ids_at_paths": {
+          "inserted_block": [
+            1
+          ],
+          "inserted_text": [
+            1,
+            0
+          ]
+        },
+        "retired_labels": [],
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "revision": 1,
+        "undo_units": 1,
+        "redo_units": 0,
+        "document_events": 1,
+        "dirty": true,
+        "map_probes": [
+          {
+            "before": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 0,
+              "affinity": "after"
+            },
+            "after": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 0,
+              "affinity": "after"
+            },
+            "deleted": false
+          }
+        ]
+      },
+      "late_refusal": {
+        "append_operation": {
+          "kind": "replace_text",
+          "leaf": {
+            "existing": "g"
+          },
+          "from": 1,
+          "to": 0,
+          "inserted": ""
+        },
+        "expected_code": "tree.invalid_range",
+        "phase": "after all primary user operations in private candidate, before final publication",
+        "expectation": "all captured committed facets byte/typed-equal; identity refusal map; zero new events; redo retained; no allocator rewind assertion",
+        "run_from": "initial checkpoint AND after successful apply then undo (one retained redo unit)"
+      },
+      "history": {
+        "undo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ab"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 2,
+          "undo_units": 0,
+          "redo_units": 1,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_all_initial_ids": true,
+          "dirty": true
+        },
+        "redo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"new\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ab"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "new"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 3,
+          "undo_units": 1,
+          "redo_units": 0,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_exact_success_ids_including_created": true,
+          "dirty": true
+        }
+      },
+      "applicability": {
+        "kwdj-prose": "direct public Session dispatch under default KWDJ frozen registry",
+        "kwdj-poetry": "not exercised by this literal; separate generated prose/poetry command lane",
+        "notes-d0": "not exercised by this KWDJ-encoded literal; no claim of unsupported generic operation",
+        "notes-d1": "not exercised by this KWDJ-encoded literal; separate Notes generated/style/recipe lane"
+      }
+    },
+    {
+      "id": "OP11-Move",
+      "operation_variant": "Move",
+      "context": "kwdj-prose",
+      "batch_witness": "Same-parent root destination2 is pre-operation end gap, adjusted once; all descendant IDs retained.",
+      "admission": "strict",
+      "input_json": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "initial_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "ab"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "z"
+              }
+            ]
+          }
+        ]
+      },
+      "initial_labels": {
+        "root": [],
+        "p": [
+          0
+        ],
+        "t": [
+          0,
+          0
+        ],
+        "guard": [
+          1
+        ],
+        "g": [
+          1,
+          0
+        ]
+      },
+      "initial_selection": {
+        "anchor": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "initial_stored_marks": null,
+      "operations": [
+        {
+          "kind": "move",
+          "node": {
+            "existing": "p"
+          },
+          "parent": {
+            "existing": "root"
+          },
+          "before_index": 2
+        }
+      ],
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"content\":[{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "z"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "ab"
+                }
+              ]
+            }
+          ]
+        },
+        "retained_ids_at_paths": {
+          "root": [],
+          "p": [
+            1
+          ],
+          "t": [
+            1,
+            0
+          ],
+          "guard": [
+            0
+          ],
+          "g": [
+            0,
+            0
+          ]
+        },
+        "new_ids_at_paths": {},
+        "retired_labels": [],
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "revision": 1,
+        "undo_units": 1,
+        "redo_units": 0,
+        "document_events": 1,
+        "dirty": true,
+        "map_probes": [
+          {
+            "before": {
+              "kind": "child",
+              "label": "root",
+              "index": 1,
+              "affinity": "before"
+            },
+            "after": {
+              "kind": "child",
+              "label": "root",
+              "index": 0,
+              "affinity": "before"
+            },
+            "deleted": false
+          },
+          {
+            "before": {
+              "kind": "text",
+              "label": "t",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "after": {
+              "kind": "text",
+              "label": "t",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "deleted": false
+          }
+        ]
+      },
+      "late_refusal": {
+        "append_operation": {
+          "kind": "replace_text",
+          "leaf": {
+            "existing": "g"
+          },
+          "from": 1,
+          "to": 0,
+          "inserted": ""
+        },
+        "expected_code": "tree.invalid_range",
+        "phase": "after all primary user operations in private candidate, before final publication",
+        "expectation": "all captured committed facets byte/typed-equal; identity refusal map; zero new events; redo retained; no allocator rewind assertion",
+        "run_from": "initial checkpoint AND after successful apply then undo (one retained redo unit)"
+      },
+      "history": {
+        "undo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ab"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 2,
+          "undo_units": 0,
+          "redo_units": 1,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_all_initial_ids": true,
+          "dirty": true
+        },
+        "redo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ab"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 3,
+          "undo_units": 1,
+          "redo_units": 0,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_exact_success_ids_including_created": true,
+          "dirty": true
+        }
+      },
+      "applicability": {
+        "kwdj-prose": "direct public Session dispatch under default KWDJ frozen registry",
+        "kwdj-poetry": "not exercised by this literal; separate generated prose/poetry command lane",
+        "notes-d0": "not exercised by this KWDJ-encoded literal; no claim of unsupported generic operation",
+        "notes-d1": "not exercised by this KWDJ-encoded literal; separate Notes generated/style/recipe lane"
+      }
+    },
+    {
+      "id": "OP12-Duplicate",
+      "operation_variant": "Duplicate",
+      "context": "kwdj-prose",
+      "batch_witness": "single operation with nontrivial published effect",
+      "admission": "strict",
+      "input_json": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "initial_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "ab"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "z"
+              }
+            ]
+          }
+        ]
+      },
+      "initial_labels": {
+        "root": [],
+        "p": [
+          0
+        ],
+        "t": [
+          0,
+          0
+        ],
+        "guard": [
+          1
+        ],
+        "g": [
+          1,
+          0
+        ]
+      },
+      "initial_selection": {
+        "anchor": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "initial_stored_marks": null,
+      "operations": [
+        {
+          "kind": "duplicate",
+          "node": {
+            "existing": "p"
+          },
+          "parent": {
+            "existing": "root"
+          },
+          "index": 1
+        }
+      ],
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "ab"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "ab"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "z"
+                }
+              ]
+            }
+          ]
+        },
+        "retained_ids_at_paths": {
+          "root": [],
+          "p": [
+            0
+          ],
+          "t": [
+            0,
+            0
+          ],
+          "guard": [
+            2
+          ],
+          "g": [
+            2,
+            0
+          ]
+        },
+        "new_ids_at_paths": {
+          "duplicate_block": [
+            1
+          ],
+          "duplicate_text": [
+            1,
+            0
+          ]
+        },
+        "retired_labels": [],
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "revision": 1,
+        "undo_units": 1,
+        "redo_units": 0,
+        "document_events": 1,
+        "dirty": true,
+        "map_probes": [
+          {
+            "before": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 0,
+              "affinity": "after"
+            },
+            "after": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 0,
+              "affinity": "after"
+            },
+            "deleted": false
+          }
+        ]
+      },
+      "late_refusal": {
+        "append_operation": {
+          "kind": "replace_text",
+          "leaf": {
+            "existing": "g"
+          },
+          "from": 1,
+          "to": 0,
+          "inserted": ""
+        },
+        "expected_code": "tree.invalid_range",
+        "phase": "after all primary user operations in private candidate, before final publication",
+        "expectation": "all captured committed facets byte/typed-equal; identity refusal map; zero new events; redo retained; no allocator rewind assertion",
+        "run_from": "initial checkpoint AND after successful apply then undo (one retained redo unit)"
+      },
+      "history": {
+        "undo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ab"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 2,
+          "undo_units": 0,
+          "redo_units": 1,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_all_initial_ids": true,
+          "dirty": true
+        },
+        "redo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ab"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ab"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 3,
+          "undo_units": 1,
+          "redo_units": 0,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_exact_success_ids_including_created": true,
+          "dirty": true
+        }
+      },
+      "applicability": {
+        "kwdj-prose": "direct public Session dispatch under default KWDJ frozen registry",
+        "kwdj-poetry": "not exercised by this literal; separate generated prose/poetry command lane",
+        "notes-d0": "not exercised by this KWDJ-encoded literal; no claim of unsupported generic operation",
+        "notes-d1": "not exercised by this KWDJ-encoded literal; separate Notes generated/style/recipe lane"
+      }
+    },
+    {
+      "id": "OP13-Remove",
+      "operation_variant": "Remove",
+      "context": "kwdj-prose",
+      "batch_witness": "single operation with nontrivial published effect",
+      "admission": "strict",
+      "input_json": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "initial_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "ab"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "z"
+              }
+            ]
+          }
+        ]
+      },
+      "initial_labels": {
+        "root": [],
+        "p": [
+          0
+        ],
+        "t": [
+          0,
+          0
+        ],
+        "guard": [
+          1
+        ],
+        "g": [
+          1,
+          0
+        ]
+      },
+      "initial_selection": {
+        "anchor": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "label": "g",
+          "utf16": 1,
+          "affinity": "after"
+        }
+      },
+      "initial_stored_marks": null,
+      "operations": [
+        {
+          "kind": "remove",
+          "node": {
+            "existing": "p"
+          }
+        }
+      ],
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"content\":[{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "z"
+                }
+              ]
+            }
+          ]
+        },
+        "retained_ids_at_paths": {
+          "root": [],
+          "guard": [
+            0
+          ],
+          "g": [
+            0,
+            0
+          ]
+        },
+        "new_ids_at_paths": {},
+        "retired_labels": [
+          "p",
+          "t"
+        ],
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "label": "g",
+            "utf16": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "revision": 1,
+        "undo_units": 1,
+        "redo_units": 0,
+        "document_events": 1,
+        "dirty": true,
+        "map_probes": [
+          {
+            "before": {
+              "kind": "text",
+              "label": "t",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "after": {
+              "kind": "child",
+              "label": "root",
+              "index": 0,
+              "affinity": "after"
+            },
+            "deleted": true
+          },
+          {
+            "before": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 0,
+              "affinity": "after"
+            },
+            "after": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 0,
+              "affinity": "after"
+            },
+            "deleted": false
+          }
+        ]
+      },
+      "late_refusal": {
+        "append_operation": {
+          "kind": "replace_text",
+          "leaf": {
+            "existing": "g"
+          },
+          "from": 1,
+          "to": 0,
+          "inserted": ""
+        },
+        "expected_code": "tree.invalid_range",
+        "phase": "after all primary user operations in private candidate, before final publication",
+        "expectation": "all captured committed facets byte/typed-equal; identity refusal map; zero new events; redo retained; no allocator rewind assertion",
+        "run_from": "initial checkpoint AND after successful apply then undo (one retained redo unit)"
+      },
+      "history": {
+        "undo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ab"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 2,
+          "undo_units": 0,
+          "redo_units": 1,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_all_initial_ids": true,
+          "dirty": true
+        },
+        "redo": {
+          "canonical": "{\"content\":[{\"content\":[{\"text\":\"z\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "document": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "z"
+                  }
+                ]
+              }
+            ]
+          },
+          "revision": 3,
+          "undo_units": 1,
+          "redo_units": 0,
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "label": "g",
+              "utf16": 1,
+              "affinity": "after"
+            }
+          },
+          "stored_marks": null,
+          "restore_exact_success_ids_including_created": true,
+          "dirty": true
+        }
+      },
+      "applicability": {
+        "kwdj-prose": "direct public Session dispatch under default KWDJ frozen registry",
+        "kwdj-poetry": "not exercised by this literal; separate generated prose/poetry command lane",
+        "notes-d0": "not exercised by this KWDJ-encoded literal; no claim of unsupported generic operation",
+        "notes-d1": "not exercised by this KWDJ-encoded literal; separate Notes generated/style/recipe lane"
+      }
+    }
+  ]
+}
