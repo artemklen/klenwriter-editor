@@ -1,0 +1,1548 @@
+{
+  "format": "editor-osr64-local-validation/1",
+  "scope": "Actual B3 compiled/runtime/package/browser local gates after the standalone cold-cache producer repair. Prior native/MSRV/canonical/M0 receipts are retained with exact relevant-source equivalence, not represented as new executions. Prepared CI retry, independent review, merge, post-merge CI and cleanup remain pending.",
+  "testedGitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb",
+  "productionCommit": "8a66939783861975cb5b1d54f296a50f9ca9ecbb",
+  "producerBuildId": "sha256:a5886a244ba4e4204e58e5616fe254581ece9563d6c31a1cb5e2064778ae91ac",
+  "sourceHashes": {
+    "Cargo.lock": "6be8489be73a34cf123e671838911359a1c1d07923f93a9a2c69c5955183997b",
+    "Cargo.toml": "020875dbf026b842a5d4c1cb12d3d9d302f20eb6439dc35708df2d7b498e435b",
+    "crates/bridge/Cargo.toml": "2c8f4e5af6fd17d002fa4963831f86474a9a39ef94466611fd1d8ae01083ad39",
+    "crates/bridge/src/convert.rs": "c2a8303ca7ea4a88c5b395add6860e536b69875e0b1b7ec036f7d65acc10a815",
+    "crates/bridge/src/distribution.rs": "b6d9580c1e801931bbf8f09ed3e1a756b7792823522d66c1fef5c1c6982498d7",
+    "crates/bridge/src/lib.rs": "cee6ae962010b7c5e84f8d2996321bba91efb84ead53ca9b861933a14577db62",
+    "crates/bridge/src/recipes.rs": "c879a46b1a7b7ce762dbcd6eab4dedf22617525fa406ab071c99b024ab54ba15",
+    "crates/core/Cargo.toml": "3d12e0f1c79d598d18c6e8b2b21496e2a49e48030c237dbf5879ea91771a81ab",
+    "crates/core/src/admission.rs": "bab6926eb8be7010a2a7440e91ba668ec951757ae94c73c0c6d9decb35e87639",
+    "crates/core/src/cache.rs": "ef1ad29e5206fa8131511216ff3dbbadaf658c69d9f2f5d6880f8c8ef8ad7245",
+    "crates/core/src/candidate.rs": "d3780e54117837a626a4930bc24022be1262afbcea95ccf0865434d4c47f51ff",
+    "crates/core/src/commands.rs": "c6cb3b20e83524d4892b05d9c36d6ce47184e7e14eccb71b7604c540cdcb7f8a",
+    "crates/core/src/document.rs": "d8e7f3cd3860da9db9b0842899ed0b4e1df623437d8aee485dfbb11606518651",
+    "crates/core/src/history.rs": "5bc12b4773a7285f1f28080e63fb92e076600dfcfedc7f836930a1028c37bd49",
+    "crates/core/src/json.rs": "ed6e39e6d42e6a21e3f3dfc022e90bbb03833f42bc22ae36a26e89700208507b",
+    "crates/core/src/lib.rs": "f760fa6fa066cee2c921c8a8defc174d0c8e1d2c48b79d7ce660b1eefc61fb5a",
+    "crates/core/src/limits.rs": "8c16687b2c071d493fded114b892a00149e6af3b65260673f7d50e1cacbb340d",
+    "crates/core/src/positions.rs": "94ce04c115a062a6b203c2e124afcaa295ad6d9b26a4c0aaaa7bf155fcac50ff",
+    "crates/core/src/profile.rs": "5939a94a953feced215b37e939e42ce1e1471c1f1b2dd85982612b73ecc73eed",
+    "crates/core/src/transaction.rs": "26f4f6457129afe08f09b5c35d857ccc7b3f41bad417e226f055a711f2fd2f14",
+    "crates/engine/Cargo.toml": "a260567f2e85c9f4408096403963a738ca77da7db03c136c64e4b1f191015a9c",
+    "crates/engine/src/command_tests.rs": "896c79c8d2a4f1101c76cf8d7693d61e01451ab8d871870355d995cb4e88b22c",
+    "crates/engine/src/commands.rs": "21940c788ad28d4555d698feefc5a8021c1b784335c90cbecde53eb7a5ae529d",
+    "crates/engine/src/delta_tests.rs": "68d508b9229c2b5874298f9bc84d2c0283041d1c50359ab4957282123ffa55cf",
+    "crates/engine/src/dispatch.rs": "b85613e1f86b5ae0221834b2557656fde63233ae2399f0fe0cacc2f393b799a3",
+    "crates/engine/src/events.rs": "94f19558164d2c49e9aac56c9f99bd42bd5f13cb29b083aad3dbad9580c6def6",
+    "crates/engine/src/eventtests.rs": "26dbdd0628016961a379e520e16d328cf75f4fca231c0cfa1b7d80f9b36befe0",
+    "crates/engine/src/grouping.rs": "74768c0057ed06622deab548f1820724bb6c3db8a260bd49196f30a68a0c0c69",
+    "crates/engine/src/history.rs": "43a28d7fc3e48138d71f4e0cb2889a572fa25dc545b39e6a0e793ae6d610382d",
+    "crates/engine/src/history_dispatch.rs": "a234e5d49c019bdbe7265b530c88cfe6f2bd23e1a125db06b438e216e181ddd5",
+    "crates/engine/src/history_profile_tests.rs": "f75c8f2a58cbf7b09e1fe7f770c3bd2e90ed7f2e8d57b22ca17e7aa72646acb4",
+    "crates/engine/src/history_tests.rs": "a131e774f1327c32773a6ec13c8f396a0563ea15849b6b3a9dcea7d079643f8d",
+    "crates/engine/src/identity.rs": "132ac933c9b3636bc2cac03cbdf43916226a11ea583cd1283172aa6f9f2bcf83",
+    "crates/engine/src/lib.rs": "1eb011baa7b939681152702281cb603de201cb71afd451283eef18fa0668daa1",
+    "crates/engine/src/mapping.rs": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54",
+    "crates/engine/src/session.rs": "156f018cf9927ec8ea0648b2ffac873a3807886019020cda6445efd7a294a7b5",
+    "crates/engine/src/snapshot.rs": "da5ef8366b1a424e4cb8055288ba33d230f7ae673b1196bf375bd4d0620691ab",
+    "crates/engine/src/transaction.rs": "34e628108dff27be15ab8ba1787ecf0132125ecf91d40d6ef38b438f7ac5260d",
+    "crates/engine/src/transaction_tests.rs": "7bbe09699b903fec0f89a6779887c1d6b17550e04e88a1205d8a42fa079552ea",
+    "crates/engine/src/tree.rs": "d1bc2205af12063d4b3b6386f0198830d321ba35b8f2a1d4ae4962d075caedda",
+    "crates/engine/src/tree_impact.rs": "9ebf7c53e8c11eee7dc144434549d4f9be632913e607bd78fa4035e322e08ec6",
+    "crates/extensions/Cargo.toml": "e5f12b0d458eb4f75ad1621737b1da1e77ec9d9d72142efd4020d62c8d29273f",
+    "crates/extensions/src/expand.rs": "c4b6af65c68e47fe7c768416b8ba80461b14a3b5a6c924a85c4c474ea7b6f303",
+    "crates/extensions/src/lib.rs": "5526ac070a2f8147a7c8b6097528ff829b7864df1ed024e8df15ac27e1015376",
+    "crates/kwdj-sdk/Cargo.toml": "4bb508f30e4791f4c7b953fa29e90f726b55579072012bc8d9d8f368b730cdbc",
+    "crates/kwdj-sdk/src/convert.rs": "11b08ac0bb76d6061d392824795fa327bb602c5d49f2c1faad0f8ce93d30d7ae",
+    "crates/kwdj-sdk/src/factory.rs": "62315ad30acdea10eecb8240e79db72a271c1ea451e7554e1be4361cbd77d3bd",
+    "crates/kwdj-sdk/src/lib.rs": "da538ca7bff34409f962e6cb53b848efee91e03b6929e0ed762dbe5330120806",
+    "crates/kwdj-sdk/src/wire.rs": "c3bd6381c3c1c952a1ae5ed395709e9e3818047f09c15de116e0ca9868545f8b",
+    "crates/kwdj/Cargo.toml": "adc634c3afce82549847e69b9feee779c49c5e3f333887d47481bfc4b7203e76",
+    "crates/kwdj/src/admission.rs": "9bc3d3c282e91a40ab86cfedc582b17748fcb671d7b38e0ca63c7a4a78a40991",
+    "crates/kwdj/src/candidate_cache.rs": "79bc689f6d7e33351dd9ced3d465860fba6577f14cf59bfd9c60c259b9ac3020",
+    "crates/kwdj/src/candidate_cache_tests.rs": "4beeca542f9e19774931cbfa6f302bbfce416eb3406e63244b1e093ee30e74f6",
+    "crates/kwdj/src/candidate_validate.rs": "61316de282ff53bbed9dca09d9584996fb5172e5c11b32d2f004befe4bf11eb5",
+    "crates/kwdj/src/commands/block.rs": "901da02897beaaaf904b0421f01740e8d08723e87ef91b972e184948c0719c29",
+    "crates/kwdj/src/commands/inline.rs": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394",
+    "crates/kwdj/src/commands/mod.rs": "9a07693d800cf8d5bddfe273fe3f21acddd727688881d20f243190e170e62552",
+    "crates/kwdj/src/core_bridge.rs": "a887f1437d900a7fa83d48c03b694d9c0bd0c3413ad5bcf4efc05bcd540f39ce",
+    "crates/kwdj/src/edit_normalize.rs": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a",
+    "crates/kwdj/src/lib.rs": "c9d33aeb376a6be9eaab53b34ab17229f40a584aeba85b9bfbcc302a27c463b9",
+    "crates/kwdj/src/model.rs": "5162a1f19c899922a032afcecc3227f65c19f05a530d1ba6a178f11e6cf635ce",
+    "crates/kwdj/src/normalize.rs": "9da4b8d258023dbd9076f8807a86d7a8db45573aea0e9bb56f1a405c0f97690f",
+    "crates/kwdj/src/project.rs": "fa5924ae5708f3b824abcfd5cecc0feedea4146c77da2684649fb20af6ec2aee",
+    "crates/kwdj/src/registry-base-v1.json": "4c9685d0d70059285601a4a624cc3b483b00a25fee0c857542254adfd2c2d922",
+    "crates/kwdj/src/registry.rs": "11cce08ffc8265d35c7d55e3382b22db48a251542f51efc333f4de581e638e90",
+    "crates/kwdj/src/registry_guards.rs": "d4f0bb21976730232149f1b4e71814435864843487fd4fc1a89e4ae485fd8968",
+    "crates/kwdj/src/registry_guards_tests.rs": "7cc5d9577b320bbd7438e262674af45ed51ad7fdd8ead8a499ebefd949a1c67e",
+    "crates/kwdj/src/session_profile.rs": "262e3878671e9e69a1afe77257877dc1232f7642722df6946d80541325b53876",
+    "crates/kwdj/src/validate.rs": "9824aeb6c05aeb5eff99af84d3c711c87eb728efa53181c1834d39354221ceec",
+    "crates/kwdj/src/wire_view.rs": "351fa1b94b1c3af1d974e9471ee04a164b6ec11d891905f5a167f16d5f9227d2",
+    "crates/notes-sdk/Cargo.toml": "7c24406d20d6efc489c794755eabcb00922498233c4735d8293078c0bf694645",
+    "crates/notes-sdk/src/adapter.rs": "36977eff0a37f307d6b617e371fd50228ab439a20d8a2a13ec8de31889e51ed4",
+    "crates/notes-sdk/src/factory.rs": "a6385b01d56a1de2fe1a8aa43839bfdb34eb8b4df7ecec323f7c04178bc910b8",
+    "crates/notes-sdk/src/lib.rs": "123b0b102a1d78eb1e31360e63f106c131e02b4f3e6891d7ca974e8ccf23f0f7",
+    "crates/notes-sdk/src/options.rs": "56d0fa87f1ffd4b11833e719037d4c682bc4135f44f702fdf685836422b3ad4c",
+    "crates/notes/Cargo.toml": "8bacb4d9831ad25df5363e7fd337d18fdec3c099c64ccf470af69fd167c4a965",
+    "crates/notes/src/borrowed.rs": "5193cf8df787c97374e592054aa688d5dbbee7326a82641a2261b14f258e77e8",
+    "crates/notes/src/codec.rs": "813beda9a2e7a396d0350181e39702ac37095f8a122a0e055d580e276d08bf5d",
+    "crates/notes/src/commands.rs": "7035e6b3f98c3b2d11f4d5f1c411cecca081b33467e7eb69f42d40b7f03e9095",
+    "crates/notes/src/error.rs": "b8635ffeb39b66d8a20c25ef7e92ff28df83f43ce4a6c3f3d684e58707c43aca",
+    "crates/notes/src/lib.rs": "70fa1754e04a8143e1644e4db857b00f1257578f21f3afc684024099414924b9",
+    "crates/notes/src/profile.rs": "243991e3bc8b937b0e679eaa405c4681b20aed24be341c2afaf3c13e4126a6d1",
+    "crates/notes/src/registration.rs": "8c090145624195725c330118d5fe9816e22d8c7ef5198b28bf2713efb0eccc01",
+    "crates/notes/src/wire.rs": "5ea2c25a6d2367c01f2d67a3d80a3df6e1a205bbff1ccd751d3fe9bbea24b562",
+    "crates/protocol/Cargo.toml": "433f344e8a370e4efa71f83ebead19edce08ef89e2f44ac819e6db03c26240da",
+    "crates/protocol/src/lib.rs": "34bdfbce364e45c89b3c531985ca1a4728da3142b903c585ce3b0a9058ab55b3",
+    "crates/protocol/src/v2.rs": "f29ae2544621670b75cd285d54fe08011675f87d6259ffebb31b9016b7043827",
+    "crates/registry/Cargo.toml": "cc16dd7493c5f76378f05f2437c577eae1c31a5a520ea27e0235fb6e9cc54ce4",
+    "crates/registry/src/attrs.rs": "d15f489e7f45d0de4f9ecee67845ac6b16b2cde05bf6dad71b1e77996241db02",
+    "crates/registry/src/compile.rs": "01a97e367e550eee0a01041bef170b50f982f8726f23f07d1e426ae2d76c9452",
+    "crates/registry/src/decimal.rs": "19987244982c907fd2f89f5683fba30fbfbd67418860fae09c74d259150cf631",
+    "crates/registry/src/grammar.rs": "780a9c4919dd1d86846f574cb74e2e281321bc035d2cac0285ea109b2359d4f2",
+    "crates/registry/src/json.rs": "e98777811b6306573777f81cd42761d0a63e0d2bef907b8c2e6b7d47de70aa82",
+    "crates/registry/src/lib.rs": "23297dbb63b5c5588c095dbf73b2a26f8777eb4f66ab3cada51039654ad5596d",
+    "crates/registry/src/recipes.rs": "a2e7ac7683c9a8a29ebb5767ede3f66a43a0bf61e6f4d52bcf4c05c3d7fb6484",
+    "crates/registry/src/schema.rs": "7ee3baa88982eb47dda6930e97487f65f1357f80741047fdf9223769ea84048e",
+    "crates/wasm/Cargo.toml": "b246f224d3398e6bb900ab9aeb21b3b6cc705c4f91c975e3767c98f577bbfc23",
+    "crates/wasm/examples/sdk_manifest.rs": "1489eac7e90ab8a5fa2b8df51bf9723fed502662b59f609a6a0320cab650ba6e",
+    "crates/wasm/examples/sdk_manifest_v2.rs": "68834b4a326ea54ff0c56b767c62a51d44bb456d500dfcff6d8db5d5e2b4a027",
+    "crates/wasm/examples/sdk_types.rs": "373d6c45dc7f3e3bc5da2e83900436bdaecf9db3cef2be22cc3ec8c66107fb9b",
+    "crates/wasm/examples/sdk_types_v2.rs": "2c638598fb400c6b1afc7fff30f53ead08f28308c667d701da6c0f1ee167df29",
+    "crates/wasm/src/codec.rs": "2bf2766834a7dc5a6964c194858b57819475518182233725f97a539cbb057a4a",
+    "crates/wasm/src/codec_browser.rs": "6f05104cdb945f51ea76f1fb22373bbbefd790ebd4872b57e040318b0676b843",
+    "crates/wasm/src/lib.rs": "def922ba7a358fe879943e22c4d9a64124f2227e840cbd34840656b9ffb9d0d5",
+    "crates/wasm/src/sdk.rs": "6885960064d22564f70cd03e0347be7c9681524ff3d32d38fe2fd7aab6c0ecdf",
+    "crates/wasm/src/sdk_browser.rs": "72855464cb20d91e60371f095fe2693a2617fc048148ec5a660fa5a5c59ce710",
+    "crates/wasm/src/sdk_convert.rs": "b8fe65781597720a415772fa44f08648ed4a95517ca69773b2332015d2b7a412",
+    "crates/wasm/src/sdk_v2.rs": "00e5aab260620c7d48a7995429b38dc71e79dcdfb60e17068c061e1976ad301d",
+    "crates/wasm/src/sdk_wire.rs": "98f8ee8a4f08d54c8a59772bb1b226dd93c993b0765891ca25b7018884418a1c",
+    "package-lock.json": "e34b0bf3150073f2f670f8eaedb1569794013915cef9fdc74203a7d0a82bc1ab",
+    "package-map.json": "5997002bc35ed0ea9d9b0559897ca561d560c7f33151335dcdcb6ba2abe7d944",
+    "package.json": "2d4cc50fdfe1ebeb035da57e345f7be60cfeaaa41484323a657c924cecb0900e",
+    "packages/kwdj/package.json": "5e82d885cc627257004066927588e192896cae945bb66cdaa99cfaa53075bd96",
+    "packages/kwdj/src/index.ts": "6254480a6d064910d8fd83a6ac8c5dcdc225fe1a2369f10135e2df57a6d550ac",
+    "packages/kwdj/tsconfig.json": "61862cc74eb571aab118a25a68b821378eb4407eb57fa7bad1b976499695e21f",
+    "packages/sdk/package.json": "264b36852bff918572f221025ae7ce0eb4a847d664bdcab1074f02d2505fee1f",
+    "packages/sdk/src/context.ts": "9d2e121ad03d13d4075e13505f3bde202222b31e5f3ea39ee44e28d897bb380b",
+    "packages/sdk/src/controller.ts": "e3298c859a25737ef4cbe7a4d1ee89df5a3cb93c7cb82ce9a256a61231953718",
+    "packages/sdk/src/data.ts": "0a58772a4fb0d4101e8a719e12406f939cedc42ad496ce16bb3d581edd04f2c7",
+    "packages/sdk/src/index.ts": "185cafbffbb9dcac4f51df81c3cacec7061e05976fee937a87c6637bd2a3b2cb",
+    "packages/sdk/src/response.ts": "1375fb891bd1628f1c8905fc97c5229ce1a017b73ec71511f4aa8f0b7d7be40f",
+    "packages/sdk/tsconfig.json": "8e756355fac7c00e05e1d07a04b7dcd47144329b8191d0d5bc9ea94e5b1c4dc1",
+    "packages/wasm/package.json": "c8e35e7a0a7503981337616f6e69c3c38d24b68f362ab8ef48c948997bffb4c0",
+    "packages/wasm/src/codec.ts": "863c25b57ae38f57498573195586ba24f69f55e0f1688c636d2aa52b1a9e82f9",
+    "packages/wasm/src/index.ts": "90f5f1c6818531a5678f94a6077ad9bdcf7b2d7d472ee29c6b18b89afa4e181e",
+    "packages/wasm/src/sdk.ts": "bc561a4fa33ad80b42346a7dcbb4a25b5255a811b25e6b53c49f4fe991e3ae91",
+    "packages/wasm/tsconfig.json": "8f98007fa9bfcc4f64a943e25fd2e06f9fd3f726088ffbf88ac58874252651e4",
+    "provenance/licenses/sdk-generator-license-sources.json": "3e23b2fc4bb59720d2eb1e1d055228abd71b2e5739d29cf8ef71196d14383f77",
+    "provenance/licenses/ts-rs-12.0.1-MIT.txt": "db7f7f8e7236a2d0b41b855b2501b7b913caebbcda6ce498637a304ad1706ce1",
+    "rust-toolchain.toml": "8426022dcf3cbd6b106cda60c0aa89ad194a12d2a0931b0e8f580d4f0f3c5fa5",
+    "scripts/build-extensions-consumers.mjs": "d5a5bd861d115653f31770383dea05b63ede06f972b41c191a544edf0e985847",
+    "scripts/build-workspace.mjs": "e5f6a3e1bdd876cc419e1f1c8c0ac2784cfac3b0fa08f52ea759a1275bf7034e",
+    "scripts/dependency-notices.mjs": "5a6d6d189bffb5443153c97960b2a6a7c75b5b95656722a90899b8b40b91fb51",
+    "scripts/generate-sdk-types.mjs": "56efc4ef21723be6fe71df09fc749c8460250f67f6a668d658e172f13b4c243e",
+    "scripts/package-identity.mjs": "7ddb810d8bfea729d5953d1b31e358cf1eb825e5d91c3d2e33076315215131dc",
+    "scripts/sdk-distribution.mjs": "aa61c13991b16c6d14e40a65e0ec87b3a39b3dd7a8f57950c25d5a7af7eb4287",
+    "scripts/seal-sdk-wasm.mjs": "9f9a7b68625c7dcd238ed5569bcb34f5cce8e3e620513379b2e7a5c34b244a66",
+    "tsconfig.base.json": "c0525f3e975995916c67503e8677c1017c794861cf5eaa7697a0405e49441576",
+    "tsconfig.json": "c55802605d61bf40384d194cc5061e337629d9a53ac34960e8ac1951dade87b4"
+  },
+  "runtimeWasm": {
+    "path": "packages/wasm/dist/editor_wasm_bg.wasm",
+    "bytes": 6526024,
+    "sha256": "f551ea8410dc1b40be1deb02c9f3751b426b9651597108fcb9e1c39a4dd206a4"
+  },
+  "receipts": {
+    "osr-64-root-build-third.json": {
+      "command": [
+        "node",
+        "scripts/build-workspace.mjs"
+      ],
+      "exit_code": 0,
+      "log": "/tmp/osr-64-root-build-third.log",
+      "log_sha256": "4ac515b45b3e146da9feddd8f59913909c50cdf2d6ae3786e3375a93220bf87a",
+      "elapsed_seconds": 226.69972610473633,
+      "git_head_before": "8a66939783861975cb5b1d54f296a50f9ca9ecbb",
+      "git_head_after": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+    },
+    "osr-64-root-extensions-third.json": {
+      "command": [
+        "node",
+        "scripts/test-extensions.mjs"
+      ],
+      "exit_code": 0,
+      "log": "/tmp/osr-64-root-extensions-third.log",
+      "log_sha256": "e859eb8a83a39e2d1ec3a364a62dd74b4b98a592b3a4dcdcebe8ab8ce4df92f9",
+      "elapsed_seconds": 12.779238939285278,
+      "git_head_before": "8a66939783861975cb5b1d54f296a50f9ca9ecbb",
+      "git_head_after": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+    },
+    "osr-64-root-local-third.json": [
+      {
+        "name": "test:codec",
+        "command": [
+          "npm",
+          "run",
+          "test:codec"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-local-third-00.log",
+        "log_sha256": "5c27edd32880620f021e7f89e6ba4525b39d71f1946667c2fdea03403f077f19",
+        "elapsed_seconds": 21.6559100151062,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+      },
+      {
+        "name": "test:corpus",
+        "command": [
+          "npm",
+          "run",
+          "test:corpus"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-local-third-01.log",
+        "log_sha256": "19d0c0ba88a9f5865f87358b76c712c09b8c311fd9eecaaee57ae2584f843f74",
+        "elapsed_seconds": 20.455060958862305,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+      },
+      {
+        "name": "test:session",
+        "command": [
+          "npm",
+          "run",
+          "test:session"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-local-third-02.log",
+        "log_sha256": "ce26ad696249939304eff4b8a8f5ed6ff75ac5d62ac3f575ccd512121bd6079a",
+        "elapsed_seconds": 1.1278998851776123,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+      },
+      {
+        "name": "test:transactions",
+        "command": [
+          "npm",
+          "run",
+          "test:transactions"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-local-third-03.log",
+        "log_sha256": "b51e11d1e74c44804bd73d23172ba3bd71fdb9f032fb73d3cf6336b31d52f195",
+        "elapsed_seconds": 1.435697078704834,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+      },
+      {
+        "name": "test:commands",
+        "command": [
+          "npm",
+          "run",
+          "test:commands"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-local-third-04.log",
+        "log_sha256": "d821c233a091f2148ab07339a7d6eca02b88cc5a20bcbad665b6bbd6ece9408d",
+        "elapsed_seconds": 2.172982692718506,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+      },
+      {
+        "name": "test:history",
+        "command": [
+          "npm",
+          "run",
+          "test:history"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-local-third-05.log",
+        "log_sha256": "4f860c1262d154d1eaf141106309c6cf275d4e157fd8f43b3ed43cf191733c71",
+        "elapsed_seconds": 4.166799783706665,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+      },
+      {
+        "name": "test:deltas",
+        "command": [
+          "npm",
+          "run",
+          "test:deltas"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-local-third-06.log",
+        "log_sha256": "844a42c1f6886e1f47cf7c1e2705cf7653d8c96d7bc20058d2c85449417e5f9d",
+        "elapsed_seconds": 42.23652625083923,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+      },
+      {
+        "name": "test:sdk",
+        "command": [
+          "npm",
+          "run",
+          "test:sdk"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-local-third-07.log",
+        "log_sha256": "439afe12520fea822e0667d9c3de8802dd293e922e32c0aade193a3bf3c81192",
+        "elapsed_seconds": 5.307663679122925,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+      },
+      {
+        "name": "check:metadata",
+        "command": [
+          "npm",
+          "run",
+          "check:metadata"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-local-third-08.log",
+        "log_sha256": "3b05447078c90cb0541e6e06cbb416f4a00d824cce2c41ba0eac8e7b133c147f",
+        "elapsed_seconds": 0.8763668537139893,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+      },
+      {
+        "name": "check:workspace",
+        "command": [
+          "npm",
+          "run",
+          "check:workspace"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-local-third-09.log",
+        "log_sha256": "c3f8f8bb7a612a0f6ae60920927c443d170d4473db0f7f004b9587c2a181ef44",
+        "elapsed_seconds": 0.45067715644836426,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+      },
+      {
+        "name": "check:packages",
+        "command": [
+          "npm",
+          "run",
+          "check:packages"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-local-third-10.log",
+        "log_sha256": "ce462499bbbf0afc1bbd44933c7dcac1b4694b33c6e90699f67cb3d3a8cc096c",
+        "elapsed_seconds": 2.02988600730896,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+      },
+      {
+        "name": "test:sdk:consumer",
+        "command": [
+          "npm",
+          "run",
+          "test:sdk:consumer"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-local-third-11.log",
+        "log_sha256": "6a97d92519c16019bc3373428d52b68a36254beae0273fd64607f3456488c1b5",
+        "elapsed_seconds": 1.0753321647644043,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+      },
+      {
+        "name": "test:workspace",
+        "command": [
+          "npm",
+          "run",
+          "test:workspace"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-local-third-12.log",
+        "log_sha256": "514edd44bfa028924d362829d955be420bbfbeaef6fba42c680f9d56851f7f1a",
+        "elapsed_seconds": 20.077844858169556,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+      },
+      {
+        "name": "check:m0",
+        "command": [
+          "npm",
+          "run",
+          "check:m0"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-local-third-13.log",
+        "log_sha256": "b754ac041c668a4a41635c6b887f60ffd79500d5aee39611b982e551d9f3f1ec",
+        "elapsed_seconds": 0.22055792808532715,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+      },
+      {
+        "name": "perf:verify",
+        "command": [
+          "npm",
+          "run",
+          "perf:verify"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-local-third-14.log",
+        "log_sha256": "85de2eff315216a5ed99e382810f78fc3426440815c17622b2d750ffc7e0a00f",
+        "elapsed_seconds": 0.23149800300598145,
+        "gitHead": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+      }
+    ],
+    "osr-64-browser-actual-third.json": {
+      "scope": "Actual OSR64 18-test CSP browser lane after freshbuild3 following narrow offlinefixture-fetch repair; actual child exit and immutable logs/full parsed reports, not CI/review evidence. PreviousB2 proofs unchanged.",
+      "argv": [
+        "npm",
+        "run",
+        "test:workspace:browser"
+      ],
+      "cwd": "/Users/artem/projects/klenwriter-editor",
+      "startedAt": "2026-10-18T16:06:31.882947+00:00",
+      "completedAt": "2026-10-18T16:06:46.131979+00:00",
+      "elapsedSeconds": 14.249082803726196,
+      "returnCode": 0,
+      "toolchain": {
+        "node": "v24.22.0",
+        "npm": "11.14.0"
+      },
+      "environment": {
+        "CFFIXED_USER_HOME": "/Users/artem/projects/klenwriter-editor/.tools/firefox-appdata",
+        "PLAYWRIGHT_SKIP_BROWSER_GC": "1"
+      },
+      "rawLog": {
+        "path": "/tmp/osr-64-browser-actual-third.log",
+        "bytes": 3632,
+        "sha256": "8b5be56cf4310eb6806b62bb4f88b6278751e6c49ebf1131aa0c45b499866b3a"
+      },
+      "sourceBefore": {
+        "buildId": "sha256:a5886a244ba4e4204e58e5616fe254581ece9563d6c31a1cb5e2064778ae91ac",
+        "sourceHashes": {
+          "Cargo.lock": "6be8489be73a34cf123e671838911359a1c1d07923f93a9a2c69c5955183997b",
+          "Cargo.toml": "020875dbf026b842a5d4c1cb12d3d9d302f20eb6439dc35708df2d7b498e435b",
+          "crates/bridge/Cargo.toml": "2c8f4e5af6fd17d002fa4963831f86474a9a39ef94466611fd1d8ae01083ad39",
+          "crates/bridge/src/convert.rs": "c2a8303ca7ea4a88c5b395add6860e536b69875e0b1b7ec036f7d65acc10a815",
+          "crates/bridge/src/distribution.rs": "b6d9580c1e801931bbf8f09ed3e1a756b7792823522d66c1fef5c1c6982498d7",
+          "crates/bridge/src/lib.rs": "cee6ae962010b7c5e84f8d2996321bba91efb84ead53ca9b861933a14577db62",
+          "crates/bridge/src/recipes.rs": "c879a46b1a7b7ce762dbcd6eab4dedf22617525fa406ab071c99b024ab54ba15",
+          "crates/core/Cargo.toml": "3d12e0f1c79d598d18c6e8b2b21496e2a49e48030c237dbf5879ea91771a81ab",
+          "crates/core/src/admission.rs": "bab6926eb8be7010a2a7440e91ba668ec951757ae94c73c0c6d9decb35e87639",
+          "crates/core/src/cache.rs": "ef1ad29e5206fa8131511216ff3dbbadaf658c69d9f2f5d6880f8c8ef8ad7245",
+          "crates/core/src/candidate.rs": "d3780e54117837a626a4930bc24022be1262afbcea95ccf0865434d4c47f51ff",
+          "crates/core/src/commands.rs": "c6cb3b20e83524d4892b05d9c36d6ce47184e7e14eccb71b7604c540cdcb7f8a",
+          "crates/core/src/document.rs": "d8e7f3cd3860da9db9b0842899ed0b4e1df623437d8aee485dfbb11606518651",
+          "crates/core/src/history.rs": "5bc12b4773a7285f1f28080e63fb92e076600dfcfedc7f836930a1028c37bd49",
+          "crates/core/src/json.rs": "ed6e39e6d42e6a21e3f3dfc022e90bbb03833f42bc22ae36a26e89700208507b",
+          "crates/core/src/lib.rs": "f760fa6fa066cee2c921c8a8defc174d0c8e1d2c48b79d7ce660b1eefc61fb5a",
+          "crates/core/src/limits.rs": "8c16687b2c071d493fded114b892a00149e6af3b65260673f7d50e1cacbb340d",
+          "crates/core/src/positions.rs": "94ce04c115a062a6b203c2e124afcaa295ad6d9b26a4c0aaaa7bf155fcac50ff",
+          "crates/core/src/profile.rs": "5939a94a953feced215b37e939e42ce1e1471c1f1b2dd85982612b73ecc73eed",
+          "crates/core/src/transaction.rs": "26f4f6457129afe08f09b5c35d857ccc7b3f41bad417e226f055a711f2fd2f14",
+          "crates/engine/Cargo.toml": "a260567f2e85c9f4408096403963a738ca77da7db03c136c64e4b1f191015a9c",
+          "crates/engine/src/command_tests.rs": "896c79c8d2a4f1101c76cf8d7693d61e01451ab8d871870355d995cb4e88b22c",
+          "crates/engine/src/commands.rs": "21940c788ad28d4555d698feefc5a8021c1b784335c90cbecde53eb7a5ae529d",
+          "crates/engine/src/delta_tests.rs": "68d508b9229c2b5874298f9bc84d2c0283041d1c50359ab4957282123ffa55cf",
+          "crates/engine/src/dispatch.rs": "b85613e1f86b5ae0221834b2557656fde63233ae2399f0fe0cacc2f393b799a3",
+          "crates/engine/src/events.rs": "94f19558164d2c49e9aac56c9f99bd42bd5f13cb29b083aad3dbad9580c6def6",
+          "crates/engine/src/eventtests.rs": "26dbdd0628016961a379e520e16d328cf75f4fca231c0cfa1b7d80f9b36befe0",
+          "crates/engine/src/grouping.rs": "74768c0057ed06622deab548f1820724bb6c3db8a260bd49196f30a68a0c0c69",
+          "crates/engine/src/history.rs": "43a28d7fc3e48138d71f4e0cb2889a572fa25dc545b39e6a0e793ae6d610382d",
+          "crates/engine/src/history_dispatch.rs": "a234e5d49c019bdbe7265b530c88cfe6f2bd23e1a125db06b438e216e181ddd5",
+          "crates/engine/src/history_profile_tests.rs": "f75c8f2a58cbf7b09e1fe7f770c3bd2e90ed7f2e8d57b22ca17e7aa72646acb4",
+          "crates/engine/src/history_tests.rs": "a131e774f1327c32773a6ec13c8f396a0563ea15849b6b3a9dcea7d079643f8d",
+          "crates/engine/src/identity.rs": "132ac933c9b3636bc2cac03cbdf43916226a11ea583cd1283172aa6f9f2bcf83",
+          "crates/engine/src/lib.rs": "1eb011baa7b939681152702281cb603de201cb71afd451283eef18fa0668daa1",
+          "crates/engine/src/mapping.rs": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54",
+          "crates/engine/src/session.rs": "156f018cf9927ec8ea0648b2ffac873a3807886019020cda6445efd7a294a7b5",
+          "crates/engine/src/snapshot.rs": "da5ef8366b1a424e4cb8055288ba33d230f7ae673b1196bf375bd4d0620691ab",
+          "crates/engine/src/transaction.rs": "34e628108dff27be15ab8ba1787ecf0132125ecf91d40d6ef38b438f7ac5260d",
+          "crates/engine/src/transaction_tests.rs": "7bbe09699b903fec0f89a6779887c1d6b17550e04e88a1205d8a42fa079552ea",
+          "crates/engine/src/tree.rs": "d1bc2205af12063d4b3b6386f0198830d321ba35b8f2a1d4ae4962d075caedda",
+          "crates/engine/src/tree_impact.rs": "9ebf7c53e8c11eee7dc144434549d4f9be632913e607bd78fa4035e322e08ec6",
+          "crates/extensions/Cargo.toml": "e5f12b0d458eb4f75ad1621737b1da1e77ec9d9d72142efd4020d62c8d29273f",
+          "crates/extensions/src/expand.rs": "c4b6af65c68e47fe7c768416b8ba80461b14a3b5a6c924a85c4c474ea7b6f303",
+          "crates/extensions/src/lib.rs": "5526ac070a2f8147a7c8b6097528ff829b7864df1ed024e8df15ac27e1015376",
+          "crates/kwdj-sdk/Cargo.toml": "4bb508f30e4791f4c7b953fa29e90f726b55579072012bc8d9d8f368b730cdbc",
+          "crates/kwdj-sdk/src/convert.rs": "11b08ac0bb76d6061d392824795fa327bb602c5d49f2c1faad0f8ce93d30d7ae",
+          "crates/kwdj-sdk/src/factory.rs": "62315ad30acdea10eecb8240e79db72a271c1ea451e7554e1be4361cbd77d3bd",
+          "crates/kwdj-sdk/src/lib.rs": "da538ca7bff34409f962e6cb53b848efee91e03b6929e0ed762dbe5330120806",
+          "crates/kwdj-sdk/src/wire.rs": "c3bd6381c3c1c952a1ae5ed395709e9e3818047f09c15de116e0ca9868545f8b",
+          "crates/kwdj/Cargo.toml": "adc634c3afce82549847e69b9feee779c49c5e3f333887d47481bfc4b7203e76",
+          "crates/kwdj/src/admission.rs": "9bc3d3c282e91a40ab86cfedc582b17748fcb671d7b38e0ca63c7a4a78a40991",
+          "crates/kwdj/src/candidate_cache.rs": "79bc689f6d7e33351dd9ced3d465860fba6577f14cf59bfd9c60c259b9ac3020",
+          "crates/kwdj/src/candidate_cache_tests.rs": "4beeca542f9e19774931cbfa6f302bbfce416eb3406e63244b1e093ee30e74f6",
+          "crates/kwdj/src/candidate_validate.rs": "61316de282ff53bbed9dca09d9584996fb5172e5c11b32d2f004befe4bf11eb5",
+          "crates/kwdj/src/commands/block.rs": "901da02897beaaaf904b0421f01740e8d08723e87ef91b972e184948c0719c29",
+          "crates/kwdj/src/commands/inline.rs": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394",
+          "crates/kwdj/src/commands/mod.rs": "9a07693d800cf8d5bddfe273fe3f21acddd727688881d20f243190e170e62552",
+          "crates/kwdj/src/core_bridge.rs": "a887f1437d900a7fa83d48c03b694d9c0bd0c3413ad5bcf4efc05bcd540f39ce",
+          "crates/kwdj/src/edit_normalize.rs": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a",
+          "crates/kwdj/src/lib.rs": "c9d33aeb376a6be9eaab53b34ab17229f40a584aeba85b9bfbcc302a27c463b9",
+          "crates/kwdj/src/model.rs": "5162a1f19c899922a032afcecc3227f65c19f05a530d1ba6a178f11e6cf635ce",
+          "crates/kwdj/src/normalize.rs": "9da4b8d258023dbd9076f8807a86d7a8db45573aea0e9bb56f1a405c0f97690f",
+          "crates/kwdj/src/project.rs": "fa5924ae5708f3b824abcfd5cecc0feedea4146c77da2684649fb20af6ec2aee",
+          "crates/kwdj/src/registry-base-v1.json": "4c9685d0d70059285601a4a624cc3b483b00a25fee0c857542254adfd2c2d922",
+          "crates/kwdj/src/registry.rs": "11cce08ffc8265d35c7d55e3382b22db48a251542f51efc333f4de581e638e90",
+          "crates/kwdj/src/registry_guards.rs": "d4f0bb21976730232149f1b4e71814435864843487fd4fc1a89e4ae485fd8968",
+          "crates/kwdj/src/registry_guards_tests.rs": "7cc5d9577b320bbd7438e262674af45ed51ad7fdd8ead8a499ebefd949a1c67e",
+          "crates/kwdj/src/session_profile.rs": "262e3878671e9e69a1afe77257877dc1232f7642722df6946d80541325b53876",
+          "crates/kwdj/src/validate.rs": "9824aeb6c05aeb5eff99af84d3c711c87eb728efa53181c1834d39354221ceec",
+          "crates/kwdj/src/wire_view.rs": "351fa1b94b1c3af1d974e9471ee04a164b6ec11d891905f5a167f16d5f9227d2",
+          "crates/notes-sdk/Cargo.toml": "7c24406d20d6efc489c794755eabcb00922498233c4735d8293078c0bf694645",
+          "crates/notes-sdk/src/adapter.rs": "36977eff0a37f307d6b617e371fd50228ab439a20d8a2a13ec8de31889e51ed4",
+          "crates/notes-sdk/src/factory.rs": "a6385b01d56a1de2fe1a8aa43839bfdb34eb8b4df7ecec323f7c04178bc910b8",
+          "crates/notes-sdk/src/lib.rs": "123b0b102a1d78eb1e31360e63f106c131e02b4f3e6891d7ca974e8ccf23f0f7",
+          "crates/notes-sdk/src/options.rs": "56d0fa87f1ffd4b11833e719037d4c682bc4135f44f702fdf685836422b3ad4c",
+          "crates/notes/Cargo.toml": "8bacb4d9831ad25df5363e7fd337d18fdec3c099c64ccf470af69fd167c4a965",
+          "crates/notes/src/borrowed.rs": "5193cf8df787c97374e592054aa688d5dbbee7326a82641a2261b14f258e77e8",
+          "crates/notes/src/codec.rs": "813beda9a2e7a396d0350181e39702ac37095f8a122a0e055d580e276d08bf5d",
+          "crates/notes/src/commands.rs": "7035e6b3f98c3b2d11f4d5f1c411cecca081b33467e7eb69f42d40b7f03e9095",
+          "crates/notes/src/error.rs": "b8635ffeb39b66d8a20c25ef7e92ff28df83f43ce4a6c3f3d684e58707c43aca",
+          "crates/notes/src/lib.rs": "70fa1754e04a8143e1644e4db857b00f1257578f21f3afc684024099414924b9",
+          "crates/notes/src/profile.rs": "243991e3bc8b937b0e679eaa405c4681b20aed24be341c2afaf3c13e4126a6d1",
+          "crates/notes/src/registration.rs": "8c090145624195725c330118d5fe9816e22d8c7ef5198b28bf2713efb0eccc01",
+          "crates/notes/src/wire.rs": "5ea2c25a6d2367c01f2d67a3d80a3df6e1a205bbff1ccd751d3fe9bbea24b562",
+          "crates/protocol/Cargo.toml": "433f344e8a370e4efa71f83ebead19edce08ef89e2f44ac819e6db03c26240da",
+          "crates/protocol/src/lib.rs": "34bdfbce364e45c89b3c531985ca1a4728da3142b903c585ce3b0a9058ab55b3",
+          "crates/protocol/src/v2.rs": "f29ae2544621670b75cd285d54fe08011675f87d6259ffebb31b9016b7043827",
+          "crates/registry/Cargo.toml": "cc16dd7493c5f76378f05f2437c577eae1c31a5a520ea27e0235fb6e9cc54ce4",
+          "crates/registry/src/attrs.rs": "d15f489e7f45d0de4f9ecee67845ac6b16b2cde05bf6dad71b1e77996241db02",
+          "crates/registry/src/compile.rs": "01a97e367e550eee0a01041bef170b50f982f8726f23f07d1e426ae2d76c9452",
+          "crates/registry/src/decimal.rs": "19987244982c907fd2f89f5683fba30fbfbd67418860fae09c74d259150cf631",
+          "crates/registry/src/grammar.rs": "780a9c4919dd1d86846f574cb74e2e281321bc035d2cac0285ea109b2359d4f2",
+          "crates/registry/src/json.rs": "e98777811b6306573777f81cd42761d0a63e0d2bef907b8c2e6b7d47de70aa82",
+          "crates/registry/src/lib.rs": "23297dbb63b5c5588c095dbf73b2a26f8777eb4f66ab3cada51039654ad5596d",
+          "crates/registry/src/recipes.rs": "a2e7ac7683c9a8a29ebb5767ede3f66a43a0bf61e6f4d52bcf4c05c3d7fb6484",
+          "crates/registry/src/schema.rs": "7ee3baa88982eb47dda6930e97487f65f1357f80741047fdf9223769ea84048e",
+          "crates/wasm/Cargo.toml": "b246f224d3398e6bb900ab9aeb21b3b6cc705c4f91c975e3767c98f577bbfc23",
+          "crates/wasm/examples/sdk_manifest.rs": "1489eac7e90ab8a5fa2b8df51bf9723fed502662b59f609a6a0320cab650ba6e",
+          "crates/wasm/examples/sdk_manifest_v2.rs": "68834b4a326ea54ff0c56b767c62a51d44bb456d500dfcff6d8db5d5e2b4a027",
+          "crates/wasm/examples/sdk_types.rs": "373d6c45dc7f3e3bc5da2e83900436bdaecf9db3cef2be22cc3ec8c66107fb9b",
+          "crates/wasm/examples/sdk_types_v2.rs": "2c638598fb400c6b1afc7fff30f53ead08f28308c667d701da6c0f1ee167df29",
+          "crates/wasm/src/codec.rs": "2bf2766834a7dc5a6964c194858b57819475518182233725f97a539cbb057a4a",
+          "crates/wasm/src/codec_browser.rs": "6f05104cdb945f51ea76f1fb22373bbbefd790ebd4872b57e040318b0676b843",
+          "crates/wasm/src/lib.rs": "def922ba7a358fe879943e22c4d9a64124f2227e840cbd34840656b9ffb9d0d5",
+          "crates/wasm/src/sdk.rs": "6885960064d22564f70cd03e0347be7c9681524ff3d32d38fe2fd7aab6c0ecdf",
+          "crates/wasm/src/sdk_browser.rs": "72855464cb20d91e60371f095fe2693a2617fc048148ec5a660fa5a5c59ce710",
+          "crates/wasm/src/sdk_convert.rs": "b8fe65781597720a415772fa44f08648ed4a95517ca69773b2332015d2b7a412",
+          "crates/wasm/src/sdk_v2.rs": "00e5aab260620c7d48a7995429b38dc71e79dcdfb60e17068c061e1976ad301d",
+          "crates/wasm/src/sdk_wire.rs": "98f8ee8a4f08d54c8a59772bb1b226dd93c993b0765891ca25b7018884418a1c",
+          "package-lock.json": "e34b0bf3150073f2f670f8eaedb1569794013915cef9fdc74203a7d0a82bc1ab",
+          "package-map.json": "5997002bc35ed0ea9d9b0559897ca561d560c7f33151335dcdcb6ba2abe7d944",
+          "package.json": "2d4cc50fdfe1ebeb035da57e345f7be60cfeaaa41484323a657c924cecb0900e",
+          "packages/kwdj/package.json": "5e82d885cc627257004066927588e192896cae945bb66cdaa99cfaa53075bd96",
+          "packages/kwdj/src/index.ts": "6254480a6d064910d8fd83a6ac8c5dcdc225fe1a2369f10135e2df57a6d550ac",
+          "packages/kwdj/tsconfig.json": "61862cc74eb571aab118a25a68b821378eb4407eb57fa7bad1b976499695e21f",
+          "packages/sdk/package.json": "264b36852bff918572f221025ae7ce0eb4a847d664bdcab1074f02d2505fee1f",
+          "packages/sdk/src/context.ts": "9d2e121ad03d13d4075e13505f3bde202222b31e5f3ea39ee44e28d897bb380b",
+          "packages/sdk/src/controller.ts": "e3298c859a25737ef4cbe7a4d1ee89df5a3cb93c7cb82ce9a256a61231953718",
+          "packages/sdk/src/data.ts": "0a58772a4fb0d4101e8a719e12406f939cedc42ad496ce16bb3d581edd04f2c7",
+          "packages/sdk/src/index.ts": "185cafbffbb9dcac4f51df81c3cacec7061e05976fee937a87c6637bd2a3b2cb",
+          "packages/sdk/src/response.ts": "1375fb891bd1628f1c8905fc97c5229ce1a017b73ec71511f4aa8f0b7d7be40f",
+          "packages/sdk/tsconfig.json": "8e756355fac7c00e05e1d07a04b7dcd47144329b8191d0d5bc9ea94e5b1c4dc1",
+          "packages/wasm/package.json": "c8e35e7a0a7503981337616f6e69c3c38d24b68f362ab8ef48c948997bffb4c0",
+          "packages/wasm/src/codec.ts": "863c25b57ae38f57498573195586ba24f69f55e0f1688c636d2aa52b1a9e82f9",
+          "packages/wasm/src/index.ts": "90f5f1c6818531a5678f94a6077ad9bdcf7b2d7d472ee29c6b18b89afa4e181e",
+          "packages/wasm/src/sdk.ts": "bc561a4fa33ad80b42346a7dcbb4a25b5255a811b25e6b53c49f4fe991e3ae91",
+          "packages/wasm/tsconfig.json": "8f98007fa9bfcc4f64a943e25fd2e06f9fd3f726088ffbf88ac58874252651e4",
+          "provenance/licenses/sdk-generator-license-sources.json": "3e23b2fc4bb59720d2eb1e1d055228abd71b2e5739d29cf8ef71196d14383f77",
+          "provenance/licenses/ts-rs-12.0.1-MIT.txt": "db7f7f8e7236a2d0b41b855b2501b7b913caebbcda6ce498637a304ad1706ce1",
+          "rust-toolchain.toml": "8426022dcf3cbd6b106cda60c0aa89ad194a12d2a0931b0e8f580d4f0f3c5fa5",
+          "scripts/build-extensions-consumers.mjs": "d5a5bd861d115653f31770383dea05b63ede06f972b41c191a544edf0e985847",
+          "scripts/build-workspace.mjs": "e5f6a3e1bdd876cc419e1f1c8c0ac2784cfac3b0fa08f52ea759a1275bf7034e",
+          "scripts/dependency-notices.mjs": "5a6d6d189bffb5443153c97960b2a6a7c75b5b95656722a90899b8b40b91fb51",
+          "scripts/generate-sdk-types.mjs": "56efc4ef21723be6fe71df09fc749c8460250f67f6a668d658e172f13b4c243e",
+          "scripts/package-identity.mjs": "7ddb810d8bfea729d5953d1b31e358cf1eb825e5d91c3d2e33076315215131dc",
+          "scripts/sdk-distribution.mjs": "aa61c13991b16c6d14e40a65e0ec87b3a39b3dd7a8f57950c25d5a7af7eb4287",
+          "scripts/seal-sdk-wasm.mjs": "9f9a7b68625c7dcd238ed5569bcb34f5cce8e3e620513379b2e7a5c34b244a66",
+          "tsconfig.base.json": "c0525f3e975995916c67503e8677c1017c794861cf5eaa7697a0405e49441576",
+          "tsconfig.json": "c55802605d61bf40384d194cc5061e337629d9a53ac34960e8ac1951dade87b4"
+        }
+      },
+      "sourceAfter": {
+        "buildId": "sha256:a5886a244ba4e4204e58e5616fe254581ece9563d6c31a1cb5e2064778ae91ac",
+        "sourceHashes": {
+          "Cargo.lock": "6be8489be73a34cf123e671838911359a1c1d07923f93a9a2c69c5955183997b",
+          "Cargo.toml": "020875dbf026b842a5d4c1cb12d3d9d302f20eb6439dc35708df2d7b498e435b",
+          "crates/bridge/Cargo.toml": "2c8f4e5af6fd17d002fa4963831f86474a9a39ef94466611fd1d8ae01083ad39",
+          "crates/bridge/src/convert.rs": "c2a8303ca7ea4a88c5b395add6860e536b69875e0b1b7ec036f7d65acc10a815",
+          "crates/bridge/src/distribution.rs": "b6d9580c1e801931bbf8f09ed3e1a756b7792823522d66c1fef5c1c6982498d7",
+          "crates/bridge/src/lib.rs": "cee6ae962010b7c5e84f8d2996321bba91efb84ead53ca9b861933a14577db62",
+          "crates/bridge/src/recipes.rs": "c879a46b1a7b7ce762dbcd6eab4dedf22617525fa406ab071c99b024ab54ba15",
+          "crates/core/Cargo.toml": "3d12e0f1c79d598d18c6e8b2b21496e2a49e48030c237dbf5879ea91771a81ab",
+          "crates/core/src/admission.rs": "bab6926eb8be7010a2a7440e91ba668ec951757ae94c73c0c6d9decb35e87639",
+          "crates/core/src/cache.rs": "ef1ad29e5206fa8131511216ff3dbbadaf658c69d9f2f5d6880f8c8ef8ad7245",
+          "crates/core/src/candidate.rs": "d3780e54117837a626a4930bc24022be1262afbcea95ccf0865434d4c47f51ff",
+          "crates/core/src/commands.rs": "c6cb3b20e83524d4892b05d9c36d6ce47184e7e14eccb71b7604c540cdcb7f8a",
+          "crates/core/src/document.rs": "d8e7f3cd3860da9db9b0842899ed0b4e1df623437d8aee485dfbb11606518651",
+          "crates/core/src/history.rs": "5bc12b4773a7285f1f28080e63fb92e076600dfcfedc7f836930a1028c37bd49",
+          "crates/core/src/json.rs": "ed6e39e6d42e6a21e3f3dfc022e90bbb03833f42bc22ae36a26e89700208507b",
+          "crates/core/src/lib.rs": "f760fa6fa066cee2c921c8a8defc174d0c8e1d2c48b79d7ce660b1eefc61fb5a",
+          "crates/core/src/limits.rs": "8c16687b2c071d493fded114b892a00149e6af3b65260673f7d50e1cacbb340d",
+          "crates/core/src/positions.rs": "94ce04c115a062a6b203c2e124afcaa295ad6d9b26a4c0aaaa7bf155fcac50ff",
+          "crates/core/src/profile.rs": "5939a94a953feced215b37e939e42ce1e1471c1f1b2dd85982612b73ecc73eed",
+          "crates/core/src/transaction.rs": "26f4f6457129afe08f09b5c35d857ccc7b3f41bad417e226f055a711f2fd2f14",
+          "crates/engine/Cargo.toml": "a260567f2e85c9f4408096403963a738ca77da7db03c136c64e4b1f191015a9c",
+          "crates/engine/src/command_tests.rs": "896c79c8d2a4f1101c76cf8d7693d61e01451ab8d871870355d995cb4e88b22c",
+          "crates/engine/src/commands.rs": "21940c788ad28d4555d698feefc5a8021c1b784335c90cbecde53eb7a5ae529d",
+          "crates/engine/src/delta_tests.rs": "68d508b9229c2b5874298f9bc84d2c0283041d1c50359ab4957282123ffa55cf",
+          "crates/engine/src/dispatch.rs": "b85613e1f86b5ae0221834b2557656fde63233ae2399f0fe0cacc2f393b799a3",
+          "crates/engine/src/events.rs": "94f19558164d2c49e9aac56c9f99bd42bd5f13cb29b083aad3dbad9580c6def6",
+          "crates/engine/src/eventtests.rs": "26dbdd0628016961a379e520e16d328cf75f4fca231c0cfa1b7d80f9b36befe0",
+          "crates/engine/src/grouping.rs": "74768c0057ed06622deab548f1820724bb6c3db8a260bd49196f30a68a0c0c69",
+          "crates/engine/src/history.rs": "43a28d7fc3e48138d71f4e0cb2889a572fa25dc545b39e6a0e793ae6d610382d",
+          "crates/engine/src/history_dispatch.rs": "a234e5d49c019bdbe7265b530c88cfe6f2bd23e1a125db06b438e216e181ddd5",
+          "crates/engine/src/history_profile_tests.rs": "f75c8f2a58cbf7b09e1fe7f770c3bd2e90ed7f2e8d57b22ca17e7aa72646acb4",
+          "crates/engine/src/history_tests.rs": "a131e774f1327c32773a6ec13c8f396a0563ea15849b6b3a9dcea7d079643f8d",
+          "crates/engine/src/identity.rs": "132ac933c9b3636bc2cac03cbdf43916226a11ea583cd1283172aa6f9f2bcf83",
+          "crates/engine/src/lib.rs": "1eb011baa7b939681152702281cb603de201cb71afd451283eef18fa0668daa1",
+          "crates/engine/src/mapping.rs": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54",
+          "crates/engine/src/session.rs": "156f018cf9927ec8ea0648b2ffac873a3807886019020cda6445efd7a294a7b5",
+          "crates/engine/src/snapshot.rs": "da5ef8366b1a424e4cb8055288ba33d230f7ae673b1196bf375bd4d0620691ab",
+          "crates/engine/src/transaction.rs": "34e628108dff27be15ab8ba1787ecf0132125ecf91d40d6ef38b438f7ac5260d",
+          "crates/engine/src/transaction_tests.rs": "7bbe09699b903fec0f89a6779887c1d6b17550e04e88a1205d8a42fa079552ea",
+          "crates/engine/src/tree.rs": "d1bc2205af12063d4b3b6386f0198830d321ba35b8f2a1d4ae4962d075caedda",
+          "crates/engine/src/tree_impact.rs": "9ebf7c53e8c11eee7dc144434549d4f9be632913e607bd78fa4035e322e08ec6",
+          "crates/extensions/Cargo.toml": "e5f12b0d458eb4f75ad1621737b1da1e77ec9d9d72142efd4020d62c8d29273f",
+          "crates/extensions/src/expand.rs": "c4b6af65c68e47fe7c768416b8ba80461b14a3b5a6c924a85c4c474ea7b6f303",
+          "crates/extensions/src/lib.rs": "5526ac070a2f8147a7c8b6097528ff829b7864df1ed024e8df15ac27e1015376",
+          "crates/kwdj-sdk/Cargo.toml": "4bb508f30e4791f4c7b953fa29e90f726b55579072012bc8d9d8f368b730cdbc",
+          "crates/kwdj-sdk/src/convert.rs": "11b08ac0bb76d6061d392824795fa327bb602c5d49f2c1faad0f8ce93d30d7ae",
+          "crates/kwdj-sdk/src/factory.rs": "62315ad30acdea10eecb8240e79db72a271c1ea451e7554e1be4361cbd77d3bd",
+          "crates/kwdj-sdk/src/lib.rs": "da538ca7bff34409f962e6cb53b848efee91e03b6929e0ed762dbe5330120806",
+          "crates/kwdj-sdk/src/wire.rs": "c3bd6381c3c1c952a1ae5ed395709e9e3818047f09c15de116e0ca9868545f8b",
+          "crates/kwdj/Cargo.toml": "adc634c3afce82549847e69b9feee779c49c5e3f333887d47481bfc4b7203e76",
+          "crates/kwdj/src/admission.rs": "9bc3d3c282e91a40ab86cfedc582b17748fcb671d7b38e0ca63c7a4a78a40991",
+          "crates/kwdj/src/candidate_cache.rs": "79bc689f6d7e33351dd9ced3d465860fba6577f14cf59bfd9c60c259b9ac3020",
+          "crates/kwdj/src/candidate_cache_tests.rs": "4beeca542f9e19774931cbfa6f302bbfce416eb3406e63244b1e093ee30e74f6",
+          "crates/kwdj/src/candidate_validate.rs": "61316de282ff53bbed9dca09d9584996fb5172e5c11b32d2f004befe4bf11eb5",
+          "crates/kwdj/src/commands/block.rs": "901da02897beaaaf904b0421f01740e8d08723e87ef91b972e184948c0719c29",
+          "crates/kwdj/src/commands/inline.rs": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394",
+          "crates/kwdj/src/commands/mod.rs": "9a07693d800cf8d5bddfe273fe3f21acddd727688881d20f243190e170e62552",
+          "crates/kwdj/src/core_bridge.rs": "a887f1437d900a7fa83d48c03b694d9c0bd0c3413ad5bcf4efc05bcd540f39ce",
+          "crates/kwdj/src/edit_normalize.rs": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a",
+          "crates/kwdj/src/lib.rs": "c9d33aeb376a6be9eaab53b34ab17229f40a584aeba85b9bfbcc302a27c463b9",
+          "crates/kwdj/src/model.rs": "5162a1f19c899922a032afcecc3227f65c19f05a530d1ba6a178f11e6cf635ce",
+          "crates/kwdj/src/normalize.rs": "9da4b8d258023dbd9076f8807a86d7a8db45573aea0e9bb56f1a405c0f97690f",
+          "crates/kwdj/src/project.rs": "fa5924ae5708f3b824abcfd5cecc0feedea4146c77da2684649fb20af6ec2aee",
+          "crates/kwdj/src/registry-base-v1.json": "4c9685d0d70059285601a4a624cc3b483b00a25fee0c857542254adfd2c2d922",
+          "crates/kwdj/src/registry.rs": "11cce08ffc8265d35c7d55e3382b22db48a251542f51efc333f4de581e638e90",
+          "crates/kwdj/src/registry_guards.rs": "d4f0bb21976730232149f1b4e71814435864843487fd4fc1a89e4ae485fd8968",
+          "crates/kwdj/src/registry_guards_tests.rs": "7cc5d9577b320bbd7438e262674af45ed51ad7fdd8ead8a499ebefd949a1c67e",
+          "crates/kwdj/src/session_profile.rs": "262e3878671e9e69a1afe77257877dc1232f7642722df6946d80541325b53876",
+          "crates/kwdj/src/validate.rs": "9824aeb6c05aeb5eff99af84d3c711c87eb728efa53181c1834d39354221ceec",
+          "crates/kwdj/src/wire_view.rs": "351fa1b94b1c3af1d974e9471ee04a164b6ec11d891905f5a167f16d5f9227d2",
+          "crates/notes-sdk/Cargo.toml": "7c24406d20d6efc489c794755eabcb00922498233c4735d8293078c0bf694645",
+          "crates/notes-sdk/src/adapter.rs": "36977eff0a37f307d6b617e371fd50228ab439a20d8a2a13ec8de31889e51ed4",
+          "crates/notes-sdk/src/factory.rs": "a6385b01d56a1de2fe1a8aa43839bfdb34eb8b4df7ecec323f7c04178bc910b8",
+          "crates/notes-sdk/src/lib.rs": "123b0b102a1d78eb1e31360e63f106c131e02b4f3e6891d7ca974e8ccf23f0f7",
+          "crates/notes-sdk/src/options.rs": "56d0fa87f1ffd4b11833e719037d4c682bc4135f44f702fdf685836422b3ad4c",
+          "crates/notes/Cargo.toml": "8bacb4d9831ad25df5363e7fd337d18fdec3c099c64ccf470af69fd167c4a965",
+          "crates/notes/src/borrowed.rs": "5193cf8df787c97374e592054aa688d5dbbee7326a82641a2261b14f258e77e8",
+          "crates/notes/src/codec.rs": "813beda9a2e7a396d0350181e39702ac37095f8a122a0e055d580e276d08bf5d",
+          "crates/notes/src/commands.rs": "7035e6b3f98c3b2d11f4d5f1c411cecca081b33467e7eb69f42d40b7f03e9095",
+          "crates/notes/src/error.rs": "b8635ffeb39b66d8a20c25ef7e92ff28df83f43ce4a6c3f3d684e58707c43aca",
+          "crates/notes/src/lib.rs": "70fa1754e04a8143e1644e4db857b00f1257578f21f3afc684024099414924b9",
+          "crates/notes/src/profile.rs": "243991e3bc8b937b0e679eaa405c4681b20aed24be341c2afaf3c13e4126a6d1",
+          "crates/notes/src/registration.rs": "8c090145624195725c330118d5fe9816e22d8c7ef5198b28bf2713efb0eccc01",
+          "crates/notes/src/wire.rs": "5ea2c25a6d2367c01f2d67a3d80a3df6e1a205bbff1ccd751d3fe9bbea24b562",
+          "crates/protocol/Cargo.toml": "433f344e8a370e4efa71f83ebead19edce08ef89e2f44ac819e6db03c26240da",
+          "crates/protocol/src/lib.rs": "34bdfbce364e45c89b3c531985ca1a4728da3142b903c585ce3b0a9058ab55b3",
+          "crates/protocol/src/v2.rs": "f29ae2544621670b75cd285d54fe08011675f87d6259ffebb31b9016b7043827",
+          "crates/registry/Cargo.toml": "cc16dd7493c5f76378f05f2437c577eae1c31a5a520ea27e0235fb6e9cc54ce4",
+          "crates/registry/src/attrs.rs": "d15f489e7f45d0de4f9ecee67845ac6b16b2cde05bf6dad71b1e77996241db02",
+          "crates/registry/src/compile.rs": "01a97e367e550eee0a01041bef170b50f982f8726f23f07d1e426ae2d76c9452",
+          "crates/registry/src/decimal.rs": "19987244982c907fd2f89f5683fba30fbfbd67418860fae09c74d259150cf631",
+          "crates/registry/src/grammar.rs": "780a9c4919dd1d86846f574cb74e2e281321bc035d2cac0285ea109b2359d4f2",
+          "crates/registry/src/json.rs": "e98777811b6306573777f81cd42761d0a63e0d2bef907b8c2e6b7d47de70aa82",
+          "crates/registry/src/lib.rs": "23297dbb63b5c5588c095dbf73b2a26f8777eb4f66ab3cada51039654ad5596d",
+          "crates/registry/src/recipes.rs": "a2e7ac7683c9a8a29ebb5767ede3f66a43a0bf61e6f4d52bcf4c05c3d7fb6484",
+          "crates/registry/src/schema.rs": "7ee3baa88982eb47dda6930e97487f65f1357f80741047fdf9223769ea84048e",
+          "crates/wasm/Cargo.toml": "b246f224d3398e6bb900ab9aeb21b3b6cc705c4f91c975e3767c98f577bbfc23",
+          "crates/wasm/examples/sdk_manifest.rs": "1489eac7e90ab8a5fa2b8df51bf9723fed502662b59f609a6a0320cab650ba6e",
+          "crates/wasm/examples/sdk_manifest_v2.rs": "68834b4a326ea54ff0c56b767c62a51d44bb456d500dfcff6d8db5d5e2b4a027",
+          "crates/wasm/examples/sdk_types.rs": "373d6c45dc7f3e3bc5da2e83900436bdaecf9db3cef2be22cc3ec8c66107fb9b",
+          "crates/wasm/examples/sdk_types_v2.rs": "2c638598fb400c6b1afc7fff30f53ead08f28308c667d701da6c0f1ee167df29",
+          "crates/wasm/src/codec.rs": "2bf2766834a7dc5a6964c194858b57819475518182233725f97a539cbb057a4a",
+          "crates/wasm/src/codec_browser.rs": "6f05104cdb945f51ea76f1fb22373bbbefd790ebd4872b57e040318b0676b843",
+          "crates/wasm/src/lib.rs": "def922ba7a358fe879943e22c4d9a64124f2227e840cbd34840656b9ffb9d0d5",
+          "crates/wasm/src/sdk.rs": "6885960064d22564f70cd03e0347be7c9681524ff3d32d38fe2fd7aab6c0ecdf",
+          "crates/wasm/src/sdk_browser.rs": "72855464cb20d91e60371f095fe2693a2617fc048148ec5a660fa5a5c59ce710",
+          "crates/wasm/src/sdk_convert.rs": "b8fe65781597720a415772fa44f08648ed4a95517ca69773b2332015d2b7a412",
+          "crates/wasm/src/sdk_v2.rs": "00e5aab260620c7d48a7995429b38dc71e79dcdfb60e17068c061e1976ad301d",
+          "crates/wasm/src/sdk_wire.rs": "98f8ee8a4f08d54c8a59772bb1b226dd93c993b0765891ca25b7018884418a1c",
+          "package-lock.json": "e34b0bf3150073f2f670f8eaedb1569794013915cef9fdc74203a7d0a82bc1ab",
+          "package-map.json": "5997002bc35ed0ea9d9b0559897ca561d560c7f33151335dcdcb6ba2abe7d944",
+          "package.json": "2d4cc50fdfe1ebeb035da57e345f7be60cfeaaa41484323a657c924cecb0900e",
+          "packages/kwdj/package.json": "5e82d885cc627257004066927588e192896cae945bb66cdaa99cfaa53075bd96",
+          "packages/kwdj/src/index.ts": "6254480a6d064910d8fd83a6ac8c5dcdc225fe1a2369f10135e2df57a6d550ac",
+          "packages/kwdj/tsconfig.json": "61862cc74eb571aab118a25a68b821378eb4407eb57fa7bad1b976499695e21f",
+          "packages/sdk/package.json": "264b36852bff918572f221025ae7ce0eb4a847d664bdcab1074f02d2505fee1f",
+          "packages/sdk/src/context.ts": "9d2e121ad03d13d4075e13505f3bde202222b31e5f3ea39ee44e28d897bb380b",
+          "packages/sdk/src/controller.ts": "e3298c859a25737ef4cbe7a4d1ee89df5a3cb93c7cb82ce9a256a61231953718",
+          "packages/sdk/src/data.ts": "0a58772a4fb0d4101e8a719e12406f939cedc42ad496ce16bb3d581edd04f2c7",
+          "packages/sdk/src/index.ts": "185cafbffbb9dcac4f51df81c3cacec7061e05976fee937a87c6637bd2a3b2cb",
+          "packages/sdk/src/response.ts": "1375fb891bd1628f1c8905fc97c5229ce1a017b73ec71511f4aa8f0b7d7be40f",
+          "packages/sdk/tsconfig.json": "8e756355fac7c00e05e1d07a04b7dcd47144329b8191d0d5bc9ea94e5b1c4dc1",
+          "packages/wasm/package.json": "c8e35e7a0a7503981337616f6e69c3c38d24b68f362ab8ef48c948997bffb4c0",
+          "packages/wasm/src/codec.ts": "863c25b57ae38f57498573195586ba24f69f55e0f1688c636d2aa52b1a9e82f9",
+          "packages/wasm/src/index.ts": "90f5f1c6818531a5678f94a6077ad9bdcf7b2d7d472ee29c6b18b89afa4e181e",
+          "packages/wasm/src/sdk.ts": "bc561a4fa33ad80b42346a7dcbb4a25b5255a811b25e6b53c49f4fe991e3ae91",
+          "packages/wasm/tsconfig.json": "8f98007fa9bfcc4f64a943e25fd2e06f9fd3f726088ffbf88ac58874252651e4",
+          "provenance/licenses/sdk-generator-license-sources.json": "3e23b2fc4bb59720d2eb1e1d055228abd71b2e5739d29cf8ef71196d14383f77",
+          "provenance/licenses/ts-rs-12.0.1-MIT.txt": "db7f7f8e7236a2d0b41b855b2501b7b913caebbcda6ce498637a304ad1706ce1",
+          "rust-toolchain.toml": "8426022dcf3cbd6b106cda60c0aa89ad194a12d2a0931b0e8f580d4f0f3c5fa5",
+          "scripts/build-extensions-consumers.mjs": "d5a5bd861d115653f31770383dea05b63ede06f972b41c191a544edf0e985847",
+          "scripts/build-workspace.mjs": "e5f6a3e1bdd876cc419e1f1c8c0ac2784cfac3b0fa08f52ea759a1275bf7034e",
+          "scripts/dependency-notices.mjs": "5a6d6d189bffb5443153c97960b2a6a7c75b5b95656722a90899b8b40b91fb51",
+          "scripts/generate-sdk-types.mjs": "56efc4ef21723be6fe71df09fc749c8460250f67f6a668d658e172f13b4c243e",
+          "scripts/package-identity.mjs": "7ddb810d8bfea729d5953d1b31e358cf1eb825e5d91c3d2e33076315215131dc",
+          "scripts/sdk-distribution.mjs": "aa61c13991b16c6d14e40a65e0ec87b3a39b3dd7a8f57950c25d5a7af7eb4287",
+          "scripts/seal-sdk-wasm.mjs": "9f9a7b68625c7dcd238ed5569bcb34f5cce8e3e620513379b2e7a5c34b244a66",
+          "tsconfig.base.json": "c0525f3e975995916c67503e8677c1017c794861cf5eaa7697a0405e49441576",
+          "tsconfig.json": "c55802605d61bf40384d194cc5061e337629d9a53ac34960e8ac1951dade87b4"
+        }
+      },
+      "productionSourceUnchanged": true,
+      "harnessBefore": {
+        "tests/workspace-browser.spec.js": {
+          "path": "/Users/artem/projects/klenwriter-editor/tests/workspace-browser.spec.js",
+          "bytes": 3308,
+          "sha256": "c80ad56fc9ab7f4e65ac2a3e42d5e38ea02bc0b294a0389b7ea1b82db5d791aa"
+        },
+        "tests/sdk-workspace-browser.spec.js": {
+          "path": "/Users/artem/projects/klenwriter-editor/tests/sdk-workspace-browser.spec.js",
+          "bytes": 10772,
+          "sha256": "81864e7cd589e3e0c5839d0d3bd086d2eded38a3556f10241ad81ade30a01a9a"
+        },
+        "scripts/workspace-server.mjs": {
+          "path": "/Users/artem/projects/klenwriter-editor/scripts/workspace-server.mjs",
+          "bytes": 3737,
+          "sha256": "566844822e5f32447367fea174d1d036f9520e8e0ee49bba9d18f7e5092c8a9d"
+        },
+        "playwright.workspace.config.js": {
+          "path": "/Users/artem/projects/klenwriter-editor/playwright.workspace.config.js",
+          "bytes": 627,
+          "sha256": "d38aa994bd9c510260add6f9530c66a9fc99be5fc1de764903cc18c6e2420bf1"
+        },
+        "spikes/workspace/sdk-host.html": {
+          "path": "/Users/artem/projects/klenwriter-editor/spikes/workspace/sdk-host.html",
+          "bytes": 462,
+          "sha256": "93703a1b9ef565bafbbc51e8b67fb9ad523ca772f11a5eada8f0fbe4f53b2952"
+        },
+        "examples/notes-extension/testkit.mjs": {
+          "path": "/Users/artem/projects/klenwriter-editor/examples/notes-extension/testkit.mjs",
+          "bytes": 19366,
+          "sha256": "d51c23912f364e1e878a98a701783c8650302cf43694738cf9c51caa0d9c3068"
+        },
+        "tests/support/extension-fixtures.mjs": {
+          "path": "/Users/artem/projects/klenwriter-editor/tests/support/extension-fixtures.mjs",
+          "bytes": 2394,
+          "sha256": "a353ff685571b7fd02dedded43492422da438c50dfad4787fd68b9e1459dd2b0"
+        }
+      },
+      "harnessAfter": {
+        "tests/workspace-browser.spec.js": {
+          "path": "/Users/artem/projects/klenwriter-editor/tests/workspace-browser.spec.js",
+          "bytes": 3308,
+          "sha256": "c80ad56fc9ab7f4e65ac2a3e42d5e38ea02bc0b294a0389b7ea1b82db5d791aa"
+        },
+        "tests/sdk-workspace-browser.spec.js": {
+          "path": "/Users/artem/projects/klenwriter-editor/tests/sdk-workspace-browser.spec.js",
+          "bytes": 10772,
+          "sha256": "81864e7cd589e3e0c5839d0d3bd086d2eded38a3556f10241ad81ade30a01a9a"
+        },
+        "scripts/workspace-server.mjs": {
+          "path": "/Users/artem/projects/klenwriter-editor/scripts/workspace-server.mjs",
+          "bytes": 3737,
+          "sha256": "566844822e5f32447367fea174d1d036f9520e8e0ee49bba9d18f7e5092c8a9d"
+        },
+        "playwright.workspace.config.js": {
+          "path": "/Users/artem/projects/klenwriter-editor/playwright.workspace.config.js",
+          "bytes": 627,
+          "sha256": "d38aa994bd9c510260add6f9530c66a9fc99be5fc1de764903cc18c6e2420bf1"
+        },
+        "spikes/workspace/sdk-host.html": {
+          "path": "/Users/artem/projects/klenwriter-editor/spikes/workspace/sdk-host.html",
+          "bytes": 462,
+          "sha256": "93703a1b9ef565bafbbc51e8b67fb9ad523ca772f11a5eada8f0fbe4f53b2952"
+        },
+        "examples/notes-extension/testkit.mjs": {
+          "path": "/Users/artem/projects/klenwriter-editor/examples/notes-extension/testkit.mjs",
+          "bytes": 19366,
+          "sha256": "d51c23912f364e1e878a98a701783c8650302cf43694738cf9c51caa0d9c3068"
+        },
+        "tests/support/extension-fixtures.mjs": {
+          "path": "/Users/artem/projects/klenwriter-editor/tests/support/extension-fixtures.mjs",
+          "bytes": 2394,
+          "sha256": "a353ff685571b7fd02dedded43492422da438c50dfad4787fd68b9e1459dd2b0"
+        }
+      },
+      "harnessUnchanged": true,
+      "artifactsBefore": {
+        "artifacts/sdk-build-identity.json": {
+          "path": "/Users/artem/projects/klenwriter-editor/artifacts/sdk-build-identity.json",
+          "bytes": 14927,
+          "sha256": "068cc68edde0d99c55de5955181cbbb4a31bb1b7ff75da3ef428b4982f5f858b"
+        },
+        "packages/wasm/dist/editor_wasm_bg.wasm": {
+          "path": "/Users/artem/projects/klenwriter-editor/packages/wasm/dist/editor_wasm_bg.wasm",
+          "bytes": 6526024,
+          "sha256": "f551ea8410dc1b40be1deb02c9f3751b426b9651597108fcb9e1c39a4dd206a4"
+        },
+        "artifacts/extensions/packet.json": {
+          "path": "/Users/artem/projects/klenwriter-editor/artifacts/extensions/packet.json",
+          "bytes": 13060313,
+          "sha256": "81e10a3cd9e1229566b357e919736670f3a675950411d868242080ee2e1fdbdf"
+        }
+      },
+      "artifactsAfter": {
+        "artifacts/sdk-build-identity.json": {
+          "path": "/Users/artem/projects/klenwriter-editor/artifacts/sdk-build-identity.json",
+          "bytes": 14927,
+          "sha256": "068cc68edde0d99c55de5955181cbbb4a31bb1b7ff75da3ef428b4982f5f858b"
+        },
+        "packages/wasm/dist/editor_wasm_bg.wasm": {
+          "path": "/Users/artem/projects/klenwriter-editor/packages/wasm/dist/editor_wasm_bg.wasm",
+          "bytes": 6526024,
+          "sha256": "f551ea8410dc1b40be1deb02c9f3751b426b9651597108fcb9e1c39a4dd206a4"
+        },
+        "artifacts/extensions/packet.json": {
+          "path": "/Users/artem/projects/klenwriter-editor/artifacts/extensions/packet.json",
+          "bytes": 13060313,
+          "sha256": "81e10a3cd9e1229566b357e919736670f3a675950411d868242080ee2e1fdbdf"
+        }
+      },
+      "artifactsUnchanged": true,
+      "playwrightStats": {
+        "startTime": "2026-10-18T16:06:32.291Z",
+        "duration": 13676.275,
+        "expected": 18,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "preservedOutputs": [
+        {
+          "original": {
+            "path": "/Users/artem/projects/klenwriter-editor/artifacts/browser.json",
+            "bytes": 26798,
+            "sha256": "921a2fa3c7323c0704bb39bb052641688091f8e030ab7dc6997ce9f47ff66b44"
+          },
+          "preserved": {
+            "path": "/tmp/osr-64-browser-actual-third-artifacts/artifacts/browser.json",
+            "bytes": 26798,
+            "sha256": "921a2fa3c7323c0704bb39bb052641688091f8e030ab7dc6997ce9f47ff66b44"
+          }
+        },
+        {
+          "original": {
+            "path": "/Users/artem/projects/klenwriter-editor/artifacts/extensions/browser-chromium.json",
+            "bytes": 1610386,
+            "sha256": "f842b944abf7565a9aec593e86cf0433eea0f66895dbf961516d58762c2d1ba0"
+          },
+          "preserved": {
+            "path": "/tmp/osr-64-browser-actual-third-artifacts/artifacts/extensions/browser-chromium.json",
+            "bytes": 1610386,
+            "sha256": "f842b944abf7565a9aec593e86cf0433eea0f66895dbf961516d58762c2d1ba0"
+          }
+        },
+        {
+          "original": {
+            "path": "/Users/artem/projects/klenwriter-editor/artifacts/extensions/browser-firefox.json",
+            "bytes": 1610385,
+            "sha256": "bf249bf5c2b4a7e4fcb14cd173225fa8a459bbbedfe30da8ae68015da9014154"
+          },
+          "preserved": {
+            "path": "/tmp/osr-64-browser-actual-third-artifacts/artifacts/extensions/browser-firefox.json",
+            "bytes": 1610385,
+            "sha256": "bf249bf5c2b4a7e4fcb14cd173225fa8a459bbbedfe30da8ae68015da9014154"
+          }
+        },
+        {
+          "original": {
+            "path": "/Users/artem/projects/klenwriter-editor/artifacts/extensions/browser-webkit.json",
+            "bytes": 1610384,
+            "sha256": "66d11cbd285cb0400236bba01cb9c18101ad481fe3a090a6eeb6ba6c0070b9bd"
+          },
+          "preserved": {
+            "path": "/tmp/osr-64-browser-actual-third-artifacts/artifacts/extensions/browser-webkit.json",
+            "bytes": 1610384,
+            "sha256": "66d11cbd285cb0400236bba01cb9c18101ad481fe3a090a6eeb6ba6c0070b9bd"
+          }
+        }
+      ],
+      "buildInputReceipt": {
+        "path": "/tmp/osr-64-root-build-third.json",
+        "bytes": 386,
+        "sha256": "a34717d19b3577d5382928e4b11fa2296ead683029531f82d1ecd73cb9a8fe4b"
+      },
+      "extensionsInputReceipt": {
+        "path": "/tmp/osr-64-root-extensions-third.json",
+        "bytes": 391,
+        "sha256": "8250d18a3b9e2acfaf0fc404b68ca85666293802635fa4acdd2fc191dbdd0c4c"
+      }
+    },
+    "osr-64-browser-actual-third-proof.json": {
+      "scope": "Actual parsed18test browser results and byte-exact saved perengine outputs afterB3. Supporting local gate only, not CI/review. No source changes; B2proofs remain byteexact.",
+      "actualExitReceipt": {
+        "path": "/tmp/osr-64-browser-actual-third.json",
+        "bytes": 38278,
+        "sha256": "d3a7409f4df8b7c2dc31eeca4c7a5b93815d4a2f4df52a33996cf415b0baf66c"
+      },
+      "actualReturnCode": 0,
+      "rawLog": {
+        "path": "/tmp/osr-64-browser-actual-third.log",
+        "bytes": 3632,
+        "sha256": "8b5be56cf4310eb6806b62bb4f88b6278751e6c49ebf1131aa0c45b499866b3a"
+      },
+      "stats": {
+        "startTime": "2026-10-18T16:06:32.291Z",
+        "duration": 13676.275,
+        "expected": 18,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "testCount": 18,
+      "projectCounts": {
+        "chromium": 6,
+        "firefox": 6,
+        "webkit": 6
+      },
+      "tests": [
+        {
+          "file": "sdk-workspace-browser.spec.js",
+          "line": 5,
+          "title": "packaged headless SDK runs real Session lifecycle and releases resources under strict CSP",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            "passed"
+          ]
+        },
+        {
+          "file": "sdk-workspace-browser.spec.js",
+          "line": 39,
+          "title": "packaged V2 notes literals, runtime extension and controller share one artifact under strict CSP",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            "passed"
+          ]
+        },
+        {
+          "file": "sdk-workspace-browser.spec.js",
+          "line": 5,
+          "title": "packaged headless SDK runs real Session lifecycle and releases resources under strict CSP",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            "passed"
+          ]
+        },
+        {
+          "file": "sdk-workspace-browser.spec.js",
+          "line": 39,
+          "title": "packaged V2 notes literals, runtime extension and controller share one artifact under strict CSP",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            "passed"
+          ]
+        },
+        {
+          "file": "sdk-workspace-browser.spec.js",
+          "line": 5,
+          "title": "packaged headless SDK runs real Session lifecycle and releases resources under strict CSP",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            "passed"
+          ]
+        },
+        {
+          "file": "sdk-workspace-browser.spec.js",
+          "line": 39,
+          "title": "packaged V2 notes literals, runtime extension and controller share one artifact under strict CSP",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            "passed"
+          ]
+        },
+        {
+          "file": "workspace-browser.spec.js",
+          "line": 4,
+          "title": "versioned codec transport preserves u64 and structured refusals under browser CSP",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            "passed"
+          ]
+        },
+        {
+          "file": "workspace-browser.spec.js",
+          "line": 29,
+          "title": "compiled Rust artifact loads through web glue under CSP with static CSS",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            "passed"
+          ]
+        },
+        {
+          "file": "workspace-browser.spec.js",
+          "line": 44,
+          "title": "compiled Rust projection budgets refuse expansion and preserve canonical data",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            "passed"
+          ]
+        },
+        {
+          "file": "workspace-browser.spec.js",
+          "line": 57,
+          "title": "compiled Rust admission refuses before parse and snapshot copies",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            "passed"
+          ]
+        },
+        {
+          "file": "workspace-browser.spec.js",
+          "line": 4,
+          "title": "versioned codec transport preserves u64 and structured refusals under browser CSP",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            "passed"
+          ]
+        },
+        {
+          "file": "workspace-browser.spec.js",
+          "line": 29,
+          "title": "compiled Rust artifact loads through web glue under CSP with static CSS",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            "passed"
+          ]
+        },
+        {
+          "file": "workspace-browser.spec.js",
+          "line": 44,
+          "title": "compiled Rust projection budgets refuse expansion and preserve canonical data",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            "passed"
+          ]
+        },
+        {
+          "file": "workspace-browser.spec.js",
+          "line": 57,
+          "title": "compiled Rust admission refuses before parse and snapshot copies",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            "passed"
+          ]
+        },
+        {
+          "file": "workspace-browser.spec.js",
+          "line": 4,
+          "title": "versioned codec transport preserves u64 and structured refusals under browser CSP",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            "passed"
+          ]
+        },
+        {
+          "file": "workspace-browser.spec.js",
+          "line": 29,
+          "title": "compiled Rust artifact loads through web glue under CSP with static CSS",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            "passed"
+          ]
+        },
+        {
+          "file": "workspace-browser.spec.js",
+          "line": 44,
+          "title": "compiled Rust projection budgets refuse expansion and preserve canonical data",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            "passed"
+          ]
+        },
+        {
+          "file": "workspace-browser.spec.js",
+          "line": 57,
+          "title": "compiled Rust admission refuses before parse and snapshot copies",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            "passed"
+          ]
+        }
+      ],
+      "engines": [
+        {
+          "project": "chromium",
+          "report": {
+            "path": "/tmp/osr-64-browser-actual-third-artifacts/artifacts/extensions/browser-chromium.json",
+            "bytes": 1610386,
+            "sha256": "f842b944abf7565a9aec593e86cf0433eea0f66895dbf961516d58762c2d1ba0"
+          },
+          "codecLiterals": 53,
+          "commandLiterals": 18,
+          "runtimeRecipe": "passed",
+          "simultaneousFrozenD0D1": true,
+          "actualSharedV1V2RustCounters": true,
+          "buildId": "sha256:a5886a244ba4e4204e58e5616fe254581ece9563d6c31a1cb5e2064778ae91ac",
+          "wasmSha256": "f551ea8410dc1b40be1deb02c9f3751b426b9651597108fcb9e1c39a4dd206a4",
+          "packetSha256": "81e10a3cd9e1229566b357e919736670f3a675950411d868242080ee2e1fdbdf",
+          "nativeFinal": {
+            "sessions": 0,
+            "snapshot_handles": 0,
+            "snapshot_bytes": "0",
+            "protected_cursors": 0
+          },
+          "controllerResources": {
+            "lifecycle": "destroyed",
+            "sessions": 0,
+            "listeners": 0,
+            "queued_mutations": 0,
+            "queued_bytes": 0,
+            "pending_tickets": 0,
+            "host_requests": 0,
+            "task_continuations": 0,
+            "original_input_bytes": 0,
+            "callback_errors": 0,
+            "callback_error_handlers": 0
+          },
+          "parsedReplyReadbacks": 1791
+        },
+        {
+          "project": "firefox",
+          "report": {
+            "path": "/tmp/osr-64-browser-actual-third-artifacts/artifacts/extensions/browser-firefox.json",
+            "bytes": 1610385,
+            "sha256": "bf249bf5c2b4a7e4fcb14cd173225fa8a459bbbedfe30da8ae68015da9014154"
+          },
+          "codecLiterals": 53,
+          "commandLiterals": 18,
+          "runtimeRecipe": "passed",
+          "simultaneousFrozenD0D1": true,
+          "actualSharedV1V2RustCounters": true,
+          "buildId": "sha256:a5886a244ba4e4204e58e5616fe254581ece9563d6c31a1cb5e2064778ae91ac",
+          "wasmSha256": "f551ea8410dc1b40be1deb02c9f3751b426b9651597108fcb9e1c39a4dd206a4",
+          "packetSha256": "81e10a3cd9e1229566b357e919736670f3a675950411d868242080ee2e1fdbdf",
+          "nativeFinal": {
+            "sessions": 0,
+            "snapshot_handles": 0,
+            "snapshot_bytes": "0",
+            "protected_cursors": 0
+          },
+          "controllerResources": {
+            "lifecycle": "destroyed",
+            "sessions": 0,
+            "listeners": 0,
+            "queued_mutations": 0,
+            "queued_bytes": 0,
+            "pending_tickets": 0,
+            "host_requests": 0,
+            "task_continuations": 0,
+            "original_input_bytes": 0,
+            "callback_errors": 0,
+            "callback_error_handlers": 0
+          },
+          "parsedReplyReadbacks": 1791
+        },
+        {
+          "project": "webkit",
+          "report": {
+            "path": "/tmp/osr-64-browser-actual-third-artifacts/artifacts/extensions/browser-webkit.json",
+            "bytes": 1610384,
+            "sha256": "66d11cbd285cb0400236bba01cb9c18101ad481fe3a090a6eeb6ba6c0070b9bd"
+          },
+          "codecLiterals": 53,
+          "commandLiterals": 18,
+          "runtimeRecipe": "passed",
+          "simultaneousFrozenD0D1": true,
+          "actualSharedV1V2RustCounters": true,
+          "buildId": "sha256:a5886a244ba4e4204e58e5616fe254581ece9563d6c31a1cb5e2064778ae91ac",
+          "wasmSha256": "f551ea8410dc1b40be1deb02c9f3751b426b9651597108fcb9e1c39a4dd206a4",
+          "packetSha256": "81e10a3cd9e1229566b357e919736670f3a675950411d868242080ee2e1fdbdf",
+          "nativeFinal": {
+            "sessions": 0,
+            "snapshot_handles": 0,
+            "snapshot_bytes": "0",
+            "protected_cursors": 0
+          },
+          "controllerResources": {
+            "lifecycle": "destroyed",
+            "sessions": 0,
+            "listeners": 0,
+            "queued_mutations": 0,
+            "queued_bytes": 0,
+            "pending_tickets": 0,
+            "host_requests": 0,
+            "task_continuations": 0,
+            "original_input_bytes": 0,
+            "callback_errors": 0,
+            "callback_error_handlers": 0
+          },
+          "parsedReplyReadbacks": 1791
+        }
+      ],
+      "sourceBeforeAfterEqual": true,
+      "harnessBeforeAfterEqual": true,
+      "artifactsBeforeAfterEqual": true,
+      "priorB2Preservation": {
+        "receipt": {
+          "path": "/tmp/osr-64-browser-actual-second.json",
+          "bytes": 38213,
+          "sha256": "0d47b2dff2d63697d49c676c1235f27481956f799a11e353cf3116322516ddf1"
+        },
+        "proof": {
+          "path": "/tmp/osr-64-browser-actual-second-proof.json",
+          "bytes": 9697,
+          "sha256": "69607ed0a0289631c23bcff23591dd287fa5ef4a9d23a33f2978f2898575687f"
+        },
+        "rawLogAndFourSavedOutputsVerified": true
+      }
+    },
+    "osr-64-root-rust-final3.json": [
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-rust-final3-0.log",
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "elapsed_seconds": 0.556210994720459
+      },
+      {
+        "command": [
+          "cargo",
+          "clippy",
+          "--workspace",
+          "--all-targets",
+          "--locked",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-rust-final3-1.log",
+        "log_sha256": "549943209ea3dcb80c8fb5b3f0a9a8bd925d84a41a8b6d3e7a8574ed9a7153e3",
+        "elapsed_seconds": 4.19208288192749
+      },
+      {
+        "command": [
+          "cargo",
+          "test",
+          "--workspace",
+          "--locked"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-rust-final3-2.log",
+        "log_sha256": "45f7e082d295ca21ac038f93d32c4eba9807d88888d22096577a50399d143db4",
+        "elapsed_seconds": 57.05489206314087
+      }
+    ],
+    "osr-64-root-msrv-final2.json": [
+      {
+        "command": [
+          "cargo",
+          "+1.89.0",
+          "test",
+          "--locked",
+          "-p",
+          "klenwriter-editor-core",
+          "-p",
+          "klenwriter-editor-kwdj",
+          "-p",
+          "klenwriter-editor-registry",
+          "-p",
+          "klenwriter-editor-protocol"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-msrv-final2-0.log",
+        "log_sha256": "076926f79d21fef90c963557467624a99259a21a7298b78a23ef9e520b1638f3",
+        "elapsed_seconds": 6.470452070236206
+      },
+      {
+        "command": [
+          "cargo",
+          "+1.89.0",
+          "check",
+          "--locked",
+          "--lib",
+          "-p",
+          "klenwriter-editor-notes",
+          "-p",
+          "klenwriter-editor-extensions"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-msrv-final2-1.log",
+        "log_sha256": "736e2582f563605dd272e5fb977840b0c0767377d27b6940c440caf75eec7157",
+        "elapsed_seconds": 0.05250406265258789
+      }
+    ],
+    "osr-64-root-canonical-final.json": {
+      "command": [
+        "node",
+        "--test",
+        "tests/canonical.node.mjs"
+      ],
+      "exit_code": 0,
+      "log": "/tmp/osr-64-root-canonical-final.log",
+      "log_sha256": "9a5bdbbcfb7c647c273c3d7ca75647e68666f37b9716feb2a484f9a98a97c79a",
+      "elapsed_seconds": 1.060687780380249
+    },
+    "osr-64-root-m0-first.json": [
+      {
+        "command": [
+          "npm",
+          "test"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-m0-first-0.log",
+        "log_sha256": "d5e14208ba44896c09113037d17c4abcf9ee5ff27e44c6a5ac838e95f9ad348e",
+        "elapsed_seconds": 360.4243712425232
+      },
+      {
+        "command": [
+          "node",
+          "scripts/summarize-evidence.mjs"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-m0-first-1.log",
+        "log_sha256": "a355364952cc8ac890fcd4c86e4246dad93920c4fb10991c8f514908a4bdbc53",
+        "elapsed_seconds": 0.1783888339996338
+      },
+      {
+        "command": [
+          "npm",
+          "run",
+          "test:contracts"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-m0-first-2.log",
+        "log_sha256": "525f0561d44243836f72135b27b6f5ee8b41502c76a882589e48f0101efe4ced",
+        "elapsed_seconds": 0.4779338836669922
+      },
+      {
+        "command": [
+          "npm",
+          "run",
+          "check:m0"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-m0-first-3.log",
+        "log_sha256": "b754ac041c668a4a41635c6b887f60ffd79500d5aee39611b982e551d9f3f1ec",
+        "elapsed_seconds": 0.39009785652160645
+      },
+      {
+        "command": [
+          "npm",
+          "run",
+          "perf:verify"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/osr-64-root-m0-first-4.log",
+        "log_sha256": "85de2eff315216a5ed99e382810f78fc3426440815c17622b2d750ffc7e0a00f",
+        "elapsed_seconds": 0.4047079086303711
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "artifacts/sdk-build-identity.json",
+      "bytes": 14927,
+      "sha256": "068cc68edde0d99c55de5955181cbbb4a31bb1b7ff75da3ef428b4982f5f858b"
+    },
+    {
+      "path": "artifacts/sdk-native-manifest.json",
+      "bytes": 421,
+      "sha256": "099047923a62709bcfa6687c441c8fc45625a38e40644db920cd3088a6c667d8"
+    },
+    {
+      "path": "artifacts/sdk-native-manifest-v2.json",
+      "bytes": 759,
+      "sha256": "504f2b1d875e70c44f347e7a89afe4cf01bcbeea38143c3de4ed4ebedcbdbf1e"
+    },
+    {
+      "path": "artifacts/extensions/report.json",
+      "bytes": 95221,
+      "sha256": "c155a991b1599a43fea38ee5f488fcab27d4b0a7bcf795b7030d954d90c93917"
+    },
+    {
+      "path": "artifacts/extensions/consumers/notes-only/build.json",
+      "bytes": 44185,
+      "sha256": "b691205c5c14e2fdcf305b34209454149c0316bf8f3b2b53f02925ebc032dd7b"
+    },
+    {
+      "path": "artifacts/extensions/consumers/kwdj-only/build.json",
+      "bytes": 44150,
+      "sha256": "5120c11f6096eefb99bdcdb0e49ae1fc12f29b62630de4656325d26cdddf55c5"
+    },
+    {
+      "path": "artifacts/codec-v1-report.json",
+      "bytes": 96165,
+      "sha256": "385945353a42c10c2045e94f1a556a8269bbb22cad8131d7c15fa007b44ae52e"
+    },
+    {
+      "path": "artifacts/codec-import-closed-report.json",
+      "bytes": 19097,
+      "sha256": "8e7a0b57bb810f27663aaa970665727ec9bd1425d11c40e845c45175d20e21d3"
+    },
+    {
+      "path": "artifacts/codec-import-root-budget-report.json",
+      "bytes": 10747,
+      "sha256": "c1bc1b593da93fa39f363e6a7c5795aec3da85b06a6f75b2ca78ecd43fb4071b"
+    },
+    {
+      "path": "artifacts/sdk-clean-consumer-report.json",
+      "bytes": 1871998,
+      "sha256": "4596ce6471d1429a48e715c9491dc9a2e6fa582732aa6dcfdb94be793eb190df"
+    },
+    {
+      "path": "artifacts/browser.json",
+      "bytes": 26798,
+      "sha256": "921a2fa3c7323c0704bb39bb052641688091f8e030ab7dc6997ce9f47ff66b44"
+    },
+    {
+      "path": "artifacts/extensions/browser-chromium.json",
+      "bytes": 1610386,
+      "sha256": "f842b944abf7565a9aec593e86cf0433eea0f66895dbf961516d58762c2d1ba0"
+    },
+    {
+      "path": "artifacts/extensions/browser-firefox.json",
+      "bytes": 1610385,
+      "sha256": "bf249bf5c2b4a7e4fcb14cd173225fa8a459bbbedfe30da8ae68015da9014154"
+    },
+    {
+      "path": "artifacts/extensions/browser-webkit.json",
+      "bytes": 1610384,
+      "sha256": "66d11cbd285cb0400236bba01cb9c18101ad481fe3a090a6eeb6ba6c0070b9bd"
+    },
+    {
+      "path": "artifacts/dependencies.json",
+      "bytes": 77166,
+      "sha256": "64b4692547edb8d8e94149b4ec9626d56c63c78aef7b41cb5ad9b8c868541cea"
+    },
+    {
+      "path": "artifacts/package-inventory.json",
+      "bytes": 13430,
+      "sha256": "fb2fa7a8fab74031959cb7b5913c06ab20fd6b5b0a6abf5b30b7a1fc66b2c78c"
+    },
+    {
+      "path": "artifacts/native-package-inventory.json",
+      "bytes": 8101,
+      "sha256": "7d3c79cc3a2286c8ff822b6daef2fcfc6eff8327312723b7f8077e0a7f2d5fe1"
+    },
+    {
+      "path": "artifacts/sdk-report.json",
+      "bytes": 27976,
+      "sha256": "51b34e12660ad362112e880a694a7c5e5f6ddd2948c8c546183595b0ed747aaa"
+    },
+    {
+      "path": "artifacts/corpus-stage-report.json",
+      "bytes": 347602,
+      "sha256": "5793918ae48baf071f2eac90e2d5f9cb6dc921a205d66de143d978429dec15cb"
+    },
+    {
+      "path": "artifacts/corpus-hardening-report.json",
+      "bytes": 220,
+      "sha256": "cad87163df8d10bf03d9e48a52654800c68c0820b0781944716b745ba1899216"
+    },
+    {
+      "path": "artifacts/corpus-extension-report.json",
+      "bytes": 18230,
+      "sha256": "2733d1ec5198bcb36d7cb020a7d60e7715b46a0e9536cff756db2ea06bbcacb2"
+    },
+    {
+      "path": "artifacts/corpus-invalid-fields-report.json",
+      "bytes": 21568,
+      "sha256": "f8124986cf5f4aaada4ba82256debd104449178cc1c40525a569f3829600962a"
+    },
+    {
+      "path": "artifacts/session-foundation-report.json",
+      "bytes": 7377,
+      "sha256": "7d1d57598995c96c9d17c2a3cd6e4fee95f6e501a679d9f84a0694cd7fff8f98"
+    },
+    {
+      "path": "artifacts/transaction-report.json",
+      "bytes": 10287,
+      "sha256": "09087d5a66f17e6664bffcc830205db68ca2ddeaf9590dd4b4d7e0bbebc522ba"
+    },
+    {
+      "path": "artifacts/command-report.json",
+      "bytes": 76915,
+      "sha256": "4a47c31cdfde1715d4d33946e6d306de76a2bdc3484bf5f49b80fef22cebfb5d"
+    },
+    {
+      "path": "artifacts/history-report.json",
+      "bytes": 97196,
+      "sha256": "45d80d9d2baefd947afd3ac26b7d448dcec220a90b99bd2254ab9451159d0da0"
+    },
+    {
+      "path": "artifacts/deltas-report.json",
+      "bytes": 202493,
+      "sha256": "642894882db7255e722225c9f44e994e5ee854b8b0484a8bc2c4fbcfd96b58be"
+    },
+    {
+      "path": "artifacts/extensions/consumers/builds.json",
+      "bytes": 935,
+      "sha256": "e04a66c9f6e7cf00ae30e4a329365dbb6f3041b394b24b7fc0179a50c8992678"
+    }
+  ],
+  "portableSupportingInputs": {
+    "path": "evidence/osr-64/third-build/index.json",
+    "earlierSources": "evidence/osr-64/supporting-inputs.json",
+    "originalHashesRemainAuthoritative": true,
+    "sha256": "476dda1d2b39258e0d06dada53dc059c4f5ce74f1b22f8b40574f37c570f7400",
+    "files": 137,
+    "originalBytes": 54675191
+  },
+  "limitations": [
+    "M0 102 passes describe MET28/GAP26/OBS48; they do not imply product input acceptance.",
+    "Browser engines are Chromium, Firefox and Playwright WebKit; no installed Safari, Windows, IME, assistive-technology or mounted production UI acceptance.",
+    "No publish/deploy or independent review approval is asserted."
+  ],
+  "historicalPreviousBuild": {
+    "receipt": {
+      "path": "/Users/artem/projects/klenwriter-editor/evidence/osr-64/local-verification-second.json",
+      "bytes": 82427,
+      "sha256": "97a2c0755aafc6ce5dda8683bcb9cab031aaf2858b90c97e99e43d70c6ccc210"
+    },
+    "scope": "Byte-exact B2 local-verification document, historical only; original gzip supporting inputs are unchanged.",
+    "snapshot": {
+      "archive": "/tmp/osr-64-second-compiled-snapshot.zip",
+      "bytes": 9631934,
+      "sha256": "69c8b3fb6d8a091342bdb5bdd6f9e405df514b32b1c04af8db336e3b9226e2d8",
+      "files": 229,
+      "buildId": "sha256:f426f85146ca8c14a0e8a919a02c11361f69705aa617146c9797c7335e97c248",
+      "defaultWasmSha256": "2437f219197939265c2de94231f45c314ab21318bd01c21b93724402de77b67c"
+    }
+  },
+  "priorReceiptReuse": {
+    "equivalence": {
+      "testedHeadBefore": "65fdf800be0ca0818ed0c3b42a5fabd2eb36ec6e",
+      "unchangedProductionInputs": 138,
+      "changed": [
+        {
+          "path": "scripts/build-extensions-consumers.mjs",
+          "before": "91878b67c5ecbd365b61e54ba7bbcac2e096d0d987abebab0764c692cdd0c0cf",
+          "after": "d5a5bd861d115653f31770383dea05b63ede06f972b41c191a544edf0e985847"
+        }
+      ],
+      "scope": "Rust/TS source and lockfiles unchanged; new producer BuildID requires fresh compiled/runtime/packaged gates. Prior native/MSRV/canonical/M0 semantic checks retain exact relevant inputs."
+    },
+    "explanation": "Rust/TypeScript sources and lockfiles are unchanged; the only production-identity change is standalone consumer fetching. Native375/MSRV151/canonical/M0 semantics remain supported by their original raw receipts. B3 build/runtime/packaged/browser gates were actually rerun for the new build identity."
+  },
+  "coldCacheFailureAndRepair": {
+    "path": "evidence/osr-64/cold-cache/index.json",
+    "failedRun": 39141373334,
+    "failedHead": "65fdf800be0ca0818ed0c3b42a5fabd2eb36ec6e",
+    "repairCommit": "8a66939783861975cb5b1d54f296a50f9ca9ecbb"
+  },
+  "supportingRuntimeAudit": {
+    "original": "/tmp/osr-64-fresh-third-runtime-evidence-audit.json",
+    "sha256": "f709aa810d5ee1571934240404c5f08fb0b5047ac1a600f9be0db0274e912848",
+    "scope": "Read-only B3 evidence consistency audit: exact source/consumer/artifact/raw log/manifests/graphs/case bindings; no repeated runtime executions, browser/offline consumer audit or formal review verdict."
+  }
+}

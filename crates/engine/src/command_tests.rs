@@ -7,7 +7,9 @@ use crate::mapping::{MapResult, StepMap};
 use crate::transaction::{CommitEvent, JournalEntrySummary, JournalSummary};
 use crate::tree::{EditOrigin, TreeError};
 use editor_core::candidate::CandidateRead;
-use editor_core::commands::{CommandDescriptor, LocalRef, SelectionIntent, StoredMarksUpdate};
+use editor_core::commands::{
+    CommandCatalog, CommandDescriptor, LocalRef, SelectionIntent, StoredMarksUpdate,
+};
 use editor_core::document::{Attributes, Document, Mark, Node, Primitive};
 use editor_core::positions::{Affinity, Position, PositionError, Selection, Utf16Offset};
 use editor_core::profile::{AdmissionMode, FrozenProfile, ProfileBinding};
@@ -38,6 +40,10 @@ enum Intent<I> {
     },
     MarkOverride(Option<Vec<Mark>>),
     Type(String),
+    RuntimeType {
+        id: String,
+        text: String,
+    },
     Noop,
     Unknown,
 }
@@ -52,6 +58,8 @@ struct FixtureProfile {
     snapshot_calls: Rc<Cell<usize>>,
     validation_calls: Rc<Cell<usize>>,
     finalizer_calls: Rc<Cell<usize>>,
+    runtime_catalog: Option<Vec<String>>,
+    profile_work: Option<editor_core::transaction::WorkLimits>,
 }
 fn mark() -> Mark {
     Mark {
@@ -97,6 +105,8 @@ impl FixtureProfile {
             snapshot_calls: Rc::new(Cell::new(0)),
             validation_calls: Rc::new(Cell::new(0)),
             finalizer_calls: Rc::new(Cell::new(0)),
+            runtime_catalog: None,
+            profile_work: None,
         }
     }
 }
@@ -105,6 +115,9 @@ impl FrozenProfile for FixtureProfile {
     type Admitted = Document;
     type Error = &'static str;
     type Cache<I: Copy + Eq + Ord> = ();
+    fn transaction_work_limits(&self) -> Option<editor_core::transaction::WorkLimits> {
+        self.profile_work
+    }
     fn binding(&self) -> &ProfileBinding {
         &self.binding
     }
@@ -236,7 +249,13 @@ impl CommandProvider for FixtureProfile {
             id: "org.example.commands/noop",
         },
     ];
-    fn command_id<I: Copy + Eq + Ord>(intent: &Intent<I>) -> &'static str {
+    fn command_catalog(&self) -> CommandCatalog<'_> {
+        match &self.runtime_catalog {
+            Some(ids) => CommandCatalog::Runtime(ids),
+            None => CommandCatalog::Static(Self::COMMANDS),
+        }
+    }
+    fn command_id<I: Copy + Eq + Ord>(intent: &Intent<I>) -> &str {
         match intent {
             Intent::Split { .. } => Self::COMMANDS[0].id,
             Intent::Insert { .. } | Intent::InsertEmptyWithInvalidCaret { .. } => {
@@ -245,6 +264,7 @@ impl CommandProvider for FixtureProfile {
             Intent::Duplicate { .. } => Self::COMMANDS[2].id,
             Intent::MarkOverride(_) => Self::COMMANDS[3].id,
             Intent::Type(_) => Self::COMMANDS[4].id,
+            Intent::RuntimeType { id, .. } => id,
             Intent::Noop => Self::COMMANDS[5].id,
             Intent::Unknown => "org.example.commands/unregistered",
         }
@@ -388,7 +408,7 @@ impl CommandProvider for FixtureProfile {
                 };
                 plan.set_stored_marks(update).map_err(budget)?;
             }
-            Intent::Type(text) => {
+            Intent::Type(text) | Intent::RuntimeType { text, .. } => {
                 let caret = state.selection.ok_or("fixture.selection")?.focus;
                 let Position::Text { leaf, utf16, .. } = caret else {
                     return Err("fixture.selection");
@@ -490,7 +510,9 @@ impl CommandProvider for FixtureProfile {
 }
 
 fn open(value: &str, styled: bool) -> Session<FixtureProfile> {
-    let profile = FixtureProfile::new(value, styled);
+    open_profile(FixtureProfile::new(value, styled))
+}
+fn open_profile(profile: FixtureProfile) -> Session<FixtureProfile> {
     let binding = profile.binding.clone();
     let mut session = Session::open(
         profile,
@@ -646,6 +668,143 @@ fn same_refusal(
         "execute refusal mutated committed facets"
     );
     reason
+}
+
+// These literal effects/refusals precede the OSR-64 instance catalog implementation.
+#[test]
+fn runtime_catalog_query_and_execute_use_the_instance_id_without_publication_on_query() {
+    let id = ["org.example.external", "type"].join("/");
+    let mut profile = FixtureProfile::new("ab", false);
+    profile.runtime_catalog = Some(vec![id.clone()]);
+    let mut s = open_profile(profile);
+    assert_eq!(
+        s.command_catalog(s.key())
+            .unwrap()
+            .ids()
+            .collect::<Vec<_>>(),
+        vec!["org.example.external/type"]
+    );
+    let leaf = first_leaf(&s);
+    let before = facets(&s, leaf);
+    let runtime = request(
+        &s,
+        Intent::RuntimeType {
+            id: id.clone(),
+            text: "X".into(),
+        },
+    );
+    assert_eq!(available(&s, &runtime).0, CommandEffect::Changed);
+    assert_eq!(facets(&s, leaf), before);
+    let legacy = request(&s, Intent::Type("X".into()));
+    assert_eq!(same_refusal(&mut s, &legacy, leaf), "command.unknown");
+    let case_mismatch = request(
+        &s,
+        Intent::RuntimeType {
+            id: "org.example.external/Type".into(),
+            text: "X".into(),
+        },
+    );
+    assert_eq!(
+        same_refusal(&mut s, &case_mismatch, leaf),
+        "command.unknown"
+    );
+    changed(&mut s, &runtime);
+    assert_eq!(
+        s.tree.document().children[0]
+            .children
+            .iter()
+            .map(|node| node.text.as_deref().unwrap())
+            .collect::<String>(),
+        "Xab"
+    );
+    assert_eq!(s.revision(), 1);
+    assert_eq!(s.journal_entries().len(), 1);
+
+    let mut other = open("ab", false);
+    assert!(matches!(
+        s.command_catalog(other.key()),
+        Err(crate::session::SessionError::State(
+            StateError::StaleSession
+        ))
+    ));
+    let other_leaf = first_leaf(&other);
+    let unregistered = request(
+        &other,
+        Intent::RuntimeType {
+            id,
+            text: "X".into(),
+        },
+    );
+    assert_eq!(
+        same_refusal(&mut other, &unregistered, other_leaf),
+        "command.unknown"
+    );
+    other.close(other.key()).unwrap();
+    assert!(matches!(
+        other.command_catalog(other.key()),
+        Err(crate::session::SessionError::State(StateError::Closed))
+    ));
+}
+
+#[test]
+fn immutable_profile_work_reductions_precede_catalog_or_raw_operation_preparation() {
+    use editor_core::transaction::WorkLimits;
+    for cap in [
+        WorkLimits {
+            units: 0,
+            bytes: u64::MAX,
+        },
+        WorkLimits {
+            units: u64::MAX,
+            bytes: 0,
+        },
+    ] {
+        let mut profile = FixtureProfile::new("ab", false);
+        profile.profile_work = Some(cap);
+        let binding = profile.binding.clone();
+        let mut s = Session::open(
+            profile,
+            &binding,
+            b"fixture",
+            AdmissionMode::Strict,
+            AccessMode::Editable,
+        )
+        .unwrap();
+        let leaf = first_leaf(&s);
+        let before = facets(&s, leaf);
+        let mut command = request(&s, Intent::Noop);
+        command.limits.work = WorkLimits {
+            units: u64::MAX,
+            bytes: u64::MAX,
+        };
+        assert_eq!(
+            same_refusal(&mut s, &command, leaf),
+            "resource_limit_exceeded"
+        );
+        assert_eq!(s.profile.validation_calls.get(), 0);
+        let mut raw = Transaction::new(
+            s.key(),
+            s.revision(),
+            vec![Operation::ReplaceText {
+                leaf: leaf.into(),
+                from: Utf16Offset::new(0),
+                to: Utf16Offset::new(0),
+                inserted: "X".into(),
+            }],
+        );
+        raw.limits.work = WorkLimits {
+            units: u64::MAX,
+            bytes: u64::MAX,
+        };
+        assert!(matches!(
+            s.dispatch(raw),
+            DispatchOutcome::Refused {
+                error: TransactionError::Limit(_),
+                ..
+            }
+        ));
+        assert_eq!(facets(&s, leaf), before);
+    }
 }
 
 #[test]

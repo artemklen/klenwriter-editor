@@ -1,0 +1,12 @@
+{
+  "root": {
+    "attrs": {
+      "title": ""
+    },
+    "children": [],
+    "marks": [],
+    "text": null,
+    "type": "org.example.notes/document"
+  },
+  "schema_version": 1
+}

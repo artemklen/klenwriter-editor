@@ -1,0 +1,27 @@
+[package]
+name = "klenwriter-editor-protocol"
+version.workspace = true
+edition.workspace = true
+rust-version = "1.89.0"
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+editor_core.workspace = true
+serde.workspace = true
+
+[features]
+default = []
+sdk-types = ["dep:ts-rs"]
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+ts-rs = { version = "=12.0.1", optional = true, default-features = false, features = ["serde-compat"] }
+
+[package.metadata.klenwriter-editor]
+role = "protocol"
+source-provenance = "SOURCE-PROVENANCE.json"
+public-api-stability = "bootstrap"

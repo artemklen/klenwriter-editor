@@ -174,7 +174,11 @@ impl<P: FrozenProfile> Session<P> {
         let tree = AddressTree::from_document(key, profile.to_document(&admitted))?;
         let baseline = SavedBaseline::admitted(profile.canonical(&admitted))?;
         let cache = profile
-            .seed_cache(&admitted, &tree, &mut WorkMeter::new(WorkLimits::default()))
+            .seed_cache(
+                &admitted,
+                &tree,
+                &mut WorkMeter::for_admission_cache(profile.admission_cache_work_limits()),
+            )
             .map_err(SessionError::Profile)?;
         Ok(Self {
             binding: requested.clone(),
@@ -208,6 +212,17 @@ impl<P: FrozenProfile> Session<P> {
     }
     pub fn selection_epoch(&self) -> u64 {
         self.selection_epoch
+    }
+
+    fn preparation_work(&self, requested: WorkLimits) -> WorkMeter {
+        let limits = self
+            .profile
+            .transaction_work_limits()
+            .map_or(requested, |profile| WorkLimits {
+                units: requested.units.min(profile.units),
+                bytes: requested.bytes.min(profile.bytes),
+            });
+        WorkMeter::new(limits)
     }
 
     /// Future typing override; None inherits the profile's caret policy, while
@@ -341,7 +356,7 @@ impl<P: FrozenProfile> Session<P> {
         if history_epoch != self.history.summary().epoch {
             return Err(StateError::StaleHistoryEpoch.into());
         }
-        let mut work = WorkMeter::new(limits);
+        let mut work = self.preparation_work(limits);
         let plan = self.history.plan_barrier(&mut work)?;
         let changed = plan.is_some();
         let next_history = plan
@@ -482,7 +497,7 @@ impl<P: FrozenProfile> Session<P> {
             .selection_epoch
             .checked_add(1)
             .ok_or(StateError::CounterExhausted)?;
-        let mut work = WorkMeter::new(WorkLimits::default());
+        let mut work = self.preparation_work(WorkLimits::default());
         let history = self
             .history
             .plan_barrier(&mut work)
@@ -554,7 +569,7 @@ impl<P: FrozenProfile> Session<P> {
         output: impl FnOnce(&[u8], WorkTrace) -> R,
     ) -> Result<R, SessionError<P::Error>> {
         self.guard(key, Some(revision))?;
-        let mut work = WorkMeter::new(WorkLimits::default());
+        let mut work = self.preparation_work(WorkLimits::default());
         let document = self.tree.document_with_work(&mut work)?;
         let admitted = self
             .profile
@@ -620,7 +635,7 @@ impl<P: FrozenProfile> Session<P> {
             });
         }
         let dirty = revision != self.revision;
-        let mut work = WorkMeter::new(WorkLimits::default());
+        let mut work = self.preparation_work(WorkLimits::default());
         let event = self.state_event(
             StateProjection {
                 stamp: self.stamp(),
@@ -665,7 +680,7 @@ impl<P: FrozenProfile> Session<P> {
         if !self.dirty || !self.baseline.equals(snapshot.document()) {
             return Ok(false);
         }
-        let mut work = WorkMeter::new(WorkLimits::default());
+        let mut work = self.preparation_work(WorkLimits::default());
         let event = self.state_event(
             StateProjection {
                 stamp: self.stamp(),
@@ -716,7 +731,11 @@ impl<P: FrozenProfile> Session<P> {
         let baseline = SavedBaseline::admitted(self.profile.canonical(&admitted))?;
         let cache = self
             .profile
-            .seed_cache(&admitted, &tree, &mut WorkMeter::new(WorkLimits::default()))
+            .seed_cache(
+                &admitted,
+                &tree,
+                &mut WorkMeter::for_admission_cache(self.profile.admission_cache_work_limits()),
+            )
             .map_err(SessionError::Profile)?;
         let events = EventOutbox::new(next_key);
         self.context = context;

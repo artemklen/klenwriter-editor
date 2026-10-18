@@ -1,0 +1,36 @@
+{
+  "root": {
+    "attrs": {
+      "tags": [],
+      "title": ""
+    },
+    "children": [
+      {
+        "attrs": {},
+        "children": [
+          {
+            "attrs": {},
+            "children": [],
+            "marks": [],
+            "text": "",
+            "type": "org.example.notes/text"
+          },
+          {
+            "attrs": {},
+            "children": [],
+            "marks": [],
+            "text": "x",
+            "type": "org.example.notes/text"
+          }
+        ],
+        "marks": [],
+        "text": null,
+        "type": "org.example.notes/paragraph"
+      }
+    ],
+    "marks": [],
+    "text": null,
+    "type": "org.example.notes/document"
+  },
+  "schema_version": 1
+}

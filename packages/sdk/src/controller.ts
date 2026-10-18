@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-import { loadSdk, verifyLoadedSdk } from '@klenwriter/editor-wasm';
-import type { EventDto, LazyWasmLoader, LoadedSdkV1, OpenOptions, RawSdkSessionV1, SdkRequest, SdkResponse, StampDto, StateDto } from '@klenwriter/editor-wasm';
+import { loadSdk, loadSdkV2, verifyLoadedSdk, verifyLoadedSdkV2 } from '@klenwriter/editor-wasm';
+import type { BridgeRequest, EventDto, LazyWasmLoader, LazyWasmLoaderV2, LoadedSdkV1, LoadedSdkV2, OpenOptions, OpenOptionsV2, ProfileDto, RawSdkSessionV1, RawSdkSessionV2, SdkRequest, SdkResponse, SessionContextV2, StampDto, StateDto } from '@klenwriter/editor-wasm';
 import { copyInput, DataError, freezeData, HARD_REQUEST_BYTES, ownData, plainFields } from './data.js';
 import type { OwnedData } from './data.js';
 import { decodeResponse } from './response.js';
+import { decodeSessionContext } from './context.js';
 
 export type DeepReadonly<T> = T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]> } : T;
 export type Response = DeepReadonly<SdkResponse>;
@@ -13,16 +14,26 @@ export type ReadRequest = Extract<SdkRequest, { kind: 'state' | 'catalog' | 'nod
 export type QueryRequest = Extract<SdkRequest, { kind: 'query_command' | 'query_history' }>;
 export type MutationRequest = Exclude<SdkRequest, ReadRequest | QueryRequest | { kind: 'events' | 'acknowledge_events' }>;
 export type StampedMutation = Extract<MutationRequest, { stamp: StampDto }>;
+export type MutationRequestV2 = Exclude<BridgeRequest, ReadRequest | QueryRequest | { kind: 'events' | 'acknowledge_events' }>;
+export type StampedMutationV2 = Extract<MutationRequestV2, { stamp: StampDto }>;
 export type Submission = { readonly status: 'completed'; readonly response: Response } | { readonly status: 'queued'; readonly completion: Promise<Response> };
 export interface ControllerLimits { readonly pending?: number; readonly requestBytes?: number; readonly queuedBytes?: number; readonly listeners?: number }
 export interface CallbackError { readonly code: 'sdk.listener_error'; readonly listener: string }
-export interface CreateEditorOptions {
+interface ControllerConfiguration {
   readonly input: Uint8Array;
-  readonly options: OpenOptions;
-  readonly loader?: LazyWasmLoader;
   readonly limits?: ControllerLimits;
   readonly onCallbackError?: (error: CallbackError) => void;
 }
+export interface CreateEditorOptions extends ControllerConfiguration {
+  readonly options: OpenOptions;
+  readonly loader?: LazyWasmLoader;
+}
+export type CreateEditorOptionsV1 = CreateEditorOptions;
+export interface CreateEditorOptionsV2 extends ControllerConfiguration {
+  readonly options: OpenOptionsV2;
+  readonly loader?: LazyWasmLoaderV2;
+}
+type AnyCreateEditorOptions = CreateEditorOptions | CreateEditorOptionsV2;
 export interface HostRequest { readonly id: string; readonly stamp: DeepReadonly<StampDto> }
 export type HostCapture = { readonly status: 'captured'; readonly request: HostRequest } | { readonly status: 'refused'; readonly response: Response };
 type Listener = (event: DeepReadonly<EventDto>) => void;
@@ -40,7 +51,9 @@ export class EditorController {
   #readySettled = false;
   #lifecycle: Lifecycle = 'loading';
   #raw: RawSdkSessionV1 | null = null;
-  #module: LoadedSdkV1 | null = null;
+  #module: LoadedSdkV1 | LoadedSdkV2 | null = null;
+  #abi: 'editor-sdk/1' | 'editor-sdk/2' = 'editor-sdk/1';
+  #context: SessionContextV2 | null = null;
   #state: StateDto | null = null;
   #original: Uint8Array | null = null;
   #pending: Pending[] = [];
@@ -60,13 +73,14 @@ export class EditorController {
   #terminalFailure: FatalResponse | null = null;
   #limits = { pending: 128, requestBytes: HARD_REQUEST_BYTES, queuedBytes: 32 * 1024 * 1024, listeners: 64 };
 
-  constructor(configuration: CreateEditorOptions) {
+  constructor(configuration: AnyCreateEditorOptions) {
     this.ready = new Promise(resolve => { this.#resolveReady = resolve; });
     try {
       const fields = plainFields(configuration);
       if (Object.keys(fields).some(key => !['input', 'options', 'loader', 'limits', 'onCallbackError'].includes(key)) || !fields.input || !fields.options) throw new DataError('sdk.invalid_input');
       this.#original = copyInput(fields.input.value);
-      const options = ownData(fields.options.value as OpenOptions);
+      const options = ownData(fields.options.value as OpenOptions | OpenOptionsV2);
+      this.#abi = options.value.abi === 'editor-sdk/2' ? 'editor-sdk/2' : 'editor-sdk/1';
       if (fields.limits) {
         for (const [key, descriptor] of Object.entries(plainFields(fields.limits.value))) {
           if (!Object.hasOwn(this.#limits, key) || !Number.isSafeInteger(descriptor.value) || descriptor.value < 0) throw new DataError('sdk.invalid_limit');
@@ -78,9 +92,10 @@ export class EditorController {
         if (typeof fields.onCallbackError.value !== 'function') throw new DataError('sdk.invalid_input');
         this.#onCallbackError = fields.onCallbackError.value;
       }
-      const loader: LazyWasmLoader = fields.loader ? fields.loader.value : () => loadSdk();
+      const loader: LazyWasmLoader | LazyWasmLoaderV2 = fields.loader ? fields.loader.value
+        : this.#abi === 'editor-sdk/2' ? () => loadSdkV2() : () => loadSdk();
       if (typeof loader !== 'function') throw new DataError('sdk.invalid_input');
-      void this.#initialize(loader, options.json);
+      void this.#initialize(loader, options.json, options.value.profile);
     } catch (error) {
       this.#onCallbackError = undefined;
       this.#lifecycle = 'destroyed';
@@ -92,6 +107,7 @@ export class EditorController {
   /** Explicit bounded recovery copy. Successful admission releases the original. */
   originalInput(): Uint8Array | null { return this.#original?.slice() ?? null; }
   capture(): DeepReadonly<StampDto> | null { return this.#lifecycle === 'ready' && this.#state ? this.#state.stamp : null; }
+  context(): DeepReadonly<SessionContextV2> | null { return this.#lifecycle === 'ready' ? this.#context : null; }
   read(request: ReadRequest): Response { return this.#readonly(request, READS); }
   query(request: QueryRequest): Response { return this.#readonly(request, QUERIES); }
 
@@ -106,6 +122,7 @@ export class EditorController {
   }
   #submitOwned(owned: OwnedData<MutationRequest>): Submission {
     if (this.#lifecycle !== 'ready' || this.#destroyRequested) return this.#completed(this.#unavailable());
+    if (this.#abi === 'editor-sdk/2' && owned.value.kind === 'update_facts') return this.#completed(this.#refusal('sdk.invalid_request_kind'));
     if (owned.value.kind === 'destroy') {
       if (Object.keys(owned.value).length !== 1) return this.#completed(this.#refusal('sdk.invalid_input'));
       return this.destroy();
@@ -187,10 +204,11 @@ export class EditorController {
     try { return freezeData(JSON.parse(this.#module.resourceCounts())); } catch { return null; }
   }
 
-  async #initialize(loader: LazyWasmLoader, optionsJson: string): Promise<void> {
+  async #initialize(loader: LazyWasmLoader | LazyWasmLoaderV2, optionsJson: string, profile: ProfileDto): Promise<void> {
     let opening = false;
     try {
-      const module = verifyLoadedSdk(await loader());
+      const loaded = await loader();
+      const module = this.#abi === 'editor-sdk/2' ? verifyLoadedSdkV2(loaded) : verifyLoadedSdk(loaded);
       if (this.#lifecycle !== 'loading' || this.#destroyRequested) return;
       this.#module = module; opening = true;
       const raw = new module.Session(this.#original!, optionsJson);
@@ -202,6 +220,7 @@ export class EditorController {
         this.#dispose(result.status === 'fatal' ? 'fatal' : 'destroyed', true);
         this.#settleReady(result); return;
       }
+      if (this.#abi === 'editor-sdk/2') this.#context = decodeSessionContext((raw as RawSdkSessionV2).context(), module.manifest.build_id, profile);
       this.#state = result.value.state; this.#original = null; this.#lifecycle = 'ready';
       this.#settleReady(result);
     } catch (error) {
@@ -333,6 +352,7 @@ export class EditorController {
   }
   #dispose(lifecycle: 'destroyed' | 'fatal', preserveOriginal = false) {
     this.#lifecycle = 'disposing'; this.#listeners.clear(); this.#hostRequests.clear(); this.#onCallbackError = undefined;
+    this.#context = null;
     this.#callbackErrors = [];
     if (this.#continuation !== null) { clearTimeout(this.#continuation); this.#continuation = null; }
     const raw = this.#raw; this.#raw = null; if (raw) this.#freeRaw(raw);
@@ -342,4 +362,11 @@ export class EditorController {
   }
 }
 
-export function createEditor(options: CreateEditorOptions): EditorController { return new EditorController(options); }
+export type EditorControllerV2 = Omit<EditorController, 'submit' | 'completeHostRequest'> & {
+  submit(request: MutationRequestV2): Submission;
+  completeHostRequest(request: HostRequest, mutation: StampedMutationV2): Submission;
+};
+export function createEditor(options: CreateEditorOptionsV2): EditorControllerV2;
+export function createEditor(options: CreateEditorOptionsV1): EditorController;
+export function createEditor(options: AnyCreateEditorOptions): EditorController | EditorControllerV2;
+export function createEditor(options: AnyCreateEditorOptions): EditorController { return new EditorController(options); }

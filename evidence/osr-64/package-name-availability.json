@@ -1,0 +1,43 @@
+{
+  "format": "klenwriter-editor-package-name-observation/1",
+  "issue": "OSR-64",
+  "observedAt": "2026-10-18T13:50:12.242045+00:00",
+  "records": [
+    {
+      "name": "klenwriter-editor-registry",
+      "url": "https://crates.io/api/v1/crates/klenwriter-editor-registry",
+      "status": 404
+    },
+    {
+      "name": "klenwriter-editor-protocol",
+      "url": "https://crates.io/api/v1/crates/klenwriter-editor-protocol",
+      "status": 404
+    },
+    {
+      "name": "klenwriter-editor-bridge",
+      "url": "https://crates.io/api/v1/crates/klenwriter-editor-bridge",
+      "status": 404
+    },
+    {
+      "name": "klenwriter-editor-kwdj-sdk",
+      "url": "https://crates.io/api/v1/crates/klenwriter-editor-kwdj-sdk",
+      "status": 404
+    },
+    {
+      "name": "klenwriter-editor-notes",
+      "url": "https://crates.io/api/v1/crates/klenwriter-editor-notes",
+      "status": 404
+    },
+    {
+      "name": "klenwriter-editor-extensions",
+      "url": "https://crates.io/api/v1/crates/klenwriter-editor-extensions",
+      "status": 404
+    },
+    {
+      "name": "klenwriter-editor-notes-sdk",
+      "url": "https://crates.io/api/v1/crates/klenwriter-editor-notes-sdk",
+      "status": 404
+    }
+  ],
+  "scope": "Read-only public crates.io API observation for new source package names. An HTTP404 is an observation, not reservation or publication; OSR-71 remains the publication gate."
+}

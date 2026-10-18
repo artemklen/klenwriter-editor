@@ -1,0 +1,1413 @@
+{
+  "actualColdCache": {
+    "actualFixtureFetchExitCode": 0,
+    "bothLockfilesByteExact": true,
+    "ciMissingPackage": "unicode-ident v1.0.27",
+    "features": [
+      "notes",
+      "kwdj"
+    ],
+    "initialState": "New isolated CARGO_HOME; actual main workspace locked host+WASM dependency fetch first. Global Cargo cache was not changed.",
+    "localMissingPackage": "cfg-if v1.0.5",
+    "offlineNormalGraphCount": 4,
+    "offlineNormalGraphExitCodes": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "oldFixtureOfflineGraphExitCode": 101,
+    "packageQualification": "Different first missing fixture-only version; identical offline-cache failure class. The fixture lock contains versions absent from the workspace lock.",
+    "root": "/tmp/osr-64-consumer-cold-cache-ykjclasj",
+    "selectedModulePresentOtherConcreteAndDefaultWasmAbsent": true,
+    "targets": [
+      "aarch64-apple-darwin",
+      "wasm32-unknown-unknown"
+    ],
+    "workspaceFetchExitCode": 0
+  },
+  "bounds": {
+    "gzipBytes": 67508,
+    "gzipFiles": 59,
+    "maximumRawBytesExclusive": 4194304,
+    "maximumRawFiles": 200,
+    "rawBytes": 346608,
+    "rawFiles": 59
+  },
+  "controlledFailure": {
+    "commands": [
+      "rust-toolchain",
+      "bindgen-toolchain",
+      "fetch-locked"
+    ],
+    "controlledFetchExitCode": 42,
+    "failedReceiptAndIndexRetained": true,
+    "noOfflineGraphOrBuildExecuted": true,
+    "purpose": "Orchestration-only fail-closed check using exact copied producer and fake cargo/rustc/bindgen plus synthetic valid-shaped identity. It is not real network failure or compilation proof.",
+    "testExitCode": 0
+  },
+  "exclusions": [
+    {
+      "group": "proof",
+      "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/cargo-home",
+      "reason": "excluded-directory",
+      "relativePath": "cargo-home"
+    }
+  ],
+  "externalZipReferences": [
+    {
+      "bytes": 6794389,
+      "copied": false,
+      "path": "/private/tmp/osr-64-review-65fdf800/prepared-first-failed-artifact.zip",
+      "role": "failed-ci-artifact",
+      "scope": "Hash-checked external historical ZIP reference only; ZIP/cache excluded from versioned cold-cache evidence.",
+      "sha256": "fbb687a43018ff3f2d6daf25509dfa75735019bf4700a0bb06f6931b38e9b2bd"
+    },
+    {
+      "bytes": 9631934,
+      "copied": false,
+      "path": "/tmp/osr-64-second-compiled-snapshot.zip",
+      "role": "historical-second-compiled-snapshot",
+      "scope": "Hash-checked external historical ZIP reference only; ZIP/cache excluded from versioned cold-cache evidence.",
+      "sha256": "69c8b3fb6d8a091342bdb5bdd6f9e405df514b32b1c04af8db336e3b9226e2d8"
+    }
+  ],
+  "failedCI": {
+    "conclusion": "failure",
+    "failedLogFetchCommandExitCode": 0,
+    "head": "65fdf800be0ca0818ed0c3b42a5fabd2eb36ec6e",
+    "missingPackage": "unicode-ident v1.0.27",
+    "producerExitCode": 101,
+    "producerStage": "notes-only normal-native cargo tree",
+    "qualification": "The log-fetch gh command succeeded; the underlying prepared CI and consumer graph failed.",
+    "runId": 39141373334
+  },
+  "files": [
+    {
+      "decompression": {
+        "bytes": 10301,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "3bbd1706b599fd622f27c1bb30668f2abc1f8333db0066ef4600216ec9ffd711"
+      },
+      "gzip": {
+        "bytes": 2804,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/documents/osr-64-consumer-cold-cache-repair.json.gz",
+        "sha256": "ccec0257b3d8573c13cadc0a6744633429466ea3574b833d2fe9e6fed59cf28e"
+      },
+      "original": {
+        "bytes": 10301,
+        "path": "/tmp/osr-64-consumer-cold-cache-repair.json",
+        "sha256": "3bbd1706b599fd622f27c1bb30668f2abc1f8333db0066ef4600216ec9ffd711"
+      },
+      "role": "documents"
+    },
+    {
+      "decompression": {
+        "bytes": 559,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "0330029a1c222a8b4ab8e7ed58cabc7055287729449212f8e1acaa955e3e6883"
+      },
+      "gzip": {
+        "bytes": 405,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/documents/osr-64-cold-cache-source-equivalence.json.gz",
+        "sha256": "28afc9c0fa28494d7553a3e2b9d0db29ab782708d20d549f08a1b21a36c72bff"
+      },
+      "original": {
+        "bytes": 559,
+        "path": "/tmp/osr-64-cold-cache-source-equivalence.json",
+        "sha256": "0330029a1c222a8b4ab8e7ed58cabc7055287729449212f8e1acaa955e3e6883"
+      },
+      "role": "documents"
+    },
+    {
+      "decompression": {
+        "bytes": 355,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "2015ba9b20f76beab5f730a8dea5d80f02d3aef8817eccb31fd8b843af70dbec"
+      },
+      "gzip": {
+        "bytes": 265,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/documents/osr-64-second-compiled-snapshot.json.gz",
+        "sha256": "ec0062c9138c04a5eec09fac594b3ed8a3836a6c940e337a1d10dcdc10250b5c"
+      },
+      "original": {
+        "bytes": 355,
+        "path": "/tmp/osr-64-second-compiled-snapshot.json",
+        "sha256": "2015ba9b20f76beab5f730a8dea5d80f02d3aef8817eccb31fd8b843af70dbec"
+      },
+      "role": "documents"
+    },
+    {
+      "decompression": {
+        "bytes": 13282,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "9f3be62965c5e25c631e39abe930916ca6a52ebaadeff7a173a14c778a888e24"
+      },
+      "gzip": {
+        "bytes": 1629,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/documents/prepared-first-run-metadata.json.gz",
+        "sha256": "66514c5d15de66287e21b8e8c76672f9f3ed62e66a9b8704cd15f3bbc1b3a33a"
+      },
+      "original": {
+        "bytes": 13282,
+        "path": "/private/tmp/osr-64-review-65fdf800/prepared-first-run-metadata.json",
+        "sha256": "9f3be62965c5e25c631e39abe930916ca6a52ebaadeff7a173a14c778a888e24"
+      },
+      "role": "documents"
+    },
+    {
+      "decompression": {
+        "bytes": 170347,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "44f98111c24eb1257f32229425dd7b3542b891843383f9b43946472a434d812e"
+      },
+      "gzip": {
+        "bytes": 22286,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/documents/prepared-first-failed.log.gz",
+        "sha256": "1b338e3d913710ffb0688a4317fb9d83b79a2cf16803ec449840b6118e190715"
+      },
+      "original": {
+        "bytes": 170347,
+        "path": "/private/tmp/osr-64-review-65fdf800/prepared-first-failed.log",
+        "sha256": "44f98111c24eb1257f32229425dd7b3542b891843383f9b43946472a434d812e"
+      },
+      "role": "documents"
+    },
+    {
+      "decompression": {
+        "bytes": 277,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "f677534ba47aa17ebbeb467f9bc59c6f99ec9fd020671f43ec12ec43000f8dfa"
+      },
+      "gzip": {
+        "bytes": 207,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/documents/prepared-first-failed.receipt.json.gz",
+        "sha256": "39f6e5f0c5f24da82f57d9ee8ec09f25a05c13c78a1754707b9d8c8e585ceb09"
+      },
+      "original": {
+        "bytes": 277,
+        "path": "/private/tmp/osr-64-review-65fdf800/prepared-first-failed.receipt.json",
+        "sha256": "f677534ba47aa17ebbeb467f9bc59c6f99ec9fd020671f43ec12ec43000f8dfa"
+      },
+      "role": "documents"
+    },
+    {
+      "decompression": {
+        "bytes": 839,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "eee14696d8cd1259674e784e98369e361a801907f3635b887031abe8ac00a4f1"
+      },
+      "gzip": {
+        "bytes": 379,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/documents/prepared-first-failed-artifact.json.gz",
+        "sha256": "34abc8bc70b4d4eec00f5a844e21331349d563c81154c49ee08f4802921758d1"
+      },
+      "original": {
+        "bytes": 839,
+        "path": "/private/tmp/osr-64-review-65fdf800/prepared-first-failed-artifact.json",
+        "sha256": "eee14696d8cd1259674e784e98369e361a801907f3635b887031abe8ac00a4f1"
+      },
+      "role": "documents"
+    },
+    {
+      "decompression": {
+        "bytes": 1081,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "fa7df8770a3e85e8dd80deeed17246b62a39c9802d672240db015907a74a2287"
+      },
+      "gzip": {
+        "bytes": 515,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/failed-consumer/03-normal-native.exit.json.gz",
+        "sha256": "00771f88a185533c8efde9c992b808a4a5cfb659ecd8fac14972e5c56fc73ef1"
+      },
+      "original": {
+        "bytes": 1081,
+        "path": "/private/tmp/osr-64-review-65fdf800/failed-consumer/03-normal-native.exit.json",
+        "sha256": "fa7df8770a3e85e8dd80deeed17246b62a39c9802d672240db015907a74a2287"
+      },
+      "role": "failed-consumer"
+    },
+    {
+      "decompression": {
+        "bytes": 128,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "56eeace63e53ab811c5b303b42ab65c8edc2d6332dcac55e054835ed28c281e4"
+      },
+      "gzip": {
+        "bytes": 131,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/failed-consumer/03-normal-native.stderr.log.gz",
+        "sha256": "80d7d9d65f9848e73c2503f1f558f46c6d4b6de4eb25894f11a45cc83a54ffd8"
+      },
+      "original": {
+        "bytes": 128,
+        "path": "/private/tmp/osr-64-review-65fdf800/failed-consumer/03-normal-native.stderr.log",
+        "sha256": "56eeace63e53ab811c5b303b42ab65c8edc2d6332dcac55e054835ed28c281e4"
+      },
+      "role": "failed-consumer"
+    },
+    {
+      "decompression": {
+        "bytes": 0,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "gzip": {
+        "bytes": 20,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/failed-consumer/03-normal-native.stdout.log.gz",
+        "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+      },
+      "original": {
+        "bytes": 0,
+        "path": "/private/tmp/osr-64-review-65fdf800/failed-consumer/03-normal-native.stdout.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "role": "failed-consumer"
+    },
+    {
+      "decompression": {
+        "bytes": 34613,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "fdb9f4c5dcaf7c55045140814497675f275b109e7ca0139a3f02c533dff7ce4a"
+      },
+      "gzip": {
+        "bytes": 8217,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/failed-consumer/receipt.json.gz",
+        "sha256": "fe756b5fddc1b238bde924ff4695fc6421c4597cd3b5f443911e34479dd27fc5"
+      },
+      "original": {
+        "bytes": 34613,
+        "path": "/private/tmp/osr-64-review-65fdf800/failed-consumer/receipt.json",
+        "sha256": "fdb9f4c5dcaf7c55045140814497675f275b109e7ca0139a3f02c533dff7ce4a"
+      },
+      "role": "failed-consumer"
+    },
+    {
+      "decompression": {
+        "bytes": 42,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "57a32e7b4e914a7eebea4feb6dc2159eef801a6de76fcee06e97e7bdb8bb507c"
+      },
+      "gzip": {
+        "bytes": 61,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/.tools/bin/wasm-bindgen.gz",
+        "sha256": "91cda6c2971bcadbec8ea0115a9481d608ef5ba828667c11ea3d95b6e0d1b403"
+      },
+      "original": {
+        "bytes": 42,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/.tools/bin/wasm-bindgen",
+        "sha256": "57a32e7b4e914a7eebea4feb6dc2159eef801a6de76fcee06e97e7bdb8bb507c"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 442,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "2f1df956baf0ee712c04980538c250c091a37d81d528159a6f5b4f4d27c9bc74"
+      },
+      "gzip": {
+        "bytes": 275,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/artifacts/extensions/consumers/builds.json.gz",
+        "sha256": "31c0d31c819898151aacbf937a82b2a9c771e20211b9c2655b006a239a86fa1f"
+      },
+      "original": {
+        "bytes": 442,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/artifacts/extensions/consumers/builds.json",
+        "sha256": "2f1df956baf0ee712c04980538c250c091a37d81d528159a6f5b4f4d27c9bc74"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 5896,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "c1a0b7866b916858a5c61466bbaef8af17cdc2e0ef1def666523e99f6814bdad"
+      },
+      "gzip": {
+        "bytes": 1469,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/build.json.gz",
+        "sha256": "07336b873cd297208fac93765bc859734711103932f2cab0bb34395fd73ed9f7"
+      },
+      "original": {
+        "bytes": 5896,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/build.json",
+        "sha256": "c1a0b7866b916858a5c61466bbaef8af17cdc2e0ef1def666523e99f6814bdad"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 1831,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "debeb8233dfde4da39ac50531a8e726538c9191c146c0186c8c07a6df932d295"
+      },
+      "gzip": {
+        "bytes": 608,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/config.json.gz",
+        "sha256": "3457bf0c0d6fa8cacbbe5277cc9d6cf18a9eae9494f4ba42a59301e2b331e845"
+      },
+      "original": {
+        "bytes": 1831,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/config.json",
+        "sha256": "debeb8233dfde4da39ac50531a8e726538c9191c146c0186c8c07a6df932d295"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 807,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "101c64a233dbddfcc7700d5c4bdf25d540bd0ce33f4836da30bfbe6c0b146ba8"
+      },
+      "gzip": {
+        "bytes": 428,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/01-rust-toolchain.exit.json.gz",
+        "sha256": "c76e6eb1f02193414d25c4666aa2e86aad8b7b23cf12ea9cdc1bc6502bd525c5"
+      },
+      "original": {
+        "bytes": 807,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/01-rust-toolchain.exit.json",
+        "sha256": "101c64a233dbddfcc7700d5c4bdf25d540bd0ce33f4836da30bfbe6c0b146ba8"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 0,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "gzip": {
+        "bytes": 20,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/01-rust-toolchain.stderr.log.gz",
+        "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+      },
+      "original": {
+        "bytes": 0,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/01-rust-toolchain.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 61,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "7e50f1871bdcd1a073cd91162694bf53abb11c5106ae89418b2653f684b82f6f"
+      },
+      "gzip": {
+        "bytes": 81,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/01-rust-toolchain.stdout.log.gz",
+        "sha256": "53ca6d150a42e03024a81023d9d80af07115c4a5ac70bee6f6703c8325a98181"
+      },
+      "original": {
+        "bytes": 61,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/01-rust-toolchain.stdout.log",
+        "sha256": "7e50f1871bdcd1a073cd91162694bf53abb11c5106ae89418b2653f684b82f6f"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 914,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "bab6052e301347fe904ed8f6f9a0cfe271e1ea00aedbd2e4ffc34651152061b7"
+      },
+      "gzip": {
+        "bytes": 442,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/02-bindgen-toolchain.exit.json.gz",
+        "sha256": "009143906a425588fd68cf4c0641a90d75e0ff8042fc4c0009336a9940c833bf"
+      },
+      "original": {
+        "bytes": 914,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/02-bindgen-toolchain.exit.json",
+        "sha256": "bab6052e301347fe904ed8f6f9a0cfe271e1ea00aedbd2e4ffc34651152061b7"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 0,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "gzip": {
+        "bytes": 20,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/02-bindgen-toolchain.stderr.log.gz",
+        "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+      },
+      "original": {
+        "bytes": 0,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/02-bindgen-toolchain.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 21,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "bd211fe262f7180ddd9923ab1de3bd96d2886d2d605ffb4c0d283d84fed5cba8"
+      },
+      "gzip": {
+        "bytes": 41,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/02-bindgen-toolchain.stdout.log.gz",
+        "sha256": "60568ad1cf891280e7a4c92b3dcfb1107e5ffcc28b1b7dfee0dd0fafbcc70bec"
+      },
+      "original": {
+        "bytes": 21,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/02-bindgen-toolchain.stdout.log",
+        "sha256": "bd211fe262f7180ddd9923ab1de3bd96d2886d2d605ffb4c0d283d84fed5cba8"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 986,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "e4601f69422cff8a5214095c24b8ee423831096618350aca2d6a19b2cc8d1453"
+      },
+      "gzip": {
+        "bytes": 495,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/03-fetch-locked.exit.json.gz",
+        "sha256": "e9ca6944e426902a6457fc6a94d1d22b607333c2bfb03362d43c26bacffc669a"
+      },
+      "original": {
+        "bytes": 986,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/03-fetch-locked.exit.json",
+        "sha256": "e4601f69422cff8a5214095c24b8ee423831096618350aca2d6a19b2cc8d1453"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 25,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "0715a2ece30a543c4894f8af3a268f1fd5aec6ed25254f6c90dbc5d1a8b2b2f3"
+      },
+      "gzip": {
+        "bytes": 45,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/03-fetch-locked.stderr.log.gz",
+        "sha256": "df6723f1bb65916e717584aa2552b10f1fc189de860ef0e8bf742abacbf0ef28"
+      },
+      "original": {
+        "bytes": 25,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/03-fetch-locked.stderr.log",
+        "sha256": "0715a2ece30a543c4894f8af3a268f1fd5aec6ed25254f6c90dbc5d1a8b2b2f3"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 0,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "gzip": {
+        "bytes": 20,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/03-fetch-locked.stdout.log.gz",
+        "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+      },
+      "original": {
+        "bytes": 0,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/03-fetch-locked.stdout.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 2865,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "c8740bba25c41bf2b7d2c6a0d11a1435debee8cfa11732b8ce296adabd4d0920"
+      },
+      "gzip": {
+        "bytes": 728,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/commands.json.gz",
+        "sha256": "1853f649c15db861c27ace7cc5c3e365c5df0401a5778f837cc03a2b54423d78"
+      },
+      "original": {
+        "bytes": 2865,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/logs/commands.json",
+        "sha256": "c8740bba25c41bf2b7d2c6a0d11a1435debee8cfa11732b8ce296adabd4d0920"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 5896,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "c1a0b7866b916858a5c61466bbaef8af17cdc2e0ef1def666523e99f6814bdad"
+      },
+      "gzip": {
+        "bytes": 1469,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/receipt.json.gz",
+        "sha256": "07336b873cd297208fac93765bc859734711103932f2cab0bb34395fd73ed9f7"
+      },
+      "original": {
+        "bytes": 5896,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/artifacts/extensions/consumers/notes-only/runs/dd1930ba-604d-4e45-8d41-dc14e55f0676/receipt.json",
+        "sha256": "c1a0b7866b916858a5c61466bbaef8af17cdc2e0ef1def666523e99f6814bdad"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 58,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "21b0cb70be340e5d76326b0e722d8b86c23ad1ebb1cc7dbdab380359de11f2e2"
+      },
+      "gzip": {
+        "bytes": 78,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/bin/cargo.gz",
+        "sha256": "d610167f982079aa51da6565f18ebd60760d04fee593e36bd8e2bbe281eaef08"
+      },
+      "original": {
+        "bytes": 58,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/bin/cargo",
+        "sha256": "21b0cb70be340e5d76326b0e722d8b86c23ad1ebb1cc7dbdab380359de11f2e2"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 83,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "0a5b060d768e52bdc8a7193c66d74b0cbc2b978308b14111c806fa5d1e995a67"
+      },
+      "gzip": {
+        "bytes": 101,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/bin/rustc.gz",
+        "sha256": "e38cd16955bd7535450aa2bca91c7d874609ef1c5336a8c621143f12549c34a4"
+      },
+      "original": {
+        "bytes": 83,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/bin/rustc",
+        "sha256": "0a5b060d768e52bdc8a7193c66d74b0cbc2b978308b14111c806fa5d1e995a67"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 1388,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "dfcfacb3b6009f5ead75b52c5279762cd4a306f695a9700629738b6b569015c5"
+      },
+      "gzip": {
+        "bytes": 609,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/check.mjs.gz",
+        "sha256": "6b1c3e44d6d81f6ebdfc5cce1a02f2cb8f0ea5b31fa420dad656fce271b437cf"
+      },
+      "original": {
+        "bytes": 1388,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/check.mjs",
+        "sha256": "dfcfacb3b6009f5ead75b52c5279762cd4a306f695a9700629738b6b569015c5"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 15953,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "d5a5bd861d115653f31770383dea05b63ede06f972b41c191a544edf0e985847"
+      },
+      "gzip": {
+        "bytes": 5005,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/scripts/build-extensions-consumers.mjs.gz",
+        "sha256": "f9c7683a3fb17cf5257b618a504ac1b0b29b77cfe6199eb8b13d62e8c31fa679"
+      },
+      "original": {
+        "bytes": 15953,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/scripts/build-extensions-consumers.mjs",
+        "sha256": "d5a5bd861d115653f31770383dea05b63ede06f972b41c191a544edf0e985847"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 4690,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "9f9a7b68625c7dcd238ed5569bcb34f5cce8e3e620513379b2e7a5c34b244a66"
+      },
+      "gzip": {
+        "bytes": 1935,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/scripts/seal-sdk-wasm.mjs.gz",
+        "sha256": "5baaebf0a5fa4e4ef65446b7cf371cc688903f7daa9a5b7fe596b007aa0dc0d7"
+      },
+      "original": {
+        "bytes": 4690,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/scripts/seal-sdk-wasm.mjs",
+        "sha256": "9f9a7b68625c7dcd238ed5569bcb34f5cce8e3e620513379b2e7a5c34b244a66"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 16822,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "40831c8ba271e2e8138765ddc3ad0acce8e900413973d0e9fc91be87ad91fde5"
+      },
+      "gzip": {
+        "bytes": 4053,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/tests/fixtures/extensions-consumer/Cargo.lock.gz",
+        "sha256": "f35c60a38e7b548d65e81e0072c22f63a60475796138f475444cdd9884972f56"
+      },
+      "original": {
+        "bytes": 16822,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/tests/fixtures/extensions-consumer/Cargo.lock",
+        "sha256": "40831c8ba271e2e8138765ddc3ad0acce8e900413973d0e9fc91be87ad91fde5"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 1321,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "a754dde19de30fd00b8a5df5284c07ccada0698d9a8187dd0b8853ac1ea1a23c"
+      },
+      "gzip": {
+        "bytes": 601,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/tests/fixtures/extensions-consumer/Cargo.toml.gz",
+        "sha256": "ab4302bb000b769bedb848f27de441cc07478d63eaf2d64be06ca702df7923de"
+      },
+      "original": {
+        "bytes": 1321,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/tests/fixtures/extensions-consumer/Cargo.toml",
+        "sha256": "a754dde19de30fd00b8a5df5284c07ccada0698d9a8187dd0b8853ac1ea1a23c"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 3653,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "4732a105cecfccf9bb0aa342044130089a7ea08d14ff02d1a9b7a00bbfee23cc"
+      },
+      "gzip": {
+        "bytes": 1184,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/tests/fixtures/extensions-consumer/src/lib.rs.gz",
+        "sha256": "0df8c9eb19948ac3e8b0d9d40798e26ae910db822cbb8d8bbf52f7e4c5fb95f0"
+      },
+      "original": {
+        "bytes": 3653,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/tests/fixtures/extensions-consumer/src/lib.rs",
+        "sha256": "4732a105cecfccf9bb0aa342044130089a7ea08d14ff02d1a9b7a00bbfee23cc"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 2690,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "b159bc9df2796772bf5cbf6f4fd096d9ef86fab6464e45a260b26f62d8ae7f54"
+      },
+      "gzip": {
+        "bytes": 923,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure/tests/fixtures/extensions-consumer/src/main.rs.gz",
+        "sha256": "a3a6ac295dfb7ea42e1b4ed17e71b8b53ae7d3ed1c7ca53cdbd5a567f1f8f721"
+      },
+      "original": {
+        "bytes": 2690,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure/tests/fixtures/extensions-consumer/src/main.rs",
+        "sha256": "b159bc9df2796772bf5cbf6f4fd096d9ef86fab6464e45a260b26f62d8ae7f54"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 1629,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "566670fe753614d4342baea1f2c53d6ec03ff0b0133fa1843cd66caf5085fc42"
+      },
+      "gzip": {
+        "bytes": 716,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure-receipt.json.gz",
+        "sha256": "222a6c018258646319dbf0ab6cf3f41e98c4e46e21669b52ecc4041a80b42a4e"
+      },
+      "original": {
+        "bytes": 1629,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure-receipt.json",
+        "sha256": "566670fe753614d4342baea1f2c53d6ec03ff0b0133fa1843cd66caf5085fc42"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 0,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "gzip": {
+        "bytes": 20,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure.stderr.log.gz",
+        "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+      },
+      "original": {
+        "bytes": 0,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 251,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "dc105f98d9fb35e784892fa687f105e98d5d3b5e8b0bf7b3cff0f9b129269eec"
+      },
+      "gzip": {
+        "bytes": 214,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/controlled-fetch-failure.stdout.log.gz",
+        "sha256": "d05861381e2d616b4a6de2a42cf753d53ec0ee93d7e83ed6b772fc1be5ccbfea"
+      },
+      "original": {
+        "bytes": 251,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/controlled-fetch-failure.stdout.log",
+        "sha256": "dc105f98d9fb35e784892fa687f105e98d5d3b5e8b0bf7b3cff0f9b129269eec"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 1081,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "3793a1afef47acc958cba078bae5ed989769edb8dc888896c5acdb5a25d525c0"
+      },
+      "gzip": {
+        "bytes": 553,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/producer.diff.gz",
+        "sha256": "e0063584c70725a6cf36c3a64908059038d2521ab06f647125b2913a798d2e7c"
+      },
+      "original": {
+        "bytes": 1081,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/producer.diff",
+        "sha256": "3793a1afef47acc958cba078bae5ed989769edb8dc888896c5acdb5a25d525c0"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 891,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "51f0ac787f15aa943c12133d2e9b21a671a45f0fd0ab86c97084f1b1aa44ca3c"
+      },
+      "gzip": {
+        "bytes": 328,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/raw/fixture-fetch-locked-both-targets.stderr.log.gz",
+        "sha256": "802045327bd7534dde3721dcb48bd5d7f410230b05843a5b02e664443843e1c1"
+      },
+      "original": {
+        "bytes": 891,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/raw/fixture-fetch-locked-both-targets.stderr.log",
+        "sha256": "51f0ac787f15aa943c12133d2e9b21a671a45f0fd0ab86c97084f1b1aa44ca3c"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 0,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "gzip": {
+        "bytes": 20,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/raw/fixture-fetch-locked-both-targets.stdout.log.gz",
+        "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+      },
+      "original": {
+        "bytes": 0,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/raw/fixture-fetch-locked-both-targets.stdout.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 0,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "gzip": {
+        "bytes": 20,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/raw/green-kwdj-normal-native.stderr.log.gz",
+        "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+      },
+      "original": {
+        "bytes": 0,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/raw/green-kwdj-normal-native.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 4696,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "ab4db991d3ada66cdfcd95a1f8fdea82850f7b6d71e681ed14a9e05d9edf15d1"
+      },
+      "gzip": {
+        "bytes": 856,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/raw/green-kwdj-normal-native.stdout.log.gz",
+        "sha256": "22ae604522498b7b8b0fcc3b1c33716fee0452d96cf1f5febd2c57bd8088768b"
+      },
+      "original": {
+        "bytes": 4696,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/raw/green-kwdj-normal-native.stdout.log",
+        "sha256": "ab4db991d3ada66cdfcd95a1f8fdea82850f7b6d71e681ed14a9e05d9edf15d1"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 0,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "gzip": {
+        "bytes": 20,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/raw/green-kwdj-normal-wasm.stderr.log.gz",
+        "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+      },
+      "original": {
+        "bytes": 0,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/raw/green-kwdj-normal-wasm.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 4988,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "6b73c6e4a889fe8a3d167029fe6cae0a93b417336b4ab43f3c932ddb54a63292"
+      },
+      "gzip": {
+        "bytes": 914,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/raw/green-kwdj-normal-wasm.stdout.log.gz",
+        "sha256": "740a6b100efdb152e3e079b73fabe0cf1d6b62f346f8cb118cb266d254758db1"
+      },
+      "original": {
+        "bytes": 4988,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/raw/green-kwdj-normal-wasm.stdout.log",
+        "sha256": "6b73c6e4a889fe8a3d167029fe6cae0a93b417336b4ab43f3c932ddb54a63292"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 0,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "gzip": {
+        "bytes": 20,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/raw/green-notes-normal-native.stderr.log.gz",
+        "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+      },
+      "original": {
+        "bytes": 0,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/raw/green-notes-normal-native.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 2905,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "74e36862bde633d4f05ce9495ef28fec986797fb1a7e4c3f0bfe5824bd722783"
+      },
+      "gzip": {
+        "bytes": 486,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/raw/green-notes-normal-native.stdout.log.gz",
+        "sha256": "f4206b24552dd393e64b878082e73dc6927297c57d39cb73d4af0ad8a99ed7cf"
+      },
+      "original": {
+        "bytes": 2905,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/raw/green-notes-normal-native.stdout.log",
+        "sha256": "74e36862bde633d4f05ce9495ef28fec986797fb1a7e4c3f0bfe5824bd722783"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 0,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "gzip": {
+        "bytes": 20,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/raw/green-notes-normal-wasm.stderr.log.gz",
+        "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+      },
+      "original": {
+        "bytes": 0,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/raw/green-notes-normal-wasm.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 3258,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "2b40921ff0445ab22035ea3291ee60e93b2a6d2d51ec37d45d42cec72d69bc6a"
+      },
+      "gzip": {
+        "bytes": 545,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/raw/green-notes-normal-wasm.stdout.log.gz",
+        "sha256": "79339d149439068786a6d5592997923f4939d294080a64f70bdc7843d4dff5a8"
+      },
+      "original": {
+        "bytes": 3258,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/raw/green-notes-normal-wasm.stdout.log",
+        "sha256": "2b40921ff0445ab22035ea3291ee60e93b2a6d2d51ec37d45d42cec72d69bc6a"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 120,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "1dcbf78fa1ff3b008837b70d1251d89232ba8de0eef8a669bf98308dff2969bd"
+      },
+      "gzip": {
+        "bytes": 126,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/raw/old-fixture-notes-normal-native.stderr.log.gz",
+        "sha256": "841eef3a5b888179a091c4a6c3f7735789d6b238e3bf961f501959cfa6c1a0cb"
+      },
+      "original": {
+        "bytes": 120,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/raw/old-fixture-notes-normal-native.stderr.log",
+        "sha256": "1dcbf78fa1ff3b008837b70d1251d89232ba8de0eef8a669bf98308dff2969bd"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 0,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "gzip": {
+        "bytes": 20,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/raw/old-fixture-notes-normal-native.stdout.log.gz",
+        "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+      },
+      "original": {
+        "bytes": 0,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/raw/old-fixture-notes-normal-native.stdout.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 0,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "gzip": {
+        "bytes": 20,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/raw/rust-toolchain.stderr.log.gz",
+        "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+      },
+      "original": {
+        "bytes": 0,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/raw/rust-toolchain.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 192,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "e794146d99fad54562fdcbd4a7c8b22b0240d2b0312ff6d879d67939b3131850"
+      },
+      "gzip": {
+        "bytes": 165,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/raw/rust-toolchain.stdout.log.gz",
+        "sha256": "519408a5a375b8c60cf90cdf0ceac5f5cff11529417f464813f8b5f05bbb117b"
+      },
+      "original": {
+        "bytes": 192,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/raw/rust-toolchain.stdout.log",
+        "sha256": "e794146d99fad54562fdcbd4a7c8b22b0240d2b0312ff6d879d67939b3131850"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 2416,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "069f9e5c66feb14ba6998c279cbbcdc01e8fc4a2a1935a8916c39963f20a86ac"
+      },
+      "gzip": {
+        "bytes": 766,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/raw/seed-main-workspace-locked.stderr.log.gz",
+        "sha256": "d7d4d3c05f70addb4e5bd330aab8bc52d45bd341c87bb25d3902491a55a4c15c"
+      },
+      "original": {
+        "bytes": 2416,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/raw/seed-main-workspace-locked.stderr.log",
+        "sha256": "069f9e5c66feb14ba6998c279cbbcdc01e8fc4a2a1935a8916c39963f20a86ac"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 0,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "gzip": {
+        "bytes": 20,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/raw/seed-main-workspace-locked.stdout.log.gz",
+        "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+      },
+      "original": {
+        "bytes": 0,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/raw/seed-main-workspace-locked.stdout.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 18306,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "8a5b2bd58dcda45b8b8d69857d5a1b7d410d9f51b524dc7eebb5cf6d6d8fd86a"
+      },
+      "gzip": {
+        "bytes": 2522,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/receipt.json.gz",
+        "sha256": "6fa77fc0fe796430bac40b53390ffdbb3594f52262b326aac85c088cde598fd9"
+      },
+      "original": {
+        "bytes": 18306,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/receipt.json",
+        "sha256": "8a5b2bd58dcda45b8b8d69857d5a1b7d410d9f51b524dc7eebb5cf6d6d8fd86a"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 7649,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "7fc51131b3b1263924577ba375816ef7f674f38a9df9c0fd0af36a8917f6c5bf"
+      },
+      "gzip": {
+        "bytes": 1548,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/red-receipt.json.gz",
+        "sha256": "c28cb27c98f51f3b3ac41c98835b11787bb03f71f27eeccb4f203315385d00f8"
+      },
+      "original": {
+        "bytes": 7649,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/red-receipt.json",
+        "sha256": "7fc51131b3b1263924577ba375816ef7f674f38a9df9c0fd0af36a8917f6c5bf"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 0,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "gzip": {
+        "bytes": 20,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/syntax.stderr.log.gz",
+        "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+      },
+      "original": {
+        "bytes": 0,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/syntax.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "role": "proof"
+    },
+    {
+      "decompression": {
+        "bytes": 0,
+        "deterministicRecompressionEqual": true,
+        "equalsOriginal": true,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "gzip": {
+        "bytes": 20,
+        "compresslevel": 9,
+        "filenameHeader": false,
+        "mtime": 0,
+        "path": "evidence/osr-64/cold-cache/raw/proof/syntax.stdout.log.gz",
+        "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+      },
+      "original": {
+        "bytes": 0,
+        "path": "/tmp/osr-64-consumer-cold-cache-ykjclasj/syntax.stdout.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "role": "proof"
+    }
+  ],
+  "format": "osr-64-cold-cache-evidence/1",
+  "historicalSnapshot": {
+    "buildId": "sha256:f426f85146ca8c14a0e8a919a02c11361f69705aa617146c9797c7335e97c248",
+    "defaultWasmSha256": "2437f219197939265c2de94231f45c314ab21318bd01c21b93724402de77b67c",
+    "qualification": "Historical second compiled snapshot predates the cold-cache producer repair; its reference is preserved without copying the ZIP."
+  },
+  "limitations": [
+    "No ZIP, Cargo cache, node_modules, .git, target or symlink payload is versioned here.",
+    "No CI retry success or build3 PASS is claimed. Fresh repaired producer identity requires root-owned build/runtime/packaged validation.",
+    "Controlled fakecargo fetch42 proves stop-and-record orchestration only. Actual locked fetch and four offline normal graphs are separate real Cargo observations.",
+    "Supporting implementer evidence does not replace the independent official review."
+  ],
+  "repair": {
+    "commit": "8a66939783861975cb5b1d54f296a50f9ca9ecbb",
+    "commitProducerBytesVerified": true,
+    "ordinaryRustTSSourcesAndLocksUnchangedPerSourceEquivalence": 138,
+    "producerSourceSha256": "d5a5bd861d115653f31770383dea05b63ede06f972b41c191a544edf0e985847",
+    "scope": "One logged cargo fetch --locked for the independently committed standalone manifest and explicit host+WASM targets precedes unchanged locked/offline graph/build commands."
+  },
+  "scope": "Portable exact-byte supporting evidence of first prepared-CI failure, actual cold-cache RED/fetch/offline-graph repair, source equivalence and historical compiled snapshot reference. Not an official review or a fresh full build/runtime result.",
+  "verification": {
+    "allMtimesZero": true,
+    "allOriginalSourcesRehashedAfterCopy": true,
+    "everyGzipDeterministicallyRecompressed": true,
+    "everyGzipFullyDecompressedAndComparedToOriginal": true,
+    "everyGzipRehashed": true,
+    "originalProofsUnchanged": true
+  }
+}

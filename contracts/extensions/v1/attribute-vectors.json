@@ -1,0 +1,1196 @@
+{
+  "format": "editor-extension-attribute-vectors/1",
+  "provenance": {
+    "license": "MIT OR Apache-2.0",
+    "author": "Codex supporting OSR-64 implementer, independently authored before registry/compiler implementation",
+    "oracle": "Literal mathematical/contract expectations; no compiler output is an expected-value source. Raw JSON strings preserve duplicate keys and number representation. Digest comparisons are authored relations, not implementation-generated hashes.",
+    "contract": "evidence/osr-64/execution-contract.md",
+    "canonical_rule": "klenwriter-canonical-json-v1"
+  },
+  "rules": "Compile each fields map as a synthetic declaration attribute policy; validate attrs_json directly without JS JSON.parse/Number roundtrip. Every accepted canonical_json is a literal canonical-v1 object, not generated output.",
+  "cases": [
+    {
+      "id": "A001-required-missing",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "string",
+            "max_bytes": 3
+          }
+        }
+      },
+      "attrs_json": "{}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.required_attribute_missing"
+      }
+    },
+    {
+      "id": "A002-optional-missing",
+      "fields": {
+        "value": {
+          "required": false,
+          "value": {
+            "kind": "string",
+            "max_bytes": 3
+          }
+        }
+      },
+      "attrs_json": "{}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{}"
+      }
+    },
+    {
+      "id": "A003-nonnullable-null",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "string",
+            "max_bytes": 3
+          }
+        }
+      },
+      "attrs_json": "{\"value\":null}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_type_mismatch"
+      }
+    },
+    {
+      "id": "A004-required-nullable-present-null",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "nullable",
+            "inner": {
+              "kind": "string",
+              "max_bytes": 3
+            }
+          }
+        }
+      },
+      "attrs_json": "{\"value\":null}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":null}"
+      }
+    },
+    {
+      "id": "A005-required-nullable-missing",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "nullable",
+            "inner": {
+              "kind": "string",
+              "max_bytes": 3
+            }
+          }
+        }
+      },
+      "attrs_json": "{}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.required_attribute_missing"
+      }
+    },
+    {
+      "id": "A006-optional-nullable-present-null",
+      "fields": {
+        "value": {
+          "required": false,
+          "value": {
+            "kind": "nullable",
+            "inner": {
+              "kind": "string",
+              "max_bytes": 3
+            }
+          }
+        }
+      },
+      "attrs_json": "{\"value\":null}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":null}"
+      }
+    },
+    {
+      "id": "A007-UTF8-exact3",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "string",
+            "max_bytes": 3
+          }
+        }
+      },
+      "attrs_json": "{\"value\":\"Яa\"}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":\"Яa\"}"
+      }
+    },
+    {
+      "id": "A008-UTF8-over4",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "string",
+            "max_bytes": 3
+          }
+        }
+      },
+      "attrs_json": "{\"value\":\"Яab\"}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_limit_exceeded"
+      }
+    },
+    {
+      "id": "A009-decomposed-exact3",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "string",
+            "max_bytes": 3
+          }
+        }
+      },
+      "attrs_json": "{\"value\":\"é\"}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":\"é\"}"
+      }
+    },
+    {
+      "id": "A010-precomposed-preserved",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "string",
+            "max_bytes": 3
+          }
+        }
+      },
+      "attrs_json": "{\"value\":\"é\"}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":\"é\"}"
+      }
+    },
+    {
+      "id": "A011-empty-string",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "string",
+            "max_bytes": 3
+          }
+        }
+      },
+      "attrs_json": "{\"value\":\"\"}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":\"\"}"
+      }
+    },
+    {
+      "id": "A012-wrong-string-type",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "string",
+            "max_bytes": 3
+          }
+        }
+      },
+      "attrs_json": "{\"value\":3}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_type_mismatch"
+      }
+    },
+    {
+      "id": "A013-boolean-true",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "boolean"
+          }
+        }
+      },
+      "attrs_json": "{\"value\":true}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":true}"
+      }
+    },
+    {
+      "id": "A014-boolean-number",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "boolean"
+          }
+        }
+      },
+      "attrs_json": "{\"value\":1}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_type_mismatch"
+      }
+    },
+    {
+      "id": "A015-i64-min",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "integer",
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "attrs_json": "{\"value\":-9223372036854775808}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":-9223372036854775808}"
+      }
+    },
+    {
+      "id": "A016-u64-max",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "integer",
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "attrs_json": "{\"value\":18446744073709551615}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":18446744073709551615}"
+      }
+    },
+    {
+      "id": "A017-two53-minus1",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "integer",
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "attrs_json": "{\"value\":9007199254740991}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":9007199254740991}"
+      }
+    },
+    {
+      "id": "A018-two53",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "integer",
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "attrs_json": "{\"value\":9007199254740992}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":9007199254740992}"
+      }
+    },
+    {
+      "id": "A019-two53-plus1",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "integer",
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "attrs_json": "{\"value\":9007199254740993}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":9007199254740993}"
+      }
+    },
+    {
+      "id": "A020-minus-two53-plus1",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "integer",
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "attrs_json": "{\"value\":-9007199254740993}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":-9007199254740993}"
+      }
+    },
+    {
+      "id": "A021-float1-integer",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "integer",
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "attrs_json": "{\"value\":1.0}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_type_mismatch"
+      }
+    },
+    {
+      "id": "A022-exp1-integer",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "integer",
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "attrs_json": "{\"value\":1e0}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_type_mismatch"
+      }
+    },
+    {
+      "id": "A023-u64-overflow-integer",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "integer",
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "attrs_json": "{\"value\":18446744073709551616}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_type_mismatch"
+      }
+    },
+    {
+      "id": "A024-i64-underflow-integer",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "integer",
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "attrs_json": "{\"value\":-9223372036854775809}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_type_mismatch"
+      }
+    },
+    {
+      "id": "A025-negativezero-integer",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "integer",
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "attrs_json": "{\"value\":-0}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_type_mismatch"
+      }
+    },
+    {
+      "id": "A026-number-integer-exact",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "number",
+            "min": "9007199254740993",
+            "max": "9007199254740993"
+          }
+        }
+      },
+      "attrs_json": "{\"value\":9007199254740993}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":9007199254740993}"
+      }
+    },
+    {
+      "id": "A027-rawfloat-rounded-not-recovered",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "number",
+            "min": "9007199254740993",
+            "max": "9007199254740993"
+          }
+        }
+      },
+      "attrs_json": "{\"value\":9007199254740993.0}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_out_of_range"
+      }
+    },
+    {
+      "id": "A028-represented-rounded-float",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "number",
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "attrs_json": "{\"value\":9007199254740993.0}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":9007199254740994.0}"
+      }
+    },
+    {
+      "id": "A029-signed-zero-compares-equal",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "number",
+            "min": "0",
+            "max": "0"
+          }
+        }
+      },
+      "attrs_json": "{\"value\":-0}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":-0.0}"
+      }
+    },
+    {
+      "id": "A030-floatzero-preserved",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "number",
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "attrs_json": "{\"value\":0.0}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":0.0}"
+      }
+    },
+    {
+      "id": "A031-integerzero-preserved",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "integer",
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "attrs_json": "{\"value\":0}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":0}"
+      }
+    },
+    {
+      "id": "A032-number-1.0-preserved",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "number",
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "attrs_json": "{\"value\":1.00}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":1.0}"
+      }
+    },
+    {
+      "id": "A033-number-underflow-zero-not-nonzero",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "number",
+            "min": "1e-400",
+            "max": null
+          }
+        }
+      },
+      "attrs_json": "{\"value\":1e-400}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_out_of_range"
+      }
+    },
+    {
+      "id": "A034-number-underflow-zero-accepted",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "number",
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "attrs_json": "{\"value\":1e-400}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":0.0}"
+      }
+    },
+    {
+      "id": "A035-u64-overflow-number-range",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "number",
+            "min": null,
+            "max": "18446744073709551615"
+          }
+        }
+      },
+      "attrs_json": "{\"value\":18446744073709551616}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_out_of_range"
+      }
+    },
+    {
+      "id": "A036-number-min-exact",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "number",
+            "min": "1.25",
+            "max": "2.5"
+          }
+        }
+      },
+      "attrs_json": "{\"value\":1.25}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":1.25}"
+      }
+    },
+    {
+      "id": "A037-number-max-exact",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "number",
+            "min": "1.25",
+            "max": "2.5"
+          }
+        }
+      },
+      "attrs_json": "{\"value\":2.5}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":2.5}"
+      }
+    },
+    {
+      "id": "A038-number-below",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "number",
+            "min": "1.25",
+            "max": "2.5"
+          }
+        }
+      },
+      "attrs_json": "{\"value\":1.24}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_out_of_range"
+      }
+    },
+    {
+      "id": "A039-number-above",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "number",
+            "min": "1.25",
+            "max": "2.5"
+          }
+        }
+      },
+      "attrs_json": "{\"value\":2.51}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_out_of_range"
+      }
+    },
+    {
+      "id": "A040-integer-fractional-bound-2",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "integer",
+            "min": "1.5",
+            "max": "2.5"
+          }
+        }
+      },
+      "attrs_json": "{\"value\":2}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":2}"
+      }
+    },
+    {
+      "id": "A041-integer-fractional-bound-1",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "integer",
+            "min": "1.5",
+            "max": "2.5"
+          }
+        }
+      },
+      "attrs_json": "{\"value\":1}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_out_of_range"
+      }
+    },
+    {
+      "id": "A042-enum-match",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "enum",
+            "values": [
+              "amber",
+              "blue"
+            ]
+          }
+        }
+      },
+      "attrs_json": "{\"value\":\"blue\"}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":\"blue\"}"
+      }
+    },
+    {
+      "id": "A043-enum-case-sensitive",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "enum",
+            "values": [
+              "amber",
+              "blue"
+            ]
+          }
+        }
+      },
+      "attrs_json": "{\"value\":\"Blue\"}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_out_of_range"
+      }
+    },
+    {
+      "id": "A044-id-ascii",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "id"
+          }
+        }
+      },
+      "attrs_json": "{\"value\":\"org.example.fixture/value\"}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":\"org.example.fixture/value\"}"
+      }
+    },
+    {
+      "id": "A045-id-unicode",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "id"
+          }
+        }
+      },
+      "attrs_json": "{\"value\":\"org.example.fixture/Я\"}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_out_of_range"
+      }
+    },
+    {
+      "id": "A046-list-empty",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "list",
+            "item": {
+              "kind": "integer",
+              "min": "0",
+              "max": "2"
+            },
+            "max_items": 2
+          }
+        }
+      },
+      "attrs_json": "{\"value\":[]}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":[]}"
+      }
+    },
+    {
+      "id": "A047-list-exact-bound",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "list",
+            "item": {
+              "kind": "integer",
+              "min": "0",
+              "max": "2"
+            },
+            "max_items": 2
+          }
+        }
+      },
+      "attrs_json": "{\"value\":[0,2]}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":[0,2]}"
+      }
+    },
+    {
+      "id": "A048-list-over",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "list",
+            "item": {
+              "kind": "integer",
+              "min": "0",
+              "max": "2"
+            },
+            "max_items": 2
+          }
+        }
+      },
+      "attrs_json": "{\"value\":[0,1,2]}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_limit_exceeded"
+      }
+    },
+    {
+      "id": "A049-list-item-type",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "list",
+            "item": {
+              "kind": "integer",
+              "min": "0",
+              "max": "2"
+            },
+            "max_items": 2
+          }
+        }
+      },
+      "attrs_json": "{\"value\":[0,1.0]}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_type_mismatch"
+      }
+    },
+    {
+      "id": "A050-list-item-range",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "list",
+            "item": {
+              "kind": "integer",
+              "min": "0",
+              "max": "2"
+            },
+            "max_items": 2
+          }
+        }
+      },
+      "attrs_json": "{\"value\":[0,3]}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_out_of_range"
+      }
+    },
+    {
+      "id": "A051-list-order-preserved",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "list",
+            "item": {
+              "kind": "integer",
+              "min": "0",
+              "max": "2"
+            },
+            "max_items": 2
+          }
+        }
+      },
+      "attrs_json": "{\"value\":[2,0]}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":[2,0]}"
+      }
+    },
+    {
+      "id": "A052-object-required",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "object",
+            "fields": {
+              "name": {
+                "required": true,
+                "value": {
+                  "kind": "string",
+                  "max_bytes": 4
+                }
+              },
+              "tag": {
+                "required": false,
+                "value": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "attrs_json": "{\"value\":{\"name\":\"Я\"}}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":{\"name\":\"Я\"}}"
+      }
+    },
+    {
+      "id": "A053-object-missing",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "object",
+            "fields": {
+              "name": {
+                "required": true,
+                "value": {
+                  "kind": "string",
+                  "max_bytes": 4
+                }
+              },
+              "tag": {
+                "required": false,
+                "value": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "attrs_json": "{\"value\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.required_attribute_missing"
+      }
+    },
+    {
+      "id": "A054-object-unknown",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "object",
+            "fields": {
+              "name": {
+                "required": true,
+                "value": {
+                  "kind": "string",
+                  "max_bytes": 4
+                }
+              },
+              "tag": {
+                "required": false,
+                "value": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "attrs_json": "{\"value\":{\"name\":\"Я\",\"extra\":1}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.unknown_attribute"
+      }
+    },
+    {
+      "id": "A055-object-nullable",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "object",
+            "fields": {
+              "name": {
+                "required": true,
+                "value": {
+                  "kind": "string",
+                  "max_bytes": 4
+                }
+              },
+              "tag": {
+                "required": false,
+                "value": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "attrs_json": "{\"value\":{\"name\":\"Я\",\"tag\":null}}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":{\"name\":\"Я\",\"tag\":null}}"
+      }
+    },
+    {
+      "id": "A056-object-wrong-outer",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "object",
+            "fields": {
+              "name": {
+                "required": true,
+                "value": {
+                  "kind": "string",
+                  "max_bytes": 4
+                }
+              },
+              "tag": {
+                "required": false,
+                "value": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "attrs_json": "{\"value\":[]}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_type_mismatch"
+      }
+    },
+    {
+      "id": "A057-object-empty-name",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "object",
+            "fields": {
+              "name": {
+                "required": true,
+                "value": {
+                  "kind": "string",
+                  "max_bytes": 4
+                }
+              },
+              "tag": {
+                "required": false,
+                "value": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "attrs_json": "{\"value\":{\"name\":\"\"}}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":{\"name\":\"\"}}"
+      }
+    },
+    {
+      "id": "A058-unknown-top-attribute",
+      "fields": {},
+      "attrs_json": "{\"unknown\":null}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.unknown_attribute"
+      }
+    },
+    {
+      "id": "A059-exact-space-NBSP",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "string",
+            "max_bytes": 3
+          }
+        }
+      },
+      "attrs_json": "{\"value\":\"  \"}",
+      "expected": {
+        "outcome": "accepted",
+        "canonical_json": "{\"value\":\"  \"}"
+      }
+    },
+    {
+      "id": "A060-integer-wrong-string",
+      "fields": {
+        "value": {
+          "required": true,
+          "value": {
+            "kind": "integer",
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "attrs_json": "{\"value\":\"9007199254740993\"}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.attribute_type_mismatch"
+      }
+    }
+  ]
+}

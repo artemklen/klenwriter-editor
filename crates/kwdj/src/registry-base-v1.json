@@ -1,0 +1,1133 @@
+{
+  "id": "org.klenwriter.kwdj/base",
+  "version": "1.0.0",
+  "dependencies": [],
+  "nodes": [
+    {
+      "id": "org.klenwriter.kwdj/text",
+      "primitive": "text",
+      "attrs": {},
+      "children": {
+        "op": "empty"
+      },
+      "marks": [
+        "org.klenwriter.kwdj/strong",
+        "org.klenwriter.kwdj/emphasis",
+        "org.klenwriter.kwdj/strike",
+        "org.klenwriter.kwdj/code",
+        "org.klenwriter.kwdj/subscript",
+        "org.klenwriter.kwdj/superscript",
+        "org.klenwriter.kwdj/text_color",
+        "org.klenwriter.kwdj/highlight",
+        "org.klenwriter.kwdj/link",
+        "org.klenwriter.kwdj/reference_link"
+      ]
+    },
+    {
+      "id": "org.klenwriter.kwdj/paragraph",
+      "primitive": "text_block",
+      "attrs": {
+        "align": {
+          "required": false,
+          "value": {
+            "kind": "enum",
+            "values": [
+              "left",
+              "center",
+              "right",
+              "justify"
+            ]
+          }
+        },
+        "first_line_indent": {
+          "required": false,
+          "value": {
+            "kind": "boolean"
+          }
+        }
+      },
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "choice",
+          "items": [
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/text"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/hard_break"
+            }
+          ]
+        },
+        "min": 0,
+        "max": 50000
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/heading",
+      "primitive": "text_block",
+      "attrs": {
+        "align": {
+          "required": false,
+          "value": {
+            "kind": "enum",
+            "values": [
+              "left",
+              "center",
+              "right",
+              "justify"
+            ]
+          }
+        },
+        "first_line_indent": {
+          "required": false,
+          "value": {
+            "kind": "boolean"
+          }
+        },
+        "level": {
+          "required": true,
+          "value": {
+            "kind": "integer",
+            "min": "1",
+            "max": "6"
+          }
+        }
+      },
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "choice",
+          "items": [
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/text"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/hard_break"
+            }
+          ]
+        },
+        "min": 0,
+        "max": 50000
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/hard_break",
+      "primitive": "hard_break",
+      "attrs": {},
+      "children": {
+        "op": "empty"
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/scene_break",
+      "primitive": "block_atom",
+      "attrs": {},
+      "children": {
+        "op": "empty"
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/code_block",
+      "primitive": "text_block",
+      "attrs": {
+        "language": {
+          "required": false,
+          "value": {
+            "kind": "string",
+            "max_bytes": 8192
+          }
+        }
+      },
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "type",
+          "id": "org.klenwriter.kwdj/text"
+        },
+        "min": 0,
+        "max": 1
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/blockquote",
+      "primitive": "container",
+      "attrs": {},
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "choice",
+          "items": [
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/paragraph"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/heading"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/blockquote"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/bullet_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/ordered_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/task_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/code_block"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/scene_break"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/table"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/media_image"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/literary_block"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/warning"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/spoiler"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/disclosure"
+            }
+          ]
+        },
+        "min": 1,
+        "max": 50000
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/list_item",
+      "primitive": "container",
+      "attrs": {},
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "choice",
+          "items": [
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/paragraph"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/heading"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/blockquote"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/bullet_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/ordered_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/task_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/code_block"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/scene_break"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/table"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/media_image"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/literary_block"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/warning"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/spoiler"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/disclosure"
+            }
+          ]
+        },
+        "min": 1,
+        "max": 50000
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/task_item",
+      "primitive": "container",
+      "attrs": {
+        "checked": {
+          "required": true,
+          "value": {
+            "kind": "boolean"
+          }
+        }
+      },
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "choice",
+          "items": [
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/paragraph"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/heading"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/blockquote"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/bullet_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/ordered_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/task_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/code_block"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/scene_break"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/table"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/media_image"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/literary_block"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/warning"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/spoiler"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/disclosure"
+            }
+          ]
+        },
+        "min": 1,
+        "max": 50000
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/bullet_list",
+      "primitive": "container",
+      "attrs": {},
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "type",
+          "id": "org.klenwriter.kwdj/list_item"
+        },
+        "min": 1,
+        "max": 50000
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/ordered_list",
+      "primitive": "container",
+      "attrs": {
+        "start": {
+          "required": false,
+          "value": {
+            "kind": "integer",
+            "min": "0",
+            "max": "18446744073709551615"
+          }
+        }
+      },
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "type",
+          "id": "org.klenwriter.kwdj/list_item"
+        },
+        "min": 1,
+        "max": 50000
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/task_list",
+      "primitive": "container",
+      "attrs": {},
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "type",
+          "id": "org.klenwriter.kwdj/task_item"
+        },
+        "min": 1,
+        "max": 50000
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/table_header",
+      "primitive": "container",
+      "attrs": {
+        "colspan": {
+          "required": false,
+          "value": {
+            "kind": "integer",
+            "min": "0",
+            "max": "18446744073709551615"
+          }
+        },
+        "rowspan": {
+          "required": false,
+          "value": {
+            "kind": "integer",
+            "min": "0",
+            "max": "18446744073709551615"
+          }
+        },
+        "align": {
+          "required": false,
+          "value": {
+            "kind": "enum",
+            "values": [
+              "left",
+              "center",
+              "right"
+            ]
+          }
+        }
+      },
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "type",
+          "id": "org.klenwriter.kwdj/paragraph"
+        },
+        "min": 1,
+        "max": 50000
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/table_cell",
+      "primitive": "container",
+      "attrs": {
+        "colspan": {
+          "required": false,
+          "value": {
+            "kind": "integer",
+            "min": "0",
+            "max": "18446744073709551615"
+          }
+        },
+        "rowspan": {
+          "required": false,
+          "value": {
+            "kind": "integer",
+            "min": "0",
+            "max": "18446744073709551615"
+          }
+        },
+        "align": {
+          "required": false,
+          "value": {
+            "kind": "enum",
+            "values": [
+              "left",
+              "center",
+              "right"
+            ]
+          }
+        }
+      },
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "type",
+          "id": "org.klenwriter.kwdj/paragraph"
+        },
+        "min": 1,
+        "max": 50000
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/table_row",
+      "primitive": "container",
+      "attrs": {},
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "choice",
+          "items": [
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/table_header"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/table_cell"
+            }
+          ]
+        },
+        "min": 1,
+        "max": 50000
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/table",
+      "primitive": "container",
+      "attrs": {},
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "type",
+          "id": "org.klenwriter.kwdj/table_row"
+        },
+        "min": 1,
+        "max": 50000
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/media_image",
+      "primitive": "container",
+      "attrs": {
+        "media_asset_id": {
+          "required": true,
+          "value": {
+            "kind": "string",
+            "max_bytes": 36
+          }
+        },
+        "alt": {
+          "required": false,
+          "value": {
+            "kind": "string",
+            "max_bytes": 8192
+          }
+        },
+        "decorative": {
+          "required": false,
+          "value": {
+            "kind": "boolean"
+          }
+        },
+        "align": {
+          "required": true,
+          "value": {
+            "kind": "enum",
+            "values": [
+              "none",
+              "center",
+              "wide"
+            ]
+          }
+        }
+      },
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "type",
+          "id": "org.klenwriter.kwdj/paragraph"
+        },
+        "min": 0,
+        "max": 50000
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/literary_block",
+      "primitive": "container",
+      "attrs": {
+        "kind": {
+          "required": true,
+          "value": {
+            "kind": "enum",
+            "values": [
+              "author_note",
+              "letter",
+              "epigraph",
+              "world_note",
+              "chronicle_quote",
+              "archive_fragment"
+            ]
+          }
+        }
+      },
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "choice",
+          "items": [
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/paragraph"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/heading"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/blockquote"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/bullet_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/ordered_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/task_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/code_block"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/scene_break"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/table"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/media_image"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/literary_block"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/warning"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/spoiler"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/disclosure"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/verse"
+            }
+          ]
+        },
+        "min": 1,
+        "max": 50000
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/warning",
+      "primitive": "container",
+      "attrs": {
+        "kind": {
+          "required": true,
+          "value": {
+            "kind": "enum",
+            "values": [
+              "general",
+              "content"
+            ]
+          }
+        },
+        "label": {
+          "required": false,
+          "value": {
+            "kind": "string",
+            "max_bytes": 8192
+          }
+        }
+      },
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "choice",
+          "items": [
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/paragraph"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/heading"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/blockquote"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/bullet_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/ordered_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/task_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/code_block"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/scene_break"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/table"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/media_image"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/literary_block"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/warning"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/spoiler"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/disclosure"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/verse"
+            }
+          ]
+        },
+        "min": 1,
+        "max": 50000
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/spoiler",
+      "primitive": "container",
+      "attrs": {
+        "label": {
+          "required": true,
+          "value": {
+            "kind": "string",
+            "max_bytes": 8192
+          }
+        }
+      },
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "choice",
+          "items": [
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/paragraph"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/heading"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/blockquote"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/bullet_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/ordered_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/task_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/code_block"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/scene_break"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/table"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/media_image"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/literary_block"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/warning"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/spoiler"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/disclosure"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/verse"
+            }
+          ]
+        },
+        "min": 1,
+        "max": 50000
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/disclosure",
+      "primitive": "container",
+      "attrs": {
+        "label": {
+          "required": true,
+          "value": {
+            "kind": "string",
+            "max_bytes": 8192
+          }
+        }
+      },
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "choice",
+          "items": [
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/paragraph"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/heading"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/blockquote"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/bullet_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/ordered_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/task_list"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/code_block"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/scene_break"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/table"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/media_image"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/literary_block"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/warning"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/spoiler"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/disclosure"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/verse"
+            }
+          ]
+        },
+        "min": 1,
+        "max": 50000
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/verse_line",
+      "primitive": "text_block",
+      "attrs": {},
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "choice",
+          "items": [
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/text"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/hard_break"
+            }
+          ]
+        },
+        "min": 0,
+        "max": 50000
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/stanza_break",
+      "primitive": "block_atom",
+      "attrs": {
+        "blank_lines": {
+          "required": true,
+          "value": {
+            "kind": "integer",
+            "min": "0",
+            "max": "18446744073709551615"
+          }
+        }
+      },
+      "children": {
+        "op": "empty"
+      },
+      "marks": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/verse",
+      "primitive": "container",
+      "attrs": {},
+      "children": {
+        "op": "repeat",
+        "item": {
+          "op": "choice",
+          "items": [
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/verse_line"
+            },
+            {
+              "op": "type",
+              "id": "org.klenwriter.kwdj/stanza_break"
+            }
+          ]
+        },
+        "min": 1,
+        "max": 50000
+      },
+      "marks": []
+    }
+  ],
+  "marks": [
+    {
+      "id": "org.klenwriter.kwdj/strong",
+      "attrs": {},
+      "excludes": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/emphasis",
+      "attrs": {},
+      "excludes": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/strike",
+      "attrs": {},
+      "excludes": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/code",
+      "attrs": {},
+      "excludes": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/subscript",
+      "attrs": {},
+      "excludes": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/superscript",
+      "attrs": {},
+      "excludes": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/text_color",
+      "attrs": {
+        "token": {
+          "required": true,
+          "value": {
+            "kind": "enum",
+            "values": [
+              "muted",
+              "accent",
+              "manuscript",
+              "warning",
+              "success",
+              "danger"
+            ]
+          }
+        }
+      },
+      "excludes": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/highlight",
+      "attrs": {
+        "token": {
+          "required": true,
+          "value": {
+            "kind": "enum",
+            "values": [
+              "accent",
+              "manuscript",
+              "warning"
+            ]
+          }
+        }
+      },
+      "excludes": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/link",
+      "attrs": {
+        "href": {
+          "required": true,
+          "value": {
+            "kind": "string",
+            "max_bytes": 8192
+          }
+        },
+        "title": {
+          "required": false,
+          "value": {
+            "kind": "string",
+            "max_bytes": 8192
+          }
+        }
+      },
+      "excludes": []
+    },
+    {
+      "id": "org.klenwriter.kwdj/reference_link",
+      "attrs": {
+        "reference_entity_id": {
+          "required": true,
+          "value": {
+            "kind": "string",
+            "max_bytes": 36
+          }
+        }
+      },
+      "excludes": []
+    }
+  ],
+  "commands": []
+}

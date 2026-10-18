@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import type { CommandDto } from '@klenwriter/editor-wasm';
 import { ownData } from './data.js';
-export { artifactStage, loadSdk, sdkAbiV1, sdkBuildId } from '@klenwriter/editor-wasm';
+export { artifactStage, loadSdk, loadSdkV2, sdkAbiV1, sdkAbiV2, sdkBuildId } from '@klenwriter/editor-wasm';
 export * from './controller.js';
 export type * from '@klenwriter/editor-wasm';
 

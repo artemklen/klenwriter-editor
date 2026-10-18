@@ -1,0 +1,44 @@
+{
+  "format": "editor-extension-basic-oracle/1",
+  "status": "independent-literals-frozen-before-implementation",
+  "issue": "OSR-64",
+  "license": "MIT OR Apache-2.0",
+  "authority": {
+    "path": "evidence/osr-64/execution-contract.md",
+    "sha256": "65a842098cb267e2eccb2ba702b9295d6c650d8f05e2521e4d926815f0eda04b"
+  },
+  "counts": {
+    "compiler": 58,
+    "attributes": 60,
+    "grammar": 40,
+    "total_authored_cases": 158,
+    "executed_cases_claimed": 0
+  },
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 8687,
+      "sha256": "89331b96451c0513d62672dc0b81408099e7dffe84300f04c364888911702ae5"
+    },
+    {
+      "path": "compiler-vectors.json",
+      "bytes": 94349,
+      "sha256": "f7d6cf7727d8cdbc2ddc5f5ade0b6484985c19bd06b4297456253b06b756c9c0"
+    },
+    {
+      "path": "attribute-vectors.json",
+      "bytes": 27732,
+      "sha256": "5a83f7f72fea3ea35fc212c1d057c308480eaad60bb7fd8315710adf2d747950"
+    },
+    {
+      "path": "grammar-vectors.json",
+      "bytes": 23754,
+      "sha256": "93bdd30dbfee46b87361d256e1b834b6713d4f9089bce69d4f2486f9a0f220c9"
+    }
+  ],
+  "scope_limits": [
+    "Initial compiler/attribute/grammar oracle only. Recipes/history and Notes codec corpus are separate.",
+    "No implementation, compiler result, native/WASM pass, public SDK proof or independent review verdict is claimed.",
+    "Digest expectations are independent equality/inequality relations; no implementation-generated hashes."
+  ]
+}

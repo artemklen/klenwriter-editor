@@ -8,6 +8,7 @@ pub mod sdk;
 #[cfg(target_arch = "wasm32")]
 mod sdk_browser;
 mod sdk_convert;
+pub mod sdk_v2;
 pub mod sdk_wire;
 
 use serde::{Deserialize, Serialize};

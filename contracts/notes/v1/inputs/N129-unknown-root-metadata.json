@@ -1,0 +1,14 @@
+{
+  "root": {
+    "attrs": {
+      "tags": [],
+      "title": "",
+      "author": "unknown"
+    },
+    "children": [],
+    "marks": [],
+    "text": null,
+    "type": "org.example.notes/document"
+  },
+  "schema_version": 1
+}

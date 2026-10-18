@@ -13,6 +13,11 @@ The owner-confirmed [distribution identity](docs/identity.md) is **KlenWriter Ed
 versions are recorded in [package-map.json](package-map.json). The packages remain
 unpublished bootstrap artifacts; registry observations do not reserve names.
 
+The headless SDK supports compatible ABI1 and explicit ABI2 in one prebuilt
+WASM. [Extension authors](docs/extensions.md) can supply bounded runtime JSON
+packages or compile independent native/WASM profile modules through public Rust
+crates. The notes profile and KWDJ use the same composition API.
+
 ## Build the standalone workspace
 
 Use Node 24.22.0, npm 11.14.0 and rustup (Rust 1.97.1 is pinned automatically):

@@ -568,7 +568,7 @@ impl<P: TransactionProfile> Session<P> {
     }
 
     pub fn dispatch(&mut self, transaction: Transaction) -> DispatchOutcome<P::Error> {
-        let mut work = WorkMeter::new(transaction.limits.work);
+        let mut work = self.preparation_work(transaction.limits.work);
         let prepared = self.prepare_transaction(
             transaction,
             self.tree.prepare(),

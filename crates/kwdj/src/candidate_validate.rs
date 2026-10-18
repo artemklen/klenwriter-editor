@@ -5,7 +5,9 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::io::{self, Write};
 
-use editor_core::admission::{PreflightBudget, PreflightUsage, preflight_node_fields};
+use editor_core::admission::{
+    PreflightBudget, PreflightUsage, preflight_json, preflight_node_fields,
+};
 use editor_core::candidate::{BorrowedNode, CandidateRead};
 use editor_core::document::TreeNode;
 use editor_core::transaction::{Operation, ValidationStats, WorkMeter};
@@ -178,17 +180,33 @@ pub(crate) fn check_normalizable_header<I: Copy>(
     )
     .map_err(KwdjError::operational)?;
     work.note_phase(editor_core::transaction::WorkPhase::Header, 1, 0);
-    let mut value = raw_header(node, path)?;
+    let value = raw_header(node, path)?;
+    // Candidate type/mark IDs are registry identities, not import spellings.
+    // Reject unknown casing before the shared wire helper canonicalizes names.
     crate::scan_known_types(&value, path)?;
+    let header = normalizable_raw_header(value, path)?;
+    same_primitive(node, &header, path)
+}
+
+/// Shape-check one original shallow wire header without allowing absent-token
+/// marks to disappear. Both imported headers and candidate discard guards use
+/// this closed decoder authority. The caller charges ownership before copying.
+pub(crate) fn normalizable_raw_header(mut value: Value, path: &str) -> Result<Node, KwdjError> {
     let mut marks = value
         .as_object_mut()
-        .expect("header object")
+        .ok_or_else(|| KwdjError::new(KwdjErrorCode::InvalidStructure, path))?
         .remove("marks");
     crate::normalize::normalize_value(&mut value, path, &mut Vec::new())?;
     if let Some(Value::Array(marks)) = &mut marks {
         for (index, mark) in marks.iter_mut().enumerate() {
-            let kind = mark.get("type").and_then(Value::as_str);
-            let replacement = match kind {
+            // Normalizing an individual mark canonicalizes type/token casing;
+            // only its enclosing marks array would discard absent tokens.
+            crate::normalize::normalize_value(
+                mark,
+                &index_path(&key_path(path, "marks"), index),
+                &mut Vec::new(),
+            )?;
+            let replacement = match mark.get("type").and_then(Value::as_str) {
                 Some("text_color") => Some("muted"),
                 Some("highlight") => Some("accent"),
                 _ => None,
@@ -203,11 +221,6 @@ pub(crate) fn check_normalizable_header<I: Copy>(
             {
                 *token = Value::String(replacement.into());
             }
-            crate::normalize::normalize_value(
-                mark,
-                &index_path(&key_path(path, "marks"), index),
-                &mut Vec::new(),
-            )?;
         }
     }
     if let Some(marks) = marks {
@@ -216,8 +229,125 @@ pub(crate) fn check_normalizable_header<I: Copy>(
             .expect("header object")
             .insert("marks".into(), marks);
     }
-    let header = decode_header(value, path)?;
-    same_primitive(node, &header, path)
+    decode_header(value, path)
+}
+
+/// Copy one original shallow wire header after charging its borrowed metadata.
+/// Child payload and actual text remain borrowed by the outer admission pass.
+pub(crate) fn original_header(
+    value: &Value,
+    path: &str,
+    budget: PreflightBudget,
+    work: &mut WorkMeter,
+) -> Result<Value, KwdjError> {
+    let object = value
+        .as_object()
+        .ok_or_else(|| KwdjError::new(KwdjErrorCode::InvalidStructure, path))?;
+    let mut header = Map::new();
+    for (key, value) in object {
+        if key == "content" {
+            continue;
+        }
+        let limits = work.limits();
+        let used = work.usage();
+        let usage = preflight_json(
+            value,
+            PreflightBudget {
+                payload_bytes: budget
+                    .payload_bytes
+                    .min(limits.bytes.saturating_sub(used.bytes)),
+                values: budget.values.min(limits.units.saturating_sub(used.units)),
+                depth: budget.depth.min(128),
+            },
+        )
+        .map_err(KwdjError::operational)?;
+        work.charge_units(usage.values)
+            .map_err(KwdjError::operational)?;
+        work.charge_bytes(
+            usage
+                .payload_bytes
+                .saturating_add(key.len() as u64)
+                .saturating_mul(16)
+                .saturating_add(usage.values.saturating_mul(256))
+                .saturating_add(128),
+        )
+        .map_err(KwdjError::operational)?;
+        header.insert(
+            key.clone(),
+            if key == "text" && value.is_string() {
+                Value::String(String::new())
+            } else {
+                value.clone()
+            },
+        );
+    }
+    if object.contains_key("content") {
+        work.charge_units(1).map_err(KwdjError::operational)?;
+        work.charge_bytes(128).map_err(KwdjError::operational)?;
+        header.insert("content".into(), Value::Array(Vec::new()));
+    }
+    Ok(Value::Object(header))
+}
+
+/// Prove closed original node/mark headers before any normalization can erase
+/// them. This is domain shape authority, independent of registry composition.
+pub(crate) fn check_original_headers(
+    value: &Value,
+    budget: PreflightBudget,
+    work: &mut WorkMeter,
+) -> Result<(), KwdjError> {
+    // Normalization's generic marks handling must not grant node fields to the
+    // Document envelope. Preserve that original field while canonicalizing
+    // known profile/default spellings, then use the unchanged closed model.
+    let mut envelope = original_header(value, "", budget, work)?;
+    let fields = envelope.as_object_mut().expect("copied object header");
+    let marks = fields.remove("marks");
+    crate::normalize::normalize_value(&mut envelope, "", &mut Vec::new())?;
+    if let Some(marks) = marks {
+        envelope
+            .as_object_mut()
+            .expect("copied object header")
+            .insert("marks".into(), marks);
+    }
+    crate::decode_document_shape(envelope)?;
+    fn walk(
+        value: &Value,
+        path: &str,
+        depth: u64,
+        budget: PreflightBudget,
+        work: &mut WorkMeter,
+    ) -> Result<(), KwdjError> {
+        work.charge_units(1).map_err(KwdjError::operational)?;
+        if depth > budget.depth.min(128) {
+            return Err(KwdjError::new(KwdjErrorCode::InvalidStructure, path));
+        }
+        normalizable_raw_header(original_header(value, path, budget, work)?, path)?;
+        if let Some(children) = value.get("content").and_then(Value::as_array) {
+            work.charge_units(children.len() as u64)
+                .map_err(KwdjError::operational)?;
+            for (index, child) in children.iter().enumerate() {
+                work.charge_units(1).map_err(KwdjError::operational)?;
+                work.charge_bytes((path.len() + 48) as u64)
+                    .map_err(KwdjError::operational)?;
+                walk(
+                    child,
+                    &index_path(&key_path(path, "content"), index),
+                    depth + 1,
+                    budget,
+                    work,
+                )?;
+            }
+        }
+        Ok(())
+    }
+    if let Some(roots) = value.get("content").and_then(Value::as_array) {
+        for (index, node) in roots.iter().enumerate() {
+            work.charge_units(1).map_err(KwdjError::operational)?;
+            work.charge_bytes(48).map_err(KwdjError::operational)?;
+            walk(node, &index_path("/content", index), 1, budget, work)?;
+        }
+    }
+    Ok(())
 }
 
 /// Before automatic removal/overwrite, inspect the original semantic payload.

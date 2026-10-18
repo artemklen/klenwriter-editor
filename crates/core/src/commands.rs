@@ -63,6 +63,58 @@ pub struct CommandDescriptor {
     pub id: &'static str,
 }
 
+/// Immutable instance view. Runtime IDs remain owned by their frozen profile;
+/// borrowing the catalog neither leaks strings nor changes session authority.
+#[derive(Debug, Clone, Copy)]
+pub enum CommandCatalog<'a> {
+    Static(&'a [CommandDescriptor]),
+    Runtime(&'a [String]),
+}
+impl<'a> CommandCatalog<'a> {
+    pub fn len(self) -> usize {
+        match self {
+            Self::Static(entries) => entries.len(),
+            Self::Runtime(ids) => ids.len(),
+        }
+    }
+    pub fn is_empty(self) -> bool {
+        self.len() == 0
+    }
+    pub fn get(self, index: usize) -> Option<&'a str> {
+        match self {
+            Self::Static(entries) => entries.get(index).map(|entry| entry.id),
+            Self::Runtime(ids) => ids.get(index).map(String::as_str),
+        }
+    }
+    pub fn ids(self) -> impl ExactSizeIterator<Item = &'a str> + Clone {
+        (0..self.len()).map(move |index| match self {
+            Self::Static(entries) => entries[index].id,
+            Self::Runtime(ids) => ids[index].as_str(),
+        })
+    }
+    pub fn validate(self) -> Result<(), CatalogError> {
+        if self.len() > MAX_COMMANDS {
+            return Err(CatalogError::TooManyCommands);
+        }
+        for (index, id) in self.ids().enumerate() {
+            if id.len() > MAX_COMMAND_ID_BYTES
+                || !id
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || b"._-/".contains(&byte))
+                || !id
+                    .split_once('/')
+                    .is_some_and(|(namespace, name)| namespace.contains('.') && !name.is_empty())
+            {
+                return Err(CatalogError::InvalidId);
+            }
+            if self.ids().take(index).any(|old| old == id) {
+                return Err(CatalogError::DuplicateId);
+            }
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CatalogError {
     TooManyCommands,
@@ -81,26 +133,7 @@ impl CatalogError {
 
 /// Frozen registration uses exact, case-sensitive namespaced ASCII IDs.
 pub fn validate_catalog(commands: &[CommandDescriptor]) -> Result<(), CatalogError> {
-    if commands.len() > MAX_COMMANDS {
-        return Err(CatalogError::TooManyCommands);
-    }
-    for (index, descriptor) in commands.iter().enumerate() {
-        let id = descriptor.id;
-        if id.len() > MAX_COMMAND_ID_BYTES
-            || !id
-                .bytes()
-                .all(|byte| byte.is_ascii_alphanumeric() || b"._-/".contains(&byte))
-            || !id
-                .split_once('/')
-                .is_some_and(|(namespace, name)| namespace.contains('.') && !name.is_empty())
-        {
-            return Err(CatalogError::InvalidId);
-        }
-        if commands[..index].iter().any(|old| old.id == id) {
-            return Err(CatalogError::DuplicateId);
-        }
-    }
-    Ok(())
+    CommandCatalog::Static(commands).validate()
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -291,6 +324,11 @@ impl<'a, I> PlanBuilder<'a, I> {
 pub trait CommandProvider: TransactionProfile {
     type Intent<I: Copy + Eq + Ord>;
     const COMMANDS: &'static [CommandDescriptor];
+    /// Legacy providers keep their exact associated catalog. A runtime profile
+    /// overrides this with IDs owned by its immutable admitted configuration.
+    fn command_catalog(&self) -> CommandCatalog<'_> {
+        CommandCatalog::Static(Self::COMMANDS)
+    }
     fn command_id<I: Copy + Eq + Ord>(intent: &Self::Intent<I>) -> &str;
     fn prepare_command<V: CandidateRead>(
         &self,
@@ -317,6 +355,38 @@ mod tests {
     use crate::document::Attribute;
     use crate::positions::{Affinity, Utf16Offset};
     use crate::transaction::{MarkEdit, WorkLimits};
+
+    // OSR-64: literal expectations frozen before the borrowed catalog seam.
+    #[test]
+    fn runtime_catalog_uses_borrowed_exact_ids_and_the_legacy_bounds() {
+        let ids = vec![
+            ["org.example.external", "type"].join("/"),
+            ["org.example.external", "Type"].join("/"),
+        ];
+        let catalog = CommandCatalog::Runtime(&ids);
+        assert_eq!(
+            catalog.ids().collect::<Vec<_>>(),
+            vec!["org.example.external/type", "org.example.external/Type"]
+        );
+        assert_eq!(catalog.validate(), Ok(()));
+        assert_eq!(catalog.get(2), None);
+        assert_eq!(CommandCatalog::Runtime(&[]).validate(), Ok(()));
+        let duplicates = vec!["org.example.external/type".to_owned(); 2];
+        assert_eq!(
+            CommandCatalog::Runtime(&duplicates).validate(),
+            Err(CatalogError::DuplicateId)
+        );
+        let invalid = vec!["org.example.external/type space".to_owned()];
+        assert_eq!(
+            CommandCatalog::Runtime(&invalid).validate(),
+            Err(CatalogError::InvalidId)
+        );
+        let too_many = vec!["org.example.external/type".to_owned(); 257];
+        assert_eq!(
+            CommandCatalog::Runtime(&too_many).validate(),
+            Err(CatalogError::TooManyCommands)
+        );
+    }
 
     #[test]
     fn catalog_is_bounded_exact_and_case_sensitive() {

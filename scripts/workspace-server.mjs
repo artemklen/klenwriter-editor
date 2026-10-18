@@ -14,6 +14,8 @@ const routes = new Map([
   ['/sdk', ['spikes/workspace/sdk-host.html', 'text/html']],
   ['/sdk-host.js', ['spikes/workspace/sdk-host.js', 'text/javascript']],
   ['/sdk-scenario.js', ['spikes/workspace/sdk-scenario.js', 'text/javascript']],
+  ['/extensions-packet.json', ['artifacts/extensions/packet.json', 'application/json']],
+  ['/notes-extension-testkit.mjs', ['examples/notes-extension/testkit.mjs', 'text/javascript']],
   ['/packages/wasm/editor_wasm_bg.wasm', ['packages/wasm/dist/editor_wasm_bg.wasm', 'application/wasm']],
   ['/style.css', ['packages/dom/dist/style.css', 'text/css']],
 ]);

@@ -1,0 +1,31 @@
+{
+  "root": {
+    "attrs": {
+      "tags": [
+        "tag",
+        "tag",
+        "tag",
+        "tag",
+        "tag",
+        "tag",
+        "tag",
+        "tag",
+        "tag",
+        "tag",
+        "tag",
+        "tag",
+        "tag",
+        "tag",
+        "tag",
+        "tag",
+        "tag"
+      ],
+      "title": ""
+    },
+    "children": [],
+    "marks": [],
+    "text": null,
+    "type": "org.example.notes/document"
+  },
+  "schema_version": 1
+}

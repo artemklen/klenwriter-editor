@@ -4,8 +4,10 @@ OSR-63 exposes a real Rust Session through `@klenwriter/editor-wasm` and the
 framework-free `@klenwriter/editor-sdk`. Packages remain private, unpublished
 `0.0.0`; ABI `editor-sdk/1` is an explicit compatibility contract, separate from
 package SemVer, codec ABI `kwdj-codec/1`, persisted KWDJ schema1 and bindgen0.2.129.
-This is a headless API. Production DOM/input/UI, general extension composition,
-CMS persistence and registry release have their own tasks.
+This is a headless API. OSR-64 adds explicitly negotiated
+[SDK2 and frozen extensions](extensions.md) in the same sealed module and one
+glue initialization; the ABI1 declarations and manifest stay compatible.
+Production DOM/input/UI, CMS persistence and registry release have their own tasks.
 
 ## Installation and loading
 

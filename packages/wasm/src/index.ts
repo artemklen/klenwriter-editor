@@ -2,4 +2,5 @@
 export const artifactStage = 'workspace-bootstrap' as const;
 export * from './codec.js';
 export * from './sdk-types.js';
+export * from './sdk-types-v2.js';
 export * from './sdk.js';

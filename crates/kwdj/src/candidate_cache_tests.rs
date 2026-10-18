@@ -886,3 +886,6 @@ fn u64_max_geometry_and_unknown_payload_preserve_exact_full_diagnostics() {
         }
     }
 }
+
+#[path = "registry_guards_tests.rs"]
+mod registry_guards_tests;

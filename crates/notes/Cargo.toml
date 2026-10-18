@@ -1,0 +1,26 @@
+[package]
+name = "klenwriter-editor-notes"
+version.workspace = true
+edition.workspace = true
+rust-version = "1.89.0"
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+description = "Independent registry-backed notes profile and closed JSON codec"
+
+[lints]
+workspace = true
+
+[dependencies]
+editor_core.workspace = true
+editor_registry.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+editor_engine.workspace = true
+
+[package.metadata.klenwriter-editor]
+role = "notes"
+source-provenance = "SOURCE-PROVENANCE.json"
+public-api-stability = "bootstrap"

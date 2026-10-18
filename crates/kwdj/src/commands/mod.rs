@@ -233,20 +233,26 @@ impl CommandProvider for KwdjProfile<'_> {
         proposed: Option<&[Mark]>,
         work: &mut WorkMeter,
     ) -> Result<Option<Vec<Mark>>, Self::Error> {
-        Ok(inline::finalize_typing_override(
+        let marks = inline::finalize_typing_override(
             self,
             *context,
             final_candidate,
             final_selection,
             proposed,
             work,
-        )?)
+        )?;
+        if let Some(marks) = &marks {
+            self.registry()
+                .validate_marks("org.klenwriter.kwdj/text", marks, work)?;
+        }
+        Ok(marks)
     }
 
     fn error_code(error: &Self::Error) -> &'static str {
         match error {
             KwdjProfileError::Document(error) => error.code.as_str(),
             KwdjProfileError::Binding(_) => "kwdj.command_binding_mismatch",
+            KwdjProfileError::Registry(error) => error.code.as_str(),
         }
     }
 }

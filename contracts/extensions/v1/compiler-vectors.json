@@ -1,0 +1,499 @@
+{
+  "format": "editor-extension-compiler-vectors/1",
+  "provenance": {
+    "license": "MIT OR Apache-2.0",
+    "author": "Codex supporting OSR-64 implementer, independently authored before registry/compiler implementation",
+    "oracle": "Literal mathematical/contract expectations; no compiler output is an expected-value source. Raw JSON strings preserve duplicate keys and number representation. Digest comparisons are authored relations, not implementation-generated hashes.",
+    "contract": "evidence/osr-64/execution-contract.md",
+    "canonical_rule": "klenwriter-canonical-json-v1"
+  },
+  "budget_fields": "Fixture-only CompilerLimits/WorkMeter host reductions; each missing field uses accepted distribution default. Zero means exhausted, never unlimited. No production DTO declaration.",
+  "cases": [
+    {
+      "id": "C001-baseline-explicit-full-id-owner",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "accepted",
+        "extension_order": [
+          "org.example.owner/base"
+        ]
+      }
+    },
+    {
+      "id": "C002-declaration-array-reorder",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "accepted",
+        "digest_same_as": "C001-baseline-explicit-full-id-owner"
+      }
+    },
+    {
+      "id": "C003-unknown-format",
+      "input_json": "{\"format\":\"editor-registry/2\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.unsupported_format"
+      }
+    },
+    {
+      "id": "C004-unknown-top-level",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"unknown\":true,\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.invalid_descriptor"
+      }
+    },
+    {
+      "id": "C005-unknown-unit-grammar-field",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\",\"extra\":true},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\",\"extra\":true},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.invalid_descriptor"
+      }
+    },
+    {
+      "id": "C006-unknown-primitive",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"foreign_primitive\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.invalid_descriptor"
+      }
+    },
+    {
+      "id": "C007-invalid-public-id-unicode",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/Я\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.invalid_identifier"
+      }
+    },
+    {
+      "id": "C008-version-range-forbidden",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"^1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.invalid_version"
+      }
+    },
+    {
+      "id": "C009-selected-extension-missing",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/absent\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.extension_missing"
+      }
+    },
+    {
+      "id": "C010-selected-version-exact",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.1\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.extension_version_mismatch"
+      }
+    },
+    {
+      "id": "C011-duplicate-extension-equal",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]},{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.duplicate_extension"
+      }
+    },
+    {
+      "id": "C012-duplicate-node-equal",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]},{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.duplicate_node"
+      }
+    },
+    {
+      "id": "C013-duplicate-mark-equal",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]},{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.duplicate_mark"
+      }
+    },
+    {
+      "id": "C014-unknown-type-reference",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/missing\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.unknown_type"
+      }
+    },
+    {
+      "id": "C015-unknown-mark-reference",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\",\"org.example.fixture/missing\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.unknown_mark"
+      }
+    },
+    {
+      "id": "C016-explicit-dependency-missing",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[{\"id\":\"org.example.owner/missing\",\"version\":\"1.0.0\"}],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.dependency_missing"
+      }
+    },
+    {
+      "id": "C017-self-dependency-cycle",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.dependency_cycle"
+      }
+    },
+    {
+      "id": "C018-dependency-version-exact",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"},{\"id\":\"org.example.owner/addon\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[{\"id\":\"org.example.owner/addon\",\"version\":\"1.0.1\"}],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]},{\"id\":\"org.example.owner/addon\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[],\"marks\":[],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.dependency_version_mismatch"
+      }
+    },
+    {
+      "id": "C019-two-owner-dependency-cycle",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"},{\"id\":\"org.example.owner/addon\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[{\"id\":\"org.example.owner/addon\",\"version\":\"1.0.0\"}],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]},{\"id\":\"org.example.owner/addon\",\"version\":\"1.0.0\",\"dependencies\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"nodes\":[],\"marks\":[],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.dependency_cycle"
+      }
+    },
+    {
+      "id": "C020-cross-owner-mark-reference-no-implied-dependency",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"},{\"id\":\"org.example.owner/addon\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[],\"commands\":[]},{\"id\":\"org.example.owner/addon\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "accepted",
+        "extension_order": [
+          "org.example.owner/addon",
+          "org.example.owner/base"
+        ],
+        "digest_differs_from": "C001-baseline-explicit-full-id-owner"
+      }
+    },
+    {
+      "id": "C021-public-id-conflict-between-owners",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"},{\"id\":\"org.example.owner/addon\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]},{\"id\":\"org.example.owner/addon\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]}],\"marks\":[],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.duplicate_node"
+      }
+    },
+    {
+      "id": "C022-explicit-topological-order",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"},{\"id\":\"org.example.owner/addon\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]},{\"id\":\"org.example.owner/addon\",\"version\":\"1.0.0\",\"dependencies\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"nodes\":[],\"marks\":[],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "accepted",
+        "extension_order": [
+          "org.example.owner/base",
+          "org.example.owner/addon"
+        ]
+      }
+    },
+    {
+      "id": "C023-topology-input-reorder",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/addon\",\"version\":\"1.0.0\"},{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/addon\",\"version\":\"1.0.0\",\"dependencies\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"nodes\":[],\"marks\":[],\"commands\":[]},{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "accepted",
+        "extension_order": [
+          "org.example.owner/base",
+          "org.example.owner/addon"
+        ],
+        "digest_same_as": "C022-explicit-topological-order"
+      }
+    },
+    {
+      "id": "C024-mutual-type-labels-not-grammar-expansion-or-dependencies",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"},{\"id\":\"org.example.owner/addon\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"type\",\"id\":\"org.example.fixture/other\"},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]},{\"id\":\"org.example.owner/addon\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/other\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"marks\":[]}],\"marks\":[],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "accepted",
+        "extension_order": [
+          "org.example.owner/addon",
+          "org.example.owner/base"
+        ]
+      }
+    },
+    {
+      "id": "C025-order-sensitive-sequence",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"sequence\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"}]},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "accepted"
+      }
+    },
+    {
+      "id": "C026-sequence-reversed-digest-changes",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"sequence\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},{\"op\":\"type\",\"id\":\"org.example.fixture/document\"}]},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "accepted",
+        "digest_differs_from": "C025-order-sensitive-sequence"
+      }
+    },
+    {
+      "id": "C027-repeat-min-greater-max",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"min\":2,\"max\":1},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.invalid_grammar"
+      }
+    },
+    {
+      "id": "C028-reversed-number-bounds",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{\"value\":{\"required\":true,\"value\":{\"kind\":\"number\",\"min\":\"2\",\"max\":\"1\"}}},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.invalid_attribute_schema"
+      }
+    },
+    {
+      "id": "C029-numeric-bound-not-json-decimal",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{\"value\":{\"required\":true,\"value\":{\"kind\":\"number\",\"min\":\"+1\",\"max\":null}}},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.invalid_numeric_bound"
+      }
+    },
+    {
+      "id": "C030-numeric-bound-exp-4097",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{\"value\":{\"required\":true,\"value\":{\"kind\":\"number\",\"min\":\"1e4097\",\"max\":null}}},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.resource_limit_exceeded"
+      }
+    },
+    {
+      "id": "C031-numeric-bound-257-coefficient-digits",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{\"value\":{\"required\":true,\"value\":{\"kind\":\"number\",\"min\":\"11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\",\"max\":null}}},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.resource_limit_exceeded"
+      }
+    },
+    {
+      "id": "C032-compiler-work-zero",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.resource_limit_exceeded"
+      },
+      "compile_budget": {
+        "work_units": 0
+      }
+    },
+    {
+      "id": "C033-compiler-owned-bytes-zero",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.resource_limit_exceeded"
+      },
+      "compile_budget": {
+        "owned_bytes": 0
+      }
+    },
+    {
+      "id": "C034-duplicate-enum-schema",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{\"value\":{\"required\":true,\"value\":{\"kind\":\"enum\",\"values\":[\"a\",\"a\"]}}},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.invalid_attribute_schema"
+      }
+    },
+    {
+      "id": "C035-unknown-unit-attribute-field",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{\"value\":{\"required\":true,\"value\":{\"kind\":\"boolean\",\"extra\":true}}},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.invalid_descriptor"
+      }
+    },
+    {
+      "id": "C036-missing-required-null-bound",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{\"value\":{\"required\":true,\"value\":{\"kind\":\"number\",\"min\":null}}},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.invalid_descriptor"
+      }
+    },
+    {
+      "id": "C037-duplicate-json-key",
+      "input_json": "{\"format\":\"editor-registry/1\",\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"mark_policy\":{},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}]}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.duplicate_json_key"
+      }
+    },
+    {
+      "id": "C038-malformed-json",
+      "input_json": "{\"format\":",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.invalid_json"
+      }
+    },
+    {
+      "id": "C039-unknown-enum-primitive-field-type",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":1,\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.invalid_descriptor"
+      }
+    },
+    {
+      "id": "C040-number-zero-bound",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{\"value\":{\"required\":true,\"value\":{\"kind\":\"number\",\"min\":\"0\",\"max\":\"0\"}}},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "accepted"
+      }
+    },
+    {
+      "id": "C041-equivalent-negative-zero-bound-digest",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{\"value\":{\"required\":true,\"value\":{\"kind\":\"number\",\"min\":\"-0.00e+2\",\"max\":\"0.0\"}}},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "accepted",
+        "digest_same_as": "C040-number-zero-bound"
+      }
+    },
+    {
+      "id": "C042-decimal-bound-10",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{\"value\":{\"required\":true,\"value\":{\"kind\":\"number\",\"min\":\"10\",\"max\":\"10\"}}},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "accepted"
+      }
+    },
+    {
+      "id": "C043-equivalent-decimal-bound-digest",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{\"value\":{\"required\":true,\"value\":{\"kind\":\"number\",\"min\":\"1.00e1\",\"max\":\"10.0\"}}},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "accepted",
+        "digest_same_as": "C042-decimal-bound-10"
+      }
+    },
+    {
+      "id": "C044-exp-4096-accepted",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{\"value\":{\"required\":true,\"value\":{\"kind\":\"number\",\"min\":\"1e-4096\",\"max\":\"1e4096\"}}},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "accepted"
+      }
+    },
+    {
+      "id": "C045-256-coefficient-digits-accepted",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{\"value\":{\"required\":true,\"value\":{\"kind\":\"number\",\"min\":\"1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\",\"max\":null}}},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "accepted"
+      }
+    },
+    {
+      "id": "C046-missing-required-mark-policy",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}]}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.invalid_descriptor"
+      }
+    },
+    {
+      "id": "C047-explicit-composer-mark-removal",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{\"org.example.fixture/text\":[]}}",
+      "expected": {
+        "outcome": "accepted",
+        "digest_differs_from": "C001-baseline-explicit-full-id-owner"
+      }
+    },
+    {
+      "id": "C048-composer-unknown-node",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{\"org.example.fixture/missing\":[]}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.unknown_type"
+      }
+    },
+    {
+      "id": "C049-composer-unknown-mark",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{\"org.example.fixture/text\":[\"org.example.fixture/missing\"]}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.unknown_mark"
+      }
+    },
+    {
+      "id": "C050-id-unit-extra-field",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{\"value\":{\"required\":true,\"value\":{\"kind\":\"id\",\"extra\":true}}},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.invalid_descriptor"
+      }
+    },
+    {
+      "id": "C051-duplicate-policy-json-key",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{},\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.duplicate_json_key"
+      }
+    },
+    {
+      "id": "C052-descriptor-bytes-exact",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "accepted"
+      },
+      "compile_budget": {
+        "descriptor_bytes": 1157
+      }
+    },
+    {
+      "id": "C053-descriptor-bytes-over",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.resource_limit_exceeded"
+      },
+      "compile_budget": {
+        "descriptor_bytes": 1156
+      }
+    },
+    {
+      "id": "C054-unknown-grammar-op",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"greedy\",\"items\":[]},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.invalid_descriptor"
+      }
+    },
+    {
+      "id": "C055-bound-negative-exponent4097",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{\"value\":{\"required\":true,\"value\":{\"kind\":\"number\",\"min\":\"1e-4097\",\"max\":null}}},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.resource_limit_exceeded"
+      }
+    },
+    {
+      "id": "C056-bound-positive-leading-zero",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{\"value\":{\"required\":true,\"value\":{\"kind\":\"number\",\"min\":\"01\",\"max\":null}}},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.invalid_numeric_bound"
+      }
+    },
+    {
+      "id": "C057-duplicate-nested-raw-key",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"primitive\":\"container\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.duplicate_json_key"
+      }
+    },
+    {
+      "id": "C058-required-bound-strings",
+      "input_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.example.fixture\",\"version\":\"1.0.0\",\"codec_id\":\"org.example.fixture/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"type\",\"id\":\"org.example.fixture/document\"},\"extensions\":[{\"id\":\"org.example.owner/base\",\"version\":\"1.0.0\",\"dependencies\":[],\"nodes\":[{\"id\":\"org.example.fixture/document\",\"primitive\":\"container\",\"attrs\":{\"value\":{\"required\":true,\"value\":{\"kind\":\"number\",\"min\":0,\"max\":null}}},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"type\",\"id\":\"org.example.fixture/paragraph\"},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/paragraph\",\"primitive\":\"text_block\",\"attrs\":{},\"children\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.example.fixture/text\"},{\"op\":\"type\",\"id\":\"org.example.fixture/br\"}]},\"min\":0,\"max\":1000000},\"marks\":[]},{\"id\":\"org.example.fixture/text\",\"primitive\":\"text\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[\"org.example.fixture/highlight\"]},{\"id\":\"org.example.fixture/br\",\"primitive\":\"hard_break\",\"attrs\":{},\"children\":{\"op\":\"empty\"},\"marks\":[]}],\"marks\":[{\"id\":\"org.example.fixture/highlight\",\"attrs\":{},\"excludes\":[]}],\"commands\":[]}],\"mark_policy\":{}}",
+      "expected": {
+        "outcome": "refused",
+        "code": "registry.invalid_descriptor"
+      }
+    }
+  ]
+}

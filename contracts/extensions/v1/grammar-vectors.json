@@ -1,0 +1,1098 @@
+{
+  "format": "editor-extension-grammar-vectors/1",
+  "provenance": {
+    "license": "MIT OR Apache-2.0",
+    "author": "Codex supporting OSR-64 implementer, independently authored before registry/compiler implementation",
+    "oracle": "Literal mathematical/contract expectations; no compiler output is an expected-value source. Raw JSON strings preserve duplicate keys and number representation. Digest comparisons are authored relations, not implementation-generated hashes.",
+    "contract": "evidence/osr-64/execution-contract.md",
+    "canonical_rule": "klenwriter-canonical-json-v1"
+  },
+  "known_type_ids": [
+    "org.example.fixture/document",
+    "org.example.fixture/paragraph",
+    "org.example.fixture/text",
+    "org.example.fixture/br"
+  ],
+  "rules": "Grammar Type IDs are terminal labels, not recursive schema expansion. compile_budget/match_budget are fixture-only explicit host reductions, not production API fields. A null match is unexecuted because compilation must refuse; never count it as a successful match.",
+  "cases": [
+    {
+      "id": "G001-empty-accept",
+      "grammar": {
+        "op": "empty"
+      },
+      "labels": [],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G002-empty-reject-label",
+      "grammar": {
+        "op": "empty"
+      },
+      "labels": [
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "refused",
+          "code": "registry.grammar_mismatch"
+        }
+      }
+    },
+    {
+      "id": "G003-type-exact",
+      "grammar": {
+        "op": "type",
+        "id": "org.example.fixture/text"
+      },
+      "labels": [
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G004-type-wrong",
+      "grammar": {
+        "op": "type",
+        "id": "org.example.fixture/text"
+      },
+      "labels": [
+        "org.example.fixture/br"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "refused",
+          "code": "registry.grammar_mismatch"
+        }
+      }
+    },
+    {
+      "id": "G005-type-needs-one",
+      "grammar": {
+        "op": "type",
+        "id": "org.example.fixture/text"
+      },
+      "labels": [],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "refused",
+          "code": "registry.grammar_mismatch"
+        }
+      }
+    },
+    {
+      "id": "G006-type-extra",
+      "grammar": {
+        "op": "type",
+        "id": "org.example.fixture/text"
+      },
+      "labels": [
+        "org.example.fixture/text",
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "refused",
+          "code": "registry.grammar_mismatch"
+        }
+      }
+    },
+    {
+      "id": "G007-sequence-order",
+      "grammar": {
+        "op": "sequence",
+        "items": [
+          {
+            "op": "type",
+            "id": "org.example.fixture/text"
+          },
+          {
+            "op": "type",
+            "id": "org.example.fixture/br"
+          }
+        ]
+      },
+      "labels": [
+        "org.example.fixture/text",
+        "org.example.fixture/br"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G008-sequence-reverse",
+      "grammar": {
+        "op": "sequence",
+        "items": [
+          {
+            "op": "type",
+            "id": "org.example.fixture/text"
+          },
+          {
+            "op": "type",
+            "id": "org.example.fixture/br"
+          }
+        ]
+      },
+      "labels": [
+        "org.example.fixture/br",
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "refused",
+          "code": "registry.grammar_mismatch"
+        }
+      }
+    },
+    {
+      "id": "G009-sequence-prefix",
+      "grammar": {
+        "op": "sequence",
+        "items": [
+          {
+            "op": "type",
+            "id": "org.example.fixture/text"
+          },
+          {
+            "op": "type",
+            "id": "org.example.fixture/br"
+          }
+        ]
+      },
+      "labels": [
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "refused",
+          "code": "registry.grammar_mismatch"
+        }
+      }
+    },
+    {
+      "id": "G010-choice-a",
+      "grammar": {
+        "op": "choice",
+        "items": [
+          {
+            "op": "type",
+            "id": "org.example.fixture/text"
+          },
+          {
+            "op": "type",
+            "id": "org.example.fixture/br"
+          }
+        ]
+      },
+      "labels": [
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G011-choice-b",
+      "grammar": {
+        "op": "choice",
+        "items": [
+          {
+            "op": "type",
+            "id": "org.example.fixture/text"
+          },
+          {
+            "op": "type",
+            "id": "org.example.fixture/br"
+          }
+        ]
+      },
+      "labels": [
+        "org.example.fixture/br"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G012-choice-wrong",
+      "grammar": {
+        "op": "choice",
+        "items": [
+          {
+            "op": "type",
+            "id": "org.example.fixture/text"
+          },
+          {
+            "op": "type",
+            "id": "org.example.fixture/br"
+          }
+        ]
+      },
+      "labels": [
+        "org.example.fixture/paragraph"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "refused",
+          "code": "registry.grammar_mismatch"
+        }
+      }
+    },
+    {
+      "id": "G013-greedy-long-alternative-must-not-hide-short",
+      "grammar": {
+        "op": "sequence",
+        "items": [
+          {
+            "op": "choice",
+            "items": [
+              {
+                "op": "sequence",
+                "items": [
+                  {
+                    "op": "type",
+                    "id": "org.example.fixture/text"
+                  },
+                  {
+                    "op": "type",
+                    "id": "org.example.fixture/br"
+                  }
+                ]
+              },
+              {
+                "op": "type",
+                "id": "org.example.fixture/text"
+              }
+            ]
+          },
+          {
+            "op": "type",
+            "id": "org.example.fixture/br"
+          }
+        ]
+      },
+      "labels": [
+        "org.example.fixture/text",
+        "org.example.fixture/br"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G014-short-alternative-must-not-hide-long",
+      "grammar": {
+        "op": "sequence",
+        "items": [
+          {
+            "op": "choice",
+            "items": [
+              {
+                "op": "type",
+                "id": "org.example.fixture/text"
+              },
+              {
+                "op": "sequence",
+                "items": [
+                  {
+                    "op": "type",
+                    "id": "org.example.fixture/text"
+                  },
+                  {
+                    "op": "type",
+                    "id": "org.example.fixture/br"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "type",
+            "id": "org.example.fixture/br"
+          }
+        ]
+      },
+      "labels": [
+        "org.example.fixture/text",
+        "org.example.fixture/br",
+        "org.example.fixture/br"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G015-nullable-choice-tail",
+      "grammar": {
+        "op": "sequence",
+        "items": [
+          {
+            "op": "choice",
+            "items": [
+              {
+                "op": "empty"
+              },
+              {
+                "op": "type",
+                "id": "org.example.fixture/text"
+              }
+            ]
+          },
+          {
+            "op": "type",
+            "id": "org.example.fixture/br"
+          }
+        ]
+      },
+      "labels": [
+        "org.example.fixture/br"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G016-nullable-choice-consumed",
+      "grammar": {
+        "op": "sequence",
+        "items": [
+          {
+            "op": "choice",
+            "items": [
+              {
+                "op": "empty"
+              },
+              {
+                "op": "type",
+                "id": "org.example.fixture/text"
+              }
+            ]
+          },
+          {
+            "op": "type",
+            "id": "org.example.fixture/br"
+          }
+        ]
+      },
+      "labels": [
+        "org.example.fixture/text",
+        "org.example.fixture/br"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G017-nullable-repeat-empty",
+      "grammar": {
+        "op": "repeat",
+        "item": {
+          "op": "choice",
+          "items": [
+            {
+              "op": "empty"
+            },
+            {
+              "op": "type",
+              "id": "org.example.fixture/text"
+            }
+          ]
+        },
+        "min": 0,
+        "max": 3
+      },
+      "labels": [],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G018-nullable-repeat-bound",
+      "grammar": {
+        "op": "repeat",
+        "item": {
+          "op": "choice",
+          "items": [
+            {
+              "op": "empty"
+            },
+            {
+              "op": "type",
+              "id": "org.example.fixture/text"
+            }
+          ]
+        },
+        "min": 0,
+        "max": 3
+      },
+      "labels": [
+        "org.example.fixture/text",
+        "org.example.fixture/text",
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G019-nullable-repeat-over",
+      "grammar": {
+        "op": "repeat",
+        "item": {
+          "op": "choice",
+          "items": [
+            {
+              "op": "empty"
+            },
+            {
+              "op": "type",
+              "id": "org.example.fixture/text"
+            }
+          ]
+        },
+        "min": 0,
+        "max": 3
+      },
+      "labels": [
+        "org.example.fixture/text",
+        "org.example.fixture/text",
+        "org.example.fixture/text",
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "refused",
+          "code": "registry.grammar_mismatch"
+        }
+      }
+    },
+    {
+      "id": "G020-required-nullable-repeat-empty",
+      "grammar": {
+        "op": "repeat",
+        "item": {
+          "op": "choice",
+          "items": [
+            {
+              "op": "empty"
+            },
+            {
+              "op": "type",
+              "id": "org.example.fixture/text"
+            }
+          ]
+        },
+        "min": 2,
+        "max": 3
+      },
+      "labels": [],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G021-finite-repeat-min",
+      "grammar": {
+        "op": "repeat",
+        "item": {
+          "op": "type",
+          "id": "org.example.fixture/text"
+        },
+        "min": 2,
+        "max": 3
+      },
+      "labels": [
+        "org.example.fixture/text",
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G022-finite-repeat-max",
+      "grammar": {
+        "op": "repeat",
+        "item": {
+          "op": "type",
+          "id": "org.example.fixture/text"
+        },
+        "min": 2,
+        "max": 3
+      },
+      "labels": [
+        "org.example.fixture/text",
+        "org.example.fixture/text",
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G023-finite-repeat-under",
+      "grammar": {
+        "op": "repeat",
+        "item": {
+          "op": "type",
+          "id": "org.example.fixture/text"
+        },
+        "min": 2,
+        "max": 3
+      },
+      "labels": [
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "refused",
+          "code": "registry.grammar_mismatch"
+        }
+      }
+    },
+    {
+      "id": "G024-finite-repeat-over",
+      "grammar": {
+        "op": "repeat",
+        "item": {
+          "op": "type",
+          "id": "org.example.fixture/text"
+        },
+        "min": 2,
+        "max": 3
+      },
+      "labels": [
+        "org.example.fixture/text",
+        "org.example.fixture/text",
+        "org.example.fixture/text",
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "refused",
+          "code": "registry.grammar_mismatch"
+        }
+      }
+    },
+    {
+      "id": "G025-zero-repeat",
+      "grammar": {
+        "op": "repeat",
+        "item": {
+          "op": "type",
+          "id": "org.example.fixture/text"
+        },
+        "min": 0,
+        "max": 0
+      },
+      "labels": [],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G026-zero-repeat-label",
+      "grammar": {
+        "op": "repeat",
+        "item": {
+          "op": "type",
+          "id": "org.example.fixture/text"
+        },
+        "min": 0,
+        "max": 0
+      },
+      "labels": [
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "refused",
+          "code": "registry.grammar_mismatch"
+        }
+      }
+    },
+    {
+      "id": "G027-ambiguous-two-paths",
+      "grammar": {
+        "op": "choice",
+        "items": [
+          {
+            "op": "type",
+            "id": "org.example.fixture/text"
+          },
+          {
+            "op": "type",
+            "id": "org.example.fixture/text"
+          }
+        ]
+      },
+      "labels": [
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G028-compact-million-label-repeat",
+      "grammar": {
+        "op": "repeat",
+        "item": {
+          "op": "type",
+          "id": "org.example.fixture/text"
+        },
+        "min": 0,
+        "max": 1000000
+      },
+      "labels": [
+        "org.example.fixture/text",
+        "org.example.fixture/text",
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G029-compact-million-choice-repeat",
+      "grammar": {
+        "op": "repeat",
+        "item": {
+          "op": "choice",
+          "items": [
+            {
+              "op": "type",
+              "id": "org.example.fixture/text"
+            },
+            {
+              "op": "type",
+              "id": "org.example.fixture/br"
+            }
+          ]
+        },
+        "min": 0,
+        "max": 1000000
+      },
+      "labels": [
+        "org.example.fixture/text",
+        "org.example.fixture/br",
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G030-compact-required-million-fast-under",
+      "grammar": {
+        "op": "repeat",
+        "item": {
+          "op": "type",
+          "id": "org.example.fixture/text"
+        },
+        "min": 1000000,
+        "max": 1000000
+      },
+      "labels": [],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "refused",
+          "code": "registry.grammar_mismatch"
+        }
+      }
+    },
+    {
+      "id": "G031-noncompact-million-sequence-refused-before-alloc",
+      "grammar": {
+        "op": "repeat",
+        "item": {
+          "op": "sequence",
+          "items": [
+            {
+              "op": "type",
+              "id": "org.example.fixture/text"
+            },
+            {
+              "op": "type",
+              "id": "org.example.fixture/br"
+            }
+          ]
+        },
+        "min": 0,
+        "max": 1000000
+      },
+      "labels": [],
+      "expected": {
+        "compile": {
+          "outcome": "refused",
+          "code": "registry.resource_limit_exceeded"
+        },
+        "match": null
+      }
+    },
+    {
+      "id": "G032-nullable-million-repeat-no-compact-shortcut",
+      "grammar": {
+        "op": "repeat",
+        "item": {
+          "op": "choice",
+          "items": [
+            {
+              "op": "empty"
+            },
+            {
+              "op": "type",
+              "id": "org.example.fixture/text"
+            }
+          ]
+        },
+        "min": 0,
+        "max": 1000000
+      },
+      "labels": [],
+      "expected": {
+        "compile": {
+          "outcome": "refused",
+          "code": "registry.resource_limit_exceeded"
+        },
+        "match": null
+      }
+    },
+    {
+      "id": "G033-reversed-repeat-counts",
+      "grammar": {
+        "op": "repeat",
+        "item": {
+          "op": "type",
+          "id": "org.example.fixture/text"
+        },
+        "min": 3,
+        "max": 2
+      },
+      "labels": [],
+      "expected": {
+        "compile": {
+          "outcome": "refused",
+          "code": "registry.invalid_grammar"
+        },
+        "match": null
+      }
+    },
+    {
+      "id": "G034-match-work-zero",
+      "grammar": {
+        "op": "type",
+        "id": "org.example.fixture/text"
+      },
+      "labels": [
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "refused",
+          "code": "registry.resource_limit_exceeded"
+        }
+      },
+      "match_budget": {
+        "work_units": 0
+      }
+    },
+    {
+      "id": "G035-compile-state-zero",
+      "grammar": {
+        "op": "type",
+        "id": "org.example.fixture/text"
+      },
+      "labels": [
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "refused",
+          "code": "registry.resource_limit_exceeded"
+        },
+        "match": null
+      },
+      "compile_budget": {
+        "states": 0
+      }
+    },
+    {
+      "id": "G036-compile-transition-zero",
+      "grammar": {
+        "op": "sequence",
+        "items": [
+          {
+            "op": "type",
+            "id": "org.example.fixture/text"
+          },
+          {
+            "op": "type",
+            "id": "org.example.fixture/br"
+          }
+        ]
+      },
+      "labels": [
+        "org.example.fixture/text",
+        "org.example.fixture/br"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "refused",
+          "code": "registry.resource_limit_exceeded"
+        },
+        "match": null
+      },
+      "compile_budget": {
+        "transitions": 0
+      }
+    },
+    {
+      "id": "G037-variable-width-repeat-tail",
+      "grammar": {
+        "op": "sequence",
+        "items": [
+          {
+            "op": "repeat",
+            "item": {
+              "op": "choice",
+              "items": [
+                {
+                  "op": "type",
+                  "id": "org.example.fixture/text"
+                },
+                {
+                  "op": "sequence",
+                  "items": [
+                    {
+                      "op": "type",
+                      "id": "org.example.fixture/text"
+                    },
+                    {
+                      "op": "type",
+                      "id": "org.example.fixture/br"
+                    }
+                  ]
+                }
+              ]
+            },
+            "min": 1,
+            "max": 2
+          },
+          {
+            "op": "type",
+            "id": "org.example.fixture/br"
+          }
+        ]
+      },
+      "labels": [
+        "org.example.fixture/text",
+        "org.example.fixture/br",
+        "org.example.fixture/text",
+        "org.example.fixture/br"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G038-epsilon-sequence",
+      "grammar": {
+        "op": "sequence",
+        "items": [
+          {
+            "op": "empty"
+          },
+          {
+            "op": "type",
+            "id": "org.example.fixture/text"
+          },
+          {
+            "op": "empty"
+          }
+        ]
+      },
+      "labels": [
+        "org.example.fixture/text"
+      ],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G039-empty-sequence-is-empty",
+      "grammar": {
+        "op": "sequence",
+        "items": []
+      },
+      "labels": [],
+      "expected": {
+        "compile": {
+          "outcome": "accepted"
+        },
+        "match": {
+          "outcome": "accepted"
+        }
+      }
+    },
+    {
+      "id": "G040-empty-choice-invalid",
+      "grammar": {
+        "op": "choice",
+        "items": []
+      },
+      "labels": [],
+      "expected": {
+        "compile": {
+          "outcome": "refused",
+          "code": "registry.invalid_grammar"
+        },
+        "match": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "format": "editor-registry/1",
+  "profile": {
+    "id": "org.example.notes",
+    "version": "1.0.0",
+    "codec_id": "org.example.notes/json",
+    "wire_version": 1
+  },
+  "selected_extensions": [
+    {
+      "id": "org.example.notes/base",
+      "version": "1.0.0"
+    }
+  ],
+  "root": {
+    "op": "type",
+    "id": "org.example.notes/document"
+  },
+  "mark_policy": {},
+  "extensions": []
+}
