@@ -9,7 +9,7 @@ mod grammar;
 mod json;
 mod schema;
 
-pub use attrs::CompiledAttributes;
+pub use attrs::{CompiledAttributes, copy_literal};
 pub use compile::{
     FrozenRegistry, MarkDescriptorRef, NodeDescriptorRef, RegistryDigest, compile_descriptor,
     compile_json,
@@ -58,10 +58,12 @@ pub struct ExtensionDescriptor {
     pub marks: Vec<MarkDescriptor>,
     pub commands: Vec<CommandDescriptor>,
 }
-/// No recipe declarations are accepted until their separate language is frozen.
-/// An empty enum makes nonempty command arrays refuse, never advertise a stub.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum CommandDescriptor {}
+pub use recipes::{
+    AffinityDescriptor, AttributeEdit, CommandDescriptor, CommandRef, MarkTemplate, NodeRef,
+    NodeTemplate, Parameter, PositionTemplate, RecipeOperation, RecipeSelection, RecipeStoredMarks,
+    SelectionTemplate, UnsignedExpr, ValueExpr,
+};
+mod recipes;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct NodeDescriptor {
@@ -171,6 +173,7 @@ macro_rules! errors {
     }
 }
 errors! {
+    CompiledCommandForbidden=>"compiled_command_forbidden", InvalidRecipe=>"invalid_recipe", RequiredArgumentMissing=>"required_argument_missing", UnknownArgument=>"unknown_argument", ArgumentTypeMismatch=>"argument_type_mismatch", InvalidNodeArgument=>"invalid_node_argument",
     InvalidJson=>"invalid_json", DuplicateJsonKey=>"duplicate_json_key", UnsupportedFormat=>"unsupported_format",
     InvalidDescriptor=>"invalid_descriptor", InvalidIdentifier=>"invalid_identifier", InvalidVersion=>"invalid_version",
     DuplicateExtension=>"duplicate_extension", ExtensionMissing=>"extension_missing", ExtensionVersionMismatch=>"extension_version_mismatch",

@@ -24,6 +24,9 @@ pub struct FrozenRegistry {
     pub(crate) nodes: BTreeMap<String, CompiledNode>,
     pub(crate) marks: BTreeMap<String, CompiledMark>,
     pub(crate) root: CompiledGrammar,
+    pub(crate) commands: BTreeMap<String, crate::recipes::CompiledCommand>,
+    pub(crate) catalog: Vec<String>,
+    pub(crate) compiled_catalog: Vec<String>,
 }
 #[derive(Debug)]
 pub(crate) struct CompiledNode {
@@ -89,7 +92,14 @@ pub fn compile_json(
     work: &mut WorkMeter,
 ) -> Result<FrozenRegistry, RegistryDiagnostic> {
     let start = work.usage();
-    let result = compile_json_inner(input, mandatory, limits, work);
+    let effective = limits.effective();
+    let result = work.with_budget(
+        editor_core::transaction::WorkLimits {
+            units: effective.work_units,
+            bytes: effective.owned_bytes,
+        },
+        |work| compile_json_inner(input, mandatory, effective, work),
+    );
     finish_compile(result, start, work)
 }
 pub fn compile_descriptor(
@@ -99,7 +109,14 @@ pub fn compile_descriptor(
     work: &mut WorkMeter,
 ) -> Result<FrozenRegistry, RegistryDiagnostic> {
     let start = work.usage();
-    let result = compile_descriptor_inner(descriptor, mandatory, limits, work);
+    let effective = limits.effective();
+    let result = work.with_budget(
+        editor_core::transaction::WorkLimits {
+            units: effective.work_units,
+            bytes: effective.owned_bytes,
+        },
+        |work| compile_descriptor_inner(descriptor, mandatory, effective, work),
+    );
     finish_compile(result, start, work)
 }
 fn finish_compile(
@@ -434,6 +451,7 @@ fn assemble(
         }
         check_marks(allowed, &public_marks, &pointer("/mark_policy", id), b)?;
     }
+    let command_tables = crate::recipes::compile_commands(&ext, mandatory, &nodes, &marks, b)?;
     let digest = canonical_digest(d, &ext, b)?;
     Ok(FrozenRegistry {
         binding,
@@ -443,6 +461,9 @@ fn assemble(
         nodes,
         marks,
         root,
+        commands: command_tables.commands,
+        catalog: command_tables.catalog,
+        compiled_catalog: command_tables.compiled,
     })
 }
 fn check_marks(
@@ -503,6 +524,16 @@ fn canonical_digest(
         e.dependencies.sort_by(|a, b| a.id.cmp(&b.id));
         e.nodes.sort_by(|a, b| a.id.cmp(&b.id));
         e.marks.sort_by(|a, b| a.id.cmp(&b.id));
+        e.commands.sort_by(|a, b| a.id().cmp(b.id()));
+        for c in &mut e.commands {
+            if let CommandDescriptor::Recipe { parameters, .. } = c {
+                for p in parameters.values_mut() {
+                    if let Parameter::Value { schema } = p {
+                        normalize_bounds(schema, b)?;
+                    }
+                }
+            }
+        }
         for n in &mut e.nodes {
             n.marks.sort();
             for field in n.attrs.values_mut() {
@@ -718,7 +749,22 @@ fn typed_depth(
         ids(marks, b)?;
     }
     let mut declarations = 0u64;
+    let mut commands = 0u64;
     for e in d.extensions.iter().chain(mandatory) {
+        commands = commands
+            .checked_add(e.commands.len() as u64)
+            .ok_or_else(|| b.resource("command count"))?;
+        b.cap(commands, 256, "command catalog")?;
+        crate::recipes::preflight_commands(&e.commands, b)?;
+        for command in &e.commands {
+            if let CommandDescriptor::Recipe { parameters, .. } = command {
+                for parameter in parameters.values() {
+                    if let Parameter::Value { schema } = parameter {
+                        attr(schema, 1, b)?;
+                    }
+                }
+            }
+        }
         text(&e.id, b)?;
         text(&e.version, b)?;
         b.cap(

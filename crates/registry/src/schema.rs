@@ -247,6 +247,19 @@ impl FrozenRegistry {
             usage,
         })
     }
+    /// The same shallow schema metadata authority used by full validation.
+    /// Useful before lossless normalization; children grammar remains final
+    /// validation's responsibility and no admission/publication is conferred.
+    pub fn validate_node_metadata<I>(
+        &self,
+        node: &BorrowedNode<'_, I>,
+        path: &str,
+        work: &mut WorkMeter,
+    ) -> Result<(), RegistryDiagnostic> {
+        let start = work.usage();
+        let result = self.metadata(node, path, work);
+        crate::with_work_usage(result, start, work)
+    }
     fn metadata<I>(
         &self,
         node: &BorrowedNode<'_, I>,

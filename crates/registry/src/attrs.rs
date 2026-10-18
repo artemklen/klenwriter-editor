@@ -80,7 +80,28 @@ impl CompiledAttributes {
         work: &mut WorkMeter,
     ) -> Result<(), RegistryDiagnostic> {
         let start = work.usage();
-        let result = self.validate_inner(attrs, path, work);
+        let result = (|| {
+            // This public entry also accepts caller-built native values. Bound
+            // them before an unknown key can allocate a diagnostic path, rather
+            // than relying on an outer codec/profile to have preflighted them.
+            let limits = work.limits();
+            let used = work.usage();
+            let usage = editor_core::admission::preflight_node_fields(
+                "registry/attributes",
+                None,
+                attrs,
+                &[],
+                0,
+                editor_core::admission::PreflightBudget {
+                    payload_bytes: limits.bytes.saturating_sub(used.bytes),
+                    values: limits.units.saturating_sub(used.units),
+                    depth: 128,
+                },
+            )
+            .map_err(|_| error(E::ResourceLimitExceeded, path, "attribute preflight"))?;
+            charge(work, usage.values, usage.payload_bytes)?;
+            self.validate_inner(attrs, path, work)
+        })();
         crate::with_work_usage(result, start, work)
     }
     fn validate_inner(
@@ -297,4 +318,98 @@ pub(crate) fn normalize_bounds(
         _ => {}
     }
     Ok(())
+}
+
+impl CompiledAttributes {
+    pub(crate) fn validate_literals(
+        &self,
+        present: &BTreeSet<&str>,
+        literals: &Attributes,
+        path: &str,
+        work: &mut WorkMeter,
+    ) -> Result<(), RegistryDiagnostic> {
+        for (key, field) in &self.fields {
+            charge(work, 1, 0)?;
+            if field.required && !present.contains(key.as_str()) {
+                return Err(error(
+                    E::RequiredAttributeMissing,
+                    &pointer(path, key),
+                    "required static field",
+                ));
+            }
+        }
+        for key in present {
+            charge(work, 1, 0)?;
+            if !self.fields.contains_key(*key) {
+                return Err(error(
+                    E::UnknownAttribute,
+                    &pointer(path, key),
+                    "unknown static field",
+                ));
+            }
+        }
+        for (key, value) in literals {
+            self.fields[key]
+                .value
+                .validate(value, &pointer(path, key), work)?;
+        }
+        Ok(())
+    }
+    pub(crate) fn validate_literal_field(
+        &self,
+        key: &str,
+        value: &Attribute,
+        path: &str,
+        work: &mut WorkMeter,
+    ) -> Result<(), RegistryDiagnostic> {
+        let field = self
+            .fields
+            .get(key)
+            .ok_or_else(|| error(E::UnknownAttribute, path, "unknown static field"))?;
+        field.value.validate(value, path, work)
+    }
+}
+/// Copy a bounded descriptor literal to the generic data algebra. This is not
+/// a semantic codec and preserves the represented serde_json Number exactly.
+pub fn copy_literal(
+    value: &serde_json::Value,
+    work: &mut WorkMeter,
+) -> Result<Attribute, RegistryDiagnostic> {
+    let start = work.usage();
+    let result = (|| {
+        let limits = work.limits();
+        let used = work.usage();
+        let usage = editor_core::admission::preflight_json(
+            value,
+            editor_core::admission::PreflightBudget {
+                payload_bytes: limits.bytes.saturating_sub(used.bytes),
+                values: limits.units.saturating_sub(used.units),
+                depth: 128,
+            },
+        )
+        .map_err(|_| error(E::ResourceLimitExceeded, "", "literal preflight"))?;
+        charge(
+            work,
+            usage.values,
+            usage
+                .payload_bytes
+                .checked_mul(2)
+                .and_then(|n| n.checked_add(usage.values * 64))
+                .ok_or_else(|| error(E::ResourceLimitExceeded, "", "literal ownership"))?,
+        )?;
+        fn copy(v: &serde_json::Value) -> Attribute {
+            match v {
+                serde_json::Value::Null => Attribute::Null,
+                serde_json::Value::Bool(v) => Attribute::Boolean(*v),
+                serde_json::Value::Number(v) => Attribute::Number(v.clone()),
+                serde_json::Value::String(v) => Attribute::String(v.clone()),
+                serde_json::Value::Array(v) => Attribute::List(v.iter().map(copy).collect()),
+                serde_json::Value::Object(v) => {
+                    Attribute::Object(v.iter().map(|(k, v)| (k.clone(), copy(v))).collect())
+                }
+            }
+        }
+        Ok(copy(value))
+    })();
+    crate::with_work_usage(result, start, work)
 }
