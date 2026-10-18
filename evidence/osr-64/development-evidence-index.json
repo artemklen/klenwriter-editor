@@ -1,0 +1,2578 @@
+{
+  "format": "osr64-development-evidence-index/1",
+  "issue": "OSR-64",
+  "createdAt": "2026-10-18T15:21:37.196251+00:00",
+  "role": "Bounded independent evidence indexing; no formal review or approval verdict",
+  "sourceContext": {
+    "implementationCommit": "b17b96a0d04d3b55b43e1c80b76c4ca92d963e26",
+    "documentationM0NoticesCommit": "2bb54dbd67053dfd9c6116179108544cc47024d1",
+    "observedHead": "2bb54dbd67053dfd9c6116179108544cc47024d1",
+    "scope": "Source identities are read-only context; earlier development receipts retain their own historical source hashes. In-progress build2/runtime/CI is deliberately not indexed as complete."
+  },
+  "policy": {
+    "originalsModified": false,
+    "rawOrZipCopiedIntoRepository": false,
+    "fileIntegrity": "Every indexed file size/SHA256 read from actual bytes, crosschecked to declared pins where supplied, and rechecked stable before writing index.",
+    "exitInterpretation": "Recorded integer exits are extracted with JSON pointers; exit0 never substitutes for semantic assertions.",
+    "qualifiedFailures": "Timing/path-assumption or missing-test-import compile failures stay qualified and are not asserted to be production RED.",
+    "measurement": "Private constructor-only ceiling experiment remains observational; no budget-raised acceptance claim.",
+    "scopeLimit": "No new tests, builds, CI, network, source edits, review, or verdict execution."
+  },
+  "snapshot": {
+    "zipEntryCount": 122,
+    "payloadFileCount": 121,
+    "embeddedManifestExtraEntry": true,
+    "totalUncompressedBytes": 57689999,
+    "embeddedManifestSha256": "4c2930b3f25e0e80b96957bbe1082d8b1b36238721afb976a3130385960be6a3",
+    "sourceCommitRecorded": "6b0c3d303fda00d8778a00eb74c2b92614347524",
+    "buildIdRecorded": "sha256:1134c7b35d7c5f11f9b0f4af7742d085bc54833fb65891701a547d709a330aa7",
+    "sourceHashesVerifiedAgainstGitRecorded": true,
+    "selectedPacket": {
+      "member": "artifacts/extensions/packet.json",
+      "bytes": 13060313,
+      "sha256": "81e10a3cd9e1229566b357e919736670f3a675950411d868242080ee2e1fdbdf",
+      "kwdjInputs": 60,
+      "notesCodecInputs": 53,
+      "notesCommandInputs": 18
+    },
+    "verificationScope": "Archive SHA256/size and central inventory checked. Embedded manifest and packet read with ZIP CRC checking. No claim every payload member was decompressed/reverified here.",
+    "historicalStdIoBinary": {
+      "member": "artifacts/extensions/consumers/kwdj-only/consumer",
+      "bytes": 4137280,
+      "sha256": "fad02b417a45fb07d9bf7ab29193264ac5f24d7fe8607c29280f8da20823d538",
+      "matchesHistoricalReceipt": true,
+      "qualification": "Read from immutable ZIP, not the mutable original artifacts/ path."
+    },
+    "historicalMetadataObservation": {
+      "caseCount": 8,
+      "unexpectedMalformedAcceptances": [
+        "empty_text_unknown_attr",
+        "empty_text_unknown_field",
+        "empty_text_wrong_attrs_shape",
+        "absent_text_color_unknown_attr",
+        "absent_text_color_unknown_field",
+        "absent_highlight_unknown_attr"
+      ]
+    }
+  },
+  "resourceInventoryInterpretation": {
+    "inputCohortFromFrozenPacket": 60,
+    "observerRecordedExitCode": 0,
+    "reportedMismatchCount": 2,
+    "mismatchIDs": [
+      "DOC-026/just_below_node_count/just_below",
+      "DOC-026/just_below_node_count/at_limit"
+    ],
+    "semanticStatus": "two mismatches reported; not a passing60-case result"
+  },
+  "rawDerivedCounts": {
+    "finalRust": {
+      "testResultSections": 58,
+      "passed": 375,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filteredOut": 0,
+      "statuses": [
+        "ok"
+      ]
+    },
+    "finalMsrv": {
+      "testResultSections": 22,
+      "passed": 151,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filteredOut": 0,
+      "statuses": [
+        "ok"
+      ]
+    },
+    "canonical": {
+      "tests": 2,
+      "pass": 2,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "m0BrowserPassed": 102,
+    "m0Summary": {
+      "observations": 102,
+      "failures": 0,
+      "requirements": {
+        "MET": 28,
+        "GAP": 26,
+        "OBSERVATION": 48
+      }
+    }
+  },
+  "entries": [
+    {
+      "id": "first_build",
+      "receipt": {
+        "path": "/tmp/osr-64-root-build-first.json",
+        "bytes": 256,
+        "sha256": "84b8d40bd5519dcae0bf237f4af286098cd5b6aaaea9548e4ba1c87af4fedcad"
+      },
+      "meaning": "Historical producer completed; this is artifact-build success, not final conformance.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/exit_code",
+          "value": 0,
+          "command": [
+            "node",
+            "scripts/build-workspace.mjs"
+          ]
+        }
+      ],
+      "recordedScope": null
+    },
+    {
+      "id": "first_extensions_failure",
+      "receipt": {
+        "path": "/tmp/osr-64-root-extensions-first.json",
+        "bytes": 211,
+        "sha256": "0c5ccd1be81a0d51cee24322c80ba143bfb0c34fa17fd353b1a2798cf651d1d2"
+      },
+      "meaning": "The first actual multi-lane consumer runner failed. Preserve the real failure; do not relabel the earlier build success as conformance.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/exit_code",
+          "value": 1,
+          "command": [
+            "node",
+            "scripts/test-extensions.mjs"
+          ]
+        }
+      ],
+      "recordedScope": null
+    },
+    {
+      "id": "first_resource_inventory",
+      "receipt": {
+        "path": "/tmp/osr-64-kwdj-resource-admissions-first.json",
+        "bytes": 906,
+        "sha256": "a9f41ef8f63fac5b38cbc68c62d63ec755ca72367f492b11626529915a911154"
+      },
+      "meaning": "Observer exited0 while reporting two semantic mismatches. This is defect evidence, NOT a passing60-case test.",
+      "productionRegressionEvidence": true,
+      "recordedExits": [
+        {
+          "pointer": "/exitCode",
+          "value": 0,
+          "command": null
+        }
+      ],
+      "recordedScope": null
+    },
+    {
+      "id": "first_compiled_snapshot",
+      "receipt": {
+        "path": "/tmp/osr-64-first-compiled-snapshot.json",
+        "bytes": 327,
+        "sha256": "258bdfe481b0dedf9b50b2dc39b7b88ebf6e6640d3b322b07a25b8d49584b381"
+      },
+      "meaning": "Immutable ZIP preserves the actual first compiled artifact/source identity before later KWDJ repairs; later artifacts/ paths may be overwritten.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [],
+      "recordedScope": null
+    },
+    {
+      "id": "cache_class_measurement",
+      "receipt": {
+        "path": "/tmp/osr-64-cache-seed-measure/measurement-receipt.json",
+        "bytes": 17424,
+        "sha256": "b36b56ec84c3643976d4a28c0744940c2c6d4dfa86b72b0f3257f28570de4fbf"
+      },
+      "meaning": "PRIVATE observational ceiling-only copy, not production GREEN. Original Default/transaction/compiler caps unchanged by measurement; exact constructor diff and raw inputs/results are pinned.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/command/actual_exit_code",
+          "value": 0,
+          "command": [
+            "cargo",
+            "run",
+            "--offline",
+            "--release",
+            "--manifest-path",
+            "/tmp/osr-64-cache-seed-measure/source/Cargo.toml",
+            "-p",
+            "private-cache-seed-measurement"
+          ]
+        },
+        {
+          "pointer": "/harness/idLayout/actualCompileExitCode",
+          "value": 0,
+          "command": null
+        },
+        {
+          "pointer": "/harness/idLayout/actualRunExitCode",
+          "value": 0,
+          "command": null
+        }
+      ],
+      "recordedScope": "Observational diagnosis of two unchanged normative resource accepts. NOT production acceptance, a new limit policy, a test-budget fix, or benchmark regression evidence."
+    },
+    {
+      "id": "cache_class_red",
+      "receipt": {
+        "path": "/tmp/osr-64-admission-cache-budget-red.json",
+        "bytes": 255,
+        "sha256": "242673eb710449b4d0cdb0230f519ad74069325c41426b7ccbd73c20b3521957"
+      },
+      "meaning": "Genuine public normative node-count admission failure before separate bounded cache construction capability.",
+      "productionRegressionEvidence": true,
+      "recordedExits": [
+        {
+          "pointer": "/exit_code",
+          "value": 101,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj-sdk",
+            "--test",
+            "admission_cache_budget"
+          ]
+        }
+      ],
+      "recordedScope": null
+    },
+    {
+      "id": "cache_class_green",
+      "receipt": {
+        "path": "/tmp/osr-64-admission-cache-budget-green.json",
+        "bytes": 637,
+        "sha256": "7440fa843f83ad870e0cb32c332bf84f2db71faf4a62c2a72612eb6160254720"
+      },
+      "meaning": "Focused core admission-meter and public resource-boundary checks after separate cache budget class; not complete runtime parity.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/0/exit_code",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-core",
+            "--test",
+            "admission_meter"
+          ]
+        },
+        {
+          "pointer": "/1/exit_code",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj-sdk",
+            "--test",
+            "admission_cache_budget"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cache_class_import",
+      "receipt": {
+        "path": "/tmp/osr-64-admission-cache-import-first.json",
+        "bytes": 294,
+        "sha256": "b73fa7d67bc65e65c9cc7acced94f9cd1c890438dd976a3e121969cfece01c2f"
+      },
+      "meaning": "Focused actual normalize/validate normative boundary extension, with literal49999/50000 inputs.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/exit_code",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj-sdk",
+            "--test",
+            "admission_cache_budget"
+          ]
+        }
+      ],
+      "recordedScope": null
+    },
+    {
+      "id": "historical_compiled_metadata",
+      "receipt": {
+        "path": "/tmp/osr-64-kwdj-import-metadata-old-compiled.json",
+        "bytes": 16752,
+        "sha256": "16ac73b6dc13eb097717bd93a29df9b9912c1281a06219513712e2336c2e02df"
+      },
+      "meaning": "Historical publicV2 stdio accepted six malformed metadata inputs; process0 is not semantic success. One valid control and one nonempty malformed refusal are also retained.",
+      "productionRegressionEvidence": true,
+      "recordedExits": [
+        {
+          "pointer": "/returnCode",
+          "value": 0,
+          "command": [
+            "/Users/artem/projects/klenwriter-editor/artifacts/extensions/consumers/kwdj-only/consumer"
+          ]
+        }
+      ],
+      "recordedScope": "Actual historical FIRST-BUILD kwdj-only compiled public V2 stdio, predates current registry_guards source and B three pending repairs; not current-source acceptance. Synthetic malformed metadata should refuse by accepted unknown-data contract; valid empty text control may normalize. No source/oracle changes."
+    },
+    {
+      "id": "profile_metadata_timing_qualification",
+      "receipt": {
+        "path": "/tmp/osr-64-kwdj-import-metadata-current-red-timing-qualification.json",
+        "bytes": 830,
+        "sha256": "af6f43b967437ccbfa0ee7e19a3516905acc4b6c589d16b953f11d3048cafb4f"
+      },
+      "meaning": "Explicit correction: the named current-red process101 already contained repair and failed only a newly authored diagnostic-path assumption. It is NOT prerepair product RED.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/actualReturnCode",
+          "value": 101,
+          "command": null
+        }
+      ],
+      "recordedScope": "Correction to inaccurate before-repair scope in retained current-red receipt. Actual source already included B normalizable_raw_header repair; sourceBefore==sourceAfter. Actual101 was only a newly authored overly-specific diagnostic leaf-path assertion; firstcase actually refused with correct kwdj.unknown_attribute. Existing shared native internally-tagged decoder intentionally reports enclosing root. Honest prerepair defect evidence is separate old-compiled publicstdio six malformed acceptances. No original log/receipt rewritten."
+    },
+    {
+      "id": "profile_metadata_path_failure",
+      "receipt": {
+        "path": "/tmp/osr-64-kwdj-import-metadata-current-red.json",
+        "bytes": 1431,
+        "sha256": "bb8c0d889b8280abd6e357122ae4a5ff4c52b9c74eb74ecc6296e0b6ed7d0d32"
+      },
+      "meaning": "Actual101, qualified by separate timing/path receipt; production had already refused malformed data correctly.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/returnCode",
+          "value": 101,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj-sdk",
+            "--test",
+            "import_metadata_closed",
+            "--",
+            "--nocapture"
+          ]
+        }
+      ],
+      "qualifications": [
+        "profile_metadata_timing_qualification"
+      ],
+      "recordedScope": "Actual current-source public Distribution/KwdjFactory Import regression before B shared rawheader repair;6malformed cases+4 valid controls/default+narrowed. Independent closed-model UnknownAttribute expectation, originalinputs and actualownedresources checked. No production changes by this agent."
+    },
+    {
+      "id": "profile_metadata_green",
+      "receipt": {
+        "path": "/tmp/osr-64-kwdj-import-metadata-current-green.json",
+        "bytes": 1485,
+        "sha256": "fc306a08b2812f68e4e38276885380384a5d84b57e9d9458763da2cfec4a3bc7"
+      },
+      "meaning": "Focused public default/narrowed profile admission metadata checks after test expectation uses unchanged native enclosing-root diagnostic.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/returnCode",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj-sdk",
+            "--test",
+            "import_metadata_closed",
+            "--",
+            "--nocapture"
+          ]
+        }
+      ],
+      "recordedScope": "Actual current-source public KwdjFactory Import after B sharedshape repair.6malformed cases/default+narrowed exactUnknownAttribute;4independent validcontrols preserve documented casing/none/default/duplicateabsent behavior; originalinput/zeroactualownedresources. Native diagnostic enclosing-root authority preserved. No production edits bythis agent."
+    },
+    {
+      "id": "profile_metadata_central_green",
+      "receipt": {
+        "path": "/tmp/osr-64-kwdj-import-metadata-post-central-profile-green.json",
+        "bytes": 1025,
+        "sha256": "327c8e7c8e1ec1b8f1cfdcc19dd01ef30bd52fae3227e166bcd775d2337c8ab3"
+      },
+      "meaning": "Focused public admission controls after central guard extraction.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/returnCode",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj-sdk",
+            "--test",
+            "import_metadata_closed",
+            "--",
+            "--nocapture"
+          ]
+        }
+      ],
+      "recordedScope": "Actual publicKwdjFactory default+narrowed12malformed+8controls after rawshape guard centralization avoidsduplicateprofile scan. Existing oracle unchanged."
+    },
+    {
+      "id": "direct_metadata_red",
+      "receipt": {
+        "path": "/tmp/osr-64-kwdj-direct-import-closed-red.json",
+        "bytes": 1589,
+        "sha256": "00004dafb717c53b0c6d21ce380a2663fa12a036016c6a01c801006ff556f5e7"
+      },
+      "meaning": "Actual direct public codec defect RED: original malformed node/mark headers could be erased before closed validation.",
+      "productionRegressionEvidence": true,
+      "recordedExits": [
+        {
+          "pointer": "/returnCode",
+          "value": 101,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "--test",
+            "import_closed_metadata",
+            "--",
+            "--nocapture"
+          ]
+        }
+      ],
+      "recordedScope": "Actual direct public decode_normalize_validate_with_limits_and_budget regression.6malformed closed-header expectations+8independently authored valid canonical controls. Source hashes determine whether central repair was present; do not infer prerepair merely from filename."
+    },
+    {
+      "id": "direct_metadata_green",
+      "receipt": {
+        "path": "/tmp/osr-64-kwdj-direct-import-closed-green.json",
+        "bytes": 1560,
+        "sha256": "f6c156130ada12f00dedd0a9566a73686ab4ce77c2da4d4d6576543e63bf5d1c"
+      },
+      "meaning": "Focused native directcodec6malformed+8independent valid canonical controls after repair; not fresh WASM evidence.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/returnCode",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "--test",
+            "import_closed_metadata",
+            "--",
+            "--nocapture"
+          ]
+        }
+      ],
+      "recordedScope": "Actual direct public decode_normalize_validate_with_limits_and_budget after B centralization. Original6malformed+8valid canonical literal expectations unchanged; onlyrustfmt. Node/WASM ABI1 newregression prepared butNOTexecuted untilfreshbuild2."
+    },
+    {
+      "id": "schema_repair_receipt",
+      "receipt": {
+        "path": "/tmp/osr-64-kwdj-schema-repair-focused-receipt.json",
+        "bytes": 6546,
+        "sha256": "f7a91080f0870ef7ea923e1997ce4355670f0ae2b8f32f1515a7fdb010f7b086"
+      },
+      "meaning": "Supporting implementer repair receipt; actual focused commands include genuine three-schema-policy RED, later GREEN, and explicitly qualified test-harness compile failure.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/commands/0/actualExit",
+          "value": 101,
+          "command": null
+        },
+        {
+          "pointer": "/commands/1/actualExit",
+          "value": 0,
+          "command": null
+        },
+        {
+          "pointer": "/commands/2/actualExit",
+          "value": 101,
+          "command": null
+        },
+        {
+          "pointer": "/commands/3/actualExit",
+          "value": 0,
+          "command": null
+        },
+        {
+          "pointer": "/commands/4/actualExit",
+          "value": 0,
+          "command": null
+        },
+        {
+          "pointer": "/commands/5/actualExit",
+          "value": 0,
+          "command": null
+        }
+      ],
+      "recordedScope": "supporting implementer, not independent review",
+      "recordedStatus": "focused checks passed; source frozen for root formatting/full gates"
+    },
+    {
+      "id": "shared_header_receipt",
+      "receipt": {
+        "path": "/tmp/osr-64-shared-original-header-repair.json",
+        "bytes": 4197,
+        "sha256": "37fe1d74cfec82062495c22010b59c44b3c75faa6baf242e2ba002f76f3230a8"
+      },
+      "meaning": "Supporting centralization receipt with later strict-candidate-ID repair links; preserve its historical source qualification.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/ownChecks/0/actualExit",
+          "value": 0,
+          "command": null
+        },
+        {
+          "pointer": "/ownChecks/1/actualExit",
+          "value": 0,
+          "command": null
+        },
+        {
+          "pointer": "/ownChecks/2/actualExit",
+          "value": 0,
+          "command": "cargo clippy --locked -p klenwriter-editor-kwdj --all-targets -- -D warnings"
+        },
+        {
+          "pointer": "/ownChecks/3/actualExit",
+          "value": 0,
+          "command": "cargo +1.89.0 check --locked -p klenwriter-editor-kwdj"
+        }
+      ],
+      "recordedScope": "supporting implementer, not official review",
+      "recordedStatus": "focused native passed, source frozen before root final gates"
+    },
+    {
+      "id": "root_first_qualification",
+      "receipt": {
+        "path": "/tmp/osr-64-kwdj-direct-root-first-red-qualification.json",
+        "bytes": 1257,
+        "sha256": "a0de2b44fa3e552e27b8de16a52a5e5e4f9643edbe6ab5547e1871b6f4111e2e"
+      },
+      "meaning": "First root attempt stopped on a diagnostic-path assumption. Only the second aggregate attempt proves the three root-field acceptances; original attempts remain unchanged.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/firstAttemptActualExit",
+          "value": 101,
+          "command": null
+        },
+        {
+          "pointer": "/secondAttemptActualExit",
+          "value": 101,
+          "command": null
+        }
+      ],
+      "recordedScope": "Additive root-envelope regression timing/path qualification; immutable original logs/receipts are preserved."
+    },
+    {
+      "id": "root_first_path_failure",
+      "receipt": {
+        "path": "/tmp/osr-64-kwdj-direct-root-closed-red.json",
+        "bytes": 1600,
+        "sha256": "5cca9834fe8760abefa374f593e6f572626811851cfbd3618a072124321615ce"
+      },
+      "meaning": "Actual101; not the aggregate semantic RED. Consult root_first_qualification.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/returnCode",
+          "value": 101,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "--test",
+            "import_closed_root",
+            "--",
+            "--nocapture"
+          ]
+        }
+      ],
+      "qualifications": [
+        "root_first_qualification"
+      ],
+      "recordedScope": "Actual additive direct public import regression for closed Document root.6unknown root fields (empty/absent/active marks and attrs)+1independent valid node-default control; earlier6bad8controls immutable. Source hashes determine prerepair timing."
+    },
+    {
+      "id": "root_semantic_red",
+      "receipt": {
+        "path": "/tmp/osr-64-kwdj-direct-root-closed-red2.json",
+        "bytes": 1652,
+        "sha256": "6910878021bf2dc20ed7921968797f06a7e9d12b504aaf294f2d66c5ecdbd241"
+      },
+      "meaning": "Actual101 after independently documented path-only fixture correction; raw log aggregates three real discarded root marks fields.",
+      "productionRegressionEvidence": true,
+      "recordedExits": [
+        {
+          "pointer": "/returnCode",
+          "value": 101,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "--test",
+            "import_closed_root",
+            "--",
+            "--nocapture"
+          ]
+        }
+      ],
+      "qualifications": [
+        "root_first_qualification"
+      ],
+      "recordedScope": "Actual additive direct public root import. Root unknown6field cases and1valid node-default control. First root RED preserved separately; only new root path expectations corrected to existing native duplicate fieldsuffix after its observed baseline refusal; no previous6bad8control source changed."
+    },
+    {
+      "id": "root_green",
+      "receipt": {
+        "path": "/tmp/osr-64-kwdj-direct-root-closed-green.json",
+        "bytes": 1520,
+        "sha256": "0565134f2b93381c79d0967a963838df9dcbd9811bd762ba10b67a03130de2a7"
+      },
+      "meaning": "Focused public direct root closure6cases+1valid control after repair, with unchanged semantic RED2 literals.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/returnCode",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "--test",
+            "import_closed_root",
+            "--",
+            "--nocapture"
+          ]
+        }
+      ],
+      "recordedScope": "Actual root public decode import after BsameDocumentclosedSerde rootshapeguard. Existing six rootcases and one valid node-default literal unchanged from semanticRED2."
+    },
+    {
+      "id": "key_red",
+      "receipt": {
+        "path": "/tmp/osr-64-import-header-budget-red.json",
+        "bytes": 2029,
+        "sha256": "e7ba8cbf8230b18b2b54a613bf2a0bfbb0d5cef4b87c70c9ab51b277ee6bc39d"
+      },
+      "meaning": "Actual public native4MiB key copy-budget RED: UnknownAttribute instead of OperationalBudgetExceeded. Small control was authored but not reached before the failing assertion.",
+      "productionRegressionEvidence": true,
+      "recordedExits": [
+        {
+          "pointer": "/actualExitCode",
+          "value": 101,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "--test",
+            "import_header_budget"
+          ]
+        },
+        {
+          "pointer": "/actualToolCompletion/exit_code",
+          "value": 101,
+          "command": null
+        }
+      ],
+      "recordedScope": "Independent literal regression authored before production repair; implementer evidence, not official review"
+    },
+    {
+      "id": "key_green",
+      "receipt": {
+        "path": "/tmp/osr-64-import-header-budget-green.json",
+        "bytes": 2331,
+        "sha256": "3ba1abacec26c993899cd299d94ef769cf665fd458e21d917141b32748b7d141"
+      },
+      "meaning": "Same test bytes as RED, actual native1/1PASS, large-key operational refusal and small escaped-key UnknownAttribute control both reached.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/actualExitCode",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "--test",
+            "import_header_budget"
+          ]
+        },
+        {
+          "pointer": "/actualToolCompletion/exit_code",
+          "value": 0,
+          "command": null
+        }
+      ],
+      "recordedScope": "Only this one public native test executed. Same authored input/schema/copy-budget expectations as RED; no cap increase or expected-result rewrite. No WASM/fullsuite/CI claim."
+    },
+    {
+      "id": "candidate_id_red",
+      "receipt": {
+        "path": "/tmp/osr-64-candidate-header-identity-red.json",
+        "bytes": 1003,
+        "sha256": "5bf21cac7ca16936fe19674dd0f13777241b338d9209ab4ef6531293bcafcbfa"
+      },
+      "meaning": "Two existing borrowed-candidate exact-ID regressions failed after accidental import-casefold reuse; genuine production regression RED.",
+      "productionRegressionEvidence": true,
+      "recordedExits": [
+        {
+          "pointer": "/cases/0/actualExit",
+          "value": 101,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "edit_normalize::tests::metadata_is_canonicalized_without_case_folding_registry_ids",
+            "--",
+            "--nocapture"
+          ]
+        },
+        {
+          "pointer": "/cases/1/actualExit",
+          "value": 101,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "edit_normalize::tests::unknown_data_is_refused_before_empty_text_or_absent_mark_can_hide_it",
+            "--",
+            "--nocapture"
+          ]
+        }
+      ],
+      "recordedScope": null
+    },
+    {
+      "id": "candidate_id_green",
+      "receipt": {
+        "path": "/tmp/osr-64-candidate-header-identity-green.json",
+        "bytes": 2600,
+        "sha256": "c5931c2e181fdfd6caf532818b47f259e0b76be4dc030d7ef7b71d76b7407af4"
+      },
+      "meaning": "Focused actual exact-ID restoration plus direct/profile/scoped/schema checks; import spelling casefold remains separate.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/cases/0/actualExit",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "edit_normalize::tests::metadata_is_canonicalized_without_case_folding_registry_ids",
+            "--",
+            "--nocapture"
+          ]
+        },
+        {
+          "pointer": "/cases/1/actualExit",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "edit_normalize::tests::unknown_data_is_refused_before_empty_text_or_absent_mark_can_hide_it",
+            "--",
+            "--nocapture"
+          ]
+        },
+        {
+          "pointer": "/cases/2/actualExit",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "--test",
+            "import_closed_metadata",
+            "--",
+            "--nocapture"
+          ]
+        },
+        {
+          "pointer": "/cases/3/actualExit",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj-sdk",
+            "--test",
+            "import_metadata_closed",
+            "--",
+            "--nocapture"
+          ]
+        },
+        {
+          "pointer": "/cases/4/actualExit",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "registry_guards_tests",
+            "--",
+            "--nocapture"
+          ]
+        },
+        {
+          "pointer": "/cases/5/actualExit",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj-sdk",
+            "--test",
+            "schema_policy",
+            "--",
+            "--nocapture"
+          ]
+        }
+      ],
+      "recordedScope": null
+    },
+    {
+      "id": "final_shared_guard_receipt",
+      "receipt": {
+        "path": "/tmp/osr-64-document-header-and-key-budget-repair.json",
+        "bytes": 3613,
+        "sha256": "d2a9a7fb46946e0a7b22019d2898acc04cd8c88e4544aa93636bc7798dc83324"
+      },
+      "meaning": "Final supporting root+key repair receipt, preserving prior direct/candidate-ID proofs and resource-class ownership separation.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [],
+      "recordedScope": [
+        "Root independent native6case test+validcontrol PASS; public4MiBkey budget regression+smallkeycontrol PASS. Own existingID2/direct1/profile1/scoped4/schema3 plus clippy alltarget eachactual0.",
+        "Existing native direct6bad/8controls and publicdefault/narrowed12bad/8controls unchanged.",
+        "C freshNode/WASM root/budget regressions await build2; no runtime parity/fullCI/delivery/review claim.",
+        "No compiler/transaction/admission-cache cap changes in these repairs. Root owns fullRust/MSRV/resource/gates and final formatting."
+      ],
+      "recordedStatus": "focused native passed; production frozen"
+    },
+    {
+      "id": "final_shared_guard_checks",
+      "receipt": {
+        "path": "/tmp/osr-64-header-final-checks.json",
+        "bytes": 2549,
+        "sha256": "d11f8b99c308e86e1288db713dfbfd1676dcc1224f12af489bf72525c60a0053"
+      },
+      "meaning": "Seven explicitly recorded focused command exits0 after final shared guard changes; no official review verdict.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/cases/0/actualExit",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "edit_normalize::tests::metadata_is_canonicalized_without_case_folding_registry_ids"
+          ]
+        },
+        {
+          "pointer": "/cases/1/actualExit",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "edit_normalize::tests::unknown_data_is_refused_before_empty_text_or_absent_mark_can_hide_it"
+          ]
+        },
+        {
+          "pointer": "/cases/2/actualExit",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "--test",
+            "import_closed_metadata"
+          ]
+        },
+        {
+          "pointer": "/cases/3/actualExit",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj-sdk",
+            "--test",
+            "import_metadata_closed"
+          ]
+        },
+        {
+          "pointer": "/cases/4/actualExit",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "registry_guards_tests"
+          ]
+        },
+        {
+          "pointer": "/cases/5/actualExit",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj-sdk",
+            "--test",
+            "schema_policy"
+          ]
+        },
+        {
+          "pointer": "/cases/6/actualExit",
+          "value": 0,
+          "command": [
+            "cargo",
+            "clippy",
+            "--locked",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "--all-targets",
+            "--",
+            "-D",
+            "warnings"
+          ]
+        }
+      ],
+      "recordedScope": null
+    },
+    {
+      "id": "codec_node_future_source_freeze",
+      "receipt": {
+        "path": "/tmp/osr-64-kwdj-codec-root-budget-source-freeze.json",
+        "bytes": 1034,
+        "sha256": "7dbbabd1aa8fe736afd65ea9abaed352d7234944cdc90a194f5ad79017fc9fb3"
+      },
+      "meaning": "Authored additive Node/WASM ABI1 regression source freeze only; do NOT infer execution from this preparation receipt.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/syntaxCheck/returnCode",
+          "value": 0,
+          "command": [
+            "/Users/artem/projects/klenwriter-editor/.tools/node/node_modules/.bin/node",
+            "--check",
+            "tests/codec.node.mjs"
+          ]
+        }
+      ],
+      "recordedScope": "Source freeze and actual syntax-only check; no native/WASM execution until freshbuild2. Existing14metadata cases and earlier60/180test prefix are unchanged byte-for-byte."
+    },
+    {
+      "id": "final_rust",
+      "receipt": {
+        "path": "/tmp/osr-64-root-rust-final3.json",
+        "bytes": 932,
+        "sha256": "743afaa9c2eb7a2479177b4e853f6177853eb6014aa73731094cbbbdb9f48fc5"
+      },
+      "meaning": "Actual final3 fmt/clippy/workspace Rust test receipts. Counts are derived from the pinned raw test-result sections, not parent narration.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/0/exit_code",
+          "value": 0,
+          "command": [
+            "cargo",
+            "fmt",
+            "--all"
+          ]
+        },
+        {
+          "pointer": "/1/exit_code",
+          "value": 0,
+          "command": [
+            "cargo",
+            "clippy",
+            "--workspace",
+            "--all-targets",
+            "--locked",
+            "--",
+            "-D",
+            "warnings"
+          ]
+        },
+        {
+          "pointer": "/2/exit_code",
+          "value": 0,
+          "command": [
+            "cargo",
+            "test",
+            "--workspace",
+            "--locked"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "final_msrv",
+      "receipt": {
+        "path": "/tmp/osr-64-root-msrv-final2.json",
+        "bytes": 884,
+        "sha256": "a681bcebc5c2cd83b53619693d264ca57c87c32a234af89ef8b196bbcf8f88c4"
+      },
+      "meaning": "Actual final2 Rust1.89 test/check receipts for core/KWDJ/registry/protocol plus Notes/extensions lib checks.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/0/exit_code",
+          "value": 0,
+          "command": [
+            "cargo",
+            "+1.89.0",
+            "test",
+            "--locked",
+            "-p",
+            "klenwriter-editor-core",
+            "-p",
+            "klenwriter-editor-kwdj",
+            "-p",
+            "klenwriter-editor-registry",
+            "-p",
+            "klenwriter-editor-protocol"
+          ]
+        },
+        {
+          "pointer": "/1/exit_code",
+          "value": 0,
+          "command": [
+            "cargo",
+            "+1.89.0",
+            "check",
+            "--locked",
+            "--lib",
+            "-p",
+            "klenwriter-editor-notes",
+            "-p",
+            "klenwriter-editor-extensions"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "canonical",
+      "receipt": {
+        "path": "/tmp/osr-64-root-canonical-final.json",
+        "bytes": 271,
+        "sha256": "99c22d3ab2d4ecb30d519d6c232480314ebc3d2ad09ff49a26b06472618c7a8d"
+      },
+      "meaning": "Actual independent canonical native/reference Node checks; raw test summary supplies counts.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/exit_code",
+          "value": 0,
+          "command": [
+            "node",
+            "--test",
+            "tests/canonical.node.mjs"
+          ]
+        }
+      ],
+      "recordedScope": null
+    },
+    {
+      "id": "m0",
+      "receipt": {
+        "path": "/tmp/osr-64-root-m0-first.json",
+        "bytes": 1355,
+        "sha256": "200a113dc623862307bec5b22de968a11c7b0898a0097be06bc327e8fe00ec52"
+      },
+      "meaning": "Actual M0 browser/summary/contracts/check/perf receipts; MET/GAP/OBSERVATION remain distinct, not all requirements passed.",
+      "productionRegressionEvidence": false,
+      "recordedExits": [
+        {
+          "pointer": "/0/exit_code",
+          "value": 0,
+          "command": [
+            "npm",
+            "test"
+          ]
+        },
+        {
+          "pointer": "/1/exit_code",
+          "value": 0,
+          "command": [
+            "node",
+            "scripts/summarize-evidence.mjs"
+          ]
+        },
+        {
+          "pointer": "/2/exit_code",
+          "value": 0,
+          "command": [
+            "npm",
+            "run",
+            "test:contracts"
+          ]
+        },
+        {
+          "pointer": "/3/exit_code",
+          "value": 0,
+          "command": [
+            "npm",
+            "run",
+            "check:m0"
+          ]
+        },
+        {
+          "pointer": "/4/exit_code",
+          "value": 0,
+          "command": [
+            "npm",
+            "run",
+            "perf:verify"
+          ]
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "path": "/tmp/osr-64-admission-cache-budget-green-0.log",
+      "bytes": 457,
+      "sha256": "f6b9efa9cdbd7c602c49618fa6c6efa024b731b47de95196a072990c77bd00ad",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_green"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-admission-cache-budget-green-1.log",
+      "bytes": 1192,
+      "sha256": "a4a0f8444f6eb396544303dd40bfe7933dbcb4114ab8f2ee8eb273e27f188a8e",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_green"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-admission-cache-budget-green.json",
+      "bytes": 637,
+      "sha256": "7440fa843f83ad870e0cb32c332bf84f2db71faf4a62c2a72612eb6160254720",
+      "roles": [
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_green"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-admission-cache-budget-red.json",
+      "bytes": 255,
+      "sha256": "242673eb710449b4d0cdb0230f519ad74069325c41426b7ccbd73c20b3521957",
+      "roles": [
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_red"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-admission-cache-budget-red.log",
+      "bytes": 1231,
+      "sha256": "feabd198c5b202691db12cb304ba1f1cdff8b645404004bddb95e7f3a2a0b33e",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_red"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-admission-cache-import-first.json",
+      "bytes": 294,
+      "sha256": "b73fa7d67bc65e65c9cc7acced94f9cd1c890438dd976a3e121969cfece01c2f",
+      "roles": [
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_import"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-admission-cache-import-first.log",
+      "bytes": 478,
+      "sha256": "e091c046d6080151703b76cf57a41252c3a651116ac2f6438a2d35abdf526560",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_import"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/actual-run-completion.json",
+      "bytes": 394,
+      "sha256": "559e3ab16a9fcae1fd3355a9eade8950340e7860087fb25a65f916f01cf2201e",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement#/command/completion"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/build-and-run.log",
+      "bytes": 2241,
+      "sha256": "47fbfa7d03c3fe34d1225cff8db086cf34d507a17bb296046c25b20354b5942a",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement#/command/stderr"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/identity-layout-compile.stderr.log",
+      "bytes": 2885,
+      "sha256": "e28f66707557a67c05564211a7209b84b4d6c4f7a0a75ccb3e9bd0981383a6a9",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement#/harness/idLayout/compileStderr"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/identity-layout-compile.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement#/harness/idLayout/compileStdout"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/identity-layout.json",
+      "bytes": 178,
+      "sha256": "9ce63679b79a879804febf1313003c45d921e75e7b83e1d3ee5cd092668d1797",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement#/harness/idLayout/result"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/identity-layout.rs",
+      "bytes": 521,
+      "sha256": "510d46c19023771fc18f9bc23a93fdbf242853fb5864c210f5e103bf0892bc2c",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement#/harness/idLayout/source"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/identity.source.rs",
+      "bytes": 11160,
+      "sha256": "132ac933c9b3636bc2cac03cbdf43916226a11ea583cd1283172aa6f9f2bcf83",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement#/harness/idLayout/actualEngineIdentitySource"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/inputs/49999.fixture.json",
+      "bytes": 750,
+      "sha256": "6549b793bdc3876cfc8417fae04fef2b556e52942fa64b16db2da89ccf3f64a4",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement#/inputs/0/frozen_fixture_metadata"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/inputs/49999.json",
+      "bytes": 1500044,
+      "sha256": "d8c3500d060dfda255bc0d4bce10e56022bc91822dc338d7c333970f494c9237",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement#/inputs/0/raw"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/inputs/50000.fixture.json",
+      "bytes": 748,
+      "sha256": "6b072faa9714f61d6fcdae0a22468b2ade3e86eb658ba8f7e48d67e7bb388c94",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement#/inputs/1/frozen_fixture_metadata"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/inputs/50000.json",
+      "bytes": 1500081,
+      "sha256": "65893e94528e25caff48c4767dd6093cae69eeba71a7840132601177851a68ed",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement#/inputs/1/raw"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/measurement-receipt.json",
+      "bytes": 17424,
+      "sha256": "b36b56ec84c3643976d4a28c0744940c2c6d4dfa86b72b0f3257f28570de4fbf",
+      "roles": [
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/private-constructor-only.patch",
+      "bytes": 455,
+      "sha256": "ec61d7e448d343c080cb21acde5a54438e147b1ff9e5f0ff2adebf0a6e96a680",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement#/source/runtimeCodeDiff"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/private-workspace-plumbing.patch",
+      "bytes": 226,
+      "sha256": "6c5d75191327eed2c7b7d47c9e18ca23ab5dc3009ab4b73eb01221057a4e9eaf",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement#/source/workspacePlumbingDiff"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/production-source-snapshot.json",
+      "bytes": 7770,
+      "sha256": "4a1fbf4f29ae7cacc780a5bcaed8750948ebfed771b8af022e9b2b56f49fb3ef",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement#/source/productionSnapshot"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/result.json",
+      "bytes": 10079,
+      "sha256": "b31504da038375db2121e0e07ff722888abd5acb24cf23240cc7dc82babdf613",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement#/command/stdout"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/source/Cargo.lock",
+      "bytes": 13243,
+      "sha256": "6006366e8c839e4da223392aca1d125f412f3e29bb38537eb5b958226a86d37e",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement#/source/privateLockfile"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/source/measure/Cargo.toml",
+      "bytes": 383,
+      "sha256": "0db966a88520c02c0c439abb0ee47d981d678783b3dc5224cd88b2df3fe787d8",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement#/harness/manifest"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-cache-seed-measure/source/measure/src/main.rs",
+      "bytes": 5424,
+      "sha256": "a9177bb242f89f707e7a1efd34506f7bfc7f1ae961c9f1a39daffb182c7d246f",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "cache_class_measurement#/harness/source"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-candidate-header-identity-green-direct.log",
+      "bytes": 384,
+      "sha256": "1a30f96e67f96ea0148c55fae7230a4193c896e3864eabb06e371edf843817ef",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "candidate_id_green#/cases/2"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-candidate-header-identity-green-mark.log",
+      "bytes": 1630,
+      "sha256": "d111593889b1668c14b854bc26ce630dda3563a446297be3c3f7d38298ea6f28",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "candidate_id_green#/cases/1"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-candidate-header-identity-green-node.log",
+      "bytes": 1718,
+      "sha256": "346226a57e507dd66a84ec9ec1d10f7118e5d568eb78a0beb31973b388822d9a",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "candidate_id_green#/cases/0"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-candidate-header-identity-green-profile.log",
+      "bytes": 491,
+      "sha256": "730c4391d6e9b4dd9645f3997ee8471c500969ba72c83f2694f92b093dc5dc9d",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "candidate_id_green#/cases/3"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-candidate-header-identity-green-schema.log",
+      "bytes": 2670,
+      "sha256": "1a9d4418f93322ac64b6fee57828025801dffc4c11eed09cc93de48842dcc597",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "candidate_id_green#/cases/5"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-candidate-header-identity-green-scoped.log",
+      "bytes": 2061,
+      "sha256": "7b7262df2ef2d950b15f334d6f027e2a8de5ec458d357b33fe1f76035a40fc6e",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "candidate_id_green#/cases/4"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-candidate-header-identity-green.json",
+      "bytes": 2600,
+      "sha256": "c5931c2e181fdfd6caf532818b47f259e0b76be4dc030d7ef7b71d76b7407af4",
+      "roles": [
+        "selected receipt/report",
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "candidate_id_green",
+        "final_shared_guard_receipt#/preservedPriorProofs/2"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-candidate-header-identity-red-mark.log",
+      "bytes": 892,
+      "sha256": "f818f07aec3af32cbe7b8f361bd063ca724561dddf7953c9f4724addbd661b8b",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "candidate_id_red#/cases/1"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-candidate-header-identity-red-node.log",
+      "bytes": 914,
+      "sha256": "784a2e2addd8c9048edb97bd32d03ee9b5662bee34ce1a4345164965241cee43",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "candidate_id_red#/cases/0"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-candidate-header-identity-red.json",
+      "bytes": 1003,
+      "sha256": "5bf21cac7ca16936fe19674dd0f13777241b338d9209ab4ef6531293bcafcbfa",
+      "roles": [
+        "selected receipt/report",
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "candidate_id_red",
+        "final_shared_guard_receipt#/preservedPriorProofs/1"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-central-header-clippy.log",
+      "bytes": 169,
+      "sha256": "9692264095ef337134b490ebe5a2acce401fba2b05f604fedc72e07ff979517b",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "shared_header_receipt#/ownChecks/2"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-central-header-msrv.log",
+      "bytes": 169,
+      "sha256": "730c5b6987a97b92f4edda9386f65c7767274b3ede83aeed871d63e987fe85bb",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "shared_header_receipt#/ownChecks/3"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-central-header-schema-policy.log",
+      "bytes": 603,
+      "sha256": "59b7ef10d02ac52397499abf07f1757b97cc485575a44c41424f7d515d5249c1",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "shared_header_receipt#/ownChecks/1"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-central-header-scoped.log",
+      "bytes": 2158,
+      "sha256": "8bc5280b400415659db9e6b00c1f0ecb5def99b924f74b19ca465599c996e62f",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "shared_header_receipt#/ownChecks/0"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-document-header-and-key-budget-repair.json",
+      "bytes": 3613,
+      "sha256": "d2a9a7fb46946e0a7b22019d2898acc04cd8c88e4544aa93636bc7798dc83324",
+      "roles": [
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "final_shared_guard_receipt"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-first-compiled-snapshot.json",
+      "bytes": 327,
+      "sha256": "258bdfe481b0dedf9b50b2dc39b7b88ebf6e6640d3b322b07a25b8d49584b381",
+      "roles": [
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "first_compiled_snapshot"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-first-compiled-snapshot.zip",
+      "bytes": 8038700,
+      "sha256": "1d2891fc04a23b47eb9f36418b76d9c3418b33fe020441eeccc534b06e65c2c8",
+      "roles": [
+        "receipt-referenced file",
+        "historical compiled ZIP",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "first_compiled_snapshot#",
+        "first_compiled_snapshot"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-header-final-checks.json",
+      "bytes": 2549,
+      "sha256": "d11f8b99c308e86e1288db713dfbfd1676dcc1224f12af489bf72525c60a0053",
+      "roles": [
+        "receipt-referenced file",
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "final_shared_guard_receipt#/ownChecks",
+        "final_shared_guard_checks"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-header-final-clippy.log",
+      "bytes": 169,
+      "sha256": "3b1f63041390d31cb7961f73b048eae3263df59fa0e341d7e22375ef0b14ef19",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "final_shared_guard_checks#/cases/6"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-header-final-direct.log",
+      "bytes": 384,
+      "sha256": "1a30f96e67f96ea0148c55fae7230a4193c896e3864eabb06e371edf843817ef",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "final_shared_guard_checks#/cases/2"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-header-final-mark.log",
+      "bytes": 2054,
+      "sha256": "e9a2aea5f4f1ade32b6d040f8da7da42ab9e8a1e2475634024cf14cd63ba9d7e",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "final_shared_guard_checks#/cases/1"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-header-final-node.log",
+      "bytes": 2142,
+      "sha256": "7130781c3a76b1a27e4e96c459de9e16b59484cc46db5a456b783e43062c1070",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "final_shared_guard_checks#/cases/0"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-header-final-profile.log",
+      "bytes": 491,
+      "sha256": "715731240dcfdfdc698a83c3ec17342312f8aa1785abe95aa6ec07cb5a58fe85",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "final_shared_guard_checks#/cases/3"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-header-final-schema.log",
+      "bytes": 603,
+      "sha256": "e0cf0f31db720d91888410a6a073e395e9e2bcfd3248f8e1fb20a87f7f32fae2",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "final_shared_guard_checks#/cases/5"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-header-final-scoped.log",
+      "bytes": 2485,
+      "sha256": "84d8cf32836fbde0663d77d02b6fefb75a9f8b743f5f26614e39e5a0faa019a6",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "final_shared_guard_checks#/cases/4"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-import-header-budget-green.json",
+      "bytes": 2331,
+      "sha256": "3ba1abacec26c993899cd299d94ef769cf665fd458e21d917141b32748b7d141",
+      "roles": [
+        "selected receipt/report",
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "key_green",
+        "final_shared_guard_receipt#/budgetGreen"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-import-header-budget-green.log",
+      "bytes": 461,
+      "sha256": "76cedb5bc5763f6fddac871099608d256c984dc9dd7838667963ee691c72a08f",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "key_green#/rawLog"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-import-header-budget-green.source-after.json",
+      "bytes": 675,
+      "sha256": "1616f20e22c2339b5e1ea2e23b7b0309132ac2354a9a5a1bb416567f279e4677",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "key_green#/sourceAfter"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-import-header-budget-green.source-before.json",
+      "bytes": 675,
+      "sha256": "b54d58066616f49ffeee3aea80f3bbc51231d1d17865b3768412e8f6f9125a3c",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "key_green#/sourceBefore"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-import-header-budget-red.json",
+      "bytes": 2029,
+      "sha256": "e7ba8cbf8230b18b2b54a613bf2a0bfbb0d5cef4b87c70c9ab51b277ee6bc39d",
+      "roles": [
+        "selected receipt/report",
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "key_red",
+        "key_green#/redReceipt",
+        "final_shared_guard_receipt#/budgetRed"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-import-header-budget-red.log",
+      "bytes": 1052,
+      "sha256": "0360649eecfe724bca05c6389ff21b19727ece77c5221e2c124e5494fabc63b8",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "key_red#/rawLog"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-import-header-budget-red.source-after.json",
+      "bytes": 673,
+      "sha256": "5bc704d45e03dd3967de66d258da51e294f2f5be575a903765ce898bd17d6ab7",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "key_red#/sourceAfter"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-import-header-budget-red.source-before.json",
+      "bytes": 673,
+      "sha256": "87c4c61a2ae793137588600d3675a2cfa8af0d17c806b388e85349543841c949",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "key_red#/sourceBefore"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-codec-root-budget-source-freeze.json",
+      "bytes": 1034,
+      "sha256": "7dbbabd1aa8fe736afd65ea9abaed352d7234944cdc90a194f5ad79017fc9fb3",
+      "roles": [
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "codec_node_future_source_freeze"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-direct-import-closed-green.json",
+      "bytes": 1560,
+      "sha256": "f6c156130ada12f00dedd0a9566a73686ab4ce77c2da4d4d6576543e63bf5d1c",
+      "roles": [
+        "selected receipt/report",
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "direct_metadata_green",
+        "shared_header_receipt#/greenDirect"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-direct-import-closed-green.log",
+      "bytes": 481,
+      "sha256": "c5ca700a0e900a9db4e9f52a8607d688d6d6fa6f74d159fd598c120ad8f4f011",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "direct_metadata_green#/rawLog"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-direct-import-closed-red.json",
+      "bytes": 1589,
+      "sha256": "00004dafb717c53b0c6d21ce380a2663fa12a036016c6a01c801006ff556f5e7",
+      "roles": [
+        "selected receipt/report",
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "direct_metadata_red",
+        "shared_header_receipt#/red"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-direct-import-closed-red.log",
+      "bytes": 1924,
+      "sha256": "bd1673c4b5d8c4f6bd61eb6741f40039353ae787b06b40a8eeb830c3302c4134",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "direct_metadata_red#/rawLog",
+        "shared_header_receipt#/redRaw"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-direct-root-closed-green.json",
+      "bytes": 1520,
+      "sha256": "0565134f2b93381c79d0967a963838df9dcbd9811bd762ba10b67a03130de2a7",
+      "roles": [
+        "selected receipt/report",
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "root_green",
+        "final_shared_guard_receipt#/rootGreen"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-direct-root-closed-green.log",
+      "bytes": 370,
+      "sha256": "908463c298074be5559b264aadda08cbe188303e6311491e9ecb7a4913ddc9d7",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "root_green#/rawLog"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-direct-root-closed-red.json",
+      "bytes": 1600,
+      "sha256": "5cca9834fe8760abefa374f593e6f572626811851cfbd3618a072124321615ce",
+      "roles": [
+        "receipt-referenced file",
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "root_first_qualification#/firstAttempt",
+        "root_first_path_failure"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-direct-root-closed-red.log",
+      "bytes": 984,
+      "sha256": "c496932115a6813e439613ced6440dd75890e7cc6f0415850bd7eeac79839b5b",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "root_first_path_failure#/rawLog"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-direct-root-closed-red2.json",
+      "bytes": 1652,
+      "sha256": "6910878021bf2dc20ed7921968797f06a7e9d12b504aaf294f2d66c5ecdbd241",
+      "roles": [
+        "receipt-referenced file",
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "root_first_qualification#/secondAttempt",
+        "root_semantic_red",
+        "final_shared_guard_receipt#/rootRed"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-direct-root-closed-red2.log",
+      "bytes": 1818,
+      "sha256": "ceab940a65d7790e8346d82e5180ea04877346e5c04d94dce162bd52b5a1c37c",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "root_semantic_red#/rawLog"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-direct-root-first-red-qualification.json",
+      "bytes": 1257,
+      "sha256": "a0de2b44fa3e552e27b8de16a52a5e5e4f9643edbe6ab5547e1871b6f4111e2e",
+      "roles": [
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "root_first_qualification"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-import-metadata-current-green.json",
+      "bytes": 1485,
+      "sha256": "fc306a08b2812f68e4e38276885380384a5d84b57e9d9458763da2cfec4a3bc7",
+      "roles": [
+        "selected receipt/report",
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "profile_metadata_green",
+        "schema_repair_receipt#/additional_independent_import_evidence"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-import-metadata-current-green.log",
+      "bytes": 491,
+      "sha256": "630da997f975c3260fd7eb5a0e67e7a994673a87eabbb3c4ca081624b9b42c60",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "profile_metadata_green#/rawLog"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-import-metadata-current-red-timing-qualification.json",
+      "bytes": 830,
+      "sha256": "af6f43b967437ccbfa0ee7e19a3516905acc4b6c589d16b953f11d3048cafb4f",
+      "roles": [
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "profile_metadata_timing_qualification"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-import-metadata-current-red.json",
+      "bytes": 1431,
+      "sha256": "bb8c0d889b8280abd6e357122ae4a5ff4c52b9c74eb74ecc6296e0b6ed7d0d32",
+      "roles": [
+        "receipt-referenced file",
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "profile_metadata_timing_qualification#/receipt",
+        "profile_metadata_path_failure"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-import-metadata-current-red.log",
+      "bytes": 996,
+      "sha256": "1b2627fd9461b4831774c09ae5d91f669bb7731e65bb3a3a764de9faaa7cf546",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "profile_metadata_path_failure#/rawLog"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-import-metadata-old-compiled.json",
+      "bytes": 16752,
+      "sha256": "16ac73b6dc13eb097717bd93a29df9b9912c1281a06219513712e2336c2e02df",
+      "roles": [
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "historical_compiled_metadata"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-import-metadata-old-compiled.requests.jsonl",
+      "bytes": 21428,
+      "sha256": "ec83eab1c6c2375c89471a8d378284c57306b8ade479d247f1008944f41e65f8",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "historical_compiled_metadata#/rawRequests"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-import-metadata-old-compiled.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "historical_compiled_metadata#/stderr"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-import-metadata-old-compiled.stdout.jsonl",
+      "bytes": 10773,
+      "sha256": "a4b9c1457464bf94481116ab68bee620116bdf63933ee56e677a39e8837fc8d8",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "historical_compiled_metadata#/rawStdout"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-import-metadata-post-central-profile-green.json",
+      "bytes": 1025,
+      "sha256": "327c8e7c8e1ec1b8f1cfdcc19dd01ef30bd52fae3227e166bcd775d2337c8ab3",
+      "roles": [
+        "selected receipt/report",
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "profile_metadata_central_green",
+        "shared_header_receipt#/greenProfile"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-import-metadata-post-central-profile-green.log",
+      "bytes": 491,
+      "sha256": "d742910010ce2d72d3876c3627045428b673301e186316bdb8353979bfbbb23d",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "profile_metadata_central_green#/rawLog"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-resource-admissions-first.json",
+      "bytes": 906,
+      "sha256": "a9f41ef8f63fac5b38cbc68c62d63ec755ca72367f492b11626529915a911154",
+      "roles": [
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "first_resource_inventory"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-resource-admissions-first.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "roles": [
+        "raw observer stderr",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "first_resource_inventory"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-schema-guards-clippy-1.log",
+      "bytes": 371,
+      "sha256": "35ec516bf2aa3848eaa4fd35c1f1dc6ed63ec7bf30d46301f6cc676374d53e02",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "schema_repair_receipt#/commands/4"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-schema-guards-msrv.log",
+      "bytes": 1304,
+      "sha256": "c5b2acd97120b3f66b61c765137967ed53ae5ec11d9a2ba4e24ea5847f9ccccf",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "schema_repair_receipt#/commands/5"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-schema-policy-green-raw-header.log",
+      "bytes": 603,
+      "sha256": "768b9b5cfebc29173c4004a64d9ff075db23fe2381073c8714c3c0463b941270",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "schema_repair_receipt#/commands/1"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-schema-policy-red-all3.log",
+      "bytes": 4234,
+      "sha256": "5af71ba9d17b19a81d720d69581628f5646664d98f914836eac8976adbb781d4",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "schema_repair_receipt#/commands/0"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-kwdj-schema-repair-focused-receipt.json",
+      "bytes": 6546,
+      "sha256": "f7a91080f0870ef7ea923e1997ce4355670f0ae2b8f32f1515a7fdb010f7b086",
+      "roles": [
+        "selected receipt/report",
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "schema_repair_receipt",
+        "shared_header_receipt#/priorFocusedReceiptPreserved"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-registry-guards-focused-1.log",
+      "bytes": 1002,
+      "sha256": "62b4c8981662a4e55db5a2f803cf7a36d30c1faf4a112d9f8fc6f8b14577b2e9",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "schema_repair_receipt#/commands/2"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-registry-guards-focused-2.log",
+      "bytes": 1940,
+      "sha256": "eb345f7b9bb86a70088ecf041fa3a3a0eb23b7f347adbe5ddf79a17f0ad2916c",
+      "roles": [
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "schema_repair_receipt#/commands/3"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-build-first.json",
+      "bytes": 256,
+      "sha256": "84b8d40bd5519dcae0bf237f4af286098cd5b6aaaea9548e4ba1c87af4fedcad",
+      "roles": [
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "first_build"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-build-first.log",
+      "bytes": 16632,
+      "sha256": "1b8c45fc19cf8bdf521a3a7d444d551e7886704bd8b4968947b352b0112514c0",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "first_build#"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-canonical-final.json",
+      "bytes": 271,
+      "sha256": "99c22d3ab2d4ecb30d519d6c232480314ebc3d2ad09ff49a26b06472618c7a8d",
+      "roles": [
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "canonical"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-canonical-final.log",
+      "bytes": 305,
+      "sha256": "9a5bdbbcfb7c647c273c3d7ca75647e68666f37b9716feb2a484f9a98a97c79a",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "canonical#"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-extensions-first.json",
+      "bytes": 211,
+      "sha256": "0c5ccd1be81a0d51cee24322c80ba143bfb0c34fa17fd353b1a2798cf651d1d2",
+      "roles": [
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "first_extensions_failure"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-extensions-first.log",
+      "bytes": 1044,
+      "sha256": "287372c36ac73a4bcf33e6d75718dfa426a87d802b66c7ebbd63b72d11c60859",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "first_extensions_failure"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-m0-first-0.log",
+      "bytes": 13676,
+      "sha256": "d5e14208ba44896c09113037d17c4abcf9ee5ff27e44c6a5ac838e95f9ad348e",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "m0#/0"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-m0-first-1.log",
+      "bytes": 86,
+      "sha256": "a355364952cc8ac890fcd4c86e4246dad93920c4fb10991c8f514908a4bdbc53",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "m0#/1"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-m0-first-2.log",
+      "bytes": 3340,
+      "sha256": "525f0561d44243836f72135b27b6f5ee8b41502c76a882589e48f0101efe4ced",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "m0#/2"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-m0-first-3.log",
+      "bytes": 499,
+      "sha256": "b754ac041c668a4a41635c6b887f60ffd79500d5aee39611b982e551d9f3f1ec",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "m0#/3"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-m0-first-4.log",
+      "bytes": 221,
+      "sha256": "85de2eff315216a5ed99e382810f78fc3426440815c17622b2d750ffc7e0a00f",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "m0#/4"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-m0-first.json",
+      "bytes": 1355,
+      "sha256": "200a113dc623862307bec5b22de968a11c7b0898a0097be06bc327e8fe00ec52",
+      "roles": [
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "m0"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-msrv-final2-0.log",
+      "bytes": 18052,
+      "sha256": "076926f79d21fef90c963557467624a99259a21a7298b78a23ef9e520b1638f3",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "final_msrv#/0"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-msrv-final2-1.log",
+      "bytes": 72,
+      "sha256": "736e2582f563605dd272e5fb977840b0c0767377d27b6940c440caf75eec7157",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "final_msrv#/1"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-msrv-final2.json",
+      "bytes": 884,
+      "sha256": "a681bcebc5c2cd83b53619693d264ca57c87c32a234af89ef8b196bbcf8f88c4",
+      "roles": [
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "final_msrv"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-rust-final3-0.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "final_rust#/0"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-rust-final3-1.log",
+      "bytes": 274,
+      "sha256": "549943209ea3dcb80c8fb5b3f0a9a8bd925d84a41a8b6d3e7a8574ed9a7153e3",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "final_rust#/1"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-rust-final3-2.log",
+      "bytes": 43666,
+      "sha256": "45f7e082d295ca21ac038f93d32c4eba9807d88888d22096577a50399d143db4",
+      "roles": [
+        "raw command log",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "final_rust#/2"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-root-rust-final3.json",
+      "bytes": 932,
+      "sha256": "743afaa9c2eb7a2479177b4e853f6177853eb6014aa73731094cbbbdb9f48fc5",
+      "roles": [
+        "selected receipt/report",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "final_rust"
+      ]
+    },
+    {
+      "path": "/tmp/osr-64-shared-original-header-repair.json",
+      "bytes": 4197,
+      "sha256": "37fe1d74cfec82062495c22010b59c44b3c75faa6baf242e2ba002f76f3230a8",
+      "roles": [
+        "selected receipt/report",
+        "receipt-referenced file",
+        "verified unchanged during index capture"
+      ],
+      "referencedBy": [
+        "shared_header_receipt",
+        "final_shared_guard_receipt#/preservedPriorProofs/0"
+      ]
+    }
+  ],
+  "summary": {
+    "selectedReceiptCount": 32,
+    "uniqueReferencedFileCount": 111,
+    "uniqueReferencedBytes": 11352468,
+    "productionRedEntryIDs": [
+      "first_resource_inventory",
+      "cache_class_red",
+      "historical_compiled_metadata",
+      "direct_metadata_red",
+      "root_semantic_red",
+      "key_red",
+      "candidate_id_red"
+    ]
+  }
+}
