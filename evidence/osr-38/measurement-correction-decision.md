@@ -68,3 +68,32 @@ schedule или plan в analyzer сохраняется как machine-readable
 Numeric floors остаются непринятыми. Candidate timing и comparison ещё не
 начинались. AC4 и полный delivery остаются незавершёнными. Остановленный
 дополнительный блок проверок не является частью этого решения и не возобновляется.
+
+## Завершённая phased calibration: результат
+
+Один corrected reference завершился с actual exit 0: 410 launches, 1 040 runs,
+208 cases. Измерительный source — `b163636c09a9641970fd3af28da2fcfa92015963`;
+production source остаётся принятым OSR-64. Все 104 time cases имеют конечный
+CV >10%; 104 resource cases стабильны. Полный reference отклонён по качеству.
+Единственный floor-helper invocation завершился exit 1; config и policy не
+созданы, floors не приняты, candidate timing/comparison не выполнялись.
+
+V4 supporting audit подтвердил current raw integrity для 470 raw files,
+66 logical requests и всех 208 cases. Его actual exit 1 относится к отдельному
+historical capacity witness gap: старый mutable debug executable теперь имеет
+другие bytes. Сохранённый capacity report не заменяет отсутствующий executable.
+Current raw validity не устраняет failed CV и этот отдельный пробел evidence.
+История operator postprocessing, включая import-inert no-op и ошибочное V3
+предположение о точном числе samples, сохранена вместе с исправленным V4.
+Исходные raw и shared validators не переписывались.
+
+Полные pins, actual receipts, counts и ограничения записаны в
+[phased-calibration-quality-checkpoint.json](phased-calibration-quality-checkpoint.json).
+Durable checkpoint `calibration-phased-b163-quality-rejected` содержит 1 857
+payload files / 1 858 ZIP entries; ZIP SHA256
+`74ad363dbdb90c4d65b70936e222cef91f09ca44bd950ab1d91123c15c7067ad`.
+Проверка сохранности архива не является приёмкой измерений. Оригиналы сохранены.
+
+AC3 и AC4 остаются незавершёнными. Этот результат не разрешает повторные
+проверки, новый capture, изменение порогов или возобновление остановленного
+дополнительного блока. CI, formal review, merge и закрытие ещё не выполнены.

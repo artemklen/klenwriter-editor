@@ -1,0 +1,247 @@
+{
+  "format": "osr38-phased-reference-quality-checkpoint/1",
+  "recordedAt": "2026-10-18T22:37:58.777995+00:00",
+  "primaryRole": "implementer",
+  "issue": "OSR-38",
+  "status": "INCOMPLETE_QUALITY_REJECTED_HISTORICAL_AUXILIARY_GAP",
+  "source": {
+    "checkpointParent": "421157f2294322ccaf71b86ca899c5743d33a254",
+    "measurementCode": "b163636c09a9641970fd3af28da2fcfa92015963",
+    "production": "9a3747c0738fded8254eb958f7e256369cd382d3",
+    "productionDigest": "01b4ce9a565846c2100dd3ec938c3162a3983e124bec8c28bc645a0c3d71593c",
+    "harnessSHA256": "97ac139f3a029c4bb475af7b476bb4c6ed16c4c9e2d1dec7737211620b6474fc",
+    "harnessInputs": 27,
+    "productionInputs": 106,
+    "productionUnchanged": true
+  },
+  "collection": {
+    "completion": {
+      "path": "/tmp/osr-38-perf-reference-calibration-phased-1.completion.json",
+      "bytes": 5862,
+      "sha256": "01b1116c07d4eec4b92375461939fb31af5a5f4f99a379c78e7c2cff1dc14d64"
+    },
+    "actualTerminal": {
+      "path": "/tmp/osr-38-perf-reference-calibration-phased-1.actual-exit.json",
+      "bytes": 4538,
+      "sha256": "6d5bb7a1d2ab7afc0cb94b4416c78183d5226d75936019d53968ccee29d81298"
+    },
+    "toolReadback": {
+      "path": "/tmp/osr-38-perf-reference-calibration-phased-1.tool-completion.json",
+      "bytes": 935,
+      "sha256": "9070fd42007acb26a165724e71ea5b4fff3e7f2c0da1dc5e94dec2662fd76b7a"
+    },
+    "startedAt": "2026-10-18T21:06:03.360805+00:00",
+    "completedAt": "2026-10-18T22:16:45.247870+00:00",
+    "elapsedSeconds": 4241.836179042002,
+    "captureChildExitCode": 0,
+    "supervisorExitCode": 0,
+    "toolExitCode": 0,
+    "configuration": {
+      "path": "/tmp/osr-38-perf-reference-calibration-phased-1-config.json",
+      "bytes": 608,
+      "sha256": "ccae3eb7fc905efcc9f12ee5acbf79d3ea3c94a0ec7adfc58a8a8ef7bf436005"
+    },
+    "nativeProducer": {
+      "path": "/tmp/osr-38-perf-phased-reference-build/build.json",
+      "bytes": 19107,
+      "sha256": "77f25c7d057d42518e7b0a5c76259d732e782962638b85ffb404a594a09f1496"
+    },
+    "baseline": {
+      "path": "/tmp/osr-38-perf-reference-calibration-phased-1/baseline.json",
+      "bytes": 7617621,
+      "sha256": "b6431857b86bfce89f650368000f49f7adea3a480e36e7abbdd91e9e4116b629"
+    },
+    "capture": {
+      "path": "/tmp/osr-38-perf-reference-calibration-phased-1/capture.json",
+      "bytes": 126124,
+      "sha256": "6f2f8085cb212184237c8cab14c112bc03cf6efb41a04325071a8a7e49e98c52"
+    },
+    "plan": {
+      "path": "/tmp/osr-38-perf-reference-calibration-phased-1/plan.json",
+      "bytes": 11355,
+      "sha256": "e1ec8fe0d331514d82ab38d33232a76d248f6e69bdb23d27028b64400b8873cc"
+    },
+    "schedule": {
+      "path": "/tmp/osr-38-perf-reference-calibration-phased-1/schedule.json",
+      "bytes": 20689,
+      "sha256": "bdd5a952ca683ca24ede2a0cbb95cd5ac638aef043ff58ff914987947dd4890e"
+    },
+    "corpus": {
+      "path": "/tmp/osr-38-perf-reference-calibration-phased-1/corpus.json",
+      "bytes": 7781859,
+      "sha256": "bfb810da4bc06bf3dc1f75366ec176aa5ea5f2915609e6d3e7d2bd70cd4775ea"
+    },
+    "counts": {
+      "launches": 410,
+      "metricRuns": 1040,
+      "metricCases": 208,
+      "phases": {
+        "timing": 350,
+        "allocator": 60
+      },
+      "rounds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "childStatuses": [
+        0
+      ],
+      "baselineSource": "9a3747c0738fded8254eb958f7e256369cd382d3",
+      "harness": "97ac139f3a029c4bb475af7b476bb4c6ed16c4c9e2d1dec7737211620b6474fc",
+      "acceptanceScope": "full-required-plan"
+    },
+    "phaseOrder": [
+      "all350timingLaunches",
+      "all60allocatorLaunches"
+    ],
+    "qualification": "Actual exit0 proves full raw collection only. Every required case remains subject to the unchanged quality guards."
+  },
+  "quality": {
+    "accepted": false,
+    "caseTotal": 208,
+    "metricRuns": 1040,
+    "noisyTimeCases": 104,
+    "noisyLatencyCases": 70,
+    "noisyColdStartupCases": 34,
+    "stableResourceCases": 104,
+    "timerFailureCases": 0,
+    "undefinedCVCases": 0,
+    "maximumAcceptedCV": 0.1,
+    "allCaseGuardsSatisfied": false,
+    "qualification": "104 finite time CV values exceed0.1. Resource stability and valid raw data do not make the reference batch conclusive. No cases or rounds were discarded."
+  },
+  "floorPreparation": {
+    "completion": {
+      "path": "/tmp/osr-38-floor-config-preparation-phased-1.completion.json",
+      "bytes": 4009,
+      "sha256": "8c2b22e108dd7a694a9eda7c840596754e3a56ac6fa383cc76223005a8f96b8e"
+    },
+    "actualChildExitCode": 1,
+    "actualToolExitCode": 1,
+    "actualInvocations": 1,
+    "proposal": {
+      "path": "/tmp/osr-38-floor-proposal-phased-1.json",
+      "bytes": 1572825,
+      "sha256": "7b33e4caaf21a6ca3ee42e564c7a1616435fcf6f37605243ae56cc3afe05af4e"
+    },
+    "qualitySummary": {
+      "proposalStatus": "no-adoption-no-config",
+      "qualityPassed": false,
+      "caseTotal": 208,
+      "stableCases": 104,
+      "failedCases": 104,
+      "qualityErrorRows": 105,
+      "failedCaseDimensions": {
+        "latency": 70,
+        "cold-startup": 34
+      }
+    },
+    "configOutput": null,
+    "policyOutput": null,
+    "adopted": false,
+    "candidateTimingExecuted": false,
+    "qualification": "The existing helper rejected quality and emitted the full proposal. No retry, numeric floor draft, policy or candidate comparison was produced."
+  },
+  "supportingIntegrity": {
+    "report": {
+      "path": "/tmp/osr-38-calibration-integrity-phased-1-v4.json",
+      "bytes": 952658,
+      "sha256": "089ed9ebd5f2fd5112a372ed0440258e07dc512ae5754984401b4d3cab1afe44"
+    },
+    "actualTerminal": {
+      "path": "/tmp/osr-38-calibration-integrity-phased-1-v4.actual-exit.json",
+      "bytes": 4663,
+      "sha256": "9d1f33085e4fa8541e17b88eac6473a8747d74a444150534d04eafec7e717d41"
+    },
+    "actualExitCode": 1,
+    "currentRawIntegrity": "valid",
+    "historicalCapacityWitness": "incomplete",
+    "overallEvidenceComplete": false,
+    "counts": {
+      "planItems": 82,
+      "expectedCases": 208,
+      "actualCases": 208,
+      "runs": 1040,
+      "launches": 410,
+      "evaluatedGroups": 208,
+      "allLaunchesExit0": true,
+      "rawFiles": 470,
+      "logicalRequests": 66
+    },
+    "integrityErrors": [
+      {
+        "scope": "historical-capacity:$.binary",
+        "class": "AssertionError",
+        "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 32935040\n- 32880032\n"
+      }
+    ],
+    "qualification": "Current raw validators passed independently. Audit exit1 records the separate historical capacity executable witness mismatch. The older mutable debug path now contains different bytes; it is not a substitute for the historical executable. No recovery or additional search is represented here."
+  },
+  "postprocessingProvenance": {
+    "toolReadbacks": {
+      "path": "/tmp/osr-38-phased-audit-tool-readbacks.json",
+      "bytes": 3363,
+      "sha256": "cb8b3b798b335b52e0545fa2e510ff1e3e6349e3de5f1ba0a6d9a42c08193761"
+    },
+    "preservedVersions": "The archive retains V1/V2 unexecuted preparations, V3 import-inert actual0/no reports, V3 realpath actual1 with an incorrect exact200 sample assumption and early historical check, and V4 actual1. V4 separately validates current raw and accepts the protocol-prescribed4032 measured samples for long-session/recurrence. No original data or shared validator was changed.",
+    "formalReview": false
+  },
+  "savedDataRoundDiagnosis": {
+    "report": {
+      "path": "/tmp/osr-38-phased-calibration-round-diagnosis.json",
+      "bytes": 1243546,
+      "sha256": "eadfb4bf0d680af043deb5d2542d21aa4aaec11a88ebe06a5bd51db446d76b52"
+    },
+    "note": {
+      "path": "/tmp/osr-38-phased-calibration-round-diagnosis.md",
+      "bytes": 3745,
+      "sha256": "71e0923e1658d1ca34790a345846657d104e3638c8b4e205e5675e2bf4288be1"
+    },
+    "qualification": "Saved-data chronology association only. No causal attribution, new host telemetry, runtime diagnostic, environment change or retry is authorized by this note."
+  },
+  "preservation": {
+    "receipt": {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/calibration-phased-b163-quality-rejected/receipt.json",
+      "bytes": 2377,
+      "sha256": "4440462a74c134b19d35f62bac64fb3b6384811fda57efeeadf9c5b6cba92a1b"
+    },
+    "archive": {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/calibration-phased-b163-quality-rejected/checkpoint.zip",
+      "bytes": 26151673,
+      "sha256": "74ad363dbdb90c4d65b70936e222cef91f09ca44bd950ab1d91123c15c7067ad"
+    },
+    "manifest": {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/calibration-phased-b163-quality-rejected/manifest.json",
+      "bytes": 1361980,
+      "sha256": "b8b4cb418a294716e100e861c1f10fff8273248e55da9b6a74f011440279bb50"
+    },
+    "audit": {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/calibration-phased-b163-quality-rejected/audit.json",
+      "bytes": 3363,
+      "sha256": "f44fe2cef5be83cc1f112bf667ee19e0581cb727f6b31797227896a6bb079ef1"
+    },
+    "payloadFiles": 1857,
+    "zipEntries": 1858,
+    "rawBytes": 68732499,
+    "sourceBundle": {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/calibration-phased-b163-quality-rejected/source/repository-421157f.bundle",
+      "bytes": 11196617,
+      "sha256": "248340098b2d5fe2995fe6176abd61ce6efb2542b465005f0851e7d3de510867",
+      "packSHA1": "0a95434fe92acea9333f302324b872e3f7536be0",
+      "fullAncestors": true,
+      "prerequisites": []
+    },
+    "originalsPreserved": true,
+    "qualification": "Archive verification is cited from the completed preservation audit; archive payload checks were not rerun for this metadata record. Full committed source history, explicit nonruntime .gitignore override, current raw and postprocessing provenance are retained. Future39 drafts remain UNACCEPTED preparation; the stopped untracked workspace was excluded."
+  },
+  "acceptance": {
+    "AC3": "INCOMPLETE: the stopped additional testing block remains stopped; required actual campaign evidence is absent.",
+    "AC4": "INCOMPLETE: full current reference quality rejected104 time cases; no floors or candidate comparison. Historical capacity witness incomplete separately.",
+    "repositoryChecks": "Previously completed ordinary and required repository gates remain in repository-checkpoint.json. No tests were rerun for these documentation changes.",
+    "delivery": "No prepared CI, independent formal review, PR, merge, closure or project completion is claimed."
+  },
+  "nextActionBoundary": "Record the completed result and keep OSR-38 open. Do not resume the stopped block, repeat the current checks, search for artifacts or launch a new measurement campaign under this record."
+}
