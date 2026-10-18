@@ -1,0 +1,429 @@
+{
+  "format": "osr38-repository-checkpoint/1",
+  "status": "NORMAL_GATES_PASSED_TARGETED_HARNESS_TESTS_PASSED_ACCEPTANCE_INCOMPLETE",
+  "scope": "Supporting implementation evidence only, not formal review. Full normal gates at e0ad734 and targeted harness tests at b163636 are separate source-bound observations.",
+  "requiredRepositoryGates": {
+    "testedSource": "e0ad734741eabd59ab66dae3f1aef20b0e91aadb",
+    "actualReceipt": {
+      "path": "/tmp/osr-38-required-repository-gates-e0ad734/receipt.json",
+      "bytes": 4402,
+      "sha256": "047d93e0538f63af5285d8b63d21d2b16ed1ce0f7b9e7fe7087edda64dce8184"
+    },
+    "startedAt": "2026-10-18T20:23:34.152572+00:00",
+    "completedAt": "2026-10-18T20:46:21.247172+00:00",
+    "actualFiveCommandExits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "commands": [
+      {
+        "name": "msrv-tests",
+        "argv": [
+          "cargo",
+          "+1.89.0",
+          "test",
+          "--locked",
+          "-p",
+          "klenwriter-editor-core",
+          "-p",
+          "klenwriter-editor-kwdj",
+          "-p",
+          "klenwriter-editor-registry",
+          "-p",
+          "klenwriter-editor-protocol"
+        ],
+        "startedAt": "2026-10-18T20:23:34.152947+00:00",
+        "status": "passed",
+        "pid": 68523,
+        "completedAt": "2026-10-18T20:24:06.627090+00:00",
+        "elapsedSeconds": 32.473672042018734,
+        "returnCode": 0,
+        "log": {
+          "path": "/tmp/osr-38-required-repository-gates-e0ad734/msrv-tests.log",
+          "bytes": 18433,
+          "sha256": "69a70877a73bef2a3db417d2d003ea5b64533a6695fdefa9685dfff809b825ca"
+        }
+      },
+      {
+        "name": "msrv-library-check",
+        "argv": [
+          "cargo",
+          "+1.89.0",
+          "check",
+          "--locked",
+          "--lib",
+          "-p",
+          "klenwriter-editor-notes",
+          "-p",
+          "klenwriter-editor-extensions"
+        ],
+        "startedAt": "2026-10-18T20:24:06.627642+00:00",
+        "status": "passed",
+        "pid": 68821,
+        "completedAt": "2026-10-18T20:24:07.761694+00:00",
+        "elapsedSeconds": 1.1338677919993643,
+        "returnCode": 0,
+        "log": {
+          "path": "/tmp/osr-38-required-repository-gates-e0ad734/msrv-library-check.log",
+          "bytes": 482,
+          "sha256": "03de96fe3f8a61b8212409c85daed483a18a28e367f6d86616cd8013379638e1"
+        }
+      },
+      {
+        "name": "repository-check",
+        "argv": [
+          "npm",
+          "run",
+          "check"
+        ],
+        "startedAt": "2026-10-18T20:24:07.762188+00:00",
+        "status": "passed",
+        "pid": 68826,
+        "completedAt": "2026-10-18T20:42:55.931080+00:00",
+        "elapsedSeconds": 1128.1559822920244,
+        "returnCode": 0,
+        "log": {
+          "path": "/tmp/osr-38-required-repository-gates-e0ad734/repository-check.log",
+          "bytes": 80664,
+          "sha256": "2bf7cdcd1c53b458b5f3d2b7320e6246efd98a5935a32a58ddf96f7846fb53ef"
+        }
+      },
+      {
+        "name": "m0-browser",
+        "argv": [
+          "npm",
+          "test"
+        ],
+        "startedAt": "2026-10-18T20:42:55.932826+00:00",
+        "status": "passed",
+        "pid": 80055,
+        "completedAt": "2026-10-18T20:46:20.537563+00:00",
+        "elapsedSeconds": 204.60235779199866,
+        "returnCode": 0,
+        "log": {
+          "path": "/tmp/osr-38-required-repository-gates-e0ad734/m0-browser.log",
+          "bytes": 13690,
+          "sha256": "1f51ba81a08496aa074bd6b945b2cf0c516cfb67a500f2c3abf0c410df06368b"
+        }
+      },
+      {
+        "name": "m0-evidence-summary",
+        "argv": [
+          "node",
+          "scripts/summarize-evidence.mjs"
+        ],
+        "startedAt": "2026-10-18T20:46:20.539119+00:00",
+        "status": "passed",
+        "pid": 81234,
+        "completedAt": "2026-10-18T20:46:20.790933+00:00",
+        "elapsedSeconds": 0.2508162920130417,
+        "returnCode": 0,
+        "log": {
+          "path": "/tmp/osr-38-required-repository-gates-e0ad734/m0-evidence-summary.log",
+          "bytes": 86,
+          "sha256": "a355364952cc8ac890fcd4c86e4246dad93920c4fb10991c8f514908a4bdbc53"
+        }
+      }
+    ],
+    "results": {
+      "MSRVNativeTests": 151,
+      "workspaceRustTests": 375,
+      "workspaceBrowserTests": 18,
+      "M0BrowserScenarios": 102,
+      "M0Failures": 0,
+      "M0RequirementClassification": {
+        "MET": 28,
+        "GAP": 26,
+        "OBSERVATION": 48
+      }
+    },
+    "qualification": "151/375 are summed actual Rust pass rows in distinct logs;18workspace browser and102M0 are separate lanes. M0 qualification is28MET/26GAP/48OBSERVATION, not102requirements met. Full gates were not rerun or attributed to later performance-source corrections."
+  },
+  "sourcePreservation": {
+    "trackedInputCount": 1395,
+    "snapshots": {
+      "before": {
+        "path": "/tmp/osr-38-required-repository-gates-e0ad734/tracked-inputs-before.json",
+        "bytes": 176431,
+        "sha256": "dff0c34a76f4953be8c316088086d9c92259fb672455fbb843e2f7e0b6e41bd1"
+      },
+      "after": {
+        "path": "/tmp/osr-38-required-repository-gates-e0ad734/tracked-inputs-after.json",
+        "bytes": 176431,
+        "sha256": "ac4b6fcd94270ebb1cf5bf64263e11696fc6895488af442e83ea1b163e5ed936"
+      }
+    },
+    "soleDuringGateTrackedDelta": [
+      {
+        "path": "evidence/osr-58/automated/observations.json",
+        "before": "af7f52d6f73a65eeecd4304040126a7ea91efa5b2ea0181cd5cc6942748cb816",
+        "after": "dc3f08436ed780613abc285e6d3dcc67d757041ac1b2654c310abd6772400c2d"
+      }
+    ],
+    "historicalM0": {
+      "preservationReceipt": {
+        "path": "/tmp/osr-38-required-repository-gates-e0ad734/m0-observations-preservation.json",
+        "bytes": 601,
+        "sha256": "8c714876dbfd039a8b0d4e1742f139c3b2e92a4cbbd33983f379f9173a27899b"
+      },
+      "actualNewOutput": {
+        "path": "/tmp/osr-38-required-repository-gates-e0ad734/m0-observations.json",
+        "bytes": 3321723,
+        "sha256": "dc3f08436ed780613abc285e6d3dcc67d757041ac1b2654c310abd6772400c2d"
+      },
+      "originalBeforeCopy": {
+        "path": "/tmp/osr-38-required-repository-gates-e0ad734/m0-observations-before.json",
+        "bytes": 3342675,
+        "sha256": "af7f52d6f73a65eeecd4304040126a7ea91efa5b2ea0181cd5cc6942748cb816"
+      },
+      "historicalPathRestoredExactly": true,
+      "restoredSHA256": "af7f52d6f73a65eeecd4304040126a7ea91efa5b2ea0181cd5cc6942748cb816"
+    },
+    "preexistingTrackedBuildException": {
+      "path": ".gitignore",
+      "testedSHA256": "2031a976d40ae645f2bc5c7d905e30aaf6ceae6e5c762b38b73ef54df21c946b",
+      "archiveMember": "source/current-tracked-exception/.gitignore",
+      "qualification": "Only preexisting tracked build-input exception to the Git source reconstruction, unchanged before/after. Sole generated gate delta was historical M0 output, separately preserved/restored. Untracked stopped workspace excluded."
+    }
+  },
+  "SDK53Equivalence": {
+    "actualExecution": {
+      "path": "/tmp/osr-38-sdk-B3-postbuild-equivalence.actual-exit.json",
+      "bytes": 1504,
+      "sha256": "255ea217e395f74340172ed4eb98f9d16d26496d177dcd2007baf3e350ca24f2"
+    },
+    "actualReadback": {
+      "path": "/tmp/osr-38-sdk-B3-postbuild-equivalence.json",
+      "bytes": 25666,
+      "sha256": "2e41a65f4e3a51b6565c91799c09b65d5c84d331d35e80a39f700a8c10c35b7c"
+    },
+    "retainedManifest": {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/sdk-B3-a5886a24/manifest.json",
+      "bytes": 14757,
+      "sha256": "afedb7ab0be6c2027120dc67afde27f2cf216d9f385aa841e03dea7c996e808e"
+    },
+    "retainedPayloadFiles": 53,
+    "equivalent": true,
+    "identitySealWasmCoherent": true,
+    "partialGateSnapshot": {
+      "path": "/tmp/osr-38-sdk-B3-postbuild-equivalence.gate-snapshot.json",
+      "bytes": 2625,
+      "sha256": "dd33c76e4a22617d5e2e0b308feba8b33cde0e1544081d078e0cd532a94d4a3a"
+    },
+    "qualification": "Readback followed npm run check while final M0 steps remained live; its immutable partial gate snapshot is not terminal success. Final five-command receipt above supplies terminal status. Byte equivalence is not an additional runtime test."
+  },
+  "durableNormalArchive": {
+    "receipt": {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/normal-gates-e0ad734-20261018/receipt.json",
+      "bytes": 5950,
+      "sha256": "fe9177caf086cf1dcd99d9e8a785c6c4e56f44ac0a5c47d2a027df4ddc5144e4"
+    },
+    "archive": {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/normal-gates-e0ad734-20261018/checkpoint.zip",
+      "bytes": 234017526,
+      "sha256": "35253e5897fd7fe9734dd34d4bbb27386f62415ec5039476588ff41eca8087b3"
+    },
+    "manifest": {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/normal-gates-e0ad734-20261018/manifest.json",
+      "bytes": 466649,
+      "sha256": "2a58a1943e2f5ab162a5b240a40fca81a0f113604cdec049e11f573fc064ca48"
+    },
+    "audit": {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/normal-gates-e0ad734-20261018/audit.json",
+      "bytes": 602,
+      "sha256": "91a9ace52080d211846085654ef8d7361b0018f6ad8c8ed797da69c6f00fda3b"
+    },
+    "payloadFiles": 1033,
+    "zipEntries": 1034,
+    "rawBytes": 356048689,
+    "limits": {
+      "rawBytes": 536870912,
+      "zipBytes": 402653184,
+      "memberBytes": 268435456
+    },
+    "qualification": "Completed earlier archive audit verified full CRC, payload hashes/sizes/modes, embedded manifest and original stability. This checkpoint crosschecks receipts, manifest and archive size; no new CRC pass. Prior reliability proof remains separately archived."
+  },
+  "targetedHarnessCorrection": {
+    "source": "b163636c09a9641970fd3af28da2fcfa92015963",
+    "red": {
+      "actualReceipt": {
+        "path": "/tmp/osr-38-measurement-regressions/red.actual-exit.json",
+        "bytes": 4392,
+        "sha256": "c1bdbb125cbf1250b6cca1fe549035c81279b6192cde6bd7e887efbc15798b93"
+      },
+      "returnCode": 1,
+      "summary": {
+        "tests": 4,
+        "pass": 1,
+        "fail": 3,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "raw": {
+        "stdout": {
+          "path": "/tmp/osr-38-measurement-regressions/red.stdout.log",
+          "bytes": 3655,
+          "sha256": "3cf113dd7d91447c7b35bab9d076e0104958e92741a0048b424a9daa70ee39e9"
+        },
+        "stderr": {
+          "path": "/tmp/osr-38-measurement-regressions/red.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "qualification": "Actual pre-fix test-only harness RED, not production engine or measurement failure."
+    },
+    "green": {
+      "actualReceipt": {
+        "path": "/tmp/osr-38-measurement-regressions/green.actual-exit.json",
+        "bytes": 4945,
+        "sha256": "70f30f927f1f8447b6c21b495eff32c535807ce324dfa0abee41d7b8801f19b6"
+      },
+      "returnCode": 0,
+      "summary": {
+        "tests": 47,
+        "pass": 47,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "raw": {
+        "stdout": {
+          "path": "/tmp/osr-38-measurement-regressions/green.stdout.log",
+          "bytes": 9216,
+          "sha256": "596680e7608ddeb4e8d2ca7e5571cbbd032b0b8063cb279a632772d5732b8b90"
+        },
+        "stderr": {
+          "path": "/tmp/osr-38-measurement-regressions/green.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "sourceBeforeAfterEqual": true,
+      "testedSourcePins": [
+        {
+          "path": "/Users/artem/projects/klenwriter-editor/scripts/reliability/perf-sdk-child.mjs",
+          "bytes": 11853,
+          "sha256": "0c5a50f3070e10b5ed1c4da5e46b575e9efa68ddc0866e371a999a0cec5ad51d"
+        },
+        {
+          "path": "/Users/artem/projects/klenwriter-editor/scripts/reliability/perf-analyze.mjs",
+          "bytes": 2365,
+          "sha256": "cab22b6cd51d68b3c95496c2b0ebe88c2f57d33813f53d8c1ee9b99a7bea263d"
+        },
+        {
+          "path": "/Users/artem/projects/klenwriter-editor/scripts/reliability/perf-capture.mjs",
+          "bytes": 17483,
+          "sha256": "df51466311b712673b00742df83ddcb0e5f989211a93fb9fd49c7cb6eb607244"
+        },
+        {
+          "path": "/Users/artem/projects/klenwriter-editor/scripts/reliability/perf-compare.mjs",
+          "bytes": 14428,
+          "sha256": "bec63c6ef45bb0586f69ffa03008af66878117ff79933eab9cec8f68469d35ec"
+        },
+        {
+          "path": "/Users/artem/projects/klenwriter-editor/scripts/reliability/perf-evidence.mjs",
+          "bytes": 2169,
+          "sha256": "7da320bb1ae625e4fdbc7e3860638e6a402bc82559f05b9604edefe066ac4a02"
+        },
+        {
+          "path": "/Users/artem/projects/klenwriter-editor/scripts/reliability/perf-schedule.mjs",
+          "bytes": 8524,
+          "sha256": "c7614eae12feaeeb3e0cb2e384112d1724fde4a4415fc3b7afa0f15eb02658de"
+        },
+        {
+          "path": "/Users/artem/projects/klenwriter-editor/scripts/reliability/prepare-floor-config.mjs",
+          "bytes": 12162,
+          "sha256": "1f134b96dd3a3515a85c0b83acea786545efd40bc97a5f3f61e9f4fa91c3c5b9"
+        },
+        {
+          "path": "/Users/artem/projects/klenwriter-editor/tests/reliability-performance.node.mjs",
+          "bytes": 24299,
+          "sha256": "08b099dcb5ae91c59d42df13d3c84155c2ee0749f7fdbe58f2a2ef0ea84adae3"
+        },
+        {
+          "path": "/tmp/osr-38-measurement-regressions/fragment.mjs",
+          "bytes": 2121,
+          "sha256": "bd71bb3fa484a46979b1012426da1d8e6faf3f2c1ea72e63d94594d4c9767430"
+        }
+      ]
+    },
+    "unchangedOracleFragment": {
+      "path": "/tmp/osr-38-measurement-regressions/fragment.mjs",
+      "bytes": 2121,
+      "sha256": "bd71bb3fa484a46979b1012426da1d8e6faf3f2c1ea72e63d94594d4c9767430"
+    },
+    "fragmentRetainedVerbatimInGreenSuite": true,
+    "freezeReceipt": {
+      "path": "/tmp/osr-38-corrected-harness-freeze.json",
+      "bytes": 14913,
+      "sha256": "7793f612acdbfb7621fb158e418bfeef2fd00ca3d3801658b5628ef4d8edf69b"
+    },
+    "harnessSHA256": "97ac139f3a029c4bb475af7b476bb4c6ed16c4c9e2d1dec7737211620b6474fc",
+    "productionSHA256": "01b4ce9a565846c2100dd3ec938c3162a3983e124bec8c28bc645a0c3d71593c",
+    "productionUnchangedFrom": "9130cf9c3480db7499cdb88818722ea032becba3",
+    "productionMapMatchesE0adGateInputs": true,
+    "durableCorrectionArchive": {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/harness-correction-20261018T205309Z-9df462b7c52e",
+      "receipt": {
+        "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/harness-correction-20261018T205309Z-9df462b7c52e/receipt-v2.json",
+        "bytes": 1511,
+        "sha256": "cbb5efd5dd5e42e58bfdecf3d9ede7e7d73b66bb295a448767f596a7d2c87987"
+      },
+      "manifest": {
+        "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/harness-correction-20261018T205309Z-9df462b7c52e/manifest-v2.json",
+        "bytes": 40270,
+        "sha256": "d9e83456daa411b8c7f39b0c984b91548b46118e2ae2ec4021627defe414666f"
+      },
+      "payloadFiles": 107,
+      "payloadBytes": 702186,
+      "inputFileCount": 33,
+      "sourceBundle": {
+        "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/harness-correction-20261018T205309Z-9df462b7c52e/source/corrections-e0ad-to-b163.bundle",
+        "sha256": "9b0ed1f03a60b44acc6334e2f35c0d04945c3f55786d336c95caa111d94cfdf1",
+        "requiresBase": "e0ad734741eabd59ab66dae3f1aef20b0e91aadb",
+        "advertisedTip": "b163636c09a9641970fd3af28da2fcfa92015963",
+        "qualification": "Incremental bundle; combine with the separately preserved e0ad source bundle. Pack trailer SHA1 and advertised tip/prerequisite checked; no ZIP CRC claim."
+      },
+      "metadataHistoryPreserved": true,
+      "allPayloadHashesReadBack": true,
+      "originalBytesAndStatIdentitiesStable": true
+    },
+    "qualification": "47 targeted tests prove harness regression/integrity behavior only. Exact RED/GREEN receipts, unchanged oracle, original source copies and draft history are retained in the linked durable correction checkpoint. Full normal gates remain the separate e0ad734 observation; no calibration or speed acceptance follows."
+  },
+  "SDKRebuildApplicability": {
+    "existingProducer": {
+      "path": "/Users/artem/projects/klenwriter-editor/artifacts/sdk-build-identity.json",
+      "bytes": 14927,
+      "sha256": "068cc68edde0d99c55de5955181cbbb4a31bb1b7ff75da3ef428b4982f5f858b"
+    },
+    "sdkBuildId": "sha256:a5886a244ba4e4204e58e5616fe254581ece9563d6c31a1cb5e2064778ae91ac",
+    "sourceClosureEntries": 139,
+    "sourceClosureMatchesE0adGateInputs": true,
+    "eightTestOnlyFilesOutsideSDKIdentity": [
+      "scripts/reliability/perf-sdk-child.mjs",
+      "scripts/reliability/perf-analyze.mjs",
+      "scripts/reliability/perf-capture.mjs",
+      "scripts/reliability/perf-compare.mjs",
+      "scripts/reliability/perf-evidence.mjs",
+      "scripts/reliability/perf-schedule.mjs",
+      "scripts/reliability/prepare-floor-config.mjs",
+      "tests/reliability-performance.node.mjs"
+    ],
+    "qualification": "The139-key SDK production closure excludes scripts/reliability and tests/reliability-performance.node.mjs. All eight corrected test-only files are outside that unchanged closure, so they do not require a full SDK rebuild. No new native producer or measured candidate result is implied."
+  },
+  "notClaimed": [
+    "No new calibration/quality acceptance",
+    "No numeric floor/adoption policy",
+    "No candidate capture/comparison/confirmation",
+    "No preparedCI/postCI/review/merge/close",
+    "No AC3 or AC4 completion",
+    "No stopped-block execution"
+  ],
+  "verification": "Only JSON/source-fragment/digest/count/raw-log hash crosschecks for this single new versioned file. No tests/builds/environment/captures, old-evidence rewrites or commit. Primary subsequently pinned the finalized receipt-v2/manifest-v2 and explicit incremental source-bundle prerequisite; no rerun or source modification."
+}

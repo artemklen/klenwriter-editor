@@ -1,0 +1,70 @@
+{
+  "format": "editor-reliability-shrinker-literals/1",
+  "provenance": "Hand-authored before reducer implementation. All faults below are deliberately test-only; none is a production regression corpus entry.",
+  "signature": {
+    "invariant": "exact-nbsp-preservation",
+    "phase": "insert_text",
+    "class": "semantic-mismatch",
+    "target": "test-only-faulty-model",
+    "context": "kwdj-prose"
+  },
+  "model": {
+    "id": "test-only-nbsp-reducer",
+    "seed": 38,
+    "context": "kwdj-prose",
+    "initialText": "LR",
+    "edits": [
+      { "from": 1, "to": 1, "inserted": "A" },
+      { "from": 1, "to": 1, "inserted": "A B" },
+      { "from": 1, "to": 1, "inserted": "B" }
+    ],
+    "expectedMinimalEdits": [
+      { "from": 1, "to": 1, "inserted": " " }
+    ],
+    "expectedMinimalAfterInsertText": "L R",
+    "deliberateFault": "Only this test-only model replaces inserted NBSP with SPACE; the independently recomputed expected document retains NBSP."
+  },
+  "raw": {
+    "inputHex": "007878425547217979ff",
+    "expectedMinimalHex": "42554721",
+    "signature": {
+      "invariant": "raw-marker",
+      "phase": "decode",
+      "class": "test-marker",
+      "target": "test-only-byte-probe",
+      "context": "raw"
+    }
+  },
+  "parserEscape": {
+    "original": "{\"text\":\"BUG!\"}",
+    "candidate": "BUG!",
+    "semanticSignature": {
+      "invariant": "raw-marker",
+      "phase": "semantic-check",
+      "class": "semantic-mismatch",
+      "target": "test-only-json-probe",
+      "context": "raw-json"
+    },
+    "parserSignature": {
+      "invariant": "invalid-json",
+      "phase": "parse",
+      "class": "syntax",
+      "target": "test-only-json-probe",
+      "context": "raw-json"
+    },
+    "candidateMustBeAcceptedAsSameFailure": false
+  },
+  "unsupported": {
+    "operation": "move",
+    "expectedStatus": "not_minimized",
+    "reason": "unsupported_model",
+    "originalMustRemainByteExact": true
+  },
+  "bounds": {
+    "maxProbes": 128,
+    "maxElapsedMs": 30000,
+    "maxProbeMs": 2000,
+    "maxEvidenceBytes": 67108864,
+    "zeroProbeBudgetMustProbeNothing": true
+  }
+}

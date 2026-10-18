@@ -1,0 +1,131 @@
+{
+  "format": "osr38-matched-producers-checkpoint/1",
+  "scope": "Build-only/source-binding checkpoint. No binary execution, calibration, candidate timing, floor adoption, CI or review.",
+  "readyReceipt": {
+    "path": "/tmp/osr-38-perf-phased-matched-builds-ready.json",
+    "bytes": 5350,
+    "sha256": "73833d83485881239d6df472d23975fc6f166c4d82ea77a08e40f843f82af337"
+  },
+  "harnessSource": "b163636c09a9641970fd3af28da2fcfa92015963",
+  "harnessSHA256": "97ac139f3a029c4bb475af7b476bb4c6ed16c4c9e2d1dec7737211620b6474fc",
+  "productionSHA256": "01b4ce9a565846c2100dd3ec938c3162a3983e124bec8c28bc645a0c3d71593c",
+  "sourceInputs": {
+    "harness": 27,
+    "production": 106
+  },
+  "rows": [
+    {
+      "side": "reference",
+      "sourceCommit": "9a3747c0738fded8254eb958f7e256369cd382d3",
+      "actualExit": {
+        "path": "/tmp/osr-38-perf-phased-reference-build.actual-exit.json",
+        "bytes": 1809,
+        "sha256": "56319e43123c0fc9ecb6a1a2cda6b56fd920336fe9f3138a811bab26c7e523e6"
+      },
+      "elapsedSeconds": 112.95521174999885,
+      "build": {
+        "path": "/tmp/osr-38-perf-phased-reference-build/build.json",
+        "bytes": 19107,
+        "sha256": "77f25c7d057d42518e7b0a5c76259d732e782962638b85ffb404a594a09f1496"
+      },
+      "binding": {
+        "path": "/tmp/osr-38-perf-phased-reference-build/source-binding.json",
+        "bytes": 3430,
+        "sha256": "29bf92910fbb955714e3221d409491371f46677e1b34764e4970f05c5857055a"
+      },
+      "sourceBefore": {
+        "path": "/tmp/osr-38-perf-phased-reference-build/source-before.json",
+        "bytes": 14474,
+        "sha256": "18ae44186fda45d23a3a71f97f26fcfe8459d3129014ce7c6d013858440fd985"
+      },
+      "sourceAfter": {
+        "path": "/tmp/osr-38-perf-phased-reference-build/source-after.json",
+        "bytes": 14474,
+        "sha256": "18ae44186fda45d23a3a71f97f26fcfe8459d3129014ce7c6d013858440fd985"
+      },
+      "gitBlobs": {
+        "path": "/tmp/osr-38-perf-phased-reference-build/git-blob-verification.json",
+        "bytes": 52285,
+        "sha256": "4b8a0875647e8381dea8309639dc946ab5dc32a1e66f34ca6737357357e6486c"
+      },
+      "gitBlobCount": 133,
+      "commands": 3,
+      "commandExitCodes": [
+        0,
+        0,
+        0
+      ],
+      "assets": 5,
+      "benchmark": {
+        "path": "/tmp/osr-38-perf-phased-reference-build/native-benchmark",
+        "bytes": 5250144,
+        "sha256": "d59ebcc6846c818521635b82f58acd828d9943dc3b6571eae58e6b27625468a5"
+      },
+      "allocator": {
+        "path": "/tmp/osr-38-perf-phased-reference-build/native-allocator",
+        "bytes": 5643440,
+        "sha256": "5443e83a3edcb1100a38a3b4efa11f68e617ba8ccaf0cd7c894fda4f8ee7d54c"
+      }
+    },
+    {
+      "side": "candidate",
+      "sourceCommit": "9130cf9c3480db7499cdb88818722ea032becba3",
+      "actualExit": {
+        "path": "/tmp/osr-38-perf-phased-candidate-build.actual-exit.json",
+        "bytes": 1809,
+        "sha256": "161694f7b39e3501ed4e7dab665911a681501873a54d7e00a418af14b4b9204e"
+      },
+      "elapsedSeconds": 191.04242416701163,
+      "build": {
+        "path": "/tmp/osr-38-perf-phased-candidate-build/build.json",
+        "bytes": 19107,
+        "sha256": "67ec94778de2feaa956fc90192aa865fa754ecbdee30d9e95c02bab5386e52b3"
+      },
+      "binding": {
+        "path": "/tmp/osr-38-perf-phased-candidate-build/source-binding.json",
+        "bytes": 3430,
+        "sha256": "65c37b57116e4b8542aeea87cd078ac0e62aaf9437ea52331dd56e4147fb6957"
+      },
+      "sourceBefore": {
+        "path": "/tmp/osr-38-perf-phased-candidate-build/source-before.json",
+        "bytes": 14474,
+        "sha256": "18ae44186fda45d23a3a71f97f26fcfe8459d3129014ce7c6d013858440fd985"
+      },
+      "sourceAfter": {
+        "path": "/tmp/osr-38-perf-phased-candidate-build/source-after.json",
+        "bytes": 14474,
+        "sha256": "18ae44186fda45d23a3a71f97f26fcfe8459d3129014ce7c6d013858440fd985"
+      },
+      "gitBlobs": {
+        "path": "/tmp/osr-38-perf-phased-candidate-build/git-blob-verification.json",
+        "bytes": 52285,
+        "sha256": "c3bce92f52d96bb77af2f11638b3b3398ee0b26ab1d5f0e112928f5fd6d2e8ae"
+      },
+      "gitBlobCount": 133,
+      "commands": 3,
+      "commandExitCodes": [
+        0,
+        0,
+        0
+      ],
+      "assets": 5,
+      "benchmark": {
+        "path": "/tmp/osr-38-perf-phased-candidate-build/native-benchmark",
+        "bytes": 5250144,
+        "sha256": "d59ebcc6846c818521635b82f58acd828d9943dc3b6571eae58e6b27625468a5"
+      },
+      "allocator": {
+        "path": "/tmp/osr-38-perf-phased-candidate-build/native-allocator",
+        "bytes": 5643440,
+        "sha256": "5443e83a3edcb1100a38a3b4efa11f68e617ba8ccaf0cd7c894fda4f8ee7d54c"
+      }
+    }
+  ],
+  "supervisorSummary": {
+    "path": "/tmp/osr-38-perf-phased-matched-builds.json",
+    "bytes": 4705,
+    "sha256": "59a932898144d33e72423a85e303ae6636607c6d74c2d48fe4bbc8283aa09dc3"
+  },
+  "qualification": "Only locked fetches, sequential release builds, Git/source/artifact binding. No measurement binaries, feasibility/capacity controls, captures, benchmarks, candidate timing, floor adoption or new environment diagnostics executed. The prior receipts/producers/raw were not overwritten. This is not a runtime correctness or quality pass.",
+  "verification": "Primary rehashed both actual build exits, build/binding/source/Git receipts and copied binaries; exitCode0/runtimeExecuted false, before/after equality and all3nativebuild command statuses0 confirmed."
+}

@@ -1,0 +1,75 @@
+# OSR-38 — execution contract draft
+
+Refined by primary Codex under OSR-26 technical authority,18.10.2026. Fresh graph confirms OSR-64 Done after full close; accepted clean main9a3747c0738fded8254eb958f7e256369cd382d3. Standalone, ci_owner none. This contract is not an implementation review verdict. Preserve all four original Linear AC. Technical choice authority remains primary Codex under OSR-26; implementation requires independent exact-source review.
+
+## Outcome and boundaries
+
+A repeatable property/coverage-guided fuzz/regression consumer of the actual public core/profile/SDK, with independent finite semantic oracles and separately attributable production release performance/memory/bundle evidence. Keep synchronous Rust authority, typed Session<P>, profiles, closed registry, current codec/ABI1/ABI2, dirty/cache/replay architecture and finite limits. No publishing/deploy, CMS, renderer, worker, engine rewrite, second JS semantic authority, new public raw transaction endpoint or public counter/memory setter. Renderer end-to-end lane is explicitly triggered by OSR-39; installed-browser release acceptance stays OSR-71. Existing immutable vectors and original RED evidence remain untouched.
+
+## Independent model, properties and replay
+
+Freeze versioned scenario schema and literal expected checkpoints before implementing runtime adapters. Small independent model starts with plain paragraph, exact token alphabet SPACE/NBSP/decomposed/astral/ZWJ, frozen allowed boundaries, isolated selection replacement/history and logical labels. Profile-specific literal full-document encoders preserve attrs/marks/metadata, not only lossy text. Expand structural and style properties using separate literal/algebra cases and authoritative full/scoped differential checks, honestly labelled.
+
+Portable scenarios contain raw authored JSON/document/options, profile/registry/capability identity, exact tagged scalars, deterministic seed, actions/definition-use labels, complete expected documents/state and invariant identity. Resolve initial labels once and bind created labels from actual returned IDs; stale labels remain stale. Native public APIs and actual sealed WASM/SDK2 replay the same representable command subset with awaited tickets and event fences. Native operation algebra separately classifies every current13 Operation variants with nontrivial successful effect AND meaningful refusal/preservation, maps/identity, undo/redo and explicit profile applicability; public SDK has no arbitrary raw13 dispatch.
+
+At minimum512 deterministic bounded scenarios per profile native (KWDJ256 Prose+256 Poetry; Notes256 D0+256 D1) and128 per profile packaged SDK replay (64 per respective context); 1..64 actions/scenario, <=128 nodes, <=16KiB source text for random valid subset. Within these allocations exercise D1 highlight/recipe and D0 refusal, and KWDJ prose/poetry normalization explicitly. Counts are coverage floors, not correctness oracles. Add frozen below/equal/above semantic/admission/ordinary/compiler limit controls, including50k-node KWDJ and4MiB unknown-key pre-copy controls outside random hot loops. Preserve compiler1M/16MiB, ordinary1M/64MiB and distinct admission-cache4M/128MiB. Public host reductions clamp and cannot increase limits.
+
+Properties: validity, canonical fixpoint/normalization idempotence, exact supported attrs/marks/text preservation, query purity, immediate query/execute feasibility/refusal agreement, committed-facet atomicity, undo/redo/identity, history grouping/eviction, explicit snapshots/save/events/ack/gap/facts and lifecycle cleanup. Native query parity includes the same full request/history hint/caps; public SDK query compares only representable Isolated requests and observable facets. Refused real prepare may reserve/burn IDs for ABA safety; no allocator rewind claim. Full/scoped is differential authority, not independent semantic oracle. Separate public observations from private invariant fixtures.
+
+## Tooling and real fuzz
+
+Test-only separate native consumer workspace/lock; pinned proptest=1.12.0 (MIT/Apache-2.0), external allocator candidate dhat=0.3.3 (experimental, verify documented backend/toolchain). Fuzz workspace uses cargo-fuzz=0.13.2 (MIT OR Apache-2.0)/libfuzzer-sys=0.4.13 ((MIT OR Apache-2.0) AND NCSA) and dated nightly-2026-10-17 verified official compiler1.101-nightly5d8fec0669a64607db9ccbf663e7c23125bf4748. Verify published checksums/resolution and supported host by actual install/build before acceptance. No test/fuzz dependencies in normal/browser closures. Each separate lock gets explicit locked fetch before unchanged offline build/replay; no silent lock changes.
+
+Four coverage-guided families: raw admission/options; registry/grammar/attrs/recipe descriptors; positions/maps/stateful operations/history/events; real bridge/lifecycle/stale-token/fact boundary. Native fuzz plus replay exact corpus/raw bytes through actual WASM/controller. No JS Number parse/stringify of authored scalar oracle. Production preflight sees raw strings before harness parsing; harness length rejection is not a production typed refusal. Known valid seeds must reach successful admit, plan/publish, normalization, late refusal, history and cleanup for both profiles; record per-target reachability and libFuzzer iterations/coverage. Panic-derived Fatal, trap, sanitizer, timeout, OOM or unhandled JS exception within bounds fails; deliberately injected transport faults are separate.
+
+PR gate four60s targets, max16KiB input, max2s/input, RSS2GiB/target, max20min job. Long scheduled/manual four900s targets, max90min job. Native libFuzzer enforces its per-input timeout; synchronous packaged-WASM replay runs under an external test-host process watchdog (never Promise.race as an interrupt). This is test isolation, not a production worker. Exact unsupported host or zero explored iterations cannot pass. Keep bounded original crashes/seed+raw logs+stats, max64MiB/target evidence and fail visibly on evidence overflow. Run actual bounded and actual long configuration locally or dedicated single delivery workflow; configured future cron alone is not completed evidence. Existing standalone one preparedCI and one automatic postCI budget stays authoritative; avoid separate unprepared exploratoryCI.
+
+## Persistence and shrinking
+
+Regression replay first. Original input/seed/action trace, target/source/build hashes, failure invariant+phase/class and minimized reproducer are versioned as separate new corpus additions with exact expectations. Remove action chunks preserving definition-use, simplify payloads/indices/caps, and retain only candidates reproducing same failure signature/phase. Test recorder/shrinker with a deliberate faulty test-only model; never manufacture a production failure. Preserve original and minimized bytes. New production bugs require actual RED before scoped fix and unchanged oracle; broad new outcome goes through linked intake.
+
+## Production release measurements
+
+Freeze harness/corpus/measurement definitions before baseline/candidate capture. Accepted64 production source/artifact baseline versus declared38 candidate, identical target hardware/OS/toolchain/browser/protocol/seed/release flags. Separate uninstrumented native public operations, actual WASM bridge, actual JS SDK runtime delivery, scalar/payload microprobes, bundles and memory. Never subtract quantiles to invent core cost. Test-only forwarding instantiation captures Memory from the same single actual WASM instance; prove no second ownership domain.
+
+Seven independently valid production shapes adapted from61: long leaf, many blocks, deep ancestors, lists, table, near node ceiling and near canonical-byte ceiling, both profiles with explicit unsupported lists/table notes cases. Retain exact actual counts/bytes/validity/capability/source/artifact identities. Add4096-command default-history/outbox long session and separately capped/drained recurrence/isolated admit-destroy. Report logical retained resources/handles, exact WASM capacity, fresh-process externally instrumented native allocation/live/peak, JS resources and attributable sampled RSS separately. Allocator profiler overhead/harness allocations are explicitly scoped; no own unsafe engine allocator and no subtraction of all-time peaks as a window peak.
+
+Comparison protocol: >=5 interleaved baseline/candidate launches x>=200 measured samples/case, raw timings, nearest-rank p50/p95/p99, median/range/sampleCV of run-p95, timer increment/zero/censoring, metadata and sealed hashes. Fail only both adopted absolute floor and max(20%,3*baselineCV), confirmed in second independent batch. CV>10%, source/runner mismatch, missing samples, insufficient/quantized timer => INCONCLUSIVE, not pass or silently increased floor. Existing61 export0.2ms/startup5ms/RSS32MiB measurement floors retain authority. New actual command/allocator floors are chosen and versioned after stable accepted64 calibration, before candidate comparison; until calibration exercised these items remain incomplete. Bundle80 retains byte-ceiling adoption; no automatic1ms/50ms/400KB SLA.
+
+Comparator tests cover synthetic stable/regressed/noisy/inconclusive distributions, missing/short samples, corrupt seal/source/environment mismatch and second-batch confirmation. These prove comparator logic, not production speed. Shared CI gates reproducibility/integrity/correctness and retains noisy timings as inconclusive. Full AC4 acceptance REQUIRES an actual conclusive reference comparison batch under the adopted policy, plus a second independent batch when a regression needs confirmation. An INCONCLUSIVE shared-CI artifact cannot close that item. Use the existing quiet local reference target and record actual power/load/timer conditions without claiming unmeasured thermal controls. If baseline/candidate production paths are unchanged, identify that fact; this establishes initial production protocol/baseline correctness, not an invented implementation speedup.
+
+## Delivery / rollback
+
+Standalone osr-38 from accepted main, ci_owner none, Codex implementer. Before implementation commit frozen contract/scenario expectations. Preserve existing required Rust fmt/clippy/tests/MSRV, canonical/source/package metadata, codec/corpus/session/transactions/commands/history/deltas/SDK/extensions/offline consumer/3-engine strict-CSP18+M0102 lanes. Add meaningful property/shrink/actual fuzz/protocol checks, source-bound machine reports and docs. One final preparedCI exactSHA, independent full-scope Grok OIDC review, normal merge exacthead, one successful automatic postmergeCI, evidence archive and branch/worktree cleanup, closingcomment/readback, Done/projectrollup. No deploy/publish. Rollback revert38 PR; persisted document/ABI formats unchanged unless a separately recorded actual defect mandates a scoped reviewed fix.
+
+Refine verdict: Ready with assumptions. Published tool/backend pins must be demonstrated by actual builds; primary owns reversible technical fallback choices without weakening acceptance. All required adopted layers need a conclusive actual reference comparison before Done.
+
+## Pre-capture measurement decisions,18.10.2026
+
+[Memory sampling](memory-sampling-decision.md) distinguishes >=5x200 genuine
+per-operation samples from one true peak/RSS scalar per independent process
+launch (>=5 per side). Both have explicit conclusive comparison policies; no
+peak is duplicated into fake200 measurements or subtracted as a window peak.
+[Notes capacity](notes-capacity-decision.md) preserves all original maximal
+typed resource refusals and freezes an accepted64 native+WASM quantity ladder
+before further probes. Largest jointly feasible rungs are fixed per measured
+operation before candidate timing; every refused control remains evidence.
+Semantic ceilings and finite operational capacity remain distinct. No production
+limit/API change or private-codec telemetry is inferred. Candidate cannot select
+a smaller input. These dimensional/capacity decisions preserve the original4AC.
+
+## Owner acceptance exception and current delivery policy · 19.10.2026
+
+The owner explicitly instructed: «Зафиксируй пропущенный шаг, закрой задачу,
+смержи и продолжай цель». The exact instruction and limitations are recorded in
+[owner-acceptance-exception.md](owner-acceptance-exception.md). AC3's stopped block
+has no execution evidence; AC4 remains noisy/inconclusive without adopted floors
+or candidate comparison, with a separate historical executable witness gap.
+The owner accepts closure of this task with those disclosed exceptions. None is
+relabeled passed; future release gates retain their own contracts.
+
+Upstream OPS-632/PR19 changes the applicable delivery mode: exact-SHA local checks,
+one prepared build-only CI and one post-merge build-only CI. Independent exact-SHA
+review, normal merge, evidence preservation and cleanup remain required. This
+later decision supersedes the earlier requirement to execute tests in CI; no
+test assertions or ordinary local test scope are removed.

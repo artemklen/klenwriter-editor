@@ -1,0 +1,107 @@
+{
+  "format": "editor-reliability-correctness-checkpoint/1",
+  "recordedAtUTC": "2026-10-18T18:22:38.309259+00:00",
+  "sourceCommit": "c4fe128efc66ffaaf13407b9c06280deb01125de",
+  "scope": "Ordinary deterministic public API replay and isolated native test dependency inventory. Intermediate evidence; not OSR-38 full acceptance or independent review.",
+  "status": "partial",
+  "native": {
+    "report": {
+      "path": "artifacts/reliability/native-report.json",
+      "bytes": 536978,
+      "sha256": "8b3a7a5fb875da928d6109fe0e1388d900946bd3610b3e5ff603a2cc44647a20"
+    },
+    "runId": "16d428ee-82f1-42e9-a8a5-f47494a49cdc",
+    "summary": {
+      "requested": 1037,
+      "requestedBaseScenarios": 1036,
+      "requestedRegressions": 0,
+      "completed": 1037,
+      "passed": 1037,
+      "failed": 0,
+      "literalCases": 12,
+      "regressionCases": 0,
+      "generatedByContext": {
+        "kwdj-prose": 256,
+        "kwdj-poetry": 256,
+        "notes-d0": 256,
+        "notes-d1": 256
+      },
+      "operationsCategory": 1,
+      "operationVariants": 13,
+      "meetsGeneratedNativeFloor": true
+    },
+    "sourceFiles": 127,
+    "binary": {
+      "path": "/Users/artem/projects/klenwriter-editor/tests/fixtures/reliability-native/target/debug/replay",
+      "bytes": 25312008,
+      "sha256": "3f98465ee9b13ab5b0ddfcacd64d5e6276e97b6e27673bf7091b79bf5b0bf153"
+    },
+    "buildReceipt": {
+      "path": "/Users/artem/projects/klenwriter-editor/artifacts/reliability/native/builds/bf29cc49-fa96-4d73-b51b-641be4c600ba/build-receipt.json",
+      "bytes": 31315,
+      "sha256": "bf3d205d4a17afc0f3d76d94068150f38f0900f572858069756bcf3c3314869a"
+    }
+  },
+  "sdk": {
+    "report": {
+      "path": "artifacts/reliability/sdk-report.json",
+      "bytes": 148078,
+      "sha256": "30caffa748f82025abd667167f35580e6370a05bc3a3e8d1973062be18e0791f"
+    },
+    "runId": "55a56118-1845-4ac8-8419-f4a8de54648d",
+    "summary": {
+      "requested": 273,
+      "requestedIndependentScenarios": 268,
+      "completed": 273,
+      "passed": 273,
+      "failed": 0,
+      "literalCases": 12,
+      "generatedByContext": {
+        "kwdj-prose": 64,
+        "kwdj-poetry": 64,
+        "notes-d0": 64,
+        "notes-d1": 64
+      },
+      "regressionCases": 0,
+      "supplementalCases": 5,
+      "meetsGeneratedSdkFloor": true
+    },
+    "buildId": "sha256:a5886a244ba4e4204e58e5616fe254581ece9563d6c31a1cb5e2064778ae91ac",
+    "wasmSHA256": "f551ea8410dc1b40be1deb02c9f3751b426b9651597108fcb9e1c39a4dd206a4",
+    "producerInputsCurrent": 139
+  },
+  "dependencies": {
+    "report": {
+      "path": "artifacts/reliability/dependencies.json",
+      "bytes": 1437243,
+      "sha256": "16dff2cc5d56cc69825f41650680fed4f4202b364fed924721b6736b9e2cd33b"
+    },
+    "summary": {
+      "nativePackages": 133,
+      "nativeRegistryPackages": 122,
+      "verifiedNativeArchives": 122,
+      "unavailableNativeArchives": [],
+      "nativeMissingLicenseTexts": [
+        "editor-reliability-native@0.0.0",
+        "r-efi@6.0.0"
+      ],
+      "allFeatureGeneratorPackages": [
+        {
+          "name": "ts-rs-macros",
+          "version": "12.0.1"
+        },
+        {
+          "name": "ts-rs",
+          "version": "12.0.1"
+        }
+      ]
+    },
+    "normalBrowserTestDependenciesAbsent": true
+  },
+  "qualifications": [
+    "Finite independent scenario model is one paragraph with isolated replacements/history and complete profile-specific documents. Raw13 operation algebra is separately counted KWDJ prose coverage.",
+    "D1 recipe and D0 refusal are separate literal supplements and existing extensions lanes, not relabelled generated scenarios. Original AC coverage is assessed across these lanes; generated floor counts remain unchanged.",
+    "Historical first native success retains raw/digests with partial original source snapshots; this checkpoint instead binds the current coherent 127-input native build/replay.",
+    "Remaining required AC3 work remains stopped and incomplete. Real conclusive performance comparison, final repository gates, CI, independent review and delivery remain pending."
+  ]
+}
