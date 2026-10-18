@@ -15,6 +15,7 @@ import { bundleFootprint } from './perf-bundle.mjs';
 import { gzipSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
 import { loadEvidence } from './perf-evidence.mjs';
+import { catalogForPlan, makeSchedule, scheduleEntries, validateSchedule } from './perf-schedule.mjs';
 
 const harnessRoot = fileURLToPath(new URL('../../', import.meta.url));
 const childScript = fileURLToPath(new URL('./perf-sdk-child.mjs', import.meta.url));
@@ -59,7 +60,7 @@ function verifiedSide(side, currentHarness) {
   assert.equal(sealReceipt.sealed_sha256, artifacts['packages/wasm/dist/editor_wasm_bg.wasm'].sha256); assert.equal(sealReceipt.build_id, distribution.buildId);
   return { producer, distribution, artifacts, bundle: bundleFootprint(side.distributionRoot) };
 }
-function runOne({ side, sideName, verified: proof, row, item, output, samples, warmup, round, captureId, requestDirectory }) {
+function runOne({ side, sideName, verified: proof, row, item, output, samples, warmup, round, captureId, requestDirectory, schedule, entry }) {
   const allocator = item.layer === 'allocator';
   const request = { profile: row.profile, input: row.input, registry: row.registry, root_blocks: row.root_blocks, first_text_path: row.first_text_path,
     layer: item.layer === 'native-bridge' ? 'bridge' : allocator ? 'core' : item.layer, workload: item.workload, samples, warmup, steps: item.steps ?? 4096 };
@@ -77,7 +78,7 @@ function runOne({ side, sideName, verified: proof, row, item, output, samples, w
   const result = spawnSync(executable, args, { cwd: output, input: stdin, encoding: 'utf8', timeout: 30 * 60 * 1000, maxBuffer: 64 * 1024 * 1024 });
   const completedAt = new Date().toISOString();
   writeFileSync(`${output}/stdout.json`, result.stdout ?? ''); writeFileSync(`${output}/stderr.log`, result.stderr ?? '');
-  const launch = { id: randomUUID(), captureId, round, side: sideName, startedAt, completedAt, executable, args, requestSha256: digest(request),stdinSha256:createHash('sha256').update(stdin).digest('hex'),logicalRequest,workloadSha256,deploymentRoot:request.root??null, source: side.sourceCommit, before, after: observation(), status: result.status, signal: result.signal, error: result.error?.message ?? null,
+  const launch = { id: randomUUID(), captureId, round, side: sideName, phase: entry.phase, planItem: entry.item, scheduleIndex: entry.index, scheduleSha256: schedule.sha256, startedAt, completedAt, executable, args, requestSha256: digest(request),stdinSha256:createHash('sha256').update(stdin).digest('hex'),logicalRequest,workloadSha256,deploymentRoot:request.root??null, source: side.sourceCommit, before, after: observation(), status: result.status, signal: result.signal, error: result.error?.message ?? null,
     stdout: fileRecord(`${output}/stdout.json`), stderr: fileRecord(`${output}/stderr.log`) };
   if (result.status !== 0) persist(`${output}/launch.json`, seal({ ...launch, cases: [], rawSha256s: [launch.stdout.sha256] }));
   assert.equal(result.status, 0, `actual child failed ${output}`);
@@ -125,6 +126,8 @@ export function capture(config) {
   environment.native_toolchain = bindings.baseline.producer.toolchain;
   const corpusReceipt = persist(`${config.output}/corpus.json`, { format: 'editor-reliability-performance-corpus/1', rows });
   const planReceipt = persist(`${config.output}/plan.json`, plan);
+  const schedule = seal(makeSchedule(catalogForPlan(plan), config.rounds, config.mode));
+  const scheduleRecord = persist(`${config.output}/schedule.json`, schedule);
   let policy;
   if (config.mode === 'comparison') {
     policy = read(config.policy); assert.ok(verified(policy)); assert.equal(policy.harness, digest(sourceBefore)); assert.equal(policy.environment, digest(environment));
@@ -135,27 +138,25 @@ export function capture(config) {
   }
   const results = { baseline: [], candidate: [] }, launches = [], provenance = { baseline: [], candidate: [] },launchRecords={baseline:[],candidate:[]};
   const captureIdentity = { id: randomUUID(), startedAt: new Date().toISOString() };
-  for (let round = 0; round < config.rounds; round++) {
-    // Alternating AB/BA orders avoid a fixed side-order bias within each round.
-    const sides = config.mode === 'calibration' ? ['baseline'] : round % 2 === 0 ? ['baseline', 'candidate'] : ['candidate', 'baseline'];
-    for (const item of plan) for (const side of sides) {
-      let row = rows.find(row => row.id === item.corpus); assert.ok(row?.supported, `unsupported corpus: ${item.corpus}`);
-      if(row.profile==='notes'&&row.shape!=='small'){
-        const selected=capacity.selectedOperations[item.workload==='export'?'export':'command'][row.shape];row=notesCapacityRow(harnessRoot,row.shape,selected.quantity);assert.equal(row.input_sha256,selected.inputSha256);
-      }
-      const output = resolve(config.output, `round-${round}`, side, item.id.replaceAll('/', '__'));
-      const result = runOne({ side: config[side], sideName: side, verified: bindings[side], row, item, output, samples: config.samples, warmup: config.warmup, round, captureId: captureIdentity.id,requestDirectory:resolve(config.output,'requests') }); launches.push(result.launch); provenance[side].push(result.provenance);launchRecords[side].push({id:result.provenance.id,...result.launch});
-      for (const measurement of result.measurements) results[side].push({ ...measurement, round });
+  for (const entry of scheduleEntries(schedule)) {
+    const { round, side } = entry, item = plan.find(item => item.id === entry.item);
+    let row = rows.find(row => row.id === item.corpus); assert.ok(row?.supported, `unsupported corpus: ${item.corpus}`);
+    if(row.profile==='notes'&&row.shape!=='small'){
+      const selected=capacity.selectedOperations[item.workload==='export'?'export':'command'][row.shape];row=notesCapacityRow(harnessRoot,row.shape,selected.quantity);assert.equal(row.input_sha256,selected.inputSha256);
     }
+    const output = resolve(config.output, `round-${round}`, side, item.id.replaceAll('/', '__'));
+    const result = runOne({ side: config[side], sideName: side, verified: bindings[side], row, item, output, samples: config.samples, warmup: config.warmup, round, captureId: captureIdentity.id,requestDirectory:resolve(config.output,'requests'),schedule,entry }); launches.push(result.launch); provenance[side].push(result.provenance);launchRecords[side].push({id:result.provenance.id,...result.launch});
+    for (const measurement of result.measurements) results[side].push({ ...measurement, round, phase: entry.phase, scheduleIndex: entry.index });
   }
+  validateSchedule(schedule, Object.values(provenance).flat().sort((a,b) => a.scheduleIndex-b.scheduleIndex), Object.values(results).flat());
   captureIdentity.completedAt = new Date().toISOString();
   assert.equal(canonical(harnessHashes(harnessRoot)), canonical(sourceBefore), 'changed harness during capture');
   for (const side of Object.keys(bindings)) assert.equal(canonical(productionHashes(bindings[side].producer.sourceRoot)), canonical(bindings[side].producer.sourceHashes), 'changed production during capture');
   for (const binding of Object.values(bindings)) for (const artifact of Object.values(binding.artifacts)) assert.equal(hashFile(artifact.path), artifact.sha256, 'packaged artifact changed during capture');
   const receipts = {};
   for (const side of Object.keys(bindings)) receipts[side] = persist(`${config.output}/${side}.json`, seal({ format: PROTOCOL.format, harness: digest(sourceBefore), source: config[side].sourceCommit, side, batch: config.batch, environment,
-    mode: config.mode, acceptanceScope: fullPlan?'full-required-plan':'diagnostic-subset', policy: policy?.sha256 ?? null, capture: captureIdentity, launches: provenance[side],launchRecords:launchRecords[side], bindings: bindings[side], corpus: corpusReceipt, plan: planReceipt, runs: results[side] }));
-  persist(`${config.output}/capture.json`, seal({ format: 'editor-reliability-performance-capture/1', config, environment, corpus: corpusReceipt, plan: planReceipt, receipts, launches }));
+    mode: config.mode, schedule, scheduleRecord, acceptanceScope: fullPlan?'full-required-plan':'diagnostic-subset', policy: policy?.sha256 ?? null, capture: captureIdentity, launches: provenance[side],launchRecords:launchRecords[side], bindings: bindings[side], corpus: corpusReceipt, plan: planReceipt, runs: results[side] }));
+  persist(`${config.output}/capture.json`, seal({ format: 'editor-reliability-performance-capture/1', config, environment, corpus: corpusReceipt, plan: planReceipt, schedule, scheduleRecord, receipts, launches }));
   return receipts;
 }
 export function calibrationProposal(baselinePath) {

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import { createHash } from 'node:crypto';
 import { PROTOCOL } from './perf-protocol.mjs';
+import { validateSchedule } from './perf-schedule.mjs';
 
 export function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -27,6 +28,8 @@ function validateBatch(batch, evidence) {
   check(batch.capture && typeof batch.capture.id === 'string' && batch.capture.id.length > 0, 'missing capture identity');
   const start = time(batch.capture.startedAt), end = time(batch.capture.completedAt); check(start < end, 'invalid capture interval');
   check(Array.isArray(batch.launches) && batch.launches.length > 0, 'missing launch provenance');
+  check(verified(batch.schedule) && batch.schedule.mode === batch.mode, 'missing/corrupt capture schedule');
+  validateSchedule(batch.schedule, batch.launches, batch.runs, { side: batch.side });
   const ids = new Set();
   for (const launch of batch.launches) {
     check(verified(launch) && !ids.has(launch.id), 'invalid/repeated launch identity'); ids.add(launch.id);
@@ -95,9 +98,12 @@ function pair(baseline, candidate, policy, calibrationRaw, evidence) {
   check(baseline.side === 'baseline' && candidate.side === 'candidate' && baseline.batch === candidate.batch && same(baseline.capture, candidate.capture), 'batch sides mismatch');
   check(baseline.policy === policy.sha256 && candidate.policy === policy.sha256, 'capture did not bind adopted policy');
   validateCalibration(policy,calibrationRaw,evidence,new Date(Math.min(...candidate.launches.map(row=>time(row.startedAt)))).toISOString());
+  check(same(baseline.schedule, candidate.schedule), 'batch schedule mismatch');
+  check(same(baseline.schedule.items, calibrationRaw.schedule.items), 'calibration schedule catalog mismatch');
   const caseIds = Object.keys(policy.cases).sort();
   for (const batch of [baseline, candidate, calibrationRaw]) check(same([...new Set(batch.runs.map(r => r.case))].sort(), caseIds), 'case mismatch');
   const all = [...baseline.launches, ...candidate.launches].sort((a,b) => time(a.startedAt)-time(b.startedAt));
+  validateSchedule(baseline.schedule, all, [...baseline.runs, ...candidate.runs]);
   check(new Set(all.map(row => row.id)).size === all.length, 'baseline/candidate reused launch');
   for (let i=1;i<all.length;i++) check(time(all[i-1].completedAt) <= time(all[i].startedAt), 'overlapping captures');
   return Object.entries(policy.cases).map(([id, definition]) => {

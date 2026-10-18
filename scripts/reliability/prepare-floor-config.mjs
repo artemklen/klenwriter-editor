@@ -23,7 +23,7 @@ export async function prepareFloorConfig({ root, calibration, candidateSource, p
   [proposalOutput, configOutput, policyOutput] = outputs;
   assert.equal(new Set(outputs).size, 3); for (const path of outputs) assert(!existsSync(path), `exclusive new output required: ${path}`);
   assert(!outputs.includes(calibration));
-  const modulePaths = ['perf-capture.mjs', 'perf-compare.mjs', 'perf-evidence.mjs', 'perf-protocol.mjs', 'perf-corpus.mjs'];
+  const modulePaths = ['perf-capture.mjs', 'perf-compare.mjs', 'perf-evidence.mjs', 'perf-schedule.mjs', 'perf-protocol.mjs', 'perf-corpus.mjs'];
   const modulePins = Object.fromEntries(modulePaths.map(name => [name, pin(resolve(root, 'scripts/reliability', name))]));
   const method = pin(resolve(root, 'evidence/osr-38/floor-adoption-method.md'));
   assert.equal(method.sha256, METHOD_SHA256, 'frozen method differs; primary must inspect new method explicitly');

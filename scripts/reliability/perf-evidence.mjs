@@ -4,11 +4,16 @@ import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
 import { canonical } from './perf-compare.mjs';
+import { catalogForPlan, makeSchedule } from './perf-schedule.mjs';
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 function checked(record){const bytes=readFileSync(record.path);assert.equal(bytes.length,record.bytes);assert.equal(hash(bytes),record.sha256,`raw changed ${record.path}`);return bytes;}
 export function loadEvidence(batches) {
   const evidence={rawFiles:{},requests:{}},decoded=new Map();
   for(const batch of batches){
+    assert.ok(batch.scheduleRecord && batch.plan, 'missing original schedule/plan receipt');
+    assert.equal(canonical(JSON.parse(checked(batch.scheduleRecord).toString('utf8'))), canonical(batch.schedule), 'schedule original differs from sealed batch');
+    const plan=JSON.parse(checked(batch.plan).toString('utf8')), {sha256: _scheduleHash,...descriptor}=batch.schedule;
+    assert.equal(canonical(descriptor), canonical(makeSchedule(catalogForPlan(plan),batch.schedule.rounds,batch.mode)), 'schedule catalog differs from bound plan');
     for(const launch of batch.launches){
       const original=batch.launchRecords.find(row=>row.id===launch.id);assert.ok(original,'missing original launch receipt');
       assert.equal(canonical(JSON.parse(checked(original).toString('utf8'))),canonical(launch),'launch original differs from sealed batch');

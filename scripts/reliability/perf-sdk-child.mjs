@@ -5,7 +5,10 @@ import { pathToFileURL } from 'node:url';
 import { performance } from 'node:perf_hooks';
 import { captureActualMemory, ownedResourcesZero } from './perf-memory.mjs';
 
-const ok = response => { assert.equal(response.status, 'ok', JSON.stringify(response)); return response.value; };
+export function ok(response) {
+  if (response.status !== 'ok') assert.equal(response.status, 'ok', JSON.stringify(response));
+  return response.value;
+}
 const ticket = async result => result.status === 'completed' ? result.response : await result.completion;
 export function sdkOptions(manifest, request) {
   const descriptor = JSON.parse(request.registry);
