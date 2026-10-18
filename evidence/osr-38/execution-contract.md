@@ -43,3 +43,17 @@ Comparator tests cover synthetic stable/regressed/noisy/inconclusive distributio
 Standalone osr-38 from accepted main, ci_owner none, Codex implementer. Before implementation commit frozen contract/scenario expectations. Preserve existing required Rust fmt/clippy/tests/MSRV, canonical/source/package metadata, codec/corpus/session/transactions/commands/history/deltas/SDK/extensions/offline consumer/3-engine strict-CSP18+M0102 lanes. Add meaningful property/shrink/actual fuzz/protocol checks, source-bound machine reports and docs. One final preparedCI exactSHA, independent full-scope Grok OIDC review, normal merge exacthead, one successful automatic postmergeCI, evidence archive and branch/worktree cleanup, closingcomment/readback, Done/projectrollup. No deploy/publish. Rollback revert38 PR; persisted document/ABI formats unchanged unless a separately recorded actual defect mandates a scoped reviewed fix.
 
 Refine verdict: Ready with assumptions. Published tool/backend pins must be demonstrated by actual builds; primary owns reversible technical fallback choices without weakening acceptance. All required adopted layers need a conclusive actual reference comparison before Done.
+
+## Pre-capture measurement decisions,18.10.2026
+
+[Memory sampling](memory-sampling-decision.md) distinguishes >=5x200 genuine
+per-operation samples from one true peak/RSS scalar per independent process
+launch (>=5 per side). Both have explicit conclusive comparison policies; no
+peak is duplicated into fake200 measurements or subtracted as a window peak.
+[Notes capacity](notes-capacity-decision.md) preserves all original maximal
+typed resource refusals and freezes an accepted64 native+WASM quantity ladder
+before further probes. Largest jointly feasible rungs are fixed per measured
+operation before candidate timing; every refused control remains evidence.
+Semantic ceilings and finite operational capacity remain distinct. No production
+limit/API change or private-codec telemetry is inferred. Candidate cannot select
+a smaller input. These dimensional/capacity decisions preserve the original4AC.
