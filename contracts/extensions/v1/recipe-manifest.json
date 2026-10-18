@@ -1,0 +1,30 @@
+{
+  "format": "editor-extension-recipe-oracle/1",
+  "status": "independent-literals-frozen-before-recipe-implementation",
+  "issue": "OSR-64",
+  "authority": {
+    "path": "evidence/osr-64/execution-contract.md",
+    "sha256": "65a842098cb267e2eccb2ba702b9295d6c650d8f05e2521e4d926815f0eda04b"
+  },
+  "counts": {
+    "compiler": 28,
+    "runtime": 24,
+    "transport": 11,
+    "total_authored_cases": 63,
+    "executed_cases_claimed": 0
+  },
+  "files": [
+    {
+      "path": "recipes.md",
+      "bytes": 9721,
+      "sha256": "d83babedc652e7a214228366659413be668122b40f414464a347c378607ca1c6"
+    },
+    {
+      "path": "recipe-vectors.json",
+      "bytes": 417563,
+      "sha256": "a0980bf6fd5709204ee904a79c9f9194580af495485fb21596245a7ae8f44a81"
+    }
+  ],
+  "preserved_basic_manifest_sha256": "4899ac668df12dac8bf771affa043d9d353b0e8b21957130ee4a9fc4403f4407",
+  "scope": "Synthetic generic recipes oracle, not Notes codec corpus or implementation/pass/verdict. Original basic158 unchanged; typed raw-string numeric transport uses existing AttributeDto."
+}
