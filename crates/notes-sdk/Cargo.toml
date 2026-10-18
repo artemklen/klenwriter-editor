@@ -1,0 +1,28 @@
+[package]
+name = "klenwriter-editor-notes-sdk"
+version.workspace = true
+edition.workspace = true
+rust-version = "1.97.1"
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+description = "Independent notes adapter and compiled factory for the generic editor SDK"
+
+[lints]
+workspace = true
+
+[dependencies]
+editor_core.workspace = true
+editor_engine.workspace = true
+editor_notes.workspace = true
+editor_registry.workspace = true
+editor_bridge = { package = "klenwriter-editor-bridge", path = "../bridge", version = "=0.0.0" }
+editor_protocol = { package = "klenwriter-editor-protocol", path = "../protocol", version = "=0.0.0" }
+editor_extensions = { package = "klenwriter-editor-extensions", path = "../extensions", version = "=0.0.0" }
+serde.workspace = true
+serde_json.workspace = true
+
+[package.metadata.klenwriter-editor]
+role = "notes-sdk"
+source-provenance = "SOURCE-PROVENANCE.json"
+public-api-stability = "bootstrap"

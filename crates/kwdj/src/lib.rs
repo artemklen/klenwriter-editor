@@ -17,8 +17,8 @@ pub use admission::{AdmissionBudget, RAW_INPUT_BYTE_CEILING};
 pub use core_bridge::{admit_core_document, admit_core_document_with_budget};
 mod normalize;
 mod project;
-mod session_profile;
 pub mod registry;
+mod session_profile;
 mod validate;
 mod wire_view;
 

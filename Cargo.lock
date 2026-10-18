@@ -230,9 +230,12 @@ version = "0.0.0"
 dependencies = [
  "klenwriter-editor-core",
  "klenwriter-editor-engine",
+ "klenwriter-editor-extensions",
  "klenwriter-editor-protocol",
+ "klenwriter-editor-registry",
  "serde",
  "serde_json",
+ "sha2",
 ]
 
 [[package]]
@@ -248,6 +251,16 @@ name = "klenwriter-editor-engine"
 version = "0.0.0"
 dependencies = [
  "klenwriter-editor-core",
+]
+
+[[package]]
+name = "klenwriter-editor-extensions"
+version = "0.0.0"
+dependencies = [
+ "klenwriter-editor-core",
+ "klenwriter-editor-engine",
+ "klenwriter-editor-registry",
+ "serde_json",
 ]
 
 [[package]]
@@ -271,8 +284,10 @@ dependencies = [
  "klenwriter-editor-bridge",
  "klenwriter-editor-core",
  "klenwriter-editor-engine",
+ "klenwriter-editor-extensions",
  "klenwriter-editor-kwdj",
  "klenwriter-editor-protocol",
+ "klenwriter-editor-registry",
  "serde",
  "serde_json",
  "ts-rs",
@@ -285,6 +300,21 @@ version = "0.0.0"
 dependencies = [
  "klenwriter-editor-core",
  "klenwriter-editor-engine",
+ "klenwriter-editor-registry",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "klenwriter-editor-notes-sdk"
+version = "0.0.0"
+dependencies = [
+ "klenwriter-editor-bridge",
+ "klenwriter-editor-core",
+ "klenwriter-editor-engine",
+ "klenwriter-editor-extensions",
+ "klenwriter-editor-notes",
+ "klenwriter-editor-protocol",
  "klenwriter-editor-registry",
  "serde",
  "serde_json",
@@ -314,10 +344,13 @@ name = "klenwriter-editor-wasm"
 version = "0.0.0"
 dependencies = [
  "js-sys",
+ "klenwriter-editor-bridge",
  "klenwriter-editor-core",
  "klenwriter-editor-engine",
  "klenwriter-editor-kwdj",
  "klenwriter-editor-kwdj-sdk",
+ "klenwriter-editor-notes-sdk",
+ "klenwriter-editor-protocol",
  "serde",
  "serde-wasm-bindgen",
  "serde_json",

@@ -1,0 +1,334 @@
+{
+  "schema": 1,
+  "issue": "OSR-29",
+  "upstreamRepository": "local/klenwriter-cms",
+  "upstreamRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+  "ownerGrant": "docs/m0/decision-register.md D10/D11",
+  "excluded": [
+    "kwdj/audit.rs: CMS audit/reading-time policy",
+    "kwdj/render.rs: existing server renderer",
+    "private/user payloads"
+  ],
+  "files": [
+    {
+      "source": "crates/klenwriter_domain/src/kwdj/model.rs",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sha256": "fd3ad345cc3b0db939c395d5a1d65bf38b53801c185a4a1e085e7f2e4882d37a",
+      "destination": "crates/kwdj/src/model.rs",
+      "grant": "Owner D10/D11, accepted 2026-10-17; owner-controlled Rust semantics only",
+      "license": "MIT OR Apache-2.0",
+      "thirdPartyHeaders": [],
+      "sourcePayload": "Rust source; no user documents or production captures",
+      "adaptations": "Namespace/read-only model seam and generic core helpers; domain semantic rules preserved and checked differentially"
+    },
+    {
+      "source": "crates/klenwriter_domain/src/kwdj/normalize.rs",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sha256": "b89ab32c6b8852282f3c9c9d654fd0cca5bceb2709e9202ff44665702ae6cdce",
+      "destination": "crates/kwdj/src/normalize.rs",
+      "grant": "Owner D10/D11, accepted 2026-10-17; owner-controlled Rust semantics only",
+      "license": "MIT OR Apache-2.0",
+      "thirdPartyHeaders": [],
+      "sourcePayload": "Rust source; no user documents or production captures",
+      "adaptations": "Namespace/read-only model seam and generic core helpers; domain semantic rules preserved and checked differentially"
+    },
+    {
+      "source": "crates/klenwriter_domain/src/kwdj/project.rs",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sha256": "83422f7aa7a967086f5e881d020ca59c3467f8ade72e33ceb517713ab2095d87",
+      "destination": "crates/kwdj/src/project.rs",
+      "grant": "Owner D10/D11, accepted 2026-10-17; owner-controlled Rust semantics only",
+      "license": "MIT OR Apache-2.0",
+      "thirdPartyHeaders": [],
+      "sourcePayload": "Rust source; no user documents or production captures",
+      "adaptations": "Namespace/read-only model seam and generic core helpers; domain semantic rules preserved and checked differentially"
+    },
+    {
+      "source": "crates/klenwriter_domain/src/kwdj/validate.rs",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sha256": "a6f20e524a29a8c78699a1687e15db2d5d1ad75ae8ed84c687163410326b5385",
+      "destination": "crates/kwdj/src/validate.rs",
+      "grant": "Owner D10/D11, accepted 2026-10-17; owner-controlled Rust semantics only",
+      "license": "MIT OR Apache-2.0",
+      "thirdPartyHeaders": [],
+      "sourcePayload": "Rust source; no user documents or production captures",
+      "adaptations": "Namespace/read-only model seam and generic core helpers; domain semantic rules preserved and checked differentially"
+    },
+    {
+      "source": "crates/klenwriter_domain/src/kwdj/mod.rs",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sha256": "2f245f006db3b1ce12075ce5fc9b79231a17e4c086a5d4063f3cff6a6fb18748",
+      "destination": "crates/kwdj/src/lib.rs",
+      "grant": "Owner D10/D11, accepted 2026-10-17; owner-controlled Rust semantics only",
+      "license": "MIT OR Apache-2.0",
+      "thirdPartyHeaders": [],
+      "sourcePayload": "Rust source; no user documents or production captures",
+      "adaptations": "Namespace/read-only model seam and generic core helpers; domain semantic rules preserved and checked differentially",
+      "additionalDestination": "crates/core/src/json.rs (schema-independent canonical_value and JSON Pointer helpers)"
+    },
+    {
+      "source": "crates/klenwriter_domain/tests/kwdj_validator.rs",
+      "sourceRevision": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+      "sha256": "5389561c826c4a72e193d7ddb0d4109ae792902608bfec594ee4f3402f634476",
+      "destination": "crates/kwdj/tests/native_regressions.rs",
+      "license": "MIT OR Apache-2.0",
+      "grant": "D10/D11, owner-controlled synthetic tests",
+      "sourcePayload": "Synthetic JSON builders, example.test URLs, fixed UUIDs; no file input or production data",
+      "adaptations": "crate import only"
+    }
+  ],
+  "localAdaptations": [
+    {
+      "issue": "OSR-77",
+      "path": "crates/kwdj/src/lib.rs",
+      "change": "Strict native scan rejects extra fields on empty node/mark variants before Serde; valid JSON and public Rust model syntax unchanged"
+    },
+    {
+      "issue": "OSR-34",
+      "path": "crates/kwdj/src/validate.rs",
+      "change": "One authoritative semantic walker generalized over wire and borrowed candidate adapters; native wire model and rule outcomes preserved through differential checkpoints"
+    },
+    {
+      "issue": "OSR-34",
+      "path": "crates/kwdj/src/normalize.rs",
+      "change": "Pure canonical newline/UUID/mark decisions shared with explicit editing normalization; import checkpoint remains separate"
+    },
+    {
+      "issue": "OSR-35",
+      "path": "crates/kwdj/src/validate.rs",
+      "change": "Expose one crate-private closed authoritative mark-set validator to command/final typing policy; existing document walker rules are shared, not copied"
+    },
+    {
+      "issue": "OSR-37",
+      "path": "crates/kwdj/src/validate.rs",
+      "change": "The same authoritative walker accepts engine-proved sparse roots/children and cached static summaries; table/verse/identity rules remain shared with full native validation. Current external identity answers are never retained across transactions."
+    }
+  ],
+  "corpusProvenance": "provenance/kwdj-corpus.json",
+  "originalSessionFoundation": {
+    "issue": "OSR-33",
+    "source": "Original implementation and owner-controlled synthetic fixtures in this repository; no third-party source copied",
+    "license": "MIT OR Apache-2.0",
+    "paths": [
+      "crates/core/src/profile.rs",
+      "crates/core/src/positions.rs",
+      "crates/engine/src/identity.rs",
+      "crates/engine/src/tree.rs",
+      "crates/engine/src/session.rs",
+      "crates/engine/src/mapping.rs",
+      "crates/kwdj/src/session_profile.rs",
+      "crates/kwdj/tests/session_profile.rs",
+      "crates/wasm/examples/support/session_observer.rs",
+      "crates/wasm/examples/session_native.rs",
+      "crates/wasm/examples/session_probe.rs",
+      "crates/wasm/tests/session_foundation.rs",
+      "tests/session.node.mjs"
+    ],
+    "adaptedLocalHelpers": [
+      "crates/core/src/admission.rs"
+    ],
+    "dependencies": "unicode-segmentation = 1.13.3 (MIT OR Apache-2.0), Unicode 17.0.0; linked dependency, notices generated at build",
+    "privacy": "Literal generated fixtures only; no private documents, browser captures or production payloads"
+  },
+  "originalAtomicTransactions": {
+    "issue": "OSR-34",
+    "source": "Original implementation and owner-controlled literal/generated fixtures in this repository; no third-party source copied",
+    "license": "MIT OR Apache-2.0",
+    "paths": [
+      "crates/core/src/candidate.rs",
+      "crates/core/src/transaction.rs",
+      "crates/engine/src/dispatch.rs",
+      "crates/engine/src/transaction.rs",
+      "crates/engine/src/transaction_tests.rs",
+      "crates/kwdj/src/candidate_validate.rs",
+      "crates/kwdj/src/wire_view.rs",
+      "crates/kwdj/src/edit_normalize.rs",
+      "crates/wasm/examples/support/transaction_observer.rs",
+      "crates/wasm/examples/transaction_native.rs",
+      "crates/wasm/examples/transaction_probe.rs",
+      "crates/wasm/tests/transactions.rs",
+      "tests/transactions.node.mjs"
+    ],
+    "extendedOriginalFoundation": [
+      "crates/core/src/admission.rs",
+      "crates/engine/src/session.rs",
+      "crates/engine/src/tree.rs",
+      "crates/kwdj/src/session_profile.rs"
+    ],
+    "privacy": "Literal/generated synthetic fixtures only; no private documents, production captures or credentials",
+    "dependencies": "No new runtime dependencies; pinned Unicode segmentation inherited from OSR-33"
+  },
+  "originalCommands": {
+    "issue": "OSR-35",
+    "source": "Original implementation and independent synthetic literal/generated fixtures in this repository; no third-party or CMS implementation copied",
+    "license": "MIT OR Apache-2.0",
+    "paths": [
+      "crates/core/src/commands.rs",
+      "crates/engine/src/commands.rs",
+      "crates/engine/src/command_tests.rs",
+      "crates/kwdj/src/commands/mod.rs",
+      "crates/kwdj/src/commands/inline.rs",
+      "crates/kwdj/src/commands/block.rs",
+      "contracts/commands/v1/vectors.json",
+      "crates/wasm/examples/support/command_observer.rs",
+      "crates/wasm/examples/support/command_structural.rs",
+      "crates/wasm/examples/support/command_inline.rs",
+      "crates/wasm/examples/command_native.rs",
+      "crates/wasm/examples/command_probe.rs",
+      "crates/wasm/tests/commands.rs",
+      "tests/commands.node.mjs",
+      "crates/wasm/tests/command_structural.rs",
+      "crates/wasm/tests/command_inline.rs"
+    ],
+    "extendedOriginalFoundation": [
+      "crates/core/src/transaction.rs",
+      "crates/engine/src/tree.rs",
+      "crates/engine/src/session.rs",
+      "crates/engine/src/dispatch.rs",
+      "crates/engine/src/transaction.rs",
+      "crates/kwdj/src/session_profile.rs"
+    ],
+    "dependencies": "No new runtime dependencies; pinned Unicode segmentation inherited from OSR-33",
+    "privacy": "Generated/literal synthetic documents, fixed fixture UUIDs and example URLs only; no private documents, production captures or credentials",
+    "authority": "Historical feature disposition references OSR-60 source audit; exact command goldens are independently authored, not CMS mounted acceptance. Codec authority remains contracts/kwdj/v1."
+  },
+  "originalHistory": {
+    "issue": "OSR-36",
+    "source": "Original implementation and independently authored synthetic literal/generated history fixtures in this repository; no third-party or CMS source copied",
+    "license": "MIT OR Apache-2.0",
+    "paths": [
+      "crates/core/src/history.rs",
+      "crates/engine/src/history.rs",
+      "crates/engine/src/grouping.rs",
+      "crates/engine/src/history_dispatch.rs",
+      "crates/engine/src/history_tests.rs",
+      "contracts/history/v1/vectors.json",
+      "contracts/history/v1/manifest.json",
+      "contracts/history/v1/adr-embedding.json",
+      "crates/wasm/examples/support/history_observer.rs",
+      "crates/wasm/examples/support/history_adr.rs",
+      "crates/wasm/examples/history_native.rs",
+      "crates/wasm/examples/history_probe.rs",
+      "crates/wasm/tests/history.rs",
+      "tests/history.node.mjs",
+      "crates/engine/src/history_profile_tests.rs",
+      "crates/wasm/examples/support/history_sequences.rs",
+      "crates/wasm/examples/support/history_facts.rs",
+      "crates/wasm/examples/support/history_generated.rs"
+    ],
+    "extendedOriginalFoundation": [
+      "crates/core/src/transaction.rs",
+      "crates/engine/src/tree.rs",
+      "crates/engine/src/session.rs",
+      "crates/engine/src/dispatch.rs",
+      "crates/engine/src/transaction.rs",
+      "crates/engine/src/commands.rs"
+    ],
+    "seedProvenance": "Unchanged owner-controlled ADR-003 operation/position vectors pinned by contracts/history/v1/manifest.json; 15 direct seeds and one declared structural embedding with separate full physical oracle",
+    "privacy": "Synthetic documents and public example.test identifiers only; no user documents, production captures, credentials or session IDs persisted",
+    "dependencies": "No new runtime dependency; immutable std Arc handles are internal on native and wasm32",
+    "extendedWitnesses": [
+      "crates/wasm/examples/support/transaction_observer.rs",
+      "crates/wasm/tests/transactions.rs",
+      "tests/transactions.node.mjs",
+      "tests/commands.node.mjs",
+      "tests/session.node.mjs"
+    ]
+  },
+  "originalDeltas": {
+    "issue": "OSR-37",
+    "source": "Original implementation and independently authored synthetic literal/generated fixtures in this repository; no CMS or third-party source copied",
+    "license": "MIT OR Apache-2.0",
+    "paths": [
+      "crates/core/src/cache.rs",
+      "crates/engine/src/events.rs",
+      "crates/engine/src/eventtests.rs",
+      "crates/engine/src/tree_impact.rs",
+      "crates/engine/src/snapshot.rs",
+      "crates/engine/src/delta_tests.rs",
+      "crates/kwdj/src/candidate_cache.rs",
+      "crates/kwdj/src/candidate_cache_tests.rs",
+      "crates/wasm/examples/delta_native.rs",
+      "crates/wasm/examples/delta_probe.rs",
+      "crates/wasm/examples/support/delta_literals.json",
+      "crates/wasm/examples/support/delta_observer.rs",
+      "crates/wasm/examples/support/delta_series.rs",
+      "crates/wasm/examples/support/delta_benchmark.rs",
+      "crates/wasm/tests/deltas.rs",
+      "crates/wasm/tests/delta_equivalence.rs",
+      "scripts/test-deltas.mjs",
+      "scripts/benchmark-deltas.mjs"
+    ],
+    "extendedOriginalFoundation": [
+      "crates/core/src/candidate.rs",
+      "crates/core/src/profile.rs",
+      "crates/core/src/transaction.rs",
+      "crates/engine/src/session.rs",
+      "crates/engine/src/tree.rs",
+      "crates/engine/src/dispatch.rs",
+      "crates/engine/src/history_dispatch.rs",
+      "crates/engine/src/commands.rs",
+      "crates/engine/src/history.rs",
+      "crates/engine/src/transaction.rs",
+      "crates/engine/src/mapping.rs",
+      "crates/kwdj/src/session_profile.rs",
+      "crates/kwdj/src/candidate_validate.rs",
+      "crates/kwdj/src/wire_view.rs",
+      "crates/kwdj/src/edit_normalize.rs"
+    ],
+    "privacy": "Synthetic literal/generated documents, fixed fixture UUIDs and example URLs only; no private documents, production captures or credentials",
+    "dependencies": "No new runtime dependency; existing pinned serializers and Unicode library reused",
+    "authority": "Generic engine owns admitted topology, dirty impact, bounded event publication and stamps; KWDJ owns scoped authoritative rule/codec proofs. Native full control is explicit test authority, not a second policy implementation. JS callback queue/disposal63 and host persistence69 keep their own gates."
+  },
+  "originalSdk": {
+    "issue": "OSR-63",
+    "source": "Original Rust/TypeScript bridge, controller, packaging and owner-controlled synthetic independent fixtures; generated TypeScript derives from repository-owned Rust wire DTOs. No third-party implementation copied.",
+    "license": "MIT OR Apache-2.0",
+    "paths": [
+      "crates/wasm/src/sdk.rs",
+      "crates/wasm/src/sdk_wire.rs",
+      "crates/wasm/src/sdk_convert.rs",
+      "crates/wasm/src/sdk_browser.rs",
+      "crates/wasm/examples/sdk_types.rs",
+      "crates/wasm/examples/sdk_manifest.rs",
+      "crates/wasm/examples/sdk_native.rs",
+      "crates/wasm/examples/sdk_probe.rs",
+      "crates/wasm/examples/support/sdk_observer.rs",
+      "crates/wasm/tests/sdk.rs",
+      "contracts/sdk/v1/vectors.json",
+      "contracts/sdk/v1/README.md",
+      "packages/wasm/src/sdk.ts",
+      "packages/wasm/src/sdk-types.ts",
+      "packages/sdk/src/controller.ts",
+      "packages/sdk/src/data.ts",
+      "packages/sdk/src/response.ts",
+      "packages/kwdj/src/index.ts",
+      "scripts/generate-sdk-types.mjs",
+      "scripts/seal-sdk-wasm.mjs",
+      "scripts/test-sdk.mjs",
+      "tests/sdk-controller.node.mjs",
+      "tests/sdk-loader.node.mjs",
+      "tests/sdk-types.node.mjs",
+      "tests/sdk-integration.node.mjs",
+      "tests/sdk-clean-consumer.node.mjs",
+      "tests/sdk-workspace-browser.spec.js",
+      "spikes/workspace/sdk-host.html",
+      "spikes/workspace/sdk-host.js",
+      "spikes/workspace/sdk-scenario.js"
+    ],
+    "extendedOriginalFoundation": [
+      "crates/engine/src/identity.rs",
+      "crates/engine/src/commands.rs",
+      "crates/engine/src/command_tests.rs",
+      "crates/engine/src/transaction.rs",
+      "crates/kwdj/src/session_profile.rs"
+    ],
+    "generationDependency": {
+      "name": "ts-rs",
+      "version": "12.0.1",
+      "license": "MIT",
+      "scope": "Optional native-only type generation. Not a default normal or WASM runtime dependency; complete actual graph/licenses recorded in artifacts/sdk-generator-dependencies.json and conservative package notices."
+    },
+    "privacy": "Only synthetic literal documents/identities and controlled test-host fixtures. No user documents, private captures, credentials or accepted external-model output."
+  }
+}

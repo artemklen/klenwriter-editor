@@ -597,7 +597,13 @@
         }
       },
       "children": {
-        "op": "empty"
+        "op": "repeat",
+        "item": {
+          "op": "type",
+          "id": "org.klenwriter.kwdj/paragraph"
+        },
+        "min": 0,
+        "max": 50000
       },
       "marks": []
     },

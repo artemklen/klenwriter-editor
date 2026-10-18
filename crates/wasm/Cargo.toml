@@ -30,14 +30,19 @@ workspace = true
 editor_core.workspace = true
 editor_engine.workspace = true
 editor_kwdj.workspace = true
+editor_protocol = { package = "klenwriter-editor-protocol", path = "../protocol", version = "=0.0.0" }
+editor_bridge = { package = "klenwriter-editor-bridge", path = "../bridge", version = "=0.0.0" }
+editor_notes_sdk = { package = "klenwriter-editor-notes-sdk", path = "../notes-sdk", version = "=0.0.0", optional = true }
+editor_kwdj_sdk = { package = "klenwriter-editor-kwdj-sdk", path = "../kwdj-sdk", version = "=0.0.0" }
 serde.workspace = true
 serde_json.workspace = true
 uuid = { version = "=1.23.3", default-features = false }
 
 [features]
-default = []
+default = ["notes"]
+notes = ["dep:editor_notes_sdk"]
 # Native declaration generation only; excluded from default and wasm dependencies.
-sdk-types = ["dep:ts-rs"]
+sdk-types = ["dep:ts-rs", "editor_kwdj_sdk/sdk-types"]
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 ts-rs = { version = "=12.0.1", optional = true, default-features = false, features = ["serde-compat"] }
