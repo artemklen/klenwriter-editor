@@ -22,6 +22,7 @@ npm ci --ignore-scripts
 cargo install wasm-bindgen-cli --version 0.2.129 --locked --root .tools
 PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install chromium firefox webkit
 npm run check
+node scripts/reliability/check.mjs
 npm test
 node scripts/summarize-evidence.mjs
 ```
@@ -105,6 +106,12 @@ notes-only/KWDJ-only native/WASM consumers через публичные crates.
 SDK1 и его36 DTO сохраняются; SDK2 выбирается явно. Rust1.89 дополнительно
 проверяет normal closures registry/protocol/notes/extensions; engine/adapters
 и основной builder используют1.97.1.
+
+`node scripts/reliability/check.mjs` выполняет отдельную ordinary reliability
+lane после build: независимый finite model, reducer/comparator checks,
+native public-API replay и actual packaged SDK, границы лимитов и dependency
+inventory. Она входит в CI отдельным шагом; [контракт и команды](docs/reliability.md)
+описывают source/build pins и отдельные performance measurements.
 
 ## Артефакты и ограничения
 

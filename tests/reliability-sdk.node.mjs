@@ -8,7 +8,8 @@ import { readScenarios, runSdkReplay, superviseProcess, supplementalCases } from
 
 test('actual packaged SDK: all twelve independent literals and five separately labelled public boundary/lifecycle supplements', { timeout: 90000 }, async () => {
   const outputRoot = mkdtempSync(join(tmpdir(), 'osr-38-sdk-focused-'));
-  const report = await runSdkReplay({ perContext: 0, outputRoot });
+  const regressionDirectory = mkdtempSync(join(tmpdir(), 'osr-38-sdk-focused-empty-regressions-'));
+  const report = await runSdkReplay({ perContext: 0, outputRoot, regressionDirectory });
   assert.equal(report.status, 'passed', JSON.stringify(report.failures));
   assert.equal(report.summary.literalCases, 12); assert.equal(report.summary.supplementalCases, 5);
   assert.equal(report.summary.completed, 17); assert.equal(report.summary.meetsGeneratedSdkFloor, false);
@@ -22,13 +23,15 @@ test('actual packaged SDK: all twelve independent literals and five separately l
 });
 
 test('frozen scenario selection reserves first64 generated per context independently from twelve literals', () => {
-  const selected = readScenarios();
+  const regressionDirectory = mkdtempSync(join(tmpdir(), 'osr-38-sdk-selection-empty-regressions-'));
+  const selected = readScenarios({ regressionDirectory });
   assert.equal(selected.selected.length, 268);
   for (const context of ['kwdj-prose', 'kwdj-poetry', 'notes-d0', 'notes-d1']) {
     const cases = selected.selected.filter(item => item.scenario.context === context);
     assert.equal(cases.filter(item => item.scenario.id.startsWith('R38-literal-')).length, 3);
-    assert.equal(cases.filter(item => !item.scenario.id.startsWith('R38-literal-')).length, 64);
+    assert.equal(cases.filter(item => !item.regression && !item.scenario.id.startsWith('R38-literal-')).length, 64);
   }
+  assert.equal(selected.regressions.selected.length, 0);
 });
 
 test('controlled watchdog self-test: parent kills a synchronous test-only infinite JS loop', { timeout: 10000 }, async () => {

@@ -29,6 +29,8 @@ jobs:
       - run: cargo +1.89.0 test --locked -p klenwriter-editor-core -p klenwriter-editor-kwdj -p klenwriter-editor-registry -p klenwriter-editor-protocol
       - run: cargo +1.89.0 check --locked --lib -p klenwriter-editor-notes -p klenwriter-editor-extensions
       - run: npm run check
+      - name: Native and packaged SDK reliability
+        run: node scripts/reliability/check.mjs
       - run: npm test
       - run: node scripts/summarize-evidence.mjs
         if: always() && hashFiles('test-results/results.json') != ''
