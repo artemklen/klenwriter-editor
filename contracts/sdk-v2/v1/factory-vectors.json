@@ -1,0 +1,123 @@
+{
+  "format": "klenwriter-editor-sdk-v2-factory-vectors/1",
+  "build_id": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "capability": {
+    "profile_id": "org.example.factory",
+    "profile_version": "1.0.0",
+    "codec_id": "org.example.factory/json",
+    "wire_version": 1,
+    "compiled_extensions": [
+      {
+        "id": "org.example.factory/base",
+        "version": "1.0.0"
+      }
+    ]
+  },
+  "input_utf8": "malformed document must never be decoded by the generic dispatch witness",
+  "cases": [
+    {
+      "id": "F001-exact-envelope-dispatch",
+      "options_json": "{\"abi\":\"editor-sdk/2\",\"build_id\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"profile\":{\"profile_id\":\"org.example.factory\",\"profile_version\":\"1.0.0\",\"codec_id\":\"org.example.factory/json\",\"wire_version\":1,\"extensions\":[{\"id\":\"org.example.factory/base\",\"version\":\"1.0.0\"}]},\"admission\":\"validate\",\"access\":\"editable\",\"registry_json\":\"{}\",\"profile_options_json\":\"{}\"}",
+      "expected": {
+        "code": "fixture.factory_reached",
+        "factory_calls": 1
+      }
+    },
+    {
+      "id": "F002-legacy-abi",
+      "options_json": "{\"abi\":\"editor-sdk/1\",\"build_id\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"profile\":{\"profile_id\":\"org.example.factory\",\"profile_version\":\"1.0.0\",\"codec_id\":\"org.example.factory/json\",\"wire_version\":1,\"extensions\":[{\"id\":\"org.example.factory/base\",\"version\":\"1.0.0\"}]},\"admission\":\"validate\",\"access\":\"editable\",\"registry_json\":\"{}\",\"profile_options_json\":\"{}\"}",
+      "expected": {
+        "code": "sdk.abi_mismatch",
+        "factory_calls": 0
+      }
+    },
+    {
+      "id": "F003-build-mismatch",
+      "options_json": "{\"abi\":\"editor-sdk/2\",\"build_id\":\"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"profile\":{\"profile_id\":\"org.example.factory\",\"profile_version\":\"1.0.0\",\"codec_id\":\"org.example.factory/json\",\"wire_version\":1,\"extensions\":[{\"id\":\"org.example.factory/base\",\"version\":\"1.0.0\"}]},\"admission\":\"validate\",\"access\":\"editable\",\"registry_json\":\"{}\",\"profile_options_json\":\"{}\"}",
+      "expected": {
+        "code": "sdk.build_mismatch",
+        "factory_calls": 0
+      }
+    },
+    {
+      "id": "F004-missing-profile",
+      "options_json": "{\"abi\":\"editor-sdk/2\",\"build_id\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"profile\":{\"profile_id\":\"org.example.absent\",\"profile_version\":\"1.0.0\",\"codec_id\":\"org.example.factory/json\",\"wire_version\":1,\"extensions\":[{\"id\":\"org.example.factory/base\",\"version\":\"1.0.0\"}]},\"admission\":\"validate\",\"access\":\"editable\",\"registry_json\":\"{}\",\"profile_options_json\":\"{}\"}",
+      "expected": {
+        "code": "profile.unsupported_profile",
+        "factory_calls": 0
+      }
+    },
+    {
+      "id": "F005-unknown-profile-version",
+      "options_json": "{\"abi\":\"editor-sdk/2\",\"build_id\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"profile\":{\"profile_id\":\"org.example.factory\",\"profile_version\":\"2.0.0\",\"codec_id\":\"org.example.factory/json\",\"wire_version\":1,\"extensions\":[{\"id\":\"org.example.factory/base\",\"version\":\"1.0.0\"}]},\"admission\":\"validate\",\"access\":\"editable\",\"registry_json\":\"{}\",\"profile_options_json\":\"{}\"}",
+      "expected": {
+        "code": "profile.unsupported_profile_version",
+        "factory_calls": 0
+      }
+    },
+    {
+      "id": "F006-missing-codec",
+      "options_json": "{\"abi\":\"editor-sdk/2\",\"build_id\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"profile\":{\"profile_id\":\"org.example.factory\",\"profile_version\":\"1.0.0\",\"codec_id\":\"org.example.factory/absent\",\"wire_version\":1,\"extensions\":[{\"id\":\"org.example.factory/base\",\"version\":\"1.0.0\"}]},\"admission\":\"validate\",\"access\":\"editable\",\"registry_json\":\"{}\",\"profile_options_json\":\"{}\"}",
+      "expected": {
+        "code": "profile.unsupported_codec",
+        "factory_calls": 0
+      }
+    },
+    {
+      "id": "F007-unknown-wire-version",
+      "options_json": "{\"abi\":\"editor-sdk/2\",\"build_id\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"profile\":{\"profile_id\":\"org.example.factory\",\"profile_version\":\"1.0.0\",\"codec_id\":\"org.example.factory/json\",\"wire_version\":2,\"extensions\":[{\"id\":\"org.example.factory/base\",\"version\":\"1.0.0\"}]},\"admission\":\"validate\",\"access\":\"editable\",\"registry_json\":\"{}\",\"profile_options_json\":\"{}\"}",
+      "expected": {
+        "code": "profile.unsupported_wire_version",
+        "factory_calls": 0
+      }
+    },
+    {
+      "id": "F008-closed-envelope",
+      "options_json": "{\"abi\":\"editor-sdk/2\",\"build_id\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"profile\":{\"profile_id\":\"org.example.factory\",\"profile_version\":\"1.0.0\",\"codec_id\":\"org.example.factory/json\",\"wire_version\":1,\"extensions\":[{\"id\":\"org.example.factory/base\",\"version\":\"1.0.0\"}]},\"admission\":\"validate\",\"access\":\"editable\",\"registry_json\":\"{}\",\"profile_options_json\":\"{}\",\"unexpected\":true}",
+      "expected": {
+        "code": "sdk.invalid_dto",
+        "factory_calls": 0
+      }
+    },
+    {
+      "id": "F009-required-registry-original-json",
+      "options_json": "{\"abi\":\"editor-sdk/2\",\"build_id\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"profile\":{\"profile_id\":\"org.example.factory\",\"profile_version\":\"1.0.0\",\"codec_id\":\"org.example.factory/json\",\"wire_version\":1,\"extensions\":[{\"id\":\"org.example.factory/base\",\"version\":\"1.0.0\"}]},\"admission\":\"validate\",\"access\":\"editable\",\"profile_options_json\":\"{}\"}",
+      "expected": {
+        "code": "sdk.invalid_dto",
+        "factory_calls": 0
+      }
+    },
+    {
+      "id": "F010-required-profile-options-string",
+      "options_json": "{\"abi\":\"editor-sdk/2\",\"build_id\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"profile\":{\"profile_id\":\"org.example.factory\",\"profile_version\":\"1.0.0\",\"codec_id\":\"org.example.factory/json\",\"wire_version\":1,\"extensions\":[{\"id\":\"org.example.factory/base\",\"version\":\"1.0.0\"}]},\"admission\":\"validate\",\"access\":\"editable\",\"registry_json\":\"{}\",\"profile_options_json\":null}",
+      "expected": {
+        "code": "sdk.invalid_dto",
+        "factory_calls": 0
+      }
+    },
+    {
+      "id": "F011-malformed-envelope",
+      "options_json": "{",
+      "expected": {
+        "code": "sdk.invalid_dto",
+        "factory_calls": 0
+      }
+    },
+    {
+      "id": "F012-duplicate-envelope-key",
+      "options_json": "{\"abi\":\"editor-sdk/2\",\"build_id\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"profile\":{\"profile_id\":\"org.example.factory\",\"profile_version\":\"1.0.0\",\"codec_id\":\"org.example.factory/json\",\"wire_version\":1,\"extensions\":[{\"id\":\"org.example.factory/base\",\"version\":\"1.0.0\"}]},\"admission\":\"validate\",\"access\":\"editable\",\"registry_json\":\"{}\",\"profile_options_json\":\"{}\",\"abi\":\"editor-sdk/2\"}",
+      "expected": {
+        "code": "sdk.invalid_dto",
+        "factory_calls": 0
+      }
+    },
+    {
+      "id": "F013-wire-transport-u32-bound",
+      "options_json": "{\"abi\":\"editor-sdk/2\",\"build_id\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"profile\":{\"profile_id\":\"org.example.factory\",\"profile_version\":\"1.0.0\",\"codec_id\":\"org.example.factory/json\",\"wire_version\":4294967296,\"extensions\":[{\"id\":\"org.example.factory/base\",\"version\":\"1.0.0\"}]},\"admission\":\"validate\",\"access\":\"editable\",\"registry_json\":\"{}\",\"profile_options_json\":\"{}\"}",
+      "expected": {
+        "code": "sdk.invalid_dto",
+        "factory_calls": 0
+      }
+    }
+  ]
+}
