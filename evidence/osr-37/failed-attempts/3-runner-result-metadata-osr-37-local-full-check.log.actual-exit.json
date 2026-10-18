@@ -1,0 +1,16 @@
+{
+  "role": "workspace_check",
+  "command": "npm run check",
+  "argv": [
+    "npm",
+    "run",
+    "check"
+  ],
+  "exit_code": 101,
+  "path": "/tmp/osr-37-local-full-check.log",
+  "bytes": 29758,
+  "sha256": "0b9d680a02ce91654fc72e1ab5220f412b655b2bb62433504fc568a758439baa",
+  "startedAt": "2026-10-18T08:44:00.878876+00:00",
+  "completedAt": "2026-10-18T08:44:12.643696+00:00",
+  "capture": "actual direct subprocess stdout+stderr to one raw file; normal exit code from subprocess.run"
+}

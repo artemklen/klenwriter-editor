@@ -2,15 +2,17 @@
 //! The only document publication path: prepare, normalize, validate, publish.
 
 use editor_core::admission::{PreflightBudget, preflight_snapshot};
+use editor_core::cache::{CacheUpdate, CandidateCache};
 use editor_core::commands::StoredMarksUpdate;
 use editor_core::document::{Attribute, Attributes, Mark, Primitive};
 use editor_core::limits::{LimitExceeded, check};
 use editor_core::positions::{Position, Selection};
 use editor_core::transaction::{
-    MarkEdit, Operation, TransactionProfile, ValidationStats, WorkMeter, WorkUsage,
+    MarkEdit, Operation, TransactionProfile, ValidationStats, WorkMeter, WorkTrace, WorkUsage,
 };
 
 use super::{AccessMode, Session, SessionState, StateError};
+use crate::events::{ChangeImpact, EventKind, EventPayload, EventPlan, SessionStamp, StateChange};
 use crate::history::{HistoryBoundary, HistoryPlan, PreparedHistoryChange};
 use crate::identity::NodeId;
 use crate::mapping::{MapError, PositionMap, StepMap};
@@ -386,7 +388,7 @@ pub(super) enum TypingPolicy {
     Command(StoredMarksUpdate),
 }
 
-pub(super) struct Prepared<A: Allocation> {
+pub(super) struct Prepared<A: Allocation, C: CandidateCache> {
     pub(super) patch: PreparedTreePatch<A>,
     pub(super) map: PositionMap<NodeId>,
     pub(super) retained_map: Option<PositionMap<NodeId>>,
@@ -405,13 +407,20 @@ pub(super) struct Prepared<A: Allocation> {
     pub(super) changed_nodes: Vec<NodeId>,
     pub(super) normalization_operations: usize,
     pub(super) validation: ValidationStats,
+    pub(super) cache_update: Option<CacheUpdate<C>>,
+    pub(super) impact: Option<ChangeImpact>,
+    pub(super) notification: Option<EventPlan>,
     pub(super) work: WorkUsage,
+    pub(super) trace: WorkTrace,
 }
-impl<A: Allocation> Prepared<A> {
+impl<A: Allocation, C: CandidateCache> Prepared<A, C> {
     pub(super) fn changed(&self) -> bool {
         self.patch.changed()
     }
 }
+
+pub(super) type PreparedFor<P, A> =
+    Prepared<A, <P as editor_core::profile::FrozenProfile>::Cache<NodeId>>;
 
 /// Charge the owned metadata material before cloning it. This logical bound
 /// includes container/value overhead and is independent of historic edits.
@@ -488,6 +497,76 @@ fn resolve_selection<E, A: Allocation>(
 }
 
 impl<P: TransactionProfile> Session<P> {
+    /// Event capacity, payload ownership and checked sequence join the same
+    /// publication-free preparation used by raw, command and history queries.
+    pub(super) fn prepare_notification<A: Allocation>(
+        &self,
+        prepared: &mut PreparedFor<P, A>,
+        work: &mut WorkMeter,
+    ) -> Result<(), TransactionError<P::Error>> {
+        let changed = prepared.changed();
+        let history = prepared
+            .history_plan
+            .as_ref()
+            .map_or_else(|| self.history.summary(), |plan| plan.summary());
+        let history_changed = history.epoch != self.history.summary().epoch;
+        if !changed
+            && !prepared.selection_changed
+            && !prepared.stored_marks_changed
+            && !history_changed
+        {
+            prepared.work = work.usage();
+            prepared.trace = work.trace();
+            return Ok(());
+        }
+        let kind = if changed {
+            work.charge_bytes(map_bytes(prepared.map.steps())? as u64)?;
+            EventKind::Document {
+                impact: prepared.impact.take().expect("prepared document impact"),
+                map: prepared.map.clone(),
+            }
+        } else {
+            EventKind::State(StateChange {
+                selection_changed: prepared.selection_changed,
+                stored_marks_changed: prepared.stored_marks_changed,
+                history_changed,
+                baseline_changed: false,
+            })
+        };
+        let journal = if changed {
+            self.journal.projected_summary(
+                prepared.journal_plan.as_ref().expect("prepared journal"),
+                self.revision,
+            )
+        } else {
+            self.journal.summary(self.revision)
+        };
+        let payload = EventPayload {
+            before: self.stamp(),
+            after: SessionStamp {
+                session: self.key,
+                revision: prepared.revision,
+                selection_epoch: prepared.epoch,
+                history_epoch: history.epoch,
+            },
+            selection_before: self.selection,
+            selection_after: prepared.selection,
+            stored_marks_before: copy_marks(self.stored_marks.as_deref(), work)?.0,
+            stored_marks_after: copy_marks(prepared.stored_marks.as_deref(), work)?.0,
+            dirty_before: self.dirty,
+            dirty_after: self.dirty || changed,
+            history,
+            journal,
+            kind,
+        };
+        prepared.notification =
+            self.events
+                .prepare_append(Some(payload), self.event_limits, work)?;
+        prepared.work = work.usage();
+        prepared.trace = work.trace();
+        Ok(())
+    }
+
     pub fn dispatch(&mut self, transaction: Transaction) -> DispatchOutcome<P::Error> {
         let mut work = WorkMeter::new(transaction.limits.work);
         let prepared = self.prepare_transaction(
@@ -521,7 +600,7 @@ impl<P: TransactionProfile> Session<P> {
             Option<&[Mark]>,
             &mut WorkMeter,
         ) -> Result<Option<Vec<Mark>>, TransactionError<P::Error>>,
-    ) -> Result<Prepared<A>, TransactionError<P::Error>> {
+    ) -> Result<PreparedFor<P, A>, TransactionError<P::Error>> {
         self.guard(transaction.session, Some(transaction.revision))?;
         if transaction
             .selection_epoch
@@ -587,12 +666,14 @@ impl<P: TransactionProfile> Session<P> {
         let normalization_start = draft.steps().len();
         let mut normalization_operations = 0usize;
         let mut validation = ValidationStats::default();
+        let mut cache_update = None;
         if has_user_operations {
             let mut passes = 0usize;
             loop {
+                draft.prepare_changes(work)?;
                 let operations = self
                     .profile
-                    .normalize_candidate(&self.context, &draft, work)
+                    .normalize_scoped(&self.context, &draft.changes()?, &self.cache, work)
                     .map_err(TransactionError::Profile)?;
                 if operations.is_empty() {
                     break;
@@ -617,11 +698,14 @@ impl<P: TransactionProfile> Session<P> {
                     normalization_operations += 1;
                 }
             }
+            draft.prepare_changes(work)?;
             draft.validate_structure(work)?;
-            validation = self
+            let validated = self
                 .profile
-                .validate_candidate(&self.context, &draft, work)
+                .validate_scoped(&self.context, &draft.changes()?, &self.cache, work)
                 .map_err(TransactionError::Profile)?;
+            validation = validated.stats;
+            cache_update = Some(validated.cache);
         }
         let changed = draft.has_changes();
         let next_revision = if changed {
@@ -692,6 +776,12 @@ impl<P: TransactionProfile> Session<P> {
         draft.tighten_copy_budget(
             before_copy.saturating_add(usize::try_from(remaining).unwrap_or(usize::MAX)),
         );
+        draft.prepare_changes(work)?;
+        let impact = if changed {
+            Some(draft.prepare_impact(work)?)
+        } else {
+            None
+        };
         let patch = draft.prepare_patch()?;
         work.charge_bytes((patch.prepared_copy_bytes() - before_copy) as u64)?;
         debug_assert_eq!(changed, patch.changed());
@@ -754,7 +844,7 @@ impl<P: TransactionProfile> Session<P> {
         } else if selection_changed || stored_marks_changed {
             history_plan = self.history.plan_barrier(work)?;
         }
-        Ok(Prepared {
+        let mut prepared = Prepared {
             patch,
             map,
             retained_map,
@@ -773,14 +863,20 @@ impl<P: TransactionProfile> Session<P> {
             changed_nodes,
             normalization_operations,
             validation,
+            cache_update,
+            impact,
+            notification: None,
             work: work.usage(),
-        })
+            trace: work.trace(),
+        };
+        self.prepare_notification(&mut prepared, work)?;
+        Ok(prepared)
     }
 
     /// Only a real prepared patch can reach this publication method.
     pub(super) fn publish_prepared(
         &mut self,
-        prepared: Prepared<RealAllocation>,
+        prepared: PreparedFor<P, RealAllocation>,
     ) -> DispatchOutcome<P::Error> {
         let changed = prepared.changed();
         if !changed {
@@ -789,6 +885,9 @@ impl<P: TransactionProfile> Session<P> {
             self.selection_epoch = prepared.epoch;
             if let Some(plan) = prepared.history_plan {
                 self.history.publish(plan);
+            }
+            if let Some(event) = prepared.notification {
+                self.events.publish(event);
             }
             return DispatchOutcome::Unchanged {
                 revision: self.revision,
@@ -801,7 +900,15 @@ impl<P: TransactionProfile> Session<P> {
         }
         let before = self.selection;
         let marks_before = std::mem::replace(&mut self.stored_marks, prepared.stored_marks);
-        let material = self.tree.publish(prepared.patch);
+        let notification = prepared
+            .notification
+            .expect("prepared document notification");
+        let observed = std::sync::Arc::clone(notification.event());
+        let material = self.tree.publish(prepared.patch, prepared.revision);
+        prepared
+            .cache_update
+            .expect("prepared profile validation")
+            .publish(&mut self.cache);
         self.journal.publish(
             JournalEntry {
                 material,
@@ -820,6 +927,7 @@ impl<P: TransactionProfile> Session<P> {
         self.selection = prepared.selection;
         self.selection_epoch = prepared.epoch;
         self.dirty = true;
+        self.events.publish(notification);
         DispatchOutcome::Changed(CommitEvent {
             revision: self.revision,
             selection_epoch: self.selection_epoch,
@@ -833,6 +941,8 @@ impl<P: TransactionProfile> Session<P> {
             normalization_operations: prepared.normalization_operations,
             validation: prepared.validation,
             work: prepared.work,
+            trace: prepared.trace,
+            notification: observed,
             dirty: self.dirty,
         })
     }

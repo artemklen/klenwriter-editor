@@ -76,4 +76,5 @@ fn actual_bounded_history_recurrence() {
     let r = observer::observe_recurrence();
     assert_eq!(r["cycles"], 512);
     assert_eq!(r["document_publications"], 1536);
+    assert_eq!(r["event_record_cap"], 1);
 }

@@ -18,6 +18,27 @@ pub(crate) trait ValidationView {
     fn text(&self, node: Self::Handle) -> Option<&str>;
     fn children_len(&self, node: Self::Handle) -> usize;
     fn child(&self, node: Self::Handle, index: usize) -> Self::Handle;
+    fn original_children_len(&self, node: Self::Handle) -> usize {
+        self.children_len(node)
+    }
+    fn root_indices(&self) -> Option<&[usize]> {
+        None
+    }
+    fn child_indices(&self, _node: Self::Handle) -> Option<&[usize]> {
+        None
+    }
+    fn known_nodes(&self) -> Option<u64> {
+        None
+    }
+    fn check_table(&self, _node: Self::Handle) -> bool {
+        true
+    }
+    fn check_verse_structure(&self, _node: Self::Handle) -> bool {
+        true
+    }
+    fn resolve_identities(&self) -> bool {
+        true
+    }
 }
 
 pub(crate) struct WireView<'a> {
@@ -184,7 +205,7 @@ impl<V: ValidationView> Serialize for NodeWire<'_, V> {
             header,
             Node::Text { .. } | Node::HardBreak | Node::SceneBreak | Node::StanzaBreak { .. }
         ) && (!matches!(header, Node::MediaImage { .. })
-            || self.view.children_len(self.node) != 0)
+            || self.view.original_children_len(self.node) != 0)
         {
             object.serialize_entry(
                 "content",
@@ -196,4 +217,67 @@ impl<V: ValidationView> Serialize for NodeWire<'_, V> {
         }
         object.end()
     }
+}
+
+/// Exact local wire count through the production node serializer. Child arrays
+/// are empty here but their presence follows the original node; cached child
+/// encodings and commas are composed separately.
+pub(crate) fn local_wire_length(
+    header: &Node,
+    text: Option<&str>,
+    children: usize,
+    work: &mut editor_core::transaction::WorkMeter,
+) -> Result<u64, crate::KwdjError> {
+    struct Local<'a> {
+        header: &'a Node,
+        text: Option<&'a str>,
+        children: usize,
+    }
+    impl ValidationView for Local<'_> {
+        type Handle = ();
+        fn roots_len(&self) -> usize {
+            1
+        }
+        fn root(&self, _: usize) {}
+        fn header(&self, _: ()) -> &Node {
+            self.header
+        }
+        fn text(&self, _: ()) -> Option<&str> {
+            self.text
+        }
+        fn children_len(&self, _: ()) -> usize {
+            0
+        }
+        fn child(&self, _: (), _: usize) {
+            unreachable!("local header has no child payload")
+        }
+        fn original_children_len(&self, _: ()) -> usize {
+            self.children
+        }
+    }
+    let view = Local {
+        header,
+        text,
+        children,
+    };
+    crate::candidate_validate::count_json(
+        &NodeWire {
+            view: &view,
+            node: (),
+        },
+        work,
+    )
+}
+
+pub(crate) fn document_envelope_length(
+    profile: Profile,
+    work: &mut editor_core::transaction::WorkMeter,
+) -> Result<u64, crate::KwdjError> {
+    crate::candidate_validate::count_json(
+        &DocumentWire {
+            view: &WireView { roots: &[] },
+            profile,
+        },
+        work,
+    )
 }

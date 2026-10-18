@@ -236,10 +236,48 @@ pub struct WorkUsage {
     pub bytes: u64,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(usize)]
+pub enum WorkPhase {
+    Structure,
+    Header,
+    Preflight,
+    Normalization,
+    Serialization,
+    StaticValidation,
+    Identity,
+    CacheReuse,
+    CacheUpdate,
+    Impact,
+    Event,
+    Export,
+    FullFallback,
+}
+
+pub const WORK_PHASE_COUNT: usize = 13;
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct PhaseUsage {
+    pub visits: u64,
+    pub bytes: u64,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct WorkTrace {
+    pub phases: [PhaseUsage; WORK_PHASE_COUNT],
+}
+
+impl WorkTrace {
+    pub fn phase(&self, phase: WorkPhase) -> PhaseUsage {
+        self.phases[phase as usize]
+    }
+}
+
 #[derive(Debug)]
 pub struct WorkMeter {
     limits: WorkLimits,
     usage: WorkUsage,
+    trace: WorkTrace,
 }
 
 impl WorkMeter {
@@ -251,6 +289,7 @@ impl WorkMeter {
                 bytes: requested.bytes.min(hard.bytes),
             },
             usage: WorkUsage::default(),
+            trace: WorkTrace::default(),
         }
     }
     pub fn usage(&self) -> WorkUsage {
@@ -258,6 +297,16 @@ impl WorkMeter {
     }
     pub fn limits(&self) -> WorkLimits {
         self.limits
+    }
+    pub fn trace(&self) -> WorkTrace {
+        self.trace
+    }
+    /// Instrument actual visits/bytes separately from logical charged work.
+    /// Counters are observational and do not confer a resource allowance.
+    pub fn note_phase(&mut self, phase: WorkPhase, visits: u64, bytes: u64) {
+        let counter = &mut self.trace.phases[phase as usize];
+        counter.visits = counter.visits.saturating_add(visits);
+        counter.bytes = counter.bytes.saturating_add(bytes);
     }
     pub fn charge_units(&mut self, amount: u64) -> Result<(), LimitExceeded> {
         let observed = self.usage.units.saturating_add(amount);
@@ -295,4 +344,30 @@ pub trait TransactionProfile: FrozenProfile {
         candidate: &V,
         work: &mut WorkMeter,
     ) -> Result<ValidationStats, Self::Error>;
+
+    fn normalize_scoped<V: crate::candidate::CandidateChanges>(
+        &self,
+        context: &Self::Context,
+        candidate: &V,
+        _cache: &Self::Cache<V::Id>,
+        work: &mut WorkMeter,
+    ) -> Result<Vec<Operation<V::Id>>, Self::Error> {
+        work.note_phase(WorkPhase::FullFallback, 1, 0);
+        self.normalize_candidate(context, candidate, work)
+    }
+
+    fn validate_scoped<V: crate::candidate::CandidateChanges>(
+        &self,
+        context: &Self::Context,
+        candidate: &V,
+        _cache: &Self::Cache<V::Id>,
+        work: &mut WorkMeter,
+    ) -> Result<crate::cache::PreparedValidation<Self::Cache<V::Id>>, Self::Error> {
+        work.note_phase(WorkPhase::FullFallback, 1, 0);
+        let stats = self.validate_candidate(context, candidate, work)?;
+        Ok(crate::cache::PreparedValidation {
+            stats,
+            cache: crate::cache::CacheUpdate::Replace(Self::Cache::<V::Id>::default()),
+        })
+    }
 }

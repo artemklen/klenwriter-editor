@@ -7,7 +7,7 @@ use editor_core::commands::{
 };
 use editor_core::transaction::{WorkMeter, WorkUsage};
 
-use super::dispatch::{Prepared, TypingPolicy};
+use super::dispatch::{PreparedFor, TypingPolicy};
 use super::{Session, StateError};
 use crate::history::HistoryHint;
 use crate::identity::{NodeId, SessionKey};
@@ -61,6 +61,11 @@ impl<E> From<TransactionError<E>> for CommandError<E> {
     }
 }
 
+type CommandPreparation<P, A> = Result<
+    (PreparedFor<P, A>, CommandPresentation),
+    CommandError<<P as editor_core::profile::FrozenProfile>::Error>,
+>;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CommandAvailability<E> {
     Available {
@@ -108,7 +113,7 @@ impl<P: CommandProvider> Session<P> {
         request: &CommandRequest<P::Intent<NodeId>>,
         draft: TreeDraft<'_, A>,
         work: &mut WorkMeter,
-    ) -> Result<(Prepared<A>, CommandPresentation), CommandError<P::Error>> {
+    ) -> CommandPreparation<P, A> {
         self.guard(request.session, Some(request.revision))
             .map_err(|error| CommandError::Transaction(TransactionError::State(error)))?;
         if request.selection_epoch != self.selection_epoch {

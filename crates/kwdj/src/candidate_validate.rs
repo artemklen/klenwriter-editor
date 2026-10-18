@@ -19,7 +19,7 @@ use crate::{
     key_path,
 };
 
-fn precharge<I>(
+pub(crate) fn precharge<I>(
     node: BorrowedNode<'_, I>,
     budget: PreflightBudget,
     work: &mut WorkMeter,
@@ -58,6 +58,11 @@ fn precharge<I>(
         }
         KwdjError::operational(error)
     })?;
+    work.note_phase(
+        editor_core::transaction::WorkPhase::Preflight,
+        1,
+        usage.payload_bytes,
+    );
     work.charge_units(usage.values)
         .map_err(KwdjError::operational)?;
     // Metadata is copied by Value/Serde and normalization. The actual text is
@@ -72,7 +77,7 @@ fn precharge<I>(
     Ok(usage)
 }
 
-fn raw_header<I>(node: BorrowedNode<'_, I>, path: &str) -> Result<Value, KwdjError> {
+pub(crate) fn raw_header<I>(node: BorrowedNode<'_, I>, path: &str) -> Result<Value, KwdjError> {
     let kind = local_name(
         node.type_id,
         &key_path(path, "type"),
@@ -122,7 +127,7 @@ fn raw_header<I>(node: BorrowedNode<'_, I>, path: &str) -> Result<Value, KwdjErr
     Ok(Value::Object(object))
 }
 
-fn decode_header(value: Value, path: &str) -> Result<Node, KwdjError> {
+pub(crate) fn decode_header(value: Value, path: &str) -> Result<Node, KwdjError> {
     // Explicit guards retain their exact source paths. Serde's internally
     // tagged Node enum reports decoding failures at the enclosing root node;
     // retain that native diagnostic behavior for the shallow adapter too.
@@ -165,7 +170,14 @@ pub(crate) fn check_normalizable_header<I: Copy>(
     path: &str,
     work: &mut WorkMeter,
 ) -> Result<(), KwdjError> {
-    precharge(node, PreflightBudget::default(), work)?;
+    let usage = precharge(node, PreflightBudget::default(), work)?;
+    work.charge_bytes(
+        usage
+            .values
+            .saturating_mul((path.len() as u64).saturating_mul(2).saturating_add(128)),
+    )
+    .map_err(KwdjError::operational)?;
+    work.note_phase(editor_core::transaction::WorkPhase::Header, 1, 0);
     let mut value = raw_header(node, path)?;
     crate::scan_known_types(&value, path)?;
     let mut marks = value
@@ -279,6 +291,7 @@ pub(crate) fn check_discarded_metadata<V: CandidateRead>(
             check_normalizable_header(node, path, work)?;
             let mut value = raw_header(node, path)?;
             crate::normalize::normalize_value(&mut value, path, &mut Vec::new())?;
+            work.note_phase(editor_core::transaction::WorkPhase::Header, 1, 0);
             let header = decode_header(value, path)?;
             work.charge_bytes((path.len() + std::mem::size_of::<(Node, String)>()) as u64)
                 .map_err(KwdjError::operational)?;
@@ -326,7 +339,10 @@ pub(crate) fn check_discarded_metadata<V: CandidateRead>(
     )
 }
 
-fn strict_header<I: Copy>(node: BorrowedNode<'_, I>, path: &str) -> Result<Node, KwdjError> {
+pub(crate) fn strict_header<I: Copy>(
+    node: BorrowedNode<'_, I>,
+    path: &str,
+) -> Result<Node, KwdjError> {
     let value = raw_header(node, path)?;
     crate::normalize::ensure_normalized(&value, path).map_err(|mut error| {
         // Native strict admission checks the whole document at the root.
@@ -450,6 +466,9 @@ fn build_view<'a, V: CandidateRead>(
     }
     for (id, path) in state.pending {
         let node = candidate.node(id).expect("checked stable candidate");
+        state
+            .work
+            .note_phase(editor_core::transaction::WorkPhase::Header, 1, 0);
         headers.insert(id, strict_header(node, &path)?);
     }
     Ok(CandidateView {
@@ -474,6 +493,11 @@ impl Write for CountWriter<'_> {
             self.refusal = Some(KwdjError::operational(error));
             return Err(io::Error::other("transaction byte budget"));
         }
+        self.work.note_phase(
+            editor_core::transaction::WorkPhase::Serialization,
+            0,
+            bytes.len() as u64,
+        );
         self.bytes = self
             .bytes
             .checked_add(bytes.len() as u64)
@@ -483,6 +507,23 @@ impl Write for CountWriter<'_> {
     fn flush(&mut self) -> io::Result<()> {
         Ok(())
     }
+}
+
+pub(crate) fn count_json<T: serde::Serialize>(
+    value: &T,
+    work: &mut WorkMeter,
+) -> Result<u64, KwdjError> {
+    let mut writer = CountWriter {
+        bytes: 0,
+        work,
+        refusal: None,
+    };
+    let result = serde_json::to_writer(&mut writer, value);
+    if let Some(error) = writer.refusal {
+        return Err(error);
+    }
+    result.map_err(|_| KwdjError::new(KwdjErrorCode::InvalidStructure, ""))?;
+    Ok(writer.bytes)
 }
 
 pub(crate) fn validate_candidate<V: CandidateRead>(
@@ -496,7 +537,7 @@ pub(crate) fn validate_candidate<V: CandidateRead>(
     validate_outcome(context, candidate, identities, limits, budget, work).map(|(stats, _)| stats)
 }
 
-fn validate_outcome<V: CandidateRead>(
+pub(crate) fn validate_outcome<V: CandidateRead>(
     context: Profile,
     candidate: &V,
     identities: &dyn IdentityResolver,

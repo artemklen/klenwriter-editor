@@ -1,0 +1,56 @@
+{
+  "issue": "OSR-37",
+  "base": "e6c6762952050b62fad30e7a5456ed5607adbb9d",
+  "attempts": [
+    {
+      "role": "workspace_check",
+      "command": "npm run check",
+      "path": "/tmp/osr-37-local-full-check-first-red.log",
+      "bytes": 29911,
+      "sha256": "5275b9c3e5f2141c46cadc6148668be41c4fe4963f58f1f368284d512f6568d6",
+      "nested_exit_code": null,
+      "wrapper_exit_code": 1,
+      "reason": "History recurrence failed at cycle3: default64 event outbox still warming; runner then failed serializing a list-shaped gate table. Nested npm return code was not persisted. Fixture is subsequently bounded to one event; all512 cycles and original steady-state assertions retained.",
+      "runner_readback": {
+        "path": "/tmp/osr-37-first-full-wrapper-readback.json",
+        "bytes": 656,
+        "sha256": "339f1c9e1c56dfff1bb83f9f8d0b63bcf699d7d9a4f9b1eb4a2de2846edea91a"
+      },
+      "source_snapshot": {
+        "path": "/tmp/osr-37-local-source-closure-first-red.json",
+        "bytes": 30823,
+        "sha256": "cf1d6c24df3803cedaad1d47d82e9fa93fec1472e3b313759d45f61d753898e0"
+      }
+    },
+    {
+      "role": "focused_history",
+      "command": "cargo test --locked -p klenwriter-editor-wasm --test history > /tmp/osr-37-history-after-event-cap.log 2>&1",
+      "path": "/tmp/osr-37-history-after-event-cap.log",
+      "bytes": 539,
+      "sha256": "82e3b0f8bda9fc563adba1fe9b9781f15cbce7220f0ccd757bba80f26c058796",
+      "nested_exit_code": 101,
+      "wrapper_exit_code": 101,
+      "reason": "Compile error in new fixture helper: EventLimits is in editor_engine::events, not crate root; import corrected. Actual direct shell command exit101 observed in tool chunk e31f82."
+    },
+    {
+      "role": "workspace_check",
+      "command": "npm run check",
+      "path": "/tmp/osr-37-local-full-check.log",
+      "bytes": 29758,
+      "sha256": "0b9d680a02ce91654fc72e1ab5220f412b655b2bb62433504fc568a758439baa",
+      "nested_exit_code": 101,
+      "wrapper_exit_code": 101,
+      "reason": "History38 nowpassed; second inherited512metadata fixture still assumed eventoutbox steady after2commits. It failed atcommit4. Isolateoneevent in this bounded fixture too; keep originalcycles/budgets/canonical/IDs/retentionoracles. Actual direct subprocess return101 persisted before sharedtable update.",
+      "runner_readback": {
+        "path": "/tmp/osr-37-local-full-check.log.actual-exit.json",
+        "bytes": 490,
+        "sha256": "8a2f3d4c1da6abcc432be42e52b71714b2b78d2f9b1e0eee5e8b80d2c814e628"
+      },
+      "source_snapshot": {
+        "path": "/tmp/osr-37-local-source-closure-second-red.json",
+        "bytes": 31163,
+        "sha256": "f0bb95be10396324fa090cf96c9dbfb9797de17d5073f5e468891dca31a4f801"
+      }
+    }
+  ]
+}

@@ -360,6 +360,7 @@ fn sibling_fixes<V: CandidateRead>(
     let mut operations = Vec::new();
     let mut previous: Option<(V::Id, BorrowedNode<'_, V::Id>, u64)> = None;
     for id in node.children {
+        work.note_phase(editor_core::transaction::WorkPhase::Normalization, 1, 0);
         let child = candidate
             .node(*id)
             .ok_or_else(|| KwdjError::new(KwdjErrorCode::InvalidStructure, path))?;
@@ -472,6 +473,7 @@ pub(crate) fn normalize_candidate<V: CandidateRead>(
             continue;
         }
         units(work, 1)?;
+        work.note_phase(editor_core::transaction::WorkPhase::Normalization, 1, 0);
         bytes(
             work,
             size_of::<V::Id>().saturating_add(size_of::<usize>() * 4),
@@ -504,6 +506,244 @@ pub(crate) fn normalize_candidate<V: CandidateRead>(
             exit: true,
         });
         schedule(node.children, &path, &mut stack, work)?;
+    }
+    Ok(Vec::new())
+}
+
+// Only a contiguous, proven neighborhood is exposed to the unchanged sibling
+// normalizer. Skipped pairs retain the admitted fixed-point proof; disjoint
+// windows are never concatenated, which could invent adjacency.
+struct SiblingWindow<'a, V: CandidateRead> {
+    view: &'a V,
+    parent: V::Id,
+    children: &'a [V::Id],
+}
+impl<V: CandidateRead> CandidateRead for SiblingWindow<'_, V> {
+    type Id = V::Id;
+    fn root(&self) -> V::Id {
+        self.view.root()
+    }
+    fn roots(&self) -> &[V::Id] {
+        self.view.roots()
+    }
+    fn node(&self, id: V::Id) -> Option<BorrowedNode<'_, V::Id>> {
+        let mut node = self.view.node(id)?;
+        if id == self.parent {
+            node.children = self.children;
+        }
+        Some(node)
+    }
+}
+fn charge_sort(work: &mut WorkMeter, length: usize) -> Result<(), KwdjError> {
+    units(
+        work,
+        length.saturating_mul((length.saturating_add(1).ilog2() as usize).saturating_add(1)),
+    )
+}
+
+/// The same local/sibling rules on the engine's invalidated forest. Unchanged
+/// ancestor payloads and unrelated sibling subtrees retain their admitted proof.
+pub(crate) fn normalize_scoped<V, F>(
+    _context: Profile,
+    candidate: &V,
+    work: &mut WorkMeter,
+    mut path: F,
+) -> Result<Vec<Operation<V::Id>>, KwdjError>
+where
+    V: editor_core::candidate::CandidateChanges,
+    F: FnMut(V::Id, &mut WorkMeter) -> Result<String, KwdjError>,
+{
+    fn visit<V, F>(
+        view: &V,
+        id: V::Id,
+        work: &mut WorkMeter,
+        path: &mut F,
+        depth: usize,
+    ) -> Result<Vec<Operation<V::Id>>, KwdjError>
+    where
+        V: editor_core::candidate::CandidateChanges,
+        F: FnMut(V::Id, &mut WorkMeter) -> Result<String, KwdjError>,
+    {
+        if depth > 128 {
+            return Err(KwdjError::new(KwdjErrorCode::InvalidStructure, ""));
+        }
+        units(work, 1)?;
+        work.note_phase(editor_core::transaction::WorkPhase::Normalization, 1, 0);
+        let index = view
+            .dirty_forest()
+            .binary_search_by_key(&id, |d| d.id)
+            .map_err(|_| KwdjError::new(KwdjErrorCode::InvalidStructure, ""))?;
+        let dirty = &view.dirty_forest()[index];
+        let Some(node) = view.node(id) else {
+            return Ok(Vec::new());
+        };
+        let current_path = path(id, work)?;
+        if dirty.payload_changed {
+            check_normalizable_header(node, &current_path, work)?;
+            let ops = local_fixes(node, id, &current_path, work)?;
+            if !ops.is_empty() {
+                return Ok(ops);
+            }
+        }
+        let mut children = Vec::new();
+        for id in &dirty.dirty_children {
+            units(work, 1)?;
+            let index = view
+                .dirty_forest()
+                .binary_search_by_key(id, |d| d.id)
+                .map_err(|_| KwdjError::new(KwdjErrorCode::InvalidStructure, ""))?;
+            let edge = &view.dirty_forest()[index];
+            if edge.after_parent == Some(dirty.id) {
+                bytes(work, size_of::<(usize, V::Id)>())?;
+                children.push((
+                    edge.after_ordinal
+                        .ok_or_else(|| KwdjError::new(KwdjErrorCode::InvalidStructure, ""))?,
+                    *id,
+                ));
+            }
+        }
+        charge_sort(work, children.len())?;
+        children.sort_unstable();
+        for (_, child) in children {
+            let ops = visit(view, child, work, path, depth + 1)?;
+            if !ops.is_empty() {
+                return Ok(ops);
+            }
+        }
+        let parent_kind = kind(node.type_id);
+        let mut needs_siblings = dirty.children_changed
+            || (dirty.payload_changed
+                && view
+                    .before_node(id)
+                    .is_some_and(|old| old.type_id != node.type_id));
+        let mut windows = Vec::new();
+        if !needs_siblings
+            && matches!(
+                parent_kind,
+                "paragraph" | "heading" | "code_block" | "verse_line" | "verse"
+            )
+        {
+            for child in &dirty.dirty_children {
+                units(work, 1)?;
+                let index = view
+                    .dirty_forest()
+                    .binary_search_by_key(child, |d| d.id)
+                    .map_err(|_| KwdjError::new(KwdjErrorCode::InvalidStructure, ""))?;
+                let edge = &view.dirty_forest()[index];
+                if !edge.direct || edge.after_parent != Some(id) {
+                    continue;
+                }
+                match (view.before_node(*child), view.node(*child)) {
+                    (Some(before), Some(after)) => {
+                        for record in [before, after] {
+                            let remaining = work.limits();
+                            let spent = work.usage();
+                            let usage = editor_core::admission::preflight_node_fields(
+                                record.type_id,
+                                None,
+                                record.attributes,
+                                record.marks,
+                                0,
+                                editor_core::admission::PreflightBudget {
+                                    payload_bytes: remaining.bytes.saturating_sub(spent.bytes),
+                                    values: remaining.units.saturating_sub(spent.units),
+                                    depth: 128,
+                                },
+                            )
+                            .map_err(KwdjError::operational)?;
+                            units(work, usage.values as usize)?;
+                            bytes(work, usage.payload_bytes as usize)?;
+                            work.note_phase(
+                                editor_core::transaction::WorkPhase::Preflight,
+                                1,
+                                usage.payload_bytes,
+                            );
+                        }
+                        if before.type_id != after.type_id
+                            || before.attributes != after.attributes
+                            || before.marks != after.marks
+                            || before.text.is_some_and(str::is_empty)
+                                != after.text.is_some_and(str::is_empty)
+                        {
+                            let ordinal = edge.after_ordinal.ok_or_else(|| {
+                                KwdjError::new(KwdjErrorCode::InvalidStructure, "")
+                            })?;
+                            bytes(work, size_of::<(usize, usize)>().saturating_mul(4))?;
+                            windows.push((
+                                ordinal.saturating_sub(1),
+                                ordinal.saturating_add(2).min(node.children.len()),
+                            ));
+                        }
+                    }
+                    _ => {
+                        needs_siblings = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if needs_siblings {
+            return sibling_fixes(view, id, &current_path, work);
+        }
+        charge_sort(work, windows.len())?;
+        windows.sort_unstable();
+        let mut merged: Vec<(usize, usize)> = Vec::new();
+        for (from, to) in windows {
+            if let Some(last) = merged.last_mut()
+                && from <= last.1
+            {
+                last.1 = last.1.max(to);
+            } else {
+                merged.push((from, to));
+            }
+        }
+        for (from, to) in merged {
+            let window = SiblingWindow {
+                view,
+                parent: id,
+                children: node
+                    .children
+                    .get(from..to)
+                    .ok_or_else(|| KwdjError::new(KwdjErrorCode::InvalidStructure, ""))?,
+            };
+            let ops = sibling_fixes(&window, id, &current_path, work)?;
+            if !ops.is_empty() {
+                return Ok(ops);
+            }
+        }
+        Ok(Vec::new())
+    }
+    let Some(root) = candidate
+        .dirty_forest()
+        .iter()
+        .find(|d| d.id == candidate.root())
+    else {
+        return Ok(Vec::new());
+    };
+    let mut roots = Vec::new();
+    for id in &root.dirty_children {
+        units(work, 1)?;
+        let i = candidate
+            .dirty_forest()
+            .binary_search_by_key(id, |d| d.id)
+            .map_err(|_| KwdjError::new(KwdjErrorCode::InvalidStructure, ""))?;
+        let d = &candidate.dirty_forest()[i];
+        if d.after_parent == Some(candidate.root()) {
+            bytes(work, size_of::<(usize, V::Id)>())?;
+            roots.push((
+                d.after_ordinal
+                    .ok_or_else(|| KwdjError::new(KwdjErrorCode::InvalidStructure, ""))?,
+                *id,
+            ));
+        }
+    }
+    charge_sort(work, roots.len())?;
+    roots.sort_unstable();
+    for (_, id) in roots {
+        let ops = visit(candidate, id, work, &mut path, 0)?;
+        if !ops.is_empty() {
+            return Ok(ops);
+        }
     }
     Ok(Vec::new())
 }

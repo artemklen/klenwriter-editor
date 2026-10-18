@@ -109,6 +109,7 @@ impl FrozenProfile for Profile {
     type Context = ();
     type Admitted = Admitted;
     type Error = &'static str;
+    type Cache<I: Copy + Eq + Ord> = ();
 
     fn binding(&self) -> &ProfileBinding {
         &self.binding

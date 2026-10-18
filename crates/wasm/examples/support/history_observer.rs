@@ -8,6 +8,7 @@ use editor_core::document::{Attributes, Document, Mark};
 use editor_core::positions::{Position, Selection};
 use editor_core::profile::{AdmissionMode, FrozenProfile, ProfileBinding};
 use editor_core::transaction::{Operation, TransactionProfile, ValidationStats, WorkMeter};
+use editor_engine::events::EventLimits;
 use editor_engine::{AccessMode, NodeId, Session};
 use editor_kwdj::commands::KwdjIntent;
 use editor_kwdj::{
@@ -61,6 +62,15 @@ impl FrozenProfile for Counted {
     type Context = <KwdjProfile<'static> as FrozenProfile>::Context;
     type Admitted = <KwdjProfile<'static> as FrozenProfile>::Admitted;
     type Error = KwdjProfileError;
+    type Cache<I: Copy + Eq + Ord> = <KwdjProfile<'static> as FrozenProfile>::Cache<I>;
+    fn seed_cache<V: CandidateRead>(
+        &self,
+        admitted: &Self::Admitted,
+        view: &V,
+        work: &mut WorkMeter,
+    ) -> Result<Self::Cache<V::Id>, Self::Error> {
+        self.inner.seed_cache(admitted, view, work)
+    }
     fn binding(&self) -> &ProfileBinding {
         self.inner.binding()
     }
@@ -94,6 +104,24 @@ impl FrozenProfile for Counted {
     }
 }
 impl TransactionProfile for Counted {
+    fn normalize_scoped<V: editor_core::candidate::CandidateChanges>(
+        &self,
+        context: &Self::Context,
+        view: &V,
+        cache: &Self::Cache<V::Id>,
+        work: &mut WorkMeter,
+    ) -> Result<Vec<Operation<V::Id>>, Self::Error> {
+        self.inner.normalize_scoped(context, view, cache, work)
+    }
+    fn validate_scoped<V: editor_core::candidate::CandidateChanges>(
+        &self,
+        context: &Self::Context,
+        view: &V,
+        cache: &Self::Cache<V::Id>,
+        work: &mut WorkMeter,
+    ) -> Result<editor_core::cache::PreparedValidation<Self::Cache<V::Id>>, Self::Error> {
+        self.inner.validate_scoped(context, view, cache, work)
+    }
     fn normalize_candidate<V: CandidateRead>(
         &self,
         c: &Self::Context,
@@ -147,6 +175,9 @@ pub fn profile() -> KwdjProfile<'static> {
     KwdjProfile::new(&IDENTITIES, Limits::default(), AdmissionBudget::default())
 }
 pub fn open(v: &Value) -> (Session<Counted>, Calls) {
+    open_with_event_limits(v, EventLimits::default())
+}
+pub fn open_with_event_limits(v: &Value, event_limits: EventLimits) -> (Session<Counted>, Calls) {
     let calls = Calls::default();
     let p = Counted {
         inner: profile(),
@@ -154,12 +185,13 @@ pub fn open(v: &Value) -> (Session<Counted>, Calls) {
     };
     let binding = p.binding().clone();
     (
-        Session::open(
+        Session::open_with_event_limits(
             p,
             &binding,
             &serde_json::to_vec(v).unwrap(),
             AdmissionMode::Strict,
             AccessMode::Editable,
+            event_limits,
         )
         .unwrap(),
         calls,

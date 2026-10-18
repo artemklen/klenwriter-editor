@@ -216,6 +216,10 @@ pub(crate) struct HistoryPlan {
 }
 
 impl HistoryPlan {
+    pub(crate) fn summary(&self) -> HistorySummary {
+        self.store.summary()
+    }
+
     pub(crate) fn chronological_evictions(&self) -> usize {
         self.chronological_evictions
     }
@@ -987,7 +991,8 @@ mod tests {
                 )
                 .unwrap();
             self.caret += 1;
-            self.tree.publish(draft.prepare_patch().unwrap())
+            self.tree
+                .publish(draft.prepare_patch().unwrap(), self.caret as u64)
         }
 
         fn boundary(&self, caret: usize) -> HistoryBoundary {
@@ -1100,7 +1105,8 @@ mod tests {
             .plan_replay(direction, &projection(materials), limits, &mut meter)
             .unwrap();
         let evicted = plan.chronological_evictions();
-        fixture.tree.publish(patch);
+        let revision = fixture.tree.changed_revision(fixture.tree.root()).unwrap() + 1;
+        fixture.tree.publish(patch, revision);
         store.publish(plan);
         materials.drain(..evicted);
     }
@@ -1551,12 +1557,12 @@ mod tests {
         let block = tree.node(tree.root()).unwrap().children()[0];
         let leaves = tree.node(block).unwrap().children().to_vec();
         let mut members = vec![];
-        for leaf in leaves {
+        for (index, leaf) in leaves.into_iter().enumerate() {
             let mut draft = tree.prepare();
             draft
                 .replace_text(leaf, Utf16Offset::new(0), Utf16Offset::new(1), "b")
                 .unwrap();
-            members.push(tree.publish(draft.prepare_patch().unwrap()));
+            members.push(tree.publish(draft.prepare_patch().unwrap(), index as u64 + 1));
         }
         let unit = HistoryUnit {
             members,
@@ -1623,7 +1629,9 @@ mod tests {
                     if index % 2 == 0 { "b" } else { "a" },
                 )
                 .unwrap();
-            let material = fixture.tree.publish(draft.prepare_patch().unwrap());
+            let material = fixture
+                .tree
+                .publish(draft.prepare_patch().unwrap(), index as u64 + 1);
             maps.push(Arc::clone(&material));
             let mut meter = work();
             let plan = store

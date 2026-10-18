@@ -613,6 +613,10 @@ impl<N: Copy + Eq> PositionMap<N> {
         &self.steps
     }
 
+    pub(crate) fn steps_capacity(&self) -> usize {
+        self.steps.capacity()
+    }
+
     pub fn map_from(&self, revision: u64, position: Position<N>) -> MapResult<N> {
         if revision != self.before {
             MapResult::Stale

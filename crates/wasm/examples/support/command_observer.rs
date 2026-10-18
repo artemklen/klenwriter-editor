@@ -62,6 +62,15 @@ impl FrozenProfile for Counted {
     type Context = <KwdjProfile<'static> as FrozenProfile>::Context;
     type Admitted = <KwdjProfile<'static> as FrozenProfile>::Admitted;
     type Error = KwdjProfileError;
+    type Cache<I: Copy + Eq + Ord> = <KwdjProfile<'static> as FrozenProfile>::Cache<I>;
+    fn seed_cache<V: CandidateRead>(
+        &self,
+        admitted: &Self::Admitted,
+        view: &V,
+        work: &mut WorkMeter,
+    ) -> Result<Self::Cache<V::Id>, Self::Error> {
+        self.inner.seed_cache(admitted, view, work)
+    }
     fn binding(&self) -> &ProfileBinding {
         self.inner.binding()
     }
@@ -95,6 +104,24 @@ impl FrozenProfile for Counted {
     }
 }
 impl TransactionProfile for Counted {
+    fn normalize_scoped<V: editor_core::candidate::CandidateChanges>(
+        &self,
+        context: &Self::Context,
+        view: &V,
+        cache: &Self::Cache<V::Id>,
+        work: &mut WorkMeter,
+    ) -> Result<Vec<Operation<V::Id>>, Self::Error> {
+        self.inner.normalize_scoped(context, view, cache, work)
+    }
+    fn validate_scoped<V: editor_core::candidate::CandidateChanges>(
+        &self,
+        context: &Self::Context,
+        view: &V,
+        cache: &Self::Cache<V::Id>,
+        work: &mut WorkMeter,
+    ) -> Result<editor_core::cache::PreparedValidation<Self::Cache<V::Id>>, Self::Error> {
+        self.inner.validate_scoped(context, view, cache, work)
+    }
     fn normalize_candidate<V: CandidateRead>(
         &self,
         c: &Self::Context,

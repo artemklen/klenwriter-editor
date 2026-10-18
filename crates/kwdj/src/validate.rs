@@ -52,9 +52,17 @@ struct State<'a> {
     resolved_media: HashSet<Uuid>,
     resolved_references: HashSet<Uuid>,
     work: Option<&'a mut WorkMeter>,
+    known_nodes: bool,
+    resolve_identities: bool,
+    collect_manifests: bool,
 }
 
 impl State<'_> {
+    fn note_header(&mut self) {
+        if let Some(work) = &mut self.work {
+            work.note_phase(editor_core::transaction::WorkPhase::StaticValidation, 1, 0);
+        }
+    }
     fn units(&mut self, count: u64) -> Result<(), KwdjError> {
         if let Some(work) = &mut self.work {
             work.charge_units(count).map_err(KwdjError::operational)?;
@@ -115,12 +123,19 @@ pub(crate) fn validate_view<'a, V: ValidationView>(
         resolved_media: HashSet::new(),
         resolved_references: HashSet::new(),
         work,
+        known_nodes: view.known_nodes().is_some(),
+        resolve_identities: view.resolve_identities(),
+        collect_manifests: view.resolve_identities(),
     };
+    if let Some(nodes) = view.known_nodes() {
+        check_limit("", "node_count", limits.node_count, nodes)?;
+        state.node_count = nodes;
+    }
     let expected = match profile {
         Profile::Prose => Expected::ProseBlock,
         Profile::Poetry => Expected::PoetryRoot,
     };
-    for index in 0..view.roots_len() {
+    let visit_root = |index, state: &mut State<'_>| {
         visit(
             view,
             view.root(index),
@@ -128,8 +143,17 @@ pub(crate) fn validate_view<'a, V: ValidationView>(
             1,
             expected,
             Ancestry::default(),
-            &mut state,
-        )?;
+            state,
+        )
+    };
+    if let Some(indices) = view.root_indices() {
+        for index in indices {
+            visit_root(*index, &mut state)?;
+        }
+    } else {
+        for index in 0..view.roots_len() {
+            visit_root(index, &mut state)?;
+        }
     }
     state
         .media
@@ -154,6 +178,7 @@ fn visit<V: ValidationView>(
     state: &mut State<'_>,
 ) -> Result<(), KwdjError> {
     state.units(1)?;
+    state.note_header();
     let node = view.header(handle);
     if !allowed(node, expected) {
         return Err(KwdjError::categorized(
@@ -170,13 +195,15 @@ fn visit<V: ValidationView>(
         ));
     }
     check_limit(path, "tree_depth", state.limits.tree_depth, depth)?;
-    state.node_count += 1;
-    check_limit(
-        path,
-        "node_count",
-        state.limits.node_count,
-        state.node_count,
-    )?;
+    if !state.known_nodes {
+        state.node_count += 1;
+        check_limit(
+            path,
+            "node_count",
+            state.limits.node_count,
+            state.node_count,
+        )?;
+    }
 
     match node {
         Node::Text { marks, .. } => {
@@ -322,7 +349,9 @@ fn visit<V: ValidationView>(
                 return Err(KwdjError::new(KwdjErrorCode::NestedTable, path));
             }
             require_nonempty(view.children_len(handle), path)?;
-            validate_table(view, handle, path, state)?;
+            if view.check_table(handle) {
+                validate_table(view, handle, path, state)?;
+            }
             let mut nested = ancestry;
             nested.table = true;
             visit_children(view, handle, path, depth, Expected::TableRow, nested, state)?;
@@ -371,30 +400,22 @@ fn visit<V: ValidationView>(
                     ));
                 }
             }
-            if !state.resolved_media.contains(&attrs.media_asset_id) {
-                match state.identities.resolve_media(&attrs.media_asset_id) {
-                    Ok(IdentityStatus::Exists) => {
-                        state.resolved_media.insert(attrs.media_asset_id);
-                    }
-                    Ok(IdentityStatus::Missing) => {
-                        return Err(KwdjError::new(
-                            KwdjErrorCode::MissingMediaIdentity,
-                            media_id_path,
-                        ));
-                    }
-                    Err(_) => {
-                        return Err(KwdjError::categorized(
-                            KwdjErrorCode::IdentityResolutionFailed,
-                            media_id_path,
-                            "media",
-                        ));
-                    }
-                }
+            if state.resolve_identities && !state.resolved_media.contains(&attrs.media_asset_id) {
+                validate_identity(
+                    state.identities,
+                    IdentityKind::Media,
+                    &attrs.media_asset_id,
+                    &media_id_path,
+                    state.work.as_deref_mut(),
+                )?;
+                state.resolved_media.insert(attrs.media_asset_id);
             }
-            state.media.push(IdentityReference {
-                id: attrs.media_asset_id,
-                path: path.to_string(),
-            });
+            if state.collect_manifests {
+                state.media.push(IdentityReference {
+                    id: attrs.media_asset_id,
+                    path: path.to_string(),
+                });
+            }
             visit_children(
                 view,
                 handle,
@@ -488,21 +509,24 @@ fn visit<V: ValidationView>(
         Node::Verse { .. } => {
             require_nonempty(view.children_len(handle), path)?;
             let length = view.children_len(handle);
-            state.units(length as u64)?;
-            let stanza = |index| {
-                matches!(
-                    view.header(view.child(handle, index)),
-                    Node::StanzaBreak { .. }
-                )
-            };
-            if stanza(0)
-                || stanza(length - 1)
-                || (1..length).any(|index| stanza(index - 1) && stanza(index))
-            {
-                return Err(KwdjError::new(
-                    KwdjErrorCode::InvalidVerse,
-                    key_path(path, "content"),
-                ));
+            if view.check_verse_structure(handle) {
+                state.units(length as u64)?;
+                let mut stanza = |index| {
+                    state.note_header();
+                    matches!(
+                        view.header(view.child(handle, index)),
+                        Node::StanzaBreak { .. }
+                    )
+                };
+                if stanza(0)
+                    || stanza(length - 1)
+                    || (1..length).any(|index| stanza(index - 1) && stanza(index))
+                {
+                    return Err(KwdjError::new(
+                        KwdjErrorCode::InvalidVerse,
+                        key_path(path, "content"),
+                    ));
+                }
             }
             visit_children(
                 view,
@@ -543,6 +567,9 @@ pub(crate) fn validate_discarded_metadata<'n>(
         resolved_media: HashSet::new(),
         resolved_references: HashSet::new(),
         work: Some(work),
+        known_nodes: false,
+        resolve_identities: true,
+        collect_manifests: true,
     };
     for (node, path) in nodes {
         state.units(1)?;
@@ -661,6 +688,9 @@ pub(crate) fn canonical_command_marks(
         resolved_media: HashSet::new(),
         resolved_references: HashSet::new(),
         work: Some(work),
+        known_nodes: false,
+        resolve_identities: true,
+        collect_manifests: true,
     };
     if !typed.is_empty() {
         validate_marks(Some(&typed), "/stored_marks", &mut state)?;
@@ -709,7 +739,7 @@ fn visit_children<V: ValidationView>(
     state: &mut State<'_>,
 ) -> Result<(), KwdjError> {
     let base = key_path(path, "content");
-    for index in 0..view.children_len(parent) {
+    let visit_child = |index, state: &mut State<'_>| {
         visit(
             view,
             view.child(parent, index),
@@ -718,7 +748,16 @@ fn visit_children<V: ValidationView>(
             expected,
             ancestry,
             state,
-        )?;
+        )
+    };
+    if let Some(indices) = view.child_indices(parent) {
+        for index in indices {
+            visit_child(*index, state)?;
+        }
+    } else {
+        for index in 0..view.children_len(parent) {
+            visit_child(index, state)?;
+        }
     }
     Ok(())
 }
@@ -814,36 +853,26 @@ fn validate_marks(
             Mark::ReferenceLink { attrs } => {
                 let reference_id_path = key_path(&attrs_path, "reference_entity_id");
                 validate_uuid(&attrs.reference_entity_id, &reference_id_path)?;
-                if !state
-                    .resolved_references
-                    .contains(&attrs.reference_entity_id)
+                if state.resolve_identities
+                    && !state
+                        .resolved_references
+                        .contains(&attrs.reference_entity_id)
                 {
-                    match state
-                        .identities
-                        .resolve_reference(&attrs.reference_entity_id)
-                    {
-                        Ok(IdentityStatus::Exists) => {
-                            state.resolved_references.insert(attrs.reference_entity_id);
-                        }
-                        Ok(IdentityStatus::Missing) => {
-                            return Err(KwdjError::new(
-                                KwdjErrorCode::MissingReferenceIdentity,
-                                reference_id_path,
-                            ));
-                        }
-                        Err(_) => {
-                            return Err(KwdjError::categorized(
-                                KwdjErrorCode::IdentityResolutionFailed,
-                                reference_id_path,
-                                "reference",
-                            ));
-                        }
-                    }
+                    validate_identity(
+                        state.identities,
+                        IdentityKind::Reference,
+                        &attrs.reference_entity_id,
+                        &reference_id_path,
+                        state.work.as_deref_mut(),
+                    )?;
+                    state.resolved_references.insert(attrs.reference_entity_id);
                 }
-                state.references.push(IdentityReference {
-                    id: attrs.reference_entity_id,
-                    path: mark_path,
-                });
+                if state.collect_manifests {
+                    state.references.push(IdentityReference {
+                        id: attrs.reference_entity_id,
+                        path: mark_path,
+                    });
+                }
             }
             _ => {}
         }
@@ -909,6 +938,7 @@ fn validate_table<V: ValidationView>(
         while occupancy.last() == Some(&0) {
             occupancy.pop();
         }
+        state.note_header();
         let Node::TableRow { .. } = view.header(row) else {
             return Err(KwdjError::new(
                 KwdjErrorCode::InvalidStructure,
@@ -918,6 +948,7 @@ fn validate_table<V: ValidationView>(
         let mut column = 0usize;
         for cell_index in 0..view.children_len(row) {
             state.units(1)?;
+            state.note_header();
             let cell = view.header(view.child(row, cell_index));
             let cell_path = index_path(&key_path(&row_path, "content"), cell_index);
             while occupancy.get(column).copied().unwrap_or(0) > 0 {
@@ -1017,6 +1048,48 @@ fn validate_uuid(id: &Uuid, path: &str) -> Result<(), KwdjError> {
         return Err(KwdjError::new(KwdjErrorCode::InvalidUuid, path));
     }
     Ok(())
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub(crate) enum IdentityKind {
+    Media,
+    Reference,
+}
+
+/// Shared synchronous existence rule for full and indexed validation lanes.
+pub(crate) fn validate_identity(
+    identities: &dyn IdentityResolver,
+    kind: IdentityKind,
+    id: &Uuid,
+    path: &str,
+    work: Option<&mut WorkMeter>,
+) -> Result<(), KwdjError> {
+    if let Some(work) = work {
+        work.charge_units(1).map_err(KwdjError::operational)?;
+        work.note_phase(editor_core::transaction::WorkPhase::Identity, 1, 0);
+    }
+    let result = match kind {
+        IdentityKind::Media => identities.resolve_media(id),
+        IdentityKind::Reference => identities.resolve_reference(id),
+    };
+    match result {
+        Ok(IdentityStatus::Exists) => Ok(()),
+        Ok(IdentityStatus::Missing) => Err(KwdjError::new(
+            match kind {
+                IdentityKind::Media => KwdjErrorCode::MissingMediaIdentity,
+                IdentityKind::Reference => KwdjErrorCode::MissingReferenceIdentity,
+            },
+            path,
+        )),
+        Err(_) => Err(KwdjError::categorized(
+            KwdjErrorCode::IdentityResolutionFailed,
+            path,
+            match kind {
+                IdentityKind::Media => "media",
+                IdentityKind::Reference => "reference",
+            },
+        )),
+    }
 }
 
 fn validate_url(value: &str, path: &str) -> Result<(), KwdjError> {

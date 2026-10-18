@@ -96,6 +96,22 @@ impl FrozenProfile for KwdjProfile<'_> {
     type Context = Profile;
     type Admitted = ValidatedDocument;
     type Error = KwdjProfileError;
+    type Cache<I: Copy + Eq + Ord> = crate::KwdjCache<I>;
+
+    fn seed_cache<V: CandidateRead>(
+        &self,
+        admitted: &Self::Admitted,
+        view: &V,
+        work: &mut WorkMeter,
+    ) -> Result<Self::Cache<V::Id>, Self::Error> {
+        Ok(crate::candidate_cache::seed(
+            admitted.document().profile(),
+            view,
+            self.limits,
+            self.budget,
+            work,
+        )?)
+    }
 
     fn binding(&self) -> &ProfileBinding {
         &self.binding
@@ -152,6 +168,40 @@ impl FrozenProfile for KwdjProfile<'_> {
 }
 
 impl TransactionProfile for KwdjProfile<'_> {
+    fn normalize_scoped<V: editor_core::candidate::CandidateChanges>(
+        &self,
+        context: &Self::Context,
+        view: &V,
+        cache: &Self::Cache<V::Id>,
+        work: &mut WorkMeter,
+    ) -> Result<Vec<Operation<V::Id>>, Self::Error> {
+        Ok(crate::candidate_cache::normalize(
+            *context,
+            view,
+            cache,
+            self.identities,
+            self.limits,
+            self.budget,
+            work,
+        )?)
+    }
+    fn validate_scoped<V: editor_core::candidate::CandidateChanges>(
+        &self,
+        context: &Self::Context,
+        view: &V,
+        cache: &Self::Cache<V::Id>,
+        work: &mut WorkMeter,
+    ) -> Result<editor_core::cache::PreparedValidation<Self::Cache<V::Id>>, Self::Error> {
+        Ok(crate::candidate_cache::validate(
+            *context,
+            view,
+            cache,
+            self.identities,
+            self.limits,
+            self.budget,
+            work,
+        )?)
+    }
     fn normalize_candidate<V: CandidateRead>(
         &self,
         context: &Self::Context,

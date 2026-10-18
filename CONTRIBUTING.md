@@ -81,6 +81,14 @@ Unicode и отказами. Lane входит в `npm run check`; report с has
 setter. Report — `artifacts/history-report.json`, контракт —
 [OSR-36](docs/history.md). Browser history/input adapters остаются отдельными gates.
 
+`npm run test:deltas` проверяет actual native/compiled-WASM dirty impact, ordered
+events, guarded reads, snapshot/save receipts и scoped KWDJ phase counters.
+Report — `artifacts/deltas-report.json`; [контракт OSR-37](docs/deltas.md) описывает
+bounded delivery и отдельные JS callback/host gates63/69. Generic opaque profiles
+сохраняют явно измеренный full fallback; local-work proof относится к KWDJ.
+Native optimized/full Session tests отдельно сравнивают32 mixed sequences и
+1312 canonical/stat/revision checkpoints с полным authoritative control.
+
 ## Артефакты и ограничения
 
 `artifacts/dependencies.json` содержит зафиксированные direct/transitive версии,

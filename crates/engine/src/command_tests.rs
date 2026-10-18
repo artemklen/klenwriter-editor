@@ -104,6 +104,7 @@ impl FrozenProfile for FixtureProfile {
     type Context = ();
     type Admitted = Document;
     type Error = &'static str;
+    type Cache<I: Copy + Eq + Ord> = ();
     fn binding(&self) -> &ProfileBinding {
         &self.binding
     }

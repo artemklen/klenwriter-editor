@@ -4,7 +4,7 @@
 use editor_core::history::HistoryProfile;
 use editor_core::transaction::{WorkMeter, WorkUsage};
 
-use super::dispatch::{Prepared, copy_marks, map_bytes, validate_selection};
+use super::dispatch::{Prepared, PreparedFor, copy_marks, map_bytes, validate_selection};
 use super::{AccessMode, Session, SessionState, StateError};
 use crate::history::{HistoryDirection, HistoryError, HistorySummary};
 use crate::identity::SessionKey;
@@ -83,7 +83,7 @@ impl<P: HistoryProfile> Session<P> {
         request: &HistoryRequest,
         mut draft: TreeDraft<'_, A>,
         work: &mut WorkMeter,
-    ) -> Result<Prepared<A>, TransactionError<P::Error>> {
+    ) -> Result<PreparedFor<P, A>, TransactionError<P::Error>> {
         self.guard(request.session, Some(request.revision))?;
         if request.selection_epoch != self.selection_epoch {
             return Err(StateError::StaleSelectionEpoch.into());
@@ -117,18 +117,20 @@ impl<P: HistoryProfile> Session<P> {
         }
         // Replay restores the exact historical normal form. Proposed repairs
         // would change that payload, so they refuse rather than normalize it.
+        draft.prepare_changes(work)?;
         let normalization = self
             .profile
-            .normalize_candidate(&self.context, &draft, work)
+            .normalize_scoped(&self.context, &draft.changes()?, &self.cache, work)
             .map_err(TransactionError::Profile)?;
         if !normalization.is_empty() {
             return Err(HistoryError::NotNormal.into());
         }
         draft.validate_structure(work)?;
-        let validation = self
+        let validated = self
             .profile
-            .validate_candidate(&self.context, &draft, work)
+            .validate_scoped(&self.context, &draft.changes()?, &self.cache, work)
             .map_err(TransactionError::Profile)?;
+        let validation = validated.stats;
         let target = match request.direction {
             HistoryDirection::Undo => unit.before(),
             HistoryDirection::Redo => unit.after(),
@@ -169,6 +171,7 @@ impl<P: HistoryProfile> Session<P> {
         draft.tighten_copy_budget(
             before_copy.saturating_add(usize::try_from(remaining).unwrap_or(usize::MAX)),
         );
+        let impact = Some(draft.prepare_impact(work)?);
         let patch = draft.prepare_patch()?;
         work.charge_bytes((patch.prepared_copy_bytes() - before_copy) as u64)?;
         if !patch.changed() {
@@ -204,7 +207,7 @@ impl<P: HistoryProfile> Session<P> {
         work.charge_bytes(std::mem::size_of_val(patch.changed_ids()) as u64)?;
         let changed_nodes = patch.changed_ids().to_vec();
         let retained_map = Some(map.clone());
-        Ok(Prepared {
+        let mut prepared = Prepared {
             patch,
             map,
             retained_map,
@@ -223,8 +226,14 @@ impl<P: HistoryProfile> Session<P> {
             changed_nodes,
             normalization_operations: 0,
             validation,
+            cache_update: Some(validated.cache),
+            impact,
+            notification: None,
             work: work.usage(),
-        })
+            trace: work.trace(),
+        };
+        self.prepare_notification(&mut prepared, work)?;
+        Ok(prepared)
     }
 
     pub fn query_history(&self, request: &HistoryRequest) -> HistoryAvailability<P::Error> {

@@ -1,0 +1,2420 @@
+{
+  "nativeWasmEqual": true,
+  "sourceHashes": {
+    "Cargo.lock": "6c4d917f290c330312b17fcd88c6207cc3aa243c30fc420793eb07d16ce6aaa2",
+    "Cargo.toml": "63cfcb06140702c837b72b77f962a10d2c9ea7a7d2845a6797a2072fd6daec84",
+    "rust-toolchain.toml": "8426022dcf3cbd6b106cda60c0aa89ad194a12d2a0931b0e8f580d4f0f3c5fa5",
+    "crates/core/Cargo.toml": "3d12e0f1c79d598d18c6e8b2b21496e2a49e48030c237dbf5879ea91771a81ab",
+    "crates/engine/Cargo.toml": "a260567f2e85c9f4408096403963a738ca77da7db03c136c64e4b1f191015a9c",
+    "crates/kwdj/Cargo.toml": "423d9158dba46e137726599e4742f7d138b7ae952e3144e7aafe21ee764b75a3",
+    "crates/wasm/Cargo.toml": "d3bd0b7332ffe2a174f0797fdc0fc1f89c95996ef4d7d520b8a71feaa61d2577",
+    "contracts/commands/v1/vectors.json": "1a067f1ca197ccc1aa7a4689e950db250973c269314bf3d38d143b97c248cb3f",
+    "contracts/history/v1/vectors.json": "22882d577677eb409172ba33ae675bc2e3754dcda2c8198f0c4468e719f07a08",
+    "contracts/history/v1/manifest.json": "34d45022dd9fb6521aadc6edeb831ff850721f684a292633e5959dce5377d662",
+    "contracts/history/v1/adr-embedding.json": "2f7ee1731a9e890fc9676c4c6eb70249b263e434d64ba3bd0e9c5af3535dd891",
+    "evidence/osr-36/execution-contract.md": "251bee723fadc0e2939055771ea6514405ff1e982a6ca46b2f607787fd8f896c",
+    "evidence/osr-59/operation-vectors.json": "8b4bebb3d4ef97db1b4f0b3d6f4a86d44d87caf100c177fd3c5be53ff9cdb15d",
+    "evidence/osr-59/position-vectors.json": "fb30084a44fa62d546f7ff4357d6ec14484e163fe3015aee61f6f90e2845e8db",
+    "crates/core/src/lib.rs": "f760fa6fa066cee2c921c8a8defc174d0c8e1d2c48b79d7ce660b1eefc61fb5a",
+    "crates/core/src/json.rs": "ed6e39e6d42e6a21e3f3dfc022e90bbb03833f42bc22ae36a26e89700208507b",
+    "crates/core/src/admission.rs": "bab6926eb8be7010a2a7440e91ba668ec951757ae94c73c0c6d9decb35e87639",
+    "crates/core/src/candidate.rs": "d3780e54117837a626a4930bc24022be1262afbcea95ccf0865434d4c47f51ff",
+    "crates/core/src/commands.rs": "a9d552aa45cd6220d1d457b3414236502c0fb314b040887c83e53608a5007558",
+    "crates/core/src/document.rs": "d8e7f3cd3860da9db9b0842899ed0b4e1df623437d8aee485dfbb11606518651",
+    "crates/core/src/history.rs": "5bc12b4773a7285f1f28080e63fb92e076600dfcfedc7f836930a1028c37bd49",
+    "crates/core/src/limits.rs": "8c16687b2c071d493fded114b892a00149e6af3b65260673f7d50e1cacbb340d",
+    "crates/core/src/positions.rs": "94ce04c115a062a6b203c2e124afcaa295ad6d9b26a4c0aaaa7bf155fcac50ff",
+    "crates/core/src/profile.rs": "1118c0164410a3471ea554e6f86276a641d6facdd0890ebf7b716fec805b29d5",
+    "crates/core/src/transaction.rs": "37ecc69684c532b90386a04af294d35a7e232bf3b11eeb2a5b6c911b3eee815f",
+    "crates/engine/src/lib.rs": "023efe26ab4908414c8030ef6809a4dd40e7fc441a13b73d2af39933cabcfeed",
+    "crates/engine/src/identity.rs": "4fb8834799e7a9f0e634b3bcc347893abd681406b8c57c52e80724df0275b921",
+    "crates/engine/src/history.rs": "43a28d7fc3e48138d71f4e0cb2889a572fa25dc545b39e6a0e793ae6d610382d",
+    "crates/engine/src/grouping.rs": "74768c0057ed06622deab548f1820724bb6c3db8a260bd49196f30a68a0c0c69",
+    "crates/engine/src/history_dispatch.rs": "0c483ac67dabe1ddeb60908a091d082ae33b36dec3e3ed10eb7855523e7120c6",
+    "crates/engine/src/history_tests.rs": "a131e774f1327c32773a6ec13c8f396a0563ea15849b6b3a9dcea7d079643f8d",
+    "crates/engine/src/history_profile_tests.rs": "f75c8f2a58cbf7b09e1fe7f770c3bd2e90ed7f2e8d57b22ca17e7aa72646acb4",
+    "crates/engine/src/commands.rs": "e30ad35a141f4c5864f5c66878e68a773bec10c3c688379fc45523d82954abe2",
+    "crates/engine/src/dispatch.rs": "493a390af0ba25832e0be378a176d29f61ebe5cb47d6c81ca434f71777708c3a",
+    "crates/engine/src/session.rs": "966c50828dec6928f87f50d962d9cbe2404866917b0736ea17c6db767e5c0da4",
+    "crates/engine/src/tree.rs": "d1bc2205af12063d4b3b6386f0198830d321ba35b8f2a1d4ae4962d075caedda",
+    "crates/engine/src/transaction.rs": "182330b64926bc4a0f2a4ddbfd5db6337f1884728f6654e2e8176d2e80834cd9",
+    "crates/engine/src/mapping.rs": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54",
+    "crates/kwdj/src/lib.rs": "014a8ed5b85e1d379ddba819fb1ea6793f3e51231c83bd77e4ad34ba07d6e96f",
+    "crates/kwdj/src/commands/mod.rs": "8e74902a6d1fd48dc8b490270569fc9aabf026f1f81ace6cb1d17f3af6681ae2",
+    "crates/kwdj/src/commands/block.rs": "901da02897beaaaf904b0421f01740e8d08723e87ef91b972e184948c0719c29",
+    "crates/kwdj/src/commands/inline.rs": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394",
+    "crates/kwdj/src/admission.rs": "9bc3d3c282e91a40ab86cfedc582b17748fcb671d7b38e0ca63c7a4a78a40991",
+    "crates/kwdj/src/candidate_validate.rs": "a6f35c8aa1b795efa9256a5ca5233d1a7d266d7b062590b64c77fcd189e6cba1",
+    "crates/kwdj/src/edit_normalize.rs": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a",
+    "crates/kwdj/src/session_profile.rs": "c8f5dcd1c5e8c2c9768470a247e7a060df909c0002cbedc6e1135e54024fa9e4",
+    "crates/kwdj/src/core_bridge.rs": "6546cb233eacfe73a1231ea395b926f4283b29533cc0ebfed6c418b7e5cf3da7",
+    "crates/kwdj/src/model.rs": "5162a1f19c899922a032afcecc3227f65c19f05a530d1ba6a178f11e6cf635ce",
+    "crates/kwdj/src/project.rs": "fa5924ae5708f3b824abcfd5cecc0feedea4146c77da2684649fb20af6ec2aee",
+    "crates/kwdj/src/normalize.rs": "9da4b8d258023dbd9076f8807a86d7a8db45573aea0e9bb56f1a405c0f97690f",
+    "crates/kwdj/src/validate.rs": "9824aeb6c05aeb5eff99af84d3c711c87eb728efa53181c1834d39354221ceec",
+    "crates/kwdj/src/wire_view.rs": "351fa1b94b1c3af1d974e9471ee04a164b6ec11d891905f5a167f16d5f9227d2",
+    "crates/wasm/examples/support/history_observer.rs": "297a5c373cb2b488815cb6d9248f05a9dd7bd624827a90bcc0eb42aefcca8421",
+    "crates/wasm/examples/support/history_adr.rs": "5eace187b8f133c69c7f566f4e41a8e473c0538358702b615954797f0675bcc7",
+    "crates/wasm/examples/support/history_sequences.rs": "f7fa047331eb0fc8122012409092977b1ec197fc54303873d39550fede3022e0",
+    "crates/wasm/examples/support/history_facts.rs": "abaa26c0751c221ddf5fb67ec76d63f9c371e11ffd6e49ca33ba8d9f8e6bad52",
+    "crates/wasm/examples/support/history_generated.rs": "711b42a02512a0411f6a66b46727c7f9b729c1081b8a65b3e2472ff37ef18f65",
+    "crates/wasm/examples/history_native.rs": "d7172057cfe749a41c1a9ef4f9b19d592843754b5b174e639cce1bd27161be65",
+    "crates/wasm/examples/history_probe.rs": "b77650d42f73e4b4645beda91c5fb181d19af1fbbb123d0b96028dbecbb0b275",
+    "crates/wasm/tests/history.rs": "818b90a497296bf281ac926800b15f33360af32b4da874d50ca25120879412b4",
+    "tests/history.node.mjs": "679b06b3d6df90183af92c486076b6016e1737a258630b5bd07484ae7e39a492",
+    "scripts/build-workspace.mjs": "00a87b773615dc636a675b7da063a47d327ab451bb80c71d1df7d192f00dd13f",
+    "package.json": "b027d18ee95275bf4b4e7e891db46d3688ff6e3b0c3b1446c74a90eab861e27f",
+    "artifacts/history/probe_bg.wasm": "7e77c3ae7c1aad1b7f292df3e5231783c8e23a59e5a84d183722d24c51d5c4f7"
+  },
+  "format": "klenwriter-editor-history-observations",
+  "generated_unicode": {
+    "case_total": 8,
+    "cases": [
+      {
+        "final_revision": "6",
+        "final_text": "ab",
+        "first": "a",
+        "second": "b",
+        "status": "passed"
+      },
+      {
+        "final_revision": "6",
+        "final_text": "  ",
+        "first": " ",
+        "second": " ",
+        "status": "passed"
+      },
+      {
+        "final_revision": "6",
+        "final_text": "é!",
+        "first": "é",
+        "second": "!",
+        "status": "passed"
+      },
+      {
+        "final_revision": "6",
+        "final_text": "Яё",
+        "first": "Я",
+        "second": "ё",
+        "status": "passed"
+      },
+      {
+        "final_revision": "6",
+        "final_text": "👩‍💻🙂",
+        "first": "👩‍💻",
+        "second": "🙂",
+        "status": "passed"
+      },
+      {
+        "final_revision": "6",
+        "final_text": "  ",
+        "first": " ",
+        "second": " ",
+        "status": "passed"
+      },
+      {
+        "final_revision": "6",
+        "final_text": "𐐀z",
+        "first": "𐐀",
+        "second": "z",
+        "status": "passed"
+      },
+      {
+        "final_revision": "6",
+        "final_text": "..…",
+        "first": "..",
+        "second": "…",
+        "status": "passed"
+      }
+    ],
+    "historical_ids_restored": true,
+    "oracle": "Independent literal Unicode/SPACE/NBSP pairs, exact caret UTF16 length and revisions; no replay-derived snapshot oracle.",
+    "ordinary_snapshot_codec_calls": 0,
+    "query_execute_work_equal": true,
+    "replays": 32,
+    "status": "passed"
+  },
+  "generic_adr": {
+    "cases": [
+      {
+        "actual_revisions": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "exact_document_selection_marks_ids": true,
+        "id": "replace-zwj-reverse",
+        "ordinary_snapshot_codec_calls": 0,
+        "physical_embedding": false,
+        "query_execute_work_equal": true,
+        "seed_revision_labels": [
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "status": "passed"
+      },
+      {
+        "actual_revisions": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "exact_document_selection_marks_ids": true,
+        "id": "insert-affinity",
+        "ordinary_snapshot_codec_calls": 0,
+        "physical_embedding": false,
+        "query_execute_work_equal": true,
+        "seed_revision_labels": [
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "status": "passed"
+      },
+      {
+        "actual_revisions": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "exact_document_selection_marks_ids": true,
+        "id": "delete-text-interior-vs-end",
+        "ordinary_snapshot_codec_calls": 0,
+        "physical_embedding": false,
+        "query_execute_work_equal": true,
+        "seed_revision_labels": [
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "status": "passed"
+      },
+      {
+        "actual_revisions": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "exact_document_selection_marks_ids": true,
+        "id": "split-affinity-and-later",
+        "ordinary_snapshot_codec_calls": 0,
+        "physical_embedding": false,
+        "query_execute_work_equal": true,
+        "seed_revision_labels": [
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "status": "passed"
+      },
+      {
+        "actual_revisions": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "exact_document_selection_marks_ids": true,
+        "id": "join-reverse-selection",
+        "ordinary_snapshot_codec_calls": 0,
+        "physical_embedding": false,
+        "query_execute_work_equal": true,
+        "seed_revision_labels": [
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "status": "passed"
+      },
+      {
+        "actual_revisions": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "exact_document_selection_marks_ids": true,
+        "id": "move-forward-stable-descendant-and-gap",
+        "ordinary_snapshot_codec_calls": 0,
+        "physical_embedding": false,
+        "query_execute_work_equal": true,
+        "seed_revision_labels": [
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "status": "passed"
+      },
+      {
+        "actual_revisions": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "exact_document_selection_marks_ids": true,
+        "id": "move-backward-gap-affinity",
+        "ordinary_snapshot_codec_calls": 0,
+        "physical_embedding": false,
+        "query_execute_work_equal": true,
+        "seed_revision_labels": [
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "status": "passed"
+      },
+      {
+        "actual_revisions": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "exact_document_selection_marks_ids": true,
+        "id": "move-cross-parent-gaps",
+        "ordinary_snapshot_codec_calls": 0,
+        "physical_embedding": true,
+        "query_execute_work_equal": true,
+        "seed_revision_labels": [
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "status": "passed"
+      },
+      {
+        "actual_revisions": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "exact_document_selection_marks_ids": true,
+        "id": "delete-nested-subtree-fallback",
+        "ordinary_snapshot_codec_calls": 0,
+        "physical_embedding": false,
+        "query_execute_work_equal": true,
+        "seed_revision_labels": [
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "status": "passed"
+      },
+      {
+        "actual_revisions": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "exact_document_selection_marks_ids": true,
+        "id": "cascade-deleted-parent-to-surviving-root",
+        "ordinary_snapshot_codec_calls": 0,
+        "physical_embedding": false,
+        "query_execute_work_equal": true,
+        "seed_revision_labels": [
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "status": "passed"
+      },
+      {
+        "actual_revisions": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "exact_document_selection_marks_ids": true,
+        "id": "mark-split-reverse-selection",
+        "ordinary_snapshot_codec_calls": 0,
+        "physical_embedding": false,
+        "query_execute_work_equal": true,
+        "seed_revision_labels": [
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "status": "passed"
+      },
+      {
+        "actual_revisions": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "exact_document_selection_marks_ids": true,
+        "id": "atom-insert-structural-affinity",
+        "ordinary_snapshot_codec_calls": 0,
+        "physical_embedding": false,
+        "query_execute_work_equal": true,
+        "seed_revision_labels": [
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "status": "passed"
+      },
+      {
+        "actual_revisions": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "exact_document_selection_marks_ids": true,
+        "id": "atom-delete-edge-and-gap",
+        "ordinary_snapshot_codec_calls": 0,
+        "physical_embedding": false,
+        "query_execute_work_equal": true,
+        "seed_revision_labels": [
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "status": "passed"
+      },
+      {
+        "actual_revisions": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "exact_document_selection_marks_ids": true,
+        "id": "hard-break-is-structural",
+        "ordinary_snapshot_codec_calls": 0,
+        "physical_embedding": false,
+        "query_execute_work_equal": true,
+        "seed_revision_labels": [
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "status": "passed"
+      },
+      {
+        "actual_revisions": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "exact_document_selection_marks_ids": true,
+        "id": "empty-text-insert",
+        "ordinary_snapshot_codec_calls": 0,
+        "physical_embedding": false,
+        "query_execute_work_equal": true,
+        "seed_revision_labels": [
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "status": "passed"
+      },
+      {
+        "actual_revisions": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "exact_document_selection_marks_ids": true,
+        "id": "combining-accent-insert-history",
+        "ordinary_snapshot_codec_calls": 0,
+        "physical_embedding": false,
+        "query_execute_work_equal": true,
+        "seed_revision_labels": [
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "status": "passed"
+      }
+    ],
+    "declared_structural_embeddings": 1,
+    "direct": 15,
+    "scope": "Actual generic production Session;15 direct unchanged ADR contracts,1 declared structural embedding checked against full physical literals AND original graph projection. No KWDJ grammar or public extension API claim.",
+    "seed_passed": 16,
+    "seed_total": 16,
+    "status": "passed"
+  },
+  "hp_only": {
+    "scope": "Actual production generic Session with explicitly implemented HistoryProfile, no CommandProvider/catalog; separate immutable bindings, never swapped during a live session.",
+    "status": "passed",
+    "variants": [
+      {
+        "binding": "honest-finalizer",
+        "implements_command_provider": false,
+        "ordinary_snapshot_codec_calls": 0,
+        "rewritten_saved_none_to_empty_refused": false,
+        "status": "passed"
+      },
+      {
+        "binding": "immutable-rewriting-finalizer",
+        "implements_command_provider": false,
+        "ordinary_snapshot_codec_calls": 0,
+        "rewritten_saved_none_to_empty_refused": true,
+        "status": "passed"
+      }
+    ]
+  },
+  "identity_facts": {
+    "case_total": 2,
+    "cases": [
+      {
+        "all_committed_facets_preserved": true,
+        "canonical_after": "{\"content\":[{\"content\":[{\"marks\":[{\"attrs\":{\"reference_entity_id\":\"550e8400-e29b-41d4-a716-446655440006\"},\"type\":\"reference_link\"}],\"text\":\"ref\",\"type\":\"text\"},{\"text\":\"x\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "canonical_before": "{\"content\":[{\"content\":[{\"marks\":[{\"attrs\":{\"reference_entity_id\":\"550e8400-e29b-41d4-a716-446655440006\"},\"type\":\"reference_link\"}],\"text\":\"ref\",\"type\":\"text\"},{\"text\":\"x\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "case": "reference_missing_then_restored",
+        "current_resolver_rechecked": true,
+        "directions": [
+          "undo",
+          "redo"
+        ],
+        "exact_historical_records_ids_selection_marks": true,
+        "explicit_checkpoint_exports": 4,
+        "ordinary_snapshot_codec_calls": 0,
+        "reason": "kwdj.reference_identity_unresolved",
+        "refused_attempts": 2,
+        "retained_stacks_preserved": true,
+        "same_captured_requests_retry": true,
+        "status": "passed",
+        "typed_errors_and_work_equal": true
+      },
+      {
+        "all_committed_facets_preserved": true,
+        "canonical_after": "{\"content\":[{\"content\":[{\"marks\":[{\"attrs\":{\"reference_entity_id\":\"550e8400-e29b-41d4-a716-446655440006\"},\"type\":\"reference_link\"}],\"text\":\"ref\",\"type\":\"text\"},{\"text\":\"x\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "canonical_before": "{\"content\":[{\"content\":[{\"marks\":[{\"attrs\":{\"reference_entity_id\":\"550e8400-e29b-41d4-a716-446655440006\"},\"type\":\"reference_link\"}],\"text\":\"ref\",\"type\":\"text\"},{\"text\":\"x\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "case": "reference_lookup_unavailable_then_restored",
+        "current_resolver_rechecked": true,
+        "directions": [
+          "undo",
+          "redo"
+        ],
+        "exact_historical_records_ids_selection_marks": true,
+        "explicit_checkpoint_exports": 4,
+        "ordinary_snapshot_codec_calls": 0,
+        "reason": "kwdj.identity_resolution_failed",
+        "refused_attempts": 2,
+        "retained_stacks_preserved": true,
+        "same_captured_requests_retry": true,
+        "status": "passed",
+        "typed_errors_and_work_equal": true
+      }
+    ],
+    "explicit_checkpoint_exports": 8,
+    "ordinary_snapshot_codec_calls": 0,
+    "scope": "Actual real KWDJ mutable synchronous identity facts; same captured undo and redo requests retry after atomic refusal.",
+    "status": "passed"
+  },
+  "kwdj": {
+    "cases": [
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"á\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"á\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H01",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"A   B test\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(t,10,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"A   B\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,5,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"A   B test\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(t,10,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H02",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"},{\"type\":\"strike\"}],\"text\":\"👩\",\"type\":\"text\"},{\"marks\":[{\"type\":\"emphasis\"},{\"type\":\"strike\"}],\"text\":\"🏽\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"},{\"type\":\"emphasis\"},{\"type\":\"strike\"}],\"text\":\"‍💻\",\"type\":\"text\"},{\"text\":\"!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "R(T(j,3,B),T(w,0,A))",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"👩\",\"type\":\"text\"},{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"🏽\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"},{\"type\":\"emphasis\"}],\"text\":\"‍💻\",\"type\":\"text\"},{\"text\":\"!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "R(T(j,3,B),T(w,0,A))",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"},{\"type\":\"strike\"}],\"text\":\"👩\",\"type\":\"text\"},{\"marks\":[{\"type\":\"emphasis\"},{\"type\":\"strike\"}],\"text\":\"🏽\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"},{\"type\":\"emphasis\"},{\"type\":\"strike\"}],\"text\":\"‍💻\",\"type\":\"text\"},{\"text\":\"!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "R(T(j,3,B),T(w,0,A))",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H03",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "2",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"abc\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(t,3,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "4",
+            "selection_literal": "C(p,0,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"abc\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "5",
+            "selection_literal": "T(t,3,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H04",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(t,0,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"ba\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "2",
+            "selection_literal": "T(v,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 2
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "3",
+            "selection_literal": "T(t,0,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 2,
+            "revision": "4",
+            "selection_literal": "C(p,0,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H05",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "strong",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "2",
+            "selection_literal": "T(u,1,A)",
+            "stored_marks_literal": "strong",
+            "undo_units": 2
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "3",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "strong",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 2,
+            "revision": "4",
+            "selection_literal": "C(p,0,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "5",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "6",
+            "selection_literal": "T(u,1,A)",
+            "stored_marks_literal": "strong",
+            "undo_units": 2
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H06",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "0",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "plain",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"},{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(u,1,A)",
+            "stored_marks_literal": "plain",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "plain",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"},{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(u,1,A)",
+            "stored_marks_literal": "plain",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H07",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,0,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,0,A)",
+            "stored_marks_literal": "strong",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H08",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H09",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"aX\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"aX\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "4",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"aX\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "5",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H10",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"A日本語\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(t,4,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"A日本語\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(t,4,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H11",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"X\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Y\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(y,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "R(T(t,2,B),T(t,0,A))",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"X\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Y\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(y,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H12",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"B\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"C\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(a,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"B\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"C\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(a,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"B\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"C\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(a,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H13",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"…\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"..\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"…\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H14",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"pre \",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"type\":\"scene_break\"},{\"content\":[{\"text\":\" tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(suffix,0,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"pre /scene tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,10,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"pre \",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"type\":\"scene_break\"},{\"content\":[{\"text\":\" tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(suffix,0,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H15",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"Я\\n😀x\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"Я😀x\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"Я\\n😀x\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H16",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "R(T(t,2,B),T(t,1,A))",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "R(T(r,1,B),E(t,After))",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "R(T(t,2,B),T(t,1,A))",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H17",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"content\":[{\"content\":[{\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"}],\"type\":\"ordered_list\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"attrs\":{\"start\":7},\"content\":[{\"content\":[{\"content\":[{\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"}],\"type\":\"ordered_list\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"content\":[{\"content\":[{\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"}],\"type\":\"ordered_list\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H18",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"attrs\":{\"checked\":true},\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"task_item\"},{\"attrs\":{\"checked\":false},\"content\":[{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"task_item\"}],\"type\":\"task_list\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(right,0,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"attrs\":{\"checked\":true},\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"task_item\"}],\"type\":\"task_list\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"attrs\":{\"checked\":true},\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"task_item\"},{\"attrs\":{\"checked\":false},\"content\":[{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"task_item\"}],\"type\":\"task_list\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(right,0,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H19",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "2",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 2
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"abc\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(t,3,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 2
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "4",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 2,
+            "revision": "5",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 2,
+            "revision": "5",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "6",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"abc\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "7",
+            "selection_literal": "T(t,3,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 2
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H20",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "4",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "5",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H21",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "plain",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "0",
+            "selection_literal": "none",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "0",
+            "selection_literal": "none",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H22",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"aX\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "2",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 2
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"aX\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "3",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 2,
+            "revision": "4",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"aX\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "5",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "6",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 2
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H24",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(t2,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(t2,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H25",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true,\"level\":2},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"Link\",\"type\":\"text\"}],\"type\":\"heading\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"Link\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true,\"level\":2},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"Link\",\"type\":\"text\"}],\"type\":\"heading\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(t,2,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H26",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"B\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "T(u,0,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "T(t,1,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"B\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "T(u,0,A)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H27",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"e\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"},{\"type\":\"emphasis\"}],\"text\":\"́\",\"type\":\"text\"},{\"text\":\"!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "R(T(ac,1,B),T(e,0,A))",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"e\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"́\",\"type\":\"text\"},{\"text\":\"!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "R(T(ac,1,B),T(e,0,A))",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"e\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"},{\"type\":\"emphasis\"}],\"text\":\"́\",\"type\":\"text\"},{\"text\":\"!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "R(T(ac,1,B),T(e,0,A))",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H28",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"type\":\"hard_break\"},{\"text\":\"!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "E(br,After)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"},{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"b\",\"type\":\"text\"},{\"text\":\"!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "R(C(p,0,A),C(p,2,B))",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"type\":\"hard_break\"},{\"text\":\"!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "E(br,After)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H29",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      },
+      {
+        "checkpoints": [
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"AB\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"e\",\"type\":\"text\"},{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"́\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "1",
+            "selection_literal": "C(p,1,B)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"A\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"e\",\"type\":\"text\"},{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"́\",\"type\":\"text\"},{\"text\":\"B\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 1,
+            "revision": "2",
+            "selection_literal": "C(p,3,B)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 0
+          },
+          {
+            "document": "{\"content\":[{\"content\":[{\"text\":\"AB\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"e\",\"type\":\"text\"},{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"́\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+            "redo_units": 0,
+            "revision": "3",
+            "selection_literal": "C(p,1,B)",
+            "stored_marks_literal": "inherit",
+            "undo_units": 1
+          }
+        ],
+        "exact_historical_id_sets": true,
+        "id": "H30",
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_work_equal": true,
+        "query_preserves_all_facets": true,
+        "status": "passed"
+      }
+    ],
+    "literal_passed": 29,
+    "literal_total": 29,
+    "scope": "Actual real-profile KWDJ main literal checkpoints; private counters reported by separate engine gate. Supplemental grouping/epoch/HP-only/aggregate witnesses are separate groups.",
+    "status": "passed"
+  },
+  "lifecycle": {
+    "case_total": 3,
+    "cases": [
+      {
+        "id": "closed",
+        "public_retention_counters_unchanged": true,
+        "query_execute_work_equal": true,
+        "reason": "session.closed",
+        "scope": "Post-close/poison graph and selection reads are guarded; private all-field lifecycle checks are separate engine evidence.",
+        "status": "passed"
+      },
+      {
+        "id": "poisoned",
+        "public_retention_counters_unchanged": true,
+        "query_execute_work_equal": true,
+        "reason": "session.poisoned",
+        "scope": "Post-close/poison graph and selection reads are guarded; private all-field lifecycle checks are separate engine evidence.",
+        "status": "passed"
+      },
+      {
+        "all_facets_preserved": true,
+        "id": "read_only",
+        "reason": "session.read_only",
+        "status": "passed"
+      }
+    ],
+    "ordinary_snapshot_codec_calls": 0,
+    "status": "passed"
+  },
+  "private_engine_cases": [
+    {
+      "id": "H23",
+      "scope": "Separate engine private counter tests; never claimed as public native/WASM execution"
+    }
+  ],
+  "property_generated": {
+    "apply_actions": 255,
+    "cases": [
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "a👩‍💻",
+          "a",
+          "é🙂"
+        ],
+        "independent_checkpoint_total": 22,
+        "insert_actions": 5,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 7,
+        "seed": 1,
+        "status": "passed",
+        "steps": 7,
+        "undo_actions": 7
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "Жx",
+          "é日本",
+          "éé"
+        ],
+        "independent_checkpoint_total": 25,
+        "insert_actions": 6,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 8,
+        "seed": 2,
+        "status": "passed",
+        "steps": 8,
+        "undo_actions": 8
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "éé",
+          "日本Жé",
+          "Ж🙂"
+        ],
+        "independent_checkpoint_total": 28,
+        "insert_actions": 7,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 9,
+        "seed": 3,
+        "status": "passed",
+        "steps": 9,
+        "undo_actions": 9
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "👩‍💻é",
+          "  🙂日本",
+          "x "
+        ],
+        "independent_checkpoint_total": 31,
+        "insert_actions": 8,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 10,
+        "seed": 4,
+        "status": "passed",
+        "steps": 10,
+        "undo_actions": 10
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          " é",
+          "é",
+          "👩‍💻"
+        ],
+        "independent_checkpoint_total": 19,
+        "insert_actions": 4,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 6,
+        "seed": 5,
+        "status": "passed",
+        "steps": 6,
+        "undo_actions": 6
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          " é",
+          "x ",
+          "Ж"
+        ],
+        "independent_checkpoint_total": 22,
+        "insert_actions": 5,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 7,
+        "seed": 6,
+        "status": "passed",
+        "steps": 7,
+        "undo_actions": 7
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "日本👩‍💻",
+          "🙂🙂👩‍💻",
+          "é"
+        ],
+        "independent_checkpoint_total": 25,
+        "insert_actions": 6,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 8,
+        "seed": 7,
+        "status": "passed",
+        "steps": 8,
+        "undo_actions": 8
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "🙂🙂",
+          " éx🙂",
+          "é"
+        ],
+        "independent_checkpoint_total": 28,
+        "insert_actions": 7,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 9,
+        "seed": 8,
+        "status": "passed",
+        "steps": 9,
+        "undo_actions": 9
+      },
+      {
+        "enter_actions": 3,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "é👩‍💻",
+          "👩‍💻",
+          " x👩‍💻",
+          "日本"
+        ],
+        "independent_checkpoint_total": 31,
+        "insert_actions": 7,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 10,
+        "seed": 9,
+        "status": "passed",
+        "steps": 10,
+        "undo_actions": 10
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "x🙂",
+          "aa",
+          ""
+        ],
+        "independent_checkpoint_total": 19,
+        "insert_actions": 4,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 6,
+        "seed": 10,
+        "status": "passed",
+        "steps": 6,
+        "undo_actions": 6
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "aé",
+          "é 🙂",
+          ""
+        ],
+        "independent_checkpoint_total": 22,
+        "insert_actions": 5,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 7,
+        "seed": 11,
+        "status": "passed",
+        "steps": 7,
+        "undo_actions": 7
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "Жé",
+          "日本ééé",
+          ""
+        ],
+        "independent_checkpoint_total": 25,
+        "insert_actions": 6,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 8,
+        "seed": 12,
+        "status": "passed",
+        "steps": 8,
+        "undo_actions": 8
+      },
+      {
+        "enter_actions": 3,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "éé",
+          " ",
+          "🙂a ",
+          ""
+        ],
+        "independent_checkpoint_total": 28,
+        "insert_actions": 6,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 9,
+        "seed": 13,
+        "status": "passed",
+        "steps": 9,
+        "undo_actions": 9
+      },
+      {
+        "enter_actions": 3,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "👩‍💻🙂",
+          "Ж日本",
+          " 👩‍💻é",
+          ""
+        ],
+        "independent_checkpoint_total": 31,
+        "insert_actions": 7,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 10,
+        "seed": 14,
+        "status": "passed",
+        "steps": 10,
+        "undo_actions": 10
+      },
+      {
+        "enter_actions": 1,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          " Ж",
+          "xЖé"
+        ],
+        "independent_checkpoint_total": 19,
+        "insert_actions": 5,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 6,
+        "seed": 15,
+        "status": "passed",
+        "steps": 6,
+        "undo_actions": 6
+      },
+      {
+        "enter_actions": 1,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          " 🙂",
+          "🙂日本👩‍💻x"
+        ],
+        "independent_checkpoint_total": 22,
+        "insert_actions": 6,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 7,
+        "seed": 16,
+        "status": "passed",
+        "steps": 7,
+        "undo_actions": 7
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "日本Ж",
+          " ",
+          "xЖ "
+        ],
+        "independent_checkpoint_total": 25,
+        "insert_actions": 6,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 8,
+        "seed": 17,
+        "status": "passed",
+        "steps": 8,
+        "undo_actions": 8
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "🙂日本",
+          "é ",
+          "  👩‍💻"
+        ],
+        "independent_checkpoint_total": 28,
+        "insert_actions": 7,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 9,
+        "seed": 18,
+        "status": "passed",
+        "steps": 9,
+        "undo_actions": 9
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "éé",
+          "a🙂x",
+          "日本👩‍💻é"
+        ],
+        "independent_checkpoint_total": 31,
+        "insert_actions": 8,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 10,
+        "seed": 19,
+        "status": "passed",
+        "steps": 10,
+        "undo_actions": 10
+      },
+      {
+        "enter_actions": 1,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "x日本",
+          "éé "
+        ],
+        "independent_checkpoint_total": 19,
+        "insert_actions": 5,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 6,
+        "seed": 20,
+        "status": "passed",
+        "steps": 6,
+        "undo_actions": 6
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "aé",
+          "日本",
+          "aé"
+        ],
+        "independent_checkpoint_total": 22,
+        "insert_actions": 5,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 7,
+        "seed": 21,
+        "status": "passed",
+        "steps": 7,
+        "undo_actions": 7
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "Ж ",
+          " a",
+          "日本日本"
+        ],
+        "independent_checkpoint_total": 25,
+        "insert_actions": 6,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 8,
+        "seed": 22,
+        "status": "passed",
+        "steps": 8,
+        "undo_actions": 8
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "éЖ",
+          "👩‍💻 a",
+          "日本é"
+        ],
+        "independent_checkpoint_total": 28,
+        "insert_actions": 7,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 9,
+        "seed": 23,
+        "status": "passed",
+        "steps": 9,
+        "undo_actions": 9
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "👩‍💻🙂",
+          "Жé日本é",
+          "é "
+        ],
+        "independent_checkpoint_total": 31,
+        "insert_actions": 8,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 10,
+        "seed": 24,
+        "status": "passed",
+        "steps": 10,
+        "undo_actions": 10
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          " Ж",
+          "x",
+          "Ж"
+        ],
+        "independent_checkpoint_total": 19,
+        "insert_actions": 4,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 6,
+        "seed": 25,
+        "status": "passed",
+        "steps": 6,
+        "undo_actions": 6
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          " 日本",
+          "日本日本",
+          "🙂"
+        ],
+        "independent_checkpoint_total": 22,
+        "insert_actions": 5,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 7,
+        "seed": 26,
+        "status": "passed",
+        "steps": 7,
+        "undo_actions": 7
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "日本a",
+          " Ж ",
+          "🙂"
+        ],
+        "independent_checkpoint_total": 25,
+        "insert_actions": 6,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 8,
+        "seed": 27,
+        "status": "passed",
+        "steps": 8,
+        "undo_actions": 8
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "🙂日本",
+          "é日本x👩‍💻",
+          "é"
+        ],
+        "independent_checkpoint_total": 28,
+        "insert_actions": 7,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 9,
+        "seed": 28,
+        "status": "passed",
+        "steps": 9,
+        "undo_actions": 9
+      },
+      {
+        "enter_actions": 3,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "éé",
+          "a",
+          " 🙂é",
+          "日本"
+        ],
+        "independent_checkpoint_total": 31,
+        "insert_actions": 7,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 10,
+        "seed": 29,
+        "status": "passed",
+        "steps": 10,
+        "undo_actions": 10
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "x ",
+          "🙂 ",
+          ""
+        ],
+        "independent_checkpoint_total": 19,
+        "insert_actions": 4,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 6,
+        "seed": 30,
+        "status": "passed",
+        "steps": 6,
+        "undo_actions": 6
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "aЖ",
+          " 🙂 ",
+          ""
+        ],
+        "independent_checkpoint_total": 22,
+        "insert_actions": 5,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 7,
+        "seed": 31,
+        "status": "passed",
+        "steps": 7,
+        "undo_actions": 7
+      },
+      {
+        "enter_actions": 2,
+        "exact_historical_records_ids_selection": true,
+        "final_paragraphs": [
+          "Ж ",
+          "👩‍💻éa ",
+          ""
+        ],
+        "independent_checkpoint_total": 25,
+        "insert_actions": 6,
+        "ordinary_snapshot_codec_calls": 0,
+        "query_execute_equal": true,
+        "query_preserves_all_facets": true,
+        "redo_actions": 8,
+        "seed": 32,
+        "status": "passed",
+        "steps": 8,
+        "undo_actions": 8
+      }
+    ],
+    "independent_checkpoint_total": 797,
+    "maximum_steps": 10,
+    "minimum_steps": 6,
+    "oracle": "Prebuilt seeded pure Vec<String> paragraph interpreter; exact literal Unicode/SPACE/NBSP and UTF16 end caret. Captured opaque identities are restoration invariants, never document oracles.",
+    "ordinary_snapshot_codec_calls": 0,
+    "redo_actions": 255,
+    "scope": "Bounded generated restoration; broader fuzz/performance OSR-38 remains separate.",
+    "sequence_total": 32,
+    "status": "passed",
+    "undo_actions": 255
+  },
+  "recurrence": {
+    "action_cap": 1,
+    "all_historical_ids_stable": true,
+    "chronological_map_cap": 1,
+    "cycles": 512,
+    "document_publications": 1536,
+    "event_record_cap": 1,
+    "final_heading_level": 1,
+    "final_revision": "1536",
+    "ordinary_snapshot_codec_calls": 0,
+    "query_execute_work_equal": true,
+    "scope": "Bounded history recurrence with real KWDJ heading attributes; one retained event isolates history steady state, default outbox covered separately; per-target32KiB work bound, no OSR38 performance claim.",
+    "status": "passed",
+    "steady_cycles": 510,
+    "steady_phase_work_and_retention_equal": true,
+    "warmup_cycles": 2,
+    "work_byte_cap": 32768
+  },
+  "scope": "Actual production Session with real KWDJ and compiled generic ADR profile on native/WASM; test-only transport, no public SDK or mounted event claim.",
+  "status": "passed",
+  "supplements": {
+    "groups": [
+      {
+        "commits": 3,
+        "historical_ids_restored": true,
+        "host_member_cap": 2,
+        "id": "member_cap_seal_start",
+        "identical_typed_selection_navigation_is_noop": true,
+        "replays": 4,
+        "status": "passed"
+      },
+      {
+        "all_facets_preserved_on_refusal": true,
+        "history_epochs": [
+          "0",
+          "1",
+          "2",
+          "2",
+          "2",
+          "2",
+          "3",
+          "4"
+        ],
+        "id": "history_epoch_boundary",
+        "query_execute_work_equal": true,
+        "setup_context_epoch": "1",
+        "stale_history_only_reason": "session.stale_history_epoch",
+        "status": "passed"
+      },
+      {
+        "atomic_refusal": true,
+        "id": "whole_group_low_budget_retry",
+        "members": 3,
+        "scope": "Zero-byte bound; generic known-cost per-member-fit aggregate proof is separate engine evidence.",
+        "status": "passed",
+        "sufficient_budget_retry": true,
+        "work_bytes": 0
+      }
+    ],
+    "status": "passed"
+  },
+  "target_metrics": "Only portable semantics/booleans compared; raw retained/work bytes are target-local bounds.",
+  "version": 1
+}
