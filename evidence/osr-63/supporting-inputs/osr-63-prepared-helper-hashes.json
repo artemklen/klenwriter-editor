@@ -1,0 +1,8 @@
+{
+  "scope": "Prepared helper bytes only; no CI/source/gate evidence",
+  "sha256": {
+    "/tmp/osr-63-collect-prepared.py": "dfba55c3a81dc15b022fdc8b7044d5ec96d0f68b198a713d22d0eb7cf2a6ee67",
+    "/tmp/osr-63-collector-sdk.py": "e518b55f4a1bafa846d0f64dc9019bd7594e533a601efc84775743709f06d2cf",
+    "/tmp/osr-63-watch-prepared.py": "f2bd23cb6c02e38a452b7fc80f7effd3060f892e80fe629e8241dbda9ef53bac"
+  }
+}

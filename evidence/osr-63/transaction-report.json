@@ -1,0 +1,299 @@
+{
+  "nativeWasmEqual": true,
+  "sourceHashes": {
+    "Cargo.lock": "bfbdc181539c4075ea62745cb2d87f6d3fc7e1714e7f159ceef1555c29d5a152",
+    "crates/wasm/Cargo.toml": "9d503ed97fd2bb220116fa69fd4a2e0a671342398a9f28cad8dd8b4fd6c08a21",
+    "crates/core/src/history.rs": "5bc12b4773a7285f1f28080e63fb92e076600dfcfedc7f836930a1028c37bd49",
+    "crates/engine/src/history.rs": "43a28d7fc3e48138d71f4e0cb2889a572fa25dc545b39e6a0e793ae6d610382d",
+    "crates/engine/src/grouping.rs": "74768c0057ed06622deab548f1820724bb6c3db8a260bd49196f30a68a0c0c69",
+    "crates/engine/src/history_dispatch.rs": "0c483ac67dabe1ddeb60908a091d082ae33b36dec3e3ed10eb7855523e7120c6",
+    "crates/core/src/candidate.rs": "d3780e54117837a626a4930bc24022be1262afbcea95ccf0865434d4c47f51ff",
+    "crates/core/src/transaction.rs": "37ecc69684c532b90386a04af294d35a7e232bf3b11eeb2a5b6c911b3eee815f",
+    "crates/core/src/admission.rs": "bab6926eb8be7010a2a7440e91ba668ec951757ae94c73c0c6d9decb35e87639",
+    "crates/core/src/positions.rs": "94ce04c115a062a6b203c2e124afcaa295ad6d9b26a4c0aaaa7bf155fcac50ff",
+    "crates/core/src/profile.rs": "1118c0164410a3471ea554e6f86276a641d6facdd0890ebf7b716fec805b29d5",
+    "crates/engine/src/tree.rs": "d1bc2205af12063d4b3b6386f0198830d321ba35b8f2a1d4ae4962d075caedda",
+    "crates/engine/src/session.rs": "966c50828dec6928f87f50d962d9cbe2404866917b0736ea17c6db767e5c0da4",
+    "crates/engine/src/dispatch.rs": "493a390af0ba25832e0be378a176d29f61ebe5cb47d6c81ca434f71777708c3a",
+    "crates/engine/src/transaction.rs": "34e628108dff27be15ab8ba1787ecf0132125ecf91d40d6ef38b438f7ac5260d",
+    "crates/kwdj/src/candidate_validate.rs": "a6f35c8aa1b795efa9256a5ca5233d1a7d266d7b062590b64c77fcd189e6cba1",
+    "crates/kwdj/src/edit_normalize.rs": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a",
+    "crates/kwdj/src/session_profile.rs": "96bcc4c5d8b070212e547345e880f4a6ffd7423ff4a8b8bebb5a4d22acc3b747",
+    "crates/kwdj/src/wire_view.rs": "351fa1b94b1c3af1d974e9471ee04a164b6ec11d891905f5a167f16d5f9227d2",
+    "crates/kwdj/src/validate.rs": "9824aeb6c05aeb5eff99af84d3c711c87eb728efa53181c1834d39354221ceec",
+    "crates/kwdj/src/normalize.rs": "9da4b8d258023dbd9076f8807a86d7a8db45573aea0e9bb56f1a405c0f97690f",
+    "crates/kwdj/src/core_bridge.rs": "6546cb233eacfe73a1231ea395b926f4283b29533cc0ebfed6c418b7e5cf3da7",
+    "crates/wasm/examples/support/transaction_observer.rs": "f356cf2c60afad699d99567fb1cc6158d2fc7840149c633733207cd1fb24609b",
+    "crates/wasm/examples/transaction_native.rs": "95e231b8a04844821142faeeb417880e4b2a9ef777d3046b7e0691cf66f26f1e",
+    "crates/wasm/examples/transaction_probe.rs": "2b5948958190b8d62b59cc69250978c4e7a380c67f612e572e4edc1f3e2d8298",
+    "crates/wasm/tests/transactions.rs": "9ffaf326f77c939e92f7a1ce11bf410aeed5c1bdcf6cce8eefcd04f96befb573",
+    "artifacts/transactions/probe_bg.wasm": "3ec65796b4463525af1167ad2b425e388daea465946ce00fc4bb7dd79c64f2de",
+    "tests/transactions.node.mjs": "636d36c9c895ad7239a89562d5453c1b8bf70b4e95bbbd8f2bfe6364bde5c64a",
+    "scripts/build-workspace.mjs": "2825817e02defa33cdb65a2859654b24480f0cbd2d29ff0673c6c3290834da0a",
+    "package.json": "68dcbf40929e811d41015c75bbed62bce0bcd12892c06cff551231789fbb1d8c"
+  },
+  "groups": {
+    "atomic_refusals": {
+      "cases": [
+        {
+          "canonical_and_state_preserved": true,
+          "code": "kwdj.unknown_attribute",
+          "identity_map": true
+        },
+        {
+          "canonical_and_state_preserved": true,
+          "code": "kwdj.unsafe_url",
+          "identity_map": true
+        },
+        {
+          "canonical_and_state_preserved": true,
+          "code": "kwdj.media_identity_unresolved",
+          "identity_map": true
+        },
+        {
+          "canonical_and_state_preserved": true,
+          "code": "limit.transaction_bytes",
+          "identity_map": true
+        },
+        {
+          "canonical_and_state_preserved": true,
+          "code": "transaction.journal_limit",
+          "identity_map": true
+        },
+        {
+          "canonical_and_state_preserved": true,
+          "code": "transaction.invalid_local_reference",
+          "identity_map": true
+        },
+        {
+          "canonical_and_state_preserved": true,
+          "code": "tree.invalid_grapheme_boundary",
+          "identity_map": true
+        },
+        {
+          "canonical_and_state_preserved": true,
+          "case": "empty-text-missing-reference",
+          "code": "kwdj.reference_identity_unresolved",
+          "identity_map": true
+        },
+        {
+          "canonical_and_state_preserved": true,
+          "case": "empty-text-active-unsafe-url",
+          "code": "kwdj.unsafe_url",
+          "identity_map": true
+        },
+        {
+          "canonical_and_state_preserved": true,
+          "case": "stanza-left-zero-before-merge",
+          "code": "kwdj.invalid_verse",
+          "identity_map": true
+        },
+        {
+          "canonical_and_state_preserved": true,
+          "case": "stanza-right-zero-before-merge",
+          "code": "kwdj.invalid_verse",
+          "identity_map": true
+        }
+      ],
+      "status": "passed"
+    },
+    "attributes_marks_spans": {
+      "canonical": {
+        "content": [
+          {
+            "attrs": {
+              "level": 2
+            },
+            "content": [
+              {
+                "marks": [
+                  {
+                    "type": "strong"
+                  },
+                  {
+                    "attrs": {
+                      "href": "https://example.test/path"
+                    },
+                    "type": "link"
+                  }
+                ],
+                "text": "hello",
+                "type": "text"
+              }
+            ],
+            "type": "heading"
+          },
+          {
+            "content": [
+              {
+                "content": [
+                  {
+                    "attrs": {
+                      "colspan": 2
+                    },
+                    "content": [
+                      {
+                        "content": [
+                          {
+                            "text": "A",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    "type": "table_cell"
+                  },
+                  {
+                    "content": [
+                      {
+                        "content": [
+                          {
+                            "text": "B",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    "type": "table_cell"
+                  }
+                ],
+                "type": "table_row"
+              }
+            ],
+            "type": "table"
+          }
+        ],
+        "profile": "prose",
+        "schema": "klenwriter.document",
+        "schema_version": 1
+      },
+      "normalization_explicit": true,
+      "repeated_metadata": {
+        "all_changed": true,
+        "allocation_warmup_commits": 2,
+        "canonical_bytes": 159,
+        "canonical_restored": true,
+        "commits": 512,
+        "event_record_limit": 1,
+        "history_action_limit": 1,
+        "identities_preserved": true,
+        "journal_entry_limit": 1,
+        "steady_commits": 510,
+        "steady_work_and_retained_bytes_stable": true,
+        "work_cap_bytes": 32768
+      },
+      "revision": 1,
+      "status": "passed"
+    },
+    "fragments_local_references": {
+      "canonical": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "A",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          },
+          {
+            "content": [
+              {
+                "text": "A",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          },
+          {
+            "content": [
+              {
+                "text": "Z",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          },
+          {
+            "content": [
+              {
+                "text": "Y",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          },
+          {
+            "type": "scene_break"
+          }
+        ],
+        "profile": "prose",
+        "schema": "klenwriter.document",
+        "schema_version": 1
+      },
+      "duplicate_has_fresh_ids": true,
+      "local_reference_text": "Z",
+      "removed_descendant_fallback": 5,
+      "revision": 1,
+      "scene_atom": true,
+      "status": "passed"
+    },
+    "normalization_noops": {
+      "canonical": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "a\nb",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "profile": "prose",
+        "schema": "klenwriter.document",
+        "schema_version": 1
+      },
+      "crlf_mapping_after": 2,
+      "normalization_explicit": true,
+      "selection_only_journal_entries": 1,
+      "selection_only_revision": 1,
+      "split_join": "net-noop",
+      "status": "passed"
+    },
+    "text_selection_journal": {
+      "canonical": {
+        "content": [
+          {
+            "content": [
+              {
+                "text": "aЖbf!",
+                "type": "text"
+              }
+            ],
+            "type": "paragraph"
+          }
+        ],
+        "profile": "prose",
+        "schema": "klenwriter.document",
+        "schema_version": 1
+      },
+      "endpoint_deleted": false,
+      "evicted": 2,
+      "interior_deleted": true,
+      "old_bookmark": "stale",
+      "retained_entries": 1,
+      "revision": 3,
+      "status": "passed"
+    }
+  },
+  "production_profile": "org.klenwriter.kwdj",
+  "schema": 1,
+  "scope": "Actual Rust dispatch; test-only transport; user Undo/Redo remains OSR-36",
+  "target_metrics": "Architecture-dependent logical byte costs are checked against bounds, not asserted equal across targets",
+  "task": "OSR-34"
+}

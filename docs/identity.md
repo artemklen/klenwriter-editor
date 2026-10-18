@@ -46,14 +46,16 @@ registry release or the standalone editor alpha of OSR-65.
 
 - Package SemVer describes a particular distribution's API/artifact release.
   Current packages are unpublished bootstrap `0.0.0`.
-- The host/session/extension API and native wire ABI have their own compatibility
-  contracts (OSR-33/63/64). This bootstrap exports build identity only; it does not
-  claim an implemented public host or wire API revision. Their map values are null.
+- The host/session API uses `editor-sdk/1` (OSR-63), with `publicHostApiRevision: 1`.
+  Generated Rust DTO declarations, exact profile/extension manifests and an actual
+  source build identity belong to this ABI. General registry composition remains
+  OSR-64. A native server RPC protocol is not defined: `nativeWireProtocolRevision`
+  stays null. Neither revision is inferred from package SemVer or stored schema.
 - `org.klenwriter.kwdj` and stored `klenwriter.document` schema version1 belong to
   the KWDJ codec. A package rename/version bump does not change stored documents.
   The profile package SemVer is separate from that persisted schema version.
 - wasm-bindgen's generated JS/WASM ABI is pinned to `0.2.129`; it is not the editor
-  wire protocol revision. The library's lifecycle ABI will be versioned explicitly.
+  wire protocol revision or the separate `editor-sdk/1` lifecycle ABI.
 
 ## Development-consumer migration
 

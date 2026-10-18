@@ -1,0 +1,60 @@
+{
+  "scope": "Pure targeted helper guards; actual existing two quiet tsc receipts read, synthetic negative metadata only. No builder/binder main, product tests/gates, Git/network or input changes.",
+  "passed": 11,
+  "failed": 0,
+  "checks": [
+    {
+      "case": "actual-quiet-tsc-receipt:osr-63-r2-listener-fatal-sdk-tsc.log",
+      "status": "passed"
+    },
+    {
+      "case": "actual-quiet-tsc-receipt:osr-63-r2-ts-compile.log",
+      "status": "passed"
+    },
+    {
+      "case": "wrong-hash",
+      "status": "passed",
+      "result": "refused"
+    },
+    {
+      "case": "wrong-exit",
+      "status": "passed",
+      "result": "refused"
+    },
+    {
+      "case": "non-tsc",
+      "status": "passed",
+      "result": "refused"
+    },
+    {
+      "case": "wrong-path",
+      "status": "passed",
+      "result": "refused"
+    },
+    {
+      "case": "wrong-byte-count",
+      "status": "passed",
+      "result": "refused"
+    },
+    {
+      "case": "changed-source",
+      "status": "passed",
+      "result": "refused"
+    },
+    {
+      "case": "missing-original-receipt",
+      "status": "passed",
+      "result": "refused"
+    },
+    {
+      "case": "empty-required-source-stays-refused",
+      "status": "passed",
+      "result": "refused"
+    },
+    {
+      "case": "arbitrary-empty-supporting-log-refused",
+      "status": "passed",
+      "result": "refused"
+    }
+  ]
+}

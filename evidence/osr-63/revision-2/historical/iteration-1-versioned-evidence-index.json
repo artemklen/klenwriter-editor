@@ -1,0 +1,546 @@
+{
+  "source": "8f09e211badfcf5fe7e7d1403f9bff465352ff0a",
+  "files": {
+    "evidence/osr-63/automated/observations.json.gz": {
+      "bytes": 102774,
+      "sha256": "9036e0329e49877c0febfc9837f707bc9a41bfc43ff7ed4bf9f519bf77f7620c"
+    },
+    "evidence/osr-63/command-report.json": {
+      "bytes": 76915,
+      "sha256": "05c1f367e41628734ff03124cd8414b2a14ffc1048c663664497e781ea55d4f7"
+    },
+    "evidence/osr-63/deepseek-assistance.json": {
+      "bytes": 2113,
+      "sha256": "e7e7746655bfc347734ccf948204927b82ab19d37a0838f2f7e6746776421af7"
+    },
+    "evidence/osr-63/deltas-report.json": {
+      "bytes": 202090,
+      "sha256": "b6b084217d1b11c0c72a1b00178988f464f52169bc6709ac166b2d2e3a1d52e7"
+    },
+    "evidence/osr-63/execution-contract.md": {
+      "bytes": 13847,
+      "sha256": "17c4e170d98e34f1ae9ce4c9199c37196360d1d8c240cee4ed883ddce06485bf"
+    },
+    "evidence/osr-63/frozen58-restoration.json": {
+      "bytes": 13778,
+      "sha256": "e2c0b2ca08400c98208f3eb39be825521da8211a6686649b80f0f1b09990fb64"
+    },
+    "evidence/osr-63/helpers/osr-63-bind-local-validation.py": {
+      "bytes": 9787,
+      "sha256": "fca3d7a70115f6b6a02f3e9307ba03848308449950ed0899d538044f0fdeac38"
+    },
+    "evidence/osr-63/helpers/osr-63-build-local-evidence.py": {
+      "bytes": 29568,
+      "sha256": "2c920e4d8ca44b42fcabb5bae37e788d00d387d6d13283102e5e9e0ccf0caea5"
+    },
+    "evidence/osr-63/helpers/osr-63-collect-prepared.py": {
+      "bytes": 63176,
+      "sha256": "dfba55c3a81dc15b022fdc8b7044d5ec96d0f68b198a713d22d0eb7cf2a6ee67"
+    },
+    "evidence/osr-63/helpers/osr-63-collector-sdk.py": {
+      "bytes": 26430,
+      "sha256": "e518b55f4a1bafa846d0f64dc9019bd7594e533a601efc84775743709f06d2cf"
+    },
+    "evidence/osr-63/history-report.json": {
+      "bytes": 97196,
+      "sha256": "4cfa39fc21ffade4184d499f024b0dd98907ca14350e0fda395e7db20ae7361a"
+    },
+    "evidence/osr-63/local-verification.json": {
+      "bytes": 212153,
+      "sha256": "090b240ab2f448967c19cbf12c19b76bd658f1872442a05d9de36caa79918213"
+    },
+    "evidence/osr-63/logs/osr-63-local-full-check-after-callback-release.log.gz": {
+      "bytes": 13224,
+      "sha256": "a0e044b495509f5d3c46c3a1c8226de71d93e41db7ea1ee0b5031e9b1451b8d3"
+    },
+    "evidence/osr-63/logs/osr-63-local-m0-browser.log.gz": {
+      "bytes": 1778,
+      "sha256": "8cefb5e67674a83c39b340b13275bd7ab5a1920a9253e4b148b8f00acf286aac"
+    },
+    "evidence/osr-63/logs/osr-63-local-m0-summary.log.gz": {
+      "bytes": 102,
+      "sha256": "7081a2d178a99bcb9b08a2fbcc2547c8bab5aa14bea679a2d78cffc50d9303cb"
+    },
+    "evidence/osr-63/logs/osr-63-local-msrv.log.gz": {
+      "bytes": 3938,
+      "sha256": "d31b12118fdcd86345f92caab7d0e68b59a8a7953fe3324974628918ee1f7c62"
+    },
+    "evidence/osr-63/m0-source-snapshot.json": {
+      "bytes": 34985,
+      "sha256": "c54c62a60391c01de0808d711b687a948f1e5418a940a25d29e883d1e00e569a"
+    },
+    "evidence/osr-63/msrv-source-equivalence.json": {
+      "bytes": 3822,
+      "sha256": "81521406b37facc4919392a68fd87c0a5b2e445b7b769cbbe1a9a53e786e58f7"
+    },
+    "evidence/osr-63/runner-readbacks/osr-63-local-full-check-after-callback-release.log.actual-exit.json": {
+      "bytes": 19925,
+      "sha256": "ab155aadd7ec2ba7074408d61e0f98903665c3f96ac72edccd83302c82316ca0"
+    },
+    "evidence/osr-63/runner-readbacks/osr-63-local-m0-browser.log.actual-exit.json": {
+      "bytes": 19877,
+      "sha256": "b8abaa9c3b9e51d29db40adc645304e0552283b6bbd3a15462e339386c3404dc"
+    },
+    "evidence/osr-63/runner-readbacks/osr-63-local-m0-summary.log.actual-exit.json": {
+      "bytes": 19909,
+      "sha256": "9292cc878ac4ecdd6a6a30899e1b8b2808704648c9c0478bb3528ced81cced9c"
+    },
+    "evidence/osr-63/runner-readbacks/osr-63-local-msrv.log.actual-exit.json": {
+      "bytes": 19986,
+      "sha256": "25ba5a2f6971ffb77b272b1dddbd722e736adf72062f78c5f83c6cda24536643"
+    },
+    "evidence/osr-63/sdk-inputs/package-inventory.json": {
+      "bytes": 12446,
+      "sha256": "4e8877d8c115a637edf57b93d9d13533b7f86934f32ae2e7ca9234bba3f250ac"
+    },
+    "evidence/osr-63/sdk-inputs/packages/klenwriter-editor-kwdj-0.0.0.tgz": {
+      "bytes": 9737,
+      "sha256": "b61ecc30f8beb5ed1952a4b08fe63c41459f3c831006617bbf40f0e5714fd528"
+    },
+    "evidence/osr-63/sdk-inputs/packages/klenwriter-editor-sdk-0.0.0.tgz": {
+      "bytes": 31995,
+      "sha256": "37ce7c291b3c3c82ac688608fe8a5557246f4108f04fe09bd0ba4b7209f9769d"
+    },
+    "evidence/osr-63/sdk-inputs/packages/klenwriter-editor-wasm-0.0.0.tgz": {
+      "bytes": 726145,
+      "sha256": "90b778e2f6807919182c5645d53049ae124947ab4d0695b5f6861b977f60da83"
+    },
+    "evidence/osr-63/sdk-inputs/sdk-build-identity.json": {
+      "bytes": 9753,
+      "sha256": "86170c58f7a64fe189b30cb0f7713f5da3b8ad79f0afc0ee105e166f939562cf"
+    },
+    "evidence/osr-63/sdk-inputs/sdk-clean-consumer-report.json": {
+      "bytes": 11664,
+      "sha256": "b6d3aed0ecd651fb3b9f4be03aa13cade822031bcb6a37849e978bd117157de0"
+    },
+    "evidence/osr-63/sdk-inputs/sdk-distribution/editor_wasm.js": {
+      "bytes": 14376,
+      "sha256": "13e77b9c20c64f9f62f2136e481e3d24b92824ed25fc31e21726749062d14ba5"
+    },
+    "evidence/osr-63/sdk-inputs/sdk-distribution/editor_wasm_bg.wasm": {
+      "bytes": 3556766,
+      "sha256": "ea06136d5577b6087c94ec5abcbb049decd68da4f3c565b07649b032a68ee0a3"
+    },
+    "evidence/osr-63/sdk-inputs/sdk-distribution/sdk-build-id.js": {
+      "bytes": 204,
+      "sha256": "cdb820d4fc19337ea197158ae4d76411d1540a42a3e7c1640d69c2c3ec3e57f3"
+    },
+    "evidence/osr-63/sdk-inputs/sdk-distribution/sdk-native-manifest.json": {
+      "bytes": 421,
+      "sha256": "12b60a79b518ed5ba8f2f799c021881b0911188b55ca6323070ac6afe689077f"
+    },
+    "evidence/osr-63/sdk-inputs/sdk-distribution/sdk-types.d.ts": {
+      "bytes": 8844,
+      "sha256": "8e8a8c9513e8163efea8f15b614889a45d770b220d13962c5a2ffde90e762bc7"
+    },
+    "evidence/osr-63/sdk-inputs/sdk-generator-dependencies.json": {
+      "bytes": 6131,
+      "sha256": "59b2e0f3b7a417a435d569080e8e9aaa19566eb5b49be42d63611a39af80cdfa"
+    },
+    "evidence/osr-63/sdk-inputs/sdk-native-manifest.json": {
+      "bytes": 421,
+      "sha256": "12b60a79b518ed5ba8f2f799c021881b0911188b55ca6323070ac6afe689077f"
+    },
+    "evidence/osr-63/sdk-inputs/sdk-report.json": {
+      "bytes": 22843,
+      "sha256": "8950750b1db6f02e44b97b6674959ab2c93844e950771228a981ef7d18f96fbb"
+    },
+    "evidence/osr-63/sdk-inputs/sdk-wasm-seal.json": {
+      "bytes": 596,
+      "sha256": "941d54afd7cf65bc7ca90a70b2beb479e113fbd142bc415d4f464bd47f66feb8"
+    },
+    "evidence/osr-63/sdk-inputs/sdk/native-observer.json": {
+      "bytes": 8340,
+      "sha256": "98138440c95dac6b66fb5397f3a3f0ef2b7c4b967606edd64e581820c7047d64"
+    },
+    "evidence/osr-63/sdk-inputs/sdk/native.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evidence/osr-63/sdk-inputs/sdk/probe.js": {
+      "bytes": 14154,
+      "sha256": "5e6a289cd0da6fe2cc21cccb43fbff8558da9d1d9d63e0987c0c9df01371673d"
+    },
+    "evidence/osr-63/sdk-inputs/sdk/probe_bg.wasm": {
+      "bytes": 2951886,
+      "sha256": "6dba796fb9ffdff64bbf84608af887a8855a6f14b747db9f28f41d8577240fd7"
+    },
+    "evidence/osr-63/sdk-inputs/sdk/wasm-observer.json": {
+      "bytes": 8340,
+      "sha256": "98138440c95dac6b66fb5397f3a3f0ef2b7c4b967606edd64e581820c7047d64"
+    },
+    "evidence/osr-63/sdk-report.json": {
+      "bytes": 22843,
+      "sha256": "8950750b1db6f02e44b97b6674959ab2c93844e950771228a981ef7d18f96fbb"
+    },
+    "evidence/osr-63/session-foundation-report.json": {
+      "bytes": 7377,
+      "sha256": "67f7cead9e57eba2084957adce6f0d0e790432d7ac40b4b4dfeb4d89a02df9a0"
+    },
+    "evidence/osr-63/source-snapshot.json": {
+      "bytes": 34993,
+      "sha256": "5f2712af4abb6ce1cb79f120ceec2d0fdc2847f25d0384ee1bbd489b7b661935"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-archive-config.template.json": {
+      "bytes": 1154,
+      "sha256": "7fc34fb0263d44c1834c84c16a1024d9409529066c170d180f4563384c374563"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-bind-local-validation.before-empty-stderr.py": {
+      "bytes": 9787,
+      "sha256": "fca3d7a70115f6b6a02f3e9307ba03848308449950ed0899d538044f0fdeac38"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-build-after-license-fix.log.actual-exit.json": {
+      "bytes": 19925,
+      "sha256": "6d9ec188fe2d11999d7e4f30cde6e83a20c8945f42206c120878a7276e1a7d3d"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-build-after-license-fix.log.gz": {
+      "bytes": 449,
+      "sha256": "2a5b1d5c4d37beaaed7fb4042172db8be45583a32e6824955753bbb26f86da61"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-build-first.log.actual-exit.json": {
+      "bytes": 19401,
+      "sha256": "a193e9c724c1e8bff10224988374d276113a28244beb936e29594d57241c753f"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-build-first.log.gz": {
+      "bytes": 777,
+      "sha256": "890f25599f8619fc8f6a216b245f41f5d5122e827bd3de64f3a0a63e53510e73"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-build-local-evidence.before-empty-stderr.py": {
+      "bytes": 29093,
+      "sha256": "77bb7741ab8dbcf52853dc35a78ea9c210aaa5827a962d62037ea4b28647e246"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-callback-retention-final-green.log.actual-exit.json": {
+      "bytes": 20000,
+      "sha256": "5cf41b42481086312e9543c19fa0742d602faca2cfeefb5918b6bf766d99ea65"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-callback-retention-final-green.log.gz": {
+      "bytes": 1493,
+      "sha256": "4883bafb38106d9719bed2f946ac0eb78a641fd5abc217924183ae7c6f2a4e53"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-callback-retention-fixed-green.log.actual-exit.json": {
+      "bytes": 20000,
+      "sha256": "a0989a3f5bd0aa05a6d7abc6edbf2fa8730f68b8f5f7e77354bf87902467eb11"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-callback-retention-fixed-green.log.gz": {
+      "bytes": 1495,
+      "sha256": "7c3ef1ec6bdd540add665d191ab5b198d388cddcd61204e264b96a3ec20b66c0"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-callback-retention-instrumented-red.log.actual-exit.json": {
+      "bytes": 20010,
+      "sha256": "0f1dba958f4e6e585d9bd985245ade8b7d47b6b9f7f46a5ced4d83125671b2c6"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-callback-retention-instrumented-red.log.gz": {
+      "bytes": 1927,
+      "sha256": "d87c954cdf73aa0cae5e23c13877cc2de0a6f75570d18eade281de1be4e3c0a4"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-callback-retention-receipt.json": {
+      "bytes": 1558,
+      "sha256": "b6f9dfc0c0e59121ea1c4cd75d3d0431073f81ea3a81c8bd13595299fae9911b"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-close-helper-hashes.json": {
+      "bytes": 2136,
+      "sha256": "fd4198577a70b6552206e93ae4a8a07332941130e03ecb9ccae0bb15a3c5b17b"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-close-helper-offline-proof.json": {
+      "bytes": 2466,
+      "sha256": "b608df5eceb945dc855d099e3b2fa32948fd9fe91c93cb3d1e9a9169ac39a6a7"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-collector-offline-results.json": {
+      "bytes": 1612,
+      "sha256": "39606d7f8eb97babd560ee9837ec1d9ab3b4bfff9a10fa60996df3a5efe71d74"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-config.template.json": {
+      "bytes": 1241,
+      "sha256": "20384ff20cf84e5e50b7210f67a6b70ec09b875f4236e1af7ff95179fcad0367"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-frozen58-restoration.json": {
+      "bytes": 13778,
+      "sha256": "e2c0b2ca08400c98208f3eb39be825521da8211a6686649b80f0f1b09990fb64"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-helper-hashes-with-review.json": {
+      "bytes": 4764,
+      "sha256": "007312538078452f5096c851da89a8b70a70c9eb068aec6432bb04581ac51c63"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-identity-owned-receipt.json": {
+      "bytes": 1116,
+      "sha256": "54f53e96520a75fb7dafb343385273661c3d326f7c21aca499873ad0526e14dc"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-license-notices-targeted.actual-exit.json": {
+      "bytes": 792,
+      "sha256": "f52c96976ec3e621810c79e5a85c2e66bddc93cbc6fb26393e832be9eccd4269"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-license-notices-targeted.log.gz": {
+      "bytes": 512,
+      "sha256": "e2002b211a01f582dad774da3bd9af53b89d876d0383ff729e9f5a1494da2001"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-local-evidence-build.log.actual-exit.json": {
+      "bytes": 20000,
+      "sha256": "0b75754c23ef72750d707108d2199f49346a8dba704369d490a50fd8e8f90d52"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-local-evidence-build.log.gz": {
+      "bytes": 475,
+      "sha256": "8d9833ef6a87417908e2a3dbb07897c72f74f8055d49bb6993c84c2274fb82a2"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-local-evidence-config-root.json": {
+      "bytes": 2988,
+      "sha256": "e4249067e4bb7f12d60db1694558293fdd8307104c8224ad8a763528026799b7"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-local-evidence-config.json": {
+      "bytes": 2535,
+      "sha256": "4efb667960512ad070b130b19aa00ea03d07ae6bc1fb5d2f56457915e1212b69"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-local-evidence-helper-hashes-v2.json": {
+      "bytes": 1597,
+      "sha256": "6d06e304d58e96b268a7641fafed04f643837d30112ac8748cb7fe17824f9049"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-local-evidence-helper-hashes.json": {
+      "bytes": 1011,
+      "sha256": "0d1014b0ed22d9ff2385e3227e0c9dc29dcb46c1395a3f0338dfdaaac0fe8a15"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-local-evidence-offline-results-v2.json": {
+      "bytes": 14235,
+      "sha256": "a07f859c0c1f997314f42c72203cbc5e7d06b90c5cd097d17400ad37eb80bd9b"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-local-evidence-offline-results.json": {
+      "bytes": 13635,
+      "sha256": "6cc8dc2cb025c5d904c54ee0cea2ad3d81f2f3171e53de0606dbca7e2385a43a"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-local-full-check-after-format.log.actual-exit.json": {
+      "bytes": 19915,
+      "sha256": "ff327851b30c3d343885b6bcfd87b67f737ea5926914631c7d74fd6e58c4e9cb"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-local-full-check-after-format.log.gz": {
+      "bytes": 13249,
+      "sha256": "29589712af02e3fd429fb7f198a43fe9b8a44b2f52fa328b6dbb88c4f40ea047"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-local-full-check.log.actual-exit.json": {
+      "bytes": 19901,
+      "sha256": "41209bda531ea058a3de6f1418e7e26cd5e2dfabed64cc72f15dda52be07116f"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-local-full-check.log.gz": {
+      "bytes": 662,
+      "sha256": "2b7226ef5093e5ee55fd55a12b3cc709c414709ec6aa8a7509284a2b227080a3"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-local-m0-observations.json": {
+      "bytes": 3252572,
+      "sha256": "8520219d80e2db24969da3ada0aa779989eec60018b2594a19b6c76607fc6d49"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-local-source-closure-during-rust.json": {
+      "bytes": 34985,
+      "sha256": "c54c62a60391c01de0808d711b687a948f1e5418a940a25d29e883d1e00e569a"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-local-source-closure-final-before-gates.json": {
+      "bytes": 34993,
+      "sha256": "5f2712af4abb6ce1cb79f120ceec2d0fdc2847f25d0384ee1bbd489b7b661935"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-local-toolchain.json": {
+      "bytes": 1735,
+      "sha256": "2f5d70bee684922d7ab257923b9c9c296e3fed59ff5de1029c1d791104f77219"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-local-validation.template.json": {
+      "bytes": 2282,
+      "sha256": "7a94789d31bc9676c43d33d777cb21a6b1624c1297b310f87823b25eb1aa13d5"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-msrv-source-equivalence.json": {
+      "bytes": 3822,
+      "sha256": "81521406b37facc4919392a68fd87c0a5b2e445b7b769cbbe1a9a53e786e58f7"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-packet-config.template.json": {
+      "bytes": 616,
+      "sha256": "78f86742ed19ab85863b83175f68a6a6c3933dc24f33eb14e345e79ccfaac621"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-postmerge-config.template.json": {
+      "bytes": 542,
+      "sha256": "c727ff4c8ffc64e33c324b68ce6cd481f0651fa2a50fb12e1917f75ca8b9883f"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-prepared-helper-hashes.json": {
+      "bytes": 406,
+      "sha256": "de6d54c7bb410d1931c0fd5904fcfda092ae26b4ba9329c2427d588617f023e8"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-proof-helper-before-empty-stderr.json": {
+      "bytes": 720,
+      "sha256": "6a2d729fe677692fbed6675d08d9d53034371bfdbc2172a6ed9702b815ec7c05"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-review-helpers-offline-proof.json": {
+      "bytes": 2538,
+      "sha256": "2f739ecefee73417cb5b3addcd0ce861079f6b21400c7e2e74fe1caa7f413929"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-browser-actual-report.json": {
+      "bytes": 9144,
+      "sha256": "8d524ae86c9dbc7f715c592cf897c448e125b793a06d95a36143ff96754b5f07"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-clean-consumer-actual.log.actual-exit.json": {
+      "bytes": 20025,
+      "sha256": "d9d67d7b1608309b6f5b7172d8932552b6a5abb4cd29df8c11a6e147022159c4"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-clean-consumer-actual.log.gz": {
+      "bytes": 190,
+      "sha256": "8ac27a945530d82cc6a28152cb0cf9947d7515da352516b6536468dbf904e4e6"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-consumer-actual-report.json": {
+      "bytes": 11664,
+      "sha256": "740f7eb5e90d75ca74c68a39b15e92a4ad8d8d7846f62522ccf5f243d6c5f5f2"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-csp-three-browsers-actual.log.actual-exit.json": {
+      "bytes": 20139,
+      "sha256": "9abb859baef6a31d9ec23b5fe01c07d515f9532d5f457199cc4c7efd2e0dc01d"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-csp-three-browsers-actual.log.gz": {
+      "bytes": 361,
+      "sha256": "f3789dae8f5a4366d344979167ecafc5eb6bdf2acbbd6fcd7492152f611321a4"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-integration-actual.log.actual-exit.json": {
+      "bytes": 19936,
+      "sha256": "6dc7278b8df4148a5d12d9edc09017e9c88286dfc241a5588d20d230bc25c024"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-integration-actual.log.gz": {
+      "bytes": 1193,
+      "sha256": "9110b52d82bc60888e76399501839d109b9d18b714aee4e3fa528630ccdc282b"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-integration-after-dto-shape.log.actual-exit.json": {
+      "bytes": 19951,
+      "sha256": "67271e3a2d4f3e8867cb98760a7c9445ef0d26c02ccf0b3e335bad080827556e"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-integration-after-dto-shape.log.gz": {
+      "bytes": 819,
+      "sha256": "373709d543feaef857fda48580e18cfbeb6af661861c56fefd25d9b0d6be39e0"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-loader-actual.log.actual-exit.json": {
+      "bytes": 20004,
+      "sha256": "7312079015a1d91d4b73165513e16e62d24eae5d614efba5435abee43f6c81e7"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-loader-actual.log.gz": {
+      "bytes": 423,
+      "sha256": "53899f2f3c088853e657406d166720ee006863398fbf15a05ed8d81752a80de5"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-native-frozen-green.log.gz": {
+      "bytes": 301,
+      "sha256": "3400a9b8123727636dd4d89ea281eef9a4213e3b84bf275b5721c36e8c94b6e5"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-native-wasm-actual.log.actual-exit.json": {
+      "bytes": 19911,
+      "sha256": "24828eb21680ca3162bcc1cd9198d40d2cfaf78cc7d111f848a6dacb4f22bf68"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-native-wasm-actual.log.gz": {
+      "bytes": 125,
+      "sha256": "7f83c380615ae19a51f40bf93da098d91f4cf3758702ddb80ee028cf53a633c6"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-observer-frozen-clippy.log.gz": {
+      "bytes": 151,
+      "sha256": "a1786bfc81d6160063bca23a9b21d5e321c52aa06bc055df7ec08de2c155c26f"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-observer-receipt.json": {
+      "bytes": 4204,
+      "sha256": "4c1cd5bad59f4949f807b3c0cf9680979362bb5263e2a0e6d1623d1ee22a7179"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-owned-focused-receipt.json": {
+      "bytes": 4689,
+      "sha256": "169c6e811c388c984372dd03c690fa1908d54bca28643c457561d3c3e585184c"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-packages-actual.log.actual-exit.json": {
+      "bytes": 20089,
+      "sha256": "d04e1febe3b01dc005e2a6b0a3c6f80cf6cdd290d1121b890b11010d1a8093a0"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-packages-actual.log.gz": {
+      "bytes": 670,
+      "sha256": "a740cf9d9400059c7aeb513450a448a046eafcae4fdbbd4b971e5db609add7b9"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-packages-path-fixed.log.actual-exit.json": {
+      "bytes": 20103,
+      "sha256": "57876975d520f6c55aa6b13e4e9cbabfb81e892700db7fd238246d52bc70f8e2"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-sdk-packages-path-fixed.log.gz": {
+      "bytes": 147,
+      "sha256": "5717801f064f6058ebe15cdfe826e24eba7da42d9aea7fcedcde5a95362e89c4"
+    },
+    "evidence/osr-63/supporting-inputs/osr-63-wire-unit-null-red.log.gz": {
+      "bytes": 559,
+      "sha256": "15046ae9db734c9647e214219e3995e495d97e3506d391089785afa1a972da96"
+    },
+    "evidence/osr-63/transaction-report.json": {
+      "bytes": 10287,
+      "sha256": "4c2b562f944f65b3095eadb1ab90b2f2a38f1ab915412799a6e3774ee929cf63"
+    },
+    "evidence/osr-63/witness-inputs/commands/probe.d.ts": {
+      "bytes": 1337,
+      "sha256": "0bce6404d35148037d3c3ee09e384bacd08c4377a638db599b21fa7ed6c2397d"
+    },
+    "evidence/osr-63/witness-inputs/commands/probe.js": {
+      "bytes": 5123,
+      "sha256": "50c64d72a8b73865d2571a7a3d67a5566a8ed42095efa3367af827f9cb41b66e"
+    },
+    "evidence/osr-63/witness-inputs/commands/probe_bg.wasm": {
+      "bytes": 2398963,
+      "sha256": "fde97b4e557f4ebdd9d5e99d35ada801aebbb12c1ab205f9e692f833de553552"
+    },
+    "evidence/osr-63/witness-inputs/commands/probe_bg.wasm.d.ts": {
+      "bytes": 308,
+      "sha256": "03b5131f873af9cde9e68b02334ec30bf5194b4aa5f6e1bec56f4b9c0e4e89d0"
+    },
+    "evidence/osr-63/witness-inputs/deltas/native-observer.json": {
+      "bytes": 45737,
+      "sha256": "faf8e0610c236213049bea0354632ac5edcc4c1efbeadde8eeb41e087e13f543"
+    },
+    "evidence/osr-63/witness-inputs/deltas/probe.d.ts": {
+      "bytes": 1333,
+      "sha256": "f5d0652eb2b5c1454d2fa9d09e8c061777ed4fd4bae6044bc48d1b8b5689ab16"
+    },
+    "evidence/osr-63/witness-inputs/deltas/probe.js": {
+      "bytes": 5119,
+      "sha256": "dd669af36d24f8c33814e2f37c1cbacce5b5bc59ab2c826ec3381ad0a1ef046c"
+    },
+    "evidence/osr-63/witness-inputs/deltas/probe_bg.wasm": {
+      "bytes": 2176578,
+      "sha256": "7563eadc6514c25bf678715c4e84906e70b22d8db94b3379f36cdde4d2c8b36a"
+    },
+    "evidence/osr-63/witness-inputs/deltas/probe_bg.wasm.d.ts": {
+      "bytes": 306,
+      "sha256": "6da05c4ee367c13744ea9d101996b3b112fb94181ed899efb17c19befbb2a176"
+    },
+    "evidence/osr-63/witness-inputs/deltas/wasm-observer.json": {
+      "bytes": 45726,
+      "sha256": "7cd1c9426fab71dc910328964c48d285c50b2b00c91c83680bc18e3c5e6d8191"
+    },
+    "evidence/osr-63/witness-inputs/history/probe.d.ts": {
+      "bytes": 1335,
+      "sha256": "645985c30e41e5cff5d87ac5d2c085d7a11f0cbb8581464c798943c943299fe9"
+    },
+    "evidence/osr-63/witness-inputs/history/probe.js": {
+      "bytes": 5121,
+      "sha256": "80a4e316288cbcf2bb960a3babc5c12574b5fef25101d19bc9b282858c515c8c"
+    },
+    "evidence/osr-63/witness-inputs/history/probe_bg.wasm": {
+      "bytes": 2522958,
+      "sha256": "cc90fa0c5200af5a3eeb8859b8c2161c91c066a2887b1f83d1542dbabc5a200b"
+    },
+    "evidence/osr-63/witness-inputs/history/probe_bg.wasm.d.ts": {
+      "bytes": 307,
+      "sha256": "7261295cf8c39c417b5a4ed36f0a2803bf1f453b309986f9eea28cba28a516e4"
+    },
+    "evidence/osr-63/witness-inputs/sdk/probe.d.ts": {
+      "bytes": 2951,
+      "sha256": "77030a25d8880111d8efff3fae48e9b3c924a58d38a82c1eee1327a8a160c63f"
+    },
+    "evidence/osr-63/witness-inputs/sdk/probe_bg.wasm.d.ts": {
+      "bytes": 1371,
+      "sha256": "d19962855d32c1b135b98fe274e9257a3f960a970e8e48474c8f6bb1fadb55d4"
+    },
+    "evidence/osr-63/witness-inputs/transactions/probe.d.ts": {
+      "bytes": 1345,
+      "sha256": "f0ce7121253aec8f979d2ca7138ec15ac14bcd5cdb974fd92d4331af3986fb05"
+    },
+    "evidence/osr-63/witness-inputs/transactions/probe.js": {
+      "bytes": 5131,
+      "sha256": "f2972d30962d18d03928f85470f69c7ceb5eaaf79758e49d489112f5ae6283bd"
+    },
+    "evidence/osr-63/witness-inputs/transactions/probe_bg.wasm": {
+      "bytes": 1628101,
+      "sha256": "3ec65796b4463525af1167ad2b425e388daea465946ce00fc4bb7dd79c64f2de"
+    },
+    "evidence/osr-63/witness-inputs/transactions/probe_bg.wasm.d.ts": {
+      "bytes": 312,
+      "sha256": "c89dfbe04494dbdaffddb5a1d9f2b8013c6a6b49b313ce83616fc9c026edd43f"
+    }
+  },
+  "scope": "Unchanged original committed versioned evidence; original review requested changes, not approval."
+}

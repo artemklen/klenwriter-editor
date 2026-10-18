@@ -1,0 +1,313 @@
+{
+  "issue": "OSR-63",
+  "completedAt": "2026-10-18T10:45:13.425674+00:00",
+  "savedNewObservations": {
+    "path": "/tmp/osr-63-local-m0-observations.json",
+    "bytes": 3252572,
+    "sha256": "8520219d80e2db24969da3ada0aa779989eec60018b2594a19b6c76607fc6d49"
+  },
+  "frozen58RestoredFiles": [
+    {
+      "path": "evidence/osr-58/automated/initial-failure/README.md",
+      "sha256": "8d439168d570e91e271963141729b19bb95c0f04eb8bfca0441aaecfa7b5ea02"
+    },
+    {
+      "path": "evidence/osr-58/automated/initial-failure/error-context.md",
+      "sha256": "79ddcc815bd1ee0179e1778cd4148d8273f403349a853ee44a85b54ae4f20a4d"
+    },
+    {
+      "path": "evidence/osr-58/automated/initial-failure/manifest.json",
+      "sha256": "3b9caff518a04ad22bc9403feb2d3ac5e176abb28e666a3c8512e59b4fea5c63"
+    },
+    {
+      "path": "evidence/osr-58/automated/initial-failure/summary.json",
+      "sha256": "8add1b8855df2fac64232a25a3017c17973e880c9877ce922fd2b3a40b618040"
+    },
+    {
+      "path": "evidence/osr-58/automated/initial-failure/test-failed-1.png",
+      "sha256": "62eb3fcfee510090179bdb9cc56584456c743f2a18fca0346b675bab97f3ab4b"
+    },
+    {
+      "path": "evidence/osr-58/automated/initial-failure/trace.zip",
+      "sha256": "a376543dc4eadbb408001dfc3e350901a34d550f4975d8c092c507abd98546f4"
+    },
+    {
+      "path": "evidence/osr-58/automated/initial-failure/typing-undo-repeat.log",
+      "sha256": "878edfa4017c6c9b17b916083f7442e3f546de60b19d6e15d9a0ccb05aac0af5"
+    },
+    {
+      "path": "evidence/osr-58/automated/observations.json",
+      "sha256": "d26e6d92decfc48e7663b6489ea2cef7f5a6ec4bbfd683b59acd34768fa4f79a"
+    },
+    {
+      "path": "evidence/osr-58/baseline/initial-run-summary.json",
+      "sha256": "82584d5bb51ef89ce3ac107c251d6b72b950071a0eb34bd46276d86ee23fe497"
+    },
+    {
+      "path": "evidence/osr-58/baseline/pre-continuation-source-manifest.json",
+      "sha256": "2502a0d99e5a701b2b4dfb77116e6890bc179fbba81cb3390215625247072f10"
+    },
+    {
+      "path": "evidence/osr-58/baseline/safari-single.json",
+      "sha256": "8a50a03e1b22be7cb57d8183fb6f8fe4eccbf28fb7161fe42ac1d0e180f87c39"
+    },
+    {
+      "path": "evidence/osr-58/baseline/typed-marker-cut-undo.json",
+      "sha256": "ce7ffe5369f81fb572ef1421ae9c48a6e9680b1c277ced970775ed39ef10e961"
+    },
+    {
+      "path": "evidence/osr-58/native/README.md",
+      "sha256": "089d06cf9a59c05ba72ccbf91f82961c96719e0645ceb0ebfbc72642fad825d9"
+    },
+    {
+      "path": "evidence/osr-58/native/chrome-islands-ru-deadkey.json",
+      "sha256": "8a354942bfe2421b00d2cf00160a132bb5d1b42d29d48319984b63bdd8f75f61"
+    },
+    {
+      "path": "evidence/osr-58/native/chrome-single-ru-deadkey.json",
+      "sha256": "06f8a6e8310a9e0cfae155473b401c7af28b5d1d2c1eea18b991a9a228febd10"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/README.md",
+      "sha256": "a44a4879c390f0cf77884c0adff1818e80bf0b12c7ee394d4ff4908b3ac2aa64"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/index.json",
+      "sha256": "7dddd67d7179d771225d4c0cb2ac766074bde707d9768b6ce0bfc93cb4cce8fc"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792183958239.json",
+      "sha256": "84f94457bbd1cb10ebfcff3bd832c846798b708d2e149e757c6b12a90eff0360"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792183959940.json",
+      "sha256": "836b03ed02416b33c3b1f0600be66601701e1d183973bdfadd4b05500a981f8d"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792183961654.json",
+      "sha256": "4881fb123f0b68f339c9884a0d19c8e8dc652d04d6c3494f5161c67871e6d30a"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792184010137.json",
+      "sha256": "8f15612d9851bae6da1a5b85f7e4c1bfbbcd667e2e309ba40e9c32bd9ff72cdc"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792184030695.json",
+      "sha256": "017780193918dfac06bf4eeeb18792b1a83d463ad7406b2c1b2eba8c88a0eead"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792184035416.json",
+      "sha256": "9426625cfe1b17fd72427018bc79e26b1828d8e434d51981db679c9b1a61b951"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792184053771.json",
+      "sha256": "336a6e5e661d6e423b8b54a77d9d7b5351b1c9885aaa117d68e9947b5a209440"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792184056641.json",
+      "sha256": "089a11b531a161a65ba53bc458af4ef949c2f64d67be2fab1a185bd26dcd6482"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792184059249.json",
+      "sha256": "849f1af518119978d9d27d80951e603e488437644edee27fb1a6eeb427c9cfcf"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792184329770.json",
+      "sha256": "295289bc6c852c08c3a1caf7eba2bf66b0ef3130fece2aa29b59eb79924c6fb3"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792184368559.json",
+      "sha256": "8fc4989fff1c5914920ec8f435f43f03501e18265a48081d6ed3dfdc3fdafff0"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792184381217.json",
+      "sha256": "3cccf9dc5eb11673c14bcbc4958ff5b23e45aa7f12118f191cb8df4a45c79727"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792184477112.json",
+      "sha256": "5aa01f75e083aecbaeac2ca8e9d6166220de09eae02272aae800adf064cd4714"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792184505414.json",
+      "sha256": "4a6d4c77063cee020739d616b52347bfe6252f838aab34a40a4964e135535b5e"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792184733730.json",
+      "sha256": "945b437bbdf85d07899407586870932576dde09ab23ccde38fa3320eca23a8ce"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792184752965.json",
+      "sha256": "06008dec470ee5398817ded0bfa36421ca83ff926f670fbbd0a06ed88622caaf"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792184843107.json",
+      "sha256": "4ec268345f3705ac7c095ba142f62fa83f888dd4139623536a607be70fe7d796"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792184872965.json",
+      "sha256": "67dade62edcfdf5e12995aeea191a3ab75434256f0984720b1e34203e5021ff4"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792184925966.json",
+      "sha256": "13cec68475057792dd6f607724ece4a302a18b79d644abd8797a061134942cd1"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792184929637.json",
+      "sha256": "c33cd86095851be93483b754319eb7b3c093f05a1a234a3b20aac22e8c10d12a"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792184983201.json",
+      "sha256": "d40f566ea7a22750ffe015840d27c0cf374e289d57d2ff8c7b220cb8ffc0a54b"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-islands-1792185005722.json",
+      "sha256": "b28590bd03f6f1843bc0898afc4bdf4a00584b46e5a23fca12ff5be8c0cb534d"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792183787499.json",
+      "sha256": "b45cde37e37df14cfa3e7bdb61fde096386873aef8485a8131716538304e7fe6"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792183824535.json",
+      "sha256": "272330efa3958893402c788ab78b03b35cbd7a2b0b3d204eaac5c742069f3589"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792183827129.json",
+      "sha256": "aa736a11d8eb8d5558f6b2daec907913d731d4bbb723e1b129cb2b272265b631"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792183841876.json",
+      "sha256": "d08f0b31706185a2755bd3f89ffa8d3aaee62c1b9857fcccac192c224797784c"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792183932372.json",
+      "sha256": "ed3ce7292aa5b9c5ad26925f49e827ab74710b8d681b006618bd39d50fe767ba"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792183935227.json",
+      "sha256": "7b4219fb245cf1a05533aae74411ca69d24744e8c5cb6ddffec86b116d48b5e3"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792183950585.json",
+      "sha256": "e6236983f29cac9bc0ca13b38aaa01782e411763544ff883f4fcc8aba31595f0"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792183952267.json",
+      "sha256": "2138379ef52e40d2db576bdf4a99bae3c1180702165e4268dd80fc118ea45c44"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792184402629.json",
+      "sha256": "f3d622040d0461d42eee1e0415ce01d6178f780c8a57f11b49098bd19fcb13c0"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792184413083.json",
+      "sha256": "307cf22ecc036c0a34650c03a24e664f431fd18ca3d33aa42a0457113e35924c"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792184423064.json",
+      "sha256": "bb94f347df437168ac4cc18d8c369dc953237b12f7858e53570a26fdd6972480"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792184453701.json",
+      "sha256": "b8e7ecd82619fec448869a0a81d666cc8dbbb1f922554be29b36a8497ece78f2"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792184518593.json",
+      "sha256": "559d63a67ab806a82c4a5d418f147e8d40ffb4377bdb1576d7019a44bcdeb864"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792184658231.json",
+      "sha256": "321b33af36cb95a429d22bfb106bddbb123844f38513e0079b75f012c556895b"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792184705035.json",
+      "sha256": "0abc53f7066208ddf808666627cd70d79d8ece30af6d019f729dd2e601639720"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792184724955.json",
+      "sha256": "33bc8e6544329b8809894639e21852a45fdcc669d420bbab684b4ce282492b0f"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792184761090.json",
+      "sha256": "3430bb749efff25498e7d9015644254d54fd9d127528c820086ae484c101aac9"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792184862809.json",
+      "sha256": "1743bd642bcdbbc70dd9851cd444563a96bafbdf942301fd903545ffd465f8e5"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792184865788.json",
+      "sha256": "f0eb24f33384225b38de3cd8bea4b566587776f360b3435892af7493b30f8ebf"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792184892985.json",
+      "sha256": "b8d07fe93a745b757d5b37e9571c464144ae21e7385c21647c459b9bd98092e5"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792184916823.json",
+      "sha256": "c1a4c4d56447e9a3d5495dd1733397548567d508932ae3322a6d9a8f60ec8124"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792184941020.json",
+      "sha256": "0ff5a73b080b4d6cce91ec91709e488f773b39bff0bc69a105207998cbde32f3"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/osr-58-single-1792184971810.json",
+      "sha256": "9ec214f98d809cb07af7d0c9d815b448a2ae13660c01ba11434f79e1e6a39389"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/screenshots/manifest.json",
+      "sha256": "4c7b035cdcf1c9785a42426ecc5f6a0b862348e873826f2c4c4fd41c9e46995b"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/screenshots/osr58-chrome-islands-find.jpg",
+      "sha256": "53e10f6c9df5ff59b997a71a771215d8b3928de6d312207ae68aa60ec0957f36"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/screenshots/osr58-chrome-single-find.jpg",
+      "sha256": "77652fcaf1c5576eb3671a46e44487819e29cc9511f112fdc04e6ae92180a45c"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/screenshots/osr58-firefox-islands-find.jpg",
+      "sha256": "0d4ba5f2094b32a0d5962e8c69a692b856174c684d2ed618a96560f1f207ccfb"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/screenshots/osr58-firefox-single-find.jpg",
+      "sha256": "b8b11cdc27137b0290906a8f2bd7e8ae9b7d5b89b3a58565b7e2715bb97ff84c"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/screenshots/osr58-safari-islands-find.jpg",
+      "sha256": "1a2a5fa50e4e2141b5251fd6a9b64d1b7fae4205e7d2a53c237448eaaf4bde9c"
+    },
+    {
+      "path": "evidence/osr-58/native/continuation/screenshots/osr58-safari-single-find.jpg",
+      "sha256": "7c731fc6861405ad1fcedc48b28b588e0ddf6ad0106d179be24b78da5d9153f1"
+    },
+    {
+      "path": "evidence/osr-58/native/safari-islands-contaminated-setup.json",
+      "sha256": "5e6dd0d875e4c38471ed9defb48c0258a51b8e148d07d9991a1ff83e210f28ad"
+    },
+    {
+      "path": "evidence/osr-58/native/safari-islands-ru-deadkey.json",
+      "sha256": "0e24071e5cb76591bffc5128be1c7240d89f705b28a9075cd5fd15700661488d"
+    },
+    {
+      "path": "evidence/osr-58/native/safari-islands-ru.json",
+      "sha256": "2b31fa16bafba5a6172f03d163d267f1c1c772f6dcbe0f935b6dc7837d12ec24"
+    },
+    {
+      "path": "evidence/osr-58/native/safari-single-deadkey-escape-blur.json",
+      "sha256": "8a50a03e1b22be7cb57d8183fb6f8fe4eccbf28fb7161fe42ac1d0e180f87c39"
+    },
+    {
+      "path": "evidence/osr-58/native/safari-single-ru.json",
+      "sha256": "9585736ea90476a2d0efdc64f9dcf6268956058a064229bb1bc5f3e6ea03f45a"
+    },
+    {
+      "path": "evidence/osr-58/source-manifest.json",
+      "sha256": "ec7735f838b49c5324ee04910ecc5694311ff56eafe893c817df0f6adfe70be5"
+    }
+  ],
+  "count": 75,
+  "scope": "New local M0 observations retained separately; all75 accepted tracked OSR58 artifacts restored byte-exact from pre-run backup."
+}

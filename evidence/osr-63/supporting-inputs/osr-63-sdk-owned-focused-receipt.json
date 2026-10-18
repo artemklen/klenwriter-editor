@@ -1,0 +1,111 @@
+{
+  "issue": "OSR-63",
+  "scope": "Supporting implementer focused local checks; no official review, CI or final committed-source validation claimed. Exact historical production source captured by each actual exit receipt; subsequent root formatting/full check will have a new build identity.",
+  "testedBuildId": "sha256:38c316f6959959941945f3174120847ee4022aec9aa94a2867941836c600990e",
+  "node": "24.22.0",
+  "results": {
+    "loader": {
+      "passed": 11,
+      "failed": 0,
+      "scope": "2 manifest/seal guard cases and 9 isolated actual compiled WASM loader cases; same-process wrong-version to correct-version retry included."
+    },
+    "packages": {
+      "privateTarballs": 6
+    },
+    "cleanConsumer": {
+      "passed": 1,
+      "realSessionCycles": 12,
+      "lateCallbacksRefused": 25,
+      "toolsAbsentFromChildPath": [
+        "cargo",
+        "rustc"
+      ],
+      "scope": "Actual external JS-only consumer installed packed wasm/sdk/kwdj offline with lifecycle scripts ignored; installed dist bytes verified against actual producers. Not a claim that Rust is globally uninstalled."
+    },
+    "strictCsp": {
+      "passed": 3,
+      "engines": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "realSessionCyclesPerEngine": 12,
+      "lateCallbacksRefusedPerEngine": 25,
+      "rendererClaim": false
+    }
+  },
+  "failuresPreserved": [
+    {
+      "gate": "sdk_actual_check_packages",
+      "returnCode": 1,
+      "cause": "Our initial PATH included npm/bin shell wrapper; wrapper searched for npm-prefix.js beside nonstandard local Node installation. Source unchanged; no package tarballs created by that failed attempt.",
+      "repair": "Existing .tools/node/node_modules/.bin npm symlink invokes npm-cli.js with Node24. No source edits; distinct actual passing gate/log follows."
+    }
+  ],
+  "gates": [
+    {
+      "gate": "sdk_loader_11_actual",
+      "returnCode": 0,
+      "rawLog": "/tmp/osr-63-sdk-loader-actual.log",
+      "rawLogBytes": 999,
+      "rawLogSha256": "5d931b8c9355b8c778a3103db89e726d956d4e57db820d6ad72fce51057ff78c",
+      "exitReceipt": "/tmp/osr-63-sdk-loader-actual.log.actual-exit.json",
+      "exitReceiptSha256": "7312079015a1d91d4b73165513e16e62d24eae5d614efba5435abee43f6c81e7",
+      "productionSourceUnchanged": true
+    },
+    {
+      "gate": "sdk_actual_check_packages",
+      "returnCode": 1,
+      "rawLog": "/tmp/osr-63-sdk-packages-actual.log",
+      "rawLogBytes": 1508,
+      "rawLogSha256": "81e27aebbcf72e9b9d2f0f3fae3689050c6ce68d2e06ab88a886bdc7ba607180",
+      "exitReceipt": "/tmp/osr-63-sdk-packages-actual.log.actual-exit.json",
+      "exitReceiptSha256": "d04e1febe3b01dc005e2a6b0a3c6f80cf6cdd290d1121b890b11010d1a8093a0",
+      "productionSourceUnchanged": true
+    },
+    {
+      "gate": "sdk_actual_check_packages_path_fixed",
+      "returnCode": 0,
+      "rawLog": "/tmp/osr-63-sdk-packages-path-fixed.log",
+      "rawLogBytes": 174,
+      "rawLogSha256": "ce462499bbbf0afc1bbd44933c7dcac1b4694b33c6e90699f67cb3d3a8cc096c",
+      "exitReceipt": "/tmp/osr-63-sdk-packages-path-fixed.log.actual-exit.json",
+      "exitReceiptSha256": "57876975d520f6c55aa6b13e4e9cbabfb81e892700db7fd238246d52bc70f8e2",
+      "productionSourceUnchanged": true
+    },
+    {
+      "gate": "sdk_clean_consumer_actual",
+      "returnCode": 0,
+      "rawLog": "/tmp/osr-63-sdk-clean-consumer-actual.log",
+      "rawLogBytes": 220,
+      "rawLogSha256": "df3c493df7e241e9996969faba51ea96b3ea34d44846a30438aa5c81b9570870",
+      "exitReceipt": "/tmp/osr-63-sdk-clean-consumer-actual.log.actual-exit.json",
+      "exitReceiptSha256": "d9d67d7b1608309b6f5b7172d8932552b6a5abb4cd29df8c11a6e147022159c4",
+      "productionSourceUnchanged": true
+    },
+    {
+      "gate": "sdk_strict_csp_three_browsers_actual",
+      "returnCode": 0,
+      "rawLog": "/tmp/osr-63-sdk-csp-three-browsers-actual.log",
+      "rawLogBytes": 1226,
+      "rawLogSha256": "1f20bef08ebf8680e860c97a4b5bb7fc122bec9868d1bbf6fc0e0457d582836f",
+      "exitReceipt": "/tmp/osr-63-sdk-csp-three-browsers-actual.log.actual-exit.json",
+      "exitReceiptSha256": "9abb859baef6a31d9ec23b5fe01c07d515f9532d5f457199cc4c7efd2e0dc01d",
+      "productionSourceUnchanged": true
+    }
+  ],
+  "reportCopies": [
+    {
+      "path": "/tmp/osr-63-sdk-browser-actual-report.json",
+      "bytes": 9144,
+      "sha256": "8d524ae86c9dbc7f715c592cf897c448e125b793a06d95a36143ff96754b5f07"
+    },
+    {
+      "path": "/tmp/osr-63-sdk-consumer-actual-report.json",
+      "bytes": 11664,
+      "sha256": "740f7eb5e90d75ca74c68a39b15e92a4ad8d8d7846f62522ccf5f243d6c5f5f2"
+    }
+  ],
+  "productionFilesEditedDuringChecks": false,
+  "fullCheckOrCiRunByThisAgent": false
+}

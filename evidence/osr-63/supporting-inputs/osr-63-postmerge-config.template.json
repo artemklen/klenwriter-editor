@@ -1,0 +1,18 @@
+{
+  "issue": "OSR-63",
+  "iteration": 1,
+  "source": null,
+  "base": "62a52bb054b09f0e850762124b53229e2b195d14",
+  "pr": null,
+  "merge": null,
+  "run": null,
+  "mergedAt": null,
+  "mergeParents": null,
+  "mergeTree": null,
+  "reviewSession": null,
+  "independentVerdict": null,
+  "reviewReceipt": "/tmp/osr-63-review-publication-receipt.json",
+  "postReceipt": "/tmp/osr-63-postmerge-ci-receipt.json",
+  "work": null,
+  "scope": "Template only, not evidence. Root must supply actual normal approve/merge/existing automatic push-main run."
+}

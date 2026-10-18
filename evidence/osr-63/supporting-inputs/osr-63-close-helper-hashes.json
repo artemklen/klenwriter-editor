@@ -1,0 +1,56 @@
+{
+  "issue": "OSR-63",
+  "scope": "Offline supporting prep only; syntax and17 synthetic guard checks passed, no mains/network/CI/review/Git/cleanup/archive executed. Imported collector/support pins finalized by actual future config.",
+  "files": [
+    {
+      "path": "/tmp/osr-63-watch-postmerge.py",
+      "bytes": 21736,
+      "sha256": "aebf3c89e6125219d8408c6367dc571f3ae74165616afa6b0d95761c82ded597"
+    },
+    {
+      "path": "/tmp/osr-63-cleanup.py",
+      "bytes": 23221,
+      "sha256": "6a167f49e6e9b74ec67aff1ebba320225f0fc6e6cf5092d877f8643c00da2e61"
+    },
+    {
+      "path": "/tmp/osr-63-archive-review.py",
+      "bytes": 47766,
+      "sha256": "2800e01cf78485db8f7faa076e9da9c68fdf02453f51dd5a57d1e74b473229cd"
+    },
+    {
+      "path": "/tmp/osr-63-audit-final-archive.py",
+      "bytes": 27255,
+      "sha256": "c1f0f00abb3ed775035819fd76344b53f6bdc2ab99d28cc152e474a3157c19ba"
+    },
+    {
+      "path": "/tmp/osr-63-postmerge-config.template.json",
+      "bytes": 542,
+      "sha256": "c727ff4c8ffc64e33c324b68ce6cd481f0651fa2a50fb12e1917f75ca8b9883f"
+    },
+    {
+      "path": "/tmp/osr-63-archive-config.template.json",
+      "bytes": 1154,
+      "sha256": "7fc34fb0263d44c1834c84c16a1024d9409529066c170d180f4563384c374563"
+    },
+    {
+      "path": "/tmp/osr-63-close-helper-offline-tests.py",
+      "bytes": 4304,
+      "sha256": "324069e2ce1747b6a4cd3e841990e4bedc3212c92f53cb4140546a9177eced51"
+    },
+    {
+      "path": "/tmp/osr-63-close-helper-offline-proof.json",
+      "bytes": 2466,
+      "sha256": "b608df5eceb945dc855d099e3b2fa32948fd9fe91c93cb3d1e9a9169ac39a6a7"
+    },
+    {
+      "path": "/tmp/osr-63-close-helpers-README.md",
+      "bytes": 8516,
+      "sha256": "0103a1c69ae76b84dd60c58365fe226051faee92353c57e07d4b88435e6a9750"
+    }
+  ],
+  "immutable37OriginalsVerified": {
+    "/tmp/osr-37-watch-postmerge.py": "5900bab3c932d2107d2b4157b53f1b2ba17b8f522f2199a1b8a7d7e2e8e85f6b",
+    "/tmp/osr-37-cleanup.py": "eafb019e6c753ca5e0473cf43b0fbe7392cf23198f4b7fe40f82130903007801",
+    "/tmp/osr-37-archive-review.py": "4a60aec8830f3184487f100d12d860f35b8fd53945860aa8a4e95c664e23934f"
+  }
+}

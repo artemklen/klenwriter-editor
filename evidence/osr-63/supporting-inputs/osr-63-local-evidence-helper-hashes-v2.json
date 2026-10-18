@@ -1,0 +1,39 @@
+{
+  "issue": "OSR-63",
+  "status": "prepared_helper_v2_not_executed_by_agent",
+  "files": {
+    "/tmp/osr-63-build-local-evidence.py": {
+      "bytes": 29568,
+      "sha256": "2c920e4d8ca44b42fcabb5bae37e788d00d387d6d13283102e5e9e0ccf0caea5"
+    },
+    "/tmp/osr-63-bind-local-validation.py": {
+      "bytes": 9787,
+      "sha256": "fca3d7a70115f6b6a02f3e9307ba03848308449950ed0899d538044f0fdeac38"
+    },
+    "/tmp/osr-63-local-evidence-offline-checks-v2.py": {
+      "bytes": 7404,
+      "sha256": "76523ac7ab3c7bcefce65984f7c614b2a26e50b1322d63030e2c66ffd207be05"
+    },
+    "/tmp/osr-63-local-evidence-offline-results-v2.json": {
+      "bytes": 14235,
+      "sha256": "a07f859c0c1f997314f42c72203cbc5e7d06b90c5cd097d17400ad37eb80bd9b"
+    },
+    "/tmp/osr-63-proof-helper-before-empty-stderr.json": {
+      "bytes": 720,
+      "sha256": "6a2d729fe677692fbed6675d08d9d53034371bfdbc2172a6ed9702b815ec7c05"
+    },
+    "/tmp/osr-63-build-local-evidence.before-empty-stderr.py": {
+      "bytes": 29093,
+      "sha256": "77bb7741ab8dbcf52853dc35a78ea9c210aaa5827a962d62037ea4b28647e246"
+    },
+    "/tmp/osr-63-bind-local-validation.before-empty-stderr.py": {
+      "bytes": 9787,
+      "sha256": "fca3d7a70115f6b6a02f3e9307ba03848308449950ed0899d538044f0fdeac38"
+    },
+    "/tmp/osr-63-local-evidence-empty-stderr-repair.md": {
+      "bytes": 1501,
+      "sha256": "269589b7eb43fa4c4f98622c841479a35ba0974a24372e3d3711409651ed54ae"
+    }
+  },
+  "scope": "Narrow empty native.stderr.log read support. Root first helperred preserved;32 bounded offline checks pass. No product source/gate change."
+}

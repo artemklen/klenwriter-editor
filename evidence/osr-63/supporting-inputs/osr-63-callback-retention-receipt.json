@@ -1,0 +1,27 @@
+{
+  "issue": "OSR-63",
+  "scope": "Supporting implementer ownership fix; actual retained function count, no new post-destroy callback emission claim. Focused JS source rebuilt by tsc only; packaged WASM remains historical95c build. Final coherent workspace rebuild required.",
+  "changedFiles": {
+    "packages/sdk/src/controller.ts": "6cac52e710a30bbe6c080e86884bf89b0c6efae2130683be580f3ab34de8bd91",
+    "tests/sdk-controller.node.mjs": "ee3e8a48cbad25f28ad6f269de0201ba9604780d1e28c2507daf44a3e1e594c8",
+    "tests/sdk-integration.node.mjs": "991c908ba2ac462ae9f7001b54de49bc610ca54f289c6dae834509d3248353c6"
+  },
+  "instrumentedRed": {
+    "receipt": "/tmp/osr-63-callback-retention-instrumented-red.log.actual-exit.json",
+    "status": "failed",
+    "tests": 30,
+    "passed": 27,
+    "failed": 3,
+    "qualification": "Getter-only production instrumentation exposed actual retained onCallbackError in loading destroy and invalid constructor. No undefined property expectation; actual count1 versus required0."
+  },
+  "finalFocusedGreen": {
+    "receipt": "/tmp/osr-63-callback-retention-final-green.log.actual-exit.json",
+    "status": "passed",
+    "tests": 30,
+    "passed": 30,
+    "controlledControllerCases": 17,
+    "actualPackagedSessionCases": 13
+  },
+  "repair": "Clear onCallbackError first in destroy() before all early returns, and in constructor catch. Normal dispose already cleared it. Resource counter derived directly from stored function. Existing callbackError lifecycle/destroyRequested guard unchanged.",
+  "sourceFrozen": true
+}

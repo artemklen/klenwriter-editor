@@ -6,6 +6,8 @@
 //! package `0.0.0`, persisted KWDJ schema version 1, and codec WASM ABI. It does
 //! not announce a registry release or a stable public session SDK.
 
+use std::rc::Rc;
+
 use editor_core::candidate::CandidateRead;
 use editor_core::document::Document;
 use editor_core::profile::{
@@ -25,13 +27,18 @@ pub const KWDJ_CODEC_ID: &str = "org.klenwriter.kwdj/json";
 pub const KWDJ_BASE_EXTENSION_ID: &str = "org.klenwriter.kwdj/base";
 pub const KWDJ_BASE_EXTENSION_VERSION: &str = "1.0.0";
 
-/// Trusted compiled KWDJ semantics, with immutable borrowed identity services.
+enum ResolverBacking<'a> {
+    Borrowed(&'a dyn IdentityResolver),
+    OwnedRc(Rc<dyn IdentityResolver>),
+}
+
+/// Trusted compiled KWDJ semantics with borrowed or owned synchronous services.
 ///
 /// The base extension identifies this compiled codec/profile capability; no
 /// runtime descriptor compiler or alternate production profile is implemented.
 pub struct KwdjProfile<'a> {
     binding: ProfileBinding,
-    identities: &'a dyn IdentityResolver,
+    identities: ResolverBacking<'a>,
     limits: Limits,
     budget: AdmissionBudget,
 }
@@ -39,6 +46,14 @@ pub struct KwdjProfile<'a> {
 impl<'a> KwdjProfile<'a> {
     pub fn new(
         identities: &'a dyn IdentityResolver,
+        limits: Limits,
+        budget: AdmissionBudget,
+    ) -> Self {
+        Self::with_resolver(ResolverBacking::Borrowed(identities), limits, budget)
+    }
+
+    fn with_resolver(
+        identities: ResolverBacking<'a>,
         limits: Limits,
         budget: AdmissionBudget,
     ) -> Self {
@@ -61,7 +76,10 @@ impl<'a> KwdjProfile<'a> {
     }
 
     pub(crate) fn identities(&self) -> &dyn IdentityResolver {
-        self.identities
+        match &self.identities {
+            ResolverBacking::Borrowed(identities) => *identities,
+            ResolverBacking::OwnedRc(identities) => identities.as_ref(),
+        }
     }
 
     pub fn limits(&self) -> Limits {
@@ -70,6 +88,19 @@ impl<'a> KwdjProfile<'a> {
 
     pub fn budget(&self) -> AdmissionBudget {
         self.budget
+    }
+}
+
+impl KwdjProfile<'static> {
+    /// Own the shared resolver without a self-reference or leaked lifetime.
+    /// The resolver must not call host JavaScript during native preparation; its
+    /// current facts may be updated by its owner outside active Session calls.
+    pub fn new_owned(
+        identities: Rc<dyn IdentityResolver>,
+        limits: Limits,
+        budget: AdmissionBudget,
+    ) -> Self {
+        Self::with_resolver(ResolverBacking::OwnedRc(identities), limits, budget)
     }
 }
 
@@ -127,13 +158,13 @@ impl FrozenProfile for KwdjProfile<'_> {
         Ok(match mode {
             AdmissionMode::Strict => validate_normalized_json_with_limits_and_budget(
                 input,
-                self.identities,
+                self.identities(),
                 self.limits,
                 self.budget,
             )?,
             AdmissionMode::Import => decode_normalize_validate_with_limits_and_budget(
                 input,
-                self.identities,
+                self.identities(),
                 self.limits,
                 self.budget,
             )?,
@@ -156,7 +187,7 @@ impl FrozenProfile for KwdjProfile<'_> {
         Ok(admit_core_document_with_budget(
             document,
             *context,
-            self.identities,
+            self.identities(),
             self.limits,
             self.budget,
         )?)
@@ -179,7 +210,7 @@ impl TransactionProfile for KwdjProfile<'_> {
             *context,
             view,
             cache,
-            self.identities,
+            self.identities(),
             self.limits,
             self.budget,
             work,
@@ -196,7 +227,7 @@ impl TransactionProfile for KwdjProfile<'_> {
             *context,
             view,
             cache,
-            self.identities,
+            self.identities(),
             self.limits,
             self.budget,
             work,
@@ -212,7 +243,7 @@ impl TransactionProfile for KwdjProfile<'_> {
         crate::candidate_validate::check_discarded_metadata(
             candidate,
             &operations,
-            self.identities,
+            self.identities(),
             self.limits,
             self.budget,
             work,
@@ -229,10 +260,164 @@ impl TransactionProfile for KwdjProfile<'_> {
         Ok(crate::candidate_validate::validate_candidate(
             *context,
             candidate,
-            self.identities,
+            self.identities(),
             self.limits,
             self.budget,
             work,
         )?)
+    }
+}
+
+#[cfg(test)]
+mod owned_tests {
+    use super::*;
+    use crate::{IdentityResolverError, IdentityStatus, KwdjErrorCode};
+    use std::cell::Cell;
+    use uuid::Uuid;
+
+    struct Facts {
+        current: Cell<Result<IdentityStatus, IdentityResolverError>>,
+        calls: Cell<usize>,
+        drops: Rc<Cell<usize>>,
+    }
+    impl Facts {
+        fn new(drops: Rc<Cell<usize>>) -> Self {
+            Self {
+                current: Cell::new(Ok(IdentityStatus::Exists)),
+                calls: Cell::new(0),
+                drops,
+            }
+        }
+    }
+    impl IdentityResolver for Facts {
+        fn resolve_media(&self, _: &Uuid) -> Result<IdentityStatus, IdentityResolverError> {
+            panic!("reference-only fixture must not consult media")
+        }
+        fn resolve_reference(&self, _: &Uuid) -> Result<IdentityStatus, IdentityResolverError> {
+            self.calls.set(self.calls.get() + 1);
+            self.current.get()
+        }
+    }
+    impl Drop for Facts {
+        fn drop(&mut self) {
+            self.drops.set(self.drops.get() + 1);
+        }
+    }
+    fn reference() -> Vec<u8> {
+        br#"{"schema":"klenwriter.document","schema_version":1,"profile":"prose","content":[{"type":"paragraph","content":[{"type":"text","text":"reference","marks":[{"type":"reference_link","attrs":{"reference_entity_id":"00000000-0000-4000-8000-000000000001"}}]}]}]}"#.to_vec()
+    }
+
+    #[test]
+    fn owned_profile_retains_resolver_after_external_owner_drops_then_releases_it() {
+        let drops = Rc::new(Cell::new(0));
+        let resolver = Rc::new(Facts::new(drops.clone()));
+        let weak = Rc::downgrade(&resolver);
+        let profile: KwdjProfile<'static> = KwdjProfile::new_owned(
+            resolver.clone(),
+            Limits::default(),
+            AdmissionBudget::default(),
+        );
+        drop(resolver);
+        assert!(weak.upgrade().is_some());
+        let admitted = profile
+            .admit_bytes(profile.binding(), &reference(), AdmissionMode::Strict)
+            .unwrap();
+        let canonical = profile.canonical(&admitted).to_vec();
+        assert_eq!(weak.upgrade().unwrap().calls.get(), 1);
+        drop(profile);
+        assert!(weak.upgrade().is_none());
+        assert_eq!(drops.get(), 1);
+        assert_eq!(admitted.canonical_json(), canonical);
+    }
+
+    #[test]
+    fn owned_profile_rechecks_current_facts_for_snapshot_and_retries_without_answer_cache() {
+        let resolver = Rc::new(Facts::new(Rc::new(Cell::new(0))));
+        let profile = KwdjProfile::new_owned(
+            resolver.clone(),
+            Limits::default(),
+            AdmissionBudget::default(),
+        );
+        let admitted = profile
+            .admit_bytes(profile.binding(), &reference(), AdmissionMode::Strict)
+            .unwrap();
+        let document = profile.to_document(&admitted);
+        for (fact, code) in [
+            (
+                Ok(IdentityStatus::Missing),
+                KwdjErrorCode::MissingReferenceIdentity,
+            ),
+            (
+                Err(IdentityResolverError::Unavailable),
+                KwdjErrorCode::IdentityResolutionFailed,
+            ),
+        ] {
+            resolver.current.set(fact);
+            let KwdjProfileError::Document(error) = profile
+                .admit_snapshot(&Profile::Prose, &document)
+                .unwrap_err()
+            else {
+                panic!("existing typed domain error must survive owned resolver")
+            };
+            assert_eq!(error.code, code);
+            assert!(error.path.ends_with("/attrs/reference_entity_id"));
+        }
+        resolver.current.set(Ok(IdentityStatus::Exists));
+        let retried = profile.admit_snapshot(&Profile::Prose, &document).unwrap();
+        assert_eq!(retried.canonical_json(), admitted.canonical_json());
+        assert_eq!(resolver.calls.get(), 4);
+    }
+
+    #[test]
+    fn owned_and_borrowed_admission_share_binding_limits_and_strict_import_semantics() {
+        let resolver = Rc::new(Facts::new(Rc::new(Cell::new(0))));
+        let owned = KwdjProfile::new_owned(
+            resolver.clone(),
+            Limits {
+                node_count: u64::MAX,
+                ..Limits::default()
+            },
+            AdmissionBudget::default(),
+        );
+        let borrowed = KwdjProfile::new(
+            resolver.as_ref(),
+            Limits::default(),
+            AdmissionBudget::default(),
+        );
+        assert_eq!(owned.binding(), borrowed.binding());
+        assert_eq!(owned.limits(), borrowed.limits());
+        assert_eq!(owned.budget(), borrowed.budget());
+        let plain=br#"{"schema":"klenwriter.document","schema_version":1,"profile":"prose","content":[{"type":"paragraph","content":[{"type":"text","text":"x","marks":[]}]}]}"#;
+        for input in [reference(), plain.to_vec()] {
+            for mode in [AdmissionMode::Strict, AdmissionMode::Import] {
+                let actual = owned.admit_bytes(owned.binding(), &input, mode);
+                let expected = borrowed.admit_bytes(borrowed.binding(), &input, mode);
+                match (actual, expected) {
+                    (Ok(a), Ok(b)) => {
+                        assert_eq!(a.canonical_json(), b.canonical_json());
+                        assert_eq!(a.reference_manifest(), b.reference_manifest());
+                        assert_eq!(a.normalization_events(), b.normalization_events());
+                    }
+                    (Err(a), Err(b)) => assert_eq!(a, b),
+                    _ => panic!("owned resolver must not alter codec semantics"),
+                }
+            }
+        }
+        resolver.calls.set(0);
+        let mismatch = ProfileBinding::new(
+            "org.other/profile",
+            "1.0.0",
+            KWDJ_CODEC_ID,
+            1,
+            owned.binding().extensions(),
+        )
+        .unwrap();
+        assert_eq!(
+            owned
+                .admit_bytes(&mismatch, b"malformed document", AdmissionMode::Strict)
+                .unwrap_err(),
+            KwdjProfileError::Binding(BindingError::ProfileMismatch)
+        );
+        assert_eq!(resolver.calls.get(), 0);
     }
 }

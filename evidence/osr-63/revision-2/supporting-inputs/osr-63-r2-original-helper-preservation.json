@@ -1,0 +1,30 @@
+{
+  "issue": "OSR-63",
+  "scope": "Original helper bytes captured before creating distinct r2 helpers. No original file mutated.",
+  "files": {
+    "/tmp/osr-63-build-local-evidence.py": {
+      "bytes": 29568,
+      "sha256": "2c920e4d8ca44b42fcabb5bae37e788d00d387d6d13283102e5e9e0ccf0caea5"
+    },
+    "/tmp/osr-63-bind-local-validation.py": {
+      "bytes": 9787,
+      "sha256": "fca3d7a70115f6b6a02f3e9307ba03848308449950ed0899d538044f0fdeac38"
+    },
+    "/tmp/osr-63-watch-postmerge.py": {
+      "bytes": 21736,
+      "sha256": "aebf3c89e6125219d8408c6367dc571f3ae74165616afa6b0d95761c82ded597"
+    },
+    "/tmp/osr-63-cleanup.py": {
+      "bytes": 23221,
+      "sha256": "6a167f49e6e9b74ec67aff1ebba320225f0fc6e6cf5092d877f8643c00da2e61"
+    },
+    "/tmp/osr-63-archive-review.py": {
+      "bytes": 47766,
+      "sha256": "2800e01cf78485db8f7faa076e9da9c68fdf02453f51dd5a57d1e74b473229cd"
+    },
+    "/tmp/osr-63-audit-final-archive.py": {
+      "bytes": 27255,
+      "sha256": "c1f0f00abb3ed775035819fd76344b53f6bdc2ab99d28cc152e474a3157c19ba"
+    }
+  }
+}

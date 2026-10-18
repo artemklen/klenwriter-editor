@@ -1,0 +1,22 @@
+{
+  "issue": "OSR-63",
+  "gate": "kwdj-command-data-red",
+  "scope": "Focused helper tests import actual pre-fix built KWDJ JS; current production source snapshot differs because controller repair is in parallel. No WASM Session created by these three helper cases.",
+  "files": [
+    {
+      "path": "packages/kwdj/dist/index.js",
+      "bytes": 1005,
+      "sha256": "ebbc185f60ba686107fb29ba9f011cd2fb9b54ed567b8bcb599fbcd65bde98e2"
+    },
+    {
+      "path": "packages/sdk/dist/index.js",
+      "bytes": 200,
+      "sha256": "02566e590eaf0474d1cc1f2f19d49e6da94ffac366e57097024e7b6052819ca4"
+    },
+    {
+      "path": "tests/sdk-integration.node.mjs",
+      "bytes": 27032,
+      "sha256": "42496645d33ee268188c0116214c51a3d34bee4c201922d605990c39374baf2a"
+    }
+  ]
+}

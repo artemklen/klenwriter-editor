@@ -1,0 +1,88 @@
+{
+  "format": "klenwriter-editor-sdk-generator-dependencies/1",
+  "generator": "ts-rs@12.0.1",
+  "scope": "Optional native-only generation feature. Full locked dependency licenses are bundled conservatively; these are not WASM runtime dependencies.",
+  "dependencies": [
+    {
+      "name": "proc-macro2",
+      "version": "1.0.106",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "quote",
+      "version": "1.0.45",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "syn",
+      "version": "2.0.118",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "syn",
+      "version": "3.0.9",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "termcolor",
+      "version": "1.4.1",
+      "license": "Unlicense OR MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "thiserror-impl",
+      "version": "2.0.21",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "thiserror",
+      "version": "2.0.21",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "ts-rs-macros",
+      "version": "12.0.1",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "ts-rs",
+      "version": "12.0.1",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "unicode-ident",
+      "version": "1.0.24",
+      "license": "(MIT OR Apache-2.0) AND Unicode-3.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "winapi-util",
+      "version": "0.1.11",
+      "license": "Unlicense OR MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "windows-link",
+      "version": "0.2.1",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "windows-sys",
+      "version": "0.61.2",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    }
+  ],
+  "wasmRuntimeGraph": "klenwriter-editor-wasm v0.0.0 (/Users/artem/projects/klenwriter-editor/crates/wasm)\njs-sys v0.3.106\ncfg-if v1.0.4\nfutures-util v0.3.32\nfutures-core v0.3.32\nfutures-task v0.3.32\npin-project-lite v0.2.17\nslab v0.4.12\nwasm-bindgen v0.2.129\ncfg-if v1.0.4\nonce_cell v1.21.4\nwasm-bindgen-macro v0.2.129 (proc-macro)\nquote v1.0.45\nproc-macro2 v1.0.106\nunicode-ident v1.0.24\nwasm-bindgen-macro-support v0.2.129\nbumpalo v3.20.3\nproc-macro2 v1.0.106 (*)\nquote v1.0.45 (*)\nsyn v3.0.9\nproc-macro2 v1.0.106 (*)\nquote v1.0.45 (*)\nunicode-ident v1.0.24\nwasm-bindgen-shared v0.2.129\nunicode-ident v1.0.24\nwasm-bindgen-shared v0.2.129\nunicode-ident v1.0.24\nklenwriter-editor-core v0.0.0 (/Users/artem/projects/klenwriter-editor/crates/core)\nserde_json v1.0.150\nitoa v1.0.18\nmemchr v2.8.2\nserde_core v1.0.228\nzmij v1.0.21\nunicode-segmentation v1.13.3\nklenwriter-editor-engine v0.0.0 (/Users/artem/projects/klenwriter-editor/crates/engine)\nklenwriter-editor-core v0.0.0 (/Users/artem/projects/klenwriter-editor/crates/core) (*)\nklenwriter-editor-kwdj v0.0.0 (/Users/artem/projects/klenwriter-editor/crates/kwdj)\nklenwriter-editor-core v0.0.0 (/Users/artem/projects/klenwriter-editor/crates/core) (*)\nserde v1.0.228\nserde_core v1.0.228\nserde_derive v1.0.228 (proc-macro)\nproc-macro2 v1.0.106 (*)\nquote v1.0.45 (*)\nsyn v2.0.118\nproc-macro2 v1.0.106 (*)\nquote v1.0.45 (*)\nunicode-ident v1.0.24\nserde_json v1.0.150 (*)\nserde_path_to_error v0.1.20\nitoa v1.0.18\nserde_core v1.0.228\nthiserror v1.0.69\nthiserror-impl v1.0.69 (proc-macro)\nproc-macro2 v1.0.106 (*)\nquote v1.0.45 (*)\nsyn v2.0.118 (*)\nurl v2.5.8\nform_urlencoded v1.2.2\npercent-encoding v2.3.2\nidna v1.1.0\nidna_adapter v1.2.2\nicu_normalizer v2.2.0\nicu_collections v2.2.0\ndisplaydoc v0.2.6 (proc-macro)\nproc-macro2 v1.0.106 (*)\nquote v1.0.45 (*)\nsyn v2.0.118 (*)\npotential_utf v0.1.5\nzerovec v0.11.6\nyoke v0.8.3\nstable_deref_trait v1.2.1\nyoke-derive v0.8.2 (proc-macro)\nproc-macro2 v1.0.106 (*)\nquote v1.0.45 (*)\nsyn v2.0.118 (*)\nsynstructure v0.13.2\nproc-macro2 v1.0.106 (*)\nquote v1.0.45 (*)\nsyn v2.0.118 (*)\nzerofrom v0.1.8\nzerofrom-derive v0.1.7 (proc-macro)\nproc-macro2 v1.0.106 (*)\nquote v1.0.45 (*)\nsyn v2.0.118 (*)\nsynstructure v0.13.2 (*)\nzerofrom v0.1.8 (*)\nzerovec-derive v0.11.3 (proc-macro)\nproc-macro2 v1.0.106 (*)\nquote v1.0.45 (*)\nsyn v2.0.118 (*)\nutf8_iter v1.0.4\nyoke v0.8.3 (*)\nzerofrom v0.1.8 (*)\nzerovec v0.11.6 (*)\nicu_normalizer_data v2.2.0\nicu_provider v2.2.0\ndisplaydoc v0.2.6 (proc-macro) (*)\nicu_locale_core v2.2.0\ndisplaydoc v0.2.6 (proc-macro) (*)\nlitemap v0.8.2\ntinystr v0.8.3\ndisplaydoc v0.2.6 (proc-macro) (*)\nzerovec v0.11.6 (*)\nwriteable v0.6.3\nzerovec v0.11.6 (*)\nwriteable v0.6.3\nyoke v0.8.3 (*)\nzerofrom v0.1.8 (*)\nzerotrie v0.2.4\ndisplaydoc v0.2.6 (proc-macro) (*)\nyoke v0.8.3 (*)\nzerofrom v0.1.8 (*)\nzerovec v0.11.6 (*)\nsmallvec v1.15.2\nzerovec v0.11.6 (*)\nicu_properties v2.2.0\nicu_collections v2.2.0 (*)\nicu_locale_core v2.2.0 (*)\nicu_properties_data v2.2.0\nicu_provider v2.2.0 (*)\nzerotrie v0.2.4 (*)\nzerovec v0.11.6 (*)\nsmallvec v1.15.2\nutf8_iter v1.0.4\npercent-encoding v2.3.2\nuuid v1.23.3\nserde_core v1.0.228\nserde v1.0.228 (*)\nserde-wasm-bindgen v0.6.5\njs-sys v0.3.106 (*)\nserde v1.0.228 (*)\nwasm-bindgen v0.2.129 (*)\nserde_json v1.0.150 (*)\nuuid v1.23.3 (*)\nwasm-bindgen v0.2.129 (*)\n",
+  "wasmRuntimeGraphSha256": "ac08883ef161b5edea2d01d04d2a0bdc22298ee957d7df18aa42ff79cf45ea98",
+  "generatorExcludedFromWasmRuntime": true
+}

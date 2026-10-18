@@ -4,6 +4,11 @@
 pub mod codec;
 #[cfg(target_arch = "wasm32")]
 mod codec_browser;
+pub mod sdk;
+#[cfg(target_arch = "wasm32")]
+mod sdk_browser;
+mod sdk_convert;
+pub mod sdk_wire;
 
 use serde::{Deserialize, Serialize};
 

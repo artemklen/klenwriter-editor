@@ -6,7 +6,7 @@
   "stage": "unpublished-bootstrap",
   "versions": {
     "packageSemver": "0.0.0",
-    "publicHostApiRevision": null,
+    "publicHostApiRevision": 1,
     "nativeWireProtocolRevision": null,
     "kwdjSchemaVersion": 1,
     "kwdjProfileId": "org.klenwriter.kwdj",

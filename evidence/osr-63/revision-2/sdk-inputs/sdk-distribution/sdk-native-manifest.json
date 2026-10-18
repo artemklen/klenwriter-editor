@@ -1,0 +1,18 @@
+{
+  "abi": "editor-sdk/1",
+  "build_id": "sha256:95b2cde31b7c232871b465a15870ee9160afe3e5a726df865a02dbec51a836a8",
+  "profiles": [
+    {
+      "profile_id": "org.klenwriter.kwdj",
+      "profile_version": "1.0.0",
+      "codec_id": "org.klenwriter.kwdj/json",
+      "wire_version": 1,
+      "extensions": [
+        {
+          "id": "org.klenwriter.kwdj/base",
+          "version": "1.0.0"
+        }
+      ]
+    }
+  ]
+}

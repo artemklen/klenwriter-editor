@@ -1,9 +1,11 @@
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { writeDependencyNotices } from './dependency-notices.mjs';
 import { identity } from './package-identity.mjs';
+import { sealPackagedSdkWasm } from './seal-sdk-wasm.mjs';
+import { computeSdkBuildIdentity, generateSdkTypes, writeSdkBuildIdentity, writeSdkGeneratorInventory } from './generate-sdk-types.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 process.chdir(root);
@@ -21,6 +23,11 @@ const version = spawnSync(bindgen, ['--version'], { encoding: 'utf8' });
 if (version.status !== 0 || version.stdout.trim() !== 'wasm-bindgen 0.2.129') {
   throw new Error('Install the pinned CLI: cargo install wasm-bindgen-cli --version 0.2.129 --locked --root .tools');
 }
+// Declarations are versioned; stale output refuses rather than silently changing source.
+generateSdkTypes({ check: true });
+writeSdkGeneratorInventory();
+const sdkIdentity = writeSdkBuildIdentity();
+process.env.KLENWRITER_EDITOR_SDK_BUILD_ID = sdkIdentity.buildId;
 run('cargo', ['build', '--workspace', '--locked', '--release']);
 run('cargo', ['build', '--workspace', '--locked', '--release', '--target', 'wasm32-unknown-unknown']);
 // Test-only WASM module: exercises the same Rust budget cases as native tests.
@@ -62,6 +69,12 @@ run('cargo', ['build', '--locked', '--release', '--target', 'wasm32-unknown-unkn
   '-p', identity.rust.wasm.name, '--example', 'history_probe']);
 run(bindgen, ['target/wasm32-unknown-unknown/release/examples/history_probe.wasm',
   '--target', 'web', '--out-dir', 'artifacts/history', '--out-name', 'probe']);
+// Public Session DTO witness: actual native/WASM bridge and independent literals.
+// The probe stays outside distributed npm assets.
+run('cargo', ['build', '--locked', '--release', '--target', 'wasm32-unknown-unknown',
+  '-p', identity.rust.wasm.name, '--example', 'sdk_probe']);
+run(bindgen, ['target/wasm32-unknown-unknown/release/examples/sdk_probe.wasm',
+  '--target', 'web', '--out-dir', 'artifacts/sdk', '--out-name', 'probe']);
 writeDependencyNotices();
 // Clean all emitted package files so stale declarations/assets cannot mask omissions.
 const packages = ['wasm', 'sdk', 'dom', 'kwdj', 'vanilla', 'angular'];
@@ -72,6 +85,31 @@ for (const name of packages) {
 run(process.execPath, ['node_modules/typescript/bin/tsc', '-b', '--force']);
 run(bindgen, [`target/wasm32-unknown-unknown/release/${identity.rust.wasm.name.replaceAll('-', '_')}.wasm`,
   '--target', 'web', '--out-dir', 'packages/wasm/dist', '--out-name', 'editor_wasm']);
+// Native manifest is compiled with the same source ID as this exact WASM build.
+const sdkManifestRun = spawnSync('cargo', ['run', '--locked', '--quiet', '-p', identity.rust.wasm.name,
+  '--example', 'sdk_manifest'], { encoding: 'utf8', maxBuffer: 1024 * 1024 });
+if (sdkManifestRun.error) throw sdkManifestRun.error;
+if (sdkManifestRun.status !== 0) throw new Error(`Native SDK manifest failed: ${sdkManifestRun.stderr}`);
+const sdkNativeManifest = JSON.parse(sdkManifestRun.stdout);
+mkdirSync('artifacts', { recursive: true });
+writeFileSync('artifacts/sdk-native-manifest.json', JSON.stringify(sdkNativeManifest, null, 2) + '\n');
+sealPackagedSdkWasm('packages/wasm/dist/editor_wasm_bg.wasm', sdkNativeManifest, sdkIdentity.buildId);
+// Actual post-seal Rust manifest must match native before any tarball can be produced.
+run(process.execPath, ['--input-type=module', '-e', `
+  import assert from 'node:assert/strict';
+  import { readFileSync } from 'node:fs';
+  import { loadSdk } from './packages/wasm/dist/index.js';
+  const actual = await loadSdk({ wasm: readFileSync('packages/wasm/dist/editor_wasm_bg.wasm') });
+  assert.deepEqual(actual.manifest, JSON.parse(readFileSync('artifacts/sdk-native-manifest.json','utf8')));
+  assert.deepEqual(JSON.parse(actual.resourceCounts()), {sessions:0,snapshot_handles:0,snapshot_bytes:'0',protected_cursors:0});
+  console.log('SDK packaged seal/native/WASM manifest agreement PASS before Session admission');
+`]);
+// Exact final producer copies are uploaded by artifacts/** for remote verification.
+mkdirSync('artifacts/sdk-distribution', { recursive: true });
+for (const name of ['editor_wasm.js', 'editor_wasm_bg.wasm', 'sdk-types.d.ts', 'sdk-build-id.js']) {
+  copyFileSync(`packages/wasm/dist/${name}`, `artifacts/sdk-distribution/${name}`);
+}
+copyFileSync('artifacts/sdk-native-manifest.json', 'artifacts/sdk-distribution/sdk-native-manifest.json');
 copyFileSync('packages/dom/src/style.css', 'packages/dom/dist/style.css');
 mkdirSync('artifacts', { recursive: true });
 // Input to a separate native/WASM agreement check; not a semantic parity claim.
@@ -79,3 +117,8 @@ run('cargo', ['run', '--locked', '--quiet', '-p', identity.rust.wasm.name, '--ex
 // Keep the documented toolchain contract in step with the artifact builder.
 const manifest = readFileSync('rust-toolchain.toml', 'utf8');
 if (!manifest.includes('channel = "1.97.1"')) throw new Error('Update the build/toolchain contract together');
+
+// A changed production input during compilation must not leave a publishable mixed wrapper/module.
+if (computeSdkBuildIdentity().buildId !== sdkIdentity.buildId) {
+  throw new Error("SDK production sources changed during build; rebuild the frozen source");
+}

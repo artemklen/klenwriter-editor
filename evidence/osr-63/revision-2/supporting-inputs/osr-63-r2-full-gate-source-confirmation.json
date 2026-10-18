@@ -1,0 +1,26 @@
+{
+  "issue": "OSR-63",
+  "iteration": 2,
+  "status": "passed",
+  "logBytes": 54376,
+  "logSha256": "f2eb66f2ba4b94d38289177f0c657ffb715344127bb577cdfb0d388506473989",
+  "sourceClosureFiles": 328,
+  "sourceBeforeAfterEqual": true,
+  "productionBuildId": "sha256:95b2cde31b7c232871b465a15870ee9160afe3e5a726df865a02dbec51a836a8",
+  "rustPassed": 304,
+  "rustAdverseCounts": 0,
+  "nodeCounts": [
+    2,
+    4,
+    12,
+    1,
+    1,
+    1,
+    1,
+    52,
+    1,
+    4
+  ],
+  "workspaceBrowserPassed": 15,
+  "scope": "Actual complete local workspace exit0 and post-run broad closure equality; not CI/review acceptance."
+}

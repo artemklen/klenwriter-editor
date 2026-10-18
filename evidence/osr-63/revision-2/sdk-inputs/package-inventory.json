@@ -1,0 +1,601 @@
+[
+  {
+    "id": "@klenwriter/editor-wasm@0.0.0",
+    "name": "@klenwriter/editor-wasm",
+    "version": "0.0.0",
+    "size": 726140,
+    "unpackedSize": 4218055,
+    "shasum": "7397a616bb675e497aaccae24192712c556342e5",
+    "integrity": "sha512-FwTuVZjzIdqogM8ZE/MVE6DCasG8Pr+N68iYrL7Tc6cMYfFoSCo+LcwQrmlMZrp1BfzUNz4yX6Ra3qW5IsxzDw==",
+    "filename": "klenwriter-editor-wasm-0.0.0.tgz",
+    "files": [
+      {
+        "path": "LICENSE-APACHE",
+        "size": 11358,
+        "mode": 420
+      },
+      {
+        "path": "LICENSE-MIT",
+        "size": 1087,
+        "mode": 420
+      },
+      {
+        "path": "NOTICE",
+        "size": 547,
+        "mode": 420
+      },
+      {
+        "path": "SOURCE-PROVENANCE.json",
+        "size": 16527,
+        "mode": 420
+      },
+      {
+        "path": "THIRD-PARTY-NOTICES",
+        "size": 530697,
+        "mode": 420
+      },
+      {
+        "path": "dist/codec.d.ts",
+        "size": 2260,
+        "mode": 420
+      },
+      {
+        "path": "dist/codec.d.ts.map",
+        "size": 1954,
+        "mode": 420
+      },
+      {
+        "path": "dist/codec.js",
+        "size": 150,
+        "mode": 420
+      },
+      {
+        "path": "dist/codec.js.map",
+        "size": 155,
+        "mode": 420
+      },
+      {
+        "path": "dist/editor_wasm_bg.wasm",
+        "size": 3556766,
+        "mode": 420
+      },
+      {
+        "path": "dist/editor_wasm_bg.wasm.d.ts",
+        "size": 1322,
+        "mode": 420
+      },
+      {
+        "path": "dist/editor_wasm.d.ts",
+        "size": 2863,
+        "mode": 420
+      },
+      {
+        "path": "dist/editor_wasm.js",
+        "size": 14376,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.d.ts",
+        "size": 274,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.d.ts.map",
+        "size": 218,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.js",
+        "size": 265,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.js.map",
+        "size": 221,
+        "mode": 420
+      },
+      {
+        "path": "dist/sdk-build-id.d.ts",
+        "size": 150,
+        "mode": 420
+      },
+      {
+        "path": "dist/sdk-build-id.d.ts.map",
+        "size": 154,
+        "mode": 420
+      },
+      {
+        "path": "dist/sdk-build-id.js",
+        "size": 204,
+        "mode": 420
+      },
+      {
+        "path": "dist/sdk-build-id.js.map",
+        "size": 170,
+        "mode": 420
+      },
+      {
+        "path": "dist/sdk-types.d.ts",
+        "size": 8844,
+        "mode": 420
+      },
+      {
+        "path": "dist/sdk-types.d.ts.map",
+        "size": 9599,
+        "mode": 420
+      },
+      {
+        "path": "dist/sdk-types.js",
+        "size": 192,
+        "mode": 420
+      },
+      {
+        "path": "dist/sdk-types.js.map",
+        "size": 134,
+        "mode": 420
+      },
+      {
+        "path": "dist/sdk.d.ts",
+        "size": 1799,
+        "mode": 420
+      },
+      {
+        "path": "dist/sdk.d.ts.map",
+        "size": 1320,
+        "mode": 420
+      },
+      {
+        "path": "dist/sdk.js",
+        "size": 13782,
+        "mode": 420
+      },
+      {
+        "path": "dist/sdk.js.map",
+        "size": 13838,
+        "mode": 420
+      },
+      {
+        "path": "dist/snippets/klenwriter-editor-wasm-cc46fd2b90cd8788/inline0.js",
+        "size": 1393,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 957,
+        "mode": 420
+      },
+      {
+        "path": "src/codec.ts",
+        "size": 2125,
+        "mode": 420
+      },
+      {
+        "path": "src/index.ts",
+        "size": 241,
+        "mode": 420
+      },
+      {
+        "path": "src/sdk-build-id.ts",
+        "size": 173,
+        "mode": 420
+      },
+      {
+        "path": "src/sdk-types.ts",
+        "size": 7847,
+        "mode": 420
+      },
+      {
+        "path": "src/sdk.ts",
+        "size": 14093,
+        "mode": 420
+      }
+    ],
+    "entryCount": 36,
+    "bundled": []
+  },
+  {
+    "id": "@klenwriter/editor-sdk@0.0.0",
+    "name": "@klenwriter/editor-sdk",
+    "version": "0.0.0",
+    "size": 32749,
+    "unpackedSize": 143991,
+    "shasum": "70d587a1ddb501140e3dc10959ba6eae7f84a0f4",
+    "integrity": "sha512-onrM4mNvzVJS6SAJOqK1gJmDnG+GBL9PVX1/Fqjcg+uh/KIb97Q12rXr9gPIxtxr027VHx5lA3Cb86Cni4CsLw==",
+    "filename": "klenwriter-editor-sdk-0.0.0.tgz",
+    "files": [
+      {
+        "path": "LICENSE-APACHE",
+        "size": 11358,
+        "mode": 420
+      },
+      {
+        "path": "LICENSE-MIT",
+        "size": 1087,
+        "mode": 420
+      },
+      {
+        "path": "NOTICE",
+        "size": 547,
+        "mode": 420
+      },
+      {
+        "path": "SOURCE-PROVENANCE.json",
+        "size": 16527,
+        "mode": 420
+      },
+      {
+        "path": "dist/controller.d.ts",
+        "size": 3359,
+        "mode": 420
+      },
+      {
+        "path": "dist/controller.d.ts.map",
+        "size": 2821,
+        "mode": 420
+      },
+      {
+        "path": "dist/controller.js",
+        "size": 20306,
+        "mode": 420
+      },
+      {
+        "path": "dist/controller.js.map",
+        "size": 20839,
+        "mode": 420
+      },
+      {
+        "path": "dist/data.d.ts",
+        "size": 746,
+        "mode": 420
+      },
+      {
+        "path": "dist/data.d.ts.map",
+        "size": 755,
+        "mode": 420
+      },
+      {
+        "path": "dist/data.js",
+        "size": 6464,
+        "mode": 420
+      },
+      {
+        "path": "dist/data.js.map",
+        "size": 6869,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.d.ts",
+        "size": 428,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.d.ts.map",
+        "size": 358,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.js",
+        "size": 494,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.js.map",
+        "size": 483,
+        "mode": 420
+      },
+      {
+        "path": "dist/response.d.ts",
+        "size": 246,
+        "mode": 420
+      },
+      {
+        "path": "dist/response.d.ts.map",
+        "size": 224,
+        "mode": 420
+      },
+      {
+        "path": "dist/response.js",
+        "size": 6499,
+        "mode": 420
+      },
+      {
+        "path": "dist/response.js.map",
+        "size": 8617,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 798,
+        "mode": 420
+      },
+      {
+        "path": "src/controller.ts",
+        "size": 20821,
+        "mode": 420
+      },
+      {
+        "path": "src/data.ts",
+        "size": 5981,
+        "mode": 420
+      },
+      {
+        "path": "src/index.ts",
+        "size": 628,
+        "mode": 420
+      },
+      {
+        "path": "src/response.ts",
+        "size": 6736,
+        "mode": 420
+      }
+    ],
+    "entryCount": 25,
+    "bundled": []
+  },
+  {
+    "id": "@klenwriter/editor-dom@0.0.0",
+    "name": "@klenwriter/editor-dom",
+    "version": "0.0.0",
+    "size": 9115,
+    "unpackedSize": 31765,
+    "shasum": "d47b00ff2a5ef505a8a0907d8a1cdf7b278adde5",
+    "integrity": "sha512-SwOvMhWaWb1WsiNiTOcPsOB2hYN+m32GJLqSiCNQOQJEpu7xkaR8k7rb/+3/oyWQxbUDZ5z63shQd9M8Mgze6g==",
+    "filename": "klenwriter-editor-dom-0.0.0.tgz",
+    "files": [
+      {
+        "path": "LICENSE-APACHE",
+        "size": 11358,
+        "mode": 420
+      },
+      {
+        "path": "LICENSE-MIT",
+        "size": 1087,
+        "mode": 420
+      },
+      {
+        "path": "NOTICE",
+        "size": 547,
+        "mode": 420
+      },
+      {
+        "path": "SOURCE-PROVENANCE.json",
+        "size": 16527,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.d.ts",
+        "size": 167,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.d.ts.map",
+        "size": 158,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.js",
+        "size": 165,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.js.map",
+        "size": 156,
+        "mode": 420
+      },
+      {
+        "path": "dist/style.css",
+        "size": 314,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 840,
+        "mode": 420
+      },
+      {
+        "path": "src/index.ts",
+        "size": 132,
+        "mode": 420
+      },
+      {
+        "path": "src/style.css",
+        "size": 314,
+        "mode": 420
+      }
+    ],
+    "entryCount": 12,
+    "bundled": []
+  },
+  {
+    "id": "@klenwriter/editor-kwdj@0.0.0",
+    "name": "@klenwriter/editor-kwdj",
+    "version": "0.0.0",
+    "size": 9927,
+    "unpackedSize": 35025,
+    "shasum": "67f13704d0e662e43c9708b7de4ce36cd2962e05",
+    "integrity": "sha512-3LmsCHj0wj8GuwJE2EQqXmuDE9xCGvbi4EJ8SIRgtDeNz0tMTEqIKz8xkeStbOdL1RqHXNNeqhuCrVpWOFfkhQ==",
+    "filename": "klenwriter-editor-kwdj-0.0.0.tgz",
+    "files": [
+      {
+        "path": "LICENSE-APACHE",
+        "size": 11358,
+        "mode": 420
+      },
+      {
+        "path": "LICENSE-MIT",
+        "size": 1087,
+        "mode": 420
+      },
+      {
+        "path": "NOTICE",
+        "size": 547,
+        "mode": 420
+      },
+      {
+        "path": "SOURCE-PROVENANCE.json",
+        "size": 16527,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.d.ts",
+        "size": 504,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.d.ts.map",
+        "size": 356,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.js",
+        "size": 1249,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.js.map",
+        "size": 1069,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 870,
+        "mode": 420
+      },
+      {
+        "path": "src/index.ts",
+        "size": 1458,
+        "mode": 420
+      }
+    ],
+    "entryCount": 10,
+    "bundled": []
+  },
+  {
+    "id": "@klenwriter/editor@0.0.0",
+    "name": "@klenwriter/editor",
+    "version": "0.0.0",
+    "size": 8907,
+    "unpackedSize": 31118,
+    "shasum": "b67f12b422105181b1422ae1161163e1c37b9f80",
+    "integrity": "sha512-l0D5MIdXaKY9cNSbgQLy7Ovj4rjTYjTLhSxlQfWRm9Gvm4VX6BGxk39ATCH2N27TuNLAfcu8wQl7zQhQUVjB6Q==",
+    "filename": "klenwriter-editor-0.0.0.tgz",
+    "files": [
+      {
+        "path": "LICENSE-APACHE",
+        "size": 11358,
+        "mode": 420
+      },
+      {
+        "path": "LICENSE-MIT",
+        "size": 1087,
+        "mode": 420
+      },
+      {
+        "path": "NOTICE",
+        "size": 547,
+        "mode": 420
+      },
+      {
+        "path": "SOURCE-PROVENANCE.json",
+        "size": 16527,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.d.ts",
+        "size": 171,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.d.ts.map",
+        "size": 158,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.js",
+        "size": 169,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.js.map",
+        "size": 156,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 809,
+        "mode": 420
+      },
+      {
+        "path": "src/index.ts",
+        "size": 136,
+        "mode": 420
+      }
+    ],
+    "entryCount": 10,
+    "bundled": []
+  },
+  {
+    "id": "@klenwriter/editor-angular@0.0.0",
+    "name": "@klenwriter/editor-angular",
+    "version": "0.0.0",
+    "size": 8896,
+    "unpackedSize": 31103,
+    "shasum": "78e41dc5f9780259154f9f7f6c6cfb5c903a3589",
+    "integrity": "sha512-zczKXyYXVzy8yoX6cH38FP3ZB+IZVjARVlRmxbSJ0ZSRtywQmwCUsquahx41t5P4ymE7CXa9O9F/E2wXcGNWXg==",
+    "filename": "klenwriter-editor-angular-0.0.0.tgz",
+    "files": [
+      {
+        "path": "LICENSE-APACHE",
+        "size": 11358,
+        "mode": 420
+      },
+      {
+        "path": "LICENSE-MIT",
+        "size": 1087,
+        "mode": 420
+      },
+      {
+        "path": "NOTICE",
+        "size": 547,
+        "mode": 420
+      },
+      {
+        "path": "SOURCE-PROVENANCE.json",
+        "size": 16527,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.d.ts",
+        "size": 167,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.d.ts.map",
+        "size": 158,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.js",
+        "size": 165,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.js.map",
+        "size": 156,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 806,
+        "mode": 420
+      },
+      {
+        "path": "src/index.ts",
+        "size": 132,
+        "mode": 420
+      }
+    ],
+    "entryCount": 10,
+    "bundled": []
+  }
+]

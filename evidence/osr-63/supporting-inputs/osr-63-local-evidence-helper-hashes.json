@@ -1,0 +1,27 @@
+{
+  "issue": "OSR-63",
+  "status": "prepared_not_executed",
+  "files": {
+    "/tmp/osr-63-build-local-evidence.py": {
+      "bytes": 29093,
+      "sha256": "77bb7741ab8dbcf52853dc35a78ea9c210aaa5827a962d62037ea4b28647e246"
+    },
+    "/tmp/osr-63-bind-local-validation.py": {
+      "bytes": 9787,
+      "sha256": "fca3d7a70115f6b6a02f3e9307ba03848308449950ed0899d538044f0fdeac38"
+    },
+    "/tmp/osr-63-local-evidence-offline-checks.py": {
+      "bytes": 6807,
+      "sha256": "6a2f9ae835561faa97096c3ea065a8eb6600a695628deab31c2c2804638f7d6b"
+    },
+    "/tmp/osr-63-local-evidence-offline-results.json": {
+      "bytes": 13635,
+      "sha256": "6cc8dc2cb025c5d904c54ee0cea2ad3d81f2f3171e53de0606dbca7e2385a43a"
+    },
+    "/tmp/osr-63-local-evidence-helpers-README.md": {
+      "bytes": 5588,
+      "sha256": "f20f4fe9b4ad606c9be7aa66cdd24831779683a56a6c10536f484cf00f044b92"
+    }
+  },
+  "scope": "No builder or binder main, network, CI or evidence publication executed.29 bounded offline checks passed."
+}

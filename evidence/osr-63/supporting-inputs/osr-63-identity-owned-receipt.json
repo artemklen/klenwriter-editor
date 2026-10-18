@@ -1,0 +1,27 @@
+{
+  "files": {
+    "crates/engine/src/identity.rs": "132ac933c9b3636bc2cac03cbdf43916226a11ea583cd1283172aa6f9f2bcf83",
+    "crates/engine/src/lib.rs": "1eb011baa7b939681152702281cb603de201cb71afd451283eef18fa0668daa1",
+    "crates/engine/src/commands.rs": "1b1b09e8481b2fbd6436e0bb2d55597b32e75af0ad015f25f749e22fb62153de",
+    "crates/engine/src/command_tests.rs": "fe505f15cbd4a9aef86632f99c3208a8962ad88a6e1891ae2c545a9845f5066c",
+    "crates/engine/src/transaction.rs": "34e628108dff27be15ab8ba1787ecf0132125ecf91d40d6ef38b438f7ac5260d",
+    "crates/kwdj/src/session_profile.rs": "96bcc4c5d8b070212e547345e880f4a6ffd7423ff4a8b8bebb5a4d22acc3b747"
+  },
+  "logs": {
+    "/tmp/osr-63-identity-owned-tests.log": {
+      "bytes": 4628,
+      "sha256": "8b22fd35879347ae6b3f5cdb7db6c33f3904ff2725e7d7c0a81f593a30a0a542"
+    },
+    "/tmp/osr-63-identity-owned-clippy.log": {
+      "bytes": 367,
+      "sha256": "7db870238387a180b03f6fdb603bd2da6d31ad5afc84d3f360d73c9a0d48a2f7"
+    }
+  },
+  "targetedTests": {
+    "identity": 5,
+    "ownedProfile": 3,
+    "commands": 12
+  },
+  "newTests": 10,
+  "clippyExitCode": 0
+}

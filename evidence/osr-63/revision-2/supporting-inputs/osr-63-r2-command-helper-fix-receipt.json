@@ -1,0 +1,76 @@
+{
+  "issue": "OSR-63",
+  "iteration": 2,
+  "finding": "Review1 suggestion: KWDJ helper serialized user accessors/toJSON before the controller could own the intent; inherited command-map names also escaped the helper guard.",
+  "repair": "Generic createCommand owns bounded plain data before serialization. KWDJ reads the own kind descriptor without invoking its getter, requires a declared command name, and delegates payload ownership. All semantics remain Rust-owned.",
+  "actualRed": {
+    "exit": 1,
+    "tests": 3,
+    "pass": 0,
+    "fail": 3,
+    "runtime": "Actual pre-fix built KWDJ helper JS, hash-pinned in runtime receipt. No WASM Session created by these helper cases; concurrent controller source repair means the broad production identity is not a claim about those old built JS bytes."
+  },
+  "actualGreen": {
+    "exit": 0,
+    "tests": 5,
+    "pass": 5,
+    "fail": 0,
+    "coverage": "Four public-helper cases and one actual TypeScript compile fixture. Focused TS compilation uses existing generated DTOs/build identity; the later complete npm check rebuilds a coherent native/WASM/JS pair."
+  },
+  "inputs": [
+    {
+      "path": "/tmp/osr-63-r2-kwdj-command-data-red.log",
+      "bytes": 2807,
+      "sha256": "859f3ec19c39c97f1c653c4a138a26b232969b1dcd8b3865766216dbdcb7d824"
+    },
+    {
+      "path": "/tmp/osr-63-r2-kwdj-command-data-red.log.actual-exit.json",
+      "bytes": 19993,
+      "sha256": "3ad90a047e57b457434bbab23ea9344fb877c98b8d1c31e2c876549dceda9e63"
+    },
+    {
+      "path": "/tmp/osr-63-r2-kwdj-command-red-runtime.json",
+      "bytes": 774,
+      "sha256": "3ef1d7ca79932b8880f901cde0860bb15b49a1a3fc409ce3bf30bd2fe03225f8"
+    },
+    {
+      "path": "/tmp/osr-63-r2-ts-compile.log.actual-exit.json",
+      "bytes": 19978,
+      "sha256": "9cf4bc4117f1d09012a7f4b423c2049a058247e71c6db88ec9903439fb9a9bc3"
+    },
+    {
+      "path": "/tmp/osr-63-r2-command-types-green.log",
+      "bytes": 558,
+      "sha256": "ba2fd77f436f8b17f83064a6fc6e62d62198ace4600e0ce5f3172b21e7ca78ed"
+    },
+    {
+      "path": "/tmp/osr-63-r2-command-types-green.log.actual-exit.json",
+      "bytes": 20088,
+      "sha256": "19a7fffdf7612463d3c773e2df49c42c99d25c2f95d84e38f936ea1e87c2ef71"
+    }
+  ],
+  "changedFiles": [
+    {
+      "path": "packages/sdk/src/index.ts",
+      "sha256": "8d367335dc06296292ca4ac3c101de2b2455ef20ad63e70154d21557c375855b"
+    },
+    {
+      "path": "packages/kwdj/src/index.ts",
+      "sha256": "6254480a6d064910d8fd83a6ac8c5dcdc225fe1a2369f10135e2df57a6d550ac"
+    },
+    {
+      "path": "tests/sdk-integration.node.mjs",
+      "sha256": "1e345ed52a9a6a1838809c84dfe61c2b36f1ba40fc54bbef2f3df257a37d47fc"
+    },
+    {
+      "path": "tests/sdk-types.node.mjs",
+      "sha256": "e047ef47601f013faa4512a4e6ae415a294b720c52cb1b09f6af81d9c8f642f8"
+    },
+    {
+      "path": "docs/sdk-v1.md",
+      "sha256": "e830988c6883eedad7014a60e1d5448e21ca74537e892b2b39e4c00f8b79c49b"
+    }
+  ],
+  "semanticOracleChanged": false,
+  "fullWorkspaceGateClaimed": false
+}

@@ -3,14 +3,16 @@
 
 use editor_core::commands::{
     CatalogError, CommandPresentation, CommandProvider, CommandState, MAX_COMMANDS, PlanBuilder,
-    validate_catalog,
+    StoredMarksUpdate, validate_catalog,
 };
+use editor_core::document::Mark;
 use editor_core::transaction::{WorkMeter, WorkUsage};
 
 use super::dispatch::{PreparedFor, TypingPolicy};
-use super::{Session, StateError};
+use super::{AccessMode, Session, SessionState, StateError};
 use crate::history::HistoryHint;
 use crate::identity::{NodeId, SessionKey};
+use crate::mapping::PositionMap;
 use crate::transaction::{DispatchOutcome, Transaction, TransactionError, TransactionLimits};
 use crate::tree::{Allocation, TreeDraft};
 
@@ -108,6 +110,50 @@ fn reason<P: CommandProvider>(error: &CommandError<P::Error>) -> &'static str {
 }
 
 impl<P: CommandProvider> Session<P> {
+    /// Set the explicit future-typing marks (`Some`, including an empty list),
+    /// or restore context inheritance (`None`). The final profile hook validates
+    /// the marks against the current selection before one atomic publication.
+    /// An actual state change advances the selection epoch, not the revision.
+    pub fn set_typing_marks(
+        &mut self,
+        key: SessionKey,
+        revision: u64,
+        selection_epoch: u64,
+        history_epoch: u64,
+        marks: Option<Vec<Mark>>,
+    ) -> DispatchOutcome<P::Error> {
+        let mut transaction = Transaction::new(key, revision, vec![]);
+        transaction.selection_epoch = Some(selection_epoch);
+        transaction.history_epoch = Some(history_epoch);
+        let typing = match marks {
+            Some(marks) => StoredMarksUpdate::Set(marks),
+            None => StoredMarksUpdate::Inherit,
+        };
+        let mut work = WorkMeter::new(transaction.limits.work);
+        let prepared = self.prepare_transaction(
+            transaction,
+            self.tree.prepare(),
+            TypingPolicy::Command(typing),
+            &mut work,
+            |view, selection, proposed, work| {
+                if self.state == SessionState::Open(AccessMode::ReadOnly) {
+                    return Err(StateError::ReadOnly.into());
+                }
+                self.profile
+                    .finalize_typing_override(&self.context, view, selection, proposed, work)
+                    .map_err(TransactionError::Profile)
+            },
+        );
+        match prepared {
+            Ok(prepared) => self.publish_prepared(prepared),
+            Err(error) => DispatchOutcome::Refused {
+                error,
+                map: PositionMap::identity(self.revision),
+                work: work.usage(),
+            },
+        }
+    }
+
     fn prepare_command_request<A: Allocation>(
         &self,
         request: &CommandRequest<P::Intent<NodeId>>,

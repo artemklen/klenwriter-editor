@@ -1,0 +1,34 @@
+{
+  "issue": "OSR-63",
+  "iteration": 1,
+  "source": null,
+  "base": "62a52bb054b09f0e850762124b53229e2b195d14",
+  "pr": null,
+  "preparedRun": null,
+  "work": null,
+  "reviewSession": null,
+  "receipts": {
+    "review": "/tmp/osr-63-review-publication-receipt.json",
+    "prepared": "/tmp/osr-63-prepared-ci/receipt.json",
+    "post": "/tmp/osr-63-postmerge-ci-receipt.json",
+    "cleanup": "/tmp/osr-63-cleanup-receipt.json"
+  },
+  "merge": null,
+  "mergedAt": null,
+  "mergeReadback": null,
+  "helperFiles": [
+    "/tmp/osr-63-collect-prepared.py",
+    "/tmp/osr-63-collector-sdk.py",
+    "/tmp/osr-63-watch-prepared.py",
+    "/tmp/osr-63-prepare-review-packet.py",
+    "/tmp/osr-63-run-review.py",
+    "/tmp/osr-63-process-review.py",
+    "/tmp/osr-63-watch-postmerge.py",
+    "/tmp/osr-63-cleanup.py",
+    "/tmp/osr-63-archive-review.py",
+    "/tmp/osr-63-audit-final-archive.py",
+    "/tmp/osr-63-config.json"
+  ],
+  "retainedInputs": [],
+  "scope": "Template only. Root must enumerate actual local/review failure raw inputs with exact bytes/SHA, and all actual builder/binder/config/exit/helper files before archive. No future gate is claimed."
+}
