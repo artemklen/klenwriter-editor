@@ -59,6 +59,7 @@ struct FixtureProfile {
     validation_calls: Rc<Cell<usize>>,
     finalizer_calls: Rc<Cell<usize>>,
     runtime_catalog: Option<Vec<String>>,
+    profile_work: Option<editor_core::transaction::WorkLimits>,
 }
 fn mark() -> Mark {
     Mark {
@@ -105,6 +106,7 @@ impl FixtureProfile {
             validation_calls: Rc::new(Cell::new(0)),
             finalizer_calls: Rc::new(Cell::new(0)),
             runtime_catalog: None,
+            profile_work: None,
         }
     }
 }
@@ -113,6 +115,9 @@ impl FrozenProfile for FixtureProfile {
     type Admitted = Document;
     type Error = &'static str;
     type Cache<I: Copy + Eq + Ord> = ();
+    fn transaction_work_limits(&self) -> Option<editor_core::transaction::WorkLimits> {
+        self.profile_work
+    }
     fn binding(&self) -> &ProfileBinding {
         &self.binding
     }
@@ -739,6 +744,67 @@ fn runtime_catalog_query_and_execute_use_the_instance_id_without_publication_on_
         other.command_catalog(other.key()),
         Err(crate::session::SessionError::State(StateError::Closed))
     ));
+}
+
+#[test]
+fn immutable_profile_work_reductions_precede_catalog_or_raw_operation_preparation() {
+    use editor_core::transaction::WorkLimits;
+    for cap in [
+        WorkLimits {
+            units: 0,
+            bytes: u64::MAX,
+        },
+        WorkLimits {
+            units: u64::MAX,
+            bytes: 0,
+        },
+    ] {
+        let mut profile = FixtureProfile::new("ab", false);
+        profile.profile_work = Some(cap);
+        let binding = profile.binding.clone();
+        let mut s = Session::open(
+            profile,
+            &binding,
+            b"fixture",
+            AdmissionMode::Strict,
+            AccessMode::Editable,
+        )
+        .unwrap();
+        let leaf = first_leaf(&s);
+        let before = facets(&s, leaf);
+        let mut command = request(&s, Intent::Noop);
+        command.limits.work = WorkLimits {
+            units: u64::MAX,
+            bytes: u64::MAX,
+        };
+        assert_eq!(
+            same_refusal(&mut s, &command, leaf),
+            "resource_limit_exceeded"
+        );
+        assert_eq!(s.profile.validation_calls.get(), 0);
+        let mut raw = Transaction::new(
+            s.key(),
+            s.revision(),
+            vec![Operation::ReplaceText {
+                leaf: leaf.into(),
+                from: Utf16Offset::new(0),
+                to: Utf16Offset::new(0),
+                inserted: "X".into(),
+            }],
+        );
+        raw.limits.work = WorkLimits {
+            units: u64::MAX,
+            bytes: u64::MAX,
+        };
+        assert!(matches!(
+            s.dispatch(raw),
+            DispatchOutcome::Refused {
+                error: TransactionError::Limit(_),
+                ..
+            }
+        ));
+        assert_eq!(facets(&s, leaf), before);
+    }
 }
 
 #[test]

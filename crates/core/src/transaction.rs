@@ -298,6 +298,35 @@ impl WorkMeter {
     pub fn limits(&self) -> WorkLimits {
         self.limits
     }
+    /// Limit a nested phase relative to its actual entry usage. All callers
+    /// share these counters and trace; returning or unwinding restores only
+    /// the enclosing ceilings, never spent work. Nested phases cannot raise
+    /// an enclosing limit, including when the supplied cap is u64::MAX.
+    pub fn with_budget<T>(&mut self, budget: WorkLimits, run: impl FnOnce(&mut Self) -> T) -> T {
+        struct Restore<'a> {
+            work: &'a mut WorkMeter,
+            limits: WorkLimits,
+        }
+        impl Drop for Restore<'_> {
+            fn drop(&mut self) {
+                self.work.limits = self.limits;
+            }
+        }
+        let previous = self.limits;
+        self.limits = WorkLimits {
+            units: previous
+                .units
+                .min(self.usage.units.saturating_add(budget.units)),
+            bytes: previous
+                .bytes
+                .min(self.usage.bytes.saturating_add(budget.bytes)),
+        };
+        let restore = Restore {
+            work: self,
+            limits: previous,
+        };
+        run(&mut *restore.work)
+    }
     pub fn trace(&self) -> WorkTrace {
         self.trace
     }
@@ -319,6 +348,91 @@ impl WorkMeter {
         check("transaction_bytes", self.limits.bytes, observed)?;
         self.usage.bytes = observed;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod work_budget_tests {
+    use super::*;
+
+    #[test]
+    fn nested_budget_retains_one_usage_trace_and_restores_only_limits() {
+        let mut work = WorkMeter::new(WorkLimits {
+            units: 100,
+            bytes: 1000,
+        });
+        work.charge_units(10).unwrap();
+        work.charge_bytes(20).unwrap();
+        work.note_phase(WorkPhase::Preflight, 1, 20);
+        work.with_budget(WorkLimits { units: 2, bytes: 3 }, |work| {
+            assert_eq!(
+                work.limits(),
+                WorkLimits {
+                    units: 12,
+                    bytes: 23
+                }
+            );
+            work.charge_units(2).unwrap();
+            work.charge_bytes(3).unwrap();
+            work.note_phase(WorkPhase::Preflight, 2, 3);
+            assert!(work.charge_units(1).is_err());
+            work.with_budget(
+                WorkLimits {
+                    units: u64::MAX,
+                    bytes: u64::MAX,
+                },
+                |work| {
+                    assert!(work.charge_units(1).is_err());
+                    assert!(work.charge_bytes(1).is_err());
+                },
+            );
+        });
+        assert_eq!(
+            work.limits(),
+            WorkLimits {
+                units: 100,
+                bytes: 1000
+            }
+        );
+        assert_eq!(
+            work.usage(),
+            WorkUsage {
+                units: 12,
+                bytes: 23
+            }
+        );
+        assert_eq!(
+            work.trace().phase(WorkPhase::Preflight),
+            PhaseUsage {
+                visits: 3,
+                bytes: 23
+            }
+        );
+        work.charge_units(1).unwrap();
+        assert_eq!(work.usage().units, 13);
+    }
+
+    #[test]
+    fn unwinding_restores_budget_without_erasing_work_already_performed() {
+        let mut work = WorkMeter::new(WorkLimits {
+            units: 100,
+            bytes: 1000,
+        });
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            work.with_budget(WorkLimits { units: 1, bytes: 0 }, |work| {
+                work.charge_units(1).unwrap();
+                panic!("synthetic inner phase trap");
+            });
+        }));
+        assert!(result.is_err());
+        assert_eq!(
+            work.limits(),
+            WorkLimits {
+                units: 100,
+                bytes: 1000
+            }
+        );
+        assert_eq!(work.usage(), WorkUsage { units: 1, bytes: 0 });
     }
 }
 

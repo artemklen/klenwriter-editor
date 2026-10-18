@@ -210,6 +210,17 @@ impl<P: FrozenProfile> Session<P> {
         self.selection_epoch
     }
 
+    fn preparation_work(&self, requested: WorkLimits) -> WorkMeter {
+        let limits = self
+            .profile
+            .transaction_work_limits()
+            .map_or(requested, |profile| WorkLimits {
+                units: requested.units.min(profile.units),
+                bytes: requested.bytes.min(profile.bytes),
+            });
+        WorkMeter::new(limits)
+    }
+
     /// Future typing override; None inherits the profile's caret policy, while
     /// Some(empty) explicitly requests plain text. This is session-local state.
     pub fn stored_marks(&self, key: SessionKey) -> Result<Option<&[Mark]>, SessionError<P::Error>> {
@@ -341,7 +352,7 @@ impl<P: FrozenProfile> Session<P> {
         if history_epoch != self.history.summary().epoch {
             return Err(StateError::StaleHistoryEpoch.into());
         }
-        let mut work = WorkMeter::new(limits);
+        let mut work = self.preparation_work(limits);
         let plan = self.history.plan_barrier(&mut work)?;
         let changed = plan.is_some();
         let next_history = plan
@@ -482,7 +493,7 @@ impl<P: FrozenProfile> Session<P> {
             .selection_epoch
             .checked_add(1)
             .ok_or(StateError::CounterExhausted)?;
-        let mut work = WorkMeter::new(WorkLimits::default());
+        let mut work = self.preparation_work(WorkLimits::default());
         let history = self
             .history
             .plan_barrier(&mut work)
@@ -554,7 +565,7 @@ impl<P: FrozenProfile> Session<P> {
         output: impl FnOnce(&[u8], WorkTrace) -> R,
     ) -> Result<R, SessionError<P::Error>> {
         self.guard(key, Some(revision))?;
-        let mut work = WorkMeter::new(WorkLimits::default());
+        let mut work = self.preparation_work(WorkLimits::default());
         let document = self.tree.document_with_work(&mut work)?;
         let admitted = self
             .profile
@@ -620,7 +631,7 @@ impl<P: FrozenProfile> Session<P> {
             });
         }
         let dirty = revision != self.revision;
-        let mut work = WorkMeter::new(WorkLimits::default());
+        let mut work = self.preparation_work(WorkLimits::default());
         let event = self.state_event(
             StateProjection {
                 stamp: self.stamp(),
@@ -665,7 +676,7 @@ impl<P: FrozenProfile> Session<P> {
         if !self.dirty || !self.baseline.equals(snapshot.document()) {
             return Ok(false);
         }
-        let mut work = WorkMeter::new(WorkLimits::default());
+        let mut work = self.preparation_work(WorkLimits::default());
         let event = self.state_event(
             StateProjection {
                 stamp: self.stamp(),

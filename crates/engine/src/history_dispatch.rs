@@ -237,7 +237,7 @@ impl<P: HistoryProfile> Session<P> {
     }
 
     pub fn query_history(&self, request: &HistoryRequest) -> HistoryAvailability<P::Error> {
-        let mut work = WorkMeter::new(request.limits.work);
+        let mut work = self.preparation_work(request.limits.work);
         match self.prepare_history(request, self.tree.prepare_preview(), &mut work) {
             Ok(prepared) => HistoryAvailability::Available {
                 selection_changed: prepared.selection_changed,
@@ -253,7 +253,7 @@ impl<P: HistoryProfile> Session<P> {
     }
 
     pub fn execute_history(&mut self, request: &HistoryRequest) -> HistoryOutcome<P::Error> {
-        let mut work = WorkMeter::new(request.limits.work);
+        let mut work = self.preparation_work(request.limits.work);
         match self.prepare_history(request, self.tree.prepare(), &mut work) {
             Ok(prepared) => match self.publish_prepared(prepared) {
                 DispatchOutcome::Changed(event) => HistoryOutcome::Completed(event),

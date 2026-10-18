@@ -11,7 +11,7 @@ use std::fmt;
 use crate::cache::CandidateCache;
 use crate::candidate::CandidateRead;
 use crate::document::Document;
-use crate::transaction::WorkMeter;
+use crate::transaction::{WorkLimits, WorkMeter};
 
 pub const MAX_PROFILE_IDENTIFIER_BYTES: usize = 128;
 pub const MAX_PROFILE_VERSION_BYTES: usize = 64;
@@ -310,6 +310,14 @@ pub trait FrozenProfile {
     type Admitted;
     type Error;
     type Cache<I: Copy + Eq + Ord>: CandidateCache;
+
+    /// Optional immutable profile/host reductions for shared engine preparation.
+    /// The engine takes the componentwise minimum before any catalog, operation
+    /// or history planning. Codec admission retains its own bounded preflight.
+    /// None preserves the existing distribution/request work contract.
+    fn transaction_work_limits(&self) -> Option<WorkLimits> {
+        None
+    }
 
     fn binding(&self) -> &ProfileBinding;
     fn admit_bytes(

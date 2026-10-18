@@ -140,7 +140,7 @@ impl<P: CommandProvider> Session<P> {
             Some(marks) => StoredMarksUpdate::Set(marks),
             None => StoredMarksUpdate::Inherit,
         };
-        let mut work = WorkMeter::new(transaction.limits.work);
+        let mut work = self.preparation_work(transaction.limits.work);
         let prepared = self.prepare_transaction(
             transaction,
             self.tree.prepare(),
@@ -248,7 +248,7 @@ impl<P: CommandProvider> Session<P> {
         &self,
         request: &CommandRequest<P::Intent<NodeId>>,
     ) -> CommandAvailability<P::Error> {
-        let mut work = WorkMeter::new(request.limits.work);
+        let mut work = self.preparation_work(request.limits.work);
         match self.prepare_command_request(request, self.tree.prepare_preview(), &mut work) {
             Ok((prepared, presentation)) => CommandAvailability::Available {
                 presentation,
@@ -273,7 +273,7 @@ impl<P: CommandProvider> Session<P> {
         &mut self,
         request: &CommandRequest<P::Intent<NodeId>>,
     ) -> CommandOutcome<P::Error> {
-        let mut work = WorkMeter::new(request.limits.work);
+        let mut work = self.preparation_work(request.limits.work);
         let prepared = self.prepare_command_request(request, self.tree.prepare(), &mut work);
         match prepared {
             Ok((prepared, presentation)) => CommandOutcome::Completed {
