@@ -474,6 +474,12 @@ impl CommandProvider for FixtureProfile {
         };
         work.charge_units(marks.len() as u64 + 1)
             .map_err(|_| "fixture.work")?;
+        if marks
+            .iter()
+            .any(|mark| mark.type_id != "org.example.commands/ink")
+        {
+            return Err("fixture.mark");
+        }
         work.charge_bytes((std::mem::size_of_val(marks) + 64) as u64)
             .map_err(|_| "fixture.work")?;
         Ok(Some(marks.to_vec()))
@@ -1080,4 +1086,185 @@ fn true_noop_does_not_need_a_next_revision_or_context_epoch() {
         other => panic!("{other:?}"),
     };
     assert_eq!(facets(&s, leaf), before);
+}
+
+fn set_typing(
+    s: &mut Session<FixtureProfile>,
+    marks: Option<Vec<Mark>>,
+) -> DispatchOutcome<&'static str> {
+    let stamp = s.stamp();
+    s.set_typing_marks(
+        stamp.session,
+        stamp.revision,
+        stamp.selection_epoch,
+        stamp.history_epoch,
+        marks,
+    )
+}
+
+#[test]
+fn explicit_typing_setter_publishes_one_state_event_and_preserves_document_facets() {
+    use crate::events::{EventKind, EventReadLimits};
+    use editor_core::transaction::WorkLimits;
+
+    let mut s = open("e\u{301}😀", true);
+    let leaf = first_leaf(&s);
+    let before = facets(&s, leaf);
+    let cursor = s.event_status(s.key()).unwrap().head;
+    let finalizer_calls = s.profile.finalizer_calls.get();
+    let outcome = set_typing(&mut s, Some(vec![]));
+    assert!(matches!(
+        outcome,
+        DispatchOutcome::Unchanged {
+            revision: 0,
+            selection_changed: false,
+            stored_marks_changed: true,
+            ..
+        }
+    ));
+    assert_eq!(s.selection_epoch(), before.epoch + 1);
+    assert_eq!(s.stored_marks, Some(vec![]));
+    assert_eq!(s.tree.document(), before.document);
+    assert_eq!(s.selection, before.selection);
+    assert_eq!(s.journal_summary(), before.journal);
+    assert_eq!(s.journal_entries(), before.entries);
+    assert!(!s.dirty());
+    assert_eq!(s.profile.finalizer_calls.get(), finalizer_calls + 1);
+    assert_eq!(s.profile.snapshot_calls.get(), 0);
+    let batch = s
+        .events_after(
+            s.key(),
+            cursor,
+            EventReadLimits::default(),
+            WorkLimits::default(),
+        )
+        .unwrap();
+    assert_eq!(batch.len(), 1);
+    let event = batch.iter().next().unwrap();
+    assert_eq!(event.before().revision, 0);
+    assert_eq!(event.after().revision, 0);
+    assert_eq!(event.payload().stored_marks_before, None);
+    assert_eq!(event.payload().stored_marks_after, Some(vec![]));
+    let EventKind::State(change) = event.kind() else {
+        panic!("typing state must not publish a document event")
+    };
+    assert!(change.stored_marks_changed);
+    assert!(!change.selection_changed && !change.baseline_changed);
+    assert_eq!(event.payload().selection_before, before.selection);
+    assert_eq!(event.payload().selection_after, before.selection);
+    let after = facets(&s, leaf);
+    let history = s.history_summary();
+    let events = s.event_status(s.key()).unwrap();
+    assert!(matches!(
+        set_typing(&mut s, Some(vec![])),
+        DispatchOutcome::Unchanged {
+            stored_marks_changed: false,
+            ..
+        }
+    ));
+    assert_eq!(facets(&s, leaf), after);
+    assert_eq!(s.history_summary(), history);
+    assert_eq!(s.event_status(s.key()).unwrap(), events);
+    assert!(matches!(
+        set_typing(&mut s, None),
+        DispatchOutcome::Unchanged {
+            stored_marks_changed: true,
+            ..
+        }
+    ));
+    assert_eq!(s.stored_marks, None);
+    assert_eq!(s.revision(), 0);
+    assert_eq!(s.selection_epoch(), before.epoch + 2);
+}
+
+#[test]
+fn explicit_typing_setter_refuses_invalid_marks_and_late_publication_limits_atomically() {
+    for case in 0..4 {
+        let mut s = open("ab", false);
+        let leaf = first_leaf(&s);
+        let initial = request(&s, Intent::Type("P".into()));
+        changed(&mut s, &initial);
+        let mut marks = vec![mark()];
+        let expected = match case {
+            0 => {
+                marks[0].type_id = "org.example.commands/unknown".into();
+                "fixture.mark"
+            }
+            1 => {
+                s.profile.reject_finalizer = true;
+                "fixture.finalize"
+            }
+            2 => {
+                s.selection_epoch = u64::MAX;
+                "session.counter_exhausted"
+            }
+            _ => {
+                s.event_limits.single_bytes = 0;
+                "resource_limit_exceeded"
+            }
+        };
+        let before = facets(&s, leaf);
+        let history = s.history_summary();
+        let events = s.event_status(s.key()).unwrap();
+        let DispatchOutcome::Refused { error, map, work } = set_typing(&mut s, Some(marks)) else {
+            panic!("typing rejection must preserve all committed state")
+        };
+        assert_eq!(crate::transaction::error_code(&error, |e| e), expected);
+        assert_eq!(map, PositionMap::identity(s.revision()));
+        assert!(work.units > 0);
+        assert_eq!(facets(&s, leaf), before);
+        assert_eq!(s.history_summary(), history);
+        assert_eq!(s.event_status(s.key()).unwrap(), events);
+        assert_eq!(s.profile.snapshot_calls.get(), 0);
+    }
+}
+
+#[test]
+fn explicit_typing_setter_checks_readonly_and_every_captured_context_token() {
+    for case in 0..5 {
+        let mut s = open("ab", false);
+        let leaf = first_leaf(&s);
+        let mut stamp = s.stamp();
+        let expected = match case {
+            0 => {
+                s.state = SessionState::Open(AccessMode::ReadOnly);
+                "session.read_only"
+            }
+            1 => {
+                stamp.session = stamp.session.next_generation().unwrap();
+                "session.stale_session"
+            }
+            2 => {
+                stamp.revision += 1;
+                "session.stale_revision"
+            }
+            3 => {
+                stamp.selection_epoch += 1;
+                "session.stale_selection_epoch"
+            }
+            _ => {
+                stamp.history_epoch += 1;
+                "session.stale_history_epoch"
+            }
+        };
+        let before = facets(&s, leaf);
+        let history = s.history_summary();
+        let events = s.event_status(s.key()).unwrap();
+        let calls = s.profile.finalizer_calls.get();
+        let DispatchOutcome::Refused { error, map, .. } = s.set_typing_marks(
+            stamp.session,
+            stamp.revision,
+            stamp.selection_epoch,
+            stamp.history_epoch,
+            Some(vec![mark()]),
+        ) else {
+            panic!("stale/readonly typing must refuse")
+        };
+        assert_eq!(crate::transaction::error_code(&error, |e| e), expected);
+        assert_eq!(map, PositionMap::identity(s.revision()));
+        assert_eq!(facets(&s, leaf), before);
+        assert_eq!(s.history_summary(), history);
+        assert_eq!(s.event_status(s.key()).unwrap(), events);
+        assert_eq!(s.profile.finalizer_calls.get(), calls);
+    }
 }

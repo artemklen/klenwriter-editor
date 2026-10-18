@@ -8,3 +8,6 @@ playwright-report/
 /artifacts/
 packages/*/dist/
 *.tsbuildinfo
+
+# Baked production identity is generated before wrapper typecheck/build.
+/packages/wasm/src/sdk-build-id.ts

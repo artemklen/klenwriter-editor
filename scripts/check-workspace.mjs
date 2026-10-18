@@ -76,7 +76,8 @@ const report = {
   artifacts: files.sort((a,b) => a.path.localeCompare(b.path)),
   unicode: { implementation: 'unicode-segmentation', version: '1.13.3', unicodeVersion: '17.0.0', scope: 'logical extended grapheme boundaries; no browser layout proof' },
   plannedNotInstalled: ['parse5 (clipboard proof, OSR-47)',
-    'ts-rs (generation, OSR-63)', 'Angular (peer only at binding implementation, OSR-49)', 'property/fuzz/benchmark tools (OSR-38)'],
+    'Angular (peer only at binding implementation, OSR-49)', 'property/fuzz/benchmark tools (OSR-38)'],
+  sdkTypeGeneration: { implementation: 'ts-rs', version: '12.0.1', scope: 'Optional native-only build generation; absent from default normal/WASM runtime closure' },
 };
 mkdirSync('artifacts', { recursive: true });
 writeFileSync('artifacts/dependencies.json', JSON.stringify(report, null, 2) + '\n');

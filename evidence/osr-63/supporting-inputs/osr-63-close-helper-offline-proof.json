@@ -1,0 +1,103 @@
+{
+  "scope": "Actual offline synthetic guard checks; no mains, network, CI, Git, review, archive, cleanup or successful delivery receipt minted.",
+  "checks": [
+    {
+      "case": "all-five-imports-no-subprocess-network-main",
+      "status": "passed"
+    },
+    {
+      "case": "unknown-source-template-before-network",
+      "status": "passed",
+      "result": "refused",
+      "error": "RuntimeError"
+    },
+    {
+      "case": "synthetic-normal-push-binding",
+      "status": "passed",
+      "scope": "Synthetic acceptance, not a run receipt"
+    },
+    {
+      "case": "wrong-post-id",
+      "status": "passed",
+      "result": "refused",
+      "error": "RuntimeError"
+    },
+    {
+      "case": "wrong-post-head_sha",
+      "status": "passed",
+      "result": "refused",
+      "error": "RuntimeError"
+    },
+    {
+      "case": "wrong-post-event",
+      "status": "passed",
+      "result": "refused",
+      "error": "RuntimeError"
+    },
+    {
+      "case": "wrong-post-head_branch",
+      "status": "passed",
+      "result": "refused",
+      "error": "RuntimeError"
+    },
+    {
+      "case": "wrong-post-run_attempt",
+      "status": "passed",
+      "result": "refused",
+      "error": "RuntimeError"
+    },
+    {
+      "case": "wrong-post-workflow_id",
+      "status": "passed",
+      "result": "refused",
+      "error": "RuntimeError"
+    },
+    {
+      "case": "wrong-post-repository",
+      "status": "passed",
+      "result": "refused",
+      "error": "RuntimeError"
+    },
+    {
+      "case": "synthetic-required-step-binding",
+      "status": "passed",
+      "scope": "Synthetic only"
+    },
+    {
+      "case": "archive-wrong-ci-conclusion",
+      "status": "passed",
+      "result": "refused",
+      "error": "RuntimeError"
+    },
+    {
+      "case": "archive-wrong-ci-run_attempt",
+      "status": "passed",
+      "result": "refused",
+      "error": "RuntimeError"
+    },
+    {
+      "case": "archive-wrong-ci-head_sha",
+      "status": "passed",
+      "result": "refused",
+      "error": "RuntimeError"
+    },
+    {
+      "case": "missing-actual-required-step",
+      "status": "passed",
+      "result": "refused",
+      "error": "RuntimeError"
+    },
+    {
+      "case": "unexecuted-step-no-timestamp",
+      "status": "passed",
+      "result": "refused",
+      "error": "RuntimeError"
+    },
+    {
+      "case": "canonical-output-unresolved-source-no-invented-future-values",
+      "status": "passed"
+    }
+  ],
+  "passed": 17,
+  "failed": 0
+}

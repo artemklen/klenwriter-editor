@@ -1,6 +1,7 @@
 # Разработка
 
-Это bootstrap M1, а не готовый редактор. Следуйте [архитектуре](docs/m0/architecture.md)
+Это библиотека с headless Session SDK; production UI выполняется следующими задачами.
+Следуйте [архитектуре](docs/m0/architecture.md)
 и контракту задачи Linear. Реализуйте общую семантику на Rust; KWDJ остаётся отдельным
 профилем. CMS, DB, Angular и browser runtime не входят в native core/profile closure.
 
@@ -89,6 +90,14 @@ bounded delivery и отдельные JS callback/host gates63/69. Generic opaq
 Native optimized/full Session tests отдельно сравнивают32 mixed sequences и
 1312 canonical/stat/revision checkpoints с полным authoritative control.
 
+`npm run test:sdk` проверяет public Session ABI `editor-sdk/1`: native/compiled
+WASM literal lane, реальный packaged lifecycle/event queue и отдельные явно
+помеченные controlled controller/loader tests. `npm run check:sdk-types` сверяет
+generated TypeScript с Rust DTO; генератор — native-only optional build dependency,
+не runtime. [SDK contract](docs/sdk-v1.md) описывает exact build negotiation,
+lossless transport, bounded callbacks/snapshot handles и fatal-after-commit.
+Чистый JS consumer и отдельный strict-CSP SDK host используют prebuilt packages.
+
 ## Артефакты и ограничения
 
 `artifacts/dependencies.json` содержит зафиксированные direct/transitive версии,
@@ -107,8 +116,8 @@ linker входят в build environment; production size budgets провери
 Проверка npm CLI сейчас даёт ENEEDAUTH; publisher authorization не заявляется.
 Registry write/проверка фактических прав перед publish — OSR-71.
 Нельзя публиковать bootstrap tarballs как alpha. Native codec извлечён в OSR-29;
-web packages пока содержат границы и диагностический build identity. Реальные
-session/DOM/Angular APIs — будущие задачи.
+WASM/SDK теперь предоставляют headless Session ABI1. Production DOM/vanilla/Angular
+mount APIs остаются отдельными задачами; пакеты пока не являются alpha release.
 
 ## Изменения
 

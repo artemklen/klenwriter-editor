@@ -1,0 +1,11 @@
+{
+  "format": "klenwriter-editor-sdk-wasm/1",
+  "section": "klenwriter.editor.sdk/1",
+  "abi": "editor-sdk/1",
+  "build_id": "sha256:253f0f4f109f994ec45081ff8ffa1a90407aad96fe74f2861d463413bb5ade7c",
+  "wasm_bytes": 3556490,
+  "wasm_sha256": "b1fbbe712d3650882294dcb466f20df8ee2fa7b8abf4a04b44f90cb4fd9017e5",
+  "sealed_bytes": 3556766,
+  "sealed_sha256": "ea06136d5577b6087c94ec5abcbb049decd68da4f3c565b07649b032a68ee0a3",
+  "scope": "Compatibility/integrity metadata from actual native manifest and exact pre-section bytes. Not a signature, publisher authentication or security attestation."
+}

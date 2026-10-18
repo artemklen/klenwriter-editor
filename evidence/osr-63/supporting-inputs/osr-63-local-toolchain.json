@@ -1,0 +1,69 @@
+{
+  "issue": "OSR-63",
+  "capturedAt": "2026-10-18T10:43:54.747065+00:00",
+  "cwd": "/Users/artem/projects/klenwriter-editor",
+  "commands": [
+    {
+      "argv": [
+        "node",
+        "--version"
+      ],
+      "returnCode": 0,
+      "stdout": "v24.22.0\n",
+      "stderr": "",
+      "executable": "/Users/artem/projects/klenwriter-editor/.tools/node/node_modules/node/bin/node"
+    },
+    {
+      "argv": [
+        "npm",
+        "--version"
+      ],
+      "returnCode": 0,
+      "stdout": "11.14.0\n",
+      "stderr": "",
+      "executable": "/Users/artem/projects/klenwriter-editor/.tools/node/node_modules/npm/bin/npm-cli.js"
+    },
+    {
+      "argv": [
+        "rustc",
+        "--version"
+      ],
+      "returnCode": 0,
+      "stdout": "rustc 1.97.1 (8bab26f4f 2026-07-14)\n",
+      "stderr": "",
+      "executable": "/Users/artem/.cargo/bin/rustup"
+    },
+    {
+      "argv": [
+        "cargo",
+        "--version"
+      ],
+      "returnCode": 0,
+      "stdout": "cargo 1.97.1 (c980f4866 2026-06-30)\n",
+      "stderr": "",
+      "executable": "/Users/artem/.cargo/bin/rustup"
+    },
+    {
+      "argv": [
+        "cargo",
+        "+1.89.0",
+        "--version"
+      ],
+      "returnCode": 0,
+      "stdout": "cargo 1.89.0 (c24e10642 2025-06-23)\n",
+      "stderr": "",
+      "executable": "/Users/artem/.cargo/bin/rustup"
+    },
+    {
+      "argv": [
+        ".tools/bin/wasm-bindgen",
+        "--version"
+      ],
+      "returnCode": 0,
+      "stdout": "wasm-bindgen 0.2.129\n",
+      "stderr": "",
+      "executable": "/Users/artem/projects/klenwriter-editor/.tools/bin/wasm-bindgen"
+    }
+  ],
+  "scope": "Actual local toolchain readback with same pinned PATH as local gates; separate from CI toolchain evidence."
+}

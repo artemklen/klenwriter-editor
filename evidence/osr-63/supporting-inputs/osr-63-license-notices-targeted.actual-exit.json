@@ -1,0 +1,16 @@
+{
+  "scope": "Actual metadata/notices-only command, not full artifact build/CI/review.",
+  "observedExitCode": 0,
+  "command": "node --input-type=module; import writeDependencyNotices(); JSON.stringify(actual return)",
+  "rawLog": "/tmp/osr-63-license-notices-targeted.log",
+  "rawLogBytes": 1505,
+  "rawLogSha256": "2f0a1072d49f9e9834866d8565dd5c6a25e2c5beb5387d488301c60de9633b75",
+  "registryPackages": 68,
+  "exactFallbacks": 2,
+  "allOtherMissingLicenseGuardRetained": true,
+  "registryCacheModified": false,
+  "licenseSourceHashes": {
+    "provenance/licenses/sdk-generator-license-sources.json": "3e23b2fc4bb59720d2eb1e1d055228abd71b2e5739d29cf8ef71196d14383f77",
+    "provenance/licenses/ts-rs-12.0.1-MIT.txt": "db7f7f8e7236a2d0b41b855b2501b7b913caebbcda6ce498637a304ad1706ce1"
+  }
+}

@@ -16,6 +16,13 @@ role = "wasm"
 source-provenance = "SOURCE-PROVENANCE.json"
 public-api-stability = "bootstrap"
 
+[package.metadata.klenwriter-editor.sdk-type-generation]
+generator = "ts-rs"
+version = "12.0.1"
+license = "MIT"
+feature = "sdk-types"
+scope = "optional native-only development tool; excluded from default runtime and wasm32 dependencies"
+
 [lints]
 workspace = true
 
@@ -26,6 +33,14 @@ editor_kwdj.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 uuid = { version = "=1.23.3", default-features = false }
+
+[features]
+default = []
+# Native declaration generation only; excluded from default and wasm dependencies.
+sdk-types = ["dep:ts-rs"]
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+ts-rs = { version = "=12.0.1", optional = true, default-features = false, features = ["serde-compat"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen.workspace = true
@@ -62,4 +77,12 @@ crate-type = ["cdylib"]
 
 [[example]]
 name = "delta_probe"
+crate-type = ["cdylib"]
+
+[[example]]
+name = "sdk_types"
+required-features = ["sdk-types"]
+
+[[example]]
+name = "sdk_probe"
 crate-type = ["cdylib"]

@@ -14,7 +14,7 @@ pub mod tree;
 pub use history::{
     HistoryDirection, HistoryError, HistoryHint, HistoryLimits, HistorySummary, TypingClass,
 };
-pub use identity::{NodeId, SessionKey};
+pub use identity::{IdentityTokenError, MAX_IDENTITY_TOKEN_BYTES, NodeId, SessionKey};
 pub use session::commands;
 pub use session::commands::{
     CommandAvailability, CommandEffect, CommandError, CommandOutcome, CommandRequest,

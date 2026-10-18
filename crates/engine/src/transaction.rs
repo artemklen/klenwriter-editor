@@ -139,7 +139,9 @@ impl<E> From<HistoryError> for TransactionError<E> {
     }
 }
 
-pub(crate) fn error_code<E>(
+/// Stable typed diagnostic code; profile errors keep the compiled provider's
+/// code without formatting or parsing a native error's debug representation.
+pub fn error_code<E>(
     error: &TransactionError<E>,
     profile: impl FnOnce(&E) -> &'static str,
 ) -> &'static str {

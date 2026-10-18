@@ -1,0 +1,345 @@
+{
+  "format": "klenwriter-editor-sdk-clean-consumer/1",
+  "status": "passed",
+  "install": {
+    "exitCode": 0,
+    "offline": true,
+    "ignoreScripts": true,
+    "npmCli": "/Users/artem/projects/klenwriter-editor/.tools/node/node_modules/npm/bin/npm-cli.js",
+    "nodeExecutable": "/Users/artem/projects/klenwriter-editor/.tools/node/node_modules/node/bin/node"
+  },
+  "execution": {
+    "exitCode": 0,
+    "pathContainsNoExecutables": true
+  },
+  "tarballs": [
+    {
+      "role": "wasm",
+      "name": "@klenwriter/editor-wasm",
+      "path": "/Users/artem/projects/klenwriter-editor/artifacts/packages/klenwriter-editor-wasm-0.0.0.tgz",
+      "sha256": "bd92bdb039e2760db12dfa6354775813463c886014dcdadfc7a559294b63da95",
+      "bytes": 726144
+    },
+    {
+      "role": "sdk",
+      "name": "@klenwriter/editor-sdk",
+      "path": "/Users/artem/projects/klenwriter-editor/artifacts/packages/klenwriter-editor-sdk-0.0.0.tgz",
+      "sha256": "b7c6bbf0fec1e5267d95f7c2a987f0d914ab5620a58f5caa4ac938ae77635408",
+      "bytes": 31892
+    },
+    {
+      "role": "kwdj",
+      "name": "@klenwriter/editor-kwdj",
+      "path": "/Users/artem/projects/klenwriter-editor/artifacts/packages/klenwriter-editor-kwdj-0.0.0.tgz",
+      "sha256": "b61ecc30f8beb5ed1952a4b08fe63c41459f3c831006617bbf40f0e5714fd528",
+      "bytes": 9737
+    }
+  ],
+  "installedArtifactHashes": [
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/codec.d.ts",
+      "bytes": 2260,
+      "sha256": "b7794c6571736366e0a28c64dbd9bc4e3639d0119a08b8e4f0d634dc45bdd01f"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/codec.d.ts.map",
+      "bytes": 1954,
+      "sha256": "ecfba12c4e1c35db4076cf5c1b4e9bf76c990f64c7913cea963f2c76f57d1eae"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/codec.js",
+      "bytes": 150,
+      "sha256": "68c229b028b436872aeae5f2142e8836667b267a7466935092f7dd96a5b37551"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/codec.js.map",
+      "bytes": 155,
+      "sha256": "57e667981a0daaee728abf90ffa2e59149ff4733302931e72038fd57764e75f0"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/editor_wasm_bg.wasm",
+      "bytes": 3556766,
+      "sha256": "7e45a53680dada594975d451ef8f55de471f8a6e7d141917fbb2c7bd59fe8e7f"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/editor_wasm_bg.wasm.d.ts",
+      "bytes": 1322,
+      "sha256": "9fda9b9fac902697f5ab81be5a57c7eb7e0712cf6e00ef2c427f144d6d8226bd"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/editor_wasm.d.ts",
+      "bytes": 2863,
+      "sha256": "cb58db3dc17072657581dbf9975b5d252c1bdd002f10d97f00ae3b5a5db2ce0e"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/editor_wasm.js",
+      "bytes": 14376,
+      "sha256": "13e77b9c20c64f9f62f2136e481e3d24b92824ed25fc31e21726749062d14ba5"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/index.d.ts",
+      "bytes": 274,
+      "sha256": "fcbc41cb7b3da2fa81544b3cc5dc05ef6fdf20d01c433739c6b2ef27cb63a4b4"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/index.d.ts.map",
+      "bytes": 218,
+      "sha256": "e8cbd0807912a873c040c41be0d47807e5201685485c8863f213309be9051c73"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/index.js",
+      "bytes": 265,
+      "sha256": "bb408777fc5795dbe80816a87a1b225eb09cc3f752f9925a2d33d0a1d8baa7eb"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/index.js.map",
+      "bytes": 221,
+      "sha256": "8d5f303f3c47d1f51c350d8636f60f98d75282c5211cfd0f07297c9550c32550"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/sdk-build-id.d.ts",
+      "bytes": 150,
+      "sha256": "8721c49004d13edea5d1263e7f378920ce76fd4c11ff1da641f1fd2130773335"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/sdk-build-id.d.ts.map",
+      "bytes": 154,
+      "sha256": "fca3b9a9768086246121eb3e5bbffb19f3d2262b015d3df4d93c9d31c05b3bd1"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/sdk-build-id.js",
+      "bytes": 204,
+      "sha256": "d66b1e86f13183285759396b307c6009d4aec462e22c879034e1e67825b91ba2"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/sdk-build-id.js.map",
+      "bytes": 170,
+      "sha256": "8524bb15cc560cb0e9d7ec7e075d136de6e877eae1602908f9dad6861882433c"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/sdk-types.d.ts",
+      "bytes": 8844,
+      "sha256": "8e8a8c9513e8163efea8f15b614889a45d770b220d13962c5a2ffde90e762bc7"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/sdk-types.d.ts.map",
+      "bytes": 9599,
+      "sha256": "962a6af31aedb45ed5cc2cdac042214b9e7eb6aedb4d68481249478b7acd4148"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/sdk-types.js",
+      "bytes": 192,
+      "sha256": "dd610d0336c71396f50c37faff434269d31bdb9173468657812ceb8fb57c7c24"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/sdk-types.js.map",
+      "bytes": 134,
+      "sha256": "9897759f35686a86fbb1de7d8d525066dec733e7ed8dd147b122fb87b3c38121"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/sdk.d.ts",
+      "bytes": 1799,
+      "sha256": "2d3c1f50c4fbc546c633b407db92985f364ffa23dd030053266eb15b465030c6"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/sdk.d.ts.map",
+      "bytes": 1320,
+      "sha256": "aedba7d650938444ec17fe621d9f2d90ab2fe33c41af2c1220dfc3e99ffb4ea6"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/sdk.js",
+      "bytes": 13782,
+      "sha256": "cee5336a93a52b55e31110be492c1e33be6fcdcf8ca79d40b5087d0945692f86"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/sdk.js.map",
+      "bytes": 13838,
+      "sha256": "d0711684460f55ab47b3dffd1441712b8c2539737ec149a789309f3ee7df552d"
+    },
+    {
+      "package": "@klenwriter/editor-wasm",
+      "file": "dist/snippets/klenwriter-editor-wasm-cc46fd2b90cd8788/inline0.js",
+      "bytes": 1393,
+      "sha256": "690d99673f62b34cecea44c9fa1e74a0c00879fcd25214446a15af13f349fb10"
+    },
+    {
+      "package": "@klenwriter/editor-sdk",
+      "file": "dist/controller.d.ts",
+      "bytes": 3319,
+      "sha256": "e14c4603ce47626bc6c2a0bfb4b458da77e46c63acc5b04127013cd6812e8b79"
+    },
+    {
+      "package": "@klenwriter/editor-sdk",
+      "file": "dist/controller.d.ts.map",
+      "bytes": 2820,
+      "sha256": "1ae79a4a2de8dc8fc40d9e6388e027174e4f7cb993cb19170c845dcc377262b0"
+    },
+    {
+      "package": "@klenwriter/editor-sdk",
+      "file": "dist/controller.js",
+      "bytes": 19391,
+      "sha256": "ceb394e4f45b3060fbcef1d78312d3d3da7032c73f664a8dd8f746e5f41bc22b"
+    },
+    {
+      "package": "@klenwriter/editor-sdk",
+      "file": "dist/controller.js.map",
+      "bytes": 20168,
+      "sha256": "fabbfe73956e7c3429027736a1f973d4a42d9b8e00484f22cacae26189c890de"
+    },
+    {
+      "package": "@klenwriter/editor-sdk",
+      "file": "dist/data.d.ts",
+      "bytes": 746,
+      "sha256": "c992abce372c577ded7f7dd5a2d1d1626df387f36bf9f85cc129352d57afd045"
+    },
+    {
+      "package": "@klenwriter/editor-sdk",
+      "file": "dist/data.d.ts.map",
+      "bytes": 755,
+      "sha256": "03178e1c44c4131e4a4a1379e48d39978620ebdb2f2d76f2983a3fb04170c70f"
+    },
+    {
+      "package": "@klenwriter/editor-sdk",
+      "file": "dist/data.js",
+      "bytes": 6464,
+      "sha256": "b1ccd64875078a4ccafd01635cfb64ebd57c272272acde817d60f7b7d6c83db6"
+    },
+    {
+      "package": "@klenwriter/editor-sdk",
+      "file": "dist/data.js.map",
+      "bytes": 6869,
+      "sha256": "4d4efc61bce1ed1daccd496543cd8658fda6045d7785ab41f0e9cff22d39c9a6"
+    },
+    {
+      "package": "@klenwriter/editor-sdk",
+      "file": "dist/index.d.ts",
+      "bytes": 202,
+      "sha256": "0d9c9c92951481841ae8add1a90adbd7604b4eb2721348e59410962a200f32cc"
+    },
+    {
+      "package": "@klenwriter/editor-sdk",
+      "file": "dist/index.d.ts.map",
+      "bytes": 223,
+      "sha256": "3beccf90f4f698bc96b83ef4efc8131483aef1fb33f6d7e07e94884d07f08095"
+    },
+    {
+      "package": "@klenwriter/editor-sdk",
+      "file": "dist/index.js",
+      "bytes": 200,
+      "sha256": "02566e590eaf0474d1cc1f2f19d49e6da94ffac366e57097024e7b6052819ca4"
+    },
+    {
+      "package": "@klenwriter/editor-sdk",
+      "file": "dist/index.js.map",
+      "bytes": 209,
+      "sha256": "188bfd2381444dd776bd91f1cb8ec16220c1c05a505bad38d875485487de67b0"
+    },
+    {
+      "package": "@klenwriter/editor-sdk",
+      "file": "dist/response.d.ts",
+      "bytes": 246,
+      "sha256": "ad6dce9390e31a3c803cdd09aa31c28e915aadb2d1aa35b8abe76989ab840f83"
+    },
+    {
+      "package": "@klenwriter/editor-sdk",
+      "file": "dist/response.d.ts.map",
+      "bytes": 224,
+      "sha256": "ea77f7996ee1dde3057156d34d7c769e8518b9b315f544159eaa52fc8f8bcf29"
+    },
+    {
+      "package": "@klenwriter/editor-sdk",
+      "file": "dist/response.js",
+      "bytes": 6499,
+      "sha256": "28ab93b5cc05e22f95bf2d383ea837a585136b7d2b3d6cbc03240b5d9375cd86"
+    },
+    {
+      "package": "@klenwriter/editor-sdk",
+      "file": "dist/response.js.map",
+      "bytes": 8617,
+      "sha256": "a96441a17af052f98733ffe06d8fdf11c452f2ae8d8391685f22758d6923fe05"
+    },
+    {
+      "package": "@klenwriter/editor-kwdj",
+      "file": "dist/index.d.ts",
+      "bytes": 504,
+      "sha256": "54388d61f3d6de72d0d74de3f74387e652b752964bf7060892c5d0dfd3667a76"
+    },
+    {
+      "package": "@klenwriter/editor-kwdj",
+      "file": "dist/index.d.ts.map",
+      "bytes": 356,
+      "sha256": "56271ae955f1cacd3cab7338e1d482c52eeb40d0f2cedccea0134aafeb5e9eb3"
+    },
+    {
+      "package": "@klenwriter/editor-kwdj",
+      "file": "dist/index.js",
+      "bytes": 1005,
+      "sha256": "ebbc185f60ba686107fb29ba9f011cd2fb9b54ed567b8bcb599fbcd65bde98e2"
+    },
+    {
+      "package": "@klenwriter/editor-kwdj",
+      "file": "dist/index.js.map",
+      "bytes": 786,
+      "sha256": "784fb4bb4fe53d921e1ecb702107d823f9cf203a7d1b02d36167b1cae636ab78"
+    }
+  ],
+  "scenarioSha256": "bac0d7ec31070abdbc53ade7a40ed1dc6f9af844098db5f57bd6144a9baf1613",
+  "report": {
+    "status": "passed",
+    "scope": "Real packaged headless Rust Session SDK; no production renderer/input/AT claim.",
+    "cycles": 12,
+    "native_baseline": {
+      "sessions": 0,
+      "snapshot_handles": 0,
+      "snapshot_bytes": "0",
+      "protected_cursors": 0
+    },
+    "native_final": {
+      "sessions": 0,
+      "snapshot_handles": 0,
+      "snapshot_bytes": "0",
+      "protected_cursors": 0
+    },
+    "late_callbacks_refused": 25,
+    "events_observed": 60,
+    "actual_commands_history_reads_exports_acknowledgements": true,
+    "exact_space_nbsp": true,
+    "failed_and_successful_remount": true,
+    "destroyed_before_late_load": true,
+    "retained_snapshot_listener_request_cleanup": true,
+    "ordinary_queries_emit_zero_events": true,
+    "build_id": "sha256:38c316f6959959941945f3174120847ee4022aec9aa94a2867941836c600990e",
+    "missingTools": {
+      "cargo": "ENOENT",
+      "rustc": "ENOENT"
+    },
+    "wasmSha256": "7e45a53680dada594975d451ef8f55de471f8a6e7d141917fbb2c7bd59fe8e7f",
+    "cwdOutsideCheckout": true,
+    "hooksDisabled": true
+  },
+  "scope": "Three actual packed private tarballs installed into a fresh external JS project. Child PATH has no cargo/rustc; no claim that tools were uninstalled globally. Real headless Session, no renderer/CMS/registry claim."
+}

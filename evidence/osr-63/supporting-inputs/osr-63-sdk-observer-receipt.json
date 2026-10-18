@@ -1,0 +1,104 @@
+{
+  "issue": "OSR-63",
+  "scope": "owned SDK observer/vectors only; implementation supporting evidence, not official review or full gates",
+  "status": "targeted_passed",
+  "owned_source_hashes": {
+    "crates/wasm/tests/sdk.rs": "7b9afd15b558dab3807264da161f8ef551139236fcf144f0d7c416873110653b",
+    "crates/wasm/examples/support/sdk_observer.rs": "1e45d8e6bb49151769c5005a69aa47a3a0e363b7e2ae25f15e179ce2b1d2fa06",
+    "crates/wasm/examples/sdk_native.rs": "8026fa6a914d062255a51625a3bb57f3615b4a454dd746044dedb5e06b9596e8",
+    "crates/wasm/examples/sdk_probe.rs": "99ddaae4f1b05fa9f1f8a863f7d2dcc61f5371328f77ef1e5878e28fb6bbbf9b",
+    "contracts/sdk/v1/vectors.json": "eb4787e00f52bbe19854d6a52c8eb75cd2425ca95983c082058f2d3e3b1d4db9",
+    "contracts/sdk/v1/README.md": "94e51b1a341b54bb90b506ea550581270cb464c346e684a5e09a7602773efc27"
+  },
+  "actual_targeted_commands": [
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "klenwriter-editor-wasm",
+        "--test",
+        "sdk",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.942,
+      "log": "/tmp/osr-63-sdk-native-frozen-green.log",
+      "bytes": 427,
+      "sha256": "585722e98e61b4ebcfdc2188685f7042670928a057268155852daa2ab40bbc9a"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "klenwriter-editor-wasm",
+        "--test",
+        "sdk",
+        "--example",
+        "sdk_native",
+        "--example",
+        "sdk_probe",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.498,
+      "log": "/tmp/osr-63-sdk-observer-frozen-clippy.log",
+      "bytes": 169,
+      "sha256": "c776b4d9fc9e8a5a937e14ba0e718ec3b1e37fd4d085daa61d67376bb1027970"
+    }
+  ],
+  "coverage": {
+    "command_literals": 16,
+    "catalog_commands": 15,
+    "literal_history_replays": 30,
+    "opening_manifest_refusals": 10,
+    "closed_request_intent_negatives": 11,
+    "snapshot_handle_cap": 32,
+    "destroy_cycles": 48,
+    "retention_mapping_commits": 65,
+    "fact_refusal_kinds": 2,
+    "lowered_node_count": 1,
+    "requested_leaf_limit": "18446744073709551615",
+    "normative_leaf_maximum": 262144,
+    "refused_leaf_bytes": 262145
+  },
+  "failed_attempts_preserved": {
+    "/tmp/osr-63-sdk-native-first.log": {
+      "sha256": "ac1389e74600d18106e0534f9ebbc24a073b79b6722bde0f95c4c95b7636c872",
+      "bytes": 1444,
+      "qualification": "fixture_authoring_assumption: text-caret InsertBlock splits around both headers; case replaced by explicit Child gap and added frozen35 text-caret literal"
+    },
+    "/tmp/osr-63-sdk-native-second.log": {
+      "sha256": "6525a30b524ddd67e8952b18852e4b4b6ee7f9ede5d85423c3f66e9d78b6a2af",
+      "bytes": 1406,
+      "qualification": "fixture_authoring_assumption: structural Remove chooses parent gap; explicit parent-gap before/after fixture authored"
+    },
+    "/tmp/osr-63-sdk-native-third.log": {
+      "sha256": "50cd64875fd521f4af2f3675130e9bcb16f8575806755e32e5dffbdee7386203",
+      "bytes": 909,
+      "qualification": "actual closed-unit DTO defect: State extra field accepted"
+    },
+    "/tmp/osr-63-sdk-native-after-closed-units.log": {
+      "sha256": "aa0746bdd0ad2d8015d92a25486e86c6b1d2d0994156a60cbf57fa29aecf1c12",
+      "bytes": 1308,
+      "qualification": "fixture_diagnostic_qualification: frozen borrowed command-mark guard reports invalid_structure, not owned-wire unknown_attribute"
+    },
+    "/tmp/osr-63-sdk-native-final.log": {
+      "sha256": "8926a6254ff9c0624980bdc98f0c682018239e0f15e5317006d50b0d81e8fe0d",
+      "bytes": 926,
+      "qualification": "fixture_limit_name_qualification: input text_leaf_bytes retains frozen diagnostic text_length"
+    },
+    "/tmp/osr-63-sdk-closed-dto-red.log": {
+      "sha256": "b8affc6571741c610c237bc7215a12ad97344ce011dad3e10359071ffce0ab5a",
+      "bytes": 1454,
+      "qualification": "actual closed-unit DTO defect isolated with full returned JSON; fixed by root/B, unchanged negative oracle passed"
+    }
+  },
+  "remaining": "Compiled WASM and cross-target portable comparison, full gates/CI/review remain root-owned."
+}

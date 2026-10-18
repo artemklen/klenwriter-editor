@@ -1,0 +1,423 @@
+{
+  "issue": "OSR-63",
+  "status": "passed",
+  "scope": "Supporting helper parser/guard checks only. Existing historical/final completed raw log inputs are separately labelled; no gate, main, evidence publication, CI/network/review/commit or successful binding executed.",
+  "cases": [
+    {
+      "id": "syntax-osr-63-build-local-evidence.py",
+      "status": "passed",
+      "negativeGuard": false,
+      "result": true
+    },
+    {
+      "id": "syntax-osr-63-bind-local-validation.py",
+      "status": "passed",
+      "negativeGuard": false,
+      "result": true
+    },
+    {
+      "id": "duplicate-json-refused",
+      "status": "passed",
+      "negativeGuard": true,
+      "actualException": "RuntimeError",
+      "message": "Duplicate JSON key: x"
+    },
+    {
+      "id": "null-path-refused",
+      "status": "passed",
+      "negativeGuard": true,
+      "actualException": "RuntimeError",
+      "message": "Actual non-null input path required"
+    },
+    {
+      "id": "relative-traversal-refused",
+      "status": "passed",
+      "negativeGuard": true,
+      "actualException": "RuntimeError",
+      "message": "Unsafe relative path: ../source"
+    },
+    {
+      "id": "absolute-source-refused",
+      "status": "passed",
+      "negativeGuard": true,
+      "actualException": "RuntimeError",
+      "message": "Unsafe relative path: /tmp/x"
+    },
+    {
+      "id": "unsafe-empty-rust-summary-refused",
+      "status": "passed",
+      "negativeGuard": true,
+      "actualException": "RuntimeError",
+      "message": "Incomplete/failed/filtered Rust log"
+    },
+    {
+      "id": "filtered-rust-summary-refused",
+      "status": "passed",
+      "negativeGuard": true,
+      "actualException": "RuntimeError",
+      "message": "Incomplete/failed/filtered Rust log"
+    },
+    {
+      "id": "multiple-browser-summary-refused",
+      "status": "passed",
+      "negativeGuard": true,
+      "actualException": "RuntimeError",
+      "message": "Incomplete/nonpassing browser log"
+    },
+    {
+      "id": "negative-node-title-not-positive",
+      "status": "passed",
+      "negativeGuard": false,
+      "result": true
+    },
+    {
+      "id": "positive-node-title",
+      "status": "passed",
+      "negativeGuard": false,
+      "result": true
+    },
+    {
+      "id": "historical-actual-sdk-lanes-derived",
+      "status": "passed",
+      "negativeGuard": false,
+      "result": [
+        {
+          "files": [
+            "tests/sdk-controller.node.mjs",
+            "tests/sdk-types.node.mjs",
+            "tests/sdk-loader.node.mjs",
+            "tests/sdk-integration.node.mjs"
+          ],
+          "commandMarker": "node scripts/test-sdk.mjs && node --test tests/sdk-controller.node.mjs tests/sdk-types.node.mjs tests/sdk-loader.node.mjs tests/sdk-integration.node.mjs",
+          "summaryIndex": 7,
+          "passed": 41,
+          "successMarkers": [
+            "controller-only: deferred loading owns bytes/options and cannot revive after cancellation",
+            "generated SDK declarations and controller surface reject invalid wire types",
+            "SDK loader manifest guard rejects mismatched or malformed offers before constructor access",
+            "packaged SDK: real catalog, text command, revisioned reads, snapshot and exact undo/redo"
+          ]
+        },
+        {
+          "files": [
+            "tests/sdk-clean-consumer.node.mjs"
+          ],
+          "commandMarker": "node --test tests/sdk-clean-consumer.node.mjs",
+          "summaryIndex": 8,
+          "passed": 1,
+          "successMarkers": [
+            "packed SDK/wasm/KWDJ execute real Session with cargo and rustc absent from child PATH"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "actual-lane-log-parser",
+      "status": "passed",
+      "negativeGuard": false,
+      "result": [
+        {
+          "files": [
+            "tests/sdk-controller.node.mjs",
+            "tests/sdk-types.node.mjs",
+            "tests/sdk-loader.node.mjs",
+            "tests/sdk-integration.node.mjs"
+          ],
+          "summaryIndex": 7,
+          "actual": {
+            "tests": 41,
+            "pass": 41,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0
+          },
+          "successMarkers": [
+            "controller-only: deferred loading owns bytes/options and cannot revive after cancellation",
+            "generated SDK declarations and controller surface reject invalid wire types",
+            "SDK loader manifest guard rejects mismatched or malformed offers before constructor access",
+            "packaged SDK: real catalog, text command, revisioned reads, snapshot and exact undo/redo"
+          ]
+        },
+        {
+          "files": [
+            "tests/sdk-clean-consumer.node.mjs"
+          ],
+          "summaryIndex": 8,
+          "actual": {
+            "tests": 1,
+            "pass": 1,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0
+          },
+          "successMarkers": [
+            "packed SDK/wasm/KWDJ execute real Session with cargo and rustc absent from child PATH"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "actual-sdk-count-mutation-refused",
+      "status": "passed",
+      "negativeGuard": true,
+      "actualException": "RuntimeError",
+      "message": "SDK Node lane failed/skipped/filtered or differs from actual frozen count"
+    },
+    {
+      "id": "actual-sdk-index-mutation-refused",
+      "status": "passed",
+      "negativeGuard": true,
+      "actualException": "RuntimeError",
+      "message": "SDK actual TAP summary index absent"
+    },
+    {
+      "id": "final-actual-sdk-lanes-derived",
+      "status": "passed",
+      "negativeGuard": false,
+      "result": [
+        {
+          "files": [
+            "tests/sdk-controller.node.mjs",
+            "tests/sdk-types.node.mjs",
+            "tests/sdk-loader.node.mjs",
+            "tests/sdk-integration.node.mjs"
+          ],
+          "commandMarker": "node scripts/test-sdk.mjs && node --test tests/sdk-controller.node.mjs tests/sdk-types.node.mjs tests/sdk-loader.node.mjs tests/sdk-integration.node.mjs",
+          "summaryIndex": 7,
+          "passed": 42,
+          "successMarkers": [
+            "controller-only: deferred loading owns bytes/options and cannot revive after cancellation",
+            "generated SDK declarations and controller surface reject invalid wire types",
+            "SDK loader manifest guard rejects mismatched or malformed offers before constructor access",
+            "packaged SDK: real catalog, text command, revisioned reads, snapshot and exact undo/redo"
+          ]
+        },
+        {
+          "files": [
+            "tests/sdk-clean-consumer.node.mjs"
+          ],
+          "commandMarker": "node --test tests/sdk-clean-consumer.node.mjs",
+          "summaryIndex": 8,
+          "passed": 1,
+          "successMarkers": [
+            "packed SDK/wasm/KWDJ execute real Session with cargo and rustc absent from child PATH"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "final-actual-sdk-lane-parser",
+      "status": "passed",
+      "negativeGuard": false,
+      "result": [
+        {
+          "files": [
+            "tests/sdk-controller.node.mjs",
+            "tests/sdk-types.node.mjs",
+            "tests/sdk-loader.node.mjs",
+            "tests/sdk-integration.node.mjs"
+          ],
+          "summaryIndex": 7,
+          "actual": {
+            "tests": 42,
+            "pass": 42,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0
+          },
+          "successMarkers": [
+            "controller-only: deferred loading owns bytes/options and cannot revive after cancellation",
+            "generated SDK declarations and controller surface reject invalid wire types",
+            "SDK loader manifest guard rejects mismatched or malformed offers before constructor access",
+            "packaged SDK: real catalog, text command, revisioned reads, snapshot and exact undo/redo"
+          ]
+        },
+        {
+          "files": [
+            "tests/sdk-clean-consumer.node.mjs"
+          ],
+          "summaryIndex": 8,
+          "actual": {
+            "tests": 1,
+            "pass": 1,
+            "fail": 0,
+            "cancelled": 0,
+            "skipped": 0,
+            "todo": 0
+          },
+          "successMarkers": [
+            "packed SDK/wasm/KWDJ execute real Session with cargo and rustc absent from child PATH"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "actual-final-closure-equals-frozen328",
+      "status": "passed",
+      "negativeGuard": false,
+      "result": 328
+    },
+    {
+      "id": "historical-full-sdk-source-not-final",
+      "status": "passed",
+      "negativeGuard": true,
+      "actualException": "RuntimeError",
+      "message": "Hash differs: packages/sdk/src/controller.ts"
+    },
+    {
+      "id": "actual-msrv-current-production-equivalence",
+      "status": "passed",
+      "negativeGuard": false,
+      "result": true
+    },
+    {
+      "id": "actual-msrv-integration-corpus-supplement",
+      "status": "passed",
+      "negativeGuard": false,
+      "result": true
+    },
+    {
+      "id": "canonical-and-position-fixtures-covered",
+      "status": "passed",
+      "negativeGuard": false,
+      "result": true
+    },
+    {
+      "id": "known-callback-red-green-and-integration-red-preserved",
+      "status": "passed",
+      "negativeGuard": false,
+      "result": true
+    },
+    {
+      "id": "symlink-input-refused",
+      "status": "passed",
+      "negativeGuard": true,
+      "actualException": "RuntimeError",
+      "message": "Missing/unsafe/empty/oversize input: /var/folders/t3/q67yljx16gv_9qlpws14ykkm0000gn/T/osr-63-offline-intg_dyi/symlink"
+    },
+    {
+      "id": "input-cap-refused",
+      "status": "passed",
+      "negativeGuard": true,
+      "actualException": "RuntimeError",
+      "message": "Missing/unsafe/empty/oversize input: /var/folders/t3/q67yljx16gv_9qlpws14ykkm0000gn/T/osr-63-offline-intg_dyi/regular"
+    },
+    {
+      "id": "empty-required-full-gate-log-refused",
+      "status": "passed",
+      "negativeGuard": true,
+      "actualException": "RuntimeError",
+      "message": "Missing/unsafe/empty/oversize input: /var/folders/t3/q67yljx16gv_9qlpws14ykkm0000gn/T/osr-63-offline-intg_dyi/required-full-gate.log"
+    },
+    {
+      "id": "actual-empty-native-stderr-preserved",
+      "status": "passed",
+      "negativeGuard": false,
+      "result": true
+    },
+    {
+      "id": "only-narrow-archived-stderr-is-optional",
+      "status": "passed",
+      "negativeGuard": false,
+      "result": true
+    },
+    {
+      "id": "gzip-complete-roundtrip",
+      "status": "passed",
+      "negativeGuard": false,
+      "result": true
+    },
+    {
+      "id": "nonzero-exit-cannot-be-final-success",
+      "status": "passed",
+      "negativeGuard": true,
+      "actualException": "RuntimeError",
+      "message": "Wrong/nonpassing actual gate receipt: workspace_check"
+    },
+    {
+      "id": "raw-capture-mutation-refused",
+      "status": "passed",
+      "negativeGuard": true,
+      "actualException": "RuntimeError",
+      "message": "Actual raw capture differs: workspace_check"
+    },
+    {
+      "id": "actual-clean-commit-binder-refuses-current-dirty-tree",
+      "status": "passed",
+      "negativeGuard": true,
+      "actualException": "RuntimeError",
+      "message": "Committed clean checkout required"
+    }
+  ],
+  "historicalSdkLanes": [
+    {
+      "files": [
+        "tests/sdk-controller.node.mjs",
+        "tests/sdk-types.node.mjs",
+        "tests/sdk-loader.node.mjs",
+        "tests/sdk-integration.node.mjs"
+      ],
+      "commandMarker": "node scripts/test-sdk.mjs && node --test tests/sdk-controller.node.mjs tests/sdk-types.node.mjs tests/sdk-loader.node.mjs tests/sdk-integration.node.mjs",
+      "summaryIndex": 7,
+      "passed": 41,
+      "successMarkers": [
+        "controller-only: deferred loading owns bytes/options and cannot revive after cancellation",
+        "generated SDK declarations and controller surface reject invalid wire types",
+        "SDK loader manifest guard rejects mismatched or malformed offers before constructor access",
+        "packaged SDK: real catalog, text command, revisioned reads, snapshot and exact undo/redo"
+      ]
+    },
+    {
+      "files": [
+        "tests/sdk-clean-consumer.node.mjs"
+      ],
+      "commandMarker": "node --test tests/sdk-clean-consumer.node.mjs",
+      "summaryIndex": 8,
+      "passed": 1,
+      "successMarkers": [
+        "packed SDK/wasm/KWDJ execute real Session with cargo and rustc absent from child PATH"
+      ]
+    }
+  ],
+  "finalSdkLanes": [
+    {
+      "files": [
+        "tests/sdk-controller.node.mjs",
+        "tests/sdk-types.node.mjs",
+        "tests/sdk-loader.node.mjs",
+        "tests/sdk-integration.node.mjs"
+      ],
+      "commandMarker": "node scripts/test-sdk.mjs && node --test tests/sdk-controller.node.mjs tests/sdk-types.node.mjs tests/sdk-loader.node.mjs tests/sdk-integration.node.mjs",
+      "summaryIndex": 7,
+      "passed": 42,
+      "successMarkers": [
+        "controller-only: deferred loading owns bytes/options and cannot revive after cancellation",
+        "generated SDK declarations and controller surface reject invalid wire types",
+        "SDK loader manifest guard rejects mismatched or malformed offers before constructor access",
+        "packaged SDK: real catalog, text command, revisioned reads, snapshot and exact undo/redo"
+      ]
+    },
+    {
+      "files": [
+        "tests/sdk-clean-consumer.node.mjs"
+      ],
+      "commandMarker": "node --test tests/sdk-clean-consumer.node.mjs",
+      "summaryIndex": 8,
+      "passed": 1,
+      "successMarkers": [
+        "packed SDK/wasm/KWDJ execute real Session with cargo and rustc absent from child PATH"
+      ]
+    }
+  ],
+  "sourceClosureFiles": 328,
+  "msrvSupplementFiles": 67,
+  "historicalSupportingFiles": 47,
+  "unavailableReferencedHistoricalInputs": [],
+  "helpers": {
+    "/tmp/osr-63-build-local-evidence.py": "2c920e4d8ca44b42fcabb5bae37e788d00d387d6d13283102e5e9e0ccf0caea5",
+    "/tmp/osr-63-bind-local-validation.py": "fca3d7a70115f6b6a02f3e9307ba03848308449950ed0899d538044f0fdeac38"
+  }
+}

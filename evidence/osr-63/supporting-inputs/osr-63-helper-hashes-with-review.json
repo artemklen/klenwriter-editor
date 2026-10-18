@@ -1,0 +1,140 @@
+{
+  "issue": "OSR-63",
+  "issue_uuid": "5d7912aa-9034-4f06-8ccc-9e739d6b0fe4",
+  "iteration": 1,
+  "scope": "Actual NEW63 helper bytes and offline supporting preparation only; no actual source/PR/run/WORK/review/gates/CI success is claimed. Historical37 helpers unchanged.",
+  "helpers": [
+    {
+      "path": "/tmp/osr-63-collect-prepared.py",
+      "bytes": 63176,
+      "sha256": "dfba55c3a81dc15b022fdc8b7044d5ec96d0f68b198a713d22d0eb7cf2a6ee67"
+    },
+    {
+      "path": "/tmp/osr-63-collector-sdk.py",
+      "bytes": 26430,
+      "sha256": "e518b55f4a1bafa846d0f64dc9019bd7594e533a601efc84775743709f06d2cf"
+    },
+    {
+      "path": "/tmp/osr-63-watch-prepared.py",
+      "bytes": 394,
+      "sha256": "f2bd23cb6c02e38a452b7fc80f7effd3060f892e80fe629e8241dbda9ef53bac"
+    },
+    {
+      "path": "/tmp/osr-63-prepare-review-packet.py",
+      "bytes": 28562,
+      "sha256": "6e569c8564c3e928c3aec472b7082129758f700cfdcfd467005bb19a086b4c03"
+    },
+    {
+      "path": "/tmp/osr-63-run-review.py",
+      "bytes": 21320,
+      "sha256": "e45b3fa7bc572a0eb755125bf09a8c2202045aa6683169f88df55aeda3c4b6df"
+    },
+    {
+      "path": "/tmp/osr-63-process-review.py",
+      "bytes": 16243,
+      "sha256": "bf87223eb007e2657f98e864dbdb4a2e96014aa8ab95c4d715f904ce32adf53a"
+    },
+    {
+      "path": "/tmp/osr-63-watch-postmerge.py",
+      "bytes": 21736,
+      "sha256": "aebf3c89e6125219d8408c6367dc571f3ae74165616afa6b0d95761c82ded597"
+    },
+    {
+      "path": "/tmp/osr-63-cleanup.py",
+      "bytes": 23221,
+      "sha256": "6a167f49e6e9b74ec67aff1ebba320225f0fc6e6cf5092d877f8643c00da2e61"
+    },
+    {
+      "path": "/tmp/osr-63-archive-review.py",
+      "bytes": 47766,
+      "sha256": "2800e01cf78485db8f7faa076e9da9c68fdf02453f51dd5a57d1e74b473229cd"
+    },
+    {
+      "path": "/tmp/osr-63-audit-final-archive.py",
+      "bytes": 27255,
+      "sha256": "c1f0f00abb3ed775035819fd76344b53f6bdc2ab99d28cc152e474a3157c19ba"
+    }
+  ],
+  "additional_inputs": [
+    {
+      "path": "/tmp/osr-63-prepared-helpers-README.md",
+      "bytes": 7608,
+      "sha256": "1235ddc39839ee6b9c5dd2e4bf90070cfdf588c40d77ce2c0820296df84bd021"
+    },
+    {
+      "path": "/tmp/osr-63-review-helpers-README.md",
+      "bytes": 7064,
+      "sha256": "025791a6f768aef292831d38dcf0e64a1c23d22b3c977759c0dc23b6cec4266b"
+    },
+    {
+      "path": "/tmp/osr-63-close-helpers-README.md",
+      "bytes": 8516,
+      "sha256": "0103a1c69ae76b84dd60c58365fe226051faee92353c57e07d4b88435e6a9750"
+    },
+    {
+      "path": "/tmp/osr-63-config.template.json",
+      "bytes": 1241,
+      "sha256": "20384ff20cf84e5e50b7210f67a6b70ec09b875f4236e1af7ff95179fcad0367"
+    },
+    {
+      "path": "/tmp/osr-63-local-validation.template.json",
+      "bytes": 2282,
+      "sha256": "7a94789d31bc9676c43d33d777cb21a6b1624c1297b310f87823b25eb1aa13d5"
+    },
+    {
+      "path": "/tmp/osr-63-packet-config.template.json",
+      "bytes": 616,
+      "sha256": "78f86742ed19ab85863b83175f68a6a6c3933dc24f33eb14e345e79ccfaac621"
+    },
+    {
+      "path": "/tmp/osr-63-postmerge-config.template.json",
+      "bytes": 542,
+      "sha256": "c727ff4c8ffc64e33c324b68ce6cd481f0651fa2a50fb12e1917f75ca8b9883f"
+    },
+    {
+      "path": "/tmp/osr-63-archive-config.template.json",
+      "bytes": 1154,
+      "sha256": "7fc34fb0263d44c1834c84c16a1024d9409529066c170d180f4563384c374563"
+    },
+    {
+      "path": "/tmp/osr-63-collector-offline-tests.py",
+      "bytes": 9583,
+      "sha256": "8621d3bcf822c5a0c4c8de954ad62f6a0b82211bc9eb4025b4695271378d6204"
+    },
+    {
+      "path": "/tmp/osr-63-collector-offline-results.json",
+      "bytes": 1612,
+      "sha256": "39606d7f8eb97babd560ee9837ec1d9ab3b4bfff9a10fa60996df3a5efe71d74"
+    },
+    {
+      "path": "/tmp/osr-63-review-helpers-offline-tests.py",
+      "bytes": 10174,
+      "sha256": "e8921686348fe5c3e477ff7b38c4ec510bec2189a973aee926c5231fe57e6f25"
+    },
+    {
+      "path": "/tmp/osr-63-review-helpers-offline-proof.json",
+      "bytes": 2538,
+      "sha256": "2f739ecefee73417cb5b3addcd0ce861079f6b21400c7e2e74fe1caa7f413929"
+    },
+    {
+      "path": "/tmp/osr-63-close-helper-offline-tests.py",
+      "bytes": 4304,
+      "sha256": "324069e2ce1747b6a4cd3e841990e4bedc3212c92f53cb4140546a9177eced51"
+    },
+    {
+      "path": "/tmp/osr-63-close-helper-offline-proof.json",
+      "bytes": 2466,
+      "sha256": "b608df5eceb945dc855d099e3b2fa32948fd9fe91c93cb3d1e9a9169ac39a6a7"
+    },
+    {
+      "path": "/tmp/osr-63-prepared-helper-hashes.json",
+      "bytes": 406,
+      "sha256": "de6d54c7bb410d1931c0fd5904fcfda092ae26b4ba9329c2427d588617f023e8"
+    },
+    {
+      "path": "/tmp/osr-63-close-helper-hashes.json",
+      "bytes": 2136,
+      "sha256": "fd4198577a70b6552206e93ae4a8a07332941130e03ecb9ccae0bb15a3c5b17b"
+    }
+  ]
+}

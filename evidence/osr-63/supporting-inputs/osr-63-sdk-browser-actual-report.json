@@ -1,0 +1,312 @@
+{
+  "config": {
+    "argv": [
+      "/Users/artem/projects/klenwriter-editor/.tools/node/node_modules/node/bin/node",
+      "/Users/artem/projects/klenwriter-editor/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      "playwright.workspace.config.js",
+      "tests/sdk-workspace-browser.spec.js"
+    ],
+    "configFile": "/Users/artem/projects/klenwriter-editor/playwright.workspace.config.js",
+    "rootDir": "/Users/artem/projects/klenwriter-editor/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/artem/projects/klenwriter-editor/artifacts/browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/artem/projects/klenwriter-editor/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/workspace-browser.spec.js",
+          "**/sdk-workspace-browser.spec.js"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/artem/projects/klenwriter-editor/artifacts/browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/Users/artem/projects/klenwriter-editor/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/workspace-browser.spec.js",
+          "**/sdk-workspace-browser.spec.js"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/artem/projects/klenwriter-editor/artifacts/browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/Users/artem/projects/klenwriter-editor/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/workspace-browser.spec.js",
+          "**/sdk-workspace-browser.spec.js"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/artem/projects/klenwriter-editor/artifacts/browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium",
+        "testDir": "/Users/artem/projects/klenwriter-editor/tests",
+        "snapshotDir": "/Users/artem/projects/klenwriter-editor/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/workspace-browser.spec.js",
+          "**/sdk-workspace-browser.spec.js"
+        ],
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4174",
+          "trace": "retain-on-failure",
+          "browserName": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/artem/projects/klenwriter-editor/artifacts/browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "firefox",
+        "testDir": "/Users/artem/projects/klenwriter-editor/tests",
+        "snapshotDir": "/Users/artem/projects/klenwriter-editor/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/workspace-browser.spec.js",
+          "**/sdk-workspace-browser.spec.js"
+        ],
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4174",
+          "trace": "retain-on-failure",
+          "browserName": "firefox"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "firefox"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/artem/projects/klenwriter-editor/artifacts/browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "webkit",
+        "testDir": "/Users/artem/projects/klenwriter-editor/tests",
+        "snapshotDir": "/Users/artem/projects/klenwriter-editor/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/workspace-browser.spec.js",
+          "**/sdk-workspace-browser.spec.js"
+        ],
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4174",
+          "trace": "retain-on-failure",
+          "browserName": "webkit"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "webkit"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "artifacts/browser.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": {
+      "command": "node scripts/workspace-server.mjs",
+      "url": "http://127.0.0.1:4174",
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "sdk-workspace-browser.spec.js",
+      "file": "sdk-workspace-browser.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "packaged headless SDK runs real Session lifecycle and releases resources under strict CSP",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 290,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T10:38:32.728Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f3832f793d764ea90cef-a60f0d03ee4d5de97fe7",
+          "file": "sdk-workspace-browser.spec.js",
+          "line": 5,
+          "column": 1
+        },
+        {
+          "title": "packaged headless SDK runs real Session lifecycle and releases resources under strict CSP",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "firefox",
+              "projectName": "firefox",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1074,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T10:38:33.481Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f3832f793d764ea90cef-26852645280946e823c3",
+          "file": "sdk-workspace-browser.spec.js",
+          "line": 5,
+          "column": 1
+        },
+        {
+          "title": "packaged headless SDK runs real Session lifecycle and releases resources under strict CSP",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "webkit",
+              "projectName": "webkit",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 660,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T10:38:35.687Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f3832f793d764ea90cef-f3eb15a1455a6ab4d142",
+          "file": "sdk-workspace-browser.spec.js",
+          "line": 5,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-18T10:38:32.367Z",
+    "duration": 4282.929,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

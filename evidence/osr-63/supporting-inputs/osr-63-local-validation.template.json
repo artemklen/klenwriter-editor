@@ -1,0 +1,84 @@
+{
+  "issue": "OSR-63",
+  "iteration": 1,
+  "repo": "artemklen/klenwriter-editor",
+  "source": null,
+  "base": "62a52bb054b09f0e850762124b53229e2b195d14",
+  "pr": null,
+  "status": null,
+  "contract": {
+    "path": "evidence/osr-63/execution-contract.md",
+    "sha256": "17c4e170d98e34f1ae9ce4c9199c37196360d1d8c240cee4ed883ddce06485bf"
+  },
+  "gateFloors": {
+    "rustPassed": null,
+    "msrvPassed": null,
+    "workspaceBrowserPassed": null,
+    "m0BrowserPassed": null
+  },
+  "requiredSteps": [],
+  "requiredRustMarkers": [],
+  "requiredWitnessMarkers": [],
+  "rawLogs": [],
+  "reports": {
+    "command": {
+      "path": null,
+      "sha256": null,
+      "sourcePaths": [],
+      "binary": "artifacts/commands/probe_bg.wasm"
+    },
+    "transaction": {
+      "path": null,
+      "sha256": null,
+      "sourcePaths": [],
+      "binary": "artifacts/transactions/probe_bg.wasm"
+    },
+    "history": {
+      "path": null,
+      "sha256": null,
+      "sourcePaths": [],
+      "binary": "artifacts/history/probe_bg.wasm"
+    },
+    "deltas": {
+      "path": null,
+      "sha256": null,
+      "sourcePaths": [],
+      "binary": "artifacts/deltas/probe_bg.wasm",
+      "semanticChecks": []
+    },
+    "sdk": {
+      "path": null,
+      "sha256": null,
+      "sourcePaths": [],
+      "binary": "artifacts/sdk/probe_bg.wasm",
+      "semanticChecks": []
+    }
+  },
+  "versionedReceipt": {
+    "path": "evidence/osr-63/local-verification.json",
+    "sha256": null
+  },
+  "sourceClosure": {},
+  "sdkLanes": [],
+  "sdkCleanConsumerReport": {
+    "path": "/Users/artem/projects/klenwriter-editor/artifacts/sdk-clean-consumer-report.json",
+    "sha256": null
+  },
+  "sdkBrowserCases": [
+    {
+      "project": "chromium",
+      "file": "tests/sdk-workspace-browser.spec.js",
+      "title": "packaged headless SDK runs real Session lifecycle and releases resources under strict CSP"
+    },
+    {
+      "project": "firefox",
+      "file": "tests/sdk-workspace-browser.spec.js",
+      "title": "packaged headless SDK runs real Session lifecycle and releases resources under strict CSP"
+    },
+    {
+      "project": "webkit",
+      "file": "tests/sdk-workspace-browser.spec.js",
+      "title": "packaged headless SDK runs real Session lifecycle and releases resources under strict CSP"
+    }
+  ]
+}

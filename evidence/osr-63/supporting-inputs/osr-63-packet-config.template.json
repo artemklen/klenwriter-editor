@@ -1,0 +1,16 @@
+{
+  "issue": "OSR-63",
+  "issue_uuid": "5d7912aa-9034-4f06-8ccc-9e739d6b0fe4",
+  "iteration": 1,
+  "reviewAttempt": 1,
+  "frozen_config": {"path": "/tmp/osr-63-config.json", "sha256": null},
+  "issue_snapshot": {"path": null, "sha256": null},
+  "comments_snapshot": {"path": null, "sha256": null, "complete": null},
+  "pr_snapshot": {"path": null, "sha256": null},
+  "delivery": {"comment_id": null, "body_path": null, "body_sha256": null},
+  "snapshot_observed_at": null,
+  "max_snapshot_age_seconds": 900,
+  "helper_manifest": {"path": null, "sha256": null},
+  "supporting_inputs": [],
+  "known_limitations": []
+}

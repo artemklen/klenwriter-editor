@@ -279,5 +279,56 @@
     "privacy": "Synthetic literal/generated documents, fixed fixture UUIDs and example URLs only; no private documents, production captures or credentials",
     "dependencies": "No new runtime dependency; existing pinned serializers and Unicode library reused",
     "authority": "Generic engine owns admitted topology, dirty impact, bounded event publication and stamps; KWDJ owns scoped authoritative rule/codec proofs. Native full control is explicit test authority, not a second policy implementation. JS callback queue/disposal63 and host persistence69 keep their own gates."
+  },
+  "originalSdk": {
+    "issue": "OSR-63",
+    "source": "Original Rust/TypeScript bridge, controller, packaging and owner-controlled synthetic independent fixtures; generated TypeScript derives from repository-owned Rust wire DTOs. No third-party implementation copied.",
+    "license": "MIT OR Apache-2.0",
+    "paths": [
+      "crates/wasm/src/sdk.rs",
+      "crates/wasm/src/sdk_wire.rs",
+      "crates/wasm/src/sdk_convert.rs",
+      "crates/wasm/src/sdk_browser.rs",
+      "crates/wasm/examples/sdk_types.rs",
+      "crates/wasm/examples/sdk_manifest.rs",
+      "crates/wasm/examples/sdk_native.rs",
+      "crates/wasm/examples/sdk_probe.rs",
+      "crates/wasm/examples/support/sdk_observer.rs",
+      "crates/wasm/tests/sdk.rs",
+      "contracts/sdk/v1/vectors.json",
+      "contracts/sdk/v1/README.md",
+      "packages/wasm/src/sdk.ts",
+      "packages/wasm/src/sdk-types.ts",
+      "packages/sdk/src/controller.ts",
+      "packages/sdk/src/data.ts",
+      "packages/sdk/src/response.ts",
+      "packages/kwdj/src/index.ts",
+      "scripts/generate-sdk-types.mjs",
+      "scripts/seal-sdk-wasm.mjs",
+      "scripts/test-sdk.mjs",
+      "tests/sdk-controller.node.mjs",
+      "tests/sdk-loader.node.mjs",
+      "tests/sdk-types.node.mjs",
+      "tests/sdk-integration.node.mjs",
+      "tests/sdk-clean-consumer.node.mjs",
+      "tests/sdk-workspace-browser.spec.js",
+      "spikes/workspace/sdk-host.html",
+      "spikes/workspace/sdk-host.js",
+      "spikes/workspace/sdk-scenario.js"
+    ],
+    "extendedOriginalFoundation": [
+      "crates/engine/src/identity.rs",
+      "crates/engine/src/commands.rs",
+      "crates/engine/src/command_tests.rs",
+      "crates/engine/src/transaction.rs",
+      "crates/kwdj/src/session_profile.rs"
+    ],
+    "generationDependency": {
+      "name": "ts-rs",
+      "version": "12.0.1",
+      "license": "MIT",
+      "scope": "Optional native-only type generation. Not a default normal or WASM runtime dependency; complete actual graph/licenses recorded in artifacts/sdk-generator-dependencies.json and conservative package notices."
+    },
+    "privacy": "Only synthetic literal documents/identities and controlled test-host fixtures. No user documents, private captures, credentials or accepted external-model output."
   }
 }

@@ -1,0 +1,50 @@
+{
+  "task_id": "OSR-63/pump-vector-draft",
+  "job_id": "d686c65cb1d5513abb2f9bb8a2994394",
+  "source_revision": "sha256:f2f109b2d339c7aba5457893d12ce53e0915c5945a09879542eb612bb9a5dc6c",
+  "input_sha256": "f2f109b2d339c7aba5457893d12ce53e0915c5945a09879542eb612bb9a5dc6c",
+  "helper_state": "failed",
+  "error": "FileNotFoundError",
+  "verified_model_answer": false,
+  "model_answer_received": false,
+  "usage": null,
+  "estimated_actual_cost_usd": null,
+  "reserved_peak_usd": 0.0037662,
+  "configured_consumer_exists": false,
+  "outcome": "No DeepSeek result accepted. Primary independently checked these synthetic scheduling expectations against accepted contract and real/controller test scenarios; unspecified native admission/enqueue order remains explicit.",
+  "primary_fallback_vectors": [
+    {
+      "id": "D1",
+      "expected": "A queues; B reads r4; command may execute only after B. Success/revision depends on actual native command, unspecified here."
+    },
+    {
+      "id": "D2",
+      "expected": "With first command admitted Changed, it reaches r5; second identical r4 capture refuses stale and changes nothing."
+    },
+    {
+      "id": "D3",
+      "expected": "A queues then requests destroy; queued command cancelled; B skipped; dispose at fence; no later document change."
+    },
+    {
+      "id": "D4",
+      "expected": "A runs; B removed and skipped; new C starts next event."
+    },
+    {
+      "id": "D5",
+      "expected": "If remount is earlier in FIFO, success g2 cancels old-g1 pending request; no edit in g2. Original prompt does not state enqueue order."
+    },
+    {
+      "id": "D6",
+      "expected": "Failed remount preserves g1/r4; captured request remains eligible, subject to native payload/policy/facts checks."
+    },
+    {
+      "id": "D7",
+      "expected": "Valid receipt4 advances saved baseline3->4 but currentr5 remains dirty; documentrevision unchanged."
+    },
+    {
+      "id": "D8",
+      "expected": "Host completion refuses stale request after selectionepoch2->3 despite unchanged documentrevision4."
+    }
+  ],
+  "raw_prompt_retained_in_evidence": false
+}

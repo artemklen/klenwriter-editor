@@ -1,7 +1,7 @@
 import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
-  testMatch: '**/workspace-browser.spec.js',
+  testMatch: ['**/workspace-browser.spec.js', '**/sdk-workspace-browser.spec.js'],
   outputDir: 'artifacts/browser-results',
   workers: 1,
   retries: 0,

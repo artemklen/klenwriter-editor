@@ -1,0 +1,34 @@
+{
+  "format": "klenwriter-editor-license-fallbacks/1",
+  "scope": "Only exact ts-rs/ts-rs-macros12.0.1 native-only optional generation packages. Their published crates omit the upstream repository root LICENSE. Raw MIT text fetched from exact crate VCS commit; other missing licenses still fail. No vendored code or registry mutation.",
+  "packages": [
+    {
+      "name": "ts-rs",
+      "version": "12.0.1",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "repository": "https://github.com/Aleph-Alpha/ts-rs",
+      "crateChecksum": "756050066659291d47a554a9f558125db17428b073c5ffce1daf5dcb0f7231d8",
+      "vcsCommit": "7182ad8289596097235406b715fa04506443b4ad",
+      "pathInVcs": "ts-rs",
+      "licenseFile": "provenance/licenses/ts-rs-12.0.1-MIT.txt",
+      "licenseSha256": "db7f7f8e7236a2d0b41b855b2501b7b913caebbcda6ce498637a304ad1706ce1",
+      "licenseBytes": 1073,
+      "upstreamLicenseUrl": "https://raw.githubusercontent.com/Aleph-Alpha/ts-rs/7182ad8289596097235406b715fa04506443b4ad/LICENSE"
+    },
+    {
+      "name": "ts-rs-macros",
+      "version": "12.0.1",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "repository": "https://github.com/Aleph-Alpha/ts-rs",
+      "crateChecksum": "38d90eea51bc7988ef9e674bf80a85ba6804739e535e9cab48e4bb34a8b652aa",
+      "vcsCommit": "7182ad8289596097235406b715fa04506443b4ad",
+      "pathInVcs": "macros",
+      "licenseFile": "provenance/licenses/ts-rs-12.0.1-MIT.txt",
+      "licenseSha256": "db7f7f8e7236a2d0b41b855b2501b7b913caebbcda6ce498637a304ad1706ce1",
+      "licenseBytes": 1073,
+      "upstreamLicenseUrl": "https://raw.githubusercontent.com/Aleph-Alpha/ts-rs/7182ad8289596097235406b715fa04506443b4ad/LICENSE"
+    }
+  ]
+}

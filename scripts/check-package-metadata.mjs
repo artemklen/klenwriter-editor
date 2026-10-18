@@ -16,9 +16,9 @@ assert.equal(root.version, identity.versions.packageSemver);
 assert.equal(root.private, true);
 assert.equal(identity.versions.kwdjSchemaVersion, 1);
 assert.equal(identity.versions.kwdjProfileId, 'org.klenwriter.kwdj');
-// Host/wire APIs are not implemented by the build-info bootstrap. Do not infer
-// their compatibility revisions from a package version or stored schema v1.
-assert.equal(identity.versions.publicHostApiRevision, null);
+// OSR-63 defines editor-sdk/1 separately from package SemVer/KWDJ schema.
+// A server native RPC protocol remains undefined; the shared DTO harness is not RPC.
+assert.equal(identity.versions.publicHostApiRevision, 1);
 assert.equal(identity.versions.nativeWireProtocolRevision, null);
 assert.equal(identity.versions.wasmBindgenAbi, '0.2.129');
 assert.deepEqual(Object.keys(identity.rust).sort(), ['core', 'engine', 'kwdj', 'wasm']);
