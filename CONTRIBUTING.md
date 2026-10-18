@@ -116,15 +116,16 @@ SDK1 и его36 DTO сохраняются; SDK2 выбирается явно.
 Lockfiles обязательны; `--locked` запрещает тихое разрешение новых Rust версий.
 Reproducible здесь означает чистую сборку одинакового pinned source/toolchain/lock,
 а не обещание идентичных native binaries на разных OS/CPU. Rust std/CLI и системный
-linker входят в build environment; production size budgets проверит OSR-38.
+linker входят в build environment; performance regression проверяет OSR-38,
+а production bundle budget — OSR-80.
 
 Все Rust crates имеют `publish = false`, JS packages — `private: true`.
 Ни один install/build/check hook не публикует пакеты и не разворачивает CMS.
 Имена, package map и version namespaces закреплены [OSR-54](docs/identity.md).
-Проверка npm CLI сейчас даёт ENEEDAUTH; publisher authorization не заявляется.
-Registry write/проверка фактических прав перед publish — OSR-71.
+Фактическая publisher authorization и registry write проверяются заново
+непосредственно перед publish в OSR-71.
 Нельзя публиковать bootstrap tarballs как alpha. Native codec извлечён в OSR-29;
-WASM/SDK теперь предоставляют headless Session ABI1. Production DOM/vanilla/Angular
+WASM/SDK предоставляют headless Session ABI1 и явно выбираемый ABI2. Production DOM/vanilla/Angular
 mount APIs остаются отдельными задачами; пакеты пока не являются alpha release.
 
 ## Изменения

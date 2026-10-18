@@ -119,7 +119,9 @@ no privilege beyond the normal session/revision/selection checks. Offsets and
 indices have the same u32 capability on native and WASM; numeric attributes keep
 their wider exact range. `MapFromUserResult` resolves before normalization and
 maps through its operations; `Set` resolves in the final frame. A Created child
-path removed by a join can therefore refuse `transaction.invalid_local_reference`.
+path removed before its chosen resolution phase can therefore refuse
+`transaction.invalid_local_reference`. A valid MapFromUserResult caret resolves
+before a later normalization join and maps through it successfully.
 Direct references to a retired root may instead refuse `tree.missing_node`.
 
 ## A compiled Rust module
@@ -177,6 +179,14 @@ work units and 16 MiB logical owned bytes. Decimal descriptors are bounded to
 raise them. Compiler phases use the same relative bounded WorkMeter; counters
 and charged failed work are retained. Profile transaction reductions are applied
 before planning through the engine's componentwise minimum.
+
+Admission/remount has a separate bounded cache-preparation meter, hard4,000,000
+units/128MiB logical charged bytes. Existing profiles request the old1,000,000/
+64MiB by default; KWDJ explicitly selects the admission capability to construct
+its domain and schema proofs for the existing50000-node ceiling. `Recipes<P>`
+delegates this immutable request. Ordinary per-edit meters remain1,000,000/
+64MiB, and compiler ceilings stay unchanged. Both classes clamp attempted
+increases. The V2 capability digest includes KWDJ's actual admission ceiling.
 
 Registry and profile caches are immutable session proof state. Schema cache
 preparation returns a sparse unpublished patch; refusal or query does not
