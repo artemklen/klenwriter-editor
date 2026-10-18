@@ -315,3 +315,24 @@ fn missing_or_unavailable_references_do_not_produce_an_admitted_handle() {
         }
     }
 }
+
+// OSR-64 literal public registration expectations precede the implementation.
+#[test]
+fn public_registry_preserves_exact_kwdj_base_ownership_and_codec_binding() {
+    let identities = Identities::default();
+    let profile = KwdjProfile::new(&identities, Limits::default(), AdmissionBudget::default());
+    let registry = profile.registry();
+    assert_eq!(registry.binding(), profile.binding());
+    assert_eq!(registry.extension_order()[0].id(), "org.klenwriter.kwdj/base");
+    for name in ["text", "paragraph", "heading", "hard_break", "scene_break", "code_block", "blockquote", "list_item", "task_item", "bullet_list", "ordered_list", "task_list", "table_header", "table_cell", "table_row", "table", "media_image", "literary_block", "warning", "spoiler", "disclosure", "verse_line", "stanza_break", "verse"] {
+        let id = format!("org.klenwriter.kwdj/{name}");
+        let definition = registry.node(&id).expect("normative KWDJ node registered");
+        assert_eq!(definition.owner.id(), "org.klenwriter.kwdj/base");
+        assert_eq!(definition.owner.version(), "1.0.0");
+    }
+    for name in ["strong", "emphasis", "strike", "code", "subscript", "superscript", "text_color", "highlight", "link", "reference_link"] {
+        let id = format!("org.klenwriter.kwdj/{name}");
+        assert_eq!(registry.mark(&id).unwrap().owner.id(), "org.klenwriter.kwdj/base");
+    }
+    assert!(registry.node("org.klenwriter.kwdj/unknown").is_none());
+}
