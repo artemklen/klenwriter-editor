@@ -1,0 +1,251 @@
+{
+  "format": "osr38-calibration-quality-checkpoint/1",
+  "scope": "Implementation checkpoint of completed accepted64 raw calibration and rejected floor eligibility. Supporting integrity analysis only; not a formal independent review or AC4 acceptance.",
+  "status": "RAW_COMPLETE_INTEGRITY_VALID_QUALITY_REJECTED",
+  "source": {
+    "checkpointCommit": "e0ad734741eabd59ab66dae3f1aef20b0e91aadb",
+    "referenceProduction": "9a3747c0738fded8254eb958f7e256369cd382d3",
+    "configuredCandidateProduction": "9130cf9c3480db7499cdb88818722ea032becba3",
+    "candidateProductionMeasured": false,
+    "harnessSHA256": "89d15ded006be219dbd65f05439f572a07edc2d125443f7a2a57d913cc033e80",
+    "node": "v24.22.0",
+    "mode": "calibration",
+    "acceptanceScopeOfPlan": "full-required-plan"
+  },
+  "actualCollection": {
+    "completionReceipt": {
+      "path": "/tmp/osr-38-perf-reference-calibration-node24-dhat4.completion.json",
+      "bytes": 3955,
+      "sha256": "e7364d102b1c82f0f877b5863c4f844625ae2cee57614950272898a908165478"
+    },
+    "supervisorStart": {
+      "path": "/tmp/osr-38-perf-reference-calibration-node24-dhat4.actual-start.json",
+      "bytes": 1121,
+      "sha256": "c41e93e4ce3fa907b1d6fc78a0035d249bca05e3c058c8c78306e0182c12f457"
+    },
+    "supervisorCompletion": {
+      "path": "/tmp/osr-38-perf-reference-calibration-node24-dhat4.actual-exit.json",
+      "bytes": 1378,
+      "sha256": "e77046290bcd8f386cb8d8b7abd2c635ae497f950b06090d9bef86336f5cd9de"
+    },
+    "toolCompletion": {
+      "path": "/tmp/osr-38-perf-reference-calibration-node24-dhat4.tool-completion.json",
+      "bytes": 217,
+      "sha256": "e8f18ecc52acc3566ddb7bbafc7fba9391b17e2151768f8306ee2097b1bff4a1"
+    },
+    "configuration": {
+      "path": "/tmp/osr-38-perf-reference-calibration-node24-dhat4-config.json",
+      "bytes": 615,
+      "sha256": "ccd9d22566481db9cb2480ed3bb2e7d8e8b2e3b475ffa7c7252595cf247782bb"
+    },
+    "combinedRawLog": {
+      "path": "/tmp/osr-38-perf-reference-calibration-node24-dhat4.log",
+      "bytes": 208,
+      "sha256": "8868dfccac1924ac7faf4035f9dd961f4ba84139faa9f1d154883f0205c42d73"
+    },
+    "actualSupervisorExit": 0,
+    "actualToolExit": 0,
+    "counts": {
+      "freshLaunches": 410,
+      "allLaunchesExit0": true,
+      "rounds": 5,
+      "launchesPerRound": 82,
+      "planCases": 82,
+      "metricRuns": 1040,
+      "metricCases": 208
+    },
+    "duration": {
+      "utcWallSeconds": 4341.994495,
+      "observedStartedAt": "2026-10-18T19:00:37.967079+00:00",
+      "observedCompletedAt": "2026-10-18T20:12:59.961574+00:00",
+      "qualification": "Elapsed UTC wall timestamps recorded by the actual supervisor; no total CPU or monotonic-duration claim. Tool wall_time_seconds is only the final poll wait."
+    },
+    "artifacts": {
+      "baseline": {
+        "path": "/tmp/osr-38-perf-reference-calibration-node24-dhat4/baseline.json",
+        "bytes": 7466862,
+        "sha256": "3ca93b321016bbbed688df18adac33f19dc8fb641d5c65c6552d009464fa0dcd"
+      },
+      "capture": {
+        "path": "/tmp/osr-38-perf-reference-calibration-node24-dhat4/capture.json",
+        "bytes": 105452,
+        "sha256": "6fc34ace8e6030a752e566a9e3e8bfbc9bafe5a5a285a75611931ed25d2f535f"
+      },
+      "plan": {
+        "path": "/tmp/osr-38-perf-reference-calibration-node24-dhat4/plan.json",
+        "bytes": 11355,
+        "sha256": "e1ec8fe0d331514d82ab38d33232a76d248f6e69bdb23d27028b64400b8873cc"
+      },
+      "corpus": {
+        "path": "/tmp/osr-38-perf-reference-calibration-node24-dhat4/corpus.json",
+        "bytes": 7781859,
+        "sha256": "bfb810da4bc06bf3dc1f75366ec176aa5ea5f2915609e6d3e7d2bd70cd4775ea"
+      }
+    },
+    "qualification": "Original supervisor completion JSON retains the start-format marker because its dictionary merge copied the start record after the format field. Original bytes are preserved; its actual completedAt/exit_code/raw log fields are recorded and bound here."
+  },
+  "integrity": {
+    "status": "integrity-valid",
+    "supportingAudit": {
+      "path": "/tmp/osr-38-calibration-integrity-first.json",
+      "bytes": 43193,
+      "sha256": "d76b5d9a0d35c7a67abc88edb40608c7ae94790f8ad987899a17d0ab5a3a1baa"
+    },
+    "actualAuditExecution": {
+      "path": "/tmp/osr-38-calibration-integrity-first.actual-exit.json",
+      "bytes": 1683,
+      "sha256": "a538f1732569a9c507f0ca662cd471695d76fc6633b1f5da54f0ddfb0d07cf8d"
+    },
+    "caseMatrixManifest": {
+      "path": "/tmp/osr-38-calibration-integrity-first.matrix.json",
+      "bytes": 368702,
+      "sha256": "182f0c891b2eb39cab7815846d88f953bfde9693230b5fc1742dbfe370072ff3"
+    },
+    "existingRawLaunchRequestValidatorPassed": true,
+    "integrityErrors": [],
+    "validatedCases": 208,
+    "rawFiles": 470,
+    "logicalRequests": 66,
+    "qualification": "Audit used append-only private exports of unchanged existing validator bodies, recorded exact source-prefix/dependency equality, and constructed no adoption policy. This checkpoint independently checks these receipts, pins and counts; it does not rerun the validator or archive CRC."
+  },
+  "quality": {
+    "eligibleForAdoption": false,
+    "cases": 208,
+    "stableCVCases": 106,
+    "CVAbove10PercentCases": 102,
+    "undefinedCVCases": 0,
+    "timerQualityFailures": 0,
+    "timingCases": 104,
+    "byteResourceCases": 104,
+    "all104ByteResourceCasesStable": true,
+    "threshold": 0.1,
+    "caseListAuthority": {
+      "path": "/tmp/osr-38-calibration-integrity-first.matrix.json",
+      "bytes": 368702,
+      "sha256": "182f0c891b2eb39cab7815846d88f953bfde9693230b5fc1742dbfe370072ff3"
+    },
+    "qualification": "All102 case refusals are finite CV>10%, not zero/undefined-CV failures. Nonzero constant counters with CV0 remain stable. Passing cases are not selected for partial adoption."
+  },
+  "floorPreparation": {
+    "actualReceipt": {
+      "path": "/tmp/osr-38-floor-config-preparation-first.json",
+      "bytes": 15587,
+      "sha256": "8b5c938598c038096bca07a65597cbaef7f6a37ca67d977cf20807d90af6dd9f"
+    },
+    "actualReturnCode": 1,
+    "helperSource": {
+      "path": "/Users/artem/projects/klenwriter-editor/scripts/reliability/prepare-floor-config.mjs",
+      "bytes": 12141,
+      "sha256": "acd6656011f762d9025e25ea5e6ed61fffbcbfac3cbb60797ad2644e974283c3"
+    },
+    "input": {
+      "path": "/tmp/osr-38-floor-config-preparation-input.json",
+      "bytes": 396,
+      "sha256": "d5b0ed246a94e50205bbdc8bc3eacca85c1fabb9fc8f0eb84233210b39b84022"
+    },
+    "raw": {
+      "stdout": {
+        "path": "/tmp/osr-38-floor-config-preparation-first.stdout.log",
+        "bytes": 1581023,
+        "sha256": "d5b2f87620295b4ecd4065f22359c91e4ca89c226890f93928390c7e98bdc83e"
+      },
+      "stderr": {
+        "path": "/tmp/osr-38-floor-config-preparation-first.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "fullProposalAndQuality": {
+      "path": "/tmp/osr-38-floor-proposal-dhat4-1.json",
+      "bytes": 1581023,
+      "sha256": "d5b2f87620295b4ecd4065f22359c91e4ca89c226890f93928390c7e98bdc83e"
+    },
+    "status": "no-adoption-no-config",
+    "caseErrors": 102,
+    "aggregateErrors": 1,
+    "totalErrorRows": 103,
+    "sharedValidatorInHelperExecuted": false,
+    "qualification": "The initial helper stops on case-quality failure before its final shared-validator dry-run. Separate supporting audit establishes raw integrity; neither creates adoption."
+  },
+  "notPerformed": {
+    "draftConfigCreated": false,
+    "actualPolicyCreated": false,
+    "candidateCapture": false,
+    "comparison": false,
+    "confirmation": false,
+    "floorAdoption": false,
+    "newMeasurementsOrTestsForThisCheckpoint": false,
+    "stoppedBlockExecution": false
+  },
+  "durableArchive": {
+    "receipt": {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/calibration-e0ad734-dhat4-quality-rejected/receipt.json",
+      "bytes": 2037,
+      "sha256": "d86ce64a0b12c32644fb209d20cf93265b90bf96d2e048e45bb28c3cf657ba4b"
+    },
+    "archive": {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/calibration-e0ad734-dhat4-quality-rejected/checkpoint.zip",
+      "bytes": 25134355,
+      "sha256": "5da44d53820f17698e9f9bb5f289378a54f520771500cdd2fbd550b3f89f0487"
+    },
+    "manifest": {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/calibration-e0ad734-dhat4-quality-rejected/manifest.json",
+      "bytes": 785671,
+      "sha256": "9b5dcb75177f10faddd9449ea5b4dad4d17f64b833b08a591b40d839288c4ccf"
+    },
+    "payloadFiles": 1843,
+    "zipEntries": 1844,
+    "rawBytes": 84602331,
+    "sourceBundle": {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/calibration-e0ad734-dhat4-quality-rejected/reviewed-source.bundle",
+      "bytes": 11170812,
+      "sha256": "e95300880a64de96e339908854bb380b42688beff4904f8502884a0a6f462b37"
+    },
+    "sourceBundleVerification": {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/calibration-e0ad734-dhat4-quality-rejected/git-bundle-proof.json",
+      "bytes": 2671,
+      "sha256": "c097c45a5fa90567edc42b40b02c007afb1afa34c534cddad6f1864605ff6c5c"
+    },
+    "creationChecks": {
+      "zipCRC": true,
+      "everyMemberSHA256": true,
+      "embeddedManifestExact": true,
+      "everyOriginalStable": true,
+      "bundleVerified": true,
+      "sourceRefAndReferenceAncestor": true,
+      "all53SdkPayloadsExact": true,
+      "oldRevisedNativeRawControlPins": true
+    },
+    "originalsRetained": true,
+    "nothingDeleted": true,
+    "coverage": [
+      "Entire finalized calibration directory, actual start/completion/tool/log receipts and floor helper outputs",
+      "Accepted64 native benchmark/allocator build receipts, binaries and staged harness/assets; Cargo targets excluded",
+      "Fixed Notes reference capacity originals and DHAT default10-to4 small counter control raw/binaries",
+      "SDK-B3-a5886a24 manifest plus all53 artifact files",
+      "Full Git source/ancestor bundle at e0ad734 and accepted9a; no separately selected stopped-block raw tree"
+    ],
+    "limitations": [
+      "Small-control receipt decision pin names an earlier document version; current decision is separately pinned, full Git history retained. Execution/build/raw pins verified unchanged.",
+      "No toolchain, external Cargo registry cache or large Cargo target copied; reproduce using pinned dependencies/toolchain separately.",
+      "Archive integrity is not conclusive calibration acceptance, floor adoption, candidate comparison, AC completion or formal review."
+    ]
+  },
+  "AC4": "INCOMPLETE: complete raw collection and integrity validity do not override CV rejection. No numeric floors, actual policy or candidate comparison were produced.",
+  "verificationForThisNewFile": {
+    "performed": "Bounded JSON/count crosschecks and SHA256/byte comparisons for referenced completion/raw/helper/audit/matrix/archive/manifest/bundle files. Existing archive CRC/member/origin checks are cited from the preserved archive receipt, not rerun. No prior evidence, methods or source rewritten.",
+    "onlyNewVersionedPath": "evidence/osr-38/calibration-quality-checkpoint.json"
+  },
+  "supportingAuditArchive": {
+    "manifest": {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/calibration-supporting-audit-20261018T202214Z-cabc20cbcb28/manifest.json",
+      "bytes": 9812,
+      "sha256": "e67f8770f4b646385d5bae9c7ee799a0bea8ae27c4f97495199ebaee81961fdc"
+    },
+    "verifiedPayloadFiles": 14,
+    "totalOriginalBytes": 836902,
+    "copyByteEqualityVerified": true,
+    "allOriginalHashesAndStatStableAfterCopy": true,
+    "qualification": "Separate later supporting-audit preservation, completed after the calibration checkpoint ZIP. The earlier calibration-e0ad734-dhat4-quality-rejected/checkpoint.zip does not include these14 later audit payloads. This link cites the completed copy/hash verification manifest; it is not a new formal review, adoption, measurement or ZIP-member verification."
+  }
+}
