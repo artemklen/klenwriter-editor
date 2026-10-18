@@ -1,0 +1,104 @@
+{
+  "format": "osr38-ordinary-integration-checkpoint/1",
+  "sourceCommit": "714c05105152a25b0daa2a738f820daefa506242",
+  "scope": "Actual local ordinary correctness checker only; full performance acceptance, remaining separate AC3, final repository/CI gates and independent review are unfinished.",
+  "runId": "bf2941d1-bc2c-4219-aa61-6ecab19cfb41",
+  "actualOuterExitCode": 0,
+  "elapsedSeconds": 201.30567287499434,
+  "stagesPassed": 17,
+  "nodeTestsPassed": 40,
+  "native": {
+    "requested": 1037,
+    "requestedBaseScenarios": 1036,
+    "requestedRegressions": 0,
+    "completed": 1037,
+    "passed": 1037,
+    "failed": 0,
+    "literalCases": 12,
+    "regressionCases": 0,
+    "generatedByContext": {
+      "kwdj-prose": 256,
+      "kwdj-poetry": 256,
+      "notes-d0": 256,
+      "notes-d1": 256
+    },
+    "operationsCategory": 1,
+    "operationVariants": 13,
+    "meetsGeneratedNativeFloor": true
+  },
+  "sdk": {
+    "requested": 273,
+    "requestedIndependentScenarios": 268,
+    "completed": 273,
+    "passed": 273,
+    "failed": 0,
+    "literalCases": 12,
+    "generatedByContext": {
+      "kwdj-prose": 64,
+      "kwdj-poetry": 64,
+      "notes-d0": 64,
+      "notes-d1": 64
+    },
+    "regressionCases": 0,
+    "supplementalCases": 5,
+    "meetsGeneratedSdkFloor": true
+  },
+  "sourceUnchanged": true,
+  "nativeBuild": {
+    "call": "buildNativeReplay",
+    "completion": "returned",
+    "buildReceipt": {
+      "path": "/Users/artem/projects/klenwriter-editor/artifacts/reliability/check/runs/bf2941d1-bc2c-4219-aa61-6ecab19cfb41/replay/native/builds/c70e57ed-0889-4a02-8f45-e20d760971dc/build-receipt.json",
+      "bytes": 32136,
+      "sha256": "3f72ad252807166f81c5424dbef0af15753899361308c24d2694e6d3ce87c47b"
+    },
+    "binary": {
+      "path": "/Users/artem/projects/klenwriter-editor/artifacts/reliability/check/runs/bf2941d1-bc2c-4219-aa61-6ecab19cfb41/replay/native/builds/c70e57ed-0889-4a02-8f45-e20d760971dc/replay",
+      "bytes": 25312008,
+      "sha256": "3f98465ee9b13ab5b0ddfcacd64d5e6276e97b6e27673bf7091b79bf5b0bf153",
+      "mode": 320
+    },
+    "qualification": "Actual child exits live in the build receipt; no process exit invented for this JS function call."
+  },
+  "nativeReport": {
+    "path": "/Users/artem/projects/klenwriter-editor/artifacts/reliability/check/runs/bf2941d1-bc2c-4219-aa61-6ecab19cfb41/replay/native-report.json",
+    "bytes": 594168,
+    "sha256": "91f18691d6f8ca79fc4c28ae8fdaf6030198fa0342b35f0e1385eae8c44c1922"
+  },
+  "sdkReport": {
+    "path": "/Users/artem/projects/klenwriter-editor/artifacts/reliability/check/runs/bf2941d1-bc2c-4219-aa61-6ecab19cfb41/replay/sdk-report.json",
+    "bytes": 163093,
+    "sha256": "f2259608e78d0ac4438a26785c1d840c416022102de88ffceb2981fc603657cd"
+  },
+  "checkReport": {
+    "path": "/Users/artem/projects/klenwriter-editor/artifacts/reliability/check-report.json",
+    "bytes": 84406,
+    "sha256": "6ac0ec8c72633c1a917886e24308b6a8c7eb0bfdffa0be9b4d02efa4a15a1bb8"
+  },
+  "outerReceipt": {
+    "path": "/tmp/osr-38-ordinary-integrated-snapshot-fix.json",
+    "bytes": 3954,
+    "sha256": "ed28002ba87f7c3690042d43fcd25675139ec161130d7a40dcc93c56dfe673a3"
+  },
+  "priorFailure": {
+    "receipt": {
+      "path": "/tmp/osr-38-ordinary-integrated-first.json",
+      "bytes": 3771,
+      "sha256": "10d63a6167010147f050a1b9299e0a730728a414367a916d60e0ca2b7edc8dfe"
+    },
+    "cause": "Later Cargo tests replaced the shared target replay binary after build; replay rejected the changed artifact before executing cases.",
+    "fixCommit": "714c05105152a25b0daa2a738f820daefa506242",
+    "fix": "Execute an exclusive verified build-UUID snapshot (mode0500) while retaining distinct produced-target and copied-binary pins. The same full checker sequence now passes."
+  },
+  "archive": {
+    "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/ordinary-714c051-bf2941d1.zip",
+    "bytes": 30362119,
+    "sha256": "1a0d316a583960845c3be844491ad5c8ac9e01f8b727a8f3976ee746bccac083",
+    "entriesVerified": 4741,
+    "manifestSHA256": "54fcd4650f122b22ae427174fced1fe8c7356b59ef52e38faa1549c51242aa27",
+    "allPayloadHashesVerified": true,
+    "sourceCommit": "714c05105152a25b0daa2a738f820daefa506242",
+    "runId": "bf2941d1-bc2c-4219-aa61-6ecab19cfb41"
+  },
+  "qualification": "This is implementation evidence, not a review verdict. The 13 literal operation variants are one separate algebra record beyond1036 base scenarios. SDK273 includes268 independent scenarios and5 supplements. Historical earlier-source standalone runs are not substituted for this coherent run."
+}
