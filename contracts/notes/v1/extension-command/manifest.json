@@ -1,0 +1,36 @@
+{
+  "format": "notes-runtime-extension-freeze/1",
+  "scope": "Authored literals and declarative author package; no execution claim",
+  "files": [
+    {
+      "path": "contracts/notes/v1/extension-command/after.canonical.json",
+      "bytes": 671,
+      "sha256": "954087cfd00b7bb9edd6c7a24ef840a3d0db5201139b1b0947fd3c8c9c4c7773"
+    },
+    {
+      "path": "contracts/notes/v1/extension-command/initial.canonical.json",
+      "bytes": 307,
+      "sha256": "c0bd549b6f106479685930ec4bdbdba5d75b1667810e3f91271d8bee8233d2ad"
+    },
+    {
+      "path": "contracts/notes/v1/extension-command/vectors.json",
+      "bytes": 734,
+      "sha256": "553efe9ad90e4045561bde1dd4a5f3eeb0f5d76d23d50bf2e52173d698ba5469"
+    },
+    {
+      "path": "examples/notes-extension/d0.json",
+      "bytes": 397,
+      "sha256": "96758c6f9b60282947953ea10e17004467e736e97ee0123e60106d57b413764a"
+    },
+    {
+      "path": "examples/notes-extension/d1.json",
+      "bytes": 6318,
+      "sha256": "15221d69bcd7dd1a504f3f7050ddca34404166b4c42dab43045d19e4e5958776"
+    },
+    {
+      "path": "examples/notes-extension/package.json",
+      "bytes": 215,
+      "sha256": "c8672ce99e0e439353bdcb6b938d034225e213be4ef7886e955160a04506d43c"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "format": "notes-runtime-extension-command/1",
+  "origin": "Primary authored semantic/caret/history literals before executing this specific public adapter scenario; no implementation output",
+  "command_id": "org.example.notes/insert-callout",
+  "values": {
+    "text": {
+      "kind": "string",
+      "value": "A😀B"
+    },
+    "title": {
+      "kind": "string",
+      "value": "Подсказка"
+    }
+  },
+  "expected": {
+    "initial": "initial.canonical.json",
+    "after": "after.canonical.json",
+    "caret_path": [
+      1,
+      0,
+      0
+    ],
+    "caret_utf16": "3",
+    "revision_after": "1",
+    "undo_steps": 1,
+    "redo_restores_exact_ids": true
+  },
+  "unknown_argument_code": "registry.unknown_argument"
+}
