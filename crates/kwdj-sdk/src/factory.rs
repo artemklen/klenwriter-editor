@@ -130,6 +130,14 @@ fn capability_bytes(profile: &KwdjProfile<'_>) -> Result<Vec<u8>, DiagnosticDto>
         ),
         ("preflight_values", budget.preflight.values.to_string()),
         ("preflight_depth", budget.preflight.depth.to_string()),
+        (
+            "admission_cache_work_units",
+            profile.admission_cache_work_limits().units.to_string(),
+        ),
+        (
+            "admission_cache_work_bytes",
+            profile.admission_cache_work_limits().bytes.to_string(),
+        ),
     ])
     .map_err(|_| diagnostic("sdk.transport_failed", "capabilities"))
 }

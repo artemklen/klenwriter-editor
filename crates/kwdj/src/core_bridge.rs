@@ -15,7 +15,7 @@ impl NormalizedDocument {
     }
 }
 
-fn convert_node(node: &model::Node) -> Node {
+pub(crate) fn convert_node(node: &model::Node) -> Node {
     use model::Node as N;
     let attributes = match node {
         N::Paragraph { attrs, .. } => attrs.as_ref().map(attributes).unwrap_or_default(),

@@ -452,7 +452,7 @@ fn indices_path(indices: &[usize], work: &mut WorkMeter) -> Result<String, KwdjE
     }
     Ok(path)
 }
-fn current_path<V: CandidateChanges>(
+pub(crate) fn current_path<V: CandidateChanges>(
     view: &V,
     cache: &KwdjCache<V::Id>,
     id: V::Id,

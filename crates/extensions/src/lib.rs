@@ -266,6 +266,9 @@ impl<P: CommandProvider + RegistryProfile> FrozenProfile for Recipes<P> {
     fn transaction_work_limits(&self) -> Option<WorkLimits> {
         self.profile.transaction_work_limits()
     }
+    fn admission_cache_work_limits(&self) -> WorkLimits {
+        self.profile.admission_cache_work_limits()
+    }
     fn admit_bytes(
         &self,
         b: &ProfileBinding,

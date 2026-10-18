@@ -319,6 +319,13 @@ pub trait FrozenProfile {
         None
     }
 
+    /// Requested preparation budget for the initial retained cache proof.
+    /// Engine admission applies its separate hard ceiling. Existing profiles
+    /// keep their original default; transaction work is unaffected.
+    fn admission_cache_work_limits(&self) -> WorkLimits {
+        WorkLimits::default()
+    }
+
     fn binding(&self) -> &ProfileBinding;
     fn admit_bytes(
         &self,

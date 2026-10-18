@@ -230,6 +230,13 @@ impl Default for WorkLimits {
     }
 }
 
+/// Hard bound for constructing retained immutable proofs at admission/remount.
+/// Ordinary transaction/compiler meters retain their separate lower ceilings.
+pub const ADMISSION_CACHE_WORK_LIMITS: WorkLimits = WorkLimits {
+    units: 4_000_000,
+    bytes: 128 * 1024 * 1024,
+};
+
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct WorkUsage {
     pub units: u64,
@@ -282,7 +289,14 @@ pub struct WorkMeter {
 
 impl WorkMeter {
     pub fn new(requested: WorkLimits) -> Self {
-        let hard = WorkLimits::default();
+        Self::bounded(requested, WorkLimits::default())
+    }
+    /// Only admission/remount cache construction uses this capability. A
+    /// profile request can lower, but cannot exceed, its fixed hard ceiling.
+    pub fn for_admission_cache(requested: WorkLimits) -> Self {
+        Self::bounded(requested, ADMISSION_CACHE_WORK_LIMITS)
+    }
+    fn bounded(requested: WorkLimits, hard: WorkLimits) -> Self {
         Self {
             limits: WorkLimits {
                 units: requested.units.min(hard.units),

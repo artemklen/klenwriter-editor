@@ -147,3 +147,115 @@ test('identity catalogs are bounded, explicit, closed and reject duplicate UUID 
     }
   }
 });
+
+test('codec ABI1 import rejects retired malformed metadata while native/WASM preserve valid normalization literals', () => {
+  // Authored before executing the centralized direct-codec guard. These mirror
+  // closed model rules, not canonical output learned from an implementation.
+  const empty = '{"content":[{"content":[],"type":"paragraph"}],"profile":"prose","schema":"klenwriter.document","schema_version":1}';
+  const plain = '{"content":[{"content":[{"text":"a","type":"text"}],"type":"paragraph"}],"profile":"prose","schema":"klenwriter.document","schema_version":1}';
+  const lines = '{"content":[{"content":[{"text":"a\\nb","type":"text"}],"type":"paragraph"}],"profile":"prose","schema":"klenwriter.document","schema_version":1}';
+  const spaces = '{"content":[{"content":[{"text":"a  b","type":"text"}],"type":"paragraph"}],"profile":"prose","schema":"klenwriter.document","schema_version":1}';
+  const refused = [
+    ['empty_text_unknown_attr', { type: 'text', text: '', attrs: { extra: 1 } }, '/content/0/attrs'],
+    ['empty_text_unknown_field', { type: 'text', text: '', extra: true }, '/content/0/extra'],
+    ['empty_text_wrong_attrs_shape', { type: 'text', text: '', attrs: true }, '/content/0/attrs'],
+    ['absent_color_unknown_attr', { type: 'text', text: 'a', marks: [{ type: 'text_color', attrs: { token: 'none', extra: 1 } }] }, '/content/0/extra'],
+    ['absent_color_unknown_field', { type: 'text', text: 'a', marks: [{ type: 'text_color', attrs: { token: 'default' }, extra: true }] }, '/content/0/extra'],
+    ['absent_highlight_unknown_attr', { type: 'text', text: 'a', marks: [{ type: 'highlight', attrs: { token: 'NONE', extra: 1 } }] }, '/content/0/extra'],
+  ].map(([id, text, path]) => ({ id, text, expected: { status: 'refused', code: 'kwdj.unknown_attribute', path } }));
+  const accepted = [
+    ['empty', { type: 'text', text: '' }, empty],
+    ['plain', { type: 'text', text: 'a' }, plain],
+    ['known_casing_and_absent_tokens', { type: 'TeXt', text: 'a', marks: [{ type: 'TEXT_COLOR', attrs: { token: 'NoNe' } }, { type: 'HIGHLIGHT', attrs: { token: 'DeFaUlT' } }] }, plain],
+    ['duplicate_absent_color_tokens', { type: 'text', text: 'a', marks: [{ type: 'text_color', attrs: { token: 'none' } }, { type: 'text_color', attrs: { token: 'default' } }] }, plain],
+    ['duplicate_absent_highlight_tokens', { type: 'text', text: 'a', marks: [{ type: 'highlight', attrs: { token: 'none' } }, { type: 'highlight', attrs: { token: 'default' } }] }, plain],
+    ['documented_newlines', { type: 'text', text: 'a\r\nb' }, lines],
+    ['space_nbsp_exact', { type: 'text', text: 'a  b' }, spaces],
+    ['valid_active_mark_on_empty_text', { type: 'text', text: '', marks: [{ type: 'strong' }] }, empty],
+  ].map(([id, text, canonical]) => ({ id, text, expected: { status: 'accepted', canonical } }));
+  const cases = [...refused, ...accepted];
+  const requests = cases.map(c => ({ operation: 'normalize', input: JSON.stringify(document([{ type: 'paragraph', content: [c.text] }])), options: options() }));
+  const nativeResults = native(requests), observations = [];
+  for (const [index, c] of cases.entries()) {
+    const request = requests[index], input = encode(request.input), original = input.slice();
+    const actual = invoke('normalize', input, request.options);
+    assert.deepEqual(actual, nativeResults[index], `${c.id}: actual native/WASM equality`);
+    assert.equal(actual.abi, 'kwdj-codec/1'); assert.equal(actual.status, c.expected.status, c.id);
+    if (actual.status === 'refused') {
+      assert.equal(actual.diagnostic.code, c.expected.code, c.id); assert.equal(actual.diagnostic.path, c.expected.path, c.id);
+    } else {
+      assert.equal(actual.canonical_json, c.expected.canonical, `${c.id}: independently authored canonical bytes`);
+      for (const operation of Object.keys(functions)) assert.equal(invoke(operation, encode(c.expected.canonical), request.options).canonical_json, c.expected.canonical, `${c.id}: ${operation} fixed point`);
+    }
+    assert.deepEqual(input, original, `${c.id}: original input ownership`);
+    observations.push({ id: c.id, input: request.input, expected: c.expected, native: nativeResults[index], wasm: actual });
+  }
+  const paths = ['crates/kwdj/src/lib.rs', 'crates/kwdj/src/candidate_validate.rs', 'crates/kwdj/src/registry_guards.rs',
+    'crates/kwdj/tests/import_closed_metadata.rs', 'crates/wasm/src/codec.rs', 'crates/wasm/src/codec_browser.rs', 'tests/codec.node.mjs'];
+  mkdirSync('artifacts', { recursive: true });
+  writeFileSync('artifacts/codec-import-closed-report.json', JSON.stringify({ format: 'kwdj-codec-import-closed/1', abi: 'kwdj-codec/1',
+    sourceHashes: Object.fromEntries(paths.map(path => [path, hash(readFileSync(path))])),
+    wasmSha256: hash(readFileSync('packages/wasm/dist/editor_wasm_bg.wasm')),
+    nativeBinarySha256: hash(readFileSync(`target/debug/examples/codec${process.platform === 'win32' ? '.exe' : ''}`)),
+    summary: { malformedRefused: 6, validControls: 8, nativeWasmComparisons: observations.length }, observations,
+    scope: 'Actual codec ABI1 normalize calls and parsed native/WASM replies; original60-input/180-comparison corpus remains separate and unchanged.' }, null, 2) + '\n');
+});
+
+test('codec ABI1 preserves closed Document roots and bounds original unknown-key copying in native/WASM', () => {
+  // Additive independent literals from import_closed_root.rs. Document exposes
+  // only schema/schema_version/profile/content; root marks/attrs stay unknown.
+  const empty = '{"content":[{"content":[],"type":"paragraph"}],"profile":"prose","schema":"klenwriter.document","schema_version":1}';
+  const rootCases = [
+    ['empty_marks', { marks: [] }, '/marks/marks'],
+    ['absent_color_mark', { marks: [{ type: 'text_color', attrs: { token: 'none' } }] }, '/marks/marks'],
+    ['absent_highlight_mark', { marks: [{ type: 'HIGHLIGHT', attrs: { token: 'DeFaUlT' } }] }, '/marks/marks'],
+    ['active_mark', { marks: [{ type: 'strong' }] }, '/marks/marks'],
+    ['empty_attrs', { attrs: {} }, '/attrs/attrs'],
+    ['authored_attrs', { attrs: { title: 'keep authored data' } }, '/attrs/attrs'],
+  ].map(([id, extra, path]) => ({ id, input: JSON.stringify({ ...document([{ type: 'paragraph', content: [] }]), ...extra }),
+    expected: { status: 'refused', code: 'kwdj.unknown_attribute', path } }));
+  const knownControl = { id: 'known_child_defaults_and_casing',
+    input: '{"schema":"klenwriter.document","schema_version":1,"profile":"PrOsE","content":[{"type":"PARAGRAPH","content":[{"type":"TEXT","text":"","marks":[]}],"attrs":{}}]}',
+    expected: { status: 'accepted', canonical: empty } };
+  // Byte-for-byte the JSON serialization of the fixed map in the independent
+  // import_header_budget.rs regression: a 4MiB tilde key below the 16MiB input
+  // cap already needs 64MiB under the 16x original-header ownership policy.
+  const largeKey = '~'.repeat(4 * 1024 * 1024);
+  const largeInput = '{"content":[{"content":[{"text":"","type":"text",' + JSON.stringify(largeKey) + ':false}],"type":"paragraph"}],"profile":"prose","schema":"klenwriter.document","schema_version":1}';
+  assert.ok(encode(largeInput).length < 16 * 1024 * 1024);
+  const budgetCases = [
+    { id: 'four_mib_unknown_key', input: largeInput, expected: { status: 'refused', code: 'kwdj.admission_budget_exceeded', path: '', category: 'operational_admission' } },
+    { id: 'small_escaped_unknown_key', input: '{"content":[{"content":[{"small~key":false,"text":"","type":"text"}],"type":"paragraph"}],"profile":"prose","schema":"klenwriter.document","schema_version":1}',
+      expected: { status: 'refused', code: 'kwdj.unknown_attribute', pathSuffix: '/small~0key' } },
+  ];
+  const cases = [...rootCases, knownControl, ...budgetCases];
+  const requests = cases.map(c => ({ operation: 'normalize', input: c.input, options: options() }));
+  const nativeResults = native(requests), observations = [];
+  for (const [index, c] of cases.entries()) {
+    const request = requests[index], input = encode(request.input), original = input.slice();
+    const actual = invoke('normalize', input, request.options);
+    assert.deepEqual(actual, nativeResults[index], `${c.id}: actual native/WASM equality`);
+    assert.equal(actual.abi, 'kwdj-codec/1'); assert.equal(actual.status, c.expected.status, c.id);
+    if (actual.status === 'refused') {
+      assert.equal(actual.diagnostic.code, c.expected.code, c.id);
+      if (c.expected.path !== undefined) assert.equal(actual.diagnostic.path, c.expected.path, c.id);
+      if (c.expected.pathSuffix !== undefined) assert.ok(actual.diagnostic.path.endsWith(c.expected.pathSuffix), c.id);
+      if (c.expected.category !== undefined) assert.equal(actual.diagnostic.category, c.expected.category, c.id);
+    } else {
+      assert.equal(actual.canonical_json, c.expected.canonical, `${c.id}: independent canonical literal`);
+      for (const operation of Object.keys(functions)) assert.equal(invoke(operation, encode(c.expected.canonical), request.options).canonical_json, c.expected.canonical);
+    }
+    assert.deepEqual(input, original, `${c.id}: original input ownership`);
+    observations.push({ id: c.id, inputBytes: input.length, inputSha256: hash(input), expected: c.expected, native: nativeResults[index], wasm: actual });
+  }
+  const paths = ['crates/kwdj/src/lib.rs', 'crates/kwdj/src/candidate_validate.rs', 'crates/kwdj/src/registry_guards.rs',
+    'crates/kwdj/tests/import_closed_root.rs', 'crates/kwdj/tests/import_header_budget.rs',
+    'crates/wasm/src/codec.rs', 'crates/wasm/src/codec_browser.rs', 'tests/codec.node.mjs'];
+  mkdirSync('artifacts', { recursive: true });
+  writeFileSync('artifacts/codec-import-root-budget-report.json', JSON.stringify({ format: 'kwdj-codec-import-root-budget/1', abi: 'kwdj-codec/1',
+    sourceHashes: Object.fromEntries(paths.map(path => [path, hash(readFileSync(path))])),
+    wasmSha256: hash(readFileSync('packages/wasm/dist/editor_wasm_bg.wasm')),
+    nativeBinarySha256: hash(readFileSync(`target/debug/examples/codec${process.platform === 'win32' ? '.exe' : ''}`)),
+    summary: { malformedRootRefused: 6, validControls: 1, operationalBudgetRefused: 1, escapedKeyRefused: 1, nativeWasmComparisons: observations.length }, observations,
+    scope: 'Actual codec ABI1 normalize calls for additive root closure and fixed4MiB-key ownership budget. Earlier14metadata cases and original60-input/180-comparison corpus stay separate and unchanged. Input hashes avoid embedding the4MiB key in this report.' }, null, 2) + '\n');
+});

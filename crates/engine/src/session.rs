@@ -174,7 +174,11 @@ impl<P: FrozenProfile> Session<P> {
         let tree = AddressTree::from_document(key, profile.to_document(&admitted))?;
         let baseline = SavedBaseline::admitted(profile.canonical(&admitted))?;
         let cache = profile
-            .seed_cache(&admitted, &tree, &mut WorkMeter::new(WorkLimits::default()))
+            .seed_cache(
+                &admitted,
+                &tree,
+                &mut WorkMeter::for_admission_cache(profile.admission_cache_work_limits()),
+            )
             .map_err(SessionError::Profile)?;
         Ok(Self {
             binding: requested.clone(),
@@ -727,7 +731,11 @@ impl<P: FrozenProfile> Session<P> {
         let baseline = SavedBaseline::admitted(self.profile.canonical(&admitted))?;
         let cache = self
             .profile
-            .seed_cache(&admitted, &tree, &mut WorkMeter::new(WorkLimits::default()))
+            .seed_cache(
+                &admitted,
+                &tree,
+                &mut WorkMeter::for_admission_cache(self.profile.admission_cache_work_limits()),
+            )
             .map_err(SessionError::Profile)?;
         let events = EventOutbox::new(next_key);
         self.context = context;

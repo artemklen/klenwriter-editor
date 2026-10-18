@@ -18,6 +18,7 @@ pub use core_bridge::{admit_core_document, admit_core_document_with_budget};
 mod normalize;
 mod project;
 pub mod registry;
+mod registry_guards;
 mod session_profile;
 mod validate;
 mod wire_view;
@@ -441,7 +442,7 @@ pub fn decode_candidate_with_limits_and_budget(
 ) -> Result<CandidateDocument, KwdjError> {
     let value = admission::parse_raw(input, budget)?;
     admission::check_value(&value, budget)?;
-    decode_checked_value(value, limits)
+    decode_checked_value(value, limits, budget)
 }
 
 /// Admit an already-parsed borrowed value without serializing and parsing it
@@ -462,13 +463,24 @@ pub fn decode_candidate_value_with_limits_and_budget(
 ) -> Result<CandidateDocument, KwdjError> {
     admission::check_value(input, budget)?;
     preflight(input)?;
-    decode_checked_value(input.clone(), limits)
+    decode_checked_value(input.clone(), limits, budget)
 }
 
 // Value is owned and has already passed the borrowed operational preflight.
 // Opaque candidates cannot be constructed or mutated outside this module.
-fn decode_checked_value(value: Value, limits: Limits) -> Result<CandidateDocument, KwdjError> {
+fn decode_checked_value(
+    value: Value,
+    limits: Limits,
+    budget: AdmissionBudget,
+) -> Result<CandidateDocument, KwdjError> {
     preflight(&value)?;
+    candidate_validate::check_original_headers(
+        &value,
+        budget.effective().preflight,
+        &mut editor_core::transaction::WorkMeter::new(
+            editor_core::transaction::WorkLimits::default(),
+        ),
+    )?;
     let mut probe = value.clone();
     let mut ignored = Vec::new();
     normalize::normalize_value(&mut probe, "", &mut ignored)?;
@@ -612,6 +624,13 @@ fn preflight(value: &Value) -> Result<(), KwdjError> {
 
 fn decode_document(value: Value) -> Result<Document, KwdjError> {
     scan_known_types(&value, "")?;
+    decode_document_shape(value)
+}
+
+// Shared closed Document authority. A shallow original envelope has no child
+// payload to scan and must refuse its own unknown fields before interpreting
+// their contents as node metadata.
+fn decode_document_shape(value: Value) -> Result<Document, KwdjError> {
     let bytes = serde_json::to_vec(&value)
         .map_err(|_| KwdjError::new(KwdjErrorCode::InvalidStructure, ""))?;
     let mut deserializer = serde_json::Deserializer::from_slice(&bytes);

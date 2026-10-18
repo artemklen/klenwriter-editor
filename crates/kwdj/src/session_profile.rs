@@ -18,8 +18,7 @@ use thiserror::Error;
 
 use crate::{
     AdmissionBudget, IdentityResolver, KwdjError, Limits, PROFILE_ID, Profile, ValidatedDocument,
-    admit_core_document_with_budget, decode_normalize_validate_with_limits_and_budget,
-    validate_normalized_json_with_limits_and_budget,
+    admit_core_document_with_budget, validate_normalized_json_with_limits_and_budget,
 };
 
 pub const KWDJ_PROFILE_VERSION: &str = "1.0.0";
@@ -182,6 +181,10 @@ impl FrozenProfile for KwdjProfile<'_> {
     type Error = KwdjProfileError;
     type Cache<I: Copy + Eq + Ord> = crate::registry::KwdjProfileCache<I>;
 
+    fn admission_cache_work_limits(&self) -> editor_core::transaction::WorkLimits {
+        editor_core::transaction::ADMISSION_CACHE_WORK_LIMITS
+    }
+
     fn seed_cache<V: CandidateRead>(
         &self,
         admitted: &Self::Admitted,
@@ -219,12 +222,21 @@ impl FrozenProfile for KwdjProfile<'_> {
                 self.limits,
                 self.budget,
             )?,
-            AdmissionMode::Import => decode_normalize_validate_with_limits_and_budget(
-                input,
-                self.identities(),
-                self.limits,
-                self.budget,
-            )?,
+            AdmissionMode::Import => {
+                let candidate = crate::decode_candidate_with_limits_and_budget(
+                    input,
+                    self.limits,
+                    self.budget,
+                )?;
+                let mut work = WorkMeter::new(editor_core::transaction::WorkLimits::default());
+                crate::registry_guards::imported(
+                    &self.registry,
+                    &candidate.value,
+                    self.budget,
+                    &mut work,
+                )?;
+                crate::normalize_and_validate(candidate, self.identities())?
+            }
         })
     }
 
@@ -263,7 +275,7 @@ impl TransactionProfile for KwdjProfile<'_> {
         cache: &Self::Cache<V::Id>,
         work: &mut WorkMeter,
     ) -> Result<Vec<Operation<V::Id>>, Self::Error> {
-        Ok(crate::candidate_cache::normalize(
+        let ops = crate::candidate_cache::normalize(
             *context,
             view,
             &cache.domain,
@@ -271,7 +283,25 @@ impl TransactionProfile for KwdjProfile<'_> {
             self.limits,
             self.budget,
             work,
-        )?)
+        )?;
+        let cached = cache
+            .domain
+            .matches(*context, view, self.limits, self.budget);
+        crate::registry_guards::discarded(
+            &self.registry,
+            view,
+            &ops,
+            self.budget,
+            work,
+            |id, work| {
+                if cached {
+                    crate::candidate_cache::current_path(view, &cache.domain, id, work)
+                } else {
+                    crate::registry_guards::uncached_path(view, id, work)
+                }
+            },
+        )?;
+        Ok(ops)
     }
     fn validate_scoped<V: editor_core::candidate::CandidateChanges>(
         &self,
@@ -312,6 +342,14 @@ impl TransactionProfile for KwdjProfile<'_> {
             self.limits,
             self.budget,
             work,
+        )?;
+        crate::registry_guards::discarded(
+            &self.registry,
+            candidate,
+            &operations,
+            self.budget,
+            work,
+            |id, work| crate::registry_guards::uncached_path(candidate, id, work),
         )?;
         Ok(operations)
     }
