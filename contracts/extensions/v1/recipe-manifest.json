@@ -21,8 +21,8 @@
     },
     {
       "path": "recipe-vectors.json",
-      "bytes": 421966,
-      "sha256": "9ea50b64ecbbd2d4e47913d8576b0d4fa23b6de3951cecefd4239276ad867a2b"
+      "bytes": 421960,
+      "sha256": "825201adc50f660b75422c15461b72f1904d6b18d76b5d8e6f1a5137b2cbce2e"
     }
   ],
   "preserved_basic_manifest_sha256": "4899ac668df12dac8bf771affa043d9d353b0e8b21957130ee4a9fc4403f4407",
@@ -35,6 +35,13 @@
       "preliminary_vectors_sha256": "a0980bf6fd5709204ee904a79c9f9194580af495485fb21596245a7ae8f44a81",
       "reason": "Independently found before implementing this path: literal from2/to1 could be rejected by a correct static compiler, preventing intended late runtime proof. Make both bounded integer parameters and supply actual2/1 in RR009. Expected runtime tree.invalid_range and all atomic invariants unchanged. No implementation output motivated or generated this correction.",
       "prior_bytes_preserved_in_git": true,
+      "case_counts_changed": false
+    },
+    {
+      "id": "RR013-pre-execution-query-execute-code-consistency",
+      "prior_manifest_sha256": "5cecc77ffeab5952c0316d75398a599372a88c8916b97a825531192b940296dd",
+      "prior_vectors_sha256": "9ea50b64ecbbd2d4e47913d8576b0d4fa23b6de3951cecefd4239276ad867a2b",
+      "reason": "Before executing runtime cases, independently found expected_query unknown_argument but expected execution argument_type_mismatch for the same unknown extra Value. Accepted validation order requires registry.unknown_argument for both. Root explicitly accepted this correction; no implementation output used.",
       "case_counts_changed": false
     }
   ]
