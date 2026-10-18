@@ -176,6 +176,10 @@ export async function buildExtensionConsumers({ baseBuildId, baseSourceHashes })
       assert(host, 'Actual native Rust host triple required');
       const bindgen = resolve(root, '.tools/bin/wasm-bindgen');
       assert.equal(utf8.decode(run('bindgen-toolchain', bindgen, ['--version'])).trim(), 'wasm-bindgen 0.2.129');
+      // This standalone lockfile may pin versions absent from the workspace cache.
+      // Populate both target graphs before enforcing offline graph/build checks.
+      run('fetch-locked', 'cargo', ['fetch', '--locked', '--manifest-path', `${fixture}/Cargo.toml`,
+        '--target', host, '--target', 'wasm32-unknown-unknown']);
       const common = ['--locked', '--offline', '--manifest-path', `${fixture}/Cargo.toml`,
         '--no-default-features', '--features', selected.feature];
       const graphs = {};
