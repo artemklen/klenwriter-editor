@@ -45,8 +45,18 @@ replay output is nested in this fresh checker directory.
 
 The before/after source closure is the union of native replay inputs,
 performance-harness files, all actual SDK producer source keys and the checker
-and executed test inputs. The actual SDK producer/seal and source pairing are
-checked before work; stale packaging refuses with the build prerequisite.
+and executed test inputs. The initial snapshot also pins the SDK child adapter,
+its documentation and directly imported Notes author testkit, plus the exact
+extension fixture packet consumed by its supplement. The existing extension
+lane prepares `artifacts/extensions/packet.json`; it must be present for a
+standalone invocation as well. Every regular `.js` file recursively under
+`packages/sdk/dist` and `packages/wasm/dist` is pinned alongside the actual WASM,
+producer and seal. Final readback requires the same JS file set, byte sizes and
+hashes, covering the first SDK harness suite as well as later replay. The proof
+refuses symlinks or evidence-bound overflow; it does not infer emitted-JS
+equivalence merely from TypeScript source hashes.
+The actual SDK producer/seal and source pairing are checked before work; stale
+packaging refuses with the build prerequisite.
 No binary/source/lock mismatch is silently relabelled as a passed stage.
 
 This entrypoint makes no real performance, coverage-guided-fuzz, stopped-block,

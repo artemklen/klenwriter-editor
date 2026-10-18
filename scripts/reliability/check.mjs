@@ -2,8 +2,8 @@
 // Ordinary correctness/integrity entrypoint. Importing never starts a check.
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
-import { lstatSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { lstatSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildNativeReplay, executeNative, replaySourceHashes, runNativeReplay } from './replay-native.mjs';
 import { runSdkReplay } from './replay-sdk.mjs';
@@ -16,6 +16,8 @@ const MAX_COMMAND_EVIDENCE = 64 * 1024 * 1024;
 const suites = ['model', 'shrink', 'performance', 'sdk'].map(name => `tests/reliability-${name}.node.mjs`);
 const ownInputs = ['scripts/reliability/check.mjs', 'docs/reliability.md', '.node-version', 'package.json', 'package-lock.json',
   'scripts/reliability/dependency-inventory.mjs', 'scripts/dependency-notices.mjs', 'evidence/osr-38/native-tooling.md',
+  'scripts/reliability/sdk-replay-child.mjs', 'docs/reliability-sdk.md',
+  'examples/notes-extension/testkit.mjs', 'artifacts/extensions/packet.json',
   ...suites, 'tests/fixtures/reliability-native/tests/limits.rs', 'tests/fixtures/reliability-native/tests/public_properties.rs'];
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const json = value => Buffer.from(JSON.stringify(value, null, 2) + '\n');
@@ -30,6 +32,24 @@ function local(path) {
   assert.equal(typeof path, 'string'); assert(path.length > 0 && !path.startsWith('/') && !path.split(/[\\/]/).includes('..'), 'source path escapes root');
   return resolve(root, path);
 }
+function javascriptArtifacts() {
+  const files = {}; let totalBytes = 0;
+  function visit(directory) {
+    for (const entry of readdirSync(directory, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name, 'en'))) {
+      assert.equal(entry.isSymbolicLink(), false, `SDK artifact symlink: ${entry.name}`);
+      const path = resolve(directory, entry.name);
+      if (entry.isDirectory()) visit(path);
+      else if (entry.isFile() && entry.name.endsWith('.js')) {
+        const item = pin(path); totalBytes += item.bytes;
+        assert(Object.keys(files).length < 1024 && totalBytes <= 64 * 1024 * 1024, 'SDK JS artifact proof bound exceeded');
+        files[relative(root, path)] = item;
+      }
+    }
+  }
+  for (const path of ['packages/sdk/dist', 'packages/wasm/dist']) visit(resolve(root, path));
+  assert(Object.keys(files).length > 0, 'missing built SDK JS artifacts');
+  return { files, totalBytes };
+}
 function sdkProducer() {
   const producerPath = resolve(root, 'artifacts/sdk-build-identity.json'), sealPath = resolve(root, 'artifacts/sdk-wasm-seal.json');
   const producer = read(producerPath), seal = read(sealPath);
@@ -39,7 +59,8 @@ function sdkProducer() {
   assert(producer.sourceHashes && Object.keys(producer.sourceHashes).length > 0);
   for (const [path, digest] of Object.entries(producer.sourceHashes)) assert.equal(hash(regular(local(path))), digest, `npm run build prerequisite is stale: ${path}`);
   return { producer, pins: { producer: pin(producerPath), seal: pin(sealPath), wasm,
-    sdkEntry: pin(resolve(root, 'packages/sdk/dist/index.js')), controller: pin(resolve(root, 'packages/sdk/dist/controller.js')) } };
+    sdkEntry: pin(resolve(root, 'packages/sdk/dist/index.js')), controller: pin(resolve(root, 'packages/sdk/dist/controller.js')),
+    javascript: javascriptArtifacts() } };
 }
 function sourceSnapshot() {
   const sdk = sdkProducer();
