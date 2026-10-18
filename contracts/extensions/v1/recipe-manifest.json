@@ -21,10 +21,21 @@
     },
     {
       "path": "recipe-vectors.json",
-      "bytes": 417563,
-      "sha256": "a0980bf6fd5709204ee904a79c9f9194580af495485fb21596245a7ae8f44a81"
+      "bytes": 421966,
+      "sha256": "9ea50b64ecbbd2d4e47913d8576b0d4fa23b6de3951cecefd4239276ad867a2b"
     }
   ],
   "preserved_basic_manifest_sha256": "4899ac668df12dac8bf771affa043d9d353b0e8b21957130ee4a9fc4403f4407",
-  "scope": "Synthetic generic recipes oracle, not Notes codec corpus or implementation/pass/verdict. Original basic158 unchanged; typed raw-string numeric transport uses existing AttributeDto."
+  "scope": "Synthetic generic recipes oracle, not Notes codec corpus or implementation/pass/verdict. Original basic158 unchanged; typed raw-string numeric transport uses existing AttributeDto.",
+  "corrections": [
+    {
+      "id": "RR009-pre-implementation-static-vs-runtime-stage",
+      "preliminary_commit": "c219f72",
+      "preliminary_manifest_sha256": "2862d1dbc54718c017a2f1039ea7691d0b06d5f1f859f7fcd119e2489b41d13f",
+      "preliminary_vectors_sha256": "a0980bf6fd5709204ee904a79c9f9194580af495485fb21596245a7ae8f44a81",
+      "reason": "Independently found before implementing this path: literal from2/to1 could be rejected by a correct static compiler, preventing intended late runtime proof. Make both bounded integer parameters and supply actual2/1 in RR009. Expected runtime tree.invalid_range and all atomic invariants unchanged. No implementation output motivated or generated this correction.",
+      "prior_bytes_preserved_in_git": true,
+      "case_counts_changed": false
+    }
+  ]
 }
