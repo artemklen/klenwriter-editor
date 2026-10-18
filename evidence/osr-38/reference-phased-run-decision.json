@@ -1,0 +1,50 @@
+{
+  "format": "osr38-corrected-reference-execution-decision/1",
+  "decidedAt": "2026-10-18T21:03:27.442189+00:00",
+  "primaryRole": "implementer",
+  "authorizationBasis": "Original OSR-38 contract and owner technical delegation in OSR-26; this is a primary test-method decision, no additional owner action.",
+  "permittedRun": "One new full accepted64 reference calibration under the corrected harness after completed builds/archives; no candidate capture.",
+  "source": {
+    "production": "9a3747c0738fded8254eb958f7e256369cd382d3",
+    "harnessCode": "b163636c09a9641970fd3af28da2fcfa92015963",
+    "harnessSHA256": "97ac139f3a029c4bb475af7b476bb4c6ed16c4c9e2d1dec7737211620b6474fc",
+    "methodDecision": "a38ca5395db30436b9e25f94ca27dbfac27db0c1",
+    "buildOnlyReady": {
+      "path": "/tmp/osr-38-perf-phased-matched-builds-ready.json",
+      "bytes": 5350,
+      "sha256": "73833d83485881239d6df472d23975fc6f166c4d82ea77a08e40f843f82af337"
+    },
+    "durableProducersAudit": {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-38/phased-matched-producers-b163/audit.json",
+      "bytes": 1544,
+      "sha256": "ddec6579875ee32bb0c8b98b3badb75f83f2c13eecf00995503c12671c87a925"
+    }
+  },
+  "reasonForNewRun": "Related harness correction has actual pre-fix regression failures followed by47 passing targeted tests: remove eager success diagnostic serialization from timed JS, and exclude DHAT launches between timing rounds inside this capture. Previous complete reference remains retained and quality-rejected102cases; it is not reclassified or selectively reused.",
+  "plan": {
+    "mode": "calibration",
+    "requiredMetricCases": 208,
+    "requiredMetricRuns": 1040,
+    "freshLaunches": 410,
+    "rounds": 5,
+    "samples": 200,
+    "warmup": 64,
+    "phaseOrder": [
+      "timing",
+      "allocator"
+    ],
+    "fullDefaultPlan": true,
+    "notesControls": "Original fixed reference quantities, unchanged production semantics; no reselection.",
+    "draftConfig": {
+      "path": "/tmp/osr-38-perf-reference-calibration-phased-1-draft-config.json",
+      "bytes": 609,
+      "sha256": "6faaaddc1bea0fdf914b11e10e72fb693d67f7371b9983b55735889237c8311f"
+    },
+    "newOutput": "/tmp/osr-38-perf-reference-calibration-phased-1"
+  },
+  "guards": "Original CV<=10%, timer>=100ticks atp95, zero/censoring/raw/source/artifact/sample/scalar/integrity/complete-plan guards unchanged. No numeric floor, adoption policy or candidate comparison until full conclusive calibration.",
+  "quietPhase": "All owned build/test/archive jobs complete before capture; no parallel heavy work. Existing capture metadata records observed power/load. No measured thermal isolation, cause or target stability claim.",
+  "stopAndOutcome": "Exactly one batch; any actual child/source/integrity failure stops it and retains raw. A complete exit0 is raw collection only; full quality must be evaluated afterwards. An inconclusive result does not authorize an unchanged retry, discarding observations, raising floors or declaring AC4 complete.",
+  "excluded": "No stopped additional block, new runtime diagnostic/control suite, candidate timing, registry publication, CI, review, merge or closure.",
+  "executionStatusAtDecision": "Not started; active config will be created separately after configuration crosscheck."
+}
