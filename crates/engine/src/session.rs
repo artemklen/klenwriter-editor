@@ -4,11 +4,19 @@
 use editor_core::document::Mark;
 use editor_core::positions::{Position, Selection};
 use editor_core::profile::{AdmissionMode, BindingError, FrozenProfile, ProfileBinding};
-use editor_core::transaction::{WorkLimits, WorkMeter};
+use editor_core::transaction::{WorkLimits, WorkMeter, WorkPhase, WorkTrace};
 
+use crate::events::{
+    EventBatch, EventCursor, EventError, EventKind, EventLimits, EventOutbox, EventPayload,
+    EventReadLimits, EventStatus, ProtectedCursor, ProtectionStart, SessionStamp, StateChange,
+    TerminalKind,
+};
 use crate::history::{HistoryError, HistoryStore, HistorySummary};
 use crate::identity::{NodeId, SessionKey};
 use crate::mapping::{MapError, MapResult};
+use crate::snapshot::{
+    MAX_SNAPSHOT_BYTES, SaveAcknowledgement, SavedBaseline, Snapshot, SnapshotError,
+};
 use crate::transaction::{CommitJournal, JournalEntrySummary, JournalSummary};
 use crate::tree::{AddressTree, TreeDraft, TreeError, TreeNode};
 
@@ -44,6 +52,33 @@ pub enum StateError {
     CounterExhausted,
 }
 
+/// A shallow borrowed render read. Children remain IDs; no persisted document
+/// or descendant payload is constructed merely to inspect this block.
+#[derive(Debug)]
+pub struct NodeRead<'a> {
+    pub stamp: SessionStamp,
+    pub changed_revision: u64,
+    pub stats: NodeStats,
+    pub node: &'a TreeNode,
+}
+
+/// Generic exact subtree totals; no profile-specific words or grapheme sum.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct NodeStats {
+    pub authored_nodes: usize,
+    pub text_utf8: usize,
+    pub text_utf16: usize,
+    pub height: usize,
+}
+
+struct StateProjection<'a> {
+    stamp: SessionStamp,
+    selection: Option<Selection<NodeId>>,
+    stored_marks: Option<&'a [Mark]>,
+    history: HistorySummary,
+    dirty: bool,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SessionError<E> {
     Binding(BindingError),
@@ -51,6 +86,20 @@ pub enum SessionError<E> {
     State(StateError),
     Tree(TreeError),
     History(HistoryError),
+    Events(EventError),
+    Snapshot(SnapshotError),
+}
+
+impl<E> From<EventError> for SessionError<E> {
+    fn from(error: EventError) -> Self {
+        Self::Events(error)
+    }
+}
+
+impl<E> From<SnapshotError> for SessionError<E> {
+    fn from(error: SnapshotError) -> Self {
+        Self::Snapshot(error)
+    }
 }
 
 impl<E> From<StateError> for SessionError<E> {
@@ -81,6 +130,10 @@ pub struct Session<P: FrozenProfile> {
     journal: CommitJournal,
     history: HistoryStore,
     dirty: bool,
+    cache: P::Cache<NodeId>,
+    events: EventOutbox,
+    event_limits: EventLimits,
+    baseline: SavedBaseline,
 }
 
 impl<P: FrozenProfile> Session<P> {
@@ -90,6 +143,24 @@ impl<P: FrozenProfile> Session<P> {
         input: &[u8],
         mode: AdmissionMode,
         access: AccessMode,
+    ) -> Result<Self, SessionError<P::Error>> {
+        Self::open_with_event_limits(
+            profile,
+            requested,
+            input,
+            mode,
+            access,
+            EventLimits::default(),
+        )
+    }
+
+    pub fn open_with_event_limits(
+        profile: P,
+        requested: &ProfileBinding,
+        input: &[u8],
+        mode: AdmissionMode,
+        access: AccessMode,
+        event_limits: EventLimits,
     ) -> Result<Self, SessionError<P::Error>> {
         profile
             .binding()
@@ -101,6 +172,10 @@ impl<P: FrozenProfile> Session<P> {
         let context = profile.context(&admitted);
         let key = SessionKey::allocate().ok_or(StateError::CounterExhausted)?;
         let tree = AddressTree::from_document(key, profile.to_document(&admitted))?;
+        let baseline = SavedBaseline::admitted(profile.canonical(&admitted))?;
+        let cache = profile
+            .seed_cache(&admitted, &tree, &mut WorkMeter::new(WorkLimits::default()))
+            .map_err(SessionError::Profile)?;
         Ok(Self {
             binding: requested.clone(),
             profile,
@@ -115,6 +190,10 @@ impl<P: FrozenProfile> Session<P> {
             journal: CommitJournal::default(),
             history: HistoryStore::default(),
             dirty: false,
+            cache,
+            events: EventOutbox::new(key),
+            event_limits: event_limits.effective(),
+            baseline,
         })
     }
 
@@ -141,7 +220,98 @@ impl<P: FrozenProfile> Session<P> {
         &self.binding
     }
 
-    /// Conservative local dirty state. Save acknowledgement/baselines are OSR-37.
+    pub fn stamp(&self) -> SessionStamp {
+        SessionStamp {
+            session: self.key,
+            revision: self.revision,
+            selection_epoch: self.selection_epoch,
+            history_epoch: self.history.summary().epoch,
+        }
+    }
+
+    /// Delivery/lifecycle metadata remains inspectable after close/poison.
+    pub fn event_status(&self, key: SessionKey) -> Result<EventStatus, SessionError<P::Error>> {
+        if key != self.key {
+            return Err(StateError::StaleSession.into());
+        }
+        Ok(self.events.status())
+    }
+
+    pub fn events_after(
+        &self,
+        key: SessionKey,
+        cursor: EventCursor,
+        limits: EventReadLimits,
+        work_limits: WorkLimits,
+    ) -> Result<EventBatch<'_>, SessionError<P::Error>> {
+        self.guard(key, None)?;
+        Ok(self
+            .events
+            .read_after(cursor, limits, &mut WorkMeter::new(work_limits))?)
+    }
+
+    pub fn protect_events(
+        &mut self,
+        key: SessionKey,
+        start: ProtectionStart,
+    ) -> Result<ProtectedCursor, SessionError<P::Error>> {
+        self.guard(key, None)?;
+        Ok(self.events.protect(start)?)
+    }
+
+    pub fn acknowledge_events(
+        &mut self,
+        key: SessionKey,
+        protection: ProtectedCursor,
+        cursor: EventCursor,
+    ) -> Result<bool, SessionError<P::Error>> {
+        self.guard(key, None)?;
+        Ok(self.events.acknowledge(protection, cursor)?)
+    }
+
+    pub fn release_events(
+        &mut self,
+        key: SessionKey,
+        protection: ProtectedCursor,
+    ) -> Result<bool, SessionError<P::Error>> {
+        self.guard(key, None)?;
+        Ok(self.events.release(protection)?)
+    }
+
+    pub fn saved_revision(&self) -> u64 {
+        self.baseline.revision
+    }
+
+    fn state_event(
+        &self,
+        after: StateProjection<'_>,
+        change: StateChange,
+        work: &mut WorkMeter,
+    ) -> Result<Option<crate::events::EventPlan>, EventError> {
+        let stored_marks_before =
+            crate::events::copy_event_marks(self.stored_marks.as_deref(), work)?;
+        let stored_marks_after = crate::events::copy_event_marks(after.stored_marks, work)?;
+        self.events.prepare_append(
+            Some(EventPayload {
+                before: self.stamp(),
+                after: after.stamp,
+                selection_before: self.selection,
+                selection_after: after.selection,
+                stored_marks_before,
+                stored_marks_after,
+                dirty_before: self.dirty,
+                dirty_after: after.dirty,
+                history: after.history,
+                journal: self.journal.summary(self.revision),
+                kind: EventKind::State(change),
+            }),
+            self.event_limits,
+            work,
+        )
+    }
+
+    /// Conservative local dirty state. Exact equality is checked only at an
+    /// explicit export/save boundary, never inferred from undo depth.
     pub fn dirty(&self) -> bool {
         self.dirty
     }
@@ -174,8 +344,37 @@ impl<P: FrozenProfile> Session<P> {
         let mut work = WorkMeter::new(limits);
         let plan = self.history.plan_barrier(&mut work)?;
         let changed = plan.is_some();
+        let next_history = plan
+            .as_ref()
+            .map_or_else(|| self.history.summary(), |plan| plan.summary());
+        let event = if changed {
+            self.state_event(
+                StateProjection {
+                    stamp: SessionStamp {
+                        history_epoch: next_history.epoch,
+                        ..self.stamp()
+                    },
+                    selection: self.selection,
+                    stored_marks: self.stored_marks.as_deref(),
+                    history: next_history,
+                    dirty: self.dirty,
+                },
+                StateChange {
+                    selection_changed: false,
+                    stored_marks_changed: false,
+                    history_changed: true,
+                    baseline_changed: false,
+                },
+                &mut work,
+            )?
+        } else {
+            None
+        };
         if let Some(plan) = plan {
             self.history.publish(plan);
+        }
+        if let Some(event) = event {
+            self.events.publish(event);
         }
         Ok(history_dispatch::HistoryBoundaryEvent {
             changed,
@@ -227,6 +426,27 @@ impl<P: FrozenProfile> Session<P> {
         Ok(self.tree.node(id)?)
     }
 
+    pub fn node_at(
+        &self,
+        key: SessionKey,
+        revision: u64,
+        id: NodeId,
+    ) -> Result<NodeRead<'_>, SessionError<P::Error>> {
+        self.guard(key, Some(revision))?;
+        let metrics = self.tree.metrics(id)?;
+        Ok(NodeRead {
+            stamp: self.stamp(),
+            changed_revision: self.tree.changed_revision(id)?,
+            stats: NodeStats {
+                authored_nodes: metrics.authored_nodes,
+                text_utf8: metrics.text_utf8,
+                text_utf16: metrics.text_utf16,
+                height: metrics.height,
+            },
+            node: self.tree.node(id)?,
+        })
+    }
+
     pub fn validate_position(
         &self,
         key: SessionKey,
@@ -262,15 +482,42 @@ impl<P: FrozenProfile> Session<P> {
             .selection_epoch
             .checked_add(1)
             .ok_or(StateError::CounterExhausted)?;
+        let mut work = WorkMeter::new(WorkLimits::default());
         let history = self
             .history
-            .plan_barrier(&mut WorkMeter::new(WorkLimits::default()))
+            .plan_barrier(&mut work)
             .map_err(SessionError::History)?;
+        let summary = history
+            .as_ref()
+            .map_or_else(|| self.history.summary(), |plan| plan.summary());
+        let event = self.state_event(
+            StateProjection {
+                stamp: SessionStamp {
+                    selection_epoch: epoch,
+                    history_epoch: summary.epoch,
+                    ..self.stamp()
+                },
+                selection: Some(selection),
+                stored_marks: None,
+                history: summary,
+                dirty: self.dirty,
+            },
+            StateChange {
+                selection_changed: true,
+                stored_marks_changed: self.stored_marks.is_some(),
+                history_changed: history.is_some(),
+                baseline_changed: false,
+            },
+            &mut work,
+        )?;
         self.selection = Some(selection);
         self.stored_marks = None;
         self.selection_epoch = epoch;
         if let Some(plan) = history {
             self.history.publish(plan);
+        }
+        if let Some(event) = event {
+            self.events.publish(event);
         }
         Ok(())
     }
@@ -297,12 +544,149 @@ impl<P: FrozenProfile> Session<P> {
         key: SessionKey,
         revision: u64,
     ) -> Result<Vec<u8>, SessionError<P::Error>> {
+        self.export_with(key, revision, |bytes, _| bytes.to_vec())
+    }
+
+    fn export_with<R>(
+        &self,
+        key: SessionKey,
+        revision: u64,
+        output: impl FnOnce(&[u8], WorkTrace) -> R,
+    ) -> Result<R, SessionError<P::Error>> {
         self.guard(key, Some(revision))?;
+        let mut work = WorkMeter::new(WorkLimits::default());
+        let document = self.tree.document_with_work(&mut work)?;
         let admitted = self
             .profile
-            .admit_snapshot(&self.context, &self.tree.document())
+            .admit_snapshot(&self.context, &document)
             .map_err(SessionError::Profile)?;
-        Ok(self.profile.canonical(&admitted).to_vec())
+        let bytes = self.profile.canonical(&admitted);
+        editor_core::limits::check(
+            "snapshot_bytes",
+            MAX_SNAPSHOT_BYTES as u64,
+            bytes.len() as u64,
+        )
+        .map_err(|error| SessionError::Snapshot(SnapshotError::Limit(error)))?;
+        work.charge_bytes(bytes.len() as u64)
+            .map_err(|error| SessionError::Snapshot(SnapshotError::Limit(error)))?;
+        work.note_phase(WorkPhase::Export, 0, bytes.len() as u64);
+        Ok(output(bytes, work.trace()))
+    }
+
+    pub fn export_snapshot_receipt(
+        &self,
+        key: SessionKey,
+        revision: u64,
+    ) -> Result<Snapshot, SessionError<P::Error>> {
+        self.export_with(key, revision, |bytes, trace| {
+            Snapshot::new(
+                self.stamp(),
+                self.events.status().head,
+                self.binding.clone(),
+                std::sync::Arc::from(bytes),
+                self.baseline.equals(bytes),
+                trace,
+            )
+        })
+    }
+
+    /// The host reports that these exact exported bytes were saved. A response
+    /// for r never clears dirty r+1, even when that later revision is an undo.
+    pub fn acknowledge_snapshot(
+        &mut self,
+        snapshot: &Snapshot,
+    ) -> Result<SaveAcknowledgement, SessionError<P::Error>> {
+        self.guard(snapshot.stamp().session, None)?;
+        if snapshot.binding() != &self.binding {
+            return Err(SnapshotError::BindingMismatch.into());
+        }
+        let revision = snapshot.stamp().revision;
+        if revision > self.revision {
+            return Err(SnapshotError::FutureRevision.into());
+        }
+        if revision < self.baseline.revision {
+            return Ok(SaveAcknowledgement::IgnoredOlder {
+                saved_revision: self.baseline.revision,
+                dirty: self.dirty,
+            });
+        }
+        if revision == self.baseline.revision {
+            if !self.baseline.equals(snapshot.document()) {
+                return Err(SnapshotError::InconsistentReceipt.into());
+            }
+            return Ok(SaveAcknowledgement::Unchanged {
+                saved_revision: revision,
+                dirty: self.dirty,
+            });
+        }
+        let dirty = revision != self.revision;
+        let mut work = WorkMeter::new(WorkLimits::default());
+        let event = self.state_event(
+            StateProjection {
+                stamp: self.stamp(),
+                selection: self.selection,
+                stored_marks: self.stored_marks.as_deref(),
+                history: self.history.summary(),
+                dirty,
+            },
+            StateChange {
+                selection_changed: false,
+                stored_marks_changed: false,
+                history_changed: false,
+                baseline_changed: true,
+            },
+            &mut work,
+        )?;
+        let baseline = SavedBaseline {
+            revision,
+            document: snapshot.shared_document(),
+        };
+        self.baseline = baseline;
+        self.dirty = dirty;
+        if let Some(event) = event {
+            self.events.publish(event);
+        }
+        Ok(SaveAcknowledgement::Updated {
+            saved_revision: revision,
+            dirty,
+        })
+    }
+
+    /// Explicit current-snapshot equality can recognize returning to saved
+    /// content. The document revision and known saved revision stay monotonic.
+    pub fn reconcile_saved_snapshot(
+        &mut self,
+        snapshot: &Snapshot,
+    ) -> Result<bool, SessionError<P::Error>> {
+        self.guard(snapshot.stamp().session, Some(snapshot.stamp().revision))?;
+        if snapshot.binding() != &self.binding {
+            return Err(SnapshotError::BindingMismatch.into());
+        }
+        if !self.dirty || !self.baseline.equals(snapshot.document()) {
+            return Ok(false);
+        }
+        let mut work = WorkMeter::new(WorkLimits::default());
+        let event = self.state_event(
+            StateProjection {
+                stamp: self.stamp(),
+                selection: self.selection,
+                stored_marks: self.stored_marks.as_deref(),
+                history: self.history.summary(),
+                dirty: false,
+            },
+            StateChange {
+                selection_changed: false,
+                stored_marks_changed: false,
+                history_changed: false,
+                baseline_changed: true,
+            },
+            &mut work,
+        )?;
+        self.dirty = false;
+        if let Some(event) = event {
+            self.events.publish(event);
+        }
+        Ok(true)
     }
 
     /// Complete new admission is prepared before replacing any current state.
@@ -329,6 +713,12 @@ impl<P: FrozenProfile> Session<P> {
             .map_err(SessionError::Profile)?;
         let context = self.profile.context(&admitted);
         let tree = AddressTree::from_document(next_key, self.profile.to_document(&admitted))?;
+        let baseline = SavedBaseline::admitted(self.profile.canonical(&admitted))?;
+        let cache = self
+            .profile
+            .seed_cache(&admitted, &tree, &mut WorkMeter::new(WorkLimits::default()))
+            .map_err(SessionError::Profile)?;
+        let events = EventOutbox::new(next_key);
         self.context = context;
         self.key = next_key;
         self.tree = tree;
@@ -340,6 +730,9 @@ impl<P: FrozenProfile> Session<P> {
         self.journal = CommitJournal::default();
         self.history = HistoryStore::default();
         self.dirty = false;
+        self.baseline = baseline;
+        self.cache = cache;
+        self.events = events;
         Ok(next_key)
     }
 
@@ -347,6 +740,7 @@ impl<P: FrozenProfile> Session<P> {
         self.guard(key, None)?;
         self.state = SessionState::Closed;
         self.stored_marks = None;
+        self.events.terminate(TerminalKind::Closed);
         Ok(())
     }
 
@@ -355,6 +749,7 @@ impl<P: FrozenProfile> Session<P> {
     pub fn poison(&mut self, key: SessionKey) -> Result<(), SessionError<P::Error>> {
         self.guard(key, None)?;
         self.state = SessionState::Poisoned;
+        self.events.terminate(TerminalKind::Poisoned);
         Ok(())
     }
 }
@@ -362,6 +757,10 @@ impl<P: FrozenProfile> Session<P> {
 #[cfg(test)]
 #[path = "history_profile_tests.rs"]
 mod history_profile_tests;
+
+#[cfg(test)]
+#[path = "delta_tests.rs"]
+mod delta_tests;
 
 #[cfg(test)]
 mod tests {
@@ -396,6 +795,7 @@ mod tests {
         type Context = ();
         type Admitted = AdmittedFixture;
         type Error = &'static str;
+        type Cache<I: Copy + Eq + Ord> = ();
         fn binding(&self) -> &ProfileBinding {
             &self.binding
         }

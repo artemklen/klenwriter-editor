@@ -5,6 +5,7 @@ use editor_core::document::{Attribute, Attributes, Document, Mark, Node, Primiti
 use editor_core::positions::{Affinity, Position, Selection, Utf16Offset};
 use editor_core::profile::{AdmissionMode, FrozenProfile};
 use editor_core::transaction::Operation;
+use editor_engine::events::EventLimits;
 use editor_engine::mapping::MapResult;
 use editor_engine::{
     AccessMode, CommitEvent, DispatchOutcome, NodeId, NodeRef, SelectionUpdate, Session,
@@ -35,14 +36,21 @@ fn paragraph(text: &str) -> Value {
     json!({"type":"paragraph","content":[{"type":"text","text":text}]})
 }
 fn open(value: &Value) -> Session<KwdjProfile<'static>> {
+    open_with_event_limits(value, EventLimits::default())
+}
+fn open_with_event_limits(
+    value: &Value,
+    event_limits: EventLimits,
+) -> Session<KwdjProfile<'static>> {
     let p = KwdjProfile::new(&IDENTITIES, Limits::default(), AdmissionBudget::default());
     let b = p.binding().clone();
-    Session::open(
+    Session::open_with_event_limits(
         p,
         &b,
         &serde_json::to_vec(value).unwrap(),
         AdmissionMode::Strict,
         AccessMode::Editable,
+        event_limits,
     )
     .unwrap()
 }
@@ -226,8 +234,9 @@ fn attributes_marks_spans() -> Value {
         "repeated_metadata":repeated_metadata_commits()})
 }
 
-/// A fixed-size live document, one chronological entry and one action unit must
-/// have stable costs after the two explicit initial allocation/ownership states.
+/// A fixed-size live document, one chronological entry, one action unit and one
+/// event record must have stable costs after two initial ownership states.
+/// Default outbox warmup/eviction is exercised by the dedicated delta/event lane.
 /// Compare costs within each target; only portable facts enter native/WASM JSON.
 fn repeated_metadata_commits() -> Value {
     const COMMITS: u64 = 512;
@@ -235,7 +244,13 @@ fn repeated_metadata_commits() -> Value {
     let value = wire(json!([{
         "type":"heading","attrs":{"level":1},"content":[{"type":"text","text":"x"}]
     }]));
-    let mut s = open(&value);
+    let mut s = open_with_event_limits(
+        &value,
+        EventLimits {
+            records: 1,
+            ..EventLimits::default()
+        },
+    );
     let k = s.key();
     let heading = children(&s, root(&s))[0];
     let text = leaf(&s);
@@ -308,7 +323,7 @@ fn repeated_metadata_commits() -> Value {
     assert_eq!(s.export_snapshot(k, s.revision()).unwrap(), initial);
     json!({"commits":COMMITS,"canonical_bytes":159,"work_cap_bytes":BYTE_CAP,
         "journal_entry_limit":1,"canonical_restored":true,"all_changed":true,
-        "history_action_limit":1,"allocation_warmup_commits":2,"steady_commits":510,
+        "history_action_limit":1,"event_record_limit":1,"allocation_warmup_commits":2,"steady_commits":510,
         "steady_work_and_retained_bytes_stable":true,"identities_preserved":true})
 }
 

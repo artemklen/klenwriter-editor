@@ -5,6 +5,7 @@
 pub const PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub mod admission;
+pub mod cache;
 pub mod candidate;
 pub mod commands;
 pub mod document;

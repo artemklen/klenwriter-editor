@@ -59,3 +59,7 @@ crate-type = ["cdylib"]
 [[example]]
 name = "history_probe"
 crate-type = ["cdylib"]
+
+[[example]]
+name = "delta_probe"
+crate-type = ["cdylib"]

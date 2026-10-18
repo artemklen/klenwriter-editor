@@ -8,7 +8,10 @@
 
 use std::fmt;
 
+use crate::cache::CandidateCache;
+use crate::candidate::CandidateRead;
 use crate::document::Document;
+use crate::transaction::WorkMeter;
 
 pub const MAX_PROFILE_IDENTIFIER_BYTES: usize = 128;
 pub const MAX_PROFILE_VERSION_BYTES: usize = 64;
@@ -306,6 +309,7 @@ pub trait FrozenProfile {
     type Context: Clone + Eq;
     type Admitted;
     type Error;
+    type Cache<I: Copy + Eq + Ord>: CandidateCache;
 
     fn binding(&self) -> &ProfileBinding;
     fn admit_bytes(
@@ -322,6 +326,17 @@ pub trait FrozenProfile {
         document: &Document,
     ) -> Result<Self::Admitted, Self::Error>;
     fn canonical<'a>(&self, admitted: &'a Self::Admitted) -> &'a [u8];
+
+    /// Admission/remount may construct bounded profile proof state once.
+    /// Opaque profiles use the unit cache and retain the full validation path.
+    fn seed_cache<V: CandidateRead>(
+        &self,
+        _admitted: &Self::Admitted,
+        _view: &V,
+        _work: &mut WorkMeter,
+    ) -> Result<Self::Cache<V::Id>, Self::Error> {
+        Ok(Self::Cache::<V::Id>::default())
+    }
 }
 
 #[cfg(test)]

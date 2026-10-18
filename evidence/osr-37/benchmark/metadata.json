@@ -1,0 +1,152 @@
+{
+  "startedAt": "2026-10-18T08:33:40.601Z",
+  "completedAt": "2026-10-18T08:34:12.168Z",
+  "processLaunches": [
+    {
+      "round": 0,
+      "path": "artifacts/delta-benchmark/raw-round-0.json",
+      "sha256": "721a5202cf430ea3f12a9389f2a3d5da43d857112b9c4c14e6ae0091f554966f",
+      "startedAt": "2026-10-18T08:33:40.602Z",
+      "completedAt": "2026-10-18T08:33:47.421Z"
+    },
+    {
+      "round": 1,
+      "path": "artifacts/delta-benchmark/raw-round-1.json",
+      "sha256": "8b70e17159be2f629122039c0fee6df37644a819b6adbe0095640d2b6b0d45d3",
+      "startedAt": "2026-10-18T08:33:47.421Z",
+      "completedAt": "2026-10-18T08:33:53.636Z"
+    },
+    {
+      "round": 2,
+      "path": "artifacts/delta-benchmark/raw-round-2.json",
+      "sha256": "b447d12f53abf6acf249fe1e441364e28bf0f9edbe8430c9097d3843cb5d2e44",
+      "startedAt": "2026-10-18T08:33:53.636Z",
+      "completedAt": "2026-10-18T08:33:59.771Z"
+    },
+    {
+      "round": 3,
+      "path": "artifacts/delta-benchmark/raw-round-3.json",
+      "sha256": "ad0a3e676315ae4f7ad83546f338aca67d0e79e4eb1a09230f0fe8120d941703",
+      "startedAt": "2026-10-18T08:33:59.771Z",
+      "completedAt": "2026-10-18T08:34:05.983Z"
+    },
+    {
+      "round": 4,
+      "path": "artifacts/delta-benchmark/raw-round-4.json",
+      "sha256": "6a4b70da6bf44723f3750c2763a96c0d13a2d5f99714e2dbcf79269fac047b58",
+      "startedAt": "2026-10-18T08:34:05.983Z",
+      "completedAt": "2026-10-18T08:34:12.161Z"
+    }
+  ],
+  "platform": "darwin",
+  "release": "27.0.0",
+  "arch": "arm64",
+  "cpus": [
+    {
+      "model": "Apple M1",
+      "speed": 2400
+    },
+    {
+      "model": "Apple M1",
+      "speed": 2400
+    },
+    {
+      "model": "Apple M1",
+      "speed": 2400
+    },
+    {
+      "model": "Apple M1",
+      "speed": 2400
+    },
+    {
+      "model": "Apple M1",
+      "speed": 2400
+    },
+    {
+      "model": "Apple M1",
+      "speed": 2400
+    },
+    {
+      "model": "Apple M1",
+      "speed": 2400
+    },
+    {
+      "model": "Apple M1",
+      "speed": 2400
+    }
+  ],
+  "totalMemory": 17179869184,
+  "loadAverage": [
+    3.07568359375,
+    3.06494140625,
+    2.79248046875
+  ],
+  "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+  "node": "v26.10.0",
+  "sourceHashes": {
+    "Cargo.lock": "6c4d917f290c330312b17fcd88c6207cc3aa243c30fc420793eb07d16ce6aaa2",
+    "Cargo.toml": "63cfcb06140702c837b72b77f962a10d2c9ea7a7d2845a6797a2072fd6daec84",
+    "crates/core/src/admission.rs": "bab6926eb8be7010a2a7440e91ba668ec951757ae94c73c0c6d9decb35e87639",
+    "crates/core/src/cache.rs": "ef1ad29e5206fa8131511216ff3dbbadaf658c69d9f2f5d6880f8c8ef8ad7245",
+    "crates/core/src/candidate.rs": "d3780e54117837a626a4930bc24022be1262afbcea95ccf0865434d4c47f51ff",
+    "crates/core/src/commands.rs": "a9d552aa45cd6220d1d457b3414236502c0fb314b040887c83e53608a5007558",
+    "crates/core/src/document.rs": "d8e7f3cd3860da9db9b0842899ed0b4e1df623437d8aee485dfbb11606518651",
+    "crates/core/src/history.rs": "5bc12b4773a7285f1f28080e63fb92e076600dfcfedc7f836930a1028c37bd49",
+    "crates/core/src/json.rs": "ed6e39e6d42e6a21e3f3dfc022e90bbb03833f42bc22ae36a26e89700208507b",
+    "crates/core/src/lib.rs": "f760fa6fa066cee2c921c8a8defc174d0c8e1d2c48b79d7ce660b1eefc61fb5a",
+    "crates/core/src/limits.rs": "8c16687b2c071d493fded114b892a00149e6af3b65260673f7d50e1cacbb340d",
+    "crates/core/src/positions.rs": "94ce04c115a062a6b203c2e124afcaa295ad6d9b26a4c0aaaa7bf155fcac50ff",
+    "crates/core/src/profile.rs": "1118c0164410a3471ea554e6f86276a641d6facdd0890ebf7b716fec805b29d5",
+    "crates/core/src/transaction.rs": "37ecc69684c532b90386a04af294d35a7e232bf3b11eeb2a5b6c911b3eee815f",
+    "crates/engine/src/command_tests.rs": "9c05b5de4cd69c528505465ee51328438c317cf562510930cbe20c6d52b9c0cd",
+    "crates/engine/src/commands.rs": "e30ad35a141f4c5864f5c66878e68a773bec10c3c688379fc45523d82954abe2",
+    "crates/engine/src/delta_tests.rs": "68d508b9229c2b5874298f9bc84d2c0283041d1c50359ab4957282123ffa55cf",
+    "crates/engine/src/dispatch.rs": "493a390af0ba25832e0be378a176d29f61ebe5cb47d6c81ca434f71777708c3a",
+    "crates/engine/src/events.rs": "94f19558164d2c49e9aac56c9f99bd42bd5f13cb29b083aad3dbad9580c6def6",
+    "crates/engine/src/eventtests.rs": "26dbdd0628016961a379e520e16d328cf75f4fca231c0cfa1b7d80f9b36befe0",
+    "crates/engine/src/grouping.rs": "74768c0057ed06622deab548f1820724bb6c3db8a260bd49196f30a68a0c0c69",
+    "crates/engine/src/history.rs": "43a28d7fc3e48138d71f4e0cb2889a572fa25dc545b39e6a0e793ae6d610382d",
+    "crates/engine/src/history_dispatch.rs": "0c483ac67dabe1ddeb60908a091d082ae33b36dec3e3ed10eb7855523e7120c6",
+    "crates/engine/src/history_profile_tests.rs": "f75c8f2a58cbf7b09e1fe7f770c3bd2e90ed7f2e8d57b22ca17e7aa72646acb4",
+    "crates/engine/src/history_tests.rs": "a131e774f1327c32773a6ec13c8f396a0563ea15849b6b3a9dcea7d079643f8d",
+    "crates/engine/src/identity.rs": "4fb8834799e7a9f0e634b3bcc347893abd681406b8c57c52e80724df0275b921",
+    "crates/engine/src/lib.rs": "023efe26ab4908414c8030ef6809a4dd40e7fc441a13b73d2af39933cabcfeed",
+    "crates/engine/src/mapping.rs": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54",
+    "crates/engine/src/session.rs": "966c50828dec6928f87f50d962d9cbe2404866917b0736ea17c6db767e5c0da4",
+    "crates/engine/src/snapshot.rs": "da5ef8366b1a424e4cb8055288ba33d230f7ae673b1196bf375bd4d0620691ab",
+    "crates/engine/src/transaction.rs": "182330b64926bc4a0f2a4ddbfd5db6337f1884728f6654e2e8176d2e80834cd9",
+    "crates/engine/src/transaction_tests.rs": "7bbe09699b903fec0f89a6779887c1d6b17550e04e88a1205d8a42fa079552ea",
+    "crates/engine/src/tree.rs": "d1bc2205af12063d4b3b6386f0198830d321ba35b8f2a1d4ae4962d075caedda",
+    "crates/engine/src/tree_impact.rs": "9ebf7c53e8c11eee7dc144434549d4f9be632913e607bd78fa4035e322e08ec6",
+    "crates/kwdj/src/admission.rs": "9bc3d3c282e91a40ab86cfedc582b17748fcb671d7b38e0ca63c7a4a78a40991",
+    "crates/kwdj/src/candidate_cache.rs": "63ab55cd50f44ba9856d7472114bc72f281a5ee5a08bdd226a30e93c1f189610",
+    "crates/kwdj/src/candidate_cache_tests.rs": "6743a30d64ba06a62978b973a63cd76b1f08a3aa60c6a107645ac2bbfb99e695",
+    "crates/kwdj/src/candidate_validate.rs": "a6f35c8aa1b795efa9256a5ca5233d1a7d266d7b062590b64c77fcd189e6cba1",
+    "crates/kwdj/src/commands/block.rs": "901da02897beaaaf904b0421f01740e8d08723e87ef91b972e184948c0719c29",
+    "crates/kwdj/src/commands/inline.rs": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394",
+    "crates/kwdj/src/commands/mod.rs": "8e74902a6d1fd48dc8b490270569fc9aabf026f1f81ace6cb1d17f3af6681ae2",
+    "crates/kwdj/src/core_bridge.rs": "6546cb233eacfe73a1231ea395b926f4283b29533cc0ebfed6c418b7e5cf3da7",
+    "crates/kwdj/src/edit_normalize.rs": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a",
+    "crates/kwdj/src/lib.rs": "014a8ed5b85e1d379ddba819fb1ea6793f3e51231c83bd77e4ad34ba07d6e96f",
+    "crates/kwdj/src/model.rs": "5162a1f19c899922a032afcecc3227f65c19f05a530d1ba6a178f11e6cf635ce",
+    "crates/kwdj/src/normalize.rs": "9da4b8d258023dbd9076f8807a86d7a8db45573aea0e9bb56f1a405c0f97690f",
+    "crates/kwdj/src/project.rs": "fa5924ae5708f3b824abcfd5cecc0feedea4146c77da2684649fb20af6ec2aee",
+    "crates/kwdj/src/session_profile.rs": "c8f5dcd1c5e8c2c9768470a247e7a060df909c0002cbedc6e1135e54024fa9e4",
+    "crates/kwdj/src/validate.rs": "9824aeb6c05aeb5eff99af84d3c711c87eb728efa53181c1834d39354221ceec",
+    "crates/kwdj/src/wire_view.rs": "351fa1b94b1c3af1d974e9471ee04a164b6ec11d891905f5a167f16d5f9227d2",
+    "crates/wasm/Cargo.toml": "d3bd0b7332ffe2a174f0797fdc0fc1f89c95996ef4d7d520b8a71feaa61d2577",
+    "crates/wasm/examples/delta_native.rs": "2cfcd778b33ae26ee04611a9ad9fb56f3c4998e1a1f5074dcf12e6d906430abd",
+    "crates/wasm/examples/support/delta_benchmark.rs": "07df48af2f7c665fba15bd069d53e74893c55a7b9c49d7e67bbfbe79878ea848",
+    "crates/wasm/examples/support/delta_literals.json": "837ffb100983761e6c72f1b933441ef15d6547b3c8f9a9658d0bc961ce8d87f6",
+    "crates/wasm/examples/support/delta_observer.rs": "8351e59a8445e18d4ded17a4c4da71793c5010b4157e1378daa324ce10481c78",
+    "crates/wasm/examples/support/delta_series.rs": "b27e60bedce1088c1ea0c743a00fa10b9371165b2aa5971839378f8028387a17",
+    "docs/m0/performance-protocol.md": "c29b8a374bb107d38d5563819e37475eab06cbb2db97954f986789cba21a7143",
+    "evidence/osr-37/execution-contract.md": "01e78e45943301f834f15c02a9d44753fe9744174853fe3ec9ed538b66ce27a2",
+    "rust-toolchain.toml": "8426022dcf3cbd6b106cda60c0aa89ad194a12d2a0931b0e8f580d4f0f3c5fa5",
+    "scripts/benchmark-deltas.mjs": "736ecb6e7ffc597421b6185e570ab08a8afa86ee9a3dbe29274511185f8a73cf"
+  },
+  "binarySha256": "0d8bc00c3a8757dc68dd6b7090b8165c5ca3aa055482d937ba86d48e8a651642",
+  "rawSha256": "4b1ce3d659ae105f47e42f6b74eb96d38ddea854d4d3deec6d08fd32e0472501",
+  "timerResolution": "Not independently calibrated; all nanosecond samples and zero intervals retained.",
+  "scope": "Five separate native process launches; actual dispatch/profile validation only; session construction and64warmups excluded. Shared workstation thermals/power/load uncontrolled. Not an input-to-paint/RSS/SLA or prechange-source claim."
+}

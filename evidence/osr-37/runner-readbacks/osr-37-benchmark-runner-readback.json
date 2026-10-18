@@ -1,0 +1,14 @@
+{
+  "command": "npm run perf:deltas > /tmp/osr-37-deltas-benchmark-first.log 2>&1",
+  "workdir": "/Users/artem/projects/klenwriter-editor",
+  "tool": "write_stdin",
+  "session_id": 50922,
+  "result": {
+    "chunk_id": "ac9027",
+    "wall_time_seconds": 0.000017459,
+    "exit_code": 0,
+    "original_token_count": 0,
+    "output": ""
+  },
+  "recordedAt": "2026-10-18 08:35:09 UTC"
+}

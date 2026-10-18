@@ -9,8 +9,9 @@ use editor_core::commands::{LocalRef, SelectionIntent};
 use editor_core::document::Mark;
 use editor_core::limits::LimitExceeded;
 use editor_core::positions::{Position, Selection};
-use editor_core::transaction::{Operation, ValidationStats, WorkLimits, WorkUsage};
+use editor_core::transaction::{Operation, ValidationStats, WorkLimits, WorkTrace, WorkUsage};
 
+use crate::events::EventError;
 use crate::history::{HistoryError, HistoryHint, HistoryLimits, ProjectedMap};
 use crate::identity::{NodeId, SessionKey};
 use crate::mapping::{MapError, MapResult, PositionMap};
@@ -105,6 +106,12 @@ pub enum TransactionError<E> {
     NormalizationLimit,
     JournalLimit,
     History(HistoryError),
+    Events(EventError),
+}
+impl<E> From<EventError> for TransactionError<E> {
+    fn from(error: EventError) -> Self {
+        Self::Events(error)
+    }
 }
 impl<E> From<TreeError> for TransactionError<E> {
     fn from(error: TreeError) -> Self {
@@ -168,6 +175,7 @@ pub(crate) fn error_code<E>(
         TransactionError::NormalizationLimit => "transaction.normalization_limit",
         TransactionError::JournalLimit => "transaction.journal_limit",
         TransactionError::History(error) => error.as_str(),
+        TransactionError::Events(error) => error.as_str(),
     }
 }
 
@@ -208,6 +216,8 @@ pub struct CommitEvent {
     pub validation: ValidationStats,
     pub work: WorkUsage,
     pub dirty: bool,
+    pub trace: WorkTrace,
+    pub notification: Arc<crate::events::SessionEvent>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -282,6 +292,18 @@ pub(crate) struct JournalPlan {
     evicted: u64,
 }
 impl CommitJournal {
+    pub(crate) fn projected_summary(&self, plan: &JournalPlan, before: u64) -> JournalSummary {
+        JournalSummary {
+            entries: self.entries.len() + 1 - plan.evict,
+            bytes: plan.bytes,
+            evicted: plan.evicted,
+            oldest_revision: self
+                .entries
+                .get(plan.evict)
+                .map_or(before, |entry| entry.map.before()),
+        }
+    }
+
     pub(crate) fn summary(&self, revision: u64) -> JournalSummary {
         JournalSummary {
             entries: self.entries.len(),

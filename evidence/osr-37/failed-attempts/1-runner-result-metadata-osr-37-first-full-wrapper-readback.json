@@ -1,0 +1,13 @@
+{
+  "issue": "OSR-37",
+  "session_id": 61383,
+  "origin": "Observed tool completion metadata retained in conversation summary; no original on-disk runner readback was captured",
+  "result": {
+    "chunk_id": "ca99f0",
+    "wall_time_seconds": 1.8542e-05,
+    "exit_code": 1,
+    "original_token_count": 97
+  },
+  "qualification": "Metadata transcribed from retained tool completion; full traceback is not reproduced. Nested npm exit was lost by the wrapper before serialization and remains unrecorded.",
+  "observedError": "TypeError: list indices must be integers or slices, not str, while indexing table['issue'] before persisting nested command exit"
+}

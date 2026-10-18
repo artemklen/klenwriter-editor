@@ -1,0 +1,694 @@
+{
+  "format": "klenwriter-editor-deltas-literals/1",
+  "status": "Independent input and expected values fixed before observer execution; never replace with runtime output.",
+  "root_rule": "Every real document change includes synthetic root in BOTH ancestor vectors; synthetic root is excluded authored upserts and root_order_changed remains separate.",
+  "id_roles": "Roles bind actual opaque IDs from explicit fixture/tree paths. Created copy roles bind final tree paths, not event ID outputs; freshness, disjointness and preserved original records are independently asserted. Role lists are lexically sorted; actual event ID arrays must be sorted unique before projection.",
+  "fixtures": {
+    "nested": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "prose",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "a"
+            }
+          ]
+        },
+        {
+          "type": "blockquote",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "b"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "c"
+            }
+          ]
+        }
+      ]
+    },
+    "simple": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "prose",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "a"
+            }
+          ]
+        }
+      ]
+    },
+    "styled": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "prose",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "a"
+            },
+            {
+              "type": "text",
+              "text": "b",
+              "marks": [
+                {
+                  "type": "strong"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "c"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "id": "D01",
+      "name": "nested raw text, old/new ancestor stamps",
+      "fixture": "nested",
+      "expected_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "a"
+              }
+            ]
+          },
+          {
+            "type": "blockquote",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "B"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "c"
+              }
+            ]
+          }
+        ]
+      },
+      "upserted": [
+        "tb"
+      ],
+      "removed": [],
+      "before": [
+        "pb",
+        "q",
+        "root"
+      ],
+      "after": [
+        "pb",
+        "q",
+        "root"
+      ],
+      "root_order_changed": false
+    },
+    {
+      "id": "D02",
+      "name": "move intact paragraph between parents",
+      "fixture": "nested",
+      "expected_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "blockquote",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "b"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "a"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "c"
+              }
+            ]
+          }
+        ]
+      },
+      "upserted": [
+        "a",
+        "q"
+      ],
+      "removed": [],
+      "before": [
+        "root"
+      ],
+      "after": [
+        "q",
+        "root"
+      ],
+      "root_order_changed": true
+    },
+    {
+      "id": "D03",
+      "name": "delete complete nested quote, root survives",
+      "fixture": "nested",
+      "expected_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "a"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "c"
+              }
+            ]
+          }
+        ]
+      },
+      "upserted": [],
+      "removed": [
+        "pb",
+        "q",
+        "tb"
+      ],
+      "before": [
+        "pb",
+        "q",
+        "root"
+      ],
+      "after": [
+        "root"
+      ],
+      "root_order_changed": true
+    },
+    {
+      "id": "D04",
+      "name": "precise CRLF normalization and composed map",
+      "fixture": "nested",
+      "expected_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "a"
+              }
+            ]
+          },
+          {
+            "type": "blockquote",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "B\n"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "c"
+              }
+            ]
+          }
+        ]
+      },
+      "upserted": [
+        "tb"
+      ],
+      "removed": [],
+      "before": [
+        "pb",
+        "q",
+        "root"
+      ],
+      "after": [
+        "pb",
+        "q",
+        "root"
+      ],
+      "root_order_changed": false,
+      "mapped_old_end_utf16": 2
+    },
+    {
+      "id": "D05",
+      "name": "mark removal joins three text IDs, tombstones exact",
+      "fixture": "styled",
+      "expected_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "abc"
+              }
+            ]
+          }
+        ]
+      },
+      "upserted": [
+        "a",
+        "ta"
+      ],
+      "removed": [
+        "tb",
+        "tc"
+      ],
+      "before": [
+        "a",
+        "root"
+      ],
+      "after": [
+        "a",
+        "root"
+      ],
+      "root_order_changed": false,
+      "mapped_old_end_utf16": 3
+    },
+    {
+      "id": "D06",
+      "name": "command duplicate complete nested subtree preserves originals",
+      "fixture": "nested",
+      "expected_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "a"
+              }
+            ]
+          },
+          {
+            "type": "blockquote",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "b"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "c"
+              }
+            ]
+          },
+          {
+            "type": "blockquote",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "b"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "upserted": [
+        "copy_p",
+        "copy_q",
+        "copy_t"
+      ],
+      "removed": [],
+      "before": [
+        "root"
+      ],
+      "after": [
+        "copy_p",
+        "copy_q",
+        "root"
+      ],
+      "root_order_changed": true
+    },
+    {
+      "id": "D07",
+      "name": "query, noop and invalid range have zero publications",
+      "fixture": "simple",
+      "expected_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "a"
+              }
+            ]
+          }
+        ]
+      },
+      "events": 0,
+      "revision": 0,
+      "reason": "position.out_of_bounds"
+    },
+    {
+      "id": "D08",
+      "name": "selection and collapsed strong override are state only",
+      "fixture": "simple",
+      "expected_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "a"
+              }
+            ]
+          }
+        ]
+      },
+      "events": 2,
+      "revision": 0,
+      "dirty": false,
+      "event_kinds": [
+        "state",
+        "state"
+      ]
+    },
+    {
+      "id": "D09",
+      "name": "typing barrier, undo and redo publish once",
+      "fixture": "simple",
+      "expected_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "ax"
+              }
+            ]
+          }
+        ]
+      },
+      "events": 5,
+      "revision": 3,
+      "event_kinds": [
+        "state",
+        "document",
+        "state",
+        "document",
+        "document"
+      ]
+    },
+    {
+      "id": "D10",
+      "name": "stale save, undo-to-equal and explicit reconciliation",
+      "fixture": "simple",
+      "expected_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "ax"
+              }
+            ]
+          }
+        ]
+      },
+      "events": 5,
+      "revision": 3,
+      "saved_revision": 1,
+      "dirty": false,
+      "event_kinds": [
+        "document",
+        "document",
+        "state",
+        "document",
+        "state"
+      ]
+    },
+    {
+      "id": "D11",
+      "name": "protected backpressure query/execute, same request retry",
+      "fixture": "simple",
+      "expected_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "axy"
+              }
+            ]
+          }
+        ]
+      },
+      "events": 3,
+      "revision": 2,
+      "reason": "events.backpressure"
+    },
+    {
+      "id": "D12",
+      "name": "remount resets delivery, terminal never needs queue space",
+      "fixture": "simple",
+      "expected_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "a"
+              }
+            ]
+          }
+        ]
+      },
+      "fresh_revision": 0,
+      "fresh_events": 0
+    },
+    {
+      "id": "D13",
+      "name": "readonly selection permitted but input refused",
+      "fixture": "simple",
+      "expected_document": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "a"
+              }
+            ]
+          }
+        ]
+      },
+      "events": 1,
+      "revision": 0,
+      "reason": "session.read_only"
+    }
+  ],
+  "series": {
+    "unrelated_width": [
+      1,
+      16,
+      128,
+      1024
+    ],
+    "leaf_utf8": [
+      1,
+      64,
+      4096
+    ],
+    "depth": [
+      0,
+      4,
+      12
+    ],
+    "nested_quote_width": [
+      1,
+      16,
+      128,
+      1024
+    ],
+    "table_rows": [
+      1,
+      16,
+      128
+    ],
+    "local_invariants": [
+      "ordinary_codec_hooks=0",
+      "FullFallback.visits=0",
+      "Export.visits=0",
+      "Header/StaticValidation/Serialization unchanged with unrelated root or quote width",
+      "same-length replacements preserve node counts and text byte totals"
+    ],
+    "structural_shapes": [
+      "delete complete block",
+      "cross-parent move intact subtree",
+      "table-cell text replacement"
+    ],
+    "verse_width": [
+      1,
+      16,
+      128,
+      1024
+    ],
+    "styled_paragraph_width": [
+      1,
+      16,
+      128,
+      1024
+    ],
+    "structural_width": [
+      1,
+      16,
+      128,
+      1024
+    ],
+    "expected_case_total": 34,
+    "gap_probe": {
+      "publications": 70,
+      "retained": 2,
+      "head": "70",
+      "oldest_after": "68",
+      "first_bounded_batch": "69",
+      "old_map_from_revision0": "Stale"
+    }
+  },
+  "benchmark": {
+    "rounds": 5,
+    "samples_per_lane_round": 200,
+    "warmup_publications": 64,
+    "widths": [
+      1,
+      16,
+      128,
+      1024
+    ],
+    "operation": "same-length one-byte ReplaceText; transaction constructed before timer; session admission outside timer; baseline=full authoritative profile path on same source, candidate=incremental profile path",
+    "order": "AB/BA alternating by round",
+    "claim": "Actual descriptive core validation+dispatch timings only; no regression verdict, no SDK/DOM/input-to-paint/RSS promise."
+  }
+}

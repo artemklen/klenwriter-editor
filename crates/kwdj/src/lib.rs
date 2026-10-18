@@ -6,7 +6,9 @@
 //! no dependency on HTTP, persistence, the editor, or public rendering.
 
 mod admission;
+mod candidate_cache;
 mod candidate_validate;
+pub use candidate_cache::{KwdjCache, KwdjCachePatch};
 pub mod commands;
 mod core_bridge;
 mod edit_normalize;

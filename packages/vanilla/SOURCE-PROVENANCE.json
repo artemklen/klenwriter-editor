@@ -97,6 +97,11 @@
       "issue": "OSR-35",
       "path": "crates/kwdj/src/validate.rs",
       "change": "Expose one crate-private closed authoritative mark-set validator to command/final typing policy; existing document walker rules are shared, not copied"
+    },
+    {
+      "issue": "OSR-37",
+      "path": "crates/kwdj/src/validate.rs",
+      "change": "The same authoritative walker accepts engine-proved sparse roots/children and cached static summaries; table/verse/identity rules remain shared with full native validation. Current external identity answers are never retained across transactions."
     }
   ],
   "corpusProvenance": "provenance/kwdj-corpus.json",
@@ -229,5 +234,50 @@
       "tests/commands.node.mjs",
       "tests/session.node.mjs"
     ]
+  },
+  "originalDeltas": {
+    "issue": "OSR-37",
+    "source": "Original implementation and independently authored synthetic literal/generated fixtures in this repository; no CMS or third-party source copied",
+    "license": "MIT OR Apache-2.0",
+    "paths": [
+      "crates/core/src/cache.rs",
+      "crates/engine/src/events.rs",
+      "crates/engine/src/eventtests.rs",
+      "crates/engine/src/tree_impact.rs",
+      "crates/engine/src/snapshot.rs",
+      "crates/engine/src/delta_tests.rs",
+      "crates/kwdj/src/candidate_cache.rs",
+      "crates/kwdj/src/candidate_cache_tests.rs",
+      "crates/wasm/examples/delta_native.rs",
+      "crates/wasm/examples/delta_probe.rs",
+      "crates/wasm/examples/support/delta_literals.json",
+      "crates/wasm/examples/support/delta_observer.rs",
+      "crates/wasm/examples/support/delta_series.rs",
+      "crates/wasm/examples/support/delta_benchmark.rs",
+      "crates/wasm/tests/deltas.rs",
+      "crates/wasm/tests/delta_equivalence.rs",
+      "scripts/test-deltas.mjs",
+      "scripts/benchmark-deltas.mjs"
+    ],
+    "extendedOriginalFoundation": [
+      "crates/core/src/candidate.rs",
+      "crates/core/src/profile.rs",
+      "crates/core/src/transaction.rs",
+      "crates/engine/src/session.rs",
+      "crates/engine/src/tree.rs",
+      "crates/engine/src/dispatch.rs",
+      "crates/engine/src/history_dispatch.rs",
+      "crates/engine/src/commands.rs",
+      "crates/engine/src/history.rs",
+      "crates/engine/src/transaction.rs",
+      "crates/engine/src/mapping.rs",
+      "crates/kwdj/src/session_profile.rs",
+      "crates/kwdj/src/candidate_validate.rs",
+      "crates/kwdj/src/wire_view.rs",
+      "crates/kwdj/src/edit_normalize.rs"
+    ],
+    "privacy": "Synthetic literal/generated documents, fixed fixture UUIDs and example URLs only; no private documents, production captures or credentials",
+    "dependencies": "No new runtime dependency; existing pinned serializers and Unicode library reused",
+    "authority": "Generic engine owns admitted topology, dirty impact, bounded event publication and stamps; KWDJ owns scoped authoritative rule/codec proofs. Native full control is explicit test authority, not a second policy implementation. JS callback queue/disposal63 and host persistence69 keep their own gates."
   }
 }

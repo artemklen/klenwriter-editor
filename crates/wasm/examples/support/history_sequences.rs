@@ -1251,7 +1251,15 @@ pub fn observe_recurrence() -> Value {
             json!([{"type":"heading","attrs":{"level":level},"content":[{"type":"text","text":"a"}]}]),
         )
     };
-    let (s, calls) = open(&heading(1));
+    // This history steady-state witness bounds every retained stream to one
+    // record. Default outbox warmup/eviction is covered by the delta/event lane.
+    let (s, calls) = open_with_event_limits(
+        &heading(1),
+        EventLimits {
+            records: 1,
+            ..EventLimits::default()
+        },
+    );
     let mut r = Run {
         s,
         calls,
@@ -1382,5 +1390,5 @@ pub fn observe_recurrence() -> Value {
     }
     assert_eq!(canonical(&r.s), expected_one);
     assert_eq!(r.s.revision(), 1536);
-    json!({"status":"passed","cycles":512,"document_publications":1536,"final_revision":"1536","final_heading_level":1,"action_cap":1,"chronological_map_cap":1,"work_byte_cap":32768,"all_historical_ids_stable":true,"warmup_cycles":2,"steady_cycles":510,"steady_phase_work_and_retention_equal":true,"query_execute_work_equal":true,"ordinary_snapshot_codec_calls":0,"scope":"Bounded history recurrence with real KWDJ heading attributes; per-target32KiB work bound, no OSR38 performance claim."})
+    json!({"status":"passed","cycles":512,"document_publications":1536,"final_revision":"1536","final_heading_level":1,"action_cap":1,"chronological_map_cap":1,"event_record_cap":1,"work_byte_cap":32768,"all_historical_ids_stable":true,"warmup_cycles":2,"steady_cycles":510,"steady_phase_work_and_retention_equal":true,"query_execute_work_equal":true,"ordinary_snapshot_codec_calls":0,"scope":"Bounded history recurrence with real KWDJ heading attributes; one retained event isolates history steady state, default outbox covered separately; per-target32KiB work bound, no OSR38 performance claim."})
 }

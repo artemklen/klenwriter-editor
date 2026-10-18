@@ -22,6 +22,11 @@ use editor_core::transaction::{MarkEdit, Operation, WorkMeter};
 use crate::identity::{NodeId, SessionKey};
 use crate::mapping::StepMap;
 
+#[path = "tree_impact.rs"]
+mod impact;
+
+use impact::{NodeMeta, PreparedTopology};
+
 const MAX_DEPTH: usize = 128;
 const MAX_STEPS: usize = 4096;
 const MAX_TEXT_BYTES: usize = 16 * 1024 * 1024;
@@ -352,6 +357,7 @@ pub(crate) struct CommitMaterial {
     inverse_steps: usize,
     estimated_bytes: usize,
     replay_cost: ReplayCost,
+    topology_copy_bound: usize,
 }
 impl CommitMaterial {
     pub(crate) fn estimated_bytes(&self) -> usize {
@@ -388,11 +394,14 @@ impl CommitMaterial {
     /// and both map directions fit another; changed-ID scratch is additional.
     /// Summing member bounds also bounds a group's final net sparse union.
     pub(crate) fn replay_copy_bound(&self) -> usize {
-        self.estimated_bytes.saturating_mul(2).saturating_add(
-            self.records
-                .len()
-                .saturating_mul(std::mem::size_of::<NodeId>()),
-        )
+        self.estimated_bytes
+            .saturating_mul(2)
+            .saturating_add(
+                self.records
+                    .len()
+                    .saturating_mul(std::mem::size_of::<NodeId>()),
+            )
+            .saturating_add(self.topology_copy_bound)
     }
 }
 
@@ -407,6 +416,7 @@ pub(crate) struct PreparedTreePatch<A = RealAllocation> {
     changed_ids: Vec<NodeId>,
     material: Arc<CommitMaterial>,
     prepared_copy_bytes: usize,
+    topology: PreparedTopology,
     allocation: PhantomData<A>,
 }
 impl<A> PreparedTreePatch<A> {
@@ -435,6 +445,8 @@ pub(crate) struct AddressTree {
     root: NodeId,
     nodes: BTreeMap<NodeId, TreeNode>,
     next_id: Cell<u64>,
+    metadata: BTreeMap<NodeId, NodeMeta>,
+    child_heights: BTreeMap<NodeId, BTreeSet<(usize, NodeId)>>,
 }
 
 fn allowed_child(parent: Option<Primitive>, child: Primitive) -> bool {
@@ -471,11 +483,16 @@ fn check_shape(node: &Node, parent: Option<Primitive>, depth: usize) -> Result<(
 impl AddressTree {
     /// Infallible expected-error phase. The exclusive Session owner validates a
     /// patch against this tree immediately before publication; no callbacks run.
-    pub(crate) fn publish(&mut self, patch: PreparedTreePatch) -> Arc<CommitMaterial> {
+    pub(crate) fn publish(
+        &mut self,
+        patch: PreparedTreePatch,
+        revision: u64,
+    ) -> Arc<CommitMaterial> {
         assert_eq!(
             patch.key, self.key,
             "Session owner published a foreign patch"
         );
+        self.publish_topology(patch.topology, revision);
         for id in patch.removed {
             self.nodes.remove(&id);
         }
@@ -495,6 +512,8 @@ impl AddressTree {
             root,
             nodes: BTreeMap::new(),
             next_id: Cell::new(2),
+            metadata: BTreeMap::new(),
+            child_heights: BTreeMap::new(),
         };
         let children = document
             .children
@@ -513,6 +532,7 @@ impl AddressTree {
                 copy_cost,
             },
         );
+        tree.initialize_topology()?;
         Ok(tree)
     }
 
@@ -586,9 +606,12 @@ impl AddressTree {
             inverse_steps: 0,
             prepared_copy_bytes: 0,
             copy_budget: MAX_PREPARED_COPY_BYTES,
+            mutation_stamp: 0,
+            topology: None,
         }
     }
 
+    #[cfg(test)]
     pub(crate) fn document(&self) -> Document {
         Document {
             children: self.nodes[&self.root]
@@ -599,6 +622,7 @@ impl AddressTree {
         }
     }
 
+    #[cfg(test)]
     fn encode(&self, id: NodeId) -> Node {
         let node = &self.nodes[&id];
         let d = node.data.as_ref().expect("semantic node");
@@ -737,6 +761,8 @@ pub struct TreeDraft<'a, A = RealAllocation> {
     inverse_steps: usize,
     prepared_copy_bytes: usize,
     copy_budget: usize,
+    mutation_stamp: u64,
+    topology: Option<PreparedTopology>,
 }
 
 impl<A: Allocation> TreeDraft<'_, A> {
@@ -967,6 +993,7 @@ impl<A: Allocation> TreeDraft<'_, A> {
         let before_inverse = self.inverse.len();
         let before_inverse_steps = self.inverse_steps;
         let before_budget = self.copy_budget;
+        let before_stamp = self.mutation_stamp;
         self.prepared_copy_bytes += backup_cost;
         let mut created = Vec::new();
         let result = action(self, &mut created, work);
@@ -988,6 +1015,7 @@ impl<A: Allocation> TreeDraft<'_, A> {
             self.inverse_steps = before_inverse_steps;
             self.prepared_copy_bytes = before_copy;
             self.copy_budget = before_budget;
+            self.mutation_stamp = before_stamp;
         }
         result
     }
@@ -1493,45 +1521,9 @@ impl<A: Allocation> TreeDraft<'_, A> {
     /// Final borrowed generic-shape gate after all operations/normalization.
     /// Closed primitives preserve reachability; depth and parent checks also
     /// prevent a malformed internal link from causing unbounded recursion.
-    pub(crate) fn validate_structure(&self, work: &mut WorkMeter) -> Result<(), TreeError> {
-        fn visit<A: Allocation>(
-            draft: &TreeDraft<'_, A>,
-            id: NodeId,
-            parent: Option<NodeId>,
-            family: Option<Primitive>,
-            depth: usize,
-            work: &mut WorkMeter,
-        ) -> Result<(), TreeError> {
-            if depth > MAX_DEPTH {
-                return Err(TreeError::ResourceLimit);
-            }
-            work.charge_units(1).map_err(|_| TreeError::ResourceLimit)?;
-            let node = draft.node(id)?;
-            if node.id != id || node.parent != parent {
-                return Err(TreeError::InvalidStructure);
-            }
-            if let Some(data) = &node.data {
-                if parent.is_none()
-                    || data.type_id.is_empty()
-                    || !allowed_child(family, data.primitive)
-                    || (data.primitive == Primitive::Text) != data.text.is_some()
-                    || (data.primitive != Primitive::Text && !data.marks.is_empty())
-                    || (!matches!(data.primitive, Primitive::Container | Primitive::TextBlock)
-                        && !node.children.is_empty())
-                {
-                    return Err(TreeError::InvalidStructure);
-                }
-            } else if id != draft.root() || parent.is_some() {
-                return Err(TreeError::InvalidStructure);
-            }
-            work.charge_units(node.children.len() as u64)
-                .map_err(|_| TreeError::ResourceLimit)?;
-            for child in &node.children {
-                visit(draft, *child, Some(id), node.primitive(), depth + 1, work)?;
-            }
-            Ok(())
-        }
-        visit(self, self.root(), None, None, 0, work)
+    pub(crate) fn validate_structure(&mut self, work: &mut WorkMeter) -> Result<(), TreeError> {
+        self.prepare_changes(work)?;
+        self.validate_sparse_structure(work)
     }
     pub fn prepared_copy_bytes(&self) -> usize {
         self.prepared_copy_bytes
@@ -1625,6 +1617,7 @@ impl<A: Allocation> TreeDraft<'_, A> {
     }
 
     fn append_maps(&mut self, maps: PreparedMaps) {
+        self.touch();
         let start = self.steps.len();
         self.steps.extend(maps.forward);
         self.inverse_steps += maps.backward.len();
@@ -1739,6 +1732,7 @@ impl<A: Allocation> TreeDraft<'_, A> {
             });
         }
         self.prepared_copy_bytes += material.estimated_bytes;
+        self.touch();
         Ok(())
     }
 
@@ -3224,6 +3218,7 @@ impl<A: Allocation> TreeDraft<'_, A> {
         )?;
         self.writes.insert(id, changed);
         self.prepared_copy_bytes += cost;
+        self.touch();
         Ok(())
     }
 
@@ -3589,6 +3584,17 @@ impl<A: Allocation> TreeDraft<'_, A> {
     /// Full-snapshot normalization is never used here. Only sparse affected
     /// records are compared and copied; cache estimates do not create commits.
     pub(crate) fn prepare_patch(mut self) -> Result<PreparedTreePatch<A>, TreeError> {
+        // Session prepares this with its shared meter. Direct internal draft
+        // callers retain a bounded compatibility path, never a whole-tree DFS.
+        if self
+            .topology
+            .as_ref()
+            .is_none_or(|plan| plan.stamp != self.mutation_stamp)
+        {
+            let mut work = WorkMeter::new(editor_core::transaction::WorkLimits::default());
+            self.prepare_changes(&mut work)?;
+        }
+        let topology = self.topology.take().expect("prepared topology");
         self.writes.retain(|id, changed| {
             self.base
                 .nodes
@@ -3689,6 +3695,7 @@ impl<A: Allocation> TreeDraft<'_, A> {
             // A net-noop has no retained history payload. The temporary empty
             // Arc still contributes to this preparation's allocation work.
             estimated_bytes: if count == 0 { 0 } else { material_bytes },
+            topology_copy_bound: topology.copy_bound(),
             replay_cost: if count == 0 {
                 ReplayCost::default()
             } else {
@@ -3704,6 +3711,7 @@ impl<A: Allocation> TreeDraft<'_, A> {
             changed_ids,
             material,
             prepared_copy_bytes: self.prepared_copy_bytes + material_bytes + id_bytes,
+            topology,
         })
     }
 }
@@ -3852,7 +3860,7 @@ mod transaction_kernel_tests {
             malformed.validate_structure(&mut meter()),
             Err(TreeError::InvalidStructure)
         );
-        let pristine = base.prepare();
+        let mut pristine = base.prepare();
         let mut zero = WorkMeter::new(WorkLimits { units: 0, bytes: 0 });
         assert_eq!(
             pristine.validate_structure(&mut zero),
@@ -3860,14 +3868,11 @@ mod transaction_kernel_tests {
         );
         assert_eq!(zero.usage().units, 0);
         let mut wide = WorkMeter::new(WorkLimits { units: 1, bytes: 0 });
-        assert_eq!(
-            pristine.validate_structure(&mut wide),
-            Err(TreeError::ResourceLimit)
-        );
+        pristine.validate_structure(&mut wide).unwrap();
         assert_eq!(
             wide.usage().units,
             1,
-            "child width refused before descending"
+            "admitted baseline uses its cached root proof"
         );
     }
     fn apply(d: &mut TreeDraft<'_>, op: Operation<NodeId>) -> Vec<NodeId> {
@@ -4002,7 +4007,7 @@ mod transaction_kernel_tests {
         assert_eq!(base.node(text).unwrap().text(), Some("abcdef"));
         let bytes = patch.material_bytes();
         let count = patch.changed_ids().len();
-        let material = base.publish(patch);
+        let material = base.publish(patch, 1);
         assert_eq!(base.document(), expected);
         assert_eq!(material.estimated_bytes(), bytes);
         assert_eq!(material.changed_count(), count);
@@ -4098,7 +4103,7 @@ mod transaction_kernel_tests {
         assert!(patch.steps().is_empty());
         assert!(patch.changed_ids().is_empty());
         assert_eq!(patch.material_bytes(), 0);
-        assert_eq!(base.publish(patch).changed_count(), 0);
+        assert_eq!(base.publish(patch, 1).changed_count(), 0);
         assert_eq!(base.document(), original);
         assert!(!base.nodes.contains_key(&right));
     }
@@ -4148,7 +4153,7 @@ mod transaction_kernel_tests {
                 if let Some(expected) = phase_costs.insert(phase, cost) {
                     assert_eq!(cost, expected, "{case} phase {phase}, commit {iteration}");
                 }
-                base.publish(patch);
+                base.publish(patch, 1);
 
                 // The same semantic document admitted afresh has the same
                 // record size, independently of how many edits produced it.
@@ -4790,7 +4795,7 @@ mod history_replay_tests {
         let patch = draft.prepare_patch().unwrap();
         assert!(patch.changed());
         let material = Arc::clone(patch.material());
-        let published = base.publish(patch);
+        let published = base.publish(patch, 1);
         assert!(Arc::ptr_eq(&published, &material));
         let after = base.nodes.clone();
         let highwater = base.next_id.get();
@@ -4812,7 +4817,7 @@ mod history_replay_tests {
         let patch = undo.prepare_patch().unwrap();
         assert!(patch.prepared_copy_bytes() <= material.replay_copy_bound());
         let undo_material = Arc::clone(patch.material());
-        base.publish(patch);
+        base.publish(patch, 1);
         assert_records(&base, &before);
         assert_eq!(base.next_id.get(), highwater);
         let mut redo = base.prepare_preview();
@@ -4855,7 +4860,7 @@ mod history_replay_tests {
             .unwrap();
         redo.validate_structure(&mut meter()).unwrap();
         PositionMap::new(2, 3, redo.steps.clone()).unwrap();
-        base.publish(redo.prepare_patch().unwrap());
+        base.publish(redo.prepare_patch().unwrap(), 3);
         assert_records(&base, &after);
         assert_eq!(base.next_id.get(), highwater);
     }
@@ -4977,7 +4982,7 @@ mod history_replay_tests {
         draft
             .replace_text(leaf, Utf16Offset::new(1), Utf16Offset::new(1), "\u{301}")
             .unwrap();
-        let material = base.publish(draft.prepare_patch().unwrap());
+        let material = base.publish(draft.prepare_patch().unwrap(), 1);
         base.next_id.set(u64::MAX);
         let mut undo = base.prepare();
         assert!(matches!(
@@ -5000,7 +5005,7 @@ mod history_replay_tests {
                 affinity: Affinity::After
             })
         );
-        base.publish(undo.prepare_patch().unwrap());
+        base.publish(undo.prepare_patch().unwrap(), 2);
         let mut redo = base.prepare();
         redo.stage_replay(&material, ReplayDirection::Redo, &mut meter())
             .unwrap();
@@ -5030,7 +5035,7 @@ mod history_replay_tests {
         change
             .replace_text(leaf, Utf16Offset::new(0), Utf16Offset::new(1), "A")
             .unwrap();
-        let material = base.publish(change.prepare_patch().unwrap());
+        let material = base.publish(change.prepare_patch().unwrap(), 1);
         let mut draft = base.prepare();
         draft
             .replace_text(leaf, Utf16Offset::new(0), Utf16Offset::new(1), "B")
@@ -5184,7 +5189,7 @@ mod history_replay_tests {
         draft
             .replace_text(leaf, Utf16Offset::new(0), Utf16Offset::new(1), "A")
             .unwrap();
-        let material = base.publish(draft.prepare_patch().unwrap());
+        let material = base.publish(draft.prepare_patch().unwrap(), 1);
         for facet in [
             "parent",
             "type",
@@ -5242,7 +5247,7 @@ mod history_replay_tests {
                 EditOrigin::User,
             )
             .unwrap();
-        let insertion = base.publish(inserted.prepare_patch().unwrap());
+        let insertion = base.publish(inserted.prepare_patch().unwrap(), 1);
         // Redo expects new IDs absent, so unexpectedly live IDs cannot be reused.
         let mut draft = base.prepare();
         assert_eq!(
@@ -5293,7 +5298,7 @@ mod history_replay_tests {
                     .unwrap(),
                 _ => unreachable!(),
             }
-            let material = base.publish(draft.prepare_patch().unwrap());
+            let material = base.publish(draft.prepare_patch().unwrap(), 1);
             let mut undo = base.prepare();
             undo.stage_replay(&material, ReplayDirection::Undo, &mut meter())
                 .unwrap();
@@ -5370,7 +5375,7 @@ mod history_replay_tests {
         let right = base.node(p).unwrap().children[1];
         let mut draft = base.prepare();
         draft.join_text(left, right).unwrap();
-        let material = base.publish(draft.prepare_patch().unwrap());
+        let material = base.publish(draft.prepare_patch().unwrap(), 1);
         let forward = PositionMap::new(0, 1, material.forward.clone()).unwrap();
         assert_eq!(
             forward.map(Position::Edge {
