@@ -205,8 +205,10 @@ export function geometry(id){
   if(clip){clip.left=Math.max(clip.left,ancestor?.left??0,vv?.offsetLeft??0);clip.top=Math.max(clip.top,ancestor?.top??0,vv?.offsetTop??0);clip.right=Math.min(clip.right,ancestor?.right??innerWidth,(vv?.offsetLeft??0)+(vv?.width??innerWidth));clip.bottom=Math.min(clip.bottom,ancestor?.bottom??innerHeight,(vv?.offsetTop??0)+(vv?.height??innerHeight));}
   let caret=null;if(s?.focusNode&&r.element?.contains(s.focusNode)){const range=document.createRange();range.setStart(s.focusNode,s.focusOffset);range.collapse(true);const boxes=[...range.getClientRects()].filter(x=>Number.isFinite(x.top)&&x.height>0);if(boxes.length)caret=rect(boxes[0]);}
   let monotonic=null;
-  if(r.previousFocus&&s?.focusNode&&r.element.contains(s.focusNode)){const a=document.createRange(),b=document.createRange();a.setStart(r.previousFocus.node,r.previousFocus.offset);a.collapse(true);b.setStart(s.focusNode,s.focusOffset);b.collapse(true);monotonic=a.compareBoundaryPoints(Range.START_TO_START,b);}
-  if(s?.focusNode&&r.element?.contains(s.focusNode))r.previousFocus={node:s.focusNode,offset:s.focusOffset};
+  // Monotonic range order measures the stable scroll fixture. Other fixtures
+  // may legitimately retire their previous Text objects during copy/cut.
+  if(r.port&&r.previousFocus&&s?.focusNode&&r.element.contains(s.focusNode)){const a=document.createRange(),b=document.createRange();a.setStart(r.previousFocus.node,r.previousFocus.offset);a.collapse(true);b.setStart(s.focusNode,s.focusOffset);b.collapse(true);monotonic=a.compareBoundaryPoints(Range.START_TO_START,b);}
+  if(r.port&&s?.focusNode&&r.element?.contains(s.focusNode))r.previousFocus={node:s.focusNode,offset:s.focusOffset};
   return {time:performance.now(),client,ancestor,effectiveClip:clip,caret,rawDom:r.element?rawSelection(r):null,state:clone(state(r)),scrollTop:r.port?.scrollTop??null,scrollLeft:r.port?.scrollLeft??null,scrollHeight:r.port?.scrollHeight??null,clientHeight:r.port?.clientHeight??null,clientWidth:r.port?.clientWidth??null,allScrollOwners:{windowX:scrollX,windowY:scrollY,portTop:r.port?.scrollTop??0,portLeft:r.port?.scrollLeft??0,clipTop:r.clip?.scrollTop??0,clipLeft:r.clip?.scrollLeft??0},resources:clone(r.editor.resources()),monotonicFromPrevious:monotonic,activeElement:document.activeElement?.id??null,dpr:devicePixelRatio,visualViewport:vv?{offsetLeft:vv.offsetLeft,offsetTop:vv.offsetTop,width:vv.width,height:vv.height,scale:vv.scale}:null};
 }
 export async function prepareScroll(id,direction){
