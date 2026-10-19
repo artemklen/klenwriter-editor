@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // One ordinary installed-browser RU/EN run. No retry, settings or authentication flow.
 import {chromium} from '@playwright/test';
+import {createSafariAdapter} from './dom-native/safari-adapter.mjs';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {existsSync,mkdirSync,mkdtempSync,readFileSync,writeFileSync} from 'node:fs';
@@ -8,14 +9,28 @@ import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const args=process.argv.slice(2), option=name=>{const at=args.indexOf(name);return at<0?null:args[at+1];};
-const browserName=option('--browser'),output=option('--output');
-if(args.length!==4||new Set([args[0],args[2]]).size!==2||![args[0],args[2]].every(name=>['--browser','--output'].includes(name))||!['chrome','safari'].includes(browserName)||!output?.startsWith('/'))throw new Error('Usage: node scripts/dom-native-acceptance.mjs --browser chrome|safari --output /absolute/outside-checkout/report.json');
+const browserName=option('--browser'),output=option('--output'),brokerPath=option('--broker');
+const usage='Usage: node scripts/dom-native-acceptance.mjs --browser chrome --output /absolute/outside-checkout/report.json OR --browser safari --output /absolute/outside-checkout/report.json --broker /absolute/fresh/broker/config.json';
+const brokerPrecondition='Safari requires a fresh running fixture broker: start node scripts/dom-native/server.mjs --directory /absolute/fresh/outside-checkout/directory, then pass its config.json with --broker';
+if(browserName==='safari'&&!brokerPath)throw new Error(brokerPrecondition);
+const expected=browserName==='chrome'?['--browser','--output']:browserName==='safari'?['--browser','--output','--broker']:[];
+const names=args.filter((_,index)=>index%2===0);
+if(args.length!==expected.length*2||new Set(names).size!==expected.length||!names.every(name=>expected.includes(name))||!['chrome','safari'].includes(browserName)||!output?.startsWith('/'))throw new Error(usage);
+let brokerConfig=null,brokerFile=null,brokerConfigSha256=null;
+if(browserName==='safari'){
+  if(!brokerPath.startsWith('/'))throw new Error(brokerPrecondition);
+  brokerFile=resolve(brokerPath);
+  if(brokerFile===root||brokerFile.startsWith(root+'/'))throw new Error('Safari broker config must be outside checkout');
+  try{const bytes=readFileSync(brokerFile);if(bytes.length>4096)throw new Error('Broker config exceeds bound');brokerConfig=JSON.parse(bytes.toString('utf8'));brokerConfigSha256=createHash('sha256').update(bytes).digest('hex');}
+  catch(error){throw new Error(brokerPrecondition+': '+error.message);}
+}
 const outputPath=resolve(output);if(outputPath===root||outputPath.startsWith(root+'/'))throw new Error('Native evidence output must be outside checkout');
 if(existsSync(outputPath))throw new Error('Evidence output already exists; use a fresh path to retain the first result');
 mkdirSync(dirname(outputPath),{recursive:true});
 const startedAt=new Date().toISOString(),wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-const report={format:'klenwriter-editor-installed-dom-native/1',startedAt,browser:browserName,status:'NOT_RUN',locales:[],physicalActions:[],setup:[],restoration:null,
+const report={format:'klenwriter-editor-installed-dom-native/2',startedAt,browser:browserName,status:'NOT_RUN',locales:[],physicalActions:[],setup:[],restoration:null,
   scope:'Installed macOS browser, actual System Events ANSI key-code input and trusted UA event trace against mounted public SDK2/WASM. Public host undo/redo is labelled separately. No IME settlement, OSR40 drag/edge scrolling, screen-reader, clipboard or release claim.'};
+if(brokerConfig)report.broker={configPath:brokerFile,configSha256:brokerConfigSha256,nonce:brokerConfig.nonce};
 const save=()=>writeFileSync(outputPath,JSON.stringify(report,null,2)+'\n');
 function run(command,argv,{fullStdout=false,timeout=30000,maxBuffer=1024*1024}={}){const result=spawnSync(command,argv,{cwd:root,encoding:'utf8',timeout,maxBuffer});
   const row={command,argv,returnCode:result.status,signal:result.signal,stdout:fullStdout?(result.stdout??''):(result.stdout??'').slice(0,16384),stderr:(result.stderr??'').slice(0,4096),error:result.error?.message??null};
@@ -27,8 +42,7 @@ const source=()=>JSON.parse(run(helper,['status']).stdout);
 async function selectSource(id){const action=JSON.parse(run(helper,['select',id]).stdout);report.setup.push({action:'select-existing-input-source',...action});await wait(250);const actual=source();if(actual.current.id!==id)throw new Error('Input source changed asynchronously; no physical key batch was sent');selectedSource=id;return actual;}
 async function physical(codes,phase){
   const application=browserName==='chrome'?'Google Chrome':'Safari';
-  if(browserName==='safari')await adapter.focus();
-  else {script(`tell application "${application}" to activate`);await wait(200);}
+  if(browserName==='chrome'){script(`tell application "${application}" to activate`);await wait(200);}
   const before=source();if(before.current.id!==selectedSource)throw new Error('Browser activation changed the selected input source; no keys sent');
   const action={phase,codes,inputSourceBefore:before.current,startedAt:new Date().toISOString(),status:'attempted',method:'System Events key code; platform input, not hardware-device evidence'};
   report.physicalActions.push(action);
@@ -38,7 +52,7 @@ async function physical(codes,phase){
       action.perKey=[];
       for(const code of codes){
         const key={code,status:'attempted',startedAt:new Date().toISOString()};action.perKey.push(key);
-        try{const guard=adapter.key(code);Object.assign(key,{status:'completed',finishedAt:new Date().toISOString(),guard});}
+        try{const guard=await adapter.key(code);Object.assign(key,{status:'completed',finishedAt:new Date().toISOString(),guard});}
         catch(error){Object.assign(key,{status:'failed',finishedAt:new Date().toISOString(),error:error.message});throw error;}
       }
     }else script(body);
@@ -55,156 +69,8 @@ async function chrome(){
     async focus(){await page.bringToFront();await page.waitForFunction(()=>document.hasFocus(),null,{timeout:5000});},
     call:(method,...args)=>page.evaluate(({method,args})=>window.domNative[method](...args),{method,args}),
     errors,async close(){await browser.close();}};}
-const safariFixtureUrl='http://127.0.0.1:4174/dom';
-const safariCreateWindow=`tell application "Safari"
-  set previousIDs to id of every window
-  if (count of previousIDs) is greater than 32 then error "Safari window ownership observation limit"
-  make new document with properties {URL:"http://127.0.0.1:4174/dom"}
-  set createdIDs to {}
-  repeat with candidate in windows
-    set candidateID to id of candidate
-    if previousIDs does not contain candidateID then set end of createdIDs to candidateID
-  end repeat
-  if (count of createdIDs) is not 1 then error "Could not identify one newly created Safari window"
-  return (item 1 of createdIDs) as text
-end tell`;
-// Paths are positional osascript arguments, never interpolated AppleScript literals.
-const safariEvaluate=`on run argv
-  set codePath to item 1 of argv
-  set ownedID to (item 2 of argv) as integer
-  set javascriptText to read (POSIX file codePath) as «class utf8»
-  tell application "Safari"
-    if not (exists window id ownedID) then error "Owned Safari window no longer exists"
-    set ownedWindow to window id ownedID
-    if (count of tabs of ownedWindow) is not 1 then error "Owned Safari window no longer has one fixture tab"
-    set ownedTab to current tab of ownedWindow
-    if (URL of ownedTab) is not "http://127.0.0.1:4174/dom" then error "Owned Safari tab left the fixture"
-    return do JavaScript javascriptText in ownedTab
-  end tell
-end run`;
-const safariFocus=`on run argv
-  set ownedID to (item 1 of argv) as integer
-  tell application "Safari"
-    if not (exists window id ownedID) then error "Owned Safari window no longer exists"
-    set ownedWindow to window id ownedID
-    if (count of tabs of ownedWindow) is not 1 then error "Owned Safari window no longer has one fixture tab"
-    if (URL of current tab of ownedWindow) is not "http://127.0.0.1:4174/dom" then error "Owned Safari tab left the fixture"
-    set index of ownedWindow to 1
-    activate
-  end tell
-  return "owned-window-front"
-end run`;
-const safariPhysicalKey=`on run argv
-  set guardPath to item 1 of argv
-  set ownedID to (item 2 of argv) as integer
-  set physicalCode to (item 3 of argv) as integer
-  if {2,4,5,11,14,17,31,36,37,45,48,51} does not contain physicalCode then error "Key is outside the closed native protocol"
-  set focusJavascript to read (POSIX file guardPath) as «class utf8»
-  tell application "System Events"
-    if (name of first application process whose frontmost is true) is not "Safari" then error "Safari is not frontmost before physical key"
-  end tell
-  tell application "Safari"
-    if not (exists front window) then error "Safari has no front window before physical key"
-    if (id of front window) is not ownedID then error "Owned Safari window is not frontmost before physical key"
-    set ownedWindow to window id ownedID
-    if (count of tabs of ownedWindow) is not 1 then error "Owned Safari window tab count changed before physical key"
-    set ownedTab to current tab of ownedWindow
-    if (URL of ownedTab) is not "http://127.0.0.1:4174/dom" then error "Owned Safari tab left the fixture before physical key"
-    set focusedTarget to do JavaScript focusJavascript in ownedTab
-    if focusedTarget is not "host-control" and focusedTarget is not "editor" then error "Owned Safari fixture input target lost document focus before physical key"
-    if (id of front window) is not ownedID then error "Owned Safari window lost frontmost ownership during key guard"
-    if (count of tabs of ownedWindow) is not 1 then error "Owned Safari tab count changed during key guard"
-    if (URL of current tab of ownedWindow) is not "http://127.0.0.1:4174/dom" then error "Owned Safari tab left fixture during key guard"
-  end tell
-  tell application "System Events"
-    if (name of first application process whose frontmost is true) is not "Safari" then error "Safari lost application focus before physical key"
-    key code physicalCode
-    delay 0.12
-  end tell
-  return focusedTarget
-end run`;
-const safariClose=`on run argv
-  set ownedID to (item 1 of argv) as integer
-  tell application "Safari"
-    if not (exists window id ownedID) then error "Owned Safari window missing at cleanup"
-    set ownedWindow to window id ownedID
-    if (count of tabs of ownedWindow) is not 1 then error "Owned Safari window retained: tab count changed"
-    if (URL of current tab of ownedWindow) is not "http://127.0.0.1:4174/dom" then error "Owned Safari window retained: tab left fixture"
-    close ownedWindow
-  end tell
-  return "owned-window-closed"
-end run`;
-const nativeMethods={
-  prepare:args=>args.length===1&&['en','ru'].includes(args[0]),
-  phase:args=>args.length===1&&['focused','type','split','join','public-host-undo-join','public-host-redo-join','delete-last','focus-return'].includes(args[0]),
-  checkpoint:args=>args.length===1&&['focused','typed','split','joined','undo-join','redo-join','delete-last','focus-return'].includes(args[0]),
-  history:args=>args.length===1&&['undo','redo'].includes(args[0]),
-  focusControl:args=>args.length===0,verifyTrace:args=>args.length===0,observations:args=>args.length===0,finish:args=>args.length===0,
-};
-async function safari(){
-  const scriptDirectory=mkdtempSync(resolve(dirname(outputPath),'safari-apple-events-'));
-  const javascriptPath=resolve(scriptDirectory,'current.js'),keyGuardPath=resolve(scriptDirectory,'key-focus.js');let requestSerial=0,mountedId=null;
-  const created=script(safariCreateWindow).stdout.trim();
-  const windowId=Number(created);
-  if(!/^[0-9]+$/.test(created)||!Number.isSafeInteger(windowId)||windowId<=0)throw new Error('Safari returned an invalid owned window ID');
-  const windowIdText=String(windowId);
-  report.browserVersion=report.bundleVersion;
-  report.control={method:'ordinary Safari window via Apple Events',windowId,fixtureUrl:safariFixtureUrl,
-    ownership:'one fresh numeric window ID from make new document; only its single fixture tab is targeted',
-    javascriptTransfer:'UTF-8 file outside checkout, passed as osascript argv',asyncProtocol:'generated request ID plus window callback result; bounded polling',
-    browserVersionSource:'installed Safari bundle',webDriver:false,scriptDirectory,
-    physicalKeyGuard:'Each key checks captured front-window ID, single fixture tab/URL, document focus and exact fixture editor/host-control target before System Events input'};
-  const errors=[];
-  function evaluate(javascript,deadline=Date.now()+15000){
-    const remaining=deadline-Date.now();if(remaining<=0)throw new Error('Safari Apple Events call deadline exceeded');
-    writeFileSync(javascriptPath,javascript,'utf8');
-    const result=run('/usr/bin/osascript',['-e',safariEvaluate,javascriptPath,windowIdText],{fullStdout:true,timeout:remaining,maxBuffer:2*1024*1024});
-    try{return JSON.parse(result.stdout.trim());}catch{throw Object.assign(new Error('Safari Apple Events did not return bounded JSON'),{nativeControl:{windowId,operation:'parse-result'}});}
-  }
-  async function poll(javascript,accept,deadline,label){
-    while(Date.now()<deadline){const value=evaluate(javascript,deadline);if(accept(value))return value;await wait(Math.min(100,Math.max(0,deadline-Date.now())));}
-    throw Object.assign(new Error(`Safari ${label} timed out`),{nativeControl:{windowId,operation:label}});
-  }
-  async function request(kind,method=null,args=[]){
-    if(kind!=='bootstrap'&&(kind!=='method'||!Object.hasOwn(nativeMethods,method)||!nativeMethods[method](args)))throw new Error('Safari fixture method/arguments are outside the closed harness API');
-    const id=`native-${++requestSerial}`,key=JSON.stringify(id),deadline=Date.now()+15000;
-    const operation=kind==='bootstrap'?`import('/dom-native-host.js').then(()=>({ready:window.domNativeReady===true,userAgent:navigator.userAgent,platform:navigator.platform,language:navigator.language,location:location.href}))`
-      :`window.domNative[${JSON.stringify(method)}](...${JSON.stringify(args)})`;
-    const begin=`(()=>{const id=${key};const pending=window.__domNativeAcceptanceRequests??=Object.create(null);if(Object.keys(pending).length>=2)throw new Error('Native callback bound');pending[id]={done:false};Promise.resolve().then(()=>${operation}).then(value=>{pending[id]={done:true,value};},error=>{pending[id]={done:true,error:String(error?.message??error).slice(0,2048)};});return JSON.stringify({accepted:id});})()`;
-    const accepted=evaluate(begin,deadline);if(accepted.accepted!==id)throw new Error('Safari request ID acknowledgement differs');
-    const read=`(()=>{const pending=window.__domNativeAcceptanceRequests;const value=pending?.[${key}]??{done:false};if(value.done)delete pending[${key}];return JSON.stringify(value);})()`;
-    const result=await poll(read,value=>value.done===true,deadline,kind==='bootstrap'?'module import':method);
-    if(Object.hasOwn(result,'error'))throw Object.assign(new Error(`Safari fixture callback: ${result.error}`),{nativeControl:{windowId,requestId:id,operation:kind==='bootstrap'?'module import':method}});
-    if(kind==='method'&&method==='prepare'){
-      const id=result.value?.id;
-      if(typeof id!=='string'||!/^mount-[1-9][0-9]{0,8}$/.test(id))throw new Error('Safari fixture returned an invalid mounted editor ID');
-      mountedId=id;
-      writeFileSync(keyGuardPath,`(()=>{const editor=document.getElementById(${JSON.stringify(id)}),control=document.getElementById('host-recovery-control'),active=document.activeElement;if(location.href!=='http://127.0.0.1:4174/dom'||!document.hasFocus())return 'blocked';if(active===control&&control?.isConnected)return 'host-control';return editor?.isConnected&&editor.parentElement===document.getElementById('mounts')&&(active===editor||editor.contains(active))?'editor':'blocked';})()`,'utf8');
-    }
-    return result.value;
-  }
-  return {async navigate(){
-      await poll('JSON.stringify({ready:window.domHostReady===true})',value=>value.ready===true,Date.now()+15000,'domHostReady');
-      const bootstrap=await request('bootstrap');if(!bootstrap.ready||bootstrap.location!==safariFixtureUrl)throw new Error('Safari fixture module admission failed');
-      Object.assign(report.control,{userAgent:bootstrap.userAgent,platform:bootstrap.platform,language:bootstrap.language});
-    },
-    async focus(){
-      const deadline=Date.now()+5000;
-      run('/usr/bin/osascript',['-e',safariFocus,windowIdText],{timeout:Math.max(1,deadline-Date.now())});
-      await poll('JSON.stringify({focused:document.hasFocus()})',value=>value.focused===true,deadline,'owned document focus');
-    },
-    call:(method,...args)=>request('method',method,args),errors,
-    key(code){
-      if(!mountedId||![2,4,5,11,14,17,31,36,37,45,48,51].includes(code))throw new Error('Safari physical key lacks a prepared fixture target');
-      const result=run('/usr/bin/osascript',['-e',safariPhysicalKey,keyGuardPath,windowIdText,String(code)],{timeout:5000});
-      const target=result.stdout.trim();if(!['host-control','editor'].includes(target))throw new Error('Safari physical key guard returned an invalid target');
-      return {windowId,fixtureUrl:safariFixtureUrl,mountedId,target,documentFocused:true,singleFixtureTab:true};
-    },
-    async close(){
-      try{const result=run('/usr/bin/osascript',['-e',safariClose,windowIdText],{timeout:5000});report.control.cleanup={status:'closed',result:result.stdout.trim(),windowId};}
-      catch(error){report.control.cleanup={status:'failed',windowId,error:error.message};throw error;}
-    }};
-}
+async function safari(){return createSafariAdapter({config:brokerConfig,report,run,outputPath});}
+
 try{
   if(process.platform!=='darwin')throw new Error('Installed macOS native lane requires Darwin');
   if(process.version!=='v24.22.0')throw new Error(`Acceptance Node pin is v24.22.0, actual ${process.version}`);
@@ -212,7 +78,8 @@ try{
   report.source={head:run('git',['rev-parse','HEAD']).stdout.trim(),trackedDirty:run('git',['status','--porcelain','--untracked-files=no']).stdout.trim(),pins:[
     'scripts/dom-native-acceptance.mjs','scripts/dom-native-input-source.swift','spikes/workspace/dom-native-host.js','spikes/workspace/dom-host.js',
     'contracts/dom/v1/inputs/D0.json','contracts/dom/v1/inputs/D1-after-end-split.json','packages/wasm/dist/editor_wasm_bg.wasm',
-    'packages/dom/dist/input.js','packages/dom/dist/mounted.js','packages/dom/dist/view.js'].map(pin)};
+    'packages/dom/dist/input.js','packages/dom/dist/mounted.js','packages/dom/dist/view.js',
+    'scripts/dom-native/protocol.mjs','scripts/dom-native/server.mjs','scripts/dom-native/page-client.mjs','scripts/dom-native/safari-adapter.mjs'].map(pin)};
   const bundle=browserName==='chrome'?'/Applications/Google Chrome.app/Contents/Info.plist':'/Applications/Safari.app/Contents/Info.plist';
   report.bundleVersion=existsSync(bundle)?run('/usr/libexec/PlistBuddy',['-c','Print :CFBundleShortVersionString',bundle]).stdout.trim():null;
   report.bundleBuild=existsSync(bundle)?run('/usr/libexec/PlistBuddy',['-c','Print :CFBundleVersion',bundle]).stdout.trim():null;
@@ -228,7 +95,7 @@ try{
   adapter=await(browserName==='chrome'?chrome():safari());await adapter.navigate();
   for(const [locale,sourceId,codes]of supported){const lane={locale,inputSourceId:sourceId,status:'NOT_RUN',checkpoints:[],startedAt:new Date().toISOString()};report.locales.push(lane);save();let typingStarted=false;
     try{if(!initial.sources.some(row=>row.id===sourceId&&row.enabled&&row.selectable))throw new Error('Required existing enabled input source is unavailable');
-      script(`tell application "${browserName==='chrome'?'Google Chrome':'Safari'}" to activate`);await wait(200);
+      if(browserName==='chrome'){script('tell application "Google Chrome" to activate');await wait(200);}
       if(adapter.focus)await adapter.focus();
       report.setup.push({action:'prepare-browser-page-focus',browser:browserName,locale,chromeDocumentFocusConfirmed:browserName==='chrome',ordinarySafariDocumentFocusConfirmed:browserName==='safari'});
       lane.actualInputSource=await selectSource(sourceId);lane.initial=await adapter.call('prepare',locale);
@@ -249,6 +116,15 @@ try{
 finally{
   if(adapter)try{await adapter.close();}catch(error){report.browserCleanupError=error.message;report.status='FAILED';}
   if(originalSource&&helper){try{report.restoration=await selectSource(originalSource);if(report.restoration.current.id!==originalSource)throw new Error('Original source not restored');}catch(error){report.restoration={status:'FAILED',error:error.message};report.status='FAILED';}}
+  try{
+    if(report.source){
+      report.sourceAfter={head:run('git',['rev-parse','HEAD']).stdout.trim(),trackedDirty:run('git',['status','--porcelain','--untracked-files=no']).stdout.trim(),pins:report.source.pins.map(value=>pin(value.path))};
+      report.sourceUnchanged=JSON.stringify(report.source)===JSON.stringify(report.sourceAfter);
+      report.sourceClean=report.source.trackedDirty===''&&report.sourceAfter.trackedDirty==='';
+      if(report.broker){report.broker.configSha256After=createHash('sha256').update(readFileSync(brokerFile)).digest('hex');report.sourceUnchanged&&=report.broker.configSha256After===report.broker.configSha256;}
+    }else{report.sourceUnchanged=false;report.sourceClean=false;}
+    if((!report.sourceUnchanged||!report.sourceClean)&&report.status==='PASSED')report.status='FAILED';
+  }catch(error){report.sourceUnchanged=false;report.sourceIdentityError=error.message;if(report.status==='PASSED')report.status='FAILED';}
   report.finishedAt=new Date().toISOString();save();
 }
 console.log(JSON.stringify({output:outputPath,status:report.status,locales:report.locales.map(lane=>({locale:lane.locale,status:lane.status}))}));

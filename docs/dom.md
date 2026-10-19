@@ -158,3 +158,63 @@ Fixture CSP разрешает только точный local `/favicon.ico` с
 отсутствия CSP violations сохраняются. Полные selection/IME/clipboard/domain/security/alpha
 acceptance остаются соответствующим OSR-40/41/47/50/67/65. CI остаётся build-only;
 обязательные проверки выполняются локально на точной поставляемой ревизии.
+
+### Installed native input на macOS
+
+После локального pre-send gate используйте pinned Node 24.22.0, установленные Chrome и
+Safari и уже выданные macOS Automation/Accessibility grants. Для первоначального
+Safari bootstrap нужен JavaScript from Apple Events. Скрипты не меняют настройки.
+Каждому запуску нужен новый абсолютный output path вне checkout; исходники должны
+быть committed и чистыми, built packages/WASM — соответствовать этому SHA.
+Один localhost fixture server занимает 127.0.0.1:4174; запускайте браузеры последовательно.
+
+Для Chrome запустите обычный fixture server, затем в другом Terminal:
+
+```sh
+node scripts/workspace-server.mjs
+```
+
+```sh
+node scripts/dom-native-acceptance.mjs --browser chrome --output /tmp/editor-chrome-001/chrome.json
+```
+
+Остановите обычный server перед Safari. Его отдельный opt-in server создаёт
+свежие nonce/title/config и ограниченный same-origin command/result канал:
+
+```sh
+node scripts/dom-native/server.mjs --directory /tmp/editor-safari-001
+```
+
+В другом Terminal выполните:
+
+```sh
+node scripts/dom-native-acceptance.mjs --browser safari --output /tmp/editor-safari-001/safari.json --broker /tmp/editor-safari-001/config.json
+```
+
+Apple Events создаёт и bootstrap-ит одно обычное Safari окно. Дальнейшие fixture
+команды используют HTTP; реальные клавиши отправляет System Events. Перед каждой
+клавишей новый page guard подтверждает URL/title, connected mounted host, focus
+и точный target. System Events немедленно проверяет уникальный nonce title
+foreground-окна. Срок guard ограничивает весь процесс отправки; неизвестный исход
+прекращает дальнейший ввод и сохраняется как `may_have_sent`.
+
+Канал допускает только закрытые fixture методы и один неподтверждённый request.
+Page отмечает request ID до выполнения; потеря ответа не повторяет native команду.
+Сохранённый результат остаётся до явного acknowledgement. Ограничены число команд,
+байты запросов/ответов/logs, polling и абсолютные deadlines; обычный server сохраняет
+свои routes/CSP. Эти endpoints существуют только у явно запущенного native server.
+
+Обе локали должны пройти 8 checkpoints: focus, typing, split/join, public-host
+undo/redo, delete-last и focus-return. Receipt сохраняет exact canonical/native
+selection/revision/history/IDs, trusted UA trace и actual System Events exits.
+Отмена cancelable beforeinput проверяется в document bubble; capture-listener
+microtask имеет отдельное точное имя и не считается post-dispatch наблюдением.
+Public-host undo/redo не является keyboard-shortcut proof.
+
+Safari cleanup отправляет один guarded CmdW только текущей fixture-вкладке и
+проверяет исчезновение её уникального AX title. Native zero resources подтверждает
+отдельный `finish`, а не закрытие вкладки. Исходная input source восстанавливается
+в finally. До и после запуска проверяются HEAD, чистый tracked tree, source/dist и
+broker-config hashes. Любая ошибка assertions, ресурсов, cleanup, восстановления
+раскладки или source identity оставляет итог FAILED/NOT_RUN. Остановите server
+после получения receipt; config и raw broker/client logs сохраняйте вместе с ним.

@@ -2,6 +2,7 @@
 // Installed-browser acceptance instrumentation. It does not dispatch edit events.
 const MAX_TRACE = 2048, MAX_PHASES = 24;
 const copy = value => JSON.parse(JSON.stringify(value));
+const tracedEvents = new WeakMap();
 let active = null;
 const pageErrors=[],policyViolations=[];
 window.addEventListener('error',event=>{if(pageErrors.length<32)pageErrors.push(String(event.message).slice(0,512));});
@@ -33,8 +34,10 @@ function trace(event) {
   const value={phase:active.phase,type:event.type,time:performance.now(),isTrusted:event.isTrusted,
     inputType:small(event.inputType),data:small(event.data,64),key:small(event.key),code:small(event.code),
     cancelable:event.cancelable,defaultPreventedAtCapture:event.defaultPrevented,
-    defaultPreventedAfterDispatch:null,isComposing:event.isComposing??null,targetId:small(event.target?.id)};
-  active.trace.push(value);queueMicrotask(()=>{value.defaultPreventedAfterDispatch=event.defaultPrevented;});
+    defaultPreventedAtCaptureMicrotask:null,defaultPreventedAtDocumentBubble:null,
+    isComposing:event.isComposing??null,targetId:small(event.target?.id)};
+  active.trace.push(value);tracedEvents.set(event,value);
+  queueMicrotask(()=>{value.defaultPreventedAtCaptureMicrotask=event.defaultPrevented;});
 }
 export async function prepare(locale) {
   if(!['en','ru'].includes(locale))throw new Error('Locale must be en or ru');
@@ -46,6 +49,11 @@ export async function prepare(locale) {
   for(const name of ['keydown','keyup','beforeinput','input','compositionstart','compositionupdate','compositionend','focusin','focusout'])listen(element,name,trace);
   for(const name of ['keydown','keyup','focusin','focusout'])listen(document.getElementById('host-recovery-control'),name,trace);
   listen(document,'selectionchange',event=>{const selection=document.getSelection();if(selection?.anchorNode&&element.contains(selection.anchorNode))trace(event);});
+  for(const name of ['keydown','keyup','beforeinput','input','compositionstart','compositionupdate','compositionend','focusin','focusout','selectionchange']) {
+    const observe=event=>{const value=tracedEvents.get(event);if(value)value.defaultPreventedAtDocumentBubble=event.defaultPrevented;};
+    document.addEventListener(name,observe);
+    active.removals.push(()=>document.removeEventListener(name,observe));
+  }
   await window.domHost.select(active.id,'/0/2',2);
   const initial=await window.domHost.inspect(active.id);active.initial=initial;active.tc=row(initial,'/0/2').id;
   expected(initial,d0,active.tc,2,0,0);return {id:active.id,locale,text:active.text,initial,metadata:await window.domHost.metadata()};
@@ -93,6 +101,7 @@ export function verifyTrace() {
   }
   if(!trusted.some(event=>event.type==='keydown'&&event.key==='Tab'&&event.phase==='focus-return'))throw new Error('Missing trusted physical focus-return Tab');
   if(active.trace.some(event=>event.type==='beforeinput'&&!event.isTrusted))throw new Error('Untrusted beforeinput cannot qualify native lane');
+  if(trusted.some(event=>event.type==='beforeinput'&&event.cancelable&&!event.isComposing&&event.defaultPreventedAtDocumentBubble!==true))throw new Error('Cancelable native beforeinput was not prevented at document bubble');
   return {status:'passed',trustedBeforeinput:trusted.filter(event=>event.type==='beforeinput').length,
     observedInputEvents:trusted.filter(event=>event.type==='input').length,
     note:'Canceled beforeinput may correctly produce zero browser input events; the actual trace is retained.'};
