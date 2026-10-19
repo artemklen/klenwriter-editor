@@ -22,10 +22,15 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./dom": {
+      "types": "./dist/dom.d.ts",
+      "import": "./dist/dom.js"
     }
   },
   "dependencies": {
-    "@klenwriter/editor-sdk": "0.0.0"
+    "@klenwriter/editor-sdk": "0.0.0",
+    "@klenwriter/editor-dom": "0.0.0"
   },
   "klenwriterEditor": {
     "role": "kwdj",

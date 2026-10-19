@@ -82,7 +82,8 @@ for (const pkg of metadata.packages) {
   }
 }
 const lock = JSON.parse(readFileSync('package-lock.json', 'utf8'));
-const packageGraph = { wasm: [], sdk: ['wasm'], dom: ['sdk'], kwdj: ['sdk'], vanilla: ['dom'], angular: ['vanilla'] };
+// ADR-005: optional concrete-profile DOM subpath; no generic package imports it.
+const packageGraph = { wasm: [], sdk: ['wasm'], dom: ['sdk'], kwdj: ['sdk', 'dom'], vanilla: ['dom'], angular: ['vanilla'] };
 for (const [name, allowed] of Object.entries(packageGraph)) {
   const manifest = JSON.parse(readFileSync(`packages/${name}/package.json`, 'utf8'));
   assert.deepEqual(Object.keys(manifest.dependencies).sort(), allowed.map(name => identity.web[name].name).sort(),

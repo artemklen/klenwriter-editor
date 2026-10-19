@@ -22,6 +22,8 @@ use serde_json::{Value, json};
 use std::{cell::Cell, rc::Rc};
 use uuid::Uuid;
 
+#[path = "command_backward.rs"]
+mod backward;
 #[path = "command_inline.rs"]
 mod inline;
 #[path = "command_structural.rs"]
@@ -713,5 +715,5 @@ pub fn observe() -> Value {
         })
         .collect::<Vec<_>>();
     let passed = cases.iter().filter(|v| v["status"] == "passed").count();
-    json!({"format":"klenwriter-editor-command-observations","version":1,"status":if passed==cases.len(){"passed"}else{"failed"},"literal_cases":cases,"literal_total":24,"literal_passed":passed,"generated":generated(),"future_typing":future_typing(),"structural":structural::observe(),"inline":inline::observe(),"scope":"Actual native/bootstrap Session<KwdjProfile>; no public transport or mounted UI claim"})
+    json!({"format":"klenwriter-editor-command-observations","version":1,"status":if passed==cases.len(){"passed"}else{"failed"},"literal_cases":cases,"literal_total":24,"literal_passed":passed,"generated":generated(),"future_typing":future_typing(),"structural":structural::observe(),"inline":inline::observe(),"backward":backward::observe(),"scope":"Actual native/bootstrap Session<KwdjProfile>; no public transport or mounted UI claim"})
 }

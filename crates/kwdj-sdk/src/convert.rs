@@ -88,6 +88,7 @@ pub fn intent_in(
             literal,
         },
         KwdjIntentDto::DismissSlash {} => KwdjIntent::DismissSlash,
+        KwdjIntentDto::DeleteBackward {} => KwdjIntent::DeleteBackward,
     })
 }
 

@@ -9,3 +9,26 @@
   outline: 2px solid var(--editor-focus-color);
   outline-offset: 2px;
 }
+.editor-surface [contenteditable="false"] { user-select: all; }
+.editor-surface p, .editor-surface h1, .editor-surface h2, .editor-surface h3,
+.editor-surface h4, .editor-surface h5, .editor-surface h6 { white-space: pre-wrap; }
+.editor-surface pre { white-space: pre-wrap; font-family: ui-monospace, monospace; }
+.editor-surface .editor-align-left { text-align: left; }
+.editor-surface .editor-align-center { text-align: center; }
+.editor-surface .editor-align-right { text-align: right; }
+.editor-surface .editor-align-justify { text-align: justify; }
+.editor-surface .editor-first-line-indent { text-indent: 2em; }
+.editor-surface .editor-task-list { list-style: none; padding-inline-start: 1.5em; }
+.editor-surface .editor-task-item { position: relative; }
+.editor-surface .editor-task-item::before { content: '\2610'; position: absolute; inset-inline-start: -1.25em; }
+.editor-surface .editor-task-item.editor-checked::before { content: '\2611'; }
+.editor-surface .editor-scene-break { margin-block: 1.5em; border: 0; border-top: 1px solid currentColor; }
+.editor-surface .editor-color-muted { color: #595959; }
+.editor-surface .editor-color-accent { color: #275dad; }
+.editor-surface .editor-color-manuscript { color: #72472d; }
+.editor-surface .editor-color-warning { color: #855500; }
+.editor-surface .editor-color-success { color: #24643b; }
+.editor-surface .editor-color-danger { color: #a12d2d; }
+.editor-surface .editor-highlight-accent { background-color: #dceaff; }
+.editor-surface .editor-highlight-manuscript { background-color: #f1e3d6; }
+.editor-surface .editor-highlight-warning { background-color: #fff0b3; }

@@ -2,6 +2,7 @@
 //! Frozen compiled KWDJ command policies. No engine import or publication authority.
 
 mod block;
+mod delete;
 mod inline;
 
 use editor_core::candidate::CandidateRead;
@@ -81,6 +82,7 @@ pub enum KwdjIntent<I> {
         literal: String,
     },
     DismissSlash,
+    DeleteBackward,
 }
 
 pub const KWDJ_COMMANDS: &[CommandDescriptor] = &[
@@ -128,6 +130,9 @@ pub const KWDJ_COMMANDS: &[CommandDescriptor] = &[
     },
     CommandDescriptor {
         id: "org.klenwriter.kwdj/command/dismiss-slash",
+    },
+    CommandDescriptor {
+        id: "org.klenwriter.kwdj/command/delete-backward",
     },
 ];
 
@@ -202,6 +207,7 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::Remove { .. } => KWDJ_COMMANDS[12].id,
             KwdjIntent::AcceptSlash { .. } => KWDJ_COMMANDS[13].id,
             KwdjIntent::DismissSlash => KWDJ_COMMANDS[14].id,
+            KwdjIntent::DeleteBackward => KWDJ_COMMANDS[15].id,
         }
     }
 
@@ -220,6 +226,7 @@ impl CommandProvider for KwdjProfile<'_> {
             }
             KwdjIntent::UnsetLink => inline::unset_link(view, state, plan)?,
             KwdjIntent::InsertText { text } => inline::insert_text(view, state, text, plan)?,
+            KwdjIntent::DeleteBackward => delete::prepare(view, state, plan)?,
             KwdjIntent::DismissSlash => CommandPresentation { active: None },
             _ => block::prepare(*context, view, state, intent, plan)?,
         })

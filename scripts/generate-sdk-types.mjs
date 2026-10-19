@@ -31,7 +31,7 @@ export function computeSdkBuildIdentity() {
   };
   for (const path of ['Cargo.toml', 'Cargo.lock', 'rust-toolchain.toml', 'package.json', 'package-lock.json',
     'package-map.json', 'tsconfig.base.json', 'tsconfig.json', 'scripts/generate-sdk-types.mjs',
-    'scripts/build-workspace.mjs', 'scripts/build-extensions-consumers.mjs', 'scripts/dependency-notices.mjs', 'scripts/package-identity.mjs', 'scripts/seal-sdk-wasm.mjs', 'scripts/sdk-distribution.mjs',
+    'scripts/build-workspace.mjs', 'scripts/generate-dom-inventory.mjs', 'scripts/build-extensions-consumers.mjs', 'scripts/dependency-notices.mjs', 'scripts/package-identity.mjs', 'scripts/seal-sdk-wasm.mjs', 'scripts/sdk-distribution.mjs',
     'provenance/licenses/ts-rs-12.0.1-MIT.txt', 'provenance/licenses/sdk-generator-license-sources.json']) add(path);
   // Every workspace library contributes, including original extension modules
   // and semantic JSON registrations. A new crate cannot escape build identity
@@ -42,13 +42,16 @@ export function computeSdkBuildIdentity() {
     add(`crates/${entry.name}/Cargo.toml`);
     walk(`crates/${entry.name}/src`, /\.(?:rs|json)$/);
   }
+  add('crates/wasm/examples/dom_inventory.rs');
+  add('examples/notes-extension/d0.json');
+  add('examples/notes-extension/dom-inventory.mjs');
   add('crates/wasm/examples/sdk_types.rs');
   add('crates/wasm/examples/sdk_types_v2.rs');
   add('crates/wasm/examples/sdk_manifest.rs');
   add('crates/wasm/examples/sdk_manifest_v2.rs');
-  for (const name of ['wasm', 'sdk', 'kwdj']) {
+  for (const name of ['wasm', 'sdk', 'dom', 'kwdj']) {
     add(`packages/${name}/package.json`); add(`packages/${name}/tsconfig.json`);
-    walk(`packages/${name}/src`, /\.(?:ts|js)$/);
+    walk(`packages/${name}/src`, /\.(?:ts|js|css)$/);
   }
   const sourceHashes = {};
   const hash = createHash('sha256').update('klenwriter-editor-sdk-source/1\0');
