@@ -76,8 +76,10 @@ An initial end checkpoint is followed by two equal complete reads at consecutive
 RAF boundaries, without an intervening relevant mutation. The initial checkpoint
 does not count as either RAF read. Changed reads reset the equality count without
 extending the budget. The owner has at most eight post-end reads, one RAF and one
-deadline timer, with a 250ms deadline from end. A callback first observed at or
-after the deadline cannot dispatch. These are engineering bounds, not a promise
+deadline timer, with a 250ms deadline from entry to the admitted end callback,
+including its initial DOM observation. A callback first observed at or after the
+deadline cannot dispatch; a read that reaches the deadline cannot authorize a
+later dispatch either. These are engineering bounds, not a promise
 that every browser stream becomes quiescent in that time.
 
 Before dispatch the owner synchronously rechecks the full context/stamp, original
@@ -120,6 +122,14 @@ does not prove a new gesture. A second unmatched key, noncancelable/mismatching
 input, changed target or queued original completion is retained rather than
 silently coalesced or queued. Ordinary typing without a composition generation
 or tombstone keeps the existing input path.
+
+Held-key identities are tracked only for an admitted generation. Their aggregate
+UTF-16 payload, including the closing identity and pending permit, uses the
+existing text-observation bound and is included in retained-input accounting.
+An idle mount keeps no key-event log. An identity that would exceed the bound
+causes explicit recovery with the original event retained for the host; it is
+never truncated into an ordinary permit. Retirement and destroy release these
+identities.
 
 This policy does not claim causal provenance for arbitrary streams. In particular,
 the historical Safari early-space observation—U+0020 event data, U+00A0 observed

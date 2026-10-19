@@ -3,8 +3,8 @@
 Это библиотека с headless Session SDK и [basic mounted DOM adapter](docs/dom.md).
 [Mounted selection](docs/selection.md), bookmarks, edge autoscroll и минимальные
 plaintext copy/cut реализованы поверх SDK2. [Composition41](docs/composition.md)
-добавляет bounded settlement и retained recovery; новая browser/installed
-приёмка ещё не выполнена. Clipboard47, UI66 и vanilla alpha сохраняют отдельные
+добавляет bounded settlement и retained recovery; browser/installed приёмка
+подтверждается отдельными exact-source receipts. Clipboard47, UI66 и vanilla alpha сохраняют отдельные
 задачи и acceptance gates.
 Следуйте [архитектуре](docs/m0/architecture.md)
 и контракту задачи Linear. Реализуйте общую семантику на Rust; KWDJ остаётся отдельным

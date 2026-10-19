@@ -333,7 +333,27 @@ for(const item of clipboard.cases.filter(c=>!clipboardUnitBoundaryIds.has(c.id))
   } else if(item.id==='CP18')finished=await call(page,'clipboardAtPublication',id);
   else {
     if(item.id==='CP26'){
-      const path=literal.input.identity_roles.L,node=authoredNode(literal.input.document,path);await call(page,'beginProvisional',id,'controlled provisional text',[...path,...Array((node.marks?.length??0)+1).fill(0)]);
+      // CP26 requires an active composition before clipboard access. Its L3
+      // document stays intact; the original cross-list-item range now correctly
+      // refuses composition correspondence under OSR41. Explicitly target all
+      // of the existing L Text so this controlled replacement has that actual
+      // precondition without changing any frozen clipboard expectation.
+      const path=literal.input.identity_roles.L,node=authoredNode(literal.input.document,path);
+      const local={anchor:{kind:'text',node:'L',offset:0,affinity:'after'},focus:{kind:'text',node:'L',offset:node.text.length,affinity:'after'}};
+      expect(before.state.stamp).toMatchObject({revision:'0',selection_epoch:'1',history_epoch:'0'});
+      const stamp={...before.state.stamp,selection_epoch:'2'},target=selection(before.roles,local);
+      const targeted=response(await call(page,'selectModel',id,local));expect(targeted.status).toBe('ok');expect(targeted.value.kind).toBe('mutation');expect(targeted.value.effect).toBe('state_changed');
+      const expectedState={...before.state,stamp,selection:target};expect(targeted.value.state).toEqual(expectedState);
+      comparison=await checkpoint(page,id,'CP26 explicit same-Text target before controlled composition');
+      expect(comparison.state).toEqual(expectedState);expect(comparison.canonical).toBe(literal.input.canonical_json);expect(comparison.roles).toEqual(before.roles);expect(comparison.native).toEqual(before.native);
+      expect(comparison.rows).toEqual(before.rows.map(row=>({...row,node:{...row.node,stamp}})));
+      expect(comparison.events).toEqual([...before.events,{sequence:'2',before:before.state.stamp,after:stamp,selection_before:before.state.selection,selection_after:target,
+        stored_marks_before:before.state.stored_marks,stored_marks_after:before.state.stored_marks,dirty_before:before.state.dirty,dirty_after:before.state.dirty,history:before.state.history,
+        change:{kind:'state',selection_changed:true,stored_marks_changed:false,history_changed:false,baseline_changed:false}}]);
+      const provisionalText='controlled provisional text',provisional=await call(page,'beginProvisional',id,provisionalText,[...path,...Array((node.marks?.length??0)+1).fill(0)]);
+      expect(provisional.lifecycle).toBe('ready');expect(provisional.text).toBe(provisionalText);expect(provisional.rawDom.inside).toBe(true);expect(provisional.rawDom.anchor.text).toBe(provisionalText);
+      const protectedCapture=await call(page,'captureBookmark',id,'CP26-active-composition');expect(protectedCapture.status).toBe('dom_refused');expect(protectedCapture.diagnostic.code).toBe('dom.composition_conflict');
+      pure(await checkpoint(page,id,'CP26 active composition preserves native target before clipboard'),comparison);
     }
     if(item.id==='CP28')await call(page,'outsideFocus');
     finished=await call(page,'clipboard',id,action);
@@ -345,6 +365,7 @@ for(const item of clipboard.cases.filter(c=>!clipboardUnitBoundaryIds.has(c.id))
   points.get(page).checkpoints.push({label:'controlled host platform outcome; no OS ACK claimed',...finished});
   if(item.id==='CP25')return;
   const after=await checkpoint(page,id,'clipboard after');
+  if(item.id==='CP26'){expect(after.rawDom.inside).toBe(true);expect(after.rawDom.anchor.text).toBe('controlled provisional text');expect(after.rawDom.focus.text).toBe('controlled provisional text');}
   if(item.expected.changedByThisCut){expect(after.canonical).toBe(literal.after.canonical_json);expect(after.state.stamp.revision).toBe('1');expect(after.state.history.undo_entries).toBe('1');expect(response(await call(page,'history',id,'undo')).status).toBe('ok');expect((await checkpoint(page,id,'clipboard undo')).canonical).toBe(literal.input.canonical_json);}
   else if(item.id!=='CP18')pure(after,comparison);
   if(item.id==='CP28')expect(await call(page,'outsideState')).toEqual({id:'selection-host-control',start:1,end:4});

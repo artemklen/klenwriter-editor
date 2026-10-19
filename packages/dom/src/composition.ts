@@ -35,7 +35,7 @@ interface Generation {
   submission:Submission|null; response:DeepReadonly<Response>|null; outcome:CompositionRecovery['nativeOutcome'];
   accepted:Accepted|null;
 }
-interface Permit { readonly event:KeyboardEvent; readonly key:string; readonly code:string; readonly shift:boolean; serial:bigint; readonly accepted:Accepted }
+interface Permit { readonly key:string; readonly code:string; readonly shift:boolean; serial:bigint; readonly accepted:Accepted }
 interface NativeFrame { readonly base:DeepReadonly<StampDto>; readonly context:DeepReadonly<SessionContextV2>; readonly selection:DeepReadonly<SelectionDto>; readonly affected:readonly string[] }
 type Packet={readonly region:RecoveryRegion;readonly composition:CompositionRecovery};
 const same=(a:unknown,b:unknown)=>JSON.stringify(a)===JSON.stringify(b);
@@ -51,7 +51,7 @@ export class CompositionOwner {
   #sink:CompositionConfiguration['onResources'];
   #generation:Generation|null=null; #next=0n; #destroyed=false;
   #raf:number|null=null; #timer:number|null=null; #pending=0; #dispatching=0; #nativeScope=false; #blocked=false;
-  #permit:Permit|null=null; #held=new Set<string>(); #enterReleased=false;
+  #permit:Permit|null=null; #held=new Set<string>(); #heldUnits=0; #enterReleased=false;
   #ownedEvents=new WeakSet<Event>(); #unsubscribe:(()=>void)|null;
   #packet:Packet|null=null; #unapplied:CompositionUnappliedInput|null=null; #ordinaryFrame:NativeFrame|null=null;
   /** The optional seed is internal controlled boundary setup, never a runtime setter. */
@@ -74,6 +74,8 @@ export class CompositionOwner {
     });
   }
   #now():number {return this.#configuration?.element.ownerDocument.defaultView?.performance.now()??0;}
+  #keyUnits():number {return this.#heldUnits+(this.#generation?.closingKey?.length??0)+(this.#permit?this.#permit.key.length+this.#permit.code.length:0);}
+  #clearKeys():void {this.#held.clear();this.#heldUnits=0;this.#permit=null;this.#enterReleased=false;if(this.#generation)this.#generation.closingKey=null;}
   #failure(reason:Reason):DomRefusal {
     const code=reason==='stale'?'dom.composition_stale':reason==='ambiguous_tail'?'dom.composition_ambiguous':reason==='settle_limit'?'dom.composition_settle_limit':reason==='capture_limit'||reason==='generation_limit'?'dom.composition_limit':reason==='busy'?'dom.busy':'dom.recovery_required';
     return domRefusal(code,'composition',this.#configuration?.capture()??this.#generation?.base??null,null,null,reason==='native_fatal'||reason==='native_unknown'?'unknown':'none');
@@ -145,7 +147,7 @@ export class CompositionOwner {
     if(event)this.#retainEvent(event);
     const g=this.#generation;
     if(this.#blocked)return;this.#blocked=true;
-    this.#stop();this.#permit=null;
+    this.#stop();this.#clearKeys();
     // The safe copy/actual DOM capability is owned BEFORE any restoration/callback.
     const preserveClaim=reason==='native_fatal'||reason==='native_unknown';
     const captured=g?.captureExhausted?this.#transfer():region??(preserveClaim?g?.latest?.region:null)??this.#recoveryRegion();
@@ -191,6 +193,7 @@ export class CompositionOwner {
     g.reads++;
     const observation=this.#observe();
     if(!observation||isDomRefusal(observation)){this.#recover(observation&&isDomRefusal(observation)&&observation.diagnostic.code==='dom.composition_stale'?'stale':'capture_limit',undefined,this.#recoveryRegion());return;}
+    if(this.#now()>=g.deadline){this.#recover('settle_limit');return;}
     g.stable=g.priorRaf===observation.fingerprint&&g.mutations===g.priorRafMutations?g.stable+1:1;
     g.priorRaf=observation.fingerprint;g.priorRafMutations=g.mutations;
     if(g.stable>=2){this.#claim(observation);return;}
@@ -243,8 +246,10 @@ export class CompositionOwner {
   }
   #claim(observation:CompositionObservation):void {
     const c=this.#configuration,g=this.#generation;if(!c||!g||g.phase!=='settling'||this.#destroyed)return;
+    if(g.deadline===null||this.#now()>=g.deadline){this.#recover('settle_limit');return;}
     if(!this.#coherent(g)){this.#recover('stale');return;}
     if(c.busy()){this.#recover('busy');return;}
+    if(this.#now()>=g.deadline){this.#recover('settle_limit');return;}
     this.#stop();g.latest=observation;g.phase='committing';g.foreignDuringClaim=false;
     this.#packet=this.#snapshot('native_unknown',observation.region);this.#emit();
     if(observation.unchanged){
@@ -257,7 +262,9 @@ export class CompositionOwner {
     try{command=c.bindings.insertText?.(observation.replacement);}catch{this.#recover('ambiguous_tail');return;}
     if(this.#destroyed)return;
     if(!command){this.#recover('ambiguous_tail');return;}
+    if(this.#now()>=g.deadline){this.#recover('settle_limit');return;}
     this.#unprotect();if(this.#destroyed)return;
+    if(this.#now()>=g.deadline){this.#recover('settle_limit');return;}
     g.outcome='unknown';this.#packet=this.#snapshot('native_unknown',observation.region);
     this.#nativeScope=true;this.#dispatching++;this.#emit();
     try{const result=c.submit({kind:'command',stamp:g.base as StampDto,command,history_hint:{kind:'isolated'}});this.#nativeScope=false;this.#ticket(g,result);}
@@ -278,6 +285,7 @@ export class CompositionOwner {
     if(!c.selection.intentAvailable()){this.#recover('generation_limit',event,this.#transfer());return;}
     const window=c.view.beginComposition(base,state.selection);
     if(isDomRefusal(window)){this.#recover('capture_limit',event,this.#transfer());return;}
+    this.#clearKeys();
     this.#next++;this.#generation={id:this.#next,window,base,context,selection:state.selection,phase:'composing',serial:c.selection.intent(),latest:null,mutations:0,captureExhausted:false,reads:0,priorRaf:null,priorRafMutations:0,stable:0,deadline:null,closingKey:null,foreignDuringClaim:false,submission:null,response:null,outcome:'not_submitted',accepted:null};
     this.#packet=null;this.#ordinaryFrame=null;this.#permit=null;this.#enterReleased=false;
     c.selection.cancel();c.view.setComposing(true);c.composing(true);this.#observe();this.#emit();
@@ -295,14 +303,16 @@ export class CompositionOwner {
     if(g.phase==='committing'||g.phase==='settling')return;
     if(g.phase==='committed'||g.phase==='cancelled'){this.#tail(event);return;}
     if(g.phase!=='composing')return;
+    const deadline=this.#now()+250;
     this.#retainEvent(event);const observation=this.#observe();
     if(!observation||isDomRefusal(observation)){this.#recover(observation&&isDomRefusal(observation)&&observation.diagnostic.code==='dom.composition_stale'?'stale':'capture_limit',event,this.#recoveryRegion());return;}
-    g.phase='settling';g.deadline=this.#now()+250;g.reads=0;g.priorRaf=null;g.priorRafMutations=g.mutations;g.stable=0;
+    g.phase='settling';g.deadline=deadline;g.reads=0;g.priorRaf=null;g.priorRafMutations=g.mutations;g.stable=0;
     c.view.setComposing(false);c.composing(false);this.#watch(g.deadline);this.#schedule();
   }
   blur(_event:Event):void {
     const g=this.#generation;if(this.#destroyed||!g||g.phase!=='composing')return;
-    this.#observe();if(this.#timer===null)this.#watch(this.#now()+250);
+    const deadline=this.#now()+250;
+    this.#observe();if(this.#timer===null)this.#watch(deadline);
   }
   #tail(event:InputEvent|CompositionEvent):void {
     const g=this.#generation,c=this.#configuration;if(!g||!c)return;
@@ -373,25 +383,35 @@ export class CompositionOwner {
     try{const ranges=event.getTargetRanges?.()??[];return ranges.length===0||ranges.length===1&&ranges[0].startContainer===browser.anchorNode&&ranges[0].endContainer===browser.focusNode&&ranges[0].startOffset===browser.anchorOffset&&ranges[0].endOffset===browser.focusOffset;}catch{return false;}
   }
   keydown(event:KeyboardEvent):void {
-    const c=this.#configuration;if(this.#destroyed||!c)return;
-    const id=event.code||event.key,previous=this.#held.has(id);this.#held.add(id);
-    const g=this.#generation;if(!g)return;
-    if(g.phase==='composing'){
-      g.closingKey=id;this.#ownedEvents.add(event);c.selection.invalidate(false,event);return;
+    const c=this.#configuration,g=this.#generation;if(this.#destroyed||!c||!g||this.#blocked||g.phase==='recovery')return;
+    // Idle typing keeps the existing ordinary path. Only this generation owns
+    // held identities, using the existing bounded text budget for all payloads.
+    const id=event.code||event.key,previous=this.#held.has(id);
+    const heldUnits=this.#heldUnits+(previous?0:id.length);
+    const closingUnits=g.phase==='composing'?id.length:g.closingKey?.length??0;
+    if(heldUnits+closingUnits+(this.#permit?this.#permit.key.length+this.#permit.code.length:0)>TEXT_LIMIT){
+      this.#recover('capture_limit',event);if(event.cancelable)event.preventDefault();return;
     }
+    if(!previous){this.#held.add(id);this.#heldUnits=heldUnits;}
+    if(g.phase==='composing'){
+      g.closingKey=id;this.#ownedEvents.add(event);c.selection.invalidate(false,event);this.#emit();return;
+    }
+    this.#emit();
     const ordinary=!event.isComposing&&event.keyCode!==229&&!['Dead','Process','Escape','Shift','Control','Alt','Meta'].includes(event.key)
       &&!event.altKey&&!event.ctrlKey&&!event.metaKey&&(scalarKey(event.key)||['Backspace','Delete','Enter'].includes(event.key));
     if(!ordinary)return;
-    if(g.phase==='recovery')return;
     if(g.phase==='settling'||g.phase==='committing'){this.#recover('busy',event);event.preventDefault();return;}
     if(previous||event.repeat||event.key==='Enter'&&(!g.closingKey||g.closingKey==='Enter'||g.closingKey==='NumpadEnter')&&!this.#enterReleased){this.#recover('ambiguous_tail',event);event.preventDefault();return;}
     if(this.#permit||!g.accepted||!this.#accepted(g.accepted)||c.busy()){this.#recover('ambiguous_tail',event);event.preventDefault();return;}
-    this.#permit={event,key:event.key,code:event.code,shift:event.shiftKey,serial:g.accepted.serial,accepted:g.accepted};
-    this.#ownedEvents.add(event);c.selection.invalidate(false,event);
+    if(this.#keyUnits()+event.key.length+event.code.length>TEXT_LIMIT){this.#recover('capture_limit',event);if(event.cancelable)event.preventDefault();return;}
+    this.#permit={key:event.key,code:event.code,shift:event.shiftKey,serial:g.accepted.serial,accepted:g.accepted};
+    this.#ownedEvents.add(event);c.selection.invalidate(false,event);this.#emit();
   }
   keyup(event:KeyboardEvent):void {
-    this.#held.delete(event.code||event.key);if(event.key==='Enter')this.#enterReleased=true;
+    if(this.#destroyed||!this.#generation)return;
+    const id=event.code||event.key;if(this.#held.delete(id))this.#heldUnits-=id.length;if(event.key==='Enter')this.#enterReleased=true;
     if(this.#permit&&(this.#permit.code||this.#permit.key)===(event.code||event.key))this.#permit=null;
+    this.#emit();
   }
   externalSubmission(request:MountedMutation,result:Submission|DomRefusal):void {
     const c=this.#configuration,g=this.#generation;
@@ -399,7 +419,7 @@ export class CompositionOwner {
     const state=c.readState();if(!state?.selection||!same(state.stamp,c.capture())||!same(c.context(),g.context)||!c.selection.intentAvailable())return;
     const window=c.view.beginComposition(state.stamp,state.selection);
     try{if(isDomRefusal(window))return;const observation=c.view.observeComposition(window);if(isDomRefusal(observation)||!observation.unchanged)return;
-      this.#generation=null;this.#permit=null;this.#unapplied=null;this.#packet=null;this.#ordinaryFrame=null;
+      this.#clearKeys();this.#generation=null;this.#unapplied=null;this.#packet=null;this.#ordinaryFrame=null;
     }finally{c.view.endProvisional();this.#emit();}
   }
   isProtected():boolean {return this.#blocked||!!this.#generation&&['composing','settling','committing','recovery'].includes(this.#generation.phase);}
@@ -421,13 +441,14 @@ export class CompositionOwner {
       if(g.accepted&&g.accepted.fingerprint!==g.latest?.fingerprint)retainedInputBytes+=2*g.accepted.fingerprint.length;
     }
     if(!this.#destroyed&&this.#unapplied?.kind==='bounded')retainedInputBytes+=2*((this.#unapplied.data?.length??0)+(this.#unapplied.key?.length??0)+(this.#unapplied.code?.length??0)+(this.#unapplied.inputType?.length??0));
+    if(!this.#destroyed)retainedInputBytes+=2*this.#keyUnits();
     return Object.freeze({continuations:this.#pending+this.#dispatching+Number(this.#raf!==null)+Number(this.#timer!==null),retainedInputBytes,retainedRecoveryRegions:regions.size});
   }
   #emit():void {try{this.#sink?.(this.resources());}catch{/* Internal numeric accounting must not replace semantic outcome. */}}
   destroy():void {
     if(this.#destroyed)return;
     this.retained('destroyed');this.#stop();this.#destroyed=true;this.#unsubscribe?.();this.#unsubscribe=null;
-    this.#permit=null;this.#held.clear();this.#generation=null;this.#ordinaryFrame=null;this.#unapplied=null;
+    this.#clearKeys();this.#generation=null;this.#ordinaryFrame=null;this.#unapplied=null;
     this.#configuration=null;this.#packet=null;this.#emit();if(this.#pending===0&&this.#dispatching===0)this.#sink=undefined;
   }
 }

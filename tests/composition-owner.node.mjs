@@ -11,7 +11,7 @@ const policy=id=>{const row=rows.find(row=>row.id.startsWith(`${id}-`));assert(r
 const clone=value=>structuredClone(value);
 const nativeRefusal={status:'refused',diagnostic:{code:'position.invalid',path:'',category:'sdk',details:{},stamp:null,may_have_committed:false}};
 function harness({native='ok',onRecovery,onSubmit,seed=0n,structuralOrdinary=false}={}) {
-  let time=0,next=0,serial=0n,listener=null,available=true,focus=true,text='abcd',mutations=0,viewFailure=null;
+  let time=0,next=0,serial=0n,listener=null,available=true,focus=true,text='abcd',mutations=0,viewFailure=null,observeCost=0,bindingCost=0;
   let state={stamp:{session:'s1:1:1',generation:'1',revision:'0',selection_epoch:'1',history_epoch:'0'},
     root:'n1:1:1:1',selection:{anchor:{kind:'text',node:'n1:1:1:3',offset:1,affinity:'after'},focus:{kind:'text',node:'n1:1:1:3',offset:3,affinity:'after'}},stored_marks:null,dirty:false,saved_revision:'0',history:{undo_entries:'0',redo_entries:'0',retained_bytes:'0'}};
   const context={build_id:'controlled-build',profile:{},registry_digest:'registry',capability_digest:'capabilities'};
@@ -27,9 +27,9 @@ function harness({native='ok',onRecovery,onSubmit,seed=0n,structuralOrdinary=fal
     observeInputIntent(fn){listener=fn;return()=>{listener=null;};}};
   const view={
     beginComposition(stamp,range){calls.push('begin');return {stamp,selection:range,entries:[],parent:element,before:null,after:null,anchor:{node:point,offset:1},focus:{node:point,offset:3},selectedAtomIds:[],affectedNodeIds:['n1:1:1:2'],originalRegion:region()};},
-    observeComposition(window){calls.push('observe');return viewFailure??(structuralOrdinary&&ordinaryCalls>0&&window.stamp.revision!==state.stamp.revision
+    observeComposition(window){calls.push('observe');time+=observeCost;observeCost=0;return viewFailure??(structuralOrdinary&&ordinaryCalls>0&&window.stamp.revision!==state.stamp.revision
       ?{status:'dom_refused',diagnostic:{code:'dom.composition_stale',phase:'composition',stamp:clone(state.stamp),publication:'none',node:null,typeId:null}}
-      :{region:region(),unchanged:text==='abcd',replacement:text==='abcd'?'bc':text.slice(1,-1),fingerprint:`actual:${text}`});},
+      :{region:region(),unchanged:text===window.originalRegion.provisionalText,replacement:text==='abcd'?'bc':text.slice(1,-1),fingerprint:`actual:${text}`});},
     restoreComposition(){calls.push('restore');text='abcd';return null;},
     readSelection:()=>clone(state.selection),restoreSelection:()=>{calls.push('restore-selection');return null;},
     setComposing:value=>calls.push(`composing:${value}`),endProvisional:()=>calls.push('unprotect'),captureRegion:()=>viewFailure?{kind:'retained_dom',element,reason:'capture_limit',ownership:'transferred_to_host'}:region(),
@@ -47,7 +47,7 @@ function harness({native='ok',onRecovery,onSubmit,seed=0n,structuralOrdinary=fal
     if(native==='queued') {originalTicket={status:'queued',completion:new Promise((yes,no)=>{resolve=()=>yes(response());reject=no;})};return originalTicket;}
     originalTicket={status:'completed',response:response()};return originalTicket;
   }
-  const config={element,view,selection,bindings:{insertText:value=>({id:'literal-insert-text',payload_json:JSON.stringify({kind:'insert_text',text:value})})},
+  const config={element,view,selection,bindings:{insertText:value=>{time+=bindingCost;bindingCost=0;return {id:'literal-insert-text',payload_json:JSON.stringify({kind:'insert_text',text:value})};}},
     canEdit:()=>true,busy:()=>false,capture:()=>clone(state.stamp),context:()=>clone(context),readState:()=>clone(state),
     submit(request){submissions++;calls.push('submit');selection.invalidate();onSubmit?.(owner);return ticket();},
     ordinary(event){ordinaryCalls++;calls.push('ordinary');event.preventDefault();selection.invalidate(false,event);text='aZ d';return ticket();},
@@ -59,7 +59,7 @@ function harness({native='ok',onRecovery,onSubmit,seed=0n,structuralOrdinary=fal
     start(){owner.start(event('compositionstart',{data:''}));},end(){owner.end(event('compositionend',{data:'Q'}));},
     raf(ms=16){time+=ms;const pending=[...rafs.values()];rafs.clear();pending.forEach(f=>f(time));},
     elapsed(ms){time+=ms;const pending=[...timers.entries()].filter(([,v])=>v.at<=time);pending.forEach(([id,v])=>{timers.delete(id);v.f();});},
-    setText(value){text=value;},setMutations(n){mutations=n;},setFailure(code='dom.composition_limit'){viewFailure={status:'dom_refused',diagnostic:{code,phase:'composition',stamp:clone(state.stamp),publication:'none',node:null,typeId:null}};},
+    setText(value){text=value;},setMutations(n){mutations=n;},setObserveCost(ms){observeCost=ms;},setBindingCost(ms){bindingCost=ms;},setFailure(code='dom.composition_limit'){viewFailure={status:'dom_refused',diagnostic:{code,phase:'composition',stamp:clone(state.stamp),publication:'none',node:null,typeId:null}};},
     staleNative(){state={...state,stamp:{...state.stamp,revision:'1'}};},setFocus(value){focus=value;},exhaustIntent(){available=false;},
     resolve:()=>resolve(),reject:()=>reject(new Error('unknown completion')),ticket:()=>originalTicket,state:()=>clone(state),
     submissions:()=>submissions,ordinaryCalls:()=>ordinaryCalls,timers:()=>timers.size,rafs:()=>rafs.size,listeners:()=>Number(listener!==null),
@@ -118,3 +118,46 @@ test('completed structural ordinary action uses a fresh native correspondence, w
 test('delayed deadline captures newest actual UA text without admitting a late dispatch [controlled]',()=>{const h=harness();h.start();h.setText('aQd');h.end();h.setText('aNewestd');h.raf(600);assert.equal(h.submissions(),0);assert.equal(h.recoveries[0].composition.reason,'settle_limit');assert.equal(h.recoveries[0].region.provisionalText,'aNewestd');assert.equal(h.timers(),0);assert.equal(h.rafs(),0);h.close();});
 test('delayed timer deadline captures newest actual UA text without admitting a late dispatch [controlled]',()=>{const h=harness();h.start();h.setText('aQd');h.end();h.setText('aNewestd');h.elapsed(600);assert.equal(h.submissions(),0);assert.equal(h.recoveries[0].composition.reason,'settle_limit');assert.equal(h.recoveries[0].region.provisionalText,'aNewestd');assert.equal(h.timers(),0);assert.equal(h.rafs(),0);h.close();});
 test('relevant mutation consumed by input between equal RAFs resets stability [controlled E09]',()=>{const h=harness();h.start();h.setText('aZd');h.end();h.raf();h.setMutations(1);h.owner.input(h.event('input',{inputType:'insertCompositionText',data:'Z'}));h.raf();assert.equal(h.submissions(),0);h.raf();assert.equal(h.submissions(),1);assert.equal(h.recoveries.length,0);h.close();});
+
+test('idle keyboard observations retain no identity log or prospective composition authority [controlled]',()=>{
+  const h=harness();for(const code of ['KeyX','unmatched-idle','x'.repeat(2097153)])h.owner.keydown(h.event('keydown',{key:'x',code}));
+  assert.deepEqual(h.owner.resources(),{continuations:0,retainedInputBytes:0,retainedRecoveryRegions:0});assert.equal(h.recoveries.length,0);
+  h.commit();h.owner.keydown(h.event('keydown',{key:'x',code:'KeyX'}));h.owner.beforeInput(h.event('beforeinput',{inputType:'insertText',data:'x'}));assert.equal(h.ordinaryCalls(),1);assert.equal(h.recoveries.length,0);h.close();
+});
+test('oversize active key identity retains the original event before adding state [controlled]',()=>{
+  const h=harness();h.start();h.setText('aQd');const event=h.event('keydown',{key:'Process',code:'x'.repeat(2097153)});h.owner.keydown(event);
+  const packet=h.recoveries[0];assert.equal(packet.composition.reason,'capture_limit');assert.equal(packet.composition.unappliedInput.kind,'retained_event');assert.equal(packet.composition.unappliedInput.event,event);assert.equal(packet.region.provisionalText,'aQd');assert(event.defaultPrevented);assert.equal(h.submissions(),0);assert(h.owner.resources().retainedInputBytes<1024);h.close();assert.equal(h.owner.resources().retainedInputBytes,0);
+});
+test('aggregate held and closing identity payload admits the exact existing cap then refuses overflow [controlled]',()=>{
+  const h=harness();h.start();h.setText('aQd');const base=h.owner.resources().retainedInputBytes,codes=['a','b','c','d'].map(c=>c.repeat(524288));
+  for(const code of codes.slice(0,3))h.owner.keydown(h.event('keydown',{key:'Process',code}));
+  assert.equal(h.recoveries.length,0);assert.equal(h.owner.resources().retainedInputBytes-base,2*2097152);
+  const event=h.event('keydown',{key:'Process',code:codes[3]});h.owner.keydown(event);const packet=h.recoveries[0];assert.equal(packet.composition.reason,'capture_limit');assert.equal(packet.composition.unappliedInput.kind,'bounded');assert.equal(packet.composition.unappliedInput.code,codes[3]);assert.equal(packet.region.provisionalText,'aQd');assert.equal(h.submissions(),0);
+  const retained=h.owner.resources();h.owner.keydown(h.event('keydown',{key:'Process',code:'another-ignored-key'}));assert.equal(h.recoveries.length,1);assert.deepEqual(h.owner.resources(),retained);h.close();
+});
+test('keyboard resource accounting releases held/permit strings and clears closing identity on retirement [controlled]',()=>{
+  const h=harness();h.start();const initial=h.owner.resources().retainedInputBytes;h.owner.keydown(h.event('keydown',{key:'q',code:'KeyQ'}));assert.equal(h.owner.resources().retainedInputBytes-initial,16);
+  h.owner.keyup(h.event('keyup',{key:'q',code:'KeyQ'}));assert.equal(h.owner.resources().retainedInputBytes-initial,8);
+  h.setText('aZd');h.end();h.raf();h.raf();const committed=h.owner.resources().retainedInputBytes;
+  h.owner.keydown(h.event('keydown',{key:' ',code:'Space'}));assert.equal(h.owner.resources().retainedInputBytes-committed,22);h.owner.keyup(h.event('keyup',{key:' ',code:'Space'}));assert.equal(h.owner.resources().retainedInputBytes,committed);assert.equal(h.resourceSnapshots.at(-1).retainedInputBytes,committed);
+  const st=h.state();h.owner.externalSubmission({kind:'set_selection',stamp:st.stamp,selection:st.selection},h.ticket());assert.deepEqual(h.owner.resources(),{continuations:0,retainedInputBytes:0,retainedRecoveryRegions:0});h.close();assert.equal(h.resourceSnapshots.at(-1).retainedInputBytes,0);
+});
+test('an unreleased composing key is not a fresh ordinary gesture even with repeat false [controlled]',()=>{
+  const h=harness();h.start();h.owner.keydown(h.event('keydown',{key:'x',code:'KeyX'}));h.setText('aZd');h.end();h.raf();h.raf();h.owner.keydown(h.event('keydown',{key:'x',code:'KeyX',repeat:false}));assert.equal(h.recoveries[0].composition.reason,'ambiguous_tail');assert.equal(h.ordinaryCalls(),0);assert.equal(h.submissions(),1);h.close();
+});
+test('released composing key permits a fresh gesture while repeat and unknown closing Enter remain negative [controlled]',()=>{
+  const h=harness();h.start();h.owner.keydown(h.event('keydown',{key:'x',code:'KeyX'}));h.setText('aZd');h.end();h.raf();h.raf();h.owner.keyup(h.event('keyup',{key:'x',code:'KeyX'}));h.owner.keydown(h.event('keydown',{key:'x',code:'KeyX'}));h.owner.beforeInput(h.event('beforeinput',{inputType:'insertText',data:'x'}));assert.equal(h.ordinaryCalls(),1);assert.equal(h.recoveries.length,0);h.close();
+  for(const event of [{key:'x',code:'KeyX',repeat:true},{key:'Enter',code:'Enter'}]){const negative=harness();negative.commit();negative.owner.keydown(negative.event('keydown',event));assert.equal(negative.recoveries[0].composition.reason,'ambiguous_tail');assert.equal(negative.ordinaryCalls(),0);negative.close();}
+});
+test('initial end capture time counts against the original 250ms deadline [controlled]',()=>{
+  const h=harness();h.start();h.setText('aZd');h.setObserveCost(300);h.end();h.raf(0);assert.equal(h.submissions(),0);assert.equal(h.recoveries[0].composition.reason,'settle_limit');assert.equal(h.recoveries[0].region.provisionalText,'aZd');assert.equal(h.timers(),0);assert.equal(h.rafs(),0);h.close();
+});
+test('initial blur capture time counts against its first 250ms watchdog [controlled]',()=>{
+  const h=harness();h.start();h.setText('aQd');h.setObserveCost(300);h.owner.blur(h.event('blur'));h.elapsed(0);assert.equal(h.submissions(),0);assert.equal(h.recoveries[0].composition.reason,'settle_limit');assert.equal(h.recoveries[0].region.kind,'retained_dom');assert(!h.calls.includes('restore'));assert.equal(h.timers(),0);assert.equal(h.rafs(),0);h.close();
+});
+test('a second stable RAF observation that reaches the deadline cannot dispatch [controlled]',()=>{
+  const h=harness();h.start();h.setText('aZd');h.end();h.raf();h.setObserveCost(240);h.raf();assert.equal(h.submissions(),0);assert.equal(h.recoveries[0].composition.reason,'settle_limit');assert.equal(h.recoveries[0].region.provisionalText,'aZd');assert.equal(h.timers(),0);assert.equal(h.rafs(),0);h.close();
+});
+test('command binding callback time cannot admit native submission after the deadline [controlled]',()=>{
+  const h=harness();h.start();h.setText('aZd');h.end();h.raf();h.setBindingCost(300);h.raf();assert.equal(h.submissions(),0);assert.equal(h.recoveries[0].composition.reason,'settle_limit');assert.equal(h.recoveries[0].composition.nativeOutcome,'not_submitted');assert.equal(h.recoveries[0].region.provisionalText,'aZd');assert.equal(h.timers(),0);assert.equal(h.rafs(),0);h.close();
+});

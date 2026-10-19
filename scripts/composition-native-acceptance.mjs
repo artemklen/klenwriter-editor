@@ -201,7 +201,7 @@ try{
   report.setup.push({action:'lock-fixed-key-script',artifact:readonlyKeyScript,scope:'No compiled runtime-state persistence; exact bytes/hash/mode remain required before and after input'});
   report.helperArtifacts=[sourceHelper,inputHelper,keySourcePath,keyScriptPath].map(helperPin);
   const initial=source();report.inputSources=initial;originalSource=initial.current.id;
-  const russian=['com.apple.keylayout.RussianWin','com.apple.keylayout.Russian'].find(id=>initial.sources.some(row=>row.id===id&&row.enabled&&row.selectable));assert.ok(russian,'Existing enabled Russian/RussianWin source required');
+  const russian='com.apple.keylayout.Russian';assert.ok(initial.sources.some(row=>row.id===russian&&row.enabled&&row.selectable),'Frozen installed matrix requires existing enabled/selectable Russian source');
   adapter=await(browserName==='chrome'?chrome():createSafariAdapter({config,report,run,outputPath,inputHelper,keyScriptPath}));await adapter.navigate();
 
   assert.equal(report.bundleVersion,browserName==='chrome'?'155.0.8059.85':'27.0.1','Pinned installed browser version');
