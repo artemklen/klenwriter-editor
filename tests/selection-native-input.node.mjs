@@ -8,16 +8,16 @@ const expectedKeys={'shift-left':{code:123,modifier:'shift'},'select-all':{code:
   cut:{code:7,modifier:'command'},'shift-tab':{code:48,modifier:'shift'},tab:{code:48,modifier:'none'}};
 function fixture(browser='safari',keyScriptPath='/controlled/fixture-keys.scpt'){
   const nonce='a'.repeat(32),config={nonce,origin:'http://127.0.0.1:4174',fixtureUrl:'http://127.0.0.1:4174/selection',title:'KlenWriter Selection native '+nonce};
-  let serial=0,reply=null,execute=null,keyExecute=null,keyProof=null,pageDown=false;
+  let serial=0,reply=null,execute=null,keyExecute=null,keyProof=null,mouseProof=null,pageDown=false,mount='selection-mount-1';
   const records=[],calls=[];
   function proof(action){
       return {id:nonce+':'+String(++serial),start:process.hrtime.bigint(),value:{nonce,url:config.fixtureUrl,title:config.title,
-        id:'selection-mount-1',mountedId:'selection-mount-1',serial,caseId:'scroll-down-terminal',action,
+        id:mount,mountedId:mount,serial,caseId:'scroll-down-terminal',action,
         target:action==='tab'?'host-control':'editor',allowed:true,editorConnected:true,documentFocused:true,pointerDown:pageDown,
         viewport:{width:1024,height:768,scale:1,offsetLeft:0,offsetTop:0},point:['move-start','down','move-end','up'].includes(action)?{x:140,y:340}:null,
         lastTrustedPointerMove:{x:140,y:340,buttons:0,pointerId:1,pointerType:'mouse',isPrimary:true,isTrusted:true,time:25}}};
   }
-  const owner=createInputOwner({browser,config,inputHelper:'/controlled/no-helper-is-executed',keyScriptPath,mountedId:()=> 'selection-mount-1',
+  const owner=createInputOwner({browser,config,inputHelper:'/controlled/no-helper-is-executed',keyScriptPath,mountedId:()=>mount,
     record:(kind,value)=>records.push({kind,value}),
     async guard(action){return reply?reply(action,proof):proof(action);},
     run(command,argv,options){
@@ -34,9 +34,15 @@ function fixture(browser='safari',keyScriptPath='/controlled/fixture-keys.scpt')
         return {returnCode:0,stdout:JSON.stringify(keyProof?keyProof(value):value),stderr:''};
       }
       if(request.action==='down')pageDown=true;if(request.action==='up')pageDown=false;
-      return {returnCode:0,stdout:JSON.stringify({status:'sent',action:request.action,requestId:request.requestId,nonce}),stderr:''};},
+      const view={x:22,y:139,width:1024,height:768},screen={x:view.x+request.point.x,y:view.y+request.point.y};
+      const value={status:'sent',action:request.action,requestId:request.requestId,nonce,mountedId:request.mountedId,caseId:request.caseId,
+        target:request.target,cleanupOnly:request.cleanupOnly,frontBundle:browser==='chrome'?'com.google.Chrome':'com.apple.Safari',frontPid:31,
+        expectedAxWindowTitle:config.title+(browser==='chrome'?' - Google Chrome':''),observedAxWindowTitle:config.title+(browser==='chrome'?' - Google Chrome':''),
+        axWindowCount:1,axViewport:view,screenPoint:screen,elapsedMs:20,
+        mouseEvent:{type:({'move-start':5,down:1,'move-end':6,up:2})[request.action],location:{...screen},deltaX:0,deltaY:0,clickState:1,pressure:request.action==='up'||request.action==='move-start'?0:1}};
+      return {returnCode:0,stdout:JSON.stringify(mouseProof?mouseProof(value,request):value),stderr:''};},
   });
-  return {owner,config,records,calls,set reply(value){reply=value;},set execute(value){execute=value;},set keyExecute(value){keyExecute=value;},set keyProof(value){keyProof=value;}};
+  return {owner,config,records,calls,set reply(value){reply=value;},set execute(value){execute=value;},set keyExecute(value){keyExecute=value;},set keyProof(value){keyProof=value;},set mouseProof(value){mouseProof=value;},set mount(value){mount=value;}};
 }
 test('controlled selection transport has finite closed cases/actions, no eval/coordinates/key RPC',()=>{
   assert.equal(limits.commands,1024);assert.equal(limits.runMs,600000);
@@ -92,10 +98,66 @@ test('controlled ordinary pointer phases preserve one owned button and actual re
   const f=fixture();await f.owner.input('move-start');await f.owner.input('down');await f.owner.input('move-end');await f.owner.input('up');
   assert.equal(f.owner.pointerState,'up');assert.equal(f.owner.disabled,false);assert.deepEqual(f.calls.map(r=>r.request.action),['move-start','down','move-end','up']);
   assert(f.records.every(row=>row.value.delivery==='sent'));assert(f.calls.every(row=>row.request.deadlineMs>0&&row.request.deadlineMs<=1000));
+  assert.deepEqual(f.calls.map(row=>row.request.mouseFrom),[null,null,{screenPoint:{x:162,y:479},axViewport:{x:22,y:139,width:1024,height:768}},null]);
+});
+test('controlled held movement without an owned down refuses before any helper call',async()=>{
+  const f=fixture();f.reply=(action,make)=>{const result=make(action);result.value.pointerDown=true;return result;};
+  await assert.rejects(f.owner.input('move-end'),/pointer transition/);assert.equal(f.calls.length,0);assert.equal(f.records.at(-1).value.delivery,'not_sent');
+});
+for(const changed of ['mount','case'])test(`controlled held movement cannot consume a successful ${changed==='mount'?'foreign mount':'different case'} origin`,async()=>{
+  const f=fixture();await f.owner.input('down');
+  if(changed==='mount')f.mount='selection-mount-2';
+  else f.reply=(action,make)=>{const result=make(action);result.value.caseId='scroll-up-terminal';return result;};
+  await assert.rejects(f.owner.input('move-end'),/matching successful owned mouse origin/);assert.equal(f.calls.length,1);
+  assert.equal(f.records.at(-1).value.delivery,'not_sent');assert.equal(f.owner.disabled,true);
+});
+function fixedDrag(f,end={x:63.09375,y:75}){
+  f.reply=(action,make)=>{const result=make(action);result.value.point=action==='move-end'||action==='up'?{...end}:{x:64,y:41};
+    result.value.lastTrustedPointerMove={...result.value.lastTrustedPointerMove,x:64,y:41};return result;};
+}
+test('controlled fractional drag retains the exact absolute endpoint and requires literal minus1/34 integer deltas',async()=>{
+  const f=fixture();fixedDrag(f);f.mouseProof=(value,request)=>request.action==='move-end'?{...value,mouseEvent:{...value.mouseEvent,deltaX:-1,deltaY:34}}:value;
+  await f.owner.input('move-start');const down=await f.owner.input('down');
+  down.actual.screenPoint.x=999;down.actual.axViewport.x=999;
+  const receipt=await f.owner.input('move-end');
+  assert.deepEqual(f.calls[2].request.mouseFrom,{screenPoint:{x:86,y:180},axViewport:{x:22,y:139,width:1024,height:768}},'Prior ownership is a private copy, not mutable receipt data');
+  assert.deepEqual(receipt.point,{x:63.09375,y:75});assert.deepEqual(receipt.actual.screenPoint,{x:85.09375,y:214});
+  assert.deepEqual(receipt.actual.mouseEvent,{type:6,location:{x:85.09375,y:214},deltaX:-1,deltaY:34,clickState:1,pressure:1});
+  await f.owner.input('up');assert.equal(f.calls[3].request.mouseFrom,null);assert.equal(f.owner.disabled,false);
+});
+test('controlled relative half values use nearest integer with ties away from zero',async()=>{
+  const f=fixture();fixedDrag(f,{x:63.5,y:41.5});
+  f.mouseProof=(value,request)=>request.action==='move-end'?{...value,mouseEvent:{...value.mouseEvent,deltaX:-1,deltaY:1}}:value;
+  await f.owner.input('down');const result=await f.owner.input('move-end');
+  assert.deepEqual(result.actual.screenPoint,{x:85.5,y:180.5});assert.equal(result.actual.mouseEvent.deltaX,-1);assert.equal(result.actual.mouseEvent.deltaY,1);
+});
+for(const [name,alter]of[
+  ['default zero delta',value=>value],
+  ['wrong event type',value=>({...value,mouseEvent:{...value.mouseEvent,type:5,deltaX:-1,deltaY:34}})],
+  ['wrong constructed location',value=>({...value,mouseEvent:{...value.mouseEvent,location:{x:86,y:180},deltaX:-1,deltaY:34}})],
+  ['changed AX origin',value=>({...value,axViewport:{...value.axViewport,x:23},screenPoint:{x:86.09375,y:214},mouseEvent:{...value.mouseEvent,location:{x:86.09375,y:214},deltaX:0,deltaY:34}})],
+  ['changed AX width',value=>({...value,axViewport:{...value.axViewport,width:1024.25},mouseEvent:{...value.mouseEvent,deltaX:-1,deltaY:34}})],
+])test(`controlled ${name} cannot turn a posted drag receipt into accepted movement`,async()=>{
+  const f=fixture();fixedDrag(f);await f.owner.input('down');f.mouseProof=(value,request)=>request.action==='move-end'?alter(value):value;
+  await assert.rejects(f.owner.input('move-end'),/metadata differs/);assert.equal(f.calls.length,2);
+  assert.equal(f.owner.disabled,true);assert.equal(f.records.at(-1).value.delivery,'unknown/may_have_sent');
+  await assert.rejects(f.owner.input('move-end'));assert.equal(f.calls.length,2,'No second movement after unknown/mismatched completion');
+});
+test('controlled an invalid successful-looking prior mouse receipt cannot seed a later drag',async()=>{
+  const f=fixture();f.mouseProof=value=>({...value,screenPoint:{x:0,y:0}});
+  await assert.rejects(f.owner.input('down'),/constructed event metadata differs/);assert.equal(f.owner.pointerState,'may-have-down');
+  await assert.rejects(f.owner.input('move-end'));assert.equal(f.calls.length,1);assert.equal(f.records.at(-1).value.delivery,'not_sent');
+});
+test('controlled unknown movement permits only a fresh cleanup up without carrying an origin',async()=>{
+  const f=fixture();await f.owner.input('down');f.execute=()=>{throw Object.assign(Error('Unknown movement completion'),{execution:{error:'unknown'}});};
+  await assert.rejects(f.owner.input('move-end'));f.execute=null;await f.owner.releaseOwnedPointer();
+  assert.deepEqual(f.calls.map(row=>row.request.action),['down','move-end','up']);assert.equal(f.calls[2].request.mouseFrom,null);
+  assert.equal(f.owner.disabled,true);assert.equal(f.owner.pointerState,'up');await assert.rejects(f.owner.input('move-end'));assert.equal(f.calls.length,3);
 });
 for(const[action,expected]of Object.entries(expectedKeys))test(`controlled ${action} uses one fixed System Events key after a separate strict read-only preflight`,async()=>{
   const f=fixture(),receipt=await f.owner.input(action);assert.equal(f.calls.length,2);
   assert.equal(f.calls[0].argv[0],'--guard-key');assert.equal(f.calls[0].request.action,action);assert.equal(f.calls[0].request.point,null);
+  assert.equal(f.calls[0].request.mouseFrom,null,'Keys never carry a mouse origin');
   const sent=f.calls[1];assert.equal(sent.command,'/usr/bin/osascript');assert.equal(sent.argv[0],'/controlled/fixture-keys.scpt');
   assert.deepEqual(sent.argv.slice(1),['safari',f.config.title,'31',action],'Only the fixed compiled path and closed key arguments; no source compilation or arbitrary keycode');
   assert.ok(sent.options.timeout<=f.calls[0].options.timeout&&sent.options.timeout>0,'One total page guard deadline');

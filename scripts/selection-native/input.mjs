@@ -4,6 +4,7 @@ import {actions,caseIds,limits} from './protocol.mjs';
 import assert from 'node:assert/strict';
 const now=()=>process.hrtime.bigint(),age=start=>Number(now()-start)/1e6;
 const mouseActions=new Set(['move-start','down','move-end','up']);
+const nearestInteger=value=>(value<0?-Math.floor(-value+.5):Math.floor(value+.5))||0;
 const keyActions=Object.freeze({'shift-left':{code:123,modifier:'shift'},'select-all':{code:0,modifier:'command'},
   copy:{code:8,modifier:'command'},cut:{code:7,modifier:'command'},'shift-tab':{code:48,modifier:'shift'},tab:{code:48,modifier:'none'}});
 export const fixedKeyScript=`on requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
@@ -76,9 +77,9 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
     ||config.origin!=='http://127.0.0.1:4174'||config.fixtureUrl!==config.origin+'/selection'
     ||config.title!=='KlenWriter Selection native '+config.nonce||!inputHelper.startsWith('/')
     ||typeof keyScriptPath!=='string'||!keyScriptPath.startsWith('/')||!keyScriptPath.endsWith('.scpt')||keyScriptPath.includes('\0'))throw Error('Invalid closed selection input configuration');
-  let disabled=false,serial=0,held=false,mayHaveDown=false,cleanupAttempted=false;
+  let disabled=false,serial=0,held=false,mayHaveDown=false,cleanupAttempted=false,lastMouse=null;
   async function perform(action,cleanup=false){
-      let dispatchStarted=false,execution=null,keyGuardExecution=null,keyGuard=null,systemEventsExecution=null,proof=null,preAge=null;
+      let dispatchStarted=false,execution=null,keyGuardExecution=null,keyGuard=null,systemEventsExecution=null,proof=null,preAge=null,mouseFrom=null;
       try{
         if((disabled&&!cleanup)||!actions.includes(action)||!mountedId())throw Error('Selection input disabled or missing owned mount');
         if(cleanup&&(action!=='up'||cleanupAttempted||!held&&!mayHaveDown))throw Error('No separately owned pointer cleanup is available');
@@ -105,11 +106,15 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
             ||!Number.isFinite(move.time)||move.time<0||!Number.isFinite(move.x)||!Number.isFinite(move.y)
             ||Math.abs(move.x-point.x)>.5||Math.abs(move.y-point.y)>.5)throw Error('Actual trusted mousemove did not confirm the fixed start; no down posted');
         }
+        if(action==='move-end'){
+          if(!lastMouse||lastMouse.mountedId!==mountedId()||lastMouse.caseId!==value.caseId)throw Error('Missing matching successful owned mouse origin; no held movement posted');
+          mouseFrom={screenPoint:{...lastMouse.screenPoint},axViewport:{...lastMouse.axViewport}};
+        }
         serial=value.serial;preAge=age(proof.start);const remaining=Math.floor(limits.guardAgeMs-preAge);
         if(remaining<=0)throw Error('Selection guard expired before input');
         const request={format:'osr40-native-input/1',browser,nonce:config.nonce,title:config.title,fixtureUrl:config.fixtureUrl,
           mountedId:mountedId(),requestId:proof.id,serial,caseId:value.caseId,action,target:value.target,point,viewport,
-          pointerDown:held||mayHaveDown,cleanupOnly:cleanup,deadlineMs:remaining};
+          pointerDown:held||mayHaveDown,cleanupOnly:cleanup,deadlineMs:remaining,mouseFrom};
         const json=JSON.stringify(request);if(Buffer.byteLength(json)>limits.commandBytes)throw Error('Selection physical request exceeds bound');
         let actual;
         if(mouseActions.has(action)){
@@ -117,6 +122,27 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
           execution=run(inputHelper,['--request',json],{timeout:remaining,fullStdout:true,maxBuffer:32768});
           actual=JSON.parse(execution.stdout);
           if(actual.status!=='sent'||actual.action!==action||actual.requestId!==proof.id||actual.nonce!==config.nonce)throw Error('Native physical input receipt differs');
+          const view=actual.axViewport,screen=actual.screenPoint,event=actual.mouseEvent;
+          if(actual.mountedId!==mountedId()||actual.caseId!==value.caseId||actual.target!==value.target||actual.cleanupOnly!==cleanup
+            ||actual.frontBundle!==(browser==='chrome'?'com.google.Chrome':'com.apple.Safari')
+            ||!Number.isSafeInteger(actual.frontPid)||actual.frontPid<=0||actual.frontPid>2147483647
+            ||actual.expectedAxWindowTitle!==config.title+(browser==='chrome'?' - Google Chrome':'')
+            ||actual.observedAxWindowTitle!==actual.expectedAxWindowTitle
+            ||!Number.isSafeInteger(actual.axWindowCount)||actual.axWindowCount<1||actual.axWindowCount>32
+            ||!view||!['x','y','width','height'].every(key=>Number.isFinite(view[key]))
+            ||Math.abs(view.width-1024)>.5||Math.abs(view.height-768)>.5||!Number.isFinite(view.x+view.width)||!Number.isFinite(view.y+view.height)
+            ||!Number.isFinite(actual.elapsedMs)||actual.elapsedMs<0||actual.elapsedMs>remaining
+            ||!screen||screen.x!==view.x+point.x||screen.y!==view.y+point.y
+            ||!event||event.type!==({'move-start':5,down:1,'move-end':6,up:2})[action]
+            ||!event.location||event.location.x!==screen.x||event.location.y!==screen.y
+            ||!Number.isSafeInteger(event.deltaX)||!Number.isSafeInteger(event.deltaY)
+            ||!Number.isSafeInteger(event.clickState)||event.clickState<0||!Number.isFinite(event.pressure)||event.pressure<0||event.pressure>1
+            ||(action==='down'||action==='up')&&event.clickState!==1)throw Error('Native mouse geometry or constructed event metadata differs');
+          if(mouseFrom){
+            if(!['x','y','width','height'].every(key=>view[key]===mouseFrom.axViewport[key])
+              ||event.deltaX!==nearestInteger(screen.x-mouseFrom.screenPoint.x)
+              ||event.deltaY!==nearestInteger(screen.y-mouseFrom.screenPoint.y))throw Error('Native held movement metadata differs from its successful owned origin');
+          }
         }else{
           try{keyGuardExecution=run(inputHelper,['--guard-key',json],{timeout:remaining,fullStdout:true,maxBuffer:32768});}
           catch(error){keyGuardExecution=error.execution??null;throw error;}
@@ -144,9 +170,10 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
             ||actual.frontPid!==keyGuard.frontPid)throw Error('System Events closed key receipt differs');
         }
         if(age(proof.start)>limits.guardAgeMs)throw Error('Selection guard expired during physical input');
+        if(mouseActions.has(action))lastMouse={mountedId:mountedId(),caseId:value.caseId,screenPoint:{...actual.screenPoint},axViewport:{...actual.axViewport}};
         if(action==='down'){held=true;mayHaveDown=false;}else if(action==='up'){held=false;mayHaveDown=false;}
         const receipt={action,requestId:proof.id,pageGuardSerial:serial,mountedId:mountedId(),caseId:value.caseId,
-          point,target:value.target,preDispatchGuardAgeMs:preAge,maximumGuardAgeMs:age(proof.start),guardAgeLimitMs:limits.guardAgeMs,
+          point,mouseFrom,target:value.target,preDispatchGuardAgeMs:preAge,maximumGuardAgeMs:age(proof.start),guardAgeLimitMs:limits.guardAgeMs,
           lastTrustedPointerMove:action==='down'?value.lastTrustedPointerMove:null,
           execution,actual,keyGuardExecution,keyGuard,systemEventsExecution,delivery:'sent',pointerDown:held,cleanupOnly:cleanup,
           method:mouseActions.has(action)?'Strict AX guard + CGEvent mouse':'Fresh strict AX key preflight + precompiled System Events fixed key code; post receipt, not browser acknowledgement'};
@@ -156,6 +183,7 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
         record(cleanup?'cleanup-pointer-release-failure':'physical-input-failure',{action,error:String(error?.message??error),execution:execution??error.execution??null,
           keyGuardExecution,keyGuard,systemEventsExecution,
           requestId:proof?.id??null,preDispatchGuardAgeMs:preAge,maximumGuardAgeMs:proof?.start?age(proof.start):null,
+          mouseFrom,
           lastTrustedPointerMove:proof?.value?.lastTrustedPointerMove??null,
           delivery:dispatchStarted?'unknown/may_have_sent':'not_sent',pointerState:held?'down':mayHaveDown?'may-have-down':'up',dispatchStarted,cleanupOnly:cleanup});
         throw error;

@@ -48,6 +48,23 @@ AX window titles separately from the page guard.
 The fixture separately compares trusted client coordinates to its independent
 geometry. CGEvent provenance means platform input, not hardware-device evidence.
 
+The input owner privately retains only a successfully completed mouse helper's
+exact screen point and AX viewport, bound to that mount and case. A successful
+`move-start` replaces this position. Only `move-end` carries the closed
+`mouseFrom:{screenPoint:{x,y},axViewport:{x,y,width,height}}` metadata; all other
+actions carry null. Swift refuses changed viewport origin or size and derives
+the drag's integer delta fields from the prior point to the new AX-derived
+point, rounding to nearest with half values away from zero. The frozen absolute
+endpoint stays exact: the fractional movement −0.90625/+34 uses delta −1/+34.
+Initial hover has no invented global cursor origin and never reads the live
+cursor. Swift records constructed event type, location, delta, click state and
+pressure; Node checks the actual receipt and the drag's owned origin before
+retaining a new position. Unknown results never establish an accepted position.
+There is still exactly one post per mouse action and no replay. This corrects
+explicit movement metadata; it does not establish the cause of the earlier
+missing drag. Actual trusted held movement and every native/range assertion
+remain required.
+
 Swift `--request` accepts only the four closed mouse actions. The six key actions
 use `--guard-key` with the same closed `osr40-native-input/1` envelope and strict
 AX viewport containment/ownership checks. A mouse action in key mode, or a key

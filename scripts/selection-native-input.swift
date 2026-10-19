@@ -119,7 +119,7 @@ if argv.count == 3 && argv[1] == "--inspect-window" {
 }
 guard argv.count == 3, ["--request", "--guard-key"].contains(argv[1]), let data = argv[2].data(using: .utf8), data.count <= 4096,
       let request = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-      closed(request, ["format", "browser", "nonce", "title", "fixtureUrl", "mountedId", "requestId", "serial", "caseId", "action", "target", "point", "viewport", "pointerDown", "cleanupOnly", "deadlineMs"]),
+      closed(request, ["format", "browser", "nonce", "title", "fixtureUrl", "mountedId", "requestId", "serial", "caseId", "action", "target", "point", "viewport", "pointerDown", "cleanupOnly", "deadlineMs", "mouseFrom"]),
       request["format"] as? String == "osr40-native-input/1",
       let browser = request["browser"] as? String, ["chrome", "safari"].contains(browser),
       let nonce = request["nonce"] as? String, nonce.range(of: "^[a-f0-9]{32}$", options: .regularExpression) != nil,
@@ -149,6 +149,19 @@ if mouse {
           let x = number(value["x"]), let y = number(value["y"]), x >= 0, x < 1024, y >= 0, y < 768 else { refuse("Invalid fixed client point") }
     point = CGPoint(x: x, y: y)
 } else if !(request["point"] is NSNull) { refuse("Key cannot carry screen coordinates") }
+var fromScreen: CGPoint?, fromViewport: CGRect?
+if action == "move-end" {
+    guard let value = request["mouseFrom"] as? [String: Any], closed(value, ["screenPoint", "axViewport"]),
+          let screen = value["screenPoint"] as? [String: Any], closed(screen, ["x", "y"]),
+          let x = number(screen["x"]), let y = number(screen["y"]),
+          let bounds = value["axViewport"] as? [String: Any], closed(bounds, ["x", "y", "width", "height"]),
+          let vx = number(bounds["x"]), let vy = number(bounds["y"]),
+          let width = number(bounds["width"]), let height = number(bounds["height"]),
+          abs(width - 1024) <= 0.5, abs(height - 768) <= 0.5,
+          (vx + width).isFinite, (vy + height).isFinite, (vx + 1024).isFinite, (vy + 768).isFinite,
+          x >= vx, x < vx + 1024, y >= vy, y < vy + 768 else { refuse("Invalid owned mouse movement origin") }
+    fromScreen = CGPoint(x: x, y: y); fromViewport = CGRect(x: vx, y: vy, width: width, height: height)
+} else if !(request["mouseFrom"] is NSNull) { refuse("Only held movement can carry its owned origin") }
 guard action != "down" || !held, action != "move-start" || !held,
       action != "move-end" || held, action != "up" || held,
       mouse || action == "shift-tab" || !held else { refuse("Pointer transition differs") }
@@ -156,6 +169,9 @@ let measurement = measureWindow(browser, expectedTitle)
 guard measurement.contained else { refuse("Unique frozen AXWebArea viewport unavailable") }
 let observedAxWindowTitle = recheckWindow(measurement, deadline)
 let view = measurement.view
+if let previous = fromViewport {
+    guard previous == view else { refuse("Owned mouse AX viewport changed before movement") }
+}
 var result: [String: Any] = ["action": action, "nonce": nonce, "requestId": requestId,
     "mountedId": mount, "caseId": caseId, "target": target, "cleanupOnly": cleanup,
     "frontBundle": measurement.expectedBundle, "frontPid": measurement.front.processIdentifier,
@@ -172,6 +188,15 @@ let actual = CGPoint(x: view.minX + local.x, y: view.minY + local.y)
 let type: CGEventType = action == "down" ? .leftMouseDown : action == "up" ? .leftMouseUp : action == "move-end" ? .leftMouseDragged : .mouseMoved
 guard let event = CGEvent(mouseEventSource: nil, mouseType: type, mouseCursorPosition: actual, mouseButton: .left) else { refuse("Cannot allocate fixture mouse event") }
 if action == "down" || action == "up" { event.setIntegerValueField(.mouseEventClickState, value: 1) }
+if let previous = fromScreen {
+    // Integer relative metadata uses nearest rounding, with exact half values away from zero.
+    // The authoritative absolute fixture location remains unchanged.
+    event.setIntegerValueField(.mouseEventDeltaX, value: Int64((actual.x - previous.x).rounded(.toNearestOrAwayFromZero)))
+    event.setIntegerValueField(.mouseEventDeltaY, value: Int64((actual.y - previous.y).rounded(.toNearestOrAwayFromZero)))
+}
+result["mouseEvent"] = ["type": event.type.rawValue, "location": ["x": event.location.x, "y": event.location.y],
+    "deltaX": event.getIntegerValueField(.mouseEventDeltaX), "deltaY": event.getIntegerValueField(.mouseEventDeltaY),
+    "clickState": event.getIntegerValueField(.mouseEventClickState), "pressure": event.getDoubleValueField(.mouseEventPressure)]
 posted = true; event.post(tap: .cghidEventTap)
 guard elapsed() <= deadline else { refuse("Fixture guard expired during post") }
 result["status"] = "sent"; result["elapsedMs"] = elapsed()
