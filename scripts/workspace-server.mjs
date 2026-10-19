@@ -54,6 +54,7 @@ const domNegativeNames = ['empty-text-unknown-attrs','empty-text-unknown-field',
 for (const name of domNegativeNames) routes.set(`/dom-fixtures/negative/${name}.json`, [`contracts/dom/v1/negative/${name}.json`, 'application/json']);
 for (const name of ['acceptance-oracles.v3.json','manifest.json']) routes.set(`/dom-fixtures/${name}`, [`contracts/dom/v1/${name}`, 'application/json']);
 http.createServer(async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
   res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self' 'wasm-unsafe-eval' ${mapHashes.join(' ')}; style-src 'self'; img-src http://127.0.0.1:4174/favicon.ico; connect-src 'self'; base-uri 'none'; object-src 'none'`);
   res.setHeader('X-Content-Type-Options', 'nosniff');
   const path = new URL(req.url, 'http://localhost').pathname;
