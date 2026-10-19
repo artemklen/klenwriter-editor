@@ -13,7 +13,7 @@ export async function createChromeAdapter({config,report,inputHelper,keyScriptPa
   const launchArguments=['--force-renderer-accessibility=complete'];
   const browser=await chromium.launch({channel:'chrome',headless:false,args:launchArguments,env:{...process.env,CFFIXED_USER_HOME:childHome}});
   const page=await browser.newPage({viewport:{width:1024,height:768}});const errors=[];
-  let mountedId=null,serial=0,guardSerial=0,busy=false,navigationStarted=false,bootstrapReady=false,physicalStarted=false,browserCdp=null,pageCdp=null;
+  let mountedId=null,serial=0,guardSerial=0,busy=false,navigationStarted=false,bootstrapReady=false,physicalStarted=false,focusEntryFailed=false,browserCdp=null,pageCdp=null;
   page.on('pageerror',error=>errors.push(error.message));report.browserVersion=browser.version();
   const record=(kind,value)=>{report.controlLog??=[];if(report.controlLog.length>=4096)throw Error('Chrome control receipt bound');report.controlLog.push({kind,...value});};
   const call=async(method,...args)=>{
@@ -41,6 +41,11 @@ export async function createChromeAdapter({config,report,inputHelper,keyScriptPa
     get pointerDown(){return inputOwner.pointerDown;},get pointerState(){return inputOwner.pointerState;},get inputDisabled(){return inputOwner.disabled;},
     async navigate(){
       assert.equal(navigationStarted,false,'Chrome bootstrap cannot be retried');assert.equal(physicalStarted,false);navigationStarted=true;
+      const focusEmulation={action:'disable-chromium-focus-emulation-before-mounted-input',method:'Emulation.setFocusEmulationEnabled',params:{enabled:false},status:'attempted',scope:'Actual DOM focus readbacks; OS foreground still requires each fresh independent AX guard'};
+      report.setup.push(focusEmulation);save();
+      try{pageCdp=await page.context().newCDPSession(page);focusEmulation.response=await pageCdp.send(focusEmulation.method,focusEmulation.params);focusEmulation.status='completed';}
+      catch(error){focusEmulation.status='failed';focusEmulation.error=error.message;throw error;}
+      finally{save();}
       const response=await page.goto(config.fixtureUrl);assert.ok(response?.ok(),'Selection fixture server unavailable');
       await page.waitForFunction(()=>!!window.ui42,null,{timeout:15000});
       await page.evaluate(async({title,modulePath})=>{document.title=title;await import(modulePath);},{title:config.title,modulePath:config.base+'/page-fixture.mjs'});
@@ -69,7 +74,14 @@ export async function createChromeAdapter({config,report,inputHelper,keyScriptPa
       });
       bootstrapReady=true;save();
     },
-    async focus(){await page.bringToFront();await page.waitForFunction(()=>document.hasFocus(),null,{timeout:5000});},call,
+    async focus(){
+      assert.equal(bootstrapReady,true,'Completed Chrome bootstrap required before normal case entry');assert.equal(focusEntryFailed,false,'Failed case entry cannot reactivate or retry');
+      assert.equal(inputOwner.disabled,false,'Disabled input cannot reactivate Chrome');assert.equal(inputOwner.keysPending,false,'Owned uncertain keys prohibit case entry');assert.equal(inputOwner.pointerDown,false,'Owned uncertain pointer prohibits case entry');assert.equal(mountedId,null,'Case entry requires the previous mount to be finished');
+      const setup={action:'activate-chrome-at-normal-case-entry',status:'attempted',scope:'Preparation before a fresh mount only; never failed/unknown input recovery'};report.setup.push(setup);save();
+      try{await page.bringToFront();setup.execution=script('tell application "Google Chrome" to activate');await page.waitForFunction(()=>document.hasFocus(),null,{timeout:5000});setup.status='completed';}
+      catch(error){focusEntryFailed=true;setup.status='failed';setup.error=error.message;throw error;}
+      finally{save();}
+    },call,
     async close(){await browser.close();report.control.cleanup={status:'owned-chrome-browser-closed',scope:'Only isolated browser instance launched for this fixture'};},
   };
 }

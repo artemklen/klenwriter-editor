@@ -31,6 +31,10 @@ measurements and closed page setup/read calls. Safari creates one owned window;
 Apple Events page access ends at bootstrap. Remaining Safari page calls use the
 bounded same-origin HTTP broker. Mutating calls are claimed before dispatch,
 unknown completion disables later actions, and no native call is replayed.
+Chrome explicitly disables Playwright focus emulation before any mount/input,
+recording the CDP method, parameters and response. Normal fresh-case entry
+activates Chrome once as preparation; a failed entry or uncertain input cannot
+trigger reactivation. Each physical action still requires its fresh OS AX guard.
 
 Physical actions are fixed System Events key programs or exact-control CGEvent
 clicks. Each has a new page/mount/nonce guard and independent strict AX check of
