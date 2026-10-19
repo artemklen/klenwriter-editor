@@ -1,0 +1,30 @@
+{
+  "format": "osr40-pre-candidate-data-check/1",
+  "method": "File/hash/static literal JSON checks only; no runtime/native/WASM/DOM/test/browser/build execution.",
+  "acceptedBase": "ff2bd3103eba9b47cd2a06098d1506d9a054a589",
+  "runtimeTrackedChanges": 0,
+  "old39FrozenFilesMatched": 60,
+  "old39PublicTypesSnapshot": {
+    "path": "contracts/selection/v1/legacy/dom-types.v39.ts",
+    "bytes": 6208,
+    "sha256": "8ec05a6e8d3804d9fc9d8c466478adfc60bad2d8860e21e3efb16a274bd2e033"
+  },
+  "jsonFilesDecoded": [
+    "bookmark-oracles.json",
+    "clipboard-oracles.json",
+    "formatting-oracles.json",
+    "linear-at-start.json",
+    "native-oracles.json",
+    "scroll-oracles.json",
+    "unicode-oracles.json"
+  ],
+  "nativeCases": 24,
+  "nativeCanonicalLiteralPairs": 78,
+  "bookmarkCases": 59,
+  "scrollCases": 12,
+  "formattingCases": 2,
+  "clipboardCases": 28,
+  "unicodeCases": 8,
+  "result": "DATA_CONSISTENT",
+  "formalReview": false
+}

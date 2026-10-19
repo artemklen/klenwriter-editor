@@ -1,0 +1,6228 @@
+{
+  "format": "editor-selection-bookmark-oracles/1",
+  "issue": "OSR-40",
+  "status": "INDEPENDENT_PRE_CANDIDATE_DRAFT_NOT_EXECUTED",
+  "accepted_base": "ff2bd3103eba9b47cd2a06098d1506d9a054a589",
+  "authority": "Hand-authored literal positions/documents/maps/states and controller outcomes before DOM40 implementation. Assembly helpers copy repeated literals; they do not execute native maps or derive expectations from a candidate.",
+  "coordinate_contract": {
+    "public_text_offset_unit": "UTF-16 code units",
+    "offset_validation": "u32/in-range/Unicode-scalar boundary; never round a half-surrogate",
+    "EGC_authority": "Rust pinned segmentation/profile commands; scalar-readable does not imply EGC-editable",
+    "new_dom_text_child_affinity": "after",
+    "known_explicit_affinity": "retain actual known owned endpoint affinity, including before",
+    "position_role_strings_are_not_wire_tokens": true
+  },
+  "binding_contract": {
+    "@S1": "actual session token for A; bind once from actual initialization, never fabricate",
+    "@G1": "actual generation token for A",
+    "@S2/@G2": "different mounted instance identity",
+    "@S3/@G3": "post-replacement identity/generation distinct from A",
+    "role_ids": "bind from independently authored native_role_paths before action; preserve through declared moves/splits/history; expected IDs are relational, not process literals",
+    "history_bytes": "@HISTORY_BYTES_state is a target-dependent observed binding; unchanged facets compare exact within target, never portable constant",
+    "opaque_build_context": "bind actual admitted context once; equal/different relationships are literal oracle facts"
+  },
+  "contexts": {
+    "KWDJ_A": {
+      "build_id": "@BUILD",
+      "profile": "@EXACT_KWDJ_PROFILE",
+      "registry_digest": "@KWDJ_REGISTRY",
+      "capability_digest": "@KWDJ_CAPS"
+    },
+    "KWDJ_LOWER_CAPS": {
+      "build_id": "@BUILD",
+      "profile": "@EXACT_KWDJ_PROFILE",
+      "registry_digest": "@KWDJ_REGISTRY",
+      "capability_digest": "@KWDJ_LOWER_CAPS"
+    }
+  },
+  "source_inputs": {
+    "docs/m0/unicode-positions.md": {
+      "bytes": 11343,
+      "sha256": "fe2dbcdeb9643ddfb90d86498e7d8392a031f4beb7b0314b20bec17ec96c471d"
+    },
+    "docs/m0/ux-contract.md": {
+      "bytes": 21511,
+      "sha256": "6841a9c011019eebb75c141e5d7bf9e646409b6d7bb0801c507c3f62800a3a29"
+    },
+    "crates/engine/src/mapping.rs": {
+      "bytes": 46845,
+      "sha256": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54"
+    },
+    "crates/engine/src/session.rs": {
+      "bytes": 35352,
+      "sha256": "156f018cf9927ec8ea0648b2ffac873a3807886019020cda6445efd7a294a7b5"
+    },
+    "crates/engine/src/history.rs": {
+      "bytes": 56430,
+      "sha256": "43a28d7fc3e48138d71f4e0cb2889a572fa25dc545b39e6a0e793ae6d610382d"
+    },
+    "crates/bridge/src/lib.rs": {
+      "bytes": 36287,
+      "sha256": "cee6ae962010b7c5e84f8d2996321bba91efb84ead53ca9b861933a14577db62"
+    },
+    "packages/dom/src/types.ts": {
+      "bytes": 6208,
+      "sha256": "8ec05a6e8d3804d9fc9d8c466478adfc60bad2d8860e21e3efb16a274bd2e033"
+    },
+    "packages/dom/src/view.ts": {
+      "bytes": 37808,
+      "sha256": "7a524a7aaf5ce00ec8a05652a6a28a62d625d46d139c5a83eb96757fa0cd2df7"
+    },
+    "packages/sdk/src/controller.ts": {
+      "bytes": 22958,
+      "sha256": "e3298c859a25737ef4cbe7a4d1ee89df5a3cb93c7cb82ce9a256a61231953718"
+    },
+    "contracts/dom/v1/manifest.json": {
+      "bytes": 10362,
+      "sha256": "fcae2d2ae55f715b36f1c5a89efac1f671c5936490c01feaa87078855b893db8"
+    },
+    "contracts/commands/v1/vectors.json": {
+      "bytes": 80586,
+      "sha256": "1a067f1ca197ccc1aa7a4689e950db250973c269314bf3d38d143b97c248cb3f"
+    },
+    "evidence/osr-59/operation-vectors.json": {
+      "bytes": 95194,
+      "sha256": "8b4bebb3d4ef97db1b4f0b3d6f4a86d44d87caf100c177fd3c5be53ff9cdb15d"
+    },
+    "crates/engine/src/transaction.rs": {
+      "bytes": 15508,
+      "sha256": "34e628108dff27be15ab8ba1787ecf0132125ecf91d40d6ef38b438f7ac5260d"
+    },
+    "crates/kwdj/src/commands/block.rs": {
+      "bytes": 90433,
+      "sha256": "a1f00b3675fe96604190924b6185c6ce3eb553ddd21c8eec5bde1afb5823e7a4"
+    },
+    "crates/kwdj/src/commands/mod.rs": {
+      "bytes": 7965,
+      "sha256": "a16647987c4a4145d84da609a5761c53fbe0f420055457f99946f9e0d77140c2"
+    }
+  },
+  "controller_contract": {
+    "methods": [
+      "captureBookmark",
+      "restoreBookmark",
+      "releaseBookmark"
+    ],
+    "max_live_bookmarks": 64,
+    "branding": "private per-mount WeakMap + bounded strong lifetime table; cloned/foreign/released handles invalid",
+    "capture": "pure current model read; internal syncFromDom is separate",
+    "restore_default": {
+      "policy": "exact",
+      "focus": false
+    },
+    "busy": "refuse before submit/queue; do not consume valid handle",
+    "consume": "one-shot at final actual dispatch; preflight refusal retains handle",
+    "exact": "full stamp/context + intent equality",
+    "mapped": "explicit policy; valid doc-only continuity + native mapped/nondeleted/nonnull result for both endpoints + final current stamp/context/intent check",
+    "document_continuity_positive": "direct synchronous facade host command input=false, expected document publication completes with no reentrant queued mutation",
+    "intent_invalidation": [
+      "input gesture including pointer same point",
+      "host set_selection even no-op",
+      "history",
+      "state-only change",
+      "barrier",
+      "stored-marks change",
+      "unknown or reentrant publication"
+    ],
+    "new_capture_after_unknown": "fresh current baseline may be established, but old handles remain invalid due advanced invalidation serial",
+    "native_submission": "return actual original object/promise/response; no synthetic cancellation/retry or retroactive Refused",
+    "resources_sibling": "MountedResourceCounts.selection:bookmarks/restoreTickets/activePointers/animationFrames; frozen39 resources.dom fields unchanged",
+    "refusal_codes": [
+      "dom.invalid_bookmark",
+      "dom.stale_selection",
+      "dom.selection_unsynchronized",
+      "dom.selection_missing",
+      "dom.selection_limit"
+    ],
+    "new_refusal_phase": "selection"
+  },
+  "native_state_conventions": {
+    "baseline": "after one explicit setup set_selection: revision0,selection_epoch1,history_epoch0,event_sequence1; null baseline has epoch/event0",
+    "isolated_document_action": "one revision/history entry/event; selection epoch only if native selection/marks change",
+    "maps_are_semantic_facts": "Map probes state independent literal expected coordinates. Actual compound normalization may use more internal chunks; no raw-step-list ABI is claimed.",
+    "open_group": "OPEN_GROUP is public-action-realizable typing/marks state; true scalar counters are literal, history bytes remain target bound",
+    "dirty": "conservative native dirty stays true after undo until explicit baseline reconciliation; do not clear by text equality",
+    "state_private_fields": "open_typing_group is fixture descriptive fact, not a new SDK field/setter; realize by public typing hint transcript"
+  },
+  "documents": {
+    "plain": {
+      "wire": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "abcd"
+              }
+            ],
+            "attrs": {
+              "align": "right",
+              "first_line_indent": true
+            }
+          }
+        ]
+      },
+      "native_role_paths": {
+        "ROOT": "",
+        "P": "/0",
+        "T": "/0/0"
+      }
+    },
+    "empty": {
+      "wire": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": []
+          }
+        ]
+      },
+      "native_role_paths": {
+        "ROOT": "",
+        "P": "/0"
+      }
+    },
+    "unicode": {
+      "wire": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "a😀é👩🏽‍💻Z"
+              }
+            ]
+          }
+        ]
+      },
+      "native_role_paths": {
+        "ROOT": "",
+        "P": "/0",
+        "T": "/0/0"
+      }
+    },
+    "split": {
+      "wire": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "ab"
+              }
+            ],
+            "attrs": {
+              "align": "right",
+              "first_line_indent": true
+            }
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "cd"
+              }
+            ],
+            "attrs": {
+              "align": "right",
+              "first_line_indent": true
+            }
+          }
+        ]
+      },
+      "native_role_paths": {
+        "ROOT": "",
+        "P": "/0",
+        "T": "/0/0",
+        "P_RIGHT": "/1",
+        "T_RIGHT": "/1/0"
+      }
+    },
+    "join_before": {
+      "wire": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "ab"
+              },
+              {
+                "type": "text",
+                "text": "cd",
+                "marks": [
+                  {
+                    "type": "strong"
+                  }
+                ]
+              }
+            ],
+            "attrs": {
+              "align": "right",
+              "first_line_indent": true
+            }
+          }
+        ]
+      },
+      "native_role_paths": {
+        "ROOT": "",
+        "P": "/0",
+        "L": "/0/0",
+        "R": "/0/1"
+      }
+    },
+    "join_after": {
+      "wire": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "abcd"
+              }
+            ],
+            "attrs": {
+              "align": "right",
+              "first_line_indent": true
+            }
+          }
+        ]
+      },
+      "native_role_paths": {
+        "ROOT": "",
+        "P": "/0",
+        "L": "/0/0"
+      }
+    },
+    "three": {
+      "wire": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "aa"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "bb"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "cc"
+              }
+            ]
+          }
+        ]
+      },
+      "native_role_paths": {
+        "ROOT": "",
+        "P0": "/0",
+        "T0": "/0/0",
+        "P1": "/1",
+        "T1": "/1/0",
+        "P2": "/2",
+        "T2": "/2/0"
+      }
+    },
+    "forward": {
+      "wire": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "aa"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "cc"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "bb"
+              }
+            ]
+          }
+        ]
+      },
+      "native_role_paths": {
+        "ROOT": "",
+        "P0": "/0",
+        "T0": "/0/0",
+        "P2": "/1",
+        "T2": "/1/0",
+        "P1": "/2",
+        "T1": "/2/0"
+      }
+    },
+    "backward": {
+      "wire": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "cc"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "aa"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "bb"
+              }
+            ]
+          }
+        ]
+      },
+      "native_role_paths": {
+        "ROOT": "",
+        "P2": "/0",
+        "T2": "/0/0",
+        "P0": "/1",
+        "T0": "/1/0",
+        "P1": "/2",
+        "T1": "/2/0"
+      }
+    },
+    "cross_before": {
+      "wire": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "blockquote",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "aa"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "bb"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "blockquote",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "cc"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "native_role_paths": {
+        "ROOT": "",
+        "Q0": "/0",
+        "P0": "/0/0",
+        "T0": "/0/0/0",
+        "P1": "/0/1",
+        "T1": "/0/1/0",
+        "Q1": "/1",
+        "P2": "/1/0",
+        "T2": "/1/0/0"
+      }
+    },
+    "cross_after": {
+      "wire": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "blockquote",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "aa"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "blockquote",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "bb"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "cc"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "native_role_paths": {
+        "ROOT": "",
+        "Q0": "/0",
+        "P0": "/0/0",
+        "T0": "/0/0/0",
+        "Q1": "/1",
+        "P1": "/1/0",
+        "T1": "/1/0/0",
+        "P2": "/1/1",
+        "T2": "/1/1/0"
+      }
+    },
+    "insert_after": {
+      "wire": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "abЯcd"
+              }
+            ],
+            "attrs": {
+              "align": "right",
+              "first_line_indent": true
+            }
+          }
+        ]
+      },
+      "native_role_paths": {
+        "ROOT": "",
+        "P": "/0",
+        "T": "/0/0"
+      }
+    },
+    "removed": {
+      "wire": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "aa"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "cc"
+              }
+            ]
+          }
+        ]
+      },
+      "native_role_paths": {
+        "ROOT": "",
+        "P0": "/0",
+        "T0": "/0/0",
+        "P2": "/1",
+        "T2": "/1/0"
+      }
+    },
+    "structural": {
+      "wire": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "A"
+              },
+              {
+                "type": "hard_break"
+              },
+              {
+                "type": "text",
+                "text": "B"
+              }
+            ]
+          },
+          {
+            "type": "scene_break"
+          },
+          {
+            "type": "blockquote",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "C"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "native_role_paths": {
+        "ROOT": "",
+        "P0": "/0",
+        "TA": "/0/0",
+        "BR": "/0/1",
+        "TB": "/0/2",
+        "ATOM": "/1",
+        "Q": "/2",
+        "P1": "/2/0",
+        "TC": "/2/0/0"
+      }
+    },
+    "open_typing": {
+      "wire": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "ab"
+              },
+              {
+                "type": "text",
+                "text": "x",
+                "marks": [
+                  {
+                    "type": "strong"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": "cd"
+              }
+            ],
+            "attrs": {
+              "align": "right",
+              "first_line_indent": true
+            }
+          }
+        ]
+      },
+      "native_role_paths": {
+        "ROOT": "",
+        "P": "/0",
+        "T": "/0/0",
+        "TX": "/0/1",
+        "TAIL": "/0/2"
+      }
+    },
+    "other": {
+      "wire": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "xy"
+              }
+            ]
+          }
+        ]
+      },
+      "native_role_paths": {
+        "ROOT_B": "",
+        "P_B": "/0",
+        "T_B": "/0/0"
+      }
+    }
+  },
+  "states": {
+    "BASE": {
+      "document_ref": "plain",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "1",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_BASE",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "1",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "T"
+      ]
+    },
+    "REVERSE": {
+      "document_ref": "plain",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "1",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 4,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 1,
+          "affinity": "before"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_REVERSE",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "1",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "T"
+      ]
+    },
+    "BEFORE_AFFINITY": {
+      "document_ref": "plain",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "1",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "before"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "before"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_BEFORE_AFFINITY",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "1",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "T"
+      ]
+    },
+    "EMPTY_CHILD": {
+      "document_ref": "empty",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "1",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "child",
+          "parent": "P",
+          "index": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "child",
+          "parent": "P",
+          "index": 0,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_EMPTY_CHILD",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "1",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P"
+      ]
+    },
+    "NULL": {
+      "document_ref": "empty",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "0",
+        "history_epoch": "0"
+      },
+      "selection": null,
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_NULL",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "0",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P"
+      ]
+    },
+    "UNICODE_COMBINING": {
+      "document_ref": "unicode",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "1",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 4,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 4,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_UNICODE_COMBINING",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "1",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "T"
+      ]
+    },
+    "UNICODE_VALID": {
+      "document_ref": "unicode",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "1",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_UNICODE_VALID",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "1",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "T"
+      ]
+    },
+    "STRUCTURAL_EDGE": {
+      "document_ref": "structural",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "1",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "edge",
+          "node": "ATOM",
+          "side": "before"
+        },
+        "focus": {
+          "kind": "edge",
+          "node": "ATOM",
+          "side": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_STRUCTURAL_EDGE",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "1",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P0",
+        "TA",
+        "BR",
+        "TB",
+        "ATOM",
+        "Q",
+        "P1",
+        "TC"
+      ]
+    },
+    "STRUCTURAL_CHILD": {
+      "document_ref": "structural",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "1",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "child",
+          "parent": "P0",
+          "index": 1,
+          "affinity": "before"
+        },
+        "focus": {
+          "kind": "child",
+          "parent": "P0",
+          "index": 2,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_STRUCTURAL_CHILD",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "1",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P0",
+        "TA",
+        "BR",
+        "TB",
+        "ATOM",
+        "Q",
+        "P1",
+        "TC"
+      ]
+    },
+    "OUTSIDE": {
+      "document_ref": "plain",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "1",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_OUTSIDE",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "1",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "host_control",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "T"
+      ]
+    },
+    "OTHER_FOCUS": {
+      "document_ref": "plain",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "1",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_OTHER_FOCUS",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "1",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_B",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "T"
+      ]
+    },
+    "B_STATE": {
+      "document_ref": "other",
+      "stamp": {
+        "session": "@S2",
+        "generation": "@G2",
+        "revision": "0",
+        "selection_epoch": "1",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T_B",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T_B",
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_B_STATE",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "1",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_B",
+      "all_role_ids_live": [
+        "ROOT_B",
+        "P_B",
+        "T_B"
+      ]
+    },
+    "AFTER_SPLIT": {
+      "document_ref": "split",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "1",
+        "selection_epoch": "2",
+        "history_epoch": "1"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T_RIGHT",
+          "offset": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T_RIGHT",
+          "offset": 0,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": true,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_AFTER_SPLIT",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "2",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "T",
+        "P_RIGHT",
+        "T_RIGHT"
+      ]
+    },
+    "RESTORED_SPLIT_BEFORE": {
+      "document_ref": "split",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "1",
+        "selection_epoch": "3",
+        "history_epoch": "1"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "before"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "before"
+        }
+      },
+      "stored_marks": null,
+      "dirty": true,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_RESTORED_SPLIT_BEFORE",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "3",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "T",
+        "P_RIGHT",
+        "T_RIGHT"
+      ]
+    },
+    "JOIN_RANGE": {
+      "document_ref": "join_before",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "1",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "R",
+          "offset": 0,
+          "affinity": "before"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "R",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_JOIN_RANGE",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "1",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "L",
+        "R"
+      ]
+    },
+    "JOIN_EDGE": {
+      "document_ref": "join_before",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "1",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "edge",
+          "node": "L",
+          "side": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "R",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_JOIN_EDGE",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "1",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "L",
+        "R"
+      ]
+    },
+    "AFTER_JOIN_RANGE": {
+      "document_ref": "join_after",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "1",
+        "selection_epoch": "2",
+        "history_epoch": "1"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "L",
+          "offset": 2,
+          "affinity": "before"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "L",
+          "offset": 4,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": true,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_AFTER_JOIN_RANGE",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "2",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "L"
+      ]
+    },
+    "AFTER_JOIN_EDGE": {
+      "document_ref": "join_after",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "1",
+        "selection_epoch": "2",
+        "history_epoch": "1"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "L",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "L",
+          "offset": 4,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": true,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_AFTER_JOIN_EDGE",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "2",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "L"
+      ]
+    },
+    "MOVE_TEXT": {
+      "document_ref": "three",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "1",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T1",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T1",
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_MOVE_TEXT",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "1",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P0",
+        "T0",
+        "P1",
+        "T1",
+        "P2",
+        "T2"
+      ]
+    },
+    "MOVED_TEXT": {
+      "document_ref": "forward",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "1",
+        "selection_epoch": "1",
+        "history_epoch": "1"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T1",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T1",
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": true,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_MOVED_TEXT",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "2",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P0",
+        "T0",
+        "P2",
+        "T2",
+        "P1",
+        "T1"
+      ]
+    },
+    "MOVE_GAP": {
+      "document_ref": "three",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "1",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "child",
+          "parent": "ROOT",
+          "index": 3,
+          "affinity": "before"
+        },
+        "focus": {
+          "kind": "child",
+          "parent": "ROOT",
+          "index": 3,
+          "affinity": "before"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_MOVE_GAP",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "1",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P0",
+        "T0",
+        "P1",
+        "T1",
+        "P2",
+        "T2"
+      ]
+    },
+    "MOVED_GAP": {
+      "document_ref": "forward",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "1",
+        "selection_epoch": "2",
+        "history_epoch": "1"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "child",
+          "parent": "ROOT",
+          "index": 2,
+          "affinity": "before"
+        },
+        "focus": {
+          "kind": "child",
+          "parent": "ROOT",
+          "index": 2,
+          "affinity": "before"
+        }
+      },
+      "stored_marks": null,
+      "dirty": true,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_MOVED_GAP",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "2",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P0",
+        "T0",
+        "P2",
+        "T2",
+        "P1",
+        "T1"
+      ]
+    },
+    "BACK_GAP": {
+      "document_ref": "three",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "1",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "child",
+          "parent": "ROOT",
+          "index": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "child",
+          "parent": "ROOT",
+          "index": 0,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_BACK_GAP",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "1",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P0",
+        "T0",
+        "P1",
+        "T1",
+        "P2",
+        "T2"
+      ]
+    },
+    "BACK_MOVED_GAP": {
+      "document_ref": "backward",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "1",
+        "selection_epoch": "2",
+        "history_epoch": "1"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "child",
+          "parent": "ROOT",
+          "index": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "child",
+          "parent": "ROOT",
+          "index": 1,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": true,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_BACK_MOVED_GAP",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "2",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P2",
+        "T2",
+        "P0",
+        "T0",
+        "P1",
+        "T1"
+      ]
+    },
+    "CROSS": {
+      "document_ref": "cross_before",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "1",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "child",
+          "parent": "Q0",
+          "index": 2,
+          "affinity": "before"
+        },
+        "focus": {
+          "kind": "child",
+          "parent": "Q1",
+          "index": 0,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_CROSS",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "1",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "Q0",
+        "P0",
+        "T0",
+        "P1",
+        "T1",
+        "Q1",
+        "P2",
+        "T2"
+      ]
+    },
+    "CROSSED": {
+      "document_ref": "cross_after",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "1",
+        "selection_epoch": "2",
+        "history_epoch": "1"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "child",
+          "parent": "Q0",
+          "index": 1,
+          "affinity": "before"
+        },
+        "focus": {
+          "kind": "child",
+          "parent": "Q1",
+          "index": 1,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": true,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_CROSSED",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "2",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "Q0",
+        "P0",
+        "T0",
+        "Q1",
+        "P1",
+        "T1",
+        "P2",
+        "T2"
+      ]
+    },
+    "AFTER_INSERT": {
+      "document_ref": "insert_after",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "1",
+        "selection_epoch": "2",
+        "history_epoch": "1"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": true,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_AFTER_INSERT",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "2",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "T"
+      ]
+    },
+    "RESTORED_INSERT_BEFORE": {
+      "document_ref": "insert_after",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "1",
+        "selection_epoch": "3",
+        "history_epoch": "1"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "before"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "before"
+        }
+      },
+      "stored_marks": null,
+      "dirty": true,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_RESTORED_INSERT_BEFORE",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "3",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "T"
+      ]
+    },
+    "DELETE_TARGET": {
+      "document_ref": "three",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "1",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T1",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T1",
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_DELETE_TARGET",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "1",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P0",
+        "T0",
+        "P1",
+        "T1",
+        "P2",
+        "T2"
+      ]
+    },
+    "AFTER_REMOVE": {
+      "document_ref": "removed",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "1",
+        "selection_epoch": "2",
+        "history_epoch": "1"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "child",
+          "parent": "ROOT",
+          "index": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "child",
+          "parent": "ROOT",
+          "index": 1,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": true,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_AFTER_REMOVE",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "2",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P0",
+        "T0",
+        "P2",
+        "T2"
+      ]
+    },
+    "UNDO_SPLIT": {
+      "document_ref": "plain",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "2",
+        "selection_epoch": "3",
+        "history_epoch": "2"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": true,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "1",
+        "retained_bytes": "@HISTORY_BYTES_UNDO_SPLIT",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "3",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "T"
+      ]
+    },
+    "REDO_SPLIT": {
+      "document_ref": "split",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "3",
+        "selection_epoch": "4",
+        "history_epoch": "3"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T_RIGHT",
+          "offset": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T_RIGHT",
+          "offset": 0,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": true,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_REDO_SPLIT",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "4",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "T",
+        "P_RIGHT",
+        "T_RIGHT"
+      ]
+    },
+    "MARKS": {
+      "document_ref": "plain",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "2",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": [
+        {
+          "type_id": "org.klenwriter.kwdj/strong",
+          "attributes": {}
+        }
+      ],
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_MARKS",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "2",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "T"
+      ]
+    },
+    "OPEN_GROUP": {
+      "document_ref": "open_typing",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "1",
+        "selection_epoch": "3",
+        "history_epoch": "1"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "TX",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "TX",
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": [
+        {
+          "type_id": "org.klenwriter.kwdj/strong",
+          "attributes": {}
+        }
+      ],
+      "dirty": true,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_OPEN_GROUP",
+        "open_typing_group": true
+      },
+      "last_published_event_sequence": "3",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "T",
+        "TX",
+        "TAIL"
+      ]
+    },
+    "SEALED_GROUP": {
+      "document_ref": "open_typing",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "1",
+        "selection_epoch": "4",
+        "history_epoch": "2"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": true,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_SEALED_GROUP",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "4",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "T",
+        "TX",
+        "TAIL"
+      ]
+    },
+    "NEW_GENERATION": {
+      "document_ref": "other",
+      "stamp": {
+        "session": "@S3",
+        "generation": "@G3",
+        "revision": "0",
+        "selection_epoch": "0",
+        "history_epoch": "0"
+      },
+      "selection": null,
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_NEW_GENERATION",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "0",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT_B",
+        "P_B",
+        "T_B"
+      ]
+    },
+    "NATIVE_NEW_SELECTION": {
+      "document_ref": "plain",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "0",
+        "selection_epoch": "2",
+        "history_epoch": "0"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": false,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_NATIVE_NEW_SELECTION",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "2",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "T"
+      ]
+    },
+    "RETENTION_66": {
+      "document_ref": "three",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "66",
+        "selection_epoch": "1",
+        "history_epoch": "66"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T1",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T1",
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": true,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "64",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_RETENTION_66",
+        "open_typing_group": false,
+        "evicted_undo_units_fixture_fact": "2"
+      },
+      "last_published_event_sequence": "67",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P0",
+        "T0",
+        "P1",
+        "T1",
+        "P2",
+        "T2"
+      ]
+    },
+    "AFTER_RESTORE_SUBSCRIBER": {
+      "document_ref": "split",
+      "stamp": {
+        "session": "@S1",
+        "generation": "@G1",
+        "revision": "1",
+        "selection_epoch": "4",
+        "history_epoch": "1"
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T_RIGHT",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T_RIGHT",
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "dirty": true,
+      "saved_revision": "0",
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "retained_bytes": "@HISTORY_BYTES_AFTER_RESTORE_SUBSCRIBER",
+        "open_typing_group": false
+      },
+      "last_published_event_sequence": "4",
+      "context_ref": "KWDJ_A",
+      "focus_owner": "editor_A",
+      "all_role_ids_live": [
+        "ROOT",
+        "P",
+        "T",
+        "P_RIGHT",
+        "T_RIGHT"
+      ]
+    }
+  },
+  "native_map_facts": {
+    "SPLIT_AT_2": {
+      "before_document": "plain",
+      "after_document": "split",
+      "semantic_effect": {
+        "op": "split_text",
+        "left": "T",
+        "right": "T_RIGHT",
+        "at_utf16": 2,
+        "old_utf16_len": 4
+      },
+      "probes": [
+        {
+          "input": {
+            "kind": "text",
+            "node": "T",
+            "offset": 2,
+            "affinity": "before"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "text",
+            "node": "T",
+            "offset": 2,
+            "affinity": "before"
+          }
+        },
+        {
+          "input": {
+            "kind": "text",
+            "node": "T",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "text",
+            "node": "T_RIGHT",
+            "offset": 0,
+            "affinity": "after"
+          }
+        },
+        {
+          "input": {
+            "kind": "text",
+            "node": "T",
+            "offset": 3,
+            "affinity": "after"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "text",
+            "node": "T_RIGHT",
+            "offset": 1,
+            "affinity": "after"
+          }
+        },
+        {
+          "input": {
+            "kind": "edge",
+            "node": "T",
+            "side": "after"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "edge",
+            "node": "T_RIGHT",
+            "side": "after"
+          }
+        }
+      ],
+      "identity": {
+        "preserved": [
+          "ROOT",
+          "P",
+          "T"
+        ],
+        "created": [
+          "P_RIGHT",
+          "T_RIGHT"
+        ]
+      }
+    },
+    "JOIN_2_PLUS_2": {
+      "before_document": "join_before",
+      "after_document": "join_after",
+      "semantic_effect": {
+        "op": "join_text",
+        "left": "L",
+        "right": "R",
+        "left_utf16_len": 2,
+        "right_utf16_len": 2
+      },
+      "probes": [
+        {
+          "input": {
+            "kind": "text",
+            "node": "R",
+            "offset": 0,
+            "affinity": "before"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "text",
+            "node": "L",
+            "offset": 2,
+            "affinity": "before"
+          }
+        },
+        {
+          "input": {
+            "kind": "text",
+            "node": "R",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "text",
+            "node": "L",
+            "offset": 4,
+            "affinity": "after"
+          }
+        },
+        {
+          "input": {
+            "kind": "edge",
+            "node": "L",
+            "side": "after"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "text",
+            "node": "L",
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        {
+          "input": {
+            "kind": "edge",
+            "node": "R",
+            "side": "before"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "text",
+            "node": "L",
+            "offset": 2,
+            "affinity": "before"
+          }
+        },
+        {
+          "input": {
+            "kind": "edge",
+            "node": "R",
+            "side": "after"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "edge",
+            "node": "L",
+            "side": "after"
+          }
+        }
+      ],
+      "identity": {
+        "preserved": [
+          "ROOT",
+          "P",
+          "L"
+        ],
+        "retired": [
+          "R"
+        ]
+      }
+    },
+    "MOVE_FORWARD": {
+      "before_document": "three",
+      "after_document": "forward",
+      "semantic_effect": {
+        "op": "child_move",
+        "parent": "ROOT",
+        "from_index": 1,
+        "count": 1,
+        "before_index": 3,
+        "old_child_count": 3
+      },
+      "probes": [
+        {
+          "input": {
+            "kind": "text",
+            "node": "T1",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "text",
+            "node": "T1",
+            "offset": 1,
+            "affinity": "after"
+          }
+        },
+        {
+          "input": {
+            "kind": "child",
+            "parent": "ROOT",
+            "index": 3,
+            "affinity": "before"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "child",
+            "parent": "ROOT",
+            "index": 2,
+            "affinity": "before"
+          }
+        },
+        {
+          "input": {
+            "kind": "child",
+            "parent": "ROOT",
+            "index": 3,
+            "affinity": "after"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "child",
+            "parent": "ROOT",
+            "index": 3,
+            "affinity": "after"
+          }
+        }
+      ],
+      "identity": {
+        "preserved": [
+          "ROOT",
+          "P0",
+          "T0",
+          "P1",
+          "T1",
+          "P2",
+          "T2"
+        ]
+      }
+    },
+    "MOVE_BACKWARD": {
+      "before_document": "three",
+      "after_document": "backward",
+      "semantic_effect": {
+        "op": "child_move",
+        "parent": "ROOT",
+        "from_index": 2,
+        "count": 1,
+        "before_index": 0,
+        "old_child_count": 3
+      },
+      "probes": [
+        {
+          "input": {
+            "kind": "child",
+            "parent": "ROOT",
+            "index": 0,
+            "affinity": "before"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "child",
+            "parent": "ROOT",
+            "index": 0,
+            "affinity": "before"
+          }
+        },
+        {
+          "input": {
+            "kind": "child",
+            "parent": "ROOT",
+            "index": 0,
+            "affinity": "after"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "child",
+            "parent": "ROOT",
+            "index": 1,
+            "affinity": "after"
+          }
+        },
+        {
+          "input": {
+            "kind": "text",
+            "node": "T2",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "text",
+            "node": "T2",
+            "offset": 1,
+            "affinity": "after"
+          }
+        }
+      ],
+      "identity": {
+        "preserved": [
+          "ROOT",
+          "P0",
+          "T0",
+          "P1",
+          "T1",
+          "P2",
+          "T2"
+        ]
+      }
+    },
+    "MOVE_CROSS_PARENT": {
+      "before_document": "cross_before",
+      "after_document": "cross_after",
+      "semantic_effect": {
+        "op": "child_move",
+        "from_parent": "Q0",
+        "from_index": 1,
+        "to_parent": "Q1",
+        "before_index": 0,
+        "count": 1,
+        "from_len": 2,
+        "to_len": 1
+      },
+      "probes": [
+        {
+          "input": {
+            "kind": "child",
+            "parent": "Q0",
+            "index": 2,
+            "affinity": "before"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "child",
+            "parent": "Q0",
+            "index": 1,
+            "affinity": "before"
+          }
+        },
+        {
+          "input": {
+            "kind": "child",
+            "parent": "Q1",
+            "index": 0,
+            "affinity": "after"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "child",
+            "parent": "Q1",
+            "index": 1,
+            "affinity": "after"
+          }
+        },
+        {
+          "input": {
+            "kind": "text",
+            "node": "T1",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "text",
+            "node": "T1",
+            "offset": 1,
+            "affinity": "after"
+          }
+        }
+      ],
+      "identity": {
+        "preserved": [
+          "ROOT",
+          "Q0",
+          "P0",
+          "T0",
+          "P1",
+          "T1",
+          "Q1",
+          "P2",
+          "T2"
+        ]
+      }
+    },
+    "INSERT_AT_2": {
+      "before_document": "plain",
+      "after_document": "insert_after",
+      "semantic_effect": {
+        "op": "replace_text",
+        "leaf": "T",
+        "from_utf16": 2,
+        "to_utf16": 2,
+        "inserted": "Я",
+        "inserted_utf16": 1,
+        "old_utf16_len": 4
+      },
+      "probes": [
+        {
+          "input": {
+            "kind": "text",
+            "node": "T",
+            "offset": 2,
+            "affinity": "before"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "text",
+            "node": "T",
+            "offset": 2,
+            "affinity": "before"
+          }
+        },
+        {
+          "input": {
+            "kind": "text",
+            "node": "T",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "text",
+            "node": "T",
+            "offset": 3,
+            "affinity": "after"
+          }
+        },
+        {
+          "input": {
+            "kind": "text",
+            "node": "T",
+            "offset": 4,
+            "affinity": "after"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "text",
+            "node": "T",
+            "offset": 5,
+            "affinity": "after"
+          }
+        }
+      ],
+      "identity": {
+        "preserved": [
+          "ROOT",
+          "P",
+          "T"
+        ],
+        "normalization_note": "Transient runs may be created/retired; expected final original T holds full abЯcd, outside paragraph attrs unchanged."
+      }
+    },
+    "REMOVE_P1": {
+      "before_document": "three",
+      "after_document": "removed",
+      "semantic_effect": {
+        "op": "remove_subtree",
+        "parent": "ROOT",
+        "index": 1,
+        "removed_roles": [
+          "P1",
+          "T1"
+        ]
+      },
+      "probes": [
+        {
+          "input": {
+            "kind": "text",
+            "node": "T1",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "status": "deleted",
+          "deleted": true,
+          "output": {
+            "kind": "child",
+            "parent": "ROOT",
+            "index": 1,
+            "affinity": "after"
+          }
+        },
+        {
+          "input": {
+            "kind": "child",
+            "parent": "ROOT",
+            "index": 3,
+            "affinity": "before"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "child",
+            "parent": "ROOT",
+            "index": 2,
+            "affinity": "before"
+          }
+        }
+      ],
+      "identity": {
+        "preserved": [
+          "ROOT",
+          "P0",
+          "T0",
+          "P2",
+          "T2"
+        ],
+        "retired": [
+          "P1",
+          "T1"
+        ]
+      }
+    },
+    "SPLIT_THEN_UNDO": {
+      "before_document": "plain",
+      "after_document": "plain",
+      "chronological_revisions": [
+        "0",
+        "1",
+        "2"
+      ],
+      "semantic_effects": [
+        "split T at2",
+        "verified historical inverse joins T_RIGHT into T at left length2"
+      ],
+      "probes": [
+        {
+          "input": {
+            "kind": "text",
+            "node": "T",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "text",
+            "node": "T",
+            "offset": 2,
+            "affinity": "after"
+          }
+        }
+      ],
+      "identity": {
+        "preserved": [
+          "ROOT",
+          "P",
+          "T"
+        ],
+        "transient_then_retired": [
+          "P_RIGHT",
+          "T_RIGHT"
+        ]
+      },
+      "policy_note": "Native map can succeed, but history intent invalidates old controller bookmark."
+    },
+    "SPLIT_UNDO_REDO": {
+      "before_document": "plain",
+      "after_document": "split",
+      "chronological_revisions": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "semantic_effects": [
+        "split",
+        "verified undo join",
+        "verified redo split with historical right IDs revived"
+      ],
+      "probes": [
+        {
+          "input": {
+            "kind": "text",
+            "node": "T",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "status": "mapped",
+          "deleted": false,
+          "output": {
+            "kind": "text",
+            "node": "T_RIGHT",
+            "offset": 0,
+            "affinity": "after"
+          }
+        }
+      ],
+      "identity": {
+        "preserved": [
+          "ROOT",
+          "P",
+          "T"
+        ],
+        "revived": [
+          "P_RIGHT",
+          "T_RIGHT"
+        ]
+      },
+      "policy_note": "Revival is native history fact, not permission to restore an old user bookmark."
+    },
+    "EVICTED": {
+      "before_document": "three",
+      "after_document": "three",
+      "from_revision": "0",
+      "current_revision": "66",
+      "oldest_retained_revision": "2",
+      "probes": [
+        {
+          "input": {
+            "kind": "text",
+            "node": "T1",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "status": "stale",
+          "deleted": false,
+          "output": null
+        }
+      ],
+      "policy_note": "66 actual isolated host Move commands alternate P1 to original pre-gap3 and then pre-gap1;33 complete pairs restore original tree and all IDs. Captured descendant T1:1 never changes. Default journal64 cannot map revision0."
+    },
+    "INVALID_SOURCE_OFFSET": {
+      "before_document": "plain",
+      "after_document": "insert_after",
+      "probes": [
+        {
+          "input": {
+            "kind": "text",
+            "node": "T",
+            "offset": 99,
+            "affinity": "after"
+          },
+          "status": "invalid",
+          "deleted": false,
+          "output": null
+        }
+      ],
+      "provenance": "Controlled corrupted/native invalid-map boundary; ordinary valid capture cannot invent offset99."
+    }
+  },
+  "cases": [
+    {
+      "id": "BM-C01",
+      "name": "capture concrete current Text point",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "captured",
+          "bookmark": "B1",
+          "selection_equals_state_ref": "BASE",
+          "stamp_and_context_equal_state_ref": "BASE",
+          "frozen_and_private_registered": true
+        },
+        "facets": {
+          "native_state_equals_ref": "BASE",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        }
+      }
+    },
+    {
+      "id": "BM-C02",
+      "name": "capture reverse anchor/focus and explicit before affinity",
+      "current_state_ref": "REVERSE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "captured",
+          "bookmark": "B1",
+          "selection_equals_state_ref": "REVERSE",
+          "stamp_and_context_equal_state_ref": "REVERSE",
+          "frozen_and_private_registered": true
+        },
+        "facets": {
+          "native_state_equals_ref": "REVERSE",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        }
+      }
+    },
+    {
+      "id": "BM-C03",
+      "name": "capture empty-block Child0",
+      "current_state_ref": "EMPTY_CHILD",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "captured",
+          "bookmark": "B1",
+          "selection_equals_state_ref": "EMPTY_CHILD",
+          "stamp_and_context_equal_state_ref": "EMPTY_CHILD",
+          "frozen_and_private_registered": true
+        },
+        "facets": {
+          "native_state_equals_ref": "EMPTY_CHILD",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        }
+      }
+    },
+    {
+      "id": "BM-C04",
+      "name": "capture scene-break Edge range",
+      "current_state_ref": "STRUCTURAL_EDGE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "captured",
+          "bookmark": "B1",
+          "selection_equals_state_ref": "STRUCTURAL_EDGE",
+          "stamp_and_context_equal_state_ref": "STRUCTURAL_EDGE",
+          "frozen_and_private_registered": true
+        },
+        "facets": {
+          "native_state_equals_ref": "STRUCTURAL_EDGE",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        }
+      }
+    },
+    {
+      "id": "BM-C05",
+      "name": "capture structural gaps across hard_break",
+      "current_state_ref": "STRUCTURAL_CHILD",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "captured",
+          "bookmark": "B1",
+          "selection_equals_state_ref": "STRUCTURAL_CHILD",
+          "stamp_and_context_equal_state_ref": "STRUCTURAL_CHILD",
+          "frozen_and_private_registered": true
+        },
+        "facets": {
+          "native_state_equals_ref": "STRUCTURAL_CHILD",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        }
+      }
+    },
+    {
+      "id": "BM-C06",
+      "name": "capture legitimate null selection",
+      "current_state_ref": "NULL",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "captured",
+          "bookmark": "B1",
+          "selection_equals_state_ref": "NULL",
+          "stamp_and_context_equal_state_ref": "NULL",
+          "frozen_and_private_registered": true
+        },
+        "facets": {
+          "native_state_equals_ref": "NULL",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        }
+      }
+    },
+    {
+      "id": "BM-C07",
+      "name": "scalar-readable combining interior is capturable",
+      "current_state_ref": "UNICODE_COMBINING",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "captured",
+          "bookmark": "B1",
+          "selection_equals_state_ref": "UNICODE_COMBINING",
+          "stamp_and_context_equal_state_ref": "UNICODE_COMBINING",
+          "frozen_and_private_registered": true
+        },
+        "facets": {
+          "native_state_equals_ref": "UNICODE_COMBINING",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        }
+      }
+    },
+    {
+      "id": "BM-C08",
+      "name": "outside-control capture reads model, not external range",
+      "current_state_ref": "OUTSIDE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "captured",
+          "bookmark": "B1",
+          "selection_equals_state_ref": "OUTSIDE",
+          "stamp_and_context_equal_state_ref": "OUTSIDE",
+          "frozen_and_private_registered": true
+        },
+        "facets": {
+          "native_state_equals_ref": "OUTSIDE",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        }
+      }
+    },
+    {
+      "id": "BM-C09",
+      "name": "pending owned DOM range is not secretly synchronized",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "fixture.observe_dom_selection",
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "node": "T",
+              "offset": 3,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "T",
+              "offset": 3,
+              "affinity": "after"
+            }
+          },
+          "provenance": "owned range pending ordinary selectionchange, model remains T2"
+        },
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.selection_unsynchronized",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "BASE",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 0
+        }
+      }
+    },
+    {
+      "id": "BM-C10",
+      "name": "half-surrogate DOM offset refuses without rounding",
+      "current_state_ref": "UNICODE_VALID",
+      "steps": [
+        {
+          "action": "fixture.observe_dom_selection",
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "node": "T",
+              "offset": 2,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "T",
+              "offset": 2,
+              "affinity": "after"
+            }
+          },
+          "actual_text": "a😀é👩🏽‍💻Z"
+        },
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.presentation_unsupported",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "UNICODE_VALID",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 0
+        }
+      },
+      "literal_coordinate_facts": {
+        "valid_utf16_scalar_boundaries": [
+          0,
+          1,
+          3,
+          4,
+          5,
+          7,
+          9,
+          10,
+          12,
+          13
+        ],
+        "egc_endpoints": [
+          0,
+          1,
+          3,
+          5,
+          12,
+          13
+        ],
+        "offset2_bisects": "😀"
+      }
+    },
+    {
+      "id": "BM-C11",
+      "name": "capture while private SDK delivery busy refuses before reads/queue",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "fixture.enter_existing_sdk_delivery_fence"
+        },
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.busy",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "BASE",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 0
+        }
+      }
+    },
+    {
+      "id": "BM-L01",
+      "name": "64 live branded handles;65th refuses, release reclaims exactly one slot",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "repeat": 64,
+          "bind_handles": [
+            "B00",
+            "B01",
+            "B02",
+            "B03",
+            "B04",
+            "B05",
+            "B06",
+            "B07",
+            "B08",
+            "B09",
+            "B10",
+            "B11",
+            "B12",
+            "B13",
+            "B14",
+            "B15",
+            "B16",
+            "B17",
+            "B18",
+            "B19",
+            "B20",
+            "B21",
+            "B22",
+            "B23",
+            "B24",
+            "B25",
+            "B26",
+            "B27",
+            "B28",
+            "B29",
+            "B30",
+            "B31",
+            "B32",
+            "B33",
+            "B34",
+            "B35",
+            "B36",
+            "B37",
+            "B38",
+            "B39",
+            "B40",
+            "B41",
+            "B42",
+            "B43",
+            "B44",
+            "B45",
+            "B46",
+            "B47",
+            "B48",
+            "B49",
+            "B50",
+            "B51",
+            "B52",
+            "B53",
+            "B54",
+            "B55",
+            "B56",
+            "B57",
+            "B58",
+            "B59",
+            "B60",
+            "B61",
+            "B62",
+            "B63"
+          ]
+        },
+        {
+          "action": "selection.captureBookmark",
+          "bind": "OVERFLOW"
+        },
+        {
+          "action": "selection.releaseBookmark",
+          "bookmark": "B00"
+        },
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B64"
+        },
+        {
+          "action": "selection.releaseBookmark",
+          "bookmark": "B00"
+        }
+      ],
+      "expected": {
+        "checkpoints": [
+          {
+            "after": "capture64",
+            "captured_handles": 64,
+            "bookmark_count": 64,
+            "all_selections": {
+              "anchor": {
+                "kind": "text",
+                "node": "T",
+                "offset": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "T",
+                "offset": 2,
+                "affinity": "after"
+              }
+            }
+          },
+          {
+            "after": "capture65",
+            "result_code": "dom.selection_limit",
+            "bookmark_count": 64,
+            "no_new_handle": true
+          },
+          {
+            "after": "releaseB00",
+            "result": true,
+            "bookmark_count": 63
+          },
+          {
+            "after": "captureB64",
+            "status": "captured",
+            "bookmark_count": 64
+          },
+          {
+            "after": "releaseB00again",
+            "result": false,
+            "bookmark_count": 64
+          }
+        ],
+        "facets": {
+          "native_state_equals_ref": "BASE",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 64
+        }
+      }
+    },
+    {
+      "id": "BM-B01",
+      "name": "structural clone cannot forge WeakMap brand",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "fixture.clone_serializable_bookmark",
+          "from": "B1",
+          "bind": "CLONE"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "CLONE",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.invalid_bookmark",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "BASE",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        }
+      }
+    },
+    {
+      "id": "BM-B02",
+      "name": "foreign mounted owner handle refuses",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "fixture.capture_other_mount_bookmark",
+          "state_ref": "B_STATE",
+          "bind": "OTHER"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "OTHER",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        },
+        {
+          "action": "selection.releaseBookmark",
+          "bookmark": "OTHER"
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.invalid_bookmark",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "BASE",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 0
+        },
+        "release_foreign_result": false
+      },
+      "other_mount_expected": {
+        "native_state_equals_ref": "B_STATE",
+        "bookmark_count": 1
+      }
+    },
+    {
+      "id": "BM-B03",
+      "name": "release true then false; released handle refuses restore",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "selection.releaseBookmark",
+          "bookmark": "B1"
+        },
+        {
+          "action": "selection.releaseBookmark",
+          "bookmark": "B1"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "release_results": [
+          true,
+          false
+        ],
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.invalid_bookmark",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "BASE",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 0
+        }
+      }
+    },
+    {
+      "id": "BM-E01",
+      "name": "exact identical native selection is true native no-op",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "completed",
+          "response": {
+            "status": "ok",
+            "value": {
+              "kind": "mutation",
+              "effect": "unchanged",
+              "state_ref": "BASE",
+              "presentation": null
+            }
+          },
+          "same_submission_object_as": "native_submission"
+        },
+        "native_state_equals_ref": "BASE",
+        "bookmark_count": 0,
+        "restore_handle_consumed": true,
+        "native_facets_unchanged_including_history_epoch_marks_events": true,
+        "controller_intent_advances_even_native_noop": true
+      }
+    },
+    {
+      "id": "BM-E02",
+      "name": "same exact point keeps explicit stored marks",
+      "current_state_ref": "MARKS",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "completed",
+          "response": {
+            "status": "ok",
+            "value": {
+              "kind": "mutation",
+              "effect": "unchanged",
+              "state_ref": "MARKS",
+              "presentation": null
+            }
+          },
+          "same_submission_object_as": "native_submission"
+        },
+        "native_state_equals_ref": "MARKS",
+        "bookmark_count": 0,
+        "restore_handle_consumed": true,
+        "stored_marks": [
+          {
+            "type_id": "org.klenwriter.kwdj/strong",
+            "attributes": {}
+          }
+        ],
+        "new_native_events": 0,
+        "history_epoch": "0"
+      }
+    },
+    {
+      "id": "BM-E03",
+      "name": "exact null with focus false stays null; no chosen first paragraph",
+      "current_state_ref": "NULL",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "completed",
+          "response": {
+            "status": "ok",
+            "value": {
+              "kind": "mutation",
+              "effect": "unchanged",
+              "state_ref": "NULL",
+              "presentation": null
+            }
+          },
+          "same_submission_object_as": "native_submission"
+        },
+        "native_state_equals_ref": "NULL",
+        "bookmark_count": 0,
+        "restore_handle_consumed": true,
+        "native_mutation_effect": "unchanged",
+        "new_native_events": 0,
+        "no_dom_endpoint_created": true
+      }
+    },
+    {
+      "id": "BM-E04",
+      "name": "null focus true refuses before native submit",
+      "current_state_ref": "NULL",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": true
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.selection_missing",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "NULL",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        }
+      }
+    },
+    {
+      "id": "BM-E05",
+      "name": "default no-focus restore preserves outside input range",
+      "current_state_ref": "OUTSIDE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "fixture.external_control_selection",
+          "control": "host_control",
+          "value": "outside",
+          "anchor": 1,
+          "focus": 4
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "completed",
+          "response": {
+            "status": "ok",
+            "value": {
+              "kind": "mutation",
+              "effect": "unchanged",
+              "state_ref": "OUTSIDE",
+              "presentation": null
+            }
+          },
+          "same_submission_object_as": "native_submission"
+        },
+        "native_state_equals_ref": "OUTSIDE",
+        "bookmark_count": 0,
+        "restore_handle_consumed": true,
+        "focus_owner": "host_control",
+        "external_control_selection": {
+          "anchor": 1,
+          "focus": 4
+        },
+        "document_dom_range_realization": "deferred",
+        "new_native_events": 0
+      }
+    },
+    {
+      "id": "BM-E06",
+      "name": "explicit current valid return transfers focus once",
+      "current_state_ref": "OUTSIDE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": true
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "completed",
+          "response": {
+            "status": "ok",
+            "value": {
+              "kind": "mutation",
+              "effect": "unchanged",
+              "state_ref": "OUTSIDE",
+              "presentation": null
+            }
+          },
+          "same_submission_object_as": "native_submission"
+        },
+        "native_state_equals_ref": "OUTSIDE",
+        "bookmark_count": 0,
+        "restore_handle_consumed": true,
+        "focus_owner": "editor_A",
+        "raw_dom_selection": {
+          "anchor_text": "abcd",
+          "anchor_offset": 2,
+          "focus_text": "abcd",
+          "focus_offset": 2
+        },
+        "native_stamp_unchanged": true,
+        "no_incidental_browser_reset_set_selection": true
+      }
+    },
+    {
+      "id": "BM-E07",
+      "name": "other mount focus is untouched by default restoration",
+      "current_state_ref": "OTHER_FOCUS",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "completed",
+          "response": {
+            "status": "ok",
+            "value": {
+              "kind": "mutation",
+              "effect": "unchanged",
+              "state_ref": "OTHER_FOCUS",
+              "presentation": null
+            }
+          },
+          "same_submission_object_as": "native_submission"
+        },
+        "native_state_equals_ref": "OTHER_FOCUS",
+        "bookmark_count": 0,
+        "restore_handle_consumed": true,
+        "focus_owner": "editor_B",
+        "other_mount_native_state_equals_ref": "B_STATE",
+        "other_mount_dom_selection": {
+          "anchor_text": "xy",
+          "anchor_offset": 1,
+          "focus_text": "xy",
+          "focus_offset": 1
+        },
+        "document_dom_range_realization": "deferred"
+      }
+    },
+    {
+      "id": "BM-E08",
+      "name": "same-point new pointer intent invalidates despite native no-op",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "owned.pointerdown",
+          "role": "T",
+          "offset": 2
+        },
+        {
+          "action": "internal.syncFromDom",
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "node": "T",
+              "offset": 2,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "T",
+              "offset": 2,
+              "affinity": "after"
+            }
+          },
+          "expected_native_effect": "unchanged"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.stale_selection",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "BASE",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        },
+        "native_stamp_equals_captured": true,
+        "intent_relation": "newer",
+        "map_queries": 0
+      }
+    },
+    {
+      "id": "BM-E09",
+      "name": "host set_selection same point also invalidates before epoch change",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "mounted.submit",
+          "request": {
+            "kind": "set_selection",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "T",
+                "offset": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "T",
+                "offset": 2,
+                "affinity": "after"
+              }
+            }
+          },
+          "input": false,
+          "expected_native_effect": "unchanged"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.stale_selection",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "BASE",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        },
+        "native_stamp_equals_captured": true,
+        "intent_relation": "newer",
+        "map_queries": 0
+      }
+    },
+    {
+      "id": "BM-E10",
+      "name": "Tab re-entry restores current native point; does not revive stale old bookmark",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "owned.new_selection",
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "node": "T",
+              "offset": 3,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "T",
+              "offset": 3,
+              "affinity": "after"
+            }
+          },
+          "expected_state_ref": "NATIVE_NEW_SELECTION"
+        },
+        {
+          "action": "fixture.focus_control_then_keyboard_tab",
+          "control": "host_control",
+          "browser_incidental_start_range": {
+            "anchor": {
+              "kind": "text",
+              "node": "T",
+              "offset": 0,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "T",
+              "offset": 0,
+              "affinity": "after"
+            }
+          }
+        },
+        {
+          "action": "internal.restore_current_native_on_tab"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.stale_selection",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "NATIVE_NEW_SELECTION",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        },
+        "tab_checkpoint": {
+          "native_state_equals_ref": "NATIVE_NEW_SELECTION",
+          "focus_owner": "editor_A",
+          "raw_dom_anchor_focus": {
+            "text": "abcd",
+            "offset": 3
+          },
+          "new_native_mutations_from_focus": 0,
+          "new_native_events_from_focus": 0
+        },
+        "old_bookmark_not_used_for_tab": true
+      }
+    },
+    {
+      "id": "BM-M01",
+      "name": "split-boundary after maps to new right Text0",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "native.document_only_boundary",
+          "input": false,
+          "synchronous": true,
+          "reentrant_queued_mutations": 0,
+          "map_ref": "SPLIT_AT_2",
+          "expected_state_ref": "AFTER_SPLIT"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "completed",
+          "response": {
+            "status": "ok",
+            "value": {
+              "kind": "mutation",
+              "effect": "unchanged",
+              "state_ref": "AFTER_SPLIT",
+              "presentation": null
+            }
+          },
+          "same_submission_object_as": "native_submission"
+        },
+        "native_state_equals_ref": "AFTER_SPLIT",
+        "bookmark_count": 0,
+        "restore_handle_consumed": true,
+        "map_ref": "SPLIT_AT_2",
+        "all_endpoint_map_statuses": "mapped",
+        "all_deleted_flags": false,
+        "document_equals_ref": "split",
+        "current_to_final_native_selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "T_RIGHT",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T_RIGHT",
+            "offset": 0,
+            "affinity": "after"
+          }
+        },
+        "outside_attrs_unchanged": true,
+        "continuity": "same captured intent; proven synchronous facade host document publication"
+      }
+    },
+    {
+      "id": "BM-M02",
+      "name": "split-boundary before stays left Text2 and restores from current right caret",
+      "current_state_ref": "BEFORE_AFFINITY",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "native.document_only_boundary",
+          "input": false,
+          "synchronous": true,
+          "reentrant_queued_mutations": 0,
+          "map_ref": "SPLIT_AT_2",
+          "expected_state_ref": "AFTER_SPLIT"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "completed",
+          "response": {
+            "status": "ok",
+            "value": {
+              "kind": "mutation",
+              "effect": "state_changed",
+              "state_ref": "RESTORED_SPLIT_BEFORE",
+              "presentation": null
+            }
+          },
+          "same_submission_object_as": "native_submission"
+        },
+        "native_state_equals_ref": "RESTORED_SPLIT_BEFORE",
+        "bookmark_count": 0,
+        "restore_handle_consumed": true,
+        "map_ref": "SPLIT_AT_2",
+        "all_endpoint_map_statuses": "mapped",
+        "all_deleted_flags": false,
+        "document_equals_ref": "split",
+        "current_to_final_native_selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "T",
+            "offset": 2,
+            "affinity": "before"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T",
+            "offset": 2,
+            "affinity": "before"
+          }
+        },
+        "outside_attrs_unchanged": true,
+        "continuity": "same captured intent; proven synchronous facade host document publication"
+      }
+    },
+    {
+      "id": "BM-M03",
+      "name": "normalization join maps right range into surviving left",
+      "current_state_ref": "JOIN_RANGE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "native.document_only_boundary",
+          "input": false,
+          "synchronous": true,
+          "reentrant_queued_mutations": 0,
+          "map_ref": "JOIN_2_PLUS_2",
+          "expected_state_ref": "AFTER_JOIN_RANGE"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "completed",
+          "response": {
+            "status": "ok",
+            "value": {
+              "kind": "mutation",
+              "effect": "unchanged",
+              "state_ref": "AFTER_JOIN_RANGE",
+              "presentation": null
+            }
+          },
+          "same_submission_object_as": "native_submission"
+        },
+        "native_state_equals_ref": "AFTER_JOIN_RANGE",
+        "bookmark_count": 0,
+        "restore_handle_consumed": true,
+        "map_ref": "JOIN_2_PLUS_2",
+        "all_endpoint_map_statuses": "mapped",
+        "all_deleted_flags": false,
+        "document_equals_ref": "join_after",
+        "current_to_final_native_selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "L",
+            "offset": 2,
+            "affinity": "before"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "L",
+            "offset": 4,
+            "affinity": "after"
+          }
+        },
+        "outside_attrs_unchanged": true,
+        "continuity": "same captured intent; proven synchronous facade host document publication"
+      }
+    },
+    {
+      "id": "BM-M04",
+      "name": "Join left EdgeAfter maps to old-left logical boundary, not final end",
+      "current_state_ref": "JOIN_EDGE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "native.document_only_boundary",
+          "input": false,
+          "synchronous": true,
+          "reentrant_queued_mutations": 0,
+          "map_ref": "JOIN_2_PLUS_2",
+          "expected_state_ref": "AFTER_JOIN_EDGE"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "completed",
+          "response": {
+            "status": "ok",
+            "value": {
+              "kind": "mutation",
+              "effect": "unchanged",
+              "state_ref": "AFTER_JOIN_EDGE",
+              "presentation": null
+            }
+          },
+          "same_submission_object_as": "native_submission"
+        },
+        "native_state_equals_ref": "AFTER_JOIN_EDGE",
+        "bookmark_count": 0,
+        "restore_handle_consumed": true,
+        "map_ref": "JOIN_2_PLUS_2",
+        "all_endpoint_map_statuses": "mapped",
+        "all_deleted_flags": false,
+        "document_equals_ref": "join_after",
+        "current_to_final_native_selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "L",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "L",
+            "offset": 4,
+            "affinity": "after"
+          }
+        },
+        "outside_attrs_unchanged": true,
+        "continuity": "same captured intent; proven synchronous facade host document publication"
+      }
+    },
+    {
+      "id": "BM-M05",
+      "name": "same-parent forward move preserves descendant identity and offset",
+      "current_state_ref": "MOVE_TEXT",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "native.document_only_boundary",
+          "input": false,
+          "synchronous": true,
+          "reentrant_queued_mutations": 0,
+          "map_ref": "MOVE_FORWARD",
+          "expected_state_ref": "MOVED_TEXT"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "completed",
+          "response": {
+            "status": "ok",
+            "value": {
+              "kind": "mutation",
+              "effect": "unchanged",
+              "state_ref": "MOVED_TEXT",
+              "presentation": null
+            }
+          },
+          "same_submission_object_as": "native_submission"
+        },
+        "native_state_equals_ref": "MOVED_TEXT",
+        "bookmark_count": 0,
+        "restore_handle_consumed": true,
+        "map_ref": "MOVE_FORWARD",
+        "all_endpoint_map_statuses": "mapped",
+        "all_deleted_flags": false,
+        "document_equals_ref": "forward",
+        "current_to_final_native_selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "T1",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T1",
+            "offset": 1,
+            "affinity": "after"
+          }
+        },
+        "outside_attrs_unchanged": true,
+        "continuity": "same captured intent; proven synchronous facade host document publication"
+      }
+    },
+    {
+      "id": "BM-M06",
+      "name": "same-parent forward move adjusts original parent destination once",
+      "current_state_ref": "MOVE_GAP",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "native.document_only_boundary",
+          "input": false,
+          "synchronous": true,
+          "reentrant_queued_mutations": 0,
+          "map_ref": "MOVE_FORWARD",
+          "expected_state_ref": "MOVED_GAP"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "completed",
+          "response": {
+            "status": "ok",
+            "value": {
+              "kind": "mutation",
+              "effect": "unchanged",
+              "state_ref": "MOVED_GAP",
+              "presentation": null
+            }
+          },
+          "same_submission_object_as": "native_submission"
+        },
+        "native_state_equals_ref": "MOVED_GAP",
+        "bookmark_count": 0,
+        "restore_handle_consumed": true,
+        "map_ref": "MOVE_FORWARD",
+        "all_endpoint_map_statuses": "mapped",
+        "all_deleted_flags": false,
+        "document_equals_ref": "forward",
+        "current_to_final_native_selection": {
+          "anchor": {
+            "kind": "child",
+            "parent": "ROOT",
+            "index": 2,
+            "affinity": "before"
+          },
+          "focus": {
+            "kind": "child",
+            "parent": "ROOT",
+            "index": 2,
+            "affinity": "before"
+          }
+        },
+        "outside_attrs_unchanged": true,
+        "continuity": "same captured intent; proven synchronous facade host document publication"
+      }
+    },
+    {
+      "id": "BM-M07",
+      "name": "same-parent backward move honors After attachment at destination0",
+      "current_state_ref": "BACK_GAP",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "native.document_only_boundary",
+          "input": false,
+          "synchronous": true,
+          "reentrant_queued_mutations": 0,
+          "map_ref": "MOVE_BACKWARD",
+          "expected_state_ref": "BACK_MOVED_GAP"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "completed",
+          "response": {
+            "status": "ok",
+            "value": {
+              "kind": "mutation",
+              "effect": "unchanged",
+              "state_ref": "BACK_MOVED_GAP",
+              "presentation": null
+            }
+          },
+          "same_submission_object_as": "native_submission"
+        },
+        "native_state_equals_ref": "BACK_MOVED_GAP",
+        "bookmark_count": 0,
+        "restore_handle_consumed": true,
+        "map_ref": "MOVE_BACKWARD",
+        "all_endpoint_map_statuses": "mapped",
+        "all_deleted_flags": false,
+        "document_equals_ref": "backward",
+        "current_to_final_native_selection": {
+          "anchor": {
+            "kind": "child",
+            "parent": "ROOT",
+            "index": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "parent": "ROOT",
+            "index": 1,
+            "affinity": "after"
+          }
+        },
+        "outside_attrs_unchanged": true,
+        "continuity": "same captured intent; proven synchronous facade host document publication"
+      }
+    },
+    {
+      "id": "BM-M08",
+      "name": "cross-parent move maps both structural gaps, preserving moved subtree",
+      "current_state_ref": "CROSS",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "native.document_only_boundary",
+          "input": false,
+          "synchronous": true,
+          "reentrant_queued_mutations": 0,
+          "map_ref": "MOVE_CROSS_PARENT",
+          "expected_state_ref": "CROSSED"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "completed",
+          "response": {
+            "status": "ok",
+            "value": {
+              "kind": "mutation",
+              "effect": "unchanged",
+              "state_ref": "CROSSED",
+              "presentation": null
+            }
+          },
+          "same_submission_object_as": "native_submission"
+        },
+        "native_state_equals_ref": "CROSSED",
+        "bookmark_count": 0,
+        "restore_handle_consumed": true,
+        "map_ref": "MOVE_CROSS_PARENT",
+        "all_endpoint_map_statuses": "mapped",
+        "all_deleted_flags": false,
+        "document_equals_ref": "cross_after",
+        "current_to_final_native_selection": {
+          "anchor": {
+            "kind": "child",
+            "parent": "Q0",
+            "index": 1,
+            "affinity": "before"
+          },
+          "focus": {
+            "kind": "child",
+            "parent": "Q1",
+            "index": 1,
+            "affinity": "after"
+          }
+        },
+        "outside_attrs_unchanged": true,
+        "continuity": "same captured intent; proven synchronous facade host document publication"
+      }
+    },
+    {
+      "id": "BM-M09",
+      "name": "external synchronous facade insertion allows explicit before-affinity rebase",
+      "current_state_ref": "BEFORE_AFFINITY",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "native.document_only_boundary",
+          "input": false,
+          "synchronous": true,
+          "reentrant_queued_mutations": 0,
+          "map_ref": "INSERT_AT_2",
+          "expected_state_ref": "AFTER_INSERT"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "completed",
+          "response": {
+            "status": "ok",
+            "value": {
+              "kind": "mutation",
+              "effect": "state_changed",
+              "state_ref": "RESTORED_INSERT_BEFORE",
+              "presentation": null
+            }
+          },
+          "same_submission_object_as": "native_submission"
+        },
+        "native_state_equals_ref": "RESTORED_INSERT_BEFORE",
+        "bookmark_count": 0,
+        "restore_handle_consumed": true,
+        "map_ref": "INSERT_AT_2",
+        "all_endpoint_map_statuses": "mapped",
+        "all_deleted_flags": false,
+        "document_equals_ref": "insert_after",
+        "current_to_final_native_selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "T",
+            "offset": 2,
+            "affinity": "before"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T",
+            "offset": 2,
+            "affinity": "before"
+          }
+        },
+        "outside_attrs_unchanged": true,
+        "continuity": "same captured intent; proven synchronous facade host document publication"
+      }
+    },
+    {
+      "id": "BM-M10",
+      "name": "exact refusal after doc change does not consume handle; explicit mapped retry succeeds",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "native.document_only_boundary",
+          "input": false,
+          "synchronous": true,
+          "reentrant_queued_mutations": 0,
+          "map_ref": "SPLIT_AT_2",
+          "expected_state_ref": "AFTER_SPLIT"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "first": {
+          "result": {
+            "status": "dom_refused",
+            "diagnostic": {
+              "code": "dom.stale_selection",
+              "phase": "selection",
+              "publication": "none"
+            }
+          },
+          "facets": {
+            "native_state_equals_ref": "AFTER_SPLIT",
+            "canonical_and_role_ids_unchanged": true,
+            "new_native_events": 0,
+            "new_native_mutations": 0,
+            "bookmark_count": 1
+          }
+        },
+        "second": {
+          "result": {
+            "status": "completed",
+            "response": {
+              "status": "ok",
+              "value": {
+                "kind": "mutation",
+                "effect": "unchanged",
+                "state_ref": "AFTER_SPLIT",
+                "presentation": null
+              }
+            },
+            "same_submission_object_as": "native_submission"
+          },
+          "native_state_equals_ref": "AFTER_SPLIT",
+          "bookmark_count": 0,
+          "restore_handle_consumed": true
+        },
+        "first_preserves_handle_for_explicit_retry": true,
+        "no_automatic_retry": true
+      }
+    },
+    {
+      "id": "BM-M11",
+      "name": "deleted provenance refuses even with plausible live parent gap",
+      "current_state_ref": "DELETE_TARGET",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "native.document_only_boundary",
+          "input": false,
+          "synchronous": true,
+          "map_ref": "REMOVE_P1",
+          "expected_state_ref": "AFTER_REMOVE"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.stale_selection",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "AFTER_REMOVE",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        },
+        "native_map_result": {
+          "status": "deleted",
+          "position": {
+            "kind": "child",
+            "parent": "ROOT",
+            "index": 1,
+            "affinity": "after"
+          },
+          "deleted": true
+        },
+        "no_nearest_gap_restore": true
+      }
+    },
+    {
+      "id": "BM-M12",
+      "name": "evicted map chain refuses despite unchanged final text and endpoints",
+      "current_state_ref": "MOVE_TEXT",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "native.document_only_boundary",
+          "repeat": 66,
+          "history_hint": "isolated",
+          "literal_pair": [
+            {
+              "semantic_host_command": "move",
+              "node": "P1",
+              "parent": "ROOT",
+              "before_index": 3,
+              "input": false
+            },
+            {
+              "semantic_host_command": "move",
+              "node": "P1",
+              "parent": "ROOT",
+              "before_index": 1,
+              "input": false
+            }
+          ],
+          "pair_repetitions": 33,
+          "map_ref": "EVICTED",
+          "expected_state_ref": "RETENTION_66",
+          "reentrant_queued_mutations": 0
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.stale_selection",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "RETENTION_66",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        },
+        "native_map_result": {
+          "status": "stale",
+          "position": null,
+          "deleted": false
+        },
+        "no_snapshot_fallback": true
+      }
+    },
+    {
+      "id": "BM-M13",
+      "name": "invalid map result is not treated as mapped",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "native.document_only_boundary",
+          "input": false,
+          "synchronous": true,
+          "reentrant_queued_mutations": 0,
+          "map_ref": "SPLIT_AT_2",
+          "expected_state_ref": "AFTER_SPLIT"
+        },
+        {
+          "action": "controlled_sdk.next_map_read_response",
+          "response": {
+            "status": "ok",
+            "value": {
+              "kind": "mapped",
+              "status": "invalid",
+              "position": null,
+              "deleted": false,
+              "stamp_ref": "AFTER_SPLIT"
+            }
+          }
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.stale_selection",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "AFTER_SPLIT",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        }
+      },
+      "lane": "controlled_sdk_boundary",
+      "qualification": "Controlled SDK map-result boundary after concrete mapping-eligible revision0→1 split; does not certify Rust execution or alter literal native map expectations."
+    },
+    {
+      "id": "BM-M14",
+      "name": "native map read refusal is preserved, not disguised as mutation",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "native.document_only_boundary",
+          "input": false,
+          "synchronous": true,
+          "reentrant_queued_mutations": 0,
+          "map_ref": "SPLIT_AT_2",
+          "expected_state_ref": "AFTER_SPLIT"
+        },
+        {
+          "action": "controlled_sdk.map_read_response",
+          "bind": "MAP_FAILURE",
+          "value": {
+            "status": "refused",
+            "diagnostic": {
+              "code": "fixture.map_read_refused",
+              "path": "/controlled-map-read",
+              "category": "fixture",
+              "details": {},
+              "stamp_ref": "AFTER_SPLIT",
+              "may_have_committed": false
+            }
+          }
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "sdk_failure",
+          "same_response_object_as": "MAP_FAILURE"
+        },
+        "native_set_selection_calls": 0,
+        "facets": {
+          "native_state_equals_ref": "AFTER_SPLIT",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        }
+      },
+      "lane": "controlled_sdk_boundary",
+      "qualification": "Controlled SDK map-result boundary after concrete mapping-eligible revision0→1 split; does not certify Rust execution or alter literal native map expectations."
+    },
+    {
+      "id": "BM-M15",
+      "name": "reentrant queued mutation invalidates otherwise plausible direct-doc continuity",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "native.document_boundary_with_reentrant_queued_mutation",
+          "map_ref": "SPLIT_AT_2",
+          "expected_state_ref": "AFTER_SPLIT",
+          "queued_mutation": {
+            "kind": "set_selection",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "T_RIGHT",
+                "offset": 0,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "T_RIGHT",
+                "offset": 0,
+                "affinity": "after"
+              }
+            },
+            "native_effect": "unchanged"
+          }
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.stale_selection",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "AFTER_SPLIT",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        },
+        "intent_relation": "newer/unknown provenance",
+        "map_queries": 0,
+        "unchanged_native_selection_of_nested_noop_does_not_restore_certificate": true
+      }
+    },
+    {
+      "id": "BM-H01",
+      "name": "undo map succeeds chronologically but history intent prohibits bookmark restoration",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "native.document_only_boundary",
+          "map_ref": "SPLIT_AT_2",
+          "expected_state_ref": "AFTER_SPLIT"
+        },
+        {
+          "action": "mounted.submit",
+          "request": {
+            "kind": "history",
+            "direction": "undo"
+          },
+          "expected_state_ref": "UNDO_SPLIT"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.stale_selection",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "UNDO_SPLIT",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        },
+        "independent_native_map_fact_ref": "SPLIT_THEN_UNDO",
+        "restore_map_queries": 0,
+        "revision_not_rewound": "2",
+        "history": {
+          "undo_entries": "0",
+          "redo_entries": "1"
+        },
+        "old_text_and_ids_do_not_revive_UI_permission": true
+      }
+    },
+    {
+      "id": "BM-H02",
+      "name": "redo historical IDs revive but old user bookmark remains stale",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "native.document_only_boundary",
+          "map_ref": "SPLIT_AT_2",
+          "expected_state_ref": "AFTER_SPLIT"
+        },
+        {
+          "action": "mounted.submit",
+          "request": {
+            "kind": "history",
+            "direction": "undo"
+          },
+          "expected_state_ref": "UNDO_SPLIT"
+        },
+        {
+          "action": "mounted.submit",
+          "request": {
+            "kind": "history",
+            "direction": "redo"
+          },
+          "expected_state_ref": "REDO_SPLIT"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.stale_selection",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "REDO_SPLIT",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        },
+        "independent_native_map_fact_ref": "SPLIT_UNDO_REDO",
+        "restore_map_queries": 0,
+        "revived_roles": [
+          "P_RIGHT",
+          "T_RIGHT"
+        ]
+      }
+    },
+    {
+      "id": "BM-H03",
+      "name": "state-only stored-mark override invalidates old bookmark",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "mounted.submit",
+          "request": {
+            "kind": "set_stored_marks",
+            "marks": [
+              {
+                "type_id": "org.klenwriter.kwdj/strong",
+                "attributes": {}
+              }
+            ]
+          },
+          "expected_state_ref": "MARKS"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.stale_selection",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "MARKS",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        },
+        "new_document_events": 0,
+        "map_queries": 0
+      }
+    },
+    {
+      "id": "BM-FX01",
+      "name": "actual changed selection clears override and seals open typing group without undo entry",
+      "current_state_ref": "OPEN_GROUP",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "owned.pointerdown",
+          "role": "T",
+          "offset": 1
+        },
+        {
+          "action": "internal.syncFromDom",
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "node": "T",
+              "offset": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "T",
+              "offset": 1,
+              "affinity": "after"
+            }
+          },
+          "expected_state_ref": "SEALED_GROUP"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.stale_selection",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "SEALED_GROUP",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        },
+        "native_effect_facts": {
+          "canonical_document_ref": "open_typing",
+          "revision": "1",
+          "undo_entries": "1",
+          "redo_entries": "0",
+          "history_epoch_before": "1",
+          "history_epoch_after": "2",
+          "selection_epoch_before": "3",
+          "selection_epoch_after": "4",
+          "stored_marks_before": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ],
+          "stored_marks_after": null,
+          "new_state_events": 1,
+          "new_document_events": 0
+        }
+      }
+    },
+    {
+      "id": "BM-FX02",
+      "name": "identical selection native no-op preserves override and open group, but new gesture still invalidates",
+      "current_state_ref": "OPEN_GROUP",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "owned.pointerdown",
+          "role": "TX",
+          "offset": 1
+        },
+        {
+          "action": "internal.syncFromDom",
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "node": "TX",
+              "offset": 1,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "TX",
+              "offset": 1,
+              "affinity": "after"
+            }
+          },
+          "native_effect": "unchanged"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.stale_selection",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "OPEN_GROUP",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        },
+        "native_facets_unchanged_including_open_group_and_marks": true,
+        "new_native_events": 0,
+        "intent_relation": "newer"
+      }
+    },
+    {
+      "id": "BM-A01",
+      "name": "busy restore refuses before any SDK queue call",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "fixture.enter_existing_sdk_delivery_fence"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.busy",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "BASE",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        },
+        "sdk_submit_calls": 0,
+        "sdk_queue_entries_added": 0,
+        "handle_not_consumed": true
+      }
+    },
+    {
+      "id": "BM-A02",
+      "name": "reentrant listener cannot restore during current native publication",
+      "current_state_ref": "AFTER_SPLIT",
+      "steps": [
+        {
+          "action": "fixture.install_branded_bookmark_from_preceding_capture",
+          "bookmark": "B1",
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "node": "T_RIGHT",
+              "offset": 0,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "T_RIGHT",
+              "offset": 0,
+              "affinity": "after"
+            }
+          }
+        },
+        {
+          "action": "fixture.invoke_from_existing_publication_listener"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.busy",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "AFTER_SPLIT",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        },
+        "sdk_submit_calls": 0,
+        "sdk_queue_entries_added": 0
+      },
+      "lane": "controlled_delivery_boundary"
+    },
+    {
+      "id": "BM-A03",
+      "name": "unexpected queued native Submission returned identically; late new user intent prevents focus only",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "controlled_sdk.next_submit_result",
+          "bind": "Q",
+          "value": {
+            "status": "queued",
+            "completion": "@PROMISE_Q"
+          }
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": true
+          }
+        },
+        {
+          "action": "owned.new_selection",
+          "selection": {
+            "anchor": {
+              "kind": "text",
+              "node": "T",
+              "offset": 3,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "T",
+              "offset": 3,
+              "affinity": "after"
+            }
+          },
+          "expected_state_ref": "NATIVE_NEW_SELECTION"
+        },
+        {
+          "action": "controlled_sdk.settle_once",
+          "promise": "@PROMISE_Q",
+          "response_bind": "Q_RESPONSE",
+          "response": {
+            "status": "refused",
+            "diagnostic": {
+              "code": "session.stale_selection_epoch",
+              "path": "stamp.selection_epoch",
+              "category": "sdk",
+              "details": {},
+              "stamp_ref": "NATIVE_NEW_SELECTION",
+              "may_have_committed": false
+            }
+          }
+        }
+      ],
+      "expected": {
+        "returned_same_submission_object": "Q",
+        "same_completion_promise": "@PROMISE_Q",
+        "completion_observations": 1,
+        "resubmissions": 0,
+        "claimed_cancellations": 0,
+        "focus_owner_unchanged": true,
+        "native_state_equals_ref": "NATIVE_NEW_SELECTION",
+        "bookmark_count": 0,
+        "restore_ticket_count_after_terminal": 0,
+        "native_response_equals_original": "Q_RESPONSE"
+      },
+      "lane": "controlled_sdk_boundary",
+      "qualification": "Defensive queue contract, not claim ordinary idle native restore queues."
+    },
+    {
+      "id": "BM-A04",
+      "name": "native success followed by newer subscriber selection never becomes fake Refused",
+      "current_state_ref": "BEFORE_AFFINITY",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "native.document_only_boundary",
+          "input": false,
+          "synchronous": true,
+          "reentrant_queued_mutations": 0,
+          "map_ref": "SPLIT_AT_2",
+          "expected_state_ref": "AFTER_SPLIT"
+        },
+        {
+          "action": "fixture.install_existing_sdk_subscriber",
+          "when": "state publication for upcoming mapped restore",
+          "once": true,
+          "nested_action": {
+            "kind": "set_selection",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "T_RIGHT",
+                "offset": 1,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "T_RIGHT",
+                "offset": 1,
+                "affinity": "after"
+              }
+            },
+            "expected_state_ref": "AFTER_RESTORE_SUBSCRIBER",
+            "native_effect": "state_changed",
+            "actual_native_result": "queued then completed once"
+          }
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": true
+          },
+          "bind_actual_submission": "DONE"
+        }
+      ],
+      "expected": {
+        "returned_same_submission_object": "DONE",
+        "native_response_unchanged": true,
+        "late_old_dom_range_applied": false,
+        "focus_transfer_applied": false,
+        "native_state_equals_ref": "AFTER_RESTORE_SUBSCRIBER",
+        "callback": {
+          "code": "dom.stale_selection",
+          "phase": "selection",
+          "publication": "alreadyPublished"
+        },
+        "no_retroactive_native_refused": true,
+        "native_response": {
+          "status": "ok",
+          "value": {
+            "kind": "mutation",
+            "effect": "state_changed",
+            "state_ref": "RESTORED_SPLIT_BEFORE",
+            "presentation": null
+          }
+        }
+      },
+      "lane": "controlled_sdk_boundary",
+      "qualification": "Source-realizable original SDK listener queue boundary: successful changed selection publishes; a listener queues a newer set_selection. The returned original response remains the earlier changed restore, current state is newer."
+    },
+    {
+      "id": "BM-A05",
+      "name": "focus event handler creates new selection; original native response retained",
+      "current_state_ref": "OUTSIDE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "fixture.install_focusin_listener",
+          "once": true,
+          "nested_action": {
+            "kind": "set_selection",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "T",
+                "offset": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "T",
+                "offset": 3,
+                "affinity": "after"
+              }
+            },
+            "expected_state_ref": "NATIVE_NEW_SELECTION"
+          }
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": true
+          }
+        }
+      ],
+      "expected": {
+        "native_submission_retained": true,
+        "final_native_state_equals_ref": "NATIVE_NEW_SELECTION",
+        "final_dom_text_offset": {
+          "text": "abcd",
+          "offset": 3
+        },
+        "old_T2_setter_after_focus_handler": false,
+        "callback": {
+          "code": "dom.stale_selection",
+          "phase": "selection",
+          "publication": "none"
+        }
+      },
+      "lane": "focus_reentrancy_boundary"
+    },
+    {
+      "id": "BM-S01",
+      "name": "composition/provisional refuses capture and restore without overwriting browser text",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "fixture.begin_provisional",
+          "actual_provisional_text": "abЖcd",
+          "base_native_document_ref": "plain"
+        },
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B2"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "capture2_code": "dom.composition_conflict",
+        "restore_code": "dom.composition_conflict",
+        "facets": {
+          "native_state_equals_ref": "BASE",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        },
+        "actual_provisional_text_retained": "abЖcd",
+        "dom_replacement_calls": 0
+      }
+    },
+    {
+      "id": "BM-S02",
+      "name": "destroy invalidates handle and releases all ownership",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "mounted.destroy"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        },
+        {
+          "action": "selection.releaseBookmark",
+          "bookmark": "B1"
+        }
+      ],
+      "expected": {
+        "restore_code": "dom.disposed",
+        "release_result": false,
+        "native_destroyed": true,
+        "resources_selection": {
+          "bookmarks": 0,
+          "restoreTickets": 0,
+          "activePointers": 0,
+          "animationFrames": 0
+        },
+        "listeners_and_continuations": 0,
+        "new_mutation_after_destroy": false
+      }
+    },
+    {
+      "id": "BM-S03",
+      "name": "successful replacement invalidates old generation even if new text looks similar",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "mounted.replace",
+          "input_document_ref": "other",
+          "expected_state_ref": "NEW_GENERATION"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.invalid_bookmark",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "NEW_GENERATION",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 0
+        },
+        "old_native_tokens_not_parsed_in_new_session": true,
+        "old_bookmark_map_queries": 0,
+        "old_roles_not_live": [
+          "P",
+          "T"
+        ],
+        "new_ids_distinct": true
+      }
+    },
+    {
+      "id": "BM-S04",
+      "name": "failed replacement still invalidates the old pending selection intent safely",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "mounted.replace",
+          "input_json": "{",
+          "expected_native_failure": true,
+          "expected_native_state_ref": "BASE"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.invalid_bookmark",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "BASE",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 0
+        },
+        "native_facets_unchanged_by_failed_replace": true,
+        "original_invalid_replacement_input_retained_by_existing39_policy": true
+      },
+      "qualification": "Proposed40 local-ownership policy: invalidate bookmarks when explicit replace starts, including failed admission; do not claim native generation changed on failure."
+    },
+    {
+      "id": "BM-S05",
+      "name": "disabled interaction refuses restoration; readOnly does not upgrade edit access",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "mounted.setInteractionMode",
+          "mode": "disabled"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.mode_blocked",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "BASE",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        }
+      }
+    },
+    {
+      "id": "BM-S06",
+      "name": "readOnly allows exact selection restoration without a document edit",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "fixture.native_access",
+          "access": "read_only",
+          "mode": "readOnly"
+        },
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "completed",
+          "response": {
+            "status": "ok",
+            "value": {
+              "kind": "mutation",
+              "effect": "unchanged",
+              "state_ref": "BASE",
+              "presentation": null
+            }
+          },
+          "same_submission_object_as": "native_submission"
+        },
+        "native_state_equals_ref": "BASE",
+        "bookmark_count": 0,
+        "restore_handle_consumed": true,
+        "native_access_stays": "read_only",
+        "document_mutations": 0,
+        "no_native_readonly_upgrade": true
+      }
+    },
+    {
+      "id": "BM-S07",
+      "name": "context capability digest mismatch refuses even when tuple/doc match",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "controlled_context_change",
+          "new_context_ref": "KWDJ_LOWER_CAPS"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.stale_selection",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "facets": {
+          "native_state_equals_ref": "BASE",
+          "canonical_and_role_ids_unchanged": true,
+          "new_native_events": 0,
+          "new_native_mutations": 0,
+          "bookmark_count": 1
+        }
+      },
+      "lane": "controlled_context_boundary",
+      "qualification": "A real mounted context is immutable; actual changes occur by replacement. This guards inconsistent/foreign integration metadata and does not promise mutable context."
+    },
+    {
+      "id": "BM-H04",
+      "name": "explicit barrier invalidates even when sealed/native barrier is a no-op",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "B1"
+        },
+        {
+          "action": "mounted.submit",
+          "request": {
+            "kind": "barrier"
+          },
+          "expected_native_effect": "unchanged",
+          "expected_state_ref": "BASE"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "B1",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        }
+      ],
+      "expected": {
+        "result": {
+          "status": "dom_refused",
+          "diagnostic": {
+            "code": "dom.stale_selection",
+            "phase": "selection",
+            "publication": "none"
+          }
+        },
+        "native_state_equals_ref": "BASE",
+        "native_stamp_unchanged": true,
+        "native_map_queries": 0,
+        "intent_relation": "newer",
+        "bookmark_count": 1
+      }
+    },
+    {
+      "id": "BM-H05",
+      "name": "fresh capture after unknown state invalidation does not revalidate an older handle",
+      "current_state_ref": "BASE",
+      "steps": [
+        {
+          "action": "selection.captureBookmark",
+          "bind": "OLD"
+        },
+        {
+          "action": "fixture.deliver_unknown_state_only_publication",
+          "expected_state_ref": "MARKS"
+        },
+        {
+          "action": "selection.captureBookmark",
+          "bind": "NEW"
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "OLD",
+          "options": {
+            "policy": "mapped",
+            "focus": false
+          }
+        },
+        {
+          "action": "selection.restoreBookmark",
+          "bookmark": "NEW",
+          "options": {
+            "policy": "exact",
+            "focus": false
+          }
+        },
+        {
+          "action": "selection.releaseBookmark",
+          "bookmark": "OLD"
+        }
+      ],
+      "expected": {
+        "old_restore_code": "dom.stale_selection",
+        "new_restore": {
+          "same_original_native_submission": true,
+          "native_effect": "unchanged",
+          "native_state_equals_ref": "MARKS",
+          "handle_consumed": true
+        },
+        "after_old_refusal_bookmarks": 2,
+        "after_new_restore_bookmarks": 1,
+        "release_old_result": true,
+        "final_bookmark_count": 0,
+        "native_state_equals_ref": "MARKS",
+        "stored_marks": [
+          {
+            "type_id": "org.klenwriter.kwdj/strong",
+            "attributes": {}
+          }
+        ],
+        "no_native_mutation_from_capture_or_old_refusal": true
+      }
+    }
+  ],
+  "summary": {
+    "document_literals": 16,
+    "native_states": 39,
+    "native_map_facts": 11,
+    "cases": 59,
+    "candidate_executions": 0,
+    "native_executions": 0,
+    "browser_executions": 0
+  },
+  "qualifications": [
+    "Controlled SDK/delivery/context boundary cases are labelled; they do not certify real Rust execution or normal queue reachability.",
+    "No new source/test/fixture implementation exists in this packet; adapters must preserve literal expected values and report real runtime results later.",
+    "Original39 contract/expected bytes remain untouched.",
+    "Numeric counters except target-dependent history bytes are authored from named public action semantics, not copied from candidate output.",
+    "Default chronological journal64 is sourced from crates/engine/src/transaction.rs;66 concrete alternating Move commits provide an evicted-chain case without private setters or fake no-op revisions."
+  ],
+  "authoring_notes": [
+    "Pre-execution author self-check changed the draft eviction transcript to66 concrete Move commits in33 pairs; avoids an odd two-state toggle ending in a different document or a first no-op. No implementation output was consulted.",
+    "Controlled map cases include concrete revision0→1 transition so their named map guard is reached.",
+    "Subscriber race uses an actual changed restore publication, not a native no-op that would emit no event. Listener is installed before the event; original Submission truth is preserved.",
+    "Failed replace local-handle invalidation is an explicit proposed40 policy in BM-S04; native generation/state does not change on failed admission.",
+    "Native HistoryLimits.actions is64: after66 isolated commits undo_entries is64 and two oldest action units were evicted; epoch/revision still66. The default-capacity fact is source-read, not a new setter or raised host cap.",
+    "Primary pre-candidate correction: BM-A03 controlled stale-selection diagnostic uses source-proven path stamp.selection_epoch/category sdk, matching bridge::stamp_check. Its controlled provenance and original-response identity assertion are unchanged."
+  ]
+}

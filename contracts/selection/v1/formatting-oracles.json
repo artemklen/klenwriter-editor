@@ -1,0 +1,441 @@
+{
+  "format": "osr40-independent-formatting-oracles/1",
+  "status": "AUTHORED_BEFORE_RUNTIME",
+  "issue": "OSR-40",
+  "provenance": "Literal KWDJ documents and range from primary implementer; only generic JSON serialization used for canonical key order, no native/WASM/DOM candidate execution.",
+  "inputs": {
+    "F1": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "prose",
+      "content": [
+        {
+          "type": "paragraph",
+          "attrs": {
+            "align": "center",
+            "first_line_indent": true
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "ab",
+              "marks": [
+                {
+                  "type": "emphasis"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "scene_break"
+        },
+        {
+          "type": "ordered_list",
+          "attrs": {
+            "start": 7
+          },
+          "content": [
+            {
+              "type": "list_item",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "cd",
+                      "marks": [
+                        {
+                          "type": "strike"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "hard_break"
+                    },
+                    {
+                      "type": "text",
+                      "text": "ef"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "task_list",
+          "content": [
+            {
+              "type": "task_item",
+              "attrs": {
+                "checked": true
+              },
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "gh"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 3,
+            "align": "right"
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "ij",
+              "marks": [
+                {
+                  "type": "emphasis"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "!",
+              "marks": [
+                {
+                  "type": "code"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "canonical": {
+    "F1": "{\"content\":[{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"type\":\"scene_break\"},{\"attrs\":{\"start\":7},\"content\":[{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strike\"}],\"text\":\"cd\",\"type\":\"text\"},{\"type\":\"hard_break\"},{\"text\":\"ef\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"}],\"type\":\"ordered_list\"},{\"content\":[{\"attrs\":{\"checked\":true},\"content\":[{\"content\":[{\"text\":\"gh\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"task_item\"}],\"type\":\"task_list\"},{\"attrs\":{\"align\":\"right\",\"level\":3},\"content\":[{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"ij\",\"type\":\"text\"}],\"type\":\"heading\"},{\"content\":[{\"marks\":[{\"type\":\"code\"}],\"text\":\"!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+    "F1-strong": "{\"content\":[{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"a\",\"type\":\"text\"},{\"marks\":[{\"type\":\"strong\"},{\"type\":\"emphasis\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"type\":\"scene_break\"},{\"attrs\":{\"start\":7},\"content\":[{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"},{\"type\":\"strike\"}],\"text\":\"cd\",\"type\":\"text\"},{\"type\":\"hard_break\"},{\"marks\":[{\"type\":\"strong\"}],\"text\":\"ef\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"}],\"type\":\"ordered_list\"},{\"content\":[{\"attrs\":{\"checked\":true},\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"gh\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"task_item\"}],\"type\":\"task_list\"},{\"attrs\":{\"align\":\"right\",\"level\":3},\"content\":[{\"marks\":[{\"type\":\"strong\"},{\"type\":\"emphasis\"}],\"text\":\"i\",\"type\":\"text\"},{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"j\",\"type\":\"text\"}],\"type\":\"heading\"},{\"content\":[{\"marks\":[{\"type\":\"code\"}],\"text\":\"!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}"
+  },
+  "roles": {
+    "root": "",
+    "P": "/0",
+    "L": "/0/0",
+    "S": "/1",
+    "O": "/2",
+    "I": "/2/0",
+    "P2": "/2/0/0",
+    "M": "/2/0/0/0",
+    "BR": "/2/0/0/1",
+    "N": "/2/0/0/2",
+    "T": "/3",
+    "TI": "/3/0",
+    "P3": "/3/0/0",
+    "U": "/3/0/0/0",
+    "H": "/4",
+    "R": "/4/0",
+    "C": "/5",
+    "Z": "/5/0"
+  },
+  "cases": [
+    {
+      "id": "F1-strong-forward",
+      "input": "F1",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "role": "L",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "role": "R",
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "command": {
+        "kind": "toggle_mark",
+        "mark": {
+          "type_id": "org.klenwriter.kwdj/strong",
+          "attributes": {}
+        }
+      },
+      "expectedCanonical": "F1-strong",
+      "projection": {
+        "text": "b\n\ncd\nef\ngh\ni",
+        "selectedAtomRoles": [
+          "S"
+        ],
+        "empty": false
+      },
+      "identity": {
+        "survive": [
+          "root",
+          "P",
+          "L",
+          "S",
+          "O",
+          "I",
+          "P2",
+          "M",
+          "BR",
+          "N",
+          "T",
+          "TI",
+          "P3",
+          "U",
+          "H",
+          "R",
+          "C",
+          "Z"
+        ],
+        "new": {
+          "L-selected": "/0/1",
+          "R-unselected-suffix": "/4/1"
+        },
+        "retired": []
+      },
+      "selectedLeafEffects": [
+        {
+          "role": "L",
+          "original": "ab",
+          "outsidePrefix": "a",
+          "selected": "b",
+          "oldMarks": [
+            "emphasis"
+          ],
+          "selectedMarks": [
+            "strong",
+            "emphasis"
+          ]
+        },
+        {
+          "role": "M",
+          "selected": "cd",
+          "oldMarks": [
+            "strike"
+          ],
+          "selectedMarks": [
+            "strong",
+            "strike"
+          ]
+        },
+        {
+          "role": "N",
+          "selected": "ef",
+          "oldMarks": [],
+          "selectedMarks": [
+            "strong"
+          ]
+        },
+        {
+          "role": "U",
+          "selected": "gh",
+          "oldMarks": [],
+          "selectedMarks": [
+            "strong"
+          ]
+        },
+        {
+          "role": "R",
+          "original": "ij",
+          "selected": "i",
+          "outsideSuffix": "j",
+          "oldMarks": [
+            "emphasis"
+          ],
+          "selectedMarks": [
+            "strong",
+            "emphasis"
+          ]
+        }
+      ],
+      "outsideAttrs": {
+        "P": {
+          "align": "center",
+          "first_line_indent": true
+        },
+        "O": {
+          "start": 7
+        },
+        "TI": {
+          "checked": true
+        },
+        "H": {
+          "level": 3,
+          "align": "right"
+        }
+      },
+      "history": {
+        "applyRevision": "1",
+        "undoRevision": "2",
+        "redoRevision": "3",
+        "applyUndoEntries": "1",
+        "applyRedoEntries": "0"
+      },
+      "repeatToggle": {
+        "expectedCanonical": "F1",
+        "note": "All selected spans now strong, so second toggle removes strong only, preserves outside marks/attrs and hard break/scene/list structure."
+      }
+    },
+    {
+      "id": "F1-strong-backward",
+      "input": "F1",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "role": "R",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "role": "L",
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "command": {
+        "kind": "toggle_mark",
+        "mark": {
+          "type_id": "org.klenwriter.kwdj/strong",
+          "attributes": {}
+        }
+      },
+      "expectedCanonical": "F1-strong",
+      "projection": {
+        "text": "b\n\ncd\nef\ngh\ni",
+        "selectedAtomRoles": [
+          "S"
+        ],
+        "empty": false
+      },
+      "identity": {
+        "survive": [
+          "root",
+          "P",
+          "L",
+          "S",
+          "O",
+          "I",
+          "P2",
+          "M",
+          "BR",
+          "N",
+          "T",
+          "TI",
+          "P3",
+          "U",
+          "H",
+          "R",
+          "C",
+          "Z"
+        ],
+        "new": {
+          "L-selected": "/0/1",
+          "R-unselected-suffix": "/4/1"
+        },
+        "retired": []
+      },
+      "selectedLeafEffects": [
+        {
+          "role": "L",
+          "original": "ab",
+          "outsidePrefix": "a",
+          "selected": "b",
+          "oldMarks": [
+            "emphasis"
+          ],
+          "selectedMarks": [
+            "strong",
+            "emphasis"
+          ]
+        },
+        {
+          "role": "M",
+          "selected": "cd",
+          "oldMarks": [
+            "strike"
+          ],
+          "selectedMarks": [
+            "strong",
+            "strike"
+          ]
+        },
+        {
+          "role": "N",
+          "selected": "ef",
+          "oldMarks": [],
+          "selectedMarks": [
+            "strong"
+          ]
+        },
+        {
+          "role": "U",
+          "selected": "gh",
+          "oldMarks": [],
+          "selectedMarks": [
+            "strong"
+          ]
+        },
+        {
+          "role": "R",
+          "original": "ij",
+          "selected": "i",
+          "outsideSuffix": "j",
+          "oldMarks": [
+            "emphasis"
+          ],
+          "selectedMarks": [
+            "strong",
+            "emphasis"
+          ]
+        }
+      ],
+      "outsideAttrs": {
+        "P": {
+          "align": "center",
+          "first_line_indent": true
+        },
+        "O": {
+          "start": 7
+        },
+        "TI": {
+          "checked": true
+        },
+        "H": {
+          "level": 3,
+          "align": "right"
+        }
+      },
+      "history": {
+        "applyRevision": "1",
+        "undoRevision": "2",
+        "redoRevision": "3",
+        "applyUndoEntries": "1",
+        "applyRedoEntries": "0"
+      },
+      "repeatToggle": {
+        "expectedCanonical": "F1",
+        "note": "All selected spans now strong, so second toggle removes strong only, preserves outside marks/attrs and hard break/scene/list structure."
+      }
+    }
+  ],
+  "rules": [
+    "Original selected anchor/focus order is never sorted for publication.",
+    "Whole unchanged outside attributes/marks/canonical subtrees remain exact; no operation may affect C/Z.",
+    "One native document publication and isolated undo unit; read/copy and failed query are pure.",
+    "After successful formatting undo restores original identities and complete original directed selection; redo restores exact historical created leaves.",
+    "Selection positions remap under existing native split/normalization affinity rules; no JS endpoint correction."
+  ]
+}

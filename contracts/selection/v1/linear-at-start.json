@@ -1,0 +1,137 @@
+{
+  "id": "OSR-40",
+  "uuid": "73892b3b-2bb1-4646-9e62-c41adf0e215a",
+  "title": "Selection controller: Unicode и границы блоков",
+  "description": "## Цель\n\nПоддержать полное выделение и операции между блоками.\n\n## Scope и границы\n\nDOM↔core mapping по [OSR-59](<https://linear.app/klenwriter/issue/OSR-59>), anchor/focus/affinity, mouse/keyboard, select-all, nested/atomic boundaries, focus/scroll anchoring; согласовать native/cross-island behavior.\n\n## Acceptance criteria\n\n1. Forward/backward selections проходят marks, lists, hard breaks и atomic blocks.\n2. Copy/cut/delete/format применяются к точно выделенному содержимому; attrs outside range сохраняются.\n3. Selection remaps после split/join/move/undo/external update; stale generation безопасно отклоняется.\n4. Emoji/combining/RTL cases не режутся некорректно; keyboard behavior и announcements соответствуют UX contract.\n5. Edge autoscroll работает вверх и вниз при удержании pointer за границей viewport, через atomic и nested blocks. Проверяются правильные model/DOM anchor/focus endpoints, полная видимость focus caret внутри client viewport (не частичное пересечение), focus return и остановка scroll при pointer release/cancel. ScrollTop сам по себе не считается успехом; продолжительность удержания и before/held/after geometry входят в evidence.\n\n## Проверка и evidence\n\nThree-engine mounted measurements + manual keyboard/mouse matrix; обязательный v1 acceptance — Chrome/Safari, Firefox experimental behavioral GAP сохраняются без блокировки v1. Ошибки harness/evidence остаются failures. Overlay screenshot не заменяет проверку clipboard/model result.\n\n## Зависимости и Definition of Done\n\nAcceptance зависит от: [OSR-39](<https://linear.app/klenwriter/issue/OSR-39>), [OSR-59](<https://linear.app/klenwriter/issue/OSR-59>). Подготовку и scaffold можно делать параллельно; это связи готовности результата.\n\nЗапланировано, не реализовано. Закрытие требует AC, артефактов/точной версии, применимых repository checks и независимого review. Deferred/unsupported сценарии показываются отдельно. Для реализации — reviewed SHA и matching checks; для design/spike — versioned decision/evidence. Deploy/publish проходят соответствующий delivery workflow.\n\n## Контекст\n\n[Master plan v2](<https://linear.app/klenwriter/document/editor-wasm-master-plan-v2-arhitektura-milestones-i-delivery-gates-cf5d7e6af041>). Решения владельца: общее Rust/WASM ядро и расширения, KWDJ первый профиль; desktop v1 без mobile/collaboration; оба поколения Tiptap должны уйти из CMS.\n\n## Архитектурное уточнение — 16.10.2026\n\n[Архитектура v1, разделы 6–7](<https://linear.app/klenwriter/document/editor-wasm-arhitektura-v1-razvitie-ogranicheniya-alternativy-i-46e126beb7a2>): baseline использует native Range/Selection внутри единой editing surface и explicit mapping в Rust positions. Overlay/cross-island selection не обязательная реализация. Сохранить полноту semantic selection и clipboard/model assertions независимо от DOM strategy.\n\n## M0 focus evidence — 16.10.2026\n\nSingle host выбран по <issue id=\"586489d4-e0dc-485d-add9-8bb06bb0930a\" href=\"https://linear.app/klenwriter/issue/OSR-58/spike-single-editing-host-protiv-per-block-islands\">OSR-58</issue>. В baseline Tab-out/Shift-Tab-back сбрасывал каретку в WebKit и у islands в трёх engines; explicit focus out/back к тому же host сохранил её. Эти пути не эквивалентны. Toolbar/dialog return должен использовать явный model selection bookmark + epoch, тестировать оба пути и различать DOM selection, node offsets и logical positions. [ADR-001](<https://github.com/artemklen/klenwriter-editor/blob/spike/osr-58-editing-hosts/docs/m0/editing-host-decision.md>).\n\nДополнительный M0 held-mouse probe: удержание за нижней границей до полной видимости caret либо 20 polls × 100ms (actual heldMs записан) даёт MET для single-host Playwright WebKit; Chromium GAP: p3 достигнут, но caret обрезан сверху; Firefox GAP: scroll есть, focus остаётся на atomic card вместо p3; islands дают document-scope GAP. Отдельный короткий installed-browser drag не эквивалентен этому held gesture: Chrome/Safari достигли p3, но endpoint остался вне viewport. Это не снимает production edge-autoscroll/visibility работу в обязательной Chrome/Safari matrix; Firefox remediation/promotion ведётся отдельно.\n\n## Refine · Codex · 19.10.2026 (МСК)\n\n**Ready with assumptions.** Исходные пять AC сохраняются полностью. Актуальная нормативная база — принятые architecture v2 и master plan v3 в `docs/m0/`; старые v1/v2 ссылки выше остаются историческим контекстом. Свежая проверка: <issue id=\"a616da47-ba7f-47f5-9353-f7aa8349b6e3\" href=\"https://linear.app/klenwriter/issue/OSR-39/dom-renderer-osnovnyh-blokov-i-reconciliation\">OSR-39</issue> и <issue id=\"7c88f485-1f6b-47d3-8824-40a11c2a804b\" href=\"https://linear.app/klenwriter/issue/OSR-59/adr-unicode-pozicii-selection-mapping-i-istoriya\">OSR-59</issue> Done; у <issue id=\"73892b3b-2bb1-4646-9e62-c41adf0e215a\" href=\"https://linear.app/klenwriter/issue/OSR-40/selection-controller-unicode-i-granicy-blokov\">OSR-40</issue> нет детей. Это standalone implementation, ci_owner=none, репозиторий `artemklen/klenwriter-editor`, base main `ff2bd3103eba9b47cd2a06098d1506d9a054a589`.\n\n**Результат:** пользователь выделяет текст/структуру в едином editing host в обоих направлениях, включая marks, hard_break, базовые списки/quote и scene_break; copy/cut/delete/format работают по точному native range, сохраняют внешние attrs/marks; selection/bookmark не перезаписывает более новый intent. Rust остаётся единственным владельцем семантики, Unicode/EGC, maps, transactions и history. TS хранит только bounded DOM correspondence/ownership; overlay, islands и второй документ не вводятся.\n\n**Решения реализации:**\n\n* Один selection owner на mount и один private существующий SDK2/event pump. Тонкий публичный `mounted.selection`: captureBookmark / restoreBookmark / releaseBookmark; 64 privately branded immutable handles. Capture читает model без скрытого set_selection; exact по умолчанию, mapped только явно через native map_position. Полный context/generation/stamp + отдельный monotonic intent token; новый targeting intent, даже NativeNoop, инвалидирует старую цель. Busy/reentrant/provisional/composition/unknown provenance отказывают до dispatch; исходный native Submission/diagnostic сохраняется. Focus:false по умолчанию; explicit focus transfer и Tab/Shift-Tab return различаются; чужой focus/range не перехватывается.\n* Позиции Text.offset остаются UTF-16 code-unit counts с проверкой scalar boundary; новые DOM Text/Child endpoints affinity=after, известная native affinity сохраняется. Scalar-readable interior EGC можно копировать; destructive edit допускает только pinned Rust EGC, включая cluster через marks. Нет округления surrogate, Unicode normalization или Intl.Segmenter как authority; RTL layout/navigation остаётся браузеру.\n* Для AC2 добавить узкий read-only ABI2 `selection_text{stamp,max_bytes}` с native KWDJ projection и typed unsupported для иных профилей; legacy ABI1 request/reply envelopes для этого read сохраняются. Добавить command17 `org.klenwriter.kwdj/command/delete-selection`, payload `{kind:'delete_selection'}`. Старые16 payload/semantics сохраняются. Новая команда покрывает положительные item→item, task-item→outside и structural atom ranges: partial endpoint paths/attrs сохраняются, удаляется только выбранный текст и maximal fully covered middle forest; обязательные empty owners восстанавливаются валидной базовой структурой в той же transaction. Native query/execute/undo/redo/maps/identity проверяются отдельно. Formatting использует существующую native range policy, без TS slicing.\n* Plain-text copy: literal text, hard_break=LF, выбранные block fragments разделяются LF, nesting не добавляет LF; scene_break — пустой block fragment с отдельным selected_atoms membership (a/scene/b → \"a\" + LF + LF + \"b\"), без U+FFFC/фиктивного native символа. Reverse range даёт тот же payload при сохранённом anchor/focus. Native projection pure; никакого snapshot/prepare_tree для чтения. Ограничения: text≤1MiB UTF-8, nodes≤200000, depth≤128, selected_atoms≤4096, native work≤1000000 units/64MiB, bounded reply≤8MiB; меньшее max_bytes соблюдается без truncation/partial result.\n* Copy/cut использует подтверждённое завершение platform writeText. ClipboardEvent.setData не считается OS ACK. Перед одной isolated native delete recheck исходного stamp/context/intent; failed/late write не удаляет документ. Возможное внешнее copied_but_not_cut и native fatal/unknown отражаются честно; external clipboard+model не объявляются одной атомарной transaction. Реальные trusted clipboard event, payload и installed OS round-trip — отдельные evidence. Full HTML/paste/sanitization/multiformat pipeline остаётся <issue id=\"985d0abc-3e19-4f47-b238-e920a23e0e3d\" href=\"https://linear.app/klenwriter/issue/OSR-47/clipboard-pipeline-bezopasnyj-decode-i-atomic-insert\">OSR-47</issue>; copy/cut AC2 не переносится туда.\n* Edge autoscroll: один primary left mouse pointer, один RAF, bounded scroll/clipping ancestors; stationary hold в обоих направлениях через atom+nesting. Cancel/release/lost capture/blur/mode/provisional/replacement/destroy останавливают owner. Selection-only сохраняет doc/revision/IDs/dirty/undo-entry counts; native stored marks/barrier/history_epoch/events проверяются по действительной native policy, а не объявляются все неизменными.\n\n**Проверка до runtime-кода:** отдельным commit зафиксировать versioned `contracts/selection/v1/`: точные API/диагностики/результаты, независимые literal input/output/IDs/maps/history и model+DOM endpoint tables, fixed geometry/timing/clipboard policy. Дизайн и данные создаются до candidate; существующие frozen39 oracle bytes/manifest сохраняются как история, live public types развиваются явно additive, старый pin не переписывается под новый файл.\n\n**Reversible fixture assumptions (фиксируются до candidate):** 64 rows×24px, viewport1024×768, scrollport x100/y80/w640/h240, top/bottom padding20/40 → scrollHeight1596/max1356; clipped ancestor x96/y100/w648/h180. Down R04:1/after→R63:3/after, up R59:2/after→R00:0/after; R16 scene_break, R24..31 quote/list nesting. Начальная setup scroll допускается только до pointerdown. Hold≤8s, observations100ms, visibility tolerance≤0.5px, release/cancel settlement≤1 passive frame +5×100ms stable samples; exact terminal endpoints и positive-height collapsed focus caret целиком внутри intersection client viewport/scrollport/clipping ancestors обязательны. 12 controlled cases (2 direction×2 clip×terminal/active-release/active-cancel), active cancel/release при оставшемся scroll range. Synthetic pointercancel явно controlled; physical installed lane не подменяется synthetic. До gesture проверяются font/geometry; instrumentation failure остаётся failure. Любая корректировка предположений — явный новый pre-candidate контракт с причиной, не подгонка после результата.\n\n**Evidence/DoD:** Chromium/Firefox/WebKit mounted semantic and geometry measurements + actual installed Chrome/Safari EN/RU keyboard/mouse/copy/cut/focus. Firefox experimental behavioral GAP допускается исходным контрактом v1 только при sound measurement; wrong offsets/data loss/stale overwrite/setup/harness errors не становятся GAP, существующие assertions не ослабляются. Minimal named surface + persistent EN/RU stale status/aria-live policy фиксируется в host fixture; real AT/full UI localization — <issue id=\"2c569e33-a3c4-4a0b-9cba-a8a51bfac717\" href=\"https://linear.app/klenwriter/issue/OSR-66/dostupnost-keyboard-navigation-i-lokalizaciya\">OSR-66</issue>. Все девять local pre-send commands из AGENTS/CONTRIBUTING на exact committed SHA, реальный packaged SDK/WASM и native comparisons, hashes/receipts + raw traces. CI строго build-only: один подготовленный source revision, независимое Grok exact-SHA review, exact-head normal merge, один automatic postmerge build, архив/readback/cleanup, затем Done+rollup. Пропуски не выдаются за PASS. No deploy/publish.\n\n**Non-goals:** full IME41, toolbar42, DnD44, virtualization46, external clipboard pipeline47, будущие domain renderers50, vanilla-alpha65, full UI/i18n/AT66, CMS save/recovery69, Firefox promotion73/release71/80. Остановленная <issue id=\"1fbd4bee-92c2-4db7-8f78-47264b375946\" href=\"https://linear.app/klenwriter/issue/OSR-38/propertyfuzz-tests-i-performance-regression-gates\">OSR-38</issue> campaign/captures/ladders/host diagnostics не возобновляется. Rollback: revert <issue id=\"73892b3b-2bb1-4646-9e62-c41adf0e215a\" href=\"https://linear.app/klenwriter/issue/OSR-40/selection-controller-unicode-i-granicy-blokov\">OSR-40</issue> PR; persisted KWDJ schema не меняется. Ответственность за implementation/closure остаётся Codex; helper proposals не являются formal review.",
+  "projectMilestone": {
+    "id": "6f3b0a28-9663-4d31-8dac-77dafa171a31",
+    "name": "M3 — Доступный браузерный редактор и vanilla alpha"
+  },
+  "priority": {
+    "value": 2,
+    "name": "High"
+  },
+  "url": "https://linear.app/klenwriter/issue/OSR-40/selection-controller-unicode-i-granicy-blokov",
+  "gitBranchName": "osr-40",
+  "createdAt": "2026-10-16T19:06:56.689Z",
+  "updatedAt": "2026-10-19T11:38:47.477Z",
+  "archivedAt": null,
+  "completedAt": null,
+  "startedAt": "2026-10-19T11:38:47.459Z",
+  "canceledAt": null,
+  "dueDate": null,
+  "slaStartedAt": null,
+  "slaMediumRiskAt": null,
+  "slaHighRiskAt": null,
+  "slaBreachesAt": null,
+  "status": "In Progress",
+  "statusType": "started",
+  "labels": [
+    "Фича"
+  ],
+  "attachments": [],
+  "documents": [],
+  "stateHistory": [
+    {
+      "state": {
+        "id": "6c248686-5924-4386-b7e6-b70ac31b1c9b",
+        "name": "Backlog",
+        "type": "backlog"
+      },
+      "startedAt": "2026-10-16T19:06:56.689Z",
+      "endedAt": "2026-10-19T11:38:10.502Z"
+    },
+    {
+      "state": {
+        "id": "45eef9b4-8d93-4009-a9b3-ba46c04973d2",
+        "name": "Todo",
+        "type": "unstarted"
+      },
+      "startedAt": "2026-10-19T11:38:10.502Z",
+      "endedAt": "2026-10-19T11:38:47.477Z"
+    },
+    {
+      "state": {
+        "id": "d0a58e04-79fb-4034-98d5-d1e336932baf",
+        "name": "In Progress",
+        "type": "started"
+      },
+      "startedAt": "2026-10-19T11:38:47.477Z",
+      "endedAt": null
+    }
+  ],
+  "createdBy": "Артёмка",
+  "createdById": "9a683891-a2df-4a33-ba48-197a058c13de",
+  "assignee": "Codex",
+  "assigneeId": "e94a41ee-ae08-44c8-a7af-020355cf6e1b",
+  "project": "Editor WASM",
+  "projectId": "8431f6c1-a6af-4bb2-af33-c61c06759c50",
+  "team": "Open Source",
+  "teamId": "584ff5ae-f43f-46f8-a91e-da75f00f1644",
+  "cycleId": "b1f55929-a4df-4ef2-9f7a-82bdc3153d4e",
+  "relations": {
+    "blocks": [
+      {
+        "id": "OSR-50",
+        "title": "KWDJ containers и доменные блоки"
+      },
+      {
+        "id": "OSR-47",
+        "title": "Clipboard pipeline: безопасный decode и atomic insert"
+      },
+      {
+        "id": "OSR-46",
+        "title": "Virtualization с сохранением selection, IME и a11y"
+      },
+      {
+        "id": "OSR-42",
+        "title": "Block chrome: toolbar, gutter и keyboard move"
+      },
+      {
+        "id": "OSR-41",
+        "title": "IME state machine и exactly-once composition commit"
+      },
+      {
+        "id": "OSR-66",
+        "title": "Доступность, keyboard navigation и локализация"
+      },
+      {
+        "id": "OSR-65",
+        "title": "Standalone vanilla API и устанавливаемый alpha-пример"
+      }
+    ],
+    "blockedBy": [
+      {
+        "id": "OSR-59",
+        "title": "ADR: Unicode-позиции, selection mapping и история"
+      },
+      {
+        "id": "OSR-39",
+        "title": "DOM renderer основных блоков и reconciliation"
+      }
+    ],
+    "relatedTo": [
+      {
+        "id": "OSR-69",
+        "title": "CMS save/recovery adapter без экспорта на каждый ввод"
+      },
+      {
+        "id": "OSR-38",
+        "title": "Property/fuzz tests и performance regression gates"
+      },
+      {
+        "id": "OSR-58",
+        "title": "Spike: single editing host против per-block islands"
+      },
+      {
+        "id": "OSR-126",
+        "title": "Дизайн лендинга klenwriter-editor"
+      },
+      {
+        "id": "OSR-73",
+        "title": "Firefox: gate перехода из experimental в supported после v1"
+      }
+    ],
+    "duplicateOf": null
+  }
+}

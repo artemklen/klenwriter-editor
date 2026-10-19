@@ -1,0 +1,563 @@
+{
+  "format": "osr40-independent-clipboard-outcomes/1",
+  "status": "AUTHORED_BEFORE_RUNTIME",
+  "provenance": "Literal finite platform/ownership/SDK boundary outcomes, not candidate traces. CP19..22 use explicitly controlled fault/ticket boundaries; actual native semantic success is independently required by native-oracles L3/L4/L5.",
+  "baseLiteral": "native-oracles L3 unless specified",
+  "unchangedFacets": "Except the separately declared intervening action: cut has no document/history/selection/marks/events/maps/resource changes before actual native dispatch. A foreign write can be unconfirmed and later externally observable.",
+  "cases": [
+    {
+      "id": "CP01",
+      "stimulus": "copy exact L3 forward",
+      "writer": "confirmed",
+      "expected": {
+        "status": "copied",
+        "clipboard": "confirmed",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": null
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP02",
+      "stimulus": "copy exact L3 backward",
+      "writer": "confirmed",
+      "expected": {
+        "status": "copied",
+        "clipboard": "confirmed",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": null
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP03",
+      "stimulus": "cut exact L3 forward",
+      "writer": "confirmed",
+      "expected": {
+        "status": "cut",
+        "clipboard": "confirmed",
+        "deleteDispatch": true,
+        "changedByThisCut": true,
+        "failure": null
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP04",
+      "stimulus": "cut exact L3 backward",
+      "writer": "confirmed",
+      "expected": {
+        "status": "cut",
+        "clipboard": "confirmed",
+        "deleteDispatch": true,
+        "changedByThisCut": true,
+        "failure": null
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP05",
+      "stimulus": "cut atom-only L5; text empty but semantic nonempty",
+      "writer": "confirmed",
+      "expected": {
+        "status": "cut",
+        "clipboard": "confirmed",
+        "deleteDispatch": true,
+        "changedByThisCut": true,
+        "failure": null
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP06",
+      "stimulus": "copy scalar-readable interior EGC L6",
+      "writer": "confirmed",
+      "expected": {
+        "status": "copied",
+        "clipboard": "confirmed",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": null
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP07",
+      "stimulus": "cut scalar-readable interior EGC; native query unavailable",
+      "writer": "not_called",
+      "expected": {
+        "status": "refused",
+        "clipboard": "not_attempted",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": "original_native_unavailable"
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP08",
+      "stimulus": "copy semantic collapsed range",
+      "writer": "not_called",
+      "expected": {
+        "status": "empty",
+        "clipboard": "not_attempted",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": null
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP09",
+      "stimulus": "readOnly copy L3",
+      "writer": "confirmed",
+      "expected": {
+        "status": "copied",
+        "clipboard": "confirmed",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": null
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP10",
+      "stimulus": "readOnly cut L3",
+      "writer": "not_called",
+      "expected": {
+        "status": "refused",
+        "clipboard": "not_attempted",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": "dom.native_read_only"
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP11",
+      "stimulus": "platform write throws/rejects",
+      "writer": "reject_or_throw",
+      "expected": {
+        "status": "write_failed",
+        "clipboard": "unconfirmed",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": "dom.clipboard_write_failed"
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP12",
+      "stimulus": "platform writer unavailable",
+      "writer": "not_called",
+      "expected": {
+        "status": "refused",
+        "clipboard": "not_attempted",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": "dom.clipboard_unavailable"
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP13",
+      "stimulus": "writer succeeds then newer native selection before completion check",
+      "writer": "confirmed_after_new_selection",
+      "expected": {
+        "status": "copied_but_not_cut",
+        "clipboard": "confirmed",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": "dom.stale_selection"
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP14",
+      "stimulus": "writer succeeds then equal-endpoint new pointer intent NativeNoop",
+      "writer": "confirmed_after_equal_target_intent",
+      "expected": {
+        "status": "copied_but_not_cut",
+        "clipboard": "confirmed",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": "dom.stale_selection"
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP15",
+      "stimulus": "writer succeeds then document revision changes",
+      "writer": "confirmed_after_document_update",
+      "expected": {
+        "status": "copied_but_not_cut",
+        "clipboard": "confirmed",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": "dom.stale_selection"
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP16",
+      "stimulus": "replacement begins before writer acknowledgement",
+      "writer": "pending_cancelled",
+      "expected": {
+        "status": "write_failed",
+        "clipboard": "unconfirmed",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": "dom.stale_selection"
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP17",
+      "stimulus": "writer deadline; external effect may complete later",
+      "writer": "pending_timeout",
+      "expected": {
+        "status": "write_failed",
+        "clipboard": "unconfirmed",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": "dom.clipboard_timeout"
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP18",
+      "stimulus": "second owned operation observes SDK busy before write",
+      "writer": "not_called",
+      "expected": {
+        "status": "refused",
+        "clipboard": "not_attempted",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": "dom.busy"
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP19",
+      "stimulus": "actual native execute refuses after confirmed write",
+      "writer": "confirmed",
+      "expected": {
+        "status": "copied_but_not_cut",
+        "clipboard": "confirmed",
+        "deleteDispatch": true,
+        "changedByThisCut": false,
+        "failure": "original_native_refused",
+        "nativeDiagnostic": {
+          "status": "refused",
+          "code": "session.stale_revision",
+          "path": "stamp.revision",
+          "category": "sdk",
+          "details": {},
+          "stamp": "actual current native stamp",
+          "may_have_committed": false
+        }
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP20",
+      "stimulus": "actual native fatal may_have_committed after confirmed write",
+      "writer": "confirmed",
+      "expected": {
+        "status": "indeterminate",
+        "clipboard": "confirmed",
+        "deleteDispatch": true,
+        "changedByThisCut": null,
+        "failure": "original_native_fatal",
+        "nativeDiagnostic": {
+          "status": "fatal",
+          "code": "sdk.transport_failure",
+          "path": "",
+          "category": "transport",
+          "details": {},
+          "stamp": "actual captured SDK stamp",
+          "may_have_committed": true
+        }
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP21",
+      "stimulus": "native unexpected queued completion changed; controlled boundary",
+      "writer": "confirmed",
+      "expected": {
+        "status": "cut",
+        "clipboard": "confirmed",
+        "deleteDispatch": true,
+        "changedByThisCut": true,
+        "failure": null
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP22",
+      "stimulus": "native unexpected queued completion stale; controlled boundary",
+      "writer": "confirmed",
+      "expected": {
+        "status": "copied_but_not_cut",
+        "clipboard": "confirmed",
+        "deleteDispatch": true,
+        "changedByThisCut": false,
+        "failure": "original_native_refused"
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP23",
+      "stimulus": "onResult throws after actual successful cut",
+      "writer": "confirmed",
+      "expected": {
+        "status": "cut",
+        "clipboard": "confirmed",
+        "deleteDispatch": true,
+        "changedByThisCut": true,
+        "failure": null
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP24",
+      "stimulus": "second clipboard call while first writer pending",
+      "writer": "not_called",
+      "expected": {
+        "status": "refused",
+        "clipboard": "not_attempted",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": "dom.busy"
+      },
+      "resourceEnd": {
+        "pending": 1,
+        "continuations": 1,
+        "retainedTextBytes": 3
+      },
+      "replay": false,
+      "phase": "immediately after second refusal, first L3 writer remains pending",
+      "afterFirstCompletesOrCancels": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      }
+    },
+    {
+      "id": "CP25",
+      "stimulus": "destroy before writer acknowledgement",
+      "writer": "pending_cancelled",
+      "expected": {
+        "status": "write_failed",
+        "clipboard": "unconfirmed",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": "dom.disposed"
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP26",
+      "stimulus": "composition/provisional active before writer",
+      "writer": "not_called",
+      "expected": {
+        "status": "refused",
+        "clipboard": "not_attempted",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": "dom.composition_conflict"
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP27",
+      "stimulus": "disabled or UI readOnly mode before cut",
+      "writer": "not_called",
+      "expected": {
+        "status": "refused",
+        "clipboard": "not_attempted",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": "dom.mode_blocked"
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    },
+    {
+      "id": "CP28",
+      "stimulus": "foreign host/control DOM selection before writer",
+      "writer": "not_called",
+      "expected": {
+        "status": "refused",
+        "clipboard": "not_attempted",
+        "deleteDispatch": false,
+        "changedByThisCut": false,
+        "failure": "dom.selection_unsynchronized"
+      },
+      "resourceEnd": {
+        "pending": 0,
+        "continuations": 0,
+        "retainedTextBytes": 0
+      },
+      "replay": false
+    }
+  ],
+  "installedEvidence": {
+    "browser": [
+      "Chrome",
+      "Safari"
+    ],
+    "language": [
+      "EN",
+      "RU"
+    ],
+    "actions": [
+      "copy_forward",
+      "copy_backward",
+      "cut_forward",
+      "cut_backward"
+    ],
+    "require": [
+      "trusted event provenance",
+      "exact native selection before operation",
+      "native projection plain text and structural membership",
+      "platform completion receipt",
+      "OS clipboard literal readback only after fixture-owned write",
+      "exact canonical after cut and undo revival",
+      "no-deletion write/stale failure controls in controlled lane"
+    ],
+    "noClaim": "Event DataTransfer.setData is payload only; no OS ACK inferred. No arbitrary paste/HTML/import/full pipeline47."
+  }
+}
