@@ -179,10 +179,6 @@ export class SelectionOwner {
     try{const values=fields(options);if(Object.keys(values).some(k=>!['policy','focus'].includes(k)) || values.policy!==undefined && values.policy!=='exact' && values.policy!=='mapped' || values.focus!==undefined && typeof values.focus!=='boolean')throw new TypeError();options=values as typeof options;}catch{return this.#refuse('dom.invalid_options');}
     const entry=bookmark && typeof bookmark==='object'?this.#entries.get(bookmark):undefined;
     if(!entry || !this.#live.has(bookmark))return this.#refuse('dom.invalid_bookmark');
-    if(options.policy!=='mapped'){
-      const exact=this.validateExact(bookmark);
-      if('status' in exact)return isDomRefusal(exact)?this.#fromView(exact):exact;
-    }
     let state=this.#state();if('status' in state)return {status:'sdk_failure',response:state};
     const context=this.configuration.context();
     if(entry.serial!==this.#serial || !same(bookmark.context,context) || bookmark.stamp.session!==state.stamp.session || bookmark.stamp.generation!==state.stamp.generation)return this.#refuse('dom.stale_selection');
