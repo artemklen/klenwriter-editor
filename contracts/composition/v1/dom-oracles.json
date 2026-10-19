@@ -1,0 +1,3993 @@
+{
+  "format": "composition-dom-oracles/1",
+  "contractStatus": "pre-candidate independently authored data; unexecuted",
+  "sourceReference": "69d8cffe2704d7c868c240344c7c3131b0b10d82",
+  "sourceTree": "385f01e4fed9c539f75f01273fdc86f59e90921c",
+  "authorship": "Explicit literal DOM and raw childNodes paths authored from independent native fixture data and source presentation rules before runtime. No candidate/native/WASM/browser result was executed or converted into expected data.",
+  "execution": {
+    "native": false,
+    "wasm": false,
+    "browser": false,
+    "physicalInput": false,
+    "tests": false
+  },
+  "refineInput": {
+    "path": "/tmp/osr-41-refine-69d8cff-01/refine.md",
+    "bytes": 9326,
+    "sha256": "e49ed26cfa784457caf7f7fa5a6ce6289d1d79b72fb3c111021904c170d1c9c7"
+  },
+  "sourcePins": [
+    {
+      "repositoryPath": "packages/dom/src/view.ts",
+      "bytes": 38684,
+      "sha256": "c545b50684b7c80dcf25f6a24ae5e6c0b020df5757cb96d79d6d8e55c70f7079"
+    },
+    {
+      "repositoryPath": "packages/dom/src/input.ts",
+      "bytes": 15183,
+      "sha256": "9439b2e79b8cf548affb5fc89a6be1a9cd8d75b73870c55a9f8c06e8e193ecd8"
+    },
+    {
+      "repositoryPath": "packages/dom/src/mounted.ts",
+      "bytes": 31446,
+      "sha256": "190c9021fec02e2687aab1909159d947876c9b325c78fcc3ce003dcc9f72f225"
+    },
+    {
+      "repositoryPath": "packages/dom/src/selection.ts",
+      "bytes": 20501,
+      "sha256": "5f5196a81bd8cf56e3a70ba9999643a381f72ba8de0bd58248b1277a8e6167f4"
+    },
+    {
+      "repositoryPath": "packages/kwdj/src/dom.ts",
+      "bytes": 12425,
+      "sha256": "6399c1e91a7952bf468cc11246b20282d796425043b4b93e5fc467aad9304a51"
+    },
+    {
+      "repositoryPath": "crates/kwdj/src/commands/inline.rs",
+      "bytes": 58026,
+      "sha256": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394"
+    },
+    {
+      "repositoryPath": "docs/m0/architecture.md",
+      "bytes": 64424,
+      "sha256": "13f7a2c183643961331322a5f78afdf8b0b7aa5169972fc581f5368c55fda6e3"
+    },
+    {
+      "repositoryPath": "docs/m0/architecture-flows.md",
+      "bytes": 12340,
+      "sha256": "c657926df44231580aaead18d95cff909f4f92209b2ff38c76248df93cadba2c"
+    },
+    {
+      "repositoryPath": "docs/m0/unicode-positions.md",
+      "bytes": 11343,
+      "sha256": "fe2dbcdeb9643ddfb90d86498e7d8392a031f4beb7b0314b20bec17ec96c471d"
+    }
+  ],
+  "notation": {
+    "root": "The arrays are childNodes of the one actual mounted host; not HTML parsed by a candidate.",
+    "roles": "Bind initial objects once using literal paths, assert nodeType/tag/static attrs/data independently, retain actual references. Native role aliases bind separately through guarded source seed paths; production DOM mapping is never the expected oracle.",
+    "identityAttributes": "Renderer-owned element rows also have generated id and data-editor-node. Capture actual id/attribute values once and compare; never invent serial values or accept copied attributes as authority. Mark-only wrappers have their literal static attrs and no independent model row id.",
+    "attrs": "Only listed static attrs asserted; separately captured generated identity attrs remain present. Host role/locale/aria label do not create document payload.",
+    "textOwnership": "D02 explicitly replaces actual Text in a controlled driver, not real UA/native input. Old Text may retire during UA; outer/mark/outside survival and zero adapter remounts are independent assertions.",
+    "finalPaths": "Expected final raw paths are authored here and apply to the committed rendered literal; interim UA may keep an explicitly observed suffix wrapper until authoritative affected reconciliation.",
+    "outside": "H/O objects and metadata are unchanged while their root child index may change after removal of selected siblings; this is actual object identity, not equal text alone.",
+    "baseline": "After legitimate native selection setup. State-only selection/marks/barrier changes are asserted separately from zero document/undo claims."
+  },
+  "limits": {
+    "structuralEntries": 8,
+    "visitedNodes": 131072,
+    "maximumDepth": 128,
+    "textUtf16Units": 2097152,
+    "mutationRecords": 4096,
+    "budgetMeaning": "Inclusive; charge before copying/traversal, globally across an observation. Every scene is an entry, BR/mark wrappers are nodes. Original/current text fields each obey the cap; legacy LF diagnostic separators also charged. Native/transport budgets may refuse earlier."
+  },
+  "fixtures": {
+    "A": {
+      "nativeInput": "inputs/A.json",
+      "before": [
+        {
+          "nodeType": 1,
+          "role": "P",
+          "tag": "p",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "T_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "T_text",
+                  "data": "abcd"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "H",
+          "tag": "h3",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "O_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "O_text",
+                  "data": "tail"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "roles": {
+        "P": [
+          0
+        ],
+        "T_outer": [
+          0,
+          0
+        ],
+        "T_text": [
+          0,
+          0,
+          0
+        ],
+        "H": [
+          1
+        ],
+        "O_outer": [
+          1,
+          0
+        ],
+        "O_text": [
+          1,
+          0,
+          0
+        ]
+      },
+      "initialForward": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        },
+        "focus": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 3
+        }
+      },
+      "window": [
+        "P"
+      ],
+      "outsideBefore": null,
+      "outsideAfter": "H"
+    },
+    "B": {
+      "nativeInput": "inputs/B.json",
+      "before": [
+        {
+          "nodeType": 1,
+          "role": "P1",
+          "tag": "p",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "L_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "L_text",
+                  "data": "ab"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "P2",
+          "tag": "p",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "R_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "R_text",
+                  "data": "cd"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "H",
+          "tag": "h3",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "O_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "O_text",
+                  "data": "tail"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "roles": {
+        "P1": [
+          0
+        ],
+        "L_outer": [
+          0,
+          0
+        ],
+        "L_text": [
+          0,
+          0,
+          0
+        ],
+        "P2": [
+          1
+        ],
+        "R_outer": [
+          1,
+          0
+        ],
+        "R_text": [
+          1,
+          0,
+          0
+        ],
+        "H": [
+          2
+        ],
+        "O_outer": [
+          2,
+          0
+        ],
+        "O_text": [
+          2,
+          0,
+          0
+        ]
+      },
+      "initialForward": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        },
+        "focus": {
+          "path": [
+            1,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        }
+      },
+      "window": [
+        "P1",
+        "P2"
+      ],
+      "outsideBefore": null,
+      "outsideAfter": "H"
+    },
+    "C": {
+      "nativeInput": "inputs/C.json",
+      "before": [
+        {
+          "nodeType": 1,
+          "role": "P1",
+          "tag": "p",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "L_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "L_text",
+                  "data": "ab"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "S",
+          "tag": "hr",
+          "attributes": {
+            "class": "editor-scene-break",
+            "role": "separator",
+            "aria-label": "Scene break",
+            "contenteditable": "false"
+          },
+          "children": []
+        },
+        {
+          "nodeType": 1,
+          "role": "P2",
+          "tag": "p",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "R_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "R_text",
+                  "data": "cd"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "H",
+          "tag": "h3",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "O_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "O_text",
+                  "data": "tail"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "roles": {
+        "P1": [
+          0
+        ],
+        "L_outer": [
+          0,
+          0
+        ],
+        "L_text": [
+          0,
+          0,
+          0
+        ],
+        "S": [
+          1
+        ],
+        "P2": [
+          2
+        ],
+        "R_outer": [
+          2,
+          0
+        ],
+        "R_text": [
+          2,
+          0,
+          0
+        ],
+        "H": [
+          3
+        ],
+        "O_outer": [
+          3,
+          0
+        ],
+        "O_text": [
+          3,
+          0,
+          0
+        ]
+      },
+      "initialForward": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        },
+        "focus": {
+          "path": [
+            2,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        }
+      },
+      "window": [
+        "P1",
+        "S",
+        "P2"
+      ],
+      "outsideBefore": null,
+      "outsideAfter": "H"
+    },
+    "G": {
+      "nativeInput": "inputs/G.json",
+      "before": [
+        {
+          "nodeType": 1,
+          "role": "P",
+          "tag": "p",
+          "attributes": {
+            "class": "editor-align-right editor-first-line-indent"
+          },
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "T_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 1,
+                  "role": "T_mark",
+                  "tag": "strong",
+                  "attributes": {},
+                  "children": [
+                    {
+                      "nodeType": 3,
+                      "role": "T_text",
+                      "data": "abcd"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "nodeType": 1,
+              "role": "BR",
+              "tag": "br",
+              "attributes": {},
+              "children": []
+            },
+            {
+              "nodeType": 1,
+              "role": "C_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 1,
+                  "role": "C_mark",
+                  "tag": "code",
+                  "attributes": {},
+                  "children": [
+                    {
+                      "nodeType": 3,
+                      "role": "C_text",
+                      "data": "tail"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "H",
+          "tag": "h3",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "O_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "O_text",
+                  "data": "tail"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "roles": {
+        "P": [
+          0
+        ],
+        "T_outer": [
+          0,
+          0
+        ],
+        "T_mark": [
+          0,
+          0,
+          0
+        ],
+        "T_text": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "BR": [
+          0,
+          1
+        ],
+        "C_outer": [
+          0,
+          2
+        ],
+        "C_mark": [
+          0,
+          2,
+          0
+        ],
+        "C_text": [
+          0,
+          2,
+          0,
+          0
+        ],
+        "H": [
+          1
+        ],
+        "O_outer": [
+          1,
+          0
+        ],
+        "O_text": [
+          1,
+          0,
+          0
+        ]
+      },
+      "initialForward": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        },
+        "focus": {
+          "path": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 3
+        }
+      },
+      "window": [
+        "P"
+      ],
+      "outsideBefore": null,
+      "outsideAfter": "H"
+    },
+    "D": {
+      "nativeInput": "inputs/D.json",
+      "before": [
+        {
+          "nodeType": 1,
+          "role": "P",
+          "tag": "p",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "E_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 1,
+                  "role": "E_mark",
+                  "tag": "strong",
+                  "attributes": {},
+                  "children": [
+                    {
+                      "nodeType": 3,
+                      "role": "E_text",
+                      "data": "e"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "nodeType": 1,
+              "role": "C_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 1,
+                  "role": "C_mark",
+                  "tag": "em",
+                  "attributes": {},
+                  "children": [
+                    {
+                      "nodeType": 3,
+                      "role": "C_text",
+                      "data": "́"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "nodeType": 1,
+              "role": "X_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 1,
+                  "role": "X_mark",
+                  "tag": "code",
+                  "attributes": {},
+                  "children": [
+                    {
+                      "nodeType": 3,
+                      "role": "X_text",
+                      "data": "x"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "H",
+          "tag": "h3",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "O_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "O_text",
+                  "data": "tail"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "roles": {
+        "P": [
+          0
+        ],
+        "E_outer": [
+          0,
+          0
+        ],
+        "E_mark": [
+          0,
+          0,
+          0
+        ],
+        "E_text": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "C_outer": [
+          0,
+          1
+        ],
+        "C_mark": [
+          0,
+          1,
+          0
+        ],
+        "C_text": [
+          0,
+          1,
+          0,
+          0
+        ],
+        "X_outer": [
+          0,
+          2
+        ],
+        "X_mark": [
+          0,
+          2,
+          0
+        ],
+        "X_text": [
+          0,
+          2,
+          0,
+          0
+        ],
+        "H": [
+          1
+        ],
+        "O_outer": [
+          1,
+          0
+        ],
+        "O_text": [
+          1,
+          0,
+          0
+        ]
+      },
+      "initialForward": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 0
+        },
+        "focus": {
+          "path": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        }
+      },
+      "window": [
+        "P"
+      ],
+      "outsideBefore": null,
+      "outsideAfter": "H"
+    }
+  },
+  "cases": [
+    {
+      "id": "D01-plain-event-data-mismatch",
+      "classification": "controlled_dom_correspondence_not_physical_input",
+      "seed": "A",
+      "direction": "forward",
+      "nativeCase": "P01-forward",
+      "originalDomSelection": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        },
+        "focus": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 3
+        }
+      },
+      "controlledObservation": {
+        "writer": "controlled_characterData",
+        "replacementUtf16": "Z",
+        "eventDataDiagnostic": "Q",
+        "finalInsideAndOutsideDom": [
+          {
+            "nodeType": 1,
+            "role": "P",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "T_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "T_text",
+                    "data": "aZd"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "soleReplacementSource": "bounded actual DOM observation, not event data",
+        "unselectedPrefix": [
+          {
+            "kind": "text",
+            "text": "a",
+            "marks": []
+          }
+        ],
+        "unselectedSuffix": [
+          {
+            "kind": "text",
+            "text": "d",
+            "marks": []
+          }
+        ],
+        "originalSelectedAtoms": [],
+        "finalSelectedAtoms": [],
+        "protectedObjectsRequiredDuringUa": [
+          "P",
+          "T_outer",
+          "H",
+          "O_outer",
+          "O_text"
+        ],
+        "retiredByUaTextAllowed": false,
+        "adapterRemountsAllowedDuringUa": 0
+      },
+      "expected": {
+        "nativeCompositionDispatches": 1,
+        "historyHint": "isolated",
+        "documentEventsAdded": 1,
+        "undoEntriesAdded": 1,
+        "committedDom": [
+          {
+            "nodeType": 1,
+            "role": "P",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "T_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "T_text",
+                    "data": "aZd"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "finalDomSelection": {
+          "anchor": {
+            "path": [
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 2
+          },
+          "focus": {
+            "path": [
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 2
+          }
+        },
+        "finalNativeCaret": {
+          "kind": "text",
+          "role": "T",
+          "offsetUtf16": 2,
+          "affinity": "after"
+        },
+        "outsideActualObjectsUnchanged": [
+          "H",
+          "O_outer",
+          "O_text"
+        ],
+        "outsideNativeMetadataAndIdsUnchanged": true,
+        "nativeUndo": "exact original canonical/IDs/directed native selection from referenced source-authored native case",
+        "fullRootRemounts": 0
+      }
+    },
+    {
+      "id": "D02-UA-like-actual-Text-replacement",
+      "classification": "controlled_dom_correspondence_not_physical_input",
+      "seed": "A",
+      "direction": "forward",
+      "nativeCase": "P02-forward",
+      "originalDomSelection": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        },
+        "focus": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 3
+        }
+      },
+      "controlledObservation": {
+        "writer": "controlled_replace_actual_Text",
+        "replacementUtf16": "я",
+        "eventDataDiagnostic": null,
+        "finalInsideAndOutsideDom": [
+          {
+            "nodeType": 1,
+            "role": "P",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "T_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "T_text",
+                    "data": "aяd"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "soleReplacementSource": "bounded actual DOM observation, not event data",
+        "unselectedPrefix": [
+          {
+            "kind": "text",
+            "text": "a",
+            "marks": []
+          }
+        ],
+        "unselectedSuffix": [
+          {
+            "kind": "text",
+            "text": "d",
+            "marks": []
+          }
+        ],
+        "originalSelectedAtoms": [],
+        "finalSelectedAtoms": [],
+        "protectedObjectsRequiredDuringUa": [
+          "P",
+          "T_outer",
+          "H",
+          "O_outer",
+          "O_text"
+        ],
+        "retiredByUaTextAllowed": true,
+        "adapterRemountsAllowedDuringUa": 0
+      },
+      "expected": {
+        "nativeCompositionDispatches": 1,
+        "historyHint": "isolated",
+        "documentEventsAdded": 1,
+        "undoEntriesAdded": 1,
+        "committedDom": [
+          {
+            "nodeType": 1,
+            "role": "P",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "T_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "T_text",
+                    "data": "aяd"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "finalDomSelection": {
+          "anchor": {
+            "path": [
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 2
+          },
+          "focus": {
+            "path": [
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 2
+          }
+        },
+        "finalNativeCaret": {
+          "kind": "text",
+          "role": "T",
+          "offsetUtf16": 2,
+          "affinity": "after"
+        },
+        "outsideActualObjectsUnchanged": [
+          "H",
+          "O_outer",
+          "O_text"
+        ],
+        "outsideNativeMetadataAndIdsUnchanged": true,
+        "nativeUndo": "exact original canonical/IDs/directed native selection from referenced source-authored native case",
+        "fullRootRemounts": 0
+      }
+    },
+    {
+      "id": "D03-decomposed-no-NFC",
+      "classification": "controlled_dom_correspondence_not_physical_input",
+      "seed": "A",
+      "direction": "forward",
+      "nativeCase": "P04-forward",
+      "originalDomSelection": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        },
+        "focus": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 3
+        }
+      },
+      "controlledObservation": {
+        "writer": "controlled_characterData",
+        "replacementUtf16": "é",
+        "eventDataDiagnostic": "é",
+        "finalInsideAndOutsideDom": [
+          {
+            "nodeType": 1,
+            "role": "P",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "T_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "T_text",
+                    "data": "aéd"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "soleReplacementSource": "bounded actual DOM observation, not event data",
+        "unselectedPrefix": [
+          {
+            "kind": "text",
+            "text": "a",
+            "marks": []
+          }
+        ],
+        "unselectedSuffix": [
+          {
+            "kind": "text",
+            "text": "d",
+            "marks": []
+          }
+        ],
+        "originalSelectedAtoms": [],
+        "finalSelectedAtoms": [],
+        "protectedObjectsRequiredDuringUa": [
+          "P",
+          "T_outer",
+          "H",
+          "O_outer",
+          "O_text"
+        ],
+        "retiredByUaTextAllowed": false,
+        "adapterRemountsAllowedDuringUa": 0
+      },
+      "expected": {
+        "nativeCompositionDispatches": 1,
+        "historyHint": "isolated",
+        "documentEventsAdded": 1,
+        "undoEntriesAdded": 1,
+        "committedDom": [
+          {
+            "nodeType": 1,
+            "role": "P",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "T_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "T_text",
+                    "data": "aéd"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "finalDomSelection": {
+          "anchor": {
+            "path": [
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 3
+          },
+          "focus": {
+            "path": [
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 3
+          }
+        },
+        "finalNativeCaret": {
+          "kind": "text",
+          "role": "T",
+          "offsetUtf16": 3,
+          "affinity": "after"
+        },
+        "outsideActualObjectsUnchanged": [
+          "H",
+          "O_outer",
+          "O_text"
+        ],
+        "outsideNativeMetadataAndIdsUnchanged": true,
+        "nativeUndo": "exact original canonical/IDs/directed native selection from referenced source-authored native case",
+        "fullRootRemounts": 0
+      }
+    },
+    {
+      "id": "D04-marks-BR-sentinels-forward",
+      "classification": "controlled_dom_correspondence_not_physical_input",
+      "seed": "G",
+      "direction": "forward",
+      "nativeCase": "P14-forward",
+      "originalDomSelection": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        },
+        "focus": {
+          "path": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 3
+        }
+      },
+      "controlledObservation": {
+        "writer": "controlled_characterData",
+        "replacementUtf16": "я",
+        "eventDataDiagnostic": "Q",
+        "finalInsideAndOutsideDom": [
+          {
+            "nodeType": 1,
+            "role": "P",
+            "tag": "p",
+            "attributes": {
+              "class": "editor-align-right editor-first-line-indent"
+            },
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "T_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "T_mark",
+                    "tag": "strong",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "T_text",
+                        "data": "aяd"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "nodeType": 1,
+                "role": "BR",
+                "tag": "br",
+                "attributes": {},
+                "children": []
+              },
+              {
+                "nodeType": 1,
+                "role": "C_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "C_mark",
+                    "tag": "code",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "C_text",
+                        "data": "tail"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "soleReplacementSource": "bounded actual DOM observation, not event data",
+        "unselectedPrefix": [
+          {
+            "kind": "text",
+            "text": "a",
+            "marks": [
+              "strong"
+            ]
+          }
+        ],
+        "unselectedSuffix": [
+          {
+            "kind": "text",
+            "text": "d",
+            "marks": [
+              "strong"
+            ]
+          },
+          {
+            "kind": "hard_break",
+            "role": "BR"
+          },
+          {
+            "kind": "text",
+            "role": "C",
+            "text": "tail",
+            "marks": [
+              "code"
+            ]
+          }
+        ],
+        "originalSelectedAtoms": [],
+        "finalSelectedAtoms": [],
+        "protectedObjectsRequiredDuringUa": [
+          "P",
+          "BR",
+          "C_outer",
+          "C_mark",
+          "C_text",
+          "H",
+          "O_outer",
+          "O_text",
+          "T_outer",
+          "T_mark"
+        ],
+        "retiredByUaTextAllowed": false,
+        "adapterRemountsAllowedDuringUa": 0
+      },
+      "expected": {
+        "nativeCompositionDispatches": 1,
+        "historyHint": "isolated",
+        "documentEventsAdded": 1,
+        "undoEntriesAdded": 1,
+        "committedDom": [
+          {
+            "nodeType": 1,
+            "role": "P",
+            "tag": "p",
+            "attributes": {
+              "class": "editor-align-right editor-first-line-indent"
+            },
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "T_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "T_mark",
+                    "tag": "strong",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "T_text",
+                        "data": "aяd"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "nodeType": 1,
+                "role": "BR",
+                "tag": "br",
+                "attributes": {},
+                "children": []
+              },
+              {
+                "nodeType": 1,
+                "role": "C_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "C_mark",
+                    "tag": "code",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "C_text",
+                        "data": "tail"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "finalDomSelection": {
+          "anchor": {
+            "path": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 2
+          },
+          "focus": {
+            "path": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 2
+          }
+        },
+        "finalNativeCaret": {
+          "kind": "text",
+          "role": "T",
+          "offsetUtf16": 2,
+          "affinity": "after"
+        },
+        "outsideActualObjectsUnchanged": [
+          "H",
+          "O_outer",
+          "O_text"
+        ],
+        "outsideNativeMetadataAndIdsUnchanged": true,
+        "nativeUndo": "exact original canonical/IDs/directed native selection from referenced source-authored native case",
+        "fullRootRemounts": 0
+      }
+    },
+    {
+      "id": "D05-marks-BR-sentinels-reverse",
+      "classification": "controlled_dom_correspondence_not_physical_input",
+      "seed": "G",
+      "direction": "reverse",
+      "nativeCase": "P14-reverse",
+      "originalDomSelection": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 3
+        },
+        "focus": {
+          "path": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        }
+      },
+      "controlledObservation": {
+        "writer": "controlled_characterData",
+        "replacementUtf16": "я",
+        "eventDataDiagnostic": "Q",
+        "finalInsideAndOutsideDom": [
+          {
+            "nodeType": 1,
+            "role": "P",
+            "tag": "p",
+            "attributes": {
+              "class": "editor-align-right editor-first-line-indent"
+            },
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "T_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "T_mark",
+                    "tag": "strong",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "T_text",
+                        "data": "aяd"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "nodeType": 1,
+                "role": "BR",
+                "tag": "br",
+                "attributes": {},
+                "children": []
+              },
+              {
+                "nodeType": 1,
+                "role": "C_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "C_mark",
+                    "tag": "code",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "C_text",
+                        "data": "tail"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "soleReplacementSource": "bounded actual DOM observation, not event data",
+        "unselectedPrefix": [
+          {
+            "kind": "text",
+            "text": "a",
+            "marks": [
+              "strong"
+            ]
+          }
+        ],
+        "unselectedSuffix": [
+          {
+            "kind": "text",
+            "text": "d",
+            "marks": [
+              "strong"
+            ]
+          },
+          {
+            "kind": "hard_break",
+            "role": "BR"
+          },
+          {
+            "kind": "text",
+            "role": "C",
+            "text": "tail",
+            "marks": [
+              "code"
+            ]
+          }
+        ],
+        "originalSelectedAtoms": [],
+        "finalSelectedAtoms": [],
+        "protectedObjectsRequiredDuringUa": [
+          "P",
+          "BR",
+          "C_outer",
+          "C_mark",
+          "C_text",
+          "H",
+          "O_outer",
+          "O_text",
+          "T_outer",
+          "T_mark"
+        ],
+        "retiredByUaTextAllowed": false,
+        "adapterRemountsAllowedDuringUa": 0
+      },
+      "expected": {
+        "nativeCompositionDispatches": 1,
+        "historyHint": "isolated",
+        "documentEventsAdded": 1,
+        "undoEntriesAdded": 1,
+        "committedDom": [
+          {
+            "nodeType": 1,
+            "role": "P",
+            "tag": "p",
+            "attributes": {
+              "class": "editor-align-right editor-first-line-indent"
+            },
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "T_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "T_mark",
+                    "tag": "strong",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "T_text",
+                        "data": "aяd"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "nodeType": 1,
+                "role": "BR",
+                "tag": "br",
+                "attributes": {},
+                "children": []
+              },
+              {
+                "nodeType": 1,
+                "role": "C_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "C_mark",
+                    "tag": "code",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "C_text",
+                        "data": "tail"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "finalDomSelection": {
+          "anchor": {
+            "path": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 2
+          },
+          "focus": {
+            "path": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 2
+          }
+        },
+        "finalNativeCaret": {
+          "kind": "text",
+          "role": "T",
+          "offsetUtf16": 2,
+          "affinity": "after"
+        },
+        "outsideActualObjectsUnchanged": [
+          "H",
+          "O_outer",
+          "O_text"
+        ],
+        "outsideNativeMetadataAndIdsUnchanged": true,
+        "nativeUndo": "exact original canonical/IDs/directed native selection from referenced source-authored native case",
+        "fullRootRemounts": 0
+      }
+    },
+    {
+      "id": "D06-compatible-paragraphs-forward",
+      "classification": "controlled_dom_correspondence_not_physical_input",
+      "seed": "B",
+      "direction": "forward",
+      "nativeCase": "P09-forward",
+      "originalDomSelection": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        },
+        "focus": {
+          "path": [
+            1,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        }
+      },
+      "controlledObservation": {
+        "writer": "controlled_characterData",
+        "replacementUtf16": "я",
+        "eventDataDiagnostic": "Q",
+        "finalInsideAndOutsideDom": [
+          {
+            "nodeType": 1,
+            "role": "P1",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "L_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "L_text",
+                    "data": "aяd"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "soleReplacementSource": "bounded actual DOM observation, not event data",
+        "unselectedPrefix": [
+          {
+            "kind": "text",
+            "text": "a",
+            "marks": []
+          }
+        ],
+        "unselectedSuffix": [
+          {
+            "kind": "text",
+            "text": "d",
+            "marks": []
+          }
+        ],
+        "originalSelectedAtoms": [],
+        "finalSelectedAtoms": [],
+        "protectedObjectsRequiredDuringUa": [
+          "P1",
+          "H",
+          "O_outer",
+          "O_text"
+        ],
+        "retiredByUaTextAllowed": false,
+        "adapterRemountsAllowedDuringUa": 0
+      },
+      "expected": {
+        "nativeCompositionDispatches": 1,
+        "historyHint": "isolated",
+        "documentEventsAdded": 1,
+        "undoEntriesAdded": 1,
+        "committedDom": [
+          {
+            "nodeType": 1,
+            "role": "P1",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "L_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "L_text",
+                    "data": "aяd"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "finalDomSelection": {
+          "anchor": {
+            "path": [
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 2
+          },
+          "focus": {
+            "path": [
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 2
+          }
+        },
+        "finalNativeCaret": {
+          "kind": "text",
+          "role": "L",
+          "offsetUtf16": 2,
+          "affinity": "after"
+        },
+        "outsideActualObjectsUnchanged": [
+          "H",
+          "O_outer",
+          "O_text"
+        ],
+        "outsideNativeMetadataAndIdsUnchanged": true,
+        "nativeUndo": "exact original canonical/IDs/directed native selection from referenced source-authored native case",
+        "fullRootRemounts": 0
+      }
+    },
+    {
+      "id": "D07-compatible-paragraphs-reverse",
+      "classification": "controlled_dom_correspondence_not_physical_input",
+      "seed": "B",
+      "direction": "reverse",
+      "nativeCase": "P09-reverse",
+      "originalDomSelection": {
+        "anchor": {
+          "path": [
+            1,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        },
+        "focus": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        }
+      },
+      "controlledObservation": {
+        "writer": "controlled_characterData",
+        "replacementUtf16": "я",
+        "eventDataDiagnostic": "Q",
+        "finalInsideAndOutsideDom": [
+          {
+            "nodeType": 1,
+            "role": "P1",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "L_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "L_text",
+                    "data": "aяd"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "soleReplacementSource": "bounded actual DOM observation, not event data",
+        "unselectedPrefix": [
+          {
+            "kind": "text",
+            "text": "a",
+            "marks": []
+          }
+        ],
+        "unselectedSuffix": [
+          {
+            "kind": "text",
+            "text": "d",
+            "marks": []
+          }
+        ],
+        "originalSelectedAtoms": [],
+        "finalSelectedAtoms": [],
+        "protectedObjectsRequiredDuringUa": [
+          "P1",
+          "H",
+          "O_outer",
+          "O_text"
+        ],
+        "retiredByUaTextAllowed": false,
+        "adapterRemountsAllowedDuringUa": 0
+      },
+      "expected": {
+        "nativeCompositionDispatches": 1,
+        "historyHint": "isolated",
+        "documentEventsAdded": 1,
+        "undoEntriesAdded": 1,
+        "committedDom": [
+          {
+            "nodeType": 1,
+            "role": "P1",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "L_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "L_text",
+                    "data": "aяd"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "finalDomSelection": {
+          "anchor": {
+            "path": [
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 2
+          },
+          "focus": {
+            "path": [
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 2
+          }
+        },
+        "finalNativeCaret": {
+          "kind": "text",
+          "role": "L",
+          "offsetUtf16": 2,
+          "affinity": "after"
+        },
+        "outsideActualObjectsUnchanged": [
+          "H",
+          "O_outer",
+          "O_text"
+        ],
+        "outsideNativeMetadataAndIdsUnchanged": true,
+        "nativeUndo": "exact original canonical/IDs/directed native selection from referenced source-authored native case",
+        "fullRootRemounts": 0
+      }
+    },
+    {
+      "id": "D08-selected-scene-forward",
+      "classification": "controlled_dom_correspondence_not_physical_input",
+      "seed": "C",
+      "direction": "forward",
+      "nativeCase": "P10-forward",
+      "originalDomSelection": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        },
+        "focus": {
+          "path": [
+            2,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        }
+      },
+      "controlledObservation": {
+        "writer": "controlled_characterData",
+        "replacementUtf16": "я",
+        "eventDataDiagnostic": "Q",
+        "finalInsideAndOutsideDom": [
+          {
+            "nodeType": 1,
+            "role": "P1",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "L_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "L_text",
+                    "data": "aяd"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "soleReplacementSource": "bounded actual DOM observation, not event data",
+        "unselectedPrefix": [
+          {
+            "kind": "text",
+            "text": "a",
+            "marks": []
+          }
+        ],
+        "unselectedSuffix": [
+          {
+            "kind": "text",
+            "text": "d",
+            "marks": []
+          }
+        ],
+        "originalSelectedAtoms": [
+          "S"
+        ],
+        "finalSelectedAtoms": [],
+        "protectedObjectsRequiredDuringUa": [
+          "P1",
+          "H",
+          "O_outer",
+          "O_text"
+        ],
+        "retiredByUaTextAllowed": false,
+        "adapterRemountsAllowedDuringUa": 0
+      },
+      "expected": {
+        "nativeCompositionDispatches": 1,
+        "historyHint": "isolated",
+        "documentEventsAdded": 1,
+        "undoEntriesAdded": 1,
+        "committedDom": [
+          {
+            "nodeType": 1,
+            "role": "P1",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "L_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "L_text",
+                    "data": "aяd"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "finalDomSelection": {
+          "anchor": {
+            "path": [
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 2
+          },
+          "focus": {
+            "path": [
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 2
+          }
+        },
+        "finalNativeCaret": {
+          "kind": "text",
+          "role": "L",
+          "offsetUtf16": 2,
+          "affinity": "after"
+        },
+        "outsideActualObjectsUnchanged": [
+          "H",
+          "O_outer",
+          "O_text"
+        ],
+        "outsideNativeMetadataAndIdsUnchanged": true,
+        "nativeUndo": "exact original canonical/IDs/directed native selection from referenced source-authored native case",
+        "fullRootRemounts": 0
+      }
+    },
+    {
+      "id": "D09-selected-scene-reverse",
+      "classification": "controlled_dom_correspondence_not_physical_input",
+      "seed": "C",
+      "direction": "reverse",
+      "nativeCase": "P10-reverse",
+      "originalDomSelection": {
+        "anchor": {
+          "path": [
+            2,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        },
+        "focus": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        }
+      },
+      "controlledObservation": {
+        "writer": "controlled_characterData",
+        "replacementUtf16": "я",
+        "eventDataDiagnostic": "Q",
+        "finalInsideAndOutsideDom": [
+          {
+            "nodeType": 1,
+            "role": "P1",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "L_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "L_text",
+                    "data": "aяd"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "soleReplacementSource": "bounded actual DOM observation, not event data",
+        "unselectedPrefix": [
+          {
+            "kind": "text",
+            "text": "a",
+            "marks": []
+          }
+        ],
+        "unselectedSuffix": [
+          {
+            "kind": "text",
+            "text": "d",
+            "marks": []
+          }
+        ],
+        "originalSelectedAtoms": [
+          "S"
+        ],
+        "finalSelectedAtoms": [],
+        "protectedObjectsRequiredDuringUa": [
+          "P1",
+          "H",
+          "O_outer",
+          "O_text"
+        ],
+        "retiredByUaTextAllowed": false,
+        "adapterRemountsAllowedDuringUa": 0
+      },
+      "expected": {
+        "nativeCompositionDispatches": 1,
+        "historyHint": "isolated",
+        "documentEventsAdded": 1,
+        "undoEntriesAdded": 1,
+        "committedDom": [
+          {
+            "nodeType": 1,
+            "role": "P1",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "L_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "L_text",
+                    "data": "aяd"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "finalDomSelection": {
+          "anchor": {
+            "path": [
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 2
+          },
+          "focus": {
+            "path": [
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 2
+          }
+        },
+        "finalNativeCaret": {
+          "kind": "text",
+          "role": "L",
+          "offsetUtf16": 2,
+          "affinity": "after"
+        },
+        "outsideActualObjectsUnchanged": [
+          "H",
+          "O_outer",
+          "O_text"
+        ],
+        "outsideNativeMetadataAndIdsUnchanged": true,
+        "nativeUndo": "exact original canonical/IDs/directed native selection from referenced source-authored native case",
+        "fullRootRemounts": 0
+      }
+    },
+    {
+      "id": "D10-unchanged-complete-cancel",
+      "classification": "controlled_dom_correspondence",
+      "seed": "A",
+      "nativeCase": "P05-forward",
+      "originalDomSelection": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        },
+        "focus": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 3
+        }
+      },
+      "actualFinalDom": [
+        {
+          "nodeType": 1,
+          "role": "P",
+          "tag": "p",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "T_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "T_text",
+                  "data": "abcd"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "H",
+          "tag": "h3",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "O_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "O_text",
+                  "data": "tail"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "nativeCompositionDispatches": 0,
+        "documentEventsAdded": 0,
+        "undoEntriesAdded": 0,
+        "completeStructuralCorrespondence": true,
+        "stateOnlyFacets": "assert root/native baseline separately; not an all-epochs-unchanged claim",
+        "affectedCommittedPresentation": [
+          {
+            "nodeType": 1,
+            "role": "P",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "T_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "T_text",
+                    "data": "abcd"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "outsideActualObjectsUnchanged": [
+          "H",
+          "O_outer",
+          "O_text"
+        ]
+      }
+    },
+    {
+      "id": "D11-readable-scalar-EGC-refusal",
+      "classification": "actual_native_refusal_after_controlled_dom_input",
+      "seed": "D",
+      "nativeCase": "P11-forward",
+      "originalDomSelection": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 0
+        },
+        "focus": {
+          "path": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 1
+        }
+      },
+      "actualFinalDom": [
+        {
+          "nodeType": 1,
+          "role": "P",
+          "tag": "p",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "E_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 1,
+                  "role": "E_mark",
+                  "tag": "strong",
+                  "attributes": {},
+                  "children": [
+                    {
+                      "nodeType": 3,
+                      "role": "E_text",
+                      "data": "Z"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "nodeType": 1,
+              "role": "C_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 1,
+                  "role": "C_mark",
+                  "tag": "em",
+                  "attributes": {},
+                  "children": [
+                    {
+                      "nodeType": 3,
+                      "role": "C_text",
+                      "data": "́"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "nodeType": 1,
+              "role": "X_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 1,
+                  "role": "X_mark",
+                  "tag": "code",
+                  "attributes": {},
+                  "children": [
+                    {
+                      "nodeType": 3,
+                      "role": "X_text",
+                      "data": "x"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "H",
+          "tag": "h3",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "O_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "O_text",
+                  "data": "tail"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "nativeCompositionDispatches": 1,
+        "nativeResponseCode": "position.invalid",
+        "nativeResponseAndOriginalSubmissionRetained": true,
+        "documentEventsAdded": 0,
+        "undoEntriesAdded": 0,
+        "retainedProvisionalText": "Źx",
+        "restoredAffectedCommittedDom": [
+          {
+            "nodeType": 1,
+            "role": "P",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "E_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "E_mark",
+                    "tag": "strong",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "E_text",
+                        "data": "e"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "nodeType": 1,
+                "role": "C_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "C_mark",
+                    "tag": "em",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "C_text",
+                        "data": "́"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "nodeType": 1,
+                "role": "X_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "X_mark",
+                    "tag": "code",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "X_text",
+                        "data": "x"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "recoveryReason": "native_refused",
+        "disposition": "committed_restored",
+        "restoreBeforeSafeInputRetention": false
+      }
+    },
+    {
+      "id": "D12-scene-membership-is-not-flat-text",
+      "classification": "controlled_negative",
+      "seed": "C",
+      "actualFinalDom": [
+        {
+          "nodeType": 1,
+          "role": "P1",
+          "tag": "p",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "L_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "L_text",
+                  "data": "aяd"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "S",
+          "tag": "hr",
+          "attributes": {
+            "class": "editor-scene-break",
+            "role": "separator",
+            "aria-label": "Scene break",
+            "contenteditable": "false"
+          },
+          "children": []
+        },
+        {
+          "nodeType": 1,
+          "role": "H",
+          "tag": "h3",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "O_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "O_text",
+                  "data": "tail"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "nativeCompositionDispatches": 0,
+        "completeReplacementClaim": false,
+        "recoveryReason": "capture_limit",
+        "disposition": "dom_transferred",
+        "soleActualDomCleared": false,
+        "sceneLabelFlattenedIntoInput": false
+      }
+    },
+    {
+      "id": "D13-outside-object-cloned",
+      "classification": "controlled_negative",
+      "seed": "A",
+      "actualFinalDom": [
+        {
+          "nodeType": 1,
+          "role": "P",
+          "tag": "p",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "T_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "T_text",
+                  "data": "aяd"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "H",
+          "tag": "h3",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "O_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "O_text",
+                  "data": "tail"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outsideMutation": {
+        "role": "H",
+        "operation": "replace with equal clone including copied id/data-editor-node",
+        "sameTextAndAttrs": true
+      },
+      "expected": {
+        "nativeCompositionDispatches": 0,
+        "copiedIdsCreateAuthority": false,
+        "recoveryReason": "stale",
+        "latestInputRetained": true,
+        "obsoleteBaseRestoredOverNewerOutsideState": false
+      }
+    },
+    {
+      "id": "D14-outside-metadata-changed",
+      "classification": "controlled_negative",
+      "seed": "G",
+      "outsideMutation": {
+        "role": "H",
+        "attribute": "title",
+        "before": null,
+        "after": "changed outside"
+      },
+      "expected": {
+        "nativeCompositionDispatches": 0,
+        "outsideMutationsIgnored": false,
+        "recoveryReason": "stale",
+        "latestInputRetained": true
+      }
+    },
+    {
+      "id": "D15-UA-clone-not-owned-before-settlement",
+      "classification": "controlled_negative",
+      "seed": "A",
+      "operation": "clone T_outer with identical data/editor/id attributes then use production owned mapping before composition settlement",
+      "expected": {
+        "clonedAttributeAuthority": false,
+        "inventedNativeId": false,
+        "originalNativeRangeReplacedByCloneGuess": false,
+        "inputRetainedOnRefusal": true
+      }
+    },
+    {
+      "id": "D16-adapter-remount-is-functional-failure",
+      "classification": "negative_instrumentation_oracle",
+      "seed": "G",
+      "operation": "adapter detaches or recreates protected P/T_mark/BR/C objects while UA still composing",
+      "expected": {
+        "testDisposition": "FAIL",
+        "mayBeCalledUaTextReplacement": false,
+        "mayBeCalledFirefoxBehaviorGap": false
+      }
+    },
+    {
+      "id": "D17-oversize-ownership",
+      "classification": "controlled_boundary",
+      "seed": "C",
+      "limitRecipe": "entries-over",
+      "expected": {
+        "nativeCompositionDispatches": 0,
+        "recoveryReason": "capture_limit",
+        "disposition": "dom_transferred",
+        "actualIntactRegionRetained": true,
+        "unboundedClone": false,
+        "soleCopyCleared": false
+      }
+    },
+    {
+      "id": "D18-destroy-during-incomplete-capture",
+      "classification": "controlled_lifecycle_boundary",
+      "seed": "A",
+      "limitRecipe": "text-over",
+      "expected": {
+        "nativeCompositionDispatches": 0,
+        "reason": "destroyed",
+        "actualDomOwnership": "transferred_to_host",
+        "soleCopyCleared": false,
+        "immutableDestroyReceiptRewrittenByLateCompletion": false,
+        "lateCompletionTouchesNewMount": false
+      }
+    }
+  ],
+  "caseCount": 18,
+  "installedLiteralBranches": [
+    {
+      "id": "I02-plain-deadkey",
+      "classification": "preauthored_literal_for_actual_OS_observation_not_executed",
+      "seed": "A",
+      "nativeCase": "P15-forward",
+      "replacementUtf16": "é",
+      "replacementCodePoints": [
+        "U+00E9"
+      ],
+      "expectedCommittedDom": [
+        {
+          "nodeType": 1,
+          "role": "P",
+          "tag": "p",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "T_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "T_text",
+                  "data": "aéd"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "H",
+          "tag": "h3",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "O_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "O_text",
+                  "data": "tail"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "finalDomSelection": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 2
+        },
+        "focus": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 2
+        }
+      },
+      "nativeCaret": {
+        "kind": "text",
+        "role": "T",
+        "offsetUtf16": 2,
+        "affinity": "after"
+      },
+      "nativeCompositionDispatches": 1,
+      "undoEntriesAdded": 1,
+      "outsideActualObjectsUnchanged": [
+        "H",
+        "O_outer",
+        "O_text"
+      ],
+      "conditionalBranchOnly": false
+    },
+    {
+      "id": "I03-marked-deadkey",
+      "classification": "preauthored_literal_for_actual_OS_observation_not_executed",
+      "seed": "G",
+      "nativeCase": "P17-forward",
+      "replacementUtf16": "é",
+      "replacementCodePoints": [
+        "U+00E9"
+      ],
+      "expectedCommittedDom": [
+        {
+          "nodeType": 1,
+          "role": "P",
+          "tag": "p",
+          "attributes": {
+            "class": "editor-align-right editor-first-line-indent"
+          },
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "T_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 1,
+                  "role": "T_mark",
+                  "tag": "strong",
+                  "attributes": {},
+                  "children": [
+                    {
+                      "nodeType": 3,
+                      "role": "T_text",
+                      "data": "aéd"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "nodeType": 1,
+              "role": "BR",
+              "tag": "br",
+              "attributes": {},
+              "children": []
+            },
+            {
+              "nodeType": 1,
+              "role": "C_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 1,
+                  "role": "C_mark",
+                  "tag": "code",
+                  "attributes": {},
+                  "children": [
+                    {
+                      "nodeType": 3,
+                      "role": "C_text",
+                      "data": "tail"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "H",
+          "tag": "h3",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "O_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "O_text",
+                  "data": "tail"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "finalDomSelection": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 2
+        },
+        "focus": {
+          "path": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 2
+        }
+      },
+      "nativeCaret": {
+        "kind": "text",
+        "role": "T",
+        "offsetUtf16": 2,
+        "affinity": "after"
+      },
+      "nativeCompositionDispatches": 1,
+      "undoEntriesAdded": 1,
+      "outsideActualObjectsUnchanged": [
+        "H",
+        "O_outer",
+        "O_text"
+      ],
+      "conditionalBranchOnly": false
+    },
+    {
+      "id": "I04-scene-deadkey",
+      "classification": "preauthored_literal_for_actual_OS_observation_not_executed",
+      "seed": "C",
+      "nativeCase": "P16-forward",
+      "replacementUtf16": "é",
+      "replacementCodePoints": [
+        "U+00E9"
+      ],
+      "expectedCommittedDom": [
+        {
+          "nodeType": 1,
+          "role": "P1",
+          "tag": "p",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "L_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "L_text",
+                  "data": "aéd"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "H",
+          "tag": "h3",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "O_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "O_text",
+                  "data": "tail"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "finalDomSelection": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 2
+        },
+        "focus": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 2
+        }
+      },
+      "nativeCaret": {
+        "kind": "text",
+        "role": "L",
+        "offsetUtf16": 2,
+        "affinity": "after"
+      },
+      "nativeCompositionDispatches": 1,
+      "undoEntriesAdded": 1,
+      "outsideActualObjectsUnchanged": [
+        "H",
+        "O_outer",
+        "O_text"
+      ],
+      "conditionalBranchOnly": false
+    },
+    {
+      "id": "I05-Escape-exact-spacing-accent-branch",
+      "classification": "preauthored_literal_for_actual_OS_observation_not_executed",
+      "seed": "A",
+      "nativeCase": "P18-forward",
+      "replacementUtf16": "´",
+      "replacementCodePoints": [
+        "U+00B4"
+      ],
+      "expectedCommittedDom": [
+        {
+          "nodeType": 1,
+          "role": "P",
+          "tag": "p",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "T_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "T_text",
+                  "data": "a´d"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "H",
+          "tag": "h3",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "O_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "O_text",
+                  "data": "tail"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "finalDomSelection": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 2
+        },
+        "focus": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 2
+        }
+      },
+      "nativeCaret": {
+        "kind": "text",
+        "role": "T",
+        "offsetUtf16": 2,
+        "affinity": "after"
+      },
+      "nativeCompositionDispatches": 1,
+      "undoEntriesAdded": 1,
+      "outsideActualObjectsUnchanged": [
+        "H",
+        "O_outer",
+        "O_text"
+      ],
+      "conditionalBranchOnly": true
+    },
+    {
+      "id": "I06-blur-exact-spacing-accent-branch",
+      "classification": "preauthored_literal_for_actual_OS_observation_not_executed",
+      "seed": "C",
+      "nativeCase": "P19-forward",
+      "replacementUtf16": "´",
+      "replacementCodePoints": [
+        "U+00B4"
+      ],
+      "expectedCommittedDom": [
+        {
+          "nodeType": 1,
+          "role": "P1",
+          "tag": "p",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "L_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "L_text",
+                  "data": "a´d"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "H",
+          "tag": "h3",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "O_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "O_text",
+                  "data": "tail"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "finalDomSelection": {
+        "anchor": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 2
+        },
+        "focus": {
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "offsetUtf16": 2
+        }
+      },
+      "nativeCaret": {
+        "kind": "text",
+        "role": "L",
+        "offsetUtf16": 2,
+        "affinity": "after"
+      },
+      "nativeCompositionDispatches": 1,
+      "undoEntriesAdded": 1,
+      "outsideActualObjectsUnchanged": [
+        "H",
+        "O_outer",
+        "O_text"
+      ],
+      "conditionalBranchOnly": true
+    }
+  ],
+  "installedUnchangedBranches": {
+    "I05": {
+      "seed": "A",
+      "actualDomMustEqual": [
+        {
+          "nodeType": 1,
+          "role": "P",
+          "tag": "p",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "T_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "T_text",
+                  "data": "abcd"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "H",
+          "tag": "h3",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "O_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "O_text",
+                  "data": "tail"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "nativeDispatches": 0,
+      "undoEntriesAdded": 0
+    },
+    "I06": {
+      "seed": "C",
+      "actualDomMustEqual": [
+        {
+          "nodeType": 1,
+          "role": "P1",
+          "tag": "p",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "L_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "L_text",
+                  "data": "ab"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "S",
+          "tag": "hr",
+          "attributes": {
+            "class": "editor-scene-break",
+            "role": "separator",
+            "aria-label": "Scene break",
+            "contenteditable": "false"
+          },
+          "children": []
+        },
+        {
+          "nodeType": 1,
+          "role": "P2",
+          "tag": "p",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "R_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "R_text",
+                  "data": "cd"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "nodeType": 1,
+          "role": "H",
+          "tag": "h3",
+          "attributes": {},
+          "children": [
+            {
+              "nodeType": 1,
+              "role": "O_outer",
+              "tag": "span",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 3,
+                  "role": "O_text",
+                  "data": "tail"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "nativeDispatches": 0,
+      "undoEntriesAdded": 0
+    },
+    "otherChangedString": {
+      "action": "retain actual raw input and truthful recovery/diagnostic",
+      "acceptedFixedPositive": false,
+      "newGoldenFromObservedOutput": false
+    }
+  },
+  "boundaryRecipes": [
+    {
+      "id": "entries-at",
+      "classification": "controlled_observation_only",
+      "entries": [
+        "paragraph",
+        "scene_break",
+        "paragraph",
+        "scene_break",
+        "paragraph",
+        "scene_break",
+        "paragraph",
+        "paragraph"
+      ],
+      "count": 8,
+      "observationWithinEntryBudget": true,
+      "nativeSuccessPromised": false
+    },
+    {
+      "id": "entries-over",
+      "classification": "controlled_boundary",
+      "entries": [
+        "paragraph",
+        "scene_break",
+        "paragraph",
+        "scene_break",
+        "paragraph",
+        "scene_break",
+        "paragraph",
+        "scene_break",
+        "paragraph"
+      ],
+      "count": 9,
+      "nativeDispatches": 0,
+      "ownership": "actual region transferred intact"
+    },
+    {
+      "id": "nodes-at",
+      "classification": "controlled_capture_primitive_not_native_semantics",
+      "recipe": {
+        "rootElementCount": 1,
+        "emptySpanChildren": 131070,
+        "emptyTextChildren": 1
+      },
+      "visitedNodeCount": 131072,
+      "captureWithinNodeBudget": true,
+      "structuralAdmissionOrNativeSuccessPromised": false
+    },
+    {
+      "id": "nodes-over",
+      "classification": "controlled_capture_primitive_not_native_semantics",
+      "recipe": {
+        "rootElementCount": 1,
+        "emptySpanChildren": 131071,
+        "emptyTextChildren": 1
+      },
+      "visitedNodeCount": 131073,
+      "captureWithinNodeBudget": false,
+      "ownership": "actual region transferred intact"
+    },
+    {
+      "id": "depth-at",
+      "classification": "controlled_capture_primitive",
+      "recipe": {
+        "elementChainNodeCount": 128,
+        "terminalTextNodeCount": 1,
+        "rootDepth": 0,
+        "terminalTextDepth": 128
+      },
+      "captureWithinDepthBudget": true,
+      "nativeSuccessPromised": false
+    },
+    {
+      "id": "depth-over",
+      "classification": "controlled_capture_primitive",
+      "recipe": {
+        "elementChainNodeCount": 129,
+        "terminalTextNodeCount": 1,
+        "rootDepth": 0,
+        "terminalTextDepth": 129
+      },
+      "captureWithinDepthBudget": false,
+      "ownership": "actual region transferred intact"
+    },
+    {
+      "id": "text-at",
+      "classification": "controlled_capture_primitive",
+      "recipe": {
+        "oneActualText": "U+0061 repeated2097152 times"
+      },
+      "actualUtf16Units": 2097152,
+      "captureWithinTextBudget": true,
+      "nativeSuccessPromised": false
+    },
+    {
+      "id": "text-over",
+      "classification": "controlled_capture_primitive",
+      "recipe": {
+        "oneActualText": "U+0061 repeated2097153 times"
+      },
+      "actualUtf16Units": 2097153,
+      "captureWithinTextBudget": false,
+      "ownership": "actual region transferred intact, not truncated or cloned"
+    },
+    {
+      "id": "mutations-at",
+      "classification": "controlled_observer_boundary",
+      "records": 4096,
+      "recordsChargedAcrossWholeGeneration": true,
+      "withinMutationBudget": true,
+      "nativeSuccessPromised": false
+    },
+    {
+      "id": "mutations-over",
+      "classification": "controlled_observer_boundary",
+      "records": 4097,
+      "recordsChargedAcrossWholeGeneration": true,
+      "withinMutationBudget": false,
+      "nativeDispatches": 0,
+      "ownership": "latest bounded input or actual region retained"
+    }
+  ],
+  "refusalOwnership": {
+    "ordinaryNativeRefused": "original ticket/response/code retained; affected committed presentation restored only after safe retention; original native facets unchanged",
+    "staleOutside": "preserve newest input, do not restore obsolete base over newer native publication",
+    "incompleteOrOversize": "actual intact region transferred; no unbounded clone, sole-copy deletion or fake complete markup snapshot",
+    "fatalOrUnknown": "original may-have-committed truth and actual input retained, no refusal restoration promise",
+    "destroy": "retained packet/owner survives missing/throw/reentrant callback; no new mount writes; terminal continuations counted until complete"
+  },
+  "remainingEvidence": "All values are source-authored expectations/recipes. Actual Rust+sealed WASM, packaged SDK, controlled three-engine and installed Chrome/Safari executions are still required after the separate contract commit."
+}

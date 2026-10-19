@@ -1,0 +1,1436 @@
+{
+  "format": "editor-composition-event-oracles/1",
+  "issue": "OSR-41",
+  "status": "PRE_CANDIDATE_NORMATIVE_DATA_NOT_EXECUTION",
+  "acceptedBase": "69d8cffe2704d7c868c240344c7c3131b0b10d82",
+  "method": "Independently authored finite policy cases; no candidate/editor imports or execution. Abstract UA steps are controlled fixtures, not evidence of real OS behavior.",
+  "defaultBaseline": {
+    "seed": "A",
+    "nativeDirectedRange": "T1 after -> T3 after",
+    "postSyncNative": "r0/s1/h0; undo0/redo0; null stored_marks",
+    "outsideHeading": "level3 tail unchanged"
+  },
+  "macroPolicy": "reuse expands only another declared input prefix; every non-null nativeCase resolves to native-oracles.json. Native measurements are compared through its independently authored literal table; policy rows additionally assert ownership/ticket/recovery behavior.",
+  "rows": [
+    {
+      "id": "E01-end-then-unchanged-tail",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "ua": "replace provisional selected Q with Z",
+          "actualText": "aZd"
+        },
+        {
+          "event": "compositionend",
+          "data": "Q",
+          "isTrusted": true
+        },
+        {
+          "event": "input",
+          "inputType": "insertFromComposition",
+          "data": "wrong",
+          "actualText": "aZd"
+        },
+        {
+          "raf": 1,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "raf": 2,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "nativeHistoryEntriesAdded": 1,
+        "nativeText": "aZd",
+        "nativeResult": "P01-forward",
+        "recovery": null
+      }
+    },
+    {
+      "id": "E02-input-before-end",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "ua": "replace provisional selected Q with Z",
+          "actualText": "aZd"
+        },
+        {
+          "event": "input",
+          "inputType": "insertCompositionText",
+          "isComposing": false,
+          "data": "Z",
+          "actualText": "aZd"
+        },
+        {
+          "event": "compositionend",
+          "data": "Q",
+          "isTrusted": true
+        },
+        {
+          "raf": 1,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "raf": 2,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "nativeHistoryEntriesAdded": 1,
+        "nativeText": "aZd",
+        "nativeResult": "P01-forward",
+        "recovery": null
+      }
+    },
+    {
+      "id": "E03-duplicate-end",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "ua": "replace provisional selected Q with Z",
+          "actualText": "aZd"
+        },
+        {
+          "event": "compositionend",
+          "data": "Q",
+          "isTrusted": true
+        },
+        {
+          "event": "compositionend",
+          "data": "Q"
+        },
+        {
+          "event": "compositionend",
+          "data": ""
+        },
+        {
+          "raf": 1,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "raf": 2,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "nativeHistoryEntriesAdded": 1,
+        "nativeText": "aZd",
+        "nativeResult": "P01-forward",
+        "recovery": null
+      }
+    },
+    {
+      "id": "E04-false-trust-empty-data",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "ua": "replace provisional selected Q with Z",
+          "actualText": "aZd"
+        },
+        {
+          "event": "compositionend",
+          "data": "",
+          "isTrusted": false
+        },
+        {
+          "event": "compositionend",
+          "isTrusted": false,
+          "data": ""
+        },
+        {
+          "raf": 1,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "raf": 2,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "nativeHistoryEntriesAdded": 1,
+        "nativeText": "aZd",
+        "nativeResult": "P01-forward",
+        "recovery": null
+      }
+    },
+    {
+      "id": "E05-true-unchanged-cancel",
+      "classification": "controlled_event_policy",
+      "nativeCase": null,
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "ua": "restore original complete correspondence",
+          "actualText": "abcd"
+        },
+        {
+          "event": "compositionend",
+          "data": ""
+        },
+        {
+          "raf": 1
+        },
+        {
+          "raf": 2
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 0,
+        "nativeHistoryEntriesAdded": 0,
+        "nativeDocument": "original_A",
+        "nativeSelection": "baseline_directed_selection",
+        "recovery": null
+      }
+    },
+    {
+      "id": "E06-escape-changed-accent",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P18-forward",
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "event": "Escape"
+        },
+        {
+          "ua": "final replacement is U+00B4",
+          "actualText": "a´d"
+        },
+        {
+          "event": "compositionend",
+          "data": ""
+        },
+        {
+          "raf": 1
+        },
+        {
+          "raf": 2
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "nativeHistoryEntriesAdded": 1,
+        "nativeText": "a´d",
+        "focusStolen": false,
+        "recovery": null
+      }
+    },
+    {
+      "id": "E07-blur-changed-empty-end",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P18-forward",
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "event": "blur"
+        },
+        {
+          "ua": "final replacement is U+00B4",
+          "actualText": "a´d"
+        },
+        {
+          "event": "compositionend",
+          "data": ""
+        },
+        {
+          "raf": 1
+        },
+        {
+          "raf": 2
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "nativeHistoryEntriesAdded": 1,
+        "nativeText": "a´d",
+        "focusStolen": false,
+        "recovery": null
+      }
+    },
+    {
+      "id": "E08-blur-without-end",
+      "classification": "controlled_event_policy",
+      "nativeCase": null,
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "event": "blur"
+        },
+        {
+          "monotonicMsFromBlur": 250,
+          "event": "watchdog"
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 0,
+        "nativeHistoryEntriesAdded": 0,
+        "adapterDestructiveWritesWhileComposing": 0,
+        "recoveryReason": "settle_limit",
+        "disposition": "dom_transferred"
+      }
+    },
+    {
+      "id": "E09-two-consecutive-stable-not-two-ever",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "event": "compositionend"
+        },
+        {
+          "raf": 1,
+          "actualText": "aQd"
+        },
+        {
+          "ua": "Q changes to Z"
+        },
+        {
+          "raf": 2,
+          "actualText": "aZd"
+        },
+        {
+          "raf": 3,
+          "actualText": "aZd"
+        }
+      ],
+      "expected": {
+        "dispatchAtRaf": 3,
+        "compositionDispatches": 1,
+        "nativeHistoryEntriesAdded": 1,
+        "nativeText": "aZd",
+        "nativeResult": "P01-forward",
+        "recovery": null
+      }
+    },
+    {
+      "id": "E10-read-cap-exact",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "event": "compositionend"
+        },
+        {
+          "rafReadSequence": [
+            "a1d",
+            "a2d",
+            "a3d",
+            "a4d",
+            "a5d",
+            "a6d",
+            "aZd",
+            "aZd"
+          ],
+          "elapsedMs": 120
+        }
+      ],
+      "expected": {
+        "dispatchAtRead": 8,
+        "compositionDispatches": 1,
+        "nativeHistoryEntriesAdded": 1,
+        "nativeText": "aZd",
+        "recovery": null
+      }
+    },
+    {
+      "id": "E11-read-cap-overflow",
+      "classification": "controlled_event_policy",
+      "nativeCase": null,
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "event": "compositionend"
+        },
+        {
+          "rafReadSequence": [
+            "a1d",
+            "a2d",
+            "a3d",
+            "a4d",
+            "a5d",
+            "a6d",
+            "a7d",
+            "a8d"
+          ],
+          "elapsedMs": 120
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 0,
+        "reads": 8,
+        "recoveryReason": "settle_limit",
+        "latestRetainedText": "a8d"
+      }
+    },
+    {
+      "id": "E12-deadline-exact",
+      "classification": "controlled_event_policy",
+      "nativeCase": null,
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "event": "compositionend"
+        },
+        {
+          "callbackElapsedMs": 250
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 0,
+        "actualElapsedMs": 250,
+        "recoveryReason": "settle_limit"
+      }
+    },
+    {
+      "id": "E13-delayed-event-loop-deadline",
+      "classification": "controlled_event_policy",
+      "nativeCase": null,
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "event": "compositionend"
+        },
+        {
+          "callbackElapsedMs": 600
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 0,
+        "actualElapsedMs": 600,
+        "recoveryReason": "settle_limit"
+      }
+    },
+    {
+      "id": "E14-stale-native-outside",
+      "classification": "controlled_event_policy",
+      "nativeCase": null,
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "host": "allowed39 outside selection+typing; preserve composing actual objects"
+        },
+        {
+          "ua": "final Z",
+          "actualText": "aZd"
+        },
+        {
+          "event": "compositionend",
+          "data": "Q",
+          "isTrusted": true
+        },
+        {
+          "raf": 1,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "raf": 2,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 0,
+        "outsideNativeEditPreserved": true,
+        "composingObjectAdapterReplacement": false,
+        "recoveryReason": "stale",
+        "latestRetainedText": "aZd"
+      }
+    },
+    {
+      "id": "E15-newer-host-target-native-noop",
+      "classification": "controlled_event_policy",
+      "nativeCase": null,
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "host": "explicit native target command returns Noop and invalidates shared intent"
+        },
+        {
+          "event": "compositionend",
+          "data": "Q",
+          "isTrusted": true
+        },
+        {
+          "raf": 1,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "raf": 2,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 0,
+        "adoptForeignSerial": false,
+        "recoveryReason": "stale"
+      }
+    },
+    {
+      "id": "E16-owned-preedit-accounting",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "event": "beforeinput",
+          "inputType": "insertCompositionText",
+          "isComposing": true
+        },
+        {
+          "event": "input",
+          "isComposing": true
+        },
+        {
+          "ua": "final Z",
+          "actualText": "aZd"
+        },
+        {
+          "event": "compositionend",
+          "data": "Q",
+          "isTrusted": true
+        },
+        {
+          "raf": 1,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "raf": 2,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "nativeHistoryEntriesAdded": 1,
+        "nativeText": "aZd",
+        "nativeResult": "P01-forward",
+        "recovery": null
+      }
+    },
+    {
+      "id": "E17-end-reentry-before-submit",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "ua": "final Z",
+          "actualText": "aZd"
+        },
+        {
+          "event": "compositionend",
+          "data": "Q",
+          "isTrusted": true
+        },
+        {
+          "raf": 1,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "raf": 2,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "callbackReentry": [
+            "compositionend",
+            "input",
+            "compositionend"
+          ]
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "nativeHistoryEntriesAdded": 1,
+        "nativeText": "aZd",
+        "nativeResult": "P01-forward",
+        "recovery": null
+      }
+    },
+    {
+      "id": "E18-original-queued-ticket",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "ua": "final Z",
+          "actualText": "aZd"
+        },
+        {
+          "event": "compositionend",
+          "data": "Q",
+          "isTrusted": true
+        },
+        {
+          "raf": 1,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "raf": 2,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "controlledNativeSubmission": "queued_original_ticket"
+        },
+        {
+          "event": "compositionend"
+        },
+        {
+          "originalCompletion": "ok"
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "nativeHistoryEntriesAdded": 1,
+        "sameOriginalTicket": true,
+        "retryOrReplay": false,
+        "finalAdapterContinuations": 0
+      }
+    },
+    {
+      "id": "E19-queued-then-new-ordinary",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "ua": "final Z",
+          "actualText": "aZd"
+        },
+        {
+          "event": "compositionend",
+          "data": "Q",
+          "isTrusted": true
+        },
+        {
+          "raf": 1,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "raf": 2,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "controlledNativeSubmission": "queued_original_ticket"
+        },
+        {
+          "ownedKey": "x",
+          "isComposing": false
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "ordinaryDispatches": 0,
+        "sameOriginalTicket": true,
+        "unappliedKey": "x",
+        "recoveryReason": "busy",
+        "latestRetainedText": "aZd"
+      }
+    },
+    {
+      "id": "E20-unchanged-accepted-final-tail",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "ua": "final Z",
+          "actualText": "aZd"
+        },
+        {
+          "event": "compositionend",
+          "data": "Q",
+          "isTrusted": true
+        },
+        {
+          "raf": 1,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "raf": 2,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "event": "input",
+          "inputType": "insertFromComposition",
+          "data": "Z",
+          "actualText": "aZd"
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "nativeHistoryEntriesAdded": 1,
+        "nativeText": "aZd",
+        "nativeResult": "P01-forward",
+        "recovery": null
+      }
+    },
+    {
+      "id": "E21-changed-after-accepted-tail",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "ua": "final Z",
+          "actualText": "aZd"
+        },
+        {
+          "event": "compositionend",
+          "data": "Q",
+          "isTrusted": true
+        },
+        {
+          "raf": 1,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "raf": 2,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "ua": "late unexplained change",
+          "actualText": "aZZd"
+        },
+        {
+          "event": "input",
+          "inputType": "insertCompositionText",
+          "data": "Z"
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "nativeHistoryEntriesAdded": 1,
+        "nativeText": "aZd",
+        "latestRetainedText": "aZZd",
+        "recoveryReason": "ambiguous_tail"
+      }
+    },
+    {
+      "id": "E22-Safari-early-space-no-retrospective-permit",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P16-forward",
+      "steps": [
+        {
+          "seed": "C",
+          "finalNativeComposition": "aéd",
+          "tombstone": "accepted_é"
+        },
+        {
+          "event": "beforeinput",
+          "inputType": "insertText",
+          "isComposing": false,
+          "cancelable": true,
+          "data": " ",
+          "newOwnedIntent": false
+        },
+        {
+          "event": "keydown",
+          "key": " ",
+          "code": "Space",
+          "isComposing": false
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "ordinaryDispatches": 0,
+        "recoveryReason": "ambiguous_tail",
+        "unappliedInputData": " ",
+        "lateKeyRescuesPriorInput": false,
+        "historicalUncancelledDomDelta": "U+00A0, not U+0020"
+      }
+    },
+    {
+      "id": "E23-explicit-new-ordinary-permit",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "seed": "A",
+          "finalNativeComposition": "aZd",
+          "stableCompleteCheckpoint": true
+        },
+        {
+          "event": "keydown",
+          "key": " ",
+          "code": "Space",
+          "isComposing": false,
+          "owned": true
+        },
+        {
+          "recheck": "same current native/DOM/full context and intent"
+        },
+        {
+          "event": "beforeinput",
+          "inputType": "insertText",
+          "data": " ",
+          "cancelable": true,
+          "isComposing": false,
+          "ownedTarget": "collapsed T2 after Z"
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "ordinaryDispatches": 1,
+        "nativeText": "aZ d",
+        "nativeHistoryEntriesAdded": 2,
+        "firstUndo": "aZd",
+        "secondUndo": "original_abcd",
+        "forwardPolicyNotCausalProof": true
+      }
+    },
+    {
+      "id": "E24-duplicate-ordinary-permit-consumed",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "reuse": "E23"
+        },
+        {
+          "event": "beforeinput",
+          "inputType": "insertText",
+          "data": " ",
+          "cancelable": true
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "ordinaryDispatches": 1,
+        "recoveryReason": "ambiguous_tail",
+        "unappliedInputData": " "
+      }
+    },
+    {
+      "id": "E25-ordinary-key-before-stable",
+      "classification": "controlled_event_policy",
+      "nativeCase": null,
+      "steps": [
+        {
+          "reuse": "E01 through end, before two stable reads"
+        },
+        {
+          "event": "keydown",
+          "key": "x",
+          "isComposing": false
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 0,
+        "ordinaryDispatches": 0,
+        "recoveryReason": "busy",
+        "unappliedKey": "x"
+      }
+    },
+    {
+      "id": "E26-consecutive-start-pending",
+      "classification": "controlled_event_policy",
+      "nativeCase": null,
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "event": "compositionend"
+        },
+        {
+          "event": "compositionstart",
+          "beforePriorTerminal": true
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 0,
+        "automaticGenerationCoalesce": false,
+        "recoveryReason": "ambiguous_tail",
+        "adapterDestructiveWritesWhileComposing": 0
+      }
+    },
+    {
+      "id": "E27-native-EGC-refusal",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P11-forward",
+      "steps": [
+        {
+          "seed": "D",
+          "nativeCase": "P11-forward"
+        },
+        {
+          "event": "compositionstart"
+        },
+        {
+          "ua": "E base e becomes Z, original combining C and code X remain",
+          "actualText": "Źx"
+        },
+        {
+          "event": "compositionend",
+          "data": "Q",
+          "isTrusted": true
+        },
+        {
+          "raf": 1
+        },
+        {
+          "raf": 2
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "nativeResponseCode": "position.invalid",
+        "nativeHistoryEntriesAdded": 0,
+        "nativeOriginalFacetsUnchanged": true,
+        "latestRetainedText": "Źx",
+        "restoredCommittedText": "éx",
+        "recoveryReason": "native_refused",
+        "originalResponsePreserved": true
+      }
+    },
+    {
+      "id": "E28-latest-retained-before-restoration",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P11-forward",
+      "steps": [
+        {
+          "reuse": "E27"
+        },
+        {
+          "onRecovery": "throws"
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "originalNativeResponsePreserved": true,
+        "soleRecoveryCopyRetained": true,
+        "editingEnabled": false,
+        "callbackFailureDoesNotReplaceCause": true
+      }
+    },
+    {
+      "id": "E29-recovery-callback-absent",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P11-forward",
+      "steps": [
+        {
+          "reuse": "E27"
+        },
+        {
+          "onRecovery": "absent"
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "soleRecoveryCopyRetained": true,
+        "destroyReceiptImmutable": true,
+        "notificationRecurses": false,
+        "newMountTouched": false
+      }
+    },
+    {
+      "id": "E30-recovery-callback-destroy",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P11-forward",
+      "steps": [
+        {
+          "reuse": "E27"
+        },
+        {
+          "onRecovery": "destroys"
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "soleRecoveryCopyRetained": true,
+        "destroyReceiptImmutable": true,
+        "notificationRecurses": false,
+        "newMountTouched": false
+      }
+    },
+    {
+      "id": "E31-recovery-callback-reentry",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P11-forward",
+      "steps": [
+        {
+          "reuse": "E27"
+        },
+        {
+          "onRecovery": "submit-and-destroy"
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "soleRecoveryCopyRetained": true,
+        "destroyReceiptImmutable": true,
+        "notificationRecurses": false,
+        "newMountTouched": false
+      }
+    },
+    {
+      "id": "E32-oversize-structural-capture",
+      "classification": "controlled_event_policy",
+      "nativeCase": null,
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "ua": "window exceeds structural or text budget"
+        },
+        {
+          "event": "compositionend",
+          "data": "Q",
+          "isTrusted": true
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 0,
+        "recoveryReason": "capture_limit",
+        "disposition": "dom_transferred",
+        "soleActualDomCleared": false,
+        "claimsCompleteMarkupSnapshot": false
+      }
+    },
+    {
+      "id": "E33-oversize-unapplied-event",
+      "classification": "controlled_event_policy",
+      "nativeCase": null,
+      "steps": [
+        {
+          "reuse": "E22 before beforeinput"
+        },
+        {
+          "event": "beforeinput",
+          "dataUtf16Units": 2097153,
+          "cancelable": true
+        }
+      ],
+      "expected": {
+        "ordinaryDispatches": 0,
+        "unappliedInputKind": "retained_event",
+        "ownership": "transferred_to_host",
+        "truncatedIntoSuccess": false
+      }
+    },
+    {
+      "id": "E34-fatal-after-claim",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "ua": "final Z",
+          "actualText": "aZd"
+        },
+        {
+          "event": "compositionend",
+          "data": "Q",
+          "isTrusted": true
+        },
+        {
+          "raf": 1,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "raf": 2,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "controlledNativeSubmission": "fatal_may_have_committed"
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "retryOrReplay": false,
+        "reason": "native_fatal",
+        "promisesOriginalStateRestoration": false,
+        "originalNativeOutcomePreserved": true,
+        "soleRecoveryCopyRetained": true
+      }
+    },
+    {
+      "id": "E35-unknown-ticket-after-destroy",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "ua": "final Z",
+          "actualText": "aZd"
+        },
+        {
+          "event": "compositionend",
+          "data": "Q",
+          "isTrusted": true
+        },
+        {
+          "raf": 1,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "raf": 2,
+          "actualText": "aZd",
+          "relevantMutations": 0
+        },
+        {
+          "controlledNativeSubmission": "queued_original_ticket"
+        },
+        {
+          "host": "destroy and mount another editor"
+        },
+        {
+          "originalCompletion": "fatal_or_ok"
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "retryOrReplay": false,
+        "destroyReceiptImmutable": true,
+        "newMountTouched": false,
+        "lateHostCallback": false,
+        "pendingContinuationCountedUntilTerminal": true,
+        "finalAdapterContinuations": 0
+      }
+    },
+    {
+      "id": "E36-destroy-active-preedit",
+      "classification": "controlled_event_policy",
+      "nativeCase": null,
+      "steps": [
+        {
+          "event": "compositionstart",
+          "baseline": "after_native_selection_sync"
+        },
+        {
+          "ua": "replace original A selected bc with Q",
+          "actualText": "aQd"
+        },
+        {
+          "host": "destroy"
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 0,
+        "nativeHistoryEntriesAdded": 0,
+        "soleRecoveryCopyRetained": true,
+        "listeners": 0,
+        "ownedRafs": 0,
+        "ownedTimers": 0,
+        "lateHostCallback": false
+      }
+    },
+    {
+      "id": "E37-generation-u64-limit",
+      "classification": "controlled_event_policy",
+      "nativeCase": null,
+      "steps": [
+        {
+          "generation": "18446744073709551615"
+        },
+        {
+          "event": "compositionstart"
+        }
+      ],
+      "expected": {
+        "wrappedGeneration": false,
+        "compositionDispatches": 0,
+        "editingContinuesWithGuessedOwner": false,
+        "soleInputPreserved": true
+      }
+    },
+    {
+      "id": "E38-composition-specific-after-new-key",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "reuse": "E23 through owned key/recheck"
+        },
+        {
+          "event": "beforeinput",
+          "inputType": "insertFromComposition",
+          "data": "Z"
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "ordinaryDispatches": 0,
+        "recoveryReason": "ambiguous_tail",
+        "soleInputPreserved": true
+      }
+    },
+    {
+      "id": "E39-indistinguishable-old-tail",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "declaredTestOrigin": "delayed_old_generation",
+          "notRuntimeAuthority": true
+        },
+        {
+          "seed": "A",
+          "finalNativeComposition": "aZd",
+          "stableCompleteCheckpoint": true
+        },
+        {
+          "event": "beforeinput",
+          "inputType": "insertText",
+          "data": " ",
+          "isComposing": false,
+          "cancelable": true,
+          "ownedTarget": "collapsed T2",
+          "newOwnedIntent": false
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "ordinaryDispatches": 0,
+        "recoveryReason": "ambiguous_tail",
+        "unappliedInputData": " ",
+        "inventsOriginClassifier": false
+      }
+    },
+    {
+      "id": "E40-indistinguishable-new-space",
+      "classification": "controlled_event_policy",
+      "nativeCase": "P01-forward",
+      "steps": [
+        {
+          "declaredTestOrigin": "genuine_ordinary_without_owned_witness",
+          "notRuntimeAuthority": true
+        },
+        {
+          "seed": "A",
+          "finalNativeComposition": "aZd",
+          "stableCompleteCheckpoint": true
+        },
+        {
+          "event": "beforeinput",
+          "inputType": "insertText",
+          "data": " ",
+          "isComposing": false,
+          "cancelable": true,
+          "ownedTarget": "collapsed T2",
+          "newOwnedIntent": false
+        }
+      ],
+      "expected": {
+        "compositionDispatches": 1,
+        "ordinaryDispatches": 0,
+        "recoveryReason": "ambiguous_tail",
+        "unappliedInputData": " ",
+        "inventsOriginClassifier": false
+      }
+    }
+  ],
+  "count": 40
+}
