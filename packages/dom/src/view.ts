@@ -3,6 +3,8 @@ import type { DeepReadonly, EventDto, NodeViewDto, PositionDto, Response, Select
 import type { DomDiagnostic, DomRefusal, MountedMutation, RecoveryRegion, RendererCatalog } from './types.js';
 import { prepareNode, type PreparedNode } from './catalog.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
+import { createCompositionCorrespondence, type CompositionWindow, type CompositionObservation } from './composition-view.js';
+export type { CompositionWindow, CompositionObservation } from './composition-view.js';
 
 export const domRegionLimits = Object.freeze({ blocks: 8, nodes: 131072, depth: 128, utf16: 2097152, mutations: 4096 });
 export interface DomPoint { readonly node: Node; readonly offset: number }
@@ -24,6 +26,11 @@ export interface DomView {
   textPosition(node: Node, offset: number): DeepReadonly<PositionDto> | DomRefusal | null;
   domPoint(position: DeepReadonly<PositionDto>): DomPoint | DomRefusal;
   beginProvisional(stamp: DeepReadonly<StampDto>, blockIds?: readonly string[]): DomRefusal | null;
+  beginComposition(stamp: DeepReadonly<StampDto>, selection: DeepReadonly<SelectionDto>): CompositionWindow | DomRefusal;
+  observeComposition(window: CompositionWindow): CompositionObservation | DomRefusal;
+  /** Recovery diagnostics only; this never admits a replacement command. */
+  captureComposition(window: CompositionWindow): RecoveryRegion | DomRefusal;
+  restoreComposition(window: CompositionWindow): DomRefusal | null;
   endProvisional(): void;
   setComposing(active: boolean): void;
   hasProvisional(): boolean;
@@ -35,8 +42,8 @@ export interface DomView {
   boundedText(element: Node): string | DomRefusal;
   destroy(options?: { readonly retainRegion?: boolean }): void;
 }
-interface Row { view: DeepReadonly<NodeViewDto>; prepared: PreparedNode; outer: HTMLElement; content: HTMLElement; text: Text | null; signature: string; placeholder: HTMLBRElement | null }
-interface Provisional { stamp: DeepReadonly<StampDto>; ids: readonly string[]; originals: ReadonlyMap<string, string>; retained: HTMLElement; composing: boolean; protected: ReadonlySet<string>; window: { parent: HTMLElement; before: ChildNode | null; after: ChildNode | null } | null }
+interface Row { view: DeepReadonly<NodeViewDto>; prepared: PreparedNode; outer: HTMLElement; content: HTMLElement; wrappers: readonly HTMLElement[]; text: Text | null; signature: string; placeholder: HTMLBRElement | null }
+interface Provisional { stamp: DeepReadonly<StampDto>; ids: readonly string[]; originals: ReadonlyMap<string, string>; retained: HTMLElement; composing: boolean; protected: ReadonlySet<string>; window: { parent: HTMLElement; before: ChildNode | null; after: ChildNode | null } | null; composition?: CompositionWindow; forceTransfer?: boolean }
 const equal = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 function scalarBoundary(text: string, offset: number): boolean {
   if (!Number.isSafeInteger(offset) || offset < 0 || offset > text.length) return false;
@@ -61,6 +68,10 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
   let lastSelection: DeepReadonly<SelectionDto> | null = null, lastAnchor: DomPoint | null = null, lastFocus: DomPoint | null = null;
   let provisional: Provisional | null = null, destroyed = false;
   let placeholders = new WeakSet<Node>();
+  let compositionGeneration: object = {};
+  const unrestorableCompositions = new WeakSet<CompositionWindow>();
+  const correspondence = createCompositionCorrespondence({host,limits:domRegionLimits,row:id=>rows.get(id),ownedId:node=>authority.get(node),
+    placeholder:node=>placeholders.has(node),point:domPoint,selection:readSelection,generation:()=>compositionGeneration});
   const refusal = (code: 'dom.renderer_missing' | 'dom.presentation_unsupported' | 'dom.composition_conflict' | 'dom.reconcile_limit' | 'dom.disposed',
     node: string | null = null, publication: DomDiagnostic['publication'] = 'none') => domRefusal(code, 'render', currentStamp, node, node ? rows.get(node)?.view.type_id || null : null, publication);
   function uniqueId(): string {
@@ -86,10 +97,11 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     if (!isRoot) applyPresentation(outer, prepared.presentation);
     bindings.set(outer, view.id);
     let content = outer;
+    const wrappers: HTMLElement[] = [];
     // The kernel creates and owns all wrappers and text, never authored HTML.
     for (const mark of prepared.marks) {
       const wrapper = doc.createElement(mark.tag); applyPresentation(wrapper, mark); content.appendChild(wrapper);
-      bindings.set(wrapper, view.id); content = wrapper;
+      bindings.set(wrapper, view.id); wrappers.push(wrapper); content = wrapper;
     }
     let text: Text | null = null;
     if (view.primitive === 'text') { text = doc.createTextNode(view.text ?? ''); content.appendChild(text); bindings.set(text, view.id); }
@@ -100,7 +112,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
       // A static prefix belongs only to a noneditable atom; editable data cannot gain text.
       throw new Error('dom.presentation_unsupported');
     }
-    return { view, prepared, outer, content, text, signature: signature(prepared), placeholder: null };
+    return { view, prepared, outer, content, wrappers:Object.freeze(wrappers), text, signature: signature(prepared), placeholder: null };
   }
   function prepare(view: DeepReadonly<NodeViewDto>, publication: DomDiagnostic['publication']): PreparedNode | DomRefusal {
     if ((view.primitive === 'text' && (view.text === null || view.children.length))
@@ -118,7 +130,19 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     return result;
   }
   function reconcileChildren(row: Row, source: ReadonlyMap<string, Row>, placeholderStore = placeholders): void {
-    if (row.view.primitive === 'text' || row.view.primitive === 'hard_break' || row.view.primitive.endsWith('_atom')) return;
+    if (row.view.primitive === 'text') {
+      // The UA may replace a Text object while composing. Publication occurs
+      // only after the owner has retained input and released protection. Restore
+      // the authoritative owned object without granting the UA object an ID.
+      let content = row.outer;
+      for (const wrapper of row.wrappers) {
+        if (content.childNodes.length !== 1 || content.firstChild !== wrapper) content.replaceChildren(wrapper);
+        content = wrapper;
+      }
+      if (row.text && (content.childNodes.length !== 1 || content.firstChild !== row.text)) content.replaceChildren(row.text);
+      return;
+    }
+    if (row.view.primitive === 'hard_break' || row.view.primitive.endsWith('_atom')) return;
     const desired: Node[] = row.view.children.map(id => {
       const child = source.get(id); if (!child) throw new Error('dom.missing_child'); return child.outer;
     });
@@ -361,9 +385,113 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
       retained: window?.parent ?? (capture.blocks.length === 1 ? first.element : host), composing: false, protected: protectedSet, window };
     return null;
   }
+  function compositionRefusal(code: 'dom.composition_stale' | 'dom.composition_ambiguous' | 'dom.composition_limit', window?: CompositionWindow): DomRefusal {
+    return domRefusal(code,'composition',window?.stamp ?? currentStamp);
+  }
+  function beginComposition(stamp: DeepReadonly<StampDto>, selection: DeepReadonly<SelectionDto>): CompositionWindow | DomRefusal {
+    if (destroyed) return refusal('dom.disposed');
+    if (provisional || !currentStamp || !stampSame(stamp,currentStamp)) return compositionRefusal('dom.composition_stale');
+    const window = correspondence.begin(stamp,selection); if (isDomRefusal(window)) return window;
+    const protectedSet = new Set<string>(), pending = window.entries.map(entry=>entry.id);
+    while (pending.length) {
+      const id = pending.pop()!; if (protectedSet.has(id)) continue;
+      if (protectedSet.size >= domRegionLimits.nodes) return compositionRefusal('dom.composition_limit',window);
+      const row = rows.get(id); if (!row) return compositionRefusal('dom.composition_stale',window);
+      protectedSet.add(id);
+      if (row.view.children.length > domRegionLimits.nodes-protectedSet.size-pending.length) return compositionRefusal('dom.composition_limit',window);
+      for (const child of row.view.children) pending.push(child);
+    }
+    // Ancestor membership is part of the protected actual window. Outside rows
+    // can still receive a publication when these ancestor descriptors agree.
+    let ancestor = window.entries[0].view.parent, depth = 0;
+    while (ancestor !== null) {
+      if (++depth > domRegionLimits.depth || protectedSet.size >= domRegionLimits.nodes) return compositionRefusal('dom.composition_limit',window);
+      const row = rows.get(ancestor); if (!row) return compositionRefusal('dom.composition_stale',window);
+      protectedSet.add(ancestor); ancestor = row.view.parent;
+    }
+    provisional = {stamp,ids:window.affectedNodeIds,originals:new Map(window.entries.map(entry=>[entry.id,entry.originalText])),retained:window.parent,
+      composing:false,protected:protectedSet,window:{parent:window.parent,before:window.before,after:window.after},composition:window};
+    return window;
+  }
+  function observeComposition(window: CompositionWindow): CompositionObservation | DomRefusal {
+    if (destroyed) return refusal('dom.disposed');
+    return correspondence.observe(window);
+  }
+  function captureComposition(window: CompositionWindow): RecoveryRegion | DomRefusal {
+    if (destroyed) return refusal('dom.disposed');
+    if (!correspondence.owns(window)) return compositionRefusal('dom.composition_stale',window);
+    const transfer = (): RecoveryRegion => Object.freeze({kind:'retained_dom',element:host.contains(window.parent)?window.parent:host,reason:'capture_limit',ownership:'transferred_to_host'});
+    if (unrestorableCompositions.has(window)) return transfer();
+    const result = correspondence.capture(window);
+    if (!isDomRefusal(result)) return result.region;
+    unrestorableCompositions.add(window);
+    if (provisional?.composition === window) provisional.forceTransfer = true;
+    return transfer();
+  }
+  function restoreComposition(window: CompositionWindow): DomRefusal | null {
+    if (destroyed) return refusal('dom.disposed');
+    if (provisional || !currentStamp || !correspondence.owns(window) || unrestorableCompositions.has(window)) return compositionRefusal('dom.composition_stale',window);
+    const parentId = window.entries[0].view.parent, parentRow = parentId ? rows.get(parentId) : undefined;
+    if (!parentRow || parentRow.content !== window.parent || !host.contains(window.parent)
+      || window.before && window.before.parentNode !== window.parent || window.after && window.after.parentNode !== window.parent) return compositionRefusal('dom.composition_stale',window);
+    const parentView = read(currentStamp,parentId!,'none'); if (isDomRefusal(parentView)) return parentView;
+    const first = parentView.children.indexOf(window.entries[0].id);
+    if (first < 0 || window.entries.some((entry,index)=>parentView.children[first+index] !== entry.id)) return compositionRefusal('dom.composition_stale',window);
+    // Preflight the current native affected subtrees before touching any DOM.
+    // This is a guarded row read, not a fabricated publication or root remount.
+    const candidates = new Map<string,{view:DeepReadonly<NodeViewDto>;prepared:PreparedNode}>();
+    const pending = window.entries.map(entry=>({id:entry.id,parent:parentId!,depth:0}));
+    let units = Math.max(0,window.entries.length-1);
+    while (pending.length) {
+      const item = pending.pop()!;
+      if (candidates.has(item.id) || candidates.size >= domRegionLimits.nodes || item.depth > domRegionLimits.depth) return compositionRefusal('dom.composition_limit',window);
+      const view = read(currentStamp,item.id,'none'); if (isDomRefusal(view)) return view;
+      if (view.parent !== item.parent) return compositionRefusal('dom.composition_stale',window);
+      const prepared = prepare(view,'none'); if (isDomRefusal(prepared)) return prepared;
+      const length = view.text?.length ?? (view.primitive === 'hard_break' ? 1 : 0);
+      if (length > domRegionLimits.utf16-units) return compositionRefusal('dom.composition_limit',window);
+      units += length; candidates.set(item.id,{view,prepared});
+      if (view.children.length > domRegionLimits.nodes-candidates.size-pending.length) return compositionRefusal('dom.composition_limit',window);
+      for (let i=view.children.length-1;i>=0;i--) pending.push({id:view.children[i],parent:view.id,depth:item.depth+1});
+    }
+    // Use the same bounded structural walker for the final recovery checkpoint.
+    // It may copy input whose exact semantic delta was refused, but never flatten
+    // a partial selected scene/right shell into a complete recovery claim.
+    const actual = correspondence.capture(window); if (isDomRefusal(actual)) return actual;
+    try {
+      const restored = new Map<string,Row>();
+      for (const [id,candidate] of candidates) {
+        const previous = rows.get(id);
+        // Keep the current owned wrappers for an unchanged native presentation;
+        // text reconciliation reconnects their original bounded chain.
+        const row = previous && previous.signature === signature(candidate.prepared) ? previous : createRow(candidate.view,candidate.prepared);
+        restored.set(id,row);
+      }
+      for (const [id,row] of restored) {
+        const candidate = candidates.get(id)!; row.view = candidate.view; row.prepared = candidate.prepared;
+        if (row.text && row.text.data !== candidate.view.text) row.text.data = candidate.view.text ?? '';
+      }
+      for (const row of restored.values()) reconcileChildren(row,restored);
+      const wanted = window.entries.map(entry=>restored.get(entry.id)!.outer);
+      let cursor = window.before ? window.before.nextSibling : window.parent.firstChild;
+      for (const element of wanted) {
+        if (cursor === element) cursor = cursor.nextSibling;
+        else window.parent.insertBefore(element,cursor);
+      }
+      while (cursor !== window.after) { const next = cursor!.nextSibling; window.parent.removeChild(cursor!); cursor = next; }
+      for (const [id,row] of restored) rows.set(id,row);
+      parentRow.view = parentView;
+      return null;
+    } catch { return compositionRefusal('dom.composition_ambiguous',window); }
+  }
   function provisionalRegion(): RecoveryRegion {
     const p = provisional!;
     const retained = (): RecoveryRegion => Object.freeze({ kind: 'retained_dom', element: p.retained, reason: 'capture_limit', ownership: 'transferred_to_host' });
+    if (p.forceTransfer) return retained();
+    if (p.composition) {
+      const capture = captureComposition(p.composition);
+      return isDomRefusal(capture) ? retained() : capture;
+    }
     const originals = [...p.originals.values()];
     const original = originals.join('\n');
     if (p.window) {
@@ -529,16 +657,16 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         // Build all authored DOM detached. Host is replaced only after all declarations passed.
         for (const [id, value] of admitted) if (id !== state.root) fresh.set(id, createRow(value.view, value.prepared, false, freshAuthority));
         const root = admitted.get(state.root)!;
-        const rootRow: Row = { view: root.view, prepared: root.prepared, outer: host, content: host, text: null, signature: signature(root.prepared), placeholder: null };
+        const rootRow: Row = { view: root.view, prepared: root.prepared, outer: host, content: host, wrappers:Object.freeze([]), text: null, signature: signature(root.prepared), placeholder: null };
         fresh.set(state.root, rootRow);
         for (const [id, row] of fresh) if (id !== state.root) reconcileChildren(row, fresh, freshPlaceholders);
         reconcileChildren(rootRow, fresh, freshPlaceholders);
-        freshAuthority.set(host,state.root); rows = fresh; authority = freshAuthority; placeholders = freshPlaceholders; rootId = state.root; currentStamp = state.stamp; provisional = null;
+        freshAuthority.set(host,state.root); rows = fresh; authority = freshAuthority; placeholders = freshPlaceholders; rootId = state.root; currentStamp = state.stamp; provisional = null; compositionGeneration = {};
         return restoreSelection(state.selection);
       } catch { return refusal('dom.presentation_unsupported'); }
     },
     patch, readSelection, restoreSelection, rememberSelection, ownedBlockAt, textPosition: positionAt, domPoint,
-    beginProvisional, endProvisional() { provisional = null; },
+    beginProvisional, beginComposition, observeComposition, captureComposition, restoreComposition, endProvisional() { provisional = null; },
     setComposing(active) { if (provisional) provisional.composing = active; },
     hasProvisional: () => provisional !== null,
     protectedIds: () => Object.freeze([...(provisional?.protected ?? [])]),
@@ -561,7 +689,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         // Never inspect or clear an unbounded retained provisional subtree.
         for (const row of rows.values()) if (row.view.parent === rootId && row.outer.parentNode === host) row.outer.remove();
       }
-      rows.clear(); authority = new WeakMap(); provisional = null; lastSelection = null; lastAnchor = lastFocus = null; currentStamp = null; rootId = null;
+      rows.clear(); authority = new WeakMap(); provisional = null; lastSelection = null; lastAnchor = lastFocus = null; currentStamp = null; rootId = null; compositionGeneration = {};
     }
   };
 }

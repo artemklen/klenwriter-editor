@@ -17,6 +17,7 @@ interface Configuration {
 interface Entry { readonly bookmark:SelectionBookmark; readonly serial:bigint }
 interface SubmissionFrame { readonly own:boolean; readonly eligible:boolean; readonly serial:bigint; readonly before:DeepReadonly<StampDto>|null; events:number; reentrant:boolean }
 interface PointerOwner { readonly id:number; x:number;y:number;anchor:DomPoint|null }
+type InputIntentObserver = (before:bigint,after:bigint,event:Event|null)=>void;
 /** One per mount: identity, browser correspondence and intent, never document semantics. */
 export class SelectionOwner {
   readonly api:MountedSelectionController;
@@ -24,10 +25,17 @@ export class SelectionOwner {
   #serial=0n;#focusSerial=0n;#exhausted=false;#destroyed=false;#attached=false;
   #publishing=0;#ownPermit=0;#restoreTickets=0;#frames:SubmissionFrame[]=[];#removals:(()=>void)[]=[];
   #pointer:PointerOwner|null=null;#raf:number|null=null;#tabEntry=false;#rangeWriting=0;
+  #inputIntentObserver:InputIntentObserver|null=null;
   constructor(readonly configuration:Configuration) {
     this.api=Object.freeze({captureBookmark:()=>this.captureBookmark(),restoreBookmark:(bookmark:SelectionBookmark,options?:{readonly policy?:'exact'|'mapped';readonly focus?:boolean})=>this.restoreBookmark(bookmark,options),releaseBookmark:(bookmark:SelectionBookmark)=>this.releaseBookmark(bookmark)});
   }
   intent():bigint { return this.#serial; }
+  intentAvailable():boolean { return !this.#exhausted && !this.#destroyed; }
+  observeInputIntent(observer:InputIntentObserver):()=>void {
+    if(this.#inputIntentObserver)throw new Error('One input intent observer per selection owner');
+    this.#inputIntentObserver=observer;
+    return ()=>{if(this.#inputIntentObserver===observer)this.#inputIntentObserver=null;};
+  }
   listeners():number { return this.#removals.length; }
   resources():SelectionResourceCounts { return Object.freeze({bookmarks:this.#live.size,restoreTickets:this.#restoreTickets,activePointers:this.#pointer?1:0,animationFrames:this.#raf===null?0:1}); }
   isPublishing():boolean { return this.#publishing>0; }
@@ -36,9 +44,11 @@ export class SelectionOwner {
   #fromView(failure:DomRefusal):DomRefusal {const value={...failure,diagnostic:{...failure.diagnostic,phase:'selection' as const}};this.configuration.report(value);return value;}
   #refuse(code:DomRefusal['diagnostic']['code']):DomRefusal { const failure=this.#failure(code);this.configuration.report(failure);return failure; }
   #guard():DomRefusal|null { if(this.#destroyed)return this.#failure('dom.disposed');if(this.#exhausted)return this.#failure('dom.selection_limit');return this.configuration.guard() ?? (this.#restoreTickets || this.configuration.busy()?this.#failure('dom.busy'):null); }
-  invalidate(clear=false):void {
+  invalidate(clear=false,event:Event|null=null):void {
+    const before=this.#serial;
     if(this.#serial===MAX_SERIAL)this.#exhausted=true;else this.#serial++;
     if(clear){for(const bookmark of this.#live)this.#entries.delete(bookmark);this.#live.clear();}
+    this.#inputIntentObserver?.(before,this.#serial,event);
   }
   #focusChanged():void {if(this.#focusSerial===MAX_SERIAL)this.#exhausted=true;else this.#focusSerial++;}
   cancel():void {
@@ -154,17 +164,17 @@ export class SelectionOwner {
       this.#tabEntry=key.key==='Tab' && !key.altKey && !key.ctrlKey && !key.metaKey && !owned(key.target);
       if(!owned(key.target))return;
       if((key.metaKey||key.ctrlKey) && !key.altKey && key.key.toLowerCase()==='a'){
-        if(this.#guard())return;key.preventDefault();this.invalidate();this.cancel();const state=this.#state();if('status' in state)return;
+        if(this.#guard())return;key.preventDefault();this.invalidate(false,key);this.cancel();const state=this.#state();if('status' in state)return;
         const root=this.configuration.read({kind:'node',stamp:state.stamp as StampDto,node:state.root});
         if(root.status!=='ok' || root.value.kind!=='node')return;
         this.#publish({anchor:{kind:'child',parent:state.root,index:0,affinity:'after'},focus:{kind:'child',parent:state.root,index:root.value.node.children.length,affinity:'after'}});return;
       }
-      if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown','Backspace','Delete','Enter','Escape'].includes(key.key)){this.invalidate();this.cancel();}
+      if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown','Backspace','Delete','Enter','Escape'].includes(key.key)){this.invalidate(false,key);this.cancel();}
     });
     listen(doc,'keyup',event=>{if((event as KeyboardEvent).key==='Tab')this.#tabEntry=false;});
     listen(doc,'pointerdown',event=>{
       const pointer=event as PointerEvent;this.#tabEntry=false;this.#focusChanged();
-      this.cancel();if(!owned(pointer.target))return;this.invalidate();
+      this.cancel();if(!owned(pointer.target))return;this.invalidate(false,pointer);
       if(pointer.button===0 && pointer.isPrimary && pointer.pointerType==='mouse' && !this.#guard())this.#pointer={id:pointer.pointerId,x:pointer.clientX,y:pointer.clientY,anchor:null};
     });
     listen(doc,'mousedown',event=>{

@@ -1,6 +1,7 @@
 import http from 'node:http';
 import { createHash } from 'node:crypto';
 import { readFile, readdir } from 'node:fs/promises';
+import { loadCompositionContract } from './composition-contract-data.mjs';
 
 // Build smoke fixture only; an exact allowlist avoids exposing the checkout.
 const root = new URL('../', import.meta.url);
@@ -19,6 +20,10 @@ const routes = new Map([
   ['/selection-host.js', ['spikes/workspace/selection-host.js', 'text/javascript']],
   ['/selection-native-host.js', ['spikes/workspace/selection-native-host.js', 'text/javascript']],
   ['/selection.css', ['spikes/workspace/selection.css', 'text/css']],
+  ['/composition', ['spikes/workspace/composition.html', 'text/html']],
+  ['/composition-host.js', ['spikes/workspace/composition-host.js', 'text/javascript']],
+  ['/composition-native-host.js', ['spikes/workspace/composition-native-host.js', 'text/javascript']],
+  ['/composition.css', ['spikes/workspace/composition.css', 'text/css']],
   ['/fixture-fonts/osr40-jetbrains-mono-regular.ttf', ['tests/fixtures/fonts/JetBrainsMono-Regular.ttf', 'font/ttf']],
   ['/notes-dom.mjs', ['examples/notes-extension/dom.mjs', 'text/javascript']],
   ['/dom-inventory.mjs', ['examples/notes-extension/dom-inventory.mjs', 'text/javascript']],
@@ -44,7 +49,7 @@ for (const name of ['wasm', 'sdk', 'kwdj', 'dom']) {
 }
 // Import maps are static, hash-authorized data. No unsafe-inline/eval or source rewriting.
 const mapHashes = [];
-for (const page of ['sdk-host.html', 'dom-host.html', 'selection.html']) {
+for (const page of ['sdk-host.html', 'dom-host.html', 'selection.html', 'composition.html']) {
   const html = await readFile(new URL(`spikes/workspace/${page}`, root), 'utf8');
   const maps = [...html.matchAll(/<script type="importmap">([^<]+)<\/script>/g)];
   if (maps.length !== 1) throw new Error(`One static import map required: ${page}`);
@@ -61,6 +66,14 @@ for (const name of ['acceptance-oracles.v3.json','manifest.json']) routes.set(`/
 for (const name of ['manifest','bookmark-oracles','native-oracles','formatting-oracles','clipboard-oracles','unicode-oracles','scroll-oracles']) {
   routes.set(`/selection-contract/${name}.json`, [`contracts/selection/v1/${name}.json`, 'application/json']);
 }
+// The DOM fixture includes only the separately pinned authoring correction.
+// Request input cannot select a source file or change the resolved contract.
+const compositionContract = loadCompositionContract();
+const compositionJsonRoutes = new Map([
+  ['/composition-contract/dom-oracles.json', JSON.stringify(compositionContract.dom)],
+  ['/composition-contract/native-oracles.json', JSON.stringify(compositionContract.native)],
+  ['/composition-contract/event-oracles.json', JSON.stringify(compositionContract.events)],
+]);
 http.createServer(async (req, res) => {
   const path = new URL(req.url, 'http://localhost').pathname;
   res.setHeader('Cache-Control', 'no-store');
@@ -73,6 +86,12 @@ http.createServer(async (req, res) => {
   if (path === '/') {
     res.setHeader('Content-Type', 'text/html');
     res.end('<!doctype html><html lang="en"><title>Workspace build smoke</title><link rel="stylesheet" href="/style.css"><main class="editor-surface">Build smoke; no editor.</main></html>');
+    return;
+  }
+  const compositionJson = compositionJsonRoutes.get(path);
+  if (compositionJson !== undefined) {
+    res.setHeader('Content-Type', 'application/json');
+    res.end(compositionJson);
     return;
   }
   const route = routes.get(path);

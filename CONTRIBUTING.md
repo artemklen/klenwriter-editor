@@ -2,8 +2,10 @@
 
 Это библиотека с headless Session SDK и [basic mounted DOM adapter](docs/dom.md).
 [Mounted selection](docs/selection.md), bookmarks, edge autoscroll и минимальные
-plaintext copy/cut реализованы поверх SDK2. Полные IME41, clipboard47, UI66 и
-vanilla alpha остаются отдельными задачами и acceptance gates.
+plaintext copy/cut реализованы поверх SDK2. [Composition41](docs/composition.md)
+добавляет bounded settlement и retained recovery; новая browser/installed
+приёмка ещё не выполнена. Clipboard47, UI66 и vanilla alpha сохраняют отдельные
+задачи и acceptance gates.
 Следуйте [архитектуре](docs/m0/architecture.md)
 и контракту задачи Linear. Реализуйте общую семантику на Rust; KWDJ остаётся отдельным
 профилем. CMS, DB, Angular и browser runtime не входят в native core/profile closure.
@@ -136,6 +138,17 @@ SDK/platform tests явно отделены от настоящих Rust/WASM/b
 [DOM guide](docs/dom.md#installed-native-input-на-macos) остаются foundation,
 а не доказательством новых selection40 сценариев. До фактического выполнения
 протокола никакой native40 pass не подразумевается.
+
+`npm run test:composition` после coherent build объединяет pinned contract/data
+check, actual native/sealed-WASM comparator, отдельно помеченные controlled Node
+owner/transport suites и mounted browser cases. Отдельные команды —
+`check:composition-contract`, `test:composition:native`, `test:composition:unit`
+и `test:composition:browser`. Lane входит в `npm run check`; физический installed
+протокол автоматически не запускается. [Composition guide](docs/composition.md)
+описывает original native ticket, exactly-once history, recovery ownership,
+границы и отдельные 24 Chrome/Safari EN/RU/dead-key rows. Frozen v1 сохраняется;
+resolved DOM data применяет только явно pinned authoring erratum 001. Наличие
+реализации/протокола не является browser/native acceptance PASS.
 
 `npm run fuzz:bounded` (четыре 60-секундных libFuzzer-таргета, лимит job 20 минут)
 выполняет coverage-guided fuzz lane OSR-38 AC3 после `npm run build`:

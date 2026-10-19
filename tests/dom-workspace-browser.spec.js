@@ -258,19 +258,26 @@ test('ordinary EN typing and engine-specific RU insertion preserve exact scalars
   await page.keyboard.type('Az');const en=await checkpoint(page,id,'ordinary keyboard EN');expect(stateRow(en,'/0/2').text).toBe('\u00a0ZAz');expect(docEvents(en)).toHaveLength(2);caret(en,stateRow(en,'/0/2').id,4);
   await page.keyboard.insertText('я');
   const trace=await page.locator(`#${id}`).evaluate(element=>element.typingTrace);observations.get(page).typingTrace=trace;
-  const p=await checkpoint(page,id,'engine-specific RU insertText');
   if(browserName==='firefox') {
-    // Actual Playwright Firefox insertText uses composition. OSR-39 preserves
-    // that unresolved region; exactly-once native settlement belongs to OSR-41.
+    // Firefox insertText uses its real composition event path. OSR-41 now
+    // settles it; this automated insertion remains distinct from OS IME input.
     expect(trace.some(event=>event.type==='compositionstart')).toBe(true);expect(trace.some(event=>event.type==='compositionend')).toBe(true);
-    expect(p.lifecycle).toBe('recoveryRequired');expect(p.state).toEqual(en.state);expect(p.canonical).toBe(en.canonical);expect(docEvents(p)).toHaveLength(2);
-    expect(p.domText).toBe('А😀 e\u0301\u00a0ZAzяБета');expect(p.failures.some(failure=>failure.diagnostic.code==='dom.composition_conflict')).toBe(true);
-    const disposed=await call(page,'dispose',id);observations.get(page).typingRecovery=disposed;
-    expect(disposed.receipt.recovery.region).toMatchObject({kind:'bounded',originalText:'А😀 e\u0301\u00a0ZAz',provisionalText:'А😀 e\u0301\u00a0ZAzя'});expect(disposed.recoveries).toHaveLength(1);
   } else {
-    expect(trace.some(event=>event.type==='compositionstart')).toBe(false);expect(p.lifecycle).toBe('ready');
-    expect(stateRow(p,'/0/2').text).toBe('\u00a0ZAzя');expect(docEvents(p)).toHaveLength(3);caret(p,stateRow(p,'/0/2').id,5);expect(await call(page,'nativeSelectionMatches',id,'/0/2',5)).toBe(true);
+    expect(trace.some(event=>event.type==='compositionstart')).toBe(false);
   }
+  await expect.poll(async()=>(await call(page,'inspect',id)).state.stamp.revision,{timeout:2000}).toBe('3');
+  const p=await checkpoint(page,id,'engine-specific RU insertText settled');expect(p.lifecycle).toBe('ready');expect(p.failures).toEqual([]);
+  expect(p.state.stamp).toMatchObject({revision:'3',selection_epoch:'4',history_epoch:'3'});
+  expect(stateRow(p,'/0/2').text).toBe('\u00a0ZAzя');expect(p.canonical).toBe(literal('D0').replace('\u00a0Z','\u00a0ZAzя'));expect(p.domText).toBe('А😀 e\u0301\u00a0ZAzяБета');
+  expect(docEvents(p)).toHaveLength(3);history(p,3,0);caret(p,stateRow(p,'/0/2').id,5);expect(await call(page,'nativeSelectionMatches',id,'/0/2',5)).toBe(true);
+  const semanticRows=(point,revision)=>point.rows.map(({path,node})=>{
+    // History restores content and identity while native counters stay monotonic.
+    expect(node.stamp).toEqual(point.state.stamp);expect(node.changed_revision).toBe(['','/0','/0/2'].includes(path)?revision:'0');
+    const {stamp,changed_revision,...semantic}=node;return {path,node:semantic};
+  });
+  expect((await call(page,'history',id,'undo')).response.status).toBe('ok');const undone=await checkpoint(page,id,'RU insertion one-unit undo');expect(undone.canonical).toBe(en.canonical);expect(undone.state.stamp).toEqual({...p.state.stamp,revision:'4',selection_epoch:'5',history_epoch:'4'});expect(semanticRows(undone,'4')).toEqual(semanticRows(en,'2'));expect(undone.state.selection).toEqual(en.state.selection);history(undone,2,1);
+  expect((await call(page,'history',id,'redo')).response.status).toBe('ok');const redone=await checkpoint(page,id,'RU insertion exact redo');expect(redone.canonical).toBe(p.canonical);expect(redone.state.stamp).toEqual({...p.state.stamp,revision:'5',selection_epoch:'6',history_epoch:'5'});expect(semanticRows(redone,'5')).toEqual(semanticRows(p,'3'));history(redone,3,0);caret(redone,stateRow(redone,'/0/2').id,5);
+  const disposed=await call(page,'dispose',id);observations.get(page).typingRecovery=disposed;expect(disposed.receipt.recovery).toBeNull();expect(disposed.recoveries).toHaveLength(0);
 });
 
 test('noncancelable basic RU/EN text uses native command and preserves exact scalars',async({page})=>{

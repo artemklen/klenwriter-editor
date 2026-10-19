@@ -1,4 +1,4 @@
-# DOM renderer и mounted SDK · OSR-39/40
+# DOM renderer и mounted SDK · OSR-39/40/41
 
 `@klenwriter/editor-dom` создаёт одну редактируемую поверхность вокруг существующего
 headless SDK2. Rust определяет документ, selection, IDs, команды, normalization и
@@ -9,6 +9,9 @@ Selection/bookmarks, bounded edge autoscroll и минимальные plaintext
 описаны в [практическом руководстве](selection.md); их additive контракт —
 [contracts/selection/v1](../contracts/selection/v1/README.md). Frozen basic39
 контракт и его literals сохраняются.
+
+[Composition owner](composition.md) добавляет bounded IME settlement и lossless
+recovery; его новый browser/installed acceptance пока остаётся pending.
 
 ## Подключение
 
@@ -118,8 +121,11 @@ owned keyboard/pointer selection, явные bookmarks и bidirectional edge aut
 
 Активный composing subtree защищён. Совместимое редактирование другой области
 проверяет, что защищённые objects/rows не меняются; конфликт явно отказывается.
-После compositionend не выполняется предполагаемое settlement: unresolved input
-сохраняется для восстановления. Полный exactly-once IME controller — OSR-41.
+В исходном basic39 unresolved input после compositionend сохранялся без settlement.
+OSR-41 добавляет [composition owner](composition.md): bounded stable observation,
+один existing native InsertText с isolated history, duplicate/tail guards и
+явное retained recovery. Новый протокол не превращает end.data в authority и не
+утверждает уже выполненную browser/installed приёмку.
 
 `destroy()` сначала сохраняет bounded original/provisional input либо actual DOM
 reference при overflow, блокирует мутации и возвращает typed receipt с настоящим
@@ -157,15 +163,19 @@ DOM selection, IDs и resources в artifacts/dom. Это измерения auto
 Installed Chrome/Safari RU/EN input и keyboard/focus имеют отдельные traces и
 точные версии; WebKit не доказывает Safari. Firefox experimental, ошибки harness
 не превращаются в skip. Playwright Firefox `keyboard.insertText('я')` в измеренном
-engine проходит через composition events: basic39 сохраняет этот символ в
-provisional DOM и recovery receipt, оставляя committed state неизменным до OSR-41.
-Это отдельный preservation oracle, а не proof ordinary RU commit или IME settlement.
+engine проходил через composition events: historical basic39 сохранял этот символ
+в provisional DOM и recovery receipt, оставляя committed state неизменным.
+Этот historical preservation oracle не доказывает ordinary RU commit или новое
+IME settlement41; исходные expectations и observation сохраняют свой scope.
 Fixture CSP разрешает только точный local `/favicon.ico` с ответом204 для
 автоматического запроса браузера; default/script/style ограничения и проверка
 отсутствия CSP violations сохраняются. `npm run test:selection` добавляет отдельные
 native/WASM, controlled controller/platform и mounted selection cases; наличие
-реализации не заменяет фактическое acceptance evidence. Полные IME/clipboard/domain/
-security/alpha acceptance остаются соответствующим OSR-41/47/50/67/65. CI остаётся build-only;
+реализации не заменяет фактическое acceptance evidence. `npm run test:composition`
+добавляет отдельные native/WASM, controlled owner/transport и mounted composition
+lanes; новый installed41 протокол и статус описаны в [composition guide](composition.md).
+IME41/clipboard47/domain50/security67/alpha65 сохраняют соответствующие acceptance
+gates. CI остаётся build-only;
 обязательные проверки выполняются локально на точной поставляемой ревизии.
 
 ### Installed native input на macOS

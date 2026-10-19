@@ -1,0 +1,7 @@
+/* Closed acceptance fixture, not product styling. */
+html, body { margin: 0; padding: 0; }
+body { width: 1024px; min-height: 768px; }
+#composition-host-control { position: absolute; left: 760px; top: 16px; }
+#composition-status { position: absolute; left: 760px; top: 64px; width: 240px; }
+.composition-example { position: absolute; left: 24px; top: 96px; width: 680px; padding: 8px; }
+.composition-example p, .composition-example h3 { margin: 0 0 12px; }
