@@ -137,6 +137,17 @@ SDK/platform tests явно отделены от настоящих Rust/WASM/b
 а не доказательством новых selection40 сценариев. До фактического выполнения
 протокола никакой native40 pass не подразумевается.
 
+`npm run fuzz:bounded` (четыре 60-секундных libFuzzer-таргета, лимит job 20 минут)
+выполняет coverage-guided fuzz lane OSR-38 AC3 после `npm run build`:
+отдельный `tests/fixtures/fuzz-native` workspace на pinned
+`nightly-2026-10-17` + `cargo-fuzz 0.13.2`/`libfuzzer-sys 0.4.13` (ставятся в
+`.tools`), explicit locked fetch → offline build, corpus regression replay и
+replay сохранённых байт через actual packaged WASM/SDK под внешним process
+watchdog. `npm run fuzz:long` (4×900 секунд, лимит 90 минут) — отдельный
+долгий прогон той же lane; его фактическое завершение обязательно для
+long-конфигурации, настроенный schedule сам по себе evidence не является.
+[Контракт и границы](docs/reliability-fuzz.md).
+
 ## Артефакты и ограничения
 
 `artifacts/dependencies.json` содержит зафиксированные direct/transitive версии,

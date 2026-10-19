@@ -13,7 +13,7 @@ import { inventory as dependencyInventory } from './dependency-inventory.mjs';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const fixture = 'tests/fixtures/reliability-native/Cargo.toml';
 const MAX_COMMAND_EVIDENCE = 64 * 1024 * 1024;
-const suites = ['model', 'shrink', 'performance', 'sdk'].map(name => `tests/reliability-${name}.node.mjs`);
+const suites = ['model', 'shrink', 'performance', 'sdk', 'fuzz-replay'].map(name => `tests/reliability-${name}.node.mjs`);
 const ownInputs = ['scripts/reliability/check.mjs', 'docs/reliability.md', '.node-version', 'package.json', 'package-lock.json',
   'scripts/reliability/dependency-inventory.mjs', 'scripts/dependency-notices.mjs', 'evidence/osr-38/native-tooling.md',
   'scripts/reliability/sdk-replay-child.mjs', 'docs/reliability-sdk.md',

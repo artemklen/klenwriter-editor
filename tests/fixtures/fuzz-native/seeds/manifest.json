@@ -1,0 +1,158 @@
+{
+  "format": "editor-reliability-fuzz-seeds/1",
+  "generator": "scripts/reliability/fuzz-seeds.mjs",
+  "families": {
+    "admission_options": 10,
+    "bridge_lifecycle_facts_stale_tokens": 4,
+    "positions_maps_state_history_events": 8,
+    "registry_grammar_attrs_recipes": 5
+  },
+  "seeds": 27,
+  "totalBytes": 26473,
+  "qualification": "Committed deterministic seeds anchor admission/refusal, descriptor compilation, deep stateful opcodes and the public bridge envelope for every context. They are inputs, not observed runtime outcomes.",
+  "files": {
+    "admission_options": [
+      {
+        "path": "admission_options/0-0-kwdj-prose.seed",
+        "bytes": 143,
+        "sha256": "b11b36b744df906912bd6943a4fea333ed3b57cbcb21d863b2ec4684532b1110"
+      },
+      {
+        "path": "admission_options/0-1-kwdj-prose.seed",
+        "bytes": 152,
+        "sha256": "71f90ee54cb3e74048996e77a931801241f6014f6864feedebfa06ed035c3952"
+      },
+      {
+        "path": "admission_options/1-0-kwdj-poetry.seed",
+        "bytes": 144,
+        "sha256": "597806e638fb2350754ef0206026514420bfdffa3939fc8ce65bfcaad44f126c"
+      },
+      {
+        "path": "admission_options/1-1-kwdj-poetry.seed",
+        "bytes": 153,
+        "sha256": "8fb491edbdb1ed23b34a2045bb675800bdeda43151a39d7190d88b202e1e3d4f"
+      },
+      {
+        "path": "admission_options/2-0-notes-d0.seed",
+        "bytes": 336,
+        "sha256": "fdb54351dfa9ffbc93ee9b145607c59e584fec9fa9130e358b8dc54c707d1615"
+      },
+      {
+        "path": "admission_options/2-1-notes-d0.seed",
+        "bytes": 345,
+        "sha256": "9da6e74d3a1bbb0fdbc90bb896b12b8692b3a837b79227788d18d8ac1c88a13c"
+      },
+      {
+        "path": "admission_options/3-0-notes-d1.seed",
+        "bytes": 398,
+        "sha256": "7b2d00b1b6171b202842989e4d1249c1f3b47af5162d09e2066196a4a192aedf"
+      },
+      {
+        "path": "admission_options/3-1-notes-d1.seed",
+        "bytes": 407,
+        "sha256": "cf7231d494905772f3bbf9a233c190bcb07b7a89eac1d7e7baaaefe88945cedb"
+      },
+      {
+        "path": "admission_options/refusal-kwdj-malformed.seed",
+        "bytes": 2,
+        "sha256": "a3ae56bff4748ead212a8a8917fce300e25dc7a7bf377bc00de81ccf148a6922"
+      },
+      {
+        "path": "admission_options/refusal-notes-empty.seed",
+        "bytes": 1,
+        "sha256": "dbc1b4c900ffe48d575b5da5c638040125f65db0fe3e24494b76ea986457d986"
+      }
+    ],
+    "bridge_lifecycle_facts_stale_tokens": [
+      {
+        "path": "bridge_lifecycle_facts_stale_tokens/0-kwdj-prose.seed",
+        "bytes": 2416,
+        "sha256": "1d7fccb823515386fae0e25847b88127d37729db952f026516476a63d141c68b"
+      },
+      {
+        "path": "bridge_lifecycle_facts_stale_tokens/1-kwdj-poetry.seed",
+        "bytes": 2417,
+        "sha256": "d83e42ee86c6b2ff0105fad7192aedcbee6a112a43e161acd42911c1fc5a728b"
+      },
+      {
+        "path": "bridge_lifecycle_facts_stale_tokens/2-notes-d0.seed",
+        "bytes": 1589,
+        "sha256": "55b0ea8f8ab1f002aadba9d56ea49c1bb674ab0c8bbd9d5e630139b838b09479"
+      },
+      {
+        "path": "bridge_lifecycle_facts_stale_tokens/3-notes-d1.seed",
+        "bytes": 9372,
+        "sha256": "ead0cb076a6b60d1eee6e66b47b06142843d4f477d5f1a79b01bcd4a0ff81b43"
+      }
+    ],
+    "positions_maps_state_history_events": [
+      {
+        "path": "positions_maps_state_history_events/0-0-kwdj-prose.seed",
+        "bytes": 9,
+        "sha256": "cae07025c35eeda641aa16320675bad4568e36f6a36083b2e239fdecca182f68"
+      },
+      {
+        "path": "positions_maps_state_history_events/0-1-kwdj-prose.seed",
+        "bytes": 9,
+        "sha256": "0bc9287e7639ca76c43b89c97000b45b36488b8150e791a6803ffcd3a6b2f948"
+      },
+      {
+        "path": "positions_maps_state_history_events/1-0-kwdj-poetry.seed",
+        "bytes": 9,
+        "sha256": "92edff234eb4ddf99e5437219d27cb52efb0f8abffccdd981a5b602cf3fd44f2"
+      },
+      {
+        "path": "positions_maps_state_history_events/1-1-kwdj-poetry.seed",
+        "bytes": 9,
+        "sha256": "61204aef430d08c6778bf3f59a0e5fa4732c74b32ecbacdbd11a557389701f7b"
+      },
+      {
+        "path": "positions_maps_state_history_events/2-0-notes-d0.seed",
+        "bytes": 9,
+        "sha256": "32f4aaa5d119542792ca4420b36351aadf8926aee856fcafe123299d684374b3"
+      },
+      {
+        "path": "positions_maps_state_history_events/2-1-notes-d0.seed",
+        "bytes": 9,
+        "sha256": "5b3ff354eb152ba2745a06937bd841e94dcf8b6eff3a25cffd95124dd1e641d3"
+      },
+      {
+        "path": "positions_maps_state_history_events/3-0-notes-d1.seed",
+        "bytes": 9,
+        "sha256": "f79bd99195d2fa28a948c8e7f8f2c1345b003abfd589da725711c12ee6ff8e55"
+      },
+      {
+        "path": "positions_maps_state_history_events/3-1-notes-d1.seed",
+        "bytes": 9,
+        "sha256": "517ab1c98d22079de0aa5ae88441220e7158ae5de9f74650568f38bc13e7a711"
+      }
+    ],
+    "registry_grammar_attrs_recipes": [
+      {
+        "path": "registry_grammar_attrs_recipes/self-contained.seed",
+        "bytes": 715,
+        "sha256": "212d4fa15ed56026db1415e451b8f166c21c6c87f4e303e2c358083d77581319"
+      },
+      {
+        "path": "registry_grammar_attrs_recipes/kwdj-base.seed",
+        "bytes": 1095,
+        "sha256": "7c45b45ec8cf9d86867978319f0b51ea918e34aab4da0e6340c77eb7959406b1"
+      },
+      {
+        "path": "registry_grammar_attrs_recipes/notes-d0.seed",
+        "bytes": 397,
+        "sha256": "96758c6f9b60282947953ea10e17004467e736e97ee0123e60106d57b413764a"
+      },
+      {
+        "path": "registry_grammar_attrs_recipes/notes-d1.seed",
+        "bytes": 6318,
+        "sha256": "15221d69bcd7dd1a504f3f7050ddca34404166b4c42dab43045d19e4e5958776"
+      },
+      {
+        "path": "registry_grammar_attrs_recipes/malformed.seed",
+        "bytes": 1,
+        "sha256": "021fb596db81e6d02bf3d2586ee3981fe519f275c0ac9ca76bbcf2ebb4097d96"
+      }
+    ]
+  }
+}

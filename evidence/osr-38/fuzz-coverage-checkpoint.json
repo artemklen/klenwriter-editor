@@ -1,0 +1,177 @@
+{
+  "format": "osr-38-fuzz-coverage-checkpoint/1",
+  "recordedAt": "2026-10-19T14:56:43+03:00",
+  "scope": "Execution of the previously stopped AC3 coverage-guided fuzz block (first item of owner-acceptance-exception.md) as a separate PR. AC4 remains inconclusive under the recorded exception; nothing here reopens it.",
+  "branch": "osr-38-ac3",
+  "baseCommit": "b9e2790e472a5c3c567b50140d679969b460ed87",
+  "lane": "node scripts/reliability/fuzz.mjs bounded|long (contract: docs/reliability-fuzz.md; committed seeds: tests/fixtures/fuzz-native/seeds with manifest)",
+  "toolchain": {
+    "nightly": "nightly-2026-10-17 (rustc 1.101.0-nightly, commit 5d8fec0669a64607db9ccbf663e7c23125bf4748)",
+    "cargoFuzz": "0.13.2 installed into gitignored .tools (MIT OR Apache-2.0)",
+    "libfuzzerSys": "=0.4.13 ((MIT OR Apache-2.0) AND NCSA; notice tests/fixtures/fuzz-native/NOTICE.md), isolated tests/fixtures/fuzz-native lock; production/root and reliability-native locks contain no fuzz tooling",
+    "host": "aarch64-apple-darwin, Darwin 27.0.0; cargo-fuzz default address-sanitizer build; detect_leaks=0 because LSan is unsupported on this host and the 2GiB RSS cap owns the memory bound",
+    "node": "24.22.0"
+  },
+  "runs": {
+    "bounded": {
+      "runId": "7f0867cb-7801-459c-91a9-8dec7cd704c2",
+      "startedAt": "2026-10-19T10:51:12.453Z",
+      "completedAt": "2026-10-19T10:55:31.875Z",
+      "status": "passed",
+      "perTarget": {
+        "admission_options": {
+          "executedUnits": 91877,
+          "coverage": 9927,
+          "features": 26588,
+          "peakRssMb": 543,
+          "crashCases": 0,
+          "corpusFiles": 1275,
+          "corpusBytes": 535686
+        },
+        "registry_grammar_attrs_recipes": {
+          "executedUnits": 368669,
+          "coverage": 4388,
+          "features": 15069,
+          "peakRssMb": 659,
+          "crashCases": 0,
+          "corpusFiles": 1929,
+          "corpusBytes": 3781028
+        },
+        "positions_maps_state_history_events": {
+          "executedUnits": 5786,
+          "coverage": 16124,
+          "features": 75445,
+          "peakRssMb": 650,
+          "crashCases": 0,
+          "corpusFiles": 1258,
+          "corpusBytes": 72915
+        },
+        "bridge_lifecycle_facts_stale_tokens": {
+          "executedUnits": 301569,
+          "coverage": 25906,
+          "features": 52760,
+          "peakRssMb": 629,
+          "crashCases": 0,
+          "corpusFiles": 1760,
+          "corpusBytes": 5435603
+        }
+      },
+      "nativeCorpusReplayFiles": {
+        "admission_options": 1285,
+        "registry_grammar_attrs_recipes": 1934,
+        "positions_maps_state_history_events": 1266,
+        "bridge_lifecycle_facts_stale_tokens": 1764
+      },
+      "wasmReplay": {
+        "admission": {
+          "tasks": 266,
+          "agreed": 147,
+          "ambiguous": 0,
+          "skippedNonUtf8": 119,
+          "refused": 137,
+          "admitted": 10,
+          "seeds": 10,
+          "corpusFiles": 256
+        },
+        "bridge": {
+          "tasks": 260,
+          "envelopeNonAdmission": 113,
+          "admitted": 18,
+          "refusedInitialization": 129,
+          "replies": 562,
+          "seeds": 4,
+          "corpusFiles": 256
+        }
+      },
+      "report": "artifacts/reliability/fuzz/bounded-report.json"
+    },
+    "long": {
+      "runId": "b66056ed-2b7f-4052-81a8-0b950116a27a",
+      "startedAt": "2026-10-19T10:55:31.907Z",
+      "completedAt": "2026-10-19T11:56:00.453Z",
+      "status": "passed",
+      "perTarget": {
+        "admission_options": {
+          "executedUnits": 1608515,
+          "coverage": 10566,
+          "features": 32472,
+          "peakRssMb": 599,
+          "crashCases": 0,
+          "corpusFiles": 3763,
+          "corpusBytes": 2545673
+        },
+        "registry_grammar_attrs_recipes": {
+          "executedUnits": 5477689,
+          "coverage": 5036,
+          "features": 18738,
+          "peakRssMb": 748,
+          "crashCases": 0,
+          "corpusFiles": 3992,
+          "corpusBytes": 7335996
+        },
+        "positions_maps_state_history_events": {
+          "executedUnits": 77491,
+          "coverage": 16146,
+          "features": 77861,
+          "peakRssMb": 723,
+          "crashCases": 0,
+          "corpusFiles": 1748,
+          "corpusBytes": 125601
+        },
+        "bridge_lifecycle_facts_stale_tokens": {
+          "executedUnits": 4764051,
+          "coverage": 27819,
+          "features": 61520,
+          "peakRssMb": 769,
+          "crashCases": 0,
+          "corpusFiles": 4218,
+          "corpusBytes": 11022840
+        }
+      },
+      "nativeCorpusReplayFiles": {
+        "admission_options": 3773,
+        "registry_grammar_attrs_recipes": 3997,
+        "positions_maps_state_history_events": 1756,
+        "bridge_lifecycle_facts_stale_tokens": 4222
+      },
+      "wasmReplay": {
+        "admission": {
+          "tasks": 266,
+          "agreed": 213,
+          "ambiguous": 1,
+          "skippedNonUtf8": 52,
+          "refused": 205,
+          "admitted": 9,
+          "seeds": 10,
+          "corpusFiles": 256
+        },
+        "bridge": {
+          "tasks": 260,
+          "envelopeNonAdmission": 104,
+          "admitted": 24,
+          "refusedInitialization": 132,
+          "replies": 605,
+          "seeds": 4,
+          "corpusFiles": 256
+        }
+      },
+      "report": "artifacts/reliability/fuzz/long-report.json"
+    }
+  },
+  "outcome": {
+    "boundedFour60s": "passed",
+    "longFour900s": "passed",
+    "crashesTrapsTimeoutsOom": 0,
+    "phaseReachability": "seed-anchored and corpus-replayed for every context: admission admit+canonical export+cleanup; registry compile attempt+success; stateful plan/publish+history+late refusal+normalization+cleanup; bridge admission+publish+history+snapshot+events+cleanup",
+    "wasmDifferential": "packaged SDK admission verdicts agreed on every native-unambiguous file (bounded agreed 147, ambiguous 0; long agreed 213, ambiguous 1; 0 mismatches). Each packaged replay included every committed seed (admission 10, bridge 4) plus 256 non-seed corpus files. Bridge request strings replayed through the actual V2 Session (bounded 562 replies, long 605 replies, no Fatal, no uncaught exception)."
+  },
+  "qualifications": [
+    "Registry and stateful opcode families are native-public lanes and replay natively in full. Packaged-WASM replay covers admission and bridge: every committed seed plus at most 256 sorted non-seed corpus files per family.",
+    "Non-UTF-8 admission payloads are counted skips, not passes: the JS admission input is a string byte domain.",
+    "Admission replay checks UTF-8 and then passes the original payload bytes, including a leading BOM. Invalid UTF-8 stays a counted skip. The BOM regression is tests/reliability-fuzz-replay.node.mjs.",
+    "The 20-minute and 90-minute caps bound the whole invocation. These two runs finished inside those caps: bounded about 4.3 minutes, long about 60.5 minutes.",
+    "No crash artifact was produced in either configuration, so the minimize subcommand is shipped machinery without an exercised receipt in these runs.",
+    "Shrinker/recorder verification with the deliberately faulty test-only model remains the ordinary tests/reliability-shrink.node.mjs lane, unchanged.",
+    "This checkpoint makes no performance, renderer, release-gate (OSR-71/OSR-80), floor or AC4 claim."
+  ]
+}
