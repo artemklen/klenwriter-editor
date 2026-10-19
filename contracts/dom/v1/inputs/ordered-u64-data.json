@@ -1,0 +1,29 @@
+{
+  "schema": "klenwriter.document",
+  "schema_version": 1,
+  "profile": "prose",
+  "content": [
+    {
+      "type": "ordered_list",
+      "attrs": {
+        "start": 9007199254740993
+      },
+      "content": [
+        {
+          "type": "list_item",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Exact start"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

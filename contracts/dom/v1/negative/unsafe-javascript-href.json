@@ -1,0 +1,24 @@
+{
+  "schema": "klenwriter.document",
+  "schema_version": 1,
+  "profile": "prose",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Link",
+          "marks": [
+            {
+              "type": "link",
+              "attrs": {
+                "href": "javascript:alert(1)"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "klenwriter.document",
+  "schema_version": 1,
+  "profile": "prose",
+  "content": [
+    {
+      "type": "scene_break",
+      "onerror": "alert(1)"
+    }
+  ]
+}

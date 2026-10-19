@@ -1,0 +1,25 @@
+{
+  "schema": "klenwriter.document",
+  "schema_version": 1,
+  "profile": "prose",
+  "content": [
+    {
+      "type": "paragraph",
+      "attrs": {
+        "align": "right",
+        "first_line_indent": true
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "a😀b",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

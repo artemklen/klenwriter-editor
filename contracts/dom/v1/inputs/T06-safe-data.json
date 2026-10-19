@@ -1,0 +1,53 @@
+{
+  "schema": "klenwriter.document",
+  "schema_version": 1,
+  "profile": "prose",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "<script>globalThis.__osr39=1</script><img src=x onerror=alert(1)>&\"' é 😀",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 2,
+        "align": "right",
+        "first_line_indent": true
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "Title"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Link",
+          "marks": [
+            {
+              "type": "link",
+              "attrs": {
+                "href": "https://example.org/a?q=%22%3E",
+                "title": "<b>Title & \"quote\"</b>"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
