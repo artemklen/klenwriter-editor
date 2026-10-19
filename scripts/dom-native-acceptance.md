@@ -47,6 +47,10 @@ The Carbon helper lists existing input sources and selects only an existing,
 enabled, selectable source. It does not enable, install or persist a layout.
 The runner verifies the selected ID after selection and again after activating
 the browser, before sending key codes; it verifies the ID again after each batch.
+Before choosing the layout it activates the browser; Chrome also brings its
+owned page forward and waits at most5seconds for `document.hasFocus()`. This is
+window preparation, not the tested Tab action. Physical Tab and its trusted trace
+must still return focus from the host control to the editor.
 The original source is restored and verified in `finally`, including failures.
 No assumption that the first key will already use a newly selected layout is
 made. Restore failure remains a failed run.

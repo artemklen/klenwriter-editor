@@ -42,6 +42,7 @@ async function chrome(){
   const browser=await chromium.launch({channel:'chrome',headless:false,env:{...process.env,CFFIXED_USER_HOME:childHome}});const page=await browser.newPage();report.browserVersion=browser.version();
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   return {async navigate(){const response=await page.goto('http://127.0.0.1:4174/dom');if(!response?.ok())throw new Error('Mounted fixture unavailable');await page.waitForFunction(()=>window.domHostReady===true);await page.evaluate(()=>import('/dom-native-host.js'));},
+    async focus(){await page.bringToFront();await page.waitForFunction(()=>document.hasFocus(),null,{timeout:5000});},
     call:(method,...args)=>page.evaluate(({method,args})=>window.domNative[method](...args),{method,args}),
     errors,async close(){await browser.close();}};}
 async function safari(){let endpoint=option('--safari-url');if(!endpoint){endpoint='http://127.0.0.1:4726';safariChild=spawn('/usr/bin/safaridriver',['--port','4726'],{stdio:['ignore','pipe','pipe']});
@@ -79,6 +80,9 @@ try{
   adapter=await(browserName==='chrome'?chrome():safari());await adapter.navigate();
   for(const [locale,sourceId,codes]of supported){const lane={locale,inputSourceId:sourceId,status:'NOT_RUN',checkpoints:[],startedAt:new Date().toISOString()};report.locales.push(lane);save();let typingStarted=false;
     try{if(!initial.sources.some(row=>row.id===sourceId&&row.enabled&&row.selectable))throw new Error('Required existing enabled input source is unavailable');
+      script(`tell application "${browserName==='chrome'?'Google Chrome':'Safari'}" to activate`);await wait(200);
+      if(adapter.focus)await adapter.focus();
+      report.setup.push({action:'prepare-browser-page-focus',browser:browserName,locale,chromeDocumentFocusConfirmed:browserName==='chrome'});
       lane.actualInputSource=await selectSource(sourceId);lane.initial=await adapter.call('prepare',locale);
       await adapter.call('phase','focused');await adapter.call('focusControl');await physical([48],'focused');lane.checkpoints.push(await adapter.call('checkpoint','focused'));
       await adapter.call('phase','type');typingStarted=true;await physical(codes,'type');lane.checkpoints.push(await adapter.call('checkpoint','typed'));
