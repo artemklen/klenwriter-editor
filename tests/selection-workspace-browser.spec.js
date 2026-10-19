@@ -124,6 +124,47 @@ for(const key of unicode.keyboard.ltrWholeCluster)test(`keyboard ${key.case}: ac
   await page.keyboard.press(key.key);await expect.poll(async()=>{const p=await call(page,'inspect',id,false);return p.state.selection;}).toEqual(selection((await call(page,'inspect',id,false)).roles,{anchor:{kind:'text',node:'T',offset:key.expectedAnchor,affinity:'after'},focus:{kind:'text',node:'T',offset:key.expectedFocus,affinity:'after'}}));await checkpoint(page,id,'actual keyboard cluster selection');
 });
 
+async function asciiBoundary(page){const literal=unicode.cases.find(row=>row.id==='U-ASCII');expect(literal.text).toBe('abc');const {id,ready}=await call(page,'mount',{source:literal.input,roles:{ROOT:'',P:'/0',T:'/0/0'}});expect(ready.status).toBe('ready');return {id,before:await checkpoint(page,id,'literal abc before pointer boundary')};}
+function unchangedPointerDocument(after,before){expect(after.canonical).toBe(before.canonical);expect(after.rows.map(r=>r.node.id)).toEqual(before.rows.map(r=>r.node.id));expect(after.state.stamp.revision).toBe(before.state.stamp.revision);expect(after.state.dirty).toBe(before.state.dirty);expect(after.state.stored_marks).toEqual(before.state.stored_marks);expect(after.state.history.undo_entries).toBe(before.state.history.undo_entries);expect(after.state.history.redo_entries).toBe(before.state.history.redo_entries);expect(after.events.slice(before.events.length).filter(e=>e.change.kind==='document')).toEqual([]);}
+function asciiRawEndpoint(raw,roles){
+  if(!raw||!Array.isArray(raw.path)||!Number.isInteger(raw.offset))return null;const path=raw.path.join('/');
+  if(raw.nodeType===3&&path==='0/0/0'&&raw.text==='abc'&&raw.offset>=0&&raw.offset<=3)return {kind:'text',node:roles.T,offset:raw.offset,affinity:'after'};
+  // Finite, authored abc DOM-role table; no production view mapper or browser
+  // word segmentation supplies this independent correspondence assertion.
+  if(raw.nodeType===1&&path==='0/0'&&(raw.offset===0||raw.offset===1))return {kind:'text',node:roles.T,offset:raw.offset===0?0:3,affinity:'after'};
+  if(raw.nodeType===1&&(path==='0'||path==='')&&(raw.offset===0||raw.offset===1))return {kind:'child',parent:path==='0'?roles.P:roles.ROOT,index:raw.offset,affinity:'after'};
+  return null;
+}
+test('pointer boundary primary plain mousedown claims default and publishes exact literal Text1',async({page})=>{
+  const {id,before}=await asciiBoundary(page),hit=await call(page,'literalHit',id,[0,0,0],1),point={kind:'text',node:before.roles.T,offset:1,affinity:'after'};let held=false;
+  try{
+    await page.mouse.move(hit.x,hit.y);await page.mouse.down();held=true;
+    await expect.poll(async()=>(await call(page,'inspect',id,false)).state.selection).toEqual({anchor:point,focus:point});
+    const during=await checkpoint(page,id,'actual primary down before physical release',false);expect(during.resources.selection.activePointers).toBe(1);expect(during.resources.selection.animationFrames).toBe(0);expect(during.activeElement).toBe(id);expect(during.rawDom.anchor).toEqual({path:[0,0,0],nodeType:3,text:'abc',offset:1});expect(during.rawDom.focus).toEqual(during.rawDom.anchor);
+    const trace=await call(page,'actionTrace',id),down=trace.trace.find(row=>row.type==='browser'&&row.phase==='document-bubble'&&row.event==='mousedown');expect(down).toMatchObject({isTrusted:true,button:0,buttons:1,detail:1,defaultPrevented:true,shift:false,alt:false,ctrl:false,meta:false,selectionResources:{activePointers:1,animationFrames:0}});
+    await page.mouse.up();held=false;const after=await checkpoint(page,id,'primary released');unchangedPointerDocument(after,before);expect(after.resources.selection.activePointers).toBe(0);expect(after.resources.selection.animationFrames).toBe(0);
+  }finally{if(held)await page.mouse.up();points.get(page).pointerBoundaryTrace=await call(page,'actionTrace',id);}
+});
+test('pointer boundary double-click detail2 preserves native abc word selection and UA default',async({page})=>{
+  const {id,before}=await asciiBoundary(page),hit=await call(page,'literalHit',id,[0,0,0],1);
+  await page.mouse.dblclick(hit.x,hit.y);
+  const literal={anchor:{kind:'text',node:before.roles.T,offset:0,affinity:'after'},focus:{kind:'text',node:before.roles.T,offset:3,affinity:'after'}};
+  await expect.poll(async()=>(await call(page,'inspect',id,false)).state.selection).toEqual(literal);
+  const after=await checkpoint(page,id,'actual UA double-click word');unchangedPointerDocument(after,before);expect(after.rawDom.anchor).toEqual({path:[0,0,0],nodeType:3,text:'abc',offset:0});expect(after.rawDom.focus).toEqual({path:[0,0,0],nodeType:3,text:'abc',offset:3});expect(after.resources.selection.activePointers).toBe(0);expect(after.resources.selection.animationFrames).toBe(0);
+  const trace=await call(page,'actionTrace',id);points.get(page).pointerBoundaryTrace=trace;const downs=trace.trace.filter(row=>row.type==='browser'&&row.phase==='document-bubble'&&row.event==='mousedown');expect(downs.map(row=>({detail:row.detail,prevented:row.defaultPrevented,owned:row.selectionResources.activePointers}))).toEqual([{detail:1,prevented:true,owned:1},{detail:2,prevented:false,owned:0}]);expect(trace.trace.find(row=>row.type==='browser'&&row.phase==='document-bubble'&&row.event==='dblclick')).toMatchObject({isTrusted:true,detail:2,defaultPrevented:false});
+});
+test('pointer boundary Shift-mousedown retains UA focus/range without custom pointer or RAF',async({page})=>{
+  const {id,before}=await asciiBoundary(page);expect(response(await call(page,'selectModel',id,{anchor:{kind:'text',node:'T',offset:1,affinity:'after'},focus:{kind:'text',node:'T',offset:1,affinity:'after'}})).status).toBe('ok');const hit=await call(page,'literalHit',id,[0,0,0],2);let held=false;
+  try{
+    await page.keyboard.down('Shift');await page.mouse.move(hit.x,hit.y);await page.mouse.down();held=true;
+    const during=await checkpoint(page,id,'actual modified down before release',false);expect(during.resources.selection.activePointers).toBe(0);expect(during.resources.selection.animationFrames).toBe(0);expect(during.activeElement).toBe(id);
+    const down=(await call(page,'actionTrace',id)).trace.find(row=>row.type==='browser'&&row.phase==='document-bubble'&&row.event==='mousedown');expect(down).toMatchObject({isTrusted:true,button:0,detail:1,shift:true,defaultPrevented:false,selectionResources:{activePointers:0,animationFrames:0}});
+    await page.mouse.up();held=false;await page.keyboard.up('Shift');
+    await expect.poll(async()=>{const p=await call(page,'inspect',id,false),a=asciiRawEndpoint(p.rawDom?.anchor,p.roles),f=asciiRawEndpoint(p.rawDom?.focus,p.roles);return p.rawDom?.inside===true&&a!==null&&f!==null&&JSON.stringify(p.state.selection)===JSON.stringify({anchor:a,focus:f});}).toBe(true);
+    const after=await checkpoint(page,id,'UA modified range agrees with independent raw endpoint table');unchangedPointerDocument(after,before);expect(after.activeElement).toBe(id);expect(after.rawDom.inside).toBe(true);expect(after.resources.selection.activePointers).toBe(0);expect(after.resources.selection.animationFrames).toBe(0);
+  }finally{if(held)await page.mouse.up();await page.keyboard.up('Shift');points.get(page).pointerBoundaryTrace=await call(page,'actionTrace',id);}
+});
+
 function authoredNode(document,path){let node=document;for(const i of path)node=node.content[i];return node;}
 function rawBookmarkPoint(documentRef,p){
   const document=bookmarks.documents[documentRef],name=p.kind==='child'?p.parent:p.node;
@@ -205,7 +246,7 @@ for(const item of bookmarks.cases.filter(c=>!bookmarkUnitBoundaryIds.has(c.id)))
       }
       case 'mounted.submit':last=await call(page,'submit',id,step.request);break;
       case 'native.document_only_boundary':await documentBoundary(page,id,step);if(step.expected_state_ref)documentRef=bookmarks.states[step.expected_state_ref].document_ref;break;
-      case 'owned.pointerdown':{const p=rawBookmarkPoint(documentRef,{kind:'text',node:step.role,offset:step.offset}),hit=await call(page,'literalHit',id,p.path,p.offset);await page.mouse.click(hit.x,hit.y);break;}
+      case 'owned.pointerdown':{const p=rawBookmarkPoint(documentRef,{kind:'text',node:step.role,offset:step.offset}),hit=await call(page,'literalHit',id,p.path,p.offset,{asciiLeafEnd:item.id==='BM-FX02'});points.get(page).checkpoints.push({label:'before authored bookmark pointer input',inputTarget:hit});if(item.id==='BM-FX02'){expect(hit.preflight.exact).toBe(true);expect(hit.preflight.requested).toEqual({path:p.path,nodeType:3,text:'x',offset:1});expect(hit.preflight.rawHit).toEqual(hit.preflight.requested);expect(hit.preflight.scalarBoundary).toBe(true);}await page.mouse.click(hit.x,hit.y);break;}
       case 'internal.syncFromDom':if(step.expected_state_ref)await waitForLiteralNativeState(page,id,step.expected_state_ref,item.id);break; // observe actual browser input owner, never a fixture setter
       case 'internal.restore_current_native_on_tab':break;
       case 'owned.new_selection':{const raw={anchor:rawBookmarkPoint(documentRef,step.selection.anchor),focus:rawBookmarkPoint(documentRef,step.selection.focus)};await call(page,'selectDomLiteral',id,raw);await expect.poll(async()=>{const p=await call(page,'inspect',id,false);return p.state.selection;}).toEqual(selection(baseline.roles,step.selection));break;}

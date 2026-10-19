@@ -4,7 +4,7 @@ import type { BookmarkCapture, BookmarkRestore, DomRefusal, MountedMutation, Mou
 import type { DomPoint, DomView } from './view.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
 import { fields } from './ownership.js';
-import { edgeGeometry, visibleEdgeHit } from './selection-geometry.js';
+import { edgeGeometry, ownedCaretHit, visibleEdgeHit } from './selection-geometry.js';
 const same=(a:unknown,b:unknown)=>JSON.stringify(a)===JSON.stringify(b);
 const MAX_SERIAL=18446744073709551615n;
 interface Configuration {
@@ -50,6 +50,7 @@ export class SelectionOwner {
     const own=this.#ownPermit>0;if(own)this.#ownPermit--;
     for(const frame of this.#frames)frame.reentrant=true;
     const harmless=['snapshot','release_snapshot'].includes(request.kind);
+    if(!own && !harmless)this.cancel();
     const eligible=!own && !input && request.kind==='command' && this.#frames.length===0 && !this.configuration.busy();
     if(!own && !eligible && !harmless)this.invalidate();
     const frame={own,eligible,serial:this.#serial,before:this.configuration.capture(),events:0,reentrant:false};this.#frames.push(frame);return frame;
@@ -63,7 +64,7 @@ export class SelectionOwner {
     const frame=this.#frames.at(-1);
     if(frame?.own && frame.events===0 && same(frame.before,event.before)){frame.events++;return;}
     if(frame?.eligible && !frame.reentrant && frame.serial===this.#serial && frame.events===0 && event.change.kind==='document' && same(frame.before,event.before)){frame.events++;return;}
-    this.invalidate();
+    this.cancel();this.invalidate();
   }
   #state():DeepReadonly<StateDto>|Response {
     const response=this.configuration.read({kind:'state'});return response.status==='ok' && response.value.kind==='state'?response.value.state:response;
@@ -166,7 +167,37 @@ export class SelectionOwner {
       this.cancel();if(!owned(pointer.target))return;this.invalidate();
       if(pointer.button===0 && pointer.isPrimary && pointer.pointerType==='mouse' && !this.#guard())this.#pointer={id:pointer.pointerId,x:pointer.clientX,y:pointer.clientY,anchor:null};
     });
-    listen(doc,'pointermove',event=>{const e=event as PointerEvent,p=this.#pointer;if(!p || p.id!==e.pointerId)return;if(!(e.buttons&1)){this.cancel();return;}p.x=e.clientX;p.y=e.clientY;this.#schedule();});
+    listen(doc,'mousedown',event=>{
+      const mouse=event as MouseEvent,p=this.#pointer;
+      if(!p)return;
+      // Compatibility mousedown supplies the real click count. Leave native
+      // word/line and modified selection intact, without claiming its drag.
+      if(!owned(mouse.target) || mouse.button!==0 || mouse.detail!==1 || mouse.altKey || mouse.ctrlKey || mouse.metaKey || mouse.shiftKey || mouse.defaultPrevented || !mouse.cancelable || ![mouse.clientX,mouse.clientY,p.x,p.y].every(Number.isFinite) || Math.abs(mouse.clientX-p.x)>=1 || Math.abs(mouse.clientY-p.y)>=1 || this.#guard()){this.cancel();return;}
+      const view=this.configuration.view(),geometry=edgeGeometry(host);
+      // Some compatibility MouseEvents truncate fractional PointerEvent CSS
+      // coordinates. Correlate within one unit, but hit the precise input point.
+      const point=view && geometry?ownedCaretHit(host,view,p.x,p.y,geometry):null;
+      if(!point){this.cancel();this.configuration.report(this.#failure('dom.selection_geometry_unsupported'));return;}
+      const serial=this.#serial,focusSerial=this.#focusSerial,stamp=this.configuration.capture(),context=this.configuration.context();
+      mouse.preventDefault();host.focus({preventScroll:true});
+      // Host focus callbacks may publish, replace, retarget or leave this mount.
+      if(this.#pointer!==p || this.#serial!==serial || this.#focusSerial!==focusSerial || !same(stamp,this.configuration.capture()) || !same(context,this.configuration.context()) || this.#guard() || !this.ownsFocus() || !doc.hasFocus() || !host.contains(point.node)){this.cancel();return;}
+      p.anchor=point;this.#writePointerRange(p,point);
+    });
+    listen(doc,'pointermove',event=>{
+      const e=event as PointerEvent,p=this.#pointer;if(!p || p.id!==e.pointerId)return;
+      if(!(e.buttons&1)){this.cancel();return;}p.x=e.clientX;p.y=e.clientY;
+      if(!p.anchor)return; // The compatibility mousedown has not claimed it.
+      const view=this.configuration.view(),geometry=edgeGeometry(host);
+      if(!view || !geometry || this.#guard() || !this.ownsFocus() || !doc.hasFocus()){this.cancel();return;}
+      if(p.y<geometry.clip.top || p.y>geometry.clip.bottom){this.#schedule();return;}
+      // Apply this actual move before a possible immediate pointerup. The RAF
+      // belongs only to edge-held scrolling; no release-time endpoint repair.
+      const x=Math.max(geometry.clip.left+.5,Math.min(geometry.clip.right-.5,p.x));
+      const point=ownedCaretHit(host,view,x,p.y,geometry);
+      if(!point){this.cancel();this.configuration.report(this.#failure('dom.selection_geometry_unsupported'));return;}
+      this.#writePointerRange(p,point);
+    });
     for(const type of ['pointerup','pointercancel','lostpointercapture'])listen(doc,type,event=>{if(this.#pointer?.id===(event as PointerEvent).pointerId)this.cancel();});
     listen(win,'blur',()=>{this.#tabEntry=false;this.#focusChanged();this.cancel();});
     listen(doc,'focusin',event=>{
@@ -180,36 +211,37 @@ export class SelectionOwner {
       if(this.#rangeWriting || this.#guard() || !this.ownsFocus())return;
       const p=this.#pointer;
       if(p){
-        // Latch the owned post-pointerdown anchor before any publication can
-        // reinstall a browser range. The first edge RAF may be much later.
-        if(!p.anchor){const range=doc.getSelection();if(range?.anchorNode&&host.contains(range.anchorNode)){
-          const position=this.configuration.view()?.textPosition(range.anchorNode,range.anchorOffset);
-          if(position&&!isDomRefusal(position))p.anchor={node:range.anchorNode,offset:range.anchorOffset};
-        }}
+        if(!p.anchor)return;
         const geometry=edgeGeometry(host);if(!geometry){this.cancel();this.configuration.report(this.#failure('dom.selection_geometry_unsupported'));return;}if(p.y<geometry.clip.top || p.y>geometry.clip.bottom){this.#schedule();return;}
       }
       this.syncFromDom();
     });
   }
   #schedule():void {
-    if(this.#raf!==null || !this.#pointer)return;
+    if(this.#raf!==null || !this.#pointer?.anchor)return;
     const win=this.configuration.element()?.ownerDocument.defaultView;if(win)this.#raf=win.requestAnimationFrame(()=>{this.#raf=null;this.#edgeTick();});
+  }
+  #writePointerRange(pointer:PointerOwner,focus:DomPoint):void {
+    const host=this.configuration.element(),anchor=pointer.anchor,browser=host?.ownerDocument.getSelection();
+    if(this.#pointer!==pointer || !host || !anchor || !browser || !host.contains(anchor.node) || !host.contains(focus.node)){this.cancel();return;}
+    this.#rangeWriting++;
+    try{if(browser.anchorNode!==anchor.node || browser.anchorOffset!==anchor.offset || browser.focusNode!==focus.node || browser.focusOffset!==focus.offset)browser.setBaseAndExtent(anchor.node,anchor.offset,focus.node,focus.offset);}
+    catch{this.cancel();this.configuration.report(this.#failure('dom.presentation_unsupported'));return;}
+    finally{this.#rangeWriting--;}
+    const selection=this.syncFromDom();if(!selection || isDomRefusal(selection))this.cancel();
   }
   #edgeTick():void {
     const host=this.configuration.element(),view=this.configuration.view(),p=this.#pointer;
     if(!host || !view || !p || this.#guard() || !this.ownsFocus() || !host.ownerDocument.hasFocus()){this.cancel();return;}
     const geometry=edgeGeometry(host);if(!geometry){this.cancel();this.configuration.report(this.#failure('dom.selection_geometry_unsupported'));return;}
     const direction=p.y<geometry.clip.top?-1:p.y>geometry.clip.bottom?1:0;if(!direction)return;
-    const browser=host.ownerDocument.getSelection();
-    if(!p.anchor){if(!browser?.anchorNode || !host.contains(browser.anchorNode)){this.cancel();return;}p.anchor={node:browser.anchorNode,offset:browser.anchorOffset};}
+    if(!p.anchor){this.cancel();return;}
     if(!host.contains(p.anchor.node)){this.cancel();return;}
     const previous=geometry.scroller.scrollTop;
     geometry.scroller.scrollTop=Math.max(0,Math.min(geometry.scroller.scrollHeight-geometry.scroller.clientHeight,previous+direction*24));
     const focus=visibleEdgeHit(host,view,geometry,p.x,direction);
     if(!focus){this.cancel();this.configuration.report(this.#failure('dom.selection_geometry_unsupported'));return;}
-    this.#rangeWriting++;
-    try{if(browser && (browser.anchorNode!==p.anchor.node || browser.anchorOffset!==p.anchor.offset || browser.focusNode!==focus.node || browser.focusOffset!==focus.offset))browser.setBaseAndExtent(p.anchor.node,p.anchor.offset,focus.node,focus.offset);}catch{this.cancel();this.configuration.report(this.#failure('dom.presentation_unsupported'));return;}finally{this.#rangeWriting--;}
-    this.syncFromDom();
+    this.#writePointerRange(p,focus);
     if(this.#pointer && geometry.scroller.scrollTop!==previous)this.#schedule();
   }
   destroy():void {if(this.#destroyed)return;this.cancel();this.invalidate(true);this.#destroyed=true;for(const remove of this.#removals.splice(0))remove();}

@@ -134,3 +134,72 @@ test('BM-S07 controlled immutable context mismatch rejects before native maps',(
 test('BM-S02/S03 controlled replace/destroy invalidation drops capabilities and keeps API stable',()=>{
   const f=fixture(),api=f.owner.api,bookmark=f.capture();f.owner.invalidate(true);refusal(api.restoreBookmark(bookmark),'dom.invalid_bookmark');const next=f.capture();f.owner.destroy();assert.equal(f.owner.api,api);refusal(api.restoreBookmark(next),'dom.disposed');assert.deepEqual(f.owner.resources(),{bookmarks:0,restoreTickets:0,activePointers:0,animationFrames:0});
 });
+
+// Controlled browser event boundary: literal hit results and an SDK callback,
+// without a browser layout engine or a substitute native selection validator.
+function pointerFixture() {
+  class OwnedNode extends EventTarget {constructor(parent=null){super();this.parentElement=parent;}contains(node){for(let p=node;p;p=p.parentElement)if(p===this)return true;return false;}}
+  class OwnedElement extends OwnedNode {}
+  const doc=new EventTarget(),win=new EventTarget(),host=new OwnedElement(),text=new OwnedNode(host);
+  let hitOffset=0,busy=false,onFocus=null,state=copy(literals.states.BASE),context=copy(literals.contexts.KWDJ_A);
+  const calls={submit:[],set:[],focus:[],failures:[],preventedOnFocus:[],hits:[]},frames=new Map();let frameId=0,currentMouse=null;
+  Object.assign(win,{Node:OwnedNode,HTMLElement:OwnedElement,visualViewport:null,
+    getComputedStyle:()=>({writingMode:'horizontal-tb',getPropertyValue:()=>'',scrollBehavior:'auto',transform:'none',perspective:'none',clipPath:'none',overflowX:'hidden',overflowY:'auto',borderTopLeftRadius:'0px',borderTopRightRadius:'0px',borderBottomLeftRadius:'0px',borderBottomRightRadius:'0px'}),
+    requestAnimationFrame:fn=>{const id=++frameId;frames.set(id,fn);return id;},cancelAnimationFrame:id=>frames.delete(id)});
+  const range={anchorNode:text,anchorOffset:0,focusNode:text,focusOffset:0,
+    setBaseAndExtent(a,ao,f,fo){calls.set.push([a,ao,f,fo]);this.anchorNode=a;this.anchorOffset=ao;this.focusNode=f;this.focusOffset=fo;doc.dispatchEvent(new Event('selectionchange'));}};
+  Object.assign(host,{ownerDocument:doc,isConnected:true,clientLeft:0,clientTop:0,clientWidth:200,clientHeight:100,scrollWidth:200,scrollHeight:1000,scrollTop:0,
+    getBoundingClientRect:()=>({left:0,top:0,right:200,bottom:100}),hasPointerCapture:()=>false,
+    focus(){calls.focus.push(true);calls.preventedOnFocus.push(currentMouse?.defaultPrevented);doc.activeElement=host;onFocus?.();}});
+  Object.assign(doc,{defaultView:win,activeElement:host,documentElement:host,scrollingElement:host,hasFocus:()=>true,getSelection:()=>range,
+    caretPositionFromPoint:(x,y)=>{calls.hits.push([x,y]);return hitOffset===null?null:{offsetNode:text,offset:hitOffset};},
+    createRange:()=>({setStart(){},collapse(){},getClientRects:()=>[{left:20,top:20,right:20,bottom:40,width:0,height:20}]})});
+  const position=offset=>({kind:'text',node:state.selection.anchor.node,offset,affinity:'after'});
+  const known=(offset,endpoint)=>endpoint.kind==='text'&&endpoint.offset===offset?copy(endpoint):position(offset);
+  const view={textPosition:(node,offset)=>node===text&&Number.isInteger(offset)&&offset>=0&&offset<=4?position(offset):null,
+    readSelection:()=>({anchor:known(range.anchorOffset,state.selection.anchor),focus:known(range.focusOffset,state.selection.focus)})};
+  let owner;owner=new SelectionOwner({element:()=>host,view:()=>view,capture:()=>state.stamp,context:()=>context,guard:()=>null,busy:()=>busy,
+    report:f=>calls.failures.push(f),recover:f=>calls.failures.push(f),read:request=>{assert.equal(request.kind,'state');return {status:'ok',value:{kind:'state',state}};},
+    submit(request){calls.submit.push(copy(request));const frame=owner.beginSubmission(request,true),before=state.stamp,changed=!same(state.selection,request.selection);state={...state,selection:copy(request.selection)};if(changed){state={...state,stamp:{...state.stamp,selection_epoch:String(BigInt(state.stamp.selection_epoch)+1n)}};owner.publication({before,after:state.stamp,change:{kind:'state'}});}const response={status:'completed',response:{status:'ok',value:{kind:'mutation',effect:changed?'state_changed':'unchanged',state:copy(state),presentation:null}}};owner.endSubmission(frame,response);return response;}});
+  owner.attach();
+  function emit(type,values={}){const e=new Event(type,{cancelable:true});Object.defineProperty(e,'target',{value:host});Object.assign(e,{pointerId:7,pointerType:'mouse',isPrimary:true,button:0,buttons:1,clientX:20,clientY:30,detail:1,altKey:false,ctrlKey:false,metaKey:false,shiftKey:false,...values});if(type==='mousedown')currentMouse=e;doc.dispatchEvent(e);return e;}
+  return {owner,host,doc,range,calls,frames,emit,get state(){return state;},set hit(v){hitOffset=v;},set onFocus(v){onFocus=v;},set busy(v){busy=v;},set context(v){context=v;},retargetStamp(){state={...state,stamp:{...state.stamp,selection_epoch:String(BigInt(state.stamp.selection_epoch)+1n)}};},claim(){emit('pointerdown');return emit('mousedown');},tick(){const pending=[...frames.values()];frames.clear();for(const fn of pending)fn();}};
+}
+test('controlled primary single-click claims before focus/default; quick move/up keeps the actual last hit and no post-end setter',()=>{
+  const f=pointerFixture();f.emit('pointerdown');assert.equal(f.calls.submit.length,0);assert.equal(f.calls.set.length,0);
+  const down=f.emit('mousedown');assert.equal(down.defaultPrevented,true);assert.deepEqual(f.calls.preventedOnFocus,[true]);assert.equal(f.owner.resources().activePointers,1);
+  f.hit=3;f.emit('pointermove',{clientX:60});assert.equal(f.state.selection.anchor.offset,0);assert.equal(f.state.selection.focus.offset,3);assert.equal(f.frames.size,0);
+  const atRelease=f.calls.set.length,publications=f.calls.submit.length;f.emit('pointerup',{buttons:0,clientX:60});f.tick();
+  assert.equal(f.calls.set.length,atRelease);assert.equal(f.calls.submit.length,publications);assert.equal(f.state.selection.focus.offset,3);assert.equal(f.owner.resources().activePointers,0);assert.equal(f.owner.resources().animationFrames,0);f.owner.destroy();
+});
+test('controlled modifier/multiple-click fallback leaves UA default untouched and synchronizes its literal range without a custom drag',()=>{
+  for(const properties of [{detail:2},{detail:3},{shiftKey:true},{ctrlKey:true},{altKey:true},{metaKey:true}]){
+    const f=pointerFixture();f.emit('pointerdown');const down=f.emit('mousedown',properties);assert.equal(down.defaultPrevented,false);assert.equal(f.calls.focus.length,0);assert.equal(f.calls.set.length,0);assert.equal(f.owner.resources().activePointers,0);
+    f.range.anchorOffset=4;f.range.focusOffset=1;f.doc.dispatchEvent(new Event('selectionchange'));
+    assert.equal(f.state.selection.anchor.offset,4);assert.equal(f.state.selection.focus.offset,1);assert.equal(f.calls.submit.length,1);
+    f.emit('pointermove',{clientY:120});assert.equal(f.frames.size,0);f.owner.destroy();
+  }
+});
+test('controlled fractional compatibility coordinates hit the precise pointer; >=1 or nonfinite mismatches never claim',()=>{
+  for(const [x,y,mx,my] of [[23.09375,41.75,23,41],[109.6,30.4,109,30]]){
+    const f=pointerFixture();f.emit('pointerdown',{clientX:x,clientY:y});const down=f.emit('mousedown',{clientX:mx,clientY:my});
+    assert.equal(down.defaultPrevented,true);assert.deepEqual(f.calls.hits,[[x,y]]);assert.equal(f.owner.resources().activePointers,1);f.owner.destroy();
+  }
+  for(const [x,y,mx,my] of [[20.5,30.5,21.5,30.5],[20.5,30.5,20.5,29.5],[20,30,NaN,30],[Infinity,30,20,30]]){
+    const f=pointerFixture();f.emit('pointerdown',{clientX:x,clientY:y});const down=f.emit('mousedown',{clientX:mx,clientY:my});
+    assert.equal(down.defaultPrevented,false);assert.equal(f.calls.hits.length,0);assert.equal(f.calls.focus.length,0);assert.equal(f.calls.set.length,0);assert.equal(f.calls.submit.length,0);assert.equal(f.owner.resources().activePointers,0);f.owner.destroy();
+  }
+});
+test('controlled synchronous focus retargeting rejects a claimed gesture before its DOM/native range publication',()=>{
+  for(const change of ['intent','context','stamp']){
+    const f=pointerFixture();f.onFocus=()=>{if(change==='intent')f.owner.invalidate();else if(change==='context')f.context=copy(literals.contexts.KWDJ_LOWER_CAPS);else f.retargetStamp();};
+    const down=f.claim();assert.equal(down.defaultPrevented,true);assert.equal(f.calls.set.length,0);assert.equal(f.calls.submit.length,0);assert.equal(f.owner.resources().activePointers,0);assert.equal(f.frames.size,0);f.owner.destroy();
+  }
+});
+test('controlled owned selection publications retain a drag; foreign host mutation cancels its pending edge frame',()=>{
+  const f=pointerFixture();f.hit=1;f.claim();assert.equal(f.owner.resources().activePointers,1);assert.equal(f.calls.submit.length,1);
+  f.emit('pointermove',{clientY:120});assert.equal(f.frames.size,1);
+  const frame=f.owner.beginSubmission({kind:'command',stamp:f.state.stamp,command:{id:'fixture.document-only',payload_json:'{}'},history_hint:{kind:'isolated'}},false);
+  assert.equal(f.owner.resources().activePointers,0);assert.equal(f.frames.size,0);const top=f.host.scrollTop;f.tick();assert.equal(f.host.scrollTop,top);
+  f.owner.endSubmission(frame,{status:'completed',response:{status:'ok',value:{kind:'mutation',effect:'unchanged',state:f.state,presentation:null}}});f.owner.destroy();
+});

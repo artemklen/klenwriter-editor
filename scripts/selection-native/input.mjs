@@ -29,6 +29,13 @@ export function createInputOwner({browser,config,inputHelper,run,record,guard,mo
           ||action==='up'&&!held&&!mayHaveDown||!mouseActions.has(action)&&action!=='shift-tab'&&(held||value.pointerDown))throw Error('Selection pointer transition differs');
         const point=value.point;
         if(mouseActions.has(action)?!point||!Number.isFinite(point.x)||!Number.isFinite(point.y)||point.x<0||point.x>=1024||point.y<0||point.y>=768:point!==null)throw Error('Missing or invalid fixed fixture point');
+        if(action==='down'){
+          const move=value.lastTrustedPointerMove;
+          if(!move||move.isTrusted!==true||move.pointerType!=='mouse'||move.isPrimary!==true
+            ||!Number.isSafeInteger(move.pointerId)||move.pointerId<=0||move.buttons!==0
+            ||!Number.isFinite(move.time)||move.time<0||!Number.isFinite(move.x)||!Number.isFinite(move.y)
+            ||Math.abs(move.x-point.x)>.5||Math.abs(move.y-point.y)>.5)throw Error('Actual trusted mousemove did not confirm the fixed start; no down posted');
+        }
         serial=value.serial;preAge=age(proof.start);const remaining=Math.floor(limits.guardAgeMs-preAge);
         if(remaining<=0)throw Error('Selection guard expired before input');
         const request={format:'osr40-native-input/1',browser,nonce:config.nonce,title:config.title,fixtureUrl:config.fixtureUrl,
@@ -43,12 +50,14 @@ export function createInputOwner({browser,config,inputHelper,run,record,guard,mo
         if(action==='down'){held=true;mayHaveDown=false;}else if(action==='up'){held=false;mayHaveDown=false;}
         const receipt={action,requestId:proof.id,pageGuardSerial:serial,mountedId:mountedId(),caseId:value.caseId,
           point,target:value.target,preDispatchGuardAgeMs:preAge,maximumGuardAgeMs:age(proof.start),guardAgeLimitMs:limits.guardAgeMs,
+          lastTrustedPointerMove:action==='down'?value.lastTrustedPointerMove:null,
           execution,actual,delivery:'sent',pointerDown:held,cleanupOnly:cleanup};
         record(cleanup?'cleanup-pointer-release':'physical-input',receipt);return receipt;
       }catch(error){
         disabled=true;
         record(cleanup?'cleanup-pointer-release-failure':'physical-input-failure',{action,error:String(error?.message??error),execution:execution??error.execution??null,
           requestId:proof?.id??null,preDispatchGuardAgeMs:preAge,maximumGuardAgeMs:proof?.start?age(proof.start):null,
+          lastTrustedPointerMove:proof?.value?.lastTrustedPointerMove??null,
           delivery:dispatchStarted?'unknown/may_have_sent':'not_sent',pointerState:held?'down':mayHaveDown?'may-have-down':'up',dispatchStarted,cleanupOnly:cleanup});
         throw error;
       }

@@ -95,10 +95,12 @@ function updateStatus(r,failure) {
     ? 'Выделение изменилось. Выберите текст снова.' : 'The selection changed. Select the text again.';
 }
 export async function mount(config={}) {
-  const id=`selection-mount-${++serial}`, r={id,headless:!!config.headless,ids:new Map(),bookmarks:new Map(),events:[],failures:[],trace:[],traceOverflow:false,writes:[],results:[],pendingWrites:[],operations:new Map(),locale:config.locale??'en',writerMode:config.writer??'resolve'};
+  const id=`selection-mount-${++serial}`, r={id,headless:!!config.headless,ids:new Map(),bookmarks:new Map(),events:[],failures:[],trace:[],traceOverflow:false,fixtureRemovals:[],writes:[],results:[],pendingWrites:[],operations:new Map(),locale:config.locale??'en',writerMode:config.writer??'resolve'};
   let element=null;
   if(!r.headless){
-    element=document.createElement('div');element.id=id;element.className='selection-example';element.setAttribute('aria-label',`Selection editor ${serial}`);r.element=element;
+    element=document.createElement('div');element.id=id;element.className='selection-example';element.setAttribute('aria-label',`Selection editor ${serial}`);
+    if(config.direction!==undefined){assert(config.direction==='rtl','Closed fixture direction must be rtl');element.dir='rtl';}
+    r.element=element;
     if(config.scroll){
       document.body.classList.add('selection-scroll-case');const port=document.createElement('div');port.className='selection-scrollport';port.id=`${id}-port`;r.port=port;
       if(config.scroll==='clipped'){const clip=document.createElement('div');clip.className='selection-clip';document.querySelector('#selection-mounts').append(clip);clip.append(port);r.clip=clip;}
@@ -127,10 +129,15 @@ export async function mount(config={}) {
     r.editor.subscribe(event=>{r.events.push(clone(event));if(r.scrollTracing)trace(r,'publication',{event:clone(event),geometry:geometry(id)});});
     bind(r,config.roles??{});
     if(element){
-      for(const type of ['pointerdown','pointermove','pointerup','pointercancel','lostpointercapture','keydown','keyup','beforeinput','copy','cut'])element.addEventListener(type,event=>{
+      const observed=(event,phase)=>({event:event.type,phase,isTrusted:event.isTrusted,pointerId:event.pointerId??null,buttons:event.buttons??null,button:event.button??null,detail:event.detail??null,defaultPrevented:event.defaultPrevented,shift:event.shiftKey??null,alt:event.altKey??null,ctrl:event.ctrlKey??null,meta:event.metaKey??null,key:event.key??null,inputType:event.inputType??null,x:event.clientX??null,y:event.clientY??null,selectionResources:clone(r.editor.resources().selection)});
+      for(const type of ['pointerdown','pointermove','pointerup','pointercancel','lostpointercapture','mousedown','dblclick','keydown','keyup','beforeinput','copy','cut'])element.addEventListener(type,event=>{
         if(type==='pointerdown')r.lastPointerId=event.pointerId;
-        trace(r,'browser',{event:type,isTrusted:event.isTrusted,pointerId:event.pointerId??null,buttons:event.buttons??null,key:event.key??null,inputType:event.inputType??null,x:event.clientX??null,y:event.clientY??null});
+        trace(r,'browser',observed(event,'element-capture'));
       },true);
+      for(const type of ['mousedown','dblclick']){
+        const listener=event=>{if(event.target===element||element.contains(event.target))trace(r,'browser',observed(event,'document-bubble'));};
+        element.ownerDocument.addEventListener(type,listener);r.fixtureRemovals.push(()=>element.ownerDocument.removeEventListener(type,listener));
+      }
     }
   }
   return {id,ready:clone(r.ready),headless:r.headless,roles:Object.fromEntries(r.ids),resources:clone(r.editor.resources())};
@@ -157,7 +164,24 @@ export function outsideFocus(){const el=document.querySelector('#selection-host-
 export function outsideState(){const el=document.querySelector('#selection-host-control');return {id:document.activeElement.id,start:el.selectionStart,end:el.selectionEnd};}
 export function beginProvisional(id,text,path=[0,0,0]){const r=rec(id),node=nodeAt(r,path);assert(node.nodeType===3,'Provisional fixture requires its literal Text object');r.element.dispatchEvent(new CompositionEvent('compositionstart',{bubbles:true,data:''}));node.data=text;return {text:node.data,resources:clone(r.editor.resources())};}
 export function ownedPointerIntent(id,path,offset){const r=rec(id),node=nodeAt(r,path),range=document.createRange();range.setStart(node,offset);range.collapse(true);const rect=range.getBoundingClientRect();r.element.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerId:991,pointerType:'mouse',isPrimary:true,button:0,buttons:1,clientX:rect.left,clientY:rect.top+rect.height/2}));setDom(r,{anchor:{path,offset},focus:{path,offset}});r.element.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerId:991,pointerType:'mouse',isPrimary:true,button:0,buttons:0}));return {provenance:'CONTROLLED synthetic targeting input; actual native selection remains subject to normal owner',rawDom:rawSelection(r)};}
-export function literalHit(id,path,offset){const r=rec(id),node=nodeAt(r,path),range=document.createRange();range.setStart(node,offset);range.collapse(true);const box=range.getBoundingClientRect();assert(box.height>0&&Number.isFinite(box.left),'Literal hit caret instrumentation unavailable');return {x:box.left,y:box.top+box.height/2};}
+export function literalHit(id,path,offset,options={}){
+  const r=rec(id),node=nodeAt(r,path),range=document.createRange();
+  range.setStart(node,offset);range.collapse(true);const box=range.getBoundingClientRect();
+  assert(box.height>0&&Number.isFinite(box.left),'Literal hit caret instrumentation unavailable');
+  if(!options.asciiLeafEnd)return {x:box.left,y:box.top+box.height/2};
+  // This opt-in targets the authored ASCII leaf itself, rather than its shared
+  // boundary with the next leaf. The raw browser hit is checked before input;
+  // it never supplies an expected native endpoint or repairs selection later.
+  assert(node.nodeType===3&&/^[\x20-\x7e]+$/.test(node.data)&&offset===node.length,'ASCII leaf-end instrumentation requires the exact authored Text end');
+  range.setStart(node,offset-1);range.setEnd(node,offset);const glyphs=[...range.getClientRects()];
+  assert(glyphs.length===1&&glyphs[0].width>0&&glyphs[0].height>0,'ASCII final glyph must have one positive box');
+  const glyph=glyphs[0],x=glyph.left+glyph.width*.75,y=glyph.top+glyph.height/2;
+  assert(Number.isFinite(x)&&Number.isFinite(y),'ASCII glyph hit must be finite');
+  let hitNode=null,hitOffset=null,method;
+  if(typeof document.caretPositionFromPoint==='function'){method='caretPositionFromPoint';const hit=document.caretPositionFromPoint(x,y);hitNode=hit?.offsetNode??null;hitOffset=hit?.offset??null;}
+  else {assert(typeof document.caretRangeFromPoint==='function','Browser raw caret hit unavailable');method='caretRangeFromPoint';const hit=document.caretRangeFromPoint(x,y);hitNode=hit?.startContainer??null;hitOffset=hit?.startOffset??null;}
+  return {x,y,preflight:{scope:'Pre-input authored ASCII leaf-end targeting; no selection mutation, mapper or retry',requested:rawPoint(r,node,offset),glyph:{left:glyph.left,top:glyph.top,width:glyph.width,height:glyph.height},fraction:.75,method,rawHit:rawPoint(r,hitNode,hitOffset),scalarBoundary:true,exact:hitNode===node&&hitOffset===offset}};
+}
 export function installSubscriber(id,request,kind='state'){
   const r=rec(id);let fired=false;r.editor.subscribe(event=>{if(fired||event.change.kind!==kind)return;fired=true;const value={...clone(request),stamp:event.after};if('selection'in value)value.selection=nativeSelection(r,value.selection);r.nestedSubmission=r.editor.submit(value);});
 }
@@ -170,7 +194,7 @@ export async function clipboardResult(id,name='operation'){const r=rec(id),op=r.
 export function clipboardState(id){const r=rec(id);return {resources:clone(r.editor.resources()),writes:clone(r.writes),results:clone(r.results),operations:[...r.operations].map(([name,op])=>({name,result:op.result}))};}
 export async function clipboard(id,action){startClipboard(id,action);return clipboardResult(id);}
 export async function clipboardAtPublication(id){const r=rec(id);let fired=false;r.editor.subscribe(()=>{if(!fired){fired=true;startClipboard(id,'cut','BUSY');}});const p={kind:'text',node:r.ids.get('L'),offset:0,affinity:'after'};await settle(r.editor.submit({kind:'set_selection',stamp:r.editor.capture(),selection:{anchor:p,focus:p}}));assert(fired,'Actual native publication did not occur');return clipboardResult(id,'BUSY');}
-export async function dispose(id){const r=rec(id);if(r.disposed)return clone(r.disposed);const receipt=r.editor.destroy();if(r.headless)await settle(receipt);else await settle(receipt.sdk);r.disposed={resources:clone(r.editor.resources()),native:clone(r.editor.nativeResources()),status:receipt.status};return clone(r.disposed);}
+export async function dispose(id){const r=rec(id);if(r.disposed)return clone(r.disposed);const receipt=r.editor.destroy();if(r.headless)await settle(receipt);else await settle(receipt.sdk);for(const remove of r.fixtureRemovals.splice(0))remove();r.disposed={resources:clone(r.editor.resources()),native:clone(r.editor.nativeResources()),status:receipt.status};return clone(r.disposed);}
 export async function allDisposed(){for(const id of records.keys())await dispose(id);return JSON.parse(module.resourceCounts());}
 export function resourceReadbacks(){return [...records].map(([id,r])=>({id,headless:r.headless,resources:clone(r.editor.resources())}));}
 export function metadata(){return {buildId:sdkBuildId,manifest:clone(module.manifest),native:JSON.parse(module.resourceCounts()),contractCounts:{bookmark:contracts.bookmark.cases.length,native:contracts.native.cases.length,formatting:contracts.formatting.cases.length,clipboard:contracts.clipboard.cases.length,unicode:contracts.unicode.cases.length,scroll:contracts.scroll.controlledCoreCases.length},scope:'Actual public mounted/SDK2/WASM. Browser protocol input is automated; platform writer controls and synthetic cancel are labelled. No installed native claim.'};}

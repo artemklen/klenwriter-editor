@@ -42,25 +42,29 @@ export function caretVisible(doc: Document,point: DomPoint,clip: VisibleBox): bo
   } catch { /* A missing native caret is unsupported, never a guessed glyph. */ }
   return false;
 }
+/** One actual browser hit, checked against owned scalar correspondence and clipping. */
+export function ownedCaretHit(host: HTMLElement,view: DomView,x: number,y: number,geometry: EdgeGeometry): DomPoint | null {
+  if (!Number.isFinite(x) || !Number.isFinite(y) || x<geometry.clip.left || x>geometry.clip.right || y<geometry.clip.top || y>geometry.clip.bottom) return null;
+  const doc=host.ownerDocument;
+  const hitDoc=doc as Document & {caretPositionFromPoint?: (x:number,y:number)=>{offsetNode:Node;offset:number}|null;caretRangeFromPoint?: (x:number,y:number)=>Range|null};
+  let point: DomPoint | null=null;
+  try {
+    if (hitDoc.caretPositionFromPoint) {const caret=hitDoc.caretPositionFromPoint(x,y);if(caret)point={node:caret.offsetNode,offset:caret.offset};}
+    else {const range=hitDoc.caretRangeFromPoint?.(x,y);if(range)point={node:range.startContainer,offset:range.startOffset};}
+  } catch { return null; }
+  if (!point || !host.contains(point.node)) return null;
+  const model=view.textPosition(point.node,point.offset),actual=edgeGeometry(host,point.node);
+  return model && !('status' in model) && actual && actual.scroller===geometry.scroller && caretVisible(doc,point,actual.clip)?point:null;
+}
 /** At most eight actual browser hits; every returned point has a wholly visible caret. */
 export function visibleEdgeHit(host: HTMLElement,view: DomView,geometry: EdgeGeometry,x: number,direction: -1|1): DomPoint | null {
-  const {clip}=geometry,doc=host.ownerDocument;
-  const hitDoc=doc as Document & {caretPositionFromPoint?: (x:number,y:number)=>{offsetNode:Node;offset:number}|null;caretRangeFromPoint?: (x:number,y:number)=>Range|null};
+  const {clip}=geometry;
   const boundedX=Math.max(clip.left+.5,Math.min(clip.right-.5,x));
   for (const inset of [.5,8,16,24,32,40,48,64]) {
     const y=direction===1?clip.bottom-inset:clip.top+inset;
     if (y<clip.top || y>clip.bottom) continue;
-    let point: DomPoint | null=null;
-    try {
-      const caret=hitDoc.caretPositionFromPoint?.(boundedX,y);
-      if (caret) point={node:caret.offsetNode,offset:caret.offset};
-      else { const range=hitDoc.caretRangeFromPoint?.(boundedX,y);if(range)point={node:range.startContainer,offset:range.startOffset}; }
-    } catch { return null; }
-    if (!point || !host.contains(point.node)) continue;
-    const model=view.textPosition(point.node,point.offset);
-    const actual=edgeGeometry(host,point.node);
-    if (!model || 'status' in model || !actual || actual.scroller!==geometry.scroller || !caretVisible(doc,point,actual.clip)) continue;
-    return point;
+    const point=ownedCaretHit(host,view,boundedX,y,geometry);
+    if(point)return point;
   }
   return null;
 }

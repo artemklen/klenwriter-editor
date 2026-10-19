@@ -12,7 +12,8 @@ function fixture(){
       return {id:nonce+':'+String(++serial),start:process.hrtime.bigint(),value:{nonce,url:config.fixtureUrl,title:config.title,
         id:'selection-mount-1',mountedId:'selection-mount-1',serial,caseId:'scroll-down-terminal',action,
         target:action==='tab'?'host-control':'editor',allowed:true,editorConnected:true,documentFocused:true,pointerDown:pageDown,
-        viewport:{width:1024,height:768,scale:1,offsetLeft:0,offsetTop:0},point:['move-start','down','move-end','up'].includes(action)?{x:140,y:340}:null}};
+        viewport:{width:1024,height:768,scale:1,offsetLeft:0,offsetTop:0},point:['move-start','down','move-end','up'].includes(action)?{x:140,y:340}:null,
+        lastTrustedPointerMove:{x:140,y:340,buttons:0,pointerId:1,pointerType:'mouse',isPrimary:true,isTrusted:true,time:25}}};
   }
   const owner=createInputOwner({browser:'safari',config,inputHelper:'/controlled/no-helper-is-executed',mountedId:()=> 'selection-mount-1',
     record:(kind,value)=>records.push({kind,value}),
@@ -37,6 +38,27 @@ test('controlled foreign mount guard refuses before any physical helper call',as
   const f=fixture();f.reply=(action,proof)=>{const result=proof(action);result.value.mountedId='selection-mount-2';return result;};
   await assert.rejects(f.owner.input('down'));assert.equal(f.calls.length,0);assert.equal(f.owner.disabled,true);
   assert.equal(f.records.at(-1).value.delivery,'not_sent');
+});
+for(const [name,alter] of [
+  ['missing observed move',()=>null],
+  ['wrong actual client x',move=>({...move,x:140.6})],
+  ['wrong actual client y',move=>({...move,y:339.4})],
+  ['already held button',move=>({...move,buttons:1})],
+  ['untrusted move',move=>({...move,isTrusted:false})],
+  ['nonmouse pointer',move=>({...move,pointerType:'pen'})],
+  ['nonprimary pointer',move=>({...move,isPrimary:false})],
+  ['missing pointer identity',move=>({...move,pointerId:null})],
+])test(`controlled ${name} stops before physical down despite matching intended coordinates`,async()=>{
+  const f=fixture();f.reply=(action,proof)=>{const result=proof(action);result.value.lastTrustedPointerMove=alter(result.value.lastTrustedPointerMove);return result;};
+  await assert.rejects(f.owner.input('down'),/Actual trusted mousemove/);
+  assert.equal(f.calls.length,0,'The Swift input helper must never be invoked');assert.equal(f.owner.pointerState,'up');assert.equal(f.owner.disabled,true);
+  assert.equal(f.records.at(-1).value.delivery,'not_sent');assert.equal(f.records.at(-1).value.dispatchStarted,false);
+});
+test('controlled actual trusted mouse point within the frozen tolerance permits one down and retains proof',async()=>{
+  const f=fixture();f.reply=(action,proof)=>{const result=proof(action);result.value.lastTrustedPointerMove.x=140.49;result.value.lastTrustedPointerMove.y=339.51;return result;};
+  const receipt=await f.owner.input('down');assert.equal(f.calls.length,1);assert.equal(f.calls[0].request.action,'down');
+  assert.deepEqual(f.calls[0].request.point,{x:140,y:340},'Actual observation never retargets the fixed fixture point');
+  assert.equal(receipt.lastTrustedPointerMove.x,140.49);assert.equal(receipt.lastTrustedPointerMove.y,339.51);
 });
 test('controlled unknown down allows one fresh owned cleanup release without restoring acceptance',async()=>{
   const f=fixture();f.execute=()=>{throw Object.assign(Error('controlled timeout'),{execution:{returnCode:null,error:'timeout'}});};

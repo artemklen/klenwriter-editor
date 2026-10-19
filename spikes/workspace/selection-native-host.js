@@ -82,14 +82,16 @@ export async function prepare(locale,caseId) {
     oracle = unicode.cases.find(c=>c.id===id); check(oracle, 'Frozen Unicode literal missing');
     source = oracle.input; roles = {root:'',P:'/0',T:'/0/0'};
   }
-  const mounted = await host.mount({source,roles,locale,writer:'platform',...(caseId.startsWith('scroll-')?{scroll:'plain'}:{})});
+  const mounted = await host.mount({source,roles,locale,writer:'platform',...(caseId==='key-rtl'?{direction:'rtl'}:{}),...(caseId.startsWith('scroll-')?{scroll:'plain'}:{})});
   check(mounted.ready.status==='ready', 'Installed selection mount admission failed');
   const element = document.getElementById(mounted.id);
-  active = {id:mounted.id,caseId,locale,oracle,element,pointerDown:false,pointerId:null,foreignPointer:false,mouseStarted:false,points:null,prepared:null,
+  active = {id:mounted.id,caseId,locale,oracle,element,pointerDown:false,pointerId:null,foreignPointer:false,lastTrustedPointerMove:null,mouseStarted:false,points:null,prepared:null,
     scrollCase:caseId.startsWith('scroll-'),samples:[],inputTrace:[],removals:[],timer:null,overflow:false,stopped:null};
   const r = active;
   for (const type of ['pointerdown','pointermove','pointerup','pointercancel','lostpointercapture','keydown','keyup','focusin','focusout','copy','cut']) {
     const listener = event => {
+      if(event.type==='pointermove' && event.isTrusted)r.lastTrustedPointerMove={x:event.clientX,y:event.clientY,buttons:event.buttons,
+        pointerId:event.pointerId,pointerType:event.pointerType,isPrimary:event.isPrimary,isTrusted:true,time:performance.now()};
       const ownedHeldPointer=r.pointerDown && ['pointermove','pointerup','pointercancel','lostpointercapture'].includes(event.type);
       if (!(ownedHeldPointer || event.target===element || element.contains(event.target) || event.target===document.getElementById('selection-host-control'))) return;
       addTrace(event);
@@ -132,7 +134,6 @@ export async function prepare(locale,caseId) {
   } else {
     const offset=caseId==='key-rtl'?oracle.utf16Length:unicode.keyboard.ltrWholeCluster.find(c=>c.case===oracle.id).setupOffset;
     const point=textPoint('T',offset);setup=await host.selectModel(r.id,{anchor:point,focus:point});
-    if(caseId==='key-rtl')element.dir='rtl';
   }
   await sleep(50);
   r.before=await host.inspect(r.id);r.initialGeometry=host.geometry(r.id);
@@ -149,7 +150,7 @@ export function guard(action) {
   const finitePoint=point===null||point===undefined||Number.isFinite(point.x)&&Number.isFinite(point.y)&&point.x>=0&&point.x<1024&&point.y>=0&&point.y<768;
   return {id:r.id,caseId:r.caseId,action,target,editorConnected,activeElementId:el?.id??null,
     documentFocused:document.hasFocus(),allowed:editorConnected&&document.hasFocus()&&target===intended&&fixed&&finitePoint,
-    viewport:v,point:clone(point??null),pointerDown:r.pointerDown,rawRangeOwned:!!selection?.anchorNode&&r.element.contains(selection.anchorNode)&&r.element.contains(selection.focusNode)};
+    viewport:v,point:clone(point??null),pointerDown:r.pointerDown,lastTrustedPointerMove:clone(r.lastTrustedPointerMove),rawRangeOwned:!!selection?.anchorNode&&r.element.contains(selection.anchorNode)&&r.element.contains(selection.focusNode)};
 }
 export function inspect() {
   const r=current();return {id:r.id,caseId:r.caseId,geometry:rawGeometry(),pointerDown:r.pointerDown,focusLoss:r.focusLoss??null,
