@@ -35,7 +35,10 @@
     "test:sdk": "node scripts/test-sdk.mjs && node --test tests/sdk-controller.node.mjs tests/sdk-types.node.mjs tests/sdk-loader.node.mjs tests/sdk-integration.node.mjs tests/sdk-v2.node.mjs tests/sdk-v2-types.node.mjs",
     "test:sdk:consumer": "node --test tests/sdk-clean-consumer.node.mjs",
     "test:extensions": "node scripts/test-extensions.mjs",
-    "test:dom": "playwright test --config playwright.dom.config.js"
+    "test:dom": "playwright test --config playwright.dom.config.js",
+    "fuzz:seeds": "node scripts/reliability/fuzz-seeds.mjs",
+    "fuzz:bounded": "node scripts/reliability/fuzz.mjs bounded",
+    "fuzz:long": "node scripts/reliability/fuzz.mjs long"
   },
   "engines": {
     "node": ">=24.22.0 <25 || >=26 <27"
