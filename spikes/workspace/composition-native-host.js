@@ -24,6 +24,14 @@ export async function prepare(locale,caseId){check(!active&&['en','ru'].includes
   const domCase=caseId==='marked-deadkey'?'D04-marks-BR-sentinels-forward':caseId==='scene-deadkey'||caseId==='blur-refocus'?'D08-selected-scene-forward':'D01-plain-event-data-mismatch';
   preparing={caseId,locale};let prepared;try{prepared=await host.mount({caseId:domCase,nativeCase:family+'-forward',locale});}finally{preparing=null;}
   const baselinePolicy=policyReadback(),before={...prepared.before,...baselinePolicy};active={id:prepared.id,caseId,locale,family,before};
+  if(caseId==='blur-refocus'){
+    // An explicit tabindex admits this nontext button to WebKit Tab navigation
+    // without changing the browser's keyboard preference or constructing a control.
+    const control=document.getElementById('composition-host-control');
+    check(control instanceof HTMLButtonElement&&control.type==='button'&&control.isConnected,'Original host button required');
+    const tabIndex=control.getAttribute('tabindex');
+    control.setAttribute('tabindex','0');active.focusControlTabIndex={control,tabIndex};
+  }
   return {...prepared,before,...baselinePolicy,caseId,locale,family,viewport:viewport(),scope:'Prepared actual SDK2 fixture only; no physical input yet'};
 }
 export function guard(action){check(actions.includes(action),'Closed key action');const r=current(),element=host.element(r.id),focus=document.activeElement,target=focus===element||element.contains(focus)?'editor':focus===document.getElementById('composition-host-control')?'host-control':'blocked';const v=viewport();
@@ -42,5 +50,15 @@ export async function settle(){const r=current(),began=performance.now();let pri
 export async function undo(){return host.history(current().id,'undo');}
 export async function redo(){return host.history(current().id,'redo');}
 export function focusControl(){return host.focusControl();}
-export async function finish(){const r=current(),before=await checkpoint(),disposed=await host.dispose(r.id),final=await host.allDisposed();host.element(r.id).remove();active=null;return {...disposed,caseId:r.caseId,before,nativeFinal:final.native,errors:before.errors,...policyReadback()};}
+export async function finish(){const r=current(),before=await checkpoint(),disposed=await host.dispose(r.id),final=await host.allDisposed();
+  let focusControlRestoration=null;
+  if(r.focusControlTabIndex){
+    const {control,tabIndex}=r.focusControlTabIndex;
+    check(document.getElementById('composition-host-control')===control&&control.isConnected&&control.getAttribute('tabindex')==='0','Owned native focus button changed before teardown');
+    if(tabIndex===null)control.removeAttribute('tabindex');else control.setAttribute('tabindex',tabIndex);
+    check(control.getAttribute('tabindex')===tabIndex,'Original host button tabindex was not restored');
+    focusControlRestoration={status:'original-button-tabindex-restored',tabIndex};
+  }
+  host.element(r.id).remove();active=null;return {...disposed,caseId:r.caseId,before,nativeFinal:final.native,focusControlRestoration,errors:before.errors,...policyReadback()};
+}
 window.compositionNative={prepare,guard,inspect,checkpoint,settle,finish,focusControl,undo,redo};window.compositionNativeReady=true;

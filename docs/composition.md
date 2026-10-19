@@ -312,6 +312,17 @@ uses the bounded HTTP broker after bootstrap; physical System Events keys remain
 a separately qualified AppleEvents channel. During composition the fixture does
 not set text/ranges or repair the result.
 
+For I06, preparation gives the original external nontext button an explicit
+`tabindex="0"` before physical input. The same button remains in place, and
+finish restores its original attribute. Existing browser keyboard settings are
+not changed. WebKit's [form-control focus admission](https://github.com/WebKit/WebKit/blob/main/Source/WebCore/html/HTMLFormControlElement.cpp)
+distinguishes an explicit tabindex from the default button behavior. The
+automated three-engine EN/RU focus controls require actual browser ShiftTab/Tab,
+trusted down/up, five stable outside-focus samples, unchanged native state/range,
+the original button/attribute after finish, empty CSP/errors and zero resources.
+They are focus-topology regression evidence; installed I06 with actual preedit
+remains mandatory.
+
 Reports preserve first failure, later NOT_RUN, raw guards/events/tickets, exact
 source/build/helper bytes and modes, layout restoration, all finish resources,
 and cleanup of only the owned Chrome window/Safari fixture tab. Unknown cleanup

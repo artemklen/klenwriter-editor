@@ -108,3 +108,88 @@ test('attribute-free custom mark SPAN remains significant when its unselected su
   expect(after.lifecycle).toBe('recoveryRequired');expect(after.canonical).toBe(before.canonical);expect(after.state).toEqual(before.state);expect(after.rows).toEqual(before.rows);expect(docEvents(after)).toEqual(docEvents(before));expect(after.recovery.composition.reason).toBe('capture_limit');expect(after.recovery.composition.nativeOutcome).toBe('not_submitted');expect(after.recovery.composition.submission).toBeNull();expect(after.recovery.composition.response).toBeNull();expect(after.recovery.provisionalText).toBe('a\u00e9d\ntail');expect(after.dom).toEqual(during.dom);
   for(const role of ['BR','C_outer','C_mark','C_text','H','O_outer','O_text']){expect(after.objects[role].connected).toBe(true);expect(after.objects[role].attributes).toEqual(before.objects[role].attributes);expect(after.objects[role].text).toEqual(before.objects[role].text);}
 });
+
+// Actual browser keyboard/focus topology only. No OS IME, composition gesture,
+// synthetic keyboard event, or programmatic focus/range repair is used here.
+// The installed I06 preedit lane remains a separate mandatory observation.
+for(const locale of ['en','ru'])test(`installed fixture nontext focus topology ${locale}: actual browser ShiftTab/Tab preserves original native range`,async({page})=>{
+  const observations=records.get(page);
+  observations.scope='Actual public packaged SDK2/sealed WASM and browser keyboard focus topology; not OS IME or installed physical input.';
+  const nativeCall=(method,...args)=>page.evaluate(({method,args})=>window.compositionNative[method](...args),{method,args});
+  const original=await page.evaluate(()=>{
+    const button=document.getElementById('composition-host-control');
+    window.compositionFocusOriginalButton=button;
+    return {tag:button.tagName,type:button.type,tabIndexAttribute:button.getAttribute('tabindex'),connected:button.isConnected};
+  });
+  expect(original).toEqual({tag:'BUTTON',type:'button',tabIndexAttribute:null,connected:true});
+  expect(await page.evaluate(async()=>{await import('/composition-native-host.js');return window.compositionNativeReady;})).toBe(true);
+  let prepared=null;
+  try{
+    prepared=await nativeCall('prepare',locale,'blur-refocus');
+    const {id}=prepared,literal=native.cases.find(row=>row.id==='P19-forward');
+    observations.nativeFocusPrepared=prepared;
+    const setup=await page.evaluate(id=>{
+      const control=document.getElementById('composition-host-control'),editor=document.getElementById(id);
+      return {tag:control.tagName,type:control.type,tabIndex:control.tabIndex,tabIndexAttribute:control.getAttribute('tabindex'),sameObject:control===window.compositionFocusOriginalButton,
+        controls:document.querySelectorAll('#composition-host-control').length,connected:control.isConnected,
+        beforeEditor:!!(control.compareDocumentPosition(editor)&Node.DOCUMENT_POSITION_FOLLOWING),
+        outsideEditable:!control.closest('[contenteditable="true"]'),editorFocused:document.activeElement===editor};
+    },id);
+    observations.nativeFocusSetup=setup;
+    // Frozen I06 requires a nontext focus control; a text input is not a substitute.
+    // An explicit tabindex makes the original button reachable without a swap.
+    expect(setup).toEqual({tag:'BUTTON',type:'button',tabIndex:0,tabIndexAttribute:'0',sameObject:true,controls:1,connected:true,beforeEditor:true,outsideEditable:true,editorFocused:true});
+    const originalButton=async()=>{
+      const value=await page.evaluate(()=>{const control=document.getElementById('composition-host-control');return {sameObject:control===window.compositionFocusOriginalButton,tag:control.tagName,type:control.type,tabIndexAttribute:control.getAttribute('tabindex'),connected:control.isConnected};});
+      (observations.nativeFocusControlChecks??=[]).push(value);
+      expect(value).toEqual({sameObject:true,tag:'BUTTON',type:'button',tabIndexAttribute:'0',connected:true});
+    };
+    const before=await nativeCall('checkpoint');
+    observations.checkpoints.push({label:'Noncomposing P19 original directed focus baseline',value:before});
+    expect(before.canonical).toBe(literal.input.canonical_json);state(before.state,literal.before_state,before.roles);
+    expect(before.state.selection).toEqual(selection(before.roles,literal.input.selection));
+    expect(before.activeElementId).toBe(id);expect(before.rawDom.inside).toBe(true);
+    const unchanged=value=>{
+      expect(value.lifecycle).toBe('ready');expect(value.recovery).toBeNull();expect(value.errors).toEqual([]);
+      expect(value.policyViolations).toEqual([]);expect(value.policyOverflow).toBeNull();expect(value.traceOverflow).toBe(false);
+      expect(value.canonical).toBe(before.canonical);expect(value.state).toEqual(before.state);
+      expect(value.rows).toEqual(before.rows);expect(value.events).toEqual(before.events);expect(value.dom).toEqual(before.dom);
+      expect(value.uaComposition).toEqual({starts:0,ends:0,open:false});
+    };
+    const acknowledged=(value,from,shift)=>{
+      expect(value.traceOverflow).toBe(false);
+      for(const event of ['keydown','keyup'])expect(value.inputTrace.slice(from).some(row=>row.event===event&&row.code==='Tab'&&row.isTrusted===true&&row.shift===shift&&row.alt===false&&row.meta===false),`Actual trusted ${event}/Tab shift=${shift}`).toBe(true);
+    };
+    const departureStart=before.inputTrace.length;
+    await page.keyboard.press('Shift+Tab');
+    await expect(page.locator('#composition-host-control')).toBeFocused();
+    const departed=await nativeCall('checkpoint');
+    observations.checkpoints.push({label:'Actual browser ShiftTab departure',value:departed});
+    acknowledged(departed,departureStart,true);unchanged(departed);expect(departed.activeElementId).toBe('composition-host-control');await originalButton();
+    for(let i=0;i<5;i++){
+      await page.waitForTimeout(100);const stable=await nativeCall('checkpoint');
+      observations.checkpoints.push({label:`External nontext focus stable ${i}`,value:stable});
+      expect(stable.activeElementId).toBe('composition-host-control');unchanged(stable);await originalButton();
+    }
+    const returnStart=(await nativeCall('inspect')).inputTraceCount;
+    await page.keyboard.press('Tab');
+    await expect(page.locator(`#${id}`)).toBeFocused();
+    const returned=await nativeCall('checkpoint');
+    observations.checkpoints.push({label:'Actual browser Tab return to original native range',value:returned});
+    acknowledged(returned,returnStart,false);unchanged(returned);expect(returned.activeElementId).toBe(id);await originalButton();
+    // SelectionOwner's Tab-return uses view.restoreSelection, not SDK publish;
+    // syncFromDom submits only a DIFFERENT selection. No epoch allowance is invented.
+    expect(returned.rawDom).toEqual(before.rawDom);
+  }finally{
+    if(prepared){
+      observations.nativeFocusFinish=await nativeCall('finish');released(observations.nativeFocusFinish);
+      expect(observations.nativeFocusFinish.nativeFinal).toEqual({sessions:0,snapshot_handles:0,snapshot_bytes:'0',protected_cursors:0});
+      expect(observations.nativeFocusFinish.errors).toEqual([]);expect(observations.nativeFocusFinish.policyViolations).toEqual([]);expect(observations.nativeFocusFinish.policyOverflow).toBeNull();
+      observations.nativeFocusRestoration=await page.evaluate(()=>{
+        const control=document.getElementById('composition-host-control');
+        return {sameObject:control===window.compositionFocusOriginalButton,tag:control.tagName,type:control.type,tabIndexAttribute:control.getAttribute('tabindex'),connected:control.isConnected};
+      });
+      expect(observations.nativeFocusRestoration).toEqual({sameObject:true,tag:'BUTTON',type:'button',tabIndexAttribute:null,connected:true});
+    }
+  }
+});
