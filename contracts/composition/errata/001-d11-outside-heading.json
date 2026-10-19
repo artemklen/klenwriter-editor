@@ -1,0 +1,1167 @@
+{
+  "format": "composition-input-erratum/1",
+  "id": "001-d11-outside-heading",
+  "status": "AUTHORING_CORRECTION_NOT_ACCEPTANCE",
+  "frozenContractCommit": "fd5439e",
+  "reason": "Independent DOM literal authoring appended the shared heading/tail helper to D, although unchanged native seed D has only one paragraph. Source review found this before any mounted composition candidate execution. This correction removes only that invented outside fixture material. No candidate output becomes a golden.",
+  "discoveredBefore": "mounted composition candidate execution",
+  "unchangedFrozenV1Bytes": true,
+  "originalFiles": [
+    {
+      "repositoryPath": "contracts/composition/v1/dom-oracles.json",
+      "bytes": 99603,
+      "sha256": "750ef0f4df5597b25fb4f9738d11b5405bd92079ac390dadf9ee7a3bbacf8754"
+    },
+    {
+      "repositoryPath": "contracts/composition/v1/native-oracles.json",
+      "bytes": 847545,
+      "sha256": "ac17ce35d4dd94f397782ce89fc0567404b3305da1c63a9277309b8c2e16df6c"
+    },
+    {
+      "repositoryPath": "contracts/composition/v1/inputs/D.json",
+      "bytes": 281,
+      "sha256": "773ba4d23b0f509e23c0c9fd05afd81e3206daef08becb8898675bd73dc5e5aa"
+    },
+    {
+      "repositoryPath": "contracts/composition/v1/expected/P11-unchanged.canonical.json",
+      "bytes": 281,
+      "sha256": "773ba4d23b0f509e23c0c9fd05afd81e3206daef08becb8898675bd73dc5e5aa"
+    },
+    {
+      "repositoryPath": "contracts/composition/v1/manifest.json",
+      "bytes": 6901,
+      "sha256": "6f2dd52af470b05c1b1fc263fe4349c421b1e6e3b30c0bfc3a0b67f79c8a747b"
+    }
+  ],
+  "originalSourcePins": {
+    "dom": [
+      {
+        "repositoryPath": "packages/dom/src/view.ts",
+        "bytes": 38684,
+        "sha256": "c545b50684b7c80dcf25f6a24ae5e6c0b020df5757cb96d79d6d8e55c70f7079"
+      },
+      {
+        "repositoryPath": "packages/dom/src/input.ts",
+        "bytes": 15183,
+        "sha256": "9439b2e79b8cf548affb5fc89a6be1a9cd8d75b73870c55a9f8c06e8e193ecd8"
+      },
+      {
+        "repositoryPath": "packages/dom/src/mounted.ts",
+        "bytes": 31446,
+        "sha256": "190c9021fec02e2687aab1909159d947876c9b325c78fcc3ce003dcc9f72f225"
+      },
+      {
+        "repositoryPath": "packages/dom/src/selection.ts",
+        "bytes": 20501,
+        "sha256": "5f5196a81bd8cf56e3a70ba9999643a381f72ba8de0bd58248b1277a8e6167f4"
+      },
+      {
+        "repositoryPath": "packages/kwdj/src/dom.ts",
+        "bytes": 12425,
+        "sha256": "6399c1e91a7952bf468cc11246b20282d796425043b4b93e5fc467aad9304a51"
+      },
+      {
+        "repositoryPath": "crates/kwdj/src/commands/inline.rs",
+        "bytes": 58026,
+        "sha256": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394"
+      },
+      {
+        "repositoryPath": "docs/m0/architecture.md",
+        "bytes": 64424,
+        "sha256": "13f7a2c183643961331322a5f78afdf8b0b7aa5169972fc581f5368c55fda6e3"
+      },
+      {
+        "repositoryPath": "docs/m0/architecture-flows.md",
+        "bytes": 12340,
+        "sha256": "c657926df44231580aaead18d95cff909f4f92209b2ff38c76248df93cadba2c"
+      },
+      {
+        "repositoryPath": "docs/m0/unicode-positions.md",
+        "bytes": 11343,
+        "sha256": "fe2dbcdeb9643ddfb90d86498e7d8392a031f4beb7b0314b20bec17ec96c471d"
+      }
+    ],
+    "native": [
+      {
+        "repositoryPath": "docs/m0/unicode-positions.md",
+        "scope": "UTF16 units, scalar-readable positions, native EGC edit authority",
+        "bytes": 11343,
+        "sha256": "fe2dbcdeb9643ddfb90d86498e7d8392a031f4beb7b0314b20bec17ec96c471d",
+        "gitBlobSha256": "fe2dbcdeb9643ddfb90d86498e7d8392a031f4beb7b0314b20bec17ec96c471d",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/core/src/commands.rs",
+        "scope": "CommandPresentation default, isolated command plan semantics",
+        "bytes": 19905,
+        "sha256": "c6cb3b20e83524d4892b05d9c36d6ce47184e7e14eccb71b7604c540cdcb7f8a",
+        "gitBlobSha256": "c6cb3b20e83524d4892b05d9c36d6ce47184e7e14eccb71b7604c540cdcb7f8a",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/kwdj/src/commands/inline.rs",
+        "scope": "insert_text 811-918; cross-block 920-1110; final typing 771-810",
+        "bytes": 58026,
+        "sha256": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394",
+        "gitBlobSha256": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/kwdj/src/edit_normalize.rs",
+        "scope": "355-400 adjacent compatible Text join preserves left ID",
+        "bytes": 41095,
+        "sha256": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a",
+        "gitBlobSha256": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/engine/src/tree.rs",
+        "scope": "range_endpoint 791; replace_inline_range 1243-1365; split/join 1907-2065; detach 2221-2285",
+        "bytes": 197736,
+        "sha256": "d1bc2205af12063d4b3b6386f0198830d321ba35b8f2a1d4ae4962d075caedda",
+        "gitBlobSha256": "d1bc2205af12063d4b3b6386f0198830d321ba35b8f2a1d4ae4962d075caedda",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/engine/src/mapping.rs",
+        "scope": "126-170 gap bias; 313-469 split/join/child; 528-542 retirement; 628-646 sticky deleted",
+        "bytes": 46845,
+        "sha256": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54",
+        "gitBlobSha256": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/engine/src/session.rs",
+        "scope": "485-535 explicit selection setup and state event; initial session state",
+        "bytes": 35352,
+        "sha256": "156f018cf9927ec8ea0648b2ffac873a3807886019020cda6445efd7a294a7b5",
+        "gitBlobSha256": "156f018cf9927ec8ea0648b2ffac873a3807886019020cda6445efd7a294a7b5",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/engine/src/commands.rs",
+        "scope": "guarded CommandRequest, query preview, execute and final typing",
+        "bytes": 10689,
+        "sha256": "21940c788ad28d4555d698feefc5a8021c1b784335c90cbecde53eb7a5ae529d",
+        "gitBlobSha256": "21940c788ad28d4555d698feefc5a8021c1b784335c90cbecde53eb7a5ae529d",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/engine/src/dispatch.rs",
+        "scope": "510-563 one event kind; 711 revision; 752-775 stored marks/selection epoch; 885-941 publication",
+        "bytes": 37299,
+        "sha256": "b85613e1f86b5ae0221834b2557656fde63233ae2399f0fe0cacc2f393b799a3",
+        "gitBlobSha256": "b85613e1f86b5ae0221834b2557656fde63233ae2399f0fe0cacc2f393b799a3",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/engine/src/history.rs",
+        "scope": "104-123 typed codes; 250-300 isolated record; 324-355 replay; 364-376 sealed/empty barrier",
+        "bytes": 56430,
+        "sha256": "43a28d7fc3e48138d71f4e0cb2889a572fa25dc545b39e6a0e793ae6d610382d",
+        "gitBlobSha256": "43a28d7fc3e48138d71f4e0cb2889a572fa25dc545b39e6a0e793ae6d610382d",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/engine/src/history_dispatch.rs",
+        "scope": "95-160 exact historical form/selection/marks; 239-280 query/execute",
+        "bytes": 10209,
+        "sha256": "a234e5d49c019bdbe7265b530c88cfe6f2bd23e1a125db06b438e216e181ddd5",
+        "gitBlobSha256": "a234e5d49c019bdbe7265b530c88cfe6f2bd23e1a125db06b438e216e181ddd5",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/engine/src/transaction.rs",
+        "scope": "144-175 TreeError::Position => position.invalid",
+        "bytes": 15508,
+        "sha256": "34e628108dff27be15ab8ba1787ecf0132125ecf91d40d6ef38b438f7ac5260d",
+        "gitBlobSha256": "34e628108dff27be15ab8ba1787ecf0132125ecf91d40d6ef38b438f7ac5260d",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/engine/src/events.rs",
+        "scope": "event payload and single append sequence, no extra state event for document publication",
+        "bytes": 28647,
+        "sha256": "94f19558164d2c49e9aac56c9f99bd42bd5f13cb29b083aad3dbad9580c6def6",
+        "gitBlobSha256": "94f19558164d2c49e9aac56c9f99bd42bd5f13cb29b083aad3dbad9580c6def6",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/protocol/src/lib.rs",
+        "scope": "81 StampDto; 102 PositionDto; 226 DiagnosticDto; 242 HistoryViewDto; 344 EventKindDto; 456 BridgeRequest",
+        "bytes": 13477,
+        "sha256": "34bdfbce364e45c89b3c531985ca1a4728da3142b903c585ce3b0a9058ab55b3",
+        "gitBlobSha256": "34bdfbce364e45c89b3c531985ca1a4728da3142b903c585ce3b0a9058ab55b3",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/bridge/src/lib.rs",
+        "scope": "239 errors; 330 request; 384-423 boundary; 576-595 history; 745-772 map response",
+        "bytes": 36728,
+        "sha256": "1d59524a4db8ac7de9793f9ccd352e34f18c7e2da55b8b408690ed1ce2016600",
+        "gitBlobSha256": "1d59524a4db8ac7de9793f9ccd352e34f18c7e2da55b8b408690ed1ce2016600",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/bridge/src/convert.rs",
+        "scope": "16 diagnostic defaults; 340 history_out; 347 presentation_out; event_out",
+        "bytes": 13259,
+        "sha256": "c2a8303ca7ea4a88c5b395add6860e536b69875e0b1b7ec036f7d65acc10a815",
+        "gitBlobSha256": "c2a8303ca7ea4a88c5b395add6860e536b69875e0b1b7ec036f7d65acc10a815",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/kwdj-sdk/src/lib.rs",
+        "scope": "current KWDJ public factory and command decoder boundary",
+        "bytes": 17616,
+        "sha256": "0dd3fe70557e2e5f7c1eb1e125ec4dffc67e335278d8803b59b1ec0b47cf7474",
+        "gitBlobSha256": "0dd3fe70557e2e5f7c1eb1e125ec4dffc67e335278d8803b59b1ec0b47cf7474",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "contracts/history/v1/vectors.json",
+        "scope": "H11 one isolated semantic IME unit; chronological revisions; exact history/marks policies",
+        "bytes": 44902,
+        "sha256": "22882d577677eb409172ba33ae675bc2e3754dcda2c8198f0c4468e719f07a08",
+        "gitBlobSha256": "22882d577677eb409172ba33ae675bc2e3754dcda2c8198f0c4468e719f07a08",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "contracts/selection/v1/native-oracles.json",
+        "scope": "L1 identity/map/history methodology and L6 scalar-readable EGC-interior refusal",
+        "bytes": 338776,
+        "sha256": "d1fe9a0f7139066eb34725a9bd6b2568752b3a6204f73474dd9436eaa25f73e1",
+        "gitBlobSha256": "d1fe9a0f7139066eb34725a9bd6b2568752b3a6204f73474dd9436eaa25f73e1",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "contracts/commands/v1/vectors.json",
+        "scope": "existing InsertText public command/normalization role methodology",
+        "bytes": 80586,
+        "sha256": "1a067f1ca197ccc1aa7a4689e950db250973c269314bf3d38d143b97c248cb3f",
+        "gitBlobSha256": "1a067f1ca197ccc1aa7a4689e950db250973c269314bf3d38d143b97c248cb3f",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/kwdj-sdk/src/convert.rs",
+        "scope": "96-121 exact profile diagnostics/category/path",
+        "bytes": 4900,
+        "sha256": "6586e933c1bb3d76f51101b9c33f0ff62c3350dd029a01bef7f056af458c4833",
+        "gitBlobSha256": "6586e933c1bb3d76f51101b9c33f0ff62c3350dd029a01bef7f056af458c4833",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/kwdj/src/validate.rs",
+        "scope": "222-244 heading/paragraph metadata;281-297 blockquote prose children",
+        "bytes": 40723,
+        "sha256": "9824aeb6c05aeb5eff99af84d3c711c87eb728efa53181c1834d39354221ceec",
+        "gitBlobSha256": "9824aeb6c05aeb5eff99af84d3c711c87eb728efa53181c1834d39354221ceec",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/kwdj/src/model.rs",
+        "scope": "schema field shapes for paragraphs, headings, hard_break and blockquote",
+        "bytes": 11709,
+        "sha256": "5162a1f19c899922a032afcecc3227f65c19f05a530d1ba6a178f11e6cf635ce",
+        "gitBlobSha256": "5162a1f19c899922a032afcecc3227f65c19f05a530d1ba6a178f11e6cf635ce",
+        "matchesGit69": true
+      },
+      {
+        "repositoryPath": "crates/core/src/transaction.rs",
+        "scope": "219-232 target-independent default work ceilings",
+        "bytes": 15125,
+        "sha256": "26f4f6457129afe08f09b5c35d857ccc7b3f41bad417e226f055a711f2fd2f14",
+        "gitBlobSha256": "26f4f6457129afe08f09b5c35d857ccc7b3f41bad417e226f055a711f2fd2f14",
+        "matchesGit69": true
+      }
+    ],
+    "refineInput": {
+      "path": "/tmp/osr-41-refine-69d8cff-01/refine.md",
+      "bytes": 9326,
+      "sha256": "e49ed26cfa784457caf7f7fa5a6ce6289d1d79b72fb3c111021904c170d1c9c7"
+    }
+  },
+  "serialization": {
+    "digest": "SHA256 of UTF8 JSON with sort_keys=true, compact separators, ensure_ascii=false; no trailing newline",
+    "use": "Data digests only, no production/native serializer executed"
+  },
+  "allowedFieldChanges": [
+    {
+      "target": "fixtures.D",
+      "path": [
+        "before"
+      ],
+      "operation": "replace2elementArrayWithOriginalParagraphOnly"
+    },
+    {
+      "target": "fixtures.D",
+      "path": [
+        "roles"
+      ],
+      "operation": "removeOnlyKeys",
+      "keys": [
+        "H",
+        "O_outer",
+        "O_text"
+      ]
+    },
+    {
+      "target": "fixtures.D",
+      "path": [
+        "outsideAfter"
+      ],
+      "operation": "replace",
+      "before": "H",
+      "after": null
+    },
+    {
+      "target": "cases[id=D11-readable-scalar-EGC-refusal]",
+      "path": [
+        "actualFinalDom"
+      ],
+      "operation": "replace2elementArrayWithOriginalParagraphOnly"
+    },
+    {
+      "target": "cases[id=D11-readable-scalar-EGC-refusal]",
+      "path": [
+        "expected",
+        "restoredAffectedCommittedDom"
+      ],
+      "operation": "replace2elementArrayWithOriginalParagraphOnly"
+    }
+  ],
+  "replacements": [
+    {
+      "target": {
+        "kind": "fixture",
+        "key": "D"
+      },
+      "before": {
+        "nativeInput": "inputs/D.json",
+        "before": [
+          {
+            "nodeType": 1,
+            "role": "P",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "E_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "E_mark",
+                    "tag": "strong",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "E_text",
+                        "data": "e"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "nodeType": 1,
+                "role": "C_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "C_mark",
+                    "tag": "em",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "C_text",
+                        "data": "́"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "nodeType": 1,
+                "role": "X_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "X_mark",
+                    "tag": "code",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "X_text",
+                        "data": "x"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "roles": {
+          "P": [
+            0
+          ],
+          "E_outer": [
+            0,
+            0
+          ],
+          "E_mark": [
+            0,
+            0,
+            0
+          ],
+          "E_text": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "C_outer": [
+            0,
+            1
+          ],
+          "C_mark": [
+            0,
+            1,
+            0
+          ],
+          "C_text": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "X_outer": [
+            0,
+            2
+          ],
+          "X_mark": [
+            0,
+            2,
+            0
+          ],
+          "X_text": [
+            0,
+            2,
+            0,
+            0
+          ],
+          "H": [
+            1
+          ],
+          "O_outer": [
+            1,
+            0
+          ],
+          "O_text": [
+            1,
+            0,
+            0
+          ]
+        },
+        "initialForward": {
+          "anchor": {
+            "path": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 0
+          },
+          "focus": {
+            "path": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 1
+          }
+        },
+        "window": [
+          "P"
+        ],
+        "outsideBefore": null,
+        "outsideAfter": "H"
+      },
+      "beforeDataSha256": "c7c18313984c4dd69ec35bf9904dc841352dc3d2a73a7ef74c18ceb3db407dec",
+      "after": {
+        "nativeInput": "inputs/D.json",
+        "before": [
+          {
+            "nodeType": 1,
+            "role": "P",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "E_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "E_mark",
+                    "tag": "strong",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "E_text",
+                        "data": "e"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "nodeType": 1,
+                "role": "C_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "C_mark",
+                    "tag": "em",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "C_text",
+                        "data": "́"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "nodeType": 1,
+                "role": "X_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "X_mark",
+                    "tag": "code",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "X_text",
+                        "data": "x"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "roles": {
+          "P": [
+            0
+          ],
+          "E_outer": [
+            0,
+            0
+          ],
+          "E_mark": [
+            0,
+            0,
+            0
+          ],
+          "E_text": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "C_outer": [
+            0,
+            1
+          ],
+          "C_mark": [
+            0,
+            1,
+            0
+          ],
+          "C_text": [
+            0,
+            1,
+            0,
+            0
+          ],
+          "X_outer": [
+            0,
+            2
+          ],
+          "X_mark": [
+            0,
+            2,
+            0
+          ],
+          "X_text": [
+            0,
+            2,
+            0,
+            0
+          ]
+        },
+        "initialForward": {
+          "anchor": {
+            "path": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 0
+          },
+          "focus": {
+            "path": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 1
+          }
+        },
+        "window": [
+          "P"
+        ],
+        "outsideBefore": null,
+        "outsideAfter": null
+      },
+      "afterDataSha256": "239624cab2cf1b97454412fb214d650be304e5c1b557ae780d9e0f092afb181d"
+    },
+    {
+      "target": {
+        "kind": "case",
+        "id": "D11-readable-scalar-EGC-refusal"
+      },
+      "before": {
+        "id": "D11-readable-scalar-EGC-refusal",
+        "classification": "actual_native_refusal_after_controlled_dom_input",
+        "seed": "D",
+        "nativeCase": "P11-forward",
+        "originalDomSelection": {
+          "anchor": {
+            "path": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 0
+          },
+          "focus": {
+            "path": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 1
+          }
+        },
+        "actualFinalDom": [
+          {
+            "nodeType": 1,
+            "role": "P",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "E_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "E_mark",
+                    "tag": "strong",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "E_text",
+                        "data": "Z"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "nodeType": 1,
+                "role": "C_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "C_mark",
+                    "tag": "em",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "C_text",
+                        "data": "́"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "nodeType": 1,
+                "role": "X_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "X_mark",
+                    "tag": "code",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "X_text",
+                        "data": "x"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "nodeType": 1,
+            "role": "H",
+            "tag": "h3",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "O_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 3,
+                    "role": "O_text",
+                    "data": "tail"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "expected": {
+          "nativeCompositionDispatches": 1,
+          "nativeResponseCode": "position.invalid",
+          "nativeResponseAndOriginalSubmissionRetained": true,
+          "documentEventsAdded": 0,
+          "undoEntriesAdded": 0,
+          "retainedProvisionalText": "Źx",
+          "restoredAffectedCommittedDom": [
+            {
+              "nodeType": 1,
+              "role": "P",
+              "tag": "p",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 1,
+                  "role": "E_outer",
+                  "tag": "span",
+                  "attributes": {},
+                  "children": [
+                    {
+                      "nodeType": 1,
+                      "role": "E_mark",
+                      "tag": "strong",
+                      "attributes": {},
+                      "children": [
+                        {
+                          "nodeType": 3,
+                          "role": "E_text",
+                          "data": "e"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "nodeType": 1,
+                  "role": "C_outer",
+                  "tag": "span",
+                  "attributes": {},
+                  "children": [
+                    {
+                      "nodeType": 1,
+                      "role": "C_mark",
+                      "tag": "em",
+                      "attributes": {},
+                      "children": [
+                        {
+                          "nodeType": 3,
+                          "role": "C_text",
+                          "data": "́"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "nodeType": 1,
+                  "role": "X_outer",
+                  "tag": "span",
+                  "attributes": {},
+                  "children": [
+                    {
+                      "nodeType": 1,
+                      "role": "X_mark",
+                      "tag": "code",
+                      "attributes": {},
+                      "children": [
+                        {
+                          "nodeType": 3,
+                          "role": "X_text",
+                          "data": "x"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "nodeType": 1,
+              "role": "H",
+              "tag": "h3",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 1,
+                  "role": "O_outer",
+                  "tag": "span",
+                  "attributes": {},
+                  "children": [
+                    {
+                      "nodeType": 3,
+                      "role": "O_text",
+                      "data": "tail"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "recoveryReason": "native_refused",
+          "disposition": "committed_restored",
+          "restoreBeforeSafeInputRetention": false
+        }
+      },
+      "beforeDataSha256": "b71ade1a80d352bed671ed3ee36040baf3d54ade24c6dd4a5c8fc8c53a06ac12",
+      "after": {
+        "id": "D11-readable-scalar-EGC-refusal",
+        "classification": "actual_native_refusal_after_controlled_dom_input",
+        "seed": "D",
+        "nativeCase": "P11-forward",
+        "originalDomSelection": {
+          "anchor": {
+            "path": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 0
+          },
+          "focus": {
+            "path": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "nodeType": 3,
+            "offsetUtf16": 1
+          }
+        },
+        "actualFinalDom": [
+          {
+            "nodeType": 1,
+            "role": "P",
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              {
+                "nodeType": 1,
+                "role": "E_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "E_mark",
+                    "tag": "strong",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "E_text",
+                        "data": "Z"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "nodeType": 1,
+                "role": "C_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "C_mark",
+                    "tag": "em",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "C_text",
+                        "data": "́"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "nodeType": 1,
+                "role": "X_outer",
+                "tag": "span",
+                "attributes": {},
+                "children": [
+                  {
+                    "nodeType": 1,
+                    "role": "X_mark",
+                    "tag": "code",
+                    "attributes": {},
+                    "children": [
+                      {
+                        "nodeType": 3,
+                        "role": "X_text",
+                        "data": "x"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "expected": {
+          "nativeCompositionDispatches": 1,
+          "nativeResponseCode": "position.invalid",
+          "nativeResponseAndOriginalSubmissionRetained": true,
+          "documentEventsAdded": 0,
+          "undoEntriesAdded": 0,
+          "retainedProvisionalText": "Źx",
+          "restoredAffectedCommittedDom": [
+            {
+              "nodeType": 1,
+              "role": "P",
+              "tag": "p",
+              "attributes": {},
+              "children": [
+                {
+                  "nodeType": 1,
+                  "role": "E_outer",
+                  "tag": "span",
+                  "attributes": {},
+                  "children": [
+                    {
+                      "nodeType": 1,
+                      "role": "E_mark",
+                      "tag": "strong",
+                      "attributes": {},
+                      "children": [
+                        {
+                          "nodeType": 3,
+                          "role": "E_text",
+                          "data": "e"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "nodeType": 1,
+                  "role": "C_outer",
+                  "tag": "span",
+                  "attributes": {},
+                  "children": [
+                    {
+                      "nodeType": 1,
+                      "role": "C_mark",
+                      "tag": "em",
+                      "attributes": {},
+                      "children": [
+                        {
+                          "nodeType": 3,
+                          "role": "C_text",
+                          "data": "́"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "nodeType": 1,
+                  "role": "X_outer",
+                  "tag": "span",
+                  "attributes": {},
+                  "children": [
+                    {
+                      "nodeType": 1,
+                      "role": "X_mark",
+                      "tag": "code",
+                      "attributes": {},
+                      "children": [
+                        {
+                          "nodeType": 3,
+                          "role": "X_text",
+                          "data": "x"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "recoveryReason": "native_refused",
+          "disposition": "committed_restored",
+          "restoreBeforeSafeInputRetention": false
+        }
+      },
+      "afterDataSha256": "cf5c3615b17629469271df520244e51c30a5ec796a71a352b4c9e3e4a96810ed"
+    }
+  ],
+  "unchangedNativeAuthority": {
+    "inputFile": "inputs/D.json",
+    "document": {
+      "content": [
+        {
+          "content": [
+            {
+              "marks": [
+                {
+                  "type": "strong"
+                }
+              ],
+              "text": "e",
+              "type": "text"
+            },
+            {
+              "marks": [
+                {
+                  "type": "emphasis"
+                }
+              ],
+              "text": "́",
+              "type": "text"
+            },
+            {
+              "marks": [
+                {
+                  "type": "code"
+                }
+              ],
+              "text": "x",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "profile": "prose",
+      "schema": "klenwriter.document",
+      "schema_version": 1
+    },
+    "expectedFile": "expected/P11-unchanged.canonical.json",
+    "expectedCanonicalJson": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"e\",\"type\":\"text\"},{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"́\",\"type\":\"text\"},{\"marks\":[{\"type\":\"code\"}],\"text\":\"x\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+    "caseIds": [
+      "P11-forward",
+      "P11-reverse"
+    ],
+    "nativeCaseRecordDataSha256": {
+      "P11-forward": "426f6bdcf5219c40392f8773896ab32370963a2370af7c79b36299d10bac3ef6",
+      "P11-reverse": "6ef78e5bac056f00d6d388906361ac69752f7a4a0ecda56b2273fbe8f04f210f"
+    },
+    "nativeAliasRetained": "P11-forward",
+    "nativeResponseCode": "position.invalid",
+    "nativeDispatches": 1,
+    "documentAndHistoryEntriesAdded": 0,
+    "originalDirectedSelectionAndAllNativeFacetsUnchanged": true
+  },
+  "unchangedDomRequirements": [
+    "Original raw E0→E1 paths/offsets, native alias, original range and replacementZ remain identical.",
+    "retainedProvisionalText Z+U0301+x and committed e+U0301+x remain identical.",
+    "Exact real Rust refusal/response/original ticket and lossless recovery before affected restoration remain mandatory.",
+    "No source implementation, native input, native expected output, frozen contract bytes, EGC policy, test assertion or lifecycle gate is weakened."
+  ],
+  "loaderPolicy": "Read pinned original v1. Match exact format/id/status, file pins, target identities and complete before data/digests. Apply these two complete replacements only after independently checking the five-field whitelist; reject additional targets/changes. Keep originals and expose erratum provenance. Do not edit v1 or silently patch native data.",
+  "qualification": "Source/data authoring correction, not a test result, approval, acceptance waiver, code review or permission to skip a native/mounted refusal witness."
+}
