@@ -27,7 +27,9 @@ use editor_protocol::*;
 pub mod convert;
 pub mod distribution;
 pub mod recipes;
+mod selection;
 pub use distribution::{CreatedEndpoint, Distribution, DistributionSession, capability_digest};
+pub use selection::SelectionTextData;
 
 const MAX_REQUEST_BYTES: usize = 16 * 1024 * 1024;
 const MAX_SNAPSHOT_HANDLES: usize = 32;
@@ -116,6 +118,15 @@ pub fn resource_counts() -> ResourceCountsDto {
 
 /// Profile-owned wire decoding and diagnostics. Session semantics remain typed.
 pub trait BridgeAdapter<P: CommandProvider> {
+    fn selection_text<V: editor_core::candidate::CandidateRead<Id = editor_engine::NodeId>>(
+        &self,
+        _view: &V,
+        _selection: editor_core::positions::Selection<editor_engine::NodeId>,
+        _max_bytes: u32,
+        _work: &mut WorkMeter,
+    ) -> Result<SelectionTextData, DiagnosticDto> {
+        Err(diagnostic("profile.selection_text_unsupported", ""))
+    }
     fn decode_command(
         &self,
         key: editor_engine::SessionKey,
@@ -882,7 +893,7 @@ impl<P: CommandProvider, A: BridgeAdapter<P>> Endpoint for Bridge<P, A> {
         Bridge::initialization(self)
     }
     fn call_json(&mut self, json: &str) -> String {
-        Bridge::call_json(self, json)
+        Bridge::call_json_v2(self, json)
     }
     fn destroy(&mut self) {
         Bridge::destroy(self);

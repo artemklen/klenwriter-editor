@@ -1,0 +1,132 @@
+{
+  "format": "editor-selection-contract/1",
+  "issue": "OSR-40",
+  "status": "FROZEN_BEFORE_IMPLEMENTATION",
+  "acceptedBase": "ff2bd3103eba9b47cd2a06098d1506d9a054a589",
+  "branch": "osr-40",
+  "authority": "Original five Linear AC, architecture v2/master plan v3, primary README/public-api declarations; copied proposals retain historical provenance.",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 16949,
+      "sha256": "5a37964ef258ce4dc4d5a3736321ede7e3400cc394a783212910a6d5402cc4df"
+    },
+    {
+      "path": "bookmark-oracle-notes.md",
+      "bytes": 6349,
+      "sha256": "a7e616d68f8f760b969c9c16b80eae94a0cd4f42a7dcdd660da73a5828a3d729"
+    },
+    {
+      "path": "bookmark-oracles.json",
+      "bytes": 163108,
+      "sha256": "463202fe299534573344bfe2bef2c42b5b2190bae6d9a137673e4d92162ab434"
+    },
+    {
+      "path": "clipboard-oracles.json",
+      "bytes": 15183,
+      "sha256": "4af63134ef75f9e401ab8e39007869094b791fad301b7896f52266f9bf008098"
+    },
+    {
+      "path": "contract-preflight.md",
+      "bytes": 11130,
+      "sha256": "00ff0ba2cd080833c232e52eaab99820e9a21d2ee4aa44489c3c21f615d79e5e"
+    },
+    {
+      "path": "formatting-oracles.json",
+      "bytes": 12192,
+      "sha256": "10295fce4cf05c4bb12428e49cdefa553e33f9846f2914a4d2cc22d2a9f8c421"
+    },
+    {
+      "path": "legacy/dom-types.v39.ts",
+      "bytes": 6208,
+      "sha256": "8ec05a6e8d3804d9fc9d8c466478adfc60bad2d8860e21e3efb16a274bd2e033"
+    },
+    {
+      "path": "linear-at-start.json",
+      "bytes": 19938,
+      "sha256": "598c9f6a3bcc7a1fb79f3e6cf5c4cbbb967d301e7ff7c76ea563ba7141d14493"
+    },
+    {
+      "path": "mounted-selection-design.md",
+      "bytes": 26566,
+      "sha256": "b4e003b821dcc98bdf231cf049243e56c324ef125512e3d53b524a81d613b252"
+    },
+    {
+      "path": "native-oracle-notes.md",
+      "bytes": 8460,
+      "sha256": "5eeee1056c9c1d26b3cae1491753d3b81a9380e031fe3b294a1a3a057a851b73"
+    },
+    {
+      "path": "native-oracles.json",
+      "bytes": 338776,
+      "sha256": "d1fe9a0f7139066eb34725a9bd6b2568752b3a6204f73474dd9436eaa25f73e1"
+    },
+    {
+      "path": "native-range-design.md",
+      "bytes": 32783,
+      "sha256": "01ccad830b711aceeb5330e1252706e1f5850e0edc7568111e1828d86c51c213"
+    },
+    {
+      "path": "pre-candidate-data-check.json",
+      "bytes": 945,
+      "sha256": "f7ba7df3f0d43d4fd07174e814327fbcbfc882cd580e2872ac096235a64e6c4c"
+    },
+    {
+      "path": "pre-freeze-consistency-notes.md",
+      "bytes": 10641,
+      "sha256": "e8e966d0510b2efa8d784200822472597971bacd19df3c91d2bbe53fea7d6e72"
+    },
+    {
+      "path": "public-api.ts",
+      "bytes": 4162,
+      "sha256": "2b1ec0b822c61847d228f9a739e444863c4774c176c25e2a9aaed30d76579e12"
+    },
+    {
+      "path": "scroll-design.md",
+      "bytes": 6441,
+      "sha256": "975a29335e2a85fdc996979cf2369ea341a8fdaf56c7c2856eb9cd1891163870"
+    },
+    {
+      "path": "scroll-oracles.json",
+      "bytes": 191863,
+      "sha256": "7709f232db057e76fff0db76a6c187bc884c61ee9641025db3f81de4c4f45350"
+    },
+    {
+      "path": "selection-intake-proposal.md",
+      "bytes": 22331,
+      "sha256": "4d6aede72a4ec384e3b1961125245c04284b6659e34786dfd2c17e5d317cd55a"
+    },
+    {
+      "path": "unicode-oracles.json",
+      "bytes": 18177,
+      "sha256": "adb2b9c04cd3e8b16340e68c419b00aac81fbcae29dae3117cd50db3fbf0f2e2"
+    }
+  ],
+  "externalAssets": [
+    {
+      "path": "tests/fixtures/fonts/JetBrainsMono-OFL.txt",
+      "bytes": 4492,
+      "sha256": "4d9694c4844a13ea377458c3f98c90d2bf83d3c214612dcae2b7808406520708"
+    },
+    {
+      "path": "tests/fixtures/fonts/JetBrainsMono-Regular.ttf",
+      "bytes": 114904,
+      "sha256": "b6b1ff4ddefe36d7f2a6174e1d001cab374e594519ee9049af028d577b64c5f5"
+    },
+    {
+      "path": "tests/fixtures/fonts/README.md",
+      "bytes": 498,
+      "sha256": "5e490f2865fcbe0684ac72e44f7ebb60f7dc59e479bb8818b3ae2f5c0002f08d"
+    }
+  ],
+  "legacy39Manifest": {
+    "path": "contracts/dom/v1/manifest.json",
+    "bytes": 10362,
+    "sha256": "fcae2d2ae55f715b36f1c5a89efac1f671c5936490c01feaa87078855b893db8"
+  },
+  "legacy39PublicTypesSnapshot": {
+    "path": "contracts/selection/v1/legacy/dom-types.v39.ts",
+    "bytes": 6208,
+    "sha256": "8ec05a6e8d3804d9fc9d8c466478adfc60bad2d8860e21e3efb16a274bd2e033"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "format": "selection-input-erratum/1",
+  "issue": "OSR-40",
+  "erratum": "001",
+  "status": "AUTHORING_CORRECTION_NOT_ACCEPTANCE",
+  "originalCase": "U-EMPTY",
+  "positiveInput": {
+    "file": "contracts/selection/v1/bookmark-oracles.json",
+    "jsonPath": "documents.empty.wire",
+    "provenance": "Frozen in f00eff0 before runtime; no candidate-derived expected output"
+  },
+  "negativeInput": {
+    "file": "contracts/selection/v1/unicode-oracles.json",
+    "case": "U-EMPTY",
+    "expected": {
+      "status": "refused",
+      "diagnostic": {
+        "code": "kwdj.invalid_structure",
+        "path": "/content/0",
+        "category": "profile",
+        "details": {},
+        "stamp": null,
+        "may_have_committed": false
+      }
+    }
+  },
+  "preservedExpectedOutputs": "Original U-EMPTY selection/fullSelections/text/SelectAll invariants remain unchanged",
+  "pins": [
+    {
+      "path": "contracts/selection/v1/manifest.json",
+      "bytes": 4291,
+      "sha256": "8d8dd36a6c0b8f918a5eb0819aa6bb9d5545b170c5e90e8cd9a9dd14dd9a6d70"
+    },
+    {
+      "path": "contracts/selection/v1/unicode-oracles.json",
+      "bytes": 18177,
+      "sha256": "adb2b9c04cd3e8b16340e68c419b00aac81fbcae29dae3117cd50db3fbf0f2e2"
+    },
+    {
+      "path": "contracts/selection/v1/bookmark-oracles.json",
+      "bytes": 163108,
+      "sha256": "463202fe299534573344bfe2bef2c42b5b2190bae6d9a137673e4d92162ab434"
+    },
+    {
+      "path": "contracts/selection/errata/001-empty-unicode-input.md",
+      "bytes": 1916,
+      "sha256": "1686d355d454659c4ffbd5bc5227db509df95ca50ca0769df79f88b3492186d0"
+    }
+  ]
+}

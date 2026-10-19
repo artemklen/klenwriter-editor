@@ -160,7 +160,14 @@ fn split_join(v2: bool) {
     s.select(original.clone());
     s.drain();
     let catalog = s.call(json!({"kind":"catalog"}));
-    assert_eq!(catalog["commands"].as_array().unwrap().len(), 16);
+    assert_eq!(catalog["commands"].as_array().unwrap().len(), 17);
+    assert!(
+        catalog["commands"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|v| v == "org.klenwriter.kwdj/command/delete-selection")
+    );
     assert!(
         catalog["commands"]
             .as_array()

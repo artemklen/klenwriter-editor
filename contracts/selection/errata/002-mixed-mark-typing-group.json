@@ -1,0 +1,108 @@
+{
+  "format": "selection-input-erratum/1",
+  "issue": "OSR-40",
+  "erratum": "002",
+  "status": "AUTHORING_CORRECTION_NOT_ACCEPTANCE",
+  "originalCase": "BM-FX01",
+  "mixedMarkStateCorrection": {
+    "beforeStateRef": "OPEN_GROUP",
+    "beforeOpenTypingGroup": false,
+    "afterStateRef": "SEALED_GROUP",
+    "afterOpenTypingGroup": false,
+    "afterHistoryEpoch": "1",
+    "allOtherFrozenStateFields": "unchanged"
+  },
+  "requiredAdditionalWitness": {
+    "id": "BM-FX01-H05",
+    "source": "contracts/history/v1/vectors.json",
+    "preexistingCases": [
+      "H04",
+      "H05"
+    ],
+    "inputDocumentRef": "empty",
+    "afterTypingDocumentRef": "a",
+    "afterNextTypingDocumentRef": "ba",
+    "initialSelection": {
+      "anchor": {
+        "kind": "child",
+        "parent": "P",
+        "index": 0,
+        "affinity": "after"
+      },
+      "focus": {
+        "kind": "child",
+        "parent": "P",
+        "index": 0,
+        "affinity": "after"
+      }
+    },
+    "typingHint": {
+      "kind": "typing",
+      "token": "1",
+      "class": "insert"
+    },
+    "afterType": {
+      "revision": "1",
+      "history_epoch": "1",
+      "undo_entries": "1",
+      "redo_entries": "0"
+    },
+    "afterNavigation": {
+      "revision": "1",
+      "history_epoch": "2",
+      "undo_entries": "1",
+      "redo_entries": "0",
+      "selectionOffset": 0,
+      "affinity": "after",
+      "newStateEvents": 1,
+      "newDocumentEvents": 0
+    },
+    "afterNextType": {
+      "revision": "2",
+      "history_epoch": "3",
+      "undo_entries": "2",
+      "redo_entries": "0"
+    }
+  },
+  "pins": [
+    {
+      "path": "contracts/selection/v1/manifest.json",
+      "bytes": 4291,
+      "sha256": "8d8dd36a6c0b8f918a5eb0819aa6bb9d5545b170c5e90e8cd9a9dd14dd9a6d70"
+    },
+    {
+      "path": "contracts/selection/v1/bookmark-oracles.json",
+      "bytes": 163108,
+      "sha256": "463202fe299534573344bfe2bef2c42b5b2190bae6d9a137673e4d92162ab434"
+    },
+    {
+      "path": "contracts/history/v1/manifest.json",
+      "bytes": 3259,
+      "sha256": "34d45022dd9fb6521aadc6edeb831ff850721f684a292633e5959dce5377d662"
+    },
+    {
+      "path": "contracts/history/v1/vectors.json",
+      "bytes": 44902,
+      "sha256": "22882d577677eb409172ba33ae675bc2e3754dcda2c8198f0c4468e719f07a08"
+    },
+    {
+      "path": "contracts/selection/errata/002-mixed-mark-typing-group.md",
+      "bytes": 2703,
+      "sha256": "02a0687f2dacf4826510f6a7f44b91c4105c54a438b9d3dc2bdbd13c95f6b6bc"
+    }
+  ],
+  "unchangedNativeAuthority": [
+    {
+      "path": "crates/engine/src/grouping.rs",
+      "base": "ff2bd3103eba9b47cd2a06098d1506d9a054a589",
+      "bytes": 12858,
+      "sha256": "74768c0057ed06622deab548f1820724bb6c3db8a260bd49196f30a68a0c0c69"
+    },
+    {
+      "path": "crates/engine/src/history.rs",
+      "base": "ff2bd3103eba9b47cd2a06098d1506d9a054a589",
+      "bytes": 56430,
+      "sha256": "43a28d7fc3e48138d71f4e0cb2889a572fa25dc545b39e6a0e793ae6d610382d"
+    }
+  ]
+}

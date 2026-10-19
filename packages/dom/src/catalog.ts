@@ -64,7 +64,7 @@ function validDefinition(d: RendererCatalogDefinition): boolean {
     if (!witness || !plain(m) || !closed(m, ['attributes', 'present']) || !stringList(m.attributes, 256)
       || m.attributes.some(a => !witness.attributes.includes(a)) || typeof m.present !== 'function') return false;
   }
-  if (d.input !== undefined && (!plain(d.input) || !closed(d.input, ['insertText', 'enter', 'lineBreak', 'deleteBackward'])
+  if (d.input !== undefined && (!plain(d.input) || !closed(d.input, ['insertText', 'enter', 'lineBreak', 'deleteBackward', 'deleteSelection'])
     || Object.values(d.input).some(f => typeof f !== 'function'))) return false;
   return true;
 }

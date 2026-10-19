@@ -4,6 +4,8 @@
 mod block;
 mod delete;
 mod inline;
+mod selection;
+pub use selection::{SelectionText, SelectionTextError, selected_text};
 
 use editor_core::candidate::CandidateRead;
 use editor_core::commands::{
@@ -83,6 +85,7 @@ pub enum KwdjIntent<I> {
     },
     DismissSlash,
     DeleteBackward,
+    DeleteSelection,
 }
 
 pub const KWDJ_COMMANDS: &[CommandDescriptor] = &[
@@ -133,6 +136,9 @@ pub const KWDJ_COMMANDS: &[CommandDescriptor] = &[
     },
     CommandDescriptor {
         id: "org.klenwriter.kwdj/command/delete-backward",
+    },
+    CommandDescriptor {
+        id: "org.klenwriter.kwdj/command/delete-selection",
     },
 ];
 
@@ -208,6 +214,7 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::AcceptSlash { .. } => KWDJ_COMMANDS[13].id,
             KwdjIntent::DismissSlash => KWDJ_COMMANDS[14].id,
             KwdjIntent::DeleteBackward => KWDJ_COMMANDS[15].id,
+            KwdjIntent::DeleteSelection => KWDJ_COMMANDS[16].id,
         }
     }
 
@@ -227,6 +234,7 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::UnsetLink => inline::unset_link(view, state, plan)?,
             KwdjIntent::InsertText { text } => inline::insert_text(view, state, text, plan)?,
             KwdjIntent::DeleteBackward => delete::prepare(view, state, plan)?,
+            KwdjIntent::DeleteSelection => selection::prepare(view, state, plan)?,
             KwdjIntent::DismissSlash => CommandPresentation { active: None },
             _ => block::prepare(*context, view, state, intent, plan)?,
         })

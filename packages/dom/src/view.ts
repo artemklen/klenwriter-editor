@@ -16,9 +16,10 @@ export interface CapturedBlock {
 export interface BlockCapture { readonly stamp: DeepReadonly<StampDto> | null; readonly blocks: readonly CapturedBlock[]; readonly region: RecoveryRegion }
 export interface DomView {
   initialize(state: DeepReadonly<StateDto>): DomRefusal | null;
-  patch(event: DeepReadonly<EventDto>): DomRefusal | null;
+  patch(event: DeepReadonly<EventDto>, restore?: boolean): DomRefusal | null;
   readSelection(): DeepReadonly<SelectionDto> | DomRefusal | null;
   restoreSelection(selection: DeepReadonly<SelectionDto> | null): DomRefusal | null;
+  rememberSelection(selection: DeepReadonly<SelectionDto> | null): DomRefusal | null;
   ownedBlockAt(node: Node | null): string | null;
   textPosition(node: Node, offset: number): DeepReadonly<PositionDto> | DomRefusal | null;
   domPoint(position: DeepReadonly<PositionDto>): DomPoint | DomRefusal;
@@ -231,10 +232,20 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     if (isDomRefusal(anchor)) return anchor; if (isDomRefusal(focus)) return focus;
     const browser = doc.getSelection(); if (!browser) return refusal('dom.presentation_unsupported');
     try {
-      // setBaseAndExtent preserves anchor/focus direction and does not focus the host.
-      browser.setBaseAndExtent(anchor.node, anchor.offset, focus.node, focus.offset);
+      // Preserve the UA's in-progress drag when correspondence is already exact.
+      // Reinstalling the same range can replace the browser's gesture anchor.
+      if (browser.anchorNode !== anchor.node || browser.anchorOffset !== anchor.offset
+        || browser.focusNode !== focus.node || browser.focusOffset !== focus.offset) {
+        browser.setBaseAndExtent(anchor.node, anchor.offset, focus.node, focus.offset);
+      }
       lastSelection = selection; lastAnchor = anchor; lastFocus = focus; return null;
     } catch { return refusal('dom.presentation_unsupported'); }
+  }
+  function rememberSelection(selection: DeepReadonly<SelectionDto> | null): DomRefusal | null {
+    if(selection===null){lastSelection=null;lastAnchor=lastFocus=null;return null;}
+    const anchor=domPoint(selection.anchor),focus=domPoint(selection.focus);
+    if(isDomRefusal(anchor))return anchor;if(isDomRefusal(focus))return focus;
+    lastSelection=selection;lastAnchor=anchor;lastFocus=focus;return null;
   }
   function readSelection(): DeepReadonly<SelectionDto> | DomRefusal | null {
     if (destroyed) return refusal('dom.disposed');
@@ -375,7 +386,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
   function captureRegion(): RecoveryRegion | null {
     return provisional ? provisionalRegion() : null;
   }
-  function patch(event: DeepReadonly<EventDto>): DomRefusal | null {
+  function patch(event: DeepReadonly<EventDto>, restore = true): DomRefusal | null {
     if (destroyed) return refusal('dom.disposed');
     const publication = 'alreadyPublished' as const, candidates = new Map<string, { view: DeepReadonly<NodeViewDto>; prepared: PreparedNode }>();
     if (event.change.kind === 'document') {
@@ -432,7 +443,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
       // This narrow optimization only uses an unchanged, already-owned Text
       // target. Child/edge targets and every provisional case keep final-only
       // restoration; an old child gap can mean something else after a patch.
-      if (provisional === null && event.selection_after && event.change.impact.removed.length) {
+      if (restore && provisional === null && event.selection_after && event.change.impact.removed.length) {
         const browser = doc.getSelection(), after = event.selection_after;
         const removed = new Set(event.change.impact.removed);
         const anchorNode = browser?.anchorNode, focusNode = browser?.focusNode;
@@ -507,7 +518,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
       } catch { return refusal('dom.presentation_unsupported', null, publication); }
     }
     currentStamp = event.after;
-    return provisional?.composing ? null : restoreSelection(event.selection_after);
+    return provisional?.composing ? null : restore ? restoreSelection(event.selection_after) : rememberSelection(event.selection_after);
   }
   return {
     initialize(state) {
@@ -526,7 +537,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         return restoreSelection(state.selection);
       } catch { return refusal('dom.presentation_unsupported'); }
     },
-    patch, readSelection, restoreSelection, ownedBlockAt, textPosition: positionAt, domPoint,
+    patch, readSelection, restoreSelection, rememberSelection, ownedBlockAt, textPosition: positionAt, domPoint,
     beginProvisional, endProvisional() { provisional = null; },
     setComposing(active) { if (provisional) provisional.composing = active; },
     hasProvisional: () => provisional !== null,

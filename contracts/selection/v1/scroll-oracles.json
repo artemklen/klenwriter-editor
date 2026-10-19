@@ -1,0 +1,7724 @@
+{
+  "format": "osr40-independent-scroll-oracles/1",
+  "status": "PROPOSAL_FOR_FRESH_REFINE_NOT_READY_NOT_FROZEN_NOT_EXECUTED",
+  "recordedAt": "2026-10-19T11:40:27.464949+00:00",
+  "issue": "OSR-40",
+  "sourceBaseline": {
+    "repo": "/Users/artem/projects/klenwriter-editor",
+    "reportedMain": "ff2bd3103eba9b47cd2a06098d1506d9a054a589",
+    "parentReports39Done": true
+  },
+  "authoringProvenance": {
+    "method": "Materialized authored ASCII model/DOM role tables and elementary fixture arithmetic only; no candidate/native/browser output used as expected values.",
+    "inputPins": [
+      {
+        "path": "/tmp/osr-40-selection-contract-draft.md",
+        "bytes": 22331,
+        "sha256": "4d6aede72a4ec384e3b1961125245c04284b6659e34786dfd2c17e5d317cd55a"
+      },
+      {
+        "path": "/tmp/osr-40-contract-preflight-notes.md",
+        "bytes": 11130,
+        "sha256": "00ff0ba2cd080833c232e52eaab99820e9a21d2ee4aa44489c3c21f615d79e5e"
+      }
+    ],
+    "performed": "read files/hash/font SFNT tables and write only these two outside-repo design artifacts",
+    "notPerformed": [
+      "source or fixture creation",
+      "native/browser/runtime",
+      "tests/build/CI",
+      "network/Linear",
+      "branch or status changes",
+      "formal review"
+    ]
+  },
+  "fontProposal": {
+    "selection": "bundle unchanged existing local JetBrains Mono Regular2.211 as test-only asset with OFL notice; root must copy/review before contract freeze",
+    "repoFontSearch": "No tracked/nonignored font asset found; installed playwright-core fonts are codicon icon fonts, not accepted ASCII fixture text fonts.",
+    "font": {
+      "path": "/Users/artem/.agents/skills/synced/87c0046d-5e82-4cb5-9a8f-5e0e7b19fbc9_4cda9f85-150c-4281-80fa-3ffadf785e49/canvas-design/canvas-fonts/JetBrainsMono-Regular.ttf",
+      "bytes": 114904,
+      "sha256": "b6b1ff4ddefe36d7f2a6174e1d001cab374e594519ee9049af028d577b64c5f5"
+    },
+    "license": {
+      "path": "/Users/artem/.agents/skills/synced/87c0046d-5e82-4cb5-9a8f-5e0e7b19fbc9_4cda9f85-150c-4281-80fa-3ffadf785e49/canvas-design/canvas-fonts/JetBrainsMono-OFL.txt",
+      "bytes": 4492,
+      "sha256": "4d9694c4844a13ea377458c3f98c90d2bf83d3c214612dcae2b7808406520708"
+    },
+    "licenseIdentifier": "OFL-1.1",
+    "attribution": "Copyright2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)",
+    "proposedFontRoute": "http://127.0.0.1:4174/fixture-fonts/osr40-jetbrains-mono-regular.ttf",
+    "proposedLicenseDestination": "tests/fixtures/fonts/JetBrainsMono-OFL.txt",
+    "noRuntimeDependency": true,
+    "faceAlias": "OSR40FixtureMono",
+    "fontFaceRule": "@font-face { font-family: 'OSR40FixtureMono'; src: url('/fixture-fonts/osr40-jetbrains-mono-regular.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: block; }",
+    "localFunctionForbidden": true,
+    "fontSizeCssPx": 16,
+    "lineHeightCssPx": 24,
+    "kerning": "none",
+    "ligatures": "none",
+    "letterSpacingCssPx": 0,
+    "wordSpacingCssPx": 0,
+    "sfntMetrics": {
+      "unitsPerEm": 1000,
+      "hheaAscender": 1020,
+      "hheaDescender": -300,
+      "hheaLineGap": 0,
+      "RAndAllDecimalDigitAdvanceUnits": 600,
+      "advanceCssPx": 9.6,
+      "threeGlyphAdvanceCssPx": 28.8,
+      "origin": "read directly from existing font head/hhea/cmap/hmtx; not browser/candidate metrics"
+    },
+    "preGestureAdmission": [
+      "serve only pinned same-origin fixture font route, retain strict CSP with exact font-src route if needed; no external fetch",
+      "explicitly await the exact FontFace.load/document.fonts.load and record actual face.status=loaded, family/weight/style plus document.fonts.ready",
+      "document.fonts.check alone is insufficient; independently verify actual R0123456789 advance geometry and all row/client boxes within0.5px",
+      "missing font, fallback, wrapping or wrong geometry is setup failure; do not adapt expected rows/endpoints after a failed run"
+    ]
+  },
+  "fixture": {
+    "viewportCss": {
+      "x": 0,
+      "y": 0,
+      "width": 1024,
+      "height": 768,
+      "left": 0,
+      "top": 0,
+      "right": 1024,
+      "bottom": 768
+    },
+    "zoomPercent": 100,
+    "direction": "ltr",
+    "writingMode": "horizontal-tb",
+    "scrollportClient": {
+      "x": 100,
+      "y": 80,
+      "width": 640,
+      "height": 240,
+      "left": 100,
+      "top": 80,
+      "right": 740,
+      "bottom": 320
+    },
+    "rowCount": 64,
+    "rowHeightCssPx": 24,
+    "paddingTopCssPx": 20,
+    "paddingBottomCssPx": 40,
+    "rowContentHeightCssPx": 1536,
+    "scrollHeightCssPx": 1596,
+    "scrollTopMinimum": 0,
+    "scrollTopMaximum": 1356,
+    "horizontalScrollRange": 0,
+    "modelDocument": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "prose",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R00"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R01"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R02"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R03"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R04"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R05"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R06"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R07"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R08"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R09"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R10"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R11"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R12"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R13"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R14"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R15"
+            }
+          ]
+        },
+        {
+          "type": "scene_break"
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R17"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R18"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R19"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R20"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R21"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R22"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R23"
+            }
+          ]
+        },
+        {
+          "type": "blockquote",
+          "content": [
+            {
+              "type": "bullet_list",
+              "content": [
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "R24"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "R25"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "R26"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "R27"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "R28"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "R29"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "R30"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "list_item",
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "content": [
+                        {
+                          "type": "text",
+                          "text": "R31"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R32"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R33"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R34"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R35"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R36"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R37"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R38"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R39"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R40"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R41"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R42"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R43"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R44"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R45"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R46"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R47"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R48"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R49"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R50"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R51"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R52"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R53"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R54"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R55"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R56"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R57"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R58"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R59"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R60"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R61"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R62"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "R63"
+            }
+          ]
+        }
+      ]
+    },
+    "independentlySerializedExpectedCanonical": "{\"content\":[{\"content\":[{\"text\":\"R00\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R01\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R02\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R03\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R04\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R05\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R06\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R07\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R08\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R09\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R10\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R11\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R12\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R13\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R14\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R15\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"type\":\"scene_break\"},{\"content\":[{\"text\":\"R17\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R18\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R19\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R20\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R21\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R22\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R23\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"content\":[{\"content\":[{\"text\":\"R24\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"},{\"content\":[{\"content\":[{\"text\":\"R25\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"},{\"content\":[{\"content\":[{\"text\":\"R26\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"},{\"content\":[{\"content\":[{\"text\":\"R27\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"},{\"content\":[{\"content\":[{\"text\":\"R28\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"},{\"content\":[{\"content\":[{\"text\":\"R29\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"},{\"content\":[{\"content\":[{\"text\":\"R30\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"},{\"content\":[{\"content\":[{\"text\":\"R31\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"}],\"type\":\"bullet_list\"}],\"type\":\"blockquote\"},{\"content\":[{\"text\":\"R32\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R33\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R34\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R35\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R36\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R37\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R38\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R39\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R40\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R41\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R42\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R43\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R44\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R45\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R46\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R47\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R48\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R49\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R50\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R51\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R52\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R53\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R54\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R55\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R56\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R57\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R58\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R59\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R60\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R61\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R62\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"R63\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+    "expectedCanonicalSha256": "54963f223b4d017690ae751da2eb14b5d135b431d989db6e783e0c2ef0c0f86c",
+    "canonicalDerivation": "deterministic key-sort of the authored literal model tree only; compare native canonical after admission, do not generate this expectation from candidate export",
+    "expectedNodeCountIncludingRoot": 138,
+    "expectedRootChildCount": 57,
+    "cssConstraints": [
+      "root host padding-block20px40px only; padding contributes extent but no fake model/DOM row nodes",
+      "p/hr fixed height24px border-box; p margin/border/padding0; hr margin/padding0 with its border included in24px",
+      "BLOCKQUOTE/UL/LI margin/padding/border0 and no marker or extra line box; UL list-style:none; quote+list total height192px",
+      "all text starts x100; left aligned, text-indent0, no marks/pseudo text/generated labels; nowrap and one text span per paragraph",
+      "scrollport border/padding0; actual client box640x240; hide scrollbar presentation in fixture CSS if needed to keep exact client dimensions, do not silently assume overlay scrollbars",
+      "clipped ancestor overflow:clip proposed, border/padding0; position child left4/top-20; no additional scroll owner",
+      "body/page fixed viewport with no page scroll extent; record window+scrollport+clip positions and all actual scroll owners",
+      "no transforms, sticky/fixed overlays inside clipping chain, scroll snapping, smooth scrolling, transitions, animation or automatic focus scrolling during gesture"
+    ]
+  },
+  "geometryModes": {
+    "plain": {
+      "scrollportClient": {
+        "x": 100,
+        "y": 80,
+        "width": 640,
+        "height": 240,
+        "left": 100,
+        "top": 80,
+        "right": 740,
+        "bottom": 320
+      },
+      "clipAncestor": null,
+      "effectiveClip": {
+        "x": 100,
+        "y": 80,
+        "width": 640,
+        "height": 240,
+        "left": 100,
+        "top": 80,
+        "right": 740,
+        "bottom": 320
+      },
+      "ancestorOverflow": "no clipping ancestor"
+    },
+    "clipped": {
+      "scrollportClient": {
+        "x": 100,
+        "y": 80,
+        "width": 640,
+        "height": 240,
+        "left": 100,
+        "top": 80,
+        "right": 740,
+        "bottom": 320
+      },
+      "clipAncestor": {
+        "x": 96,
+        "y": 100,
+        "width": 648,
+        "height": 180,
+        "left": 96,
+        "top": 100,
+        "right": 744,
+        "bottom": 280
+      },
+      "effectiveClip": {
+        "x": 100,
+        "y": 100,
+        "width": 640,
+        "height": 180,
+        "left": 100,
+        "top": 100,
+        "right": 740,
+        "bottom": 280
+      },
+      "ancestorOverflow": "clip; fixture proposal so this ancestor is not another programmatic scroll container",
+      "scrollportOffsetInClipAncestor": {
+        "left": 4,
+        "top": -20
+      }
+    }
+  },
+  "structuralRoles": [
+    {
+      "role": "root",
+      "modelPath": "",
+      "domRole": "fixtureHost",
+      "domTag": "DIV",
+      "domChildNodesPath": [],
+      "children": 57
+    },
+    {
+      "role": "Q24_31",
+      "modelPath": "/24",
+      "domRole": "quote.Element",
+      "domTag": "BLOCKQUOTE",
+      "domChildNodesPath": [
+        24
+      ],
+      "children": 1
+    },
+    {
+      "role": "L24_31",
+      "modelPath": "/24/0",
+      "domRole": "list.Element",
+      "domTag": "UL",
+      "domChildNodesPath": [
+        24,
+        0
+      ],
+      "children": 8
+    },
+    {
+      "role": "LI24",
+      "modelPath": "/24/0/0",
+      "domRole": "LI24.Element",
+      "domTag": "LI",
+      "domChildNodesPath": [
+        24,
+        0,
+        0
+      ],
+      "children": 1
+    },
+    {
+      "role": "LI25",
+      "modelPath": "/24/0/1",
+      "domRole": "LI25.Element",
+      "domTag": "LI",
+      "domChildNodesPath": [
+        24,
+        0,
+        1
+      ],
+      "children": 1
+    },
+    {
+      "role": "LI26",
+      "modelPath": "/24/0/2",
+      "domRole": "LI26.Element",
+      "domTag": "LI",
+      "domChildNodesPath": [
+        24,
+        0,
+        2
+      ],
+      "children": 1
+    },
+    {
+      "role": "LI27",
+      "modelPath": "/24/0/3",
+      "domRole": "LI27.Element",
+      "domTag": "LI",
+      "domChildNodesPath": [
+        24,
+        0,
+        3
+      ],
+      "children": 1
+    },
+    {
+      "role": "LI28",
+      "modelPath": "/24/0/4",
+      "domRole": "LI28.Element",
+      "domTag": "LI",
+      "domChildNodesPath": [
+        24,
+        0,
+        4
+      ],
+      "children": 1
+    },
+    {
+      "role": "LI29",
+      "modelPath": "/24/0/5",
+      "domRole": "LI29.Element",
+      "domTag": "LI",
+      "domChildNodesPath": [
+        24,
+        0,
+        5
+      ],
+      "children": 1
+    },
+    {
+      "role": "LI30",
+      "modelPath": "/24/0/6",
+      "domRole": "LI30.Element",
+      "domTag": "LI",
+      "domChildNodesPath": [
+        24,
+        0,
+        6
+      ],
+      "children": 1
+    },
+    {
+      "role": "LI31",
+      "modelPath": "/24/0/7",
+      "domRole": "LI31.Element",
+      "domTag": "LI",
+      "domChildNodesPath": [
+        24,
+        0,
+        7
+      ],
+      "children": 1
+    }
+  ],
+  "modelRowRoles": [
+    {
+      "row": "R00",
+      "blockRole": "R00.block",
+      "modelBlockPath": "/0",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R00.text",
+      "modelTextPath": "/0/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R00",
+      "utf16Length": 3
+    },
+    {
+      "row": "R01",
+      "blockRole": "R01.block",
+      "modelBlockPath": "/1",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R01.text",
+      "modelTextPath": "/1/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R01",
+      "utf16Length": 3
+    },
+    {
+      "row": "R02",
+      "blockRole": "R02.block",
+      "modelBlockPath": "/2",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R02.text",
+      "modelTextPath": "/2/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R02",
+      "utf16Length": 3
+    },
+    {
+      "row": "R03",
+      "blockRole": "R03.block",
+      "modelBlockPath": "/3",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R03.text",
+      "modelTextPath": "/3/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R03",
+      "utf16Length": 3
+    },
+    {
+      "row": "R04",
+      "blockRole": "R04.block",
+      "modelBlockPath": "/4",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R04.text",
+      "modelTextPath": "/4/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R04",
+      "utf16Length": 3
+    },
+    {
+      "row": "R05",
+      "blockRole": "R05.block",
+      "modelBlockPath": "/5",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R05.text",
+      "modelTextPath": "/5/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R05",
+      "utf16Length": 3
+    },
+    {
+      "row": "R06",
+      "blockRole": "R06.block",
+      "modelBlockPath": "/6",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R06.text",
+      "modelTextPath": "/6/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R06",
+      "utf16Length": 3
+    },
+    {
+      "row": "R07",
+      "blockRole": "R07.block",
+      "modelBlockPath": "/7",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R07.text",
+      "modelTextPath": "/7/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R07",
+      "utf16Length": 3
+    },
+    {
+      "row": "R08",
+      "blockRole": "R08.block",
+      "modelBlockPath": "/8",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R08.text",
+      "modelTextPath": "/8/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R08",
+      "utf16Length": 3
+    },
+    {
+      "row": "R09",
+      "blockRole": "R09.block",
+      "modelBlockPath": "/9",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R09.text",
+      "modelTextPath": "/9/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R09",
+      "utf16Length": 3
+    },
+    {
+      "row": "R10",
+      "blockRole": "R10.block",
+      "modelBlockPath": "/10",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R10.text",
+      "modelTextPath": "/10/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R10",
+      "utf16Length": 3
+    },
+    {
+      "row": "R11",
+      "blockRole": "R11.block",
+      "modelBlockPath": "/11",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R11.text",
+      "modelTextPath": "/11/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R11",
+      "utf16Length": 3
+    },
+    {
+      "row": "R12",
+      "blockRole": "R12.block",
+      "modelBlockPath": "/12",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R12.text",
+      "modelTextPath": "/12/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R12",
+      "utf16Length": 3
+    },
+    {
+      "row": "R13",
+      "blockRole": "R13.block",
+      "modelBlockPath": "/13",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R13.text",
+      "modelTextPath": "/13/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R13",
+      "utf16Length": 3
+    },
+    {
+      "row": "R14",
+      "blockRole": "R14.block",
+      "modelBlockPath": "/14",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R14.text",
+      "modelTextPath": "/14/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R14",
+      "utf16Length": 3
+    },
+    {
+      "row": "R15",
+      "blockRole": "R15.block",
+      "modelBlockPath": "/15",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R15.text",
+      "modelTextPath": "/15/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R15",
+      "utf16Length": 3
+    },
+    {
+      "row": "R16",
+      "blockRole": "R16.block",
+      "modelBlockPath": "/16",
+      "nativeBlockType": "org.klenwriter.kwdj/scene_break",
+      "textRole": null,
+      "modelTextPath": null,
+      "nativeTextType": null,
+      "literalText": null,
+      "utf16Length": null
+    },
+    {
+      "row": "R17",
+      "blockRole": "R17.block",
+      "modelBlockPath": "/17",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R17.text",
+      "modelTextPath": "/17/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R17",
+      "utf16Length": 3
+    },
+    {
+      "row": "R18",
+      "blockRole": "R18.block",
+      "modelBlockPath": "/18",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R18.text",
+      "modelTextPath": "/18/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R18",
+      "utf16Length": 3
+    },
+    {
+      "row": "R19",
+      "blockRole": "R19.block",
+      "modelBlockPath": "/19",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R19.text",
+      "modelTextPath": "/19/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R19",
+      "utf16Length": 3
+    },
+    {
+      "row": "R20",
+      "blockRole": "R20.block",
+      "modelBlockPath": "/20",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R20.text",
+      "modelTextPath": "/20/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R20",
+      "utf16Length": 3
+    },
+    {
+      "row": "R21",
+      "blockRole": "R21.block",
+      "modelBlockPath": "/21",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R21.text",
+      "modelTextPath": "/21/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R21",
+      "utf16Length": 3
+    },
+    {
+      "row": "R22",
+      "blockRole": "R22.block",
+      "modelBlockPath": "/22",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R22.text",
+      "modelTextPath": "/22/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R22",
+      "utf16Length": 3
+    },
+    {
+      "row": "R23",
+      "blockRole": "R23.block",
+      "modelBlockPath": "/23",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R23.text",
+      "modelTextPath": "/23/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R23",
+      "utf16Length": 3
+    },
+    {
+      "row": "R24",
+      "blockRole": "R24.block",
+      "modelBlockPath": "/24/0/0/0",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R24.text",
+      "modelTextPath": "/24/0/0/0/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R24",
+      "utf16Length": 3
+    },
+    {
+      "row": "R25",
+      "blockRole": "R25.block",
+      "modelBlockPath": "/24/0/1/0",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R25.text",
+      "modelTextPath": "/24/0/1/0/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R25",
+      "utf16Length": 3
+    },
+    {
+      "row": "R26",
+      "blockRole": "R26.block",
+      "modelBlockPath": "/24/0/2/0",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R26.text",
+      "modelTextPath": "/24/0/2/0/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R26",
+      "utf16Length": 3
+    },
+    {
+      "row": "R27",
+      "blockRole": "R27.block",
+      "modelBlockPath": "/24/0/3/0",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R27.text",
+      "modelTextPath": "/24/0/3/0/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R27",
+      "utf16Length": 3
+    },
+    {
+      "row": "R28",
+      "blockRole": "R28.block",
+      "modelBlockPath": "/24/0/4/0",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R28.text",
+      "modelTextPath": "/24/0/4/0/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R28",
+      "utf16Length": 3
+    },
+    {
+      "row": "R29",
+      "blockRole": "R29.block",
+      "modelBlockPath": "/24/0/5/0",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R29.text",
+      "modelTextPath": "/24/0/5/0/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R29",
+      "utf16Length": 3
+    },
+    {
+      "row": "R30",
+      "blockRole": "R30.block",
+      "modelBlockPath": "/24/0/6/0",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R30.text",
+      "modelTextPath": "/24/0/6/0/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R30",
+      "utf16Length": 3
+    },
+    {
+      "row": "R31",
+      "blockRole": "R31.block",
+      "modelBlockPath": "/24/0/7/0",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R31.text",
+      "modelTextPath": "/24/0/7/0/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R31",
+      "utf16Length": 3
+    },
+    {
+      "row": "R32",
+      "blockRole": "R32.block",
+      "modelBlockPath": "/25",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R32.text",
+      "modelTextPath": "/25/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R32",
+      "utf16Length": 3
+    },
+    {
+      "row": "R33",
+      "blockRole": "R33.block",
+      "modelBlockPath": "/26",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R33.text",
+      "modelTextPath": "/26/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R33",
+      "utf16Length": 3
+    },
+    {
+      "row": "R34",
+      "blockRole": "R34.block",
+      "modelBlockPath": "/27",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R34.text",
+      "modelTextPath": "/27/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R34",
+      "utf16Length": 3
+    },
+    {
+      "row": "R35",
+      "blockRole": "R35.block",
+      "modelBlockPath": "/28",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R35.text",
+      "modelTextPath": "/28/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R35",
+      "utf16Length": 3
+    },
+    {
+      "row": "R36",
+      "blockRole": "R36.block",
+      "modelBlockPath": "/29",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R36.text",
+      "modelTextPath": "/29/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R36",
+      "utf16Length": 3
+    },
+    {
+      "row": "R37",
+      "blockRole": "R37.block",
+      "modelBlockPath": "/30",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R37.text",
+      "modelTextPath": "/30/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R37",
+      "utf16Length": 3
+    },
+    {
+      "row": "R38",
+      "blockRole": "R38.block",
+      "modelBlockPath": "/31",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R38.text",
+      "modelTextPath": "/31/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R38",
+      "utf16Length": 3
+    },
+    {
+      "row": "R39",
+      "blockRole": "R39.block",
+      "modelBlockPath": "/32",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R39.text",
+      "modelTextPath": "/32/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R39",
+      "utf16Length": 3
+    },
+    {
+      "row": "R40",
+      "blockRole": "R40.block",
+      "modelBlockPath": "/33",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R40.text",
+      "modelTextPath": "/33/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R40",
+      "utf16Length": 3
+    },
+    {
+      "row": "R41",
+      "blockRole": "R41.block",
+      "modelBlockPath": "/34",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R41.text",
+      "modelTextPath": "/34/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R41",
+      "utf16Length": 3
+    },
+    {
+      "row": "R42",
+      "blockRole": "R42.block",
+      "modelBlockPath": "/35",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R42.text",
+      "modelTextPath": "/35/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R42",
+      "utf16Length": 3
+    },
+    {
+      "row": "R43",
+      "blockRole": "R43.block",
+      "modelBlockPath": "/36",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R43.text",
+      "modelTextPath": "/36/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R43",
+      "utf16Length": 3
+    },
+    {
+      "row": "R44",
+      "blockRole": "R44.block",
+      "modelBlockPath": "/37",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R44.text",
+      "modelTextPath": "/37/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R44",
+      "utf16Length": 3
+    },
+    {
+      "row": "R45",
+      "blockRole": "R45.block",
+      "modelBlockPath": "/38",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R45.text",
+      "modelTextPath": "/38/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R45",
+      "utf16Length": 3
+    },
+    {
+      "row": "R46",
+      "blockRole": "R46.block",
+      "modelBlockPath": "/39",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R46.text",
+      "modelTextPath": "/39/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R46",
+      "utf16Length": 3
+    },
+    {
+      "row": "R47",
+      "blockRole": "R47.block",
+      "modelBlockPath": "/40",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R47.text",
+      "modelTextPath": "/40/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R47",
+      "utf16Length": 3
+    },
+    {
+      "row": "R48",
+      "blockRole": "R48.block",
+      "modelBlockPath": "/41",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R48.text",
+      "modelTextPath": "/41/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R48",
+      "utf16Length": 3
+    },
+    {
+      "row": "R49",
+      "blockRole": "R49.block",
+      "modelBlockPath": "/42",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R49.text",
+      "modelTextPath": "/42/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R49",
+      "utf16Length": 3
+    },
+    {
+      "row": "R50",
+      "blockRole": "R50.block",
+      "modelBlockPath": "/43",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R50.text",
+      "modelTextPath": "/43/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R50",
+      "utf16Length": 3
+    },
+    {
+      "row": "R51",
+      "blockRole": "R51.block",
+      "modelBlockPath": "/44",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R51.text",
+      "modelTextPath": "/44/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R51",
+      "utf16Length": 3
+    },
+    {
+      "row": "R52",
+      "blockRole": "R52.block",
+      "modelBlockPath": "/45",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R52.text",
+      "modelTextPath": "/45/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R52",
+      "utf16Length": 3
+    },
+    {
+      "row": "R53",
+      "blockRole": "R53.block",
+      "modelBlockPath": "/46",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R53.text",
+      "modelTextPath": "/46/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R53",
+      "utf16Length": 3
+    },
+    {
+      "row": "R54",
+      "blockRole": "R54.block",
+      "modelBlockPath": "/47",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R54.text",
+      "modelTextPath": "/47/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R54",
+      "utf16Length": 3
+    },
+    {
+      "row": "R55",
+      "blockRole": "R55.block",
+      "modelBlockPath": "/48",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R55.text",
+      "modelTextPath": "/48/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R55",
+      "utf16Length": 3
+    },
+    {
+      "row": "R56",
+      "blockRole": "R56.block",
+      "modelBlockPath": "/49",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R56.text",
+      "modelTextPath": "/49/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R56",
+      "utf16Length": 3
+    },
+    {
+      "row": "R57",
+      "blockRole": "R57.block",
+      "modelBlockPath": "/50",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R57.text",
+      "modelTextPath": "/50/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R57",
+      "utf16Length": 3
+    },
+    {
+      "row": "R58",
+      "blockRole": "R58.block",
+      "modelBlockPath": "/51",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R58.text",
+      "modelTextPath": "/51/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R58",
+      "utf16Length": 3
+    },
+    {
+      "row": "R59",
+      "blockRole": "R59.block",
+      "modelBlockPath": "/52",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R59.text",
+      "modelTextPath": "/52/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R59",
+      "utf16Length": 3
+    },
+    {
+      "row": "R60",
+      "blockRole": "R60.block",
+      "modelBlockPath": "/53",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R60.text",
+      "modelTextPath": "/53/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R60",
+      "utf16Length": 3
+    },
+    {
+      "row": "R61",
+      "blockRole": "R61.block",
+      "modelBlockPath": "/54",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R61.text",
+      "modelTextPath": "/54/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R61",
+      "utf16Length": 3
+    },
+    {
+      "row": "R62",
+      "blockRole": "R62.block",
+      "modelBlockPath": "/55",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R62.text",
+      "modelTextPath": "/55/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R62",
+      "utf16Length": 3
+    },
+    {
+      "row": "R63",
+      "blockRole": "R63.block",
+      "modelBlockPath": "/56",
+      "nativeBlockType": "org.klenwriter.kwdj/paragraph",
+      "textRole": "R63.text",
+      "modelTextPath": "/56/0",
+      "nativeTextType": "org.klenwriter.kwdj/text",
+      "literalText": "R63",
+      "utf16Length": 3
+    }
+  ],
+  "rawDomRowRoles": [
+    {
+      "row": "R00",
+      "elementRole": "R00.Element",
+      "elementChildNodesPath": [
+        0
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R00.Span",
+      "spanChildNodesPath": [
+        0,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R00.Text",
+      "textChildNodesPath": [
+        0,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R00",
+      "textChildCount": 0
+    },
+    {
+      "row": "R01",
+      "elementRole": "R01.Element",
+      "elementChildNodesPath": [
+        1
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R01.Span",
+      "spanChildNodesPath": [
+        1,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R01.Text",
+      "textChildNodesPath": [
+        1,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R01",
+      "textChildCount": 0
+    },
+    {
+      "row": "R02",
+      "elementRole": "R02.Element",
+      "elementChildNodesPath": [
+        2
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R02.Span",
+      "spanChildNodesPath": [
+        2,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R02.Text",
+      "textChildNodesPath": [
+        2,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R02",
+      "textChildCount": 0
+    },
+    {
+      "row": "R03",
+      "elementRole": "R03.Element",
+      "elementChildNodesPath": [
+        3
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R03.Span",
+      "spanChildNodesPath": [
+        3,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R03.Text",
+      "textChildNodesPath": [
+        3,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R03",
+      "textChildCount": 0
+    },
+    {
+      "row": "R04",
+      "elementRole": "R04.Element",
+      "elementChildNodesPath": [
+        4
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R04.Span",
+      "spanChildNodesPath": [
+        4,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R04.Text",
+      "textChildNodesPath": [
+        4,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R04",
+      "textChildCount": 0
+    },
+    {
+      "row": "R05",
+      "elementRole": "R05.Element",
+      "elementChildNodesPath": [
+        5
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R05.Span",
+      "spanChildNodesPath": [
+        5,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R05.Text",
+      "textChildNodesPath": [
+        5,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R05",
+      "textChildCount": 0
+    },
+    {
+      "row": "R06",
+      "elementRole": "R06.Element",
+      "elementChildNodesPath": [
+        6
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R06.Span",
+      "spanChildNodesPath": [
+        6,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R06.Text",
+      "textChildNodesPath": [
+        6,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R06",
+      "textChildCount": 0
+    },
+    {
+      "row": "R07",
+      "elementRole": "R07.Element",
+      "elementChildNodesPath": [
+        7
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R07.Span",
+      "spanChildNodesPath": [
+        7,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R07.Text",
+      "textChildNodesPath": [
+        7,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R07",
+      "textChildCount": 0
+    },
+    {
+      "row": "R08",
+      "elementRole": "R08.Element",
+      "elementChildNodesPath": [
+        8
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R08.Span",
+      "spanChildNodesPath": [
+        8,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R08.Text",
+      "textChildNodesPath": [
+        8,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R08",
+      "textChildCount": 0
+    },
+    {
+      "row": "R09",
+      "elementRole": "R09.Element",
+      "elementChildNodesPath": [
+        9
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R09.Span",
+      "spanChildNodesPath": [
+        9,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R09.Text",
+      "textChildNodesPath": [
+        9,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R09",
+      "textChildCount": 0
+    },
+    {
+      "row": "R10",
+      "elementRole": "R10.Element",
+      "elementChildNodesPath": [
+        10
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R10.Span",
+      "spanChildNodesPath": [
+        10,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R10.Text",
+      "textChildNodesPath": [
+        10,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R10",
+      "textChildCount": 0
+    },
+    {
+      "row": "R11",
+      "elementRole": "R11.Element",
+      "elementChildNodesPath": [
+        11
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R11.Span",
+      "spanChildNodesPath": [
+        11,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R11.Text",
+      "textChildNodesPath": [
+        11,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R11",
+      "textChildCount": 0
+    },
+    {
+      "row": "R12",
+      "elementRole": "R12.Element",
+      "elementChildNodesPath": [
+        12
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R12.Span",
+      "spanChildNodesPath": [
+        12,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R12.Text",
+      "textChildNodesPath": [
+        12,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R12",
+      "textChildCount": 0
+    },
+    {
+      "row": "R13",
+      "elementRole": "R13.Element",
+      "elementChildNodesPath": [
+        13
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R13.Span",
+      "spanChildNodesPath": [
+        13,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R13.Text",
+      "textChildNodesPath": [
+        13,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R13",
+      "textChildCount": 0
+    },
+    {
+      "row": "R14",
+      "elementRole": "R14.Element",
+      "elementChildNodesPath": [
+        14
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R14.Span",
+      "spanChildNodesPath": [
+        14,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R14.Text",
+      "textChildNodesPath": [
+        14,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R14",
+      "textChildCount": 0
+    },
+    {
+      "row": "R15",
+      "elementRole": "R15.Element",
+      "elementChildNodesPath": [
+        15
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R15.Span",
+      "spanChildNodesPath": [
+        15,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R15.Text",
+      "textChildNodesPath": [
+        15,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R15",
+      "textChildCount": 0
+    },
+    {
+      "row": "R16",
+      "elementRole": "R16.Element",
+      "elementChildNodesPath": [
+        16
+      ],
+      "expectedElementTag": "HR",
+      "expectedChildCount": 0,
+      "spanRole": null,
+      "spanChildNodesPath": null,
+      "spanTag": null,
+      "textObjectRole": null,
+      "textChildNodesPath": null,
+      "textNodeType": null,
+      "literalText": null,
+      "textChildCount": null
+    },
+    {
+      "row": "R17",
+      "elementRole": "R17.Element",
+      "elementChildNodesPath": [
+        17
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R17.Span",
+      "spanChildNodesPath": [
+        17,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R17.Text",
+      "textChildNodesPath": [
+        17,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R17",
+      "textChildCount": 0
+    },
+    {
+      "row": "R18",
+      "elementRole": "R18.Element",
+      "elementChildNodesPath": [
+        18
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R18.Span",
+      "spanChildNodesPath": [
+        18,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R18.Text",
+      "textChildNodesPath": [
+        18,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R18",
+      "textChildCount": 0
+    },
+    {
+      "row": "R19",
+      "elementRole": "R19.Element",
+      "elementChildNodesPath": [
+        19
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R19.Span",
+      "spanChildNodesPath": [
+        19,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R19.Text",
+      "textChildNodesPath": [
+        19,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R19",
+      "textChildCount": 0
+    },
+    {
+      "row": "R20",
+      "elementRole": "R20.Element",
+      "elementChildNodesPath": [
+        20
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R20.Span",
+      "spanChildNodesPath": [
+        20,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R20.Text",
+      "textChildNodesPath": [
+        20,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R20",
+      "textChildCount": 0
+    },
+    {
+      "row": "R21",
+      "elementRole": "R21.Element",
+      "elementChildNodesPath": [
+        21
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R21.Span",
+      "spanChildNodesPath": [
+        21,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R21.Text",
+      "textChildNodesPath": [
+        21,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R21",
+      "textChildCount": 0
+    },
+    {
+      "row": "R22",
+      "elementRole": "R22.Element",
+      "elementChildNodesPath": [
+        22
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R22.Span",
+      "spanChildNodesPath": [
+        22,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R22.Text",
+      "textChildNodesPath": [
+        22,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R22",
+      "textChildCount": 0
+    },
+    {
+      "row": "R23",
+      "elementRole": "R23.Element",
+      "elementChildNodesPath": [
+        23
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R23.Span",
+      "spanChildNodesPath": [
+        23,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R23.Text",
+      "textChildNodesPath": [
+        23,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R23",
+      "textChildCount": 0
+    },
+    {
+      "row": "R24",
+      "elementRole": "R24.Element",
+      "elementChildNodesPath": [
+        24,
+        0,
+        0,
+        0
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R24.Span",
+      "spanChildNodesPath": [
+        24,
+        0,
+        0,
+        0,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R24.Text",
+      "textChildNodesPath": [
+        24,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R24",
+      "textChildCount": 0
+    },
+    {
+      "row": "R25",
+      "elementRole": "R25.Element",
+      "elementChildNodesPath": [
+        24,
+        0,
+        1,
+        0
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R25.Span",
+      "spanChildNodesPath": [
+        24,
+        0,
+        1,
+        0,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R25.Text",
+      "textChildNodesPath": [
+        24,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R25",
+      "textChildCount": 0
+    },
+    {
+      "row": "R26",
+      "elementRole": "R26.Element",
+      "elementChildNodesPath": [
+        24,
+        0,
+        2,
+        0
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R26.Span",
+      "spanChildNodesPath": [
+        24,
+        0,
+        2,
+        0,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R26.Text",
+      "textChildNodesPath": [
+        24,
+        0,
+        2,
+        0,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R26",
+      "textChildCount": 0
+    },
+    {
+      "row": "R27",
+      "elementRole": "R27.Element",
+      "elementChildNodesPath": [
+        24,
+        0,
+        3,
+        0
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R27.Span",
+      "spanChildNodesPath": [
+        24,
+        0,
+        3,
+        0,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R27.Text",
+      "textChildNodesPath": [
+        24,
+        0,
+        3,
+        0,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R27",
+      "textChildCount": 0
+    },
+    {
+      "row": "R28",
+      "elementRole": "R28.Element",
+      "elementChildNodesPath": [
+        24,
+        0,
+        4,
+        0
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R28.Span",
+      "spanChildNodesPath": [
+        24,
+        0,
+        4,
+        0,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R28.Text",
+      "textChildNodesPath": [
+        24,
+        0,
+        4,
+        0,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R28",
+      "textChildCount": 0
+    },
+    {
+      "row": "R29",
+      "elementRole": "R29.Element",
+      "elementChildNodesPath": [
+        24,
+        0,
+        5,
+        0
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R29.Span",
+      "spanChildNodesPath": [
+        24,
+        0,
+        5,
+        0,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R29.Text",
+      "textChildNodesPath": [
+        24,
+        0,
+        5,
+        0,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R29",
+      "textChildCount": 0
+    },
+    {
+      "row": "R30",
+      "elementRole": "R30.Element",
+      "elementChildNodesPath": [
+        24,
+        0,
+        6,
+        0
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R30.Span",
+      "spanChildNodesPath": [
+        24,
+        0,
+        6,
+        0,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R30.Text",
+      "textChildNodesPath": [
+        24,
+        0,
+        6,
+        0,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R30",
+      "textChildCount": 0
+    },
+    {
+      "row": "R31",
+      "elementRole": "R31.Element",
+      "elementChildNodesPath": [
+        24,
+        0,
+        7,
+        0
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R31.Span",
+      "spanChildNodesPath": [
+        24,
+        0,
+        7,
+        0,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R31.Text",
+      "textChildNodesPath": [
+        24,
+        0,
+        7,
+        0,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R31",
+      "textChildCount": 0
+    },
+    {
+      "row": "R32",
+      "elementRole": "R32.Element",
+      "elementChildNodesPath": [
+        25
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R32.Span",
+      "spanChildNodesPath": [
+        25,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R32.Text",
+      "textChildNodesPath": [
+        25,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R32",
+      "textChildCount": 0
+    },
+    {
+      "row": "R33",
+      "elementRole": "R33.Element",
+      "elementChildNodesPath": [
+        26
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R33.Span",
+      "spanChildNodesPath": [
+        26,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R33.Text",
+      "textChildNodesPath": [
+        26,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R33",
+      "textChildCount": 0
+    },
+    {
+      "row": "R34",
+      "elementRole": "R34.Element",
+      "elementChildNodesPath": [
+        27
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R34.Span",
+      "spanChildNodesPath": [
+        27,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R34.Text",
+      "textChildNodesPath": [
+        27,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R34",
+      "textChildCount": 0
+    },
+    {
+      "row": "R35",
+      "elementRole": "R35.Element",
+      "elementChildNodesPath": [
+        28
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R35.Span",
+      "spanChildNodesPath": [
+        28,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R35.Text",
+      "textChildNodesPath": [
+        28,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R35",
+      "textChildCount": 0
+    },
+    {
+      "row": "R36",
+      "elementRole": "R36.Element",
+      "elementChildNodesPath": [
+        29
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R36.Span",
+      "spanChildNodesPath": [
+        29,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R36.Text",
+      "textChildNodesPath": [
+        29,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R36",
+      "textChildCount": 0
+    },
+    {
+      "row": "R37",
+      "elementRole": "R37.Element",
+      "elementChildNodesPath": [
+        30
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R37.Span",
+      "spanChildNodesPath": [
+        30,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R37.Text",
+      "textChildNodesPath": [
+        30,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R37",
+      "textChildCount": 0
+    },
+    {
+      "row": "R38",
+      "elementRole": "R38.Element",
+      "elementChildNodesPath": [
+        31
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R38.Span",
+      "spanChildNodesPath": [
+        31,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R38.Text",
+      "textChildNodesPath": [
+        31,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R38",
+      "textChildCount": 0
+    },
+    {
+      "row": "R39",
+      "elementRole": "R39.Element",
+      "elementChildNodesPath": [
+        32
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R39.Span",
+      "spanChildNodesPath": [
+        32,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R39.Text",
+      "textChildNodesPath": [
+        32,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R39",
+      "textChildCount": 0
+    },
+    {
+      "row": "R40",
+      "elementRole": "R40.Element",
+      "elementChildNodesPath": [
+        33
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R40.Span",
+      "spanChildNodesPath": [
+        33,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R40.Text",
+      "textChildNodesPath": [
+        33,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R40",
+      "textChildCount": 0
+    },
+    {
+      "row": "R41",
+      "elementRole": "R41.Element",
+      "elementChildNodesPath": [
+        34
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R41.Span",
+      "spanChildNodesPath": [
+        34,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R41.Text",
+      "textChildNodesPath": [
+        34,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R41",
+      "textChildCount": 0
+    },
+    {
+      "row": "R42",
+      "elementRole": "R42.Element",
+      "elementChildNodesPath": [
+        35
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R42.Span",
+      "spanChildNodesPath": [
+        35,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R42.Text",
+      "textChildNodesPath": [
+        35,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R42",
+      "textChildCount": 0
+    },
+    {
+      "row": "R43",
+      "elementRole": "R43.Element",
+      "elementChildNodesPath": [
+        36
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R43.Span",
+      "spanChildNodesPath": [
+        36,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R43.Text",
+      "textChildNodesPath": [
+        36,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R43",
+      "textChildCount": 0
+    },
+    {
+      "row": "R44",
+      "elementRole": "R44.Element",
+      "elementChildNodesPath": [
+        37
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R44.Span",
+      "spanChildNodesPath": [
+        37,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R44.Text",
+      "textChildNodesPath": [
+        37,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R44",
+      "textChildCount": 0
+    },
+    {
+      "row": "R45",
+      "elementRole": "R45.Element",
+      "elementChildNodesPath": [
+        38
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R45.Span",
+      "spanChildNodesPath": [
+        38,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R45.Text",
+      "textChildNodesPath": [
+        38,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R45",
+      "textChildCount": 0
+    },
+    {
+      "row": "R46",
+      "elementRole": "R46.Element",
+      "elementChildNodesPath": [
+        39
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R46.Span",
+      "spanChildNodesPath": [
+        39,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R46.Text",
+      "textChildNodesPath": [
+        39,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R46",
+      "textChildCount": 0
+    },
+    {
+      "row": "R47",
+      "elementRole": "R47.Element",
+      "elementChildNodesPath": [
+        40
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R47.Span",
+      "spanChildNodesPath": [
+        40,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R47.Text",
+      "textChildNodesPath": [
+        40,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R47",
+      "textChildCount": 0
+    },
+    {
+      "row": "R48",
+      "elementRole": "R48.Element",
+      "elementChildNodesPath": [
+        41
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R48.Span",
+      "spanChildNodesPath": [
+        41,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R48.Text",
+      "textChildNodesPath": [
+        41,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R48",
+      "textChildCount": 0
+    },
+    {
+      "row": "R49",
+      "elementRole": "R49.Element",
+      "elementChildNodesPath": [
+        42
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R49.Span",
+      "spanChildNodesPath": [
+        42,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R49.Text",
+      "textChildNodesPath": [
+        42,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R49",
+      "textChildCount": 0
+    },
+    {
+      "row": "R50",
+      "elementRole": "R50.Element",
+      "elementChildNodesPath": [
+        43
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R50.Span",
+      "spanChildNodesPath": [
+        43,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R50.Text",
+      "textChildNodesPath": [
+        43,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R50",
+      "textChildCount": 0
+    },
+    {
+      "row": "R51",
+      "elementRole": "R51.Element",
+      "elementChildNodesPath": [
+        44
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R51.Span",
+      "spanChildNodesPath": [
+        44,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R51.Text",
+      "textChildNodesPath": [
+        44,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R51",
+      "textChildCount": 0
+    },
+    {
+      "row": "R52",
+      "elementRole": "R52.Element",
+      "elementChildNodesPath": [
+        45
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R52.Span",
+      "spanChildNodesPath": [
+        45,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R52.Text",
+      "textChildNodesPath": [
+        45,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R52",
+      "textChildCount": 0
+    },
+    {
+      "row": "R53",
+      "elementRole": "R53.Element",
+      "elementChildNodesPath": [
+        46
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R53.Span",
+      "spanChildNodesPath": [
+        46,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R53.Text",
+      "textChildNodesPath": [
+        46,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R53",
+      "textChildCount": 0
+    },
+    {
+      "row": "R54",
+      "elementRole": "R54.Element",
+      "elementChildNodesPath": [
+        47
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R54.Span",
+      "spanChildNodesPath": [
+        47,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R54.Text",
+      "textChildNodesPath": [
+        47,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R54",
+      "textChildCount": 0
+    },
+    {
+      "row": "R55",
+      "elementRole": "R55.Element",
+      "elementChildNodesPath": [
+        48
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R55.Span",
+      "spanChildNodesPath": [
+        48,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R55.Text",
+      "textChildNodesPath": [
+        48,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R55",
+      "textChildCount": 0
+    },
+    {
+      "row": "R56",
+      "elementRole": "R56.Element",
+      "elementChildNodesPath": [
+        49
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R56.Span",
+      "spanChildNodesPath": [
+        49,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R56.Text",
+      "textChildNodesPath": [
+        49,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R56",
+      "textChildCount": 0
+    },
+    {
+      "row": "R57",
+      "elementRole": "R57.Element",
+      "elementChildNodesPath": [
+        50
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R57.Span",
+      "spanChildNodesPath": [
+        50,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R57.Text",
+      "textChildNodesPath": [
+        50,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R57",
+      "textChildCount": 0
+    },
+    {
+      "row": "R58",
+      "elementRole": "R58.Element",
+      "elementChildNodesPath": [
+        51
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R58.Span",
+      "spanChildNodesPath": [
+        51,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R58.Text",
+      "textChildNodesPath": [
+        51,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R58",
+      "textChildCount": 0
+    },
+    {
+      "row": "R59",
+      "elementRole": "R59.Element",
+      "elementChildNodesPath": [
+        52
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R59.Span",
+      "spanChildNodesPath": [
+        52,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R59.Text",
+      "textChildNodesPath": [
+        52,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R59",
+      "textChildCount": 0
+    },
+    {
+      "row": "R60",
+      "elementRole": "R60.Element",
+      "elementChildNodesPath": [
+        53
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R60.Span",
+      "spanChildNodesPath": [
+        53,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R60.Text",
+      "textChildNodesPath": [
+        53,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R60",
+      "textChildCount": 0
+    },
+    {
+      "row": "R61",
+      "elementRole": "R61.Element",
+      "elementChildNodesPath": [
+        54
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R61.Span",
+      "spanChildNodesPath": [
+        54,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R61.Text",
+      "textChildNodesPath": [
+        54,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R61",
+      "textChildCount": 0
+    },
+    {
+      "row": "R62",
+      "elementRole": "R62.Element",
+      "elementChildNodesPath": [
+        55
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R62.Span",
+      "spanChildNodesPath": [
+        55,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R62.Text",
+      "textChildNodesPath": [
+        55,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R62",
+      "textChildCount": 0
+    },
+    {
+      "row": "R63",
+      "elementRole": "R63.Element",
+      "elementChildNodesPath": [
+        56
+      ],
+      "expectedElementTag": "P",
+      "expectedChildCount": 1,
+      "spanRole": "R63.Span",
+      "spanChildNodesPath": [
+        56,
+        0
+      ],
+      "spanTag": "SPAN",
+      "textObjectRole": "R63.Text",
+      "textChildNodesPath": [
+        56,
+        0,
+        0
+      ],
+      "textNodeType": 3,
+      "literalText": "R63",
+      "textChildCount": 0
+    }
+  ],
+  "rowGeometry": [
+    {
+      "row": "R00",
+      "ordinal": 0,
+      "kind": "paragraph",
+      "text": "R00",
+      "contentY": [
+        20,
+        44
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 100,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 100,
+        "right": 740,
+        "bottom": 124
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -1256,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -1256,
+        "right": 740,
+        "bottom": -1232
+      },
+      "modelBlockRole": "R00.block",
+      "domBlockRole": "R00.Element"
+    },
+    {
+      "row": "R01",
+      "ordinal": 1,
+      "kind": "paragraph",
+      "text": "R01",
+      "contentY": [
+        44,
+        68
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 124,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 124,
+        "right": 740,
+        "bottom": 148
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -1232,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -1232,
+        "right": 740,
+        "bottom": -1208
+      },
+      "modelBlockRole": "R01.block",
+      "domBlockRole": "R01.Element"
+    },
+    {
+      "row": "R02",
+      "ordinal": 2,
+      "kind": "paragraph",
+      "text": "R02",
+      "contentY": [
+        68,
+        92
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 148,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 148,
+        "right": 740,
+        "bottom": 172
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -1208,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -1208,
+        "right": 740,
+        "bottom": -1184
+      },
+      "modelBlockRole": "R02.block",
+      "domBlockRole": "R02.Element"
+    },
+    {
+      "row": "R03",
+      "ordinal": 3,
+      "kind": "paragraph",
+      "text": "R03",
+      "contentY": [
+        92,
+        116
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 172,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 172,
+        "right": 740,
+        "bottom": 196
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -1184,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -1184,
+        "right": 740,
+        "bottom": -1160
+      },
+      "modelBlockRole": "R03.block",
+      "domBlockRole": "R03.Element"
+    },
+    {
+      "row": "R04",
+      "ordinal": 4,
+      "kind": "paragraph",
+      "text": "R04",
+      "contentY": [
+        116,
+        140
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 196,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 196,
+        "right": 740,
+        "bottom": 220
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -1160,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -1160,
+        "right": 740,
+        "bottom": -1136
+      },
+      "modelBlockRole": "R04.block",
+      "domBlockRole": "R04.Element"
+    },
+    {
+      "row": "R05",
+      "ordinal": 5,
+      "kind": "paragraph",
+      "text": "R05",
+      "contentY": [
+        140,
+        164
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 220,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 220,
+        "right": 740,
+        "bottom": 244
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -1136,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -1136,
+        "right": 740,
+        "bottom": -1112
+      },
+      "modelBlockRole": "R05.block",
+      "domBlockRole": "R05.Element"
+    },
+    {
+      "row": "R06",
+      "ordinal": 6,
+      "kind": "paragraph",
+      "text": "R06",
+      "contentY": [
+        164,
+        188
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 244,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 244,
+        "right": 740,
+        "bottom": 268
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -1112,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -1112,
+        "right": 740,
+        "bottom": -1088
+      },
+      "modelBlockRole": "R06.block",
+      "domBlockRole": "R06.Element"
+    },
+    {
+      "row": "R07",
+      "ordinal": 7,
+      "kind": "paragraph",
+      "text": "R07",
+      "contentY": [
+        188,
+        212
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 268,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 268,
+        "right": 740,
+        "bottom": 292
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -1088,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -1088,
+        "right": 740,
+        "bottom": -1064
+      },
+      "modelBlockRole": "R07.block",
+      "domBlockRole": "R07.Element"
+    },
+    {
+      "row": "R08",
+      "ordinal": 8,
+      "kind": "paragraph",
+      "text": "R08",
+      "contentY": [
+        212,
+        236
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 292,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 292,
+        "right": 740,
+        "bottom": 316
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -1064,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -1064,
+        "right": 740,
+        "bottom": -1040
+      },
+      "modelBlockRole": "R08.block",
+      "domBlockRole": "R08.Element"
+    },
+    {
+      "row": "R09",
+      "ordinal": 9,
+      "kind": "paragraph",
+      "text": "R09",
+      "contentY": [
+        236,
+        260
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 316,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 316,
+        "right": 740,
+        "bottom": 340
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -1040,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -1040,
+        "right": 740,
+        "bottom": -1016
+      },
+      "modelBlockRole": "R09.block",
+      "domBlockRole": "R09.Element"
+    },
+    {
+      "row": "R10",
+      "ordinal": 10,
+      "kind": "paragraph",
+      "text": "R10",
+      "contentY": [
+        260,
+        284
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 340,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 340,
+        "right": 740,
+        "bottom": 364
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -1016,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -1016,
+        "right": 740,
+        "bottom": -992
+      },
+      "modelBlockRole": "R10.block",
+      "domBlockRole": "R10.Element"
+    },
+    {
+      "row": "R11",
+      "ordinal": 11,
+      "kind": "paragraph",
+      "text": "R11",
+      "contentY": [
+        284,
+        308
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 364,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 364,
+        "right": 740,
+        "bottom": 388
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -992,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -992,
+        "right": 740,
+        "bottom": -968
+      },
+      "modelBlockRole": "R11.block",
+      "domBlockRole": "R11.Element"
+    },
+    {
+      "row": "R12",
+      "ordinal": 12,
+      "kind": "paragraph",
+      "text": "R12",
+      "contentY": [
+        308,
+        332
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 388,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 388,
+        "right": 740,
+        "bottom": 412
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -968,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -968,
+        "right": 740,
+        "bottom": -944
+      },
+      "modelBlockRole": "R12.block",
+      "domBlockRole": "R12.Element"
+    },
+    {
+      "row": "R13",
+      "ordinal": 13,
+      "kind": "paragraph",
+      "text": "R13",
+      "contentY": [
+        332,
+        356
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 412,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 412,
+        "right": 740,
+        "bottom": 436
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -944,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -944,
+        "right": 740,
+        "bottom": -920
+      },
+      "modelBlockRole": "R13.block",
+      "domBlockRole": "R13.Element"
+    },
+    {
+      "row": "R14",
+      "ordinal": 14,
+      "kind": "paragraph",
+      "text": "R14",
+      "contentY": [
+        356,
+        380
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 436,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 436,
+        "right": 740,
+        "bottom": 460
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -920,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -920,
+        "right": 740,
+        "bottom": -896
+      },
+      "modelBlockRole": "R14.block",
+      "domBlockRole": "R14.Element"
+    },
+    {
+      "row": "R15",
+      "ordinal": 15,
+      "kind": "paragraph",
+      "text": "R15",
+      "contentY": [
+        380,
+        404
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 460,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 460,
+        "right": 740,
+        "bottom": 484
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -896,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -896,
+        "right": 740,
+        "bottom": -872
+      },
+      "modelBlockRole": "R15.block",
+      "domBlockRole": "R15.Element"
+    },
+    {
+      "row": "R16",
+      "ordinal": 16,
+      "kind": "scene_break",
+      "text": null,
+      "contentY": [
+        404,
+        428
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 484,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 484,
+        "right": 740,
+        "bottom": 508
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -872,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -872,
+        "right": 740,
+        "bottom": -848
+      },
+      "modelBlockRole": "R16.block",
+      "domBlockRole": "R16.Element"
+    },
+    {
+      "row": "R17",
+      "ordinal": 17,
+      "kind": "paragraph",
+      "text": "R17",
+      "contentY": [
+        428,
+        452
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 508,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 508,
+        "right": 740,
+        "bottom": 532
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -848,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -848,
+        "right": 740,
+        "bottom": -824
+      },
+      "modelBlockRole": "R17.block",
+      "domBlockRole": "R17.Element"
+    },
+    {
+      "row": "R18",
+      "ordinal": 18,
+      "kind": "paragraph",
+      "text": "R18",
+      "contentY": [
+        452,
+        476
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 532,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 532,
+        "right": 740,
+        "bottom": 556
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -824,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -824,
+        "right": 740,
+        "bottom": -800
+      },
+      "modelBlockRole": "R18.block",
+      "domBlockRole": "R18.Element"
+    },
+    {
+      "row": "R19",
+      "ordinal": 19,
+      "kind": "paragraph",
+      "text": "R19",
+      "contentY": [
+        476,
+        500
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 556,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 556,
+        "right": 740,
+        "bottom": 580
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -800,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -800,
+        "right": 740,
+        "bottom": -776
+      },
+      "modelBlockRole": "R19.block",
+      "domBlockRole": "R19.Element"
+    },
+    {
+      "row": "R20",
+      "ordinal": 20,
+      "kind": "paragraph",
+      "text": "R20",
+      "contentY": [
+        500,
+        524
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 580,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 580,
+        "right": 740,
+        "bottom": 604
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -776,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -776,
+        "right": 740,
+        "bottom": -752
+      },
+      "modelBlockRole": "R20.block",
+      "domBlockRole": "R20.Element"
+    },
+    {
+      "row": "R21",
+      "ordinal": 21,
+      "kind": "paragraph",
+      "text": "R21",
+      "contentY": [
+        524,
+        548
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 604,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 604,
+        "right": 740,
+        "bottom": 628
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -752,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -752,
+        "right": 740,
+        "bottom": -728
+      },
+      "modelBlockRole": "R21.block",
+      "domBlockRole": "R21.Element"
+    },
+    {
+      "row": "R22",
+      "ordinal": 22,
+      "kind": "paragraph",
+      "text": "R22",
+      "contentY": [
+        548,
+        572
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 628,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 628,
+        "right": 740,
+        "bottom": 652
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -728,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -728,
+        "right": 740,
+        "bottom": -704
+      },
+      "modelBlockRole": "R22.block",
+      "domBlockRole": "R22.Element"
+    },
+    {
+      "row": "R23",
+      "ordinal": 23,
+      "kind": "paragraph",
+      "text": "R23",
+      "contentY": [
+        572,
+        596
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 652,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 652,
+        "right": 740,
+        "bottom": 676
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -704,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -704,
+        "right": 740,
+        "bottom": -680
+      },
+      "modelBlockRole": "R23.block",
+      "domBlockRole": "R23.Element"
+    },
+    {
+      "row": "R24",
+      "ordinal": 24,
+      "kind": "paragraph",
+      "text": "R24",
+      "contentY": [
+        596,
+        620
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 676,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 676,
+        "right": 740,
+        "bottom": 700
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -680,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -680,
+        "right": 740,
+        "bottom": -656
+      },
+      "modelBlockRole": "R24.block",
+      "domBlockRole": "R24.Element"
+    },
+    {
+      "row": "R25",
+      "ordinal": 25,
+      "kind": "paragraph",
+      "text": "R25",
+      "contentY": [
+        620,
+        644
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 700,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 700,
+        "right": 740,
+        "bottom": 724
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -656,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -656,
+        "right": 740,
+        "bottom": -632
+      },
+      "modelBlockRole": "R25.block",
+      "domBlockRole": "R25.Element"
+    },
+    {
+      "row": "R26",
+      "ordinal": 26,
+      "kind": "paragraph",
+      "text": "R26",
+      "contentY": [
+        644,
+        668
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 724,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 724,
+        "right": 740,
+        "bottom": 748
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -632,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -632,
+        "right": 740,
+        "bottom": -608
+      },
+      "modelBlockRole": "R26.block",
+      "domBlockRole": "R26.Element"
+    },
+    {
+      "row": "R27",
+      "ordinal": 27,
+      "kind": "paragraph",
+      "text": "R27",
+      "contentY": [
+        668,
+        692
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 748,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 748,
+        "right": 740,
+        "bottom": 772
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -608,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -608,
+        "right": 740,
+        "bottom": -584
+      },
+      "modelBlockRole": "R27.block",
+      "domBlockRole": "R27.Element"
+    },
+    {
+      "row": "R28",
+      "ordinal": 28,
+      "kind": "paragraph",
+      "text": "R28",
+      "contentY": [
+        692,
+        716
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 772,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 772,
+        "right": 740,
+        "bottom": 796
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -584,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -584,
+        "right": 740,
+        "bottom": -560
+      },
+      "modelBlockRole": "R28.block",
+      "domBlockRole": "R28.Element"
+    },
+    {
+      "row": "R29",
+      "ordinal": 29,
+      "kind": "paragraph",
+      "text": "R29",
+      "contentY": [
+        716,
+        740
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 796,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 796,
+        "right": 740,
+        "bottom": 820
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -560,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -560,
+        "right": 740,
+        "bottom": -536
+      },
+      "modelBlockRole": "R29.block",
+      "domBlockRole": "R29.Element"
+    },
+    {
+      "row": "R30",
+      "ordinal": 30,
+      "kind": "paragraph",
+      "text": "R30",
+      "contentY": [
+        740,
+        764
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 820,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 820,
+        "right": 740,
+        "bottom": 844
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -536,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -536,
+        "right": 740,
+        "bottom": -512
+      },
+      "modelBlockRole": "R30.block",
+      "domBlockRole": "R30.Element"
+    },
+    {
+      "row": "R31",
+      "ordinal": 31,
+      "kind": "paragraph",
+      "text": "R31",
+      "contentY": [
+        764,
+        788
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 844,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 844,
+        "right": 740,
+        "bottom": 868
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -512,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -512,
+        "right": 740,
+        "bottom": -488
+      },
+      "modelBlockRole": "R31.block",
+      "domBlockRole": "R31.Element"
+    },
+    {
+      "row": "R32",
+      "ordinal": 32,
+      "kind": "paragraph",
+      "text": "R32",
+      "contentY": [
+        788,
+        812
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 868,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 868,
+        "right": 740,
+        "bottom": 892
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -488,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -488,
+        "right": 740,
+        "bottom": -464
+      },
+      "modelBlockRole": "R32.block",
+      "domBlockRole": "R32.Element"
+    },
+    {
+      "row": "R33",
+      "ordinal": 33,
+      "kind": "paragraph",
+      "text": "R33",
+      "contentY": [
+        812,
+        836
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 892,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 892,
+        "right": 740,
+        "bottom": 916
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -464,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -464,
+        "right": 740,
+        "bottom": -440
+      },
+      "modelBlockRole": "R33.block",
+      "domBlockRole": "R33.Element"
+    },
+    {
+      "row": "R34",
+      "ordinal": 34,
+      "kind": "paragraph",
+      "text": "R34",
+      "contentY": [
+        836,
+        860
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 916,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 916,
+        "right": 740,
+        "bottom": 940
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -440,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -440,
+        "right": 740,
+        "bottom": -416
+      },
+      "modelBlockRole": "R34.block",
+      "domBlockRole": "R34.Element"
+    },
+    {
+      "row": "R35",
+      "ordinal": 35,
+      "kind": "paragraph",
+      "text": "R35",
+      "contentY": [
+        860,
+        884
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 940,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 940,
+        "right": 740,
+        "bottom": 964
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -416,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -416,
+        "right": 740,
+        "bottom": -392
+      },
+      "modelBlockRole": "R35.block",
+      "domBlockRole": "R35.Element"
+    },
+    {
+      "row": "R36",
+      "ordinal": 36,
+      "kind": "paragraph",
+      "text": "R36",
+      "contentY": [
+        884,
+        908
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 964,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 964,
+        "right": 740,
+        "bottom": 988
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -392,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -392,
+        "right": 740,
+        "bottom": -368
+      },
+      "modelBlockRole": "R36.block",
+      "domBlockRole": "R36.Element"
+    },
+    {
+      "row": "R37",
+      "ordinal": 37,
+      "kind": "paragraph",
+      "text": "R37",
+      "contentY": [
+        908,
+        932
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 988,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 988,
+        "right": 740,
+        "bottom": 1012
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -368,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -368,
+        "right": 740,
+        "bottom": -344
+      },
+      "modelBlockRole": "R37.block",
+      "domBlockRole": "R37.Element"
+    },
+    {
+      "row": "R38",
+      "ordinal": 38,
+      "kind": "paragraph",
+      "text": "R38",
+      "contentY": [
+        932,
+        956
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1012,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1012,
+        "right": 740,
+        "bottom": 1036
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -344,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -344,
+        "right": 740,
+        "bottom": -320
+      },
+      "modelBlockRole": "R38.block",
+      "domBlockRole": "R38.Element"
+    },
+    {
+      "row": "R39",
+      "ordinal": 39,
+      "kind": "paragraph",
+      "text": "R39",
+      "contentY": [
+        956,
+        980
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1036,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1036,
+        "right": 740,
+        "bottom": 1060
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -320,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -320,
+        "right": 740,
+        "bottom": -296
+      },
+      "modelBlockRole": "R39.block",
+      "domBlockRole": "R39.Element"
+    },
+    {
+      "row": "R40",
+      "ordinal": 40,
+      "kind": "paragraph",
+      "text": "R40",
+      "contentY": [
+        980,
+        1004
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1060,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1060,
+        "right": 740,
+        "bottom": 1084
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -296,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -296,
+        "right": 740,
+        "bottom": -272
+      },
+      "modelBlockRole": "R40.block",
+      "domBlockRole": "R40.Element"
+    },
+    {
+      "row": "R41",
+      "ordinal": 41,
+      "kind": "paragraph",
+      "text": "R41",
+      "contentY": [
+        1004,
+        1028
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1084,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1084,
+        "right": 740,
+        "bottom": 1108
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -272,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -272,
+        "right": 740,
+        "bottom": -248
+      },
+      "modelBlockRole": "R41.block",
+      "domBlockRole": "R41.Element"
+    },
+    {
+      "row": "R42",
+      "ordinal": 42,
+      "kind": "paragraph",
+      "text": "R42",
+      "contentY": [
+        1028,
+        1052
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1108,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1108,
+        "right": 740,
+        "bottom": 1132
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -248,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -248,
+        "right": 740,
+        "bottom": -224
+      },
+      "modelBlockRole": "R42.block",
+      "domBlockRole": "R42.Element"
+    },
+    {
+      "row": "R43",
+      "ordinal": 43,
+      "kind": "paragraph",
+      "text": "R43",
+      "contentY": [
+        1052,
+        1076
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1132,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1132,
+        "right": 740,
+        "bottom": 1156
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -224,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -224,
+        "right": 740,
+        "bottom": -200
+      },
+      "modelBlockRole": "R43.block",
+      "domBlockRole": "R43.Element"
+    },
+    {
+      "row": "R44",
+      "ordinal": 44,
+      "kind": "paragraph",
+      "text": "R44",
+      "contentY": [
+        1076,
+        1100
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1156,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1156,
+        "right": 740,
+        "bottom": 1180
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -200,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -200,
+        "right": 740,
+        "bottom": -176
+      },
+      "modelBlockRole": "R44.block",
+      "domBlockRole": "R44.Element"
+    },
+    {
+      "row": "R45",
+      "ordinal": 45,
+      "kind": "paragraph",
+      "text": "R45",
+      "contentY": [
+        1100,
+        1124
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1180,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1180,
+        "right": 740,
+        "bottom": 1204
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -176,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -176,
+        "right": 740,
+        "bottom": -152
+      },
+      "modelBlockRole": "R45.block",
+      "domBlockRole": "R45.Element"
+    },
+    {
+      "row": "R46",
+      "ordinal": 46,
+      "kind": "paragraph",
+      "text": "R46",
+      "contentY": [
+        1124,
+        1148
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1204,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1204,
+        "right": 740,
+        "bottom": 1228
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -152,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -152,
+        "right": 740,
+        "bottom": -128
+      },
+      "modelBlockRole": "R46.block",
+      "domBlockRole": "R46.Element"
+    },
+    {
+      "row": "R47",
+      "ordinal": 47,
+      "kind": "paragraph",
+      "text": "R47",
+      "contentY": [
+        1148,
+        1172
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1228,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1228,
+        "right": 740,
+        "bottom": 1252
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -128,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -128,
+        "right": 740,
+        "bottom": -104
+      },
+      "modelBlockRole": "R47.block",
+      "domBlockRole": "R47.Element"
+    },
+    {
+      "row": "R48",
+      "ordinal": 48,
+      "kind": "paragraph",
+      "text": "R48",
+      "contentY": [
+        1172,
+        1196
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1252,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1252,
+        "right": 740,
+        "bottom": 1276
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -104,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -104,
+        "right": 740,
+        "bottom": -80
+      },
+      "modelBlockRole": "R48.block",
+      "domBlockRole": "R48.Element"
+    },
+    {
+      "row": "R49",
+      "ordinal": 49,
+      "kind": "paragraph",
+      "text": "R49",
+      "contentY": [
+        1196,
+        1220
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1276,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1276,
+        "right": 740,
+        "bottom": 1300
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -80,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -80,
+        "right": 740,
+        "bottom": -56
+      },
+      "modelBlockRole": "R49.block",
+      "domBlockRole": "R49.Element"
+    },
+    {
+      "row": "R50",
+      "ordinal": 50,
+      "kind": "paragraph",
+      "text": "R50",
+      "contentY": [
+        1220,
+        1244
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1300,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1300,
+        "right": 740,
+        "bottom": 1324
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -56,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -56,
+        "right": 740,
+        "bottom": -32
+      },
+      "modelBlockRole": "R50.block",
+      "domBlockRole": "R50.Element"
+    },
+    {
+      "row": "R51",
+      "ordinal": 51,
+      "kind": "paragraph",
+      "text": "R51",
+      "contentY": [
+        1244,
+        1268
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1324,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1324,
+        "right": 740,
+        "bottom": 1348
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -32,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -32,
+        "right": 740,
+        "bottom": -8
+      },
+      "modelBlockRole": "R51.block",
+      "domBlockRole": "R51.Element"
+    },
+    {
+      "row": "R52",
+      "ordinal": 52,
+      "kind": "paragraph",
+      "text": "R52",
+      "contentY": [
+        1268,
+        1292
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1348,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1348,
+        "right": 740,
+        "bottom": 1372
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": -8,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": -8,
+        "right": 740,
+        "bottom": 16
+      },
+      "modelBlockRole": "R52.block",
+      "domBlockRole": "R52.Element"
+    },
+    {
+      "row": "R53",
+      "ordinal": 53,
+      "kind": "paragraph",
+      "text": "R53",
+      "contentY": [
+        1292,
+        1316
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1372,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1372,
+        "right": 740,
+        "bottom": 1396
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": 16,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 16,
+        "right": 740,
+        "bottom": 40
+      },
+      "modelBlockRole": "R53.block",
+      "domBlockRole": "R53.Element"
+    },
+    {
+      "row": "R54",
+      "ordinal": 54,
+      "kind": "paragraph",
+      "text": "R54",
+      "contentY": [
+        1316,
+        1340
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1396,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1396,
+        "right": 740,
+        "bottom": 1420
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": 40,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 40,
+        "right": 740,
+        "bottom": 64
+      },
+      "modelBlockRole": "R54.block",
+      "domBlockRole": "R54.Element"
+    },
+    {
+      "row": "R55",
+      "ordinal": 55,
+      "kind": "paragraph",
+      "text": "R55",
+      "contentY": [
+        1340,
+        1364
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1420,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1420,
+        "right": 740,
+        "bottom": 1444
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": 64,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 64,
+        "right": 740,
+        "bottom": 88
+      },
+      "modelBlockRole": "R55.block",
+      "domBlockRole": "R55.Element"
+    },
+    {
+      "row": "R56",
+      "ordinal": 56,
+      "kind": "paragraph",
+      "text": "R56",
+      "contentY": [
+        1364,
+        1388
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1444,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1444,
+        "right": 740,
+        "bottom": 1468
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": 88,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 88,
+        "right": 740,
+        "bottom": 112
+      },
+      "modelBlockRole": "R56.block",
+      "domBlockRole": "R56.Element"
+    },
+    {
+      "row": "R57",
+      "ordinal": 57,
+      "kind": "paragraph",
+      "text": "R57",
+      "contentY": [
+        1388,
+        1412
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1468,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1468,
+        "right": 740,
+        "bottom": 1492
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": 112,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 112,
+        "right": 740,
+        "bottom": 136
+      },
+      "modelBlockRole": "R57.block",
+      "domBlockRole": "R57.Element"
+    },
+    {
+      "row": "R58",
+      "ordinal": 58,
+      "kind": "paragraph",
+      "text": "R58",
+      "contentY": [
+        1412,
+        1436
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1492,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1492,
+        "right": 740,
+        "bottom": 1516
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": 136,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 136,
+        "right": 740,
+        "bottom": 160
+      },
+      "modelBlockRole": "R58.block",
+      "domBlockRole": "R58.Element"
+    },
+    {
+      "row": "R59",
+      "ordinal": 59,
+      "kind": "paragraph",
+      "text": "R59",
+      "contentY": [
+        1436,
+        1460
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1516,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1516,
+        "right": 740,
+        "bottom": 1540
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": 160,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 160,
+        "right": 740,
+        "bottom": 184
+      },
+      "modelBlockRole": "R59.block",
+      "domBlockRole": "R59.Element"
+    },
+    {
+      "row": "R60",
+      "ordinal": 60,
+      "kind": "paragraph",
+      "text": "R60",
+      "contentY": [
+        1460,
+        1484
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1540,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1540,
+        "right": 740,
+        "bottom": 1564
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": 184,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 184,
+        "right": 740,
+        "bottom": 208
+      },
+      "modelBlockRole": "R60.block",
+      "domBlockRole": "R60.Element"
+    },
+    {
+      "row": "R61",
+      "ordinal": 61,
+      "kind": "paragraph",
+      "text": "R61",
+      "contentY": [
+        1484,
+        1508
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1564,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1564,
+        "right": 740,
+        "bottom": 1588
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": 208,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 208,
+        "right": 740,
+        "bottom": 232
+      },
+      "modelBlockRole": "R61.block",
+      "domBlockRole": "R61.Element"
+    },
+    {
+      "row": "R62",
+      "ordinal": 62,
+      "kind": "paragraph",
+      "text": "R62",
+      "contentY": [
+        1508,
+        1532
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1588,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1588,
+        "right": 740,
+        "bottom": 1612
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": 232,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 232,
+        "right": 740,
+        "bottom": 256
+      },
+      "modelBlockRole": "R62.block",
+      "domBlockRole": "R62.Element"
+    },
+    {
+      "row": "R63",
+      "ordinal": 63,
+      "kind": "paragraph",
+      "text": "R63",
+      "contentY": [
+        1532,
+        1556
+      ],
+      "blockBoxAtScroll0": {
+        "x": 100,
+        "y": 1612,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 1612,
+        "right": 740,
+        "bottom": 1636
+      },
+      "blockBoxAtScrollMax1356": {
+        "x": 100,
+        "y": 256,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 256,
+        "right": 740,
+        "bottom": 280
+      },
+      "modelBlockRole": "R63.block",
+      "domBlockRole": "R63.Element"
+    }
+  ],
+  "endpointTables": {
+    "down": {
+      "initialScrollTop": 0,
+      "anchor": {
+        "kind": "text",
+        "nodeRole": "R04.text",
+        "offset": 1,
+        "unit": "UTF-16 code units",
+        "affinity": "after"
+      },
+      "initialFocus": {
+        "kind": "text",
+        "nodeRole": "R04.text",
+        "offset": 1,
+        "unit": "UTF-16 code units",
+        "affinity": "after"
+      },
+      "terminalFocus": {
+        "kind": "text",
+        "nodeRole": "R63.text",
+        "offset": 3,
+        "unit": "UTF-16 code units",
+        "affinity": "after"
+      },
+      "direction": "forward",
+      "anchorModelPath": "/4/0",
+      "terminalFocusModelPath": "/56/0",
+      "rawDomAnchor": {
+        "objectRole": "R04.Text",
+        "hostChildNodesPath": [
+          4,
+          0,
+          0
+        ],
+        "nodeType": 3,
+        "expectedData": "R04",
+        "offset": 1,
+        "unit": "UTF-16 code units"
+      },
+      "rawDomInitialFocus": {
+        "objectRole": "R04.Text",
+        "hostChildNodesPath": [
+          4,
+          0,
+          0
+        ],
+        "nodeType": 3,
+        "expectedData": "R04",
+        "offset": 1,
+        "unit": "UTF-16 code units"
+      },
+      "rawDomTerminalFocus": {
+        "objectRole": "R63.Text",
+        "hostChildNodesPath": [
+          56,
+          0,
+          0
+        ],
+        "nodeType": 3,
+        "expectedData": "R63",
+        "offset": 3,
+        "unit": "UTF-16 code units"
+      },
+      "anchorBlockBefore": {
+        "x": 100,
+        "y": 196,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 196,
+        "right": 740,
+        "bottom": 220
+      },
+      "terminalBlockAtBoundary": {
+        "x": 100,
+        "y": 256,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 256,
+        "right": 740,
+        "bottom": 280
+      },
+      "anchorHitCss": {
+        "x": 109.6,
+        "y": 208
+      },
+      "heldX": 128.55,
+      "terminalScrollBoundary": 1356,
+      "terminalLogicalMembership": [
+        {
+          "role": "R04.text",
+          "kind": "text_slice",
+          "fromUtf16": 1,
+          "toUtf16": 3,
+          "literalSlice": "04"
+        },
+        {
+          "role": "R05.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R05"
+        },
+        {
+          "role": "R06.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R06"
+        },
+        {
+          "role": "R07.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R07"
+        },
+        {
+          "role": "R08.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R08"
+        },
+        {
+          "role": "R09.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R09"
+        },
+        {
+          "role": "R10.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R10"
+        },
+        {
+          "role": "R11.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R11"
+        },
+        {
+          "role": "R12.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R12"
+        },
+        {
+          "role": "R13.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R13"
+        },
+        {
+          "role": "R14.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R14"
+        },
+        {
+          "role": "R15.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R15"
+        },
+        {
+          "role": "R16.block",
+          "kind": "structural_atom",
+          "occurrences": 1,
+          "nativeEdgeRepresentation": "before/after structural edges; no text offset or U+FFFC"
+        },
+        {
+          "role": "R17.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R17"
+        },
+        {
+          "role": "R18.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R18"
+        },
+        {
+          "role": "R19.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R19"
+        },
+        {
+          "role": "R20.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R20"
+        },
+        {
+          "role": "R21.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R21"
+        },
+        {
+          "role": "R22.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R22"
+        },
+        {
+          "role": "R23.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R23"
+        },
+        {
+          "role": "R24.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R24"
+        },
+        {
+          "role": "R25.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R25"
+        },
+        {
+          "role": "R26.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R26"
+        },
+        {
+          "role": "R27.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R27"
+        },
+        {
+          "role": "R28.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R28"
+        },
+        {
+          "role": "R29.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R29"
+        },
+        {
+          "role": "R30.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R30"
+        },
+        {
+          "role": "R31.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R31"
+        },
+        {
+          "role": "R32.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R32"
+        },
+        {
+          "role": "R33.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R33"
+        },
+        {
+          "role": "R34.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R34"
+        },
+        {
+          "role": "R35.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R35"
+        },
+        {
+          "role": "R36.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R36"
+        },
+        {
+          "role": "R37.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R37"
+        },
+        {
+          "role": "R38.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R38"
+        },
+        {
+          "role": "R39.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R39"
+        },
+        {
+          "role": "R40.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R40"
+        },
+        {
+          "role": "R41.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R41"
+        },
+        {
+          "role": "R42.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R42"
+        },
+        {
+          "role": "R43.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R43"
+        },
+        {
+          "role": "R44.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R44"
+        },
+        {
+          "role": "R45.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R45"
+        },
+        {
+          "role": "R46.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R46"
+        },
+        {
+          "role": "R47.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R47"
+        },
+        {
+          "role": "R48.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R48"
+        },
+        {
+          "role": "R49.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R49"
+        },
+        {
+          "role": "R50.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R50"
+        },
+        {
+          "role": "R51.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R51"
+        },
+        {
+          "role": "R52.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R52"
+        },
+        {
+          "role": "R53.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R53"
+        },
+        {
+          "role": "R54.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R54"
+        },
+        {
+          "role": "R55.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R55"
+        },
+        {
+          "role": "R56.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R56"
+        },
+        {
+          "role": "R57.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R57"
+        },
+        {
+          "role": "R58.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R58"
+        },
+        {
+          "role": "R59.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R59"
+        },
+        {
+          "role": "R60.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R60"
+        },
+        {
+          "role": "R61.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R61"
+        },
+        {
+          "role": "R62.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R62"
+        },
+        {
+          "role": "R63.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R63"
+        }
+      ],
+      "terminalContainsNestedRows": [
+        "R24",
+        "R25",
+        "R26",
+        "R27",
+        "R28",
+        "R29",
+        "R30",
+        "R31"
+      ],
+      "selectionOrderRule": "Retain anchor/focus as listed; membership may be logically ordered for checking without sorting the native selection."
+    },
+    "up": {
+      "initialScrollTop": 1356,
+      "anchor": {
+        "kind": "text",
+        "nodeRole": "R59.text",
+        "offset": 2,
+        "unit": "UTF-16 code units",
+        "affinity": "after"
+      },
+      "initialFocus": {
+        "kind": "text",
+        "nodeRole": "R59.text",
+        "offset": 2,
+        "unit": "UTF-16 code units",
+        "affinity": "after"
+      },
+      "terminalFocus": {
+        "kind": "text",
+        "nodeRole": "R00.text",
+        "offset": 0,
+        "unit": "UTF-16 code units",
+        "affinity": "after"
+      },
+      "direction": "backward",
+      "anchorModelPath": "/52/0",
+      "terminalFocusModelPath": "/0/0",
+      "rawDomAnchor": {
+        "objectRole": "R59.Text",
+        "hostChildNodesPath": [
+          52,
+          0,
+          0
+        ],
+        "nodeType": 3,
+        "expectedData": "R59",
+        "offset": 2,
+        "unit": "UTF-16 code units"
+      },
+      "rawDomInitialFocus": {
+        "objectRole": "R59.Text",
+        "hostChildNodesPath": [
+          52,
+          0,
+          0
+        ],
+        "nodeType": 3,
+        "expectedData": "R59",
+        "offset": 2,
+        "unit": "UTF-16 code units"
+      },
+      "rawDomTerminalFocus": {
+        "objectRole": "R00.Text",
+        "hostChildNodesPath": [
+          0,
+          0,
+          0
+        ],
+        "nodeType": 3,
+        "expectedData": "R00",
+        "offset": 0,
+        "unit": "UTF-16 code units"
+      },
+      "anchorBlockBefore": {
+        "x": 100,
+        "y": 160,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 160,
+        "right": 740,
+        "bottom": 184
+      },
+      "terminalBlockAtBoundary": {
+        "x": 100,
+        "y": 100,
+        "width": 640,
+        "height": 24,
+        "left": 100,
+        "top": 100,
+        "right": 740,
+        "bottom": 124
+      },
+      "anchorHitCss": {
+        "x": 119.2,
+        "y": 172
+      },
+      "heldX": 100.25,
+      "terminalScrollBoundary": 0,
+      "terminalLogicalMembership": [
+        {
+          "role": "R00.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R00"
+        },
+        {
+          "role": "R01.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R01"
+        },
+        {
+          "role": "R02.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R02"
+        },
+        {
+          "role": "R03.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R03"
+        },
+        {
+          "role": "R04.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R04"
+        },
+        {
+          "role": "R05.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R05"
+        },
+        {
+          "role": "R06.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R06"
+        },
+        {
+          "role": "R07.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R07"
+        },
+        {
+          "role": "R08.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R08"
+        },
+        {
+          "role": "R09.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R09"
+        },
+        {
+          "role": "R10.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R10"
+        },
+        {
+          "role": "R11.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R11"
+        },
+        {
+          "role": "R12.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R12"
+        },
+        {
+          "role": "R13.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R13"
+        },
+        {
+          "role": "R14.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R14"
+        },
+        {
+          "role": "R15.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R15"
+        },
+        {
+          "role": "R16.block",
+          "kind": "structural_atom",
+          "occurrences": 1,
+          "nativeEdgeRepresentation": "before/after structural edges; no text offset or U+FFFC"
+        },
+        {
+          "role": "R17.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R17"
+        },
+        {
+          "role": "R18.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R18"
+        },
+        {
+          "role": "R19.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R19"
+        },
+        {
+          "role": "R20.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R20"
+        },
+        {
+          "role": "R21.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R21"
+        },
+        {
+          "role": "R22.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R22"
+        },
+        {
+          "role": "R23.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R23"
+        },
+        {
+          "role": "R24.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R24"
+        },
+        {
+          "role": "R25.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R25"
+        },
+        {
+          "role": "R26.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R26"
+        },
+        {
+          "role": "R27.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R27"
+        },
+        {
+          "role": "R28.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R28"
+        },
+        {
+          "role": "R29.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R29"
+        },
+        {
+          "role": "R30.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R30"
+        },
+        {
+          "role": "R31.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R31"
+        },
+        {
+          "role": "R32.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R32"
+        },
+        {
+          "role": "R33.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R33"
+        },
+        {
+          "role": "R34.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R34"
+        },
+        {
+          "role": "R35.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R35"
+        },
+        {
+          "role": "R36.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R36"
+        },
+        {
+          "role": "R37.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R37"
+        },
+        {
+          "role": "R38.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R38"
+        },
+        {
+          "role": "R39.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R39"
+        },
+        {
+          "role": "R40.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R40"
+        },
+        {
+          "role": "R41.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R41"
+        },
+        {
+          "role": "R42.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R42"
+        },
+        {
+          "role": "R43.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R43"
+        },
+        {
+          "role": "R44.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R44"
+        },
+        {
+          "role": "R45.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R45"
+        },
+        {
+          "role": "R46.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R46"
+        },
+        {
+          "role": "R47.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R47"
+        },
+        {
+          "role": "R48.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R48"
+        },
+        {
+          "role": "R49.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R49"
+        },
+        {
+          "role": "R50.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R50"
+        },
+        {
+          "role": "R51.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R51"
+        },
+        {
+          "role": "R52.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R52"
+        },
+        {
+          "role": "R53.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R53"
+        },
+        {
+          "role": "R54.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R54"
+        },
+        {
+          "role": "R55.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R55"
+        },
+        {
+          "role": "R56.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R56"
+        },
+        {
+          "role": "R57.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R57"
+        },
+        {
+          "role": "R58.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 3,
+          "literalSlice": "R58"
+        },
+        {
+          "role": "R59.text",
+          "kind": "text_slice",
+          "fromUtf16": 0,
+          "toUtf16": 2,
+          "literalSlice": "R5"
+        }
+      ],
+      "terminalContainsNestedRows": [
+        "R24",
+        "R25",
+        "R26",
+        "R27",
+        "R28",
+        "R29",
+        "R30",
+        "R31"
+      ],
+      "selectionOrderRule": "Retain anchor/focus as listed; membership may be logically ordered for checking without sorting the native selection."
+    }
+  },
+  "oracleIndependence": {
+    "modelBinding": "Before pointerdown, resolve opaque native IDs once through current guarded shallow reads at the literal model paths; validate full expected types/text/topology. This binds IDs to preauthored roles, it does not derive expected endpoints.",
+    "domBinding": "Resolve host.childNodes by the independent raw DOM path table; validate each literal tag/Text.data and expected child counts. Retain actual Text objects for identity comparisons. Never call production domPoint/readSelection or infer model roles from the observed selection.",
+    "opaqueIdPolicy": "No fixed process tokens or authored DOM IDs; all document IDs unique and stable against recorded pregesture role mapping. Cloned attributes/IDs do not establish ownership.",
+    "membership": "Per-leaf text slices and atom membership are selection oracles only, not a clipboard plain-text/separator specification.",
+    "utf16": "PositionDto.text.offset stays UTF-16 code-unit count with scalar-boundary validation; no scalar ordinal conversion. New observed Text endpoints use after; separate bookmark tests retain explicitly captured before affinity."
+  },
+  "arithmeticProof": {
+    "withoutPadding": {
+      "scrollHeight": 1536,
+      "maxScroll": 1296,
+      "R00AtMinY": [
+        80,
+        104
+      ],
+      "R63AtMaxY": [
+        296,
+        320
+      ],
+      "clippedVisibleY": [
+        100,
+        280
+      ],
+      "feasible": false
+    },
+    "withPadding": {
+      "formulaRowTopInViewport": "80+20+24*rowOrdinal-scrollTop",
+      "formulaMaxScroll": "20+64*24+40-240=1356",
+      "R00AtMinY": [
+        100,
+        124
+      ],
+      "R63AtMaxY": [
+        256,
+        280
+      ],
+      "R04AtDownStartY": [
+        196,
+        220
+      ],
+      "R59AtUpStartY": [
+        160,
+        184
+      ],
+      "bothInitialAnchorRowsFullyVisibleInBothModes": true,
+      "bothTerminalRowBoxesFullyVisibleInBothModes": true,
+      "caretCaveat": "Row-envelope arithmetic is feasibility only. Actual finite positive-height collapsed focus Range rect must still pass all four clip edges; do not substitute row/glyph/selection-union rect."
+    }
+  },
+  "timingAndSamplingProposal": {
+    "cadenceMs": 100,
+    "maximumHeldMs": 8000,
+    "stationaryToleranceCssPx": 0.5,
+    "visibilityToleranceCssPx": 0.5,
+    "settlementFramesMaximum": 1,
+    "settlementAbsoluteMaximumMs": 100,
+    "stableSamples": 5,
+    "stableIntervalMs": 100,
+    "positiveAdvance": "strict scrollTop delta in intended direction at distinct actual times while same pointerId/buttons remain held; no selection or wheel/scroll assist",
+    "activeEndTrigger": "end immediately on second positive distinct observed scroll advance while directional range remains; retain bounded scroll-event/publication records as well as100ms checkpoints",
+    "activeWindowFailure": "Reaching terminal before two qualifying advances with range remaining does not prove active stop; retain failed/unexercised case rather than relabel terminal release. Do not add direct scroll correction to create a window.",
+    "terminalRequirement": "Reach exact preauthored model+rawDOM focus within8s while held, with unchanged anchor and actual full caret visible; mandatory in terminal_release cases.",
+    "transientInvariant": "No fixed transient focus expected. Every published/sampled focus is valid owned scalar boundary, moves monotonically through the literal logical position order or stays equal; anchor exact at every publication/sample. Do not require unobservable intermediate selection epochs.",
+    "visibilityCheckpoints": "Initial anchor, exact terminal while held, first settled end, and five stable samples require entire actual focus caret inside effective clip. In-progress samples record visibility honestly; transient owned/monotonic focus is separate from terminal literal.",
+    "rangeRectRule": "collapse a fresh Range at actual raw focus; finite left/right/top/bottom, height>0 (width0 valid), all edges inside effective clip within0.5px. Missing usable rect is instrumentation failure, not a fabricated glyph rect."
+  },
+  "gestureStateInvariants": {
+    "stable": [
+      "canonical document bytes",
+      "document revision",
+      "node identities and role topology",
+      "dirty flag",
+      "undo/redo entry counts"
+    ],
+    "nativeSpecified": [
+      "selection_epoch and selection events only for actual native changes; identical selection may be native Noop",
+      "stored_marks may clear on changed set_selection",
+      "an open typing group can be sealed, changing history_epoch without a new undo unit"
+    ],
+    "coreInitialState": "fresh admitted fixture, revision0/dirtyfalse/undo0/redo0, stored_marksnull and no open typing group; baseline exact native stamp/IDs captured after owned pointerdown anchor",
+    "additionalHistoryControl": "Separate selection AC fixture must exercise stored_marks/open-group behavior according to current native contract; do not globally assert all history facets unchanged."
+  },
+  "controlledCoreCases": [
+    {
+      "id": "S40-down-plain-terminal_release",
+      "direction": "down",
+      "geometry": "plain",
+      "ending": "terminal_release",
+      "provenance": "controlled mounted lane; automated pointer protocol; no installed/physical claim",
+      "initialScrollTop": 0,
+      "initialModelSelection": {
+        "anchor": {
+          "kind": "text",
+          "nodeRole": "R04.text",
+          "offset": 1,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "nodeRole": "R04.text",
+          "offset": 1,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        }
+      },
+      "initialRawDomSelection": {
+        "anchor": {
+          "objectRole": "R04.Text",
+          "hostChildNodesPath": [
+            4,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R04",
+          "offset": 1,
+          "unit": "UTF-16 code units"
+        },
+        "focus": {
+          "objectRole": "R04.Text",
+          "hostChildNodesPath": [
+            4,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R04",
+          "offset": 1,
+          "unit": "UTF-16 code units"
+        }
+      },
+      "pointerDownCss": {
+        "x": 109.6,
+        "y": 208
+      },
+      "stationaryHeldCss": {
+        "x": 128.55,
+        "y": 328
+      },
+      "anchorInvariant": {
+        "kind": "text",
+        "nodeRole": "R04.text",
+        "offset": 1,
+        "unit": "UTF-16 code units",
+        "affinity": "after"
+      },
+      "rawDomAnchorInvariant": {
+        "objectRole": "R04.Text",
+        "hostChildNodesPath": [
+          4,
+          0,
+          0
+        ],
+        "nodeType": 3,
+        "expectedData": "R04",
+        "offset": 1,
+        "unit": "UTF-16 code units"
+      },
+      "endTrigger": {
+        "kind": "literal_terminal_then_release",
+        "expectedFocus": {
+          "kind": "text",
+          "nodeRole": "R63.text",
+          "offset": 3,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "expectedRawDomFocus": {
+          "objectRole": "R63.Text",
+          "hostChildNodesPath": [
+            56,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R63",
+          "offset": 3,
+          "unit": "UTF-16 code units"
+        },
+        "maximumHeldMs": 8000,
+        "requireTwoPositiveDistinctScrollAdvances": true
+      },
+      "afterEnd": {
+        "settlement": "at most one actual RAF, absolute deadline100ms; record any final native selection change honestly",
+        "stableSamples": 5,
+        "stableSampleIntervalMs": 100,
+        "stableSelectionBaseline": "terminal literal",
+        "requireAllScrollOwnersStable": true,
+        "requireControllerRafAndPointerCaptureAndContinuationZero": true,
+        "requireFullFocusCaretInsideEffectiveClip": true
+      },
+      "mandatoryTerminalLiteral": {
+        "anchor": {
+          "kind": "text",
+          "nodeRole": "R04.text",
+          "offset": 1,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "nodeRole": "R63.text",
+          "offset": 3,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        }
+      },
+      "candidateAcceptanceAssistance": "none: no wheel, scrollTop, scrollIntoView or endpoint reselection after pointerdown"
+    },
+    {
+      "id": "S40-down-plain-active_release",
+      "direction": "down",
+      "geometry": "plain",
+      "ending": "active_release",
+      "provenance": "controlled mounted lane; automated pointer protocol; no installed/physical claim",
+      "initialScrollTop": 0,
+      "initialModelSelection": {
+        "anchor": {
+          "kind": "text",
+          "nodeRole": "R04.text",
+          "offset": 1,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "nodeRole": "R04.text",
+          "offset": 1,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        }
+      },
+      "initialRawDomSelection": {
+        "anchor": {
+          "objectRole": "R04.Text",
+          "hostChildNodesPath": [
+            4,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R04",
+          "offset": 1,
+          "unit": "UTF-16 code units"
+        },
+        "focus": {
+          "objectRole": "R04.Text",
+          "hostChildNodesPath": [
+            4,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R04",
+          "offset": 1,
+          "unit": "UTF-16 code units"
+        }
+      },
+      "pointerDownCss": {
+        "x": 109.6,
+        "y": 208
+      },
+      "stationaryHeldCss": {
+        "x": 128.55,
+        "y": 328
+      },
+      "anchorInvariant": {
+        "kind": "text",
+        "nodeRole": "R04.text",
+        "offset": 1,
+        "unit": "UTF-16 code units",
+        "affinity": "after"
+      },
+      "rawDomAnchorInvariant": {
+        "objectRole": "R04.Text",
+        "hostChildNodesPath": [
+          4,
+          0,
+          0
+        ],
+        "nodeType": 3,
+        "expectedData": "R04",
+        "offset": 1,
+        "unit": "UTF-16 code units"
+      },
+      "endTrigger": {
+        "kind": "second_positive_distinct_scroll_advance_with_directional_range_remaining",
+        "minimumPositiveAdvances": 2,
+        "remainingRangeRule": "scrollTop<1356",
+        "minimumRemainingRangeExclusiveCssPx": 0,
+        "expectedTransientFocus": null,
+        "stopStimulus": "pointerup via automated pointer protocol"
+      },
+      "afterEnd": {
+        "settlement": "at most one actual RAF, absolute deadline100ms; record any final native selection change honestly",
+        "stableSamples": 5,
+        "stableSampleIntervalMs": 100,
+        "stableSelectionBaseline": "first settled actual valid owned selection; stability baseline only, not an independent expected transient endpoint",
+        "requireAllScrollOwnersStable": true,
+        "requireControllerRafAndPointerCaptureAndContinuationZero": true,
+        "requireFullFocusCaretInsideEffectiveClip": true
+      },
+      "mandatoryTerminalLiteral": null,
+      "candidateAcceptanceAssistance": "none: no wheel, scrollTop, scrollIntoView or endpoint reselection after pointerdown"
+    },
+    {
+      "id": "S40-down-plain-active_cancel",
+      "direction": "down",
+      "geometry": "plain",
+      "ending": "active_cancel",
+      "provenance": "controlled mounted lane; automated pointer protocol; no installed/physical claim",
+      "initialScrollTop": 0,
+      "initialModelSelection": {
+        "anchor": {
+          "kind": "text",
+          "nodeRole": "R04.text",
+          "offset": 1,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "nodeRole": "R04.text",
+          "offset": 1,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        }
+      },
+      "initialRawDomSelection": {
+        "anchor": {
+          "objectRole": "R04.Text",
+          "hostChildNodesPath": [
+            4,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R04",
+          "offset": 1,
+          "unit": "UTF-16 code units"
+        },
+        "focus": {
+          "objectRole": "R04.Text",
+          "hostChildNodesPath": [
+            4,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R04",
+          "offset": 1,
+          "unit": "UTF-16 code units"
+        }
+      },
+      "pointerDownCss": {
+        "x": 109.6,
+        "y": 208
+      },
+      "stationaryHeldCss": {
+        "x": 128.55,
+        "y": 328
+      },
+      "anchorInvariant": {
+        "kind": "text",
+        "nodeRole": "R04.text",
+        "offset": 1,
+        "unit": "UTF-16 code units",
+        "affinity": "after"
+      },
+      "rawDomAnchorInvariant": {
+        "objectRole": "R04.Text",
+        "hostChildNodesPath": [
+          4,
+          0,
+          0
+        ],
+        "nodeType": 3,
+        "expectedData": "R04",
+        "offset": 1,
+        "unit": "UTF-16 code units"
+      },
+      "endTrigger": {
+        "kind": "second_positive_distinct_scroll_advance_with_directional_range_remaining",
+        "minimumPositiveAdvances": 2,
+        "remainingRangeRule": "scrollTop<1356",
+        "minimumRemainingRangeExclusiveCssPx": 0,
+        "expectedTransientFocus": null,
+        "stopStimulus": "synthetic controlled pointercancel with the owned pointerId; explicitly isTrusted=false, not native cancellation proof"
+      },
+      "afterEnd": {
+        "settlement": "at most one actual RAF, absolute deadline100ms; record any final native selection change honestly",
+        "stableSamples": 5,
+        "stableSampleIntervalMs": 100,
+        "stableSelectionBaseline": "first settled actual valid owned selection; stability baseline only, not an independent expected transient endpoint",
+        "requireAllScrollOwnersStable": true,
+        "requireControllerRafAndPointerCaptureAndContinuationZero": true,
+        "requireFullFocusCaretInsideEffectiveClip": true
+      },
+      "mandatoryTerminalLiteral": null,
+      "candidateAcceptanceAssistance": "none: no wheel, scrollTop, scrollIntoView or endpoint reselection after pointerdown"
+    },
+    {
+      "id": "S40-down-clipped-terminal_release",
+      "direction": "down",
+      "geometry": "clipped",
+      "ending": "terminal_release",
+      "provenance": "controlled mounted lane; automated pointer protocol; no installed/physical claim",
+      "initialScrollTop": 0,
+      "initialModelSelection": {
+        "anchor": {
+          "kind": "text",
+          "nodeRole": "R04.text",
+          "offset": 1,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "nodeRole": "R04.text",
+          "offset": 1,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        }
+      },
+      "initialRawDomSelection": {
+        "anchor": {
+          "objectRole": "R04.Text",
+          "hostChildNodesPath": [
+            4,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R04",
+          "offset": 1,
+          "unit": "UTF-16 code units"
+        },
+        "focus": {
+          "objectRole": "R04.Text",
+          "hostChildNodesPath": [
+            4,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R04",
+          "offset": 1,
+          "unit": "UTF-16 code units"
+        }
+      },
+      "pointerDownCss": {
+        "x": 109.6,
+        "y": 208
+      },
+      "stationaryHeldCss": {
+        "x": 128.55,
+        "y": 288
+      },
+      "anchorInvariant": {
+        "kind": "text",
+        "nodeRole": "R04.text",
+        "offset": 1,
+        "unit": "UTF-16 code units",
+        "affinity": "after"
+      },
+      "rawDomAnchorInvariant": {
+        "objectRole": "R04.Text",
+        "hostChildNodesPath": [
+          4,
+          0,
+          0
+        ],
+        "nodeType": 3,
+        "expectedData": "R04",
+        "offset": 1,
+        "unit": "UTF-16 code units"
+      },
+      "endTrigger": {
+        "kind": "literal_terminal_then_release",
+        "expectedFocus": {
+          "kind": "text",
+          "nodeRole": "R63.text",
+          "offset": 3,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "expectedRawDomFocus": {
+          "objectRole": "R63.Text",
+          "hostChildNodesPath": [
+            56,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R63",
+          "offset": 3,
+          "unit": "UTF-16 code units"
+        },
+        "maximumHeldMs": 8000,
+        "requireTwoPositiveDistinctScrollAdvances": true
+      },
+      "afterEnd": {
+        "settlement": "at most one actual RAF, absolute deadline100ms; record any final native selection change honestly",
+        "stableSamples": 5,
+        "stableSampleIntervalMs": 100,
+        "stableSelectionBaseline": "terminal literal",
+        "requireAllScrollOwnersStable": true,
+        "requireControllerRafAndPointerCaptureAndContinuationZero": true,
+        "requireFullFocusCaretInsideEffectiveClip": true
+      },
+      "mandatoryTerminalLiteral": {
+        "anchor": {
+          "kind": "text",
+          "nodeRole": "R04.text",
+          "offset": 1,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "nodeRole": "R63.text",
+          "offset": 3,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        }
+      },
+      "candidateAcceptanceAssistance": "none: no wheel, scrollTop, scrollIntoView or endpoint reselection after pointerdown"
+    },
+    {
+      "id": "S40-down-clipped-active_release",
+      "direction": "down",
+      "geometry": "clipped",
+      "ending": "active_release",
+      "provenance": "controlled mounted lane; automated pointer protocol; no installed/physical claim",
+      "initialScrollTop": 0,
+      "initialModelSelection": {
+        "anchor": {
+          "kind": "text",
+          "nodeRole": "R04.text",
+          "offset": 1,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "nodeRole": "R04.text",
+          "offset": 1,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        }
+      },
+      "initialRawDomSelection": {
+        "anchor": {
+          "objectRole": "R04.Text",
+          "hostChildNodesPath": [
+            4,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R04",
+          "offset": 1,
+          "unit": "UTF-16 code units"
+        },
+        "focus": {
+          "objectRole": "R04.Text",
+          "hostChildNodesPath": [
+            4,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R04",
+          "offset": 1,
+          "unit": "UTF-16 code units"
+        }
+      },
+      "pointerDownCss": {
+        "x": 109.6,
+        "y": 208
+      },
+      "stationaryHeldCss": {
+        "x": 128.55,
+        "y": 288
+      },
+      "anchorInvariant": {
+        "kind": "text",
+        "nodeRole": "R04.text",
+        "offset": 1,
+        "unit": "UTF-16 code units",
+        "affinity": "after"
+      },
+      "rawDomAnchorInvariant": {
+        "objectRole": "R04.Text",
+        "hostChildNodesPath": [
+          4,
+          0,
+          0
+        ],
+        "nodeType": 3,
+        "expectedData": "R04",
+        "offset": 1,
+        "unit": "UTF-16 code units"
+      },
+      "endTrigger": {
+        "kind": "second_positive_distinct_scroll_advance_with_directional_range_remaining",
+        "minimumPositiveAdvances": 2,
+        "remainingRangeRule": "scrollTop<1356",
+        "minimumRemainingRangeExclusiveCssPx": 0,
+        "expectedTransientFocus": null,
+        "stopStimulus": "pointerup via automated pointer protocol"
+      },
+      "afterEnd": {
+        "settlement": "at most one actual RAF, absolute deadline100ms; record any final native selection change honestly",
+        "stableSamples": 5,
+        "stableSampleIntervalMs": 100,
+        "stableSelectionBaseline": "first settled actual valid owned selection; stability baseline only, not an independent expected transient endpoint",
+        "requireAllScrollOwnersStable": true,
+        "requireControllerRafAndPointerCaptureAndContinuationZero": true,
+        "requireFullFocusCaretInsideEffectiveClip": true
+      },
+      "mandatoryTerminalLiteral": null,
+      "candidateAcceptanceAssistance": "none: no wheel, scrollTop, scrollIntoView or endpoint reselection after pointerdown"
+    },
+    {
+      "id": "S40-down-clipped-active_cancel",
+      "direction": "down",
+      "geometry": "clipped",
+      "ending": "active_cancel",
+      "provenance": "controlled mounted lane; automated pointer protocol; no installed/physical claim",
+      "initialScrollTop": 0,
+      "initialModelSelection": {
+        "anchor": {
+          "kind": "text",
+          "nodeRole": "R04.text",
+          "offset": 1,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "nodeRole": "R04.text",
+          "offset": 1,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        }
+      },
+      "initialRawDomSelection": {
+        "anchor": {
+          "objectRole": "R04.Text",
+          "hostChildNodesPath": [
+            4,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R04",
+          "offset": 1,
+          "unit": "UTF-16 code units"
+        },
+        "focus": {
+          "objectRole": "R04.Text",
+          "hostChildNodesPath": [
+            4,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R04",
+          "offset": 1,
+          "unit": "UTF-16 code units"
+        }
+      },
+      "pointerDownCss": {
+        "x": 109.6,
+        "y": 208
+      },
+      "stationaryHeldCss": {
+        "x": 128.55,
+        "y": 288
+      },
+      "anchorInvariant": {
+        "kind": "text",
+        "nodeRole": "R04.text",
+        "offset": 1,
+        "unit": "UTF-16 code units",
+        "affinity": "after"
+      },
+      "rawDomAnchorInvariant": {
+        "objectRole": "R04.Text",
+        "hostChildNodesPath": [
+          4,
+          0,
+          0
+        ],
+        "nodeType": 3,
+        "expectedData": "R04",
+        "offset": 1,
+        "unit": "UTF-16 code units"
+      },
+      "endTrigger": {
+        "kind": "second_positive_distinct_scroll_advance_with_directional_range_remaining",
+        "minimumPositiveAdvances": 2,
+        "remainingRangeRule": "scrollTop<1356",
+        "minimumRemainingRangeExclusiveCssPx": 0,
+        "expectedTransientFocus": null,
+        "stopStimulus": "synthetic controlled pointercancel with the owned pointerId; explicitly isTrusted=false, not native cancellation proof"
+      },
+      "afterEnd": {
+        "settlement": "at most one actual RAF, absolute deadline100ms; record any final native selection change honestly",
+        "stableSamples": 5,
+        "stableSampleIntervalMs": 100,
+        "stableSelectionBaseline": "first settled actual valid owned selection; stability baseline only, not an independent expected transient endpoint",
+        "requireAllScrollOwnersStable": true,
+        "requireControllerRafAndPointerCaptureAndContinuationZero": true,
+        "requireFullFocusCaretInsideEffectiveClip": true
+      },
+      "mandatoryTerminalLiteral": null,
+      "candidateAcceptanceAssistance": "none: no wheel, scrollTop, scrollIntoView or endpoint reselection after pointerdown"
+    },
+    {
+      "id": "S40-up-plain-terminal_release",
+      "direction": "up",
+      "geometry": "plain",
+      "ending": "terminal_release",
+      "provenance": "controlled mounted lane; automated pointer protocol; no installed/physical claim",
+      "initialScrollTop": 1356,
+      "initialModelSelection": {
+        "anchor": {
+          "kind": "text",
+          "nodeRole": "R59.text",
+          "offset": 2,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "nodeRole": "R59.text",
+          "offset": 2,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        }
+      },
+      "initialRawDomSelection": {
+        "anchor": {
+          "objectRole": "R59.Text",
+          "hostChildNodesPath": [
+            52,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R59",
+          "offset": 2,
+          "unit": "UTF-16 code units"
+        },
+        "focus": {
+          "objectRole": "R59.Text",
+          "hostChildNodesPath": [
+            52,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R59",
+          "offset": 2,
+          "unit": "UTF-16 code units"
+        }
+      },
+      "pointerDownCss": {
+        "x": 119.2,
+        "y": 172
+      },
+      "stationaryHeldCss": {
+        "x": 100.25,
+        "y": 72
+      },
+      "anchorInvariant": {
+        "kind": "text",
+        "nodeRole": "R59.text",
+        "offset": 2,
+        "unit": "UTF-16 code units",
+        "affinity": "after"
+      },
+      "rawDomAnchorInvariant": {
+        "objectRole": "R59.Text",
+        "hostChildNodesPath": [
+          52,
+          0,
+          0
+        ],
+        "nodeType": 3,
+        "expectedData": "R59",
+        "offset": 2,
+        "unit": "UTF-16 code units"
+      },
+      "endTrigger": {
+        "kind": "literal_terminal_then_release",
+        "expectedFocus": {
+          "kind": "text",
+          "nodeRole": "R00.text",
+          "offset": 0,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "expectedRawDomFocus": {
+          "objectRole": "R00.Text",
+          "hostChildNodesPath": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R00",
+          "offset": 0,
+          "unit": "UTF-16 code units"
+        },
+        "maximumHeldMs": 8000,
+        "requireTwoPositiveDistinctScrollAdvances": true
+      },
+      "afterEnd": {
+        "settlement": "at most one actual RAF, absolute deadline100ms; record any final native selection change honestly",
+        "stableSamples": 5,
+        "stableSampleIntervalMs": 100,
+        "stableSelectionBaseline": "terminal literal",
+        "requireAllScrollOwnersStable": true,
+        "requireControllerRafAndPointerCaptureAndContinuationZero": true,
+        "requireFullFocusCaretInsideEffectiveClip": true
+      },
+      "mandatoryTerminalLiteral": {
+        "anchor": {
+          "kind": "text",
+          "nodeRole": "R59.text",
+          "offset": 2,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "nodeRole": "R00.text",
+          "offset": 0,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        }
+      },
+      "candidateAcceptanceAssistance": "none: no wheel, scrollTop, scrollIntoView or endpoint reselection after pointerdown"
+    },
+    {
+      "id": "S40-up-plain-active_release",
+      "direction": "up",
+      "geometry": "plain",
+      "ending": "active_release",
+      "provenance": "controlled mounted lane; automated pointer protocol; no installed/physical claim",
+      "initialScrollTop": 1356,
+      "initialModelSelection": {
+        "anchor": {
+          "kind": "text",
+          "nodeRole": "R59.text",
+          "offset": 2,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "nodeRole": "R59.text",
+          "offset": 2,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        }
+      },
+      "initialRawDomSelection": {
+        "anchor": {
+          "objectRole": "R59.Text",
+          "hostChildNodesPath": [
+            52,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R59",
+          "offset": 2,
+          "unit": "UTF-16 code units"
+        },
+        "focus": {
+          "objectRole": "R59.Text",
+          "hostChildNodesPath": [
+            52,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R59",
+          "offset": 2,
+          "unit": "UTF-16 code units"
+        }
+      },
+      "pointerDownCss": {
+        "x": 119.2,
+        "y": 172
+      },
+      "stationaryHeldCss": {
+        "x": 100.25,
+        "y": 72
+      },
+      "anchorInvariant": {
+        "kind": "text",
+        "nodeRole": "R59.text",
+        "offset": 2,
+        "unit": "UTF-16 code units",
+        "affinity": "after"
+      },
+      "rawDomAnchorInvariant": {
+        "objectRole": "R59.Text",
+        "hostChildNodesPath": [
+          52,
+          0,
+          0
+        ],
+        "nodeType": 3,
+        "expectedData": "R59",
+        "offset": 2,
+        "unit": "UTF-16 code units"
+      },
+      "endTrigger": {
+        "kind": "second_positive_distinct_scroll_advance_with_directional_range_remaining",
+        "minimumPositiveAdvances": 2,
+        "remainingRangeRule": "scrollTop>0",
+        "minimumRemainingRangeExclusiveCssPx": 0,
+        "expectedTransientFocus": null,
+        "stopStimulus": "pointerup via automated pointer protocol"
+      },
+      "afterEnd": {
+        "settlement": "at most one actual RAF, absolute deadline100ms; record any final native selection change honestly",
+        "stableSamples": 5,
+        "stableSampleIntervalMs": 100,
+        "stableSelectionBaseline": "first settled actual valid owned selection; stability baseline only, not an independent expected transient endpoint",
+        "requireAllScrollOwnersStable": true,
+        "requireControllerRafAndPointerCaptureAndContinuationZero": true,
+        "requireFullFocusCaretInsideEffectiveClip": true
+      },
+      "mandatoryTerminalLiteral": null,
+      "candidateAcceptanceAssistance": "none: no wheel, scrollTop, scrollIntoView or endpoint reselection after pointerdown"
+    },
+    {
+      "id": "S40-up-plain-active_cancel",
+      "direction": "up",
+      "geometry": "plain",
+      "ending": "active_cancel",
+      "provenance": "controlled mounted lane; automated pointer protocol; no installed/physical claim",
+      "initialScrollTop": 1356,
+      "initialModelSelection": {
+        "anchor": {
+          "kind": "text",
+          "nodeRole": "R59.text",
+          "offset": 2,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "nodeRole": "R59.text",
+          "offset": 2,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        }
+      },
+      "initialRawDomSelection": {
+        "anchor": {
+          "objectRole": "R59.Text",
+          "hostChildNodesPath": [
+            52,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R59",
+          "offset": 2,
+          "unit": "UTF-16 code units"
+        },
+        "focus": {
+          "objectRole": "R59.Text",
+          "hostChildNodesPath": [
+            52,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R59",
+          "offset": 2,
+          "unit": "UTF-16 code units"
+        }
+      },
+      "pointerDownCss": {
+        "x": 119.2,
+        "y": 172
+      },
+      "stationaryHeldCss": {
+        "x": 100.25,
+        "y": 72
+      },
+      "anchorInvariant": {
+        "kind": "text",
+        "nodeRole": "R59.text",
+        "offset": 2,
+        "unit": "UTF-16 code units",
+        "affinity": "after"
+      },
+      "rawDomAnchorInvariant": {
+        "objectRole": "R59.Text",
+        "hostChildNodesPath": [
+          52,
+          0,
+          0
+        ],
+        "nodeType": 3,
+        "expectedData": "R59",
+        "offset": 2,
+        "unit": "UTF-16 code units"
+      },
+      "endTrigger": {
+        "kind": "second_positive_distinct_scroll_advance_with_directional_range_remaining",
+        "minimumPositiveAdvances": 2,
+        "remainingRangeRule": "scrollTop>0",
+        "minimumRemainingRangeExclusiveCssPx": 0,
+        "expectedTransientFocus": null,
+        "stopStimulus": "synthetic controlled pointercancel with the owned pointerId; explicitly isTrusted=false, not native cancellation proof"
+      },
+      "afterEnd": {
+        "settlement": "at most one actual RAF, absolute deadline100ms; record any final native selection change honestly",
+        "stableSamples": 5,
+        "stableSampleIntervalMs": 100,
+        "stableSelectionBaseline": "first settled actual valid owned selection; stability baseline only, not an independent expected transient endpoint",
+        "requireAllScrollOwnersStable": true,
+        "requireControllerRafAndPointerCaptureAndContinuationZero": true,
+        "requireFullFocusCaretInsideEffectiveClip": true
+      },
+      "mandatoryTerminalLiteral": null,
+      "candidateAcceptanceAssistance": "none: no wheel, scrollTop, scrollIntoView or endpoint reselection after pointerdown"
+    },
+    {
+      "id": "S40-up-clipped-terminal_release",
+      "direction": "up",
+      "geometry": "clipped",
+      "ending": "terminal_release",
+      "provenance": "controlled mounted lane; automated pointer protocol; no installed/physical claim",
+      "initialScrollTop": 1356,
+      "initialModelSelection": {
+        "anchor": {
+          "kind": "text",
+          "nodeRole": "R59.text",
+          "offset": 2,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "nodeRole": "R59.text",
+          "offset": 2,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        }
+      },
+      "initialRawDomSelection": {
+        "anchor": {
+          "objectRole": "R59.Text",
+          "hostChildNodesPath": [
+            52,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R59",
+          "offset": 2,
+          "unit": "UTF-16 code units"
+        },
+        "focus": {
+          "objectRole": "R59.Text",
+          "hostChildNodesPath": [
+            52,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R59",
+          "offset": 2,
+          "unit": "UTF-16 code units"
+        }
+      },
+      "pointerDownCss": {
+        "x": 119.2,
+        "y": 172
+      },
+      "stationaryHeldCss": {
+        "x": 100.25,
+        "y": 92
+      },
+      "anchorInvariant": {
+        "kind": "text",
+        "nodeRole": "R59.text",
+        "offset": 2,
+        "unit": "UTF-16 code units",
+        "affinity": "after"
+      },
+      "rawDomAnchorInvariant": {
+        "objectRole": "R59.Text",
+        "hostChildNodesPath": [
+          52,
+          0,
+          0
+        ],
+        "nodeType": 3,
+        "expectedData": "R59",
+        "offset": 2,
+        "unit": "UTF-16 code units"
+      },
+      "endTrigger": {
+        "kind": "literal_terminal_then_release",
+        "expectedFocus": {
+          "kind": "text",
+          "nodeRole": "R00.text",
+          "offset": 0,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "expectedRawDomFocus": {
+          "objectRole": "R00.Text",
+          "hostChildNodesPath": [
+            0,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R00",
+          "offset": 0,
+          "unit": "UTF-16 code units"
+        },
+        "maximumHeldMs": 8000,
+        "requireTwoPositiveDistinctScrollAdvances": true
+      },
+      "afterEnd": {
+        "settlement": "at most one actual RAF, absolute deadline100ms; record any final native selection change honestly",
+        "stableSamples": 5,
+        "stableSampleIntervalMs": 100,
+        "stableSelectionBaseline": "terminal literal",
+        "requireAllScrollOwnersStable": true,
+        "requireControllerRafAndPointerCaptureAndContinuationZero": true,
+        "requireFullFocusCaretInsideEffectiveClip": true
+      },
+      "mandatoryTerminalLiteral": {
+        "anchor": {
+          "kind": "text",
+          "nodeRole": "R59.text",
+          "offset": 2,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "nodeRole": "R00.text",
+          "offset": 0,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        }
+      },
+      "candidateAcceptanceAssistance": "none: no wheel, scrollTop, scrollIntoView or endpoint reselection after pointerdown"
+    },
+    {
+      "id": "S40-up-clipped-active_release",
+      "direction": "up",
+      "geometry": "clipped",
+      "ending": "active_release",
+      "provenance": "controlled mounted lane; automated pointer protocol; no installed/physical claim",
+      "initialScrollTop": 1356,
+      "initialModelSelection": {
+        "anchor": {
+          "kind": "text",
+          "nodeRole": "R59.text",
+          "offset": 2,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "nodeRole": "R59.text",
+          "offset": 2,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        }
+      },
+      "initialRawDomSelection": {
+        "anchor": {
+          "objectRole": "R59.Text",
+          "hostChildNodesPath": [
+            52,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R59",
+          "offset": 2,
+          "unit": "UTF-16 code units"
+        },
+        "focus": {
+          "objectRole": "R59.Text",
+          "hostChildNodesPath": [
+            52,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R59",
+          "offset": 2,
+          "unit": "UTF-16 code units"
+        }
+      },
+      "pointerDownCss": {
+        "x": 119.2,
+        "y": 172
+      },
+      "stationaryHeldCss": {
+        "x": 100.25,
+        "y": 92
+      },
+      "anchorInvariant": {
+        "kind": "text",
+        "nodeRole": "R59.text",
+        "offset": 2,
+        "unit": "UTF-16 code units",
+        "affinity": "after"
+      },
+      "rawDomAnchorInvariant": {
+        "objectRole": "R59.Text",
+        "hostChildNodesPath": [
+          52,
+          0,
+          0
+        ],
+        "nodeType": 3,
+        "expectedData": "R59",
+        "offset": 2,
+        "unit": "UTF-16 code units"
+      },
+      "endTrigger": {
+        "kind": "second_positive_distinct_scroll_advance_with_directional_range_remaining",
+        "minimumPositiveAdvances": 2,
+        "remainingRangeRule": "scrollTop>0",
+        "minimumRemainingRangeExclusiveCssPx": 0,
+        "expectedTransientFocus": null,
+        "stopStimulus": "pointerup via automated pointer protocol"
+      },
+      "afterEnd": {
+        "settlement": "at most one actual RAF, absolute deadline100ms; record any final native selection change honestly",
+        "stableSamples": 5,
+        "stableSampleIntervalMs": 100,
+        "stableSelectionBaseline": "first settled actual valid owned selection; stability baseline only, not an independent expected transient endpoint",
+        "requireAllScrollOwnersStable": true,
+        "requireControllerRafAndPointerCaptureAndContinuationZero": true,
+        "requireFullFocusCaretInsideEffectiveClip": true
+      },
+      "mandatoryTerminalLiteral": null,
+      "candidateAcceptanceAssistance": "none: no wheel, scrollTop, scrollIntoView or endpoint reselection after pointerdown"
+    },
+    {
+      "id": "S40-up-clipped-active_cancel",
+      "direction": "up",
+      "geometry": "clipped",
+      "ending": "active_cancel",
+      "provenance": "controlled mounted lane; automated pointer protocol; no installed/physical claim",
+      "initialScrollTop": 1356,
+      "initialModelSelection": {
+        "anchor": {
+          "kind": "text",
+          "nodeRole": "R59.text",
+          "offset": 2,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "nodeRole": "R59.text",
+          "offset": 2,
+          "unit": "UTF-16 code units",
+          "affinity": "after"
+        }
+      },
+      "initialRawDomSelection": {
+        "anchor": {
+          "objectRole": "R59.Text",
+          "hostChildNodesPath": [
+            52,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R59",
+          "offset": 2,
+          "unit": "UTF-16 code units"
+        },
+        "focus": {
+          "objectRole": "R59.Text",
+          "hostChildNodesPath": [
+            52,
+            0,
+            0
+          ],
+          "nodeType": 3,
+          "expectedData": "R59",
+          "offset": 2,
+          "unit": "UTF-16 code units"
+        }
+      },
+      "pointerDownCss": {
+        "x": 119.2,
+        "y": 172
+      },
+      "stationaryHeldCss": {
+        "x": 100.25,
+        "y": 92
+      },
+      "anchorInvariant": {
+        "kind": "text",
+        "nodeRole": "R59.text",
+        "offset": 2,
+        "unit": "UTF-16 code units",
+        "affinity": "after"
+      },
+      "rawDomAnchorInvariant": {
+        "objectRole": "R59.Text",
+        "hostChildNodesPath": [
+          52,
+          0,
+          0
+        ],
+        "nodeType": 3,
+        "expectedData": "R59",
+        "offset": 2,
+        "unit": "UTF-16 code units"
+      },
+      "endTrigger": {
+        "kind": "second_positive_distinct_scroll_advance_with_directional_range_remaining",
+        "minimumPositiveAdvances": 2,
+        "remainingRangeRule": "scrollTop>0",
+        "minimumRemainingRangeExclusiveCssPx": 0,
+        "expectedTransientFocus": null,
+        "stopStimulus": "synthetic controlled pointercancel with the owned pointerId; explicitly isTrusted=false, not native cancellation proof"
+      },
+      "afterEnd": {
+        "settlement": "at most one actual RAF, absolute deadline100ms; record any final native selection change honestly",
+        "stableSamples": 5,
+        "stableSampleIntervalMs": 100,
+        "stableSelectionBaseline": "first settled actual valid owned selection; stability baseline only, not an independent expected transient endpoint",
+        "requireAllScrollOwnersStable": true,
+        "requireControllerRafAndPointerCaptureAndContinuationZero": true,
+        "requireFullFocusCaretInsideEffectiveClip": true
+      },
+      "mandatoryTerminalLiteral": null,
+      "candidateAcceptanceAssistance": "none: no wheel, scrollTop, scrollIntoView or endpoint reselection after pointerdown"
+    }
+  ],
+  "setupAndOwnership": [
+    "All explicit scroll positioning/font/geometry probes happen before pointerdown; down0/up1356 are fixed setup literals, not acceptance correction.",
+    "Move to literal anchor hit, pointerdown, verify exact collapsed anchor via independent model/DOM tables; then move once to frozen held x/y and keep pointer stationary. No model endpoint injection or reselection during/after gesture.",
+    "Record actual pointerId/buttons, pointer events and trust/protocol provenance, heldMs, all owner scroll positions, rawDOM/model points, resource baselines and actual caret/clip geometry.",
+    "After release/cancel require no pending controller RAF, capture or continuation and five stable100ms samples; page/clip and any discovered scroll owner also stable.",
+    "Synthetic controlled pointercancel proves only controlled handler cancellation. Native pointercancel needs a separately induced and retained trusted event; do not claim it from this12-case matrix.",
+    "Installed Chrome/Safari EN/RU physical drag/key proof remains a separate bounded host-owned lane after root freezes it; this data authorizes no native actions.",
+    "Firefox experimental label does not weaken any configured mandatory model/DOM/data/ownership oracle or hide fixture/font/instrumentation failures.",
+    "No clipboard47, IME41 settlement, domain, AT69 or stopped38 campaign completion is inferred."
+  ],
+  "rootDecisionsBeforeFreeze": [
+    "review/copy unchanged font+OFL into test-only fixture assets with attribution and exact narrow font route/CSP",
+    "confirm fixture-only overflow:clip/scrollbar styling and all box/font setup admission checks",
+    "commit these materialized literal model/rawDOM tables and resolve any future observed topology/setup mismatch as contract/setup work, never derive an expected endpoint from a candidate",
+    "confirm8s/100ms/oneRAF100ms/5stable budgets and the controlled-vs-physical cancellation provenance split"
+  ]
+}

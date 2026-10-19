@@ -1,0 +1,844 @@
+{
+  "format": "osr40-independent-unicode-oracles/1",
+  "status": "AUTHORED_BEFORE_RUNTIME",
+  "units": "UTF-16 code units, scalar-boundary checked; never scalar ordinals",
+  "authority": "Literal strings/offset tables authored from Unicode scalars; edit EGC policy uses existing pinned Rust segmentation, not Intl.Segmenter or candidate output.",
+  "cases": [
+    {
+      "id": "U-ASCII",
+      "input": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "abc"
+              }
+            ]
+          }
+        ]
+      },
+      "text": "abc",
+      "utf16Length": 3,
+      "scalarBoundaries": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "egcBoundaries": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "fullSelections": [
+        {
+          "direction": "forward",
+          "anchor": 0,
+          "focus": 3,
+          "copy": "abc",
+          "model": {
+            "anchor": {
+              "kind": "text",
+              "role": "T",
+              "offset": 0,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "role": "T",
+              "offset": 3,
+              "affinity": "after"
+            }
+          }
+        },
+        {
+          "direction": "backward",
+          "anchor": 3,
+          "focus": 0,
+          "copy": "abc",
+          "model": {
+            "anchor": {
+              "kind": "text",
+              "role": "T",
+              "offset": 3,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "role": "T",
+              "offset": 0,
+              "affinity": "after"
+            }
+          }
+        }
+      ],
+      "newEndpointAffinity": "after",
+      "invalidHalfSurrogateOffsets": []
+    },
+    {
+      "id": "U-RU",
+      "input": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Привет"
+              }
+            ]
+          }
+        ]
+      },
+      "text": "Привет",
+      "utf16Length": 6,
+      "scalarBoundaries": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "egcBoundaries": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "fullSelections": [
+        {
+          "direction": "forward",
+          "anchor": 0,
+          "focus": 6,
+          "copy": "Привет",
+          "model": {
+            "anchor": {
+              "kind": "text",
+              "role": "T",
+              "offset": 0,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "role": "T",
+              "offset": 6,
+              "affinity": "after"
+            }
+          }
+        },
+        {
+          "direction": "backward",
+          "anchor": 6,
+          "focus": 0,
+          "copy": "Привет",
+          "model": {
+            "anchor": {
+              "kind": "text",
+              "role": "T",
+              "offset": 6,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "role": "T",
+              "offset": 0,
+              "affinity": "after"
+            }
+          }
+        }
+      ],
+      "newEndpointAffinity": "after",
+      "invalidHalfSurrogateOffsets": []
+    },
+    {
+      "id": "U-COMB",
+      "input": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "é"
+              }
+            ]
+          }
+        ]
+      },
+      "text": "é",
+      "utf16Length": 2,
+      "scalarBoundaries": [
+        0,
+        1,
+        2
+      ],
+      "egcBoundaries": [
+        0,
+        2
+      ],
+      "fullSelections": [
+        {
+          "direction": "forward",
+          "anchor": 0,
+          "focus": 2,
+          "copy": "é",
+          "model": {
+            "anchor": {
+              "kind": "text",
+              "role": "T",
+              "offset": 0,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "role": "T",
+              "offset": 2,
+              "affinity": "after"
+            }
+          }
+        },
+        {
+          "direction": "backward",
+          "anchor": 2,
+          "focus": 0,
+          "copy": "é",
+          "model": {
+            "anchor": {
+              "kind": "text",
+              "role": "T",
+              "offset": 2,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "role": "T",
+              "offset": 0,
+              "affinity": "after"
+            }
+          }
+        }
+      ],
+      "newEndpointAffinity": "after",
+      "invalidHalfSurrogateOffsets": []
+    },
+    {
+      "id": "U-ZWJ",
+      "input": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "👩🏽‍💻"
+              }
+            ]
+          }
+        ]
+      },
+      "text": "👩🏽‍💻",
+      "utf16Length": 7,
+      "scalarBoundaries": [
+        0,
+        2,
+        4,
+        5,
+        7
+      ],
+      "egcBoundaries": [
+        0,
+        7
+      ],
+      "fullSelections": [
+        {
+          "direction": "forward",
+          "anchor": 0,
+          "focus": 7,
+          "copy": "👩🏽‍💻",
+          "model": {
+            "anchor": {
+              "kind": "text",
+              "role": "T",
+              "offset": 0,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "role": "T",
+              "offset": 7,
+              "affinity": "after"
+            }
+          }
+        },
+        {
+          "direction": "backward",
+          "anchor": 7,
+          "focus": 0,
+          "copy": "👩🏽‍💻",
+          "model": {
+            "anchor": {
+              "kind": "text",
+              "role": "T",
+              "offset": 7,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "role": "T",
+              "offset": 0,
+              "affinity": "after"
+            }
+          }
+        }
+      ],
+      "newEndpointAffinity": "after",
+      "invalidHalfSurrogateOffsets": [
+        1,
+        3,
+        6
+      ]
+    },
+    {
+      "id": "U-FLAG",
+      "input": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "🇷🇺"
+              }
+            ]
+          }
+        ]
+      },
+      "text": "🇷🇺",
+      "utf16Length": 4,
+      "scalarBoundaries": [
+        0,
+        2,
+        4
+      ],
+      "egcBoundaries": [
+        0,
+        4
+      ],
+      "fullSelections": [
+        {
+          "direction": "forward",
+          "anchor": 0,
+          "focus": 4,
+          "copy": "🇷🇺",
+          "model": {
+            "anchor": {
+              "kind": "text",
+              "role": "T",
+              "offset": 0,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "role": "T",
+              "offset": 4,
+              "affinity": "after"
+            }
+          }
+        },
+        {
+          "direction": "backward",
+          "anchor": 4,
+          "focus": 0,
+          "copy": "🇷🇺",
+          "model": {
+            "anchor": {
+              "kind": "text",
+              "role": "T",
+              "offset": 4,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "role": "T",
+              "offset": 0,
+              "affinity": "after"
+            }
+          }
+        }
+      ],
+      "newEndpointAffinity": "after",
+      "invalidHalfSurrogateOffsets": [
+        1,
+        3
+      ]
+    },
+    {
+      "id": "U-RTL",
+      "input": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "שלום"
+              }
+            ]
+          }
+        ]
+      },
+      "text": "שלום",
+      "utf16Length": 4,
+      "scalarBoundaries": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "egcBoundaries": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "fullSelections": [
+        {
+          "direction": "forward",
+          "anchor": 0,
+          "focus": 4,
+          "copy": "שלום",
+          "model": {
+            "anchor": {
+              "kind": "text",
+              "role": "T",
+              "offset": 0,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "role": "T",
+              "offset": 4,
+              "affinity": "after"
+            }
+          }
+        },
+        {
+          "direction": "backward",
+          "anchor": 4,
+          "focus": 0,
+          "copy": "שלום",
+          "model": {
+            "anchor": {
+              "kind": "text",
+              "role": "T",
+              "offset": 4,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "role": "T",
+              "offset": 0,
+              "affinity": "after"
+            }
+          }
+        }
+      ],
+      "newEndpointAffinity": "after",
+      "invalidHalfSurrogateOffsets": []
+    },
+    {
+      "id": "U-MIX",
+      "input": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "aאבb"
+              }
+            ]
+          }
+        ]
+      },
+      "text": "aאבb",
+      "utf16Length": 4,
+      "scalarBoundaries": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "egcBoundaries": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "fullSelections": [
+        {
+          "direction": "forward",
+          "anchor": 0,
+          "focus": 4,
+          "copy": "aאבb",
+          "model": {
+            "anchor": {
+              "kind": "text",
+              "role": "T",
+              "offset": 0,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "role": "T",
+              "offset": 4,
+              "affinity": "after"
+            }
+          }
+        },
+        {
+          "direction": "backward",
+          "anchor": 4,
+          "focus": 0,
+          "copy": "aאבb",
+          "model": {
+            "anchor": {
+              "kind": "text",
+              "role": "T",
+              "offset": 4,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "role": "T",
+              "offset": 0,
+              "affinity": "after"
+            }
+          }
+        }
+      ],
+      "newEndpointAffinity": "after",
+      "invalidHalfSurrogateOffsets": []
+    },
+    {
+      "id": "U-EMPTY",
+      "input": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph"
+          }
+        ]
+      },
+      "text": "",
+      "utf16Length": 0,
+      "scalarBoundaries": [
+        0
+      ],
+      "egcBoundaries": [
+        0
+      ],
+      "fullSelections": [
+        {
+          "direction": "forward",
+          "anchor": 0,
+          "focus": 0,
+          "copy": "",
+          "model": {
+            "anchor": {
+              "kind": "child",
+              "role": "P",
+              "index": 0,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "child",
+              "role": "P",
+              "index": 0,
+              "affinity": "after"
+            }
+          },
+          "semanticEmpty": true
+        },
+        {
+          "direction": "backward",
+          "anchor": 0,
+          "focus": 0,
+          "copy": "",
+          "model": {
+            "anchor": {
+              "kind": "child",
+              "role": "P",
+              "index": 0,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "child",
+              "role": "P",
+              "index": 0,
+              "affinity": "after"
+            }
+          },
+          "semanticEmpty": true
+        }
+      ],
+      "newEndpointAffinity": "after",
+      "invalidHalfSurrogateOffsets": []
+    }
+  ],
+  "composite": {
+    "text": "A😀é👩🏽‍💻🇷🇺שלוםaאבbПривет",
+    "utf16Length": 30,
+    "scalarBoundaries": [
+      0,
+      1,
+      3,
+      4,
+      5,
+      7,
+      9,
+      10,
+      12,
+      14,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30
+    ],
+    "egcBoundaries": [
+      0,
+      1,
+      3,
+      5,
+      12,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30
+    ],
+    "invalidHalfSurrogateOffsets": [
+      2,
+      6,
+      8,
+      11,
+      13,
+      15
+    ]
+  },
+  "crossMarkCluster": {
+    "content": [
+      {
+        "type": "text",
+        "text": "e",
+        "marks": [
+          {
+            "type": "strong"
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "text": "́",
+        "marks": [
+          {
+            "type": "emphasis"
+          }
+        ]
+      },
+      {
+        "type": "hard_break"
+      },
+      {
+        "type": "text",
+        "text": "x"
+      }
+    ],
+    "copyReadable": [
+      {
+        "anchor": [
+          "/0/0",
+          0
+        ],
+        "focus": [
+          "/0/0",
+          1
+        ],
+        "text": "e",
+        "edit": "position.invalid"
+      },
+      {
+        "anchor": [
+          "/0/1",
+          0
+        ],
+        "focus": [
+          "/0/1",
+          1
+        ],
+        "text": "́",
+        "edit": "position.invalid"
+      },
+      {
+        "anchor": [
+          "/0/0",
+          0
+        ],
+        "focus": [
+          "/0/1",
+          1
+        ],
+        "text": "é",
+        "edit": "allowed"
+      }
+    ],
+    "barrier": "hard_break separates the following x; no joined EGC across it"
+  },
+  "keyboard": {
+    "ltrWholeCluster": [
+      {
+        "case": "U-COMB",
+        "setupOffset": 2,
+        "key": "Shift+ArrowLeft",
+        "expectedAnchor": 2,
+        "expectedFocus": 0
+      },
+      {
+        "case": "U-ZWJ",
+        "setupOffset": 7,
+        "key": "Shift+ArrowLeft",
+        "expectedAnchor": 7,
+        "expectedFocus": 0
+      },
+      {
+        "case": "U-FLAG",
+        "setupOffset": 4,
+        "key": "Shift+ArrowLeft",
+        "expectedAnchor": 4,
+        "expectedFocus": 0
+      }
+    ],
+    "selectAll": {
+      "gesture": "Cmd+A on macOS or Ctrl+A elsewhere, owned host only",
+      "policy": "prevent default only for owned host gesture; publish one exact native root Child range without a second document",
+      "fixtures": [
+        {
+          "fixture": "formatting F1",
+          "anchor": {
+            "kind": "child",
+            "role": "root",
+            "index": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "role": "root",
+            "index": 6,
+            "affinity": "after"
+          }
+        },
+        {
+          "fixture": "scroll64",
+          "anchor": {
+            "kind": "child",
+            "role": "root",
+            "index": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "role": "root",
+            "index": 57,
+            "affinity": "after"
+          }
+        },
+        {
+          "fixture": "each Unicode one-paragraph case",
+          "anchor": {
+            "kind": "child",
+            "role": "root",
+            "index": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "role": "root",
+            "index": 1,
+            "affinity": "after"
+          }
+        }
+      ],
+      "externalControl": "native browser target preserved, no host command or preventDefault",
+      "atom": "structural membership once, never U+FFFC"
+    },
+    "rtl": [
+      "Native visual navigation is browser layout policy; retain engine/dir/key/actual raw endpoint trace separately.",
+      "All resulting owned endpoints must be valid and agree with native model; copy payload matches literal selected Unicode without normalization.",
+      "Do not claim a custom identical cross-engine bidi traversal or use keyboard observation to regenerate the literal range oracle."
+    ]
+  },
+  "ux": {
+    "hostRole": "textbox",
+    "hostNamed": true,
+    "staleEn": "The selection changed. Select the text again.",
+    "staleRu": "Выделение изменилось. Выберите текст снова.",
+    "liveRegion": "polite persistent status on refusal; no per-caret announcements",
+    "realAssistiveTechnologyClaim": false
+  }
+}

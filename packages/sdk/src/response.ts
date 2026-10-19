@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-import type { SdkResponse } from '@klenwriter/editor-wasm';
+import type { SdkResponse, SdkResponseV2 } from '@klenwriter/editor-wasm';
 import { DataError, freezeData, isU64, ownData } from './data.js';
 
 type Check = (value: unknown) => boolean;
@@ -76,5 +76,29 @@ export function decodeResponse(raw: string): SdkResponse {
       ? shape(value, { status: literal('ok'), value: reply })
       : shape(value, { status: literal('refused', 'fatal'), diagnostic }))) throw new DataError('sdk.invalid_response');
     return freezeData(value) as SdkResponse;
+  } catch { throw new DataError('sdk.invalid_response'); }
+}
+
+const SELECTION_TEXT_BYTES = 1024 * 1024;
+const SELECTION_REPLY_BYTES = 8 * 1024 * 1024;
+const selectionText: Check = value => shape(value, {
+  kind: literal('selection_text'), stamp, selection,
+  projection_id: v => typeof v === 'string' && v.length > 0 && v.length <= 1024,
+  text: v => typeof v === 'string' && v.length <= SELECTION_TEXT_BYTES && new TextEncoder().encode(v).byteLength <= SELECTION_TEXT_BYTES,
+  empty: bool,
+  selected_atoms: v => Array.isArray(v) && v.length <= 4096 && v.every(id => typeof id === 'string' && id.length > 0 && id.length <= 256)
+    && new Set(v).size === v.length,
+}) && object(value) && (value.empty !== true || value.text === '' && Array.isArray(value.selected_atoms) && value.selected_atoms.length === 0);
+
+/** ABI2 adds one bounded pure reply. Legacy decoder and command tickets stay closed. */
+export function decodeResponseV2(raw: string): SdkResponseV2 {
+  try {
+    if (typeof raw !== 'string' || raw.length > SELECTION_REPLY_BYTES || new TextEncoder().encode(raw).byteLength > SELECTION_REPLY_BYTES) throw new DataError('sdk.invalid_response');
+    const parsed: unknown = JSON.parse(raw);
+    const value = ownData(parsed, 16 * 1024 * 1024).value;
+    if (!object(value) || !(value.status === 'ok'
+      ? shape(value, { status: literal('ok'), value: v => reply(v) || selectionText(v) })
+      : shape(value, { status: literal('refused', 'fatal'), diagnostic }))) throw new DataError('sdk.invalid_response');
+    return freezeData(value) as SdkResponseV2;
   } catch { throw new DataError('sdk.invalid_response'); }
 }

@@ -19,9 +19,11 @@ packages or compile independent native/WASM profile modules through public Rust
 crates. The notes profile and KWDJ use the same composition API.
 
 The [mounted DOM boundary](docs/dom.md) adds a basic editable SDK2 surface,
-explicit profile renderers and bounded input reconciliation. Production selection,
-IME settlement, clipboard, complete UI and installable vanilla alpha remain their
-separate acceptance gates; this is not a published editor release.
+explicit profile renderers and bounded input reconciliation. Its
+[selection controller](docs/selection.md) adds guarded bookmarks, owned selection
+gestures, bounded edge autoscroll and minimal plaintext copy/cut. Full IME
+settlement, paste/HTML clipboard handling, complete UI and installable vanilla
+alpha retain separate acceptance gates; this is not a published editor release.
 
 ## Build the standalone workspace
 
