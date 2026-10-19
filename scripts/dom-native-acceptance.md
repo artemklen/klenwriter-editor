@@ -7,7 +7,7 @@ performance captures nor changes browser settings, authentication or preferences
 
 Prerequisites: built public DOM/SDK/WASM artifacts and the workspace server at
 `http://127.0.0.1:4174/dom`; installed Google Chrome/Safari; existing enabled
-U.S. and RussianWin input sources; previously granted System Events automation
+U.S. and Russian or RussianWin input sources; previously granted System Events automation
 and Accessibility access. Safari WebDriver must already be enabled. Missing
 permissions/sources produce a retained NOT_RUN/error, with no permission-setting,
 authentication flow or retry. The runner does not start the workspace server or
@@ -51,7 +51,9 @@ It focuses the host control and sends physical Tab to return to the editor under
 the current browser policy, then sends these System Events ANSI virtual keycodes:
 
 - EN: H/E/L/L/O (`4,14,37,37,31`) under `com.apple.keylayout.US`: `hello`.
-- RU: G/H/B/D/T/N (`5,4,11,2,17,45`) under `com.apple.keylayout.RussianWin`: `привет`.
+- RU: G/H/B/D/T/N (`5,4,11,2,17,45`) under an existing enabled
+  `com.apple.keylayout.RussianWin` or `com.apple.keylayout.Russian`: `привет`.
+  These letter keys are shared; this protocol makes no punctuation-layout claim.
 - Return (`36`): append the compatible empty paragraph; Backspace (`51`): join.
 - Public host undo/redo: verify historical empty-block identity revival/retirement.
   These actions are labelled public host API, and do not claim native shortcut proof.

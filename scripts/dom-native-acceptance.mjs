@@ -65,7 +65,12 @@ try{
   const accessibility=script('tell application "System Events" to get UI elements enabled').stdout.trim();report.setup.push({action:'read-existing-ui-automation-availability',value:accessibility});if(accessibility!=='true')throw new Error('Existing UI automation permission is unavailable');
   helper=resolve(dirname(outputPath),'dom-native-input-source');run('/usr/bin/swiftc',[resolve(root,'scripts/dom-native-input-source.swift'),'-o',helper]);
   const initial=source();report.inputSources=initial;originalSource=initial.current.id;
-  const supported=[['en','com.apple.keylayout.US',[4,14,37,37,31]],['ru','com.apple.keylayout.RussianWin',[5,4,11,2,17,45]]];
+  // These two existing Russian layouts share the letter keys used for привет.
+  // Their punctuation differs and is outside this basic functional protocol.
+  const russian=['com.apple.keylayout.RussianWin','com.apple.keylayout.Russian'].find(id=>initial.sources.some(row=>row.id===id&&row.enabled&&row.selectable));
+  if(!russian)throw new Error('An existing enabled Russian or RussianWin input source is required');
+  report.setup.push({action:'choose-existing-russian-letter-layout',inputSourceId:russian,expectedText:'привет'});
+  const supported=[['en','com.apple.keylayout.US',[4,14,37,37,31]],['ru',russian,[5,4,11,2,17,45]]];
   adapter=await(browserName==='chrome'?chrome():safari());await adapter.navigate();
   for(const [locale,sourceId,codes]of supported){const lane={locale,inputSourceId:sourceId,status:'NOT_RUN',checkpoints:[],startedAt:new Date().toISOString()};report.locales.push(lane);save();let typingStarted=false;
     try{if(!initial.sources.some(row=>row.id===sourceId&&row.enabled&&row.selectable))throw new Error('Required existing enabled input source is unavailable');
