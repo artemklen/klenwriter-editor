@@ -428,6 +428,64 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
           }
         }
       }
+      // Relocate a caret out of a removed empty block before touching its DOM.
+      // This narrow optimization only uses an unchanged, already-owned Text
+      // target. Child/edge targets and every provisional case keep final-only
+      // restoration; an old child gap can mean something else after a patch.
+      if (provisional === null && event.selection_after && event.change.impact.removed.length) {
+        const browser = doc.getSelection(), after = event.selection_after;
+        const removed = new Set(event.change.impact.removed);
+        const anchorNode = browser?.anchorNode, focusNode = browser?.focusNode;
+        const blockId = anchorNode ? ownedBlockAt(anchorNode) : null;
+        const block = blockId ? rows.get(blockId) : undefined;
+        const oldPoint = anchorNode && browser ? positionAt(anchorNode,browser.anchorOffset) : null;
+        if (browser?.isCollapsed && anchorNode && focusNode && anchorNode === focusNode
+          && browser.anchorOffset === browser.focusOffset && host.contains(anchorNode)
+          && blockId && removed.has(blockId) && block?.view.primitive === 'text_block'
+          && authority.get(block.outer) === blockId && block.outer.ownerDocument === doc
+          && block.outer.isConnected && host.contains(block.outer) && block.outer.contains(anchorNode)
+          && block.view.children.length === 0 && block.placeholder && placeholders.has(block.placeholder)
+          && block.content.childNodes.length === 1 && block.content.firstChild === block.placeholder
+          && oldPoint && !isDomRefusal(oldPoint) && oldPoint.kind === 'child'
+          && oldPoint.parent === blockId && oldPoint.index === 0
+          && after.anchor.kind === 'text' && after.focus.kind === 'text'
+          && after.anchor.node === after.focus.node && after.anchor.offset === after.focus.offset) {
+          const stableTextPoint = (position: DeepReadonly<PositionDto>): boolean => {
+            if (position.kind !== 'text') return false;
+            const point = domPoint(position), target = rows.get(position.node);
+            if (isDomRefusal(point) || !target?.text || point.node !== target.text
+              || target.text.data !== target.view.text || target.text.parentNode !== target.content
+              || !target.outer.contains(target.text) || target.content.childNodes.length !== 1
+              || target.content.firstChild !== target.text || point.node.ownerDocument !== doc
+              || !point.node.isConnected || !host.contains(point.node)) return false;
+            const visited = new Set<string>();
+            let id: string | null = position.node;
+            while (id !== null) {
+              if (visited.size > domRegionLimits.depth || visited.has(id) || removed.has(id)) return false;
+              visited.add(id);
+              const row = rows.get(id), candidate = candidates.get(id);
+              if (!row || authority.get(row.outer) !== id || authority.get(row.content) !== id
+                || !row.outer.contains(row.content) || !row.outer.isConnected || !host.contains(row.outer)) return false;
+              if (candidate && (signature(candidate.prepared) !== row.signature
+                || candidate.view.parent !== row.view.parent || candidate.view.type_id !== row.view.type_id
+                || candidate.view.primitive !== row.view.primitive || candidate.view.text !== row.view.text
+                || !equal(candidate.view.attributes,row.view.attributes) || !equal(candidate.view.marks,row.view.marks)
+                || id === position.node && !equal(candidate.view.children,row.view.children))) return false;
+              const parentId: string | null = row.view.parent;
+              if (parentId === null) return id === rootId && row.outer === host;
+              const parent = rows.get(parentId), index = parent?.view.children.indexOf(id) ?? -1;
+              if (!parent || index < 0 || row.outer.parentNode !== parent.content
+                || parent.content.childNodes[index] !== row.outer) return false;
+              id = parentId;
+            }
+            return false;
+          };
+          if (stableTextPoint(after.anchor) && stableTextPoint(after.focus)) {
+            const failure = restoreSelection(after);
+            if (failure) return failure;
+          }
+        }
+      }
       try {
         for (const [id, candidate] of candidates) {
           const previous = rows.get(id);

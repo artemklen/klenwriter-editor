@@ -93,6 +93,14 @@ Empty-block BR — только placeholder. Native selection сохраняет
 суррогатная середина не округляется. Публичные ошибки native positions остаются
 position.invalid с исходными code/path/category; JS не сегментирует EGC.
 
+Перед удалением выбранного пустого text block renderer может перенести DOM range
+на текущий native `event.selection_after`, если оба endpoint уже соответствуют
+одному неизменившемуся owned Text. Проверяются connected topology, ancestors,
+identity и presentation; перенос происходит до первой структурной DOM mutation.
+Child/edge/new targets и provisional/composing используют обычный final restore.
+Native affinity сохраняется. Этот порядок DOM patch не добавляет SDK submit,
+document event или history unit; final selection restore остаётся обязательным.
+
 При непосредственном keyboard Tab entry из внешнего host control в mounted host
 адаптер восстанавливает **текущий** native selection до синхронизации browser reset.
 Один focus-return не меняет native stamp, документ, history или identities; после

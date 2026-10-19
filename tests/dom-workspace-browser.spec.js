@@ -116,6 +116,73 @@ test('T02 actual keyboard end split/join and six literal history/identity checkp
   expect(await call(page,'sameIdentity',id,'P2','/1')).toBe(true);expect(await call(page,'nativeSelectionMatches',id,'/0/2',2)).toBe(true);
 });
 
+test('T02 selected-empty join restores surviving DOM caret before the first structural mutation',async({page})=>{
+  const mounted=await call(page,'mount',{fixture:'D1-after-end-split'});expect(mounted.ready).toBe('ready');
+  const id=mounted.id;await call(page,'select',id,'/1',0);
+  const before=await checkpoint(page,id,'T02 literal selected-empty before join');
+  const TC=stateRow(before,'/0/2').id,P2=stateRow(before,'/2').id,empty=stateRow(before,'/1').id;
+  expect(before.canonical).toBe(literal('D1-after-end-split'));expect(before.state.stamp.revision).toBe('0');history(before,0,0);
+  expect(stateRow(before,'/1').children).toEqual([]);caret(before,empty,0,'child');
+  const selected=await page.evaluate(id=>{
+    const node=window.domHost.domAt(id,'/1'),selection=document.getSelection();
+    return {anchor:selection?.anchorNode===node,focus:selection?.focusNode===node,anchorOffset:selection?.anchorOffset,focusOffset:selection?.focusOffset};
+  },id);
+  expect(selected).toEqual({anchor:true,focus:true,anchorOffset:0,focusOffset:0});
+  await page.evaluate(id=>{
+    const host=document.getElementById(id),selected=window.domHost.domAt(id,'/1');
+    const target=window.domHost.leaf(id,'/0/2'),p2=window.domHost.domAt(id,'/2');
+    const snapshots=[],saved=[];let dropped=0;
+    // Observe only this owner's three structural entrypoints. No SDK calls,
+    // range writes, event dispatch, or changes to the original method behavior.
+    function observe(method,phase) {
+      if(snapshots.length===64){dropped++;return;}
+      const selection=document.getSelection();
+      snapshots.push({method,phase,anchorIsTC:selection?.anchorNode===target,focusIsTC:selection?.focusNode===target,
+        anchorOffset:selection?.anchorOffset??null,focusOffset:selection?.focusOffset??null,
+        anchorIsSelectedEmpty:selection?.anchorNode===selected,focusIsSelectedEmpty:selection?.focusNode===selected,
+        targetConnected:target.isConnected,selectedConnected:selected.isConnected});
+    }
+    for(const [owner,name] of [[host,'insertBefore'],[host,'removeChild'],[selected,'remove']]) {
+      const descriptor=Object.getOwnPropertyDescriptor(owner,name),original=owner[name];saved.push({owner,name,descriptor});
+      Object.defineProperty(owner,name,{configurable:true,writable:true,value:function(...args){
+        observe(name,'before');try{return Reflect.apply(original,this,args);}finally{observe(name,'after');}
+      }});
+    }
+    window.selectedEmptyJoinProbe={snapshots,target,p2,selected,get dropped(){return dropped;},restore(){
+      for(const {owner,name,descriptor} of saved.reverse())if(descriptor)Object.defineProperty(owner,name,descriptor);else delete owner[name];
+    }};
+  },id);
+  let probe;
+  try {
+    // Automated keyboard input drives the actual mounted command/event path.
+    await page.keyboard.press('Backspace');
+  } finally {
+    probe=await page.evaluate(()=>{
+      const probe=window.selectedEmptyJoinProbe;
+      try{return {snapshots:probe.snapshots,dropped:probe.dropped};}finally{probe.restore();}
+    });
+    observations.get(page).selectedEmptyJoin=probe;
+  }
+  const joined=await checkpoint(page,id,'T02 selected-empty after keyboard join');
+  const identity=await page.evaluate(id=>{
+    const probe=window.selectedEmptyJoinProbe;
+    try{return {sameTC:window.domHost.leaf(id,'/0/2')===probe.target,sameP2:window.domHost.domAt(id,'/1')===probe.p2,
+      emptyDetached:!probe.selected.isConnected,selectedTC:window.domHost.nativeSelectionMatches(id,'/0/2',2)};}finally{delete window.selectedEmptyJoinProbe;}
+  },id);
+  expect(probe.dropped).toBe(0);expect(probe.snapshots.length).toBeGreaterThan(0);
+  // This is an independent transient invariant: at the VERY FIRST structural
+  // mutation, the raw Selection must already target the surviving literal TC2.
+  expect(probe.snapshots[0]).toMatchObject({phase:'before',anchorIsTC:true,focusIsTC:true,anchorOffset:2,focusOffset:2,targetConnected:true,selectedConnected:true});
+  expect(joined.canonical).toBe(literal('D0'));caret(joined,TC,2);expect(joined.state.stamp.revision).toBe('1');history(joined,1,0);
+  expect(docEvents(joined)).toHaveLength(1);expect(joined.failures).toEqual([]);expect(joined.lifecycle).toBe('ready');
+  expect(stateRow(joined,'/0/2').id).toBe(TC);expect(stateRow(joined,'/1').id).toBe(P2);expect(joined.rows.some(row=>row.node.id===empty)).toBe(false);
+  expect(identity).toEqual({sameTC:true,sameP2:true,emptyDetached:true,selectedTC:true});unique(joined);
+  expect(joined.resources).toEqual(before.resources);
+  const disposed=await call(page,'dispose',id);
+  expect(disposed.resources.dom).toEqual({listeners:0,observers:0,continuations:0,retainedInputBytes:0,retainedRecoveryRegions:0});
+  expect(disposed.native).toEqual({sessions:0,snapshot_handles:0,snapshot_bytes:'0',protected_cursors:0});
+});
+
 test('T03 actual keyboard middle split/join preserves historical IDs and old-left caret',async({page})=>{
   const {id}=await call(page,'mount',{fixture:'T03-initial'});await call(page,'select',id,'/0/0',1);const before=await checkpoint(page,id,'T03 initial'), left=stateRow(before,'/0/0').id;
   await page.keyboard.press('Enter');const split=await checkpoint(page,id,'T03 Enter'), E=stateRow(split,'/1').id,TR=stateRow(split,'/1/0').id;
