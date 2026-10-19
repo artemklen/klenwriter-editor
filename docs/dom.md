@@ -93,6 +93,14 @@ Empty-block BR — только placeholder. Native selection сохраняет
 суррогатная середина не округляется. Публичные ошибки native positions остаются
 position.invalid с исходными code/path/category; JS не сегментирует EGC.
 
+При непосредственном keyboard Tab entry из внешнего host control в mounted host
+адаптер восстанавливает **текущий** native selection до синхронизации browser reset.
+Один focus-return не меняет native stamp, документ, history или identities; после
+редактирования используется текущая каретка, а не начальная позиция mount.
+Это узкий keyboard-entry guard с проверками lifecycle/busy/provisional/composing,
+не перехват намеренного pointer selection. Полные selection/bookmarks, keyboard
+navigation и bidirectional edge autoscroll остаются OSR-40.
+
 Активный composing subtree защищён. Совместимое редактирование другой области
 проверяет, что защищённые objects/rows не меняются; конфликт явно отказывается.
 После compositionend не выполняется предполагаемое settlement: unresolved input

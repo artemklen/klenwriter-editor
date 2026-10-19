@@ -28,6 +28,7 @@ export function attachInput(options: InputConfiguration): InputOwner {
   const { element,view } = options, doc = element.ownerDocument;
   const removals: (() => void)[] = [];
   let destroyed = false, composing = false, syncing = false, pending: Pending | null = null;
+  let tabEntry = false;
   const failure = (code: DomRefusal['diagnostic']['code']) => domRefusal(code,'command',options.capture());
   const listen = (target: EventTarget,name: string,callback: EventListener) => {
     target.addEventListener(name,callback); removals.push(() => target.removeEventListener(name,callback));
@@ -212,6 +213,26 @@ export function attachInput(options: InputConfiguration): InputOwner {
     else begin(input,selection);
   });
   listen(element,'input',event => { if (!destroyed) reconcile(event as InputEvent); });
+  // Safari may create a new start-of-host caret when Tab enters an editing
+  // host. Restore the current native selection before that incidental browser
+  // selection can be published. Pointer entry keeps its own selection intent.
+  listen(doc,'keydown',event => {
+    const key = event as KeyboardEvent;
+    tabEntry = !destroyed && key.key === 'Tab' && !key.altKey && !key.ctrlKey && !key.metaKey
+      && key.target instanceof Node && !element.contains(key.target);
+  });
+  listen(doc,'keyup',event => { if ((event as KeyboardEvent).key === 'Tab') tabEntry = false; });
+  listen(doc,'pointerdown',() => { tabEntry = false; });
+  if (doc.defaultView) listen(doc.defaultView,'blur',() => { tabEntry = false; });
+  listen(doc,'focusin',event => {
+    const returning = tabEntry; tabEntry = false;
+    if (!returning || event.target !== element || destroyed || syncing || composing || pending
+      || !options.canSelect() || options.busy() || view.hasProvisional()) return;
+    const state = options.readState();
+    if (!state?.selection) return;
+    const refusal = view.restoreSelection(state.selection);
+    if (refusal) options.recover(refusal,view.captureRegion());
+  });
   listen(doc,'selectionchange',() => {
     if (destroyed || syncing || composing || pending || !options.canSelect() || options.busy() || view.hasProvisional()) return;
     const selection = doc.getSelection();

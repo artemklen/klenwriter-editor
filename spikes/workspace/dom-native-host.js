@@ -60,14 +60,21 @@ export async function checkpoint(name) {
   try {
   const typed=copy(active.d0);typed.content[0].content[2].text+=active.text;
   const split=copy(active.d1);split.content[0].content[2].text+=active.text;
-  if(name==='typed')expected(point,typed,active.tc,2+n,n,n);
+  if(name==='focused')expected(point,active.d0,active.tc,2,0,0);
+  else if(name==='typed')expected(point,typed,active.tc,2+n,n,n);
   else if(name==='split') {active.empty=row(point,'/1').id;expected(point,split,active.empty,0,n+1,n+1,0,'child');}
   else if(name==='joined')expected(point,typed,active.tc,2+n,n+2,n+2);
   else if(name==='undo-join') {if(row(point,'/1').id!==active.empty)throw new Error('Undo did not revive historical empty-block ID');expected(point,split,active.empty,0,n+3,n+1,1,'child');}
   else if(name==='redo-join')expected(point,typed,active.tc,2+n,n+4,n+2);
   else if(name==='delete-last'||name==='focus-return') {const shortened=copy(active.d0);shortened.content[0].content[2].text+=active.text.slice(0,-1);expected(point,shortened,active.tc,1+n,n+5,n+3);}
-  else if(name!=='focused')throw new Error(`Unknown checkpoint ${name}`);
+  else throw new Error(`Unknown checkpoint ${name}`);
   if(['focused','focus-return'].includes(name)&&!focused)throw new Error('Physical Tab did not return editor focus under current browser policy');
+  if(['focused','focus-return'].includes(name)) {
+    const before=name==='focused'?active.initial:active.checkpoints.find(checkpoint=>checkpoint.name==='delete-last');
+    ensure(before);
+    if(point.canonical!==before.canonical||JSON.stringify(point.state)!==JSON.stringify(before.state)
+      ||JSON.stringify(point.rows)!==JSON.stringify(before.rows)||JSON.stringify(point.events)!==JSON.stringify(before.events))throw new Error('Focus alone changed the native stamp, document, selection, history or identities');
+  }
   if(row(point,'/0/2').id!==active.tc)throw new Error('Original surviving text ID changed');
   if(active.overflow)throw new Error('Native trace cap exceeded');
   } catch(error) {active.checkpoints.at(-1).assertionError=String(error.message??error);throw error;}

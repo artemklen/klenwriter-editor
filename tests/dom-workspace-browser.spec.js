@@ -76,6 +76,34 @@ test('T06 complete basic catalog has named host and valid static accessibility s
   expect(result.violations).toEqual([]);expect(result.incomplete).toEqual([]);expect(result.passes.length).toBeGreaterThan(0);
 });
 
+test('T09 physical Tab return preserves current native caret and every committed facet before and after deletion',async({page})=>{
+  const mounted=await call(page,'mount',{fixture:'D0'});expect(mounted.ready).toBe('ready');
+  const id=mounted.id;await call(page,'select',id,'/0/2',2);
+  const initial=await checkpoint(page,id,'T09 before initial Tab return'),TC=stateRow(initial,'/0/2').id;
+  expect(initial.canonical).toBe(literal('D0'));expect(initial.state.stamp.revision).toBe('0');history(initial,0,0);caret(initial,TC,2);
+  async function tabReturn(before,offset,label) {
+    await page.locator('#host-recovery-control').focus();await expect(page.locator('#host-recovery-control')).toBeFocused();
+    // Physical keyboard entry is the action under test. Do not focus/reselect the
+    // editor from the fixture after Tab: that would conceal Safari's reset.
+    await page.keyboard.press('Tab');await expect(page.locator(`#${id}`)).toBeFocused();
+    await expect.poll(()=>call(page,'nativeSelectionMatches',id,'/0/2',offset)).toBe(true);
+    const after=await checkpoint(page,id,label);
+    expect(after.state).toEqual(before.state);expect(after.capture).toEqual(before.capture);
+    expect(after.rows).toEqual(before.rows);expect(after.canonical).toBe(before.canonical);
+    expect(after.events).toEqual(before.events);expect(after.ids).toEqual(before.ids);
+    expect(after.actualSelection).toEqual(before.actualSelection);expect(after.failures).toEqual([]);
+    caret(after,TC,offset);unique(after);return after;
+  }
+  await tabReturn(initial,2,'T09 initial physical Tab return');
+  expect((await call(page,'command',id,{kind:'insert_text',text:'XY'})).response.status).toBe('ok');
+  await page.keyboard.press('Backspace');
+  const deleted=await checkpoint(page,id,'T09 current caret after deletion');
+  expect(deleted.canonical).toBe(literal('T04-X'));expect(deleted.state.stamp.revision).toBe('2');history(deleted,2,0);
+  expect(docEvents(deleted)).toHaveLength(2);caret(deleted,TC,3);
+  // The second return must restore the current offset3, not the initial offset2.
+  await tabReturn(deleted,3,'T09 post-delete physical Tab return');
+});
+
 test('T02 actual keyboard end split/join and six literal history/identity checkpoints',async({page})=>{
   const {id}=await call(page,'mount',{fixture:'D0'});await call(page,'select',id,'/0/2',2);await call(page,'mark',id,'P2','/1');
   const initial=await checkpoint(page,id,'T02 initial'), originalIds=new Set(initial.rows.map(row=>row.node.id));

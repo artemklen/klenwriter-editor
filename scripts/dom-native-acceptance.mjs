@@ -33,7 +33,16 @@ async function physical(codes,phase){
   const action={phase,codes,inputSourceBefore:before.current,startedAt:new Date().toISOString(),status:'attempted',method:'System Events key code; platform input, not hardware-device evidence'};
   report.physicalActions.push(action);
   const body=`tell application "System Events"\nif (name of first application process whose frontmost is true) is not "${application}" then error "Browser activation failed"\n${codes.map(code=>`key code ${code}\ndelay 0.12`).join('\n')}\nend tell`;
-  try{script(body);}catch(error){Object.assign(action,{status:'failed',finishedAt:new Date().toISOString(),error:error.message});save();throw error;}
+  try{
+    if(browserName==='safari'){
+      action.perKey=[];
+      for(const code of codes){
+        const key={code,status:'attempted',startedAt:new Date().toISOString()};action.perKey.push(key);
+        try{const guard=adapter.key(code);Object.assign(key,{status:'completed',finishedAt:new Date().toISOString(),guard});}
+        catch(error){Object.assign(key,{status:'failed',finishedAt:new Date().toISOString(),error:error.message});throw error;}
+      }
+    }else script(body);
+  }catch(error){Object.assign(action,{status:'failed',finishedAt:new Date().toISOString(),error:error.message});save();throw error;}
   await wait(250);const after=source();Object.assign(action,{status:'completed',finishedAt:new Date().toISOString(),inputSourceAfter:after.current});
   if(after.current.id!==before.current.id)throw new Error('Input source changed during physical key batch');save();}
 
@@ -85,6 +94,35 @@ const safariFocus=`on run argv
   end tell
   return "owned-window-front"
 end run`;
+const safariPhysicalKey=`on run argv
+  set guardPath to item 1 of argv
+  set ownedID to (item 2 of argv) as integer
+  set physicalCode to (item 3 of argv) as integer
+  if {2,4,5,11,14,17,31,36,37,45,48,51} does not contain physicalCode then error "Key is outside the closed native protocol"
+  set focusJavascript to read (POSIX file guardPath) as «class utf8»
+  tell application "System Events"
+    if (name of first application process whose frontmost is true) is not "Safari" then error "Safari is not frontmost before physical key"
+  end tell
+  tell application "Safari"
+    if not (exists front window) then error "Safari has no front window before physical key"
+    if (id of front window) is not ownedID then error "Owned Safari window is not frontmost before physical key"
+    set ownedWindow to window id ownedID
+    if (count of tabs of ownedWindow) is not 1 then error "Owned Safari window tab count changed before physical key"
+    set ownedTab to current tab of ownedWindow
+    if (URL of ownedTab) is not "http://127.0.0.1:4174/dom" then error "Owned Safari tab left the fixture before physical key"
+    set focusedTarget to do JavaScript focusJavascript in ownedTab
+    if focusedTarget is not "host-control" and focusedTarget is not "editor" then error "Owned Safari fixture input target lost document focus before physical key"
+    if (id of front window) is not ownedID then error "Owned Safari window lost frontmost ownership during key guard"
+    if (count of tabs of ownedWindow) is not 1 then error "Owned Safari tab count changed during key guard"
+    if (URL of current tab of ownedWindow) is not "http://127.0.0.1:4174/dom" then error "Owned Safari tab left fixture during key guard"
+  end tell
+  tell application "System Events"
+    if (name of first application process whose frontmost is true) is not "Safari" then error "Safari lost application focus before physical key"
+    key code physicalCode
+    delay 0.12
+  end tell
+  return focusedTarget
+end run`;
 const safariClose=`on run argv
   set ownedID to (item 1 of argv) as integer
   tell application "Safari"
@@ -105,7 +143,7 @@ const nativeMethods={
 };
 async function safari(){
   const scriptDirectory=mkdtempSync(resolve(dirname(outputPath),'safari-apple-events-'));
-  const javascriptPath=resolve(scriptDirectory,'current.js');let requestSerial=0;
+  const javascriptPath=resolve(scriptDirectory,'current.js'),keyGuardPath=resolve(scriptDirectory,'key-focus.js');let requestSerial=0,mountedId=null;
   const created=script(safariCreateWindow).stdout.trim();
   const windowId=Number(created);
   if(!/^[0-9]+$/.test(created)||!Number.isSafeInteger(windowId)||windowId<=0)throw new Error('Safari returned an invalid owned window ID');
@@ -114,7 +152,8 @@ async function safari(){
   report.control={method:'ordinary Safari window via Apple Events',windowId,fixtureUrl:safariFixtureUrl,
     ownership:'one fresh numeric window ID from make new document; only its single fixture tab is targeted',
     javascriptTransfer:'UTF-8 file outside checkout, passed as osascript argv',asyncProtocol:'generated request ID plus window callback result; bounded polling',
-    browserVersionSource:'installed Safari bundle',webDriver:false,scriptDirectory};
+    browserVersionSource:'installed Safari bundle',webDriver:false,scriptDirectory,
+    physicalKeyGuard:'Each key checks captured front-window ID, single fixture tab/URL, document focus and exact fixture editor/host-control target before System Events input'};
   const errors=[];
   function evaluate(javascript,deadline=Date.now()+15000){
     const remaining=deadline-Date.now();if(remaining<=0)throw new Error('Safari Apple Events call deadline exceeded');
@@ -136,6 +175,12 @@ async function safari(){
     const read=`(()=>{const pending=window.__domNativeAcceptanceRequests;const value=pending?.[${key}]??{done:false};if(value.done)delete pending[${key}];return JSON.stringify(value);})()`;
     const result=await poll(read,value=>value.done===true,deadline,kind==='bootstrap'?'module import':method);
     if(Object.hasOwn(result,'error'))throw Object.assign(new Error(`Safari fixture callback: ${result.error}`),{nativeControl:{windowId,requestId:id,operation:kind==='bootstrap'?'module import':method}});
+    if(kind==='method'&&method==='prepare'){
+      const id=result.value?.id;
+      if(typeof id!=='string'||!/^mount-[1-9][0-9]{0,8}$/.test(id))throw new Error('Safari fixture returned an invalid mounted editor ID');
+      mountedId=id;
+      writeFileSync(keyGuardPath,`(()=>{const editor=document.getElementById(${JSON.stringify(id)}),control=document.getElementById('host-recovery-control'),active=document.activeElement;if(location.href!=='http://127.0.0.1:4174/dom'||!document.hasFocus())return 'blocked';if(active===control&&control?.isConnected)return 'host-control';return editor?.isConnected&&editor.parentElement===document.getElementById('mounts')&&(active===editor||editor.contains(active))?'editor':'blocked';})()`,'utf8');
+    }
     return result.value;
   }
   return {async navigate(){
@@ -149,6 +194,12 @@ async function safari(){
       await poll('JSON.stringify({focused:document.hasFocus()})',value=>value.focused===true,deadline,'owned document focus');
     },
     call:(method,...args)=>request('method',method,args),errors,
+    key(code){
+      if(!mountedId||![2,4,5,11,14,17,31,36,37,45,48,51].includes(code))throw new Error('Safari physical key lacks a prepared fixture target');
+      const result=run('/usr/bin/osascript',['-e',safariPhysicalKey,keyGuardPath,windowIdText,String(code)],{timeout:5000});
+      const target=result.stdout.trim();if(!['host-control','editor'].includes(target))throw new Error('Safari physical key guard returned an invalid target');
+      return {windowId,fixtureUrl:safariFixtureUrl,mountedId,target,documentFocused:true,singleFixtureTab:true};
+    },
     async close(){
       try{const result=run('/usr/bin/osascript',['-e',safariClose,windowIdText],{timeout:5000});report.control.cleanup={status:'closed',result:result.stdout.trim(),windowId};}
       catch(error){report.control.cleanup={status:'failed',windowId,error:error.message};throw error;}

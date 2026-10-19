@@ -76,6 +76,13 @@ forward and targets its fixture tab. Focus preparation waits at most5seconds for
 `document.hasFocus()`. Safari repeats that owned-window preparation before each
 physical batch. This setup is separate from the tested Tab action. Physical Tab and its trusted trace
 must still return focus from the host control to the editor.
+Immediately before each individual Safari key, one owned-window AppleScript
+operation verifies Safari is frontmost, its front-window ID matches the captured
+ID, that window still has one tab at the fixed fixture URL, and the document has
+focus on the exact prepared editor or host recovery button. A mismatch aborts
+the batch before further keys. Per-key attempted/completed/error records retain
+the checked window, mounted editor ID and allowed input target. Focus preparation
+does not replace this individual-key guard or the physical Tab assertion.
 The original source is restored and verified in `finally`, including failures.
 No assumption that the first key will already use a newly selected layout is
 made. Restore failure remains a failed run.
