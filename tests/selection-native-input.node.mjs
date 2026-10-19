@@ -23,7 +23,9 @@ function fixture(browser='safari',keyScriptPath='/controlled/fixture-keys.scpt')
     run(command,argv,options){
       if(command==='/usr/bin/osascript'){
         const action=argv.at(-1),call={command,argv,options,action};calls.push(call);if(keyExecute)return keyExecute(call);
-        return {returnCode:0,stdout:JSON.stringify({status:'key-sent',action,keyCode:expectedKeys[action].code,modifier:expectedKeys[action].modifier,frontPid:31}),stderr:''};
+        const expected=expectedKeys[action==='release-select-all'?'select-all':action];
+        return {returnCode:0,stdout:JSON.stringify({status:action==='release-select-all'?'keys-released':'key-sent',action,keyCode:expected.code,modifier:expected.modifier,frontPid:31,
+          ...(action==='select-all'?{keyTransitions:['command-down','key0-down','command-up','key0-up']}:action==='release-select-all'?{keyTransitions:['command-up','key0-up']}:{})}),stderr:''};
       }
       const request=JSON.parse(argv[1]);calls.push({command,argv,options,request});if(execute)return execute(request);
       if(argv[0]==='--guard-key'){
@@ -163,7 +165,8 @@ for(const[action,expected]of Object.entries(expectedKeys))test(`controlled ${act
   assert.ok(sent.options.timeout<=f.calls[0].options.timeout&&sent.options.timeout>0,'One total page guard deadline');
   assert.equal(receipt.keyGuard.status,'guarded');assert.equal(receipt.keyGuard.delivery,'not_sent');
   assert.equal(receipt.keyGuardExecution.returnCode,0);assert.equal(receipt.systemEventsExecution.returnCode,0);
-  assert.deepEqual(receipt.actual,{status:'key-sent',action,keyCode:expected.code,modifier:expected.modifier,frontPid:31});
+  assert.deepEqual(receipt.actual,{status:'key-sent',action,keyCode:expected.code,modifier:expected.modifier,frontPid:31,
+    ...(action==='select-all'?{keyTransitions:['command-down','key0-down','command-up','key0-up']}:{})});
   assert.equal(receipt.delivery,'sent');assert.equal(f.owner.disabled,false);
 });
 test('controlled Chrome key passes only the exact decorated AX title and own guarded PID to System Events',async()=>{
@@ -211,6 +214,87 @@ test('controlled ShiftTab key preserves owned held pointer for a separately guar
   const f=fixture();await f.owner.input('down');await f.owner.input('shift-tab');assert.equal(f.owner.pointerState,'down');
   assert.equal(f.calls[1].argv[0],'--guard-key');assert.equal(f.calls[1].request.pointerDown,true);
   await f.owner.input('up');assert.equal(f.owner.pointerState,'up');assert.equal(f.calls[3].argv[0],'--request');
+});
+async function unknownSelectAll(f){
+  f.keyExecute=()=>{throw Object.assign(Error('Unknown owned Select All completion'),{execution:{returnCode:null,error:'ETIMEDOUT'}});};
+  await assert.rejects(f.owner.input('select-all'),/Unknown owned Select All completion/);
+  assert.equal(f.owner.selectAllKeysPending,true);assert.equal(f.owner.disabled,true);assert.equal(f.calls.length,2);f.keyExecute=null;
+}
+test('controlled normal Select All confirms modifier-before-key release and never permits cleanup afterwards',async()=>{
+  const f=fixture();const receipt=await f.owner.input('select-all');
+  assert.deepEqual(receipt.actual.keyTransitions,['command-down','key0-down','command-up','key0-up']);assert.equal(f.owner.selectAllKeysPending,false);
+  assert.equal(receipt.selectAllKeysPending,false);await assert.rejects(f.owner.releaseOwnedSelectAllKeys(),/No separately owned/);assert.equal(f.calls.length,2);
+});
+test('controlled unknown Select All permits one fresh read-only preflight and UP-only cleanup without replay',async()=>{
+  const f=fixture();await unknownSelectAll(f);const original=f.records.at(-1).value;
+  const released=await f.owner.releaseOwnedSelectAllKeys();
+  assert.deepEqual(f.calls.map(row=>row.command==='/usr/bin/osascript'?row.action:row.request.action),['select-all','select-all','select-all','release-select-all']);
+  assert.equal(f.calls[2].argv[0],'--guard-key');assert.equal(f.calls[2].request.cleanupOnly,false,'Existing closed read-only guard remains unchanged');
+  assert.equal(released.action,'release-select-all');assert.equal(released.pageAction,'select-all');assert.equal(released.keyCleanupOnly,true);
+  assert.deepEqual(released.actual.keyTransitions,['command-up','key0-up']);assert.equal(released.actual.status,'keys-released');
+  assert.equal(released.keyGuardExecution.returnCode,0);assert.equal(released.systemEventsExecution.returnCode,0);
+  assert.equal(f.owner.selectAllKeysPending,false);assert.equal(f.owner.disabled,true);assert.equal(original.error,'Unknown owned Select All completion');
+  assert.equal(original.systemEventsExecution.error,'ETIMEDOUT');assert.equal(original.delivery,'unknown/may_have_sent');
+  await assert.rejects(f.owner.input('select-all'));await assert.rejects(f.owner.releaseOwnedSelectAllKeys());assert.equal(f.calls.length,4);
+});
+test('controlled a Select All read-only refusal never creates owned keys or starts cleanup',async()=>{
+  const f=fixture();f.execute=()=>{throw Object.assign(Error('Read-only guard refused'),{execution:{returnCode:2}});};
+  await assert.rejects(f.owner.input('select-all'));assert.equal(f.owner.selectAllKeysPending,false);
+  await assert.rejects(f.owner.releaseOwnedSelectAllKeys());assert.equal(f.calls.length,1);assert.equal(f.records.at(-1).value.delivery,'not_sent');
+});
+test('controlled an expired pre-dispatch Select All guard never creates keys to release',async()=>{
+  const f=fixture();let proof;f.reply=(action,make)=>{proof=make(action);return proof;};
+  f.keyProof=value=>{proof.start=process.hrtime.bigint()-2_000_000_000n;return value;};
+  await assert.rejects(f.owner.input('select-all'),/expired after read-only/);assert.equal(f.owner.selectAllKeysPending,false);
+  await assert.rejects(f.owner.releaseOwnedSelectAllKeys());assert.equal(f.calls.length,1);
+});
+for(const changed of ['mount','case','PID'])test(`controlled pending Select All ${changed} mismatch refuses cleanup before a release script`,async()=>{
+  const f=fixture();await unknownSelectAll(f);
+  if(changed==='mount')f.mount='selection-mount-2';
+  if(changed==='case')f.reply=(action,make)=>{const result=make(action);result.value.caseId='key-comb';return result;};
+  if(changed==='PID')f.keyProof=value=>({...value,frontPid:32});
+  await assert.rejects(f.owner.releaseOwnedSelectAllKeys(),/owned Select All|Owned Select All/);
+  assert.equal(f.calls.filter(row=>row.command==='/usr/bin/osascript').length,1);assert.equal(f.owner.selectAllKeysPending,true);
+  assert.equal(f.records.at(-1).value.delivery,'not_sent');if(changed==='mount')f.mount='selection-mount-1';
+  await assert.rejects(f.owner.releaseOwnedSelectAllKeys());
+  assert.equal(f.calls.filter(row=>row.command==='/usr/bin/osascript').length,1);
+});
+test('controlled broker unknown completion cannot be bypassed for pending key cleanup',async()=>{
+  const f=fixture();await unknownSelectAll(f);f.reply=()=>{throw Error('Broker pending/unknown; no fresh guard');};
+  await assert.rejects(f.owner.releaseOwnedSelectAllKeys(),/Broker pending/);assert.equal(f.calls.length,2);assert.equal(f.owner.selectAllKeysPending,true);
+  assert.equal(f.records.at(-1).kind,'cleanup-key-release-failure');assert.equal(f.records.at(-1).value.delivery,'not_sent');
+  await assert.rejects(f.owner.releaseOwnedSelectAllKeys());assert.equal(f.calls.length,2);
+});
+test('controlled stale cleanup guard sends no UP and cannot obtain another cleanup attempt',async()=>{
+  const f=fixture();await unknownSelectAll(f);f.reply=(action,make)=>({...make(action),start:process.hrtime.bigint()-2_000_000_000n});
+  await assert.rejects(f.owner.releaseOwnedSelectAllKeys(),/Fresh owned/);assert.equal(f.calls.length,2);assert.equal(f.owner.selectAllKeysPending,true);
+  assert.equal(f.records.at(-1).value.delivery,'not_sent');await assert.rejects(f.owner.releaseOwnedSelectAllKeys());assert.equal(f.calls.length,2);
+});
+test('controlled unknown UP-only cleanup keeps original key ownership and allows no second attempt',async()=>{
+  const f=fixture();await unknownSelectAll(f);f.keyExecute=()=>{throw Object.assign(Error('Unknown release completion'),{execution:{error:'release-timeout'}});};
+  await assert.rejects(f.owner.releaseOwnedSelectAllKeys(),/Unknown release/);assert.equal(f.owner.selectAllKeysPending,true);assert.equal(f.owner.disabled,true);
+  assert.equal(f.records.at(-1).value.delivery,'unknown/may_have_sent');assert.equal(f.records.at(-1).value.systemEventsExecution.error,'release-timeout');
+  assert.equal(f.calls.at(-1).action,'release-select-all');await assert.rejects(f.owner.releaseOwnedSelectAllKeys());await assert.rejects(f.owner.input('copy'));assert.equal(f.calls.length,4);
+});
+for(const transitions of [undefined,['command-down','key0-down','key0-up','command-up']])test(`controlled ${transitions?'reversed':'missing'} Select All release ordering cannot confirm normal completion`,async()=>{
+  const f=fixture();f.keyExecute=()=>({returnCode:0,stdout:JSON.stringify({status:'key-sent',action:'select-all',keyCode:0,modifier:'command',frontPid:31,keyTransitions:transitions}),stderr:''});
+  await assert.rejects(f.owner.input('select-all'),/release ordering differs/);assert.equal(f.owner.selectAllKeysPending,true);assert.equal(f.owner.disabled,true);
+});
+test('controlled late but confirmed complete Select All remains failed without adding redundant release input',async()=>{
+  const f=fixture();let proof;f.reply=(action,make)=>{proof=make(action);return proof;};
+  f.keyExecute=()=>{proof.start=process.hrtime.bigint()-2_000_000_000n;return {returnCode:0,stdout:JSON.stringify({status:'key-sent',action:'select-all',keyCode:0,modifier:'command',frontPid:31,keyTransitions:['command-down','key0-down','command-up','key0-up']}),stderr:''};};
+  await assert.rejects(f.owner.input('select-all'),/guard expired during physical/);assert.equal(f.owner.selectAllKeysPending,false);assert.equal(f.owner.disabled,true);
+  await assert.rejects(f.owner.releaseOwnedSelectAllKeys());assert.equal(f.calls.length,2,'No extra UP after known normal post completion');
+});
+test('controlled cleanup receipt claiming a new down never confirms release-only completion',async()=>{
+  const f=fixture();await unknownSelectAll(f);
+  f.keyExecute=()=>({returnCode:0,stdout:JSON.stringify({status:'keys-released',action:'release-select-all',keyCode:0,modifier:'command',frontPid:31,keyTransitions:['command-down','key0-up']}),stderr:''});
+  await assert.rejects(f.owner.releaseOwnedSelectAllKeys(),/release ordering differs/);assert.equal(f.owner.selectAllKeysPending,true);assert.equal(f.owner.disabled,true);
+  await assert.rejects(f.owner.releaseOwnedSelectAllKeys());assert.equal(f.calls.length,4);
+});
+test('controlled release-only script action is private and cannot be requested as a page input action',async()=>{
+  const f=fixture();assert.equal(validCall('guard',['release-select-all']),false);
+  await assert.rejects(f.owner.input('release-select-all'));assert.equal(f.calls.length,0);assert.equal(f.owner.selectAllKeysPending,false);
 });
 
 function bootstrapFixture(){

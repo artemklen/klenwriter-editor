@@ -76,6 +76,12 @@ one System Events key code. The action alone determines its fixed mapping:
 ShiftLeft123+Shift, SelectAll0+Command, Copy8+Command, Cut7+Command, ShiftTab48+Shift
 and Tab48. No arbitrary keycode, modifier or script argument is accepted; no app
 activation occurs in this key path. It uses the native39 System Events key mechanism.
+Select All alone uses the installed System Events dictionary's integer `key down`
+and `key up` capability: Command down, key0 down, Command up, key0 up. Thus Command
+is released before the A-position key, without character or layout translation.
+Other key actions retain their existing atomic `key code` mapping. The script's
+ordered post receipt is recorded; actual trusted KeyA down/up and exact native
+Select All range assertions still establish reception.
 The post ownership check runs immediately after the key, with no fixed sleep;
 actual browser reception is verified afterwards by the existing trusted trace,
 selection, clipboard acknowledgement and focus/stop assertions. Raw Swift preflight and System
@@ -98,6 +104,26 @@ Each key uses that required driver-owned absolute `.scpt` path with the same
 four closed browser/title/PID/action arguments; source compilation is outside
 the1s action deadline. No inline-source fallback, guard change, replay or deadline
 increase occurs after a refusal or unknown completion.
+
+Before dispatching Select All, Node records may-have-owned keys bound to the
+dispatch mount, case and guarded browser PID. A script error attempts releases
+for its own attempted held keys after rechecking fixture ownership, then rethrows
+the original error. Node timeout can prevent that error handler from running.
+For unknown completion only, the per-case finally therefore allows one separate
+release attempt before finish destroys the mount: a new existing page
+`guard('select-all')` and strict Swift read-only key guard must confirm the same
+mount/case/PID, exact title and fresh1s deadline. The private compiled-script
+`release-select-all` branch sends only Command up and key0 up, attempting both
+and retaining an error if either fails. It is not a page/protocol action and can
+never send a new down or replay Select All. A pending/unknown broker blocks this
+cleanup as well. Both raw guards/executions and cleanup failures remain recorded;
+successful cleanup keeps normal input disabled and the original case failed.
+Confirmed complete normal post receipts clear may-have-owned keys, so a missing
+browser keyup or a later acceptance failure does not add redundant physical ups.
+That clearing requires the exact full transition list and successful post
+ownership receipt. If the total1s age check subsequently fails, the case stays
+failed and input stays disabled despite the known completed ups. A timeout
+without that complete reply retains pending ownership for the one cleanup attempt.
 
 Chrome starts only its isolated fixture child with
 `--force-renderer-accessibility=complete`, Chromium's documented fixed AX mode

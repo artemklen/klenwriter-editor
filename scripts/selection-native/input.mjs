@@ -24,6 +24,31 @@ export const fixedKeyScript=`on requireFixture(expectedPID, expectedName, expect
     end tell
   end tell
 end requireFixture
+on releaseSelectAllOwnedKeys(releaseCommand, releaseCode)
+  set firstMessage to missing value
+  set firstNumber to 0
+  tell application "System Events"
+    if releaseCommand then
+      try
+        key up command
+      on error messageText number errorNumber
+        set firstMessage to messageText
+        set firstNumber to errorNumber
+      end try
+    end if
+    if releaseCode then
+      try
+        key up 0
+      on error messageText number errorNumber
+        if firstMessage is missing value then
+          set firstMessage to messageText
+          set firstNumber to errorNumber
+        end if
+      end try
+    end if
+  end tell
+  if firstMessage is not missing value then error firstMessage number firstNumber
+end releaseSelectAllOwnedKeys
 on run argv
   if (count of argv) is not 4 then error "Closed fixture key arguments required"
   set expectedBrowser to item 1 of argv
@@ -40,7 +65,7 @@ on run argv
   else
     error "Browser outside closed fixture"
   end if
-  if {"shift-left", "select-all", "copy", "cut", "shift-tab", "tab"} does not contain fixtureAction then error "Key action outside closed fixture"
+  if {"shift-left", "select-all", "copy", "cut", "shift-tab", "tab", "release-select-all"} does not contain fixtureAction then error "Key action outside closed fixture"
   my requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
   tell application "System Events"
     if fixtureAction is "shift-left" then
@@ -48,7 +73,27 @@ on run argv
       set physicalCode to 123
       set modifierName to "shift"
     else if fixtureAction is "select-all" then
-      key code 0 using {command down}
+      set commandMayBeHeld to true
+      set codeMayBeHeld to false
+      try
+        key down command
+        set codeMayBeHeld to true
+        key down 0
+        key up command
+        set commandMayBeHeld to false
+        key up 0
+        set codeMayBeHeld to false
+      on error originalMessage number originalNumber
+        try
+          my requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
+          my releaseSelectAllOwnedKeys(commandMayBeHeld, codeMayBeHeld)
+        end try
+        error originalMessage number originalNumber
+      end try
+      set physicalCode to 0
+      set modifierName to "command"
+    else if fixtureAction is "release-select-all" then
+      my releaseSelectAllOwnedKeys(true, true)
       set physicalCode to 0
       set modifierName to "command"
     else if fixtureAction is "copy" then
@@ -70,6 +115,8 @@ on run argv
     end if
   end tell
   my requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
+  if fixtureAction is "select-all" then return "{\\"status\\":\\"key-sent\\",\\"action\\":\\"select-all\\",\\"keyCode\\":0,\\"modifier\\":\\"command\\",\\"frontPid\\":" & expectedPID & ",\\"keyTransitions\\":[\\"command-down\\",\\"key0-down\\",\\"command-up\\",\\"key0-up\\"]}"
+  if fixtureAction is "release-select-all" then return "{\\"status\\":\\"keys-released\\",\\"action\\":\\"release-select-all\\",\\"keyCode\\":0,\\"modifier\\":\\"command\\",\\"frontPid\\":" & expectedPID & ",\\"keyTransitions\\":[\\"command-up\\",\\"key0-up\\"]}"
   return "{\\"status\\":\\"key-sent\\",\\"action\\":\\"" & fixtureAction & "\\",\\"keyCode\\":" & physicalCode & ",\\"modifier\\":\\"" & modifierName & "\\",\\"frontPid\\":" & expectedPID & "}"
 end run`;
 export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,record,guard,mountedId}){
@@ -77,11 +124,17 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
     ||config.origin!=='http://127.0.0.1:4174'||config.fixtureUrl!==config.origin+'/selection'
     ||config.title!=='KlenWriter Selection native '+config.nonce||!inputHelper.startsWith('/')
     ||typeof keyScriptPath!=='string'||!keyScriptPath.startsWith('/')||!keyScriptPath.endsWith('.scpt')||keyScriptPath.includes('\0'))throw Error('Invalid closed selection input configuration');
-  let disabled=false,serial=0,held=false,mayHaveDown=false,cleanupAttempted=false,lastMouse=null;
-  async function perform(action,cleanup=false){
+  let disabled=false,serial=0,held=false,mayHaveDown=false,cleanupAttempted=false,lastMouse=null,ownedSelectAllKeys=null,keyCleanupAttempted=false;
+  async function perform(action,cleanup=false,keyCleanup=false){
+      const physicalAction=keyCleanup?'release-select-all':action;
       let dispatchStarted=false,execution=null,keyGuardExecution=null,keyGuard=null,systemEventsExecution=null,proof=null,preAge=null,mouseFrom=null;
       try{
-        if((disabled&&!cleanup)||!actions.includes(action)||!mountedId())throw Error('Selection input disabled or missing owned mount');
+        if(keyCleanup){
+          if(action!=='select-all'||keyCleanupAttempted||!ownedSelectAllKeys)throw Error('No separately owned Select All key cleanup is available');
+          keyCleanupAttempted=true;
+          if(ownedSelectAllKeys.mountedId!==mountedId())throw Error('No separately owned Select All key cleanup is available for this mount');
+        }
+        if((disabled&&!cleanup&&!keyCleanup)||!actions.includes(action)||!mountedId())throw Error('Selection input disabled or missing owned mount');
         if(cleanup&&(action!=='up'||cleanupAttempted||!held&&!mayHaveDown))throw Error('No separately owned pointer cleanup is available');
         if(cleanup)cleanupAttempted=true;
         proof=await guard(action);const value=proof.value;
@@ -90,6 +143,7 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
           ||value.id!==mountedId()||value.mountedId!==mountedId()||value.action!==action||!caseIds.includes(value.caseId)
           ||value.allowed!==true||value.documentFocused!==true||value.editorConnected!==true
           ||!Number.isSafeInteger(value.serial)||value.serial<=serial||age(proof.start)>limits.guardAgeMs)throw Error('Fresh owned selection action guard refused');
+        if(keyCleanup&&value.caseId!==ownedSelectAllKeys.caseId)throw Error('Owned Select All cleanup case changed');
         const expectedTarget=action==='tab'?'host-control':'editor';
         if(value.target!==expectedTarget&&!(action==='up'&&(held||mayHaveDown)&&value.target==='host-control'))throw Error('Selection input target differs');
         const viewport=value.viewport;
@@ -158,42 +212,52 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
             ||!view||!['x','y','width','height'].every(key=>Number.isFinite(view[key]))
             ||Math.abs(view.width-1024)>.5||Math.abs(view.height-768)>.5||!Number.isFinite(view.x+view.width)||!Number.isFinite(view.y+view.height)
             ||!Number.isFinite(keyGuard.elapsedMs)||keyGuard.elapsedMs<0||keyGuard.elapsedMs>remaining)throw Error('Strict native key geometry/deadline differs');
+          if(keyCleanup&&keyGuard.frontPid!==ownedSelectAllKeys.frontPid)throw Error('Owned Select All cleanup browser PID changed');
           const keyRemaining=Math.floor(limits.guardAgeMs-age(proof.start));
           if(keyRemaining<=0)throw Error('Selection guard expired after read-only key preflight; no key sent');
           dispatchStarted=true;
-          try{systemEventsExecution=run('/usr/bin/osascript',[keyScriptPath,browser,keyGuard.expectedAxWindowTitle,String(keyGuard.frontPid),action],
+          if(action==='select-all'&&!keyCleanup)ownedSelectAllKeys={mountedId:mountedId(),caseId:value.caseId,frontPid:keyGuard.frontPid};
+          try{systemEventsExecution=run('/usr/bin/osascript',[keyScriptPath,browser,keyGuard.expectedAxWindowTitle,String(keyGuard.frontPid),physicalAction],
             {timeout:keyRemaining,fullStdout:true,maxBuffer:32768});}
           catch(error){systemEventsExecution=error.execution??null;throw error;}
           execution=systemEventsExecution;actual=JSON.parse(execution.stdout);
           const expected=keyActions[action];
-          if(actual.status!=='key-sent'||actual.action!==action||actual.keyCode!==expected.code||actual.modifier!==expected.modifier
+          if(actual.status!==(keyCleanup?'keys-released':'key-sent')||actual.action!==physicalAction||actual.keyCode!==expected.code||actual.modifier!==expected.modifier
             ||actual.frontPid!==keyGuard.frontPid)throw Error('System Events closed key receipt differs');
+          if(action==='select-all'){
+            assert.deepEqual(actual.keyTransitions,keyCleanup?['command-up','key0-up']:['command-down','key0-down','command-up','key0-up'],'System Events Select All release ordering differs');
+            ownedSelectAllKeys=null; // The fixed program confirmed both ups and its post ownership check, even if the total age check below fails.
+          }
         }
         if(age(proof.start)>limits.guardAgeMs)throw Error('Selection guard expired during physical input');
         if(mouseActions.has(action))lastMouse={mountedId:mountedId(),caseId:value.caseId,screenPoint:{...actual.screenPoint},axViewport:{...actual.axViewport}};
         if(action==='down'){held=true;mayHaveDown=false;}else if(action==='up'){held=false;mayHaveDown=false;}
-        const receipt={action,requestId:proof.id,pageGuardSerial:serial,mountedId:mountedId(),caseId:value.caseId,
+        const receipt={action:physicalAction,pageAction:action,requestId:proof.id,pageGuardSerial:serial,mountedId:mountedId(),caseId:value.caseId,
           point,mouseFrom,target:value.target,preDispatchGuardAgeMs:preAge,maximumGuardAgeMs:age(proof.start),guardAgeLimitMs:limits.guardAgeMs,
           lastTrustedPointerMove:action==='down'?value.lastTrustedPointerMove:null,
-          execution,actual,keyGuardExecution,keyGuard,systemEventsExecution,delivery:'sent',pointerDown:held,cleanupOnly:cleanup,
+          execution,actual,keyGuardExecution,keyGuard,systemEventsExecution,delivery:'sent',pointerDown:held,cleanupOnly:cleanup||keyCleanup,keyCleanupOnly:keyCleanup,
+          selectAllKeysPending:ownedSelectAllKeys!==null,
           method:mouseActions.has(action)?'Strict AX guard + CGEvent mouse':'Fresh strict AX key preflight + precompiled System Events fixed key code; post receipt, not browser acknowledgement'};
-        record(cleanup?'cleanup-pointer-release':'physical-input',receipt);return receipt;
+        record(keyCleanup?'cleanup-key-release':cleanup?'cleanup-pointer-release':'physical-input',receipt);return receipt;
       }catch(error){
         disabled=true;
-        record(cleanup?'cleanup-pointer-release-failure':'physical-input-failure',{action,error:String(error?.message??error),execution:execution??error.execution??null,
+        record(keyCleanup?'cleanup-key-release-failure':cleanup?'cleanup-pointer-release-failure':'physical-input-failure',{action:physicalAction,pageAction:action,error:String(error?.message??error),execution:execution??error.execution??null,
           keyGuardExecution,keyGuard,systemEventsExecution,
           requestId:proof?.id??null,preDispatchGuardAgeMs:preAge,maximumGuardAgeMs:proof?.start?age(proof.start):null,
           mouseFrom,
           lastTrustedPointerMove:proof?.value?.lastTrustedPointerMove??null,
-          delivery:dispatchStarted?'unknown/may_have_sent':'not_sent',pointerState:held?'down':mayHaveDown?'may-have-down':'up',dispatchStarted,cleanupOnly:cleanup});
+          delivery:dispatchStarted?'unknown/may_have_sent':'not_sent',pointerState:held?'down':mayHaveDown?'may-have-down':'up',dispatchStarted,cleanupOnly:cleanup||keyCleanup,
+          keyCleanupOnly:keyCleanup,selectAllKeysPending:ownedSelectAllKeys!==null});
         throw error;
       }
   }
   return {
     get disabled(){return disabled;},get pointerDown(){return held||mayHaveDown;},
     get pointerState(){return mayHaveDown?'may-have-down':held?'down':'up';},
+    get selectAllKeysPending(){return ownedSelectAllKeys!==null;},
     input:action=>perform(action),
     async releaseOwnedPointer(){disabled=true;return perform('up',true);},
+    async releaseOwnedSelectAllKeys(){disabled=true;return perform('select-all',false,true);},
   };
 }
 

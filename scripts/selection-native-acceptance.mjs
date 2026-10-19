@@ -169,6 +169,7 @@ async function chrome(){
   report.control={method:'Installed headed Chrome; closed Playwright page setup/read RPC, strict AX CGEvent mouse and guarded System Events keys',webDriver:false,
     uniqueTitle:config.title,fixtureUrl:config.fixtureUrl,fixtureOnly:true,childOnlyEnvironment:true,launchArguments};
   return {errors,input:action=>{assert.equal(bootstrapReady,true,'Strict Chrome window bootstrap required before input');physicalStarted=true;return inputOwner.input(action);},releaseOwnedPointer:()=>inputOwner.releaseOwnedPointer(),
+    releaseOwnedSelectAllKeys:()=>inputOwner.releaseOwnedSelectAllKeys(),get selectAllKeysPending(){return inputOwner.selectAllKeysPending;},
     get pointerDown(){return inputOwner.pointerDown;},get pointerState(){return inputOwner.pointerState;},get inputDisabled(){return inputOwner.disabled;},
     async navigate(){
       assert.equal(navigationStarted,false,'Chrome bootstrap cannot be retried');assert.equal(physicalStarted,false);navigationStarted=true;
@@ -396,6 +397,7 @@ try{
         entry.status='PASSED';
       }catch(error){entry.status=physicalBegan?'FAILED':'NOT_RUN';entry.error={message:error.message,stack:error.stack,execution:error.execution??null,lastObservation:error.lastObservation??null};if(!prepared)blocked=true;}
       finally{
+        if(adapter.selectAllKeysPending){try{entry.failedCaseKeyCleanup=await adapter.releaseOwnedSelectAllKeys();}catch(error){entry.keyCleanupError={message:error.message,execution:error.execution??null};blocked=true;}entry.status='FAILED';}
         if(adapter.pointerDown){try{entry.failedCasePointerCleanup=await adapter.releaseOwnedPointer();}catch(error){entry.pointerCleanupError={message:error.message,execution:error.execution??null};blocked=true;}entry.status='FAILED';}
         if(prepareAttempted){
           if(entry.status!=='PASSED')try{entry.failedCaseEvidence=await adapter.call('checkpoint');}catch(error){entry.failedEvidenceError=error.message;}

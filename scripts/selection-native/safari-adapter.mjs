@@ -203,6 +203,8 @@ export async function createSafariAdapter({config,report,run,outputPath,inputHel
     },
     input:action=>inputOwner.input(action),
     releaseOwnedPointer:()=>inputOwner.releaseOwnedPointer(),
+    releaseOwnedSelectAllKeys:()=>inputOwner.releaseOwnedSelectAllKeys(),
+    get selectAllKeysPending(){return inputOwner.selectAllKeysPending;},
     get pointerDown(){return inputOwner.pointerDown;},
     get pointerState(){return inputOwner.pointerState;},
     get inputDisabled(){return inputOwner.disabled;},
