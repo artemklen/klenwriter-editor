@@ -22,7 +22,7 @@ One request is pending until host read, persistence and explicit acknowledgement
 The page claims its ID before await/native execution. Transport failure never
 resubmits a command. Absolute per-call deadline is15s.
 
-`createSafariAdapter({config,report,run,outputPath,inputHelper})` exposes
+`createSafariAdapter({config,report,run,outputPath,inputHelper,keyScriptPath})` exposes
 `navigate/focus/call/input/close` plus pointer state and `releaseOwnedPointer`.
 Fresh window creation and at most3 viewport adjustments are bootstrap-only Apple
 Events. The exact viewport is1024×768, visual scale1/offset0. HTTP page-ready
@@ -53,7 +53,7 @@ use `--guard-key` with the same closed `osr40-native-input/1` envelope and stric
 AX viewport containment/ownership checks. A mouse action in key mode, or a key
 action in mouse mode, refuses before AX access. Key mode returns
 `status:"guarded",delivery:"not_sent"` before any CGEvent path. Within the remaining
-original1s page-guard deadline, one fixed `/usr/bin/osascript` program checks the
+original1s page-guard deadline, one fixed precompiled `/usr/bin/osascript` program checks the
 exact guarded PID, app/bundle, unique AX title and focused window before and after
 one System Events key code. The action alone determines its fixed mapping:
 ShiftLeft123+Shift, SelectAll0+Command, Copy8+Command, Cut7+Command, ShiftTab48+Shift
@@ -65,6 +65,13 @@ the unchanged trusted UA event, selection and clipboard acknowledgement assertio
 establish whether the fixture actually received the action. A read-only preflight
 refusal is `not_sent`; unknown dispatch or postcheck failure is
 `unknown/may_have_sent` and disables later actions.
+The driver writes the identical fixed source and runs `osacompile` once into its
+fresh helper directory before launching a browser or starting any page guard.
+Both source and compiled artifact bytes/SHA256 are pinned before and after the
+run. Each key uses that required driver-owned absolute `.scpt` path with the same
+four closed browser/title/PID/action arguments; source compilation is outside
+the1s action deadline. No inline-source fallback, guard change, replay or deadline
+increase occurs after a refusal or unknown completion.
 
 Chrome starts only its isolated fixture child with
 `--force-renderer-accessibility=complete`, Chromium's documented fixed AX mode

@@ -6,7 +6,7 @@ import {createInputOwner,prepareChromeWindow} from '../scripts/selection-native/
 import {validCall,limits} from '../scripts/selection-native/protocol.mjs';
 const expectedKeys={'shift-left':{code:123,modifier:'shift'},'select-all':{code:0,modifier:'command'},copy:{code:8,modifier:'command'},
   cut:{code:7,modifier:'command'},'shift-tab':{code:48,modifier:'shift'},tab:{code:48,modifier:'none'}};
-function fixture(browser='safari'){
+function fixture(browser='safari',keyScriptPath='/controlled/fixture-keys.scpt'){
   const nonce='a'.repeat(32),config={nonce,origin:'http://127.0.0.1:4174',fixtureUrl:'http://127.0.0.1:4174/selection',title:'KlenWriter Selection native '+nonce};
   let serial=0,reply=null,execute=null,keyExecute=null,keyProof=null,pageDown=false;
   const records=[],calls=[];
@@ -17,7 +17,7 @@ function fixture(browser='safari'){
         viewport:{width:1024,height:768,scale:1,offsetLeft:0,offsetTop:0},point:['move-start','down','move-end','up'].includes(action)?{x:140,y:340}:null,
         lastTrustedPointerMove:{x:140,y:340,buttons:0,pointerId:1,pointerType:'mouse',isPrimary:true,isTrusted:true,time:25}}};
   }
-  const owner=createInputOwner({browser,config,inputHelper:'/controlled/no-helper-is-executed',mountedId:()=> 'selection-mount-1',
+  const owner=createInputOwner({browser,config,inputHelper:'/controlled/no-helper-is-executed',keyScriptPath,mountedId:()=> 'selection-mount-1',
     record:(kind,value)=>records.push({kind,value}),
     async guard(action){return reply?reply(action,proof):proof(action);},
     run(command,argv,options){
@@ -96,8 +96,8 @@ test('controlled ordinary pointer phases preserve one owned button and actual re
 for(const[action,expected]of Object.entries(expectedKeys))test(`controlled ${action} uses one fixed System Events key after a separate strict read-only preflight`,async()=>{
   const f=fixture(),receipt=await f.owner.input(action);assert.equal(f.calls.length,2);
   assert.equal(f.calls[0].argv[0],'--guard-key');assert.equal(f.calls[0].request.action,action);assert.equal(f.calls[0].request.point,null);
-  const sent=f.calls[1];assert.equal(sent.command,'/usr/bin/osascript');assert.equal(sent.argv[0],'-e');
-  assert.deepEqual(sent.argv.slice(2),['safari',f.config.title,'31',action],'No arbitrary keycode, modifier or script argument');
+  const sent=f.calls[1];assert.equal(sent.command,'/usr/bin/osascript');assert.equal(sent.argv[0],'/controlled/fixture-keys.scpt');
+  assert.deepEqual(sent.argv.slice(1),['safari',f.config.title,'31',action],'Only the fixed compiled path and closed key arguments; no source compilation or arbitrary keycode');
   assert.ok(sent.options.timeout<=f.calls[0].options.timeout&&sent.options.timeout>0,'One total page guard deadline');
   assert.equal(receipt.keyGuard.status,'guarded');assert.equal(receipt.keyGuard.delivery,'not_sent');
   assert.equal(receipt.keyGuardExecution.returnCode,0);assert.equal(receipt.systemEventsExecution.returnCode,0);
@@ -105,7 +105,10 @@ for(const[action,expected]of Object.entries(expectedKeys))test(`controlled ${act
   assert.equal(receipt.delivery,'sent');assert.equal(f.owner.disabled,false);
 });
 test('controlled Chrome key passes only the exact decorated AX title and own guarded PID to System Events',async()=>{
-  const f=fixture('chrome');await f.owner.input('copy');assert.deepEqual(f.calls[1].argv.slice(2),['chrome',f.config.title+' - Google Chrome','31','copy']);
+  const f=fixture('chrome');await f.owner.input('copy');assert.deepEqual(f.calls[1].argv.slice(1),['chrome',f.config.title+' - Google Chrome','31','copy']);
+});
+test('controlled key input requires the driver-owned absolute compiled script path before any action',()=>{
+  for(const path of [null,'relative.scpt','/controlled/source.applescript','/controlled/fixture-keys.scpt\0'])assert.throws(()=>fixture('safari',path),/Invalid closed selection input configuration/);
 });
 test('controlled refused read-only key preflight never invokes System Events and stays not_sent',async()=>{
   const f=fixture();f.execute=()=>{throw Object.assign(Error('Strict AX refused'),{execution:{returnCode:2,stdout:'refused',stderr:''}});};
@@ -128,6 +131,14 @@ test('controlled unknown System Events completion disables later keys and preser
   await assert.rejects(f.owner.input('cut'));assert.equal(f.calls.length,2);const failed=f.records.at(-1).value;
   assert.equal(failed.delivery,'unknown/may_have_sent');assert.equal(failed.dispatchStarted,true);assert.equal(failed.keyGuardExecution.returnCode,0);
   assert.equal(failed.systemEventsExecution.error,'unknown');await assert.rejects(f.owner.input('copy'));assert.equal(f.calls.length,2);
+});
+test('controlled late compiled-script success cannot extend the total1s deadline or trigger a retry',async()=>{
+  const f=fixture();let proof;f.reply=(action,make)=>{proof=make(action);return proof;};
+  f.keyExecute=()=>{proof.start=process.hrtime.bigint()-2_000_000_000n;return {returnCode:0,stdout:JSON.stringify({status:'key-sent',action:'copy',keyCode:8,modifier:'command',frontPid:31}),stderr:''};};
+  await assert.rejects(f.owner.input('copy'),/guard expired during physical input/);assert.equal(f.calls.length,2);
+  assert.equal(f.calls[1].argv[0],'/controlled/fixture-keys.scpt');assert.equal(f.records.at(-1).value.delivery,'unknown/may_have_sent');
+  assert.equal(f.records.at(-1).value.systemEventsExecution.returnCode,0,'Actual late completion remains in evidence');
+  await assert.rejects(f.owner.input('copy'));assert.equal(f.calls.length,2,'No source or compiled-script fallback/replay');
 });
 test('controlled wrong System Events modifier receipt cannot prove key delivery',async()=>{
   const f=fixture();f.keyExecute=()=>({returnCode:0,stdout:JSON.stringify({status:'key-sent',action:'copy',keyCode:8,modifier:'none',frontPid:31}),stderr:''});

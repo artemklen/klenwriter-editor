@@ -9,7 +9,7 @@ import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {computeSdkBuildIdentity} from './generate-sdk-types.mjs';
 import {createSafariAdapter} from './selection-native/safari-adapter.mjs';
-import {createInputOwner,prepareChromeWindow} from './selection-native/input.mjs';
+import {createInputOwner,prepareChromeWindow,fixedKeyScript} from './selection-native/input.mjs';
 import {caseIds,limits,validCall} from './selection-native/protocol.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
@@ -45,7 +45,7 @@ function run(command,argv,{fullStdout=false,timeout=30000,maxBuffer=1024*1024}={
   return execution;
 }
 const script=text=>run('/usr/bin/osascript',['-e',text]);
-let config=null,configPath=null,configHash=null,adapter=null,inputHelper=null,sourceHelper=null,originalSource=null,selectedSource=null;
+let config=null,configPath=null,configHash=null,adapter=null,inputHelper=null,keyScriptPath=null,sourceHelper=null,originalSource=null,selectedSource=null;
 if(browserName==='safari'){
   if(!brokerPath?.startsWith('/'))throw Error(usage);
   configPath=outside(brokerPath);const bytes=readFileSync(configPath);if(bytes.length>4096)throw Error('Broker config bound');
@@ -161,7 +161,7 @@ async function chrome(){
       if(method==='finish')mountedId=null;return value;
     }finally{busy=false;}
   };
-  const inputOwner=createInputOwner({browser:'chrome',config,inputHelper,run,record,mountedId:()=>mountedId,guard:async action=>{
+  const inputOwner=createInputOwner({browser:'chrome',config,inputHelper,keyScriptPath,run,record,mountedId:()=>mountedId,guard:async action=>{
     const start=process.hrtime.bigint(),value=await call('guard',action);
     assert.equal(value.url,config.fixtureUrl);assert.equal(value.title,config.title);
     return {id:config.nonce+':'+String(serial),start,value:{...value,mountedId,serial:++guardSerial}};
@@ -369,11 +369,14 @@ try{
   assert.ok(existsSync(bundle),'Installed browser bundle required');report.bundleVersion=run('/usr/libexec/PlistBuddy',['-c','Print :CFBundleShortVersionString',bundle]).stdout.trim();report.bundleBuild=run('/usr/libexec/PlistBuddy',['-c','Print :CFBundleVersion',bundle]).stdout.trim();
   const accessibility=script('tell application "System Events" to get UI elements enabled').stdout.trim();report.setup.push({action:'read-existing-ui-automation-availability',value:accessibility});assert.equal(accessibility,'true','Existing Accessibility permission required; no request/grant flow');
   const helperDirectory=mkdtempSync(resolve(dirname(outputPath),'selection-native-helpers-'));sourceHelper=resolve(helperDirectory,'input-source');inputHelper=resolve(helperDirectory,'fixture-input');
-  report.setup.push({action:'compile-closed-source-helpers',executions:[run('/usr/bin/swiftc',[resolve(root,'scripts/dom-native-input-source.swift'),'-O','-o',sourceHelper]),run('/usr/bin/swiftc',[resolve(root,'scripts/selection-native-input.swift'),'-O','-o',inputHelper])],sourceHelper,inputHelper});
-  report.helperArtifacts=[sourceHelper,inputHelper].map(helperPin);
+  const keySourcePath=resolve(helperDirectory,'fixture-keys.applescript');keyScriptPath=resolve(helperDirectory,'fixture-keys.scpt');
+  writeFileSync(keySourcePath,fixedKeyScript,{flag:'wx'});
+  report.setup.push({action:'write-fixed-key-script-source',source:helperPin(keySourcePath),scope:'Exact fixed program; compile once before browser/input/page guards'});
+  report.setup.push({action:'compile-closed-source-helpers',executions:[run('/usr/bin/swiftc',[resolve(root,'scripts/dom-native-input-source.swift'),'-O','-o',sourceHelper]),run('/usr/bin/swiftc',[resolve(root,'scripts/selection-native-input.swift'),'-O','-o',inputHelper]),run('/usr/bin/osacompile',['-o',keyScriptPath,keySourcePath])],sourceHelper,inputHelper,keySourcePath,keyScriptPath});
+  report.helperArtifacts=[sourceHelper,inputHelper,keySourcePath,keyScriptPath].map(helperPin);
   const initial=source();report.inputSources=initial;originalSource=initial.current.id;
   const russian=['com.apple.keylayout.RussianWin','com.apple.keylayout.Russian'].find(id=>initial.sources.some(row=>row.id===id&&row.enabled&&row.selectable));assert.ok(russian,'Existing enabled Russian/RussianWin source required');
-  adapter=await(browserName==='chrome'?chrome():createSafariAdapter({config,report,run,outputPath,inputHelper}));await adapter.navigate();
+  adapter=await(browserName==='chrome'?chrome():createSafariAdapter({config,report,run,outputPath,inputHelper,keyScriptPath}));await adapter.navigate();
   let blocked=false;
   for(const [locale,inputSourceId]of [['en','com.apple.keylayout.US'],['ru',russian]]){
     const lane={locale,inputSourceId,status:'NOT_RUN',cases:[],startedAt:new Date().toISOString()};report.locales.push(lane);

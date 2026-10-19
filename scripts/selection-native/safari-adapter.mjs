@@ -78,7 +78,7 @@ const ownedTitleExists = `on run argv
   end tell
 end run`;
 
-export async function createSafariAdapter({config,report,run,outputPath,inputHelper}) {
+export async function createSafariAdapter({config,report,run,outputPath,inputHelper,keyScriptPath}) {
   if (config.format !== 'osr40-selection-http-broker/1' || !/^[a-f0-9]{32}$/.test(config.nonce)
     || config.origin !== 'http://127.0.0.1:4174' || config.fixtureUrl !== config.origin+'/selection'
     || config.base !== '/selection-native-broker-'+config.nonce || config.title !== 'KlenWriter Selection native '+config.nonce) throw new Error('Invalid closed broker configuration');
@@ -127,7 +127,7 @@ export async function createSafariAdapter({config,report,run,outputPath,inputHel
       throw error;
     } finally { inflight = false; }
   }
-  const inputOwner=createInputOwner({browser:'safari',config,inputHelper,run,record,guard:action=>rpc('guard',[action]),mountedId:()=>mountedId});
+  const inputOwner=createInputOwner({browser:'safari',config,inputHelper,keyScriptPath,run,record,guard:action=>rpc('guard',[action]),mountedId:()=>mountedId});
   try {
     const status = await exchange('host/status',undefined,now(),limits.commandBytes);
     if (status.stopped || status.ready || status.commands!==0 || status.pending) throw new Error('Broker is expired or already used');

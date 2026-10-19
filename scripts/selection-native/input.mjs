@@ -6,7 +6,7 @@ const now=()=>process.hrtime.bigint(),age=start=>Number(now()-start)/1e6;
 const mouseActions=new Set(['move-start','down','move-end','up']);
 const keyActions=Object.freeze({'shift-left':{code:123,modifier:'shift'},'select-all':{code:0,modifier:'command'},
   copy:{code:8,modifier:'command'},cut:{code:7,modifier:'command'},'shift-tab':{code:48,modifier:'shift'},tab:{code:48,modifier:'none'}});
-const guardedKey=`on requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
+export const fixedKeyScript=`on requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
   tell application "System Events"
     set ownedProcesses to (application processes whose unix id is expectedPID)
     if (count of ownedProcesses) is not 1 then error "Exact fixture browser PID unavailable"
@@ -72,10 +72,11 @@ on run argv
   my requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
   return "{\\"status\\":\\"key-sent\\",\\"action\\":\\"" & fixtureAction & "\\",\\"keyCode\\":" & physicalCode & ",\\"modifier\\":\\"" & modifierName & "\\",\\"frontPid\\":" & expectedPID & "}"
 end run`;
-export function createInputOwner({browser,config,inputHelper,run,record,guard,mountedId}){
+export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,record,guard,mountedId}){
   if(!['safari','chrome'].includes(browser)||config.nonce.length!==32||!/^[a-f0-9]{32}$/.test(config.nonce)
     ||config.origin!=='http://127.0.0.1:4174'||config.fixtureUrl!==config.origin+'/selection'
-    ||config.title!=='KlenWriter Selection native '+config.nonce||!inputHelper.startsWith('/'))throw Error('Invalid closed selection input configuration');
+    ||config.title!=='KlenWriter Selection native '+config.nonce||!inputHelper.startsWith('/')
+    ||typeof keyScriptPath!=='string'||!keyScriptPath.startsWith('/')||!keyScriptPath.endsWith('.scpt')||keyScriptPath.includes('\0'))throw Error('Invalid closed selection input configuration');
   let disabled=false,serial=0,held=false,mayHaveDown=false,cleanupAttempted=false;
   async function perform(action,cleanup=false){
       let dispatchStarted=false,execution=null,keyGuardExecution=null,keyGuard=null,systemEventsExecution=null,proof=null,preAge=null;
@@ -135,7 +136,7 @@ export function createInputOwner({browser,config,inputHelper,run,record,guard,mo
           const keyRemaining=Math.floor(limits.guardAgeMs-age(proof.start));
           if(keyRemaining<=0)throw Error('Selection guard expired after read-only key preflight; no key sent');
           dispatchStarted=true;
-          try{systemEventsExecution=run('/usr/bin/osascript',['-e',guardedKey,browser,keyGuard.expectedAxWindowTitle,String(keyGuard.frontPid),action],
+          try{systemEventsExecution=run('/usr/bin/osascript',[keyScriptPath,browser,keyGuard.expectedAxWindowTitle,String(keyGuard.frontPid),action],
             {timeout:keyRemaining,fullStdout:true,maxBuffer:32768});}
           catch(error){systemEventsExecution=error.execution??null;throw error;}
           execution=systemEventsExecution;actual=JSON.parse(execution.stdout);
@@ -149,7 +150,7 @@ export function createInputOwner({browser,config,inputHelper,run,record,guard,mo
           point,target:value.target,preDispatchGuardAgeMs:preAge,maximumGuardAgeMs:age(proof.start),guardAgeLimitMs:limits.guardAgeMs,
           lastTrustedPointerMove:action==='down'?value.lastTrustedPointerMove:null,
           execution,actual,keyGuardExecution,keyGuard,systemEventsExecution,delivery:'sent',pointerDown:held,cleanupOnly:cleanup,
-          method:mouseActions.has(action)?'Strict AX guard + CGEvent mouse':'Fresh strict AX key preflight + System Events fixed key code; post receipt, not browser acknowledgement'};
+          method:mouseActions.has(action)?'Strict AX guard + CGEvent mouse':'Fresh strict AX key preflight + precompiled System Events fixed key code; post receipt, not browser acknowledgement'};
         record(cleanup?'cleanup-pointer-release':'physical-input',receipt);return receipt;
       }catch(error){
         disabled=true;
