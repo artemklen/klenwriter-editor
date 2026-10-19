@@ -22,6 +22,7 @@ test.beforeEach(async({page},testInfo)=>{
   const response=await page.goto('/dom');record.csp=response.headers()['content-security-policy'];
   expect(record.csp).toContain("default-src 'none'");expect(record.csp).toContain("'wasm-unsafe-eval'");
   expect(record.csp).not.toContain("'unsafe-inline'");expect(record.csp).not.toMatch(/(?:^|\s)'unsafe-eval'/);
+  expect(record.csp).toContain('img-src http://127.0.0.1:4174/favicon.ico;');
   await page.waitForFunction(()=>window.domHostReady===true);
   record.metadata=await call(page,'metadata');
 });
@@ -142,6 +143,12 @@ test('T09/T10/T11 UI modes preserve history, replacement rotates generation and 
   const previous=await checkpoint(page,id,'T11 before refusal');expect((await call(page,'replace',id,'{',true)).response.status).toBe('refused');const refused=await checkpoint(page,id,'T11 failed replacement');expect(refused.canonical).toBe(previous.canonical);expect(refused.state).toEqual(previous.state);expect(await call(page,'sameIdentity',id,'P1','/0')).toBe(true);
   expect((await call(page,'replace',id,'T10-replacement')).response.status).toBe('ok');const replaced=await checkpoint(page,id,'T10 replaced');expect(replaced.canonical).toBe(literal('T10-replacement'));expect(replaced.state.stamp.generation).not.toBe(previous.state.stamp.generation);expect(replaced.state.stamp.revision).toBe('0');expect(replaced.state.selection).toBeNull();expect(replaced.state.dirty).toBe(false);history(replaced,0,0);expect(replaced.attributes.contenteditable).toBe('true');expect(replaced.attributes.role).toBe('textbox');
   const ro=await call(page,'mount',{fixture:'D0',access:'read_only'});expect(ro.ready).toBe('ready');expect((await call(page,'mode',ro.id,'editable')).diagnostic.code).toBe('dom.native_read_only');
+  // Clearing this mount's authoritative null selection must preserve another
+  // instance's actual browser range, including its native read-only selection.
+  await call(page,'select',ro.id,'/0/2',1);expect(await call(page,'nativeSelectionMatches',ro.id,'/0/2',1)).toBe(true);
+  expect((await call(page,'replace',id,'T10-replacement')).response.status).toBe('ok');
+  const replacedAgain=await checkpoint(page,id,'T10 replacement preserves another owner selection');expect(replacedAgain.state.selection).toBeNull();
+  expect(await call(page,'nativeSelectionMatches',ro.id,'/0/2',1)).toBe(true);
 });
 
 for(const [fixtureName,path,offset]of [['D0','/0/2',2],['T03-initial','/0/0',1]])test(`bounded noncancelable split/join reconciles actual cloned DOM (${fixtureName})`,async({page})=>{
@@ -150,10 +157,25 @@ for(const [fixtureName,path,offset]of [['D0','/0/2',2],['T03-initial','/0/0',1]]
   const target=fixtureName==='D0'?'/1':'/1/0';await call(page,'select',id,target,0);const joined=await call(page,'noncancelable',id,'deleteContentBackward');expect(joined.lifecycle).toBe('ready');p=await checkpoint(page,id,'noncancelable join');expect(p.canonical).toBe(literal(fixtureName));caret(p,left,offset);expect(docEvents(p)).toHaveLength(2);
 });
 
-test('ordinary browser keyboard RU/EN typing is one native publication per gesture',async({page})=>{
+test('ordinary EN typing and engine-specific RU insertion preserve exact scalars',async({page,browserName})=>{
   const {id}=await call(page,'mount',{fixture:'D0'});await call(page,'select',id,'/0/2',2);
-  await page.keyboard.type('Az');await page.keyboard.insertText('я');
-  const p=await checkpoint(page,id,'ordinary keyboard RU EN');expect(stateRow(p,'/0/2').text).toBe('\u00a0ZAzя');expect(docEvents(p)).toHaveLength(3);caret(p,stateRow(p,'/0/2').id,5);expect(await call(page,'nativeSelectionMatches',id,'/0/2',5)).toBe(true);
+  await page.locator(`#${id}`).evaluate(element=>{element.typingTrace=[];for(const type of ['beforeinput','input','compositionstart','compositionupdate','compositionend'])element.addEventListener(type,event=>{if(element.typingTrace.length<64)element.typingTrace.push({type:event.type,inputType:event.inputType??null,data:event.data??null,isComposing:event.isComposing??false,isTrusted:event.isTrusted,cancelable:event.cancelable,defaultPrevented:event.defaultPrevented});});});
+  await page.keyboard.type('Az');const en=await checkpoint(page,id,'ordinary keyboard EN');expect(stateRow(en,'/0/2').text).toBe('\u00a0ZAz');expect(docEvents(en)).toHaveLength(2);caret(en,stateRow(en,'/0/2').id,4);
+  await page.keyboard.insertText('я');
+  const trace=await page.locator(`#${id}`).evaluate(element=>element.typingTrace);observations.get(page).typingTrace=trace;
+  const p=await checkpoint(page,id,'engine-specific RU insertText');
+  if(browserName==='firefox') {
+    // Actual Playwright Firefox insertText uses composition. OSR-39 preserves
+    // that unresolved region; exactly-once native settlement belongs to OSR-41.
+    expect(trace.some(event=>event.type==='compositionstart')).toBe(true);expect(trace.some(event=>event.type==='compositionend')).toBe(true);
+    expect(p.lifecycle).toBe('recoveryRequired');expect(p.state).toEqual(en.state);expect(p.canonical).toBe(en.canonical);expect(docEvents(p)).toHaveLength(2);
+    expect(p.domText).toBe('А😀 e\u0301\u00a0ZAzяБета');expect(p.failures.some(failure=>failure.diagnostic.code==='dom.composition_conflict')).toBe(true);
+    const disposed=await call(page,'dispose',id);observations.get(page).typingRecovery=disposed;
+    expect(disposed.receipt.recovery.region).toMatchObject({kind:'bounded',originalText:'А😀 e\u0301\u00a0ZAz',provisionalText:'А😀 e\u0301\u00a0ZAzя'});expect(disposed.recoveries).toHaveLength(1);
+  } else {
+    expect(trace.some(event=>event.type==='compositionstart')).toBe(false);expect(p.lifecycle).toBe('ready');
+    expect(stateRow(p,'/0/2').text).toBe('\u00a0ZAzя');expect(docEvents(p)).toHaveLength(3);caret(p,stateRow(p,'/0/2').id,5);expect(await call(page,'nativeSelectionMatches',id,'/0/2',5)).toBe(true);
+  }
 });
 
 test('noncancelable basic RU/EN text uses native command and preserves exact scalars',async({page})=>{

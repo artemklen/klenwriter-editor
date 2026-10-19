@@ -121,6 +121,8 @@ programmatic submit разрешён при действующих native/capabi
 DOM не добавляет очередь или retry. Смена composition/capture даёт явный отказ.
 Успех меняет generation и сбрасывает history/maps/events/saved baseline, затем
 выполняет один полный render: native remount не создаёт обычного document event.
+Native selection `null` очищает браузерные ranges внутри этого host; выделение
+другого mounted instance или host control сохраняется.
 Отказ до публикации оставляет прежний Session и DOM. Факты/profile/registry меняются
 через нового owner и admission, а не replace или скрытый update_facts.
 
@@ -131,6 +133,12 @@ T01–T12 в Chromium/WebKit/Firefox, сохраняет native rows, canonical,
 DOM selection, IDs и resources в artifacts/dom. Это измерения automated engines.
 Installed Chrome/Safari RU/EN input и keyboard/focus имеют отдельные traces и
 точные версии; WebKit не доказывает Safari. Firefox experimental, ошибки harness
-не превращаются в skip. Полные selection/IME/clipboard/domain/security/alpha
+не превращаются в skip. Playwright Firefox `keyboard.insertText('я')` в измеренном
+engine проходит через composition events: basic39 сохраняет этот символ в
+provisional DOM и recovery receipt, оставляя committed state неизменным до OSR-41.
+Это отдельный preservation oracle, а не proof ordinary RU commit или IME settlement.
+Fixture CSP разрешает только точный local `/favicon.ico` с ответом204 для
+автоматического запроса браузера; default/script/style ограничения и проверка
+отсутствия CSP violations сохраняются. Полные selection/IME/clipboard/domain/security/alpha
 acceptance остаются соответствующим OSR-40/41/47/50/67/65. CI остаётся build-only;
 обязательные проверки выполняются локально на точной поставляемой ревизии.

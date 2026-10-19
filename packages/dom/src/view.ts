@@ -213,7 +213,20 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
   function restoreSelection(selection: DeepReadonly<SelectionDto> | null): DomRefusal | null {
     if (destroyed) return refusal('dom.disposed');
     if (provisional?.composing) return null;
-    if (selection === null) { lastSelection = null; lastAnchor = lastFocus = null; return null; }
+    if (selection === null) {
+      lastSelection = null; lastAnchor = lastFocus = null;
+      const browser = doc.getSelection();
+      try {
+        // Replacement can reparent an old range to the editing host itself.
+        // Remove only this host's ranges; another mount or host control keeps
+        // its native selection, including Firefox's other selection ranges.
+        if (browser) for (let i = browser.rangeCount - 1; i >= 0; i--) {
+          const range = browser.getRangeAt(i);
+          if (host.contains(range.startContainer) && host.contains(range.endContainer)) browser.removeRange(range);
+        }
+        return null;
+      } catch { return refusal('dom.presentation_unsupported'); }
+    }
     const anchor = domPoint(selection.anchor), focus = domPoint(selection.focus);
     if (isDomRefusal(anchor)) return anchor; if (isDomRefusal(focus)) return focus;
     const browser = doc.getSelection(); if (!browser) return refusal('dom.presentation_unsupported');
