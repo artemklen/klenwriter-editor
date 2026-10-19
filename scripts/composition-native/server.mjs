@@ -57,6 +57,10 @@ async function body(req,maximum) {
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
 const paths = Object.fromEntries(['config','page-client.mjs','protocol.mjs','page/ready','page/poll','page/result','host/submit','host/read','host/ack','host/status'].map(path=>[base+'/'+path,path]));
+// The nonce-served protocol re-exports this exact shared module. Its relative
+// import resolves outside the nonce prefix in the browser, so serve that one
+// fixed dependency only while this opt-in broker is running.
+paths['/selection-native/protocol.mjs'] = 'selection-protocol.mjs';
 const original = http.createServer;
 http.createServer = function(...args) {
   const at = args.findIndex(value=>typeof value==='function');
@@ -70,8 +74,9 @@ http.createServer = function(...args) {
       if (req.method === 'POST' && req.headers.origin !== origin) return json(res,403,{error:'Wrong fixture origin'});
       expire();
       if (route === 'config' && req.method === 'GET') return json(res,200,config);
-      if (['page-client.mjs','protocol.mjs'].includes(route) && req.method === 'GET') {
-        const bytes = readFileSync(new URL('./'+route,import.meta.url)); account(bytes.length);
+      if (['page-client.mjs','protocol.mjs','selection-protocol.mjs'].includes(route) && req.method === 'GET') {
+        const modulePath = route === 'selection-protocol.mjs' ? '../selection-native/protocol.mjs' : './'+route;
+        const bytes = readFileSync(new URL(modulePath,import.meta.url)); account(bytes.length);
         res.writeHead(200,{'Content-Type':'text/javascript','Cache-Control':'no-store'}); res.end(bytes); return;
       }
       if (route === 'host/status' && req.method === 'GET') return json(res,200,{ready,stopped,commands,polls,pending:pending?{id:pending.id,delivered:pending.delivered,done:!!pending.result}:null});
