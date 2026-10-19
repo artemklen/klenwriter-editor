@@ -76,6 +76,8 @@ InputEvent dispatch is used. System Events is platform key-code injection; this
 is not a claim of input from a physical hardware device. An isTrusted flag alone
 cannot establish the provenance, so the runner also records its actual key-code
 commands and verified OS input source.
+Action records distinguish attempted, failed and completed key batches; a failed
+batch is not reported as completed physical input.
 
 The trace is limited to2048 entries and24 checkpoints; only the fixture editing
 host, fixture host control and selection changes inside the host are observed.

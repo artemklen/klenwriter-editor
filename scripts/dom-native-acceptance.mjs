@@ -29,9 +29,11 @@ async function physical(codes,phase){
   const application=browserName==='chrome'?'Google Chrome':'Safari';
   script(`tell application "${application}" to activate`);await wait(200);
   const before=source();if(before.current.id!==selectedSource)throw new Error('Browser activation changed the selected input source; no keys sent');
-  report.physicalActions.push({phase,codes,inputSourceBefore:before.current,startedAt:new Date().toISOString(),method:'System Events key code; platform input, not hardware-device evidence'});
-  const body=`tell application "System Events"\nif name of first application process whose frontmost is true is not "${application}" then error "Browser activation failed"\n${codes.map(code=>`key code ${code}\ndelay 0.12`).join('\n')}\nend tell`;
-  script(body);await wait(250);const after=source();Object.assign(report.physicalActions.at(-1),{finishedAt:new Date().toISOString(),inputSourceAfter:after.current});
+  const action={phase,codes,inputSourceBefore:before.current,startedAt:new Date().toISOString(),status:'attempted',method:'System Events key code; platform input, not hardware-device evidence'};
+  report.physicalActions.push(action);
+  const body=`tell application "System Events"\nif (name of first application process whose frontmost is true) is not "${application}" then error "Browser activation failed"\n${codes.map(code=>`key code ${code}\ndelay 0.12`).join('\n')}\nend tell`;
+  try{script(body);}catch(error){Object.assign(action,{status:'failed',finishedAt:new Date().toISOString(),error:error.message});save();throw error;}
+  await wait(250);const after=source();Object.assign(action,{status:'completed',finishedAt:new Date().toISOString(),inputSourceAfter:after.current});
   if(after.current.id!==before.current.id)throw new Error('Input source changed during physical key batch');save();}
 
 async function chrome(){
