@@ -4,9 +4,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createInputOwner,prepareChromeWindow} from '../scripts/selection-native/input.mjs';
 import {validCall,limits} from '../scripts/selection-native/protocol.mjs';
-function fixture(){
+const expectedKeys={'shift-left':{code:123,modifier:'shift'},'select-all':{code:0,modifier:'command'},copy:{code:8,modifier:'command'},
+  cut:{code:7,modifier:'command'},'shift-tab':{code:48,modifier:'shift'},tab:{code:48,modifier:'none'}};
+function fixture(browser='safari'){
   const nonce='a'.repeat(32),config={nonce,origin:'http://127.0.0.1:4174',fixtureUrl:'http://127.0.0.1:4174/selection',title:'KlenWriter Selection native '+nonce};
-  let serial=0,reply=null,execute=null,pageDown=false;
+  let serial=0,reply=null,execute=null,keyExecute=null,keyProof=null,pageDown=false;
   const records=[],calls=[];
   function proof(action){
       return {id:nonce+':'+String(++serial),start:process.hrtime.bigint(),value:{nonce,url:config.fixtureUrl,title:config.title,
@@ -15,14 +17,26 @@ function fixture(){
         viewport:{width:1024,height:768,scale:1,offsetLeft:0,offsetTop:0},point:['move-start','down','move-end','up'].includes(action)?{x:140,y:340}:null,
         lastTrustedPointerMove:{x:140,y:340,buttons:0,pointerId:1,pointerType:'mouse',isPrimary:true,isTrusted:true,time:25}}};
   }
-  const owner=createInputOwner({browser:'safari',config,inputHelper:'/controlled/no-helper-is-executed',mountedId:()=> 'selection-mount-1',
+  const owner=createInputOwner({browser,config,inputHelper:'/controlled/no-helper-is-executed',mountedId:()=> 'selection-mount-1',
     record:(kind,value)=>records.push({kind,value}),
     async guard(action){return reply?reply(action,proof):proof(action);},
-    run(command,argv){const request=JSON.parse(argv[1]);calls.push({command,request});if(execute)return execute(request);
+    run(command,argv,options){
+      if(command==='/usr/bin/osascript'){
+        const action=argv.at(-1),call={command,argv,options,action};calls.push(call);if(keyExecute)return keyExecute(call);
+        return {returnCode:0,stdout:JSON.stringify({status:'key-sent',action,keyCode:expectedKeys[action].code,modifier:expectedKeys[action].modifier,frontPid:31}),stderr:''};
+      }
+      const request=JSON.parse(argv[1]);calls.push({command,argv,options,request});if(execute)return execute(request);
+      if(argv[0]==='--guard-key'){
+        const value={status:'guarded',delivery:'not_sent',action:request.action,requestId:request.requestId,nonce,mountedId:request.mountedId,caseId:request.caseId,
+          target:request.target,cleanupOnly:false,frontBundle:browser==='chrome'?'com.google.Chrome':'com.apple.Safari',frontPid:31,
+          expectedAxWindowTitle:config.title+(browser==='chrome'?' - Google Chrome':''),observedAxWindowTitle:config.title+(browser==='chrome'?' - Google Chrome':''),
+          axWindowCount:1,axViewport:{x:22,y:139,width:1024,height:768},elapsedMs:20};
+        return {returnCode:0,stdout:JSON.stringify(keyProof?keyProof(value):value),stderr:''};
+      }
       if(request.action==='down')pageDown=true;if(request.action==='up')pageDown=false;
       return {returnCode:0,stdout:JSON.stringify({status:'sent',action:request.action,requestId:request.requestId,nonce}),stderr:''};},
   });
-  return {owner,config,records,calls,set reply(value){reply=value;},set execute(value){execute=value;}};
+  return {owner,config,records,calls,set reply(value){reply=value;},set execute(value){execute=value;},set keyExecute(value){keyExecute=value;},set keyProof(value){keyProof=value;}};
 }
 test('controlled selection transport has finite closed cases/actions, no eval/coordinates/key RPC',()=>{
   assert.equal(limits.commands,1024);assert.equal(limits.runMs,600000);
@@ -78,6 +92,52 @@ test('controlled ordinary pointer phases preserve one owned button and actual re
   const f=fixture();await f.owner.input('move-start');await f.owner.input('down');await f.owner.input('move-end');await f.owner.input('up');
   assert.equal(f.owner.pointerState,'up');assert.equal(f.owner.disabled,false);assert.deepEqual(f.calls.map(r=>r.request.action),['move-start','down','move-end','up']);
   assert(f.records.every(row=>row.value.delivery==='sent'));assert(f.calls.every(row=>row.request.deadlineMs>0&&row.request.deadlineMs<=1000));
+});
+for(const[action,expected]of Object.entries(expectedKeys))test(`controlled ${action} uses one fixed System Events key after a separate strict read-only preflight`,async()=>{
+  const f=fixture(),receipt=await f.owner.input(action);assert.equal(f.calls.length,2);
+  assert.equal(f.calls[0].argv[0],'--guard-key');assert.equal(f.calls[0].request.action,action);assert.equal(f.calls[0].request.point,null);
+  const sent=f.calls[1];assert.equal(sent.command,'/usr/bin/osascript');assert.equal(sent.argv[0],'-e');
+  assert.deepEqual(sent.argv.slice(2),['safari',f.config.title,'31',action],'No arbitrary keycode, modifier or script argument');
+  assert.ok(sent.options.timeout<=f.calls[0].options.timeout&&sent.options.timeout>0,'One total page guard deadline');
+  assert.equal(receipt.keyGuard.status,'guarded');assert.equal(receipt.keyGuard.delivery,'not_sent');
+  assert.equal(receipt.keyGuardExecution.returnCode,0);assert.equal(receipt.systemEventsExecution.returnCode,0);
+  assert.deepEqual(receipt.actual,{status:'key-sent',action,keyCode:expected.code,modifier:expected.modifier,frontPid:31});
+  assert.equal(receipt.delivery,'sent');assert.equal(f.owner.disabled,false);
+});
+test('controlled Chrome key passes only the exact decorated AX title and own guarded PID to System Events',async()=>{
+  const f=fixture('chrome');await f.owner.input('copy');assert.deepEqual(f.calls[1].argv.slice(2),['chrome',f.config.title+' - Google Chrome','31','copy']);
+});
+test('controlled refused read-only key preflight never invokes System Events and stays not_sent',async()=>{
+  const f=fixture();f.execute=()=>{throw Object.assign(Error('Strict AX refused'),{execution:{returnCode:2,stdout:'refused',stderr:''}});};
+  await assert.rejects(f.owner.input('copy'));assert.equal(f.calls.length,1);assert.equal(f.records.at(-1).value.delivery,'not_sent');
+  assert.equal(f.records.at(-1).value.dispatchStarted,false);assert.equal(f.records.at(-1).value.keyGuardExecution.returnCode,2);
+  await assert.rejects(f.owner.input('tab'));assert.equal(f.calls.length,1);
+});
+test('controlled guard expiring after read-only preflight sends no key and retains its actual preflight',async()=>{
+  const f=fixture();let proof;
+  f.reply=(action,make)=>{proof=make(action);return proof;};f.keyProof=value=>{proof.start=process.hrtime.bigint()-2_000_000_000n;return value;};
+  await assert.rejects(f.owner.input('shift-left'),/expired after read-only/);assert.equal(f.calls.length,1);
+  const failure=f.records.at(-1).value;assert.equal(failure.delivery,'not_sent');assert.equal(failure.keyGuard.status,'guarded');assert.equal(failure.systemEventsExecution,null);
+});
+test('controlled malformed key preflight identity refuses before System Events',async()=>{
+  const f=fixture();f.keyProof=value=>({...value,expectedAxWindowTitle:value.expectedAxWindowTitle+' other'});
+  await assert.rejects(f.owner.input('copy'),/preflight differs/);assert.equal(f.calls.length,1);assert.equal(f.records.at(-1).value.delivery,'not_sent');
+});
+test('controlled unknown System Events completion disables later keys and preserves both raw executions',async()=>{
+  const f=fixture();f.keyExecute=()=>{throw Object.assign(Error('Controlled post-key ownership/timeout failure'),{execution:{returnCode:null,error:'unknown'}});};
+  await assert.rejects(f.owner.input('cut'));assert.equal(f.calls.length,2);const failed=f.records.at(-1).value;
+  assert.equal(failed.delivery,'unknown/may_have_sent');assert.equal(failed.dispatchStarted,true);assert.equal(failed.keyGuardExecution.returnCode,0);
+  assert.equal(failed.systemEventsExecution.error,'unknown');await assert.rejects(f.owner.input('copy'));assert.equal(f.calls.length,2);
+});
+test('controlled wrong System Events modifier receipt cannot prove key delivery',async()=>{
+  const f=fixture();f.keyExecute=()=>({returnCode:0,stdout:JSON.stringify({status:'key-sent',action:'copy',keyCode:8,modifier:'none',frontPid:31}),stderr:''});
+  await assert.rejects(f.owner.input('copy'),/closed key receipt differs/);assert.equal(f.calls.length,2);assert.equal(f.records.at(-1).value.delivery,'unknown/may_have_sent');
+  assert.equal(f.owner.disabled,true);
+});
+test('controlled ShiftTab key preserves owned held pointer for a separately guarded mouse release',async()=>{
+  const f=fixture();await f.owner.input('down');await f.owner.input('shift-tab');assert.equal(f.owner.pointerState,'down');
+  assert.equal(f.calls[1].argv[0],'--guard-key');assert.equal(f.calls[1].request.pointerDown,true);
+  await f.owner.input('up');assert.equal(f.owner.pointerState,'up');assert.equal(f.calls[3].argv[0],'--request');
 });
 
 function bootstrapFixture(){

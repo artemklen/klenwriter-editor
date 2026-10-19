@@ -117,7 +117,7 @@ if argv.count == 3 && argv[1] == "--inspect-window" {
         "axWindow": encodedRectangle(measurement.frame), "axViewport": encodedRectangle(measurement.view),
         "contained": measurement.contained, "elapsedMs": elapsed()], 0)
 }
-guard argv.count == 3, argv[1] == "--request", let data = argv[2].data(using: .utf8), data.count <= 4096,
+guard argv.count == 3, ["--request", "--guard-key"].contains(argv[1]), let data = argv[2].data(using: .utf8), data.count <= 4096,
       let request = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
       closed(request, ["format", "browser", "nonce", "title", "fixtureUrl", "mountedId", "requestId", "serial", "caseId", "action", "target", "point", "viewport", "pointerDown", "cleanupOnly", "deadlineMs"]),
       request["format"] as? String == "osr40-native-input/1",
@@ -141,6 +141,8 @@ guard argv.count == 3, argv[1] == "--request", let data = argv[2].data(using: .u
 guard target == (action == "tab" ? "host-control" : "editor") || action == "up" && held && target == "host-control",
       !cleanup || action == "up" && held else { refuse("Target or cleanup transition differs") }
 let mouse = ["move-start", "down", "move-end", "up"].contains(action)
+let guardingKey = argv[1] == "--guard-key"
+guard guardingKey ? !mouse : mouse else { refuse("Input mode does not match its closed mouse/key action") }
 var point: CGPoint?
 if mouse {
     guard let value = request["point"] as? [String: Any], closed(value, ["x", "y"]),
@@ -154,27 +156,25 @@ let measurement = measureWindow(browser, expectedTitle)
 guard measurement.contained else { refuse("Unique frozen AXWebArea viewport unavailable") }
 let observedAxWindowTitle = recheckWindow(measurement, deadline)
 let view = measurement.view
-var global: CGPoint?
-if let local = point {
-    let actual = CGPoint(x: view.minX + local.x, y: view.minY + local.y); global = actual
-    let type: CGEventType = action == "down" ? .leftMouseDown : action == "up" ? .leftMouseUp : action == "move-end" ? .leftMouseDragged : .mouseMoved
-    guard let event = CGEvent(mouseEventSource: nil, mouseType: type, mouseCursorPosition: actual, mouseButton: .left) else { refuse("Cannot allocate fixture mouse event") }
-    if action == "down" || action == "up" { event.setIntegerValueField(.mouseEventClickState, value: 1) }
-    posted = true; event.post(tap: .cghidEventTap)
-} else {
-    let code: CGKeyCode = action == "shift-left" ? 123 : action == "select-all" ? 0 : action == "copy" ? 8 : action == "cut" ? 7 : 48
-    let flags: CGEventFlags = ["shift-left", "shift-tab"].contains(action) ? .maskShift : ["select-all", "copy", "cut"].contains(action) ? .maskCommand : []
-    guard let down = CGEvent(keyboardEventSource: nil, virtualKey: code, keyDown: true),
-          let up = CGEvent(keyboardEventSource: nil, virtualKey: code, keyDown: false) else { refuse("Cannot allocate fixture modified-key pair") }
-    down.flags = flags; up.flags = flags
-    posted = true; down.post(tap: .cghidEventTap); up.post(tap: .cghidEventTap)
-}
-guard elapsed() <= deadline else { refuse("Fixture guard expired during post") }
-var result: [String: Any] = ["status": "sent", "action": action, "nonce": nonce, "requestId": requestId,
+var result: [String: Any] = ["action": action, "nonce": nonce, "requestId": requestId,
     "mountedId": mount, "caseId": caseId, "target": target, "cleanupOnly": cleanup,
     "frontBundle": measurement.expectedBundle, "frontPid": measurement.front.processIdentifier,
     "expectedAxWindowTitle": measurement.expectedTitle, "observedAxWindowTitle": observedAxWindowTitle,
-    "axWindowCount": measurement.windowCount, "axViewport": encodedRectangle(view),
-    "elapsedMs": elapsed(), "method": "fixture-scoped CGEvent; platform input, not hardware-device provenance"]
-if let global { result["screenPoint"] = ["x": global.x, "y": global.y] }
+    "axWindowCount": measurement.windowCount, "axViewport": encodedRectangle(view)]
+if guardingKey {
+    guard elapsed() <= deadline else { refuse("Key guard deadline expired") }
+    result["status"] = "guarded"; result["delivery"] = "not_sent"; result["elapsedMs"] = elapsed()
+    result["method"] = "read-only strict AX key preflight; no key posted"
+    emit(result, 0)
+}
+guard let local = point else { refuse("Mouse input lacks its fixed client point") }
+let actual = CGPoint(x: view.minX + local.x, y: view.minY + local.y)
+let type: CGEventType = action == "down" ? .leftMouseDown : action == "up" ? .leftMouseUp : action == "move-end" ? .leftMouseDragged : .mouseMoved
+guard let event = CGEvent(mouseEventSource: nil, mouseType: type, mouseCursorPosition: actual, mouseButton: .left) else { refuse("Cannot allocate fixture mouse event") }
+if action == "down" || action == "up" { event.setIntegerValueField(.mouseEventClickState, value: 1) }
+posted = true; event.post(tap: .cghidEventTap)
+guard elapsed() <= deadline else { refuse("Fixture guard expired during post") }
+result["status"] = "sent"; result["elapsedMs"] = elapsed()
+result["method"] = "fixture-scoped CGEvent mouse; platform input, not hardware-device provenance"
+result["screenPoint"] = ["x": actual.x, "y": actual.y]
 emit(result, 0)

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-// Installed selection40 Safari fixture adapter. Apple Events end at bootstrap.
+// Installed selection40 Safari fixture adapter. Safari page Apple Events end at bootstrap.
 import {appendFileSync,mkdtempSync,writeFileSync} from 'node:fs';
 import {resolve,dirname} from 'node:path';
 import {limits,validCall,boundedJson} from './protocol.mjs';
@@ -141,9 +141,9 @@ export async function createSafariAdapter({config,report,run,outputPath,inputHel
   if (!/^[0-9]+$/.test(created) || !Number.isSafeInteger(Number(created)) || Number(created)<=0) throw new Error('Invalid newly owned Safari window ID');
   const windowId = Number(created);
   report.browserVersion = report.bundleVersion;
-  report.control = {method:'ordinary Safari; bootstrap Apple Events, then same-origin closed HTTP fixture RPC and AX/title-scoped CGEvent input',
+  report.control = {method:'ordinary Safari; bootstrap Apple Events, then same-origin closed HTTP fixture RPC, strict AX CGEvent mouse and guarded System Events keys',
     windowId,uniqueTitle:config.title,fixtureUrl:config.fixtureUrl,brokerNonce:config.nonce,brokerDirectory:config.directory,clientLog,
-    webDriver:false,fixtureOnly:true,appleEventsScope:'fresh fixture creation and module bootstrap only; zero calls after bootstrap',
+    webDriver:false,fixtureOnly:true,appleEventsScope:'Safari JavaScript/URL/title Apple Events are bootstrap-only; zero Safari page-control calls afterwards. System Events fixed guarded keys use a separate platform-input path',
     ownership:'fresh bootstrap numeric ID; thereafter exact random document title and fresh mounted-host page guard',
     cleanupScope:'CmdW closes only the current exact fixture tab; title absence is not a process/window shutdown claim'};
   function evaluateBootstrap(code,deadline) {

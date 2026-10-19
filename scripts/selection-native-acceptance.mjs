@@ -36,7 +36,7 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const monotonic=()=>performance.now();
 const report={format:'klenwriter-editor-installed-selection-native/1',browser:browserName,status:'NOT_RUN',startedAt:new Date().toISOString(),
   locales:[],setup:[],physicalActions:[],restoration:null,
-  scope:'Actual installed macOS Chrome/Safari; fixture-scoped CGEvent platform input with trusted UA traces, native public SDK2/WASM selection, own-confirmed clipboard writes and OS readback. Platform input is not hardware-device evidence. No IME settlement, arbitrary clipboard47, assistive-technology or independent-review claim.'};
+  scope:'Actual installed macOS Chrome/Safari; fixture-scoped CGEvent mouse and guarded System Events keys with trusted UA traces, native public SDK2/WASM selection, own-confirmed clipboard writes and OS readback. Platform input is not hardware-device evidence. No IME settlement, arbitrary clipboard47, assistive-technology or independent-review claim.'};
 const save=()=>writeFileSync(outputPath,JSON.stringify(report,null,2)+'\n');
 function run(command,argv,{fullStdout=false,timeout=30000,maxBuffer=1024*1024}={}){
   const result=spawnSync(command,argv,{cwd:root,encoding:'utf8',timeout,maxBuffer});
@@ -166,7 +166,7 @@ async function chrome(){
     assert.equal(value.url,config.fixtureUrl);assert.equal(value.title,config.title);
     return {id:config.nonce+':'+String(serial),start,value:{...value,mountedId,serial:++guardSerial}};
   }});
-  report.control={method:'Installed headed Chrome; closed Playwright page setup/read RPC, AX/title-scoped CGEvent physical actions',webDriver:false,
+  report.control={method:'Installed headed Chrome; closed Playwright page setup/read RPC, strict AX CGEvent mouse and guarded System Events keys',webDriver:false,
     uniqueTitle:config.title,fixtureUrl:config.fixtureUrl,fixtureOnly:true,childOnlyEnvironment:true,launchArguments};
   return {errors,input:action=>{assert.equal(bootstrapReady,true,'Strict Chrome window bootstrap required before input');physicalStarted=true;return inputOwner.input(action);},releaseOwnedPointer:()=>inputOwner.releaseOwnedPointer(),
     get pointerDown(){return inputOwner.pointerDown;},get pointerState(){return inputOwner.pointerState;},get inputDisabled(){return inputOwner.disabled;},
@@ -379,7 +379,7 @@ try{
     if(!blocked){assert.ok(initial.sources.some(row=>row.id===inputSourceId&&row.enabled&&row.selectable),'Required existing enabled source unavailable');await adapter.focus();lane.actualInputSource=await selectSource(inputSourceId);}
     for(const caseId of caseIds){
       const entry={locale,caseId,status:'NOT_RUN',checkpoints:[],startedAt:new Date().toISOString()};lane.cases.push(entry);save();
-      if(blocked){entry.reason='Earlier control/cleanup failure disabled later physical input';continue;}
+      if(blocked){entry.reason='Earlier acceptance/control/cleanup failure disabled later physical input';continue;}
       let prepared=null,physicalBegan=false,prepareAttempted=false;
       try{
         prepareAttempted=true;
@@ -394,7 +394,7 @@ try{
           if(entry.status!=='PASSED')try{entry.failedCaseEvidence=await adapter.call('checkpoint');}catch(error){entry.failedEvidenceError=error.message;}
           try{entry.finish=await adapter.call('finish');if(prepared)assert.equal(entry.finish.id,prepared.id);released(entry.finish);}catch(error){entry.finishError=error.message;entry.status='FAILED';blocked=true;}
         }
-        if(adapter.inputDisabled)blocked=true;entry.finishedAt=new Date().toISOString();save();
+        if(entry.status!=='PASSED'||adapter.inputDisabled)blocked=true;entry.finishedAt=new Date().toISOString();save();
       }
     }
     lane.status=lane.cases.length===13&&lane.cases.every(value=>value.status==='PASSED')?'PASSED':lane.cases.some(value=>value.status==='FAILED')?'FAILED':'NOT_RUN';lane.finishedAt=new Date().toISOString();save();

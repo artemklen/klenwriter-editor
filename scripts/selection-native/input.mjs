@@ -4,13 +4,81 @@ import {actions,caseIds,limits} from './protocol.mjs';
 import assert from 'node:assert/strict';
 const now=()=>process.hrtime.bigint(),age=start=>Number(now()-start)/1e6;
 const mouseActions=new Set(['move-start','down','move-end','up']);
+const keyActions=Object.freeze({'shift-left':{code:123,modifier:'shift'},'select-all':{code:0,modifier:'command'},
+  copy:{code:8,modifier:'command'},cut:{code:7,modifier:'command'},'shift-tab':{code:48,modifier:'shift'},tab:{code:48,modifier:'none'}});
+const guardedKey=`on requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
+  tell application "System Events"
+    set ownedProcesses to (application processes whose unix id is expectedPID)
+    if (count of ownedProcesses) is not 1 then error "Exact fixture browser PID unavailable"
+    set ownedProcess to item 1 of ownedProcesses
+    tell ownedProcess
+      if name is not expectedName or bundle identifier is not expectedBundle then error "Fixture browser identity changed"
+      if frontmost is not true then error "Fixture browser is not frontmost for key"
+      if (count of windows) is greater than 32 then error "Fixture AX window observation limit"
+      if (count of (windows whose name is expectedTitle)) is not 1 then error "Fixture AX title is not unique"
+      if not (exists front window) then error "Fixture front window missing"
+      if (name of front window) is not expectedTitle then error "Exact fixture title is not frontmost"
+      set focusedFixtureWindow to value of attribute "AXFocusedWindow"
+      if (value of attribute "AXTitle" of focusedFixtureWindow) is not expectedTitle then error "Exact fixture title is not focused"
+    end tell
+  end tell
+end requireFixture
+on run argv
+  if (count of argv) is not 4 then error "Closed fixture key arguments required"
+  set expectedBrowser to item 1 of argv
+  set expectedTitle to item 2 of argv
+  set expectedPID to (item 3 of argv) as integer
+  set fixtureAction to item 4 of argv
+  if expectedPID is less than 1 then error "Invalid fixture browser PID"
+  if expectedBrowser is "chrome" then
+    set expectedName to "Google Chrome"
+    set expectedBundle to "com.google.Chrome"
+  else if expectedBrowser is "safari" then
+    set expectedName to "Safari"
+    set expectedBundle to "com.apple.Safari"
+  else
+    error "Browser outside closed fixture"
+  end if
+  if {"shift-left", "select-all", "copy", "cut", "shift-tab", "tab"} does not contain fixtureAction then error "Key action outside closed fixture"
+  my requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
+  tell application "System Events"
+    if fixtureAction is "shift-left" then
+      key code 123 using {shift down}
+      set physicalCode to 123
+      set modifierName to "shift"
+    else if fixtureAction is "select-all" then
+      key code 0 using {command down}
+      set physicalCode to 0
+      set modifierName to "command"
+    else if fixtureAction is "copy" then
+      key code 8 using {command down}
+      set physicalCode to 8
+      set modifierName to "command"
+    else if fixtureAction is "cut" then
+      key code 7 using {command down}
+      set physicalCode to 7
+      set modifierName to "command"
+    else if fixtureAction is "shift-tab" then
+      key code 48 using {shift down}
+      set physicalCode to 48
+      set modifierName to "shift"
+    else
+      key code 48
+      set physicalCode to 48
+      set modifierName to "none"
+    end if
+    delay 0.12
+  end tell
+  my requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
+  return "{\\"status\\":\\"key-sent\\",\\"action\\":\\"" & fixtureAction & "\\",\\"keyCode\\":" & physicalCode & ",\\"modifier\\":\\"" & modifierName & "\\",\\"frontPid\\":" & expectedPID & "}"
+end run`;
 export function createInputOwner({browser,config,inputHelper,run,record,guard,mountedId}){
-  if(!['safari','chrome'].includes(browser)||!/^[a-f0-9]{32}$/.test(config.nonce)
+  if(!['safari','chrome'].includes(browser)||config.nonce.length!==32||!/^[a-f0-9]{32}$/.test(config.nonce)
     ||config.origin!=='http://127.0.0.1:4174'||config.fixtureUrl!==config.origin+'/selection'
     ||config.title!=='KlenWriter Selection native '+config.nonce||!inputHelper.startsWith('/'))throw Error('Invalid closed selection input configuration');
   let disabled=false,serial=0,held=false,mayHaveDown=false,cleanupAttempted=false;
   async function perform(action,cleanup=false){
-      let dispatchStarted=false,execution=null,proof=null,preAge=null;
+      let dispatchStarted=false,execution=null,keyGuardExecution=null,keyGuard=null,systemEventsExecution=null,proof=null,preAge=null;
       try{
         if((disabled&&!cleanup)||!actions.includes(action)||!mountedId())throw Error('Selection input disabled or missing owned mount');
         if(cleanup&&(action!=='up'||cleanupAttempted||!held&&!mayHaveDown))throw Error('No separately owned pointer cleanup is available');
@@ -43,20 +111,50 @@ export function createInputOwner({browser,config,inputHelper,run,record,guard,mo
           mountedId:mountedId(),requestId:proof.id,serial,caseId:value.caseId,action,target:value.target,point,viewport,
           pointerDown:held||mayHaveDown,cleanupOnly:cleanup,deadlineMs:remaining};
         const json=JSON.stringify(request);if(Buffer.byteLength(json)>limits.commandBytes)throw Error('Selection physical request exceeds bound');
-        dispatchStarted=true;if(action==='down')mayHaveDown=true;
-        execution=run(inputHelper,['--request',json],{timeout:remaining,fullStdout:true,maxBuffer:32768});
-        const actual=JSON.parse(execution.stdout);
-        if(actual.status!=='sent'||actual.action!==action||actual.requestId!==proof.id||actual.nonce!==config.nonce)throw Error('Native physical input receipt differs');
+        let actual;
+        if(mouseActions.has(action)){
+          dispatchStarted=true;if(action==='down')mayHaveDown=true;
+          execution=run(inputHelper,['--request',json],{timeout:remaining,fullStdout:true,maxBuffer:32768});
+          actual=JSON.parse(execution.stdout);
+          if(actual.status!=='sent'||actual.action!==action||actual.requestId!==proof.id||actual.nonce!==config.nonce)throw Error('Native physical input receipt differs');
+        }else{
+          try{keyGuardExecution=run(inputHelper,['--guard-key',json],{timeout:remaining,fullStdout:true,maxBuffer:32768});}
+          catch(error){keyGuardExecution=error.execution??null;throw error;}
+          keyGuard=JSON.parse(keyGuardExecution.stdout);
+          if(keyGuard.status!=='guarded'||keyGuard.delivery!=='not_sent'||keyGuard.action!==action||keyGuard.requestId!==proof.id||keyGuard.nonce!==config.nonce
+            ||keyGuard.mountedId!==mountedId()||keyGuard.caseId!==value.caseId||keyGuard.target!==value.target||keyGuard.cleanupOnly!==false
+            ||keyGuard.frontBundle!==(browser==='chrome'?'com.google.Chrome':'com.apple.Safari')
+            ||!Number.isSafeInteger(keyGuard.frontPid)||keyGuard.frontPid<=0||keyGuard.frontPid>2147483647
+            ||keyGuard.expectedAxWindowTitle!==config.title+(browser==='chrome'?' - Google Chrome':'')
+            ||keyGuard.observedAxWindowTitle!==keyGuard.expectedAxWindowTitle)throw Error('Strict native key preflight differs');
+          const view=keyGuard.axViewport;
+          if(!Number.isSafeInteger(keyGuard.axWindowCount)||keyGuard.axWindowCount<1||keyGuard.axWindowCount>32
+            ||!view||!['x','y','width','height'].every(key=>Number.isFinite(view[key]))
+            ||Math.abs(view.width-1024)>.5||Math.abs(view.height-768)>.5||!Number.isFinite(view.x+view.width)||!Number.isFinite(view.y+view.height)
+            ||!Number.isFinite(keyGuard.elapsedMs)||keyGuard.elapsedMs<0||keyGuard.elapsedMs>remaining)throw Error('Strict native key geometry/deadline differs');
+          const keyRemaining=Math.floor(limits.guardAgeMs-age(proof.start));
+          if(keyRemaining<=0)throw Error('Selection guard expired after read-only key preflight; no key sent');
+          dispatchStarted=true;
+          try{systemEventsExecution=run('/usr/bin/osascript',['-e',guardedKey,browser,keyGuard.expectedAxWindowTitle,String(keyGuard.frontPid),action],
+            {timeout:keyRemaining,fullStdout:true,maxBuffer:32768});}
+          catch(error){systemEventsExecution=error.execution??null;throw error;}
+          execution=systemEventsExecution;actual=JSON.parse(execution.stdout);
+          const expected=keyActions[action];
+          if(actual.status!=='key-sent'||actual.action!==action||actual.keyCode!==expected.code||actual.modifier!==expected.modifier
+            ||actual.frontPid!==keyGuard.frontPid)throw Error('System Events closed key receipt differs');
+        }
         if(age(proof.start)>limits.guardAgeMs)throw Error('Selection guard expired during physical input');
         if(action==='down'){held=true;mayHaveDown=false;}else if(action==='up'){held=false;mayHaveDown=false;}
         const receipt={action,requestId:proof.id,pageGuardSerial:serial,mountedId:mountedId(),caseId:value.caseId,
           point,target:value.target,preDispatchGuardAgeMs:preAge,maximumGuardAgeMs:age(proof.start),guardAgeLimitMs:limits.guardAgeMs,
           lastTrustedPointerMove:action==='down'?value.lastTrustedPointerMove:null,
-          execution,actual,delivery:'sent',pointerDown:held,cleanupOnly:cleanup};
+          execution,actual,keyGuardExecution,keyGuard,systemEventsExecution,delivery:'sent',pointerDown:held,cleanupOnly:cleanup,
+          method:mouseActions.has(action)?'Strict AX guard + CGEvent mouse':'Fresh strict AX key preflight + System Events fixed key code; post receipt, not browser acknowledgement'};
         record(cleanup?'cleanup-pointer-release':'physical-input',receipt);return receipt;
       }catch(error){
         disabled=true;
         record(cleanup?'cleanup-pointer-release-failure':'physical-input-failure',{action,error:String(error?.message??error),execution:execution??error.execution??null,
+          keyGuardExecution,keyGuard,systemEventsExecution,
           requestId:proof?.id??null,preDispatchGuardAgeMs:preAge,maximumGuardAgeMs:proof?.start?age(proof.start):null,
           lastTrustedPointerMove:proof?.value?.lastTrustedPointerMove??null,
           delivery:dispatchStarted?'unknown/may_have_sent':'not_sent',pointerState:held?'down':mayHaveDown?'may-have-down':'up',dispatchStarted,cleanupOnly:cleanup});

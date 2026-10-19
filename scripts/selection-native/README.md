@@ -27,7 +27,8 @@ resubmits a command. Absolute per-call deadline is15s.
 Fresh window creation and at most3 viewport adjustments are bootstrap-only Apple
 Events. The exact viewport is1024×768, visual scale1/offset0. HTTP page-ready
 confirms module initialization. After bootstrap, fixture commands use HTTP;
-physical transitions use the compiled Swift helper. Cleanup uses an exact unique
+mouse transitions use the compiled Swift helper; keys use the guarded System
+Events path described below. Cleanup uses an exact unique
 foreground AX title and guarded CmdW; the separate finish result establishes
 native resource release.
 
@@ -46,6 +47,24 @@ or alternate title is accepted. Input receipts retain the expected and observed
 AX window titles separately from the page guard.
 The fixture separately compares trusted client coordinates to its independent
 geometry. CGEvent provenance means platform input, not hardware-device evidence.
+
+Swift `--request` accepts only the four closed mouse actions. The six key actions
+use `--guard-key` with the same closed `osr40-native-input/1` envelope and strict
+AX viewport containment/ownership checks. A mouse action in key mode, or a key
+action in mouse mode, refuses before AX access. Key mode returns
+`status:"guarded",delivery:"not_sent"` before any CGEvent path. Within the remaining
+original1s page-guard deadline, one fixed `/usr/bin/osascript` program checks the
+exact guarded PID, app/bundle, unique AX title and focused window before and after
+one System Events key code. The action alone determines its fixed mapping:
+ShiftLeft123+Shift, SelectAll0+Command, Copy8+Command, Cut7+Command, ShiftTab48+Shift
+and Tab48. No arbitrary keycode, modifier or script argument is accepted; no app
+activation occurs in this key path. It uses the native39 System Events mechanism,
+with its120ms settlement inside the same deadline. Raw Swift preflight and System
+Events executions/results are retained separately. `key-sent` is a post receipt;
+the unchanged trusted UA event, selection and clipboard acknowledgement assertions
+establish whether the fixture actually received the action. A read-only preflight
+refusal is `not_sent`; unknown dispatch or postcheck failure is
+`unknown/may_have_sent` and disables later actions.
 
 Chrome starts only its isolated fixture child with
 `--force-renderer-accessibility=complete`, Chromium's documented fixed AX mode
@@ -81,6 +100,8 @@ checks. It never resumes the failed scenario or changes its failed result.
 An unacknowledged unknown broker request cannot be bypassed for cleanup.
 Call this release before finish destroys the mount. Unknown cleanup is retained,
 never replaced with a fabricated successful release.
+Any case acceptance failure also stops the remaining matrix after that case's
+owned cleanup; later cases remain `NOT_RUN` and no later locale source is selected.
 
 `tests/selection-native-input.node.mjs` checks controlled protocol/dispatch
 boundaries without executing Swift, AX, browser or network operations. Swift
