@@ -62,6 +62,10 @@ control/menu и означают up/down/unnest/nest. Native Find/document short
 сохраняются. Профиль проверяет контейнеры: вынос единственного ребёнка из quote
 может быть refused, без удаления обёртки в JS. Physical DnD — OSR-44.
 
+Контекст использует локализованные generic primitive names и путь native
+ancestors, например «Документ / Контейнер». Он связан с Move и меню через ARIA;
+технические node/type IDs не служат пользовательскими подписями.
+
 Composition блокирует конфликтующие controls, сохраняя native provisional input.
 Read-only сохраняет selection/copy/Find; disabled не предоставляет editing focus.
 После отказа требуется новое явное действие; позднего replay нет.
@@ -127,3 +131,9 @@ Chromium/WebKit/Firefox checks. Controlled faults/queues, реальные brows
 проверяются на финальной source/build версии. WebKit не является Safari;
 labels/axe не подтверждают real screen-reader acceptance. Delivery gates —
 CONTRIBUTING; CI остаётся build-only.
+
+Конечный [installed protocol](../contracts/ui/v1/installed-matrix.md) и
+[его runner](../scripts/ui-native/README.md) разделяют физические действия,
+подготовку через host API и наблюдение native-вызовов. Проверки input owner в
+`test:ui:unit` используют процессы-заглушки; компиляция Swift/AppleScript и эти
+тесты сами по себе не подтверждают ввод в установленном браузере.

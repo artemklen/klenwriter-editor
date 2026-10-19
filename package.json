@@ -47,7 +47,7 @@
     "fuzz:long": "node scripts/reliability/fuzz.mjs long",
     "check:ui-contract": "node scripts/ui-contract-check.mjs",
     "test:ui:native": "node scripts/test-ui-native.mjs",
-    "test:ui:unit": "node --test tests/ui-host-request.node.mjs tests/ui-public-types.node.mjs",
+    "test:ui:unit": "node --test tests/ui-host-request.node.mjs tests/ui-public-types.node.mjs tests/ui-native-input.node.mjs",
     "test:ui:browser": "playwright test --config playwright.ui.config.js",
     "test:ui": "npm run check:ui-contract && npm run test:ui:native && npm run test:ui:unit && npm run test:ui:browser"
   },

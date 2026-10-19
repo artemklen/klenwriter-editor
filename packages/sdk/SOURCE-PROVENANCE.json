@@ -350,6 +350,7 @@
       "scripts/ui-native",
       "tests/ui-host-request.node.mjs",
       "tests/ui-public-types.node.mjs",
+      "tests/ui-native-input.node.mjs",
       "tests/ui-controls-browser.spec.js",
       "tests/ui-geometry-browser.spec.js",
       "spikes/workspace/ui.html",
