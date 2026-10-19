@@ -67,7 +67,6 @@ on run argv
       set physicalCode to 48
       set modifierName to "none"
     end if
-    delay 0.12
   end tell
   my requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
   return "{\\"status\\":\\"key-sent\\",\\"action\\":\\"" & fixtureAction & "\\",\\"keyCode\\":" & physicalCode & ",\\"modifier\\":\\"" & modifierName & "\\",\\"frontPid\\":" & expectedPID & "}"

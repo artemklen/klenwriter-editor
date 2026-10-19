@@ -58,8 +58,10 @@ exact guarded PID, app/bundle, unique AX title and focused window before and aft
 one System Events key code. The action alone determines its fixed mapping:
 ShiftLeft123+Shift, SelectAll0+Command, Copy8+Command, Cut7+Command, ShiftTab48+Shift
 and Tab48. No arbitrary keycode, modifier or script argument is accepted; no app
-activation occurs in this key path. It uses the native39 System Events mechanism,
-with its120ms settlement inside the same deadline. Raw Swift preflight and System
+activation occurs in this key path. It uses the native39 System Events key mechanism.
+The post ownership check runs immediately after the key, with no fixed sleep;
+actual browser reception is verified afterwards by the existing trusted trace,
+selection, clipboard acknowledgement and focus/stop assertions. Raw Swift preflight and System
 Events executions/results are retained separately. `key-sent` is a post receipt;
 the unchanged trusted UA event, selection and clipboard acknowledgement assertions
 establish whether the fixture actually received the action. A read-only preflight
