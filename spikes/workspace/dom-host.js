@@ -26,32 +26,54 @@ function receiptSummary(receipt) {
   return {status:receipt.status,sdk:receipt.sdk.status,callbackFailure:receipt.callbackFailure,
     recovery:receipt.recovery ? {originalInput:receipt.recovery.originalInput ? Array.from(receipt.recovery.originalInput) : null,region:regionSummary(receipt.recovery.region)} : null};
 }
-async function options(profile, access = 'editable', registry = 'D0') {
+async function options(profile, access = 'editable', registry = 'D0', admission = 'validate') {
   const [module,packet] = await Promise.all([modulePromise,packetPromise]);
   const notes = profile === 'notes', descriptor = packet.registries[registry];
   return {abi:'editor-sdk/2',build_id:sdkBuildId,profile:notes ? {profile_id:'org.example.notes',profile_version:'1.0.0',codec_id:'org.example.notes/json',wire_version:1,extensions:descriptor.selected_extensions} : packet.kwdjProfile,
-    admission:'validate',access,registry_json:notes ? packet.registryJson[registry] : packet.kwdjRegistryJson,
+    admission,access,registry_json:notes ? packet.registryJson[registry] : packet.kwdjRegistryJson,
     profile_options_json:JSON.stringify(notes ? {root_blocks:registry === 'D0' ? ['org.example.notes/paragraph'] : ['org.example.notes/paragraph','org.example.notes/callout'],limits:null} : {identities:{media:[],references:[]},limits:null})};
+}
+function controlledFaultModule(module,kind,observations) {
+  class ActualSessionWithControlledReply {
+    constructor(input,optionsJson){this.actual=new module.Session(input,optionsJson);this.stamp=null;}
+    initialization(){const json=this.actual.initialization(),reply=JSON.parse(json);this.stamp=reply.value?.state?.stamp??null;return json;}
+    context(){return this.actual.context();}
+    call(json){
+      const request=JSON.parse(json);
+      if(request.kind===kind){
+        const reply={status:'fatal',diagnostic:{code:'fixture.native_fatal',path:'/controlled-transport',category:'transport',details:{fixture:'dom-mounted-controlled-reply'},stamp:this.stamp,may_have_committed:false}};
+        observations.push({requestKind:request.kind,response:copy(reply),provenance:'CONTROLLED transport reply; all other calls and native ownership delegate to actual packaged WASM Session'});
+        return JSON.stringify(reply);
+      }
+      const result=this.actual.call(json),reply=JSON.parse(result);this.stamp=reply.value?.state?.stamp??this.stamp;return result;
+    }
+    destroy(){this.actual.destroy();}
+    free(){this.actual.free();}
+  }
+  return {manifest:module.manifest,Session:ActualSessionWithControlledReply,resourceCounts:()=>module.resourceCounts()};
 }
 export async function mount(config = {}) {
   const module = await modulePromise, id = `mount-${++serial}`, element = document.createElement('div');
-  element.id = id; document.querySelector('#mounts').appendChild(element);
+  element.id = id; element.setAttribute('aria-label',`KlenWriter editor example ${serial}`);
+  document.querySelector('#mounts').appendChild(element);
   const profile = config.profile ?? 'kwdj', source = config.source ?? await fixture(config.fixture ?? (profile === 'notes' ? 'Notes-D0' : 'D0'));
-  const failures = [], recoveries = [], events = [];
-  let resolveLoader;
+  const failures = [], recoveries = [], events = [], faults=[];
+  const loaded=config.faultKind?controlledFaultModule(module,config.faultKind,faults):module;
+  let resolveLoader,resolveTemporary,loaderCalls=0;
+  const temporaryDelay=config.delayReplacement?new Promise(resolve=>{resolveTemporary=resolve;}):null;
   const delayed = config.delayed ? new Promise(resolve => {resolveLoader=resolve;}) : null;
-  const editor = mountEditor({element,editor:{input:encode(source),options:await options(profile,config.access ?? 'editable',config.registry ?? 'D0'),loader:() => config.failLoad ? Promise.reject(new Error('controlled loader rejection')) : delayed ?? Promise.resolve(module)},
+  const editor = mountEditor({element,editor:{input:encode(source),options:await options(profile,config.access ?? 'editable',config.registry ?? 'D0',config.admission ?? 'validate'),loader:() => {loaderCalls++;return config.failLoad ? Promise.reject(new Error('controlled loader rejection')) : config.delayReplacement&&loaderCalls===2 ? temporaryDelay : delayed ?? Promise.resolve(loaded);}},
     renderers:config.badBinding ? defineRendererCatalog({...kwdjBasicRenderers.definition,binding:{...kwdjBasicRenderers.definition.binding,registryDigest:'0'.repeat(64)}}) : profile === 'notes' ? notesD0Renderers : kwdjBasicRenderers,
     ...(config.mode ? {mode:config.mode} : {}),onRefusal:failure => failures.push(copy(failure)),onRecovery:packet => {
       recoveries.push({originalInput:packet.originalInput ? Array.from(packet.originalInput) : null,region:regionSummary(packet.region)});
       if (config.mutateRecovery && packet.originalInput) packet.originalInput.fill(0);
       if (config.throwRecovery) throw new Error('intentional recovery callback failure');
     }});
-  const record = {id,editor,element,source,failures,recoveries,events,marks:new Map(),resolveLoader,ready:null}; records.set(id,record);
+  const record = {id,editor,element,source,failures,recoveries,events,faults,marks:new Map(),resolveLoader,resolveTemporary,loaderCalls:()=>loaderCalls,ready:null}; records.set(id,record);
   if (config.delayed) return {id,lifecycle:editor.lifecycle,contenteditable:element.getAttribute('contenteditable'),originalInput:Array.from(editor.originalInput() ?? [])};
   const ready = await editor.ready; record.ready = ready;
   if (ready.status === 'ready') editor.subscribe(event => events.push(copy(event)));
-  return {id,ready:ready.status,diagnostic:ready.diagnostic ?? null,lifecycle:editor.lifecycle,originalInput:editor.originalInput() ? Array.from(editor.originalInput()) : null};
+  return {id,ready:ready.status,diagnostic:ready.diagnostic ?? null,nativeResponse:ready.response??null,lifecycle:editor.lifecycle,originalInput:editor.originalInput() ? Array.from(editor.originalInput()) : null};
 }
 export async function releaseLoader(id) {
   const r=rec(id); r.resolveLoader(await modulePromise); r.resolveLoader=null;
@@ -78,10 +100,10 @@ export function domAt(id,path) {
 }
 export function leaf(id,path) {const outer=domAt(id,path),walker=document.createTreeWalker(outer,NodeFilter.SHOW_TEXT);const node=walker.nextNode();assert(node,`Missing text ${path}`);return node;}
 export async function select(id,path,offset,focusPath=path,focusOffset=offset,affinity='after') {
-  const r=rec(id),a=row(id,path),f=row(id,focusPath);
+  const r=rec(id);r.element.focus();const a=row(id,path),f=row(id,focusPath);
   const point=(node,value)=>node.primitive==='text'?{kind:'text',node:node.id,offset:value,affinity}:{kind:'child',parent:node.id,index:value,affinity};
   const result=await outcome(r.editor.submit({kind:'set_selection',stamp:r.editor.capture(),selection:{anchor:point(a,offset),focus:point(f,focusOffset)}}));
-  assert(response(result).status==='ok','Actual set_selection refused');r.element.focus();return result;
+  assert(response(result).status==='ok','Actual set_selection refused');return result;
 }
 export async function command(id,intent) {const r=rec(id);return outcome(r.editor.submit({kind:'command',stamp:r.editor.capture(),command:kwdjCommand(intent),history_hint:{kind:'isolated'}}));}
 export async function submit(id,request) {const r=rec(id);return outcome(r.editor.submit({...request,...('stamp' in request || !['release_snapshot'].includes(request.kind)?{stamp:r.editor.capture()}:{})}));}
@@ -95,7 +117,7 @@ export async function snapshot(id) {
 export async function inspect(id) {
   const r=rec(id), native=nativeRows(id), selection=document.getSelection();
   return {...native,lifecycle:r.editor.lifecycle,failures:copy(r.failures),events:copy(r.events),canonical:await snapshot(id),
-    domText:r.element.textContent,ids:[...document.querySelectorAll('[id]')].map(e=>e.id),resources:copy(r.editor.resources()),
+    capture:copy(r.editor.capture()),context:copy(r.editor.context()),domText:r.element.textContent,ids:[...document.querySelectorAll('[id]')].map(e=>e.id),resources:copy(r.editor.resources()),
     actualSelection:selection?.anchorNode?{anchorText:selection.anchorNode.textContent,anchorOffset:selection.anchorOffset,focusText:selection.focusNode.textContent,focusOffset:selection.focusOffset,inside:r.element.contains(selection.anchorNode)&&r.element.contains(selection.focusNode)}:null,
     attributes:{contenteditable:r.element.getAttribute('contenteditable'),tabindex:r.element.getAttribute('tabindex'),role:r.element.getAttribute('role'),'aria-readonly':r.element.getAttribute('aria-readonly'),'aria-disabled':r.element.getAttribute('aria-disabled')}};
 }
@@ -165,3 +187,35 @@ export function read(id,request) {const r=rec(id);return r.editor.read({...reque
 export function listenerDestroy(id) {const r=rec(id);let receipt=null,calls=0;r.editor.subscribe(event=>{if(event.change.kind==='document')receipt=r.editor.destroy();});r.editor.subscribe(()=>calls++);r.listenerDisposal=()=>({calls,receipt:receipt?receiptSummary(receipt):null,resources:r.editor.resources()});}
 export function listenerDestroyResult(id) {return rec(id).listenerDisposal();}
 Object.assign(window.domHost,{rawSelection,queryCommand,read,listenerDestroy,listenerDestroyResult});
+
+export async function faultRequest(id,method) {
+  const r=rec(id),stamp=r.editor.capture();
+  const response=method==='read'?r.editor.read({kind:'catalog'}):r.editor.query({kind:'query_history',stamp,direction:'undo'});
+  return {response,lifecycle:r.editor.lifecycle,contenteditable:r.element.getAttribute('contenteditable'),resources:copy(r.editor.resources()),faults:copy(r.faults),native:copy(r.editor.nativeResources())};
+}
+Object.assign(window.domHost,{faultRequest});
+
+export async function negativeSource(item) {
+  const path=item.input?item.input.path:`inputs/${item.document}.json`;
+  const result=await fetch(`/dom-fixtures/${path}`);assert(result.ok,`Missing frozen negative ${path}`);return result.text();
+}
+export async function startReplacement(id,name) {
+  const r=rec(id),source=await fixture(name);r.pendingReplacement=r.editor.replace(encode(source));
+  return {loaderCalls:r.loaderCalls(),resources:copy(r.editor.resources()),capture:copy(r.editor.capture()),source};
+}
+export async function finishReplacement(id) {
+  const r=rec(id);assert(r.resolveTemporary,'No delayed temporary loader');r.resolveTemporary(await modulePromise);r.resolveTemporary=null;
+  const result=await r.pendingReplacement;return {result:await outcome(result),resources:copy(r.editor.resources()),capture:copy(r.editor.capture()),native:copy(r.editor.nativeResources()),domText:r.element.textContent,loaderCalls:r.loaderCalls()};
+}
+export async function rawRequest(id,request,query=false) {
+  const r=rec(id),owned={...request,stamp:r.editor.capture()};return query?r.editor.query(owned):outcome(r.editor.submit(owned));
+}
+Object.assign(window.domHost,{negativeSource,startReplacement,finishReplacement,rawRequest});
+
+export function malformedCompositionRequests(id) {
+  const r=rec(id),before=nativeRows(id);let accessorCalls=0;
+  const accessor={};Object.defineProperty(accessor,'kind',{enumerable:true,get(){accessorCalls++;return 'command';}});
+  const results=[r.editor.submit(null),r.editor.query(null),r.editor.submit(accessor),r.editor.query(accessor)];
+  return {results,accessorCalls,before,after:nativeRows(id),lifecycle:r.editor.lifecycle};
+}
+Object.assign(window.domHost,{malformedCompositionRequests});

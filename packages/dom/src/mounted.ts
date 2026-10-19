@@ -20,6 +20,7 @@ class MountedOwner implements MountedEditor {
   readonly ready: Promise<MountedReady>;
   #resolve!: (value: MountedReady) => void;
   #settled = false;
+  #initialReadFailure: Response | null = null;
   #lifecycle: MountedLifecycle = 'loading';
   #element: HTMLElement | null = null;
   #controller: EditorControllerV2 | null = null;
@@ -111,7 +112,7 @@ class MountedOwner implements MountedEditor {
     if (region) this.#recovery = region;
     else if (!this.#recovery) this.#recovery = this.#view?.captureRegion() ?? null;
     if (!this.#recovery && this.#element && ['dom.reconcile_limit','dom.recovery_required','dom.composition_conflict'].includes(failure.diagnostic.code)) this.#recovery = Object.freeze({kind:'retained_dom',element:this.#element,reason:'capture_limit',ownership:'transferred_to_host'});
-    this.#lifecycle = 'recoveryRequired';
+    this.#lifecycle = this.#controller?.lifecycle === 'fatal' ? 'fatal' : 'recoveryRequired';
     this.#element?.setAttribute('contenteditable','false');
     this.#report(failure);
   }
@@ -128,8 +129,24 @@ class MountedOwner implements MountedEditor {
     element.setAttribute('tabindex', this.#mode === 'disabled' ? '-1' : '0');
     if (this.#mode === 'disabled' && element.ownerDocument.activeElement === element) element.blur();
   }
+  #reflectFatal(response: Response): Response {
+    if (this.#lifecycle === 'disposing' || this.#lifecycle === 'destroyed') return response;
+    if (response.status === 'fatal') {
+      this.#lifecycle = 'fatal';
+      this.#observer?.disconnect(); this.#observer = null;
+      this.#input?.destroy(); this.#input = null;
+      this.#unsubscribe?.(); this.#unsubscribe = null;
+      this.#element?.setAttribute('contenteditable','false');
+    }
+    return response;
+  }
+  #nativeRead(request: ReadRequest): Response {
+    const response = this.#controller!.read(request);
+    if (this.#lifecycle === 'loading' && response.status !== 'ok') this.#initialReadFailure = response;
+    return this.#reflectFatal(response);
+  }
   #state(): DeepReadonly<StateDto> | null {
-    const result = this.#controller?.read({ kind:'state' });
+    const result = this.#controller ? this.#nativeRead({ kind:'state' }) : null;
     return result?.status === 'ok' && result.value.kind === 'state' ? result.value.state : null;
   }
   async #initialize() {
@@ -143,16 +160,19 @@ class MountedOwner implements MountedEditor {
     const context = controller.context();
     let failure = context ? admitCatalog(this.#catalog!,context) : this.#failure('dom.renderer_binding_mismatch','mount');
     if (!failure) {
-      this.#view = createDomView({ element:this.#element!, catalog:this.#catalog!, readNode:(stamp,node) => controller.read({ kind:'node',stamp:stamp as StampDto,node }) });
+      this.#view = createDomView({ element:this.#element!, catalog:this.#catalog!, readNode:(stamp,node) => this.#nativeRead({ kind:'node',stamp:stamp as StampDto,node }) });
       const state = this.#state();
       failure = state ? this.#view.initialize(state) : this.#failure('dom.not_ready','mount');
     }
     if (failure) {
-      this.#lifecycle = 'recoveryRequired'; controller.destroy();
+      const nativeFailure = this.#initialReadFailure; this.#initialReadFailure = null;
+      this.#lifecycle = nativeFailure?.status === 'fatal' ? 'fatal' : 'recoveryRequired'; controller.destroy();
       this.#view?.destroy({ retainRegion:true }); this.#view = null;
-      this.#settle({ ...failure, response, recovery:this.#packet() }); this.#report(failure); return;
+      if (nativeFailure) this.#settle({status:'sdk_failure',response:nativeFailure,recovery:this.#packet()});
+      else { this.#settle({ ...failure, response, recovery:this.#packet() }); this.#report(failure); }
+      return;
     }
-    this.#context = context;
+    this.#initialReadFailure = null; this.#context = context;
     const subscription = controller.subscribe(event => this.#publication(event));
     if (typeof subscription !== 'function') {
       this.#lifecycle = 'recoveryRequired'; controller.destroy();
@@ -209,18 +229,18 @@ class MountedOwner implements MountedEditor {
       this.#recover(domRefusal('dom.presentation_unsupported','render',event.after,null,null,'alreadyPublished'));
     } finally { this.#delivery--; this.#observe(); }
   }
-  read(request: ReadRequest): Response | DomRefusal { const guard = this.#lifecycle === 'recoveryRequired' && this.#controller?.lifecycle === 'ready' ? null : this.#guard(); return guard ? this.#report(guard) : this.#controller!.read(request); }
+  read(request: ReadRequest): Response | DomRefusal { const guard = this.#lifecycle === 'recoveryRequired' && this.#controller?.lifecycle === 'ready' ? null : this.#guard(); return guard ? this.#report(guard) : this.#nativeRead(request); }
   query(request: QueryRequest): Response | DomRefusal {
-    try { request = ownConfiguration(request); } catch { return this.#report(this.#failure('dom.invalid_options')); }
+    try { request = ownConfiguration(request); if (!request || typeof request !== 'object' || Array.isArray(request) || typeof request.kind !== 'string') throw new TypeError(); } catch { return this.#report(this.#failure('dom.invalid_options')); }
     const lifecycle = this.#lifecycle === 'recoveryRequired' && this.#controller?.lifecycle === 'ready' ? null : this.#guard();
     if (lifecycle) return this.#report(lifecycle);
     let gate: DomRefusal | null;
     try { gate = this.#catalog!.definition.commandGate(request); } catch { gate = this.#failure('dom.command_unsupported'); }
-    return gate ? this.#report(gate) : this.#controller!.query(request);
+    return gate ? this.#report(gate) : this.#reflectFatal(this.#controller!.query(request));
   }
   submit(request: MountedMutation) { return this.#submit(request,false); }
   #submit(request: MountedMutation, input: boolean): Submission | DomRefusal {
-    try { request = ownConfiguration(request); } catch { return this.#report(this.#failure('dom.invalid_options')); }
+    try { request = ownConfiguration(request); if (!request || typeof request !== 'object' || Array.isArray(request) || typeof request.kind !== 'string') throw new TypeError(); } catch { return this.#report(this.#failure('dom.invalid_options')); }
     const kind = (request as MutationRequestV2)?.kind;
     const recoveryRead = this.#lifecycle === 'recoveryRequired' && this.#controller?.lifecycle === 'ready' && ['snapshot','acknowledge_snapshot','reconcile_snapshot','release_snapshot'].includes(kind);
     const guard = recoveryRead ? null : this.#guard();
@@ -236,7 +256,7 @@ class MountedOwner implements MountedEditor {
     this.#forwarding++;
     try {
       const result = this.#controller!.submit(request);
-      const terminal = (response: Response) => { if (response.status === 'fatal' && this.#lifecycle === 'ready') { this.#lifecycle = 'fatal'; this.#element?.setAttribute('contenteditable','false'); } };
+      const terminal = (response: Response) => { if (response.status === 'fatal') this.#reflectFatal(response); };
       if (result.status === 'completed') terminal(result.response); else void result.completion.then(terminal);
       return result;
     } finally { this.#forwarding--; }
@@ -250,7 +270,9 @@ class MountedOwner implements MountedEditor {
     try { return request.command.id === this.#catalog!.definition.input?.insertText?.('').id; } catch { return false; }
   }
   subscribe(listener: (event: DeepReadonly<EventDto>) => void) {
-    const guard = this.#guard(); return guard ? this.#report(guard) : this.#controller!.subscribe(listener);
+    const guard = this.#guard(); if (guard) return this.#report(guard);
+    const subscription = this.#controller!.subscribe(listener);
+    return typeof subscription === 'function' ? subscription : this.#reflectFatal(subscription);
   }
   setInteractionMode(mode: InteractionMode) {
     const guard = this.#guard('mode');
@@ -285,10 +307,14 @@ class MountedOwner implements MountedEditor {
       if (binding) return this.#report(binding);
       if (!same(context,this.#context)) return this.#report(this.#failure('dom.renderer_binding_mismatch','replace'));
       const preflightElement = this.#element!.ownerDocument.createElement('div');
-      const preflight = createDomView({ element:preflightElement,catalog:this.#catalog!,readNode:(stamp,node) => temporary!.read({kind:'node',stamp:stamp as StampDto,node}) });
+      let readFailure: Response | null = null;
+      const preflight = createDomView({ element:preflightElement,catalog:this.#catalog!,readNode:(stamp,node) => { const response = temporary!.read({kind:'node',stamp:stamp as StampDto,node}); if (response.status !== 'ok') readFailure = response; return response; } });
       const stateResponse = temporary.read({ kind:'state' });
-      const failure = stateResponse.status === 'ok' && stateResponse.value.kind === 'state' ? preflight.initialize(stateResponse.value.state) : this.#failure('dom.renderer_missing','replace');
-      preflight.destroy();
+      let failure: DomRefusal | null;
+      try { failure = stateResponse.status === 'ok' && stateResponse.value.kind === 'state' ? preflight.initialize(stateResponse.value.state) : this.#failure('dom.renderer_missing','replace'); }
+      finally { preflight.destroy(); }
+      if (stateResponse.status !== 'ok') return {status:'completed',response:stateResponse};
+      if (readFailure) return {status:'completed',response:readFailure};
       temporary.destroy(); this.#temporary = null; temporary = null;
       if (failure) return this.#report(failure);
       if (this.#guard('replace')) return this.#report(this.#guard('replace')!);
@@ -325,7 +351,8 @@ class MountedOwner implements MountedEditor {
     if (this.#receipt) return this.#receipt;
     this.#lifecycle = 'disposing';
     this.#observer?.disconnect(); this.#observer = null;
-    this.#recovery ??= this.#view?.captureRegion() ?? null;
+    if (this.#view?.hasProvisional()) this.#recovery = this.#view.captureRegion() ?? this.#recovery;
+    else this.#recovery ??= this.#view?.captureRegion() ?? null;
     const packet = this.#packet();
     this.#input?.destroy(); this.#input = null;
     this.#unsubscribe?.(); this.#unsubscribe = null;
@@ -346,7 +373,7 @@ class MountedOwner implements MountedEditor {
       for (const [name,value] of this.#attributes) { if (value === null) this.#element.removeAttribute(name); else this.#element.setAttribute(name,value); }
       if (!this.#hadClass) this.#element.classList.remove('editor-surface');
     }
-    this.#replacement = false; this.#configuration = null; this.#catalog = null; this.#context = null;
+    this.#replacement = false; this.#initialReadFailure = null; this.#configuration = null; this.#catalog = null; this.#context = null;
     this.#original = null; this.#replacementInput = null; this.#recovery = null; this.#element = null; this.#attributes.clear(); this.#records = 0;
     receipt.sdk = sdk; receipt.callbackFailure = callbackFailure; Object.freeze(receipt);
     if (sdk.status === 'completed') this.#lifecycle = 'destroyed'; else void sdk.completion.then(() => { this.#lifecycle = 'destroyed'; });

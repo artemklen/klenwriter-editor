@@ -13,6 +13,7 @@ const routes = new Map([
   ['/admission-budget/probe_bg.wasm', ['artifacts/admission-budget/probe_bg.wasm', 'application/wasm']],
   ['/sdk', ['spikes/workspace/sdk-host.html', 'text/html']],
   ['/dom', ['spikes/workspace/dom-host.html', 'text/html']],
+  ['/dom-native-host.js', ['spikes/workspace/dom-native-host.js', 'text/javascript']],
   ['/dom-host.js', ['spikes/workspace/dom-host.js', 'text/javascript']],
   ['/notes-dom.mjs', ['examples/notes-extension/dom.mjs', 'text/javascript']],
   ['/dom-inventory.mjs', ['examples/notes-extension/dom-inventory.mjs', 'text/javascript']],
@@ -49,6 +50,8 @@ for (const name of domFixtureNames) for (const kind of ['inputs','expected']) {
   const file = `${name}${kind === 'expected' ? '.canonical' : ''}.json`;
   routes.set(`/dom-fixtures/${kind}/${file}`, [`contracts/dom/v1/${kind}/${file}`, 'application/json']);
 }
+const domNegativeNames = ['empty-text-unknown-attrs','empty-text-unknown-field','empty-text-wrong-attrs-shape','absent-color-unknown-attr','absent-color-unknown-field','absent-highlight-unknown-attr','unsafe-javascript-href','notes-version-2','notes-extra-envelope-field','notes-title-one-byte-over','notes-unknown-root-attr','scene-break-unknown-style','scene-break-unknown-onerror','heading-level-seven','notes-wrong-tags-kind'];
+for (const name of domNegativeNames) routes.set(`/dom-fixtures/negative/${name}.json`, [`contracts/dom/v1/negative/${name}.json`, 'application/json']);
 for (const name of ['acceptance-oracles.v3.json','manifest.json']) routes.set(`/dom-fixtures/${name}`, [`contracts/dom/v1/${name}`, 'application/json']);
 http.createServer(async (req, res) => {
   res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self' 'wasm-unsafe-eval' ${mapHashes.join(' ')}; style-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'`);

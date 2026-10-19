@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 const literal=name=>readFileSync(`contracts/dom/v1/expected/${name}.canonical.json`,'utf8');
@@ -47,11 +48,31 @@ test('T01/T06 exact authored text, nine marks, twelve nodes, attrs and safe stat
   expect(await call(page,'nativeSelectionMatches',id,'/0/2',2)).toBe(true);
   const catalog=await call(page,'mount',{fixture:'KWDJ-basic-catalog'});expect(catalog.ready).toBe('ready');const rendered=await checkpoint(page,catalog.id,'T06 complete supported catalog');
   expect(rendered.canonical).toBe(literal('KWDJ-basic-catalog'));expect(new Set(rendered.rows.filter(x=>x.node.type_id).map(x=>x.node.type_id)).size).toBe(12);
-  const semantic=await page.locator(`#${catalog.id}`).evaluate(el=>({h:el.querySelector('h2')?.textContent,quote:!!el.querySelector('blockquote'),lists:el.querySelectorAll('ul,ol').length,start:el.querySelector('ol')?.getAttribute('start'),checked:el.querySelector('[aria-checked="true"]')?.getAttribute('role'),atom:el.querySelector('hr')?.getAttribute('contenteditable'),strong:!!el.querySelector('strong'),code:el.querySelector('pre')?.textContent,whiteSpace:getComputedStyle(el).whiteSpace}));
-  expect(semantic).toMatchObject({h:'Heading',quote:true,lists:3,start:'3',checked:'checkbox',atom:'false',strong:true,whiteSpace:'pre-wrap'});
+  const semantic=await page.locator(`#${catalog.id}`).evaluate(el=>({h:el.querySelector('h2')?.textContent,quote:!!el.querySelector('blockquote'),lists:el.querySelectorAll('ul,ol').length,start:el.querySelector('ol')?.getAttribute('start'),
+    validListChildren:[...el.querySelectorAll('ul,ol')].every(list=>[...list.children].every(item=>item.tagName==='LI'&&!item.hasAttribute('role'))),
+    tasks:[...el.querySelectorAll('.editor-task-item')].map(item=>({tag:item.tagName,parent:item.parentElement.tagName,title:item.getAttribute('title'),role:item.getAttribute('role'),ariaChecked:item.getAttribute('aria-checked'),checked:item.classList.contains('editor-checked'),text:item.textContent})),
+    atom:el.querySelector('hr')?.getAttribute('contenteditable'),strong:!!el.querySelector('strong'),code:el.querySelector('pre')?.textContent,whiteSpace:getComputedStyle(el).whiteSpace}));
+  expect(semantic).toMatchObject({h:'Heading',quote:true,lists:3,start:'3',validListChildren:true,atom:'false',strong:true,whiteSpace:'pre-wrap'});
+  expect(semantic.tasks).toEqual([
+    {tag:'LI',parent:'UL',title:'Completed task',role:null,ariaChecked:null,checked:true,text:'Checked'},
+    {tag:'LI',parent:'UL',title:'Incomplete task',role:null,ariaChecked:null,checked:false,text:'Unchecked'},
+  ]);
+  expect(rendered.rows.filter(row=>row.node.type_id==='org.klenwriter.kwdj/task_item').map(row=>row.node.attributes.checked)).toEqual([{kind:'boolean',value:true},{kind:'boolean',value:false}]);
   const safe=await call(page,'mount',{fixture:'T06-safe-data'});expect(safe.ready).toBe('ready');expect((await checkpoint(page,safe.id,'T06 data')).canonical).toBe(literal('T06-safe-data'));
   expect(await page.locator(`#${safe.id} script, #${safe.id} img, #${safe.id} iframe, #${safe.id} style`).count()).toBe(0);
   expect(await call(page,'brandCheck')).toBe(true);
+});
+
+test('T06 complete basic catalog has named host and valid static accessibility semantics',async({page})=>{
+  const mounted=await call(page,'mount',{fixture:'KWDJ-basic-catalog'});expect(mounted.ready).toBe('ready');
+  expect(await call(page,'snapshot',mounted.id)).toBe(literal('KWDJ-basic-catalog'));
+  await expect(page.getByRole('textbox',{name:'KlenWriter editor example 1'})).toBeVisible();
+  // Unmodified axe defaults, scoped to this actual mounted catalog. This is a
+  // static OSR-39 smoke; wider assistive technology acceptance remains OSR-69.
+  const result=await new AxeBuilder({page}).include(`#${mounted.id}`).analyze();
+  observations.get(page).axe={engine:result.testEngine,scope:'Actual mounted KWDJ basic catalog static semantics; OSR-39 smoke only',
+    violations:result.violations,incomplete:result.incomplete,passedRules:result.passes.map(rule=>rule.id)};
+  expect(result.violations).toEqual([]);expect(result.incomplete).toEqual([]);expect(result.passes.length).toBeGreaterThan(0);
 });
 
 test('T02 actual keyboard end split/join and six literal history/identity checkpoints',async({page})=>{
@@ -140,6 +161,26 @@ test('noncancelable basic RU/EN text uses native command and preserves exact sca
   expect((await call(page,'noncancelable',id,'insertText','яZ')).lifecycle).toBe('ready');const p=await checkpoint(page,id,'noncancelable RU EN');expect(stateRow(p,'/0/2').text).toBe('\u00a0ZяZ');expect(docEvents(p)).toHaveLength(1);caret(p,stateRow(p,'/0/2').id,4);
 });
 
+test('noncancelable text after authored hard break preserves literal structure and native caret',async({page})=>{
+  const source='{"schema":"klenwriter.document","schema_version":1,"profile":"prose","content":[{"type":"paragraph","content":[{"type":"text","text":"a"},{"type":"hard_break"},{"type":"text","text":"b"}]}]}';
+  const expected='{"content":[{"content":[{"text":"a","type":"text"},{"type":"hard_break"},{"text":"bя","type":"text"}],"type":"paragraph"}],"profile":"prose","schema":"klenwriter.document","schema_version":1}';
+  const {id}=await call(page,'mount',{source});await call(page,'select',id,'/0/2',1);
+  const initial=await checkpoint(page,id,'authored hard break before noncancelable insert'),B=stateRow(initial,'/0/2').id;
+  expect((await call(page,'noncancelable',id,'insertText','я')).lifecycle).toBe('ready');
+  const after=await checkpoint(page,id,'authored hard break after noncancelable insert');
+  expect(after.canonical).toBe(expected);expect(stateRow(after,'/0/1').type_id).toBe('org.klenwriter.kwdj/hard_break');
+  expect(stateRow(after,'/0/2').id).toBe(B);caret(after,B,2);expect(after.state.stamp.revision).toBe('1');expect(docEvents(after)).toHaveLength(1);
+});
+
+test('malformed public requests during composition refuse without invoking accessors or native changes',async({page})=>{
+  const {id}=await call(page,'mount',{fixture:'composition-initial'});await call(page,'beginComposition',id,'/0/0','o\u0301mega.');
+  const result=await call(page,'malformedCompositionRequests',id);observations.get(page).malformedComposition=result;
+  expect(result.results).toHaveLength(4);for(const refusal of result.results)expect(refusal).toMatchObject({status:'dom_refused',diagnostic:{code:'dom.invalid_options',publication:'none'}});
+  expect(result.accessorCalls).toBe(0);expect(result.after).toEqual(result.before);expect(result.lifecycle).toBe('ready');
+  expect(await call(page,'compositionObjectsIntact',id,'/0/0','o\u0301mega.')).toBe(true);
+  expect(await call(page,'snapshot',id)).toBe(literal('composition-initial'));
+});
+
 test('composition seam preserves actual provisional objects through outside update and destroy callback failure',async({page})=>{
   const {id}=await call(page,'mount',{fixture:'composition-initial',throwRecovery:true});await call(page,'beginComposition',id,'/0/0','o\u0301mega.');
   await call(page,'select',id,'/1/0',4);const outside=await call(page,'command',id,{kind:'insert_text',text:'!'});expect(outside.response.status).toBe('ok');expect(await call(page,'compositionObjectsIntact',id,'/0/0','o\u0301mega.')).toBe(true);
@@ -148,9 +189,9 @@ test('composition seam preserves actual provisional objects through outside upda
 });
 
 test('oversize provisional region transfers untouched actual DOM and second instance remains independent',async({page})=>{
-  const a=await call(page,'mount',{fixture:'composition-initial'}),b=await call(page,'mount',{fixture:'D0'});const other=await checkpoint(page,b.id,'T12 second mount');
-  await call(page,'beginComposition',a.id,'/0/0','omega.');await page.evaluate(id=>window.domHost.replaceCompositionText(id,'Ж'.repeat(2097153)),a.id);
-  const result=await call(page,'dispose',a.id);expect(result.receipt.recovery.region).toMatchObject({kind:'retained_dom',reason:'capture_limit',ownership:'transferred_to_host',connected:true});
+  const a=await call(page,'mount',{fixture:'composition-initial',throwRecovery:true}),b=await call(page,'mount',{fixture:'D0'});const other=await checkpoint(page,b.id,'T12 second mount');
+  await call(page,'beginComposition',a.id,'/0/0','omega.');await page.evaluate(id=>{document.querySelector(`#${id}`).hidden=true;window.domHost.replaceCompositionText(id,'Ж'.repeat(2097153));},a.id);
+  const result=await call(page,'dispose',a.id);expect(result.receipt.callbackFailure.diagnostic.code).toBe('dom.recovery_callback_failed');expect(result.receipt.recovery.region).toMatchObject({kind:'retained_dom',reason:'capture_limit',ownership:'transferred_to_host',connected:true});
   expect(await page.evaluate(id=>document.querySelector(`#${id}`).firstElementChild.firstElementChild.firstChild.data.length,a.id)).toBe(2097153);
   const after=await checkpoint(page,b.id,'T12 second mount unchanged');expect(after.canonical).toBe(other.canonical);expect(after.state).toEqual(other.state);unique(after);
 });
@@ -165,4 +206,89 @@ test('derived ordered-list value refusal preserves native publication and exact 
   const {id}=await call(page,'mount',{source});await call(page,'select',id,'/0/1/0',0);const result=await call(page,'command',id,{kind:'enter'});expect(result.response.status).toBe('ok');
   const p=await checkpoint(page,id,'postpublication derived presentation refusal');expect(p.lifecycle).toBe('recoveryRequired');expect(p.failures.at(-1).diagnostic).toMatchObject({code:'dom.presentation_unsupported',publication:'alreadyPublished'});
   expect(p.canonical).toBe('{"content":[{"attrs":{"start":2147483647},"content":[{"content":[{"content":[{"text":"A","type":"text"}],"type":"paragraph"}],"type":"list_item"}],"type":"ordered_list"},{"content":[],"type":"paragraph"},{"attrs":{"start":2147483649},"content":[{"content":[{"content":[{"text":"C","type":"text"}],"type":"paragraph"}],"type":"list_item"}],"type":"ordered_list"}],"profile":"prose","schema":"klenwriter.document","schema_version":1}');expect(p.state.stamp.revision).toBe('1');history(p,1,0);
+});
+
+test('destroy captures latest unresolved provisional DOM after recovery and a late input',async({page})=>{
+  const {id}=await call(page,'mount',{fixture:'composition-initial'});
+  await call(page,'beginComposition',id,'/0/0','o\u0301mega.');
+  await page.evaluate(id=>document.querySelector(`#${id}`).dispatchEvent(new CompositionEvent('compositionend',{bubbles:true,data:''})),id);
+  // OSR-41 settlement is unclaimed: emulate a browser-owned trailing DOM change
+  // after recovery. Teardown must preserve the actual latest region nonetheless.
+  await page.evaluate(id=>{window.domHost.replaceCompositionText(id,'o\u0301mega.終');window.domHost.input(id,'insertCompositionText','終');},id);
+  const destroyed=await call(page,'dispose',id);
+  expect(destroyed.receipt.recovery.region).toMatchObject({kind:'bounded',originalText:'omega.',provisionalText:'o\u0301mega.終'});
+});
+
+
+test('controlled transport fatal during initial native node read keeps original envelope and input',async({page})=>{
+  const result=await call(page,'mount',{fixture:'D0',faultKind:'node'});observations.get(page).controlledFault=result;
+  expect(result.ready).toBe('sdk_failure');expect(result.nativeResponse).toMatchObject({status:'fatal',diagnostic:{code:'fixture.native_fatal',path:'/controlled-transport',category:'transport',details:{fixture:'dom-mounted-controlled-reply'},may_have_committed:false}});
+  expect(result.lifecycle).toBe('fatal');expect(new TextDecoder().decode(Uint8Array.from(result.originalInput))).toBe(wire('D0'));
+  const disposed=await call(page,'dispose',result.id);expect(disposed.resources.sdk.sessions).toBe(0);expect(disposed.native.sessions).toBe(0);
+});
+for(const [method,kind]of [['read','catalog'],['query','query_history']])test(`controlled transport fatal from mounted ${method} synchronizes fatal lifecycle and disables DOM`,async({page})=>{
+  const mounted=await call(page,'mount',{fixture:'D0',faultKind:kind});expect(mounted.ready).toBe('ready');
+  const result=await call(page,'faultRequest',mounted.id,method);observations.get(page).controlledFault=result;
+  expect(result.response).toMatchObject({status:'fatal',diagnostic:{code:'fixture.native_fatal',path:'/controlled-transport',category:'transport',details:{fixture:'dom-mounted-controlled-reply'},may_have_committed:false}});
+  expect(result.faults).toHaveLength(1);expect(result.lifecycle).toBe('fatal');expect(result.contenteditable).toBe('false');expect(result.resources.sdk.sessions).toBe(0);expect(result.native.sessions).toBe(0);
+});
+
+const frozenNegatives=JSON.parse(readFileSync('contracts/dom/v1/acceptance-oracles.v3.json','utf8')).negativeValidations;
+for(const item of frozenNegatives)test(`frozen negative ${item.id}: exact native refusal, owned bytes and failed replacement invariance`,async({page})=>{
+  const notes=item.layer.includes('Notes')||item.id.startsWith('notes-'),profile=notes?'notes':'kwdj';
+  // The six declared Import fixtures exercise native Import rather than Strict.
+  // This mapping is pinned by AdmissionDto::Normalize -> AdmissionMode::Import.
+  const admission=item.layer.includes('Import')?'normalize':'validate';
+  const source=item.input?readFileSync(`contracts/dom/v1/${item.input.path}`,'utf8'):wire(item.document);
+  if(item.input){expect(Buffer.byteLength(source)).toBe(item.input.bytes);expect(createHash('sha256').update(source).digest('hex')).toBe(item.input.sha256);}
+  const failed=await call(page,'mount',{profile,registry:'D0',admission,source});
+  observations.get(page).negative={id:item.id,layer:item.layer,admission,authority:item.authority,expected:item.expected,actualMountedReady:failed};
+  expect(failed.ready).toBe('sdk_failure');expect(failed.nativeResponse.status).toBe(item.expected.status);expect(failed.nativeResponse.diagnostic).toMatchObject({code:item.expected.code,path:item.expected.path});
+  expect(new TextDecoder().decode(Uint8Array.from(failed.originalInput))).toBe(source);
+  const failureReceipt=await call(page,'dispose',failed.id);expect(new TextDecoder().decode(Uint8Array.from(failureReceipt.receipt.recovery.originalInput))).toBe(source);expect(failureReceipt.resources.sdk.sessions).toBe(0);
+  const live=await call(page,'mount',{profile,registry:'D0',admission,fixture:notes?'Notes-D0':'D0'});expect(live.ready).toBe('ready');
+  await call(page,'select',live.id,notes?'/0/0/0':'/0/2',notes?0:2);
+  const edit=notes?await call(page,'rawRequest',live.id,{kind:'command',command:{id:'org.example.notes/command/insert-text',payload_json:'{"text":"X"}'},history_hint:{kind:'isolated'}}):await call(page,'command',live.id,{kind:'insert_text',text:'X'});
+  expect(edit.response.status).toBe('ok');await call(page,'mark',live.id,'unchanged-native-parent','/0');const before=await checkpoint(page,live.id,`${item.id} before failed replace`);history(before,1,0);
+  const replacement=await call(page,'replace',live.id,source,true);observations.get(page).negative.actualReplacement=replacement;
+  expect(replacement.status).toBe('completed');expect(replacement.response.status).toBe(item.expected.status);expect(replacement.response.diagnostic).toMatchObject({code:item.expected.code,path:item.expected.path});
+  const after=await checkpoint(page,live.id,`${item.id} after failed replace`);expect(after.canonical).toBe(before.canonical);expect(after.state).toEqual(before.state);expect(after.capture).toEqual(before.capture);expect(after.context).toEqual(before.context);expect(after.rows).toEqual(before.rows);expect(after.events).toEqual(before.events);expect(after.ids).toEqual(before.ids);expect(await call(page,'sameIdentity',live.id,'unchanged-native-parent','/0')).toBe(true);
+  expect(new TextDecoder().decode(Uint8Array.from(await call(page,'original',live.id)))).toBe(source);expect(after.resources.sdk.host_requests).toBe(0);expect(after.resources.dom.continuations).toBe(0);
+});
+
+test('closed payload coverage refuses unsupported targets, marks, recipes and raw lifecycle bypass without native changes',async({page})=>{
+  const {id}=await call(page,'mount',{fixture:'D0'});await call(page,'select',id,'/0/2',2);await call(page,'command',id,{kind:'insert_text',text:'X'});await call(page,'mark',id,'P1','/0');const before=await checkpoint(page,id,'closed payload before');
+  const command=(name,payload)=>({kind:'command',command:{id:`org.klenwriter.kwdj/command/${name}`,payload_json:JSON.stringify(payload)},history_hint:{kind:'isolated'}});
+  const unknownMark={type_id:'org.example/unrendered_mark',attributes:{}};
+  const requests=[
+    ['unsupported-target',command('insert-block',{kind:'insert_block',target:{kind:'media'}}),'dom.command_unsupported'],
+    ['unsupported-mark',command('toggle-mark',{kind:'toggle_mark',mark:unknownMark}),'dom.command_unsupported'],
+    ['closed-mark-attrs',command('toggle-mark',{kind:'toggle_mark',mark:{type_id:'org.klenwriter.kwdj/strong',attributes:{extra:{kind:'boolean',value:true}}}}),'dom.command_unsupported'],
+    ['stored-marks',{kind:'set_stored_marks',marks:[unknownMark]},'dom.command_unsupported'],
+    ['unknown-recipe',{kind:'command',command:{id:'org.example/command/recipe',payload_json:'{"kind":"recipe","arguments":{"nodes":{},"values":{}}}'},history_hint:{kind:'isolated'}},'dom.command_unsupported'],
+    ['closed-known-command-payload',command('enter',{kind:'enter',extra:true}),'dom.command_unsupported'],
+    ['unsupported-numeric-target',command('insert-block',{kind:'insert_block',target:{kind:'ordered_list',start:'2147483648'}}),'dom.command_unsupported'],
+    ['raw-remount',{kind:'remount',input_json:wire('D0'),admission:'validate'},'dom.explicit_method_required'],
+    ['raw-destroy',{kind:'destroy'},'dom.explicit_method_required'],
+    ['live-facts',{kind:'update_facts',identities:{media:[],references:[]}},'dom.command_unsupported'],
+  ];
+  observations.get(page).payloadRefusals=[];
+  for(const [name,request,code]of requests){const result=await call(page,'rawRequest',id,request);observations.get(page).payloadRefusals.push({name,request,result});expect(result.status).toBe('dom_refused');expect(result.diagnostic).toMatchObject({code,publication:'none'});}
+  const query=await call(page,'rawRequest',id,{kind:'query_command',command:requests[0][1].command},true);expect(query.status).toBe('dom_refused');expect(query.diagnostic.code).toBe('dom.command_unsupported');
+  const after=await checkpoint(page,id,'closed payload after');expect(after.canonical).toBe(before.canonical);expect(after.state).toEqual(before.state);expect(after.capture).toEqual(before.capture);expect(after.events).toEqual(before.events);expect(after.rows).toEqual(before.rows);expect(await call(page,'sameIdentity',id,'P1','/0')).toBe(true);
+});
+
+test('asynchronous temporary replacement busy and stale checks retain the edited live native session',async({page})=>{
+  const {id}=await call(page,'mount',{fixture:'D0',delayReplacement:true});await call(page,'select',id,'/0/2',2);await call(page,'mark',id,'P1','/0');
+  const started=await call(page,'startReplacement',id,'T10-replacement');expect(started.loaderCalls).toBe(2);expect(started.resources.sdk.host_requests).toBe(1);expect(started.resources.dom.continuations).toBe(1);
+  const busy=await call(page,'replace',id,'D0');expect(busy.status).toBe('dom_refused');expect(busy.diagnostic.code).toBe('dom.busy');
+  expect((await call(page,'command',id,{kind:'insert_text',text:'X'})).response.status).toBe('ok');const edited=await checkpoint(page,id,'asynchronous replace main edit');expect(edited.canonical).toBe(literal('T04-X'));
+  const finished=await call(page,'finishReplacement',id);observations.get(page).replacementRace={started,busy,finished};expect(finished.result.status).toBe('dom_refused');expect(finished.result.diagnostic.code).toBe('dom.stale_replace');expect(finished.resources.sdk.host_requests).toBe(0);expect(finished.resources.dom.continuations).toBe(0);expect(finished.native.sessions).toBe(1);
+  const after=await checkpoint(page,id,'asynchronous stale replacement');expect(after.canonical).toBe(edited.canonical);expect(after.state).toEqual(edited.state);expect(after.capture).toEqual(edited.capture);expect(after.events).toEqual(edited.events);expect(after.rows).toEqual(edited.rows);expect(await call(page,'sameIdentity',id,'P1','/0')).toBe(true);
+});
+
+test('asynchronous temporary replacement destroyed during loading never resurrects after late actual loader resolution',async({page})=>{
+  const {id}=await call(page,'mount',{fixture:'D0',delayReplacement:true});const started=await call(page,'startReplacement',id,'T10-replacement');expect(started.loaderCalls).toBe(2);
+  const destroyed=await call(page,'dispose',id);expect(destroyed.receipt.status).toBe('destroy_requested');expect(new TextDecoder().decode(Uint8Array.from(destroyed.receipt.recovery.originalInput))).toBe(wire('T10-replacement'));expect(destroyed.resources.dom).toMatchObject({listeners:0,observers:0,continuations:0,retainedInputBytes:0,retainedRecoveryRegions:0});
+  const finished=await call(page,'finishReplacement',id);observations.get(page).replacementDestroyedRace={started,destroyed,finished};expect(finished.result.status).toBe('dom_refused');expect(finished.result.diagnostic.code).toBe('dom.disposed');expect(finished.native.sessions).toBe(0);expect(finished.resources.sdk.sessions).toBe(0);expect(finished.resources.sdk.host_requests).toBe(0);expect(finished.resources.dom.continuations).toBe(0);expect(finished.domText).toBe('');expect(finished.capture).toBeNull();
 });

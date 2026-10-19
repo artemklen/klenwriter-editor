@@ -71,7 +71,7 @@ export function writeSdkBuildIdentity(identity = computeSdkBuildIdentity()) {
   writeFileSync(resolve(root, 'artifacts/sdk-build-identity.json'), JSON.stringify({
     format: 'klenwriter-editor-sdk-build/1', ...identity,
     exclusions: [...excluded],
-    scope: 'Production Rust, wrapper/profile TS, locked metadata and build/generator inputs. Generated outputs/artifacts/provenance excluded to avoid a file hash cycle.',
+    scope: 'Production Rust, SDK/DOM/profile TS/CSS, locked metadata and build/generator inputs. Generated outputs/artifacts/provenance excluded to avoid a file hash cycle.',
   }, null, 2) + '\n');
   return identity;
 }

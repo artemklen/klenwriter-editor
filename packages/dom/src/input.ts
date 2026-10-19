@@ -2,6 +2,7 @@
 import type { CommandDto, DeepReadonly, PositionDto, SelectionDto, StampDto, StateDto, Submission } from '@klenwriter/editor-sdk';
 import type { DomRefusal, InputCommandBindings, MountedMutation, RecoveryRegion } from './types.js';
 import type { BlockCapture, CapturedBlock, DomView } from './view.js';
+import { domRegionLimits } from './view.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
 export interface InputOwner { destroy(): void; listeners(): number }
 interface InputConfiguration {
@@ -79,10 +80,35 @@ export function attachInput(options: InputConfiguration): InputOwner {
   function offset(block: HTMLElement,position: DeepReadonly<PositionDto>): number | null {
     const point = view.domPoint(position);
     if (isDomRefusal(point) || point.node !== block && !block.contains(point.node)) return null;
-    // The entire affected region was counted/capped before this bounded Range copy.
-    const range = doc.createRange();
-    try { range.setStart(block,0); range.setEnd(point.node,point.offset); return range.toString().length; }
-    catch { return null; } finally { range.detach(); }
+    // DOM correspondence uses the same hard-break/placeholder representation as
+    // boundedText. Range.toString() omits BR and cannot supply this coordinate.
+    const stack: {node:Node|null;depth:number}[] = [{node:block,depth:0}];
+    let units = 0, visited = 0;
+    while (stack.length) {
+      const {node,depth} = stack.pop()!;
+      if (node === null) return units;
+      if (++visited > domRegionLimits.nodes || depth > domRegionLimits.depth) return null;
+      if (node === point.node) {
+        if (node.nodeType === 3) return point.offset <= domRegionLimits.utf16-units ? units+point.offset : null;
+        if (!Number.isSafeInteger(point.offset) || point.offset < 0 || point.offset > node.childNodes.length) return null;
+        stack.push({node:null,depth});
+        if (point.offset > domRegionLimits.nodes-visited-stack.length) return null;
+        for (let i = point.offset-1; i >= 0; i--) stack.push({node:node.childNodes[i],depth:depth+1});
+        continue;
+      }
+      if (node.nodeType === 3) {
+        const length = (node as Text).data.length;
+        if (length > domRegionLimits.utf16-units) return null;
+        units += length;
+      } else if (node.nodeType === 1 && (node as Element).tagName === 'BR') {
+        const text = view.boundedText(node); if (isDomRefusal(text) || text.length > domRegionLimits.utf16-units) return null;
+        units += text.length;
+      } else {
+        if (node.childNodes.length > domRegionLimits.nodes-visited-stack.length) return null;
+        for (let i = node.childNodes.length-1; i >= 0; i--) stack.push({node:node.childNodes[i],depth:depth+1});
+      }
+    }
+    return null;
   }
   function preserve(code: DomRefusal['diagnostic']['code'],region?: RecoveryRegion | null) {
     const captured = region ?? view.captureRegion() ?? Object.freeze({kind:'retained_dom' as const,element,reason:'capture_limit' as const,ownership:'transferred_to_host' as const});
@@ -95,7 +121,7 @@ export function attachInput(options: InputConfiguration): InputOwner {
     if (isDomRefusal(firstCapture)) { preserve('dom.reconcile_limit'); return; }
     const block = firstCapture.blocks[0], parent = block?.element.parentNode;
     if (!block || !parent) { preserve('dom.recovery_required'); return; }
-    const anchor = offset(block.element,selection.anchor), focus = offset(block.element,selection.focus);
+    const anchor = offset(block.element,selection.anchor), focus = equal(selection.anchor,selection.focus) ? anchor : offset(block.element,selection.focus);
     if (anchor === null || focus === null) { preserve('dom.presentation_unsupported'); return; }
     const affected = [...ids];
     const previous = block.element.previousSibling;

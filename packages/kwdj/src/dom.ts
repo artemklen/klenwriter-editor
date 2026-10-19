@@ -76,7 +76,7 @@ const nodes: Record<string, NodeRendererDefinition> = {
   [`${prefix}task_item`]: node('container', ['checked'], n => {
     const checked = n.attributes.checked;
     return checked?.kind === 'boolean' ? { tag: 'li', classes: ['editor-task-item', ...(checked.value ? ['editor-checked'] : [])],
-      attributes: { role: 'checkbox', 'aria-checked': String(checked.value) } } : refused(n.type_id, n);
+      attributes: { title: checked.value ? 'Completed task' : 'Incomplete task' } } : refused(n.type_id, n);
   }),
   [`${prefix}scene_break`]: node('block_atom', [], () => ({ tag: 'hr', classes: ['editor-scene-break'], attributes: { role: 'separator', 'aria-label': 'Scene break' } })),
 };
