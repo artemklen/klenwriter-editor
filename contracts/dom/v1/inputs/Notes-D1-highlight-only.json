@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "root": {
+    "type": "org.example.notes/document",
+    "attrs": {
+      "title": "Keep title",
+      "tags": [
+        "alpha",
+        "β"
+      ]
+    },
+    "marks": [],
+    "text": null,
+    "children": [
+      {
+        "type": "org.example.notes/paragraph",
+        "attrs": {},
+        "marks": [],
+        "text": null,
+        "children": [
+          {
+            "type": "org.example.notes/text",
+            "attrs": {},
+            "marks": [
+              {
+                "type": "org.example.notes/highlight",
+                "attrs": {
+                  "color": "sun"
+                }
+              }
+            ],
+            "text": "A B é",
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -227,7 +227,7 @@ mod tests {
         assert!(matches!(session.initialization(), SdkResponse::Ok { .. }));
         assert!(session.context().is_some());
         let catalog = call(&mut session, json!({"kind":"catalog"}));
-        assert_eq!(catalog["value"]["commands"].as_array().unwrap().len(), 16);
+        assert_eq!(catalog["value"]["commands"].as_array().unwrap().len(), 17);
         assert!(
             catalog["value"]["commands"]
                 .as_array()

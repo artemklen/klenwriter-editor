@@ -1,0 +1,33 @@
+{
+  "schema": "klenwriter.document",
+  "schema_version": 1,
+  "profile": "prose",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "e",
+          "marks": [
+            {
+              "type": "emphasis"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "́",
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "type": "emphasis"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

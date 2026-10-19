@@ -236,6 +236,28 @@ export async function exerciseNotes(port, packet) {
   return { module: 'present', codec: cases, commands, runtimeRecipe: 'passed', simultaneousFrozenD0D1: port.multiple };
 }
 
+// Frozen mandatory inventory: the original15 remain, with OSR-39 appended16th.
+// SDK2 advertises ASCII-sorted registry IDs. This packet selects no KWDJ recipe;
+// the separate compiled/runtime recipe gates cover base16 plus one recipe17.
+const kwdjMandatoryCommands = Object.freeze([
+  'org.klenwriter.kwdj/command/enter',
+  'org.klenwriter.kwdj/command/shift-enter',
+  'org.klenwriter.kwdj/command/toggle-mark',
+  'org.klenwriter.kwdj/command/set-link',
+  'org.klenwriter.kwdj/command/unset-link',
+  'org.klenwriter.kwdj/command/insert-text',
+  'org.klenwriter.kwdj/command/transform-block',
+  'org.klenwriter.kwdj/command/toggle-quote',
+  'org.klenwriter.kwdj/command/toggle-list',
+  'org.klenwriter.kwdj/command/insert-block',
+  'org.klenwriter.kwdj/command/move',
+  'org.klenwriter.kwdj/command/duplicate',
+  'org.klenwriter.kwdj/command/remove',
+  'org.klenwriter.kwdj/command/accept-slash',
+  'org.klenwriter.kwdj/command/dismiss-slash',
+  'org.klenwriter.kwdj/command/delete-backward',
+].sort());
+
 export async function exerciseKwdj(port, packet) {
   const baseline = await port.resources(), present = port.manifest.profiles.some(value => value.profile_id === 'org.klenwriter.kwdj');
   const makeOptions = c => ({ abi: 'editor-sdk/2', build_id: port.manifest.build_id,
@@ -250,6 +272,7 @@ export async function exerciseKwdj(port, packet) {
     return { module: 'absent', refusal: result.diagnostic.code, codec: [] };
   }
   const cases = [];
+  let checkedDeleteBackward = false;
   for (const c of packet.kwdj) {
     const handle = await port.open(c.input, makeOptions(c));
     try {
@@ -260,7 +283,35 @@ export async function exerciseKwdj(port, packet) {
         if (c.expectedCanonical !== undefined && c.expectedCanonical !== null) equal(actual, c.expectedCanonical, `${c.id}: KWDJ literal canonical`);
         else equal(JSON.parse(actual), JSON.parse(c.input), `${c.id}: independently constructed resource semantics`);
         check((await handle.context()).build_id === port.manifest.build_id, 'KWDJ build context');
-        check(ok(await handle.call({ kind: 'catalog' })).commands.length === 15, 'KWDJ actual mandatory catalog');
+        equal(ok(await handle.call({ kind: 'catalog' })).commands, kwdjMandatoryCommands, 'KWDJ exact mandatory16 catalog');
+        if (!checkedDeleteBackward) {
+          const before = await state(handle), beforeIds = await identities(handle), beforeEvents = await events(handle);
+          equal(before.selection, null, 'KWDJ initial selection for strict command admission');
+          const command = { id: 'org.klenwriter.kwdj/command/delete-backward', payload_json: '{"kind":"delete_backward"}' };
+          const query = ok(await handle.call({ kind: 'query_command', stamp: before.stamp, command }));
+          check(!query.available, 'KWDJ delete-backward requires native selection');
+          equal(query.diagnostic.code, 'kwdj.command_selection_required', 'KWDJ exact scoped delete-backward handler');
+          equal(query.diagnostic.path, '/command', 'KWDJ delete-backward selection diagnostic path');
+          const result = await handle.call({ kind: 'command', stamp: before.stamp, command, history_hint: { kind: 'isolated' } });
+          check(result.status === 'refused' && !result.diagnostic.may_have_committed, 'KWDJ delete-backward selection refusal');
+          equal(result.diagnostic.code, 'kwdj.command_selection_required', 'KWDJ delete-backward execute handler');
+          equal(result.diagnostic.path, '/command', 'KWDJ delete-backward execute diagnostic path');
+          const extra = { ...command, payload_json: '{"kind":"delete_backward","extra":true}' };
+          for (const request of [
+            { kind: 'query_command', stamp: before.stamp, command: extra },
+            { kind: 'command', stamp: before.stamp, command: extra, history_hint: { kind: 'isolated' } },
+          ]) {
+            const refused = await handle.call(request);
+            check(refused.status === 'refused' && !refused.diagnostic.may_have_committed, 'KWDJ delete-backward closed empty DTO');
+            equal(refused.diagnostic.code, 'sdk.invalid_dto', 'KWDJ delete-backward extra-field diagnostic');
+            equal(refused.diagnostic.path, '', 'KWDJ delete-backward DTO diagnostic path');
+          }
+          equal(await state(handle), before, 'KWDJ strict command refusals preserve all state');
+          equal(await identities(handle), beforeIds, 'KWDJ strict command refusals preserve IDs and payload');
+          equal(await events(handle), beforeEvents, 'KWDJ strict command refusals publish no event');
+          equal(await snapshot(handle), actual, 'KWDJ strict command refusals preserve canonical bytes');
+          checkedDeleteBackward = true;
+        }
       } else {
         check(initial.status === 'refused' && !initial.diagnostic.may_have_committed, `${c.id}: KWDJ refusal`);
         if (c.expectedCodes?.length) check(c.expectedCodes.includes(initial.diagnostic.code), `${c.id}: normative KWDJ refusal ${initial.diagnostic.code}`);
@@ -270,5 +321,6 @@ export async function exerciseKwdj(port, packet) {
     } finally { await handle.destroy(); }
     equal(await port.resources(), baseline, `${c.id}: KWDJ ownership`);
   }
+  check(checkedDeleteBackward, 'KWDJ accepted literal required for strict command proof');
   return { module: 'present', codec: cases };
 }

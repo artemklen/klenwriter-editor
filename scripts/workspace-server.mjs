@@ -12,6 +12,11 @@ const routes = new Map([
   ['/admission-budget/probe.js', ['artifacts/admission-budget/probe.js', 'text/javascript']],
   ['/admission-budget/probe_bg.wasm', ['artifacts/admission-budget/probe_bg.wasm', 'application/wasm']],
   ['/sdk', ['spikes/workspace/sdk-host.html', 'text/html']],
+  ['/dom', ['spikes/workspace/dom-host.html', 'text/html']],
+  ['/dom-native-host.js', ['spikes/workspace/dom-native-host.js', 'text/javascript']],
+  ['/dom-host.js', ['spikes/workspace/dom-host.js', 'text/javascript']],
+  ['/notes-dom.mjs', ['examples/notes-extension/dom.mjs', 'text/javascript']],
+  ['/dom-inventory.mjs', ['examples/notes-extension/dom-inventory.mjs', 'text/javascript']],
   ['/sdk-host.js', ['spikes/workspace/sdk-host.js', 'text/javascript']],
   ['/sdk-scenario.js', ['spikes/workspace/sdk-scenario.js', 'text/javascript']],
   ['/extensions-packet.json', ['artifacts/extensions/packet.json', 'application/json']],
@@ -29,19 +34,33 @@ async function allowSnippets(directory, prefix) {
   }
 }
 await allowSnippets(new URL('packages/wasm/dist/snippets/', root), '/snippets/');
-for (const name of ['wasm', 'sdk', 'kwdj']) {
+for (const name of ['wasm', 'sdk', 'kwdj', 'dom']) {
   await allowSnippets(new URL(`packages/${name}/dist/`, root), `/packages/${name}/`);
 }
 // Import maps are static, hash-authorized data. No unsafe-inline/eval or source rewriting.
-const sdkHtml = await readFile(new URL('spikes/workspace/sdk-host.html', root), 'utf8');
-const maps = [...sdkHtml.matchAll(/<script type="importmap">([^<]+)<\/script>/g)];
-if (maps.length !== 1) throw new Error('One static SDK import map required');
-const mapHash = createHash('sha256').update(maps[0][1]).digest('base64');
+const mapHashes = [];
+for (const page of ['sdk-host.html', 'dom-host.html']) {
+  const html = await readFile(new URL(`spikes/workspace/${page}`, root), 'utf8');
+  const maps = [...html.matchAll(/<script type="importmap">([^<]+)<\/script>/g)];
+  if (maps.length !== 1) throw new Error(`One static import map required: ${page}`);
+  mapHashes.push(`'sha256-${createHash('sha256').update(maps[0][1]).digest('base64')}'`);
+}
+const domFixtureNames = ['D0','D1-after-end-split','T03-initial','T03-split','T04-X','T04-XY','T05-styled-EGC','T05-formatted-EGC','T05-backward-EGC','T05-backward-EGC-after','T06-safe-data','T10-replacement','KWDJ-basic-catalog','Notes-D0','Notes-D1-callout-highlight','Notes-D1-highlight-only','composition-initial','composition-outside-edit','ordered-u64-data'];
+for (const name of domFixtureNames) for (const kind of ['inputs','expected']) {
+  const file = `${name}${kind === 'expected' ? '.canonical' : ''}.json`;
+  routes.set(`/dom-fixtures/${kind}/${file}`, [`contracts/dom/v1/${kind}/${file}`, 'application/json']);
+}
+const domNegativeNames = ['empty-text-unknown-attrs','empty-text-unknown-field','empty-text-wrong-attrs-shape','absent-color-unknown-attr','absent-color-unknown-field','absent-highlight-unknown-attr','unsafe-javascript-href','notes-version-2','notes-extra-envelope-field','notes-title-one-byte-over','notes-unknown-root-attr','scene-break-unknown-style','scene-break-unknown-onerror','heading-level-seven','notes-wrong-tags-kind'];
+for (const name of domNegativeNames) routes.set(`/dom-fixtures/negative/${name}.json`, [`contracts/dom/v1/negative/${name}.json`, 'application/json']);
+for (const name of ['acceptance-oracles.v3.json','manifest.json']) routes.set(`/dom-fixtures/${name}`, [`contracts/dom/v1/${name}`, 'application/json']);
 http.createServer(async (req, res) => {
-  res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-${mapHash}'; style-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'`);
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self' 'wasm-unsafe-eval' ${mapHashes.join(' ')}; style-src 'self'; img-src http://127.0.0.1:4174/favicon.ico; connect-src 'self'; base-uri 'none'; object-src 'none'`);
   res.setHeader('X-Content-Type-Options', 'nosniff');
   const path = new URL(req.url, 'http://localhost').pathname;
   if (req.method !== 'GET') { res.writeHead(405); res.end(); return; }
+  // Firefox requests this implicit fixture resource; no authored image is allowed.
+  if (path === '/favicon.ico') { res.writeHead(204); res.end(); return; }
   if (path === '/') {
     res.setHeader('Content-Type', 'text/html');
     res.end('<!doctype html><html lang="en"><title>Workspace build smoke</title><link rel="stylesheet" href="/style.css"><main class="editor-surface">Build smoke; no editor.</main></html>');

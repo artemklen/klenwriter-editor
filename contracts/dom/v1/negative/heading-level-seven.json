@@ -1,0 +1,19 @@
+{
+  "schema": "klenwriter.document",
+  "schema_version": 1,
+  "profile": "prose",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 7
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "Heading"
+        }
+      ]
+    }
+  ]
+}

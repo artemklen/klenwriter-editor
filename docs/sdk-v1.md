@@ -9,6 +9,14 @@ This is a headless API. OSR-64 adds explicitly negotiated
 glue initialization; the ABI1 declarations and manifest stay compatible.
 Production DOM/input/UI, CMS persistence and registry release have their own tasks.
 
+OSR-39 adds the closed KWDJ payload `{"kind":"delete_backward"}` and its16th
+compiled command ID `org.klenwriter.kwdj/command/delete-backward`. The original15
+payloads, persisted schema and SDK request/reply envelopes remain compatible;
+the generated intent union widens. Current builds and registry digests change,
+so old WASM refuses the new command and mixed artifacts still fail negotiation.
+Feature-detect the actual catalog; a runtime recipe makes a base16 catalog17,
+and a host declaration colliding with the mandatory ID refuses. Notes is unchanged.
+
 ## Installation and loading
 
 The packed wasm package includes generated web glue and its prebuilt WASM asset.

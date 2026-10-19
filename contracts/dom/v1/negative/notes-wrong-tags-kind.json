@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "root": {
+    "type": "org.example.notes/document",
+    "attrs": {
+      "title": "Keep title",
+      "tags": "alpha"
+    },
+    "marks": [],
+    "text": null,
+    "children": []
+  }
+}

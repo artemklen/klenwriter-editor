@@ -1,0 +1,132 @@
+{
+  "format": "osr39-source-pins/3",
+  "baseAcceptedMain": "b9e2790 (full SHA is supplied by primary source freeze; not guessed here)",
+  "files": [
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/AGENTS.md",
+      "bytes": 1057,
+      "sha256": "a2fd2a6c0c6c6cce32d7e8b3729af27f1844a76239cb98f853b8f94a297d8a08"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/docs/m0/architecture.md",
+      "bytes": 64424,
+      "sha256": "13f7a2c183643961331322a5f78afdf8b0b7aa5169972fc581f5368c55fda6e3"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/docs/m0/editing-host-decision.md",
+      "bytes": 19938,
+      "sha256": "bc3cc863a4389d10a46d9e506bdca04b3b9e5eb48b6452e452d4ec40a6a48b14"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/docs/m0/unicode-positions.md",
+      "bytes": 11343,
+      "sha256": "fe2dbcdeb9643ddfb90d86498e7d8392a031f4beb7b0314b20bec17ec96c471d"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/docs/m0/ux-contract.md",
+      "bytes": 21511,
+      "sha256": "6841a9c011019eebb75c141e5d7bf9e646409b6d7bb0801c507c3f62800a3a29"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/docs/adr/004-canonical-json-v1.md",
+      "bytes": 10290,
+      "sha256": "5d2a975d5c558e981cb2bb42e8d42b225663e4b7a5873951f22b8ad116110a5c"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/docs/commands.md",
+      "bytes": 7102,
+      "sha256": "58446904e69a686ccf5454336264c1b9f66e66b2da78437c69685f28aa00f73e"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/docs/sdk-v1.md",
+      "bytes": 13609,
+      "sha256": "5e5b0270b642826691efa92ce9180e42d36b378aa4953d4cad478dd639b49312"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/docs/deltas.md",
+      "bytes": 11449,
+      "sha256": "8a3511ab689c516687a4b4f5179fec70fd223e36a2959e274050031811de90b7"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/docs/extensions.md",
+      "bytes": 12852,
+      "sha256": "307168dc6106d8833861fe20f8633cfb351955e41b2d563d549e21c309ba5fd2"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/evidence/osr-63/execution-contract.md",
+      "bytes": 13847,
+      "sha256": "17c4e170d98e34f1ae9ce4c9199c37196360d1d8c240cee4ed883ddce06485bf"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/evidence/osr-64/execution-contract.md",
+      "bytes": 11565,
+      "sha256": "65a842098cb267e2eccb2ba702b9295d6c650d8f05e2521e4d926815f0eda04b"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/contracts/commands/v1/vectors.json",
+      "bytes": 80586,
+      "sha256": "1a067f1ca197ccc1aa7a4689e950db250973c269314bf3d38d143b97c248cb3f"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/contracts/notes/v1/README.md",
+      "bytes": 8134,
+      "sha256": "19b813c2c44cbaee2ee761090b3b7a1428a8dcb62ddd3888ff223454d0858adb"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/contracts/notes/v1/vectors.json",
+      "bytes": 21924,
+      "sha256": "44a2afcd37ea24c64728b1cd140a2cd438c7de58a4ee8b76ef45b04f83440314"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/crates/kwdj/src/model.rs",
+      "bytes": 11709,
+      "sha256": "5162a1f19c899922a032afcecc3227f65c19f05a530d1ba6a178f11e6cf635ce"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/crates/kwdj/src/validate.rs",
+      "bytes": 40723,
+      "sha256": "9824aeb6c05aeb5eff99af84d3c711c87eb728efa53181c1834d39354221ceec"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/crates/kwdj/src/lib.rs",
+      "bytes": 27861,
+      "sha256": "c9d33aeb376a6be9eaab53b34ab17229f40a584aeba85b9bfbcc302a27c463b9"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/crates/kwdj/tests/import_closed_metadata.rs",
+      "bytes": 6132,
+      "sha256": "9d8a681450b458c72349016b45990f81abe4055ee1b3002cd8c0f1f2ea34fe85"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/crates/kwdj/tests/native_regressions.rs",
+      "bytes": 15780,
+      "sha256": "72d9ebbb71f24fe6a02f4342aba961286293695c3df16df3d4fccd504dc2b9fa"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/crates/engine/src/session.rs",
+      "bytes": 35352,
+      "sha256": "156f018cf9927ec8ea0648b2ffac873a3807886019020cda6445efd7a294a7b5"
+    },
+    {
+      "path": "/tmp/osr-39-refine-contract.md",
+      "bytes": 18044,
+      "sha256": "ca15cbcb41bc391cfcf6b9212e297561407dda1566aba6c70b59f7c8623a3816"
+    },
+    {
+      "path": "/tmp/osr-39-test-design-draft.md",
+      "bytes": 27431,
+      "sha256": "71df3c0198d8cc988b0a90be2acbe468408d1fca52155442ebcd1e6f1e9ab201"
+    },
+    {
+      "path": "/tmp/osr-39-test-design-draft-version1.md",
+      "bytes": 26264,
+      "sha256": "588c01b4589d367ad41d6789fba2a6841e1bebe1d0bc76152f214a650209d0a1"
+    },
+    {
+      "path": "/tmp/osr-39-backward-delete-contract-proposal.md",
+      "bytes": 19892,
+      "sha256": "c0f5bd2971c226ca786f12b8dd73d047dadfa58917e51648f0256f8a11c9a5d2",
+      "authorityStatus": "B proposal; only primary-confirmed payload/eligibility below are accepted"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "root": {
+    "type": "org.example.notes/document",
+    "attrs": {
+      "title": "Notes D0",
+      "tags": [
+        "alpha",
+        "β",
+        "alpha"
+      ]
+    },
+    "marks": [],
+    "text": null,
+    "children": [
+      {
+        "type": "org.example.notes/paragraph",
+        "attrs": {},
+        "marks": [],
+        "text": null,
+        "children": [
+          {
+            "type": "org.example.notes/text",
+            "attrs": {},
+            "marks": [],
+            "text": "А😀 é Z",
+            "children": []
+          },
+          {
+            "type": "org.example.notes/hard_break",
+            "attrs": {},
+            "marks": [],
+            "text": null,
+            "children": []
+          },
+          {
+            "type": "org.example.notes/text",
+            "attrs": {},
+            "marks": [],
+            "text": "Line2",
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "schema": "klenwriter.document",
+  "schema_version": 1,
+  "profile": "prose",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "a",
+          "marks": [
+            {
+              "type": "text_color",
+              "attrs": {
+                "token": "none",
+                "extra": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

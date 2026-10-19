@@ -1,6 +1,7 @@
 # Разработка
 
-Это библиотека с headless Session SDK; production UI выполняется следующими задачами.
+Это библиотека с headless Session SDK и [basic mounted DOM adapter](docs/dom.md).
+Полные selection/IME/clipboard/UI и vanilla alpha выполняются следующими задачами.
 Следуйте [архитектуре](docs/m0/architecture.md)
 и контракту задачи Linear. Реализуйте общую семантику на Rust; KWDJ остаётся отдельным
 профилем. CMS, DB, Angular и browser runtime не входят в native core/profile closure.
@@ -154,8 +155,8 @@ linker входят в build environment; performance regression проверя�
 Фактическая publisher authorization и registry write проверяются заново
 непосредственно перед publish в OSR-71.
 Нельзя публиковать bootstrap tarballs как alpha. Native codec извлечён в OSR-29;
-WASM/SDK предоставляют headless Session ABI1 и явно выбираемый ABI2. Production DOM/vanilla/Angular
-mount APIs остаются отдельными задачами; пакеты пока не являются alpha release.
+WASM/SDK предоставляют headless Session ABI1 и явно выбираемый ABI2. Basic DOM mount выполняется в OSR-39; полный vanilla/Angular
+alpha остаётся отдельными задачами; пакеты пока не являются alpha release.
 
 ## Изменения
 
