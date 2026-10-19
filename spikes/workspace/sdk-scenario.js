@@ -18,7 +18,7 @@ export async function exercisePackagedSdk({ createEditor, kwdjCommand, module, l
   const baseline = globalCounts();
   equal(baseline, { sessions: 0, snapshot_handles: 0, snapshot_bytes: '0', protected_cursors: 0 }, 'empty native baseline');
   // Original SDK1 provider order remains the unchanged fifteen-command prefix.
-  // OSR-39 appends one command; historical SDK vectors still describe the prefix.
+  // OSR-39 and OSR-40 each append one command; historical SDK vectors still describe the prefix.
   const legacyCatalog = ['enter', 'shift-enter', 'toggle-mark', 'set-link', 'unset-link', 'insert-text',
     'transform-block', 'toggle-quote', 'toggle-list', 'insert-block', 'move', 'duplicate', 'remove',
     'accept-slash', 'dismiss-slash'].map(name => `org.klenwriter.kwdj/command/${name}`);
@@ -60,9 +60,13 @@ export async function exercisePackagedSdk({ createEditor, kwdjCommand, module, l
     const initial = readText(editor); assert(initial.text.text === 'a' && initial.state.stamp.revision === '0', 'independent initial checkpoint');
     const catalog = value(editor.read({ kind: 'catalog' }), 'catalog').commands;
     const command = kwdjCommand({ kind: 'insert_text', text: ' \u00a0b' });
+    const deleteSelection = kwdjCommand({ kind: 'delete_selection' });
+    equal(deleteSelection, { id: 'org.klenwriter.kwdj/command/delete-selection', payload_json: '{"kind":"delete_selection"}' },
+      'closed additive DeleteSelection command DTO');
     equal(catalog.slice(0, legacyCatalog.length), legacyCatalog, 'unchanged original SDK1 command prefix');
-    assert(catalog.length === 16 && catalog[15] === 'org.klenwriter.kwdj/command/delete-backward'
-      && catalog.includes(command.id), 'real native command catalog with appended DeleteBackward');
+    assert(catalog.length === 17 && catalog[15] === 'org.klenwriter.kwdj/command/delete-backward'
+      && catalog[16] === deleteSelection.id && catalog.includes(command.id),
+      'real native command catalog preserves all16 and appends DeleteSelection');
     const atEnd = { kind: 'text', node: initial.text.id, offset: 1, affinity: 'after' };
     value(done(editor.submit({ kind: 'set_selection', stamp: editor.capture(), selection: { anchor: atEnd, focus: atEnd } })), 'mutation');
     const beforeQuery = editor.capture(); const countBefore = seen[0].length;
