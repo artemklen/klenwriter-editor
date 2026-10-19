@@ -68,7 +68,14 @@ refusal is `not_sent`; unknown dispatch or postcheck failure is
 The driver writes the identical fixed source and runs `osacompile` once into its
 fresh helper directory before launching a browser or starting any page guard.
 Both source and compiled artifact bytes/SHA256 are pinned before and after the
-run. Each key uses that required driver-owned absolute `.scpt` path with the same
+run. After compilation the driver sets the compiled file to mode0444 and verifies
+that mode before browser/input; every helper artifact's permission mode is also recorded and
+compared after the run. In a bounded pure echo/argv comparison, writable0644
+execution changed the compiled bytes, while0444 returned the same actual value
+with bytes/mode unchanged. `osascript` reported its prevented state save on stderr;
+any such message remains in the raw execution receipt. This keeps compiled runtime
+state out of the fixed artifact without waiving byte/hash checks.
+Each key uses that required driver-owned absolute `.scpt` path with the same
 four closed browser/title/PID/action arguments; source compilation is outside
 the1s action deadline. No inline-source fallback, guard change, replay or deadline
 increase occurs after a refusal or unknown completion.

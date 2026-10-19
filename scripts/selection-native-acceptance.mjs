@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {chromium} from '@playwright/test';
 import {spawnSync} from 'node:child_process';
 import {createHash,randomBytes} from 'node:crypto';
-import {existsSync,mkdirSync,mkdtempSync,readFileSync,readdirSync,writeFileSync} from 'node:fs';
+import {chmodSync,existsSync,mkdirSync,mkdtempSync,readFileSync,readdirSync,statSync,writeFileSync} from 'node:fs';
 import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {computeSdkBuildIdentity} from './generate-sdk-types.mjs';
@@ -26,7 +26,7 @@ if(existsSync(outputPath))throw Error('Evidence output already exists; preserve 
 mkdirSync(dirname(outputPath),{recursive:true});
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const pin=path=>{const bytes=readFileSync(resolve(root,path));return {path,bytes:bytes.length,sha256:hash(bytes)};};
-const helperPin=path=>{const bytes=readFileSync(path);return {path,bytes:bytes.length,sha256:hash(bytes)};};
+const helperPin=path=>{const bytes=readFileSync(path);return {path,bytes:bytes.length,sha256:hash(bytes),mode:(statSync(path).mode&0o7777).toString(8).padStart(4,'0')};};
 const walk=path=>readdirSync(path,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()?walk(`${path}/${entry.name}`):entry.isFile()?[`${path}/${entry.name}`]:[]);
 const frozen=name=>JSON.parse(readFileSync(`contracts/selection/v1/${name}-oracles.json`,'utf8'));
 const native=frozen('native'),unicode=frozen('unicode'),scroll=frozen('scroll'),formatting=frozen('formatting');
@@ -373,6 +373,9 @@ try{
   writeFileSync(keySourcePath,fixedKeyScript,{flag:'wx'});
   report.setup.push({action:'write-fixed-key-script-source',source:helperPin(keySourcePath),scope:'Exact fixed program; compile once before browser/input/page guards'});
   report.setup.push({action:'compile-closed-source-helpers',executions:[run('/usr/bin/swiftc',[resolve(root,'scripts/dom-native-input-source.swift'),'-O','-o',sourceHelper]),run('/usr/bin/swiftc',[resolve(root,'scripts/selection-native-input.swift'),'-O','-o',inputHelper]),run('/usr/bin/osacompile',['-o',keyScriptPath,keySourcePath])],sourceHelper,inputHelper,keySourcePath,keyScriptPath});
+  chmodSync(keyScriptPath,0o444);
+  const readonlyKeyScript=helperPin(keyScriptPath);assert.equal(readonlyKeyScript.mode,'0444','Compiled key script must be read-only before browser/input');
+  report.setup.push({action:'lock-fixed-key-script',artifact:readonlyKeyScript,scope:'No compiled runtime-state persistence; exact bytes/hash/mode remain required before and after input'});
   report.helperArtifacts=[sourceHelper,inputHelper,keySourcePath,keyScriptPath].map(helperPin);
   const initial=source();report.inputSources=initial;originalSource=initial.current.id;
   const russian=['com.apple.keylayout.RussianWin','com.apple.keylayout.Russian'].find(id=>initial.sources.some(row=>row.id===id&&row.enabled&&row.selectable));assert.ok(russian,'Existing enabled Russian/RussianWin source required');
