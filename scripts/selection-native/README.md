@@ -38,6 +38,12 @@ total guard age. `selection-native-input.swift` accepts the closed request only,
 requires an exact focused Safari/Chrome AX window and one1024×768 AXWebArea,
 with at most32 windows/512 AX nodes/depth32. The AX rectangle is the physical
 coordinate origin; outerHeight/toolbar estimates do not select screen positions.
+The page title remains exactly `KlenWriter Selection native <nonce>`. Safari's
+expected AX window title is that same string; Chrome's expected AX window title
+adds exactly ` - Google Chrome`. Both checks require one exact matching focused
+window and recheck its exact title immediately before input; no substring match
+or alternate title is accepted. Input receipts retain the expected and observed
+AX window titles separately from the page guard.
 The fixture separately compares trusted client coordinates to its independent
 geometry. CGEvent provenance means platform input, not hardware-device evidence.
 

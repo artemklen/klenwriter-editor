@@ -87,10 +87,11 @@ guard action != "down" || !held, action != "move-start" || !held,
       mouse || action == "shift-tab" || !held else { refuse("Pointer transition differs") }
 guard AXIsProcessTrusted() else { refuse("Existing Accessibility permission is unavailable") }
 let expectedBundle = browser == "safari" ? "com.apple.Safari" : "com.google.Chrome"
+let expectedAxWindowTitle = expectedTitle + (browser == "chrome" ? " - Google Chrome" : "")
 guard let front = NSWorkspace.shared.frontmostApplication, front.bundleIdentifier == expectedBundle else { refuse("Fixture browser is not frontmost") }
 let application = AXUIElementCreateApplication(front.processIdentifier)
 guard let windows = attribute(application, kAXWindowsAttribute as CFString) as? [AXUIElement], windows.count <= 32 else { refuse("Bounded browser AX windows unavailable") }
-let matching = windows.filter { title($0) == expectedTitle }
+let matching = windows.filter { title($0) == expectedAxWindowTitle }
 guard matching.count == 1, let focusedValue = attribute(application, kAXFocusedWindowAttribute as CFString),
       CFGetTypeID(focusedValue) == AXUIElementGetTypeID(), CFEqual(focusedValue, matching[0]) else { refuse("Exact unique fixture title is not focused") }
 guard let view = webViewport(matching[0]), let frame = rectangle(matching[0]),
@@ -100,7 +101,8 @@ guard elapsed() < deadline,
       NSWorkspace.shared.frontmostApplication?.processIdentifier == front.processIdentifier,
       let currentFocusedWindow = attribute(application, kAXFocusedWindowAttribute as CFString),
       CFGetTypeID(currentFocusedWindow) == AXUIElementGetTypeID(), CFEqual(currentFocusedWindow, matching[0]),
-      title(matching[0]) == expectedTitle else { refuse("Fixture guard expired or ownership changed before post") }
+      let observedAxWindowTitle = title(matching[0]),
+      observedAxWindowTitle == expectedAxWindowTitle else { refuse("Fixture guard expired or ownership changed before post") }
 var global: CGPoint?
 if let local = point {
     let actual = CGPoint(x: view.minX + local.x, y: view.minY + local.y); global = actual
@@ -120,6 +122,7 @@ guard elapsed() <= deadline else { refuse("Fixture guard expired during post") }
 var result: [String: Any] = ["status": "sent", "action": action, "nonce": nonce, "requestId": requestId,
     "mountedId": mount, "caseId": caseId, "target": target, "cleanupOnly": cleanup,
     "frontBundle": expectedBundle, "frontPid": front.processIdentifier,
+    "expectedAxWindowTitle": expectedAxWindowTitle, "observedAxWindowTitle": observedAxWindowTitle,
     "axWindowCount": windows.count, "axViewport": ["x": view.minX, "y": view.minY, "width": view.width, "height": view.height],
     "elapsedMs": elapsed(), "method": "fixture-scoped CGEvent; platform input, not hardware-device provenance"]
 if let global { result["screenPoint"] = ["x": global.x, "y": global.y] }
