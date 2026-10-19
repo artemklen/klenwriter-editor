@@ -115,13 +115,13 @@ export function noncancelable(id,inputType,data=null) {
   const r=rec(id),selection=document.getSelection(),anchor=selection.anchorNode,offset=selection.anchorOffset;
   assert(anchor?.nodeType===Node.TEXT_NODE || inputType==='deleteContentBackward','Expected actual text caret');
   let block=anchor.nodeType===Node.TEXT_NODE?anchor.parentElement.closest('p,h1,h2,h3,h4,h5,h6,pre'):selection.anchorNode.closest?.('p,h1,h2,h3,h4,h5,h6,pre');
-  assert(block,'Affected text block');beforeInput(id,inputType,data,false);
+  assert(block,'Affected text block');beforeInput(id,inputType,data,false);let clonedIdObserved=false;
   if(inputType==='insertText') anchor.replaceData(offset,selection.focusOffset-offset,data);
   else if(inputType==='insertParagraph') {
     const range=document.createRange();range.setStart(anchor,offset);range.setEnd(block,block.childNodes.length);
     const right=block.cloneNode(false);right.appendChild(range.extractContents());
     if(!right.textContent&&right.childNodes.length===0)right.appendChild(document.createElement('br'));
-    block.after(right);range.detach();
+    block.after(right);clonedIdObserved=right.id===block.id&&right.id!=='';range.detach();
     const walker=document.createTreeWalker(right,NodeFilter.SHOW_TEXT),text=walker.nextNode();
     selection.setBaseAndExtent(text??right,0,text??right,0);
   } else if(inputType==='deleteContentBackward') {
@@ -129,7 +129,7 @@ export function noncancelable(id,inputType,data=null) {
     while(block.firstChild)previous.appendChild(block.firstChild);block.remove();
   } else throw new Error('Unsupported harness provisional action');
   input(id,inputType,data);
-  return {clonedIdObserved:inputType==='insertParagraph',lifecycle:r.editor.lifecycle,failures:copy(r.failures)};
+  return {clonedIdObserved,lifecycle:r.editor.lifecycle,failures:copy(r.failures)};
 }
 export async function beginComposition(id,path,text) {
   await select(id,path,0);const r=rec(id),node=leaf(id,path);r.element.dispatchEvent(new CompositionEvent('compositionstart',{bubbles:true,data:''}));

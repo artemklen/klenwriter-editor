@@ -125,8 +125,14 @@ test('T09/T10/T11 UI modes preserve history, replacement rotates generation and 
 
 for(const [fixtureName,path,offset]of [['D0','/0/2',2],['T03-initial','/0/0',1]])test(`bounded noncancelable split/join reconciles actual cloned DOM (${fixtureName})`,async({page})=>{
   const {id}=await call(page,'mount',{fixture:fixtureName});await call(page,'select',id,path,offset);const initial=await checkpoint(page,id,'noncancelable initial'),left=stateRow(initial,path).id;
-  const split=await call(page,'noncancelable',id,'insertParagraph');expect(split.lifecycle).toBe('ready');let p=await checkpoint(page,id,'noncancelable split');expect(p.canonical).toBe(literal(fixtureName==='D0'?'D1-after-end-split':'T03-split'));unique(p);
+  const split=await call(page,'noncancelable',id,'insertParagraph');expect(split.lifecycle).toBe('ready');expect(split.clonedIdObserved).toBe(true);let p=await checkpoint(page,id,'noncancelable split');expect(p.canonical).toBe(literal(fixtureName==='D0'?'D1-after-end-split':'T03-split'));unique(p);
   const target=fixtureName==='D0'?'/1':'/1/0';await call(page,'select',id,target,0);const joined=await call(page,'noncancelable',id,'deleteContentBackward');expect(joined.lifecycle).toBe('ready');p=await checkpoint(page,id,'noncancelable join');expect(p.canonical).toBe(literal(fixtureName));caret(p,left,offset);expect(docEvents(p)).toHaveLength(2);
+});
+
+test('ordinary browser keyboard RU/EN typing is one native publication per gesture',async({page})=>{
+  const {id}=await call(page,'mount',{fixture:'D0'});await call(page,'select',id,'/0/2',2);
+  await page.keyboard.type('Az');await page.keyboard.insertText('я');
+  const p=await checkpoint(page,id,'ordinary keyboard RU EN');expect(stateRow(p,'/0/2').text).toBe('\u00a0ZAzя');expect(docEvents(p)).toHaveLength(3);caret(p,stateRow(p,'/0/2').id,5);expect(await call(page,'nativeSelectionMatches',id,'/0/2',5)).toBe(true);
 });
 
 test('noncancelable basic RU/EN text uses native command and preserves exact scalars',async({page})=>{
@@ -155,8 +161,8 @@ test('T12 destroy from native publication listener suppresses later callbacks an
 });
 
 test('derived ordered-list value refusal preserves native publication and exact committed integer',async({page})=>{
-  const source='{"schema":"klenwriter.document","schema_version":1,"profile":"prose","content":[{"type":"ordered_list","attrs":{"start":2147483647},"content":[{"type":"list_item","content":[{"type":"paragraph","content":[{"type":"text","text":"A"}]}]},{"type":"list_item","content":[{"type":"paragraph"}]},{"type":"list_item","content":[{"type":"paragraph","content":[{"type":"text","text":"C"}]}]}]}]}';
+  const source='{"schema":"klenwriter.document","schema_version":1,"profile":"prose","content":[{"type":"ordered_list","attrs":{"start":2147483647},"content":[{"type":"list_item","content":[{"type":"paragraph","content":[{"type":"text","text":"A"}]}]},{"type":"list_item","content":[{"type":"paragraph","content":[]}]},{"type":"list_item","content":[{"type":"paragraph","content":[{"type":"text","text":"C"}]}]}]}]}';
   const {id}=await call(page,'mount',{source});await call(page,'select',id,'/0/1/0',0);const result=await call(page,'command',id,{kind:'enter'});expect(result.response.status).toBe('ok');
   const p=await checkpoint(page,id,'postpublication derived presentation refusal');expect(p.lifecycle).toBe('recoveryRequired');expect(p.failures.at(-1).diagnostic).toMatchObject({code:'dom.presentation_unsupported',publication:'alreadyPublished'});
-  expect(p.canonical).toContain('"start":2147483649');expect(p.canonical).not.toContain('2147483650');expect(p.state.stamp.revision).toBe('1');history(p,1,0);
+  expect(p.canonical).toBe('{"content":[{"attrs":{"start":2147483647},"content":[{"content":[{"content":[{"text":"A","type":"text"}],"type":"paragraph"}],"type":"list_item"}],"type":"ordered_list"},{"content":[],"type":"paragraph"},{"attrs":{"start":2147483649},"content":[{"content":[{"content":[{"text":"C","type":"text"}],"type":"paragraph"}],"type":"list_item"}],"type":"ordered_list"}],"profile":"prose","schema":"klenwriter.document","schema_version":1}');expect(p.state.stamp.revision).toBe('1');history(p,1,0);
 });
