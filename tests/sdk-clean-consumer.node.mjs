@@ -10,7 +10,10 @@ import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const sha512 = bytes => createHash('sha512').update(bytes).digest('base64');
-const selected = ['wasm', 'sdk', 'kwdj'];
+// KWDJ's optional DOM subpath has a declared DOM dependency (ADR-005), even
+// when this consumer executes only its headless root entry.
+const selected = ['wasm', 'sdk', 'dom', 'kwdj'];
+const selectedNames = new Set(selected.map(role => `@klenwriter/editor-${role}`));
 
 function npmCli() {
   if (process.env.npm_execpath && existsSync(process.env.npm_execpath)) return realpathSync(process.env.npm_execpath);
@@ -31,6 +34,9 @@ test('packed SDK/wasm/KWDJ execute real Session with cargo and rustc absent from
     const bytes = readFileSync(path);
     assert.equal(record.integrity, `sha512-${sha512(bytes)}`);
     const source = JSON.parse(readFileSync(resolve(root, `packages/${role}/package.json`), 'utf8'));
+    for (const dependency of Object.keys(source.dependencies ?? {})) {
+      assert(selectedNames.has(dependency), `${name} dependency ${dependency} must be supplied as an actual packed tarball`);
+    }
     for (const hook of ['preinstall', 'install', 'postinstall', 'prepare']) assert.equal(source.scripts?.[hook], undefined, `${name} has no consumer build hook`);
     return { role, name, path, sha256: hash(bytes), bytes: bytes.length, inventory: record };
   });
@@ -154,7 +160,7 @@ process.stdout.write(JSON.stringify({ ...report, missingTools, wasmSha256: creat
       execution: { exitCode: child.status, pathContainsNoExecutables: true },
       tarballs: packages.map(({ inventory, ...value }) => value), installedArtifactHashes: installed,
       scenarioSha256: hash(scenario), extensionInputs: { testkitSha256: hash(notesTestkit), packetSha256: hash(extensionPacket) }, report: result,
-      scope: 'Three actual packed private tarballs installed into a fresh external JS project. Child PATH has no cargo/rustc; no claim that tools were uninstalled globally. Legacy12cycles plus actual V2 notes53/commands18/runtime recipe/frozenD0D1/shared Rust ownership and reentrant controller. Parsed native replies retained. No renderer/CMS acceptance.',
+      scope: 'Four actual packed private tarballs supply the full declared SDK/wasm/KWDJ/DOM dependency closure in a fresh external JS project. Child PATH has no cargo/rustc; no claim that tools were uninstalled globally. Legacy12cycles plus actual V2 notes53/commands18/runtime recipe/frozenD0D1/shared Rust ownership and reentrant controller. Parsed native replies retained. No renderer/CMS acceptance.',
     }, null, 2) + '\n');
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });

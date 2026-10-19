@@ -1,0 +1,50 @@
+{
+  "schema": "klenwriter.document",
+  "schema_version": 1,
+  "profile": "prose",
+  "content": [
+    {
+      "type": "paragraph",
+      "attrs": {
+        "align": "right",
+        "first_line_indent": true
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "А😀 "
+        },
+        {
+          "type": "text",
+          "text": "é",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " Z"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "align": "right",
+        "first_line_indent": true
+      },
+      "content": []
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Бета"
+        }
+      ]
+    }
+  ]
+}

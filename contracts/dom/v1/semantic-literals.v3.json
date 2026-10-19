@@ -1,0 +1,860 @@
+{
+  "D0": {
+    "schema": "klenwriter.document",
+    "schema_version": 1,
+    "profile": "prose",
+    "content": [
+      {
+        "type": "paragraph",
+        "attrs": {
+          "align": "right",
+          "first_line_indent": true
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "А😀 "
+          },
+          {
+            "type": "text",
+            "text": "é",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " Z"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "Бета"
+          }
+        ]
+      }
+    ]
+  },
+  "D1-after-end-split": {
+    "schema": "klenwriter.document",
+    "schema_version": 1,
+    "profile": "prose",
+    "content": [
+      {
+        "type": "paragraph",
+        "attrs": {
+          "align": "right",
+          "first_line_indent": true
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "А😀 "
+          },
+          {
+            "type": "text",
+            "text": "é",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " Z"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "align": "right",
+          "first_line_indent": true
+        },
+        "content": []
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "Бета"
+          }
+        ]
+      }
+    ]
+  },
+  "T03-initial": {
+    "schema": "klenwriter.document",
+    "schema_version": 1,
+    "profile": "prose",
+    "content": [
+      {
+        "type": "paragraph",
+        "attrs": {
+          "align": "right",
+          "first_line_indent": true
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "a😀b",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "T03-split": {
+    "schema": "klenwriter.document",
+    "schema_version": 1,
+    "profile": "prose",
+    "content": [
+      {
+        "type": "paragraph",
+        "attrs": {
+          "align": "right",
+          "first_line_indent": true
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "a",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "align": "right",
+          "first_line_indent": true
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "😀b",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "T04-X": {
+    "schema": "klenwriter.document",
+    "schema_version": 1,
+    "profile": "prose",
+    "content": [
+      {
+        "type": "paragraph",
+        "attrs": {
+          "align": "right",
+          "first_line_indent": true
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "А😀 "
+          },
+          {
+            "type": "text",
+            "text": "é",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " ZX"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "Бета"
+          }
+        ]
+      }
+    ]
+  },
+  "T04-XY": {
+    "schema": "klenwriter.document",
+    "schema_version": 1,
+    "profile": "prose",
+    "content": [
+      {
+        "type": "paragraph",
+        "attrs": {
+          "align": "right",
+          "first_line_indent": true
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "А😀 "
+          },
+          {
+            "type": "text",
+            "text": "é",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": " ZXY"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "Бета"
+          }
+        ]
+      }
+    ]
+  },
+  "T05-styled-EGC": {
+    "schema": "klenwriter.document",
+    "schema_version": 1,
+    "profile": "prose",
+    "content": [
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "e"
+          },
+          {
+            "type": "text",
+            "text": "́",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "T05-formatted-EGC": {
+    "schema": "klenwriter.document",
+    "schema_version": 1,
+    "profile": "prose",
+    "content": [
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "e",
+            "marks": [
+              {
+                "type": "emphasis"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": "́",
+            "marks": [
+              {
+                "type": "strong"
+              },
+              {
+                "type": "emphasis"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "T06-safe-data": {
+    "schema": "klenwriter.document",
+    "schema_version": 1,
+    "profile": "prose",
+    "content": [
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "<script>globalThis.__osr39=1</script><img src=x onerror=alert(1)>&\"' é 😀",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 2,
+          "align": "right",
+          "first_line_indent": true
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Title"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "Link",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://example.org/a?q=%22%3E",
+                  "title": "<b>Title & \"quote\"</b>"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "KWDJ-basic-catalog": {
+    "schema": "klenwriter.document",
+    "schema_version": 1,
+    "profile": "prose",
+    "content": [
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "strong",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": "emphasis",
+            "marks": [
+              {
+                "type": "emphasis"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": "strike",
+            "marks": [
+              {
+                "type": "strike"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": "code",
+            "marks": [
+              {
+                "type": "code"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": "sub",
+            "marks": [
+              {
+                "type": "subscript"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": "sup",
+            "marks": [
+              {
+                "type": "superscript"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": "color",
+            "marks": [
+              {
+                "type": "text_color",
+                "attrs": {
+                  "token": "accent"
+                }
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": "highlight",
+            "marks": [
+              {
+                "type": "highlight",
+                "attrs": {
+                  "token": "warning"
+                }
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": "link",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://example.org/catalog",
+                  "title": "Literal title"
+                }
+              }
+            ]
+          },
+          {
+            "type": "hard_break"
+          },
+          {
+            "type": "text",
+            "text": "after break"
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 2
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Heading"
+          }
+        ]
+      },
+      {
+        "type": "blockquote",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Quote"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "bullet_list",
+        "content": [
+          {
+            "type": "list_item",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Bullet"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "ordered_list",
+        "attrs": {
+          "start": 3
+        },
+        "content": [
+          {
+            "type": "list_item",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Third"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "task_list",
+        "content": [
+          {
+            "type": "task_item",
+            "attrs": {
+              "checked": true
+            },
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Checked"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "task_item",
+            "attrs": {
+              "checked": false
+            },
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Unchecked"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "code_block",
+        "attrs": {
+          "language": "text"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "<b>code</b>\nline two"
+          }
+        ]
+      },
+      {
+        "type": "scene_break"
+      }
+    ]
+  },
+  "Notes-D0": {
+    "schema_version": 1,
+    "root": {
+      "type": "org.example.notes/document",
+      "attrs": {
+        "title": "Notes D0",
+        "tags": [
+          "alpha",
+          "β",
+          "alpha"
+        ]
+      },
+      "marks": [],
+      "text": null,
+      "children": [
+        {
+          "type": "org.example.notes/paragraph",
+          "attrs": {},
+          "marks": [],
+          "text": null,
+          "children": [
+            {
+              "type": "org.example.notes/text",
+              "attrs": {},
+              "marks": [],
+              "text": "А😀 é Z",
+              "children": []
+            },
+            {
+              "type": "org.example.notes/hard_break",
+              "attrs": {},
+              "marks": [],
+              "text": null,
+              "children": []
+            },
+            {
+              "type": "org.example.notes/text",
+              "attrs": {},
+              "marks": [],
+              "text": "Line2",
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "Notes-D1-callout-highlight": {
+    "schema_version": 1,
+    "root": {
+      "type": "org.example.notes/document",
+      "attrs": {
+        "title": "Keep title",
+        "tags": [
+          "alpha",
+          "β"
+        ]
+      },
+      "marks": [],
+      "text": null,
+      "children": [
+        {
+          "type": "org.example.notes/callout",
+          "attrs": {
+            "kind": "warning",
+            "title": "Do not drop"
+          },
+          "marks": [],
+          "text": null,
+          "children": [
+            {
+              "type": "org.example.notes/paragraph",
+              "attrs": {},
+              "marks": [],
+              "text": null,
+              "children": [
+                {
+                  "type": "org.example.notes/text",
+                  "attrs": {},
+                  "marks": [
+                    {
+                      "type": "org.example.notes/highlight",
+                      "attrs": {
+                        "color": "sun"
+                      }
+                    }
+                  ],
+                  "text": "A B é",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "Notes-D1-highlight-only": {
+    "schema_version": 1,
+    "root": {
+      "type": "org.example.notes/document",
+      "attrs": {
+        "title": "Keep title",
+        "tags": [
+          "alpha",
+          "β"
+        ]
+      },
+      "marks": [],
+      "text": null,
+      "children": [
+        {
+          "type": "org.example.notes/paragraph",
+          "attrs": {},
+          "marks": [],
+          "text": null,
+          "children": [
+            {
+              "type": "org.example.notes/text",
+              "attrs": {},
+              "marks": [
+                {
+                  "type": "org.example.notes/highlight",
+                  "attrs": {
+                    "color": "sun"
+                  }
+                }
+              ],
+              "text": "A B é",
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "T10-replacement": {
+    "schema": "klenwriter.document",
+    "schema_version": 1,
+    "profile": "prose",
+    "content": [
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "Новый документ 😀"
+          }
+        ]
+      }
+    ]
+  },
+  "composition-initial": {
+    "schema": "klenwriter.document",
+    "schema_version": 1,
+    "profile": "prose",
+    "content": [
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "omega."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "tail"
+          }
+        ]
+      }
+    ]
+  },
+  "composition-outside-edit": {
+    "schema": "klenwriter.document",
+    "schema_version": 1,
+    "profile": "prose",
+    "content": [
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "omega."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "tail!"
+          }
+        ]
+      }
+    ]
+  },
+  "ordered-u64-data": {
+    "schema": "klenwriter.document",
+    "schema_version": 1,
+    "profile": "prose",
+    "content": [
+      {
+        "type": "ordered_list",
+        "attrs": {
+          "start": 9007199254740993
+        },
+        "content": [
+          {
+            "type": "list_item",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Exact start"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "T05-backward-EGC": {
+    "schema": "klenwriter.document",
+    "schema_version": 1,
+    "profile": "prose",
+    "content": [
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "Xe"
+          },
+          {
+            "type": "text",
+            "text": "́",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "T05-backward-EGC-after": {
+    "schema": "klenwriter.document",
+    "schema_version": 1,
+    "profile": "prose",
+    "content": [
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "X"
+          }
+        ]
+      }
+    ]
+  }
+}

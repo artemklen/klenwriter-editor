@@ -6,6 +6,7 @@ import { writeDependencyNotices } from './dependency-notices.mjs';
 import { identity } from './package-identity.mjs';
 import { sealPackagedSdkWasm } from './seal-sdk-wasm.mjs';
 import { computeSdkBuildIdentity, generateSdkTypes, writeSdkBuildIdentity, writeSdkGeneratorInventory } from './generate-sdk-types.mjs';
+import { generateDomInventory } from './generate-dom-inventory.mjs';
 import { defaultSdkDistribution, defaultSdkCargoFeatures } from './sdk-distribution.mjs';
 import { buildExtensionConsumers } from './build-extensions-consumers.mjs';
 
@@ -25,6 +26,8 @@ const version = spawnSync(bindgen, ['--version'], { encoding: 'utf8' });
 if (version.status !== 0 || version.stdout.trim() !== 'wasm-bindgen 0.2.129') {
   throw new Error('Install the pinned CLI: cargo install wasm-bindgen-cli --version 0.2.129 --locked --root .tools');
 }
+// Native registry witnesses are versioned and checked before build identity.
+generateDomInventory({ check: true });
 // Declarations are versioned; stale output refuses rather than silently changing source.
 generateSdkTypes({ check: true });
 writeSdkGeneratorInventory();

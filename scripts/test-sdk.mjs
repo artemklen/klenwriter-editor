@@ -16,7 +16,8 @@ const built = JSON.parse(readFileSync('artifacts/sdk-build-identity.json', 'utf8
 assert.equal(built.buildId, sdkIdentity.buildId, 'Build SDK artifacts from this source before testing');
 assert.deepEqual(built.sourceHashes, sdkIdentity.sourceHashes);
 const sources = [...new Set([...Object.keys(sdkIdentity.sourceHashes),
-  ...walk('contracts/sdk/v1'), 'crates/wasm/examples/support/sdk_observer.rs',
+  ...walk('contracts/sdk/v1'), ...walk('contracts/dom/v1'),
+  'crates/wasm/examples/support/sdk_backward.rs', 'crates/wasm/examples/support/sdk_observer.rs',
   'crates/wasm/examples/sdk_native.rs', 'crates/wasm/examples/sdk_probe.rs', 'crates/wasm/tests/sdk.rs',
   'evidence/osr-63/execution-contract.md', 'scripts/test-sdk.mjs', 'packages/wasm/src/sdk-types.ts',
   'tests/sdk-controller.node.mjs', 'tests/sdk-loader.node.mjs', 'tests/sdk-types.node.mjs',

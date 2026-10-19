@@ -1,0 +1,231 @@
+{
+  "schema": "klenwriter.document",
+  "schema_version": 1,
+  "profile": "prose",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "strong",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "emphasis",
+          "marks": [
+            {
+              "type": "emphasis"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "strike",
+          "marks": [
+            {
+              "type": "strike"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "code",
+          "marks": [
+            {
+              "type": "code"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "sub",
+          "marks": [
+            {
+              "type": "subscript"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "sup",
+          "marks": [
+            {
+              "type": "superscript"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "color",
+          "marks": [
+            {
+              "type": "text_color",
+              "attrs": {
+                "token": "accent"
+              }
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "highlight",
+          "marks": [
+            {
+              "type": "highlight",
+              "attrs": {
+                "token": "warning"
+              }
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "link",
+          "marks": [
+            {
+              "type": "link",
+              "attrs": {
+                "href": "https://example.org/catalog",
+                "title": "Literal title"
+              }
+            }
+          ]
+        },
+        {
+          "type": "hard_break"
+        },
+        {
+          "type": "text",
+          "text": "after break"
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "level": 2
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "Heading"
+        }
+      ]
+    },
+    {
+      "type": "blockquote",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Quote"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "bullet_list",
+      "content": [
+        {
+          "type": "list_item",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Bullet"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ordered_list",
+      "attrs": {
+        "start": 3
+      },
+      "content": [
+        {
+          "type": "list_item",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Third"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "task_list",
+      "content": [
+        {
+          "type": "task_item",
+          "attrs": {
+            "checked": true
+          },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Checked"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "task_item",
+          "attrs": {
+            "checked": false
+          },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Unchecked"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "code_block",
+      "attrs": {
+        "language": "text"
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "<b>code</b>\nline two"
+        }
+      ]
+    },
+    {
+      "type": "scene_break"
+    }
+  ]
+}

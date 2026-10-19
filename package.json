@@ -18,7 +18,7 @@
     "check:packages": "node scripts/check-packages.mjs",
     "test:workspace": "node --test tests/workspace.node.mjs",
     "check:rust": "cargo fmt --all --check && cargo clippy --workspace --all-targets --locked -- -D warnings && cargo test --workspace --locked",
-    "check": "npm run check:rust && npm run test:canonical && npm run build && npm run test:codec && npm run test:corpus && npm run test:session && npm run test:transactions && npm run test:commands && npm run test:history && npm run test:deltas && npm run test:sdk && npm run test:extensions && npm run check:metadata && npm run check:workspace && npm run check:packages && npm run test:sdk:consumer && npm run test:workspace && npm run check:m0 && npm run perf:verify && npm run test:workspace:browser",
+    "check": "npm run check:rust && npm run test:canonical && npm run build && npm run test:codec && npm run test:corpus && npm run test:session && npm run test:transactions && npm run test:commands && npm run test:history && npm run test:deltas && npm run test:sdk && npm run test:extensions && npm run check:metadata && npm run check:workspace && npm run check:packages && npm run test:sdk:consumer && npm run test:workspace && npm run check:m0 && npm run perf:verify && npm run test:workspace:browser && npm run test:dom",
     "test:session": "node --test tests/session.node.mjs",
     "test:transactions": "node --test tests/transactions.node.mjs",
     "test:commands": "node --test tests/commands.node.mjs",
@@ -34,7 +34,8 @@
     "check:sdk-types": "node scripts/generate-sdk-types.mjs --check",
     "test:sdk": "node scripts/test-sdk.mjs && node --test tests/sdk-controller.node.mjs tests/sdk-types.node.mjs tests/sdk-loader.node.mjs tests/sdk-integration.node.mjs tests/sdk-v2.node.mjs tests/sdk-v2-types.node.mjs",
     "test:sdk:consumer": "node --test tests/sdk-clean-consumer.node.mjs",
-    "test:extensions": "node scripts/test-extensions.mjs"
+    "test:extensions": "node scripts/test-extensions.mjs",
+    "test:dom": "playwright test --config playwright.dom.config.js"
   },
   "engines": {
     "node": ">=24.22.0 <25 || >=26 <27"

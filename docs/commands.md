@@ -66,7 +66,7 @@ Unrelated marks and inline barriers survive. Same-block split commands move the
 intact suffix before deleting an old separating range, avoiding an artificial
 intermediate EGC boundary rejection.
 
-KWDJ publishes15 typed command IDs and9 registered slash candidates. Enter handles
+KWDJ publishes16 typed command IDs and9 registered slash candidates. Enter handles
 paragraph/heading boundaries, code LF and basic nested/task/list split/exit/lift
 without flattening tails. Shift+Enter inserts a bare hard break (code uses LF).
 Paragraph/heading and lossless code/quote/list transforms preserve compatible
@@ -81,6 +81,19 @@ captured range/literal and fresh request tokens; prefix/suffix/layout survive on
 atomic delete+insert. Escape is a no-op command seam; keyboard handling belongs to
 its later host gate. Future domain/media/table/poetry algorithms return precise
 unavailable reasons. See the [baseline disposition](command-parity.md).
+
+OSR-39 appends `org.klenwriter.kwdj/command/delete-backward` after the original15
+commands. Its closed payload is `{"kind":"delete_backward"}` on both SDK ABIs.
+Rust deletes the previous pinned EGC across styled Text leaves, or prepares the
+existing empty InsertText replacement for an actual selected range. At a block
+start it joins compatible paragraph/heading siblings under the same root or
+simple blockquote, retaining the left identity and the pre-join caret seam.
+Code-block text supports EGC deletion, while its block-start join, inline barriers,
+lists/domain boundaries and lossy type/attribute joins refuse atomically. Only a
+first eligible top-level start is Unchanged. `Keep` typing state is revalidated on
+the final candidate. The [frozen DOM contract](../contracts/dom/v1/README.md)
+supplies independent exact T02/T03 history/identity/caret and Unicode literals;
+shared native/WASM command and SDK1/SDK2 witnesses exercise them.
 
 The24 [independent literal vectors](../contracts/commands/v1/vectors.json) were
 chosen before implementation. Actual native/WASM witnesses compare their complete

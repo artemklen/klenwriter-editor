@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync,writeFileSync} from 'node:fs';
+import {readFileSync,readdirSync,writeFileSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import init,{observeCommands} from '../artifacts/commands/probe.js';
@@ -24,6 +24,8 @@ test('actual KWDJ command availability and execution match literal expectations 
   const maps=wasm.structural.groups.find(group=>group.id==='normalization_position_maps');
   assert.equal(maps.case_total,6);assert.equal(maps.cases.length,6);
   for(const c of maps.cases)assert.equal(c.status,'passed');
+  assert.equal(wasm.backward.status,'passed');
+  assert.equal(wasm.backward.frozen_t02_t03,true);
   assert.equal(wasm.inline.status,'passed');assert.equal(Object.keys(wasm.inline.groups).length,8);
   for(const group of Object.values(wasm.inline.groups))assert.equal(group.status,'passed');
   for(const c of wasm.literal_cases){
@@ -33,7 +35,8 @@ test('actual KWDJ command availability and execution match literal expectations 
     assert.equal(typeof c.canonical_json,'string');
   }
   assert.match(wasm.literal_cases[23].canonical_json,/18446744073709551615/);
-  const paths=['Cargo.lock','crates/wasm/Cargo.toml','contracts/commands/v1/vectors.json',
+  const walk=path=>readdirSync(path,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()?walk(`${path}/${entry.name}`):entry.isFile()?[`${path}/${entry.name}`]:[]);
+  const paths=[...walk('contracts/dom/v1'),'crates/kwdj/src/commands/delete.rs','crates/wasm/examples/support/command_backward.rs','Cargo.lock','crates/wasm/Cargo.toml','contracts/commands/v1/vectors.json',
     'crates/core/src/history.rs','crates/engine/src/history.rs','crates/engine/src/grouping.rs','crates/engine/src/history_dispatch.rs',
     'crates/core/src/commands.rs','crates/core/src/transaction.rs','crates/core/src/positions.rs',
     'crates/engine/src/commands.rs','crates/engine/src/dispatch.rs','crates/engine/src/session.rs','crates/engine/src/tree.rs','crates/engine/src/transaction.rs','crates/engine/src/mapping.rs',

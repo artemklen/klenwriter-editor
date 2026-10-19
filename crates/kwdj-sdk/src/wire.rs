@@ -173,6 +173,7 @@ pub enum KwdjIntentDto {
         literal: String,
     },
     DismissSlash {},
+    DeleteBackward {},
 }
 
 #[cfg_attr(
@@ -351,7 +352,8 @@ mod tests {
                 "shift_enter",
                 "unset_link",
                 "toggle_quote",
-                "dismiss_slash"
+                "dismiss_slash",
+                "delete_backward"
             ]
         );
         check_units!(

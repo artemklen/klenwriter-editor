@@ -47,6 +47,11 @@ sdk-types = ["dep:ts-rs", "editor_kwdj_sdk/sdk-types"]
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 ts-rs = { version = "=12.0.1", optional = true, default-features = false, features = ["serde-compat"] }
 
+# Build-time DOM coverage inventory only. These do not enter the WASM runtime.
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+editor_registry.workspace = true
+editor_notes.workspace = true
+
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen.workspace = true
 js-sys.workspace = true

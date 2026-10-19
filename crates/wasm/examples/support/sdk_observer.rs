@@ -5,6 +5,9 @@
 use klenwriter_editor_wasm::sdk::{BridgeSession, manifest, resource_counts};
 use serde_json::{Value, json};
 
+#[path = "sdk_backward.rs"]
+mod backward;
+
 const VECTORS: &str = include_str!("../../../../contracts/sdk/v1/vectors.json");
 const PREFIX: &str = "org.klenwriter.kwdj/command/";
 const REFERENCE: &str = "550e8400-e29b-41d4-a716-446655440006";
@@ -407,6 +410,10 @@ fn command_literals(v: &Value) -> Value {
         rows.push(json!({"id":row["id"],"effect":applied["effect"],"canonical_json":canonical,"query_pure":true,"exact_historical_ids":true}));
         let catalog = call(&mut bridge, json!({"kind":"catalog"}));
         if rows.len() == v["literal_total"].as_u64().unwrap() as usize {
+            // The historical15-command edit corpus is unchanged. OSR-39 appends
+            // one compiled command to the shipped provider inventory.
+            assert_eq!(catalog_expected.len(), 15);
+            catalog_expected.push(json!("org.klenwriter.kwdj/command/delete-backward"));
             assert_eq!(catalog["commands"], Value::Array(catalog_expected.clone()));
         }
         destroy(&mut bridge);
@@ -980,7 +987,7 @@ pub fn observe() -> Value {
     let report = json!({"format":"klenwriter-sdk-observer/1","status":"passed","abi":"editor-sdk/1",
         "opening":opening(&v),"commands":command_literals(&v),"stale":stale_and_remount(&v),
         "state_events":state_events_and_mapping(&v),"snapshots_resources":snapshots_and_resources(&v),
-        "identity_facts":identity_facts(&v),"metadata_dtos":metadata_and_closed_dtos(&v),"mapping_provenance":mapping_provenance(&v)});
+        "identity_facts":identity_facts(&v),"metadata_dtos":metadata_and_closed_dtos(&v),"mapping_provenance":mapping_provenance(&v),"backward":backward::observe()});
     assert_eq!(
         resource_counts(),
         baseline,

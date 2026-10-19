@@ -1,2 +1,5 @@
-/** Dom package boundary. Runtime implementation belongs to later tasks. */
+// SPDX-License-Identifier: MIT OR Apache-2.0
 export { artifactStage } from '@klenwriter/editor-sdk';
+export { defineRendererCatalog } from './catalog.js';
+export { mountEditor } from './mounted.js';
+export type * from './types.js';

@@ -2609,7 +2609,7 @@ mod tests {
     #[test]
     fn catalogue_and_future_provider_reasons_are_exact_and_finite() {
         validate_catalog(super::super::KWDJ_COMMANDS).unwrap();
-        assert_eq!(super::super::KWDJ_COMMANDS.len(), 15);
+        assert_eq!(super::super::KWDJ_COMMANDS.len(), 16);
         assert!(
             super::super::KWDJ_SLASH_CANDIDATES
                 .iter()

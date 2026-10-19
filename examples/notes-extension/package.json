@@ -6,6 +6,11 @@
   "license": "MIT OR Apache-2.0",
   "exports": {
     "./d0.json": "./d0.json",
-    "./d1.json": "./d1.json"
+    "./d1.json": "./d1.json",
+    "./dom": "./dom.mjs"
+  },
+  "dependencies": {
+    "@klenwriter/editor-dom": "0.0.0",
+    "@klenwriter/editor-sdk": "0.0.0"
   }
 }
