@@ -8,7 +8,8 @@ performance captures nor changes browser settings, authentication or preferences
 Prerequisites: built public DOM/SDK/WASM artifacts and the workspace server at
 `http://127.0.0.1:4174/dom`; installed Google Chrome/Safari; existing enabled
 U.S. and Russian or RussianWin input sources; previously granted System Events automation
-and Accessibility access. Safari WebDriver must already be enabled. Missing
+and Accessibility access. For Safari, the owner must already have enabled
+**Allow JavaScript from Apple Events**. The runner does not change that setting. Missing
 permissions/sources produce a retained NOT_RUN/error, with no permission-setting,
 authentication flow or retry. The runner does not start the workspace server or
 run a build/CI.
@@ -29,13 +30,35 @@ PATH="$PWD/.tools/node/node_modules/.bin:$PATH" node scripts/dom-native-acceptan
 
 Node24.22.0 is enforced. Reports, the compiled Carbon helper and checkpoint data
 stay outside the checkout. Each run records exact Node, macOS product/build,
-browser capability/bundle versions, source/artifact hashes, actual current and
+browser bundle/build versions, source/artifact hashes, actual current and
 available input source IDs, physical key-code actions, trusted browser event
 traces and native canonical/selection/history checkpoints. Chrome uses the actual
-installed `channel: 'chrome'`, headed. Safari uses the installed safaridriver and
-W3C session; pass `--safari-url http://127.0.0.1:PORT` to use an already-running
-local driver. It never executes `safaridriver --enable` or changes Safari options.
-A driver started by this runner is stopped in its final cleanup.
+installed `channel: 'chrome'`, headed. Safari uses one ordinary window created by
+Safari's Apple Events `make new document` command at the fixed fixture URL.
+Its fresh numeric window ID is captured and validated, then every JavaScript
+operation targets the current tab of that exact owned window. The window must
+retain its one fixture tab. Existing Safari windows and tabs are left alone.
+The report records this control method, window ID, fixture URL, actual
+`navigator.userAgent`, language/platform and installed Safari bundle version/build.
+No WebDriver capability or W3C-session result is claimed; the former
+`--safari-url` mode is removed. Earlier WebDriver physical traces remain qualified
+NOT_RUN evidence and are not promoted by this change.
+
+Safari receives generated JavaScript through one fixed UTF-8 file in a fresh
+external report subdirectory; its path and validated window ID are positional
+`osascript` arguments. Shell expansion and AppleScript interpolation of authored
+code/arguments are absent. The closed helper API admits only the protocol's
+method names and literal phase/locale/history arguments. Async methods use a
+fresh request ID and an explicit callback-result slot on the fixture window.
+Apple Events is not assumed to await a JavaScript Promise. Each readiness/import/
+method call polls at100ms for at most15seconds, with JSON output capped at2MiB.
+`domHostReady` is observed before the fixed `/dom-native-host.js` module import.
+
+Cleanup closes only the captured owned window while it still contains exactly
+one tab at the fixed fixture URL. Missing ownership, an extra tab or navigation
+is retained as an explicit cleanup failure; other user windows are never closed.
+The runner does not change Safari preferences, remote automation, JavaScript
+grants, authentication or global app-data environment variables.
 
 Chrome receives a fresh `CFFIXED_USER_HOME` directory under the external report
 folder for its app-data lookup. This addresses the observed macOS27 startup
@@ -47,9 +70,11 @@ The Carbon helper lists existing input sources and selects only an existing,
 enabled, selectable source. It does not enable, install or persist a layout.
 The runner verifies the selected ID after selection and again after activating
 the browser, before sending key codes; it verifies the ID again after each batch.
-Before choosing the layout it activates the browser; Chrome also brings its
-owned page forward and waits at most5seconds for `document.hasFocus()`. This is
-window preparation, not the tested Tab action. Physical Tab and its trusted trace
+Before choosing the layout it activates the browser and prepares the owned page.
+Chrome brings its page forward; Safari brings only its captured ordinary window
+forward and targets its fixture tab. Focus preparation waits at most5seconds for
+`document.hasFocus()`. Safari repeats that owned-window preparation before each
+physical batch. This setup is separate from the tested Tab action. Physical Tab and its trusted trace
 must still return focus from the host control to the editor.
 The original source is restored and verified in `finally`, including failures.
 No assumption that the first key will already use a newly selected layout is
@@ -90,7 +115,8 @@ No private documents, accounts, general application keystrokes or host diagnosti
 are collected. Actual Tab return is recorded; the runner does not read or alter
 the user's global Safari Tab preference. This covers basic39 focus only.
 
-For an existing Safari MCP session, load `/dom`, then import the static module:
+The ordinary Safari adapter loads `/dom` and imports the same static fixture
+module after readiness. Its closed callback protocol invokes these public hooks:
 
 ```js
 await import('/dom-native-host.js');
@@ -102,8 +128,8 @@ The same module exposes `phase(name)`, `focusControl()`, `checkpoint(name)`,
 Checkpoint names in order are `focused`, `typed`, `split`, `joined`, `undo-join`,
 `redo-join`, `delete-last`, `focus-return`; trace phases for real input are
 `focused`, `type`, `split`, `join`, `delete-last`, `focus-return`.
-Perform OS input-source confirmation and actual physical key-code actions between
-these calls. WebDriver/PW text insertion is not an OS-layout input proof. Retain
+The runner performs OS input-source confirmation and actual physical key-code
+actions between these calls. Retain
 actual browser/OS/source/action metadata alongside the module result, preserve
 failures, call `finish()` and verify `resourcesReleased`, and restore the original
 input source even if an assertion fails. Do not select another layout merely to
