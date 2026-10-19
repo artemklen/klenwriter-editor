@@ -161,6 +161,7 @@ async function committed(entry,prepared,family){const literal=byId(family+'-forw
 async function performCase(entry,prepared){
   if(entry.caseId==='ordinary-layout'){const action=await physical(entry.locale==='en'?'ordinary-en':'ordinary-ru',entry);const after=await adapter.call('settle');keyAck(after,action,'KeyZ',{shift:entry.locale==='en'});entry.disposition='ordinary_layout_not_IME';await committed(entry,prepared,entry.locale==='en'?'P01':'P02');return;}
   const start=await physical('deadkey-acute',entry),preedit=await checkpoint(entry,'actual US OptionE preedit');keyAck(preedit,start,'KeyE',{alt:true});assert.ok(preedit.inputTrace.slice(start.inputTraceBefore).some(x=>x.event==='compositionstart'&&x.isTrusted),'Actual UA compositionstart required');
+  assert.equal(preedit.lifecycle,'ready','Preedit must remain admitted before further physical input');assert.equal(preedit.recovery,null,'No further physical input after provisional recovery');
   if(['plain-deadkey','marked-deadkey','scene-deadkey'].includes(entry.caseId)){
     const action=await physical('complete-e',entry),final=await adapter.call('settle');keyAck(final,action,'KeyE');assert.ok(final.inputTrace.slice(action.inputTraceBefore).some(x=>x.event==='compositionend'),'Actual UA compositionend required');entry.disposition='fixed_precomposed_e_acute_positive';await committed(entry,prepared,prepared.family);return;
   }
@@ -185,7 +186,7 @@ try{
     ...walk('packages/wasm/dist'),...walk('packages/sdk/dist'),...walk('packages/dom/dist'),...walk('packages/kwdj/dist'),
     'scripts/composition-native-acceptance.mjs','scripts/composition-native-input.swift','scripts/dom-native-input-source.swift','spikes/workspace/composition-native-host.js',
     'spikes/workspace/composition-host.js','spikes/workspace/composition.css','spikes/workspace/composition.html','scripts/workspace-server.mjs','artifacts/sdk-build-identity.json',
-    'scripts/composition-contract-data.mjs','scripts/selection-native/protocol.mjs','artifacts/sdk-native-manifest.json','artifacts/sdk-native-manifest-v2.json','artifacts/sdk-wasm-seal.json'])].sort();
+    'scripts/composition-contract-data.mjs','scripts/composition-csp-policy.mjs','scripts/selection-native/protocol.mjs','artifacts/sdk-native-manifest.json','artifacts/sdk-native-manifest-v2.json','artifacts/sdk-wasm-seal.json'])].sort();
   report.source={head:run('git',['rev-parse','HEAD']).stdout.trim(),trackedDirty:run('git',['status','--porcelain','--untracked-files=no']).stdout.trim(),pins:paths.map(pin)};
   const seal=JSON.parse(readFileSync('artifacts/sdk-wasm-seal.json','utf8'));assert.equal(seal.build_id,identity.buildId);assert.equal(seal.sealed_sha256,pin('packages/wasm/dist/editor_wasm_bg.wasm').sha256);
   const bundle=browserName==='chrome'?'/Applications/Google Chrome.app/Contents/Info.plist':'/Applications/Safari.app/Contents/Info.plist';

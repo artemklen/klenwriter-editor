@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // Closed acceptance fixture. Only public packaged SDK2/DOM and actual sealed WASM.
 import {loadSdkV2,sdkBuildId} from '@klenwriter/editor-sdk';
-import {mountEditor} from '@klenwriter/editor-dom';
+import {defineRendererCatalog,mountEditor} from '@klenwriter/editor-dom';
 import {kwdjCommand} from '@klenwriter/editor-kwdj';
 import {kwdjBasicRenderers} from '@klenwriter/editor-kwdj/dom';
 
@@ -39,13 +39,23 @@ for(const name of ['remove','replaceChildren','replaceWith']){const original=Ele
 export function metadata(){return {buildId:sdkBuildId,manifest:clone(module.manifest),native:JSON.parse(module.resourceCounts()),counts:{dom:dom.cases.length,native:native.cases.length,event:events.rows.length},errata:clone(dom.appliedErrata??dom.errata??null),scope:'Actual packaged SDK2/sealed WASM. Controlled DOM mutations and synthetic events are not installed physical input.'};}
 export function definition(caseId){const c=caseAt(caseId);return {dom:c,fixture:dom.fixtures[c.seed],native:c.nativeCase?nativeAt(c.nativeCase):null};}
 export function nativeDefinition(id){return clone(nativeAt(id));}
-export async function mount({caseId='D01-plain-event-data-mismatch',nativeCase=null,locale='en'}={}){
+export async function mount({caseId='D01-plain-event-data-mismatch',nativeCase=null,locale='en',presentation='basic'}={}){
   const c=caseAt(caseId),nc=nativeAt(nativeCase??c.nativeCase??(c.seed==='G'?'P14-forward':c.seed==='C'?'P10-forward':'P02-forward'));
+  check(['basic','strong-span-control'].includes(presentation),'Closed fixture presentation');
+  let renderers=kwdjBasicRenderers,fixture=dom.fixtures[c.seed];
+  if(presentation==='strong-span-control'){
+    check(c.id==='D04-marks-BR-sentinels-forward'&&nc.id==='P17-forward','Custom presentation control requires the independent P17 seed');
+    const definition=kwdjBasicRenderers.definition,strong='org.klenwriter.kwdj/strong';
+    renderers=defineRendererCatalog({...definition,marks:{...definition.marks,[strong]:{...definition.marks[strong],present:()=>({tag:'span'})}}});check(renderers.status!=='dom_refused','Public custom mark catalog refused');
+    // This explicit presentation control is a separate authored baseline. The
+    // basic G literal and every frozen contract object remain untouched.
+    fixture=clone(fixture);const mark=atTree(fixture.before,fixture.roles.T_mark);check(mark.tag==='strong','Frozen G strong marker required');mark.tag='span';
+  }
   check(['en','ru'].includes(locale),'Closed fixture locale');document.documentElement.lang=locale;document.getElementById('composition-host-control').textContent=locale==='ru'?'Вне редактора композиции':'Outside composition editor';document.getElementById('composition-status').textContent='';
   const id=`composition-mount-${++serial}`,element=document.createElement('div');element.id=id;element.lang=locale;element.className='composition-example';element.setAttribute('aria-label',locale==='ru'?'Редактор композиции':'Composition editor');
   own('host-setup',()=>document.getElementById('composition-mounts').append(element));
-  const r={id,element,case:c,nativeCase:nc,fixture:dom.fixtures[c.seed],ids:{},objects:new Map(),window:[],trace:[],traceOverflow:false,phase:'setup',uaComposition:{starts:0,ends:0,open:false},events:[],failures:[],recoveries:[],locale,removals:[]};records.set(id,r);
-  r.editor=mountEditor({element,renderers:kwdjBasicRenderers,editor:{input:encoder.encode(nc.input.canonical_json),options:{abi:'editor-sdk/2',build_id:sdkBuildId,profile:packet.kwdjProfile,admission:'validate',access:'editable',registry_json:packet.kwdjRegistryJson,profile_options_json:JSON.stringify({identities:{media:[],references:[]},limits:null})},loader:()=>module},
+  const r={id,element,case:c,nativeCase:nc,fixture,presentation,ids:{},objects:new Map(),window:[],trace:[],traceOverflow:false,phase:'setup',uaComposition:{starts:0,ends:0,open:false},events:[],failures:[],recoveries:[],locale,removals:[]};records.set(id,r);
+  r.editor=mountEditor({element,renderers,editor:{input:encoder.encode(nc.input.canonical_json),options:{abi:'editor-sdk/2',build_id:sdkBuildId,profile:packet.kwdjProfile,admission:'validate',access:'editable',registry_json:packet.kwdjRegistryJson,profile_options_json:JSON.stringify({identities:{media:[],references:[]},limits:null})},loader:()=>module},
     onRefusal:value=>{r.failures.push(clone(value));record(r,'refusal',{value:clone(value)});},onRecovery:value=>{r.recoveries.push(value);record(r,'recovery',{value:recovery(value)});const code=value.composition?.reason==='native_refused'?value.composition.response?.diagnostic?.code:null;document.getElementById('composition-status').textContent=(locale==='ru'?'Ввод сохранён. Требуется восстановление.':'Input retained. Recovery required.')+(typeof code==='string'&&code.length<=128?' '+code:'');}});
   r.ready=await r.editor.ready;check(r.ready.status==='ready','Actual packaged mount failed');
   const actual=rows(r);for(const [role,p]of Object.entries(nc.input.identity_roles)){const key=p.virtual_root?'':'/'+p.join('/');const row=actual.rows.find(x=>x.path===key);check(row,'Missing independent native role '+role);r.ids[role]=row.node.id;}
@@ -80,6 +90,22 @@ export function mutate(id){const r=get(id),cid=r.case.id;check(r.phase==='compos
     if(r.fixture.window.includes('P2'))r.objects.get('P2').remove();if(r.fixture.window.includes('S')&&!cid.startsWith('D12'))r.objects.get('S').remove();
   });return {label:'CONTROLLED declared UA-like actual DOM mutation; not physical UA input',objects:identity(r),rawDom:raw(r)};
 }
+// Finite correspondence regressions use existing frozen native literals. These
+// deliberately declared mutations are not browser/OS provenance observations.
+export async function markSpanMount(){const prepared=await mount({caseId:'D04-marks-BR-sentinels-forward',nativeCase:'P17-forward',presentation:'strong-span-control'});return {...prepared,presentation:'Public custom strong renderer is an attribute-free SPAN; native P17 strong mark is unchanged'};}
+export function wrapperPreedit(id,variant){const r=get(id);check(r.phase==='composing','No controlled composing owner');check(['direct-unmarked-suffix','unmarked-prefix','unmarked-suffix','unmarked-custom-span-suffix'].includes(variant),'Closed wrapper correspondence case');
+  if(variant==='direct-unmarked-suffix')check(r.nativeCase.id==='P16-forward'&&r.case.seed==='C','Direct suffix requires the frozen P16 scene range');
+  else check(r.nativeCase.id==='P17-forward'&&r.case.seed==='G','Mark-erasure case requires the frozen P17 marked range');
+  own('controlled-UA',()=>{
+    if(variant==='direct-unmarked-suffix'){
+      r.objects.get('L_text').data='a\u00e9';r.objects.get('P1').appendChild(document.createTextNode('d'));r.objects.get('S').remove();r.objects.get('P2').remove();
+    }else{
+      const outer=r.objects.get('T_outer'),mark=r.objects.get('T_mark');check(mark.parentNode===outer&&(variant==='unmarked-custom-span-suffix'?r.presentation==='strong-span-control'&&mark.tagName==='SPAN':r.presentation==='basic'&&mark.tagName==='STRONG'),'Original declared strong wrapper required');
+      if(variant==='unmarked-prefix'){r.objects.get('T_text').data='\u00e9d';outer.insertBefore(document.createTextNode('a'),mark);}
+      else{r.objects.get('T_text').data='a\u00e9';outer.appendChild(document.createTextNode('d'));}
+    }
+  });const result={label:'CONTROLLED literal wrapper correspondence; synthetic events, not actual UA/OS input',variant,actualDom:[...r.element.childNodes].map(node=>tree(node)),objects:identity(r),rawDom:raw(r)};record(r,'controlled-wrapper-preedit',result);return result;
+}
 function atTree(values,p){let v=values[p[0]];for(const i of p.slice(1))v=v.children[i];return v;}
 export function end(id,{data=null,duplicate=false}={}){const r=get(id);own('controlled-UA',()=>r.element.dispatchEvent(new CompositionEvent('compositionend',{bubbles:true,data:data??''})));if(duplicate)own('controlled-UA',()=>r.element.dispatchEvent(new CompositionEvent('compositionend',{bubbles:true,data:data??''})));return {label:'CONTROLLED synthetic compositionend; event data diagnostic only'};}
 export function trailing(id){const r=get(id);own('controlled-UA',()=>r.element.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertCompositionText',data:null,isComposing:false})));}
@@ -96,5 +122,5 @@ export function captureSelection(id){const r=get(id),v=r.editor.selection.captur
 export async function dispose(id){const r=get(id);if(r.disposed)return clone(r.disposed);const receipt=r.editor.destroy();r.destroyReceipt=receipt;await settle(receipt.sdk);for(const remove of r.removals.splice(0))remove();r.disposed={id,status:receipt.status,recovery:recovery(receipt.recovery),resources:clone(r.editor.resources()),native:clone(r.editor.nativeResources()),hostRecoveryOwners:new Set([...r.recoveries,receipt.recovery].filter(Boolean)).size,retainedDomOwned:receipt.recovery?.region?.kind==='retained_dom'&&receipt.recovery.region.element===r.element,retainedTextObjects:Object.fromEntries([...r.objects].filter(([,node])=>node.nodeType===3).map(([role,node])=>[role,{utf16Units:node.data.length,insideRetainedDom:receipt.recovery?.region?.kind==='retained_dom'&&receipt.recovery.region.element.contains(node)}]))};return clone(r.disposed);}
 export async function allDisposed(){for(const id of records.keys())await dispose(id);return {native:JSON.parse(module.resourceCounts()),mounts:[...records.values()].map(r=>clone(r.disposed))};}
 export function element(id){return get(id).element;}
-window.compositionHost={metadata,definition,nativeDefinition,mount,inspect,snapshot,start,mutate,end,trailing,policyMount,policyPreedit,policyGesture,policyReentry,history,outsideEdit,focusControl,captureSelection,dispose,allDisposed};
+window.compositionHost={metadata,definition,nativeDefinition,mount,inspect,snapshot,start,mutate,markSpanMount,wrapperPreedit,end,trailing,policyMount,policyPreedit,policyGesture,policyReentry,history,outsideEdit,focusControl,captureSelection,dispose,allDisposed};
 window.compositionHostReady=true;

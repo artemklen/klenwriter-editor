@@ -60,3 +60,51 @@ test('E22 controlled early Space before keydown stays unapplied and never gains 
 test('E17 controlled public publication reentry refuses barrier before invalidating the composition claim',async({page})=>{
   const {id,before,after,literal}=await policyCommitted(page,'E17',{reentry:true});expect(after.policyReentries).toHaveLength(1);expect(after.policyReentries[0].response).toMatchObject({status:'dom_refused',diagnostic:{code:'dom.busy',publication:'none'}});expect(after.events.filter(row=>row.change.kind==='document').length-docEvents(before).length).toBe(1);expect(after.canonical).toBe(literal.after_canonical_json);expect(after.recovery).toBeNull();expect(after.lifecycle).toBe('ready');const stable=await checkpoint(page,id,'E17 reentrant end/input/end settled without another unit');expect(stable.state).toEqual(after.state);expect(docEvents(stable)).toEqual(docEvents(after));expect(stable.policyReentries).toEqual(after.policyReentries);
 });
+
+test('attribute-free direct unmarked suffix preserves frozen P16 scene replacement semantics',async({page})=>{
+  const item=dom.cases.find(c=>c.id==='D08-selected-scene-forward'),literal=native.cases.find(c=>c.id==='P16-forward');
+  const {id,before}=await call(page,'mount',{caseId:item.id,nativeCase:literal.id});
+  records.get(page).checkpoints.push({label:'P16 independent scene baseline',value:before});expect(before.canonical).toBe(literal.input.canonical_json);state(before.state,literal.before_state,before.roles);
+  await call(page,'start',id);const mutation=await call(page,'wrapperPreedit',id,'direct-unmarked-suffix');expect(mutation.variant).toBe('direct-unmarked-suffix');
+  const during=await checkpoint(page,id,'controlled original SPAN a-é plus direct unmarked d');
+  expect(during.canonical).toBe(before.canonical);expect(during.state).toEqual(before.state);expect(docEvents(during)).toEqual(docEvents(before));
+  expect(during.dom).toHaveLength(2);expect(during.dom[0].children).toHaveLength(2);expect(during.dom[0].children[0].tag).toBe('span');expect(during.dom[0].children[0].children[0].data).toBe('a\u00e9');expect(during.dom[0].children[1]).toEqual({nodeType:3,data:'d',utf16Units:1});
+  expect(during.objects.P1.connected).toBe(true);expect(during.objects.L_outer.connected).toBe(true);expect(during.objects.L_text.connected).toBe(true);expect(during.objects.S.connected).toBe(false);expect(during.objects.P2.connected).toBe(false);
+  for(const role of ['H','O_outer','O_text']){expect(during.objects[role].connected).toBe(true);expect(during.objects[role].attributes).toEqual(before.objects[role].attributes);expect(during.objects[role].text).toEqual(before.objects[role].text);}
+  expect(during.trace.filter(x=>x.kind==='dom-write'&&x.writer==='adapter'&&x.phase==='composing'&&x.insideWindow)).toEqual([]);
+  await call(page,'end',id,{data:'not the replacement',duplicate:true});await terminal(page,id);const after=await checkpoint(page,id,'P16 direct suffix settled through actual Rust');
+  expect(after.lifecycle).toBe('ready');expect(after.recovery).toBeNull();expect(after.canonical).toBe(literal.after_canonical_json);state(after.state,literal.after_state,before.roles);expect(docEvents(after).length-docEvents(before).length).toBe(1);
+  for(const role of literal.identity.retained_live)expect(after.rows.some(row=>row.node.id===before.roles[role])).toBe(true);for(const role of literal.identity.retired_old)expect(after.rows.some(row=>row.node.id===before.roles[role])).toBe(false);
+  const expectedDom=structuredClone(item.expected.committedDom);expectedDom[0].children[0].children[0].data=JSON.parse(literal.after_canonical_json).content[0].content[0].text;
+  expect(after.dom).toHaveLength(expectedDom.length);after.dom.forEach((node,i)=>literalTree(node,expectedDom[i]));
+  for(const edge of ['anchor','focus']){expect(after.rawDom[edge].path).toEqual(item.expected.finalDomSelection[edge].path);expect(after.rawDom[edge].nodeType).toBe(3);expect(after.rawDom[edge].offset).toBe(2);}
+  for(const role of ['H','O_outer','O_text']){expect(after.objects[role].connected).toBe(true);expect(after.objects[role].attributes).toEqual(before.objects[role].attributes);expect(after.objects[role].text).toEqual(before.objects[role].text);}
+  await call(page,'trailing',id);await page.evaluate(()=>new Promise(requestAnimationFrame));const duplicate=await checkpoint(page,id,'P16 direct suffix duplicate deduplicated');expect(duplicate.state).toEqual(after.state);expect(docEvents(duplicate)).toEqual(docEvents(after));
+  expect((await call(page,'history',id,'undo')).response.status).toBe('ok');const undone=await checkpoint(page,id,'P16 undo restores selected scene and original identities');expect(undone.canonical).toBe(literal.undo.canonical_json);state(undone.state,literal.undo.state,before.roles);expect(new Set(undone.rows.map(row=>row.node.id))).toEqual(new Set(before.rows.map(row=>row.node.id)));expect(docEvents(undone).length-docEvents(before).length).toBe(2);
+  for(const edge of ['anchor','focus']){expect(undone.rawDom[edge].path).toEqual(item.originalDomSelection[edge].path);expect(undone.rawDom[edge].offset).toBe(item.originalDomSelection[edge].offsetUtf16);}
+  expect((await call(page,'history',id,'redo')).response.status).toBe('ok');const redone=await checkpoint(page,id,'P16 exact redo after direct-suffix correspondence');expect(redone.canonical).toBe(literal.redo.canonical_json);state(redone.state,literal.redo.state,before.roles);expect(docEvents(redone).length-docEvents(before).length).toBe(3);
+});
+test('transparent SPAN policy cannot erase STRONG from an unselected prefix or suffix',async({page})=>{
+  const literal=native.cases.find(c=>c.id==='P17-forward');
+  for(const variant of ['unmarked-prefix','unmarked-suffix']){
+    const {id,before}=await call(page,'mount',{caseId:'D04-marks-BR-sentinels-forward',nativeCase:literal.id});records.get(page).checkpoints.push({label:variant+' independent marked baseline',value:before});expect(before.canonical).toBe(literal.input.canonical_json);state(before.state,literal.before_state,before.roles);
+    await call(page,'start',id);await call(page,'wrapperPreedit',id,variant);const during=await checkpoint(page,id,variant+' controlled mark erasure');
+    const children=during.dom[0].children[0].children;expect(children).toHaveLength(2);expect(children[variant==='unmarked-prefix'?0:1]).toEqual({nodeType:3,data:variant==='unmarked-prefix'?'a':'d',utf16Units:1});expect(children[variant==='unmarked-prefix'?1:0].tag).toBe('strong');expect(during.objects.T_mark.connected).toBe(true);
+    expect(during.canonical).toBe(before.canonical);expect(during.state).toEqual(before.state);expect(during.trace.filter(x=>x.kind==='dom-write'&&x.writer==='adapter'&&x.phase==='composing'&&x.insideWindow)).toEqual([]);
+    await call(page,'end',id,{data:'\u00e9'});await terminal(page,id);const after=await checkpoint(page,id,variant+' rejected before semantic command');
+    expect(after.lifecycle).toBe('recoveryRequired');expect(after.canonical).toBe(before.canonical);expect(after.state).toEqual(before.state);expect(docEvents(after)).toEqual(docEvents(before));expect(after.rows).toEqual(before.rows);
+    expect(after.recovery.composition.reason).toBe('capture_limit');expect(after.recovery.composition.nativeOutcome).toBe('not_submitted');expect(after.recovery.composition.submission).toBeNull();expect(after.recovery.composition.response).toBeNull();expect(after.recovery.provisionalText).toBe('a\u00e9d\ntail');
+    for(const role of ['BR','C_outer','C_mark','C_text','H','O_outer','O_text']){expect(after.objects[role].connected).toBe(true);expect(after.objects[role].attributes).toEqual(before.objects[role].attributes);expect(after.objects[role].text).toEqual(before.objects[role].text);}
+    expect(after.dom).toEqual(during.dom);
+  }
+});
+test('attribute-free custom mark SPAN remains significant when its unselected suffix loses the mark',async({page})=>{
+  const literal=native.cases.find(c=>c.id==='P17-forward'),mounted=await call(page,'markSpanMount'),{id,before}=mounted;
+  records.get(page).checkpoints.push({label:'Independent native P17 with explicit public mark-SPAN presentation',value:before});expect(mounted.presentation).toContain('native P17 strong mark is unchanged');expect(before.canonical).toBe(literal.input.canonical_json);state(before.state,literal.before_state,before.roles);
+  const text=before.rows.find(row=>row.node.id===before.roles.T).node;expect(text.marks.map(mark=>mark.type_id)).toEqual(['org.klenwriter.kwdj/strong']);expect(before.dom[0].children[0].children[0].tag).toBe('span');expect(before.objects.T_mark.attributes).toEqual({});
+  await call(page,'start',id);await call(page,'wrapperPreedit',id,'unmarked-custom-span-suffix');const during=await checkpoint(page,id,'Controlled custom mark-SPAN suffix erasure');
+  expect(during.dom[0].children[0].children).toHaveLength(2);expect(during.dom[0].children[0].children[0].tag).toBe('span');expect(during.dom[0].children[0].children[1]).toEqual({nodeType:3,data:'d',utf16Units:1});expect(during.objects.T_mark.connected).toBe(true);expect(during.canonical).toBe(before.canonical);expect(during.state).toEqual(before.state);expect(during.trace.filter(x=>x.kind==='dom-write'&&x.writer==='adapter'&&x.phase==='composing'&&x.insideWindow)).toEqual([]);
+  await call(page,'end',id,{data:'\u00e9'});await terminal(page,id);const after=await checkpoint(page,id,'Custom mark-SPAN loss refused before native dispatch');
+  expect(after.lifecycle).toBe('recoveryRequired');expect(after.canonical).toBe(before.canonical);expect(after.state).toEqual(before.state);expect(after.rows).toEqual(before.rows);expect(docEvents(after)).toEqual(docEvents(before));expect(after.recovery.composition.reason).toBe('capture_limit');expect(after.recovery.composition.nativeOutcome).toBe('not_submitted');expect(after.recovery.composition.submission).toBeNull();expect(after.recovery.composition.response).toBeNull();expect(after.recovery.provisionalText).toBe('a\u00e9d\ntail');expect(after.dom).toEqual(during.dom);
+  for(const role of ['BR','C_outer','C_mark','C_text','H','O_outer','O_text']){expect(after.objects[role].connected).toBe(true);expect(after.objects[role].attributes).toEqual(before.objects[role].attributes);expect(after.objects[role].text).toEqual(before.objects[role].text);}
+});

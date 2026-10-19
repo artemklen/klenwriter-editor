@@ -61,6 +61,7 @@ interface RecordNode {
   readonly end: number;
   readonly chain: readonly Element[];
   readonly atom: boolean;
+  readonly transparentTextRow: boolean;
 }
 interface Segment {
   readonly kind: 'text' | 'break' | 'atom';
@@ -122,10 +123,14 @@ export function createCompositionCorrespondence(access: CompositionAccess) {
     result.sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:0);return Object.freeze(result.map(value=>Object.freeze(value)));
   }
   function style(chain: readonly Element[],originals?: ReadonlyMap<Node,RecordNode>): string {
-    return JSON.stringify(chain.map(node=>{
+    return JSON.stringify(chain.flatMap(node=>{
       const original=originals?.get(node);
-      const pairs=original?.attributes ?? [];
-      return [node.tagName,presentationAttributes(pairs)];
+      const pairs=presentationAttributes(original?.attributes ?? []);
+      // A UA paragraph merge can unwrap an unmarked text row entirely. Such a
+      // transparent SPAN carries no presentation or native mark authority.
+      // Authored mark tags/classes/attrs still participate in correspondence;
+      // scan() separately rejects every fresh wrapper with attributes.
+      return node.tagName==='SPAN'&&pairs.length===0&&(!original||original.transparentTextRow) ? [] : [[node.tagName,pairs]];
     }));
   }
   function scan(root: Node,budget: Budget,originals?: ReadonlyMap<Node,RecordNode>,baseline=false): Scan | null {
@@ -180,7 +185,8 @@ export function createCompositionCorrespondence(access: CompositionAccess) {
           segments.push({kind:'atom',node,data:'',start,end:start,chain:item.chain,style:style(item.chain,originals)});
         }
       }
-      const record:RecordNode={node,type:node.nodeType,tag,attributes:attrs,children:Object.freeze(childRefs),data,start,end:units,chain:item.chain,atom:!!atom};records.push(record);
+      const transparentTextRow=original?.transparentTextRow??(baseline&&tag==='SPAN'&&row?.outer===node&&row.view.primitive==='text'&&presentationAttributes(attrs).length===0);
+      const record:RecordNode={node,type:node.nodeType,tag,attributes:attrs,children:Object.freeze(childRefs),data,start,end:units,chain:item.chain,atom:!!atom,transparentTextRow};records.push(record);
       if(node.nodeType===1&&tag!=='BR'){
         stack.push({node,depth:item.depth,chain:item.chain,exit:true,record});
         const chain=node===root?item.chain:Object.freeze([...item.chain,node as Element]);

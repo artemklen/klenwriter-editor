@@ -2,6 +2,7 @@ import http from 'node:http';
 import { createHash } from 'node:crypto';
 import { readFile, readdir } from 'node:fs/promises';
 import { loadCompositionContract } from './composition-contract-data.mjs';
+import { compositionStyleDirective } from './composition-csp-policy.mjs';
 
 // Build smoke fixture only; an exact allowlist avoids exposing the checkout.
 const root = new URL('../', import.meta.url);
@@ -78,7 +79,9 @@ http.createServer(async (req, res) => {
   const path = new URL(req.url, 'http://localhost').pathname;
   res.setHeader('Cache-Control', 'no-store');
   const fixtureFont = path === '/selection' ? '; font-src http://127.0.0.1:4174/fixture-fonts/osr40-jetbrains-mono-regular.ttf' : '';
-  res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self' 'wasm-unsafe-eval' ${mapHashes.join(' ')}; style-src 'self'; img-src http://127.0.0.1:4174/favicon.ico; connect-src 'self'; base-uri 'none'; object-src 'none'${fixtureFont}`);
+  const compositionStyle = path === '/composition'
+    ? `; ${compositionStyleDirective}` : '';
+  res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self' 'wasm-unsafe-eval' ${mapHashes.join(' ')}; style-src 'self'${compositionStyle}; img-src http://127.0.0.1:4174/favicon.ico; connect-src 'self'; base-uri 'none'; object-src 'none'${fixtureFont}`);
   res.setHeader('X-Content-Type-Options', 'nosniff');
   if (req.method !== 'GET') { res.writeHead(405); res.end(); return; }
   // Firefox requests this implicit fixture resource; no authored image is allowed.

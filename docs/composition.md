@@ -202,6 +202,53 @@ this resolved DOM data. Candidate output never becomes a golden.
 
 ## Commands and evidence boundaries
 
+### Host CSP compatibility for native paragraph replacement
+
+Chromium's native paragraph merge serializes a temporary inline style before
+inserting its surviving suffix. With the default editor stylesheet, the exact
+source-authored declaration is63 UTF-8 bytes:
+
+```css
+white-space: pre-wrap; display: inline !important; float: none;
+```
+
+The composition fixture permits only that declaration through this CSP3 directive,
+while keeping `style-src 'self'` for stylesheets and the existing script policy:
+
+```text
+style-src-attr 'unsafe-hashes' 'sha256-Bik11TcNhgFEPza2gjD1hgP18nxqnHcOjH8nICs6uM8=' 'report-sample'
+```
+
+This is an explicit host policy exception. It authorizes those exact style bytes
+on any element in that document; CSP cannot restrict them to browser-created
+elements. It does not permit other declarations, inline stylesheets or scripts,
+and does not grant native model/mark authority. No hash is learned from browser
+input, reports or requests. Browser measurements separately verify the exact
+attribute succeeds and a different attribute and inline stylesheet remain blocked.
+Every normal controlled/installed row still requires an empty CSP violation array.
+
+The narrow exception is necessary for the default native cross-paragraph path in
+the measured Chromium version. A policy blocking every inline style reports that
+UA operation even when native model/history semantics later succeed. Arbitrary
+theme styles or different browser serialization are not automatically admitted;
+an unknown attribute still fails correspondence and its input is retained.
+The adapter itself never writes a style attribute. Existing CMS/public policies
+are unchanged here; their serving/integration gate belongs to OSR-31.
+
+After parsing, the UA may remove its redundant wrapper, leaving direct suffix
+Text. Correspondence treats only a captured text-row outer SPAN with no
+presentation attributes, or a fresh attribute-free UA SPAN, as transparent.
+Captured mark wrappers, including attribute-free SPAN marks, remain significant.
+Prefix/nonboundary object identity, exact suffix text, original native range,
+outside sentinels and final frozen native/DOM expectations stay required.
+
+The implementation reasoning follows exact Chromium155.0.8059.85
+[Text serialization](https://github.com/chromium/chromium/blob/155.0.8059.85/third_party/blink/renderer/core/editing/serializers/styled_markup_serializer.cc#L589),
+[redundant-style cleanup](https://github.com/chromium/chromium/blob/155.0.8059.85/third_party/blink/renderer/core/editing/commands/replace_selection_command.cc#L870)
+and the [CSP3 attribute-hash mechanism](https://www.w3.org/TR/CSP/#unsafe-hashes-usage).
+These sources explain the compatibility design; actual run receipts determine
+which acceptance lanes passed.
+
 After a coherent build, automated lanes are available separately:
 
 ```sh
