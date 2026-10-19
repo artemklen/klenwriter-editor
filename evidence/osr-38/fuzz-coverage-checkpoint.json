@@ -1,6 +1,6 @@
 {
   "format": "osr-38-fuzz-coverage-checkpoint/1",
-  "recordedAt": "2026-10-19T12:20:23+03:00",
+  "recordedAt": "2026-10-19T13:41:15+03:00",
   "scope": "Execution of the previously stopped AC3 coverage-guided fuzz block (first item of owner-acceptance-exception.md) as a separate PR. AC4 remains inconclusive under the recorded exception; nothing here reopens it.",
   "branch": "osr-38-ac3",
   "baseCommit": "b9e2790e472a5c3c567b50140d679969b460ed87",
@@ -9,141 +9,150 @@
     "nightly": "nightly-2026-10-17 (rustc 1.101.0-nightly, commit 5d8fec0669a64607db9ccbf663e7c23125bf4748)",
     "cargoFuzz": "0.13.2 installed into gitignored .tools (MIT OR Apache-2.0)",
     "libfuzzerSys": "=0.4.13 ((MIT OR Apache-2.0) AND NCSA; notice tests/fixtures/fuzz-native/NOTICE.md), isolated tests/fixtures/fuzz-native lock; production/root and reliability-native locks contain no fuzz tooling",
-    "host": "aarch64-apple-darwin, Darwin 27.0.0; cargo-fuzz default address-sanitizer build; detect_leaks=0 because LSan is unsupported on this host and the 2GiB RSS cap owns the memory bound"
+    "host": "aarch64-apple-darwin, Darwin 27.0.0; cargo-fuzz default address-sanitizer build; detect_leaks=0 because LSan is unsupported on this host and the 2GiB RSS cap owns the memory bound",
+    "node": "24.22.0"
   },
   "runs": {
     "bounded": {
-      "runId": "4af5f0f8-0dcf-4815-9620-44b39581fb85",
-      "startedAt": "2026-10-19T09:14:47.255Z",
-      "completedAt": "2026-10-19T09:19:07.114Z",
+      "runId": "5306e944-da45-458a-b65f-e6b3cddf5e84",
+      "startedAt": "2026-10-19T09:35:18.157Z",
+      "completedAt": "2026-10-19T09:39:38.927Z",
       "status": "passed",
       "perTarget": {
         "admission_options": {
-          "executedUnits": 80208,
-          "coverage": 9713,
-          "features": 24510,
-          "peakRssMb": 533,
+          "executedUnits": 97668,
+          "coverage": 9872,
+          "features": 24818,
+          "peakRssMb": 548,
           "crashCases": 0,
-          "corpusFiles": 1092,
-          "corpusBytes": 323457
+          "corpusFiles": 1365,
+          "corpusBytes": 361915
         },
         "registry_grammar_attrs_recipes": {
-          "executedUnits": 361694,
-          "coverage": 4267,
-          "features": 14747,
-          "peakRssMb": 609,
+          "executedUnits": 372158,
+          "coverage": 4321,
+          "features": 14914,
+          "peakRssMb": 664,
           "crashCases": 0,
-          "corpusFiles": 1746,
-          "corpusBytes": 4038339
+          "corpusFiles": 1951,
+          "corpusBytes": 3705652
         },
         "positions_maps_state_history_events": {
-          "executedUnits": 5759,
-          "coverage": 16140,
-          "features": 75846,
-          "peakRssMb": 643,
+          "executedUnits": 5331,
+          "coverage": 16113,
+          "features": 75261,
+          "peakRssMb": 607,
           "crashCases": 0,
-          "corpusFiles": 1277,
-          "corpusBytes": 85468
+          "corpusFiles": 1261,
+          "corpusBytes": 69786
         },
         "bridge_lifecycle_facts_stale_tokens": {
-          "executedUnits": 310952,
-          "coverage": 25768,
-          "features": 52651,
-          "peakRssMb": 618,
+          "executedUnits": 258334,
+          "coverage": 25989,
+          "features": 52502,
+          "peakRssMb": 610,
           "crashCases": 0,
-          "corpusFiles": 1749,
-          "corpusBytes": 5749113
+          "corpusFiles": 1727,
+          "corpusBytes": 7079861
         }
       },
       "nativeCorpusReplayFiles": {
-        "admission_options": 1102,
-        "registry_grammar_attrs_recipes": 1751,
-        "positions_maps_state_history_events": 1285,
-        "bridge_lifecycle_facts_stale_tokens": 1753
+        "admission_options": 1375,
+        "registry_grammar_attrs_recipes": 1956,
+        "positions_maps_state_history_events": 1269,
+        "bridge_lifecycle_facts_stale_tokens": 1731
       },
       "wasmReplay": {
         "admission": {
-          "tasks": 256,
-          "agreed": 136,
+          "tasks": 266,
+          "agreed": 144,
           "ambiguous": 0,
-          "skippedNonUtf8": 120,
-          "refused": 126,
-          "admitted": 10
+          "skippedNonUtf8": 122,
+          "refused": 133,
+          "admitted": 11,
+          "seeds": 10,
+          "corpusFiles": 256
         },
         "bridge": {
-          "tasks": 256,
-          "envelopeNonAdmission": 98,
-          "admitted": 21,
-          "refusedInitialization": 137,
-          "replies": 621
+          "tasks": 260,
+          "envelopeNonAdmission": 104,
+          "admitted": 22,
+          "refusedInitialization": 134,
+          "replies": 592,
+          "seeds": 4,
+          "corpusFiles": 256
         }
       },
       "report": "artifacts/reliability/fuzz/bounded-report.json"
     },
     "long": {
-      "runId": "b89a92bb-19cd-49cc-8bb9-db97ffb3123a",
-      "startedAt": "2026-10-19T08:12:49.112Z",
-      "completedAt": "2026-10-19T09:13:21.185Z",
+      "runId": "67068770-e93e-4823-88a1-524a71b3e2b5",
+      "startedAt": "2026-10-19T09:39:38.964Z",
+      "completedAt": "2026-10-19T10:40:10.521Z",
       "status": "passed",
       "perTarget": {
         "admission_options": {
-          "executedUnits": 1549491,
-          "coverage": 10494,
-          "features": 31770,
-          "peakRssMb": 548,
+          "executedUnits": 1463143,
+          "coverage": 10578,
+          "features": 32318,
+          "peakRssMb": 518,
           "crashCases": 0,
-          "corpusFiles": 3502,
-          "corpusBytes": 1564274
+          "corpusFiles": 3604,
+          "corpusBytes": 1665354
         },
         "registry_grammar_attrs_recipes": {
-          "executedUnits": 5258263,
-          "coverage": 5021,
-          "features": 19063,
-          "peakRssMb": 695,
+          "executedUnits": 5124306,
+          "coverage": 4943,
+          "features": 18672,
+          "peakRssMb": 659,
           "crashCases": 0,
-          "corpusFiles": 4115,
-          "corpusBytes": 11015616
+          "corpusFiles": 4012,
+          "corpusBytes": 9220714
         },
         "positions_maps_state_history_events": {
-          "executedUnits": 76174,
+          "executedUnits": 68780,
           "coverage": 16147,
-          "features": 77691,
-          "peakRssMb": 660,
+          "features": 77633,
+          "peakRssMb": 618,
           "crashCases": 0,
-          "corpusFiles": 1735,
-          "corpusBytes": 110994
+          "corpusFiles": 1728,
+          "corpusBytes": 116971
         },
         "bridge_lifecycle_facts_stale_tokens": {
-          "executedUnits": 4312126,
-          "coverage": 27873,
-          "features": 62866,
-          "peakRssMb": 646,
+          "executedUnits": 4241342,
+          "coverage": 27836,
+          "features": 63727,
+          "peakRssMb": 647,
           "crashCases": 0,
-          "corpusFiles": 4443,
-          "corpusBytes": 14510368
+          "corpusFiles": 4160,
+          "corpusBytes": 14318831
         }
       },
       "nativeCorpusReplayFiles": {
-        "admission_options": 3512,
-        "registry_grammar_attrs_recipes": 4120,
-        "positions_maps_state_history_events": 1743,
-        "bridge_lifecycle_facts_stale_tokens": 4447
+        "admission_options": 3614,
+        "registry_grammar_attrs_recipes": 4017,
+        "positions_maps_state_history_events": 1736,
+        "bridge_lifecycle_facts_stale_tokens": 4164
       },
       "wasmReplay": {
         "admission": {
-          "tasks": 256,
-          "agreed": 191,
-          "ambiguous": 0,
-          "skippedNonUtf8": 65,
-          "refused": 180,
-          "admitted": 11
+          "tasks": 266,
+          "agreed": 184,
+          "ambiguous": 1,
+          "skippedNonUtf8": 81,
+          "refused": 166,
+          "admitted": 19,
+          "seeds": 10,
+          "corpusFiles": 256
         },
         "bridge": {
-          "tasks": 256,
-          "envelopeNonAdmission": 96,
-          "admitted": 23,
-          "refusedInitialization": 137,
-          "replies": 637
+          "tasks": 260,
+          "envelopeNonAdmission": 104,
+          "admitted": 27,
+          "refusedInitialization": 129,
+          "replies": 645,
+          "seeds": 4,
+          "corpusFiles": 256
         }
       },
       "report": "artifacts/reliability/fuzz/long-report.json"
@@ -154,10 +163,10 @@
     "longFour900s": "passed",
     "crashesTrapsTimeoutsOom": 0,
     "phaseReachability": "seed-anchored and corpus-replayed for every context: admission admit+canonical export+cleanup; registry compile attempt+success; stateful plan/publish+history+late refusal+normalization+cleanup; bridge admission+publish+history+snapshot+events+cleanup",
-    "wasmDifferential": "packaged SDK admission verdicts agreed on every native-unambiguous corpus file (bounded 136/136 agreed, long 191/191 agreed, 0 mismatches); exact raw bridge request strings replayed verbatim through the actual V2 Session (621/637 replies, no Fatal, no uncaught exception)"
+    "wasmDifferential": "packaged SDK admission verdicts agreed on every native-unambiguous file (bounded agreed 144, ambiguous 0; long agreed 184, ambiguous 1; 0 mismatches). Each packaged replay included every committed seed (admission 10, bridge 4) plus 256 non-seed corpus files. Bridge request strings replayed through the actual V2 Session (bounded 592 replies, long 645 replies, no Fatal, no uncaught exception)."
   },
   "qualifications": [
-    "Registry and stateful opcode families are native-public lanes and replay natively in full; the packaged-WASM replay covers the admission and bridge families with a deterministic 256-file subset per family, seeds always included.",
+    "Registry and stateful opcode families are native-public lanes and replay natively in full. Packaged-WASM replay covers admission and bridge: every committed seed plus at most 256 sorted non-seed corpus files per family.",
     "Non-UTF-8 admission payloads are counted skips, not passes: the JS admission input is a string byte domain.",
     "No crash artifact was produced in either configuration, so the minimize subcommand is shipped machinery without an exercised receipt in these runs.",
     "Shrinker/recorder verification with the deliberately faulty test-only model remains the ordinary tests/reliability-shrink.node.mjs lane, unchanged.",

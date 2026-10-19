@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { chmodSync, copyFileSync, lstatSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { resolve, relative } from 'node:path';
+import { basename, resolve, relative } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
 import { replaySourceHashes } from './replay-native.mjs';
@@ -24,7 +24,8 @@ const TIMEOUT_SECONDS = 2;
 const RSS_LIMIT_MB = 2048;
 const LIBFUZZER_SEED = 951929086; // 0x38c0ffee
 const MAX_TARGET_EVIDENCE = 64 * 1024 * 1024;
-// Deterministic per-family packaged-WASM replay bound (seeds always included).
+// Non-seed corpus files replayed per family. Every committed seed is added
+// on top of this bound, in seed-name order, before the corpus subset.
 const WASM_REPLAY_LIMIT = 256;
 const MODES = Object.freeze({
   bounded: Object.freeze({ perTargetSeconds: 60, jobCapMs: 20 * 60 * 1000, runSlackMs: 4 * 60 * 1000 }),
@@ -232,6 +233,7 @@ function requirePhases(family, aggregate, failures) {
       need(context, 'command_publications', 'plan/publish');
       need(context, 'history_publications', 'history');
       need(context, 'late_refusals', 'late refusal');
+      need(context, 'normalization_operations', 'normalization');
       need(context, 'closed', 'cleanup');
     }
   } else {
@@ -279,6 +281,27 @@ function sdkProducerPins() {
   return { buildId: producer.buildId, wasm };
 }
 
+/**
+ * Packaged replay set: every committed seed copied into the corpus, then at
+ * most WASM_REPLAY_LIMIT sorted non-seed corpus files. Seed names sort late
+ * among libFuzzer hashes, so a single slice of the corpus drops them.
+ */
+export function packagedReplayPaths(family, corpusDirectory) {
+  const committed = readdirSync(resolve(seedsDirectory, family))
+    .filter(name => name.endsWith('.seed'))
+    .sort((left, right) => left.localeCompare(right, 'en'));
+  const files = walk(corpusDirectory);
+  const byName = new Map(files.map(path => [basename(path), path]));
+  const seeds = committed.map(name => {
+    const path = byName.get(name);
+    assert.ok(path, `committed seed missing from corpus copy: ${family}/${name}`);
+    return path;
+  });
+  const seedNames = new Set(committed);
+  const corpus = files.filter(path => !seedNames.has(basename(path))).slice(0, WASM_REPLAY_LIMIT);
+  return { seeds, corpus, files: [...seeds, ...corpus] };
+}
+
 async function wasmStage(directory, commands, nativeAdmission) {
   const producer = sdkProducerPins();
   const child = spawn(process.execPath, [wasmChild], { cwd: root, stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
@@ -290,7 +313,7 @@ async function wasmStage(directory, commands, nativeAdmission) {
   child.stderr.on('data', bytes => { if (bytes.length) failures.push({ phase: 'wasm', failure: { code: 'reliability.fuzz_wasm_stderr', message: bytes.toString('utf8').slice(0, 1024) } }); });
   child.on('message', message => { if (message?.kind === 'ready') { clearTimeout(watchdog); readyResolve(message); } });
   const module = await ready;
-  const summary = { admission: { tasks: 0, agreed: 0, ambiguous: 0, skippedNonUtf8: 0, refused: 0, admitted: 0 }, bridge: { tasks: 0, envelopeNonAdmission: 0, admitted: 0, refusedInitialization: 0, replies: 0 } };
+  const summary = { admission: { tasks: 0, agreed: 0, ambiguous: 0, skippedNonUtf8: 0, refused: 0, admitted: 0, seeds: 0, corpusFiles: 0 }, bridge: { tasks: 0, envelopeNonAdmission: 0, admitted: 0, refusedInitialization: 0, replies: 0, seeds: 0, corpusFiles: 0 } };
   async function task(payload, deadlineMs) {
     return new Promise(resolveTask => {
       let settled = false;
@@ -305,11 +328,12 @@ async function wasmStage(directory, commands, nativeAdmission) {
   }
   if (module) {
     const admissionDirectory = resolve(directory, 'corpus', 'admission_options');
-    // Bounded deterministic packaged-WASM subset: seeds are always replayed;
-    // sorted corpus files follow up to the documented replay limit. The
-    // native replayer above walks the complete corpus.
-    const files = walk(admissionDirectory).slice(0, WASM_REPLAY_LIMIT);
-    for (const [index, path] of files.entries()) {
+    // Seeds first, then the sorted non-seed subset. Native replay above
+    // still walks the complete corpus.
+    const admissionReplay = packagedReplayPaths('admission_options', admissionDirectory);
+    summary.admission.seeds = admissionReplay.seeds.length;
+    summary.admission.corpusFiles = admissionReplay.corpus.length;
+    for (const [index, path] of admissionReplay.files.entries()) {
       const name = relative(admissionDirectory, path);
       const payload = regular(path);
       const context = CONTEXTS[payload[0] % 4];
@@ -331,7 +355,10 @@ async function wasmStage(directory, commands, nativeAdmission) {
   }
   if (module && failures.length === 0) {
     const bridgeDirectory = resolve(directory, 'corpus', 'bridge_lifecycle_facts_stale_tokens');
-    for (const [index, path] of walk(bridgeDirectory).slice(0, WASM_REPLAY_LIMIT).entries()) {
+    const bridgeReplay = packagedReplayPaths('bridge_lifecycle_facts_stale_tokens', bridgeDirectory);
+    summary.bridge.seeds = bridgeReplay.seeds.length;
+    summary.bridge.corpusFiles = bridgeReplay.corpus.length;
+    for (const [index, path] of bridgeReplay.files.entries()) {
       const name = relative(bridgeDirectory, path);
       const payload = regular(path);
       const context = CONTEXTS[payload[0] % 4];

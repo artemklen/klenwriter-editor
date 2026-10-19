@@ -68,9 +68,9 @@ After fuzzing, the uninstrumented `corpus-replay` binary replays every seed
 and corpus file through the same family entries: any harness panic fails, and
 aggregated per-context reachability must show for all four contexts
 successful admit + canonical export + cleanup (admission), compile attempt +
-success (registry), plan/publish + history + late refusal + cleanup
-(stateful), and admission + publish + history + snapshot + events + cleanup
-(bridge).
+success (registry), plan/publish + history + late refusal + normalization +
+cleanup (stateful), and admission + publish + history + snapshot + events +
+cleanup (bridge).
 
 ## Actual packaged WASM/SDK replay
 
