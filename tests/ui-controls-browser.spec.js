@@ -1,0 +1,220 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+import { test, expect } from '@playwright/test';
+import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+
+const nativePath='contracts/ui/v1/native-oracles.json', nestingPath='contracts/ui/v1/nesting-oracles.json';
+const nativeBytes=readFileSync(nativePath), nestingBytes=readFileSync(nestingPath);
+const native=JSON.parse(nativeBytes), nesting=JSON.parse(nestingBytes);
+const literals=new Map([...native.cases,...nesting.cases].map(c=>[c.id,c]));
+const records=new WeakMap();
+const call=(page,method,...args)=>page.evaluate(({method,args})=>window.ui42[method](...args),{method,args});
+const root=(page,id)=>page.locator(`#${id}`);
+const control=(page,id,key)=>root(page,id).locator(`[data-editor-ui-action="${key}"]`);
+const add=(page,id)=>root(page,id).locator('[data-editor-ui-control="add"]');
+const move=(page,id)=>root(page,id).locator('[data-editor-ui-control="move"]');
+const documentEvents=state=>state.events.filter(e=>e.change.kind==='document');
+const stateEvents=state=>state.events.filter(e=>e.change.kind==='state');
+const submitted=state=>state.results.filter(r=>r.status==='submitted');
+const point=(roles,p)=>p===null?null:Object.fromEntries(Object.entries(p).map(([k,v])=>[k,['node','parent'].includes(k)?roles[v]??v:v]));
+const selection=(roles,s)=>s===null?null:{anchor:point(roles,s.anchor),focus:point(roles,s.focus)};
+const rolePaths=paths=>Object.fromEntries(Object.entries(paths).map(([k,v])=>[k,Array.isArray(v)?v:v.kind==='synthetic_root'?[]:v.path]));
+const idsAt=state=>state.rows.map(r=>r.node.id).sort();
+const receiptHash=bytes=>createHash('sha256').update(bytes).digest('hex');
+async function mounted(page,configuration={}){
+  const value=await call(page,'mount',configuration);records.get(page).mounts.push(value.id);
+  expect(value.ready).toBe('ready');expect(value.uiReady).toBe('ready');
+  expect(await root(page,value.id).getByRole('status').textContent()).not.toMatch(/^(Открываем документ…|Opening document…)$/);return value.id;
+}
+async function checkpoint(page,id,label){
+  const value=await call(page,'inspect',id),statusText=await root(page,id).getByRole('status').textContent();records.get(page).checkpoints.push({label,id,...value,statusText});return value;
+}
+async function editorFocus(page,id){
+  const response=await call(page,'editorFocus',id);expect(['completed','queued']).toContain(response.status);expect(response.response.status).toBe('ok');
+  await expect(page.locator(`#${id}-editor`)).toBeFocused();
+}
+async function activate(page,id,key,method='pointer'){
+  const button=control(page,id,key);await expect(button).toHaveAttribute('aria-disabled','false');
+  if(method==='keyboard'){
+    await editorFocus(page,id);await page.keyboard.press('Shift+Tab');
+    await expect(control(page,id,'strong')).toBeFocused();
+    if(key!=='strong')await button.focus();await page.keyboard.press('Enter');
+  }else await button.click();
+}
+async function waitSubmissions(page,id,count){await expect.poll(async()=>submitted(await call(page,'inspect',id)).length).toBe(count);}
+function unchanged(after,before){expect(after.canonical).toBe(before.canonical);expect(after.state).toEqual(before.state);expect(after.rows).toEqual(before.rows);expect(after.events).toEqual(before.events);}
+function nativeChanged(after,before,item,{notes=false}={}){
+  const e=item.expected,afterCanonical=notes?e.canonical:item.after_canonical??e.canonical_json;
+  expect(after.canonical).toBe(afterCanonical);expect(after.state.stamp.revision).toBe(String(BigInt(before.state.stamp.revision)+1n));
+  expect(after.state.history.undo_entries).toBe('1');expect(after.state.history.redo_entries).toBe('0');expect(after.state.dirty).toBe(true);
+  expect(after.state.saved_revision).toBe('0');expect(documentEvents(after).length-documentEvents(before).length).toBe(1);
+  const delta=e.stampDelta??e.command?.stamp_delta??{revision:1,selection_epoch:0,history_epoch:1};
+  for(const key of ['revision','selection_epoch','history_epoch'])expect(BigInt(after.state.stamp[key])-BigInt(before.state.stamp[key])).toBe(BigInt(delta[key]));
+  expect(stateEvents(after).length-stateEvents(before).length).toBe(0);
+  expect(submitted(after).length-submitted(before).length).toBe(1);expect(submitted(after).at(-1).response.status).toBe('ok');
+  expect(idsAt(after)).toEqual([...idsAt(before),...idsAt(after).filter(id=>!idsAt(before).includes(id))].sort());
+}
+async function nativeUndoRedo(page,id,item,before,after){
+  const result=await call(page,'history',id,'undo');expect(result.response.status).toBe('ok');
+  const undone=await checkpoint(page,id,'undo exact input, IDs, selection and stored marks');
+  expect(undone.canonical).toBe(before.canonical);expect(undone.state.selection).toEqual(before.state.selection);expect(undone.state.stored_marks).toEqual(before.state.stored_marks);expect(idsAt(undone)).toEqual(idsAt(before));
+  expect(undone.state.history.undo_entries).toBe('0');expect(undone.state.history.redo_entries).toBe('1');
+  expect((await call(page,'history',id,'redo')).response.status).toBe('ok');
+  const redone=await checkpoint(page,id,'redo exact output, IDs and directed selection');expect(redone.canonical).toBe(after.canonical);expect(redone.state.selection).toEqual(after.state.selection);expect(idsAt(redone)).toEqual(idsAt(after));
+  expect(redone.state.history.undo_entries).toBe('1');expect(redone.state.history.redo_entries).toBe('0');
+}
+
+test.beforeEach(async({page},info)=>{
+  const record={engine:info.project.name,installedBrowser:false,scope:'Actual packaged mounted SDK2/WASM/UI; browser-protocol keyboard/pointer. Explicit synthetic composition is controlled integration, not OS IME.',
+    frozen:[{path:nativePath,bytes:nativeBytes.length,sha256:receiptHash(nativeBytes)},{path:nestingPath,bytes:nestingBytes.length,sha256:receiptHash(nestingBytes)}],errors:[],externalRequests:[],mounts:[],checkpoints:[],cleanup:[]};
+  records.set(page,record);page.on('pageerror',error=>record.errors.push(error.message));page.on('request',request=>{if(!request.url().startsWith('http://127.0.0.1:4174/'))record.externalRequests.push(request.url());});
+  await page.addInitScript(()=>{window.uiPolicy=[];document.addEventListener('securitypolicyviolation',event=>window.uiPolicy.push({directive:event.effectiveDirective,blocked:event.blockedURI}));});
+  const response=await page.goto('/ui');record.csp=response.headers()['content-security-policy'];expect(record.csp).toContain("default-src 'none'");expect(record.csp).not.toContain("'unsafe-inline'");expect(record.csp).not.toContain("'unsafe-eval'");
+  await page.waitForFunction(()=>!!window.ui42,undefined,{timeout:15000});
+});
+test.afterEach(async({page},info)=>{
+  const record=records.get(page);if(!record)return;
+  try{
+    for(const id of record.mounts){const result=await call(page,'destroy',id);record.cleanup.push({id,...result});expect(result.ui).toEqual({listeners:0,observers:0,animationFrames:0,subscriptions:0,hostRequests:0,continuations:0});
+      expect(result.mounted.dom.listeners).toBe(0);expect(result.mounted.dom.observers).toBe(0);expect(result.mounted.dom.continuations).toBe(0);expect(result.mounted.selection).toEqual({bookmarks:0,restoreTickets:0,activePointers:0,animationFrames:0});
+      expect(result.mounted.clipboard).toEqual({pending:0,continuations:0,retainedTextBytes:0});for(const key of ['sessions','listeners','queued_mutations','queued_bytes','pending_tickets','host_requests','task_continuations'])expect(result.mounted.sdk[key]).toBe(0);
+      expect(result.mounted.hostRequests).toEqual({pending:0,focusContinuations:0});
+    }
+    if(record.cleanup.length)expect(record.cleanup.at(-1).native).toEqual({sessions:0,snapshot_handles:0,snapshot_bytes:'0',protected_cursors:0});
+    record.policy=await page.evaluate(()=>window.uiPolicy);expect(record.errors).toEqual([]);expect(record.externalRequests).toEqual([]);expect(record.policy).toEqual([]);
+  }finally{
+    record.status=info.status;mkdirSync('artifacts/ui',{recursive:true});const path=`artifacts/ui/${info.project.name}-controls-${info.testId.replaceAll(/[^a-zA-Z0-9_-]/g,'_')}.json`;
+    writeFileSync(path,JSON.stringify(record,null,2)+'\n');await info.attach('ui-controls-observations',{path,contentType:'application/json'});
+  }
+});
+
+test('K01: one roving toolbar stop, arrows/Home/End, Tab exit and keyed controls preserve native state',async({page})=>{
+  const id=await mounted(page,{case:'V01-forward'}),bold=control(page,id,'strong'),italic=control(page,id,'emphasis');
+  await editorFocus(page,id);const before=await checkpoint(page,id,'before keyboard navigation');
+  await bold.evaluate(node=>window.uiControlIdentity=node);
+  await page.keyboard.press('Shift+Tab');await expect(bold).toBeFocused();await page.keyboard.press('ArrowRight');await expect(italic).toBeFocused();
+  await page.keyboard.press('Home');await expect(bold).toBeFocused();await page.keyboard.press('End');await expect(italic).toBeFocused();await page.keyboard.press('ArrowLeft');await expect(bold).toBeFocused();
+  expect(await root(page,id).getByRole('toolbar').locator('button[tabindex="0"]').count()).toBe(1);
+  await call(page,'refresh',id);await expect.poll(()=>bold.evaluate(node=>node===window.uiControlIdentity)).toBe(true);await expect(bold).toBeFocused();
+  await page.keyboard.press('Tab');await expect(page.locator(`#${id}-editor`)).toBeFocused();
+  const after=await checkpoint(page,id,'after navigation only');unchanged(after,before);expect(submitted(after)).toHaveLength(0);
+});
+
+for(const locale of ['ru','en'])test(`L01 ${locale}: localized labels, 32px targets and 200% layout retain visible focus`,async({page})=>{
+  await page.setViewportSize({width:640,height:768});const id=await mounted(page,{case:'V01-forward',locale});
+  const toolbar=root(page,id).getByRole('toolbar'),bold=control(page,id,'strong');await expect(toolbar).toHaveAccessibleName(locale==='ru'?'Форматирование текста':'Text formatting');
+  await expect(bold).toHaveAccessibleName(locale==='ru'?'Полужирный':'Bold');await expect(add(page,id)).toHaveAccessibleName(locale==='ru'?'Добавить блок':'Add block');
+  await page.evaluate(()=>document.documentElement.style.zoom='2');await editorFocus(page,id);await page.keyboard.press('Shift+Tab');await expect(bold).toBeFocused();
+  const geometry=await root(page,id).evaluate(node=>({buttons:[...node.querySelectorAll('.kw-ui-button')].map(button=>{const style=getComputedStyle(button),r=button.getBoundingClientRect();return {width:parseFloat(style.minWidth),height:parseFloat(style.minHeight),visible:r.width>0&&r.height>0,clipped:button.scrollWidth>button.clientWidth+1};}),
+    focus:(()=>{const s=getComputedStyle(document.activeElement);return {style:s.outlineStyle,width:parseFloat(s.outlineWidth)};})(),toolbar:{scroll:node.querySelector('[role=toolbar]').scrollWidth,client:node.querySelector('[role=toolbar]').clientWidth,wrap:getComputedStyle(node.querySelector('[role=toolbar]')).flexWrap}}));
+  for(const button of geometry.buttons){expect(button.width).toBeGreaterThanOrEqual(32);expect(button.height).toBeGreaterThanOrEqual(32);expect(button.visible).toBe(true);expect(button.clipped).toBe(false);}
+  expect(geometry.focus.style).not.toBe('none');expect(geometry.focus.width).toBeGreaterThanOrEqual(2);expect(geometry.toolbar.wrap).toBe('wrap');expect(geometry.toolbar.scroll).toBeLessThanOrEqual(geometry.toolbar.client+1);
+  await call(page,'locale',id,locale==='ru'?'en':'ru');await expect(bold).toHaveAccessibleName(locale==='ru'?'Bold':'Полужирный');expect(submitted(await checkpoint(page,id,'locale and layout are presentation only'))).toHaveLength(0);
+});
+
+for(const direction of ['forward','reverse'])for(const method of ['pointer','keyboard'])test(`T01 ${direction} ${method}: mixed Strong exact native document/range, one unit and undo`,async({page})=>{
+  const item=literals.get(`V01-${direction}`),id=await mounted(page,{case:item.id}),bold=control(page,id,'strong');await expect(bold).toHaveAttribute('aria-pressed','mixed');
+  const before=await checkpoint(page,id,'mixed selection before action');await activate(page,id,'strong',method);await waitSubmissions(page,id,1);await expect(bold).toHaveAttribute('aria-pressed','true');
+  const after=await checkpoint(page,id,'Strong actual native completion');nativeChanged(after,before,item);expect(after.state.selection).toEqual(selection(before.roles,item.expected.selection));expect(idsAt(after)).toEqual(idsAt(before));
+  expect(after.focusResults.at(-1)).toEqual({status:'restored',failure:null});expect(after.insideEditor).toBe(true);await nativeUndoRedo(page,id,item,before,after);
+});
+
+test('T02: collapsed Strong twice changes only native stored marks and preserves zero undo entries',async({page})=>{
+  const item=literals.get('V02-collapsed-twice'),id=await mounted(page,{case:item.id});const initial=await checkpoint(page,id,'collapsed baseline');
+  for(const [index,step]of item.expected.steps.entries()){
+    const before=await checkpoint(page,id,`before collapsed toggle ${index+1}`);await activate(page,id,'strong');await waitSubmissions(page,id,index+1);
+    const after=await checkpoint(page,id,`native collapsed toggle ${index+1}`);expect(after.canonical).toBe(item.expected.canonical_json);expect(after.state.selection).toEqual(initial.state.selection);expect(after.state.stored_marks).toEqual(step.stored_marks);
+    expect(after.state.stamp.revision).toBe(before.state.stamp.revision);expect(BigInt(after.state.stamp.selection_epoch)-BigInt(before.state.stamp.selection_epoch)).toBe(1n);expect(after.state.history.undo_entries).toBe('0');expect(after.state.history.redo_entries).toBe('0');expect(after.state.dirty).toBe(false);
+    expect(documentEvents(after)).toHaveLength(0);expect(stateEvents(after).length-stateEvents(before).length).toBe(1);expect(idsAt(after)).toEqual(idsAt(initial));await expect(control(page,id,'strong')).toHaveAttribute('aria-pressed',index===0?'true':'false');
+  }
+});
+
+for(const caseId of ['V03-root-gap','V07-text-caret'])test(`A01/A02 ${caseId}: Add Paragraph preserves authored target, literal IDs/caret and one command`,async({page})=>{
+  const item=literals.get(caseId),id=await mounted(page,{case:caseId}),before=await checkpoint(page,id,'before Add');await add(page,id).click();const listbox=root(page,id).getByRole('listbox');await expect(listbox).toBeVisible();
+  await expect(control(page,id,'paragraph')).toBeFocused();await page.keyboard.press('Enter');await waitSubmissions(page,id,1);await call(page,'bindAfter',id,item.expected.roles);
+  const after=await checkpoint(page,id,'paragraph native result');nativeChanged(after,before,item);expect(after.state.selection).toEqual(selection(after.roles,item.expected.selection));
+  expect(stateEvents(after).length-stateEvents(before).length).toBe(0);for(const name of item.expected.created)expect(idsAt(before)).not.toContain(after.roles[name]);
+  expect(after.focusResults.at(-1)).toEqual({status:'restored',failure:null});await expect(listbox).toBeHidden();await nativeUndoRedo(page,id,item,before,after);
+});
+
+test('A03: Add Escape restores exact native range; unavailable insertion stays discoverable without a ticket',async({page})=>{
+  const id=await mounted(page,{case:'V03-root-gap'});await editorFocus(page,id);const before=await checkpoint(page,id,'before dismissed Add');await add(page,id).click();await page.keyboard.press('Escape');
+  const after=await checkpoint(page,id,'dismissed Add');unchanged(after,before);expect(after.insideEditor).toBe(true);expect(submitted(after)).toHaveLength(0);expect(after.uiResources.hostRequests).toBe(0);
+  await add(page,id).click();const table=control(page,id,'table');await expect(table).toHaveAttribute('aria-disabled','true');await table.focus();await expect(table).toBeFocused();await page.keyboard.press('Enter');
+  const refused=await checkpoint(page,id,'unsupported table entry');expect(refused.canonical).toBe(before.canonical);expect(submitted(refused)).toHaveLength(0);expect(documentEvents(refused)).toHaveLength(0);
+});
+
+for(const [caseId,choice,key]of [['V04-up','up','ArrowUp'],['V04-down','down','ArrowDown']])for(const method of ['menu','shortcut'])test(`M01 ${caseId} ${method}: exact pre-removal native destination and stable move control`,async({page})=>{
+  const item=literals.get(caseId),id=await mounted(page,{case:caseId}),before=await checkpoint(page,id,'before same-parent move');await move(page,id).evaluate(node=>window.uiMoveIdentity=node);
+  if(method==='menu'){await move(page,id).click();await control(page,id,choice).click();}else {await editorFocus(page,id);await page.keyboard.press('Tab');await expect(move(page,id)).toBeFocused();await page.keyboard.press(`Alt+${key}`);}
+  await waitSubmissions(page,id,1);await call(page,'bindAfter',id,item.expected.roles);const after=await checkpoint(page,id,'native move result');nativeChanged(after,before,item);expect(after.state.selection).toEqual(before.state.selection);expect(idsAt(after)).toEqual(idsAt(before));
+  expect(await move(page,id).evaluate(node=>node===window.uiMoveIdentity)).toBe(true);await expect(move(page,id)).toBeFocused();await expect(root(page,id).getByRole('status')).toContainText(`position ${item.expected.roles.B.at(-1)+1}`);await nativeUndoRedo(page,id,item,before,after);
+});
+
+for(const [caseId,choice]of [['N01','nest'],['N02','unnest'],['N03','unnest'],['N08','nest']])test(`M02 ${caseId}: explicit ${choice} queries real native legality and preserves exact structure`,async({page})=>{
+  const item=literals.get(caseId),id=await mounted(page,{case:caseId}),before=await checkpoint(page,id,'before nesting menu');
+  if(caseId==='N01'||caseId==='N02'){
+    const context=root(page,id).locator('.kw-ui-context');await expect(context).toHaveText(`Block 2: Text block — Document${caseId==='N02'?' / Container':''}`);
+    const contextId=await context.getAttribute('id');expect(contextId).toBeTruthy();expect((await move(page,id).getAttribute('aria-describedby')).split(' ')).toContain(contextId);
+  }
+  await move(page,id).click();const target=control(page,id,choice);
+  if(caseId==='N01'||caseId==='N02')expect((await root(page,id).getByRole('menu').getAttribute('aria-describedby')).split(' ')).toContain(await root(page,id).locator('.kw-ui-context').getAttribute('id'));
+  if(item.expected.command.response_status==='refused'){
+    await expect(target).toHaveAttribute('aria-disabled','true');await target.focus();await page.keyboard.press('Enter');const after=await checkpoint(page,id,'native query refused before semantic execution');unchanged(after,before);expect(submitted(after)).toHaveLength(0);await expect(root(page,id).getByRole('status')).toContainText(item.expected.command.diagnostic.code);
+  }else{
+    await target.click();await waitSubmissions(page,id,1);await call(page,'bindAfter',id,rolePaths(item.roles_after));const after=await checkpoint(page,id,'native nesting result');nativeChanged(after,before,item);expect(after.state.selection).toEqual(selection(after.roles,item.expected.command.selection));expect(idsAt(after)).toEqual(idsAt(before));
+    await expect(root(page,id).locator('.kw-ui-context')).toHaveText(`Block 2: Text block — Document${caseId==='N01'?' / Container':''}`);await nativeUndoRedo(page,id,item,before,after);
+  }
+});
+
+test('M03: local move shortcuts leave editor/global keyboard default untouched',async({page})=>{
+  const id=await mounted(page,{case:'V04-up'});await editorFocus(page,id);const before=await checkpoint(page,id,'before editor-local unrelated shortcuts');
+  const observations=await page.locator(`#${id}-editor`).evaluate(node=>{const results=[];for(const init of [{key:'ArrowUp',altKey:true},{key:'f',ctrlKey:true},{key:'f',metaKey:true}]){const event=new KeyboardEvent('keydown',{...init,bubbles:true,cancelable:true});node.dispatchEvent(event);results.push({key:init.key,defaultPrevented:event.defaultPrevented});}return results;});
+  expect(observations.every(value=>!value.defaultPrevented)).toBe(true);unchanged(await checkpoint(page,id,'no global capture'),before);expect(submitted(await call(page,'inspect',id))).toHaveLength(0);
+});
+
+test('H01: real Notes modal is named and traps focus; Escape restores original exact range with no transaction',async({page})=>{
+  const id=await mounted(page,{case:'V06-NC011-root-title-owned-metadata'});await editorFocus(page,id);const before=await checkpoint(page,id,'before Notes dialog');await control(page,id,'title').click();
+  const dialog=root(page,id).getByRole('dialog');await expect(dialog).toHaveAccessibleName('Block options');await expect(dialog.getByRole('textbox',{name:'Title'})).toBeFocused();
+  await page.keyboard.press('Tab');await expect(dialog.getByRole('button',{name:'Apply',exact:true})).toBeFocused();await page.keyboard.press('Tab');await expect(dialog.getByRole('button',{name:'Cancel',exact:true})).toBeFocused();await page.keyboard.press('Tab');await expect(dialog.getByRole('textbox')).toBeFocused();
+  await page.keyboard.press('Shift+Tab');await expect(dialog.getByRole('button',{name:'Cancel',exact:true})).toBeFocused();await page.keyboard.press('Tab');await expect(dialog.getByRole('textbox')).toBeFocused();await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();const after=await checkpoint(page,id,'cancelled host dialog');unchanged(after,before);expect(after.insideEditor).toBe(true);expect(after.dialog.closeReasons).toEqual(['cancelled']);expect(after.uiResources.hostRequests).toBe(0);expect(submitted(after)).toHaveLength(0);
+});
+
+for(const caseId of ['V06-NC011-root-title-owned-metadata','V06-NC013-identical-title-noop','V06-NC014-title-257-byte-refusal'])test(`P01 ${caseId}: independent Notes factory keeps actual native success/noop/refusal`,async({page})=>{
+  const item=literals.get(caseId),id=await mounted(page,{case:caseId}),before=await checkpoint(page,id,'before Notes title action');await control(page,id,'title').click();const dialog=root(page,id).getByRole('dialog');await dialog.getByRole('textbox').fill(item.command.payload.title);await dialog.getByRole('button',{name:'Apply',exact:true}).click();
+  await expect(dialog).toBeHidden();const after=await checkpoint(page,id,'Notes actual outcome');
+  if(item.expected.kind==='refused'){
+    // UI must honour the real native availability refusal before complete;
+    // execution Refused is independently measured in the sealed native lane.
+    unchanged(after,before);expect(submitted(after)).toHaveLength(0);expect(after.results.at(-1)).toEqual({status:'ui_refused',code:'ui.unavailable',action:'title'});await expect(root(page,id).getByRole('status')).toContainText(item.expected.code);
+  }else if(item.expected.kind==='changed'){
+    nativeChanged(after,before,item,{notes:true});expect(after.state.selection).toEqual(before.state.selection);expect(idsAt(after)).toEqual(idsAt(before));await nativeUndoRedo(page,id,item,before,after);
+  }else {unchanged(after,before);expect(submitted(after)).toHaveLength(1);expect(submitted(after)[0].response.value.effect).toBe('unchanged');}
+  expect(after.dialog.closeReasons).toHaveLength(1);expect(after.uiResources.hostRequests).toBe(0);
+});
+
+for(const transition of ['selection','mode','replace'])test(`H02 ${transition}: stale Notes result never dispatches, steals focus or replays`,async({page})=>{
+  const id=await mounted(page,{case:'V06-NC011-root-title-owned-metadata'}),before=await checkpoint(page,id,'before stale dialog');await control(page,id,'title').click();
+  if(transition==='selection')await call(page,'select',id,{anchor:{kind:'text',node:'T',offset:0,affinity:'after'},focus:{kind:'text',node:'T',offset:0,affinity:'after'}});
+  else if(transition==='mode')await call(page,'mode',id,'readOnly');
+  else {const source=JSON.parse(before.canonical);source.root.attrs.title='replacement';await call(page,'replace',id,source);}
+  await page.locator('#ui-after').focus();const afterTransition=await checkpoint(page,id,'external transition before late host callback');await call(page,'lateAccept',id,0,{title:'late result'});
+  const after=await checkpoint(page,id,'late accept ignored');unchanged(after,afterTransition);expect(submitted(after)).toHaveLength(0);await expect(page.locator('#ui-after')).toBeFocused();expect(after.uiResources.hostRequests).toBe(0);expect(after.dialog.closeReasons).toHaveLength(1);
+});
+
+for(const mode of ['readOnly','disabled'])test(`R01 ${mode}: mutation controls explain native mode and never consume an action`,async({page})=>{
+  const id=await mounted(page,{case:'V01-forward'});await call(page,'mode',id,mode);await expect(control(page,id,'strong')).toHaveAttribute('aria-disabled','true');await expect(add(page,id)).toHaveAttribute('aria-disabled','true');const before=await checkpoint(page,id,'blocked mode baseline');await control(page,id,'strong').click({force:true});await add(page,id).click({force:true});
+  const after=await checkpoint(page,id,'blocked controls');unchanged(after,before);expect(submitted(after)).toHaveLength(0);await expect(root(page,id).getByRole('status')).not.toBeEmpty();
+  await call(page,'mode',id,'editable');await expect(control(page,id,'strong')).toHaveAttribute('aria-disabled','false');await control(page,id,'strong').click();await waitSubmissions(page,id,1);
+});
+
+test('C01: controlled composition lock preserves provisional objects/focus; only a fresh action after terminal may submit',async({page})=>{
+  const id=await mounted(page,{case:'V02-collapsed-twice'});await editorFocus(page,id);const before=await checkpoint(page,id,'before controlled composition');
+  await page.locator(`#${id}-editor`).evaluate(node=>{window.uiCompositionChildren=[...node.childNodes];node.dispatchEvent(new CompositionEvent('compositionstart',{bubbles:true,data:''}));});
+  await expect(control(page,id,'strong')).toHaveAttribute('aria-disabled','true');await control(page,id,'strong').click({force:true});
+  expect(await page.locator(`#${id}-editor`).evaluate(node=>node.contains(document.activeElement)&&node.childNodes.length===window.uiCompositionChildren.length&&[...node.childNodes].every((child,index)=>child===window.uiCompositionChildren[index]))).toBe(true);
+  await page.locator(`#${id}-editor`).evaluate(node=>node.dispatchEvent(new CompositionEvent('compositionend',{bubbles:true,data:''})));
+  await expect(control(page,id,'strong')).toHaveAttribute('aria-disabled','false');const settled=await checkpoint(page,id,'unchanged controlled composition settled');expect(settled.canonical).toBe(before.canonical);expect(settled.state.stamp.revision).toBe(before.state.stamp.revision);expect(submitted(settled)).toHaveLength(0);
+  await control(page,id,'strong').click();await waitSubmissions(page,id,1);expect((await checkpoint(page,id,'fresh gesture after terminal')).state.stored_marks).toEqual([{type_id:'org.klenwriter.kwdj/strong',attributes:{}}]);
+});

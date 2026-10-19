@@ -1,0 +1,14 @@
+{
+  "observedAt": "2026-10-19T21:46:42.130715+00:00",
+  "purpose": "New optional UI bootstrap identity only; observation is not reservation or publish authorization",
+  "records": [
+    {
+      "name": "@klenwriter/editor-ui",
+      "registry": "npm",
+      "url": "https://registry.npmjs.org/@klenwriter%2feditor-ui",
+      "status": 404,
+      "responseBytes": 21,
+      "responseSha256": "c8d3eae160a892e32837db3dcae515e843e5383fef52b8141940c8bcf8b6d59f"
+    }
+  ]
+}

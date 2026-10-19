@@ -330,5 +330,42 @@
       "scope": "Optional native-only type generation. Not a default normal or WASM runtime dependency; complete actual graph/licenses recorded in artifacts/sdk-generator-dependencies.json and conservative package notices."
     },
     "privacy": "Only synthetic literal documents/identities and controlled test-host fixtures. No user documents, private captures, credentials or accepted external-model output."
+  },
+  "originalBlockChrome": {
+    "issue": "OSR-42",
+    "source": "Original TypeScript optional UI/mounted capabilities and independently source-authored synthetic contracts; no third-party/CMS source copied",
+    "license": "MIT OR Apache-2.0",
+    "sourceContractCommit": "2ecdf0b5fab5ff1274465471a24d7b35ea16ad7e",
+    "paths": [
+      "packages/ui/src",
+      "packages/dom/src/geometry.ts",
+      "packages/dom/src/host-request.ts",
+      "contracts/ui/v1",
+      "scripts/ui-contract-check.mjs",
+      "crates/wasm/examples/ui_native.rs",
+      "scripts/ui-semantic-data.mjs",
+      "scripts/ui-semantic-assertions.mjs",
+      "scripts/test-ui-native.mjs",
+      "scripts/ui-native-acceptance.mjs",
+      "scripts/ui-native",
+      "tests/ui-host-request.node.mjs",
+      "tests/ui-public-types.node.mjs",
+      "tests/ui-controls-browser.spec.js",
+      "tests/ui-geometry-browser.spec.js",
+      "spikes/workspace/ui.html",
+      "spikes/workspace/ui-frame.html",
+      "spikes/workspace/ui-host.js",
+      "spikes/workspace/ui-fixture.css",
+      "docs/ui.md"
+    ],
+    "extendedOriginalFoundation": [
+      "packages/dom/src/types.ts",
+      "packages/dom/src/mounted.ts",
+      "packages/dom/src/selection.ts",
+      "packages/dom/src/view.ts"
+    ],
+    "authority": "Rust profile query/execute and the existing single SDK pump; geometry is bounded presentation and opaque requests validate genuine ownership/full tokens. UI has no concrete profile/CMS/framework dependency.",
+    "dependencies": "Public workspace DOM/SDK only; no new external runtime dependency.",
+    "privacy": "Synthetic literal documents and controlled fixtures only; no private documents or production data."
   }
 }

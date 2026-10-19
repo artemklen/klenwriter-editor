@@ -4,7 +4,8 @@
 [Mounted selection](docs/selection.md), bookmarks, edge autoscroll и минимальные
 plaintext copy/cut реализованы поверх SDK2. [Composition41](docs/composition.md)
 добавляет bounded settlement и retained recovery; browser/installed приёмка
-подтверждается отдельными exact-source receipts. Clipboard47, UI66 и vanilla alpha сохраняют отдельные
+подтверждается отдельными exact-source receipts. Необязательный [block chrome42](docs/ui.md)
+добавляет toolbar/move/host dialogs. Clipboard47, полная a11y66 и vanilla alpha сохраняют отдельные
 задачи и acceptance gates.
 Следуйте [архитектуре](docs/m0/architecture.md)
 и контракту задачи Linear. Реализуйте общую семантику на Rust; KWDJ остаётся отдельным
@@ -56,7 +57,7 @@ tests и test-evidence upload из CI удалены.
 `npm run check` включает fmt/clippy/native tests, independent canonical JS/native
 reference vectors (`npm run test:canonical`, [ADR-004](docs/adr/004-canonical-json-v1.md)), native + wasm32 release build,
 TypeScript project references, generated web glue, transitive architecture closure,
-license/version/MSRV/target/size inventory, упаковку шести private пакетов, установку
+license/version/MSRV/target/size inventory, упаковку семи private пакетов, установку
 их tarballs во внешний временный проект и WASM smoke во всех трёх движках, затем
 существующие M0 contract/artifact/performance-integrity checks.
 `npm test` сохраняет 102 browser scenarios M0 spike отдельно от workspace smoke.

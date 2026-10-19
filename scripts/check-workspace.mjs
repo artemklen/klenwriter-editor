@@ -83,7 +83,7 @@ for (const pkg of metadata.packages) {
 }
 const lock = JSON.parse(readFileSync('package-lock.json', 'utf8'));
 // ADR-005: optional concrete-profile DOM subpath; no generic package imports it.
-const packageGraph = { wasm: [], sdk: ['wasm'], dom: ['sdk'], kwdj: ['sdk', 'dom'], vanilla: ['dom'], angular: ['vanilla'] };
+const packageGraph = { wasm: [], sdk: ['wasm'], dom: ['sdk'], kwdj: ['sdk', 'dom'], vanilla: ['dom'], angular: ['vanilla'], ui: ['dom','sdk'] };
 for (const [name, allowed] of Object.entries(packageGraph)) {
   const manifest = JSON.parse(readFileSync(`packages/${name}/package.json`, 'utf8'));
   assert.deepEqual(Object.keys(manifest.dependencies).sort(), allowed.map(name => identity.web[name].name).sort(),
@@ -104,7 +104,7 @@ function inspect(path) {
     }
   }
 }
-for (const name of ['wasm', 'sdk', 'dom', 'kwdj', 'vanilla', 'angular']) inspect(`packages/${name}/dist`);
+for (const name of ['wasm', 'sdk', 'dom', 'kwdj', 'vanilla', 'angular', 'ui']) inspect(`packages/${name}/dist`);
 const report = {
   stage: 'OSR-29 extracted native semantics; sizes are not production editor budgets',
   toolchains: { rust: output('rustc', ['--version']).trim(), node: process.version, npm: output('npm', ['--version']).trim(),

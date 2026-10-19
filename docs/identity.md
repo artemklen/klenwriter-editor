@@ -21,6 +21,7 @@ this map. Generic names carry no mandatory KWDJ storage semantics.
 | `packages/wasm` | `@klenwriter/editor-wasm` | Prebuilt artifact and glue |
 | `packages/sdk` | `@klenwriter/editor-sdk` | Generic SDK boundary |
 | `packages/dom` | `@klenwriter/editor-dom` | Generic DOM/input boundary |
+| `packages/ui` | `@klenwriter/editor-ui` | Optional generic toolbar, gutter and Add controls |
 | `packages/vanilla` | `@klenwriter/editor` | Framework-free binding |
 | `packages/angular` | `@klenwriter/editor-angular` | Angular binding |
 | `packages/kwdj` | `@klenwriter/editor-kwdj` | Optional KWDJ profile boundary |
@@ -41,6 +42,11 @@ publisher rights before a write; the date-bound observation cannot authorize it.
 All Rust crates retain `publish = false`, all web packages `private: true`, and
 versions remain `0.0.0`. The installed-tarball smoke is a development proof, not a
 registry release or the standalone editor alpha of OSR-65.
+
+OSR-42 adds the optional `@klenwriter/editor-ui` package. Its separate
+[registry observation](../evidence/osr-42/package-name-availability.json) records
+HTTP404 on 2026-10-19; the original ten-name OSR-54 observation remains unchanged.
+This additional observation also makes no reservation or publishing claim.
 
 ## Independent version namespaces
 
@@ -89,6 +95,6 @@ repository license does not relicense third-party code or design assets.
 `npm run check:metadata` checks identities, SPDX, independent version namespaces,
 license bytes and provenance copies. After reviewing a root ownership-manifest
 change, run `npm run sync:provenance` explicitly before committing. Package checks
-inspect real tarball entries and install the six artifacts into an external
+inspect real tarball entries and install the seven artifacts into an external
 project; native smoke compiles the public crate names from an external Cargo
 project. The native extraction differential remains a separate source-bound proof.

@@ -3,10 +3,10 @@
 import type { CommandDto, CreateEditorOptionsV2, DeepReadonly, EditorControllerV2, EventDto, MarkDto, MutationRequestV2, NodeViewDto, ProfileDto, QueryRequest, ReadRequest, ReadRequestV2, Response, ResponseV2, SelectionDto, SelectionTextRequestV2, SessionContextV2, StampDto, Submission } from '@klenwriter/editor-sdk';
 export type InteractionMode = 'editable' | 'readOnly' | 'disabled';
 export type MountedLifecycle = 'loading' | 'ready' | 'recoveryRequired' | 'disposing' | 'destroyed' | 'fatal';
-export type DomCode = 'dom.invalid_options' | 'dom.not_ready' | 'dom.disposed' | 'dom.renderer_binding_mismatch' | 'dom.renderer_missing' | 'dom.presentation_unsupported' | 'dom.command_unsupported' | 'dom.explicit_method_required' | 'dom.composition_conflict' | 'dom.mode_blocked' | 'dom.native_read_only' | 'dom.busy' | 'dom.stale_replace' | 'dom.reconcile_limit' | 'dom.recovery_required' | 'dom.recovery_callback_failed' | 'dom.invalid_bookmark' | 'dom.stale_selection' | 'dom.selection_unsynchronized' | 'dom.selection_missing' | 'dom.selection_limit' | 'dom.clipboard_unavailable' | 'dom.clipboard_write_failed' | 'dom.clipboard_timeout' | 'dom.selection_geometry_unsupported' | CompositionDomCode;
+export type DomCode = 'dom.invalid_options' | 'dom.not_ready' | 'dom.disposed' | 'dom.renderer_binding_mismatch' | 'dom.renderer_missing' | 'dom.presentation_unsupported' | 'dom.command_unsupported' | 'dom.explicit_method_required' | 'dom.composition_conflict' | 'dom.mode_blocked' | 'dom.native_read_only' | 'dom.busy' | 'dom.stale_replace' | 'dom.reconcile_limit' | 'dom.recovery_required' | 'dom.recovery_callback_failed' | 'dom.invalid_bookmark' | 'dom.stale_selection' | 'dom.selection_unsynchronized' | 'dom.selection_missing' | 'dom.selection_limit' | 'dom.clipboard_unavailable' | 'dom.clipboard_write_failed' | 'dom.clipboard_timeout' | 'dom.selection_geometry_unsupported' | 'dom.invalid_host_request' | 'dom.stale_host_request' | CompositionDomCode;
 export interface DomDiagnostic {
   readonly code: DomCode;
-  readonly phase: 'mount' | 'command' | 'render' | 'replace' | 'mode' | 'destroy' | 'selection' | 'clipboard' | 'composition';
+  readonly phase: 'mount' | 'command' | 'render' | 'replace' | 'mode' | 'destroy' | 'selection' | 'clipboard' | 'composition' | 'geometry' | 'host_request';
   readonly stamp: DeepReadonly<StampDto> | null;
   readonly node: string | null;
   readonly typeId: string | null;
@@ -44,7 +44,7 @@ export interface RendererCatalogDefinition {
 /** Created only by defineRendererCatalog; opaque trusted capability witness. */
 export interface RendererCatalog { readonly definition: RendererCatalogDefinition; readonly __rendererCatalog: unique symbol }
 export interface MountEditorOptions { readonly element: HTMLElement; readonly editor: CreateEditorOptionsV2; readonly renderers: RendererCatalog; readonly mode?: InteractionMode; readonly onRecovery?: (packet: RecoveryPacket) => void; readonly onRefusal?: (failure: DomRefusal) => void; readonly clipboard?: ClipboardConfiguration }
-export interface MountedResourceCounts { readonly sdk: ReturnType<EditorControllerV2['resources']>; readonly dom: Readonly<{ listeners: number; observers: number; continuations: number; retainedInputBytes: number; retainedRecoveryRegions: number }>; readonly selection: SelectionResourceCounts; readonly clipboard: ClipboardResourceCounts }
+export interface MountedResourceCounts { readonly sdk: ReturnType<EditorControllerV2['resources']>; readonly dom: Readonly<{ listeners: number; observers: number; continuations: number; retainedInputBytes: number; retainedRecoveryRegions: number }>; readonly selection: SelectionResourceCounts; readonly clipboard: ClipboardResourceCounts; readonly hostRequests: Readonly<{pending:number;focusContinuations:number}> }
 export interface MountedEditor {
   readonly ready: Promise<MountedReady>;
   readonly lifecycle: MountedLifecycle;
@@ -52,6 +52,8 @@ export interface MountedEditor {
   context(): ReturnType<EditorControllerV2['context']>;
   readonly selection: MountedSelectionController;
   readonly clipboard: MountedClipboardController;
+  readonly geometry: MountedGeometry;
+  readonly hostRequests: MountedHostRequests;
   read(request: ReadRequest): Response | DomRefusal;
   read(request: SelectionTextRequestV2): ResponseV2 | DomRefusal;
   read(request: ReadRequestV2): ResponseV2 | DomRefusal;
@@ -110,7 +112,7 @@ export interface ClipboardResourceCounts { readonly pending: number; readonly co
 // OSR-41 additive recovery provenance, frozen before implementation.
 /** An immutable description; referenced DOM/Event objects remain host-owned capabilities. */
 export type CompositionUnappliedInput =
-  | { readonly kind: 'bounded'; readonly source: 'beforeinput' | 'keydown' | 'composition'; readonly inputType: string | null;
+  | { readonly kind: 'bounded'; readonly source: 'beforeinput' | 'keydown' | 'composition' | 'geometry' | 'host_request'; readonly inputType: string | null;
       readonly data: string | null; readonly key: string | null; readonly code: string | null; readonly defaultPrevented: boolean }
   | { readonly kind: 'retained_event'; readonly event: InputEvent | KeyboardEvent | CompositionEvent;
       readonly reason: 'capture_limit'; readonly ownership: 'transferred_to_host' };
@@ -134,3 +136,46 @@ export interface CompositionRecovery {
 }
 
 export type CompositionDomCode = 'dom.composition_ambiguous' | 'dom.composition_stale' | 'dom.composition_settle_limit' | 'dom.composition_limit';
+
+// OSR-42 additive geometry and host capabilities, frozen before runtime.
+export type CssRect = Readonly<{x:number;y:number;width:number;height:number}>;
+export type GeometryRequest =
+ | {readonly kind:'block';readonly stamp:StampDto;readonly node:string}
+ | {readonly kind:'block_at_point';readonly stamp:StampDto;readonly x:number;readonly y:number}
+ | {readonly kind:'selection';readonly stamp:StampDto};
+export interface GeometrySnapshot {
+ readonly status:'measured'; readonly stamp:DeepReadonly<StampDto>;
+ readonly context:DeepReadonly<SessionContextV2>;
+ readonly target:Readonly<{kind:'block';node:string}>
+   | Readonly<{kind:'selection';selection:DeepReadonly<SelectionDto>}>;
+ readonly rects:readonly CssRect[];
+ readonly anchor:CssRect|null; readonly focus:CssRect|null;
+ readonly clip:CssRect; readonly viewport:CssRect; readonly visible:boolean;
+}
+export type GeometryRead = GeometrySnapshot|DomRefusal|SelectionReadFailure;
+export interface MountedGeometry {read(request:GeometryRequest):GeometryRead}
+export interface MountedHostRequest {
+ readonly stamp:DeepReadonly<StampDto>;
+ readonly context:DeepReadonly<SessionContextV2>;
+ readonly __mountedHostRequest:unique symbol;
+}
+export type MountedHostCapture = Readonly<{status:'captured';request:MountedHostRequest}>
+ | DomRefusal|SelectionReadFailure;
+export interface HostFocus {
+ readonly status:'restored'|'not_requested'|'not_restored';
+ readonly failure:DomRefusal|SelectionReadFailure|null;
+}
+export interface MountedHostRequests {
+ status():Readonly<{status:'available';stamp:DeepReadonly<StampDto>;
+   context:DeepReadonly<SessionContextV2>}>|DomRefusal;
+ capture(options?:{readonly focusScope?:HTMLElement}):MountedHostCapture;
+ complete(request:MountedHostRequest,command:CommandDto,
+   options?:{readonly focus?:'native_result'|'none'}):
+   Readonly<{status:'submitted';submission:Submission;focus:Promise<HostFocus>}>
+   | DomRefusal|SelectionReadFailure;
+ cancel(request:MountedHostRequest,options?:{readonly focus?:boolean}):
+   Readonly<{status:'cancelled';restore:BookmarkRestore|null}>
+   | DomRefusal|SelectionReadFailure;
+ release(request:MountedHostRequest):boolean;
+}
+// MountedEditor adds readonly geometry and readonly hostRequests.

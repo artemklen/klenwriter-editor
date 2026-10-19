@@ -23,9 +23,11 @@ explicit profile renderers and bounded input reconciliation. Its
 [selection controller](docs/selection.md) adds guarded bookmarks, owned selection
 gestures, bounded edge autoscroll and minimal plaintext copy/cut. The
 [composition owner](docs/composition.md) adds bounded settlement, isolated native
-replacement and retained recovery; its new browser/installed acceptance is still
-pending. Paste/HTML clipboard handling, complete UI and installable vanilla alpha
-retain separate gates; this is not a published editor release.
+replacement and retained recovery; browser and installed evidence is versioned
+separately. The optional [block chrome](docs/ui.md) adds profile-supplied toolbar,
+Add/move controls, geometry and host-owned dialogs. Paste/HTML clipboard handling,
+slash/physical drag, complete accessibility and installable vanilla alpha retain
+separate gates; this is not a published editor release.
 
 ## Build the standalone workspace
 

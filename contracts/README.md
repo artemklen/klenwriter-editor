@@ -11,3 +11,6 @@ package/API/storage version separation are defined in [identity.md](../docs/iden
 Mounted API, additive native DeleteBackward and independently authored semantic/
 canonical literals: [DOM v1 (OSR-39)](dom/v1/README.md). Freeze precedes runtime
 implementation; historical design drafts retain their original status text.
+
+Optional generic block chrome, additive geometry/host requests and independently
+authored UI/native/keyboard/focus literals: [UI v1 (OSR-42)](ui/v1/README.md).

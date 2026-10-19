@@ -1,0 +1,20 @@
+/* SPDX-License-Identifier: MIT OR Apache-2.0 */
+.kw-ui-toolbar,.kw-ui-entry,.kw-ui-gutter,.kw-ui-popup{box-sizing:border-box;font:14px/1.4 system-ui,sans-serif;color:#202824;background:#fff}
+.kw-ui-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:4px;border:1px solid #60736a;border-radius:6px;position:sticky;top:0;z-index:2}
+.kw-ui-entry,.kw-ui-gutter{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:4px}
+.kw-ui-gutter{width:max-content;max-width:min(18rem,100%)}
+.kw-ui-button{box-sizing:border-box;min-width:32px;min-height:32px;max-width:100%;padding:5px 8px;font:inherit;color:inherit;background:#fff;border:1px solid #60736a;border-radius:4px;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
+.kw-ui-button[aria-pressed=true]{background:#dcebe2;border-color:#286143}
+.kw-ui-button[aria-pressed=mixed]{background:#e2eaff;border-color:#3859a0}
+.kw-ui-button[aria-disabled=true]{color:#525c56;background:#f0f2f0;cursor:default}
+.kw-ui-button:focus-visible,.kw-ui-popup:focus-visible{outline:3px solid #1e5bca;outline-offset:2px}
+.kw-ui-status,.kw-ui-reason,.kw-ui-context{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.kw-ui-reason{font-size:12px;color:#803c1d}
+.kw-ui-status{padding:4px;flex-basis:100%}
+.kw-ui-context{font-size:12px;flex-basis:100%}
+.kw-ui-popup{display:flex;flex-direction:column;gap:4px;max-width:min(32rem,100%);max-height:60vh;overflow:auto;padding:6px;border:1px solid #60736a;border-radius:6px;box-shadow:0 3px 12px #0002;z-index:3}
+.kw-ui-popup[hidden]{display:none}
+.kw-ui-popup .kw-ui-button{text-align:start}
+.kw-ui-floating{position:fixed;max-width:min(24rem,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow:auto;z-index:3}
+@media(prefers-reduced-motion:reduce){.kw-ui-toolbar,.kw-ui-gutter,.kw-ui-popup{scroll-behavior:auto;transition:none;animation:none}}
+@media(forced-colors:active){.kw-ui-button:focus-visible,.kw-ui-popup:focus-visible{outline-color:Highlight}.kw-ui-button[aria-disabled=true]{color:GrayText}}

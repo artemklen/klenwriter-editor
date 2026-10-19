@@ -1,0 +1,27 @@
+/* SPDX-License-Identifier: MIT OR Apache-2.0 */
+body { margin: 24px; color: #17201c; background: #f4f6f3; font: 16px/1.5 system-ui, sans-serif; }
+.ui-fixture { max-width: 880px; margin: 24px auto; padding: 20px; border: 1px solid #83948b; background: #fff; }
+.ui-fixture-editor { min-height: 180px; padding: 20px 48px; overflow-wrap: anywhere; }
+.ui-fixture-editor p { min-height: 24px; margin: 0 0 14px; }
+.ui-fixture-editor blockquote { padding: 12px; border-left: 3px solid #7d9587; }
+.ui-fixture-editor hr { min-height: 1px; margin: 16px 0; }
+.ui-fixture-scroll { max-height: 220px; overflow: auto; border: 1px solid #697e71; }
+.ui-fixture-clip { max-height: 30px; overflow: hidden; }
+.ui-fixture-foreign { position: fixed; inset: 0; z-index: 9999; background: #ffffff01; }
+.ui-geometry-middle-clip blockquote { max-height: 30px; overflow: hidden; }
+.ui-geometry-zero-clip { height: 0; overflow: hidden; }
+.ui-geometry-transform { transform: translateX(1px); }
+.ui-geometry-perspective { perspective: 400px; }
+.ui-geometry-clip-path { clip-path: inset(1px); }
+.ui-geometry-mask { mask-image: linear-gradient(#000, #000); }
+.ui-geometry-zoom { zoom: 1.25; }
+.ui-geometry-vertical { writing-mode: vertical-rl; }
+.ui-geometry-rounded-clip { overflow: hidden; border-radius: 12px; }
+.ui-geometry-hidden { display: none; }
+.ui-fixture-dialog { position: fixed; z-index: 20; top: 20%; left: 20%; width: min(500px, 60vw); padding: 24px; border: 2px solid #42624f; background: #fff; box-shadow: 0 8px 40px #15271a44; }
+.ui-fixture-dialog[hidden] { display: none; }
+.ui-fixture-dialog label { display: block; }
+.ui-fixture-dialog input { display: block; box-sizing: border-box; width: 100%; min-height: 36px; margin: 8px 0 16px; font: inherit; }
+.ui-fixture-dialog button { min-width: 72px; min-height: 36px; margin-right: 8px; font: inherit; }
+:focus-visible { outline: 3px solid #145eb0; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }

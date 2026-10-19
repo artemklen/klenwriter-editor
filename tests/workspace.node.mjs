@@ -46,7 +46,7 @@ test('all packed JS boundaries install in an external project with no checkout/t
     const program = `
       import assert from 'node:assert/strict';
       import { readFileSync } from 'node:fs';
-      for (const name of ${JSON.stringify(['sdk','dom','kwdj','vanilla','angular'].map(id => identity.web[id].name))}) {
+      for (const name of ${JSON.stringify(['sdk','dom','kwdj','vanilla','angular','ui'].map(id => identity.web[id].name))}) {
         const pkg = await import(name);
         assert.equal(pkg.artifactStage, 'workspace-bootstrap');
       }
@@ -54,6 +54,10 @@ test('all packed JS boundaries install in an external project with no checkout/t
       await wasm.default({ module_or_path: readFileSync(new URL(import.meta.resolve('@klenwriter/editor-wasm/artifact.wasm'))) });
       assert.equal(wasm.buildInfo().stage, 'workspace-bootstrap');
       assert.match(readFileSync(new URL(import.meta.resolve('@klenwriter/editor-dom/style.css')), 'utf8'), /:focus-visible/);
+      assert.match(readFileSync(new URL(import.meta.resolve('@klenwriter/editor-ui/style.css')), 'utf8'), /:focus-visible/);
+      const ui = await import('@klenwriter/editor-ui');
+      assert.equal(typeof ui.createEditorUi, 'function');
+      assert.equal(typeof ui.defineUiHostAction, 'function');
     `;
     const consumer = join(dir, 'consumer.mjs');
     writeFileSync(consumer, program);
