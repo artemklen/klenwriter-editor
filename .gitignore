@@ -12,3 +12,6 @@ packages/*/dist/
 
 # Baked production identity is generated before wrapper typecheck/build.
 /packages/wasm/src/sdk-build-id.ts
+
+# Fuzz fixture build dir (seeds are committed; corpora live under artifacts/)
+/tests/fixtures/fuzz-native/target/

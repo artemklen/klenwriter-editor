@@ -73,3 +73,24 @@ one prepared build-only CI and one post-merge build-only CI. Independent exact-S
 review, normal merge, evidence preservation and cleanup remain required. This
 later decision supersedes the earlier requirement to execute tests in CI; no
 test assertions or ordinary local test scope are removed.
+
+## AC3 stopped block execution · 19.10.2026
+
+The previously stopped coverage-guided block of AC3 (first item of the owner
+acceptance exception) was executed as a separate PR on top of the exception
+closure. A standalone `tests/fixtures/fuzz-native` workspace (pinned
+`nightly-2026-10-17`, cargo-fuzz 0.13.2, libfuzzer-sys 0.4.13 with the NCSA
+notice retained, explicit locked fetch followed by offline build, isolated
+lock away from the production/browser closures) drives the four family
+targets over the frozen public harness entries, with committed deterministic
+seeds and manifest, full native corpus regression replay with per-context
+phase reachability, packaged WASM/SDK replay of retained raw bytes under an
+external process watchdog with native differential agreement, and a minimize
+reproducer subcommand. Both real configurations completed on this host:
+bounded 4×60s and long 4×900s with actual executed units and coverage
+recorded and zero crashes/traps/timeouts/OOM inside the 16KiB input, 2s
+per-input, 2GiB RSS and 64MiB evidence bounds. Exact figures, receipts and
+qualifications: [fuzz-coverage-checkpoint.json](fuzz-coverage-checkpoint.json);
+lane contract: [docs/reliability-fuzz.md](../../docs/reliability-fuzz.md).
+The AC4 noisy result, unadopted floors, historical witness gap and all other
+exception items remain unchanged and unclaimed.

@@ -1,0 +1,61 @@
+[package]
+name = "editor-reliability-fuzz"
+version = "0.0.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+description = "Standalone coverage-guided fuzz consumer of the public native reliability harness"
+
+# Test/fuzz tooling never enters the production/browser workspace closure.
+[workspace]
+resolver = "3"
+
+# Non-default layout marker required by cargo-fuzz (sibling of the ordinary
+# reliability fixture, not a nested `fuzz/` directory).
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+# The crate name must stay canonical: libfuzzer-sys macros expand to absolute
+# `::libfuzzer_sys` paths internally.
+libfuzzer-sys = "=0.4.13"
+editor_reliability_native = { package = "editor-reliability-native", path = "../reliability-native" }
+serde_json = "=1.0.150"
+
+# The four coverage-guided families plus the deterministic corpus replayer.
+# Fuzz bins carry `harness = false`; libfuzzer-sys owns their entrypoint and
+# its generated unsafe shim, so package-level `unsafe_code = "forbid"` is kept
+# only on the crate sources that are authored without macro expansions.
+[[bin]]
+name = "admission_options"
+path = "fuzz_targets/admission_options.rs"
+test = false
+doc = false
+harness = false
+
+[[bin]]
+name = "registry_grammar_attrs_recipes"
+path = "fuzz_targets/registry_grammar_attrs_recipes.rs"
+test = false
+doc = false
+harness = false
+
+[[bin]]
+name = "positions_maps_state_history_events"
+path = "fuzz_targets/positions_maps_state_history_events.rs"
+test = false
+doc = false
+harness = false
+
+[[bin]]
+name = "bridge_lifecycle_facts_stale_tokens"
+path = "fuzz_targets/bridge_lifecycle_facts_stale_tokens.rs"
+test = false
+doc = false
+harness = false
+
+[[bin]]
+name = "corpus-replay"
+path = "src/bin/corpus_replay.rs"
+test = false
+doc = false
