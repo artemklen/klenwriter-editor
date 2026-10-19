@@ -303,6 +303,7 @@ function scrollInvariant(geometry,roles,literal,{caret=false}={}){
 }
 async function scrolling(entry,prepared){
   const direction=entry.caseId.includes('-down-')?'down':'up',terminal=entry.caseId.endsWith('-terminal'),focus=entry.caseId.endsWith('-focus');
+  if(focus)assert.deepEqual(prepared.focusControl,{tag:'SELECT',type:'select-one',size:2,tabIndex:0,installedBeforeInput:true},'Pre-input non-text focus witness');
   const literal=scroll.controlledCoreCases.find(row=>row.direction===direction&&row.geometry==='plain'&&row.ending===(terminal?'terminal_release':'active_release'));
   const setup=prepared.prepared,mode=scroll.geometryModes.plain;assert.equal(setup.font.status,'loaded');assert.equal(setup.font.family.replace(/^['"]|['"]$/g,''),'OSR40FixtureMono');
   nearBox(setup.geometry.client,mode.scrollportClient);nearBox(setup.geometry.effectiveClip,mode.effectiveClip);
@@ -392,7 +393,9 @@ try{
         if(adapter.pointerDown){try{entry.failedCasePointerCleanup=await adapter.releaseOwnedPointer();}catch(error){entry.pointerCleanupError={message:error.message,execution:error.execution??null};blocked=true;}entry.status='FAILED';}
         if(prepareAttempted){
           if(entry.status!=='PASSED')try{entry.failedCaseEvidence=await adapter.call('checkpoint');}catch(error){entry.failedEvidenceError=error.message;}
-          try{entry.finish=await adapter.call('finish');if(prepared)assert.equal(entry.finish.id,prepared.id);released(entry.finish);}catch(error){entry.finishError=error.message;entry.status='FAILED';blocked=true;}
+          try{entry.finish=await adapter.call('finish');if(prepared)assert.equal(entry.finish.id,prepared.id);released(entry.finish);
+            if(caseId.endsWith('-focus'))assert.deepEqual(entry.finish.focusControlRestoration,{status:'original-input-object-restored',type:'text'});
+          }catch(error){entry.finishError=error.message;entry.status='FAILED';blocked=true;}
         }
         if(entry.status!=='PASSED'||adapter.inputDisabled)blocked=true;entry.finishedAt=new Date().toISOString();save();
       }

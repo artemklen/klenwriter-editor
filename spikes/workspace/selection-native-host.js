@@ -88,6 +88,16 @@ export async function prepare(locale,caseId) {
   active = {id:mounted.id,caseId,locale,oracle,element,pointerDown:false,pointerId:null,foreignPointer:false,lastTrustedPointerMove:null,mouseStarted:false,points:null,prepared:null,
     scrollCase:caseId.startsWith('scroll-'),samples:[],inputTrace:[],removals:[],timer:null,overflow:false,stopped:null};
   const r = active;
+  if (caseId.endsWith('-focus')) {
+    // A text input owns its own range on Tab focus. Use a non-text listbox for
+    // this separate focus-loss witness, before any fixture focus or input.
+    const original=document.getElementById('selection-host-control');
+    check(original instanceof HTMLInputElement && original.type==='text', 'Original host text control required');
+    const control=document.createElement('select');control.id=original.id;control.size=2;control.tabIndex=0;
+    control.setAttribute('aria-label','Installed focus cancellation control');
+    const option=document.createElement('option');option.value='fixture';option.textContent='Host focus control';control.append(option);
+    original.replaceWith(control);r.focusControlSwap={original,control};
+  }
   for (const type of ['pointerdown','pointermove','pointerup','pointercancel','lostpointercapture','keydown','keyup','focusin','focusout','copy','cut']) {
     const listener = event => {
       if(event.type==='pointermove' && event.isTrusted)r.lastTrustedPointerMove={x:event.clientX,y:event.clientY,buttons:event.buttons,
@@ -137,7 +147,9 @@ export async function prepare(locale,caseId) {
   }
   await sleep(50);
   r.before=await host.inspect(r.id);r.initialGeometry=host.geometry(r.id);
-  return {id:r.id,caseId,locale,setup,points:clone(r.points),viewport:viewport(),prepared:clone(r.prepared),before:r.before};
+  const control=document.getElementById('selection-host-control');
+  return {id:r.id,caseId,locale,setup,points:clone(r.points),viewport:viewport(),prepared:clone(r.prepared),before:r.before,
+    focusControl:{tag:control.tagName,type:control.type,size:control.size??null,tabIndex:control.tabIndex,installedBeforeInput:!!r.focusControlSwap}};
 }
 export function guard(action) {
   check(actions.includes(action), 'Unknown installed input action');const r=current(),selection=document.getSelection();
@@ -167,7 +179,10 @@ export async function checkpoint() {
     overflow:r.overflow,sampleError:r.sampleError??null,settlement:r.settlement??null,actionTrace:host.actionTrace(r.id),clipboard:host.clipboardState(r.id),
     errors:clone(errors),policyViolations:clone(violations),viewport:viewport()};
 }
-export function focusControl() { return host.outsideFocus(); }
+export function focusControl() {
+  const r=current();if(!r.focusControlSwap)return host.outsideFocus();
+  r.focusControlSwap.control.focus({preventScroll:true});return {id:document.activeElement?.id??null,type:'non-text-listbox'};
+}
 export async function finish() {
   const r=current();check(!r.pointerDown,'Physical pointer remains held at fixture teardown');
   if(r.timer!==null){clearInterval(r.timer);r.timer=null;}
@@ -175,7 +190,15 @@ export async function finish() {
   if(r.settlementTimer!==null&&r.settlementTimer!==undefined)clearTimeout(r.settlementTimer);
   for(const remove of r.removals.splice(0))remove();
   const value=await host.dispose(r.id),global=await host.allDisposed();
-  const result={id:r.id,...value,global,errors:clone(errors),policyViolations:clone(violations)};
+  let focusControlRestoration=null;
+  if(r.focusControlSwap){
+    const {original,control}=r.focusControlSwap;
+    check(document.getElementById('selection-host-control')===control && control.isConnected,'Owned native focus control changed before teardown');
+    control.replaceWith(original);
+    check(document.getElementById('selection-host-control')===original,'Original host input object was not restored');
+    focusControlRestoration={status:'original-input-object-restored',type:original.type};
+  }
+  const result={id:r.id,...value,global,focusControlRestoration,errors:clone(errors),policyViolations:clone(violations)};
   active=null;return result;
 }
 window.selectionNative={prepare,guard,inspect,settle,checkpoint,finish,focusControl};
