@@ -37,6 +37,12 @@ W3C session; pass `--safari-url http://127.0.0.1:PORT` to use an already-running
 local driver. It never executes `safaridriver --enable` or changes Safari options.
 A driver started by this runner is stopped in its final cleanup.
 
+Chrome receives a fresh `CFFIXED_USER_HOME` directory under the external report
+folder for its app-data lookup. This addresses the observed macOS27 startup
+path-service failure without using the real Chrome app-data directory. The
+override applies only to the Chrome child; Carbon input-source verification and
+System Events use the actual user environment. The report records that boundary.
+
 The Carbon helper lists existing input sources and selects only an existing,
 enabled, selectable source. It does not enable, install or persist a layout.
 The runner verifies the selected ID after selection and again after activating

@@ -3,7 +3,7 @@
 import {chromium} from '@playwright/test';
 import {spawn,spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
-import {existsSync,mkdirSync,readFileSync,writeFileSync} from 'node:fs';
+import {existsSync,mkdirSync,mkdtempSync,readFileSync,writeFileSync} from 'node:fs';
 import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
@@ -34,7 +34,10 @@ async function physical(codes,phase){
   script(body);await wait(250);const after=source();Object.assign(report.physicalActions.at(-1),{finishedAt:new Date().toISOString(),inputSourceAfter:after.current});
   if(after.current.id!==before.current.id)throw new Error('Input source changed during physical key batch');save();}
 
-async function chrome(){const browser=await chromium.launch({channel:'chrome',headless:false});const page=await browser.newPage();report.browserVersion=browser.version();
+async function chrome(){
+  const childHome=mkdtempSync(resolve(dirname(outputPath),'chrome-appdata-'));
+  report.setup.push({action:'isolate-chrome-child-app-data',variable:'CFFIXED_USER_HOME',directory:childHome,scope:'Chrome child only; Carbon/System Events retain the real user environment'});
+  const browser=await chromium.launch({channel:'chrome',headless:false,env:{...process.env,CFFIXED_USER_HOME:childHome}});const page=await browser.newPage();report.browserVersion=browser.version();
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   return {async navigate(){const response=await page.goto('http://127.0.0.1:4174/dom');if(!response?.ok())throw new Error('Mounted fixture unavailable');await page.waitForFunction(()=>window.domHostReady===true);await page.evaluate(()=>import('/dom-native-host.js'));},
     call:(method,...args)=>page.evaluate(({method,args})=>window.domNative[method](...args),{method,args}),
