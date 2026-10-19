@@ -53,7 +53,11 @@ required phase reachability.
 
 `node scripts/reliability/fuzz.mjs bounded` runs four 60-second targets under
 a 20-minute job cap; `node scripts/reliability/fuzz.mjs long` runs four
-900-second targets under a 90-minute job cap. Both apply `max_len=16384`,
+900-second targets under a 90-minute job cap. The cap covers the whole
+invocation: toolchain check, locked fetch, offline build, every fuzz target,
+native corpus replay and packaged WASM replay. A stage receives only the time
+still left, and the host kills that stage's process group when the deadline
+expires. Both apply `max_len=16384`,
 `timeout=2` seconds per input, `rss_limit_mb=2048` per target, value profile,
 a fixed seed and `print_final_stats`. A panic-derived crash, trap, sanitizer
 report, per-input timeout, OOM (libFuzzer `rss_limit_mb`) or watchdog kill

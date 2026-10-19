@@ -27,13 +27,20 @@ function moduleOptions(module, context) {
     access: 'editable', registry_json: scenario.registry_json, profile_options_json: scenario.profile_options_json };
 }
 
+/** Valid UTF-8 bytes, including a leading BOM. Null means the payload is not UTF-8. */
+export function admissionInputBytes(payload) {
+  const bytes = Buffer.isBuffer(payload) ? payload : Buffer.from(payload);
+  try { new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
+  catch { return null; }
+  return new Uint8Array(bytes);
+}
+
 async function admission(module, context, payloadB64) {
   const payload = Buffer.from(payloadB64, 'base64');
-  let text;
-  try { text = new TextDecoder('utf-8', { fatal: true }).decode(payload); }
-  catch { return { status: 'skipped-non-utf8', reason: 'raw payload is not valid UTF-8; JS admission input is a string byte domain' }; }
+  const input = admissionInputBytes(payload);
+  if (!input) return { status: 'skipped-non-utf8', reason: 'raw payload is not valid UTF-8; JS admission input is a string byte domain' };
   const baseline = counts(module), callbackErrors = [];
-  const editor = createEditor({ input: new TextEncoder().encode(text), options: moduleOptions(module, context),
+  const editor = createEditor({ input, options: moduleOptions(module, context),
     loader: async () => module, onCallbackError: error => callbackErrors.push(error) });
   try {
     const ready = await editor.ready;

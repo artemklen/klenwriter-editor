@@ -78,15 +78,34 @@ function fuzzSourceHashes() {
   return Object.fromEntries([...paths].sort().map(path => [path, hash(regular(resolve(root, path)))]));
 }
 
+/** Whole-invocation budget. Every stage may use only the time still left. */
+export function laneClock(capMs) {
+  const started = performance.now();
+  return {
+    capMs,
+    remaining() {
+      return Math.max(0, Math.floor(capMs - (performance.now() - started)));
+    },
+    budget(label, ceilingMs) {
+      const left = this.remaining();
+      assert(left > 0, `fuzz job cap exhausted before ${label}`);
+      return Math.min(ceilingMs, left);
+    },
+  };
+}
+
 /** External wall-clock watchdog; the SIGKILL is the interrupt, never a race. */
-function execute({ binary, args, cwd = root, timeoutMs, maxStreamBytes = 16 * 1024 * 1024, env = {}, nightly = false }) {
+export function execute({ binary, args, cwd = root, timeoutMs, maxStreamBytes = 16 * 1024 * 1024, env = {}, nightly = false }) {
   assert.ok(Number.isSafeInteger(timeoutMs) && timeoutMs > 0 && timeoutMs <= 95 * 60 * 1000);
   const startedAt = new Date().toISOString(), started = performance.now();
   const path = nightly ? ensureNightlyShims() : null;
   return new Promise(resolveResult => {
     let stdout = Buffer.alloc(0), stderr = Buffer.alloc(0), failure = null;
-    const child = spawn(binary, args, { cwd, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, ...(path ? { PATH: path } : {}), ...env } });
-    const kill = code => { failure ??= { code, phase: 'process', class: code, message: 'External fuzz host stopped the child' }; child.kill('SIGKILL'); };
+    const child = spawn(binary, args, { cwd, detached: true, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, ...(path ? { PATH: path } : {}), ...env } });
+    const kill = code => {
+      failure ??= { code, phase: 'process', class: code, message: 'External fuzz host stopped the child' };
+      try { process.kill(-child.pid, 'SIGKILL'); } catch { child.kill('SIGKILL'); }
+    };
     const timer = setTimeout(() => kill('reliability.fuzz_watchdog'), Math.max(0, timeoutMs - (performance.now() - started)));
     function capture(name, chunk) {
       const prior = name === 'stdout' ? stdout : stderr;
@@ -128,12 +147,12 @@ function inventoryCorpus(directory) {
   return { files, totalBytes };
 }
 
-async function environmentStage(directory) {
+async function environmentStage(directory, clock) {
   const commands = [];
-  const versions = await execute({ binary: cargoFuzz, args: ['--version'], timeoutMs: 30 * 1000 });
+  const versions = await execute({ binary: cargoFuzz, args: ['--version'], timeoutMs: clock.budget('cargo-fuzz version', 30 * 1000) });
   commands.push(rawExecution(directory, 'env-cargo-fuzz', versions));
   assert.equal(versions.stdout.toString('utf8').trim(), CARGO_FUZZ_VERSION, 'pinned cargo-fuzz 0.13.2 required');
-  const compiler = await execute({ binary: 'rustc', args: ['-vV'], cwd: fixtureDirectory, timeoutMs: 30 * 1000, nightly: true });
+  const compiler = await execute({ binary: 'rustc', args: ['-vV'], cwd: fixtureDirectory, timeoutMs: clock.budget('rustc', 30 * 1000), nightly: true });
   commands.push(rawExecution(directory, 'env-rustc', compiler));
   const release = /release:\s*(.+)/.exec(compiler.stdout.toString('utf8'))?.[1]?.trim();
   assert.equal(release, RUSTC_RELEASE, `pinned ${TOOLCHAIN} compiler release required`);
@@ -150,17 +169,17 @@ async function environmentStage(directory) {
   return { commands, host, release };
 }
 
-async function fetchBuildStage(directory, commands) {
+async function fetchBuildStage(directory, commands, clock) {
   const lockBefore = pin(resolve(fixtureDirectory, 'Cargo.lock'), 8 * 1024 * 1024);
-  const fetch = await execute({ binary: 'cargo', args: ['fetch', '--locked'], cwd: fixtureDirectory, timeoutMs: 10 * 60 * 1000, nightly: true });
+  const fetch = await execute({ binary: 'cargo', args: ['fetch', '--locked'], cwd: fixtureDirectory, timeoutMs: clock.budget('locked fetch', 10 * 60 * 1000), nightly: true });
   commands.push(rawExecution(directory, 'build-fetch', fetch));
   assert.equal(fetch.failure, null, 'explicit locked fetch failed');
   // cwd inside the fixture selects the pinned nightly through the nested
   // rust-toolchain.toml for every cargo child cargo-fuzz spawns.
-  const fuzzBuild = await execute({ binary: cargoFuzz, args: ['build', '--fuzz-dir', '.'], cwd: fixtureDirectory, timeoutMs: 60 * 60 * 1000, env: { CARGO_NET_OFFLINE: 'true' }, nightly: true });
+  const fuzzBuild = await execute({ binary: cargoFuzz, args: ['build', '--fuzz-dir', '.'], cwd: fixtureDirectory, timeoutMs: clock.budget('cargo-fuzz build', 60 * 60 * 1000), env: { CARGO_NET_OFFLINE: 'true' }, nightly: true });
   commands.push(rawExecution(directory, 'build-cargo-fuzz', fuzzBuild));
   assert.equal(fuzzBuild.failure, null, 'offline cargo-fuzz build failed');
-  const replayBuild = await execute({ binary: 'cargo', args: ['build', '--locked', '--offline', '--bin', 'corpus-replay'], cwd: fixtureDirectory, timeoutMs: 30 * 60 * 1000, nightly: true });
+  const replayBuild = await execute({ binary: 'cargo', args: ['build', '--locked', '--offline', '--bin', 'corpus-replay'], cwd: fixtureDirectory, timeoutMs: clock.budget('corpus-replay build', 30 * 60 * 1000), nightly: true });
   commands.push(rawExecution(directory, 'build-corpus-replay', replayBuild));
   assert.equal(replayBuild.failure, null, 'offline corpus-replay build failed');
   const lockAfter = pin(resolve(fixtureDirectory, 'Cargo.lock'), 8 * 1024 * 1024);
@@ -172,9 +191,8 @@ async function fetchBuildStage(directory, commands) {
 function fuzzBinary(host, name) { return resolve(fixtureDirectory, 'target', host, 'release', name); }
 function replayBinary() { return resolve(fixtureDirectory, 'target', 'debug', 'corpus-replay'); }
 
-async function runTargets(mode, directory, host, commands) {
+async function runTargets(mode, directory, host, commands, clock) {
   const limits = MODES[mode];
-  const jobStarted = performance.now();
   const results = [];
   for (const family of FAMILIES) {
     const corpusDirectory = resolve(directory, 'corpus', family), artifactsDirectory = resolve(directory, 'artifacts', family);
@@ -185,7 +203,7 @@ async function runTargets(mode, directory, host, commands) {
     }
     const binary = fuzzBinary(host, family);
     const binaryPin = pin(binary, 512 * 1024 * 1024);
-    const remainingJobMs = limits.jobCapMs - (performance.now() - jobStarted);
+    const remainingJobMs = clock.remaining();
     assert(remainingJobMs > limits.runSlackMs, `fuzz job cap exhausted before ${family}`);
     const run = await execute({
       binary, cwd: root, timeoutMs: Math.min(limits.perTargetSeconds * 1000 + limits.runSlackMs, remainingJobMs),
@@ -249,11 +267,11 @@ function requirePhases(family, aggregate, failures) {
   if (missing.length) failures.push({ family, phase: 'reachability', missing });
 }
 
-async function replayStage(directory, commands) {
+async function replayStage(directory, commands, clock) {
   const observations = [], nativeAdmission = {}, failures = [];
   for (const family of FAMILIES) {
     const inputs = [resolve(seedsDirectory, family), resolve(directory, 'corpus', family)];
-    const run = await execute({ binary: replayBinary(), args: [family, ...inputs], timeoutMs: 10 * 60 * 1000, maxStreamBytes: 32 * 1024 * 1024 });
+    const run = await execute({ binary: replayBinary(), args: [family, ...inputs], timeoutMs: clock.budget(`corpus replay ${family}`, 10 * 60 * 1000), maxStreamBytes: 32 * 1024 * 1024 });
     commands.push(rawExecution(directory, `replay-${family}`, run));
     if (run.failure) { failures.push({ family, phase: 'corpus-replay', failure: run.failure }); break; }
     const report = JSON.parse(run.stdout.toString('utf8'));
@@ -302,13 +320,20 @@ export function packagedReplayPaths(family, corpusDirectory) {
   return { seeds, corpus, files: [...seeds, ...corpus] };
 }
 
-async function wasmStage(directory, commands, nativeAdmission) {
+async function wasmStage(directory, commands, nativeAdmission, clock) {
   const producer = sdkProducerPins();
-  const child = spawn(process.execPath, [wasmChild], { cwd: root, stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
   const failures = [];
   let readyResolve;
   const ready = new Promise(resolveReady => { readyResolve = resolveReady; });
-  const watchdog = setTimeout(() => { failures.push({ phase: 'wasm', failure: { code: 'reliability.fuzz_wasm_watchdog', message: 'SDK replay child watchdog' } }); child.kill('SIGKILL'); readyResolve(null); }, 60 * 1000);
+  const laneMs = clock.budget('wasm replay', 95 * 60 * 1000);
+  const child = spawn(process.execPath, [wasmChild], { cwd: root, detached: true, stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
+  const stopChild = () => { try { process.kill(-child.pid, 'SIGKILL'); } catch { child.kill('SIGKILL'); } };
+  const laneTimer = setTimeout(() => {
+    failures.push({ phase: 'wasm', failure: { code: 'reliability.fuzz_watchdog', message: 'SDK replay exceeded the lane job cap' } });
+    stopChild();
+    readyResolve(null);
+  }, laneMs);
+  const watchdog = setTimeout(() => { failures.push({ phase: 'wasm', failure: { code: 'reliability.fuzz_wasm_watchdog', message: 'SDK replay child watchdog' } }); stopChild(); readyResolve(null); }, Math.min(60 * 1000, laneMs));
   child.stdout.on('data', () => {});
   child.stderr.on('data', bytes => { if (bytes.length) failures.push({ phase: 'wasm', failure: { code: 'reliability.fuzz_wasm_stderr', message: bytes.toString('utf8').slice(0, 1024) } }); });
   child.on('message', message => { if (message?.kind === 'ready') { clearTimeout(watchdog); readyResolve(message); } });
@@ -317,7 +342,7 @@ async function wasmStage(directory, commands, nativeAdmission) {
   async function task(payload, deadlineMs) {
     return new Promise(resolveTask => {
       let settled = false;
-      const timer = setTimeout(() => { if (!settled) { settled = true; failures.push({ phase: 'wasm', failure: { code: 'reliability.fuzz_wasm_watchdog', message: `task watchdog: ${payload.kind}` } }); child.kill('SIGKILL'); resolveTask({ status: 'failed' }); } }, deadlineMs);
+      const timer = setTimeout(() => { if (!settled) { settled = true; failures.push({ phase: 'wasm', failure: { code: 'reliability.fuzz_wasm_watchdog', message: `task watchdog: ${payload.kind}` } }); stopChild(); resolveTask({ status: 'failed' }); } }, Math.max(1, deadlineMs));
       const onMessage = message => {
         if (message?.kind !== 'result' || message.task !== payload.index) return;
         settled = true; clearTimeout(timer); child.off('message', onMessage); resolveTask(message.result);
@@ -339,7 +364,8 @@ async function wasmStage(directory, commands, nativeAdmission) {
       const context = CONTEXTS[payload[0] % 4];
       // Strip the test-only context selector: the packaged SDK receives the
       // payload bytes exactly as the native harness entry does.
-      const result = await task({ kind: 'admission', index, context, payloadB64: payload.subarray(1).toString('base64') }, 30 * 1000);
+      const deadlineMs = Math.min(30 * 1000, clock.remaining());
+      const result = await task({ kind: 'admission', index, context, payloadB64: payload.subarray(1).toString('base64') }, deadlineMs);
       summary.admission.tasks++;
       if (result.status === 'skipped-non-utf8') { summary.admission.skippedNonUtf8++; continue; }
       if (result.status === 'failed') { failures.push({ phase: 'wasm-admission', name, failure: result }); break; }
@@ -362,7 +388,8 @@ async function wasmStage(directory, commands, nativeAdmission) {
       const name = relative(bridgeDirectory, path);
       const payload = regular(path);
       const context = CONTEXTS[payload[0] % 4];
-      const result = await task({ kind: 'bridge', index, context, payloadB64: payload.subarray(1).toString('base64') }, 30 * 1000);
+      const deadlineMs = Math.min(30 * 1000, clock.remaining());
+      const result = await task({ kind: 'bridge', index, context, payloadB64: payload.subarray(1).toString('base64') }, deadlineMs);
       summary.bridge.tasks++;
       if (result.status === 'envelope-non-admission') { summary.bridge.envelopeNonAdmission++; continue; }
       if (result.status === 'failed') { failures.push({ phase: 'wasm-bridge', name, failure: result }); break; }
@@ -370,7 +397,8 @@ async function wasmStage(directory, commands, nativeAdmission) {
       summary.bridge.replies += result.replies ?? 0;
     }
   }
-  child.kill('SIGKILL');
+  clearTimeout(laneTimer);
+  stopChild();
   await new Promise(resolveClose => child.on('close', resolveClose));
   commands.push({ phase: 'wasm-replay', producer, summary: { ...summary, replayLimitPerFamily: WASM_REPLAY_LIMIT }, failures });
   return { producer, summary, failures };
@@ -403,12 +431,13 @@ async function main() {
   const sourceBefore = fuzzSourceHashes();
   let environment = null, build = null, targets = null, replay = null, wasm = null, failure = null;
   try {
-    environment = await environmentStage(directory);
-    build = await fetchBuildStage(directory, commands);
-    targets = await runTargets(mode, directory, environment.host, commands);
+    const clock = laneClock(MODES[mode].jobCapMs);
+    environment = await environmentStage(directory, clock);
+    build = await fetchBuildStage(directory, commands, clock);
+    targets = await runTargets(mode, directory, environment.host, commands, clock);
     if (targets.every(target => target.failure === null)) {
-      replay = await replayStage(directory, commands);
-      if (replay.failures.length === 0) wasm = await wasmStage(directory, commands, replay.nativeAdmission);
+      replay = await replayStage(directory, commands, clock);
+      if (replay.failures.length === 0) wasm = await wasmStage(directory, commands, replay.nativeAdmission, clock);
     }
   } catch (error) {
     failure = { code: 'reliability.fuzz_lane', message: error.message, stack: error.stack };
