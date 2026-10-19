@@ -47,6 +47,33 @@ AX window titles separately from the page guard.
 The fixture separately compares trusted client coordinates to its independent
 geometry. CGEvent provenance means platform input, not hardware-device evidence.
 
+Chrome starts only its isolated fixture child with
+`--force-renderer-accessibility=complete`, Chromium's documented fixed AX mode
+([official overview](https://github.com/chromium/chromium/blob/main/docs/accessibility/overview.md#command-line-options)).
+Before the first prepare or input, the driver uses the separate read-only
+`--inspect-window` mode. Its closed JSON envelope has exactly
+`{format:"osr40-native-window-inspection/1",browser:"chrome",nonce,title,fixtureUrl,deadlineMs}`,
+at most4KiB and a finite1–1000ms deadline. It has no action, point, key, mount or
+resize argument and returns before the CGEvent path. Shared AX measurement keeps
+the same unique focused title, frozen WebArea size,512-node/depth32 budgets and
+final ownership recheck. Only inspection may return `contained:false`; physical
+`--request` still requires containment and a fresh page/AX guard for every action.
+
+Bootstrap records actual page URL/title/nonce, viewport, scroll and raw selection
+before and after each inspection. The URL is driver-observed, not an AX URL
+claim; these observations are separate operations. It correlates the AX foreground
+PID with its own CDP browser and obtains the window from its own page target.
+After reading bounds it rechecks the page, target identity and target-to-window
+association before each resize; any change refuses that mutation.
+Within15s and at most3 rounds it may increase only that window's width/height by
+the ceiling of measured positive right/bottom WebArea spill. It preserves window
+origin,1024×768 page viewport, scale1/offset0, scroll and selection. Initial failed
+geometry, exact CDP requests/bounds and every later measurement remain in the
+receipt. Left/top spill, malformed data, changed ownership, unknown completion or
+remaining strict refusal stops bootstrap; no physical input follows that failure.
+Inspector stdout is bounded at32KiB. No toolbar inset or fixed pixel correction
+is inferred, and no VoiceOver, system setting or existing Chrome instance changes.
+
 Any failure disables normal actions. A dispatched timeout is recorded as
 unknown/may_have_sent. If a pointer is down/may-have-down, one **separate cleanup**
 release is permitted only after a new exact page guard('up') and fresh AX/title

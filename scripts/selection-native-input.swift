@@ -34,14 +34,17 @@ func rectangle(_ element: AXUIElement) -> CGRect? {
     var origin = CGPoint.zero, size = CGSize.zero
     guard AXValueGetValue(p as! AXValue, .cgPoint, &origin), AXValueGetValue(s as! AXValue, .cgSize, &size),
           origin.x.isFinite, origin.y.isFinite, size.width.isFinite, size.height.isFinite,
+          (origin.x + size.width).isFinite, (origin.y + size.height).isFinite,
           size.width > 0, size.height > 0 else { return nil }
     return CGRect(origin: origin, size: size)
 }
-func webViewport(_ window: AXUIElement) -> CGRect? {
+func webViewport(_ window: AXUIElement) -> (view: CGRect, visited: Int, depth: Int)? {
     var todo: [(AXUIElement, Int)] = [(window, 0)], seen: [AXUIElement] = [], matches: [CGRect] = []
+    var maximumDepth = 0
     while let (element, depth) = todo.popLast() {
         if seen.contains(where: { CFEqual($0, element) }) { continue }
         guard seen.count < 512, depth <= 32 else { return nil }; seen.append(element)
+        maximumDepth = max(maximumDepth, depth)
         if attribute(element, kAXRoleAttribute as CFString) as? String == "AXWebArea",
            let r = rectangle(element), abs(r.width - 1024) <= 0.5, abs(r.height - 768) <= 0.5 { matches.append(r) }
         if let children = attribute(element, kAXChildrenAttribute as CFString) as? [AXUIElement] {
@@ -49,9 +52,71 @@ func webViewport(_ window: AXUIElement) -> CGRect? {
             for child in children.reversed() { todo.append((child, depth + 1)) }
         }
     }
-    return matches.count == 1 ? matches[0] : nil
+    return matches.count == 1 ? (matches[0], seen.count, maximumDepth) : nil
+}
+struct WindowMeasurement {
+    let front: NSRunningApplication
+    let application: AXUIElement
+    let window: AXUIElement
+    let view: CGRect
+    let frame: CGRect
+    let expectedBundle: String
+    let expectedTitle: String
+    let windowCount: Int
+    let visited: Int
+    let depth: Int
+    var contained: Bool {
+        view.minX >= frame.minX - 0.5 && view.maxX <= frame.maxX + 0.5 &&
+        view.minY >= frame.minY - 0.5 && view.maxY <= frame.maxY + 0.5
+    }
+}
+func measureWindow(_ browser: String, _ pageTitle: String) -> WindowMeasurement {
+    guard AXIsProcessTrusted() else { refuse("Existing Accessibility permission is unavailable") }
+    let bundle = browser == "safari" ? "com.apple.Safari" : "com.google.Chrome"
+    let expectedTitle = pageTitle + (browser == "chrome" ? " - Google Chrome" : "")
+    guard let front = NSWorkspace.shared.frontmostApplication, front.bundleIdentifier == bundle else { refuse("Fixture browser is not frontmost") }
+    let application = AXUIElementCreateApplication(front.processIdentifier)
+    guard let windows = attribute(application, kAXWindowsAttribute as CFString) as? [AXUIElement], windows.count <= 32 else { refuse("Bounded browser AX windows unavailable") }
+    let matching = windows.filter { title($0) == expectedTitle }
+    guard matching.count == 1, let focused = attribute(application, kAXFocusedWindowAttribute as CFString),
+          CFGetTypeID(focused) == AXUIElementGetTypeID(), CFEqual(focused, matching[0]) else { refuse("Exact unique fixture title is not focused") }
+    guard let scan = webViewport(matching[0]), let frame = rectangle(matching[0]) else { refuse("Unique frozen AXWebArea viewport unavailable") }
+    return WindowMeasurement(front: front, application: application, window: matching[0], view: scan.view, frame: frame,
+        expectedBundle: bundle, expectedTitle: expectedTitle, windowCount: windows.count, visited: scan.visited, depth: scan.depth)
+}
+func recheckWindow(_ measurement: WindowMeasurement, _ deadline: Double) -> String {
+    guard elapsed() < deadline,
+          NSWorkspace.shared.frontmostApplication?.processIdentifier == measurement.front.processIdentifier,
+          let focused = attribute(measurement.application, kAXFocusedWindowAttribute as CFString),
+          CFGetTypeID(focused) == AXUIElementGetTypeID(), CFEqual(focused, measurement.window),
+          let observedTitle = title(measurement.window), observedTitle == measurement.expectedTitle else { refuse("Fixture guard expired or ownership changed before post") }
+    return observedTitle
+}
+func encodedRectangle(_ value: CGRect) -> [String: Double] {
+    ["x": value.minX, "y": value.minY, "width": value.width, "height": value.height]
 }
 let argv = CommandLine.arguments
+if argv.count == 3 && argv[1] == "--inspect-window" {
+    guard let data = argv[2].data(using: .utf8), data.count <= 4096,
+          let request = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+          closed(request, ["format", "browser", "nonce", "title", "fixtureUrl", "deadlineMs"]),
+          request["format"] as? String == "osr40-native-window-inspection/1", request["browser"] as? String == "chrome",
+          let nonce = request["nonce"] as? String, nonce.utf8.count == 32,
+          nonce.range(of: "^[a-f0-9]{32}$", options: .regularExpression) != nil,
+          let pageTitle = request["title"] as? String, pageTitle == "KlenWriter Selection native " + nonce,
+          request["fixtureUrl"] as? String == "http://127.0.0.1:4174/selection",
+          let deadline = number(request["deadlineMs"]), deadline >= 1, deadline <= 1000 else { refuse("Invalid closed window inspection request") }
+    let measurement = measureWindow("chrome", pageTitle)
+    let observedTitle = recheckWindow(measurement, deadline)
+    guard elapsed() <= deadline else { refuse("Window inspection deadline expired") }
+    emit(["format": "osr40-native-window-inspection/1", "status": "inspected", "delivery": "not_sent",
+        "browser": "chrome", "nonce": nonce, "title": pageTitle, "fixtureUrl": "http://127.0.0.1:4174/selection",
+        "frontBundle": measurement.expectedBundle, "frontPid": measurement.front.processIdentifier,
+        "expectedAxWindowTitle": measurement.expectedTitle, "observedAxWindowTitle": observedTitle,
+        "axWindowCount": measurement.windowCount, "axMatchCount": 1, "visitedNodes": measurement.visited, "maximumDepth": measurement.depth,
+        "axWindow": encodedRectangle(measurement.frame), "axViewport": encodedRectangle(measurement.view),
+        "contained": measurement.contained, "elapsedMs": elapsed()], 0)
+}
 guard argv.count == 3, argv[1] == "--request", let data = argv[2].data(using: .utf8), data.count <= 4096,
       let request = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
       closed(request, ["format", "browser", "nonce", "title", "fixtureUrl", "mountedId", "requestId", "serial", "caseId", "action", "target", "point", "viewport", "pointerDown", "cleanupOnly", "deadlineMs"]),
@@ -85,24 +150,10 @@ if mouse {
 guard action != "down" || !held, action != "move-start" || !held,
       action != "move-end" || held, action != "up" || held,
       mouse || action == "shift-tab" || !held else { refuse("Pointer transition differs") }
-guard AXIsProcessTrusted() else { refuse("Existing Accessibility permission is unavailable") }
-let expectedBundle = browser == "safari" ? "com.apple.Safari" : "com.google.Chrome"
-let expectedAxWindowTitle = expectedTitle + (browser == "chrome" ? " - Google Chrome" : "")
-guard let front = NSWorkspace.shared.frontmostApplication, front.bundleIdentifier == expectedBundle else { refuse("Fixture browser is not frontmost") }
-let application = AXUIElementCreateApplication(front.processIdentifier)
-guard let windows = attribute(application, kAXWindowsAttribute as CFString) as? [AXUIElement], windows.count <= 32 else { refuse("Bounded browser AX windows unavailable") }
-let matching = windows.filter { title($0) == expectedAxWindowTitle }
-guard matching.count == 1, let focusedValue = attribute(application, kAXFocusedWindowAttribute as CFString),
-      CFGetTypeID(focusedValue) == AXUIElementGetTypeID(), CFEqual(focusedValue, matching[0]) else { refuse("Exact unique fixture title is not focused") }
-guard let view = webViewport(matching[0]), let frame = rectangle(matching[0]),
-      view.minX >= frame.minX - 0.5, view.maxX <= frame.maxX + 0.5,
-      view.minY >= frame.minY - 0.5, view.maxY <= frame.maxY + 0.5 else { refuse("Unique frozen AXWebArea viewport unavailable") }
-guard elapsed() < deadline,
-      NSWorkspace.shared.frontmostApplication?.processIdentifier == front.processIdentifier,
-      let currentFocusedWindow = attribute(application, kAXFocusedWindowAttribute as CFString),
-      CFGetTypeID(currentFocusedWindow) == AXUIElementGetTypeID(), CFEqual(currentFocusedWindow, matching[0]),
-      let observedAxWindowTitle = title(matching[0]),
-      observedAxWindowTitle == expectedAxWindowTitle else { refuse("Fixture guard expired or ownership changed before post") }
+let measurement = measureWindow(browser, expectedTitle)
+guard measurement.contained else { refuse("Unique frozen AXWebArea viewport unavailable") }
+let observedAxWindowTitle = recheckWindow(measurement, deadline)
+let view = measurement.view
 var global: CGPoint?
 if let local = point {
     let actual = CGPoint(x: view.minX + local.x, y: view.minY + local.y); global = actual
@@ -121,9 +172,9 @@ if let local = point {
 guard elapsed() <= deadline else { refuse("Fixture guard expired during post") }
 var result: [String: Any] = ["status": "sent", "action": action, "nonce": nonce, "requestId": requestId,
     "mountedId": mount, "caseId": caseId, "target": target, "cleanupOnly": cleanup,
-    "frontBundle": expectedBundle, "frontPid": front.processIdentifier,
-    "expectedAxWindowTitle": expectedAxWindowTitle, "observedAxWindowTitle": observedAxWindowTitle,
-    "axWindowCount": windows.count, "axViewport": ["x": view.minX, "y": view.minY, "width": view.width, "height": view.height],
+    "frontBundle": measurement.expectedBundle, "frontPid": measurement.front.processIdentifier,
+    "expectedAxWindowTitle": measurement.expectedTitle, "observedAxWindowTitle": observedAxWindowTitle,
+    "axWindowCount": measurement.windowCount, "axViewport": encodedRectangle(view),
     "elapsedMs": elapsed(), "method": "fixture-scoped CGEvent; platform input, not hardware-device provenance"]
 if let global { result["screenPoint"] = ["x": global.x, "y": global.y] }
 emit(result, 0)

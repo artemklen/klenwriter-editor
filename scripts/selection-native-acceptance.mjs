@@ -9,7 +9,7 @@ import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {computeSdkBuildIdentity} from './generate-sdk-types.mjs';
 import {createSafariAdapter} from './selection-native/safari-adapter.mjs';
-import {createInputOwner} from './selection-native/input.mjs';
+import {createInputOwner,prepareChromeWindow} from './selection-native/input.mjs';
 import {caseIds,limits,validCall} from './selection-native/protocol.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
@@ -143,8 +143,10 @@ async function until(read,predicate,maximum=2000){const start=monotonic();let va
 async function chrome(){
   const childHome=mkdtempSync(resolve(dirname(outputPath),'chrome-selection-appdata-'));
   report.setup.push({action:'isolate-chrome-child-app-data',variable:'CFFIXED_USER_HOME',directory:childHome,scope:'Only Chrome child; Carbon and scoped CGEvent helper use the real user environment'});
-  const browser=await chromium.launch({channel:'chrome',headless:false,env:{...process.env,CFFIXED_USER_HOME:childHome}});
-  const page=await browser.newPage({viewport:{width:1024,height:768}});const errors=[];let mountedId=null,serial=0,guardSerial=0,busy=false;
+  const launchArguments=['--force-renderer-accessibility=complete'];
+  const browser=await chromium.launch({channel:'chrome',headless:false,args:launchArguments,env:{...process.env,CFFIXED_USER_HOME:childHome}});
+  const page=await browser.newPage({viewport:{width:1024,height:768}});const errors=[];
+  let mountedId=null,serial=0,guardSerial=0,busy=false,navigationStarted=false,bootstrapReady=false,physicalStarted=false,browserCdp=null,pageCdp=null;
   page.on('pageerror',error=>errors.push(error.message));report.browserVersion=browser.version();
   const record=(kind,value)=>{report.controlLog??=[];if(report.controlLog.length>=4096)throw Error('Chrome control receipt bound');report.controlLog.push({kind,...value});};
   const call=async(method,...args)=>{
@@ -165,10 +167,39 @@ async function chrome(){
     return {id:config.nonce+':'+String(serial),start,value:{...value,mountedId,serial:++guardSerial}};
   }});
   report.control={method:'Installed headed Chrome; closed Playwright page setup/read RPC, AX/title-scoped CGEvent physical actions',webDriver:false,
-    uniqueTitle:config.title,fixtureUrl:config.fixtureUrl,fixtureOnly:true,childOnlyEnvironment:true};
-  return {errors,input:action=>inputOwner.input(action),releaseOwnedPointer:()=>inputOwner.releaseOwnedPointer(),
+    uniqueTitle:config.title,fixtureUrl:config.fixtureUrl,fixtureOnly:true,childOnlyEnvironment:true,launchArguments};
+  return {errors,input:action=>{assert.equal(bootstrapReady,true,'Strict Chrome window bootstrap required before input');physicalStarted=true;return inputOwner.input(action);},releaseOwnedPointer:()=>inputOwner.releaseOwnedPointer(),
     get pointerDown(){return inputOwner.pointerDown;},get pointerState(){return inputOwner.pointerState;},get inputDisabled(){return inputOwner.disabled;},
-    async navigate(){const response=await page.goto(config.fixtureUrl);assert.ok(response?.ok(),'Selection fixture server unavailable');await page.waitForFunction(()=>window.selectionHostReady===true,null,{timeout:15000});await page.evaluate(async title=>{document.title=title;await import('/selection-native-host.js');},config.title);await page.bringToFront();script('tell application "Google Chrome" to activate');await page.waitForFunction(()=>document.hasFocus(),null,{timeout:5000});},
+    async navigate(){
+      assert.equal(navigationStarted,false,'Chrome bootstrap cannot be retried');assert.equal(physicalStarted,false);navigationStarted=true;
+      const response=await page.goto(config.fixtureUrl);assert.ok(response?.ok(),'Selection fixture server unavailable');
+      await page.waitForFunction(()=>window.selectionHostReady===true,null,{timeout:15000});
+      await page.evaluate(async title=>{document.title=title;await import('/selection-native-host.js');},config.title);
+      await page.bringToFront();script('tell application "Google Chrome" to activate');await page.waitForFunction(()=>document.hasFocus(),null,{timeout:5000});
+      report.control.bootstrap=await prepareChromeWindow({config,record,
+        pageState:()=>page.evaluate(()=>{
+          const prefix='KlenWriter Selection native ',v=visualViewport,selection=getSelection();
+          const point=(node,offset)=>{if(!node)return null;const path=[];let current=node;
+            while(current.parentNode){if(path.length>=64)throw Error('Bounded bootstrap raw selection path');path.unshift(Array.prototype.indexOf.call(current.parentNode.childNodes,current));current=current.parentNode;}
+            return {nodeType:node.nodeType,path,offset};};
+          return {url:location.href,title:document.title,nonce:document.title.startsWith(prefix)?document.title.slice(prefix.length):null,documentFocused:document.hasFocus(),
+            viewport:{width:innerWidth,height:innerHeight,scale:v?.scale,offsetLeft:v?.offsetLeft,offsetTop:v?.offsetTop},scroll:{x:scrollX,y:scrollY},
+            selection:{rangeCount:selection?.rangeCount??0,anchor:point(selection?.anchorNode,selection?.anchorOffset),focus:point(selection?.focusNode,selection?.focusOffset)}};
+        }),
+        inspectWindow:request=>{
+          const json=JSON.stringify(request);assert.ok(Buffer.byteLength(json)<=4096);
+          const execution=run(inputHelper,['--inspect-window',json],{timeout:request.deadlineMs,fullStdout:true,maxBuffer:32768});
+          return {execution,actual:JSON.parse(execution.stdout)};
+        },
+        async getBrowserPid(){
+          browserCdp=await browser.newBrowserCDPSession();const result=await browserCdp.send('SystemInfo.getProcessInfo');
+          const owned=result.processInfo.filter(value=>value.type==='browser');assert.equal(owned.length,1);return Number(owned[0].id);
+        },
+        async getTargetInfo(){pageCdp??=await page.context().newCDPSession(page);return (await pageCdp.send('Target.getTargetInfo')).targetInfo;},
+        windowCommand:(method,params)=>{assert.ok(browserCdp);return browserCdp.send(method,params);},
+      });
+      bootstrapReady=true;save();
+    },
     async focus(){await page.bringToFront();await page.waitForFunction(()=>document.hasFocus(),null,{timeout:5000});},call,
     async close(){await browser.close();report.control.cleanup={status:'owned-chrome-browser-closed',scope:'Only isolated browser instance launched for this fixture'};},
   };

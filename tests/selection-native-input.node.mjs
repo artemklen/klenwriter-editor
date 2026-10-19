@@ -2,7 +2,7 @@
 // Controlled protocol/dispatch boundaries only. No OS, browser, helper or network calls.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createInputOwner} from '../scripts/selection-native/input.mjs';
+import {createInputOwner,prepareChromeWindow} from '../scripts/selection-native/input.mjs';
 import {validCall,limits} from '../scripts/selection-native/protocol.mjs';
 function fixture(){
   const nonce='a'.repeat(32),config={nonce,origin:'http://127.0.0.1:4174',fixtureUrl:'http://127.0.0.1:4174/selection',title:'KlenWriter Selection native '+nonce};
@@ -78,4 +78,115 @@ test('controlled ordinary pointer phases preserve one owned button and actual re
   const f=fixture();await f.owner.input('move-start');await f.owner.input('down');await f.owner.input('move-end');await f.owner.input('up');
   assert.equal(f.owner.pointerState,'up');assert.equal(f.owner.disabled,false);assert.deepEqual(f.calls.map(r=>r.request.action),['move-start','down','move-end','up']);
   assert(f.records.every(row=>row.value.delivery==='sent'));assert(f.calls.every(row=>row.request.deadlineMs>0&&row.request.deadlineMs<=1000));
+});
+
+function bootstrapFixture(){
+  const nonce='b'.repeat(32),config={nonce,title:'KlenWriter Selection native '+nonce,fixtureUrl:'http://127.0.0.1:4174/selection'};
+  let current={left:22,top:52,width:1026,height:848,windowState:'normal'},time=0,pageReads=0;
+  const records=[],commands=[],inspections=[];
+  const control={page:null,inspection:null,command:null,target:null,frame:null,viewY:139};
+  const callbacks={config,record:(kind,value)=>records.push({kind,value}),clock:()=>time,delay:async ms=>{time+=ms;},
+    getBrowserPid:async()=>31,
+    getTargetInfo:async()=>{const value={targetId:'own-page',type:'page',url:config.fixtureUrl,title:config.title};return control.target?control.target(value):value;},
+    pageState:async()=>{
+      const value={nonce,url:config.fixtureUrl,title:config.title,documentFocused:true,
+        viewport:{width:1024,height:768,scale:1,offsetLeft:0,offsetTop:0},scroll:{x:0,y:0},selection:{rangeCount:0,anchor:null,focus:null}};
+      return control.page?control.page(value,++pageReads):value;
+    },
+    inspectWindow:async request=>{
+      assert.deepEqual(Object.keys(request).sort(),['browser','deadlineMs','fixtureUrl','format','nonce','title']);
+      assert.equal(request.format,'osr40-native-window-inspection/1');assert.equal(request.browser,'chrome');
+      assert.equal(request.nonce,nonce);assert.equal(request.title,config.title);assert.equal(request.fixtureUrl,config.fixtureUrl);
+      assert.ok(Number.isInteger(request.deadlineMs)&&request.deadlineMs>0&&request.deadlineMs<=1000);
+      const frame=control.frame??{x:current.left,y:current.top,width:current.width,height:current.height},view={x:22,y:control.viewY,width:1024,height:768};
+      let actual={format:request.format,status:'inspected',delivery:'not_sent',browser:'chrome',nonce,title:config.title,fixtureUrl:config.fixtureUrl,
+        frontBundle:'com.google.Chrome',frontPid:31,expectedAxWindowTitle:config.title+' - Google Chrome',observedAxWindowTitle:config.title+' - Google Chrome',
+        axWindowCount:1,axMatchCount:1,visitedNodes:44,maximumDepth:13,axWindow:frame,axViewport:view,
+        contained:view.x>=frame.x-.5&&view.x+view.width<=frame.x+frame.width+.5&&view.y>=frame.y-.5&&view.y+view.height<=frame.y+frame.height+.5,elapsedMs:20};
+      if(control.inspection)actual=control.inspection(actual,request);
+      inspections.push({request,actual});return {execution:{returnCode:0,stdout:JSON.stringify(actual),stderr:''},actual};
+    },
+    windowCommand:async(method,params)=>{
+      commands.push({method,params:structuredClone(params)});
+      if(control.command){const result=control.command(method,params);if(result!==undefined)return result;}
+      if(method==='Browser.getWindowForTarget'){assert.deepEqual(params,{targetId:'own-page'});return {windowId:9,bounds:{...current}};}
+      assert.equal(params.windowId,9,'No other browser window may be addressed');
+      if(method==='Browser.getWindowBounds')return {bounds:{...current}};
+      assert.equal(method,'Browser.setWindowBounds');assert.deepEqual(Object.keys(params.bounds).sort(),['height','width']);
+      current={...current,...params.bounds};return {};
+    }};
+  return {callbacks,control,records,commands,inspections,advance:ms=>{time+=ms;},resizes:()=>commands.filter(row=>row.method==='Browser.setWindowBounds')};
+}
+test('controlled Chrome bootstrap preserves failed baseline and fixes only measured own-window spill',async()=>{
+  const f=bootstrapFixture(),result=await prepareChromeWindow(f.callbacks);
+  assert.equal(result.status,'prepared');assert.equal(result.adjustments,1);assert.equal(result.measurement.contained,true);
+  assert.deepEqual(f.resizes(),[{method:'Browser.setWindowBounds',params:{windowId:9,bounds:{width:1026,height:855}}}]);
+  assert.deepEqual(f.inspections.map(row=>row.actual.contained),[false,true]);
+  const saved=f.records.filter(row=>row.kind==='chrome-bootstrap-inspection');assert.equal(saved.length,2);
+  assert.equal(saved[0].value.actual.axWindow.height,848);assert.equal(saved[1].value.actual.axWindow.height,855);
+  assert.equal(saved[0].value.execution.returnCode,0);assert.equal(saved[0].value.actual.delivery,'not_sent');
+  assert.deepEqual(saved[0].value.before,saved[1].value.after,'Bootstrap does not write page viewport, scroll or selection');
+});
+test('controlled Chrome bootstrap rejects a nonce with a trailing newline before any callback',async()=>{
+  const f=bootstrapFixture();f.callbacks.config={...f.callbacks.config,nonce:f.callbacks.config.nonce+'\n',title:f.callbacks.config.title+'\n'};
+  await assert.rejects(prepareChromeWindow(f.callbacks));assert.equal(f.records.length,0);assert.equal(f.commands.length,0);assert.equal(f.inspections.length,0);
+});
+test('controlled Chrome bootstrap uses fractional measured spill and keeps existing half-pixel containment tolerance',async()=>{
+  const exact=bootstrapFixture();exact.control.frame={x:22,y:52,width:1026,height:854.5};
+  assert.equal((await prepareChromeWindow(exact.callbacks)).adjustments,0);assert.equal(exact.resizes().length,0);
+  const outside=bootstrapFixture();outside.control.viewY=139.2;
+  const result=await prepareChromeWindow(outside.callbacks);assert.equal(result.adjustments,1);
+  assert.deepEqual(outside.resizes()[0].params.bounds,{width:1026,height:856},'ceil actual7.2px spill is8; no constant toolbar correction');
+});
+for(const [name,alter]of[
+  ['foreign foreground PID',value=>({...value,frontPid:32})],
+  ['contradictory contained flag',value=>({...value,contained:true})],
+  ['ambiguous WebArea',value=>({...value,axMatchCount:2})],
+  ['node budget exceeded',value=>({...value,visitedNodes:513})],
+  ['nonfinite rectangle edge',value=>({...value,axWindow:{x:1e308,y:52,width:1e308,height:848}})],
+  ['late inspection receipt',value=>({...value,elapsedMs:1001})],
+])test(`controlled Chrome bootstrap ${name} refuses before any resize`,async()=>{
+  const f=bootstrapFixture();f.control.inspection=alter;
+  await assert.rejects(prepareChromeWindow(f.callbacks));assert.equal(f.resizes().length,0);assert.equal(f.commands.length,0);
+});
+test('controlled Chrome bootstrap rechecks actual page ownership after inspection before any resize',async()=>{
+  const f=bootstrapFixture();f.control.page=(value,count)=>count===2?{...value,url:'http://127.0.0.1:4174/other'}:value;
+  await assert.rejects(prepareChromeWindow(f.callbacks),/Bootstrap page URL changed/);assert.equal(f.resizes().length,0);assert.equal(f.commands.length,0);
+});
+for(const change of ['URL','target','window'])test(`controlled Chrome bootstrap ${change} change during bounds read refuses before resize`,async()=>{
+  const f=bootstrapFixture();let boundsRead=false;
+  f.control.command=method=>{
+    if(method==='Browser.getWindowBounds')boundsRead=true;
+    if(method==='Browser.getWindowForTarget'&&boundsRead&&change==='window')return {windowId:10,bounds:{left:22,top:52,width:1026,height:848,windowState:'normal'}};
+  };
+  f.control.page=value=>boundsRead&&change==='URL'?{...value,url:'http://127.0.0.1:4174/other'}:value;
+  f.control.target=value=>boundsRead&&change==='target'?{...value,targetId:'different-page'}:value;
+  await assert.rejects(prepareChromeWindow(f.callbacks));assert.equal(f.resizes().length,0);assert.equal(f.inspections.length,1);
+  assert.equal(f.records.some(row=>row.kind==='chrome-bootstrap-completed'),false);
+});
+test('controlled Chrome bootstrap refuses changed raw selection and scroll instead of repairing the page',async()=>{
+  for(const altered of [{selection:{rangeCount:1,anchor:{path:[0],offset:0},focus:{path:[0],offset:1}}},{scroll:{x:0,y:1}}]){
+    const f=bootstrapFixture();f.control.page=(value,count)=>count===2?{...value,...altered}:value;
+    await assert.rejects(prepareChromeWindow(f.callbacks));assert.equal(f.commands.length,0);
+  }
+});
+test('controlled Chrome bootstrap unknown CDP resize completion stops without another inspection or command',async()=>{
+  const f=bootstrapFixture();f.control.command=method=>{if(method==='Browser.setWindowBounds')throw Object.assign(Error('Unknown CDP completion'),{execution:{status:'unknown'}});};
+  await assert.rejects(prepareChromeWindow(f.callbacks),/Unknown CDP completion/);assert.equal(f.resizes().length,1);assert.equal(f.inspections.length,1);
+  assert.equal(f.commands.at(-1).method,'Browser.setWindowBounds');assert.equal(f.records.at(-1).value.execution.status,'unknown');
+});
+test('controlled Chrome bootstrap maximum3 adjustments retains all strict refusals',async()=>{
+  const f=bootstrapFixture();f.control.frame={x:22,y:52,width:1026,height:848};
+  await assert.rejects(prepareChromeWindow(f.callbacks),/at most3/);assert.equal(f.resizes().length,3);assert.equal(f.inspections.length,4);
+  assert(f.inspections.every(row=>row.actual.contained===false));assert.equal(f.records.some(row=>row.kind==='chrome-bootstrap-completed'),false);
+});
+test('controlled Chrome bootstrap does not move a window or continue after overall deadline',async()=>{
+  const moved=bootstrapFixture();let resized=false;
+  moved.control.command=(method,params)=>{
+    if(method==='Browser.setWindowBounds')resized=true;
+    if(method==='Browser.getWindowBounds'&&resized)return {bounds:{left:23,top:52,width:params.width??1026,height:855,windowState:'normal'}};
+  };
+  await assert.rejects(prepareChromeWindow(moved.callbacks),/window origin/);assert.equal(moved.resizes().length,1);assert.equal(moved.inspections.length,1);
+  const expired=bootstrapFixture();expired.control.inspection=value=>{expired.advance(15001);return value;};
+  await assert.rejects(prepareChromeWindow(expired.callbacks),/deadline/);assert.equal(expired.commands.length,0);
 });
