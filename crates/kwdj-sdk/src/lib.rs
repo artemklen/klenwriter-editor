@@ -193,6 +193,35 @@ impl KwdjAdapter {
     }
 }
 impl BridgeAdapter<KwdjProfile<'static>> for KwdjAdapter {
+    fn selection_text<V: editor_core::candidate::CandidateRead<Id = NodeId>>(
+        &self,
+        view: &V,
+        selection: editor_core::positions::Selection<NodeId>,
+        max_bytes: u32,
+        work: &mut editor_core::transaction::WorkMeter,
+    ) -> Result<editor_bridge::SelectionTextData, DiagnosticDto> {
+        let data = editor_kwdj::commands::selected_text(view, selection, max_bytes, work).map_err(
+            |e| match e {
+                editor_kwdj::commands::SelectionTextError::Limit(code) => diagnostic(code, ""),
+                editor_kwdj::commands::SelectionTextError::Invalid => {
+                    diagnostic("position.invalid", "")
+                }
+                editor_kwdj::commands::SelectionTextError::Work(e) => {
+                    let mut d = diagnostic("resource_limit_exceeded", "");
+                    d.details.insert("limit".into(), e.name.into());
+                    d.details.insert("maximum".into(), e.maximum.to_string());
+                    d.details.insert("observed".into(), e.observed.to_string());
+                    d
+                }
+            },
+        )?;
+        Ok(editor_bridge::SelectionTextData {
+            projection_id: "org.klenwriter.kwdj/selection-text/1".into(),
+            text: data.text,
+            empty: data.empty,
+            selected_atoms: data.selected_atoms,
+        })
+    }
     fn decode_command(
         &self,
         key: SessionKey,

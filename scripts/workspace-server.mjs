@@ -15,6 +15,11 @@ const routes = new Map([
   ['/dom', ['spikes/workspace/dom-host.html', 'text/html']],
   ['/dom-native-host.js', ['spikes/workspace/dom-native-host.js', 'text/javascript']],
   ['/dom-host.js', ['spikes/workspace/dom-host.js', 'text/javascript']],
+  ['/selection', ['spikes/workspace/selection.html', 'text/html']],
+  ['/selection-host.js', ['spikes/workspace/selection-host.js', 'text/javascript']],
+  ['/selection-native-host.js', ['spikes/workspace/selection-native-host.js', 'text/javascript']],
+  ['/selection.css', ['spikes/workspace/selection.css', 'text/css']],
+  ['/fixture-fonts/osr40-jetbrains-mono-regular.ttf', ['tests/fixtures/fonts/JetBrainsMono-Regular.ttf', 'font/ttf']],
   ['/notes-dom.mjs', ['examples/notes-extension/dom.mjs', 'text/javascript']],
   ['/dom-inventory.mjs', ['examples/notes-extension/dom-inventory.mjs', 'text/javascript']],
   ['/sdk-host.js', ['spikes/workspace/sdk-host.js', 'text/javascript']],
@@ -39,7 +44,7 @@ for (const name of ['wasm', 'sdk', 'kwdj', 'dom']) {
 }
 // Import maps are static, hash-authorized data. No unsafe-inline/eval or source rewriting.
 const mapHashes = [];
-for (const page of ['sdk-host.html', 'dom-host.html']) {
+for (const page of ['sdk-host.html', 'dom-host.html', 'selection.html']) {
   const html = await readFile(new URL(`spikes/workspace/${page}`, root), 'utf8');
   const maps = [...html.matchAll(/<script type="importmap">([^<]+)<\/script>/g)];
   if (maps.length !== 1) throw new Error(`One static import map required: ${page}`);
@@ -53,11 +58,15 @@ for (const name of domFixtureNames) for (const kind of ['inputs','expected']) {
 const domNegativeNames = ['empty-text-unknown-attrs','empty-text-unknown-field','empty-text-wrong-attrs-shape','absent-color-unknown-attr','absent-color-unknown-field','absent-highlight-unknown-attr','unsafe-javascript-href','notes-version-2','notes-extra-envelope-field','notes-title-one-byte-over','notes-unknown-root-attr','scene-break-unknown-style','scene-break-unknown-onerror','heading-level-seven','notes-wrong-tags-kind'];
 for (const name of domNegativeNames) routes.set(`/dom-fixtures/negative/${name}.json`, [`contracts/dom/v1/negative/${name}.json`, 'application/json']);
 for (const name of ['acceptance-oracles.v3.json','manifest.json']) routes.set(`/dom-fixtures/${name}`, [`contracts/dom/v1/${name}`, 'application/json']);
+for (const name of ['manifest','bookmark-oracles','native-oracles','formatting-oracles','clipboard-oracles','unicode-oracles','scroll-oracles']) {
+  routes.set(`/selection-contract/${name}.json`, [`contracts/selection/v1/${name}.json`, 'application/json']);
+}
 http.createServer(async (req, res) => {
-  res.setHeader('Cache-Control', 'no-store');
-  res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self' 'wasm-unsafe-eval' ${mapHashes.join(' ')}; style-src 'self'; img-src http://127.0.0.1:4174/favicon.ico; connect-src 'self'; base-uri 'none'; object-src 'none'`);
-  res.setHeader('X-Content-Type-Options', 'nosniff');
   const path = new URL(req.url, 'http://localhost').pathname;
+  res.setHeader('Cache-Control', 'no-store');
+  const fixtureFont = path === '/selection' ? '; font-src http://127.0.0.1:4174/fixture-fonts/osr40-jetbrains-mono-regular.ttf' : '';
+  res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self' 'wasm-unsafe-eval' ${mapHashes.join(' ')}; style-src 'self'; img-src http://127.0.0.1:4174/favicon.ico; connect-src 'self'; base-uri 'none'; object-src 'none'${fixtureFont}`);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
   if (req.method !== 'GET') { res.writeHead(405); res.end(); return; }
   // Firefox requests this implicit fixture resource; no authored image is allowed.
   if (path === '/favicon.ico') { res.writeHead(204); res.end(); return; }

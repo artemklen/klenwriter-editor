@@ -13,6 +13,7 @@ const commandNames: Record<KwdjIntentDto['kind'], string> = {
   insert_block: 'insert-block', move: 'move', duplicate: 'duplicate', remove: 'remove',
   accept_slash: 'accept-slash', dismiss_slash: 'dismiss-slash',
   delete_backward: 'delete-backward',
+  delete_selection: 'delete-selection',
 };
 
 /** Numeric metadata, revision/group tokens and ordered-list starts remain strings. */

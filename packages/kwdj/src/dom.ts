@@ -118,7 +118,7 @@ function coveredCommand(id: string, payload: Record<string, unknown>): boolean {
   const name = id.slice(`${prefix}command/`.length);
   if (!id.startsWith(`${prefix}command/`) || payload.kind !== name.replaceAll('-', '_')) return false;
   switch (name) {
-    case 'enter': case 'shift-enter': case 'delete-backward': case 'unset-link': case 'toggle-quote': case 'dismiss-slash':
+    case 'enter': case 'shift-enter': case 'delete-backward': case 'delete-selection': case 'unset-link': case 'toggle-quote': case 'dismiss-slash':
       return closed(payload, ['kind']);
     case 'insert-text': return closed(payload, ['kind', 'text']) && typeof payload.text === 'string';
     case 'toggle-mark': return closed(payload, ['kind', 'mark']) && coveredMark(payload.mark);
@@ -171,6 +171,7 @@ const result = defineRendererCatalog({
   },
   nodes, marks, commandGate,
   input: {
+    deleteSelection: () => kwdjCommand({ kind: 'delete_selection' }),
     insertText: text => kwdjCommand({ kind: 'insert_text', text }),
     enter: () => kwdjCommand({ kind: 'enter' }),
     lineBreak: () => kwdjCommand({ kind: 'shift_enter' }),

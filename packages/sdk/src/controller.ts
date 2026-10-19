@@ -1,20 +1,22 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import { loadSdk, loadSdkV2, verifyLoadedSdk, verifyLoadedSdkV2 } from '@klenwriter/editor-wasm';
-import type { BridgeRequest, EventDto, LazyWasmLoader, LazyWasmLoaderV2, LoadedSdkV1, LoadedSdkV2, OpenOptions, OpenOptionsV2, ProfileDto, RawSdkSessionV1, RawSdkSessionV2, SdkRequest, SdkResponse, SessionContextV2, StampDto, StateDto } from '@klenwriter/editor-wasm';
+import type { BridgeRequestV2, EventDto, LazyWasmLoader, LazyWasmLoaderV2, LoadedSdkV1, LoadedSdkV2, OpenOptions, OpenOptionsV2, ProfileDto, RawSdkSessionV1, RawSdkSessionV2, SdkRequest, SdkResponse, SdkResponseV2, SelectionTextRequestV2, SessionContextV2, StampDto, StateDto } from '@klenwriter/editor-wasm';
 import { copyInput, DataError, freezeData, HARD_REQUEST_BYTES, ownData, plainFields } from './data.js';
 import type { OwnedData } from './data.js';
-import { decodeResponse } from './response.js';
+import { decodeResponse, decodeResponseV2 } from './response.js';
 import { decodeSessionContext } from './context.js';
 
 export type DeepReadonly<T> = T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]> } : T;
 export type Response = DeepReadonly<SdkResponse>;
+export type ResponseV2 = DeepReadonly<SdkResponseV2>;
 type FatalResponse = DeepReadonly<Extract<SdkResponse, { status: 'fatal' }>>;
 export type Lifecycle = 'loading' | 'ready' | 'disposing' | 'destroyed' | 'fatal';
 export type ReadRequest = Extract<SdkRequest, { kind: 'state' | 'catalog' | 'node' | 'map_position' | 'resources' }>;
+export type ReadRequestV2 = ReadRequest | SelectionTextRequestV2;
 export type QueryRequest = Extract<SdkRequest, { kind: 'query_command' | 'query_history' }>;
 export type MutationRequest = Exclude<SdkRequest, ReadRequest | QueryRequest | { kind: 'events' | 'acknowledge_events' }>;
 export type StampedMutation = Extract<MutationRequest, { stamp: StampDto }>;
-export type MutationRequestV2 = Exclude<BridgeRequest, ReadRequest | QueryRequest | { kind: 'events' | 'acknowledge_events' }>;
+export type MutationRequestV2 = Exclude<BridgeRequestV2, ReadRequestV2 | QueryRequest | { kind: 'events' | 'acknowledge_events' }>;
 export type StampedMutationV2 = Extract<MutationRequestV2, { stamp: StampDto }>;
 export type Submission = { readonly status: 'completed'; readonly response: Response } | { readonly status: 'queued'; readonly completion: Promise<Response> };
 export interface ControllerLimits { readonly pending?: number; readonly requestBytes?: number; readonly queuedBytes?: number; readonly listeners?: number }
@@ -108,7 +110,17 @@ export class EditorController {
   originalInput(): Uint8Array | null { return this.#original?.slice() ?? null; }
   capture(): DeepReadonly<StampDto> | null { return this.#lifecycle === 'ready' && this.#state ? this.#state.stamp : null; }
   context(): DeepReadonly<SessionContextV2> | null { return this.#lifecycle === 'ready' ? this.#context : null; }
-  read(request: ReadRequest): Response { return this.#readonly(request, READS); }
+  // The implementation accepts the explicitly negotiated ABI2 extension. Only
+  // the legacy overload is exported on EditorController; its factory's V2 type
+  // adds the new overloads without widening legacy read results or mutations.
+  read(request: ReadRequest): Response;
+  read(request: ReadRequestV2): ResponseV2 {
+    if (this.#lifecycle !== 'ready' || this.#destroyRequested) return this.#unavailable();
+    try {
+      if (plainFields(request).kind?.value === 'selection_text') return this.#selectionText(request as SelectionTextRequestV2);
+    } catch { return this.#readonly(request as ReadRequest, READS); }
+    return this.#readonly(request as ReadRequest, READS);
+  }
   query(request: QueryRequest): Response { return this.#readonly(request, QUERIES); }
 
   submit(request: MutationRequest): Submission {
@@ -262,6 +274,25 @@ export class EditorController {
       return this.#wire(owned.json, false);
     } catch (error) { return this.#refusal(error instanceof DataError ? error.code : 'sdk.invalid_input'); }
   }
+  #selectionText(request: SelectionTextRequestV2): ResponseV2 {
+    if (this.#abi !== 'editor-sdk/2') return this.#refusal('sdk.invalid_request_kind');
+    if (this.#lifecycle !== 'ready' || this.#destroyRequested) return this.#unavailable();
+    let json: string, expectedStamp: DeepReadonly<StampDto>;
+    try {
+      const owned = ownData(request, this.#limits.requestBytes);
+      if (owned.value.kind !== 'selection_text') throw new DataError('sdk.invalid_request_kind');
+      json = owned.json;
+      expectedStamp = owned.value.stamp;
+    } catch (error) { return this.#refusal(error instanceof DataError ? error.code : 'sdk.invalid_input'); }
+    try {
+      const response = decodeResponseV2(this.#raw!.call(json));
+      if (response.status === 'fatal') { this.#terminalFailure = response; this.#dispose('fatal'); }
+      if (response.status === 'ok' && (response.value.kind !== 'selection_text' || !stampEqual(response.value.stamp, expectedStamp))) {
+        return this.#fatal('sdk.invalid_response', false);
+      }
+      return response;
+    } catch { return this.#fatal('sdk.transport_failure', false); }
+  }
   #wire(json: string, mutation: boolean): SdkResponse {
     try {
       const response = decodeResponse(this.#raw!.call(json));
@@ -362,11 +393,14 @@ export class EditorController {
   }
 }
 
-export type EditorControllerV2 = Omit<EditorController, 'submit' | 'completeHostRequest'> & {
+export type EditorControllerV2 = Omit<EditorController, 'read' | 'submit' | 'completeHostRequest'> & {
+  read(request: ReadRequest): Response;
+  read(request: SelectionTextRequestV2): ResponseV2;
+  read(request: ReadRequestV2): ResponseV2;
   submit(request: MutationRequestV2): Submission;
   completeHostRequest(request: HostRequest, mutation: StampedMutationV2): Submission;
 };
 export function createEditor(options: CreateEditorOptionsV2): EditorControllerV2;
 export function createEditor(options: CreateEditorOptionsV1): EditorController;
 export function createEditor(options: AnyCreateEditorOptions): EditorController | EditorControllerV2;
-export function createEditor(options: AnyCreateEditorOptions): EditorController { return new EditorController(options); }
+export function createEditor(options: AnyCreateEditorOptions): EditorController | EditorControllerV2 { return new EditorController(options); }

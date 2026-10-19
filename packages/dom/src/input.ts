@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import type { CommandDto, DeepReadonly, PositionDto, SelectionDto, StampDto, StateDto, Submission } from '@klenwriter/editor-sdk';
 import type { DomRefusal, InputCommandBindings, MountedMutation, RecoveryRegion } from './types.js';
+import type { SelectionOwner } from './selection.js';
 import type { BlockCapture, CapturedBlock, DomView } from './view.js';
 import { domRegionLimits } from './view.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
 export interface InputOwner { destroy(): void; listeners(): number }
 interface InputConfiguration {
-  readonly element: HTMLElement; readonly view: DomView; readonly bindings: InputCommandBindings;
+  readonly element: HTMLElement; readonly view: DomView; readonly bindings: InputCommandBindings; readonly selection: SelectionOwner;
   readonly canEdit: () => boolean; readonly canSelect: () => boolean; readonly busy: () => boolean;
   readonly capture: () => DeepReadonly<StampDto> | null;
   readonly readState: () => DeepReadonly<StateDto> | null;
@@ -20,50 +21,36 @@ interface Pending {
   readonly inputType: string; readonly data: string | null; readonly stamp: DeepReadonly<StampDto>;
   readonly selection: DeepReadonly<SelectionDto>; readonly capture: BlockCapture;
   readonly block: CapturedBlock; readonly parent: Node; readonly previous: ChildNode | null;
-  readonly next: ChildNode | null; readonly anchor: number; readonly focus: number;
+  readonly next: ChildNode | null; readonly anchor: number; readonly focus: number; readonly noncollapsed: boolean;
 }
 const equal = (a: unknown,b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 /** Browser correspondence only: no segmentation, normalization, IDs or semantic edits. */
 export function attachInput(options: InputConfiguration): InputOwner {
   const { element,view } = options, doc = element.ownerDocument;
   const removals: (() => void)[] = [];
-  let destroyed = false, composing = false, syncing = false, pending: Pending | null = null;
-  let tabEntry = false;
+  let destroyed = false, composing = false, pending: Pending | null = null;
   const failure = (code: DomRefusal['diagnostic']['code']) => domRefusal(code,'command',options.capture());
   const listen = (target: EventTarget,name: string,callback: EventListener) => {
     target.addEventListener(name,callback); removals.push(() => target.removeEventListener(name,callback));
   };
   function refused(code: DomRefusal['diagnostic']['code']) { const value = failure(code); options.report(value); return value; }
-  function syncSelection(): DeepReadonly<SelectionDto> | DomRefusal | null {
-    const selection = view.readSelection();
-    if (!selection || isDomRefusal(selection)) return selection;
-    const state = options.readState();
-    if (!state) return refused('dom.not_ready');
-    if (!equal(state.selection,selection)) {
-      syncing = true;
-      let result: Submission | DomRefusal;
-      try { result = options.submit({kind:'set_selection',stamp:state.stamp as StampDto,selection:selection as SelectionDto}); }
-      finally { syncing = false; }
-      if (isDomRefusal(result)) return result;
-      if (result.status !== 'completed' || result.response.status !== 'ok') return refused('dom.busy');
-    }
-    return selection;
-  }
-  function command(inputType: string,data: string | null): CommandDto | null {
+  const syncSelection = () => options.selection.syncFromDom();
+  function command(inputType: string,data: string | null,noncollapsed = doc.getSelection()?.isCollapsed === false): CommandDto | null {
     switch (inputType) {
       case 'insertText': case 'insertReplacementText': return typeof data === 'string' ? options.bindings.insertText?.(data) ?? null : null;
       case 'insertParagraph': return options.bindings.enter?.() ?? null;
       case 'insertLineBreak': return options.bindings.lineBreak?.() ?? null;
-      case 'deleteContentBackward': return options.bindings.deleteBackward?.() ?? null;
+      case 'deleteContentBackward': return noncollapsed ? options.bindings.deleteSelection?.() ?? null : options.bindings.deleteBackward?.() ?? null;
+      case 'deleteContentForward': return noncollapsed ? options.bindings.deleteSelection?.() ?? null : null;
       default: return null;
     }
   }
-  function submit(inputType: string,data: string | null): Submission | DomRefusal {
+  function submit(inputType: string,data: string | null,noncollapsed?:boolean): Submission | DomRefusal {
     const stamp = options.capture();
     if (!stamp) return refused('dom.not_ready');
     if (inputType === 'historyUndo' || inputType === 'historyRedo') return options.submit({kind:'history',stamp:stamp as StampDto,direction:inputType === 'historyUndo' ? 'undo' : 'redo'});
     let dto: CommandDto | null;
-    try { dto = command(inputType,data); } catch { return refused('dom.command_unsupported'); }
+    try { dto = command(inputType,data,noncollapsed); } catch { return refused('dom.command_unsupported'); }
     if (!dto) return refused('dom.command_unsupported');
     return options.submit({kind:'command',stamp:stamp as StampDto,command:dto,history_hint:{kind:'isolated'}});
   }
@@ -135,7 +122,7 @@ export function attachInput(options: InputConfiguration): InputOwner {
     if (isDomRefusal(capture)) { preserve('dom.reconcile_limit'); return; }
     const refusal = view.beginProvisional(stamp,affected);
     if (refusal) { preserve(refusal.diagnostic.code); return; }
-    pending = {inputType:event.inputType,data:event.data,stamp,selection,capture,block,parent,previous,next:block.element.nextSibling,anchor,focus};
+    pending = {inputType:event.inputType,data:event.data,stamp,selection,capture,block,parent,previous,next:block.element.nextSibling,anchor,focus,noncollapsed:doc.getSelection()?.isCollapsed===false};
   }
   function bounded(node: Node): string | null { const result = view.boundedText(node); return isDomRefusal(result) ? null : result; }
   function observed(p: Pending): boolean {
@@ -156,8 +143,9 @@ export function attachInput(options: InputConfiguration): InputOwner {
       if (right === '\n' && sibling.childNodes.length === 1 && sibling.firstChild?.nodeType === 1 && (sibling.firstChild as Element).tagName === 'BR') right = '';
       return right !== null && live === before.slice(0,a) && right === before.slice(b);
     }
-    if (p.inputType === 'deleteContentBackward') {
+    if (p.inputType === 'deleteContentBackward' || p.inputType === 'deleteContentForward') {
       if (a !== b) return live === before.slice(0,a)+before.slice(b);
+      if (p.inputType === 'deleteContentForward') return false;
       if (a > 0) {
         // Only observe a contiguous deletion ending at the captured caret. Native
         // pinned EGC admission chooses its exact boundary; JS never segments text.
@@ -182,18 +170,19 @@ export function attachInput(options: InputConfiguration): InputOwner {
     if (capture?.kind === 'retained_dom') { preserve('dom.reconcile_limit',capture); return; }
     // Retain owned provisional data before native publication is allowed to patch.
     pending = null; view.endProvisional();
-    const result = submit(p.inputType,p.data);
+    const result = submit(p.inputType,p.data,p.noncollapsed);
     if (isDomRefusal(result) || result.status !== 'completed' || result.response.status !== 'ok') {
       options.recover(failure('dom.recovery_required'),capture); return;
     }
     // Native is authoritative, but a different browser deletion must remain visible
     // as recovered provisional input rather than an unreported substitution.
-    if (p.inputType === 'deleteContentBackward' && p.anchor > 0) {
+    if ((p.inputType === 'deleteContentBackward' || p.inputType === 'deleteContentForward') && p.anchor > 0) {
       const after = view.captureBlocks([p.block.id]);
       if (isDomRefusal(after) || capture?.kind === 'bounded' && after.blocks[0]?.originalText !== capture.provisionalText) options.recover(domRefusal('dom.presentation_unsupported','render',options.capture(),null,null,'alreadyPublished'),capture);
     }
   }
   listen(element,'beforeinput',event => {
+    options.selection.invalidate(); options.selection.cancel();
     const input = event as InputEvent;
     if (destroyed) return;
     if (!options.canEdit()) { if (input.cancelable) input.preventDefault(); refused('dom.mode_blocked'); return; }
@@ -213,32 +202,8 @@ export function attachInput(options: InputConfiguration): InputOwner {
     else begin(input,selection);
   });
   listen(element,'input',event => { if (!destroyed) reconcile(event as InputEvent); });
-  // Safari may create a new start-of-host caret when Tab enters an editing
-  // host. Restore the current native selection before that incidental browser
-  // selection can be published. Pointer entry keeps its own selection intent.
-  listen(doc,'keydown',event => {
-    const key = event as KeyboardEvent;
-    tabEntry = !destroyed && key.key === 'Tab' && !key.altKey && !key.ctrlKey && !key.metaKey
-      && key.target instanceof Node && !element.contains(key.target);
-  });
-  listen(doc,'keyup',event => { if ((event as KeyboardEvent).key === 'Tab') tabEntry = false; });
-  listen(doc,'pointerdown',() => { tabEntry = false; });
-  if (doc.defaultView) listen(doc.defaultView,'blur',() => { tabEntry = false; });
-  listen(doc,'focusin',event => {
-    const returning = tabEntry; tabEntry = false;
-    if (!returning || event.target !== element || destroyed || syncing || composing || pending
-      || !options.canSelect() || options.busy() || view.hasProvisional()) return;
-    const state = options.readState();
-    if (!state?.selection) return;
-    const refusal = view.restoreSelection(state.selection);
-    if (refusal) options.recover(refusal,view.captureRegion());
-  });
-  listen(doc,'selectionchange',() => {
-    if (destroyed || syncing || composing || pending || !options.canSelect() || options.busy() || view.hasProvisional()) return;
-    const selection = doc.getSelection();
-    if (selection?.anchorNode && selection.focusNode && element.contains(selection.anchorNode) && element.contains(selection.focusNode)) syncSelection();
-  });
   listen(element,'compositionstart',() => {
+    options.selection.invalidate(); options.selection.cancel();
     if (destroyed || !options.canEdit()) return;
     const stamp = options.capture();
     composing = true;

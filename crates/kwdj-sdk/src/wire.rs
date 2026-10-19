@@ -174,6 +174,7 @@ pub enum KwdjIntentDto {
     },
     DismissSlash {},
     DeleteBackward {},
+    DeleteSelection {},
 }
 
 #[cfg_attr(

@@ -1,7 +1,9 @@
 # Разработка
 
 Это библиотека с headless Session SDK и [basic mounted DOM adapter](docs/dom.md).
-Полные selection/IME/clipboard/UI и vanilla alpha выполняются следующими задачами.
+[Mounted selection](docs/selection.md), bookmarks, edge autoscroll и минимальные
+plaintext copy/cut реализованы поверх SDK2. Полные IME41, clipboard47, UI66 и
+vanilla alpha остаются отдельными задачами и acceptance gates.
 Следуйте [архитектуре](docs/m0/architecture.md)
 и контракту задачи Linear. Реализуйте общую семантику на Rust; KWDJ остаётся отдельным
 профилем. CMS, DB, Angular и browser runtime не входят в native core/profile closure.
@@ -124,6 +126,17 @@ native public-API replay и actual packaged SDK, границы лимитов �
 inventory. Она входит в локальный pre-send gate; [контракт и команды](docs/reliability.md)
 описывают source/build pins и отдельные performance measurements.
 
+`npm run test:dom` сохраняет basic39 renderer/input, bounded reconciliation и
+recovery assertions. `npm run test:selection` после build проверяет неизменность
+pre-candidate selection contracts, native/compiled-WASM comparator, отдельные
+Node suites и mounted browser cases во всех трёх configured engines. Controlled
+SDK/platform tests явно отделены от настоящих Rust/WASM/browser путей. Lane входит
+в `npm run check`; [руководство](docs/selection.md) описывает API, границы и
+отдельный installed Chrome/Safari EN/RU протокол. Команды native39 в
+[DOM guide](docs/dom.md#installed-native-input-на-macos) остаются foundation,
+а не доказательством новых selection40 сценариев. До фактического выполнения
+протокола никакой native40 pass не подразумевается.
+
 ## Артефакты и ограничения
 
 `artifacts/dependencies.json` содержит зафиксированные direct/transitive версии,
@@ -144,7 +157,8 @@ linker входят в build environment; performance regression проверя�
 Фактическая publisher authorization и registry write проверяются заново
 непосредственно перед publish в OSR-71.
 Нельзя публиковать bootstrap tarballs как alpha. Native codec извлечён в OSR-29;
-WASM/SDK предоставляют headless Session ABI1 и явно выбираемый ABI2. Basic DOM mount выполняется в OSR-39; полный vanilla/Angular
+WASM/SDK предоставляют headless Session ABI1 и явно выбираемый ABI2. Basic DOM mount39
+и selection40 используют тот же SDK2 owner; полный vanilla/Angular
 alpha остаётся отдельными задачами; пакеты пока не являются alpha release.
 
 ## Изменения

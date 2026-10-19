@@ -156,6 +156,15 @@ where
     P: CommandProvider + RegistryProfile,
     A: BridgeAdapter<P>,
 {
+    fn selection_text<V: editor_core::candidate::CandidateRead<Id = NodeId>>(
+        &self,
+        view: &V,
+        selection: editor_core::positions::Selection<NodeId>,
+        max_bytes: u32,
+        work: &mut WorkMeter,
+    ) -> Result<crate::SelectionTextData, DiagnosticDto> {
+        self.inner.selection_text(view, selection, max_bytes, work)
+    }
     fn decode_command(
         &self,
         key: SessionKey,

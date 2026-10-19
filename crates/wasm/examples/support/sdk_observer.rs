@@ -414,6 +414,7 @@ fn command_literals(v: &Value) -> Value {
             // one compiled command to the shipped provider inventory.
             assert_eq!(catalog_expected.len(), 15);
             catalog_expected.push(json!("org.klenwriter.kwdj/command/delete-backward"));
+            catalog_expected.push(json!("org.klenwriter.kwdj/command/delete-selection"));
             assert_eq!(catalog["commands"], Value::Array(catalog_expected.clone()));
         }
         destroy(&mut bridge);

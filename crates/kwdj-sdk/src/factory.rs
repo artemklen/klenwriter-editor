@@ -152,6 +152,11 @@ impl Endpoint for KwdjEndpoint {
         if let Some(response) = self.inner.retained_fatal_response() {
             return self.inner.encode_response(response);
         }
+        if let Ok(request) = decode::<editor_protocol::v2::SelectionTextRequestV2>(json) {
+            return self
+                .inner
+                .call_json_v2(&serde_json::to_string(&request).expect("closed read serializes"));
+        }
         let response = match decode::<SdkRequest>(json) {
             Ok(request) => dispatch_kwdj(&mut self.inner, request),
             Err(diagnostic) => SdkResponse::Refused { diagnostic },
@@ -227,7 +232,14 @@ mod tests {
         assert!(matches!(session.initialization(), SdkResponse::Ok { .. }));
         assert!(session.context().is_some());
         let catalog = call(&mut session, json!({"kind":"catalog"}));
-        assert_eq!(catalog["value"]["commands"].as_array().unwrap().len(), 17);
+        assert_eq!(catalog["value"]["commands"].as_array().unwrap().len(), 18);
+        assert!(
+            catalog["value"]["commands"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|v| v == "org.klenwriter.kwdj/command/delete-selection")
+        );
         assert!(
             catalog["value"]["commands"]
                 .as_array()

@@ -16,6 +16,32 @@ use std::path::Path;
 
 const BUILD: &str = "notes-factory-native-fixture";
 
+#[test]
+fn abi2_selected_text_is_explicitly_unsupported_by_notes_without_state_change() {
+    let input = include_bytes!("../../../contracts/dom/v1/inputs/Notes-D0.json");
+    let mut session = distribution().open(input, &options(false).to_string());
+    let id = path(&mut session, &[json!(0), json!(0)]);
+    let st = state(&mut session);
+    let selected = call(
+        &mut session,
+        json!({"kind":"set_selection","stamp":st["stamp"],"selection":{"anchor":{"kind":"text","node":id,"offset":0,"affinity":"after"},"focus":{"kind":"text","node":id,"offset":1,"affinity":"after"}}}),
+    );
+    assert_eq!(selected["status"], "ok", "{selected}");
+    let before = state(&mut session);
+    let resources = session.own_resource_counts();
+    let result = call(
+        &mut session,
+        json!({"kind":"selection_text","stamp":before["stamp"],"max_bytes":1024}),
+    );
+    assert_eq!(
+        result,
+        json!({"status":"refused","diagnostic":{"code":"profile.selection_text_unsupported","path":"","category":"sdk","details":{},"stamp":before["stamp"],"may_have_committed":false}})
+    );
+    assert_eq!(state(&mut session), before);
+    assert_eq!(session.own_resource_counts(), resources);
+    session.destroy();
+}
+
 fn distribution() -> Distribution {
     Distribution::new(BUILD, vec![Box::new(NotesFactory)]).unwrap()
 }

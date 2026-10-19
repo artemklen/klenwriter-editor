@@ -95,7 +95,9 @@ async function open(input = document('abc'), optionOverrides = {}, controllerOve
 test('packaged SDK: real catalog, text command, revisioned reads, snapshot and exact undo/redo', async () => {
   const context = await open(); const { editor } = context;
   try {
-    assert.equal(accepted(editor.read({ kind: 'catalog' })).commands.length, 16);
+    const commands = accepted(editor.read({ kind: 'catalog' })).commands;
+    assert.equal(commands.length, 17);
+    assert(commands.includes('org.klenwriter.kwdj/command/delete-selection'));
     const leaf = textLeaf(editor).id; select(editor, leaf, 2);
     const events = []; editor.subscribe(event => events.push(event));
     const before = editor.capture();

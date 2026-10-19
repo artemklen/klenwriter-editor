@@ -236,9 +236,9 @@ export async function exerciseNotes(port, packet) {
   return { module: 'present', codec: cases, commands, runtimeRecipe: 'passed', simultaneousFrozenD0D1: port.multiple };
 }
 
-// Frozen mandatory inventory: the original15 remain, with OSR-39 appended16th.
+// Mandatory inventory: original15, OSR-39 appended16th, OSR-40 appended17th.
 // SDK2 advertises ASCII-sorted registry IDs. This packet selects no KWDJ recipe;
-// the separate compiled/runtime recipe gates cover base16 plus one recipe17.
+// the separate compiled/runtime recipe gates cover base17 plus one recipe18.
 const kwdjMandatoryCommands = Object.freeze([
   'org.klenwriter.kwdj/command/enter',
   'org.klenwriter.kwdj/command/shift-enter',
@@ -256,6 +256,7 @@ const kwdjMandatoryCommands = Object.freeze([
   'org.klenwriter.kwdj/command/accept-slash',
   'org.klenwriter.kwdj/command/dismiss-slash',
   'org.klenwriter.kwdj/command/delete-backward',
+  'org.klenwriter.kwdj/command/delete-selection',
 ].sort());
 
 export async function exerciseKwdj(port, packet) {
@@ -283,7 +284,7 @@ export async function exerciseKwdj(port, packet) {
         if (c.expectedCanonical !== undefined && c.expectedCanonical !== null) equal(actual, c.expectedCanonical, `${c.id}: KWDJ literal canonical`);
         else equal(JSON.parse(actual), JSON.parse(c.input), `${c.id}: independently constructed resource semantics`);
         check((await handle.context()).build_id === port.manifest.build_id, 'KWDJ build context');
-        equal(ok(await handle.call({ kind: 'catalog' })).commands, kwdjMandatoryCommands, 'KWDJ exact mandatory16 catalog');
+        equal(ok(await handle.call({ kind: 'catalog' })).commands, kwdjMandatoryCommands, 'KWDJ exact mandatory17 catalog');
         if (!checkedDeleteBackward) {
           const before = await state(handle), beforeIds = await identities(handle), beforeEvents = await events(handle);
           equal(before.selection, null, 'KWDJ initial selection for strict command admission');

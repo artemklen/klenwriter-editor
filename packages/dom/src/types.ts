@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-// OSR-39 public contract, frozen before adapter implementation.
-import type { CommandDto, CreateEditorOptionsV2, DeepReadonly, EditorControllerV2, EventDto, MarkDto, MutationRequestV2, NodeViewDto, ProfileDto, QueryRequest, ReadRequest, Response, StampDto, Submission } from '@klenwriter/editor-sdk';
+// OSR-40 adds selection/clipboard capabilities; the OSR-39 contract snapshot remains frozen.
+import type { CommandDto, CreateEditorOptionsV2, DeepReadonly, EditorControllerV2, EventDto, MarkDto, MutationRequestV2, NodeViewDto, ProfileDto, QueryRequest, ReadRequest, ReadRequestV2, Response, ResponseV2, SelectionDto, SelectionTextRequestV2, SessionContextV2, StampDto, Submission } from '@klenwriter/editor-sdk';
 export type InteractionMode = 'editable' | 'readOnly' | 'disabled';
 export type MountedLifecycle = 'loading' | 'ready' | 'recoveryRequired' | 'disposing' | 'destroyed' | 'fatal';
-export type DomCode = 'dom.invalid_options' | 'dom.not_ready' | 'dom.disposed' | 'dom.renderer_binding_mismatch' | 'dom.renderer_missing' | 'dom.presentation_unsupported' | 'dom.command_unsupported' | 'dom.explicit_method_required' | 'dom.composition_conflict' | 'dom.mode_blocked' | 'dom.native_read_only' | 'dom.busy' | 'dom.stale_replace' | 'dom.reconcile_limit' | 'dom.recovery_required' | 'dom.recovery_callback_failed';
+export type DomCode = 'dom.invalid_options' | 'dom.not_ready' | 'dom.disposed' | 'dom.renderer_binding_mismatch' | 'dom.renderer_missing' | 'dom.presentation_unsupported' | 'dom.command_unsupported' | 'dom.explicit_method_required' | 'dom.composition_conflict' | 'dom.mode_blocked' | 'dom.native_read_only' | 'dom.busy' | 'dom.stale_replace' | 'dom.reconcile_limit' | 'dom.recovery_required' | 'dom.recovery_callback_failed' | 'dom.invalid_bookmark' | 'dom.stale_selection' | 'dom.selection_unsynchronized' | 'dom.selection_missing' | 'dom.selection_limit' | 'dom.clipboard_unavailable' | 'dom.clipboard_write_failed' | 'dom.clipboard_timeout' | 'dom.selection_geometry_unsupported';
 export interface DomDiagnostic {
   readonly code: DomCode;
-  readonly phase: 'mount' | 'command' | 'render' | 'replace' | 'mode' | 'destroy';
+  readonly phase: 'mount' | 'command' | 'render' | 'replace' | 'mode' | 'destroy' | 'selection' | 'clipboard';
   readonly stamp: DeepReadonly<StampDto> | null;
   readonly node: string | null;
   readonly typeId: string | null;
@@ -32,7 +32,7 @@ export interface TrustedRegistryInventory { readonly nodes: readonly RegistryNod
 export interface NodeRendererDefinition { readonly primitive: string; readonly attributes: readonly string[]; readonly present: (node: DeepReadonly<NodeViewDto>) => DomPresentation | DomRefusal }
 export interface MarkRendererDefinition { readonly attributes: readonly string[]; readonly present: (mark: DeepReadonly<MarkDto>) => DomPresentation | DomRefusal }
 /** Data-only command construction for browser gestures; semantics remain native. */
-export interface InputCommandBindings { readonly insertText?: (text: string) => CommandDto; readonly enter?: () => CommandDto; readonly lineBreak?: () => CommandDto; readonly deleteBackward?: () => CommandDto }
+export interface InputCommandBindings { readonly insertText?: (text: string) => CommandDto; readonly enter?: () => CommandDto; readonly lineBreak?: () => CommandDto; readonly deleteBackward?: () => CommandDto; readonly deleteSelection?: () => CommandDto }
 export interface RendererCatalogDefinition {
   readonly binding: Readonly<{ buildId: string; profile: DeepReadonly<ProfileDto>; registryDigest: string }>;
   readonly inventory: TrustedRegistryInventory;
@@ -43,14 +43,18 @@ export interface RendererCatalogDefinition {
 }
 /** Created only by defineRendererCatalog; opaque trusted capability witness. */
 export interface RendererCatalog { readonly definition: RendererCatalogDefinition; readonly __rendererCatalog: unique symbol }
-export interface MountEditorOptions { readonly element: HTMLElement; readonly editor: CreateEditorOptionsV2; readonly renderers: RendererCatalog; readonly mode?: InteractionMode; readonly onRecovery?: (packet: RecoveryPacket) => void; readonly onRefusal?: (failure: DomRefusal) => void }
-export interface MountedResourceCounts { readonly sdk: ReturnType<EditorControllerV2['resources']>; readonly dom: Readonly<{ listeners: number; observers: number; continuations: number; retainedInputBytes: number; retainedRecoveryRegions: number }> }
+export interface MountEditorOptions { readonly element: HTMLElement; readonly editor: CreateEditorOptionsV2; readonly renderers: RendererCatalog; readonly mode?: InteractionMode; readonly onRecovery?: (packet: RecoveryPacket) => void; readonly onRefusal?: (failure: DomRefusal) => void; readonly clipboard?: ClipboardConfiguration }
+export interface MountedResourceCounts { readonly sdk: ReturnType<EditorControllerV2['resources']>; readonly dom: Readonly<{ listeners: number; observers: number; continuations: number; retainedInputBytes: number; retainedRecoveryRegions: number }>; readonly selection: SelectionResourceCounts; readonly clipboard: ClipboardResourceCounts }
 export interface MountedEditor {
   readonly ready: Promise<MountedReady>;
   readonly lifecycle: MountedLifecycle;
   capture(): ReturnType<EditorControllerV2['capture']>;
   context(): ReturnType<EditorControllerV2['context']>;
+  readonly selection: MountedSelectionController;
+  readonly clipboard: MountedClipboardController;
   read(request: ReadRequest): Response | DomRefusal;
+  read(request: SelectionTextRequestV2): ResponseV2 | DomRefusal;
+  read(request: ReadRequestV2): ResponseV2 | DomRefusal;
   query(request: QueryRequest): Response | DomRefusal;
   submit(request: MountedMutation): MountedSubmission;
   subscribe(listener: (event: DeepReadonly<EventDto>) => void): ReturnType<EditorControllerV2['subscribe']> | DomRefusal;
@@ -61,3 +65,44 @@ export interface MountedEditor {
   nativeResources(): ReturnType<EditorControllerV2['nativeResources']>;
   originalInput(): Uint8Array | null;
 }
+
+export interface SelectionBookmark {
+  readonly selection: DeepReadonly<SelectionDto> | null;
+  readonly stamp: DeepReadonly<StampDto>;
+  readonly context: DeepReadonly<SessionContextV2>;
+  readonly __selectionBookmark: unique symbol;
+}
+export interface SelectionReadFailure { readonly status: 'sdk_failure'; readonly response: Response }
+export type BookmarkCapture = { readonly status: 'captured'; readonly bookmark: SelectionBookmark } | DomRefusal | SelectionReadFailure;
+export type BookmarkRestore = Submission | DomRefusal | SelectionReadFailure;
+export interface MountedSelectionController {
+  captureBookmark(): BookmarkCapture;
+  restoreBookmark(bookmark: SelectionBookmark, options?: { readonly policy?: 'exact' | 'mapped'; readonly focus?: boolean }): BookmarkRestore;
+  releaseBookmark(bookmark: SelectionBookmark): boolean;
+}
+export interface SelectionResourceCounts {
+  readonly bookmarks: number;
+  readonly restoreTickets: number;
+  readonly activePointers: number;
+  readonly animationFrames: number;
+}
+
+export type ClipboardFailure = DomRefusal | SelectionReadFailure | { readonly status: 'native_unavailable'; readonly response: Response };
+export interface ClipboardOutcome {
+  readonly action: 'copy' | 'cut';
+  readonly status: 'copied' | 'cut' | 'empty' | 'refused' | 'write_failed' | 'copied_but_not_cut' | 'indeterminate';
+  readonly clipboard: 'not_attempted' | 'confirmed' | 'unconfirmed';
+  readonly failure: ClipboardFailure | null;
+  /** Original native command ticket; never fabricated from a read/query. */
+  readonly submission: Submission | null;
+}
+export interface MountedClipboardController {
+  copy(): Promise<ClipboardOutcome>;
+  cut(): Promise<ClipboardOutcome>;
+}
+export interface ClipboardConfiguration {
+  /** Trusted host platform adapter; default is this document's navigator.clipboard.writeText. */
+  readonly writeText?: (text: string) => Promise<void>;
+  readonly onResult?: (outcome: ClipboardOutcome) => void;
+}
+export interface ClipboardResourceCounts { readonly pending: number; readonly continuations: number; readonly retainedTextBytes: number }

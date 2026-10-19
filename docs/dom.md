@@ -1,10 +1,14 @@
-# DOM renderer и mounted SDK · OSR-39
+# DOM renderer и mounted SDK · OSR-39/40
 
 `@klenwriter/editor-dom` создаёт одну редактируемую поверхность вокруг существующего
 headless SDK2. Rust определяет документ, selection, IDs, команды, normalization и
 history; DOM хранит только соответствие с текущим native view и ограниченный
 provisional input. Контракт и независимые ожидаемые документы закреплены до кода
 в [contracts/dom/v1](../contracts/dom/v1/README.md).
+Selection/bookmarks, bounded edge autoscroll и минимальные plaintext copy/cut
+описаны в [практическом руководстве](selection.md); их additive контракт —
+[contracts/selection/v1](../contracts/selection/v1/README.md). Frozen basic39
+контракт и его literals сохраняются.
 
 ## Подключение
 
@@ -75,9 +79,11 @@ UI-покрытие, а семантическую допустимость и �
 
 Cancelable обычный input предотвращает browser default и вызывает native команду
 синхронно. Native KWDJ DeleteBackward — command16: предыдущий pinned EGC через
-соседние стили или совместимый paragraph/heading join. Весь диапазон удаляется одной
-командой; before-history содержит исходный selection. SDK1/2 получают одинаковый
-закрытый DTO. Старые15 payload/edit vectors сохранены, persisted schema не меняется.
+соседние стили или совместимый paragraph/heading join. Noncollapsed Backspace/Delete
+вызывает command17 DeleteSelection; collapsed Backspace сохраняет command16.
+Before-history содержит исходный selection. SDK1/2 получают одинаковый закрытый
+KWDJ DTO; новый mounted SDK2 read selection_text возвращает bounded native plaintext
+projection. Старые payload/edit vectors сохранены, persisted schema не меняется.
 
 Noncancelable text/split/join сопоставляется с ограниченным affected DOM region и
 публикуется через native команду. Клонированный HTML id не даёт model identity.
@@ -106,8 +112,9 @@ document event или history unit; final selection restore остаётся о�
 Один focus-return не меняет native stamp, документ, history или identities; после
 редактирования используется текущая каретка, а не начальная позиция mount.
 Это узкий keyboard-entry guard с проверками lifecycle/busy/provisional/composing,
-не перехват намеренного pointer selection. Полные selection/bookmarks, keyboard
-navigation и bidirectional edge autoscroll остаются OSR-40.
+не перехват намеренного pointer selection. SelectionOwner теперь также обслуживает
+owned keyboard/pointer selection, явные bookmarks и bidirectional edge autoscroll;
+точные правила stale/focus/visibility и ресурсы приведены в [selection guide](selection.md).
 
 Активный composing subtree защищён. Совместимое редактирование другой области
 проверяет, что защищённые objects/rows не меняются; конфликт явно отказывается.
@@ -155,11 +162,17 @@ provisional DOM и recovery receipt, оставляя committed state неизм
 Это отдельный preservation oracle, а не proof ordinary RU commit или IME settlement.
 Fixture CSP разрешает только точный local `/favicon.ico` с ответом204 для
 автоматического запроса браузера; default/script/style ограничения и проверка
-отсутствия CSP violations сохраняются. Полные selection/IME/clipboard/domain/security/alpha
-acceptance остаются соответствующим OSR-40/41/47/50/67/65. CI остаётся build-only;
+отсутствия CSP violations сохраняются. `npm run test:selection` добавляет отдельные
+native/WASM, controlled controller/platform и mounted selection cases; наличие
+реализации не заменяет фактическое acceptance evidence. Полные IME/clipboard/domain/
+security/alpha acceptance остаются соответствующим OSR-41/47/50/67/65. CI остаётся build-only;
 обязательные проверки выполняются локально на точной поставляемой ревизии.
 
 ### Installed native input на macOS
+
+Ниже сохранён basic39 foundation protocol. Расширение installed Chrome/Safari EN/RU
+протокола для selection40 (в том числе held drag и OS clipboard readback) требует
+отдельной проверки; эти команды сами по себе не утверждают покрытие selection40.
 
 После локального pre-send gate используйте pinned Node 24.22.0, установленные Chrome и
 Safari и уже выданные macOS Automation/Accessibility grants. Для первоначального

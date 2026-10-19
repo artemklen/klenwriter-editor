@@ -1,0 +1,37 @@
+/* Acceptance fixture only. These fixed boxes are not product layout rules. */
+@font-face {
+  font-family: 'OSR40FixtureMono';
+  src: url('/fixture-fonts/osr40-jetbrains-mono-regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+}
+html, body { margin: 0; padding: 0; }
+body.selection-scroll-case { overflow: clip; width: 1024px; height: 768px; }
+#selection-host-control { position: absolute; left: 780px; top: 12px; width: 180px; }
+#selection-status { position: absolute; left: 780px; top: 48px; width: 220px; }
+.selection-example { margin: 8px; padding: 8px; }
+.selection-clip { position: absolute; left: 96px; top: 100px; width: 648px; height: 180px; overflow: clip; }
+.selection-scrollport { position: absolute; left: 100px; top: 80px; width: 640px; height: 240px; overflow: auto; overscroll-behavior: contain; scrollbar-width: none; }
+.selection-clip > .selection-scrollport { left: 4px; top: -20px; }
+.selection-scrollport::-webkit-scrollbar { width: 0; height: 0; }
+.selection-clip, .selection-scrollport, .selection-scrollport * {
+  border-radius: 0; clip-path: none; mask: none; transform: none;
+  scroll-behavior: auto; scroll-snap-type: none; transition: none; animation: none;
+}
+.selection-scrollport, .selection-clip { border: 0; padding: 0; margin: 0; box-sizing: content-box; }
+.selection-scrollport > .selection-example {
+  box-sizing: border-box; display: block; width: 100%; margin: 0; border: 0;
+  padding: 20px 0 40px; min-height: 0; overflow: visible;
+  font: 400 16px/24px 'OSR40FixtureMono'; font-kerning: none;
+  font-variant-ligatures: none; letter-spacing: 0; word-spacing: 0;
+  direction: ltr; writing-mode: horizontal-tb; text-align: left; text-indent: 0;
+}
+.selection-scrollport p, .selection-scrollport hr, .selection-scrollport .editor-scene-break {
+  box-sizing: border-box; display: block; height: 24px; margin: 0; padding: 0;
+  border: 0; white-space: pre; overflow-wrap: normal; word-break: normal;
+}
+.selection-scrollport hr { border-top: 1px solid currentColor; }
+.selection-scrollport blockquote, .selection-scrollport ul, .selection-scrollport li {
+  display: block; margin: 0; padding: 0; border: 0; list-style: none;
+}

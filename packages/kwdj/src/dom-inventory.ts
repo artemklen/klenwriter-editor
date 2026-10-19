@@ -20,6 +20,14 @@ export const kwdjDomInventory = {
     },
     {
       "descriptor": {
+        "id": "org.klenwriter.kwdj/command/delete-selection",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/delete-selection",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
         "id": "org.klenwriter.kwdj/command/dismiss-slash",
         "kind": "compiled"
       },
@@ -141,6 +149,7 @@ export const kwdjDomInventory = {
     "commands": [
       "org.klenwriter.kwdj/command/accept-slash",
       "org.klenwriter.kwdj/command/delete-backward",
+      "org.klenwriter.kwdj/command/delete-selection",
       "org.klenwriter.kwdj/command/dismiss-slash",
       "org.klenwriter.kwdj/command/duplicate",
       "org.klenwriter.kwdj/command/enter",
@@ -1410,5 +1419,5 @@ export const kwdjDomInventory = {
     "profile_version": "1.0.0",
     "wire_version": 1
   },
-  "registryDigest": "ca5fa04f7043a6fa924ebaed420fff719f49b5fe0bcb34f7ea05c67adccaff02"
+  "registryDigest": "5f342288843be336a343f3989db50ef2128f6cad2a66493fbcbf318e4dde81af"
 } as const;
