@@ -1,21 +1,31 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-import type { CommandDto, DeepReadonly, PositionDto, SelectionDto, StampDto, StateDto, Submission } from '@klenwriter/editor-sdk';
-import type { DomRefusal, InputCommandBindings, MountedMutation, RecoveryRegion } from './types.js';
+import type { CommandDto, DeepReadonly, PositionDto, SelectionDto, SessionContextV2, StampDto, StateDto, Submission } from '@klenwriter/editor-sdk';
+import type { CompositionRecovery, DomRefusal, InputCommandBindings, MountedMutation, RecoveryRegion } from './types.js';
 import type { SelectionOwner } from './selection.js';
 import type { BlockCapture, CapturedBlock, DomView } from './view.js';
 import { domRegionLimits } from './view.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
-export interface InputOwner { destroy(): void; listeners(): number }
+import { CompositionOwner } from './composition.js';
+export interface InputOwner {
+  destroy(): void; listeners(): number;
+  isProtected(): boolean; isCommitting(): boolean;
+  retained(reason?:CompositionRecovery['reason']): ReturnType<CompositionOwner['retained']>;
+  resources(): { readonly continuations:number; readonly retainedInputBytes:number; readonly retainedRecoveryRegions:number };
+  externalSubmission(request:MountedMutation,result:Submission|DomRefusal):void;
+}
 interface InputConfiguration {
   readonly element: HTMLElement; readonly view: DomView; readonly bindings: InputCommandBindings; readonly selection: SelectionOwner;
   readonly canEdit: () => boolean; readonly canSelect: () => boolean; readonly busy: () => boolean;
   readonly capture: () => DeepReadonly<StampDto> | null;
+  readonly context: () => DeepReadonly<SessionContextV2> | null;
   readonly readState: () => DeepReadonly<StateDto> | null;
   readonly submit: (request: MountedMutation) => Submission | DomRefusal;
+  readonly submitComposition: (request: MountedMutation) => Submission | DomRefusal;
   readonly report: (failure: DomRefusal) => unknown;
-  readonly recover: (failure: DomRefusal, region?: RecoveryRegion | null) => void;
+  readonly recover: (failure: DomRefusal, region?: RecoveryRegion | null, composition?: CompositionRecovery | null) => void;
   readonly composing: (active: boolean) => void;
   readonly consumeRecords: () => number;
+  readonly onResources?: (resources:ReturnType<CompositionOwner['resources']>) => void;
 }
 interface Pending {
   readonly inputType: string; readonly data: string | null; readonly stamp: DeepReadonly<StampDto>;
@@ -28,7 +38,7 @@ const equal = (a: unknown,b: unknown) => JSON.stringify(a) === JSON.stringify(b)
 export function attachInput(options: InputConfiguration): InputOwner {
   const { element,view } = options, doc = element.ownerDocument;
   const removals: (() => void)[] = [];
-  let destroyed = false, composing = false, pending: Pending | null = null;
+  let destroyed = false, pending: Pending | null = null;
   const failure = (code: DomRefusal['diagnostic']['code']) => domRefusal(code,'command',options.capture());
   const listen = (target: EventTarget,name: string,callback: EventListener) => {
     target.addEventListener(name,callback); removals.push(() => target.removeEventListener(name,callback));
@@ -45,14 +55,15 @@ export function attachInput(options: InputConfiguration): InputOwner {
       default: return null;
     }
   }
-  function submit(inputType: string,data: string | null,noncollapsed?:boolean): Submission | DomRefusal {
+  function submit(inputType: string,data: string | null,noncollapsed?:boolean,ownedPermit=false): Submission | DomRefusal {
     const stamp = options.capture();
     if (!stamp) return refused('dom.not_ready');
-    if (inputType === 'historyUndo' || inputType === 'historyRedo') return options.submit({kind:'history',stamp:stamp as StampDto,direction:inputType === 'historyUndo' ? 'undo' : 'redo'});
+    const dispatch=ownedPermit?options.submitComposition:options.submit;
+    if (inputType === 'historyUndo' || inputType === 'historyRedo') return dispatch({kind:'history',stamp:stamp as StampDto,direction:inputType === 'historyUndo' ? 'undo' : 'redo'});
     let dto: CommandDto | null;
     try { dto = command(inputType,data,noncollapsed); } catch { return refused('dom.command_unsupported'); }
     if (!dto) return refused('dom.command_unsupported');
-    return options.submit({kind:'command',stamp:stamp as StampDto,command:dto,history_hint:{kind:'isolated'}});
+    return dispatch({kind:'command',stamp:stamp as StampDto,command:dto,history_hint:{kind:'isolated'}});
   }
   function selectionBlocks(selection: DeepReadonly<SelectionDto>): readonly string[] | null {
     const ids: string[] = [];
@@ -160,7 +171,7 @@ export function attachInput(options: InputConfiguration): InputOwner {
     return false;
   }
   function reconcile(event: InputEvent) {
-    if (composing || event.isComposing) return;
+    if (event.isComposing) return;
     const p = pending;
     if (!p) { if (options.canEdit()) preserve('dom.recovery_required'); return; }
     if (options.consumeRecords() > 4096) { preserve('dom.reconcile_limit'); return; }
@@ -181,48 +192,41 @@ export function attachInput(options: InputConfiguration): InputOwner {
       if (isDomRefusal(after) || capture?.kind === 'bounded' && after.blocks[0]?.originalText !== capture.provisionalText) options.recover(domRefusal('dom.presentation_unsupported','render',options.capture(),null,null,'alreadyPublished'),capture);
     }
   }
-  listen(element,'beforeinput',event => {
-    options.selection.invalidate(); options.selection.cancel();
-    const input = event as InputEvent;
-    if (destroyed) return;
-    if (!options.canEdit()) { if (input.cancelable) input.preventDefault(); refused('dom.mode_blocked'); return; }
-    if (composing || input.isComposing) return;
-    if (view.hasProvisional()) { if (input.cancelable) input.preventDefault(); refused('dom.composition_conflict'); return; }
-    if (options.busy()) { if (input.cancelable) input.preventDefault(); refused('dom.busy'); return; }
-    const selection = syncSelection();
-    if (!selection || isDomRefusal(selection)) { if (input.cancelable) input.preventDefault(); return; }
-    if (options.busy()) { if (input.cancelable) input.preventDefault(); refused('dom.busy'); return; }
+  function ordinaryBeforeInput(input:InputEvent,ownedPermit=false):Submission|DomRefusal|null {
+    options.selection.invalidate(false,input); options.selection.cancel();
+    if (destroyed) return null;
+    if (!options.canEdit()) { if (input.cancelable) input.preventDefault(); return refused('dom.mode_blocked'); }
+    if (input.isComposing) return null;
+    if (view.hasProvisional()) { if (input.cancelable) input.preventDefault(); return refused('dom.composition_conflict'); }
+    if (options.busy()) { if (input.cancelable) input.preventDefault(); return refused('dom.busy'); }
+    const selection = ownedPermit?view.readSelection():syncSelection();
+    if (!selection || isDomRefusal(selection)) { if (input.cancelable) input.preventDefault(); return isDomRefusal(selection)?selection:null; }
+    if (ownedPermit && !equal(selection,options.readState()?.selection)) { if(input.cancelable)input.preventDefault();return refused('dom.stale_selection'); }
+    if (options.busy()) { if (input.cancelable) input.preventDefault(); return refused('dom.busy'); }
     let supported = input.inputType === 'historyUndo' || input.inputType === 'historyRedo';
     try { supported ||= command(input.inputType,input.data) !== null; } catch { supported = false; }
-    if (!supported) { if (input.cancelable) input.preventDefault(); refused('dom.command_unsupported'); return; }
+    if (!supported) { if (input.cancelable) input.preventDefault(); return refused('dom.command_unsupported'); }
     if (input.cancelable) {
-      input.preventDefault(); const result = submit(input.inputType,input.data);
-      if (!isDomRefusal(result) && result.status === 'completed' && result.response.status === 'refused') refused('dom.command_unsupported');
+      input.preventDefault(); const result = submit(input.inputType,input.data,undefined,ownedPermit);
+      if (!ownedPermit && !isDomRefusal(result) && result.status === 'completed' && result.response.status === 'refused') refused('dom.command_unsupported');
+      return result;
     }
     else begin(input,selection);
-  });
-  listen(element,'input',event => { if (!destroyed) reconcile(event as InputEvent); });
-  listen(element,'compositionstart',() => {
-    options.selection.invalidate(); options.selection.cancel();
-    if (destroyed || !options.canEdit()) return;
-    const stamp = options.capture();
-    composing = true;
-    let refusal: DomRefusal | null = null;
-    if (stamp) {
-      const selection = view.readSelection();
-      const ids = selection && !isDomRefusal(selection) ? selectionBlocks(selection) : null;
-      refusal = view.beginProvisional(stamp,ids ?? undefined);
-    } else refusal = failure('dom.not_ready');
-    options.composing(true);
-    if (refusal || !view.hasProvisional()) {
-      options.recover(refusal ?? failure('dom.composition_conflict'),Object.freeze({kind:'retained_dom',element,reason:'capture_limit',ownership:'transferred_to_host'}));
-    } else if (options.busy()) preserve('dom.busy');
-  });
-  listen(element,'compositionend',() => {
-    if (destroyed) return;
-    composing = false; options.composing(false);
-    // Settlement is OSR-41: preserve the unresolved region explicitly.
-    if (view.hasProvisional()) preserve('dom.composition_conflict');
-  });
-  return { destroy() { if (destroyed) return; destroyed = true; pending = null; for (const remove of removals.splice(0)) remove(); }, listeners:() => removals.length };
+    return null;
+  }
+  const composition=new CompositionOwner({...options,submit:options.submitComposition,ordinary:input=>ordinaryBeforeInput(input,true)});
+  listen(element,'beforeinput',event=>{const input=event as InputEvent;if(!destroyed && !composition.beforeInput(input))ordinaryBeforeInput(input);});
+  listen(element,'input',event=>{const input=event as InputEvent;if(!destroyed && !composition.input(input))reconcile(input);});
+  listen(element,'compositionstart',event=>{if(!destroyed)composition.start(event as CompositionEvent);});
+  listen(element,'compositionupdate',event=>{if(!destroyed)composition.update(event as CompositionEvent);});
+  listen(element,'compositionend',event=>{if(!destroyed)composition.end(event as CompositionEvent);});
+  listen(element,'keydown',event=>{if(!destroyed)composition.keydown(event as KeyboardEvent);});
+  listen(element,'keyup',event=>{if(!destroyed)composition.keyup(event as KeyboardEvent);});
+  listen(element,'blur',event=>{if(!destroyed)composition.blur(event);});
+  return {
+    destroy() { if (destroyed) return; destroyed=true;pending=null;composition.destroy();for(const remove of removals.splice(0))remove(); },
+    listeners:()=>removals.length,isProtected:()=>composition.isProtected(),isCommitting:()=>composition.isCommitting(),
+    retained:reason=>composition.retained(reason),resources:()=>composition.resources(),
+    externalSubmission:(request,result)=>composition.externalSubmission(request,result),
+  };
 }

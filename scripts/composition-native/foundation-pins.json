@@ -1,0 +1,41 @@
+{
+  "format": "composition-native-foundation-pins/1",
+  "scope": "Immutable OSR40 source reused/adapted into new41 finite files; not inherited native40 execution proof. Old files are not edited. Runtime reports also pin actual41 helpers/source/binary/modes before and after input.",
+  "files": [
+    {
+      "path": "scripts/selection-native/server.mjs",
+      "bytes": 8817,
+      "sha256": "720ead80030f96818f0f1ae58d443d86c17a7f0644ce52aa185e8cd54fa9dbaf"
+    },
+    {
+      "path": "scripts/selection-native/page-client.mjs",
+      "bytes": 3890,
+      "sha256": "42e6599c962f387e726a09a63cda8b48a367bb9fc0acd75883ef6c2860fdb80b"
+    },
+    {
+      "path": "scripts/selection-native/safari-adapter.mjs",
+      "bytes": 15417,
+      "sha256": "499e9f61579960bc568fe21015ba3b6a3bed66c7ad0cd31beaaa59b5af74b647"
+    },
+    {
+      "path": "scripts/selection-native/input.mjs",
+      "bytes": 28271,
+      "sha256": "afe04dd1f925e96bc8163cab58bc42ea796c1acec6779a328f8c4a764a68f87a"
+    },
+    {
+      "path": "scripts/selection-native-input.swift",
+      "bytes": 15243,
+      "sha256": "23e7bf87e264e18fc59e6fcccd754160ac5d70f2be48598d3ac9445408949d82"
+    },
+    {
+      "path": "scripts/selection-native/protocol.mjs",
+      "bytes": 1886,
+      "sha256": "e46fd3189ae87faffce0a1addbf5bcef59308346145d56f4715aca7d40658cc5"
+    },
+    {
+      "path": "scripts/dom-native-input-source.swift",
+      "bytes": 2610,
+      "sha256": "a453e855ed67f668e079218c089e81e74de292522928b73c2c08f5ce1cfd57a8"
+    }
+  ]
+}

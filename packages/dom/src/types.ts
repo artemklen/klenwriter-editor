@@ -3,10 +3,10 @@
 import type { CommandDto, CreateEditorOptionsV2, DeepReadonly, EditorControllerV2, EventDto, MarkDto, MutationRequestV2, NodeViewDto, ProfileDto, QueryRequest, ReadRequest, ReadRequestV2, Response, ResponseV2, SelectionDto, SelectionTextRequestV2, SessionContextV2, StampDto, Submission } from '@klenwriter/editor-sdk';
 export type InteractionMode = 'editable' | 'readOnly' | 'disabled';
 export type MountedLifecycle = 'loading' | 'ready' | 'recoveryRequired' | 'disposing' | 'destroyed' | 'fatal';
-export type DomCode = 'dom.invalid_options' | 'dom.not_ready' | 'dom.disposed' | 'dom.renderer_binding_mismatch' | 'dom.renderer_missing' | 'dom.presentation_unsupported' | 'dom.command_unsupported' | 'dom.explicit_method_required' | 'dom.composition_conflict' | 'dom.mode_blocked' | 'dom.native_read_only' | 'dom.busy' | 'dom.stale_replace' | 'dom.reconcile_limit' | 'dom.recovery_required' | 'dom.recovery_callback_failed' | 'dom.invalid_bookmark' | 'dom.stale_selection' | 'dom.selection_unsynchronized' | 'dom.selection_missing' | 'dom.selection_limit' | 'dom.clipboard_unavailable' | 'dom.clipboard_write_failed' | 'dom.clipboard_timeout' | 'dom.selection_geometry_unsupported';
+export type DomCode = 'dom.invalid_options' | 'dom.not_ready' | 'dom.disposed' | 'dom.renderer_binding_mismatch' | 'dom.renderer_missing' | 'dom.presentation_unsupported' | 'dom.command_unsupported' | 'dom.explicit_method_required' | 'dom.composition_conflict' | 'dom.mode_blocked' | 'dom.native_read_only' | 'dom.busy' | 'dom.stale_replace' | 'dom.reconcile_limit' | 'dom.recovery_required' | 'dom.recovery_callback_failed' | 'dom.invalid_bookmark' | 'dom.stale_selection' | 'dom.selection_unsynchronized' | 'dom.selection_missing' | 'dom.selection_limit' | 'dom.clipboard_unavailable' | 'dom.clipboard_write_failed' | 'dom.clipboard_timeout' | 'dom.selection_geometry_unsupported' | CompositionDomCode;
 export interface DomDiagnostic {
   readonly code: DomCode;
-  readonly phase: 'mount' | 'command' | 'render' | 'replace' | 'mode' | 'destroy' | 'selection' | 'clipboard';
+  readonly phase: 'mount' | 'command' | 'render' | 'replace' | 'mode' | 'destroy' | 'selection' | 'clipboard' | 'composition';
   readonly stamp: DeepReadonly<StampDto> | null;
   readonly node: string | null;
   readonly typeId: string | null;
@@ -18,7 +18,7 @@ export type MountedSubmission = Submission | DomRefusal;
 export type RecoveryRegion =
   | { readonly kind: 'bounded'; readonly stamp: DeepReadonly<StampDto> | null; readonly originalText: string; readonly provisionalText: string; readonly affectedNodeIds: readonly string[] }
   | { readonly kind: 'retained_dom'; readonly element: HTMLElement; readonly reason: 'capture_limit'; readonly ownership: 'transferred_to_host' };
-export interface RecoveryPacket { readonly originalInput: Uint8Array | null; readonly region: RecoveryRegion | null }
+export interface RecoveryPacket { readonly originalInput: Uint8Array | null; readonly region: RecoveryRegion | null; readonly composition?: CompositionRecovery | null }
 export interface DestroyReceipt { readonly status: 'destroy_requested'; readonly sdk: Submission; readonly recovery: RecoveryPacket | null; readonly callbackFailure: DomRefusal | null }
 export type MountedReady = { readonly status: 'ready'; readonly response: Response }
   | { readonly status: 'sdk_failure'; readonly response: Response; readonly recovery: RecoveryPacket | null }
@@ -106,3 +106,31 @@ export interface ClipboardConfiguration {
   readonly onResult?: (outcome: ClipboardOutcome) => void;
 }
 export interface ClipboardResourceCounts { readonly pending: number; readonly continuations: number; readonly retainedTextBytes: number }
+
+// OSR-41 additive recovery provenance, frozen before implementation.
+/** An immutable description; referenced DOM/Event objects remain host-owned capabilities. */
+export type CompositionUnappliedInput =
+  | { readonly kind: 'bounded'; readonly source: 'beforeinput' | 'keydown' | 'composition'; readonly inputType: string | null;
+      readonly data: string | null; readonly key: string | null; readonly code: string | null; readonly defaultPrevented: boolean }
+  | { readonly kind: 'retained_event'; readonly event: InputEvent | KeyboardEvent | CompositionEvent;
+      readonly reason: 'capture_limit'; readonly ownership: 'transferred_to_host' };
+
+export interface CompositionRecovery {
+  /** Checked, decimal u64 local generation; never an allocator or document ID. */
+  readonly generation: string;
+  readonly reason: 'native_refused' | 'native_fatal' | 'native_unknown' | 'stale' | 'ambiguous_tail'
+    | 'settle_limit' | 'capture_limit' | 'generation_limit' | 'busy' | 'destroyed';
+  /** Null only when a start checkpoint could not be admitted; never invented. */
+  readonly context: DeepReadonly<SessionContextV2> | null;
+  readonly base: DeepReadonly<StampDto> | null;
+  readonly selection: DeepReadonly<SelectionDto> | null;
+  readonly affectedNodeIds: readonly string[];
+  /** The actual native ticket; no replacement ticket or invented terminal response. */
+  readonly submission: Submission | null;
+  readonly response: DeepReadonly<Response> | null;
+  readonly nativeOutcome: 'not_submitted' | 'queued' | 'completed' | 'unknown';
+  readonly unappliedInput: CompositionUnappliedInput | null;
+  readonly disposition: 'committed_restored' | 'provisional_retained' | 'dom_transferred';
+}
+
+export type CompositionDomCode = 'dom.composition_ambiguous' | 'dom.composition_stale' | 'dom.composition_settle_limit' | 'dom.composition_limit';

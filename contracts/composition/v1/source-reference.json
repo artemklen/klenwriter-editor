@@ -1,0 +1,282 @@
+{
+  "format": "composition-pre-candidate-source-reference/1",
+  "recordedAt": "2026-10-19T17:27:16.088887+00:00",
+  "acceptedBase": "69d8cffe2704d7c868c240344c7c3131b0b10d82",
+  "acceptedTree": "385f01e4fed9c539f75f01273fdc86f59e90921c",
+  "scope": "Selected authoritative source/environment/oldfrozen manifests before candidate. Native oracle selectedSources contains additional nativeengine/profile/bridge sourcepins. These historical pins are not requirements that live files never evolve; priorfrozen contract bytes do remain immutable.",
+  "sourceFileCount": 45,
+  "sources": [
+    {
+      "path": ".github/workflows/spike.yml",
+      "bytes": 975,
+      "sha256": "a965d9f5c98e2df3c3bd2543559e8df799b81787a3ad671d25a2b0270459cb99",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": ".node-version",
+      "bytes": 8,
+      "sha256": "a1c56e968c358e10872d64220b3ae759ffe7feaffc4da95fae425dbcca43fe44",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 1057,
+      "sha256": "a2fd2a6c0c6c6cce32d7e8b3729af27f1844a76239cb98f853b8f94a297d8a08",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "bytes": 15280,
+      "sha256": "6f26b6e574a023ba9108b2b4abbf699cd768bd06b1143547df54693a514464ab",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "contracts/dom/v1/manifest.json",
+      "bytes": 10362,
+      "sha256": "fcae2d2ae55f715b36f1c5a89efac1f671c5936490c01feaa87078855b893db8",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "contracts/selection/v1/manifest.json",
+      "bytes": 4291,
+      "sha256": "8d8dd36a6c0b8f918a5eb0819aa6bb9d5545b170c5e90e8cd9a9dd14dd9a6d70",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "docs/m0/architecture-flows.md",
+      "bytes": 12340,
+      "sha256": "c657926df44231580aaead18d95cff909f4f92209b2ff38c76248df93cadba2c",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "docs/m0/architecture.md",
+      "bytes": 64424,
+      "sha256": "13f7a2c183643961331322a5f78afdf8b0b7aa5169972fc581f5368c55fda6e3",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "docs/m0/master-plan.md",
+      "bytes": 8788,
+      "sha256": "40433e71a0b10a48db9dfe9eac5cc37a004114b549d38ee25101195773a61c14",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 19712,
+      "sha256": "aeea367a7985d919aaf8af0fd062b0941f553c5fa580119f864a721ba18ebcfa",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "package.json",
+      "bytes": 3729,
+      "sha256": "a10d04bf33d824ec7ebcd3a0a1cc0c35fd3ed5a0f2152e4050488437d775def4",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/dom/src/catalog.ts",
+      "bytes": 10765,
+      "sha256": "e20c825c6ec2e757a3d8d4a36fcd890d5e16eb23ad8dd4ae9ad1199cd316ee0b",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/dom/src/clipboard.ts",
+      "bytes": 14061,
+      "sha256": "b73e63c66cd8fd2bac07bbddae51a9be92566355f3a2c51f7ab642de6ac37b44",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/dom/src/index.ts",
+      "bytes": 233,
+      "sha256": "9805f73679c28bd33fa190394700bc8b3dcc284abdf19f337b3590a86b918ddc",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/dom/src/input.ts",
+      "bytes": 15183,
+      "sha256": "9439b2e79b8cf548affb5fc89a6be1a9cd8d75b73870c55a9f8c06e8e193ecd8",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/dom/src/mounted.ts",
+      "bytes": 31446,
+      "sha256": "190c9021fec02e2687aab1909159d947876c9b325c78fcc3ce003dcc9f72f225",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/dom/src/ownership.ts",
+      "bytes": 3436,
+      "sha256": "78fc6600652cfbbc93e0f44155255aaffeb9a9d0f67629106b5e07479baab3e0",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/dom/src/refusal.ts",
+      "bytes": 810,
+      "sha256": "e2be8f518718e3bc0402f6aa4352cbc9bcece5416fdb7adbd849b38a1cc270d4",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/dom/src/selection-geometry.ts",
+      "bytes": 5471,
+      "sha256": "4e86a45ce81bd98f6bc341e2a4f8e3d5ebfb709e8b14d0d610ef5a000ee9b5a9",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/dom/src/selection.ts",
+      "bytes": 20501,
+      "sha256": "5f5196a81bd8cf56e3a70ba9999643a381f72ba8de0bd58248b1277a8e6167f4",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/dom/src/style.css",
+      "bytes": 1943,
+      "sha256": "6dc6e5603fc4cfec65d2f96cdb3d1bdea87771c3b6aa4b86718655bbc1821810",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/dom/src/types.ts",
+      "bytes": 9110,
+      "sha256": "8896ad65415de4fb8f14afb2f4353343882bbaa19a3008cc90ebe2339054402f",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/dom/src/view.ts",
+      "bytes": 38684,
+      "sha256": "c545b50684b7c80dcf25f6a24ae5e6c0b020df5757cb96d79d6d8e55c70f7079",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/kwdj/src/dom-inventory.ts",
+      "bytes": 37487,
+      "sha256": "22ff9aee4adc422d96e2febeb1fba447f2a7e437786df78a70b81146dcb302d9",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/kwdj/src/dom.ts",
+      "bytes": 12425,
+      "sha256": "6399c1e91a7952bf468cc11246b20282d796425043b4b93e5fc467aad9304a51",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/kwdj/src/index.ts",
+      "bytes": 1536,
+      "sha256": "f369b51656c4840107b4db51dc157ce7b2635888a73896b52ad113be6ce612ca",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/sdk/src/context.ts",
+      "bytes": 2539,
+      "sha256": "9d2e121ad03d13d4075e13505f3bde202222b31e5f3ea39ee44e28d897bb380b",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/sdk/src/controller.ts",
+      "bytes": 25035,
+      "sha256": "4bbfc4e4221c91c6a4aaeb6db6ac6ab18267363662f0dc6c8b53a1c516b0b509",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/sdk/src/data.ts",
+      "bytes": 5981,
+      "sha256": "0a58772a4fb0d4101e8a719e12406f939cedc42ad496ce16bb3d581edd04f2c7",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/sdk/src/index.ts",
+      "bytes": 649,
+      "sha256": "185cafbffbb9dcac4f51df81c3cacec7061e05976fee937a87c6637bd2a3b2cb",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "packages/sdk/src/response.ts",
+      "bytes": 8318,
+      "sha256": "1fe7e543fa502aeca2fc8d515e70e81be2b5c88f6b3f3cc5aac0f235b737e46c",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "rust-toolchain.toml",
+      "bytes": 123,
+      "sha256": "8426022dcf3cbd6b106cda60c0aa89ad194a12d2a0931b0e8f580d4f0f3c5fa5",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "scripts/dom-native-acceptance.mjs",
+      "bytes": 15124,
+      "sha256": "0a4fc26c75585c923c8c71e3250b59b4110741a69ed7f29a60c57fdeb637d83a",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "scripts/dom-native/page-client.mjs",
+      "bytes": 4720,
+      "sha256": "f16577dadd8a6f3f399a16a15cbd9fd3a23fd9d490ac91d4a26e7672bd34082c",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "scripts/dom-native/protocol.mjs",
+      "bytes": 2043,
+      "sha256": "8150a02776c4bdc3076084343a5ddc9c00ecb7ca6fc1ace104798d9f8367db36",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "scripts/dom-native/safari-adapter.mjs",
+      "bytes": 15888,
+      "sha256": "1cd3eb9d4360e3a35d82dca8961eae43eb1ce9a1a6e5f63c32b24bc4bc91a790",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "scripts/dom-native/server.mjs",
+      "bytes": 7967,
+      "sha256": "e8da25ce001655156b2d3faf93ffb8f3ec4d869bf0624f9353a2bbbd161840e7",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "scripts/selection-native-acceptance.mjs",
+      "bytes": 44728,
+      "sha256": "0bc4d1a21f1dfc3b646f7ca8445d6acd4ee036703ae1f2c667d23dc84fdfa455",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "scripts/selection-native-input.swift",
+      "bytes": 15243,
+      "sha256": "23e7bf87e264e18fc59e6fcccd754160ac5d70f2be48598d3ac9445408949d82",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "scripts/selection-native/README.md",
+      "bytes": 11796,
+      "sha256": "fa1118722d7dcb678d4715e6ab3c0eabda59bbefddb78468cf5d3dd56bd6b8f2",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "scripts/selection-native/input.mjs",
+      "bytes": 28271,
+      "sha256": "afe04dd1f925e96bc8163cab58bc42ea796c1acec6779a328f8c4a764a68f87a",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "scripts/selection-native/page-client.mjs",
+      "bytes": 3890,
+      "sha256": "42e6599c962f387e726a09a63cda8b48a367bb9fc0acd75883ef6c2860fdb80b",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "scripts/selection-native/protocol.mjs",
+      "bytes": 1886,
+      "sha256": "e46fd3189ae87faffce0a1addbf5bcef59308346145d56f4715aca7d40658cc5",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "scripts/selection-native/safari-adapter.mjs",
+      "bytes": 15417,
+      "sha256": "499e9f61579960bc568fe21015ba3b6a3bed66c7ad0cd31beaaa59b5af74b647",
+      "matchesAcceptedGitBlob": true
+    },
+    {
+      "path": "scripts/selection-native/server.mjs",
+      "bytes": 8817,
+      "sha256": "720ead80030f96818f0f1ae58d443d86c17a7f0644ce52aa185e8cd54fa9dbaf",
+      "matchesAcceptedGitBlob": true
+    }
+  ],
+  "executedEditorOrCandidate": false,
+  "authorship": "Byte reads, git blob reads, Pythonstdlib hashes/JSON only; no model import/evaluation."
+}

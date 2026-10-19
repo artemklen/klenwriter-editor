@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Composition contract fixture</title>
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/composition.css">
+<script type="importmap">{"imports":{"@klenwriter/editor-wasm":"/packages/wasm/index.js","@klenwriter/editor-sdk":"/packages/sdk/index.js","@klenwriter/editor-dom":"/packages/dom/index.js","@klenwriter/editor-kwdj":"/packages/kwdj/index.js","@klenwriter/editor-kwdj/dom":"/packages/kwdj/dom.js"}}</script>
+<script type="module" src="/composition-host.js"></script>
+<button id="composition-host-control" type="button">Outside composition editor</button>
+<p id="composition-status" role="status" aria-live="polite"></p>
+<main id="composition-mounts" aria-label="Composition contract examples"></main>
+</html>

@@ -1,0 +1,210 @@
+{
+  "format": "editor-composition-contract/1",
+  "issue": "OSR-41",
+  "status": "FROZEN_BEFORE_IMPLEMENTATION",
+  "acceptedBase": "69d8cffe2704d7c868c240344c7c3131b0b10d82",
+  "acceptedTree": "385f01e4fed9c539f75f01273fdc86f59e90921c",
+  "freezeMethod": "Contract-only commit before any41runtime edits or candidate/editor/native/WASM/browser execution; source-authored data and byte/JSON consistency only.",
+  "counts": {
+    "nativeCases": 30,
+    "eventPolicyRows": 40,
+    "domCases": 18,
+    "installedRows": 24,
+    "browserLocales": 4,
+    "boundaryRecipes": 10
+  },
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 3175,
+      "sha256": "c76688cce45838b54baec1df515b3342fdae8c576743ebc0c1f4c9368f07918d"
+    },
+    {
+      "path": "dom-oracles.json",
+      "bytes": 99603,
+      "sha256": "750ef0f4df5597b25fb4f9738d11b5405bd92079ac390dadf9ee7a3bbacf8754"
+    },
+    {
+      "path": "event-oracles.json",
+      "bytes": 35962,
+      "sha256": "82b4ee813401aeb40dca447f9cda9756b2447984b7c912ceba8ddb2e76d17d7b"
+    },
+    {
+      "path": "expected/N01-unchanged.canonical.json",
+      "bytes": 321,
+      "sha256": "641868a23ec663d274d1a509b87b5953b048023ab3718fcc61d6e8872debc91f"
+    },
+    {
+      "path": "expected/N02-unchanged.canonical.json",
+      "bytes": 319,
+      "sha256": "ff4dcd31b249864ebbcbaf114307f8b6c76ad839fafc680f4a65cd324ad24bd6"
+    },
+    {
+      "path": "expected/P01.canonical.json",
+      "bytes": 225,
+      "sha256": "8e476fce4de29a65b369d9f66ee96063dc1f1758cb0c105f81a27dd7f1d8eb1a"
+    },
+    {
+      "path": "expected/P02.canonical.json",
+      "bytes": 226,
+      "sha256": "b7d5e47bed9e36b91f8b183f3749e16ca708900832572387a108526b19051edf"
+    },
+    {
+      "path": "expected/P04.canonical.json",
+      "bytes": 227,
+      "sha256": "ccbec7fb5045c09da814716380efcc0e97be85a0686130949ea3f1bbf6c9434a"
+    },
+    {
+      "path": "expected/P05-unchanged.canonical.json",
+      "bytes": 226,
+      "sha256": "661a620ce85cf1b91b7bce0c04ac273692849a56555075e94d8f7ee14c13015c"
+    },
+    {
+      "path": "expected/P09.canonical.json",
+      "bytes": 226,
+      "sha256": "b7d5e47bed9e36b91f8b183f3749e16ca708900832572387a108526b19051edf"
+    },
+    {
+      "path": "expected/P10.canonical.json",
+      "bytes": 226,
+      "sha256": "b7d5e47bed9e36b91f8b183f3749e16ca708900832572387a108526b19051edf"
+    },
+    {
+      "path": "expected/P11-unchanged.canonical.json",
+      "bytes": 281,
+      "sha256": "773ba4d23b0f509e23c0c9fd05afd81e3206daef08becb8898675bd73dc5e5aa"
+    },
+    {
+      "path": "expected/P14.canonical.json",
+      "bytes": 383,
+      "sha256": "a18b6ab202d635a7e091a5366ba2ef492b2943187d5322c12c6bc079e5ba5cb9"
+    },
+    {
+      "path": "expected/P15.canonical.json",
+      "bytes": 226,
+      "sha256": "b8bfe8774e663a5f70be48cf25606c86e6d1e5da9bf9388271a23aac99c99a1c"
+    },
+    {
+      "path": "expected/P16.canonical.json",
+      "bytes": 226,
+      "sha256": "b8bfe8774e663a5f70be48cf25606c86e6d1e5da9bf9388271a23aac99c99a1c"
+    },
+    {
+      "path": "expected/P17.canonical.json",
+      "bytes": 383,
+      "sha256": "1f48fe0dd5c9744a0ba096c8b7b2d1230fbcc52121d9677f77123f492e7065b6"
+    },
+    {
+      "path": "expected/P18.canonical.json",
+      "bytes": 226,
+      "sha256": "872b147d80d2927ef03ec1f8532321f94c04d4a1401133bb93b655895cc6c617"
+    },
+    {
+      "path": "expected/P19.canonical.json",
+      "bytes": 226,
+      "sha256": "872b147d80d2927ef03ec1f8532321f94c04d4a1401133bb93b655895cc6c617"
+    },
+    {
+      "path": "inputs/A.json",
+      "bytes": 226,
+      "sha256": "661a620ce85cf1b91b7bce0c04ac273692849a56555075e94d8f7ee14c13015c"
+    },
+    {
+      "path": "inputs/B.json",
+      "bytes": 285,
+      "sha256": "edce0d5fa4d8f1c0f34320d8e7ae63ad9b779dcef0fd7a3172d04d2f651087bd"
+    },
+    {
+      "path": "inputs/C.json",
+      "bytes": 308,
+      "sha256": "bcfa076dd25ec928d37ec89261fe425a0363700011687e7924b30c6c9efcfefc"
+    },
+    {
+      "path": "inputs/D.json",
+      "bytes": 281,
+      "sha256": "773ba4d23b0f509e23c0c9fd05afd81e3206daef08becb8898675bd73dc5e5aa"
+    },
+    {
+      "path": "inputs/E.json",
+      "bytes": 321,
+      "sha256": "641868a23ec663d274d1a509b87b5953b048023ab3718fcc61d6e8872debc91f"
+    },
+    {
+      "path": "inputs/F.json",
+      "bytes": 319,
+      "sha256": "ff4dcd31b249864ebbcbaf114307f8b6c76ad839fafc680f4a65cd324ad24bd6"
+    },
+    {
+      "path": "inputs/G.json",
+      "bytes": 383,
+      "sha256": "c43d5865799cb54f2342e387799b97aa9f61f4c358d384e6fa156f0673b8f4f1"
+    },
+    {
+      "path": "installed-matrix.md",
+      "bytes": 10449,
+      "sha256": "37fe3601bcc949c8ba999922de056562b798396072c4bdf36762a2faf9fa4e4d"
+    },
+    {
+      "path": "native-oracles-design.md",
+      "bytes": 13324,
+      "sha256": "f4cb1825f2e69617edf8fff29cc7ac9cd78fc9eae40a4605c35752d3f09e7cda"
+    },
+    {
+      "path": "native-oracles.json",
+      "bytes": 847545,
+      "sha256": "ac17ce35d4dd94f397782ce89fc0567404b3305da1c63a9277309b8c2e16df6c"
+    },
+    {
+      "path": "public-api-additions.ts",
+      "bytes": 2609,
+      "sha256": "55e8f47fd101ce718a03b118d75ef3978e79a151ffb1ed5f60318586dd344adb"
+    },
+    {
+      "path": "source-reference.json",
+      "bytes": 9793,
+      "sha256": "1c63c6887aaacce4e66c672c6a218c07d57ec257d55fe28d34e28b75e8c51e5e"
+    },
+    {
+      "path": "state-machine.md",
+      "bytes": 12749,
+      "sha256": "db8821b129d930c6c3b7530a89aae017f2dc4653516e3c1c312582c050853dba"
+    },
+    {
+      "path": "structural-correspondence.md",
+      "bytes": 10833,
+      "sha256": "a051e562d47083527fe964426234a7da92365963be79d074aad9dd6fbd898200"
+    }
+  ],
+  "externalAssets": [
+    {
+      "path": "tests/fixtures/fonts/JetBrainsMono-OFL.txt",
+      "bytes": 4492,
+      "sha256": "4d9694c4844a13ea377458c3f98c90d2bf83d3c214612dcae2b7808406520708"
+    },
+    {
+      "path": "tests/fixtures/fonts/JetBrainsMono-Regular.ttf",
+      "bytes": 114904,
+      "sha256": "b6b1ff4ddefe36d7f2a6174e1d001cab374e594519ee9049af028d577b64c5f5"
+    },
+    {
+      "path": "tests/fixtures/fonts/README.md",
+      "bytes": 498,
+      "sha256": "5e490f2865fcbe0684ac72e44f7ebb60f7dc59e479bb8818b3ae2f5c0002f08d"
+    }
+  ],
+  "legacyContractManifests": [
+    {
+      "path": "contracts/dom/v1/manifest.json",
+      "bytes": 10362,
+      "sha256": "fcae2d2ae55f715b36f1c5a89efac1f671c5936490c01feaa87078855b893db8"
+    },
+    {
+      "path": "contracts/selection/v1/manifest.json",
+      "bytes": 4291,
+      "sha256": "8d8dd36a6c0b8f918a5eb0819aa6bb9d5545b170c5e90e8cd9a9dd14dd9a6d70"
+    }
+  ],
+  "publicApiAddition": "public-api-additions.ts",
+  "sourceReference": "source-reference.json",
+  "measurementPolicy": "Controlled expectations are not runtime/OS evidence. Preserve original native tickets, target-local observations, unsupported/ambiguous/refused/fatal distinctions and actual resource completion. Old39/40frozenbytes remain history."
+}
