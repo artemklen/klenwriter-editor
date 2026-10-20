@@ -6,9 +6,15 @@ import ApplicationServices
 
 let began = DispatchTime.now().uptimeNanoseconds
 var posted = false
+var safariScrollRecheckProofs: [[String: Any]] = []
 func elapsed() -> Double { Double(DispatchTime.now().uptimeNanoseconds - began) / 1_000_000 }
 func emit(_ value: [String: Any], _ code: Int32) -> Never {
-    let bytes = try! JSONSerialization.data(withJSONObject: value, options: [.sortedKeys])
+    var output = value
+    if var proof = output["axViewportProof"] as? [String: Any] {
+        proof["rechecks"] = safariScrollRecheckProofs
+        output["axViewportProof"] = proof
+    }
+    let bytes = try! JSONSerialization.data(withJSONObject: output, options: [.sortedKeys])
     FileHandle.standardOutput.write(bytes); FileHandle.standardOutput.write(Data([10])); exit(code)
 }
 func refuse(_ reason: String) -> Never {
@@ -217,8 +223,10 @@ func recheckWindow(_ measurement: WindowMeasurement, _ deadline: Double) -> Stri
               let frame = rectangle(measurement.window), frame == measurement.frame,
               let scan = safariViewport(measurement.window, frame, saved.expectedWidth, saved.expectedHeight), let current = scan.fallback,
               CFEqual(saved.contentElement, current.contentElement), CFEqual(saved.scrollElement, current.scrollElement),
-              saved.content == current.content, saved.scroll == current.scroll, saved.bar == current.bar,
+              saved.scroll == current.scroll, saved.bar == current.bar,
               saved.orientation == current.orientation, saved.visible == current.visible else { refuse("Original Safari scroll viewport changed before post") }
+        // The full current content geometry was validated above. Its extent
+        // outside the unchanged visible clip is not a coordinate authority.
         if let bar = saved.barElement {
             guard let currentBar = current.barElement, CFEqual(bar, currentBar) else { refuse("Original Safari scrollbar identity changed before post") }
         } else if current.barElement != nil { refuse("Original Safari scrollbar membership changed before post") }
@@ -226,6 +234,8 @@ func recheckWindow(_ measurement: WindowMeasurement, _ deadline: Double) -> Stri
               let focused = attribute(measurement.application, kAXFocusedWindowAttribute as CFString), CFGetTypeID(focused) == AXUIElementGetTypeID(),
               CFEqual(focused, measurement.window), title(measurement.window) == measurement.expectedTitle,
               rectangle(measurement.window) == measurement.frame else { refuse("Safari scroll viewport authority expired before post") }
+        guard safariScrollRecheckProofs.count < 3 else { refuse("Safari scroll viewport recheck bound") }
+        safariScrollRecheckProofs.append(current.proof)
     }
     return observedTitle
 }

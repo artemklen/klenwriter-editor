@@ -76,6 +76,11 @@ rechecked before each original post; raw `axViewportProof` records the fallback
 basis/content/scroll/visible/bar measurements only when used. Exact-WebArea,
 Chrome and strict initial Safari-readiness proofs retain their existing meaning.
 No native event, input retry or acceptance is inferred from this geometry proof.
+The [continuity addendum](../../contracts/ui/v1.1/safari-scroll-viewport/continuity.md)
+keeps the full mapping viewport and exact visible clip fixed between original
+posts while allowing document extent changes outside that clip. Each recheck
+still validates the complete current AX proof and original identities; successful
+receipts retain at most three actual recheck proofs beside the initial one.
 
 Chrome's one live native Find episode follows the separate
 [window contract](../../contracts/ui/v1.1/chrome-find-presentation/find-presentation.md).
