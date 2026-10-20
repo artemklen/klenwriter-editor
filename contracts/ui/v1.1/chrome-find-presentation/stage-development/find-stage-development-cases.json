@@ -1,0 +1,116 @@
+{
+  "format": "editor-ui-find-stage-development-cases/1",
+  "status": "SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "stageMarkers": {
+    "maximumPerInvocation": 24,
+    "selectedMaximum": 22,
+    "outerLiteralStrings": [
+      "OSR42-AS8 PRE begin",
+      "OSR42-AS8 PRE end",
+      "OSR42-AS8 KEYS begin",
+      "OSR42-AS8 KEYS end",
+      "OSR42-AS8 POST begin",
+      "OSR42-AS8 POST end"
+    ],
+    "guardLiteralStrings": [
+      "OSR42-AS8 GUARD begin",
+      "OSR42-AS8 GUARD identity ok",
+      "OSR42-AS8 GUARD root located",
+      "OSR42-AS8 GUARD root frame ok",
+      "OSR42-AS8 GUARD focus ok",
+      "OSR42-AS8 GUARD topology ok",
+      "OSR42-AS8 GUARD final begin",
+      "OSR42-AS8 GUARD final end"
+    ],
+    "guardInvocationsPerAS8": 2,
+    "stdoutChange": false,
+    "stderrExistingCap": 4096,
+    "legacy4Markers": 0,
+    "noDynamicValuesOrReads": true,
+    "interpretation": "Diagnostic source progress only; never ACK or PASS"
+  },
+  "development": {
+    "environment": "OSR42_NATIVE_DEVELOPMENT_CASE",
+    "accepted": [
+      "undefined/unset",
+      "modes-zoom"
+    ],
+    "rejectedLiteralExamples": [
+      "",
+      "modes-zoom\n",
+      " modes-zoom",
+      "format-keyboard",
+      "*"
+    ],
+    "whenAbsent": "Original30 rows/reportshape unchanged; no development property",
+    "reportDevelopment": {
+      "environment": "OSR42_NATIVE_DEVELOPMENT_CASE",
+      "caseId": "modes-zoom",
+      "selectedCases": 2,
+      "excludedCases": 28,
+      "coverage": "INCOMPLETE",
+      "acceptance": false
+    },
+    "excludedReason": "Development-only OSR42_NATIVE_DEVELOPMENT_CASE=modes-zoom: excluded from this targeted run",
+    "existingCaseOrder": [
+      "en/modes-zoom",
+      "ru/modes-zoom"
+    ],
+    "reportRowsRetained": 30,
+    "selectedRows": 2,
+    "excludedRows": 28,
+    "twoSelectedPass": {
+      "report": "INCOMPLETE",
+      "exitCode": 2,
+      "PASS": 2,
+      "NOT_RUN": 28
+    },
+    "firstSelectedFailure": {
+      "report": "FAILED",
+      "exitCode": 1,
+      "selectedRu": "NOT_RUN original earlierfailure reason",
+      "excluded28": "NOT_RUN explicit exclusion reason"
+    }
+  },
+  "vectors": [
+    {
+      "id": "FS01",
+      "case": "AS8 successful source path",
+      "expected": "at most22 literal markers, original ACK unchanged"
+    },
+    {
+      "id": "FS02",
+      "case": "AS8 guard/key failure or timeout",
+      "expected": "partial markers only, original failure/unknown+1s unchanged, never treat markers as ACK"
+    },
+    {
+      "id": "FS03",
+      "case": "legacy4",
+      "expected": "zero newmarkers; original codepath/checks/key/stdout unchanged"
+    },
+    {
+      "id": "DS01",
+      "case": "environment unset",
+      "expected": "original30/reportshape unaffected"
+    },
+    {
+      "id": "DS02",
+      "case": "exact modes-zoom",
+      "expected": "same EN/RU modes rows only;28explicitNR; never finalPASS"
+    },
+    {
+      "id": "DS03",
+      "case": "invalid environment",
+      "expected": "reject before output/helpers/browser/input"
+    },
+    {
+      "id": "DS04",
+      "case": "selected EN failure/unknown",
+      "expected": "original cleanup+blocked semantics; no RU retry; all old failure assertions stay"
+    }
+  ],
+  "additionalUnitTests": 0,
+  "expectedUnits": 155,
+  "expectedUiBrowser": 216,
+  "expectedOverallBrowser": 972
+}
