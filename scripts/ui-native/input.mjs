@@ -98,22 +98,27 @@ on findFrameOf(ownedWindow)
  return my requireFiniteFindFrame({(item 1 of observedPosition) as real, (item 2 of observedPosition) as real, (item 1 of observedSize) as real, (item 2 of observedSize) as real})
 end findFrameOf
 on requireChromeFindFixture(expectedPID, expectedName, expectedBundle, expectedTitle, expectedFrame, auxiliaryTitle, allowClosed)
+ log "OSR42-AS8 GUARD begin"
  tell application "System Events"
   set ownedProcesses to (application processes whose unix id is expectedPID)
   if (count of ownedProcesses) is not 1 then error "Exact Chrome Find PID unavailable"
   tell item 1 of ownedProcesses
    if name is not expectedName or bundle identifier is not expectedBundle or expectedName is not "Google Chrome" or expectedBundle is not "com.google.Chrome" then error "Original Chrome Find identity changed"
    if frontmost is not true then error "Original Chrome Find is not frontmost"
+   log "OSR42-AS8 GUARD identity ok"
    set ownedCount to count of windows
    if ownedCount is not 2 and (allowClosed is not true or ownedCount is not 1) then error "Closed Chrome Find window count differs"
    set matchingRoots to (windows whose name is expectedTitle)
    if (count of matchingRoots) is not 1 then error "Original Chrome Find root is not unique"
    set rootWindow to item 1 of matchingRoots
+   log "OSR42-AS8 GUARD root located"
    if (role of rootWindow) is not "AXWindow" or (subrole of rootWindow) is not "AXStandardWindow" then error "Original Chrome Find root role differs"
    if (my findFrameOf(rootWindow)) is not expectedFrame then error "Original Chrome Find root frame changed"
+   log "OSR42-AS8 GUARD root frame ok"
    set focusedRoot to value of attribute "AXFocusedWindow"
    if focusedRoot is not rootWindow then error "Original Chrome Find focused object differs"
    if (value of attribute "AXTitle" of focusedRoot) is not expectedTitle then error "Fixture title not focused"
+   log "OSR42-AS8 GUARD focus ok"
    if ownedCount is 1 then
     set frontRoot to front window
     if frontRoot is not rootWindow or (name of frontRoot) is not expectedTitle then error "Closed Chrome Find root is not frontmost"
@@ -129,8 +134,11 @@ on requireChromeFindFixture(expectedPID, expectedName, expectedBundle, expectedT
     if (item 1 of auxiliaryFrame) is less than (item 1 of expectedFrame) or (item 2 of auxiliaryFrame) is less than (item 2 of expectedFrame) or ((item 1 of auxiliaryFrame) + (item 3 of auxiliaryFrame)) is greater than ((item 1 of expectedFrame) + (item 3 of expectedFrame)) or ((item 2 of auxiliaryFrame) + (item 4 of auxiliaryFrame)) is greater than ((item 2 of expectedFrame) + (item 4 of expectedFrame)) then error "Exact Chrome Find auxiliary is outside original root"
     set measuredPhase to "open"
    end if
+   log "OSR42-AS8 GUARD topology ok"
+   log "OSR42-AS8 GUARD final begin"
    if (count of windows) is not ownedCount or frontmost is not true then error "Chrome Find topology changed during guard"
    if (value of attribute "AXFocusedWindow") is not rootWindow or (name of rootWindow) is not expectedTitle or (my findFrameOf(rootWindow)) is not expectedFrame then error "Original Chrome Find root changed during guard"
+   log "OSR42-AS8 GUARD final end"
   end tell
  end tell
  return measuredPhase
@@ -155,12 +163,14 @@ const branches=Object.entries(keySpecs).flatMap(([action,spec])=>[false,true].ma
   const isFindAction=['find','close-find','release-find','release-close-find'].includes(actual);
   const phaseCheck=actual==='find'?'if nativeFindPhase is not "open" then error "Native Find did not open"':actual==='close-find'?'if nativeFindPhase is not "closed" then error "Native Find did not close"':'';
   const findPost=isFindAction?`if findPresentationEnabled then
+  log "OSR42-AS8 POST begin"
   set nativeFindPhase to my requireChromeFindFixture(expectedPID, expectedName, expectedBundle, expectedTitle, originalFindFrame, originalFindAuxiliaryTitle, ${actual==='find'?'false':'true'})
   ${phaseCheck}
+  log "OSR42-AS8 POST end"
   return ${appleString(prefix)} & expectedPID & ${appleString(',"nativeFindPhase":"')} & nativeFindPhase & ${appleString('"}')}
  end if
  `:'';
-  return `if fixtureAction is "${actual}" then\n tell application "System Events"\n  ${lines.join('\n  ')}\n end tell\n ${findPost}${postGuard}\n return "${prefix.replaceAll('\\','\\\\').replaceAll('"','\\"')}" & expectedPID & "}"\nend if`;
+  return `if fixtureAction is "${actual}" then\n if findPresentationEnabled then log "OSR42-AS8 KEYS begin"\n tell application "System Events"\n  ${lines.join('\n  ')}\n end tell\n if findPresentationEnabled then log "OSR42-AS8 KEYS end"\n ${findPost}${postGuard}\n return "${prefix.replaceAll('\\','\\\\').replaceAll('"','\\"')}" & expectedPID & "}"\nend if`;
 })).join('\n');
 export const fixedKeyScript=requireFixture+findPostGuardDiagnostic+chromeFindPresentation+`on run argv
  if (count of argv) is not 4 and (count of argv) is not 8 then error "Closed UI42 key arguments required"
@@ -184,6 +194,7 @@ export const fixedKeyScript=requireFixture+findPostGuardDiagnostic+chromeFindPre
   set originalFindFrame to my requireFiniteFindFrame({(item 5 of argv) as real, (item 6 of argv) as real, (item 7 of argv) as real, (item 8 of argv) as real})
   set originalFindPageTitle to my requireFindRootTitle(expectedTitle)
   set originalFindAuxiliaryTitle to "Find in page" & linefeed & "    " & originalFindPageTitle
+  log "OSR42-AS8 PRE begin"
   if fixtureAction is "find" then
    if (my requireChromeFindFixture(expectedPID, expectedName, expectedBundle, expectedTitle, originalFindFrame, originalFindAuxiliaryTitle, true)) is not "closed" then error "Native Find precondition is not closed"
   else if fixtureAction is "close-find" then
@@ -191,6 +202,7 @@ export const fixedKeyScript=requireFixture+findPostGuardDiagnostic+chromeFindPre
   else
    set cleanupFindPhase to my requireChromeFindFixture(expectedPID, expectedName, expectedBundle, expectedTitle, originalFindFrame, originalFindAuxiliaryTitle, true)
   end if
+  log "OSR42-AS8 PRE end"
  else
   my requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
  end if

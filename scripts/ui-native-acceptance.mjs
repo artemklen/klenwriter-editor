@@ -18,6 +18,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');process.chdir(r
 const args=process.argv.slice(2),names=['--browser','--output','--broker','--head','--expected-version'];
 if(args.length!==names.length*2||new Set(args.filter((_,i)=>i%2===0)).size!==names.length||args.filter((_,i)=>i%2===0).some(name=>!names.includes(name)))throw Error('Usage: node scripts/ui-native-acceptance.mjs --browser chrome|safari --output /fresh/outside/report.json --broker /fresh/outside/broker/config.json --head FULL_SHA --expected-version INSTALLED_VERSION');
 const option=name=>args[args.indexOf(name)+1],browserName=option('--browser'),expectedHead=option('--head');assert.ok(['chrome','safari'].includes(browserName));assert.match(expectedHead,/^[a-f0-9]{40}$/);
+const developmentCase=process.env.OSR42_NATIVE_DEVELOPMENT_CASE;assert.ok(developmentCase===undefined||developmentCase==='modes-zoom','Closed OSR42_NATIVE_DEVELOPMENT_CASE must be unset or exactly modes-zoom');
 const outside=value=>{assert.ok(value?.startsWith('/'));const path=resolve(value);assert.ok(path!==root&&!path.startsWith(root+'/'),'Evidence must remain outside checkout');return path;};
 const outputPath=outside(option('--output')),configPath=outside(option('--broker'));assert.equal(existsSync(outputPath),false,'Preserve prior evidence; output must be fresh');mkdirSync(dirname(outputPath),{recursive:true});
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex'),now=()=>new Date().toISOString(),wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -26,6 +27,7 @@ const absolutePin=path=>({...pin(path),path:resolve(path)});
 const walk=path=>readdirSync(path,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()?walk(`${path}/${entry.name}`):entry.isFile()?[`${path}/${entry.name}`]:[]);
 const report={format:'editor-ui-installed/1',browser:browserName,expectedHead,status:'NOT_RUN',startedAt:now(),locales:['en','ru'].map(locale=>({locale,inputSourceId:locale==='en'?'com.apple.keylayout.US':'com.apple.keylayout.Russian',cases:caseIds.map(caseId=>({locale,caseId,status:'NOT_RUN',actualActionCount:0,preparation:[],checkpoints:[],startedAt:null}))})),physicalActions:[],setup:[],restoration:null,
   scope:'Installed macOS browser; finite42 scenarios, public mounted SDK/native readbacks and original request/response traces. Strict scoped System Events keys/CGEvent clicks are platform input, not hardware-device provenance. Native preedit windows missing from actual trusted traces remain UNOBSERVED. No synthetic fallback, AT/CJK/mobile claim, previous41 evidence reuse or independent formal-review verdict.'};
+if(developmentCase!==undefined)report.development={"environment":"OSR42_NATIVE_DEVELOPMENT_CASE","caseId":"modes-zoom","selectedCases":2,"excludedCases":28,"coverage":"INCOMPLETE","acceptance":false};
 const save=()=>writeFileSync(outputPath,JSON.stringify(report,null,2)+'\n');save();
 function run(command,argv,{fullStdout=false,timeout=30000,maxBuffer=1024*1024}={}){
   const value=spawnSync(command,argv,{cwd:root,encoding:'utf8',timeout,maxBuffer});
@@ -225,7 +227,7 @@ try {
   let blocked=false;
   for(const lane of report.locales){
     const locale=lane.locale;
-    for(const entry of lane.cases){const caseId=entry.caseId;save();if(blocked){entry.reason='Earlier failure/unknown completion disables further physical actions';continue;}entry.startedAt=now();
+    for(const entry of lane.cases){const caseId=entry.caseId;if(developmentCase!==undefined&&caseId!==developmentCase){entry.reason="Development-only OSR42_NATIVE_DEVELOPMENT_CASE=modes-zoom: excluded from this targeted run";continue;}save();if(blocked){entry.reason='Earlier failure/unknown completion disables further physical actions';continue;}entry.startedAt=now();
       let prepareAttempted=false,prepared=null;
       try {
         await adapter.focus();await selectSource(caseId.startsWith('composition-')?'com.apple.keylayout.US':lane.inputSourceId);prepareAttempted=true;prepared=await adapter.call('prepare',locale,caseId);entry.prepared=prepared;assert.equal(prepared.before.native.context.build_id,identity.buildId);entry.status=await perform(entry,prepared);await screenshot(entry,'final');

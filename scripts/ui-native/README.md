@@ -61,6 +61,14 @@ screenshot crops the original root rectangle. Unknown completion remains FAILED;
 only one matching original-key UP cleanup is permitted. Ordinary actions and
 Safari retain their existing measurement paths.
 
+For targeted development only, the exact environment value
+`OSR42_NATIVE_DEVELOPMENT_CASE=modes-zoom` selects the existing EN/RU modes rows.
+All30 report rows remain: the other28 are explicitly NOT_RUN, and two PASS still
+produce INCOMPLETE/exit2. This cannot supply full installed acceptance. Unset the
+variable for the normal matrix. The
+[diagnostic contract](../../contracts/ui/v1.1/chrome-find-presentation/stage-development/find-stage-development.md)
+also bounds AS8 stderr stage markers; these observations never replace a key ACK.
+
 Composition rows first require actual trusted compositionstart and an unresolved
 native window. The distinct pointer gesture is separately guarded/acknowledged.
 A window that ended before the gesture is UNOBSERVED only after the additive
