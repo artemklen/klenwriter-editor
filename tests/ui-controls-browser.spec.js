@@ -188,6 +188,12 @@ for(const caseId of ['V06-NC011-root-title-owned-metadata','V06-NC013-identical-
     // UI must honour the real native availability refusal before complete;
     // execution Refused is independently measured in the sealed native lane.
     unchanged(after,before);expect(submitted(after)).toHaveLength(0);expect(after.results.at(-1)).toEqual({status:'ui_refused',code:'ui.unavailable',action:'title'});await expect(root(page,id).getByRole('status')).toContainText(item.expected.code);
+    // An ordinary presentation refresh preserves independent native refusal feedback.
+    expect(item.expected.code).toBe('notes.invalid_attribute');const refusalText=await root(page,id).getByRole('status').textContent();
+    await call(page,'refresh',id);await rlFrames(page);await expect(root(page,id).getByRole('status')).toHaveText(refusalText);
+    await expect(root(page,id).getByRole('status')).toContainText(item.expected.code);const refreshed=await checkpoint(page,id,'NC014 refusal feedback survives ordinary refresh');
+    unchanged(refreshed,after);expect(refreshed.context).toEqual(after.context);expect(refreshed.results).toEqual(after.results);expect(refreshed.failures).toEqual(after.failures);expect(refreshed.focusResults).toEqual(after.focusResults);
+    expect(refreshed.activeId).toBe(after.activeId);expect(refreshed.activeTag).toBe(after.activeTag);expect(refreshed.insideEditor).toBe(after.insideEditor);expect(refreshed.mode).toBe(after.mode);expect(refreshed.dialog).toEqual(after.dialog);expect(submitted(refreshed)).toHaveLength(0);
   }else if(item.expected.kind==='changed'){
     nativeChanged(after,before,item,{notes:true});expect(after.state.selection).toEqual(before.state.selection);expect(idsAt(after)).toEqual(idsAt(before));await nativeUndoRedo(page,id,item,before,after);
   }else {unchanged(after,before);expect(submitted(after)).toHaveLength(1);expect(submitted(after)[0].response.value.effect).toBe('unchanged');}
@@ -206,7 +212,9 @@ for(const transition of ['selection','mode','replace'])test(`H02 ${transition}: 
 for(const mode of ['readOnly','disabled'])test(`R01 ${mode}: mutation controls explain native mode and never consume an action`,async({page})=>{
   const id=await mounted(page,{case:'V01-forward'});await call(page,'mode',id,mode);await expect(control(page,id,'strong')).toHaveAttribute('aria-disabled','true');await expect(add(page,id)).toHaveAttribute('aria-disabled','true');const before=await checkpoint(page,id,'blocked mode baseline');await control(page,id,'strong').click({force:true});await add(page,id).click({force:true});
   const after=await checkpoint(page,id,'blocked controls');unchanged(after,before);expect(submitted(after)).toHaveLength(0);await expect(root(page,id).getByRole('status')).not.toBeEmpty();
-  await call(page,'mode',id,'editable');await expect(control(page,id,'strong')).toHaveAttribute('aria-disabled','false');await control(page,id,'strong').click();await waitSubmissions(page,id,1);
+  await call(page,'mode',id,'editable');await expect(control(page,id,'strong')).toHaveAttribute('aria-disabled','false');
+  await expect(root(page,id).getByRole('status')).toBeEmpty();
+  await control(page,id,'strong').click();await waitSubmissions(page,id,1);
 });
 
 test('C01: controlled composition lock preserves provisional objects/focus; only a fresh action after terminal may submit',async({page})=>{
@@ -216,6 +224,7 @@ test('C01: controlled composition lock preserves provisional objects/focus; only
   expect(await page.locator(`#${id}-editor`).evaluate(node=>node.contains(document.activeElement)&&node.childNodes.length===window.uiCompositionChildren.length&&[...node.childNodes].every((child,index)=>child===window.uiCompositionChildren[index]))).toBe(true);
   await page.locator(`#${id}-editor`).evaluate(node=>node.dispatchEvent(new CompositionEvent('compositionend',{bubbles:true,data:''})));
   await expect(control(page,id,'strong')).toHaveAttribute('aria-disabled','false');const settled=await checkpoint(page,id,'unchanged controlled composition settled');expect(settled.canonical).toBe(before.canonical);expect(settled.state.stamp.revision).toBe(before.state.stamp.revision);expect(submitted(settled)).toHaveLength(0);
+  await expect(root(page,id).getByRole('status')).toBeEmpty();
   await control(page,id,'strong').click();await waitSubmissions(page,id,1);expect((await checkpoint(page,id,'fresh gesture after terminal')).state.stored_marks).toEqual([{type_id:'org.klenwriter.kwdj/strong',attributes:{}}]);
 });
 
@@ -367,8 +376,10 @@ for(const variant of rl.variants)test(`RL01 ${variant.locale} ${variant.layoutSc
   await page.mouse.down();const down=await checkpoint(page,id,'RL01 rejected Add down retains protected native/browser input'),d=await rlRaw(page,id);unchanged(down,before);rlBrowser(d,c);rlFlow(d,a);
   await editor.evaluate(node=>node.dispatchEvent(new CompositionEvent('compositionend',{bubbles:true,data:''})));await expect(plus).toHaveAttribute('aria-disabled','false');await rlFrames(page);
   const settled=await checkpoint(page,id,'RL01 empty terminal: no native InsertText or other semantic work'),e=await rlRaw(page,id);unchanged(settled,before);expect(settled.context).toEqual(before.context);rlBrowser(e,d);rlFlow(e,a);
+  expect(e.status).toBe('');
   expect(await page.evaluate(point=>document.elementFromPoint(point.x,point.y)===window.rlAdd,point)).toBe(true);await page.mouse.up();await rlFrames(page);
   const up=await checkpoint(page,id,'RL01 same browser-protocol coordinate remains exact Add; no replay'),f=await rlRaw(page,id);unchanged(up,before);rlBrowser(f,e);rlFlow(f,a);expect(submitted(up)).toHaveLength(0);expect(await pg42Commands(page,id)).toHaveLength(0);expect(await root(page,id).getByRole('listbox').count()).toBe(0);
+  expect(f.status).toBe('');
   expect(await page.evaluate(()=>window.rlEvents.map(e=>({event:e.event,sameAdd:e.sameAdd})))).toEqual([{event:'pointerdown',sameAdd:true},{event:'pointerup',sameAdd:true},{event:'click',sameAdd:true}]);
   // Explicit noncomposing readonly/focus setup: focus priority, full description,
   // and a real floating gutter retain their own scroll bounds. No native edit.
