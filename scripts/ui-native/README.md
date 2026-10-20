@@ -32,7 +32,13 @@ Apple Events page access ends at bootstrap. Remaining Safari page calls use the
 bounded same-origin HTTP broker. Mutating calls are claimed before dispatch,
 unknown completion disables later actions, and no native call is replayed.
 Chrome explicitly disables Playwright focus emulation before any mount/input,
-recording the CDP method, parameters and response. Normal fresh-case entry
+recording the CDP method, parameters and response. The
+[original-session contract](../../contracts/ui/v1.1/chrome-find-presentation/original-focus/chrome-original-focus.md)
+pins the installed Playwright library and resolves only the owned page's original
+main FrameSession, which enabled that emulation. Its single fixed command sends
+`enabled:false` there; unavailable identities or library drift refuse setup.
+The separate public CDP session remains a bootstrap measurement channel.
+Actual native Find focus readbacks remain required. Normal fresh-case entry
 activates Chrome once as preparation; a failed entry or uncertain input cannot
 trigger reactivation. Each physical action still requires its fresh OS AX guard.
 

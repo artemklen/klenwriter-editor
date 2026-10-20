@@ -2,7 +2,9 @@
 // Separate42 adaptation of the guarded installed41 Chrome bootstrap.
 import assert from 'node:assert/strict';
 import {chromium} from '@playwright/test';
-import {mkdtempSync} from 'node:fs';
+import {mkdtempSync,readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {createRequire} from 'node:module';
 import {resolve,dirname} from 'node:path';
 import {limits,validCall} from './protocol.mjs';
 import {createInputOwner,prepareChromeWindow} from './input.mjs';
@@ -42,14 +44,31 @@ export async function createChromeAdapter({config,report,inputHelper,keyScriptPa
     get pointerDown(){return inputOwner.pointerDown;},get pointerState(){return inputOwner.pointerState;},get inputDisabled(){return inputOwner.disabled;},
     async navigate(){
       assert.equal(navigationStarted,false,'Chrome bootstrap cannot be retried');assert.equal(physicalStarted,false);navigationStarted=true;
-      const focusEmulation={action:'disable-chromium-focus-emulation-before-mounted-input',method:'Emulation.setFocusEmulationEnabled',params:{enabled:false},status:'attempted',scope:'Actual DOM focus readbacks; OS foreground still requires each fresh independent AX guard'};
-      report.setup.push(focusEmulation);save();
-      try{pageCdp=await page.context().newCDPSession(page);focusEmulation.response=await pageCdp.send(focusEmulation.method,focusEmulation.params);focusEmulation.status='completed';}
-      catch(error){focusEmulation.status='failed';focusEmulation.error=error.message;throw error;}
-      finally{save();}
       const response=await page.goto(config.fixtureUrl);assert.ok(response?.ok(),'Selection fixture server unavailable');
       await page.waitForFunction(()=>!!window.ui42,null,{timeout:15000});
       await page.evaluate(async({title,modulePath})=>{document.title=title;await import(modulePath);},{title:config.title,modulePath:config.base+'/page-fixture.mjs'});
+      const focusEmulation={action:'disable-original-playwright-focus-emulation',method:'Emulation.setFocusEmulationEnabled',params:{enabled:false},status:'attempted',provenance:'Pinned Playwright1.64.1 original main FrameSession; not a newly attached CDP session',scope:'Owned Chrome setup before first mount/physical input; actual focus and independent native AX assertions remain mandatory'};
+      report.setup.push(focusEmulation);save();
+      try{
+        assert.equal(mountedId,null);assert.equal(physicalStarted,false);assert.equal(page.url(),config.fixtureUrl);assert.equal(await page.title(),config.title);
+        const require=createRequire(import.meta.url),packagePath=require.resolve('playwright-core/package.json'),corePath=resolve(dirname(packagePath),'lib/coreBundle.js');
+        const packageBytes=readFileSync(packagePath),coreBytes=readFileSync(corePath),version=JSON.parse(packageBytes).version;
+        const libraryPin=(path,bytes)=>({path,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')});
+        focusEmulation.library={version,files:[libraryPin(packagePath,packageBytes),libraryPin(corePath,coreBytes)]};
+        assert.equal(version,'1.64.1');assert.equal(packageBytes.length,876);assert.equal(focusEmulation.library.files[0].sha256,'8aa1c9863fa8dea324e674254158cdc79440f4124ef2d84d38053013541cb7d6');
+        assert.equal(coreBytes.length,3585406);assert.equal(focusEmulation.library.files[1].sha256,'829521b67ed7be90c7d6d6098ff39f2241562d47e4ad7ccab13710924a56001d');
+        // PF01: private access starts only AFTER the exact installed-library pins.
+        assert.equal(typeof page._connection?.toImpl,'function');const serverPage=page._connection.toImpl(page),delegate=serverPage?.delegate,frameSession=delegate?._mainFrameSession,client=frameSession?._client;
+        assert.ok(serverPage&&delegate&&frameSession&&client);assert.equal(delegate._page,serverPage);assert.equal(frameSession._crPage,delegate);assert.equal(frameSession._page,serverPage);
+        assert.equal(typeof frameSession._targetId,'string');assert.ok(frameSession._targetId.length>0&&frameSession._targetId.length<=256);assert.equal(frameSession._targetId,delegate._targetId);
+        assert.ok(delegate._sessions instanceof Map);assert.equal(delegate._sessions.get(delegate._targetId),frameSession);assert.equal(frameSession._parentSession,null);
+        assert.equal(typeof client.send,'function');assert.equal(client._connection,delegate._browserContext?._browser?._connection);
+        assert.equal(typeof client._sessionId,'string');assert.ok(client._sessionId.length>0&&client._sessionId.length<=256);assert.ok(client._connection?._sessions instanceof Map);assert.equal(client._connection._sessions.get(client._sessionId),client);
+        assert.equal(client._closed,false);assert.equal(client._crashed,false);
+        focusEmulation.context={fixtureUrl:page.url(),title:config.title,mountedId,targetId:frameSession._targetId,originalSessionId:client._sessionId};
+        focusEmulation.response=await client.send('Emulation.setFocusEmulationEnabled',{enabled:false});focusEmulation.status='completed';
+      }catch(error){focusEmulation.status='failed';focusEmulation.error=String(error.message).slice(0,1024);throw error;}
+      finally{save();}
       await page.bringToFront();script('tell application "Google Chrome" to activate');await page.waitForFunction(()=>document.hasFocus(),null,{timeout:5000});
       report.control.bootstrap=await prepareChromeWindow({config,record,
         pageState:()=>page.evaluate(()=>{
