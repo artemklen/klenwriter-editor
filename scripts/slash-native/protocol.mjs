@@ -15,5 +15,5 @@ export function validCall(method,args){
  if(method==='prepare')return args.length===2&&['en','ru'].includes(args[0])&&caseIds.includes(args[1])&&args[1].endsWith('-'+args[0]);
  if(['guard','cleanupGuard'].includes(method))return args.length===1&&actions.includes(args[0]);
  if(method==='setup')return args.length===1&&setupIds.includes(args[0]);
- return ['inspect','checkpoint','settle','finish','documentGuard'].includes(method)&&args.length===0;
+ return ['inspect','checkpoint','settle','finish','finishDispose','documentGuard'].includes(method)&&args.length===0;
 }

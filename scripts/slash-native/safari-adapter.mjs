@@ -104,10 +104,11 @@ export async function createSafariAdapter({config,report,run,outputPath,inputHel
     if (!response.ok) throw new Error('Fixture broker HTTP '+response.status+': '+path);
     return result;
   }
-  async function rpc(method,args=[]) {
+  async function rpc(method,args=[],receipt=null) {
     if (disabled || inflight || serial>=limits.commands || !validCall(method,args)) throw new Error('Broker call unavailable, concurrent or outside closed API');
     inflight = true;
     const id = config.nonce+':'+String(++serial), start = now();
+    if(receipt)receipt.id=id; // Actual claimed RPC identity, including failed completion.
     try {
       const accepted = await exchange('host/submit',{id,method,args},start,limits.commandBytes);
       if (accepted.accepted !== id) throw new Error('Broker request acknowledgement differs');
@@ -201,12 +202,25 @@ export async function createSafariAdapter({config,report,run,outputPath,inputHel
       if (value.nonce!==config.nonce || value.url!==config.fixtureUrl || value.title!==config.title || value.documentFocused!==true) throw new Error('Owned fixture document lost focus; no refocus or keys sent');
     },
     async call(method,...args) {
+      if(method==='finish'){
+        if(args.length!==0)throw Error('Closed finish takes no arguments');
+        const parts={mountedId,order:['checkpoint','finishDispose'],status:'attempted',checkpoint:{id:null,status:'pending'},dispose:{id:null,status:'not_started'}};
+        (report.control.finishParts??=[]).push(parts);record('finish-parts',parts);
+        try{
+          const before=await rpc('checkpoint',[],parts.checkpoint);parts.checkpoint.status='completed';record('finish-parts',parts);
+          parts.dispose.status='pending';const disposed=await rpc('finishDispose',[],parts.dispose);parts.dispose.status='completed';mountedId=null;
+          parts.status='completed';return {before:before.value,...disposed.value};
+        }catch(error){
+          parts.status='failed';const part=parts.checkpoint.status==='completed'?parts.dispose:parts.checkpoint;
+          part.status=part.id===null?'not_dispatched':error.nativeMethodFailure?'failed_known_result':'failed_or_unknown';parts.error={message:error.message,nativeMethodFailure:error.nativeMethodFailure===true};throw error;
+        }finally{record('finish-parts',parts);}
+      }
       const {value} = await rpc(method,args);
       if (method==='prepare') {
         if (typeof value?.id!=='string' || !/^ui42-[1-9][0-9]{0,8}$/.test(value.id)) throw new Error('Invalid prepared mount identity');
         mountedId = value.id;
       }
-      if (method==='finish') mountedId = null;
+      if (['finish','finishDispose'].includes(method)) mountedId = null;
       return value;
     },
     input:action=>inputOwner.input(action),

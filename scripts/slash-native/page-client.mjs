@@ -38,7 +38,7 @@ async function command(call){
         if(value?.id!==mountedId||value?.action!==call.args[0])throw Error('Composition action guard differs from owned mount');
         value={...value,...documentGuard(),serial:++serial};
       }
-      if(call.method==='finish')mountedId=null;
+      if(['finish','finishDispose'].includes(call.method))mountedId=null;
     }
     result={id:call.id,ok:true,value};
   }catch(error){result={id:call.id,ok:false,error:String(error?.message??error).slice(0,2048)};}
