@@ -18,14 +18,72 @@ const requireFixture=`on requireFixture(expectedPID, expectedName, expectedBundl
  end tell
 end requireFixture
 `;
+const findPostGuardDiagnostic=`on boundedDiagnosticText(observedValue, characterLimit)
+ set observedText to observedValue as text
+ if (length of observedText) is greater than characterLimit then return (text 1 thru characterLimit of observedText) & "...[truncated]"
+ return observedText
+end boundedDiagnosticText
+on logFindPostGuardWindows(expectedPID, expectedName, expectedBundle)
+ tell application "System Events"
+  set ownedProcesses to (application processes whose unix id is expectedPID)
+  if (count of ownedProcesses) is not 1 then error "Diagnostic exact fixture PID unavailable"
+  tell item 1 of ownedProcesses
+   if name is not expectedName or bundle identifier is not expectedBundle then error "Diagnostic fixture identity changed"
+   set ownedCount to count of windows
+   log {"UI42 find POST guard diagnostic", expectedPID, expectedName, expectedBundle, "frontmost", frontmost, "windowCount", ownedCount, "windowCap", 32, "titleCap", 96}
+   if ownedCount is greater than 32 then error "Diagnostic fixture window bound"
+   try
+    set focusedTitle to my boundedDiagnosticText(value of attribute "AXTitle" of (value of attribute "AXFocusedWindow"), 96)
+    log {"focusedWindowTitle", focusedTitle}
+   on error
+    log {"focusedWindowTitle", "[unavailable]"}
+   end try
+   repeat with ownedIndex from 1 to ownedCount
+    set ownedWindow to window ownedIndex
+    set observedName to "[unavailable]"
+    set observedPosition to "[unavailable]"
+    set observedSize to "[unavailable]"
+    set observedRole to "[unavailable]"
+    set observedSubrole to "[unavailable]"
+    try
+     set observedName to my boundedDiagnosticText(name of ownedWindow, 96)
+    end try
+    try
+     set observedPosition to position of ownedWindow
+    end try
+    try
+     set observedSize to size of ownedWindow
+    end try
+    try
+     set observedRole to my boundedDiagnosticText(value of attribute "AXRole" of ownedWindow, 48)
+    end try
+    try
+     set observedSubrole to my boundedDiagnosticText(value of attribute "AXSubrole" of ownedWindow, 48)
+    end try
+    log {"window", ownedIndex, "name", observedName, "position", observedPosition, "size", observedSize, "role", observedRole, "subrole", observedSubrole}
+   end repeat
+  end tell
+ end tell
+end logFindPostGuardWindows
+`;
 const branches=Object.entries(keySpecs).flatMap(([action,spec])=>[false,true].map(cleanup=>{
   const actual=(cleanup?'release-':'')+action;
   const transitions=cleanup?[...spec.modifiers.map(m=>m+'-up'),`key${spec.code}-up`]:[...spec.modifiers.map(m=>m+'-down'),`key${spec.code}-down`,`key${spec.code}-up`,...spec.modifiers.toReversed().map(m=>m+'-up')];
   const lines=cleanup?[...spec.modifiers.map(m=>`key up ${m}`),`key up ${spec.code}`]:[...spec.modifiers.map(m=>`key down ${m}`),`key down ${spec.code}`,`key up ${spec.code}`,...spec.modifiers.toReversed().map(m=>`key up ${m}`)];
   const prefix=JSON.stringify({status:cleanup?'keys-released':'key-sent',action:actual,keyCode:spec.code,modifiers:spec.modifiers,keyTransitions:transitions}).slice(0,-1)+',"frontPid":';
-  return `if fixtureAction is "${actual}" then\n tell application "System Events"\n  ${lines.join('\n  ')}\n end tell\n my requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)\n return "${prefix.replaceAll('\\','\\\\').replaceAll('"','\\"')}" & expectedPID & "}"\nend if`;
+  const postGuard=actual==='find'?`try
+  my requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
+ on error originalMessage number originalNumber
+  try
+   my logFindPostGuardWindows(expectedPID, expectedName, expectedBundle)
+  on error diagnosticMessage number diagnosticNumber
+   set ignoredDiagnosticNumber to diagnosticNumber
+  end try
+  error originalMessage number originalNumber
+ end try`:'my requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)';
+  return `if fixtureAction is "${actual}" then\n tell application "System Events"\n  ${lines.join('\n  ')}\n end tell\n ${postGuard}\n return "${prefix.replaceAll('\\','\\\\').replaceAll('"','\\"')}" & expectedPID & "}"\nend if`;
 })).join('\n');
-export const fixedKeyScript=requireFixture+`on run argv
+export const fixedKeyScript=requireFixture+findPostGuardDiagnostic+`on run argv
  if (count of argv) is not 4 then error "Closed UI42 key arguments required"
  set expectedBrowser to item 1 of argv
  set expectedTitle to item 2 of argv
