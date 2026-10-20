@@ -158,12 +158,24 @@ func measure(_ r: Request, _ originalRoot: AXUIElement?) throws -> Measurement {
     if phase == "open" {
         let others = windows.filter { !CFEqual($0, root) }
         let auxTitle = "Find in page\n    " + r.title
-        guard others.count == 1, let other = others.first, axTitle(other) == auxTitle,
-              attribute(other, kAXRoleAttribute as CFString) as? String == "AXWindow",
-              attribute(other, kAXSubroleAttribute as CFString) as? String == "AXUnknown",
-              let f = rectangle(other), f.minX >= rootFrame.minX, f.maxX <= rootFrame.maxX,
+        guard others.count == 1, let other = others.first else {
+            throw MeasurementFailure.refused("Exact nonce Find auxiliary count differs")
+        }
+        guard axTitle(other) == auxTitle else {
+            throw MeasurementFailure.refused("Exact nonce Find auxiliary title differs")
+        }
+        guard attribute(other, kAXRoleAttribute as CFString) as? String == "AXWindow" else {
+            throw MeasurementFailure.refused("Exact nonce Find auxiliary role differs")
+        }
+        guard attribute(other, kAXSubroleAttribute as CFString) as? String == "AXUnknown" else {
+            throw MeasurementFailure.refused("Exact nonce Find auxiliary subrole differs")
+        }
+        guard let f = rectangle(other) else {
+            throw MeasurementFailure.refused("Exact nonce Find auxiliary frame unavailable")
+        }
+        guard f.minX >= rootFrame.minX, f.maxX <= rootFrame.maxX,
               f.minY >= rootFrame.minY, f.maxY <= rootFrame.maxY else {
-            throw MeasurementFailure.refused("Exact contained nonce Find auxiliary differs")
+            throw MeasurementFailure.refused("Exact nonce Find auxiliary containment differs")
         }
         aux = ["title": auxTitle, "role": "AXWindow", "subrole": "AXUnknown", "frame": encoded(f)] as Fields
     }
@@ -400,7 +412,15 @@ var reads = 0
 var last: Measurement?
 var postStatus = "unobserved"
 var postProblem: Fields? = diagnostic("phase", "Required Find phase was not observed within the original budget")
-while reads < 12 && request.deadline - elapsed() > 16 {
+var observePostPhase = true
+if request.action == "close-find" && !request.cleanup {
+    if request.deadline - elapsed() > 266 {
+        Thread.sleep(forTimeInterval: 0.25)
+    } else {
+        observePostPhase = false
+    }
+}
+while observePostPhase && reads < 12 && request.deadline - elapsed() > 16 {
     reads += 1
     do {
         let measurement = try measure(request, originalRoot)
