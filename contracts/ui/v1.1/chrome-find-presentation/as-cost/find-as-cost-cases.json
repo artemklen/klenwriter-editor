@@ -1,0 +1,80 @@
+{
+  "format": "editor-ui-find-as-cost-cases/2",
+  "status": "SOURCE_AUTHORED_NOT_EXECUTED",
+  "predicateMapping": [
+    {
+      "original": "exactPID/processcount1/name/bundle",
+      "consolidated": "same exact original process lookup and identities; no rebind"
+    },
+    {
+      "original": "frontmost true",
+      "consolidated": "same before and final fresh recheck"
+    },
+    {
+      "original": "windows <=32",
+      "consolidated": "closed requires exactly1 original root; OPEN remains exactly2 with one exactaux"
+    },
+    {
+      "original": "unique expected root name",
+      "consolidated": "same exact nonce full root matchcount1"
+    },
+    {
+      "original": "front window name expectedTitle",
+      "consolidated": "closed actual front-window object==unique root AND explicit same root/front name expected"
+    },
+    {
+      "original": "focused window AXTitle expectedTitle",
+      "consolidated": "actual focused-root object equality PLUS explicit focused AXTitle==expectedTitle; must not infer title from name alone"
+    },
+    {
+      "new": "rootrole/frame/finite bounds/focus object",
+      "consolidated": "all retained, including final fresh frame/title/focus checks"
+    },
+    {
+      "new": "aux exacttitle/role/subrole/distinct/contained",
+      "consolidated": "all retained OPEN; strict CLOSED forbidsaux"
+    }
+  ],
+  "vectors": [
+    {
+      "id": "FA01",
+      "case": "AS8 normal Find PRE",
+      "expected": "single complete CLOSED guard preserves all original+new fields; no duplicate old call"
+    },
+    {
+      "id": "FA02",
+      "case": "AS8 close POST",
+      "expected": "single complete CLOSED guard, Findabsent/frame/focus complete; no duplicate old call"
+    },
+    {
+      "id": "FA03",
+      "case": "legacy4 all actions",
+      "expected": "original requireFixture and generated legacy paths byte-identical"
+    },
+    {
+      "id": "FA04",
+      "case": "expected constants",
+      "expected": "exact32hex/title/frame validated once; actual owned attributes NEVER reused across phases"
+    },
+    {
+      "id": "FA05",
+      "case": "post freshness/mismatch",
+      "expected": "fresh final count/frontmost/focus/title/frame checks retained; mismatch refuses"
+    },
+    {
+      "id": "FA06",
+      "case": "deadline or unknown execution",
+      "expected": "same1s timeout, same unknown policy, one original UP attempt only; no retry or positive promotion"
+    },
+    {
+      "id": "FA07",
+      "case": "new AS8 required role/subrole access",
+      "expected": "direct SDEF properties only; same AX literal values/missing\u2192refuse; no all-properties/entire contents, no speed claim"
+    }
+  ],
+  "additionalUnitTests": 0,
+  "expectedUnitTotal": 155,
+  "expectedUiBrowser": 216,
+  "expectedOverallBrowser": 972,
+  "cleanupLimitation": "No duplicated old guard in cleanup; removing calls alone cannot prove any speedup"
+}

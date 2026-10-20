@@ -1,0 +1,218 @@
+{
+  "format": "editor-ui-chrome-find-cost-observation/1",
+  "sourceReport": {
+    "path": "/tmp/osr-42-installed-development-0012170-11/chrome/chrome.json",
+    "bytes": 22291512,
+    "sha256": "3c95ff4273f7af8aae1f6fa3d59a22cbbe6edfddf822c196c54e9dbd4485b7ec"
+  },
+  "originalStatus": "FAILED",
+  "counts": {
+    "PASS": 10,
+    "REFUSED": 0,
+    "FAILED": 1,
+    "UNOBSERVED": 4,
+    "UNSUPPORTED": 0,
+    "NOT_RUN": 15
+  },
+  "actions": 48,
+  "restoration": "RESTORED",
+  "sourceUnchanged": true,
+  "sourceClean": true,
+  "helperStable": true,
+  "failures": [
+    {
+      "cleanupOnly": false,
+      "delivery": "unknown/may_have_sent",
+      "keysPending": true,
+      "totalGuardAgeMs": 1003.028209,
+      "error": "/usr/bin/osascript: spawnSync /usr/bin/osascript ETIMEDOUT",
+      "guardExecution": {
+        "command": "/tmp/osr-42-installed-development-0012170-11/chrome/ui42-native-helpers-mluJJV/fixture-input",
+        "argv": [
+          "--guard-key",
+          "{\"format\":\"osr42-native-input/1\",\"browser\":\"chrome\",\"nonce\":\"36b71b5cb5e1c4b23b82871e171182bf\",\"title\":\"KlenWriter UI native 36b71b5cb5e1c4b23b82871e171182bf\",\"fixtureUrl\":\"http://127.0.0.1:4174/ui\",\"mountedId\":\"ui42-15\",\"requestId\":\"36b71b5cb5e1c4b23b82871e171182bf:266\",\"serial\":48,\"caseId\":\"modes-zoom\",\"action\":\"find\",\"target\":\"focused\",\"point\":null,\"viewport\":{\"width\":1024,\"height\":768,\"scale\":1,\"offsetLeft\":0,\"offsetTop\":0,\"pageZoom\":1},\"pointerDown\":false,\"cleanupOnly\":false,\"deadlineMs\":998}"
+        ],
+        "returnCode": 0,
+        "signal": null,
+        "stdout": "{\"action\":\"find\",\"axViewport\":{\"height\":768,\"width\":1024,\"x\":22,\"y\":139},\"axWindow\":{\"height\":855,\"width\":1026,\"x\":22,\"y\":52},\"axWindowCount\":1,\"caseId\":\"modes-zoom\",\"cleanupOnly\":false,\"delivery\":\"not_sent\",\"elapsedMs\":30.858499999999999,\"expectedAxWindowTitle\":\"KlenWriter UI native 36b71b5cb5e1c4b23b82871e171182bf - Google Chrome\",\"frontBundle\":\"com.google.Chrome\",\"frontPid\":36619,\"mountedId\":\"ui42-15\",\"nonce\":\"36b71b5cb5e1c4b23b82871e171182bf\",\"observedAxWindowTitle\":\"KlenWriter UI native 36b71b5cb5e1c4b23b82871e171182bf - Google Chrome\",\"requestId\":\"36b71b5cb5e1c4b23b82871e171182bf:266\",\"status\":\"guarded\",\"target\":\"focused\"}\n",
+        "stderr": "",
+        "error": null
+      },
+      "guardResponse": {
+        "action": "find",
+        "axViewport": {
+          "height": 768,
+          "width": 1024,
+          "x": 22,
+          "y": 139
+        },
+        "axWindow": {
+          "height": 855,
+          "width": 1026,
+          "x": 22,
+          "y": 52
+        },
+        "axWindowCount": 1,
+        "caseId": "modes-zoom",
+        "cleanupOnly": false,
+        "delivery": "not_sent",
+        "elapsedMs": 30.8585,
+        "expectedAxWindowTitle": "KlenWriter UI native 36b71b5cb5e1c4b23b82871e171182bf - Google Chrome",
+        "frontBundle": "com.google.Chrome",
+        "frontPid": 36619,
+        "mountedId": "ui42-15",
+        "nonce": "36b71b5cb5e1c4b23b82871e171182bf",
+        "observedAxWindowTitle": "KlenWriter UI native 36b71b5cb5e1c4b23b82871e171182bf - Google Chrome",
+        "requestId": "36b71b5cb5e1c4b23b82871e171182bf:266",
+        "status": "guarded",
+        "target": "focused"
+      },
+      "asExecution": {
+        "command": "/usr/bin/osascript",
+        "argv": [
+          "/tmp/osr-42-installed-development-0012170-11/chrome/ui42-native-helpers-mluJJV/fixed-keys.scpt",
+          "chrome",
+          "KlenWriter UI native 36b71b5cb5e1c4b23b82871e171182bf - Google Chrome",
+          "36619",
+          "find",
+          "22",
+          "52",
+          "1026",
+          "855"
+        ],
+        "returnCode": null,
+        "signal": "SIGTERM",
+        "stdout": "",
+        "stderr": "",
+        "error": "spawnSync /usr/bin/osascript ETIMEDOUT"
+      }
+    },
+    {
+      "cleanupOnly": true,
+      "delivery": "unknown/may_have_sent",
+      "keysPending": true,
+      "totalGuardAgeMs": 1002.984291,
+      "error": "/usr/bin/osascript: spawnSync /usr/bin/osascript ETIMEDOUT",
+      "guardExecution": {
+        "command": "/tmp/osr-42-installed-development-0012170-11/chrome/ui42-native-helpers-mluJJV/fixture-input",
+        "argv": [
+          "--guard-find-key",
+          "{\"format\":\"osr42-chrome-find-window/1\",\"browser\":\"chrome\",\"nonce\":\"36b71b5cb5e1c4b23b82871e171182bf\",\"title\":\"KlenWriter UI native 36b71b5cb5e1c4b23b82871e171182bf\",\"fixtureUrl\":\"http://127.0.0.1:4174/ui\",\"mountedId\":\"ui42-15\",\"caseId\":\"modes-zoom\",\"findRequestId\":\"36b71b5cb5e1c4b23b82871e171182bf:266\",\"requestId\":\"36b71b5cb5e1c4b23b82871e171182bf:267\",\"serial\":49,\"pid\":36619,\"rootFrame\":{\"height\":855,\"width\":1026,\"x\":22,\"y\":52},\"purpose\":\"release-find\",\"deadlineMs\":998}"
+        ],
+        "returnCode": 0,
+        "signal": null,
+        "stdout": "{\"axWindow\":{\"height\":855,\"width\":1026,\"x\":22,\"y\":52},\"axWindowCount\":2,\"browser\":\"chrome\",\"caseId\":\"modes-zoom\",\"contained\":true,\"delivery\":\"not_sent\",\"elapsedMs\":20.509542,\"expectedAxWindowTitle\":\"KlenWriter UI native 36b71b5cb5e1c4b23b82871e171182bf - Google Chrome\",\"findAux\":{\"frame\":{\"height\":84,\"width\":403,\"x\":612,\"y\":124},\"role\":\"AXWindow\",\"subrole\":\"AXUnknown\",\"title\":\"Find in page\\n    KlenWriter UI native 36b71b5cb5e1c4b23b82871e171182bf\"},\"findRequestId\":\"36b71b5cb5e1c4b23b82871e171182bf:266\",\"fixtureUrl\":\"http:\\/\\/127.0.0.1:4174\\/ui\",\"format\":\"osr42-chrome-find-window\\/1\",\"frontBundle\":\"com.google.Chrome\",\"frontPid\":36619,\"measurement\":\"native-find-window-only\",\"mountedId\":\"ui42-15\",\"nativeFindPhase\":\"open\",\"nonce\":\"36b71b5cb5e1c4b23b82871e171182bf\",\"observedAxWindowTitle\":\"KlenWriter UI native 36b71b5cb5e1c4b23b82871e171182bf - Google Chrome\",\"purpose\":\"release-find\",\"requestId\":\"36b71b5cb5e1c4b23b82871e171182bf:267\",\"rootFocused\":true,\"rootRole\":\"AXWindow\",\"rootSubrole\":\"AXStandardWindow\",\"serial\":49,\"status\":\"guarded\",\"title\":\"KlenWriter UI native 36b71b5cb5e1c4b23b82871e171182bf\"}\n",
+        "stderr": "",
+        "error": null
+      },
+      "guardResponse": {
+        "axWindow": {
+          "height": 855,
+          "width": 1026,
+          "x": 22,
+          "y": 52
+        },
+        "axWindowCount": 2,
+        "browser": "chrome",
+        "caseId": "modes-zoom",
+        "contained": true,
+        "delivery": "not_sent",
+        "elapsedMs": 20.509542,
+        "expectedAxWindowTitle": "KlenWriter UI native 36b71b5cb5e1c4b23b82871e171182bf - Google Chrome",
+        "findAux": {
+          "frame": {
+            "height": 84,
+            "width": 403,
+            "x": 612,
+            "y": 124
+          },
+          "role": "AXWindow",
+          "subrole": "AXUnknown",
+          "title": "Find in page\n    KlenWriter UI native 36b71b5cb5e1c4b23b82871e171182bf"
+        },
+        "findRequestId": "36b71b5cb5e1c4b23b82871e171182bf:266",
+        "fixtureUrl": "http://127.0.0.1:4174/ui",
+        "format": "osr42-chrome-find-window/1",
+        "frontBundle": "com.google.Chrome",
+        "frontPid": 36619,
+        "measurement": "native-find-window-only",
+        "mountedId": "ui42-15",
+        "nativeFindPhase": "open",
+        "nonce": "36b71b5cb5e1c4b23b82871e171182bf",
+        "observedAxWindowTitle": "KlenWriter UI native 36b71b5cb5e1c4b23b82871e171182bf - Google Chrome",
+        "purpose": "release-find",
+        "requestId": "36b71b5cb5e1c4b23b82871e171182bf:267",
+        "rootFocused": true,
+        "rootRole": "AXWindow",
+        "rootSubrole": "AXStandardWindow",
+        "serial": 49,
+        "status": "guarded",
+        "title": "KlenWriter UI native 36b71b5cb5e1c4b23b82871e171182bf"
+      },
+      "asExecution": {
+        "command": "/usr/bin/osascript",
+        "argv": [
+          "/tmp/osr-42-installed-development-0012170-11/chrome/ui42-native-helpers-mluJJV/fixed-keys.scpt",
+          "chrome",
+          "KlenWriter UI native 36b71b5cb5e1c4b23b82871e171182bf - Google Chrome",
+          "36619",
+          "release-find",
+          "22",
+          "52",
+          "1026",
+          "855"
+        ],
+        "returnCode": null,
+        "signal": "SIGTERM",
+        "stdout": "",
+        "stderr": "",
+        "error": "spawnSync /usr/bin/osascript ETIMEDOUT"
+      }
+    }
+  ],
+  "finishKeyFTrace": [
+    {
+      "ordinal": 7,
+      "mountId": "ui42-15",
+      "clock": {
+        "kind": "performance.now",
+        "timeOrigin": 1792463526794.4
+      },
+      "time": 47082.20000001788,
+      "event": "keydown",
+      "isTrusted": true,
+      "target": {
+        "id": "ui42-15-editor",
+        "tag": "DIV",
+        "action": null,
+        "control": null,
+        "buttonText": null
+      },
+      "active": {
+        "id": "ui42-15-editor",
+        "tag": "DIV",
+        "action": null,
+        "control": null,
+        "buttonText": null
+      },
+      "targetObject": 182,
+      "detail": 0,
+      "isPrimary": null,
+      "key": "f",
+      "code": "KeyF",
+      "shift": false,
+      "alt": false,
+      "meta": true,
+      "ctrl": false,
+      "data": null,
+      "inputType": null,
+      "button": null,
+      "buttons": null,
+      "pointerId": null,
+      "x": null,
+      "y": null,
+      "defaultPrevented": false
+    }
+  ],
+  "qualification": "No AS milestones stdout/stderr exist. Trusted KeyF down proves a key reached the page; absence of page keyup does not establish whether OS keyup was sent because native Find may own later events. Exact stalled instruction/PRE/transitions/POST remains UNKNOWN. No timing improvement inferred before future run."
+}

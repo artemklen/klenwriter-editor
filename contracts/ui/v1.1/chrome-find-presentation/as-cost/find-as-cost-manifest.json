@@ -1,0 +1,54 @@
+{
+  "format": "editor-ui-find-as-cost-manifest/2",
+  "status": "FROZEN_SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "head": "00121705c0f1ff08f0d452fb69e68995e2d3faee",
+  "sourcePins": [
+    {
+      "path": "scripts/ui-native/input.mjs",
+      "bytes": 37820,
+      "sha256": "792f84d45e70532525eab415e2c8bc7d9379ab44371567cdbee858c647fe8eea"
+    },
+    {
+      "path": "scripts/ui-native/guard.swift",
+      "bytes": 21890,
+      "sha256": "ae87f0e855e841f232e70a60361291a73e49084bd1d4ffe51c3a8cf1ce6d7cf5"
+    },
+    {
+      "path": "contracts/ui/v1.1/chrome-find-presentation/find-presentation.md",
+      "bytes": 5892,
+      "sha256": "7365918f5f8fb8e29b71dbc16be11ef0c870e3e747fe2f27f43d18e67fd8ebf3"
+    },
+    {
+      "path": "contracts/ui/v1.1/chrome-find-presentation/find-presentation-design.json",
+      "bytes": 6730,
+      "sha256": "9142fbf1054eede0085da4fe880bcb530cd1759c16205e6b5cb22071f872083d"
+    }
+  ],
+  "files": [
+    {
+      "path": "find-as-cost.md",
+      "bytes": 4353,
+      "sha256": "b4dd7f91062432fd3e9f39be228a69c90cf246860b8982a6e548d20fe2073467"
+    },
+    {
+      "path": "find-as-cost-cases.json",
+      "bytes": 2879,
+      "sha256": "50a3fa4435341e388f3aea3d19ddc06d2fb7742372fa5aff2ce4efe659bda0a9"
+    },
+    {
+      "path": "chrome11-observation.json",
+      "bytes": 9718,
+      "sha256": "f1fa3b922455b1456c5e229a19c76b2a00a22c314022c5f52286ad5d3d13ff04"
+    },
+    {
+      "path": "system-events-role-source.json",
+      "bytes": 1524,
+      "sha256": "b5303ff25da2a17c393a32d205d9bdc73cb8cc68cc972c9dbf1ecb823056e220"
+    }
+  ],
+  "primarySource": {
+    "path": "/System/Library/CoreServices/System Events.app/Contents/Resources/SystemEvents.sdef",
+    "bytes": 111857,
+    "sha256": "4d2a64771a1294f83c30c1a24476624e9148a84aa62365b5086f79e5a984ce7b"
+  }
+}
