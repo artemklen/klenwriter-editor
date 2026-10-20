@@ -69,6 +69,13 @@ async function selectSource(id){
  }
  const execution=run(sourceHelper,['select',id],{fullStdout:true}),result=JSON.parse(execution.stdout);assert.equal(result.status,'ok');report.setup.push({action:'select-existing-source',before,execution,result});await wait(250);const actual=source();coherent(actual,id);selectedSource=id;
  if(sourceWindowReadiness&&typeof adapter?.awaitSourceWindowReady==='function')await adapter.awaitSourceWindowReady(id);
+ if(sourceWindowReadiness&&browserName==='safari'){
+  const stage={action:'passive-safari-source-settle',status:'preparing',requested:id,durationMs:1000,before:actual,elapsedMs:null,actual:null};report.setup.push(stage);const began=process.hrtime.bigint();
+  try{
+   await wait(1000);stage.elapsedMs=Number(process.hrtime.bigint()-began)/1e6;assert.ok(Number.isFinite(stage.elapsedMs)&&stage.elapsedMs>=0&&stage.elapsedMs<2000,'Safari source settling delay exceeded its bound');
+   stage.actual=source();coherent(stage.actual,id);stage.status='completed';return stage.actual;
+  }catch(error){stage.status='refused';stage.error={message:error.message,execution:error.execution??null};throw error;}
+ }
  return actual;
 }
 const roles=value=>Object.fromEntries(value.native.rows.map(row=>[JSON.stringify(row.path),row.node.id]));
