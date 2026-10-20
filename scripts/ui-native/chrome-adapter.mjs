@@ -18,6 +18,7 @@ export async function createChromeAdapter({config,report,inputHelper,keyScriptPa
   const record=(kind,value)=>{report.controlLog??=[];if(report.controlLog.length>=4096)throw Error('Chrome control receipt bound');report.controlLog.push({kind,...value});};
   const call=async(method,...args)=>{
     if(busy||++serial>limits.commands||!validCall(method,args))throw Error('Concurrent, excessive or unknown Chrome fixture call');busy=true;
+    if(method==='finish')inputOwner.retireFindEpisode();
     try{const value=await page.evaluate(async({method,args,nonce,url,title})=>{
       if(method==='documentGuard')return {url:location.href,title:document.title,documentFocused:document.hasFocus()};
       if(location.href!==url||document.title!==title)throw Error('Selection fixture left its exact owned URL/title');
@@ -33,11 +34,11 @@ export async function createChromeAdapter({config,report,inputHelper,keyScriptPa
     assert.equal(value.url,config.fixtureUrl);assert.equal(value.title,config.title);
     return {id:config.nonce+':'+String(serial),start,value:{...value,mountedId,serial:++guardSerial}};
   };
-  const inputOwner=createInputOwner({browser:'chrome',config,inputHelper,keyScriptPath,run,record,mountedId:()=>mountedId,guard:pageGuard('guard'),cleanupGuard:pageGuard('cleanupGuard')});
+  const inputOwner=createInputOwner({browser:'chrome',config,inputHelper,keyScriptPath,run,record,mountedId:()=>mountedId,guard:pageGuard('guard'),cleanupGuard:pageGuard('cleanupGuard'),nativeFindEpisode:'chrome-fd01'});
   report.control={method:'Installed headed Chrome; closed Playwright page setup/read RPC, strict AX preflight, fixed System Events keys and exact-control CGEvent clicks',webDriver:false,
     uniqueTitle:config.title,fixtureUrl:config.fixtureUrl,fixtureOnly:true,childOnlyEnvironment:true,launchArguments};
   return {errors,input:action=>{assert.equal(bootstrapReady,true,'Strict Chrome window bootstrap required before input');physicalStarted=true;return inputOwner.input(action);},releaseOwnedPointer:()=>inputOwner.releaseOwnedPointer(),
-    releaseOwnedKeys:()=>inputOwner.releaseOwnedKeys(),get keysPending(){return inputOwner.keysPending;},
+    releaseOwnedKeys:()=>inputOwner.releaseOwnedKeys(),captureFindWindow:path=>inputOwner.captureFindWindow(path),get keysPending(){return inputOwner.keysPending;},
     get pointerDown(){return inputOwner.pointerDown;},get pointerState(){return inputOwner.pointerState;},get inputDisabled(){return inputOwner.disabled;},
     async navigate(){
       assert.equal(navigationStarted,false,'Chrome bootstrap cannot be retried');assert.equal(physicalStarted,false);navigationStarted=true;
@@ -82,6 +83,6 @@ export async function createChromeAdapter({config,report,inputHelper,keyScriptPa
       catch(error){focusEntryFailed=true;setup.status='failed';setup.error=error.message;throw error;}
       finally{save();}
     },call,
-    async close(){await browser.close();report.control.cleanup={status:'owned-chrome-browser-closed',scope:'Only isolated browser instance launched for this fixture'};},
+    async close(){inputOwner.retireFindEpisode();await browser.close();report.control.cleanup={status:'owned-chrome-browser-closed',scope:'Only isolated browser instance launched for this fixture'};},
   };
 }

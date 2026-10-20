@@ -95,7 +95,99 @@ func recheckWindow(_ measurement: WindowMeasurement, _ deadline: Double) -> Stri
 func encodedRectangle(_ value: CGRect) -> [String: Double] {
     ["x": value.minX, "y": value.minY, "width": value.width, "height": value.height]
 }
+// Explicit Chrome Find-window proof. Never supplies a WebArea or pointer map.
+struct ChromeFindWindowMeasurement {
+    let root: AXUIElement
+    let frame: CGRect
+    let auxiliary: AXUIElement?
+    let auxiliaryFrame: CGRect?
+    let phase: String
+}
+func findRequestFrame(_ value: Any?) -> CGRect? {
+    guard let fields = value as? [String: Any], closed(fields, ["x", "y", "width", "height"]),
+          let x = number(fields["x"]), let y = number(fields["y"]),
+          let width = number(fields["width"]), let height = number(fields["height"]),
+          width > 0, height > 0, (x + width).isFinite, (y + height).isFinite else { return nil }
+    return CGRect(x: x, y: y, width: width, height: height)
+}
+func measureChromeFindWindow(_ pid: pid_t, _ pageTitle: String, _ originalFrame: CGRect,
+                             _ allowClosed: Bool, _ deadline: Double) -> ChromeFindWindowMeasurement {
+    guard elapsed() < deadline, AXIsProcessTrusted() else { refuse("Find-window authority expired or Accessibility unavailable") }
+    guard let front = NSWorkspace.shared.frontmostApplication, front.processIdentifier == pid,
+          front.bundleIdentifier == "com.google.Chrome", front.localizedName == "Google Chrome" else { refuse("Original Chrome Find process is not frontmost") }
+    let application = AXUIElementCreateApplication(pid)
+    guard let windows = attribute(application, kAXWindowsAttribute as CFString) as? [AXUIElement],
+          windows.count == 2 || (allowClosed && windows.count == 1) else { refuse("Closed Chrome Find window count differs") }
+    let rootTitle = pageTitle + " - Google Chrome"
+    let roots = windows.filter { title($0) == rootTitle }
+    guard roots.count == 1, let root = roots.first,
+          attribute(root, kAXRoleAttribute as CFString) as? String == "AXWindow",
+          attribute(root, kAXSubroleAttribute as CFString) as? String == "AXStandardWindow",
+          let frame = rectangle(root), frame == originalFrame,
+          let focused = attribute(application, kAXFocusedWindowAttribute as CFString),
+          CFGetTypeID(focused) == AXUIElementGetTypeID(), CFEqual(focused, root) else { refuse("Original Chrome Find root, frame or focused object differs") }
+    if windows.count == 1 {
+        return ChromeFindWindowMeasurement(root: root, frame: frame, auxiliary: nil, auxiliaryFrame: nil, phase: "closed")
+    }
+    let other = windows.filter { !CFEqual($0, root) }
+    let auxiliaryTitle = "Find in page\n    " + pageTitle
+    guard other.count == 1, let auxiliary = other.first,
+          title(auxiliary) == auxiliaryTitle,
+          attribute(auxiliary, kAXRoleAttribute as CFString) as? String == "AXWindow",
+          attribute(auxiliary, kAXSubroleAttribute as CFString) as? String == "AXUnknown",
+          let auxiliaryFrame = rectangle(auxiliary),
+          auxiliaryFrame.minX >= frame.minX, auxiliaryFrame.maxX <= frame.maxX,
+          auxiliaryFrame.minY >= frame.minY, auxiliaryFrame.maxY <= frame.maxY else { refuse("Exact contained nonce Chrome Find auxiliary differs") }
+    return ChromeFindWindowMeasurement(root: root, frame: frame, auxiliary: auxiliary, auxiliaryFrame: auxiliaryFrame, phase: "open")
+}
+func findWholeMatch(_ value: String, _ pattern: String) -> Bool {
+    guard let match = value.range(of: pattern, options: .regularExpression) else { return false }
+    return match == (value.startIndex..<value.endIndex)
+}
+func inspectChromeFindWindow(_ mode: String, _ json: String) -> Never {
+    guard let data = json.data(using: .utf8), data.count <= 4096,
+          let request = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+          closed(request, ["format", "browser", "nonce", "title", "fixtureUrl", "mountedId", "caseId", "findRequestId", "requestId", "serial", "pid", "rootFrame", "purpose", "deadlineMs"]),
+          request["format"] as? String == "osr42-chrome-find-window/1", request["browser"] as? String == "chrome",
+          let nonce = request["nonce"] as? String, nonce.utf8.count == 32, nonce.range(of: "^[a-f0-9]{32}$", options: .regularExpression) != nil,
+          let pageTitle = request["title"] as? String, pageTitle == "KlenWriter UI native " + nonce,
+          request["fixtureUrl"] as? String == "http://127.0.0.1:4174/ui", request["caseId"] as? String == "modes-zoom",
+          let mount = request["mountedId"] as? String, findWholeMatch(mount, "^ui42-[1-9][0-9]{0,8}$"),
+          let findRequestId = request["findRequestId"] as? String, findWholeMatch(findRequestId, "^" + nonce + ":[1-9][0-9]{0,3}$"),
+          let requestId = request["requestId"] as? String, findWholeMatch(requestId, "^" + nonce + ":[1-9][0-9]{0,3}$"),
+          let serial = number(request["serial"]), serial >= 1, serial <= 2048, serial.rounded() == serial,
+          let pidValue = number(request["pid"]), pidValue >= 1, pidValue <= Double(Int32.max), pidValue.rounded() == pidValue,
+          let originalFrame = findRequestFrame(request["rootFrame"]),
+          let purpose = request["purpose"] as? String,
+          (mode == "--inspect-find-window" ? ["post-find", "screenshot"].contains(purpose) : ["pre-close-find", "release-find", "release-close-find"].contains(purpose)),
+          let deadline = number(request["deadlineMs"]), deadline >= 1, deadline <= 1000, deadline.rounded() == deadline else { refuse("Invalid closed Chrome Find-window request") }
+    guard (purpose == "post-find" ? requestId == findRequestId : requestId != findRequestId) else { refuse("Chrome Find request identity differs") }
+    let pid = pid_t(pidValue), allowClosed = purpose == "release-find" || purpose == "release-close-find"
+    let first = measureChromeFindWindow(pid, pageTitle, originalFrame, allowClosed, deadline)
+    let final = measureChromeFindWindow(pid, pageTitle, originalFrame, allowClosed, deadline)
+    guard elapsed() <= deadline, first.phase == final.phase, CFEqual(first.root, final.root), first.frame == final.frame else { refuse("Chrome Find ownership changed during proof") }
+    if let firstAuxiliary = first.auxiliary {
+        guard let finalAuxiliary = final.auxiliary, CFEqual(firstAuxiliary, finalAuxiliary),
+              first.auxiliaryFrame == final.auxiliaryFrame else { refuse("Chrome Find auxiliary changed during proof") }
+    }
+    let rootTitle = pageTitle + " - Google Chrome"
+    var auxiliary: Any = NSNull()
+    if let frame = final.auxiliaryFrame {
+        auxiliary = ["title": "Find in page\n    " + pageTitle, "role": "AXWindow", "subrole": "AXUnknown", "frame": encodedRectangle(frame)] as [String: Any]
+    }
+    emit(["format": "osr42-chrome-find-window/1", "status": mode == "--guard-find-key" ? "guarded" : "inspected", "delivery": "not_sent",
+          "measurement": "native-find-window-only", "purpose": purpose, "browser": "chrome", "nonce": nonce, "title": pageTitle,
+          "fixtureUrl": "http://127.0.0.1:4174/ui", "mountedId": mount, "caseId": "modes-zoom", "findRequestId": findRequestId,
+          "requestId": requestId, "serial": serial, "frontPid": pid, "frontBundle": "com.google.Chrome",
+          "expectedAxWindowTitle": rootTitle, "observedAxWindowTitle": rootTitle, "axWindowCount": final.phase == "open" ? 2 : 1,
+          "axWindow": encodedRectangle(final.frame), "rootFocused": true, "rootRole": "AXWindow", "rootSubrole": "AXStandardWindow",
+          "findAux": auxiliary, "contained": true, "elapsedMs": elapsed(), "nativeFindPhase": final.phase], 0)
+}
+
 let argv = CommandLine.arguments
+if argv.count == 3 && ["--inspect-find-window", "--guard-find-key"].contains(argv[1]) {
+    inspectChromeFindWindow(argv[1], argv[2])
+}
 if argv.count == 3 && argv[1] == "--inspect-window" {
     guard let data = argv[2].data(using: .utf8), data.count <= 4096,
           let request = try? JSONSerialization.jsonObject(with: data) as? [String: Any],

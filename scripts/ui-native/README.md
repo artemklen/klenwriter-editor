@@ -38,7 +38,7 @@ trigger reactivation. Each physical action still requires its fresh OS AX guard.
 
 Physical actions are fixed System Events key programs or exact-control CGEvent
 clicks. Each has a new page/mount/nonce guard and independent strict AX check of
-the exact foreground process/window and actual web area. This is platform input,
+the exact foreground process/window. Ordinary actions also measure the actual web area. This is platform input,
 not hardware-device provenance. Navigation is physical. Fixture mounting,
 literal selection setup, explicit focus setup, host edit and native undo/redo
 are labelled setup/host API actions; none is described as physical input.
@@ -50,6 +50,16 @@ DPR is recorded as a crosscheck and may remain hardware-fixed in Safari. Pointer
 coordinates use the actual AX-web-area/current-CSS-viewport ratio. The Find row
 requires a trusted unprevented CmdF, actual document focus departure and an
 owned-window screenshot; a single fresh-window-guarded Escape closes it.
+
+Chrome's one live native Find episode follows the separate
+[window contract](../../contracts/ui/v1.1/chrome-find-presentation/find-presentation.md).
+Its initial CmdF keeps the ordinary measured-WebArea guard. While Find is open,
+Escape, original UP-only cleanup and its screenshot use explicit window-only
+proofs of the original PID, nonce, mount and root frame, with the exact contained
+Find auxiliary. These proofs provide no viewport or pointer coordinates. The
+screenshot crops the original root rectangle. Unknown completion remains FAILED;
+only one matching original-key UP cleanup is permitted. Ordinary actions and
+Safari retain their existing measurement paths.
 
 Composition rows first require actual trusted compositionstart and an unresolved
 native window. The distinct pointer gesture is separately guarded/acknowledged.
