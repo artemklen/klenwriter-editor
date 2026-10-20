@@ -487,15 +487,16 @@ for type in transitions {
  event.setIntegerValueField(.mouseEventClickState,value:type == .mouseMoved ? 0 : 1)
  events.append(event)
 }
+let constructorTimestamps = chromePrelude ? events.map { $0.timestamp } : []
 var pointerPrelude: [String: Any]? = nil
 var pairTiming: [String: Any]? = nil
-var previousTimestamp: UInt64 = 0
+var previousPostUptime: UInt64 = 0
 if chromePrelude {
  let downNumber = events[1].getIntegerValueField(.mouseEventNumber)
  events[2].setIntegerValueField(.mouseEventNumber,value:downNumber)
  let upNumber = events[2].getIntegerValueField(.mouseEventNumber)
  guard downNumber == upNumber else { refuse("Allocated Chrome mouse pair number differs") }
- pairTiming = ["downEventNumber":String(downNumber), "upEventNumber":String(upNumber), "requestedPauseMs":25]
+ pairTiming = ["timestampPolicy":"constructor-default", "downEventNumber":String(downNumber), "upEventNumber":String(upNumber), "requestedPauseMs":25]
 }
 for (index, type) in transitions.enumerated() {
  _=recheckWindow(measurement,deadline)
@@ -503,11 +504,13 @@ for (index, type) in transitions.enumerated() {
   guard let point = safariScrollViewportPoint(viewport: fallback.scroll, visible: fallback.visible, cssWidth: width, cssHeight: height, x: x, y: y), point == actual else { refuse("Safari pointer no longer belongs to the exact visible content") }
  }
  if chromePrelude {
-  events[index].timestamp = DispatchTime.now().uptimeNanoseconds
   let timestamp = events[index].timestamp
-  guard timestamp > previousTimestamp else { refuse("Chrome pointer timestamps must increase") }
-  previousTimestamp = timestamp
+  guard timestamp == constructorTimestamps[index] else { refuse("Chrome constructor timestamp changed before post") }
   pairTiming?[["moveTimestampNs","downTimestampNs","upTimestampNs"][index]] = String(timestamp)
+  let postUptime = DispatchTime.now().uptimeNanoseconds
+  guard postUptime > previousPostUptime else { refuse("Chrome pointer posting clock must increase") }
+  previousPostUptime = postUptime
+  pairTiming?[["movePostUptimeNs","downPostUptimeNs","upPostUptimeNs"][index]] = String(postUptime)
  }
  posted=true
  if let pid = postingPid { events[index].postToPid(pid) }
