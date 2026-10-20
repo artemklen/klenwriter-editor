@@ -115,7 +115,8 @@ export async function createSafariAdapter({config,report,run,outputPath,inputHel
         const result = await exchange('host/read',{id},start);
         if (result.id !== id) throw new Error('Broker result identity differs');
         if (result.done) {
-          record('native-result',{id,method,result:result.result}); // Persist before acknowledgement.
+          // exchange already persisted the complete host/read response before returning.
+          record('native-result',{id,method,resultReference:{kind:'http-response',path:'host/read',id,done:true}});
           const ack = await exchange('host/ack',{id},start,limits.commandBytes);
           if (ack.acknowledged !== id) throw new Error('Broker result consumption differs');
           if (!result.result?.ok) throw Object.assign(new Error('Fixture method failed: '+result.result?.error),{nativeMethodFailure:true});
