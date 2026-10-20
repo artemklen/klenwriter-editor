@@ -18,7 +18,7 @@
     "check:packages": "node scripts/check-packages.mjs",
     "test:workspace": "node --test tests/workspace.node.mjs",
     "check:rust": "cargo fmt --all --check && cargo clippy --workspace --all-targets --locked -- -D warnings && cargo test --workspace --locked",
-    "check": "npm run check:rust && npm run test:canonical && npm run build && npm run test:codec && npm run test:corpus && npm run test:session && npm run test:transactions && npm run test:commands && npm run test:history && npm run test:deltas && npm run test:sdk && npm run test:extensions && npm run check:metadata && npm run check:workspace && npm run check:packages && npm run test:sdk:consumer && npm run test:workspace && npm run check:m0 && npm run perf:verify && npm run test:workspace:browser && npm run test:dom && npm run test:selection && npm run test:composition && npm run test:ui",
+    "check": "npm run check:rust && npm run test:canonical && npm run build && npm run test:codec && npm run test:corpus && npm run test:session && npm run test:transactions && npm run test:commands && npm run test:history && npm run test:deltas && npm run test:sdk && npm run test:extensions && npm run check:metadata && npm run check:workspace && npm run check:packages && npm run test:sdk:consumer && npm run test:workspace && npm run check:m0 && npm run perf:verify && npm run test:workspace:browser && npm run test:dom && npm run test:selection && npm run test:composition && npm run test:ui && npm run test:slash",
     "test:session": "node --test tests/session.node.mjs",
     "test:transactions": "node --test tests/transactions.node.mjs",
     "test:commands": "node --test tests/commands.node.mjs",
@@ -49,7 +49,12 @@
     "test:ui:native": "node scripts/test-ui-native.mjs",
     "test:ui:unit": "node --test tests/ui-host-request.node.mjs tests/ui-public-types.node.mjs tests/ui-native-input.node.mjs",
     "test:ui:browser": "playwright test --config playwright.ui.config.js",
-    "test:ui": "npm run check:ui-contract && npm run test:ui:native && npm run test:ui:unit && npm run test:ui:browser"
+    "test:ui": "npm run check:ui-contract && npm run test:ui:native && npm run test:ui:unit && npm run test:ui:browser",
+    "check:slash-contract": "node scripts/slash-contract-check.mjs",
+    "test:slash:native": "node scripts/slash-native.mjs",
+    "test:slash:unit": "node --test tests/slash-*.node.mjs",
+    "test:slash": "npm run check:slash-contract && npm run test:slash:native && npm run test:slash:unit",
+    "test:slash:browser": "playwright test --config playwright.ui.config.js tests/ui-slash-browser.spec.js"
   },
   "engines": {
     "node": ">=24.22.0 <25 || >=26 <27"

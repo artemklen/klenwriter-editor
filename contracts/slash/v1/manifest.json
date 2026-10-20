@@ -1,0 +1,113 @@
+{
+  "format": "editor-slash-contract/1",
+  "status": "FROZEN_BEFORE_IMPLEMENTATION",
+  "sourceRevision": "3960664b286b0939d3e7d8e724183eb9f7b71ee6",
+  "sourceTree": "0f24703a5dc7f9c1fd2689a87a8cb2afaecdaadd",
+  "task": "OSR-43",
+  "authoredBeforeRuntime": true,
+  "scope": "Source contracts and independent expectations, not runtime evidence or independent formal review. Incomplete seeds remain qualified. freeze-decisions.md overrides original preparation prose.",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 3091,
+      "sha256": "5abb9ec0068088cc07c0c56588f7e8383fb5e081fa11929bfdc80b47aff04c8b",
+      "mode": 420
+    },
+    {
+      "path": "baseline-source-pins.json",
+      "bytes": 1916,
+      "sha256": "5aee3d40c9b714d249ce68d191ebb4668120d081e0ab5c712f6a0d4936af2e86",
+      "mode": 420
+    },
+    {
+      "path": "behavior.md",
+      "bytes": 7365,
+      "sha256": "5b5bce64ca594540f7167a4df46317823f4180dc59c7826aaae7d4b80c61024f",
+      "mode": 420
+    },
+    {
+      "path": "dom-api.ts",
+      "bytes": 1906,
+      "sha256": "dba5cb8a4ed224957285d121d01973d6588f1e57560644e5c6c7a20c2dfc3d57",
+      "mode": 420
+    },
+    {
+      "path": "dom-source-preparation.md",
+      "bytes": 18148,
+      "sha256": "b56801ff56d8281583d1aafdbd2ef557326e1867db22be114db02f7d87da7c4d",
+      "mode": 420
+    },
+    {
+      "path": "freeze-decisions.md",
+      "bytes": 4165,
+      "sha256": "8da47307f5344210c1bdb9c1064c69a353e81575654d6878ed75a6faa0c752b9",
+      "mode": 420
+    },
+    {
+      "path": "input-origin-oracles.json",
+      "bytes": 4066,
+      "sha256": "f2322ed5ed71549e7b897c3b327f60dc5404d7380e2c2986252fcff6be65a0f8",
+      "mode": 420
+    },
+    {
+      "path": "lexical-key-oracles.json",
+      "bytes": 17681,
+      "sha256": "920f8a7190717cd66d93dcf610c00ed6c098d1363b187288ea5c2456167e4333",
+      "mode": 420
+    },
+    {
+      "path": "lexical-key-oracles.md",
+      "bytes": 2793,
+      "sha256": "b75b80f3d073cfbaf2587995319eaaa2de912f28af7a9353c5235841def99292",
+      "mode": 420
+    },
+    {
+      "path": "native-api.md",
+      "bytes": 11536,
+      "sha256": "04e6e9181f5895d694150432d75a0dd6c285491439a4643daa3c426c13d2925e",
+      "mode": 420
+    },
+    {
+      "path": "native-source-oracles.json",
+      "bytes": 23940,
+      "sha256": "e33b149b68a55c9c6916bf532c4cc6b0482b39ea1eb45af77931936494ed5e3a",
+      "mode": 420
+    },
+    {
+      "path": "native-source-oracles.md",
+      "bytes": 5910,
+      "sha256": "0c85a0de95331b8b8956b7a244ab93ed9e9581032fb8c1cffc70e4827c87b628",
+      "mode": 420
+    },
+    {
+      "path": "native-source-pins.json",
+      "bytes": 6874,
+      "sha256": "48f48b4c90421fd819a402278715bb15060186a34a1ea9345eaddd3d6fa52674",
+      "mode": 420
+    },
+    {
+      "path": "presentation-api.ts",
+      "bytes": 1719,
+      "sha256": "400a96cc810e5b34fd66d2117370e79837f3c37ae8bd46a0b49f0b60567ee0cd",
+      "mode": 420
+    },
+    {
+      "path": "strings.json",
+      "bytes": 1750,
+      "sha256": "f174669a5a717529480c2652d500ba43a4feacf8ec06713b180f2c8d08f3c5d2",
+      "mode": 420
+    },
+    {
+      "path": "text-window-oracles.json",
+      "bytes": 8877,
+      "sha256": "9b50f55c6110510190042bd4f438adf75d22303254882e17379bae21600f1e48",
+      "mode": 420
+    },
+    {
+      "path": "ui-api.ts",
+      "bytes": 998,
+      "sha256": "cded7cc80b339c399bbcd99db57cd3a44635b85926889f930f2c62b08901d397",
+      "mode": 420
+    }
+  ]
+}

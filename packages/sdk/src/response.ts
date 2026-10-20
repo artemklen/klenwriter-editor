@@ -90,15 +90,65 @@ const selectionText: Check = value => shape(value, {
     && new Set(v).size === v.length,
 }) && object(value) && (value.empty !== true || value.text === '' && Array.isArray(value.selected_atoms) && value.selected_atoms.length === 0);
 
-/** ABI2 adds one bounded pure reply. Legacy decoder and command tickets stay closed. */
-export function decodeResponseV2(raw: string): SdkResponseV2 {
+const TEXT_WINDOW_REPLY_BYTES = 256 * 1024;
+const scalarText = (value: unknown): value is string => {
+  if (typeof value !== 'string') return false;
+  for (let i = 0; i < value.length; i++) {
+    const unit = value.charCodeAt(i);
+    if (unit >= 0xd800 && unit <= 0xdbff) {
+      const next = value.charCodeAt(++i);
+      if (!(next >= 0xdc00 && next <= 0xdfff)) return false;
+    } else if (unit >= 0xdc00 && unit <= 0xdfff) return false;
+  }
+  return true;
+};
+const token: Check = value => scalarText(value) && value.length > 0 && value.length <= 256;
+const windowNode: Check = value => shape(value, { node: token, type_id: v => scalarText(v) && v.length > 0, primitive: literal('text_block', 'container') });
+const windowSpan: Check = value => shape(value, { node: token, from_utf16: size, to_utf16: size, text: scalarText })
+  && object(value) && typeof value.from_utf16 === 'number' && typeof value.to_utf16 === 'number'
+  && typeof value.text === 'string' && value.text.length > 0 && value.to_utf16 > value.from_utf16
+  && value.to_utf16 - value.from_utf16 === value.text.length;
+const windowBoundary: Check = literal('block', 'inline_atom', 'hard_break', 'window_limit');
+const textWindow: Check = value => {
+  if (!shape(value, { kind: literal('text_window'), stamp, selection, block: windowNode, caret: position,
+    ancestors: v => Array.isArray(v) && v.length <= 126 && v.every(windowNode),
+    before: v => Array.isArray(v) && v.length <= 256 && v.every(windowSpan),
+    after: v => Array.isArray(v) && v.length <= 256 && v.every(windowSpan),
+    before_stop: windowBoundary, after_stop: windowBoundary }) || !object(value)) return false;
+  const block = value.block as Record<string, unknown>, caret = value.caret as Record<string, unknown>;
+  const selected = value.selection as { anchor: Record<string, unknown>; focus: Record<string, unknown> };
+  const before = value.before as {node: string; from_utf16: number; to_utf16: number; text: string}[];
+  const after = value.after as typeof before;
+  const ancestors = value.ancestors as Record<string, unknown>[];
+  if (block.primitive !== 'text_block' || ancestors.some(n => n.primitive !== 'container')
+    || new Set([block.node, ...ancestors.map(n => n.node)]).size !== ancestors.length + 1
+    || !Object.keys(caret).every(key => caret[key] === selected.focus[key])) return false;
+  const total = [...before, ...after].reduce((n, span) => n + span.text.length, 0);
+  if (total > 256 || [before, after].some(spans => new Set(spans.map(s => s.node)).size !== spans.length)
+    || [...before, ...after].some(s => s.node === block.node || ancestors.some(n => n.node === s.node))) return false;
+  if (caret.kind === 'child') return selected.anchor.kind === 'child' && selected.anchor.parent === caret.parent
+    && selected.anchor.index === caret.index && caret.parent === block.node && caret.index === 0
+    && before.length === 0 && after.length === 0 && value.before_stop === 'block' && value.after_stop === 'block';
+  if (ancestors.length > 125 || caret.node === block.node || ancestors.some(n => n.node === caret.node)
+    || caret.kind !== 'text' || !token(caret.node) || selected.anchor.kind !== 'text'
+    || selected.anchor.node !== caret.node || selected.anchor.offset !== caret.offset) return false;
+  if (before.some((s, i) => s.node === caret.node && (i !== before.length - 1 || s.to_utf16 !== caret.offset))
+    || after.some((s, i) => s.node === caret.node && (i !== 0 || s.from_utf16 !== caret.offset))) return false;
+  return before.every(a => after.every(b => a.node !== b.node || a.node === caret.node));
+};
+
+/** ABI2 bounded pure replies; legacy decoder and command tickets stay closed. */
+export function decodeResponseV2(raw: string, expectedKind?: 'selection_text' | 'text_window'): SdkResponseV2 {
   try {
-    if (typeof raw !== 'string' || raw.length > SELECTION_REPLY_BYTES || new TextEncoder().encode(raw).byteLength > SELECTION_REPLY_BYTES) throw new DataError('sdk.invalid_response');
+    const maximum = expectedKind === 'text_window' ? TEXT_WINDOW_REPLY_BYTES : SELECTION_REPLY_BYTES;
+    if (typeof raw !== 'string' || raw.length > maximum || new TextEncoder().encode(raw).byteLength > maximum) throw new DataError('sdk.invalid_response');
     const parsed: unknown = JSON.parse(raw);
     const value = ownData(parsed, 16 * 1024 * 1024).value;
     if (!object(value) || !(value.status === 'ok'
-      ? shape(value, { status: literal('ok'), value: v => reply(v) || selectionText(v) })
+      ? shape(value, { status: literal('ok'), value: v => reply(v) || selectionText(v) || textWindow(v) })
       : shape(value, { status: literal('refused', 'fatal'), diagnostic }))) throw new DataError('sdk.invalid_response');
+    if (value.status === 'ok' && object(value.value) && value.value.kind === 'text_window'
+      && new TextEncoder().encode(raw).byteLength > TEXT_WINDOW_REPLY_BYTES) throw new DataError('sdk.invalid_response');
     return freezeData(value) as SdkResponseV2;
   } catch { throw new DataError('sdk.invalid_response'); }
 }

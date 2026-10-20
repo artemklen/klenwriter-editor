@@ -441,6 +441,20 @@ impl<P: FrozenProfile> Session<P> {
         Ok(self.tree.node(id)?)
     }
 
+    /// Pure bounded lexical read. Full public stamps are checked by the bridge.
+    pub fn text_window(
+        &self,
+        key: SessionKey,
+        before: usize,
+        after: usize,
+    ) -> Result<
+        Result<crate::text_window::TextWindow<'_>, crate::text_window::TextWindowError>,
+        SessionError<P::Error>,
+    > {
+        self.guard(key, None)?;
+        Ok(self.tree.text_window(self.selection, before, after))
+    }
+
     pub fn node_at(
         &self,
         key: SessionKey,

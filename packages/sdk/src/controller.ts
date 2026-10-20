@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import { loadSdk, loadSdkV2, verifyLoadedSdk, verifyLoadedSdkV2 } from '@klenwriter/editor-wasm';
-import type { BridgeRequestV2, EventDto, LazyWasmLoader, LazyWasmLoaderV2, LoadedSdkV1, LoadedSdkV2, OpenOptions, OpenOptionsV2, ProfileDto, RawSdkSessionV1, RawSdkSessionV2, SdkRequest, SdkResponse, SdkResponseV2, SelectionTextRequestV2, SessionContextV2, StampDto, StateDto } from '@klenwriter/editor-wasm';
+import type { BridgeRequestV2, EventDto, LazyWasmLoader, LazyWasmLoaderV2, LoadedSdkV1, LoadedSdkV2, OpenOptions, OpenOptionsV2, ProfileDto, RawSdkSessionV1, RawSdkSessionV2, SdkRequest, SdkResponse, SdkResponseV2, SelectionTextRequestV2, TextWindowRequestV2, SessionContextV2, StampDto, StateDto } from '@klenwriter/editor-wasm';
 import { copyInput, DataError, freezeData, HARD_REQUEST_BYTES, ownData, plainFields } from './data.js';
 import type { OwnedData } from './data.js';
 import { decodeResponse, decodeResponseV2 } from './response.js';
@@ -12,7 +12,7 @@ export type ResponseV2 = DeepReadonly<SdkResponseV2>;
 type FatalResponse = DeepReadonly<Extract<SdkResponse, { status: 'fatal' }>>;
 export type Lifecycle = 'loading' | 'ready' | 'disposing' | 'destroyed' | 'fatal';
 export type ReadRequest = Extract<SdkRequest, { kind: 'state' | 'catalog' | 'node' | 'map_position' | 'resources' }>;
-export type ReadRequestV2 = ReadRequest | SelectionTextRequestV2;
+export type ReadRequestV2 = ReadRequest | SelectionTextRequestV2 | TextWindowRequestV2;
 export type QueryRequest = Extract<SdkRequest, { kind: 'query_command' | 'query_history' }>;
 export type MutationRequest = Exclude<SdkRequest, ReadRequest | QueryRequest | { kind: 'events' | 'acknowledge_events' }>;
 export type StampedMutation = Extract<MutationRequest, { stamp: StampDto }>;
@@ -117,7 +117,8 @@ export class EditorController {
   read(request: ReadRequestV2): ResponseV2 {
     if (this.#lifecycle !== 'ready' || this.#destroyRequested) return this.#unavailable();
     try {
-      if (plainFields(request).kind?.value === 'selection_text') return this.#selectionText(request as SelectionTextRequestV2);
+      const kind = plainFields(request).kind?.value;
+      if (kind === 'selection_text' || kind === 'text_window') return this.#boundedRead(request as SelectionTextRequestV2 | TextWindowRequestV2);
     } catch { return this.#readonly(request as ReadRequest, READS); }
     return this.#readonly(request as ReadRequest, READS);
   }
@@ -274,20 +275,28 @@ export class EditorController {
       return this.#wire(owned.json, false);
     } catch (error) { return this.#refusal(error instanceof DataError ? error.code : 'sdk.invalid_input'); }
   }
-  #selectionText(request: SelectionTextRequestV2): ResponseV2 {
+  #boundedRead(request: SelectionTextRequestV2 | TextWindowRequestV2): ResponseV2 {
     if (this.#abi !== 'editor-sdk/2') return this.#refusal('sdk.invalid_request_kind');
     if (this.#lifecycle !== 'ready' || this.#destroyRequested) return this.#unavailable();
-    let json: string, expectedStamp: DeepReadonly<StampDto>;
+    let json: string, expectedStamp: DeepReadonly<StampDto>, kind: 'selection_text' | 'text_window';
+    let before = 0, after = 0;
     try {
       const owned = ownData(request, this.#limits.requestBytes);
-      if (owned.value.kind !== 'selection_text') throw new DataError('sdk.invalid_request_kind');
+      if (owned.value.kind !== 'selection_text' && owned.value.kind !== 'text_window') throw new DataError('sdk.invalid_request_kind');
+      kind = owned.value.kind;
+      if (owned.value.kind === 'text_window') { before = owned.value.before_utf16; after = owned.value.after_utf16; }
       json = owned.json;
       expectedStamp = owned.value.stamp;
     } catch (error) { return this.#refusal(error instanceof DataError ? error.code : 'sdk.invalid_input'); }
     try {
-      const response = decodeResponseV2(this.#raw!.call(json));
+      const response = decodeResponseV2(this.#raw!.call(json), kind);
       if (response.status === 'fatal') { this.#terminalFailure = response; this.#dispose('fatal'); }
-      if (response.status === 'ok' && (response.value.kind !== 'selection_text' || !stampEqual(response.value.stamp, expectedStamp))) {
+      if (response.status === 'ok' && (response.value.kind !== kind || !('stamp' in response.value) || !stampEqual(response.value.stamp, expectedStamp))) {
+        return this.#fatal('sdk.invalid_response', false);
+      }
+      if (response.status === 'ok' && response.value.kind === 'text_window'
+        && (response.value.before.reduce((n, span) => n + span.text.length, 0) > before
+          || response.value.after.reduce((n, span) => n + span.text.length, 0) > after)) {
         return this.#fatal('sdk.invalid_response', false);
       }
       return response;
@@ -396,6 +405,7 @@ export class EditorController {
 export type EditorControllerV2 = Omit<EditorController, 'read' | 'submit' | 'completeHostRequest'> & {
   read(request: ReadRequest): Response;
   read(request: SelectionTextRequestV2): ResponseV2;
+  read(request: TextWindowRequestV2): ResponseV2;
   read(request: ReadRequestV2): ResponseV2;
   submit(request: MutationRequestV2): Submission;
   completeHostRequest(request: HostRequest, mutation: StampedMutationV2): Submission;

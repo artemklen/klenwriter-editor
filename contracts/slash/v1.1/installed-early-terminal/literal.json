@@ -1,0 +1,62 @@
+{
+  "format": "editor-slash43-early-terminal-literal/1",
+  "status": "FROZEN_BEFORE_CANDIDATE",
+  "sourceHead": "ff6614603e58d03afb7bbc99c1f8c49ac75866ac",
+  "sources": {
+    "contracts/composition/v1/native-oracles.json": {
+      "sha256": "ac17ce35d4dd94f397782ce89fc0567404b3305da1c63a9277309b8c2e16df6c",
+      "cases": [
+        "P18-forward",
+        "P19-forward"
+      ],
+      "input": "U+00B4"
+    },
+    "contracts/slash/installed-v1/oracles.json": {
+      "sha256": "375a31968d037a28d94ee7a24a8cfc2f59ee15cbed8db6e1d40419215733ae55",
+      "fixture": "Pslash"
+    },
+    "crates/kwdj-sdk/src/wire.rs": {
+      "sha256": "d19033b8f4f3f244ec01ffab0ee17a11dd2a770cd1105c589bc94ab9f38f3cdd",
+      "scope": "tagged insert_text payload"
+    },
+    "crates/kwdj/src/commands/inline.rs": {
+      "sha256": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394",
+      "scope": "insert_text one scalar at collapsed native T5 preserves attrs and roles"
+    }
+  },
+  "beforeCanonical": "{\"content\":[{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true},\"content\":[{\"text\":\"pre / tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+  "afterCanonical": "{\"content\":[{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true},\"content\":[{\"text\":\"pre /´ tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+  "roles": {
+    "R": [],
+    "P": [
+      0
+    ],
+    "T": [
+      0,
+      0
+    ]
+  },
+  "beforeCaret": 5,
+  "afterCaret": 6,
+  "affinity": "after",
+  "command": {
+    "id": "org.klenwriter.kwdj/command/insert-text",
+    "payload_json": "{\"kind\":\"insert_text\",\"text\":\"´\"}"
+  },
+  "historyHint": {
+    "kind": "isolated"
+  },
+  "deltas": {
+    "revision": 1,
+    "selection_epoch": 1,
+    "history_epoch": 1,
+    "documentEvents": 1,
+    "stateEvents": 0,
+    "undo_entries": 1
+  },
+  "redoEntries": "0",
+  "dirty": true,
+  "savedRevision": "0",
+  "storedMarks": null,
+  "outcome": "UNOBSERVED_ONLY_NOT_PEACUTE_OR_PRESERVED_OPEN_WINDOW"
+}

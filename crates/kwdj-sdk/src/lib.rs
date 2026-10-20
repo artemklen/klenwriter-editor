@@ -2,6 +2,7 @@
 //! KWDJ legacy SDK adapter over the same typed generic bridge used by other profiles.
 mod convert;
 mod factory;
+pub use convert::target_out;
 pub use factory::{KwdjFactory, KwdjOptionsV2};
 pub mod wire;
 use crate::convert::*;

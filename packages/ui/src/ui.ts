@@ -4,6 +4,8 @@ import type { HostFocus, InteractionMode, MountedEditor, MountedHostRequest } fr
 import type { EditorUi, UiAction, UiActionContext, UiBlockContext, UiCloseReason, UiCommandAction, UiFailure, UiHostAction, UiJson, UiLocale, UiMoveChoice, UiProfile, UiResult, UiText, UiUnavailable } from './types.js';
 import { command, element, fields, host, id, json, list, text, UiError, unavailable } from './data.js';
 import { label } from './strings.js';
+import { slashProfile } from './slash-profile.js';
+import { SlashOwner } from './slash-owner.js';
 
 interface Options {
   readonly editor: MountedEditor; readonly editorElement: HTMLElement;
@@ -48,10 +50,11 @@ function actions(value: unknown, allowed: 'all' | 'commands' | 'hosts'): readonl
 }
 function profile(value: unknown): UiProfile | UiUnavailable {
   const absent = unavailable(value); if (absent) return absent;
-  const f = fields(value, ['toolbar', 'insertions', 'blockActions', 'moves']);
+  const f = fields(value, ['toolbar', 'insertions', 'blockActions', 'moves'], ['slash']);
   if (typeof f.moves !== 'function') throw new UiError('ui.invalid_options');
   return Object.freeze({ toolbar: actions(f.toolbar, 'all'), insertions: actions(f.insertions, 'commands') as readonly UiCommandAction[],
-    blockActions: actions(f.blockActions, 'hosts') as readonly UiHostAction[], moves: f.moves as UiProfile['moves'] });
+    blockActions: actions(f.blockActions, 'hosts') as readonly UiHostAction[], moves: f.moves as UiProfile['moves'],
+    ...(f.slash !== undefined ? {slash:slashProfile(f.slash)} : {}) });
 }
 function moves(value: unknown): readonly UiMoveChoice[] | UiUnavailable {
   const absent = unavailable(value); if (absent) return absent;
@@ -91,6 +94,7 @@ class Ui implements EditorUi {
   #status: HTMLElement; #blockLabel: HTMLElement; #add: Control; #move: Control;
   #controls = new WeakMap<Element, Control>(); #toolbarControls = new Map<string, Control>(); #blockControls = new Map<string, Control>();
   #pending: Pending | null = null; #popup: Popup | null = null; #tasks = new Set<Task>();
+  #slash: SlashOwner | null = null;
   #pointerGesture = new WeakMap<Control, { readonly pointerId: number; admitted: boolean; request: MountedHostRequest | null }>();
   #removals: (() => void)[] = []; #observer: ResizeObserver | null = null; #subscription: (() => void) | null = null;
   #raf: number | null = null; #followupFrames = 0; #rendering = false; #refreshAgain = false; #emitting = false; #callbackDepth = 0;
@@ -122,7 +126,7 @@ class Ui implements EditorUi {
       if (this.#destroyed) return failure('ui.disposed');
       this.#wireInput(); // Mounted input owner is attached before its ready promise resolves.
       this.#initialized = true;
-      const subscription = configuration.editor.subscribe(() => this.refresh());
+      const subscription = configuration.editor.subscribe(event => { this.#slash?.publication(event); this.refresh(); });
       if (typeof subscription !== 'function') {
         const result: UiFailure = subscription.status === 'dom_refused' ? subscription : { status: 'sdk_failure', response: subscription };
         this.#show(result); return result;
@@ -169,6 +173,7 @@ class Ui implements EditorUi {
     this.#listen(configuration.editorElement, 'keyup', () => { if (!this.#pending) { this.#hover = null; this.#pointer = null; } this.refresh(); });
     this.#listen(this.#document, 'selectionchange', () => this.refresh());
     this.#listen(this.#document, 'focusin', () => {
+      this.#slash?.focusChanged();
       const current = this.#document.activeElement;
       if (this.#pending && !this.#pending.abort && current && !this.#insideUi(current)) {
         this.#releasePending('invalidated'); this.#hidePopup();
@@ -212,9 +217,11 @@ class Ui implements EditorUi {
     return control.scope === 'toolbar' ? roots.toolbar : control.scope === 'add' ? roots.entry : roots.gutter;
   }
   #pointerDown(event: PointerEvent): void {
+    this.#slash?.foreignGesture(event.target);
     this.#pointerGesture = new WeakMap();
     const control = this.#find(event.target); if (!control || event.button !== 0 || event.ctrlKey || event.metaKey || event.altKey || this.#destroyed) return;
     const gesture = { pointerId: event.pointerId, admitted: false, request: null as MountedHostRequest | null }; this.#pointerGesture.set(control, gesture);
+    if (control.scope === 'add' && this.#slash?.closeAdd()) { event.preventDefault(); return; }
     if (!this.#pending && !this.#tasks.size && !this.#rendering && !this.#callbackDepth) this.#update();
     if (!control.availability.available || this.#tasks.size) { event.preventDefault(); this.#showControl(control); return; }
     if (this.#popup && control.scope === 'popup') { gesture.request = this.#popup.pending.request; gesture.admitted = true; return; }
@@ -267,7 +274,7 @@ class Ui implements EditorUi {
     if (response.status !== 'ok' || response.value.kind !== 'node') return { status: 'sdk_failure', response };
     return response.value.node;
   }
-  #snapshot(): UiActionContext | UiFailure {
+  #snapshot(preferSelection = false): UiActionContext | UiFailure {
     const editor = this.#options!.editor, context = editor.context(), stamp = editor.capture();
     if (!context || !stamp) return failure('ui.unavailable');
     const reply = editor.read({ kind: 'state' });
@@ -277,8 +284,8 @@ class Ui implements EditorUi {
     const catalog = editor.read({ kind: 'catalog' });
     if (catalog.status === 'dom_refused') return catalog;
     if (catalog.status !== 'ok' || catalog.value.kind !== 'catalog') return { status: 'sdk_failure', response: catalog };
-    let target = this.#hover;
-    if (this.#pointer && !this.#pending) {
+    let target = preferSelection ? null : this.#hover;
+    if (!preferSelection && this.#pointer && !this.#pending) {
       const measured = editor.geometry.read({ kind: 'block_at_point', stamp: state.stamp, ...this.#pointer });
       if (measured.status === 'measured' && measured.target.kind === 'block') target = this.#hover = measured.target.node;
     }
@@ -412,6 +419,7 @@ class Ui implements EditorUi {
       const context = this.#snapshot();
       if ('status' in context) { this.#disable(context, true, context.status === 'dom_refused' ? 'availability' : 'feedback'); return context; }
       if (!same(this.#profileContext, context.context)) {
+        this.#disposeSlash();
         this.#releasePending('invalidated'); this.#hidePopup();
         const selected = profile(this.#callback(() => this.#options!.profile(context.context)));
         if ('status' in selected) { const result = failure('ui.unavailable'); this.#setStatus(selected.message[this.#locale]); this.#disable(result, false); return result; }
@@ -420,15 +428,24 @@ class Ui implements EditorUi {
       if (!same(context.state.stamp, this.#options.editor.capture()) || !same(context.context, this.#options.editor.context())) return failure('ui.unavailable');
       if (this.#pending && !this.#sameCapture(this.#pending, context)) { this.#releasePending('invalidated'); this.#hidePopup(); }
       this.#context = context; this.#labels();
+      if (this.#profile!.slash && !this.#slash) this.#slash = new SlashOwner({
+        editor:this.#options.editor,element:this.#options.editorElement,entry:this.#entry,add:this.#add.button,prefix:this.#prefix,
+        snapshot:()=>this.#snapshot(true),invoke:callback=>this.#callback(callback),
+        availability:(value,captured)=>this.#availability(value,captured),
+        result:result=>this.#emit(result),failure:result=>{this.#show(result);this.#emit(result);},
+        feedback:message=>this.#setStatus(message),schedule:()=>this.refresh(),
+        beforeOpen:()=>{this.#releasePending('invalidated');this.#hidePopup();},
+      },this.#profile!.slash,this.#locale);
       this.#syncControls(this.#toolbarControls, this.#profile!.toolbar, this.#toolbar, 'toolbar', context);
       this.#syncControls(this.#blockControls, this.#profile!.blockActions, this.#gutter, 'block', context);
       const status = this.#options.editor.hostRequests.status();
       this.#add.context = this.#move.context = context;
-      this.#add.availability = { available: status.status === 'available' && this.#profile!.insertions.length > 0, active: null, failure: status.status === 'available' ? null : status, reason: status.status === 'available' ? '' : this.#reason(status) };
+      this.#add.availability = { available: status.status === 'available' && (this.#profile!.slash?.choices.length ?? this.#profile!.insertions.length) > 0, active: null, failure: status.status === 'available' ? null : status, reason: status.status === 'available' ? '' : this.#reason(status) };
       this.#move.availability = { available: status.status === 'available' && context.block !== null, active: null, failure: status.status === 'available' ? null : status, reason: status.status === 'available' ? context.block ? '' : label('unavailable', this.#locale) : this.#reason(status) };
       this.#drawAvailability(this.#add); this.#drawAvailability(this.#move);
       this.#blockLabel.textContent = context.block ? `${label('block', this.#locale).replace('{position}', String(context.block.index + 1)).replace('{type}', this.#typeLabel(context.block.node))} — ${[...context.block.ancestors].reverse().map(node => this.#typeLabel(node)).join(' / ')}` : '';
       this.#position(context);
+      if (this.#profile!.slash) this.#slash?.refresh(this.#profile!.slash,this.#locale);
       if (status.status !== 'available') { this.#releasePending('invalidated'); this.#hidePopup(); this.#setStatus(this.#reason(status), 'availability'); }
       else if (same(context.state.stamp, this.#options.editor.capture()) && same(context.context, this.#options.editor.context())
         && (this.#statusOwner === 'loading' || this.#statusOwner === 'availability')) this.#setStatus('');
@@ -517,6 +534,7 @@ class Ui implements EditorUi {
       : node.primitive === 'container' ? 'container' : node.primitive === 'block_atom' ? 'object' : 'genericBlock', this.#locale);
   }
   #disable(result: UiFailure, show = true, owner: 'availability' | 'feedback' = 'feedback'): void {
+    this.#slash?.retire();
     this.#clearToolbarPlacement();
     for (const control of [...this.#toolbarControls.values(), ...this.#blockControls.values(), this.#add, this.#move]) {
       control.availability = { available: false, active: null, failure: result, reason: this.#reason(result) }; this.#drawAvailability(control);
@@ -572,6 +590,13 @@ class Ui implements EditorUi {
   }
   #openPopup(kind: 'add' | 'move'): void {
     if (this.#popup) { this.#cancelPopup(true); return; }
+    if (kind === 'add' && this.#profile?.slash) {
+      if (this.#slash?.closeAdd()) { this.#releasePending('cancelled'); return; }
+      const pending = this.#capture(this.#options!.slots.entry);
+      if (pending && this.#slash) { this.#pending = null; pending.claimed = true; this.#slash.openAdd(pending.request,pending.context); }
+      return;
+    }
+    this.#slash?.retire();
     const trigger = kind === 'add' ? this.#add.button : this.#move.button;
     const pending = this.#capture(kind === 'add' ? this.#options!.slots.entry : this.#options!.slots.gutter); if (!pending) return;
     const popup = kind === 'add' ? this.#addPopup : this.#movePopup;
@@ -712,7 +737,7 @@ class Ui implements EditorUi {
   }
   setInteractionMode(mode: InteractionMode): ReturnType<MountedEditor['setInteractionMode']> {
     if (!this.#options || this.#destroyed) return { status: 'dom_refused', diagnostic: { code: 'dom.disposed', phase: 'mode', stamp: null, node: null, typeId: null, publication: 'none' } };
-    const result = this.#options.editor.setInteractionMode(mode); this.#releasePending('invalidated'); this.#hidePopup(); this.refresh(); return result;
+    const result = this.#options.editor.setInteractionMode(mode); this.#releasePending('invalidated'); this.#hidePopup(); this.#slash?.retire(); this.refresh(); return result;
   }
   refresh(): void {
     if (this.#destroyed || !this.#initialized || this.#raf !== null) return;
@@ -722,8 +747,13 @@ class Ui implements EditorUi {
     });
   }
   resources(): ReturnType<EditorUi['resources']> {
-    return Object.freeze({ listeners: this.#removals.length, observers: this.#observer ? 1 : 0, animationFrames: this.#raf === null ? 0 : 1,
-      subscriptions: this.#subscription ? 1 : 0, hostRequests: this.#pending ? 1 : 0, continuations: this.#tasks.size });
+    const slash = this.#slash?.resources();
+    return Object.freeze({ listeners: this.#removals.length + (slash?.listeners ?? 0), observers: this.#observer ? 1 : 0, animationFrames: this.#raf === null ? 0 : 1,
+      subscriptions: (this.#subscription ? 1 : 0) + (slash?.subscriptions ?? 0), hostRequests: (this.#pending ? 1 : 0) + (slash?.hostRequests ?? 0), continuations: this.#tasks.size + (slash?.continuations ?? 0) });
+  }
+  #disposeSlash(): void {
+    const owner = this.#slash; this.#slash = null;
+    if (owner) this.#track(owner.destroy(),()=>{},()=>{});
   }
   #finishDisposal(): void { if (this.#destroyed && !this.#tasks.size) for (const resolve of this.#settle.splice(0)) resolve(); }
   destroy(): ReturnType<EditorUi['destroy']> {
@@ -731,6 +761,7 @@ class Ui implements EditorUi {
       this.#destroyed = true; this.#onResult = undefined;
       if (this.#raf !== null) this.#window.cancelAnimationFrame(this.#raf); this.#raf = null; this.#followupFrames = 0;
       this.#releasePending('destroyed'); this.#hidePopup();
+      this.#disposeSlash();
       for (const task of this.#tasks) { task.done = null; task.dispose?.(); task.dispose = null; }
       this.#subscription?.(); this.#subscription = null; this.#observer?.disconnect(); this.#observer = null;
       for (const remove of this.#removals.splice(0)) remove();

@@ -32,6 +32,7 @@ const routes = new Map([
   ['/ui-fixture.css', ['spikes/workspace/ui-fixture.css', 'text/css']],
   ['/ui-style.css', ['packages/ui/dist/style.css', 'text/css']],
   ['/ui-contract/geometry-fixtures.json', ['contracts/ui/v1/geometry-fixtures.json', 'application/json']],
+  ['/slash-contract/strings.json', ['contracts/slash/v1/strings.json', 'application/json']],
   ['/ui-contract/v1.1/manifest.json', ['contracts/ui/v1.1/manifest.json', 'application/json']],
   ['/ui-contract/v1.1/toolbar-placement-cases.json', ['contracts/ui/v1.1/toolbar-placement-cases.json', 'application/json']],
   ['/ui-contract/v1.1/toolbar-placement.md', ['contracts/ui/v1.1/toolbar-placement.md', 'text/plain']],

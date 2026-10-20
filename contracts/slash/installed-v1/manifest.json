@@ -1,0 +1,32 @@
+{
+  "format": "editor-slash-installed-contract-freeze/1",
+  "status": "FROZEN_BEFORE_INSTALLED_IMPLEMENTATION",
+  "frozenAt": "2026-10-20T11:45:38.682190+00:00",
+  "files": [
+    {
+      "path": "facade-plan.md",
+      "bytes": 6133,
+      "sha256": "6c5cd1ef776e4fce57d2dfa0d78bf7f10f0bac629b9479991c08b0889dab716a"
+    },
+    {
+      "path": "freeze-decisions.md",
+      "bytes": 3291,
+      "sha256": "2487b6612d24e6a133b7ab344b276aae4f5c089e0745a324cc1e281edd55dc31"
+    },
+    {
+      "path": "oracle-authoring.md",
+      "bytes": 508,
+      "sha256": "d2a8791176b837c1cf23d139159d6272537d22c12f18cd2410e83cf7913ead6b"
+    },
+    {
+      "path": "oracles.json",
+      "bytes": 35149,
+      "sha256": "375a31968d037a28d94ee7a24a8cfc2f59ee15cbed8db6e1d40419215733ae55"
+    },
+    {
+      "path": "transport-plan.md",
+      "bytes": 5667,
+      "sha256": "53270d450d320858360e7c121537254fd7960125d85754e1d7fd9d322144adba"
+    }
+  ]
+}

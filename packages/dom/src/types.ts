@@ -1,7 +1,22 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // OSR-40 adds selection/clipboard capabilities; the OSR-39 contract snapshot remains frozen.
-import type { CommandDto, CreateEditorOptionsV2, DeepReadonly, EditorControllerV2, EventDto, MarkDto, MutationRequestV2, NodeViewDto, ProfileDto, QueryRequest, ReadRequest, ReadRequestV2, Response, ResponseV2, SelectionDto, SelectionTextRequestV2, SessionContextV2, StampDto, Submission } from '@klenwriter/editor-sdk';
+import type { CommandDto, CreateEditorOptionsV2, DeepReadonly, EditorControllerV2, EventDto, MarkDto, MutationRequestV2, NodeViewDto, ProfileDto, QueryRequest, ReadRequest, ReadRequestV2, Response, ResponseV2, SelectionDto, SelectionTextRequestV2, SessionContextV2, StampDto, Submission, TextWindowRequestV2, TextWindowReplyV2 } from '@klenwriter/editor-sdk';
 export type InteractionMode = 'editable' | 'readOnly' | 'disabled';
+export type OrdinaryInputType = 'insertText'|'insertReplacementText'|'insertParagraph'|'insertLineBreak'|'deleteContentBackward'|'deleteContentForward'|'historyUndo'|'historyRedo';
+export interface OrdinaryInputObservation {
+  readonly kind:'ordinary_input'; readonly inputType:OrdinaryInputType; readonly isTrusted:boolean; readonly dataHint:string|null;
+  readonly before:DeepReadonly<StampDto>; readonly after:DeepReadonly<StampDto>; readonly context:DeepReadonly<SessionContextV2>;
+  readonly selectionBefore:DeepReadonly<SelectionDto>|null; readonly selectionAfter:DeepReadonly<SelectionDto>|null;
+  readonly beforeWindow:DeepReadonly<TextWindowReplyV2>|null;
+}
+export interface MountedInputObservations { subscribe(observer:(event:OrdinaryInputObservation)=>void):(()=>void)|DomRefusal }
+export interface MountedPopupPresentationHandle {
+  update(options:{readonly activeOption:HTMLElement|null}):Readonly<{status:'updated';stamp:DeepReadonly<StampDto>;context:DeepReadonly<SessionContextV2>}>|DomRefusal;
+  dispose():void;
+}
+export interface MountedPopupPresentation {
+  open(options:{readonly element:HTMLElement;readonly listbox:HTMLElement;readonly activeOption:HTMLElement|null}):Readonly<{status:'opened';presentation:MountedPopupPresentationHandle;stamp:DeepReadonly<StampDto>;context:DeepReadonly<SessionContextV2>}>|DomRefusal;
+}
 export type MountedLifecycle = 'loading' | 'ready' | 'recoveryRequired' | 'disposing' | 'destroyed' | 'fatal';
 export type DomCode = 'dom.invalid_options' | 'dom.not_ready' | 'dom.disposed' | 'dom.renderer_binding_mismatch' | 'dom.renderer_missing' | 'dom.presentation_unsupported' | 'dom.command_unsupported' | 'dom.explicit_method_required' | 'dom.composition_conflict' | 'dom.mode_blocked' | 'dom.native_read_only' | 'dom.busy' | 'dom.stale_replace' | 'dom.reconcile_limit' | 'dom.recovery_required' | 'dom.recovery_callback_failed' | 'dom.invalid_bookmark' | 'dom.stale_selection' | 'dom.selection_unsynchronized' | 'dom.selection_missing' | 'dom.selection_limit' | 'dom.clipboard_unavailable' | 'dom.clipboard_write_failed' | 'dom.clipboard_timeout' | 'dom.selection_geometry_unsupported' | 'dom.invalid_host_request' | 'dom.stale_host_request' | CompositionDomCode;
 export interface DomDiagnostic {
@@ -44,7 +59,7 @@ export interface RendererCatalogDefinition {
 /** Created only by defineRendererCatalog; opaque trusted capability witness. */
 export interface RendererCatalog { readonly definition: RendererCatalogDefinition; readonly __rendererCatalog: unique symbol }
 export interface MountEditorOptions { readonly element: HTMLElement; readonly editor: CreateEditorOptionsV2; readonly renderers: RendererCatalog; readonly mode?: InteractionMode; readonly onRecovery?: (packet: RecoveryPacket) => void; readonly onRefusal?: (failure: DomRefusal) => void; readonly clipboard?: ClipboardConfiguration }
-export interface MountedResourceCounts { readonly sdk: ReturnType<EditorControllerV2['resources']>; readonly dom: Readonly<{ listeners: number; observers: number; continuations: number; retainedInputBytes: number; retainedRecoveryRegions: number }>; readonly selection: SelectionResourceCounts; readonly clipboard: ClipboardResourceCounts; readonly hostRequests: Readonly<{pending:number;focusContinuations:number}> }
+export interface MountedResourceCounts { readonly sdk: ReturnType<EditorControllerV2['resources']>; readonly dom: Readonly<{ listeners: number; observers: number; continuations: number; retainedInputBytes: number; retainedRecoveryRegions: number }>; readonly selection: SelectionResourceCounts; readonly clipboard: ClipboardResourceCounts; readonly hostRequests: Readonly<{pending:number;focusContinuations:number}>; readonly inputObservations: Readonly<{subscribers:number}>; readonly popupPresentation: Readonly<{handles:number}> }
 export interface MountedEditor {
   readonly ready: Promise<MountedReady>;
   readonly lifecycle: MountedLifecycle;
@@ -54,8 +69,11 @@ export interface MountedEditor {
   readonly clipboard: MountedClipboardController;
   readonly geometry: MountedGeometry;
   readonly hostRequests: MountedHostRequests;
+  readonly inputObservations: MountedInputObservations;
+  readonly popupPresentation: MountedPopupPresentation;
   read(request: ReadRequest): Response | DomRefusal;
   read(request: SelectionTextRequestV2): ResponseV2 | DomRefusal;
+  read(request: TextWindowRequestV2): ResponseV2 | DomRefusal;
   read(request: ReadRequestV2): ResponseV2 | DomRefusal;
   query(request: QueryRequest): Response | DomRefusal;
   submit(request: MountedMutation): MountedSubmission;

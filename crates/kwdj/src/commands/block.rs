@@ -1673,7 +1673,7 @@ fn insert_block<V: CandidateRead>(
     }
     let mut cut = prepare_inline_cut(view, selected, plan)?;
     let header = get(view, cut.block, plan)?;
-    if !matches!(kind(header.type_id), "paragraph" | "heading") {
+    if !super::is_slash_text_block(header.type_id) {
         return Err(unsupported());
     }
     let at = index(view, header.parent, cut.block, plan)?;

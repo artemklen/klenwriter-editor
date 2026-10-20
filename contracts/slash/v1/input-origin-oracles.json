@@ -1,0 +1,27 @@
+{
+  "format":"editor-slash-input-origin-source-oracles/1",
+  "status":"AUTHORED_BEFORE_RUNTIME_NOT_EXECUTED",
+  "sourceRevision":"3960664b286b0939d3e7d8e724183eb9f7b71ee6",
+  "authority":["packages/dom/src/input.ts","packages/dom/src/composition.ts","contracts/slash/v1/behavior.md"],
+  "cases":[
+    {"id":"O01-ordinary-cancelable","ownedPermit":false,"cancelable":true,"inputType":"insertText","data":"/","native":"completed-ok-changed-fresh","correspondence":"not-required","expected":{"notifications":1,"mayOpenAfterNativeWindowChecks":true}},
+    {"id":"O02-composition-cancelable","ownedPermit":true,"cancelable":true,"inputType":"insertText","data":"/","native":"completed-ok-changed-fresh","expected":{"notifications":0,"mayOpenAfterNativeWindowChecks":false}},
+    {"id":"O03-ordinary-noncancelable","ownedPermit":false,"cancelable":false,"inputType":"insertText","data":"/","native":"completed-ok-changed-fresh","correspondence":"all-checks-pass","expected":{"notifications":1,"mayOpenAfterNativeWindowChecks":true}},
+    {"id":"O04-composition-noncancelable","ownedPermit":true,"cancelable":false,"inputType":"insertText","data":"/","native":"completed-ok-changed-fresh","correspondence":"all-checks-pass","expected":{"notifications":0,"dispatch":"submitComposition","mayOpenAfterNativeWindowChecks":false}},
+    {"id":"O05-queued","ownedPermit":false,"cancelable":true,"inputType":"insertText","data":"/","native":"queued-eventual-ok","expected":{"notifications":0,"mayOpenAfterNativeWindowChecks":false,"replay":false}},
+    {"id":"O06-refused","ownedPermit":false,"native":"completed-refused","expected":{"notifications":0,"mayOpenAfterNativeWindowChecks":false}},
+    {"id":"O07-fatal","ownedPermit":false,"native":"completed-fatal","expected":{"notifications":0,"mayOpenAfterNativeWindowChecks":false}},
+    {"id":"O08-unchanged","ownedPermit":false,"native":"completed-ok-unchanged","expected":{"notifications":0,"mayOpenAfterNativeWindowChecks":false}},
+    {"id":"O09-recovery","ownedPermit":false,"cancelable":false,"native":"completed-ok-changed","correspondence":"post-submit-delete-mismatch","expected":{"notifications":0,"mayOpenAfterNativeWindowChecks":false,"recoveryPreserved":true}},
+    {"id":"O10-publication-reentry","ownedPermit":false,"native":"completed-ok-changed","freshAfterCallbacks":false,"expected":{"notifications":0,"mayOpenAfterNativeWindowChecks":false}},
+    {"id":"O11-missing-before-witness","ownedPermit":false,"native":"completed-ok-changed-fresh","beforeWindow":null,"expected":{"mayOpenAfterNativeWindowChecks":false}},
+    {"id":"O12-data-hint-is-not-authority","ownedPermit":false,"data":"/","nativeAfterWindowLiteral":"x","expected":{"mayOpenAfterNativeWindowChecks":false}},
+    {"id":"O13-synthetic-trust-preserved","ownedPermit":false,"isTrusted":false,"native":"completed-ok-changed-fresh","expected":{"reportedTrust":false,"physicalEvidence":false}},
+    {"id":"O14-multi-insert","ownedPermit":false,"inputType":"insertText","data":"/quote","native":"completed-ok-changed-fresh","expected":{"newOpening":false}},
+    {"id":"O15-replacement","ownedPermit":false,"inputType":"insertReplacementText","data":"/","native":"completed-ok-changed-fresh","expected":{"newOpening":false}},
+    {"id":"O16-dismissed-anchor-edit","frame":"dismissed","inputType":"insertText","data":"q","nativeLiteral":"/q","expected":{"newOpening":false}},
+    {"id":"O17-ordinary-query-edit","frame":"active-matching-anchor","inputType":"deleteContentBackward","native":"completed-ok-changed-fresh","nativeLiteral":"/q","expected":{"mayRefreshAfterNativeWindowChecks":true}},
+    {"id":"O18-foreign-publication","frame":"active","inputOrigin":null,"native":"changed","expected":{"frame":"closed","replay":false}}
+  ],
+  "note":"These are independent branch expectations, not counts of implemented tests. Every positive opening additionally needs exact native windows, eligible lexical boundary, full tokens and ready owner guards. Notification count for null beforeWindow is intentionally unspecified; null cannot certify opening."
+}

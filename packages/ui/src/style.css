@@ -16,6 +16,10 @@
 .kw-ui-popup{display:flex;flex-direction:column;gap:4px;max-width:min(32rem,100%);max-height:60vh;overflow:auto;padding:6px;border:1px solid #60736a;border-radius:6px;box-shadow:0 3px 12px #0002;z-index:3}
 .kw-ui-popup[hidden]{display:none}
 .kw-ui-popup .kw-ui-button{text-align:start}
+.kw-ui-slash{position:absolute;left:0;top:100%;width:max-content;min-width:min(18rem,100%)}
+.kw-ui-slash-option{display:flex;flex-direction:column;gap:2px}
+.kw-ui-slash-option[aria-selected=true]{outline:2px solid #1e5bca;outline-offset:-2px;background:#e2eaff}
+.kw-ui-slash-option .kw-ui-reason:empty{display:none}
 .kw-ui-floating{position:fixed;max-width:min(24rem,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow:auto;z-index:3}
 @media(prefers-reduced-motion:reduce){.kw-ui-toolbar,.kw-ui-gutter,.kw-ui-popup{scroll-behavior:auto;transition:none;animation:none}}
 @media(forced-colors:active){.kw-ui-button:focus-visible,.kw-ui-popup:focus-visible{outline-color:Highlight}.kw-ui-button[aria-disabled=true]{color:GrayText}}

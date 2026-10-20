@@ -1,0 +1,205 @@
+{
+  "format": "osr43-native-public-read-proposal-source-pins/1",
+  "createdAt": "2026-10-20T10:55:48.666595+00:00",
+  "baseline": "3960664b286b0939d3e7d8e724183eb9f7b71ee6",
+  "observedHead": "3960664b286b0939d3e7d8e724183eb9f7b71ee6",
+  "statusPorcelain": "?? contracts/slash/\n",
+  "files": [
+    {
+      "path": "crates/protocol/src/lib.rs",
+      "bytes": 13477,
+      "sha256": "34bdfbce364e45c89b3c531985ca1a4728da3142b903c585ce3b0a9058ab55b3"
+    },
+    {
+      "path": "crates/protocol/src/v2.rs",
+      "bytes": 4058,
+      "sha256": "c3c4e5cc707241e6f69508ec9a06a6db9f793ca671fb6ca9b7c021eb22119275"
+    },
+    {
+      "path": "crates/core/src/document.rs",
+      "bytes": 4361,
+      "sha256": "d8e7f3cd3860da9db9b0842899ed0b4e1df623437d8aee485dfbb11606518651"
+    },
+    {
+      "path": "crates/core/src/candidate.rs",
+      "bytes": 2556,
+      "sha256": "d3780e54117837a626a4930bc24022be1262afbcea95ccf0865434d4c47f51ff"
+    },
+    {
+      "path": "crates/core/src/positions.rs",
+      "bytes": 16213,
+      "sha256": "94ce04c115a062a6b203c2e124afcaa295ad6d9b26a4c0aaaa7bf155fcac50ff"
+    },
+    {
+      "path": "crates/core/src/transaction.rs",
+      "bytes": 15125,
+      "sha256": "26f4f6457129afe08f09b5c35d857ccc7b3f41bad417e226f055a711f2fd2f14"
+    },
+    {
+      "path": "crates/engine/src/lib.rs",
+      "bytes": 1283,
+      "sha256": "1eb011baa7b939681152702281cb603de201cb71afd451283eef18fa0668daa1"
+    },
+    {
+      "path": "crates/engine/src/session.rs",
+      "bytes": 35352,
+      "sha256": "156f018cf9927ec8ea0648b2ffac873a3807886019020cda6445efd7a294a7b5"
+    },
+    {
+      "path": "crates/engine/src/tree.rs",
+      "bytes": 197736,
+      "sha256": "d1bc2205af12063d4b3b6386f0198830d321ba35b8f2a1d4ae4962d075caedda"
+    },
+    {
+      "path": "crates/engine/src/tree_impact.rs",
+      "bytes": 43082,
+      "sha256": "9ebf7c53e8c11eee7dc144434549d4f9be632913e607bd78fa4035e322e08ec6"
+    },
+    {
+      "path": "crates/bridge/src/lib.rs",
+      "bytes": 36728,
+      "sha256": "1d59524a4db8ac7de9793f9ccd352e34f18c7e2da55b8b408690ed1ce2016600"
+    },
+    {
+      "path": "crates/bridge/src/selection.rs",
+      "bytes": 5533,
+      "sha256": "7bb062321beb7914f3b122bc121c986efd9d5e2c962ae0fabf043ed25e2d133b"
+    },
+    {
+      "path": "crates/bridge/src/convert.rs",
+      "bytes": 13259,
+      "sha256": "c2a8303ca7ea4a88c5b395add6860e536b69875e0b1b7ec036f7d65acc10a815"
+    },
+    {
+      "path": "crates/bridge/src/distribution.rs",
+      "bytes": 8875,
+      "sha256": "b6d9580c1e801931bbf8f09ed3e1a756b7792823522d66c1fef5c1c6982498d7"
+    },
+    {
+      "path": "crates/bridge/src/recipes.rs",
+      "bytes": 6504,
+      "sha256": "3a59dc1f45c0ff5580f675d2367c1158e1927c488c2aacb1d96dbbc0a31b4021"
+    },
+    {
+      "path": "crates/kwdj/src/commands/mod.rs",
+      "bytes": 8311,
+      "sha256": "aeb7ea6abb41a69405e7876fe5df6a9572d7a544f05308be4de84f708ed7a8e4"
+    },
+    {
+      "path": "crates/kwdj/src/commands/block.rs",
+      "bytes": 90571,
+      "sha256": "85ca66ce1c5121f6ef73e6159819bbedc0c934729a18c287cdc03e02b197cc0e"
+    },
+    {
+      "path": "crates/kwdj/src/commands/inline.rs",
+      "bytes": 58026,
+      "sha256": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394"
+    },
+    {
+      "path": "crates/kwdj-sdk/src/lib.rs",
+      "bytes": 17616,
+      "sha256": "0dd3fe70557e2e5f7c1eb1e125ec4dffc67e335278d8803b59b1ec0b47cf7474"
+    },
+    {
+      "path": "crates/kwdj-sdk/src/factory.rs",
+      "bytes": 35265,
+      "sha256": "e6a46b164afb21ff350d4c8c7d1b3e8266bf91393b9b12465e8752ef5d8284db"
+    },
+    {
+      "path": "crates/kwdj-sdk/src/wire.rs",
+      "bytes": 12999,
+      "sha256": "d19033b8f4f3f244ec01ffab0ee17a11dd2a770cd1105c589bc94ab9f38f3cdd"
+    },
+    {
+      "path": "crates/kwdj-sdk/src/convert.rs",
+      "bytes": 4900,
+      "sha256": "6586e933c1bb3d76f51101b9c33f0ff62c3350dd029a01bef7f056af458c4833"
+    },
+    {
+      "path": "crates/notes-sdk/src/factory.rs",
+      "bytes": 3600,
+      "sha256": "a6385b01d56a1de2fe1a8aa43839bfdb34eb8b4df7ecec323f7c04178bc910b8"
+    },
+    {
+      "path": "crates/wasm/examples/sdk_types_v2.rs",
+      "bytes": 1204,
+      "sha256": "7e78606e4f7e3e6a4b4b77ad1bb10cee4575ed415f9e1c9b3b84278630d806a0"
+    },
+    {
+      "path": "crates/wasm/examples/dom_inventory.rs",
+      "bytes": 4543,
+      "sha256": "d15bcc150887268545a9f7f132594f09880fd56dc598001c792a76d98e80b60f"
+    },
+    {
+      "path": "scripts/generate-sdk-types.mjs",
+      "bytes": 10900,
+      "sha256": "1b544e51d6a63cab39a4f5e26cd894a05e62ee7ce696bdf615ff3e8caee37802"
+    },
+    {
+      "path": "scripts/generate-dom-inventory.mjs",
+      "bytes": 2999,
+      "sha256": "25ce971af3091e27f5ac0f9b61b97cdcd7e35d7022d7642901034444249658d8"
+    },
+    {
+      "path": "packages/wasm/src/sdk-types-v2.ts",
+      "bytes": 2708,
+      "sha256": "06f45400e7bb1e1d21194ec294f3cf4436c13d6c716353e48b640ddb6006fea8"
+    },
+    {
+      "path": "packages/wasm/src/sdk.ts",
+      "bytes": 20280,
+      "sha256": "bc561a4fa33ad80b42346a7dcbb4a25b5255a811b25e6b53c49f4fe991e3ae91"
+    },
+    {
+      "path": "packages/sdk/src/controller.ts",
+      "bytes": 25035,
+      "sha256": "4bbfc4e4221c91c6a4aaeb6db6ac6ab18267363662f0dc6c8b53a1c516b0b509"
+    },
+    {
+      "path": "packages/sdk/src/response.ts",
+      "bytes": 8318,
+      "sha256": "1fe7e543fa502aeca2fc8d515e70e81be2b5c88f6b3f3cc5aac0f235b737e46c"
+    },
+    {
+      "path": "packages/dom/src/types.ts",
+      "bytes": 13547,
+      "sha256": "7eb8bc06c8a24b7128e228db3f9c6d31a84443c95135acf24bdd82b63ee44a6c"
+    },
+    {
+      "path": "packages/dom/src/mounted.ts",
+      "bytes": 37397,
+      "sha256": "818305bdc5e37696ed74fb2c84eefcd5bde72bc01b5a64bbbe22503da8ee2d3a"
+    },
+    {
+      "path": "packages/kwdj/src/index.ts",
+      "bytes": 1536,
+      "sha256": "f369b51656c4840107b4db51dc157ce7b2635888a73896b52ad113be6ce612ca"
+    },
+    {
+      "path": "packages/ui/src/ui.ts",
+      "bytes": 55447,
+      "sha256": "64525bda5906c241c27ccf63657c1b642d891c79adde0d278edfe136f664e0a5"
+    },
+    {
+      "path": "docs/commands.md",
+      "bytes": 8047,
+      "sha256": "071b31f33b53c5e1e4a85e8778c6574ecd712cdf8f523b98b5322024dba0c0ca"
+    },
+    {
+      "path": "docs/command-parity.md",
+      "bytes": 5826,
+      "sha256": "d7b441897ae8bfbd8acecb24b0e8e50f50d508563328aa81c2c8a03b3229ec1f"
+    },
+    {
+      "path": "docs/m0/ux-contract.md",
+      "bytes": 21511,
+      "sha256": "6841a9c011019eebb75c141e5d7bf9e646409b6d7bb0801c507c3f62800a3a29"
+    }
+  ],
+  "proposal": {
+    "path": "/tmp/osr-43-native-public-read-contract-proposal-01.md",
+    "bytes": 11536,
+    "sha256": "04e6e9181f5895d694150432d75a0dd6c285491439a4643daa3c426c13d2925e"
+  },
+  "scope": "SOURCE_AUTHORED_ONLY; no editor/native/WASM/browser/build/test execution; no repository writes; root concurrently authors untracked contracts/slash"
+}

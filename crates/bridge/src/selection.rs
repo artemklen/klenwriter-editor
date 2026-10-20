@@ -117,6 +117,24 @@ impl<P: CommandProvider, A: BridgeAdapter<P>> Bridge<P, A> {
         }
         match request {
             BridgeRequestV2::Common(request) => self.call(request).into(),
+            BridgeRequestV2::TextWindow(TextWindowRequestV2::TextWindow {
+                stamp,
+                before_utf16,
+                after_utf16,
+            }) => match self.text_window(&stamp, before_utf16, after_utf16) {
+                Ok(value) => SdkResponseV2::Ok {
+                    value: Box::new(value),
+                },
+                Err(mut diagnostic) => {
+                    if diagnostic.stamp.is_none() {
+                        diagnostic.stamp = self
+                            .session
+                            .as_ref()
+                            .map(|s| Box::new(stamp_out(s.stamp())));
+                    }
+                    SdkResponseV2::Refused { diagnostic }
+                }
+            },
             BridgeRequestV2::SelectionText(SelectionTextRequestV2::SelectionText {
                 stamp,
                 max_bytes,

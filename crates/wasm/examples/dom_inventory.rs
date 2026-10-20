@@ -94,6 +94,36 @@ fn main() {
         &editor_kwdj::registry::registry_descriptor(),
         &[editor_kwdj::registry::base_registration()],
     );
+    // Static catalog comes from native command targets and the same compiled
+    // registration witness; no JavaScript target registry is authored here.
+    for id in [
+        "org.klenwriter.kwdj/command/insert-block",
+        "org.klenwriter.kwdj/command/accept-slash",
+    ] {
+        assert!(
+            kwdj["commandWitnesses"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|w| w["id"] == id)
+        );
+    }
+    let insertions: Vec<_> = editor_kwdj::commands::KWDJ_SLASH_CANDIDATES.iter().map(|candidate| {
+        serde_json::json!({"id": candidate.id, "target": editor_kwdj_sdk::target_out(&candidate.target)})
+    }).collect();
+    let text_types: Vec<_> = editor_kwdj::commands::KWDJ_SLASH_TEXT_BLOCK_TYPES
+        .iter()
+        .map(|id| {
+            let actual = kwdj["inventory"]["nodes"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|node| node["id"] == *id)
+                .expect("eligible native type is compiled");
+            assert_eq!(actual["primitive"], "text_block");
+            *id
+        })
+        .collect();
     let notes_descriptor =
         serde_json::from_slice(include_bytes!("../../../examples/notes-extension/d0.json"))
             .expect("shipped Notes D0 descriptor");
@@ -105,7 +135,7 @@ fn main() {
     );
     serde_json::to_writer_pretty(
         std::io::stdout(),
-        &serde_json::json!({"format": "klenwriter-editor-dom-inventory/1", "kwdj": kwdj, "notesD0": notes}),
+        &serde_json::json!({"format": "klenwriter-editor-dom-inventory/1", "kwdj": kwdj, "notesD0": notes, "kwdjInsertions": {"candidates": insertions, "textBlockTypes": text_types}}),
     )
     .unwrap();
     println!();
