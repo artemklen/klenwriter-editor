@@ -1,0 +1,79 @@
+{
+  "format": "osr42-during-pointer-observation-source-manifest/1",
+  "createdAt": "2026-10-20T00:58:40.017680+00:00",
+  "status": "SOURCE_AUTHORING_NOT_ACCEPTANCE",
+  "files": [
+    {
+      "path": "observation.md",
+      "bytes": 2596,
+      "sha256": "9302e91249126ecf1fd070824f8ec46685f457372fe2d3fee578870b11d3296e"
+    },
+    {
+      "path": "cases.json",
+      "bytes": 4290,
+      "sha256": "23117459985f70f33353ca38ed74383ea30d6e447d394c9bae95520ee66a8d05"
+    }
+  ],
+  "sourcePins": [
+    {
+      "path": "scripts/ui-native/composition-observation.mjs",
+      "bytes": 14779,
+      "sha256": "062eb1d495e5352d16220fd03e73b343959dc7d16763f67bf8e6abb8bf318e8a"
+    },
+    {
+      "path": "scripts/ui-native-acceptance.mjs",
+      "bytes": 40928,
+      "sha256": "f482e3c1f17431683163589bb5dd1336ee8c017af103ad1fbcc047260c7fa881"
+    },
+    {
+      "path": "scripts/ui-native/page-fixture.mjs",
+      "bytes": 13979,
+      "sha256": "d08db9449e5b62676169c96a493e65a46290ca5f70a8a650f698c4f2d738d7b1"
+    },
+    {
+      "path": "tests/ui-composition-observation.node.mjs",
+      "bytes": 10757,
+      "sha256": "2b59437594ab54dec7b4ccc8bfcb52f5925f6a3117c19b3d3a1097535a23a7c8"
+    },
+    {
+      "path": "tests/ui-composition-after-click.node.mjs",
+      "bytes": 10531,
+      "sha256": "683519d2f7185bc41dec45e71b66ed96c4eab685c153d67aaa0ed0a385c883c1"
+    },
+    {
+      "path": "tests/ui-native-input.node.mjs",
+      "bytes": 19216,
+      "sha256": "2a7250a2b78bfbcc07bcacb11efb84863354f13830371c750b5bd063dbb3f70c"
+    },
+    {
+      "path": "contracts/ui/v1.1/composition-after-click-observation/observation.md",
+      "bytes": 3914,
+      "sha256": "561e911895c8f8985590459028905055628542d072587f4879e6e3451b26f495"
+    },
+    {
+      "path": "contracts/ui/v1.1/composition-after-click-observation/cases.json",
+      "bytes": 19108,
+      "sha256": "5f9224fba546dd8b068e1052882103df12c176ca5ba2a946b469fd2223ca1a0b"
+    },
+    {
+      "path": "contracts/ui/v1.1/pointer-gesture.md",
+      "bytes": 3003,
+      "sha256": "c834a5ab13d41ebc6861c550556ebe879821378e077a8428cd2b714f1ab02376"
+    },
+    {
+      "path": "contracts/ui/v1.1/pointer-capture-continuity.md",
+      "bytes": 3008,
+      "sha256": "13fd1b809ecc12e75f8ae47ed9092171103cd41ef6ea6ac4e5fa1504c0235c90"
+    }
+  ],
+  "historicalChrome05": {
+    "path": "/tmp/osr-42-installed-development-2f3d6a9-05/chrome/chrome.json",
+    "bytes": 20287589,
+    "sha256": "f1c7090a046bec75360995ae6a033a088d8eec53e602eb1c72a96f2d5a979246",
+    "status": "FAILED",
+    "canRetroclassify": false,
+    "foreignUpClickTargetRemainsFailure": true
+  },
+  "repoChanges": false,
+  "runtimeOrOSExecuted": false
+}

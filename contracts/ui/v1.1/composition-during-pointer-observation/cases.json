@@ -1,0 +1,168 @@
+{
+  "format": "osr42-during-pointer-observation-cases/1",
+  "status": "SOURCE_AUTHORED_BEFORE_CLASSIFIER_CANDIDATE",
+  "baseFacts": {
+    "sameOriginalMountContextClockAndPrefixes": true,
+    "trustedStart": 100,
+    "preeditCheckpoint": 120,
+    "terminal": {
+      "time": 140,
+      "ordinal": 2,
+      "isTrusted": false
+    },
+    "down": {
+      "time": 150,
+      "ordinal": 3,
+      "isTrusted": true,
+      "pointerId": 17,
+      "targetObject": 101,
+      "isPrimary": true
+    },
+    "up": {
+      "time": 160,
+      "ordinal": 4,
+      "isTrusted": true,
+      "pointerId": 17,
+      "targetObject": 101,
+      "isPrimary": true
+    },
+    "click": {
+      "time": 161,
+      "ordinal": 5,
+      "isTrusted": true,
+      "pointerId": 17,
+      "targetObject": 101,
+      "detail": 1
+    },
+    "guardTargetObject": 101,
+    "nativeInsert": {
+      "startedAt": 154,
+      "finishedAt": 155,
+      "oneExpectedOriginalRequestResponse": true,
+      "fullExistingSemanticChecks": true
+    },
+    "checkpoint": 180,
+    "domRawFocus": "exact preedit equality",
+    "otherSemanticCalls": [],
+    "uiResults": [],
+    "pendingUiAndHostRequests": 0
+  },
+  "cases": [
+    {
+      "id": "DP01",
+      "name": "one expected own settlement during completed matching pointer",
+      "overrides": {},
+      "expected": {
+        "duringPointer": "UNOBSERVED",
+        "protectedGestureAcceptance": false,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    },
+    {
+      "id": "DP02",
+      "name": "native starts before down",
+      "overrides": {
+        "nativeInsert": {
+          "startedAt": 149,
+          "finishedAt": 150,
+          "oneExpectedOriginalRequestResponse": true,
+          "fullExistingSemanticChecks": true
+        }
+      },
+      "expected": {
+        "duringPointer": "FAILED",
+        "protectedGestureAcceptance": false,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    },
+    {
+      "id": "DP03",
+      "name": "native finishes after click",
+      "overrides": {
+        "nativeInsert": {
+          "startedAt": 161,
+          "finishedAt": 162,
+          "oneExpectedOriginalRequestResponse": true,
+          "fullExistingSemanticChecks": true
+        }
+      },
+      "expected": {
+        "duringPointer": "FAILED",
+        "protectedGestureAcceptance": false,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    },
+    {
+      "id": "DP04",
+      "name": "up/click land on foreign BODY object",
+      "overrides": {
+        "up": {
+          "time": 160,
+          "ordinal": 4,
+          "isTrusted": true,
+          "pointerId": 17,
+          "targetObject": 102,
+          "isPrimary": true
+        },
+        "click": {
+          "time": 161,
+          "ordinal": 5,
+          "isTrusted": true,
+          "pointerId": 17,
+          "targetObject": 102,
+          "detail": 1
+        }
+      },
+      "expected": {
+        "duringPointer": "FAILED",
+        "protectedGestureAcceptance": false,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    },
+    {
+      "id": "DP05",
+      "name": "additional Strong command",
+      "overrides": {
+        "otherSemanticCalls": [
+          "org.klenwriter.kwdj/command/toggle-mark"
+        ]
+      },
+      "expected": {
+        "duringPointer": "FAILED",
+        "protectedGestureAcceptance": false,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    },
+    {
+      "id": "DP06",
+      "name": "provisional DOM/range/focus changed",
+      "overrides": {
+        "domRawFocus": "different"
+      },
+      "expected": {
+        "duringPointer": "FAILED",
+        "protectedGestureAcceptance": false,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    },
+    {
+      "id": "DP07",
+      "name": "missing observed terminal",
+      "overrides": {
+        "terminal": null
+      },
+      "expected": {
+        "duringPointer": "FAILED",
+        "protectedGestureAcceptance": false,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    }
+  ],
+  "closedBounds": {
+    "startEqualDownAndFinishEqualClick": "eligible only with all other proof",
+    "beforeOrAfterInterval": "FAILED in this subset",
+    "afterClickForDP01": "FAILED",
+    "twoCommands": "FAILED",
+    "foreignTargetEvenExactNativeInsertion": "FAILED"
+  }
+}
