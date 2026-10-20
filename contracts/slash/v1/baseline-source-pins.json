@@ -1,0 +1,24 @@
+{
+  "status": "pre_candidate_source_authoring",
+  "revision": "3960664b286b0939d3e7d8e724183eb9f7b71ee6",
+  "tree": "0f24703a5dc7f9c1fd2689a87a8cb2afaecdaadd",
+  "files": {
+    "docs/m0/architecture.md": "13f7a2c183643961331322a5f78afdf8b0b7aa5169972fc581f5368c55fda6e3",
+    "docs/m0/master-plan.md": "40433e71a0b10a48db9dfe9eac5cc37a004114b549d38ee25101195773a61c14",
+    "docs/m0/ux-contract.md": "6841a9c011019eebb75c141e5d7bf9e646409b6d7bb0801c507c3f62800a3a29",
+    "crates/kwdj/src/commands/mod.rs": "aeb7ea6abb41a69405e7876fe5df6a9572d7a544f05308be4de84f708ed7a8e4",
+    "crates/kwdj/src/commands/block.rs": "85ca66ce1c5121f6ef73e6159819bbedc0c934729a18c287cdc03e02b197cc0e",
+    "crates/protocol/src/v2.rs": "c3c4e5cc707241e6f69508ec9a06a6db9f793ca671fb6ca9b7c021eb22119275",
+    "crates/bridge/src/selection.rs": "7bb062321beb7914f3b122bc121c986efd9d5e2c962ae0fabf043ed25e2d133b",
+    "packages/dom/src/input.ts": "96d74ec9cbb3f2d0c2daa2297434a4556ca0aac3823e56530af7baf18d77e3ae",
+    "packages/dom/src/mounted.ts": "818305bdc5e37696ed74fb2c84eefcd5bde72bc01b5a64bbbe22503da8ee2d3a",
+    "packages/dom/src/types.ts": "7eb8bc06c8a24b7128e228db3f9c6d31a84443c95135acf24bdd82b63ee44a6c",
+    "packages/ui/src/types.ts": "a888a837cd8147861e5602a9e9c03c68420982a409911953f356f38ccb0c087a",
+    "packages/ui/src/ui.ts": "64525bda5906c241c27ccf63657c1b642d891c79adde0d278edfe136f664e0a5",
+    "packages/ui/src/data.ts": "5d70d0a5f39b735c34badf21b227b58ecf9fd86131436e46b45f29b2aec92e14",
+    "packages/ui/src/strings.ts": "a598835681bb8c2d13908cc5e0ff5ecb1c89242820fe85ee0ce589b4729ca96f",
+    "packages/kwdj/src/index.ts": "f369b51656c4840107b4db51dc157ce7b2635888a73896b52ad113be6ce612ca",
+    "packages/sdk/src/controller.ts": "4bbfc4e4221c91c6a4aaeb6db6ac6ab18267363662f0dc6c8b53a1c516b0b509",
+    "packages/wasm/src/sdk-types-v2.ts": "06f45400e7bb1e1d21194ec294f3cf4436c13d6c716353e48b640ddb6006fea8"
+  }
+}

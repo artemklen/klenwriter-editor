@@ -1,0 +1,353 @@
+{
+  "format": "editor-slash-text-window-source-oracles/1",
+  "status": "AUTHORED_BEFORE_RUNTIME_NOT_EXECUTED",
+  "sourceRevision": "3960664b286b0939d3e7d8e724183eb9f7b71ee6",
+  "contract": "native-api.md + freeze-decisions.md",
+  "notation": "$T/P/A/B bind genuine native IDs bijectively from authored paths; full native stamps/context are read setup, never guessed tokens. Unspecified after is empty when requested0. Spans echo actual caret, selection, block and bounded nearest-first ancestors.",
+  "purity": "For every read/refusal compare exact before/after state/canonical/live IDs/event cursors/history/resources; no identities or mutation publications. Relative allocation measurements are not shared native/WASM constants.",
+  "cases": [
+    {
+      "id": "W01-start",
+      "text": "/head",
+      "caret": 5,
+      "before": 5,
+      "after": 0,
+      "expectedBefore": [
+        {
+          "node": "$T",
+          "from_utf16": 0,
+          "to_utf16": 5,
+          "text": "/head"
+        }
+      ],
+      "before_stop": "block",
+      "after_stop": "block"
+    },
+    {
+      "id": "W02-middle",
+      "text": "a😀b",
+      "caret": 3,
+      "before": 3,
+      "after": 1,
+      "expectedBefore": [
+        {
+          "node": "$T",
+          "from_utf16": 0,
+          "to_utf16": 3,
+          "text": "a😀"
+        }
+      ],
+      "expectedAfter": [
+        {
+          "node": "$T",
+          "from_utf16": 3,
+          "to_utf16": 4,
+          "text": "b"
+        }
+      ],
+      "before_stop": "block",
+      "after_stop": "block"
+    },
+    {
+      "id": "W03-scalar-round",
+      "text": "a😀b",
+      "caret": 3,
+      "before": 1,
+      "after": 0,
+      "expectedBefore": [],
+      "before_stop": "window_limit",
+      "after_stop": "window_limit"
+    },
+    {
+      "id": "W04-surrogate-caret",
+      "scope": "private-invalid-native-position-only; public set_selection refuses setup",
+      "text": "a😀b",
+      "caret": 2,
+      "before": 1,
+      "after": 0,
+      "expected": "refused, no half-surrogate output; existing position diagnostic"
+    },
+    {
+      "id": "W05-decomposed",
+      "text": "é/",
+      "caret": 3,
+      "before": 3,
+      "after": 0,
+      "expectedBefore": [
+        {
+          "node": "$T",
+          "from_utf16": 0,
+          "to_utf16": 3,
+          "text": "é/"
+        }
+      ],
+      "before_stop": "block",
+      "after_stop": "block"
+    },
+    {
+      "id": "W06-marks",
+      "leaves": [
+        {
+          "role": "A",
+          "text": "/he",
+          "marks": [
+            "strong"
+          ]
+        },
+        {
+          "role": "B",
+          "text": "ad",
+          "marks": [
+            "emphasis"
+          ]
+        }
+      ],
+      "caret": {
+        "node": "B",
+        "offset": 2
+      },
+      "before": 5,
+      "after": 0,
+      "expectedBefore": [
+        {
+          "node": "$A",
+          "from_utf16": 0,
+          "to_utf16": 3,
+          "text": "/he"
+        },
+        {
+          "node": "$B",
+          "from_utf16": 0,
+          "to_utf16": 2,
+          "text": "ad"
+        }
+      ],
+      "before_stop": "block",
+      "after_stop": "block"
+    },
+    {
+      "id": "W07-hard-break",
+      "children": [
+        {
+          "role": "A",
+          "text": "/he"
+        },
+        {
+          "role": "BR",
+          "primitive": "hard_break"
+        },
+        {
+          "role": "B",
+          "text": "ad"
+        }
+      ],
+      "caret": {
+        "node": "B",
+        "offset": 2
+      },
+      "before": 256,
+      "after": 0,
+      "expectedBefore": [
+        {
+          "node": "$B",
+          "from_utf16": 0,
+          "to_utf16": 2,
+          "text": "ad"
+        }
+      ],
+      "before_stop": "hard_break",
+      "after_stop": "block"
+    },
+    {
+      "id": "W08-inline-atom",
+      "scope": "generic/prepare-only if no shipped profile admits inline atom; not sealed KWDJ proof",
+      "children": [
+        {
+          "role": "A",
+          "text": "/he"
+        },
+        {
+          "role": "ATOM",
+          "primitive": "inline_atom"
+        },
+        {
+          "role": "B",
+          "text": "ad"
+        }
+      ],
+      "caret": {
+        "node": "B",
+        "offset": 2
+      },
+      "before": 256,
+      "after": 0,
+      "expectedBefore": [
+        {
+          "node": "$B",
+          "from_utf16": 0,
+          "to_utf16": 2,
+          "text": "ad"
+        }
+      ],
+      "before_stop": "inline_atom",
+      "after_stop": "block"
+    },
+    {
+      "id": "W09-empty",
+      "block": "$P",
+      "selection": {
+        "kind": "child",
+        "parent": "$P",
+        "index": 0,
+        "affinity": "after"
+      },
+      "before": 256,
+      "after": 0,
+      "expectedBefore": [],
+      "expectedAfter": [],
+      "before_stop": "block",
+      "after_stop": "block",
+      "noInventedTextId": true
+    },
+    {
+      "id": "W10-request-cap",
+      "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "caret": 256,
+      "before": 256,
+      "after": 0,
+      "expectedBefore": [
+        {
+          "node": "$T",
+          "from_utf16": 0,
+          "to_utf16": 256,
+          "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "before_stop": "block",
+      "after_stop": "block"
+    },
+    {
+      "id": "W11-request-over",
+      "before": 257,
+      "after": 0,
+      "diagnostic": "text_window.window_limit"
+    },
+    {
+      "id": "W12-combined-over",
+      "before": 128,
+      "after": 129,
+      "diagnostic": "text_window.window_limit"
+    },
+    {
+      "id": "W13-source-exact",
+      "textRecipe": {
+        "repeat": "a",
+        "count": 65538
+      },
+      "caret": 32768,
+      "before": 0,
+      "after": 0,
+      "expectedBefore": [],
+      "expectedAfter": [],
+      "before_stop": "window_limit",
+      "after_stop": "window_limit",
+      "scalarLookupVisits": 32768
+    },
+    {
+      "id": "W14-source-over",
+      "textRecipe": {
+        "repeat": "a",
+        "count": 65538
+      },
+      "caret": 32769,
+      "before": 0,
+      "after": 0,
+      "diagnostic": "text_window.source_scan_limit"
+    },
+    {
+      "id": "W15-source-cumulative",
+      "textRecipe": {
+        "repeat": "a",
+        "count": 65538
+      },
+      "caret": 32768,
+      "before": 1,
+      "after": 0,
+      "diagnostic": "text_window.source_scan_limit"
+    },
+    {
+      "id": "W16-long-tail",
+      "textRecipe": {
+        "repeat": "a",
+        "count": 65538
+      },
+      "caret": 65538,
+      "before": 256,
+      "after": 0,
+      "expectedBefore": [
+        {
+          "node": "$T",
+          "from_utf16": 65282,
+          "to_utf16": 65538,
+          "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "before_stop": "window_limit",
+      "after_stop": "block"
+    },
+    {
+      "id": "W17-null",
+      "selection": null,
+      "diagnostic": "selection.required"
+    },
+    {
+      "id": "W18-root-gap",
+      "selection": {
+        "kind": "child",
+        "parent": "$ROOT",
+        "index": 0,
+        "affinity": "after"
+      },
+      "diagnostic": "text_window.unsupported_context"
+    },
+    {
+      "id": "W19-noncollapsed",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$T",
+          "offset": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$T",
+          "offset": 1,
+          "affinity": "before"
+        }
+      },
+      "diagnostic": "text_window.unsupported_context"
+    },
+    {
+      "id": "W20-zero-inside",
+      "text": "abc",
+      "caret": 1,
+      "before": 0,
+      "after": 0,
+      "expectedBefore": [],
+      "expectedAfter": [],
+      "before_stop": "window_limit",
+      "after_stop": "window_limit"
+    }
+  ],
+  "additionalNegativeInventory": [
+    "closed DTO missing/unknown/negative/fraction/bool caps",
+    "each of five stale stamp fields",
+    "foreign session",
+    "fatal and disposed boundary",
+    "1024/1025 cumulative node visits with genuine fixture admission qualification",
+    "128/129 root-inclusive path with admission versus read distinction",
+    "reply-bound before allocation",
+    "generic Notes supported without slash semantics"
+  ]
+}
