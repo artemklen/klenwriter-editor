@@ -482,7 +482,10 @@ class MountedOwner implements MountedEditor {
         this.#observer?.disconnect();
         const state = this.#state();
         let renderFailure: DomRefusal | null;
-        try { renderFailure = state ? this.#view!.initialize(state) : this.#failure('dom.presentation_unsupported','replace'); }
+        try {
+          if(state){this.#selectionOwner.viewReplaced();renderFailure=this.#view!.initialize(state);}
+          else renderFailure=this.#failure('dom.presentation_unsupported','replace');
+        }
         catch { renderFailure = this.#failure('dom.presentation_unsupported','replace'); }
         if (renderFailure) this.#recover({ ...renderFailure,diagnostic:{...renderFailure.diagnostic,phase:'replace',publication:'alreadyPublished',stamp:controller.capture()} });
         else this.#replacementInput = null;

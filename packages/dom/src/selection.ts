@@ -29,6 +29,7 @@ export class SelectionOwner {
   #serial=0n;#focusSerial=0n;#exhausted=false;#destroyed=false;#attached=false;
   #publishing=0;#ownPermit=0;#restoreTickets=0;#frames:SubmissionFrame[]=[];#removals:(()=>void)[]=[];
   #pointer:PointerOwner|null=null;#raf:number|null=null;#tabEntry=false;#rangeWriting=0;
+  #heldMouse:number|null=null;#retiredViewImport=false;
   #inputIntentObserver:InputIntentObserver|null=null;
   #knownInvalidation:SubmissionFrame|null=null;
   #focusPermits=new WeakMap<ResultFocusPermit,FocusEntry>();
@@ -69,6 +70,8 @@ export class SelectionOwner {
     if(this.#raf!==null){host?.ownerDocument.defaultView?.cancelAnimationFrame(this.#raf);this.#raf=null;}
     if(pointer && host)try{if(host.hasPointerCapture(pointer.id))host.releasePointerCapture(pointer.id);}catch{/* Only this owned pointer. */}
   }
+  /** Actual remount only: the old held gesture cannot supply a fresh-view caret. */
+  viewReplaced():void { if(!this.#destroyed && this.#heldMouse!==null)this.#retiredViewImport=true; }
   beginSubmission(request:MountedMutation,input:boolean):SubmissionFrame {
     const own=this.#ownPermit>0;if(own)this.#ownPermit--;
     for(const frame of this.#frames)frame.reentrant=true;
@@ -223,7 +226,7 @@ export class SelectionOwner {
     const stamp=this.configuration.capture();if(!stamp)return this.#refuse('dom.not_ready');
     this.#publishing++;this.#ownPermit++;try{return this.configuration.submit({kind:'set_selection',stamp:stamp as StampDto,selection:selection as SelectionDto|null});}finally{this.#publishing--;this.#ownPermit=0;}
   }
-  syncFromDom():DeepReadonly<SelectionDto>|DomRefusal|null {
+  syncFromDom(freshInput=false):DeepReadonly<SelectionDto>|DomRefusal|null {
     if(this.#rangeWriting || this.#guard())return null;
     const view=this.configuration.view(),selection=view?.readSelection();if(!selection || isDomRefusal(selection))return isDomRefusal(selection)?this.#fromView(selection):null;
     const state=this.#state();if('status' in state)return this.#refuse('dom.not_ready');
@@ -232,13 +235,25 @@ export class SelectionOwner {
       const result=this.#publish(selection);if(isDomRefusal(result))return result;
       if(result.status!=='completed' || result.response.status!=='ok')return this.#refuse('dom.busy');
     }
+    if(freshInput)this.#retiredViewImport=false;
     return selection;
   }
   attach():void {
     if(this.#attached || this.#destroyed)return;
     const host=this.configuration.element(),doc=host?.ownerDocument,win=doc?.defaultView;if(!host || !doc || !win)return;this.#attached=true;
-    const listen=(target:EventTarget,type:string,fn:EventListener)=>{target.addEventListener(type,fn);this.#removals.push(()=>target.removeEventListener(type,fn));};
+    const listen=(target:EventTarget,type:string,fn:EventListener,capture=false)=>{target.addEventListener(type,fn,capture);this.#removals.push(()=>target.removeEventListener(type,fn,capture));};
     const owned=(target:EventTarget|null)=>target instanceof win.Node && host.contains(target);
+    // Window capture precedes an outside UI handle's stopped document bubble.
+    // Retain only physical identity, not an event, target or selection capability.
+    listen(win,'pointerdown',event=>{
+      const p=event as PointerEvent;
+      if(!p.isTrusted || !p.isPrimary || p.pointerType!=='mouse' || p.button!==0)return;
+      this.#heldMouse=null;
+      if((p.buttons&1) && Number.isSafeInteger(p.pointerId) && p.pointerId>=0 && doc.hasFocus() && this.ownsFocus())this.#heldMouse=p.pointerId;
+    },true);
+    for(const type of ['pointerup','pointercancel'])listen(win,type,event=>{
+      const p=event as PointerEvent;if(p.isTrusted && p.pointerType==='mouse' && this.#heldMouse===p.pointerId)this.#heldMouse=null;
+    },true);
     listen(doc,'keydown',event=>{
       const key=event as KeyboardEvent;
       this.#tabEntry=key.key==='Tab' && !key.altKey && !key.ctrlKey && !key.metaKey && !owned(key.target);
@@ -249,13 +264,17 @@ export class SelectionOwner {
         if(root.status!=='ok' || root.value.kind!=='node')return;
         this.#publish({anchor:{kind:'child',parent:state.root,index:0,affinity:'after'},focus:{kind:'child',parent:state.root,index:root.value.node.children.length,affinity:'after'}});return;
       }
+      if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].includes(key.key) && key.isTrusted && !key.isComposing && !key.defaultPrevented && doc.hasFocus() && this.ownsFocus() && !this.#guard())this.#retiredViewImport=false;
       if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown','Backspace','Delete','Enter','Escape'].includes(key.key)){this.invalidate(false,key);this.cancel();}
     });
     listen(doc,'keyup',event=>{if((event as KeyboardEvent).key==='Tab')this.#tabEntry=false;});
     listen(doc,'pointerdown',event=>{
       const pointer=event as PointerEvent;this.#tabEntry=false;this.#focusChanged();
       this.cancel();if(!owned(pointer.target))return;this.invalidate(false,pointer);
-      if(pointer.button===0 && pointer.isPrimary && pointer.pointerType==='mouse' && !this.#guard())this.#pointer={id:pointer.pointerId,x:pointer.clientX,y:pointer.clientY,anchor:null};
+      if(pointer.button===0 && pointer.isPrimary && pointer.pointerType==='mouse' && !this.#guard()){
+        if(pointer.isTrusted && !pointer.defaultPrevented && doc.hasFocus())this.#retiredViewImport=false;
+        this.#pointer={id:pointer.pointerId,x:pointer.clientX,y:pointer.clientY,anchor:null};
+      }
     });
     listen(doc,'mousedown',event=>{
       const mouse=event as MouseEvent,p=this.#pointer;
@@ -298,7 +317,7 @@ export class SelectionOwner {
       }
     });
     listen(doc,'selectionchange',()=>{
-      if(this.#rangeWriting || this.#guard() || !this.ownsFocus())return;
+      if(this.#retiredViewImport || this.#rangeWriting || this.#guard() || !this.ownsFocus())return;
       const p=this.#pointer;
       if(p){
         if(!p.anchor)return;
@@ -334,5 +353,5 @@ export class SelectionOwner {
     this.#writePointerRange(p,focus);
     if(this.#pointer && geometry.scroller.scrollTop!==previous)this.#schedule();
   }
-  destroy():void {if(this.#destroyed)return;this.cancel();this.invalidate(true);this.#destroyed=true;for(const remove of this.#removals.splice(0))remove();}
+  destroy():void {if(this.#destroyed)return;this.cancel();this.#heldMouse=null;this.#retiredViewImport=false;this.invalidate(true);this.#destroyed=true;for(const remove of this.#removals.splice(0))remove();}
 }

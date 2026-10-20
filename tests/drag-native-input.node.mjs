@@ -1,0 +1,87 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+// Controlled mock-process lane only. No actual helper, AX, browser or native input.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createInputOwner,fixedTransitions} from '../scripts/drag-installed/input.mjs';
+const nonce='a'.repeat(32),frame={x:10,y:20,width:1040,height:850};
+const config={format:'osr44-drag-http-broker/1',nonce,title:'KlenWriter Drag native '+nonce,fixtureUrl:'http://127.0.0.1:4174/ui'};
+function setup({mutateGuard,mode,inspectPid=42,caseId='I44-N01-en'}={}){
+  const invocations=[],records=[];let serial=0;
+  const stamp={session:'mock',generation:'1',revision:'0',selection_epoch:'1',history_epoch:'0'},context={build_id:'mock-only'};
+  const gate=async(action,cleanup=false)=>{
+    const point=['hover-source','move-start','down'].includes(action)?{x:20,y:20}:{x:100,y:100};
+    const value={nonce,url:config.fixtureUrl,title:config.title,mountedId:'ui42-1',caseId,action,serial:++serial,editorConnected:true,allowed:true,releaseOnly:cleanup,documentFocused:true,
+      sourceObject:'o1',handleObject:'o2',targetObject:'o3',viewport:{width:1024,height:768,scale:1,offsetLeft:0,offsetTop:0,pageZoom:1},point,actualUnpressedHandleMove:true,stamp,context};
+    const g={id:nonce+':'+serial,start:process.hrtime.bigint(),value};mutateGuard?.(g,action,cleanup);return g;
+  };
+  const run=(command,args)=>{
+    assert.equal(command,'mock-helper-never-executed');const request=JSON.parse(args[1]);invocations.push({flag:args[0],request});
+    if(args[0]==='--inspect-window')return{returnCode:0,stdout:JSON.stringify({status:'inspected',delivery:'not_sent',nonce,browser:'chrome',contained:true,frontPid:inspectPid,axWindow:frame})};
+    const literalKeys={'zoom-in':{normal:['command-down','shift-down','key24-down','key24-up','shift-up','command-up'],cleanup:['command-up','shift-up','key24-up']}};
+    const actual={format:'osr44-native-input-result/1',request,action:request.action,postedTransitions:literalKeys[request.action]?.[request.cleanupOnly?'cleanup':'normal']??fixedTransitions(request.action,request.cleanupOnly),coreComplete:true,status:'sent',delivery:'sent',frontPid:42,axWindow:frame,screenPoint:{x:request.point?.x??0,y:request.point?.y??0}};
+    const special=mode?.(request,actual);if(special)throw Object.assign(Error('Controlled opaque/late completion'),{execution:{returnCode:2,stdout:JSON.stringify(special),stderr:'mock-only'}});
+    return{returnCode:0,stdout:JSON.stringify(actual)};
+  };
+  const owner=createInputOwner({browser:'chrome',config,inputHelper:'mock-helper-never-executed',run,record:(kind,value)=>records.push({kind,value}),guard:a=>gate(a),cleanupGuard:a=>gate(a,true),mountedId:()=>'ui42-1',ownedPointerPid:()=>42});
+  return{owner,invocations,records};
+}
+async function down(f){await f.owner.input('hover-source');await f.owner.input('move-start');await f.owner.input('down');assert.equal(f.owner.pointerDown,true);}
+test('D44-I01 original down held-move and up use separate closed phases with one owner',async()=>{
+  const f=setup();await down(f);await f.owner.input('move-1');await f.owner.input('up');assert.equal(f.owner.pointerDown,false);assert.equal(f.owner.disabled,false);
+  const posts=f.invocations.filter(x=>x.flag==='--request').map(x=>x.request);assert.deepEqual(posts.map(x=>x.action),['hover-source','move-start','down','move-1','up']);
+  assert.deepEqual(posts.map(x=>x.pointerDown),[false,false,false,true,true]);for(const p of posts){assert.equal(p.pid,42);assert.deepEqual(p.rootFrame,frame);assert.equal(p.sourceObject,'o1');}
+});
+test('D44-I02 a foreign mount nonce or repeated serial refuses before any platform request',async()=>{
+  for(const field of ['nonce','mountedId']){const f=setup({mutateGuard:g=>g.value[field]='foreign'});await assert.rejects(f.owner.input('hover-source'));assert.equal(f.invocations.length,0);}
+  const f=setup({mutateGuard:g=>g.value.serial=1});await f.owner.input('hover-source');const n=f.invocations.length;await assert.rejects(f.owner.input('move-start'));assert.equal(f.invocations.length,n);
+});
+test('D44-I03 an expired initial guard and foreign original browser PID cannot bind input',async()=>{
+  const expired=setup({mutateGuard:g=>g.start-=2_000_000_000n});await assert.rejects(expired.owner.input('hover-source'),/expired/);assert.equal(expired.invocations.length,0);
+  const foreign=setup({inspectPid:43});await assert.rejects(foreign.owner.input('hover-source'),/Chrome PID/);assert.equal(foreign.invocations.filter(x=>x.flag==='--request').length,0);
+});
+test('D44-I04 unknown original Down retains one matching UP-only cleanup and forbids replay',async()=>{
+  const f=setup({mode:(r,a)=>r.action==='down'?{...a,coreComplete:false,status:'unknown',delivery:'unknown/may_have_sent'}:null});
+  await f.owner.input('hover-source');await f.owner.input('move-start');await assert.rejects(f.owner.input('down'));assert.equal(f.owner.pointerDown,true);assert.equal(f.owner.disabled,true);
+  await assert.rejects(f.owner.input('down'));const release=await f.owner.releaseOwnedPointer();assert.equal(release.status,'released');assert.equal(f.owner.pointerDown,false);
+  const n=f.invocations.length;assert.equal((await f.owner.releaseOwnedPointer()).status,'not_required');assert.equal(f.invocations.length,n);
+  const posts=f.invocations.filter(x=>x.flag==='--request').map(x=>x.request);assert.equal(posts.filter(x=>x.action==='down').length,1);assert.deepEqual(posts.at(-1).action,'up');assert.equal(posts.at(-1).cleanupOnly,true);
+});
+test('D44-I05 opaque move and failed cleanup cannot allocate a second release or another Down',async()=>{
+  const f=setup({mode:(r,a)=>(r.action==='move-1'||r.cleanupOnly)?{...a,coreComplete:false,postedTransitions:[],status:'unknown',delivery:'unknown/may_have_sent'}:null});
+  await down(f);await assert.rejects(f.owner.input('move-1'));assert.equal((await f.owner.releaseOwnedPointer()).status,'failed');const n=f.invocations.length;
+  assert.equal((await f.owner.releaseOwnedPointer()).status,'already_attempted');await assert.rejects(f.owner.input('down'));assert.equal(f.invocations.length,n);
+});
+test('D44-I06 complete original Up with late refusal retires ownership before the failure',async()=>{
+  const f=setup({mode:(r,a)=>r.action==='up'?{...a,status:'refused',delivery:'unknown/may_have_sent'}:null});await down(f);await assert.rejects(f.owner.input('up'));
+  assert.equal(f.owner.pointerDown,false);const n=f.invocations.length;assert.equal((await f.owner.releaseOwnedPointer()).status,'not_required');assert.equal(f.invocations.length,n);
+});
+test('D44-I07 wrong request echo or nonliteral transition cannot manufacture completed Up',async()=>{
+  for(const corrupt of ['echo','transition']){
+    const f=setup({mode:(r,a)=>r.action==='up'&&!r.cleanupOnly?{...a,...(corrupt==='echo'?{request:{...r,handleObject:'o999'}}:{postedTransitions:['down','up']})}:null});
+    await down(f);await assert.rejects(f.owner.input('up'));assert.equal(f.owner.pointerDown,true);assert.equal((await f.owner.releaseOwnedPointer()).status,'released');
+  }
+});
+test('D44-I08 a held native-stamp change refuses before move while same-owner cleanup remains release-only',async()=>{
+  const f=setup({mutateGuard:(g,action,cleanup)=>{if(action==='move-1'&&!cleanup)g.value.stamp={...g.value.stamp,revision:'1'};}});await down(f);const n=f.invocations.length;
+  await assert.rejects(f.owner.input('move-1'),/native stamp/);assert.equal(f.invocations.length,n);assert.equal((await f.owner.releaseOwnedPointer()).status,'released');
+});
+
+test('D44-I09 an original fixed modifier/key program has exact complete source-literal release',async()=>{
+  const f=setup({caseId:'I44-N03-en'}),receipt=await f.owner.input('zoom-in');
+  assert.deepEqual(receipt.actual.postedTransitions,['command-down','shift-down','key24-down','key24-up','shift-up','command-up']);
+  assert.equal(receipt.request.point,null);assert.equal(receipt.request.cleanupOnly,false);assert.equal(f.owner.keysPending,false);
+  const n=f.invocations.length;assert.equal((await f.owner.releaseOwnedKeys()).status,'not_required');assert.equal(f.invocations.length,n);
+});
+test('D44-I10 an unknown partial modifier/key core permits one source-literal UP-only cleanup',async()=>{
+  const f=setup({caseId:'I44-N03-en',mode:(r,a)=>r.action==='zoom-in'&&!r.cleanupOnly?{...a,coreComplete:false,status:'unknown',delivery:'unknown/may_have_sent',postedTransitions:['command-down','shift-down','key24-down']}:null});
+  await assert.rejects(f.owner.input('zoom-in'));assert.equal(f.owner.keysPending,true);await assert.rejects(f.owner.input('zoom-in'));
+  const cleanup=await f.owner.releaseOwnedKeys();assert.equal(cleanup.status,'released');assert.equal(f.owner.keysPending,false);
+  assert.deepEqual(cleanup.receipt.actual.postedTransitions,['command-up','shift-up','key24-up']);assert.equal(cleanup.receipt.request.action,'zoom-in');assert.equal(cleanup.receipt.request.cleanupOnly,true);assert.equal(cleanup.receipt.request.point,null);
+  const posts=f.invocations.filter(x=>x.flag==='--request').map(x=>x.request);assert.equal(posts.filter(x=>!x.cleanupOnly).length,1);assert.equal(posts.filter(x=>x.cleanupOnly).length,1);
+  const n=f.invocations.length;assert.equal((await f.owner.releaseOwnedKeys()).status,'not_required');assert.equal(f.invocations.length,n);
+});
+test('D44-I11 a complete original key core with late refusal never allocates a redundant release',async()=>{
+  const f=setup({caseId:'I44-N03-en',mode:(r,a)=>r.action==='zoom-in'?{...a,status:'refused',delivery:'unknown/may_have_sent'}:null});
+  await assert.rejects(f.owner.input('zoom-in'));assert.equal(f.owner.keysPending,false);assert.equal(f.owner.disabled,true);
+  const n=f.invocations.length;assert.equal((await f.owner.releaseOwnedKeys()).status,'not_required');assert.equal(f.invocations.length,n);
+});

@@ -8,7 +8,11 @@ plaintext copy/cut реализованы поверх SDK2. [Composition41](doc
 добавляет toolbar/move/host dialogs и optional slash/insertion picker43.
 `npm run test:slash` проверяет frozen contracts, native/sealed semantic literals,
 bounded text-window reads и controlled/public types; slash browser cases входят
-в существующий `test:ui:browser`. Clipboard47, полная a11y66 и vanilla alpha сохраняют отдельные
+в существующий `test:ui:browser`. [Block drag44](docs/drag.md) добавляет optional
+pointer handle поверх того же native Move и клавиатурного меню. `npm run test:drag`
+проверяет native/sealed semantics и controlled owner/types; `test:drag:browser`
+проверяет mounted geometry, pointer и lifecycle во всех трёх движках.
+Clipboard47, полная a11y66 и vanilla alpha сохраняют отдельные
 задачи и acceptance gates.
 Следуйте [архитектуре](docs/m0/architecture.md)
 и контракту задачи Linear. Реализуйте общую семантику на Rust; KWDJ остаётся отдельным
@@ -18,6 +22,14 @@ bounded text-window reads и controlled/public types; slash browser cases вхо
 
 Нужны Git, публичный доступ к crates.io/npm/Rust toolchain downloads и системные
 build tools для Rust. CMS checkout, DB, private registry и секреты не нужны.
+
+Для локальных Playwright checks на macOS используйте свежий каталог данных
+приложения в child environment: `CFFIXED_USER_HOME` указывает на отдельный
+task-owned `browser-appdata`, `TMPDIR` — на отдельный каталог в `/private/tmp`.
+Так запускался принятый OSR-43 gate; без отдельного appdata Firefox может
+завершиться до открытия страницы с `Could not find profile folder`.
+Это окружение только браузерных checks. Installed input helpers используют
+реальное пользовательское окружение, чтобы сохранить существующие grants.
 
 1. Установите Node **24.22.0** (CI pin `.node-version`) и npm **11.14.0**.
    Node 26 допускается для разработки, но acceptance lane использует Node 24.

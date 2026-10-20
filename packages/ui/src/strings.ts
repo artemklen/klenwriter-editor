@@ -16,5 +16,18 @@ const copy = {
   block: ['Блок {position}: {type}', 'Block {position}: {type}'],
   document: ['Документ', 'Document'], textBlock: ['Текстовый блок', 'Text block'],
   container: ['Контейнер', 'Container'], object: ['Объект', 'Object'], genericBlock: ['Блок', 'Block'],
+  drag: ['Перетащить блок; Enter — меню перемещения', 'Drag block; Enter opens the move menu'],
+  dragMissing: ['Перетаскивание недоступно в этом профиле. Используйте меню перемещения.', 'Dragging is unavailable in this profile. Use the move menu.'],
+  dragPreview: ['Перемещение блока', 'Moving block'],
+  dragParents: ['Родитель назначения: ← / → — выбрать, Escape — отменить', 'Destination parent: ← / → to choose, Escape to cancel'],
+  dragEdge: ['Перед / после блока', 'Before / after block'],
+  dragBefore: ['Перед: {block}', 'Before: {block}'],
+  dragAfter: ['После: {block}', 'After: {block}'],
+  dragInside: ['Внутрь: {block}', 'Inside: {block}'],
+  dragGeometry: ['Нет полностью видимой позиции для переноса.', 'No fully visible drop position.'],
+  dragLimit: ['Достигнут предел перетаскивания. Начните новый жест.', 'Drag limit reached. Start a new gesture.'],
+  dragCancelled: ['Перемещение отменено.', 'Move cancelled.'],
+  dragMoved: ['Блок перемещён.', 'Block moved.'],
+  externalDrop: ['Внешнее перетаскивание недоступно.', 'External drop is unavailable.'],
 } as const;
 export function label(key: keyof typeof copy, locale: UiLocale): string { return copy[key][locale === 'ru' ? 0 : 1]; }

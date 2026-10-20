@@ -76,7 +76,7 @@ test.beforeEach(async({page},info)=>{
 test.afterEach(async({page},info)=>{
   const record=records.get(page);if(!record)return;
   try{
-    for(const id of record.mounts){const result=await call(page,'destroy',id);record.cleanup.push({id,...result});expect(result.ui).toEqual({listeners:0,observers:0,animationFrames:0,subscriptions:0,hostRequests:0,continuations:0});
+    for(const id of record.mounts){const result=await call(page,'destroy',id);record.cleanup.push({id,...result});expect(result.ui).toEqual({listeners:0,observers:0,animationFrames:0,subscriptions:0,hostRequests:0,continuations:0,dragGestures:0,pointerCaptures:0});
       expect(result.mounted.dom.listeners).toBe(0);expect(result.mounted.dom.observers).toBe(0);expect(result.mounted.dom.continuations).toBe(0);expect(result.mounted.selection).toEqual({bookmarks:0,restoreTickets:0,activePointers:0,animationFrames:0});
       expect(result.mounted.clipboard).toEqual({pending:0,continuations:0,retainedTextBytes:0});for(const key of ['sessions','listeners','queued_mutations','queued_bytes','pending_tickets','host_requests','task_continuations'])expect(result.mounted.sdk[key]).toBe(0);
       expect(result.mounted.hostRequests).toEqual({pending:0,focusContinuations:0});

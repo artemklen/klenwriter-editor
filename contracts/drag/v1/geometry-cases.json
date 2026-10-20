@@ -1,0 +1,520 @@
+{
+  "format": "editor-drag-geometry-cases/1",
+  "authoredBeforeBrowserExecution": true,
+  "authority": "contracts/drag/v1/api.md + original OSR44 AC; selected source-first quarter/midpoint policy; frozen OSR42 input/path bijection",
+  "baselineHead": "a21a7f8030afaeb4879fcbbd4953a7c76e098184",
+  "fixture": {
+    "path": "contracts/ui/v1/geometry-fixtures.json",
+    "sha256": "0e5c03c8b57802ad940e3c1e1c3b3ae3f3c972865879050ef6a394e33f1a017c",
+    "canonical": "{\"content\":[{\"content\":[{\"text\":\"A😀éאב\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"text\":\"cd\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"type\":\"scene_break\"},{\"content\":[{\"text\":\"ef\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+    "roles": {
+      "R": [],
+      "P": [
+        0
+      ],
+      "T": [
+        0,
+        0
+      ],
+      "Q": [
+        1
+      ],
+      "P2": [
+        1,
+        0
+      ],
+      "U": [
+        1,
+        0,
+        0
+      ],
+      "S": [
+        2
+      ],
+      "P3": [
+        3
+      ],
+      "V": [
+        3,
+        0
+      ]
+    }
+  },
+  "allCases": {
+    "fullNativeFacets": [
+      "canonical",
+      "state",
+      "rows",
+      "events",
+      "context",
+      "SDK/mounted resources"
+    ],
+    "browserFacets": [
+      "actual node identities",
+      "DOM bytes",
+      "directed browser range",
+      "active element",
+      "scroll offsets"
+    ],
+    "refusalEnvelope": {
+      "status": "dom_refused",
+      "phase": "geometry",
+      "node": null,
+      "typeId": null,
+      "publication": "none"
+    },
+    "budgets": {
+      "objectsPlusDistinctChildSlots": 1024,
+      "allDistinctAncestors": 128,
+      "rawRectanglesIncludingFinalRevalidation": 256
+    },
+    "requiredEngines": [
+      "chromium",
+      "webkit",
+      "firefox"
+    ],
+    "retries": 0,
+    "CSPViolations": [],
+    "pageErrors": [],
+    "externalRequests": [],
+    "scope": "Mounted packaged actual WASM/native proof separately labelled from controlled request/transport/private-view/cap instrumentation. Not installed OS input, manual usability, performance or formal-review proof.",
+    "controlledMutationPolicy": "DG07/DG14/DG15 restore original DOM objects and browser range within the injected turn; geometry itself preserves mounted/native/browser state. The deliberate internal child-list or observed-host attribute mutations then invoke the inherited mounted recoveryRequired policy. Post-turn native canonical/state/IDs/history/events and SDK/native resources remain exact; mounted context closes and host contenteditable becomes false. This is source-authored from mounted.ts mutation recovery, not a geometry/native write."
+  },
+  "cases": [
+    {
+      "id": "DG01",
+      "lane": "actual-native-and-UA",
+      "name": "Arm returns compact headers for paragraph/container/atom while preserving foreign caret source",
+      "input": {
+        "fixture": "F",
+        "source": [
+          "P3",
+          "Q",
+          "S"
+        ],
+        "point": null
+      },
+      "expected": {
+        "status": "drag_measured",
+        "hit": null,
+        "insideParents": [],
+        "destination": null,
+        "targetBox": null,
+        "headers": {
+          "P3": {
+            "typeId": "org.klenwriter.kwdj/paragraph",
+            "primitive": "text_block",
+            "parent": "R",
+            "index": 3,
+            "childCount": 1
+          },
+          "Q": {
+            "typeId": "org.klenwriter.kwdj/blockquote",
+            "primitive": "container",
+            "parent": "R",
+            "index": 1,
+            "childCount": 1
+          },
+          "S": {
+            "typeId": "org.klenwriter.kwdj/scene_break",
+            "primitive": "block_atom",
+            "parent": "R",
+            "index": 2,
+            "childCount": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "DG02",
+      "lane": "actual-native-and-UA",
+      "name": "Nearest nested text block before/after uses its genuine native parent and pre-removal index",
+      "input": {
+        "fixture": "F",
+        "source": "P3",
+        "pointRole": "P2",
+        "fractions": [
+          0.125,
+          0.875
+        ]
+      },
+      "expected": {
+        "hit": "P2",
+        "insideParents": [
+          "Q",
+          "R"
+        ],
+        "destinations": [
+          {
+            "placement": "before",
+            "reference": "P2",
+            "parent": "Q",
+            "before_index": 0
+          },
+          {
+            "placement": "after",
+            "reference": "P2",
+            "parent": "Q",
+            "before_index": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "DG03",
+      "lane": "actual-native-and-UA",
+      "name": "Explicit inside parent is selected from the genuine hit ancestry, never inferred from child geometry",
+      "input": {
+        "fixture": "F",
+        "source": "P3",
+        "pointRole": "P2",
+        "insideParent": [
+          "Q",
+          "R"
+        ]
+      },
+      "expected": {
+        "destinations": [
+          {
+            "placement": "inside",
+            "reference": "Q",
+            "parent": "Q",
+            "before_index": 1
+          },
+          {
+            "placement": "inside",
+            "reference": "R",
+            "parent": "R",
+            "before_index": 4
+          }
+        ],
+        "rootHeader": {
+          "typeId": "",
+          "primitive": "root",
+          "parent": null,
+          "index": null,
+          "childCount": 4
+        },
+        "nonmemberInsideParent": "dom.selection_geometry_unsupported"
+      }
+    },
+    {
+      "id": "DG04",
+      "lane": "actual-native-and-UA",
+      "name": "Container quarters allow before/after; middle half awaits an explicit parent choice",
+      "input": {
+        "fixture": "F",
+        "source": "P3",
+        "hitRole": "Q",
+        "x": "inside genuine left border, outside child box",
+        "fractions": [
+          0.125,
+          0.5,
+          0.875
+        ]
+      },
+      "expected": {
+        "hit": "Q",
+        "insideParents": [
+          "Q",
+          "R"
+        ],
+        "destinations": [
+          {
+            "placement": "before",
+            "reference": "Q",
+            "parent": "R",
+            "before_index": 1
+          },
+          null,
+          {
+            "placement": "after",
+            "reference": "Q",
+            "parent": "R",
+            "before_index": 2
+          }
+        ],
+        "middleKeepsTargetBox": true
+      }
+    },
+    {
+      "id": "DG05",
+      "lane": "actual-native-and-UA",
+      "name": "Five full stamp tokens and four session-context facets independently refuse stale reads",
+      "input": {
+        "fixture": "F",
+        "source": "P",
+        "stampFacets": [
+          "session",
+          "generation",
+          "revision",
+          "selection_epoch",
+          "history_epoch"
+        ],
+        "contextFacets": [
+          "build_id",
+          "profile.profile_version",
+          "registry_digest",
+          "capability_digest"
+        ]
+      },
+      "expected": {
+        "code": "dom.stale_selection",
+        "nativeStateReadBeforeMismatch": 0
+      }
+    },
+    {
+      "id": "DG06",
+      "lane": "controlled-request-data-on-actual-mount",
+      "name": "Closed request nesting rejects extra keys/prototype/getter/sparse extension and nonfinite point",
+      "input": {
+        "fixture": "F",
+        "source": "P",
+        "variants": [
+          "extra-top-level",
+          "getter-point",
+          "extra-context",
+          "extra-profile",
+          "sparse-extensions",
+          "prototype-context",
+          "nonfinite-x",
+          "nonfinite-y",
+          "inside-without-point",
+          "unknown-kind"
+        ]
+      },
+      "expected": {
+        "code": "dom.invalid_options",
+        "gettersInvoked": 0,
+        "nativeStateReads": 0
+      }
+    },
+    {
+      "id": "DG07",
+      "lane": "controlled-owner-mutation-on-actual-mount",
+      "name": "Same-ID clone and detached genuine outer cannot acquire private row authority",
+      "input": {
+        "fixture": "F",
+        "source": "P3",
+        "mutations": [
+          "clone-target-P2",
+          "clone-source-P3",
+          "detach-wrapper"
+        ],
+        "restoreBeforeLeavingTurn": true
+      },
+      "expected": {
+        "code": "dom.selection_geometry_unsupported",
+        "nodeIdAttributesAreAuthority": false,
+        "geometryNativeRequests": [
+          "state"
+        ],
+        "geometryMountedFactsUnchangedWithinTurn": true,
+        "originalBrowserFacetsRestoredWithinTurn": true,
+        "postTurnLifecycle": "recoveryRequired",
+        "postTurnRefusal": {
+          "code": "dom.recovery_required",
+          "phase": "render",
+          "cause": "controlled child-list setup invokes existing mounted MutationObserver policy"
+        },
+        "nativeCanonicalStateRowsEventsAndSDKResourcesUnchanged": true,
+        "geometryDidNotCauseRecoveryMutation": true
+      }
+    },
+    {
+      "id": "DG08",
+      "lane": "actual-native-and-UA",
+      "name": "Foreign overlay/other-mount hit is unsupported; complete foreign stamp/context refuses stale even when scoped node IDs coincide",
+      "input": {
+        "fixture": "F",
+        "source": "P3",
+        "pointRole": "P2",
+        "foreignMount": true,
+        "overlayClass": "ui-fixture-foreign",
+        "foreignAuthority": "foreign full stamp/context, not an assumption of globally unique node ID strings"
+      },
+      "expected": {
+        "foreignHitAndOverlayCode": "dom.selection_geometry_unsupported",
+        "foreignStampContextCode": "dom.stale_selection"
+      }
+    },
+    {
+      "id": "DG09",
+      "lane": "controlled-layout-fault-on-actual-mount",
+      "name": "Transform and nonfinite or fragmented block measurements refuse without truncating",
+      "input": {
+        "fixture": "F",
+        "source": "S",
+        "faults": [
+          "transform-wrapper",
+          "nonfinite-rect",
+          "two-fragments"
+        ]
+      },
+      "expected": {
+        "code": "dom.selection_geometry_unsupported"
+      }
+    },
+    {
+      "id": "DG10",
+      "lane": "controlled-native-reentry-during-actual-UA-measurement",
+      "name": "State selection reentry makes the entire composite stale; only explicit setup publishes",
+      "input": {
+        "fixture": "F",
+        "source": "P3",
+        "pointRole": "P2",
+        "reentry": "set T caret0 once during source getClientRects"
+      },
+      "expected": {
+        "code": "dom.stale_selection",
+        "documentMutation": 0,
+        "selectionEpochDelta": 1,
+        "stateEventsDelta": 1,
+        "historyDelta": 0
+      }
+    },
+    {
+      "id": "DG11",
+      "lane": "controlled-native-transport-on-actual-module",
+      "name": "Original Refused/Fatal state reply survives as sdk_failure response and resources release",
+      "input": {
+        "fixture": "F",
+        "source": "P",
+        "faults": [
+          "refused",
+          "fatal"
+        ]
+      },
+      "expected": {
+        "status": "sdk_failure",
+        "responseIdentity": "exact configured original response",
+        "fatalLifecycle": "fatal",
+        "fatalInputEditable": false,
+        "disposedCounters": 0,
+        "sdkLifecycleAfterDispose": {
+          "refused": "destroyed",
+          "fatal": "fatal"
+        },
+        "lifecycleSource": "packages/sdk/src/controller.ts destroy() preserves an existing fatal lifecycle; all numeric resource fields still release to zero"
+      }
+    },
+    {
+      "id": "DG12",
+      "lane": "actual-owned-private-view-with-controlled-row-DTOs",
+      "name": "Combined distinct objects and child slots reach1024; one extra ancestor refuses, even though DOM objects alone fit",
+      "input": {
+        "privateFixture": "two text blocks each254 opaque inline atoms; root host in one external wrapper under body",
+        "source": "P",
+        "hit": "Q"
+      },
+      "expected": {
+        "separateArms": "measured",
+        "combined": "drag_measured",
+        "objects": 514,
+        "childSlots": 510,
+        "combinedUnits": 1024,
+        "extraExternalWrapper": "dom.selection_limit",
+        "extraUnits": 1025,
+        "scope": "actual DOM/view measurement, controlled topology DTOs; no native grammar claim"
+      }
+    },
+    {
+      "id": "DG13",
+      "lane": "controlled-ancestor-layout-on-actual-mount",
+      "name": "128 distinct all-ancestors succeed,129 refuses without resetting the budget",
+      "input": {
+        "fixture": "F",
+        "source": "S",
+        "externalNonclippingAncestorCounts": [
+          128,
+          129
+        ]
+      },
+      "expected": {
+        "exactStatus": "drag_measured",
+        "exactAncestors": 128,
+        "excessCode": "dom.selection_limit"
+      }
+    },
+    {
+      "id": "DG14",
+      "lane": "controlled-clipping-layout-on-actual-mount",
+      "name": "Final revalidation shares the raw rect budget:127 clipping ancestors plus two fragment reads reach256",
+      "input": {
+        "fixture": "F",
+        "source": "S",
+        "totalAncestors": 128,
+        "clippingAncestors": 127,
+        "extraClip": "make last existing ancestor clipping too"
+      },
+      "expected": {
+        "exactStatus": "drag_measured",
+        "exactRects": 256,
+        "fragmentCallsExact": 2,
+        "excessCode": "dom.selection_limit",
+        "noSuccessfulTruncation": true,
+        "geometryMountedFactsUnchangedWithinTurn": true,
+        "originalBrowserFacetsRestoredWithinTurn": true,
+        "postTurnLifecycle": "recoveryRequired",
+        "postTurnRefusal": {
+          "code": "dom.recovery_required",
+          "phase": "render",
+          "cause": "controlled clip class on observed host invokes existing mounted MutationObserver attribute policy"
+        },
+        "nativeCanonicalStateRowsEventsAndSDKResourcesUnchanged": true,
+        "geometryDidNotCauseRecoveryMutation": true
+      }
+    },
+    {
+      "id": "DG15",
+      "lane": "controlled-revalidation-fault-on-actual-mount",
+      "name": "An actual object detached only on the final fragment read invalidates otherwise coherent geometry",
+      "input": {
+        "fixture": "F",
+        "source": "S",
+        "point": null,
+        "mutation": "remove source atom on second getClientRects; restore synchronously after read"
+      },
+      "expected": {
+        "code": "dom.selection_geometry_unsupported",
+        "successfulStaleWitness": false,
+        "geometryMountedFactsUnchangedWithinTurn": true,
+        "originalBrowserFacetsRestoredWithinTurn": true,
+        "postTurnLifecycle": "recoveryRequired",
+        "postTurnRefusal": {
+          "code": "dom.recovery_required",
+          "phase": "render",
+          "cause": "controlled child-list setup invokes existing mounted MutationObserver policy"
+        },
+        "nativeCanonicalStateRowsEventsAndSDKResourcesUnchanged": true,
+        "geometryDidNotCauseRecoveryMutation": true
+      }
+    },
+    {
+      "id": "DG16",
+      "lane": "actual-native-and-UA",
+      "name": "Pure repeated reads and readOnly/disabled reads preserve native/browser facets and release all resources",
+      "input": {
+        "fixture": "F",
+        "source": "P3",
+        "modes": [
+          "editable",
+          "readOnly",
+          "disabled"
+        ],
+        "repeat": 3,
+        "nativeTrace": true
+      },
+      "expected": {
+        "nativeRequestsPerRead": [
+          "state"
+        ],
+        "documentOrSelectionWrites": 0,
+        "nodeViewReadsPerGeometryCall": 0,
+        "pointerCaptures": 0,
+        "hostRequests": 0,
+        "afterDestroySDKAndNativeCounters": 0
+      }
+    }
+  ]
+}

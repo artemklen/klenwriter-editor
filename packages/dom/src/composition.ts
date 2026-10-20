@@ -277,7 +277,7 @@ export class CompositionOwner {
     this.#retainEvent(event);
     if(this.#next===MAX||!c.selection.intentAvailable()){this.#recover('generation_limit',event,this.#transfer());return;}
     if(!c.canEdit()||c.busy()){this.#recover('busy',event,this.#transfer());return;}
-    const synced=c.selection.syncFromDom();
+    const synced=c.selection.syncFromDom(true);
     if(this.#destroyed)return;
     const state=c.readState(),base=c.capture(),context=c.context();
     if(!synced||isDomRefusal(synced)||!state?.selection||!base||!context||!same(synced,state.selection)||!same(base,state.stamp)){this.#recover('stale',event,this.#transfer());return;}

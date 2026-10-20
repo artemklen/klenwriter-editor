@@ -1,0 +1,1687 @@
+{
+  "format": "editor-drag-semantic-oracles/1",
+  "status": "SOURCE_AUTHORED_BEFORE_RUNTIME",
+  "source_revision": "a21a7f8030afaeb4879fcbbd4953a7c76e098184",
+  "provenance": {
+    "source_draft_sha256": "978510650ea5adc1613ac66c1cb3cd876eb93a16e3a8e4caf2237fdc5f103a94",
+    "method": "Literal expectations from Rust Move/history/mapping source and pinned frozen42 literals, before any44 candidate execution. No output-learned expected data."
+  },
+  "role_binding": "Role names bind bijectively to admitted opaque native IDs by authored paths; only node/parent position and intent fields are substituted. Original IDs survive all Move/history operations; created/retired are always empty.",
+  "baseline": {
+    "revision": "0",
+    "selection_epoch": "1",
+    "history_epoch": "0",
+    "stored_marks": null,
+    "dirty": false,
+    "saved_revision": "0",
+    "history": {
+      "undo_entries": "0",
+      "redo_entries": "0"
+    }
+  },
+  "command_id": "org.klenwriter.kwdj/command/move",
+  "history_hint": {
+    "kind": "isolated"
+  },
+  "reused_frozen_cases": [
+    {
+      "path": "contracts/ui/v1/native-oracles.json",
+      "bytes": 49373,
+      "sha256": "e064ba58d2c579c3cd9c58937a32a09591c8379a283543b40c2828919fe84470",
+      "case_ids": [
+        "V04-up",
+        "V04-down",
+        "V05-same-index",
+        "V05-after-self-index",
+        "V05-invalid-index",
+        "V05-wrong-child",
+        "V05-synthetic-root"
+      ]
+    },
+    {
+      "path": "contracts/ui/v1/nesting-oracles.json",
+      "bytes": 88937,
+      "sha256": "a36060d26da183934206bdb49b20129a6c40c41da1bf2a255452014bdd921b84",
+      "case_ids": [
+        "N01",
+        "N02",
+        "N03",
+        "N04",
+        "N05",
+        "N06",
+        "N08"
+      ]
+    }
+  ],
+  "new_cases": [
+    {
+      "id": "M44-01",
+      "source": "accepted source draft01, before any44 candidate",
+      "input_canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "roles_before": {
+        "R": [],
+        "A": [
+          0
+        ],
+        "AT": [
+          0,
+          0
+        ],
+        "Q": [
+          1
+        ],
+        "B": [
+          1,
+          0
+        ],
+        "BT": [
+          1,
+          0,
+          0
+        ],
+        "H": [
+          2
+        ],
+        "HT": [
+          2,
+          0
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 0,
+          "affinity": "after"
+        }
+      },
+      "profile_options": {
+        "identities": {
+          "media": [],
+          "references": []
+        },
+        "limits": null
+      },
+      "operations": [
+        {
+          "kind": "command",
+          "intent": {
+            "kind": "move",
+            "node": "Q",
+            "parent": "R",
+            "before_index": 3
+          },
+          "expected": {
+            "effect": "changed",
+            "state": {
+              "canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"},{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+              "roles": {
+                "R": [],
+                "A": [
+                  0
+                ],
+                "AT": [
+                  0,
+                  0
+                ],
+                "H": [
+                  1
+                ],
+                "HT": [
+                  1,
+                  0
+                ],
+                "Q": [
+                  2
+                ],
+                "B": [
+                  2,
+                  0
+                ],
+                "BT": [
+                  2,
+                  0,
+                  0
+                ]
+              },
+              "selection": {
+                "anchor": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 1,
+                  "affinity": "after"
+                },
+                "focus": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 0,
+                  "affinity": "after"
+                }
+              },
+              "stored_marks": null,
+              "counters": {
+                "revision": "1",
+                "selection_epoch": "1",
+                "history_epoch": "1"
+              },
+              "history": {
+                "undo_entries": "1",
+                "redo_entries": "0"
+              },
+              "saved_revision": "0",
+              "dirty": true
+            },
+            "events": 1,
+            "source_step_map": {
+              "kind": "child_move",
+              "from_parent": "R",
+              "from_index": 1,
+              "to_parent": "R",
+              "to_index": 3,
+              "count": 1,
+              "from_len": 3,
+              "to_len": 3
+            }
+          }
+        },
+        {
+          "kind": "map",
+          "from_revision": "0",
+          "position": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "expected": {
+            "position": {
+              "kind": "text",
+              "node": "BT",
+              "offset": 1,
+              "affinity": "after"
+            },
+            "status": "mapped",
+            "deleted": false
+          }
+        },
+        {
+          "kind": "map",
+          "from_revision": "0",
+          "position": {
+            "kind": "child",
+            "parent": "R",
+            "index": 3,
+            "affinity": "before"
+          },
+          "expected": {
+            "position": {
+              "kind": "child",
+              "parent": "R",
+              "index": 2,
+              "affinity": "before"
+            },
+            "status": "mapped",
+            "deleted": false
+          }
+        },
+        {
+          "kind": "map",
+          "from_revision": "0",
+          "position": {
+            "kind": "child",
+            "parent": "R",
+            "index": 3,
+            "affinity": "after"
+          },
+          "expected": {
+            "position": {
+              "kind": "child",
+              "parent": "R",
+              "index": 3,
+              "affinity": "after"
+            },
+            "status": "mapped",
+            "deleted": false
+          }
+        },
+        {
+          "kind": "map",
+          "from_revision": "0",
+          "position": {
+            "kind": "child",
+            "parent": "R",
+            "index": 2,
+            "affinity": "before"
+          },
+          "expected": {
+            "position": {
+              "kind": "child",
+              "parent": "R",
+              "index": 1,
+              "affinity": "before"
+            },
+            "status": "mapped",
+            "deleted": false
+          }
+        },
+        {
+          "kind": "history",
+          "direction": "undo",
+          "expected": {
+            "effect": "changed",
+            "state": {
+              "canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+              "roles": {
+                "R": [],
+                "A": [
+                  0
+                ],
+                "AT": [
+                  0,
+                  0
+                ],
+                "Q": [
+                  1
+                ],
+                "B": [
+                  1,
+                  0
+                ],
+                "BT": [
+                  1,
+                  0,
+                  0
+                ],
+                "H": [
+                  2
+                ],
+                "HT": [
+                  2,
+                  0
+                ]
+              },
+              "selection": {
+                "anchor": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 1,
+                  "affinity": "after"
+                },
+                "focus": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 0,
+                  "affinity": "after"
+                }
+              },
+              "stored_marks": null,
+              "counters": {
+                "revision": "2",
+                "selection_epoch": "1",
+                "history_epoch": "2"
+              },
+              "history": {
+                "undo_entries": "0",
+                "redo_entries": "1"
+              },
+              "saved_revision": "0",
+              "dirty": true
+            },
+            "events": 1,
+            "source_step_map": {
+              "kind": "child_move",
+              "from_parent": "R",
+              "from_index": 2,
+              "to_parent": "R",
+              "to_index": 1,
+              "count": 1,
+              "from_len": 3,
+              "to_len": 3
+            }
+          }
+        },
+        {
+          "kind": "history",
+          "direction": "redo",
+          "expected": {
+            "effect": "changed",
+            "state": {
+              "canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"},{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+              "roles": {
+                "R": [],
+                "A": [
+                  0
+                ],
+                "AT": [
+                  0,
+                  0
+                ],
+                "H": [
+                  1
+                ],
+                "HT": [
+                  1,
+                  0
+                ],
+                "Q": [
+                  2
+                ],
+                "B": [
+                  2,
+                  0
+                ],
+                "BT": [
+                  2,
+                  0,
+                  0
+                ]
+              },
+              "selection": {
+                "anchor": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 1,
+                  "affinity": "after"
+                },
+                "focus": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 0,
+                  "affinity": "after"
+                }
+              },
+              "stored_marks": null,
+              "counters": {
+                "revision": "3",
+                "selection_epoch": "1",
+                "history_epoch": "3"
+              },
+              "history": {
+                "undo_entries": "1",
+                "redo_entries": "0"
+              },
+              "saved_revision": "0",
+              "dirty": true
+            },
+            "events": 1,
+            "source_step_map": {
+              "kind": "child_move",
+              "from_parent": "R",
+              "from_index": 1,
+              "to_parent": "R",
+              "to_index": 3,
+              "count": 1,
+              "from_len": 3,
+              "to_len": 3
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "M44-02",
+      "source": "accepted source draft01, before any44 candidate",
+      "input_canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"},{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "roles_before": {
+        "R": [],
+        "A": [
+          0
+        ],
+        "AT": [
+          0,
+          0
+        ],
+        "H": [
+          1
+        ],
+        "HT": [
+          1,
+          0
+        ],
+        "Q": [
+          2
+        ],
+        "B": [
+          2,
+          0
+        ],
+        "BT": [
+          2,
+          0,
+          0
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 0,
+          "affinity": "after"
+        }
+      },
+      "profile_options": {
+        "identities": {
+          "media": [],
+          "references": []
+        },
+        "limits": null
+      },
+      "operations": [
+        {
+          "kind": "command",
+          "intent": {
+            "kind": "move",
+            "node": "Q",
+            "parent": "R",
+            "before_index": 1
+          },
+          "expected": {
+            "effect": "changed",
+            "state": {
+              "canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+              "roles": {
+                "R": [],
+                "A": [
+                  0
+                ],
+                "AT": [
+                  0,
+                  0
+                ],
+                "Q": [
+                  1
+                ],
+                "B": [
+                  1,
+                  0
+                ],
+                "BT": [
+                  1,
+                  0,
+                  0
+                ],
+                "H": [
+                  2
+                ],
+                "HT": [
+                  2,
+                  0
+                ]
+              },
+              "selection": {
+                "anchor": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 1,
+                  "affinity": "after"
+                },
+                "focus": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 0,
+                  "affinity": "after"
+                }
+              },
+              "stored_marks": null,
+              "counters": {
+                "revision": "1",
+                "selection_epoch": "1",
+                "history_epoch": "1"
+              },
+              "history": {
+                "undo_entries": "1",
+                "redo_entries": "0"
+              },
+              "saved_revision": "0",
+              "dirty": true
+            },
+            "events": 1,
+            "source_step_map": {
+              "kind": "child_move",
+              "from_parent": "R",
+              "from_index": 2,
+              "to_parent": "R",
+              "to_index": 1,
+              "count": 1,
+              "from_len": 3,
+              "to_len": 3
+            }
+          }
+        },
+        {
+          "kind": "map",
+          "from_revision": "0",
+          "position": {
+            "kind": "child",
+            "parent": "R",
+            "index": 1,
+            "affinity": "before"
+          },
+          "expected": {
+            "position": {
+              "kind": "child",
+              "parent": "R",
+              "index": 1,
+              "affinity": "before"
+            },
+            "status": "mapped",
+            "deleted": false
+          }
+        },
+        {
+          "kind": "map",
+          "from_revision": "0",
+          "position": {
+            "kind": "child",
+            "parent": "R",
+            "index": 1,
+            "affinity": "after"
+          },
+          "expected": {
+            "position": {
+              "kind": "child",
+              "parent": "R",
+              "index": 2,
+              "affinity": "after"
+            },
+            "status": "mapped",
+            "deleted": false
+          }
+        },
+        {
+          "kind": "map",
+          "from_revision": "0",
+          "position": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "expected": {
+            "position": {
+              "kind": "text",
+              "node": "BT",
+              "offset": 1,
+              "affinity": "after"
+            },
+            "status": "mapped",
+            "deleted": false
+          }
+        },
+        {
+          "kind": "history",
+          "direction": "undo",
+          "expected": {
+            "effect": "changed",
+            "state": {
+              "canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"},{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+              "roles": {
+                "R": [],
+                "A": [
+                  0
+                ],
+                "AT": [
+                  0,
+                  0
+                ],
+                "H": [
+                  1
+                ],
+                "HT": [
+                  1,
+                  0
+                ],
+                "Q": [
+                  2
+                ],
+                "B": [
+                  2,
+                  0
+                ],
+                "BT": [
+                  2,
+                  0,
+                  0
+                ]
+              },
+              "selection": {
+                "anchor": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 1,
+                  "affinity": "after"
+                },
+                "focus": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 0,
+                  "affinity": "after"
+                }
+              },
+              "stored_marks": null,
+              "counters": {
+                "revision": "2",
+                "selection_epoch": "1",
+                "history_epoch": "2"
+              },
+              "history": {
+                "undo_entries": "0",
+                "redo_entries": "1"
+              },
+              "saved_revision": "0",
+              "dirty": true
+            },
+            "events": 1,
+            "source_step_map": {
+              "kind": "child_move",
+              "from_parent": "R",
+              "from_index": 1,
+              "to_parent": "R",
+              "to_index": 3,
+              "count": 1,
+              "from_len": 3,
+              "to_len": 3
+            }
+          }
+        },
+        {
+          "kind": "history",
+          "direction": "redo",
+          "expected": {
+            "effect": "changed",
+            "state": {
+              "canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+              "roles": {
+                "R": [],
+                "A": [
+                  0
+                ],
+                "AT": [
+                  0,
+                  0
+                ],
+                "Q": [
+                  1
+                ],
+                "B": [
+                  1,
+                  0
+                ],
+                "BT": [
+                  1,
+                  0,
+                  0
+                ],
+                "H": [
+                  2
+                ],
+                "HT": [
+                  2,
+                  0
+                ]
+              },
+              "selection": {
+                "anchor": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 1,
+                  "affinity": "after"
+                },
+                "focus": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 0,
+                  "affinity": "after"
+                }
+              },
+              "stored_marks": null,
+              "counters": {
+                "revision": "3",
+                "selection_epoch": "1",
+                "history_epoch": "3"
+              },
+              "history": {
+                "undo_entries": "1",
+                "redo_entries": "0"
+              },
+              "saved_revision": "0",
+              "dirty": true
+            },
+            "events": 1,
+            "source_step_map": {
+              "kind": "child_move",
+              "from_parent": "R",
+              "from_index": 2,
+              "to_parent": "R",
+              "to_index": 1,
+              "count": 1,
+              "from_len": 3,
+              "to_len": 3
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "M44-03",
+      "source": "accepted source draft01, before any44 candidate",
+      "input_canonical": "{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"type\":\"scene_break\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "roles_before": {
+        "R": [],
+        "B": [
+          0
+        ],
+        "BT": [
+          0,
+          0
+        ],
+        "E": [
+          1
+        ],
+        "H": [
+          2
+        ],
+        "HT": [
+          2,
+          0
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "edge",
+          "node": "E",
+          "side": "after"
+        },
+        "focus": {
+          "kind": "edge",
+          "node": "E",
+          "side": "after"
+        }
+      },
+      "profile_options": {
+        "identities": {
+          "media": [],
+          "references": []
+        },
+        "limits": null
+      },
+      "operations": [
+        {
+          "kind": "command",
+          "intent": {
+            "kind": "move",
+            "node": "E",
+            "parent": "R",
+            "before_index": 0
+          },
+          "expected": {
+            "effect": "changed",
+            "state": {
+              "canonical": "{\"content\":[{\"type\":\"scene_break\"},{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+              "roles": {
+                "R": [],
+                "E": [
+                  0
+                ],
+                "B": [
+                  1
+                ],
+                "BT": [
+                  1,
+                  0
+                ],
+                "H": [
+                  2
+                ],
+                "HT": [
+                  2,
+                  0
+                ]
+              },
+              "selection": {
+                "anchor": {
+                  "kind": "edge",
+                  "node": "E",
+                  "side": "after"
+                },
+                "focus": {
+                  "kind": "edge",
+                  "node": "E",
+                  "side": "after"
+                }
+              },
+              "stored_marks": null,
+              "counters": {
+                "revision": "1",
+                "selection_epoch": "1",
+                "history_epoch": "1"
+              },
+              "history": {
+                "undo_entries": "1",
+                "redo_entries": "0"
+              },
+              "saved_revision": "0",
+              "dirty": true
+            },
+            "events": 1,
+            "source_step_map": {
+              "kind": "child_move",
+              "from_parent": "R",
+              "from_index": 1,
+              "to_parent": "R",
+              "to_index": 0,
+              "count": 1,
+              "from_len": 3,
+              "to_len": 3
+            }
+          }
+        },
+        {
+          "kind": "map",
+          "from_revision": "0",
+          "position": {
+            "kind": "edge",
+            "node": "E",
+            "side": "after"
+          },
+          "expected": {
+            "position": {
+              "kind": "edge",
+              "node": "E",
+              "side": "after"
+            },
+            "status": "mapped",
+            "deleted": false
+          }
+        },
+        {
+          "kind": "history",
+          "direction": "undo",
+          "expected": {
+            "effect": "changed",
+            "state": {
+              "canonical": "{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"type\":\"scene_break\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+              "roles": {
+                "R": [],
+                "B": [
+                  0
+                ],
+                "BT": [
+                  0,
+                  0
+                ],
+                "E": [
+                  1
+                ],
+                "H": [
+                  2
+                ],
+                "HT": [
+                  2,
+                  0
+                ]
+              },
+              "selection": {
+                "anchor": {
+                  "kind": "edge",
+                  "node": "E",
+                  "side": "after"
+                },
+                "focus": {
+                  "kind": "edge",
+                  "node": "E",
+                  "side": "after"
+                }
+              },
+              "stored_marks": null,
+              "counters": {
+                "revision": "2",
+                "selection_epoch": "1",
+                "history_epoch": "2"
+              },
+              "history": {
+                "undo_entries": "0",
+                "redo_entries": "1"
+              },
+              "saved_revision": "0",
+              "dirty": true
+            },
+            "events": 1,
+            "source_step_map": {
+              "kind": "child_move",
+              "from_parent": "R",
+              "from_index": 0,
+              "to_parent": "R",
+              "to_index": 2,
+              "count": 1,
+              "from_len": 3,
+              "to_len": 3
+            }
+          }
+        },
+        {
+          "kind": "history",
+          "direction": "redo",
+          "expected": {
+            "effect": "changed",
+            "state": {
+              "canonical": "{\"content\":[{\"type\":\"scene_break\"},{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+              "roles": {
+                "R": [],
+                "E": [
+                  0
+                ],
+                "B": [
+                  1
+                ],
+                "BT": [
+                  1,
+                  0
+                ],
+                "H": [
+                  2
+                ],
+                "HT": [
+                  2,
+                  0
+                ]
+              },
+              "selection": {
+                "anchor": {
+                  "kind": "edge",
+                  "node": "E",
+                  "side": "after"
+                },
+                "focus": {
+                  "kind": "edge",
+                  "node": "E",
+                  "side": "after"
+                }
+              },
+              "stored_marks": null,
+              "counters": {
+                "revision": "3",
+                "selection_epoch": "1",
+                "history_epoch": "3"
+              },
+              "history": {
+                "undo_entries": "1",
+                "redo_entries": "0"
+              },
+              "saved_revision": "0",
+              "dirty": true
+            },
+            "events": 1,
+            "source_step_map": {
+              "kind": "child_move",
+              "from_parent": "R",
+              "from_index": 1,
+              "to_parent": "R",
+              "to_index": 0,
+              "count": 1,
+              "from_len": 3,
+              "to_len": 3
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "M44-04",
+      "source": "accepted source draft01: genuine existing redo branch, not a fresh-session substitute",
+      "input_canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "roles_before": {
+        "R": [],
+        "A": [
+          0
+        ],
+        "AT": [
+          0,
+          0
+        ],
+        "Q": [
+          1
+        ],
+        "B": [
+          1,
+          0
+        ],
+        "BT": [
+          1,
+          0,
+          0
+        ],
+        "H": [
+          2
+        ],
+        "HT": [
+          2,
+          0
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 0,
+          "affinity": "after"
+        }
+      },
+      "profile_options": {
+        "identities": {
+          "media": [],
+          "references": []
+        },
+        "limits": null
+      },
+      "operations": [
+        {
+          "kind": "command",
+          "intent": {
+            "kind": "move",
+            "node": "Q",
+            "parent": "R",
+            "before_index": 3
+          },
+          "expected": {
+            "effect": "changed",
+            "state": {
+              "canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"},{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+              "roles": {
+                "R": [],
+                "A": [
+                  0
+                ],
+                "AT": [
+                  0,
+                  0
+                ],
+                "H": [
+                  1
+                ],
+                "HT": [
+                  1,
+                  0
+                ],
+                "Q": [
+                  2
+                ],
+                "B": [
+                  2,
+                  0
+                ],
+                "BT": [
+                  2,
+                  0,
+                  0
+                ]
+              },
+              "selection": {
+                "anchor": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 1,
+                  "affinity": "after"
+                },
+                "focus": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 0,
+                  "affinity": "after"
+                }
+              },
+              "stored_marks": null,
+              "counters": {
+                "revision": "1",
+                "selection_epoch": "1",
+                "history_epoch": "1"
+              },
+              "history": {
+                "undo_entries": "1",
+                "redo_entries": "0"
+              },
+              "saved_revision": "0",
+              "dirty": true
+            },
+            "events": 1,
+            "source_step_map": {
+              "kind": "child_move",
+              "from_parent": "R",
+              "from_index": 1,
+              "to_parent": "R",
+              "to_index": 3,
+              "count": 1,
+              "from_len": 3,
+              "to_len": 3
+            }
+          }
+        },
+        {
+          "kind": "history",
+          "direction": "undo",
+          "expected": {
+            "effect": "changed",
+            "state": {
+              "canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+              "roles": {
+                "R": [],
+                "A": [
+                  0
+                ],
+                "AT": [
+                  0,
+                  0
+                ],
+                "Q": [
+                  1
+                ],
+                "B": [
+                  1,
+                  0
+                ],
+                "BT": [
+                  1,
+                  0,
+                  0
+                ],
+                "H": [
+                  2
+                ],
+                "HT": [
+                  2,
+                  0
+                ]
+              },
+              "selection": {
+                "anchor": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 1,
+                  "affinity": "after"
+                },
+                "focus": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 0,
+                  "affinity": "after"
+                }
+              },
+              "stored_marks": null,
+              "counters": {
+                "revision": "2",
+                "selection_epoch": "1",
+                "history_epoch": "2"
+              },
+              "history": {
+                "undo_entries": "0",
+                "redo_entries": "1"
+              },
+              "saved_revision": "0",
+              "dirty": true
+            },
+            "events": 1,
+            "source_step_map": {
+              "kind": "child_move",
+              "from_parent": "R",
+              "from_index": 2,
+              "to_parent": "R",
+              "to_index": 1,
+              "count": 1,
+              "from_len": 3,
+              "to_len": 3
+            }
+          }
+        },
+        {
+          "kind": "command",
+          "intent": {
+            "kind": "move",
+            "node": "Q",
+            "parent": "R",
+            "before_index": 1
+          },
+          "expected": {
+            "effect": "unchanged",
+            "state": {
+              "canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+              "roles": {
+                "R": [],
+                "A": [
+                  0
+                ],
+                "AT": [
+                  0,
+                  0
+                ],
+                "Q": [
+                  1
+                ],
+                "B": [
+                  1,
+                  0
+                ],
+                "BT": [
+                  1,
+                  0,
+                  0
+                ],
+                "H": [
+                  2
+                ],
+                "HT": [
+                  2,
+                  0
+                ]
+              },
+              "selection": {
+                "anchor": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 1,
+                  "affinity": "after"
+                },
+                "focus": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 0,
+                  "affinity": "after"
+                }
+              },
+              "stored_marks": null,
+              "counters": {
+                "revision": "2",
+                "selection_epoch": "1",
+                "history_epoch": "2"
+              },
+              "history": {
+                "undo_entries": "0",
+                "redo_entries": "1"
+              },
+              "saved_revision": "0",
+              "dirty": true
+            },
+            "events": 0
+          }
+        },
+        {
+          "kind": "command",
+          "intent": {
+            "kind": "move",
+            "node": "Q",
+            "parent": "R",
+            "before_index": 2
+          },
+          "expected": {
+            "effect": "unchanged",
+            "state": {
+              "canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+              "roles": {
+                "R": [],
+                "A": [
+                  0
+                ],
+                "AT": [
+                  0,
+                  0
+                ],
+                "Q": [
+                  1
+                ],
+                "B": [
+                  1,
+                  0
+                ],
+                "BT": [
+                  1,
+                  0,
+                  0
+                ],
+                "H": [
+                  2
+                ],
+                "HT": [
+                  2,
+                  0
+                ]
+              },
+              "selection": {
+                "anchor": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 1,
+                  "affinity": "after"
+                },
+                "focus": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 0,
+                  "affinity": "after"
+                }
+              },
+              "stored_marks": null,
+              "counters": {
+                "revision": "2",
+                "selection_epoch": "1",
+                "history_epoch": "2"
+              },
+              "history": {
+                "undo_entries": "0",
+                "redo_entries": "1"
+              },
+              "saved_revision": "0",
+              "dirty": true
+            },
+            "events": 0
+          }
+        },
+        {
+          "kind": "command",
+          "intent": {
+            "kind": "move",
+            "node": "Q",
+            "parent": "R",
+            "before_index": 4
+          },
+          "expected": {
+            "effect": "refused",
+            "state": {
+              "canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+              "roles": {
+                "R": [],
+                "A": [
+                  0
+                ],
+                "AT": [
+                  0,
+                  0
+                ],
+                "Q": [
+                  1
+                ],
+                "B": [
+                  1,
+                  0
+                ],
+                "BT": [
+                  1,
+                  0,
+                  0
+                ],
+                "H": [
+                  2
+                ],
+                "HT": [
+                  2,
+                  0
+                ]
+              },
+              "selection": {
+                "anchor": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 1,
+                  "affinity": "after"
+                },
+                "focus": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 0,
+                  "affinity": "after"
+                }
+              },
+              "stored_marks": null,
+              "counters": {
+                "revision": "2",
+                "selection_epoch": "1",
+                "history_epoch": "2"
+              },
+              "history": {
+                "undo_entries": "0",
+                "redo_entries": "1"
+              },
+              "saved_revision": "0",
+              "dirty": true
+            },
+            "events": 0,
+            "diagnostic": {
+              "code": "tree.invalid_index",
+              "path": "",
+              "category": "sdk",
+              "details": {},
+              "stamp": "CURRENT_STAMP",
+              "may_have_committed": false
+            }
+          }
+        },
+        {
+          "kind": "history",
+          "direction": "redo",
+          "expected": {
+            "effect": "changed",
+            "state": {
+              "canonical": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"heading\"},{\"content\":[{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true},\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+              "roles": {
+                "R": [],
+                "A": [
+                  0
+                ],
+                "AT": [
+                  0,
+                  0
+                ],
+                "H": [
+                  1
+                ],
+                "HT": [
+                  1,
+                  0
+                ],
+                "Q": [
+                  2
+                ],
+                "B": [
+                  2,
+                  0
+                ],
+                "BT": [
+                  2,
+                  0,
+                  0
+                ]
+              },
+              "selection": {
+                "anchor": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 1,
+                  "affinity": "after"
+                },
+                "focus": {
+                  "kind": "text",
+                  "node": "BT",
+                  "offset": 0,
+                  "affinity": "after"
+                }
+              },
+              "stored_marks": null,
+              "counters": {
+                "revision": "3",
+                "selection_epoch": "1",
+                "history_epoch": "3"
+              },
+              "history": {
+                "undo_entries": "1",
+                "redo_entries": "0"
+              },
+              "saved_revision": "0",
+              "dirty": true
+            },
+            "events": 1,
+            "source_step_map": {
+              "kind": "child_move",
+              "from_parent": "R",
+              "from_index": 1,
+              "to_parent": "R",
+              "to_index": 3,
+              "count": 1,
+              "from_len": 3,
+              "to_len": 3
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "qualified_not_run": [
+    {
+      "id": "DEFAULT_DEPTH_32_FULL_LITERAL",
+      "status": "NOT_RUN_SPECIFICATION_ONLY",
+      "scope": "Frozen42 N05/N06 exercise actual reduced3/4 profile depth. Default32/33 extension has no full authored literal in this lane and is not counted as executed."
+    }
+  ],
+  "scope": "Native/public SDK2 semantic lane only; no pointer/keyboard/focus/geometry/installed/CMS44 acceptance from this artifact.",
+  "reused_public_map_probes": {
+    "N01": [
+      {
+        "kind": "map",
+        "from_revision": "0",
+        "position": {
+          "kind": "child",
+          "parent": "R",
+          "index": 3,
+          "affinity": "before"
+        },
+        "expected": {
+          "position": {
+            "kind": "child",
+            "parent": "R",
+            "index": 2,
+            "affinity": "before"
+          },
+          "status": "mapped",
+          "deleted": false
+        }
+      },
+      {
+        "kind": "map",
+        "from_revision": "0",
+        "position": {
+          "kind": "child",
+          "parent": "Q",
+          "index": 1,
+          "affinity": "after"
+        },
+        "expected": {
+          "position": {
+            "kind": "child",
+            "parent": "Q",
+            "index": 2,
+            "affinity": "after"
+          },
+          "status": "mapped",
+          "deleted": false
+        }
+      },
+      {
+        "kind": "map",
+        "from_revision": "0",
+        "position": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "expected": {
+          "position": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "status": "mapped",
+          "deleted": false
+        }
+      }
+    ],
+    "N02": [
+      {
+        "kind": "map",
+        "from_revision": "0",
+        "position": {
+          "kind": "child",
+          "parent": "Q",
+          "index": 2,
+          "affinity": "before"
+        },
+        "expected": {
+          "position": {
+            "kind": "child",
+            "parent": "Q",
+            "index": 1,
+            "affinity": "before"
+          },
+          "status": "mapped",
+          "deleted": false
+        }
+      },
+      {
+        "kind": "map",
+        "from_revision": "0",
+        "position": {
+          "kind": "child",
+          "parent": "R",
+          "index": 1,
+          "affinity": "after"
+        },
+        "expected": {
+          "position": {
+            "kind": "child",
+            "parent": "R",
+            "index": 2,
+            "affinity": "after"
+          },
+          "status": "mapped",
+          "deleted": false
+        }
+      },
+      {
+        "kind": "map",
+        "from_revision": "0",
+        "position": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "expected": {
+          "position": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "status": "mapped",
+          "deleted": false
+        }
+      }
+    ]
+  }
+}

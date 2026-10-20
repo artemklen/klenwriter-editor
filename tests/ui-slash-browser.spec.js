@@ -39,7 +39,7 @@ test.afterEach(async({page},info)=>{
     for(const id of record.mounts){
       if(info.status!=='passed'){const value=await call(page,'inspect',id,{snapshot:false});record.checkpoints.push({id,note:'pure native failure readback before disposal',...value,window:await call(page,'textWindow',id),presentation:await menu(page,id).evaluate(node=>({documentFocused:document.hasFocus(),hidden:node.hidden,display:getComputedStyle(node).display,visibility:getComputedStyle(node).visibility,rect:node.getBoundingClientRect().toJSON(),text:node.textContent}))});}
       const result=await call(page,'destroy',id);record.cleanup.push({id,...result});
-      expect(result.ui).toEqual({listeners:0,observers:0,animationFrames:0,subscriptions:0,hostRequests:0,continuations:0});
+      expect(result.ui).toEqual({listeners:0,observers:0,animationFrames:0,subscriptions:0,hostRequests:0,continuations:0,dragGestures:0,pointerCaptures:0});
       expect(result.mounted.inputObservations).toEqual({subscribers:0});expect(result.mounted.popupPresentation).toEqual({handles:0});
       expect(result.mounted.hostRequests).toEqual({pending:0,focusContinuations:0});expect(result.mounted.dom.listeners).toBe(0);
       expect(result.native).toEqual({sessions:0,snapshot_handles:0,snapshot_bytes:'0',protected_cursors:0});

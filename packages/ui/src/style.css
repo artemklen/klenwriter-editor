@@ -40,3 +40,15 @@
   position:fixed;top:auto;bottom:8px;left:8px;right:8px;
   max-width:min(24rem,calc(100% - 16px));margin-inline:auto;
 }
+/* The source view is never decorated/mutated: all drag paint is outside it. */
+.kw-ui-drag-preview,.kw-ui-drag-line,.kw-ui-drag-outline,.kw-ui-drag-parents{
+  position:fixed;box-sizing:border-box;pointer-events:none;z-index:6;
+}
+.kw-ui-drag-preview{width:240px;max-width:calc(100vw - 16px);padding:6px 8px;border:1px solid #286143;border-radius:4px;background:#fff;color:#202824;font:14px/1.4 system-ui,sans-serif;white-space:normal;overflow-wrap:anywhere}
+.kw-ui-drag-outline{border:2px solid #286143;background:transparent}
+.kw-ui-drag-line{background:#1e5bca;min-height:2px}
+.kw-ui-drag-parents{right:8px;bottom:8px;max-width:min(24rem,calc(100vw - 16px));max-height:35vh;overflow:auto;padding:6px;border:1px solid #60736a;border-radius:4px;background:#fff;color:#202824;font:14px/1.4 system-ui,sans-serif}
+.kw-ui-drag-parents [aria-selected=true]{outline:2px solid #1e5bca;outline-offset:-2px;background:#e2eaff}
+.kw-ui-drag-parent-instruction{font-weight:600;padding-bottom:4px}
+.kw-ui-drag-preview[hidden],.kw-ui-drag-line[hidden],.kw-ui-drag-outline[hidden],.kw-ui-drag-parents[hidden]{display:none}
+@media(forced-colors:active){.kw-ui-drag-line{background:Highlight}.kw-ui-drag-outline{border-color:Highlight}.kw-ui-drag-parents [aria-selected=true]{outline-color:Highlight}}
