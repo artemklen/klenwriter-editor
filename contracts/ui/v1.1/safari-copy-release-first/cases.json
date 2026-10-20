@@ -1,0 +1,128 @@
+{
+  "format": "editor-ui-safari-copy-release-first-cases/1",
+  "status": "SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "baseSourceRevision": "147372a0982509af949fecf685c0f961cc3f0149",
+  "scope": "Injected run/guard only; zero AppleScript, AX, clipboard, browser or physical-input execution",
+  "privateOption": {
+    "name": "safariCopyKeyTransport",
+    "tag": "sc-copy01",
+    "browser": "safari",
+    "normalAction": "copy"
+  },
+  "normalProgram": ["command-down", "key8-down", "command-up", "key8-up"],
+  "normalReply": {
+    "status": "key-sent",
+    "action": "copy",
+    "keyCode": 8,
+    "modifiers": ["command"],
+    "programId": "safari-copy-release-first/1",
+    "keyTransitions": ["command-down", "key8-down", "command-up", "key8-up"],
+    "frontPid": "exact actual positive PID from this fresh strict Swift guard"
+  },
+  "cleanupProgram": ["command-up", "key8-up"],
+  "cleanupReply": {
+    "status": "keys-released",
+    "action": "release-copy",
+    "keyCode": 8,
+    "modifiers": ["command"],
+    "keyTransitions": ["command-up", "key8-up"],
+    "frontPid": "exact original pending owner PID, freshly guarded"
+  },
+  "cases": [
+    {
+      "id": "SC-N01",
+      "testName": "SC-N01 opted-in Safari Copy uses the closed release-first program and exact ACK",
+      "sourceInputs": [
+        "Safari owner with exact sc-copy01 option and fresh same-owner page/Swift guards",
+        "stub returns the independently literal normalReply within the original deadline"
+      ],
+      "expected": {
+        "normalKeyCalls": 1,
+        "scriptArgumentsExcludingPath": ["safari", "exact guarded AX title", "actual guarded decimal PID", "copy", "sc-copy01"],
+        "programId": "safari-copy-release-first/1",
+        "keyTransitions": ["command-down", "key8-down", "command-up", "key8-up"],
+        "delivery": "sent",
+        "keysPending": false,
+        "cleanupCalls": 0,
+        "browserAckInferred": false
+      }
+    },
+    {
+      "id": "SC-N02",
+      "testName": "SC-N02 Safari Copy opt-in is closed and preserves every legacy route",
+      "vectors": [
+        "unknown tag and Chrome opt-in refuse before any process call",
+        "five-argument fixed-script grammar rejects wrong browser, wrong action or wrong tag before keys",
+        "absent option preserves four-argument Safari and Chrome Copy with original key8-up before command-up",
+        "valid Safari opt-in leaves other normal keys on their original four-argument route",
+        "Chrome eight-argument Find and all pre-existing173 assertions remain unchanged"
+      ],
+      "expected": {
+        "invalidOptionProcessCalls": 0,
+        "invalidFiveArgumentInputCommands": 0,
+        "legacyCopyTransitions": ["command-down", "key8-down", "key8-up", "command-up"],
+        "legacyAndOtherKeyFifthArgument": false,
+        "arbitraryProgramOrKeyAccepted": false
+      }
+    },
+    {
+      "id": "SC-N03",
+      "testName": "SC-N03 malformed Safari Copy program receipts refuse without clearing ownership or replay",
+      "vectors": [
+        "missing programId or wrong programId",
+        "old release order, omitted transition, extra transition or duplicate transition",
+        "wrong status, action, keyCode, modifiers or frontPid",
+        "extra reply field cannot be accepted as the exact closed receipt",
+        "exact complete POST receipt after the deadline fails but proves all ups and needs no redundant release"
+      ],
+      "expected": {
+        "malformedNormalOutcome": "FAILED unknown/may_have_sent",
+        "malformedKeysPending": true,
+        "normalActionsDisabled": true,
+        "normalKeyCalls": 1,
+        "automaticReplayCalls": 0,
+        "lateCompleteOutcome": "FAILED known_completed",
+        "lateCompleteKeysPending": false,
+        "lateCompleteCleanupCalls": 0
+      }
+    },
+    {
+      "id": "SC-N04",
+      "testName": "SC-N04 uncertain Safari Copy permits only one original legacy UP-only cleanup",
+      "vectors": [
+        "opaque timeout after normal five-argument dispatch retains original owner and disables normal actions",
+        "one fresh same-owner cleanup uses original four-argument release-copy, never sc-copy01",
+        "foreign PID, mount, case or window refuses before cleanup key dispatch",
+        "cleanup timeout/refusal stays failed and cannot be retried or rebound",
+        "pre-dispatch guard refusal creates no pending keys and allows no cleanup"
+      ],
+      "expected": {
+        "normalKeyCalls": 1,
+        "maximumCleanupAttempts": 1,
+        "cleanupArgumentsExcludingPath": ["safari", "exact guarded AX title", "original pending decimal PID", "release-copy"],
+        "cleanupTransitions": ["command-up", "key8-up"],
+        "cleanupDownTransitions": 0,
+        "replayOrSecondReleaseCalls": 0,
+        "successfulCleanupKeysPending": false,
+        "failedCleanupPreservesOriginalFailure": true,
+        "originalFailedRowBecomesPass": false
+      }
+    }
+  ],
+  "newUnitFile": "tests/ui-native-safari-copy.node.mjs",
+  "entry": "one additive import in tests/ui-native-input.node.mjs; all old173 names/assertions unchanged",
+  "newUnitCount": 4,
+  "oldUnitCount": 173,
+  "expectedUnitTotal": 177,
+  "browserCaseAddition": 0,
+  "expectedUiBrowser": 216,
+  "expectedOverallBrowser": 972,
+  "unchangedAcceptance": [
+    "fresh full page/mount/case/nonce/PID/AX and AS PRE/POST ownership",
+    "original total one-second deadline, bounds and no event retry",
+    "actual trusted keydown AND keyup",
+    "actual Copy/clipboard ACK and exact OS UTF-8 bytes",
+    "native canonical, directed selection, identities, counters/history and resource checks"
+  ],
+  "actualInstalledBehavior": "NOT_OBSERVED; original Safari08 failure remains unchanged; no expected DOM ACK is inferred from this candidate program"
+}
