@@ -1,0 +1,182 @@
+{
+  "format": "editor-ui-toolbar-placement-cases/1.1",
+  "status": "SOURCE_AUTHORED_BEFORE_FLOATING_TOOLBAR_CANDIDATE",
+  "baseV1manifestSHA256": "4f6f643c8fcc4f6b8716b614862173400dcc08436114462d450e923dc9eec889",
+  "oracle": "Independent raw DOM Ranges/viewport/clip/toolbar box; unchanged native literals referenced by existing case ID. No candidate position/class/computed-position as golden.",
+  "bounds": {
+    "viewportInsetCssPx": 8,
+    "verticalGapMinCssPx": 4,
+    "nearGapMaxCssPx": 24,
+    "toleranceCssPx": 0.5,
+    "requiredCssPosition": null
+  },
+  "literalSelections": {
+    "forward": {
+      "case": "V01-forward",
+      "anchor": {
+        "path": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "text": "ab",
+        "offset": 0
+      },
+      "focus": {
+        "path": [
+          1,
+          0,
+          0
+        ],
+        "text": "cd",
+        "offset": 2
+      }
+    },
+    "reverse": {
+      "case": "V01-reverse",
+      "anchor": {
+        "path": [
+          1,
+          0,
+          0
+        ],
+        "text": "cd",
+        "offset": 2
+      },
+      "focus": {
+        "path": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "text": "ab",
+        "offset": 0
+      }
+    },
+    "caret": {
+      "case": "V02-collapsed-twice",
+      "anchor": {
+        "path": [
+          0,
+          0,
+          0
+        ],
+        "text": "ab",
+        "offset": 1
+      },
+      "focus": {
+        "path": [
+          0,
+          0,
+          0
+        ],
+        "text": "ab",
+        "offset": 1
+      }
+    }
+  },
+  "pathOrigin": "original editorElement.childNodes; each index is childNodes; endpoints are exact Text objects, never DOM IDs or production mapping",
+  "cases": [
+    {
+      "id": "TP01",
+      "variants": [
+        "forward",
+        "reverse",
+        "caret"
+      ],
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "setup": {
+        "wrapperClass": "ui-placement-middle",
+        "externalCss": ".ui-placement-middle .ui-fixture-editor { padding-top:180px; }",
+        "beforeBaseline": [
+          "original public authored native selection + exact literal raw endpoints",
+          "initial scroll0; raw visible selection/caret envelope top250..400px",
+          "at least one side independently fits actual toolbar +gap4/inset8"
+        ]
+      },
+      "expected": {
+        "placement": "floating",
+        "permittedSides": [
+          "above",
+          "below"
+        ],
+        "horizontalProjectionOverlap": true,
+        "selectedRectsUnchanged": true,
+        "nativeBrowserFocusScrollUnchanged": true,
+        "keyedControlsSame": true
+      },
+      "retain": [
+        "K01 real Tab/arrows/Home/End/Tab exit",
+        "T01 both directions pointer+keyboard exact native one-command/focus/undo on fresh fixture",
+        "T02 state-only; L01 RUEN/32px/200%/CSP/resources"
+      ]
+    },
+    {
+      "id": "TP02",
+      "variants": [
+        "forward"
+      ],
+      "viewport": {
+        "width": 1280,
+        "height": 180
+      },
+      "setup": {
+        "wrapperClass": "ui-placement-nofit",
+        "externalCss": ".ui-placement-nofit .ui-fixture-editor { position:fixed;top:0;left:240px;width:640px;min-height:0;padding:0; } .ui-placement-nofit .ui-fixture-editor p { height:100px;min-height:0;line-height:100px;margin:0; }",
+        "beforeBaseline": [
+          "genuine measured visible range and literal endpoints",
+          "independent above AND below available spaces each smaller than actual toolbar height+gap4/inset8; mismatch FAIL not skip"
+        ]
+      },
+      "expected": {
+        "placement": "sticky_normal_flow_fallback",
+        "reason": "nofit",
+        "ownLeftTopCleared": true,
+        "toolbarAndButtonsSame": true,
+        "nativeBrowserFocusScrollUnchanged": true
+      }
+    },
+    {
+      "id": "TP03",
+      "variants": [
+        "forward"
+      ],
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "setup": {
+        "existingExternalClass": "ui-geometry-transform",
+        "applyTo": "editorElement before baseline",
+        "precondition": "actual selection geometry dom.selection_geometry_unsupported, unchanged G18"
+      },
+      "expected": {
+        "placement": "sticky_normal_flow_fallback",
+        "reason": "unsupported",
+        "originalGeometryCode": "dom.selection_geometry_unsupported",
+        "ownLeftTopCleared": true,
+        "toolbarAndButtonsSame": true,
+        "nativeBrowserFocusScrollUnchanged": true
+      }
+    }
+  ],
+  "fallbackReasons": {
+    "unavailable": "original absent/unavailable geometry or dom.selection_missing",
+    "invisible": "measured visible:false/empty visible intersection",
+    "nofit": "independent no feasible nearby above/below box",
+    "unsupported": "dom.selection_geometry_unsupported",
+    "busy": "original dom.busy/dom.composition_conflict",
+    "stale": "original dom.stale_selection/full-context continuity failure"
+  },
+  "globalAssertions": [
+    "CSP violations/errors/external requests[]; no unsafe-inline/eval/hash transfer",
+    "same original native facets/raw DOM objects/range/focus/scroll; position reads submit zero semantic actions",
+    "one UI RAF/observer/subscription capacity and final existing resources0 assertions unchanged"
+  ],
+  "fixtureMapping": "Reuse window.ui42.mount V01/V02, editorFocus, geometryRead, inspect, refresh and destroy. Finite opt-in external CSS may be added later to existing fixture stylesheet; no generic product API/test setter. No setup assistance after baseline."
+}

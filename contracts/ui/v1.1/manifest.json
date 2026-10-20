@@ -1,0 +1,35 @@
+{
+  "format": "editor-ui-toolbar-placement-contract/1.1",
+  "status": "SOURCE_AUTHORED_EXTENSION_FOR_ROOT_FREEZE_BEFORE_PLACEMENT_CODE",
+  "authoredAt": "2026-10-20T00:01:36.607954+00:00",
+  "baseV1manifest": {
+    "path": "contracts/ui/v1/manifest.json",
+    "bytes": 28088,
+    "sha256": "4f6f643c8fcc4f6b8716b614862173400dcc08436114462d450e923dc9eec889"
+  },
+  "baselineUiHead": "3ba8875d150ab80199b90bf7a675c4098fcf1c7b",
+  "existingUiImplementation": true,
+  "floatingToolbarCandidateExists": false,
+  "claimsExecutionOrReview": false,
+  "intendedDirectory": "contracts/ui/v1.1",
+  "files": [
+    {
+      "path": "toolbar-placement.md",
+      "bytes": 3313,
+      "sha256": "fa3c232667c7a9a41c63d853d19260d34d5b241b7593444695e7ad8ecf9be392",
+      "mode": 420
+    },
+    {
+      "path": "toolbar-placement-cases.json",
+      "bytes": 5593,
+      "sha256": "f290e58b05eb8e3b51e0fdeea4e33b19a326615027687ea4fbc702759bff5b45",
+      "mode": 420
+    }
+  ],
+  "manifestSelfExcluded": true,
+  "caseIds": [
+    "TP01",
+    "TP02",
+    "TP03"
+  ]
+}
