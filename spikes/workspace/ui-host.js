@@ -114,6 +114,16 @@ function observedModule(r,{controlled=false,trace=false}={}){
   }
   return {manifest:module.manifest,Session:ObservedSession,resourceCounts:()=>module.resourceCounts()};
 }
+function createFixtureUi(r){
+  assert(!r.ui,'One fixture UI owner');
+  r.ui=createEditorUi({editor:r.editor,editorElement:r.element,slots:r.slots,locale:r.locale,profile:profile(r),onResult:result=>{
+    if(result.status==='submitted'){
+      r.results.push({status:result.status,action:result.action,submission:result.submission.status,...(result.submission.status==='completed'?{response:copy(result.submission.response)}:{})});
+      const work=result.focus.then(value=>r.focusResults.push(copy(value)));r.focusPromises.push(work);
+    }else r.results.push(copy(result));
+  }});
+  assert(!('status'in r.ui),JSON.stringify(r.ui));
+}
 export async function mount(config={}){
   const selected=cases.find(c=>c.job.id===(config.case??'V01-forward')),id=`ui42-${++serial}`,wrapper=document.createElement('section');wrapper.className='ui-fixture';wrapper.id=id;
   const toolbar=document.createElement('div'),gutter=document.createElement('div'),entry=document.createElement('div'),element=document.createElement('div');
@@ -128,23 +138,22 @@ export async function mount(config={}){
   if(config.direction){assert(config.direction==='rtl','Closed fixture direction');element.dir='rtl';}
   assert(!(config.controlledReadFault&&config.nativeTrace),'Native trace and controlled transport faults are separate lanes');
   const loaded=config.controlledReadFault||config.nativeTrace?observedModule(r,{controlled:config.controlledReadFault===true,trace:config.nativeTrace===true}):module;
-  const loader=config.delayed?new Promise(resolve=>{r.releaseLoader=()=>resolve(loaded);}):Promise.resolve(loaded);
+  assert(!(config.createUiBeforeReady&&(config.delayed||config.geometryOnly)),'Early UI is a separate closed loader lane');
+  const loader=config.delayed||config.createUiBeforeReady?new Promise(resolve=>{r.releaseLoader=()=>resolve(loaded);}):Promise.resolve(loaded);
   r.editor=mountEditor({element,editor:{input:new TextEncoder().encode(job.input),options:{abi:'editor-sdk/2',build_id:sdkBuildId,profile:job.profile,admission:'validate',access:config.access??'editable',registry_json:job.registry_json,profile_options_json:job.profile_options_json},loader:()=>loader},renderers:r.notes?notesD0Renderers:kwdjBasicRenderers,...(config.mode?{mode:config.mode}:{}),onRefusal:f=>r.failures.push(copy(f)),
     clipboard:{onResult:value=>{assert(r.clipboardResults.length<64,'Finite clipboard observations');r.clipboardResults.push({action:value.action,status:value.status,clipboard:value.clipboard,failure:copy(value.failure),submission:value.submission?{status:value.submission.status,...(value.submission.status==='completed'?{response:copy(value.submission.response)}:{})}:null});}},
     onRecovery:packet=>{assert(r.recoveryResults.length<64,'Finite recovery observations');const c=packet.composition;r.recoveryResults.push({originalInputBytes:packet.originalInput?.byteLength??null,region:packet.region?.kind==='bounded'?copy(packet.region):packet.region?{kind:packet.region.kind,reason:packet.region.reason,ownership:packet.region.ownership,connected:packet.region.element.isConnected}:null,composition:c?{generation:c.generation,reason:c.reason,context:copy(c.context),base:copy(c.base),selection:copy(c.selection),affectedNodeIds:copy(c.affectedNodeIds),nativeOutcome:c.nativeOutcome,response:copy(c.response),disposition:c.disposition,unappliedInput:c.unappliedInput?.kind==='bounded'?copy(c.unappliedInput):c.unappliedInput?{kind:c.unappliedInput.kind,reason:c.unappliedInput.reason,ownership:c.unappliedInput.ownership}:null}:null});}});
+  if(config.createUiBeforeReady){
+    r.uiCreation={mountedPhase:r.editor.lifecycle,loaderHeld:true};assert(r.uiCreation.mountedPhase==='loading','Early UI precedes actual module resolution');
+    createFixtureUi(r);r.releaseLoader();r.releaseLoader=null;
+  }
   if(config.delayed)return {id,lifecycle:r.editor.lifecycle,uiCreated:false};
   const ready=await r.editor.ready;assert(ready.status==='ready',JSON.stringify(ready));r.editor.subscribe(event=>{r.events.push(copy(event));if(r.geometryProbe){const role=r.geometryProbe;r.geometryProbe=null;r.geometryProbeResults.push(copy(r.editor.geometry.read({kind:'block',node:r.ids.get(role),stamp:event.after})));}if(r.destroyProbe){r.destroyProbe=false;const receipt=r.editor.destroy();r.geometryProbeResults.push({phase:r.editor.lifecycle,sdkTicket:receipt.sdk.status,geometry:copy(r.editor.geometry.read({kind:'selection',stamp:event.after}))});}});bind(r,rolePaths);
   const chosen=config.selection??(config.geometry?geometry.fixtures[config.geometry].selection??null:selected.expected.selectionBefore);
   if(chosen){const request=r.editor.submit({kind:'set_selection',stamp:r.editor.capture(),selection:resolve(r,chosen)});assert(request.status==='completed'&&request.response.status==='ok','Literal selection setup');}
   if(config.geometryOnly)return {id,ready:ready.status,roles:Object.fromEntries(r.ids),uiCreated:false};
-  r.ui=createEditorUi({editor:r.editor,editorElement:element,slots:r.slots,locale:r.locale,profile:profile(r),onResult:result=>{
-    if(result.status==='submitted'){
-      r.results.push({status:result.status,action:result.action,submission:result.submission.status,...(result.submission.status==='completed'?{response:copy(result.submission.response)}:{})});
-      const work=result.focus.then(value=>r.focusResults.push(copy(value)));r.focusPromises.push(work);
-    }else r.results.push(copy(result));
-  }});
-  assert(!('status'in r.ui),JSON.stringify(r.ui));const uiReady=await r.ui.ready;assert(uiReady.status==='ready',JSON.stringify(uiReady));r.events=[];
-  return {id,ready:ready.status,uiReady:uiReady.status,roles:Object.fromEntries(r.ids),case:config.case??'V01-forward'};
+  if(!r.ui)createFixtureUi(r);const uiReady=await r.ui.ready;assert(uiReady.status==='ready',JSON.stringify(uiReady));r.events=[];
+  return {id,ready:ready.status,uiReady:uiReady.status,roles:Object.fromEntries(r.ids),case:config.case??'V01-forward',...(r.uiCreation?{uiCreation:copy(r.uiCreation)}:{})};
 }
 export async function inspect(id,options){
   const noSnapshot=options!==undefined;

@@ -24,6 +24,7 @@ const receiptHash=bytes=>createHash('sha256').update(bytes).digest('hex');
 async function mounted(page,configuration={}){
   const value=await call(page,'mount',configuration);records.get(page).mounts.push(value.id);
   expect(value.ready).toBe('ready');expect(value.uiReady).toBe('ready');
+  if(configuration.createUiBeforeReady)expect(value.uiCreation).toEqual({mountedPhase:'loading',loaderHeld:true});
   expect(await root(page,value.id).getByRole('status').textContent()).not.toMatch(/^(Открываем документ…|Opening document…)$/);return value.id;
 }
 async function checkpoint(page,id,label){
@@ -223,12 +224,16 @@ for(const mode of ['readOnly','disabled'])test(`R01 ${mode}: mutation controls e
   await control(page,id,'strong').click();await waitSubmissions(page,id,1);
 });
 
-test('C01: controlled composition lock preserves provisional objects/focus; only a fresh action after terminal may submit',async({page})=>{
-  const id=await mounted(page,{case:'V02-collapsed-twice'});await editorFocus(page,id);const before=await checkpoint(page,id,'before controlled composition');
+for(const createUiBeforeReady of [false,true])test(`C01${createUiBeforeReady?'-EARLY':''}: controlled composition lock preserves provisional objects/focus; only a fresh action after terminal may submit`,async({page})=>{
+  const id=await mounted(page,{case:'V02-collapsed-twice',createUiBeforeReady});await editorFocus(page,id);const before=await checkpoint(page,id,'before controlled composition');
   await page.locator(`#${id}-editor`).evaluate(node=>{window.uiCompositionChildren=[...node.childNodes];node.dispatchEvent(new CompositionEvent('compositionstart',{bubbles:true,data:''}));});
   await expect(control(page,id,'strong')).toHaveAttribute('aria-disabled','true');await control(page,id,'strong').click({force:true});
   expect(await page.locator(`#${id}-editor`).evaluate(node=>node.contains(document.activeElement)&&node.childNodes.length===window.uiCompositionChildren.length&&[...node.childNodes].every((child,index)=>child===window.uiCompositionChildren[index]))).toBe(true);
-  await page.locator(`#${id}-editor`).evaluate(node=>node.dispatchEvent(new CompositionEvent('compositionend',{bubbles:true,data:''})));
+  await page.locator(`#${id}-editor`).evaluate((node,id)=>{
+    // Controlled TO01: queue own UI RAF before the owner terminal RAF in ONE JS turn.
+    window.ui42.refresh(id);
+    node.dispatchEvent(new CompositionEvent('compositionend',{bubbles:true,data:''}));
+  },id);
   await expect(control(page,id,'strong')).toHaveAttribute('aria-disabled','false');const settled=await checkpoint(page,id,'unchanged controlled composition settled');expect(settled.canonical).toBe(before.canonical);expect(settled.state.stamp.revision).toBe(before.state.stamp.revision);expect(submitted(settled)).toHaveLength(0);
   await expect(root(page,id).getByRole('status')).toBeEmpty();
   await control(page,id,'strong').click();await waitSubmissions(page,id,1);expect((await checkpoint(page,id,'fresh gesture after terminal')).state.stored_marks).toEqual([{type_id:'org.klenwriter.kwdj/strong',attributes:{}}]);
