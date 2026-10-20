@@ -19,3 +19,10 @@ page/PID/root/title/nonce/coordinate/one-second pre-post guards remain mandatory
 This adds only passive observation after posting, not input authority or a new
 key/pointer action. No resend, release, move, activation, source change, target
 recapture or event normalization is permitted by this observation rule.
+
+The page guard retains its original target element for event observation only.
+Each pointer event records that captured object's identity and whether its event
+target belongs to it; a genuine option's descendant may be the event target.
+No click-time target lookup supplies this relationship. Wrong captured target,
+outside target, pointer identity or event order fails immediately, including
+while a partial sequence is being observed.
