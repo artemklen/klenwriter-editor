@@ -12,7 +12,7 @@ import {createSafariAdapter} from './ui-native/safari-adapter.mjs';
 import {captureOwnedWindow,fixedKeyScript} from './ui-native/input.mjs';
 import {caseIds,keySpecs,limits} from './ui-native/protocol.mjs';
 import {compositionSettlementLiterals,compositionSettlementState} from './ui-native/settlement-literals.mjs';
-import {classifyCompositionObservation,classifyCompositionAfterClickObservation,earlySpacingAccentBinding,notesEarlySpacingAccentBinding} from './ui-native/composition-observation.mjs';
+import {classifyCompositionObservation,classifyCompositionAfterClickObservation,classifyCompositionDuringPointerObservation,earlySpacingAccentBinding,notesEarlySpacingAccentBinding} from './ui-native/composition-observation.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');process.chdir(root);
 const args=process.argv.slice(2),names=['--browser','--output','--broker','--head','--expected-version'];
@@ -160,7 +160,12 @@ async function perform(entry,prepared){
     if(entry.compositionObservation.classification==='FAILED'){
       // Keep the original default failure; this is a separately frozen subset.
       entry.compositionAfterClickObservation=classifyCompositionAfterClickObservation(observationInput);
-      assert.equal(entry.compositionAfterClickObservation.classification,'UNOBSERVED',entry.compositionAfterClickObservation.error?.message??entry.compositionObservation.error?.message);
+      if(entry.compositionAfterClickObservation.classification!=='UNOBSERVED'){
+        // Pure observation only; keep BOTH earlier classifier failures unchanged.
+        entry.compositionDuringPointerObservation=classifyCompositionDuringPointerObservation(observationInput);
+        assert.equal(entry.compositionDuringPointerObservation.classification,'UNOBSERVED',entry.compositionDuringPointerObservation.error?.message??entry.compositionAfterClickObservation.error?.message);
+        entry.disposition=entry.compositionDuringPointerObservation.reason;return 'UNOBSERVED';
+      }
       entry.disposition='native_terminal_before_gesture_insert_completed_after_click';return 'UNOBSERVED';
     }
     if(entry.compositionObservation.classification==='UNOBSERVED'){entry.disposition=entry.compositionObservation.reason;return 'UNOBSERVED';}

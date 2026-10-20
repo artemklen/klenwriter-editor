@@ -101,3 +101,6 @@ for(const [name,edit]of [
 ])test(`AFTER-CLICK ${name} cannot supply the required actual gesture identity`,()=>{
   const f=afterFixture();edit(f);afterFailed(f);assert.equal(f.checks,0);
 });
+
+// Private controlled fixture reuse only; all existing assertions above unchanged.
+export {afterFixture};

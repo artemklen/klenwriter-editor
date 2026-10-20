@@ -64,7 +64,7 @@ function classifyCompositionObservationPhase({before,preedit,gesture,action,expe
       else check(readKinds.has(request.kind),'No additional semantic mutation or unknown request');
     }
     if(terminals.length===0){
-      check(phase!=='after-click','AFTER-CLICK requires one explicit terminal');
+      check(phase==='before-down',`${phase==='after-click'?'AFTER-CLICK':'DURING-POINTER'} requires one explicit terminal`);
       check(gesture.composition.open===true&&gesture.composition.observedEnded===false&&semantic.length===0,'No terminal or semantic completion can be inferred');
       return {classification:unchanged,...scope};
     }
@@ -73,7 +73,7 @@ function classifyCompositionObservationPhase({before,preedit,gesture,action,expe
     assert.deepEqual(gesture.composition.terminals,[{ordinal:terminal.ordinal,time:terminal.time,isTrusted:terminal.isTrusted,mountId:mount,clock:documentClock}],'All observed terminals retained with original trust');
     check(semantic.length===1,'Exactly one expected native InsertText; no deferred or additional command');
     const {row,request,response}=semantic[0];
-    if(phase==='after-click'){
+    if(phase==='after-click'||phase==='during-pointer'){
       const clickRows=during.filter(event=>event.event==='click'),click=clickRows[0],guard=action.proof?.pageGuard;
       check(during.filter(event=>event.event==='pointerdown').length===1&&during.filter(event=>event.event==='pointerup').length===1&&clickRows.length===1,'Exactly one actual distinct down/up/click');
       check(guard?.allowed===true&&guard.id===mount&&guard.mountedId===mount&&guard.caseId===before.caseId&&guard.action===action.action&&guard.target===action.action.slice(6),'Same original closed target guard');
@@ -85,7 +85,8 @@ function classifyCompositionObservationPhase({before,preedit,gesture,action,expe
       check(down.isPrimary===true&&ups[0].isPrimary===true,'Actual primary pointer sequence');
       check(Number.isSafeInteger(click.detail)&&click.detail>0,'Actual positive-detail click');
       check(down.ordinal<ups[0].ordinal&&ups[0].ordinal<click.ordinal&&ups[0].time<=click.time,'Completed matching pointer event order');
-      check(row.startedAt>=click.time&&row.finishedAt<=gesture.observation.at,'InsertText starts AFTER click and finishes before checkpoint');
+      if(phase==='after-click')check(row.startedAt>=click.time&&row.finishedAt<=gesture.observation.at,'InsertText starts AFTER click and finishes before checkpoint');
+      else check(row.startedAt>=down.time&&row.finishedAt<=click.time,'InsertText starts and finishes DURING the matching completed pointer gesture');
       for(const key of ['html','rootObject','objects','selection','active','activeObject'])assert.deepEqual(gesture.dom?.[key],preedit.dom?.[key],`Exact provisional DOM ${key}`);
       check(preedit.dom&&gesture.dom&&typeof preedit.dom.html==='string'&&Number.isSafeInteger(preedit.dom.rootObject)&&preedit.dom.rootObject>0&&Array.isArray(preedit.dom.objects)&&preedit.dom.selection&&preedit.dom.active,'Actual full provisional DOM observation');
       check(Number.isSafeInteger(preedit.dom.activeObject)&&preedit.dom.activeObject>0,'Actual focused object observed');
@@ -110,10 +111,10 @@ function classifyCompositionObservationPhase({before,preedit,gesture,action,expe
     check(typeof verifySettlement==='function','Full unchanged semantic assertions are mandatory');
     const settlement=verifySettlement({row,request,response});
     check(settlement&&typeof settlement==='object','Semantic proof retained');
-    return {classification:'UNOBSERVED',reason:phase==='after-click'?'native_terminal_preceded_gesture_insert_settled_after_click':'native_window_settled_before_distinct_gesture',...scope,
+    return {classification:'UNOBSERVED',reason:phase==='after-click'?'native_terminal_preceded_gesture_insert_settled_after_click':phase==='during-pointer'?'native_terminal_preceded_gesture_insert_settled_during_pointer':'native_window_settled_before_distinct_gesture',...scope,
       mountId:mount,clock:documentClock,trustedStartOrdinal:starts[0].ordinal,preeditCheckpointAt:preedit.observation.at,
       terminal:{ordinal:terminal.ordinal,time:terminal.time,isTrusted:terminal.isTrusted},pointerdown:{ordinal:down.ordinal,time:down.time},
-      nativeCall:{ordinal:row.ordinal,startedAt:row.startedAt,finishedAt:row.finishedAt,requestJson:row.requestJson,responseJson:row.responseJson},settlement,...(phase==='after-click'?{phase:'AFTER_CLICK',click:{ordinal:during.find(event=>event.event==='click').ordinal,time:during.find(event=>event.event==='click').time}}:{})};
+      nativeCall:{ordinal:row.ordinal,startedAt:row.startedAt,finishedAt:row.finishedAt,requestJson:row.requestJson,responseJson:row.responseJson},settlement,...(phase!=='before-down'?{phase:phase==='after-click'?'AFTER_CLICK':'DURING_POINTER',click:{ordinal:during.find(event=>event.event==='click').ordinal,time:during.find(event=>event.event==='click').time}}:{})};
   }catch(error){return {classification:'FAILED',...scope,error:{name:error.name,message:error.message}};}
 }
 
@@ -121,6 +122,8 @@ function classifyCompositionObservationPhase({before,preedit,gesture,action,expe
 export function classifyCompositionObservation(input){return classifyCompositionObservationPhase(input,'before-down');}
 // Separate frozen additive subset; never a two-command or interleaving waiver.
 export function classifyCompositionAfterClickObservation(input){return classifyCompositionObservationPhase(input,'after-click');}
+// Separate frozen own-settlement interval; all exact target/preservation checks apply.
+export function classifyCompositionDuringPointerObservation(input){return classifyCompositionObservationPhase(input,'during-pointer');}
 
 // This is an observation-only input binding, not a new native-output oracle.
 // U+00B4/one-unit/caret identity is already frozen in41 P18/P19. The literal

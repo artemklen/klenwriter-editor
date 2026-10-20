@@ -73,6 +73,13 @@ checkpoint, exact provisional DOM/objects/raw range/focus preservation, and zero
 UI results/dialog openings/pending requests. The original default failure stays
 in the report alongside that separate observation. It permits no interleaving or
 two-command exception and does not turn missed opportunity into protected PASS.
+The separate frozen DURING_POINTER subset keeps those same stronger actual
+target/DOM/raw/focus/no-UI-command checks and permits only the composition's
+one expected original InsertText within down.time<=startedAt<=finishedAt<=click.time,
+with its explicit terminal strictly before down. Both earlier classifier results
+remain recorded. Foreign up/click targets still fail; this cannot replace layout
+stability or accept a replay/second command. Original Chrome05 remains FAILED.
+These are single-threaded event-record/call bounds, not concurrent dispatch proof.
 The source-authored Notes spacing-accent binding is `a´b`/T2 with its distinct
 `{text}` payload; existing Notes é and KWDJ bindings stay unchanged.
 Original Chrome04 remains FAILED under its original before-down contract; only a
