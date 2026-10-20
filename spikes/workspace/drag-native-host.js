@@ -68,6 +68,7 @@ export function installDragNativeHost(config,programs){
     document.addEventListener('securitypolicyviolation',r.policyListener);window.addEventListener('error',r.errorListener);
     // All fixture layout/focus/scroll setup precedes the baseline and actual input.
     if(family.scroll)root.classList.add('ui-drag-scroll');
+    if(family.id==='N03')root.classList.add('ui-drag-zoom200');
     const focused=await window.ui42.editorFocus(r.id);check(focused.response?.status==='ok','Original public exact focus setup');
     if(family.scroll)editor.scrollTop=family.scroll.prebaseline==='end'?editor.scrollHeight-editor.clientHeight:0;
     await raf();r.baseline=await checkpoint();r.events=[];

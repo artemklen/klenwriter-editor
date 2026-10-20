@@ -1536,6 +1536,8 @@
   "qualification": "16 fixed rows per browser, eight EN/RU families. Pointer UI locale is not Russian typing proof. Compile/controlled/browser-protocol evidence never counts as installed PASS. Raw failures/unknown release remain authoritative; no screenshot, survey, external-app drag, permission request or stopped campaign.",
   "fixture_layout": {
     "scroll_class": "ui-drag-scroll",
+    "zoom200_class": "ui-drag-zoom200",
+    "zoom200_family": "N03",
     "authority": "Current external spikes/workspace/ui-fixture.css only; no inline margin/row override",
     "edge_inset_css_px": 10,
     "setup": "Initial scroll start/end only before baseline; no fixture scroll write after baseline"
