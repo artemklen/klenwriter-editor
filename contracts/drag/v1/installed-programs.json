@@ -57,6 +57,7 @@
       "actions": [
         "hover-source",
         "move-start",
+        "tab",
         "shift-tab",
         "enter",
         "down-key"
@@ -64,7 +65,7 @@
       "expected": "changed",
       "zoom": 1,
       "reach_handle": {
-        "key": "shift-tab",
+        "key": "tab",
         "maximum": 16,
         "stop": "Actual focus is the original labelled handle object; no JS focus during traversal"
       },
@@ -1469,6 +1470,11 @@
     "after_zoom_reset_passive_ms": 2000
   },
   "fixed_keys": {
+    "tab": {
+      "code": 48,
+      "modifiers": [],
+      "domCode": "Tab"
+    },
     "shift-tab": {
       "code": 48,
       "modifiers": [
@@ -1548,6 +1554,15 @@
     "no_external_application_campaign": true
   },
   "fixed_key_programs": {
+    "tab": {
+      "normal": [
+        "key48-down",
+        "key48-up"
+      ],
+      "cleanup": [
+        "key48-up"
+      ]
+    },
     "shift-tab": {
       "normal": [
         "shift-down",

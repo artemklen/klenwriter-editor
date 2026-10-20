@@ -15,10 +15,15 @@ export function installDragNativeHost(config,programs){
   const active=()=>({object:token(document.activeElement),id:document.activeElement?.id??null,tag:document.activeElement?.tagName??null});
   // Window capture is installed BEFORE any mount/owner. The terminal owner may stop propagation later.
   for(const name of ['pointermove','pointerdown','pointerup','pointercancel','gotpointercapture','lostpointercapture','click','keydown','keyup','focusin','focusout','compositionstart','compositionupdate','compositionend','dragstart','dragover','drop'])window.addEventListener(name,event=>{
-    const r=current;if(!r||!r.root.contains(event.target)&&!['pointerup','pointercancel','keyup'].includes(name))return;
+    const r=current;if(!r)return;
+    const withinRoot=event.target instanceof Node&&r.root.contains(event.target);
+    // Observation only: retain this mount's already observed held pointer even
+    // when its target is outside the root. No event becomes move authority.
+    const originalHeldPointer=name.startsWith('pointer')&&r.down&&r.pointerId!==null&&event.pointerId===r.pointerId;
+    if(!withinRoot&&!originalHeldPointer&&!['pointerup','pointercancel','keyup'].includes(name))return;
     if(r.events.length>=16384){r.overflow=true;return;}
     const element=event.target instanceof Element?event.target:null;
-    const value={name,at:performance.now(),timeOrigin:performance.timeOrigin,isTrusted:event.isTrusted,targetObject:token(element),sourceHit:!!(element&&(element===r.source||r.source.contains(element))),handleHit:!!(element&&(element===r.handle||r.handle.contains(element))),targetTag:element?.tagName??null,targetControl:element?.dataset.editorUiControl??null,
+    const value={name,at:performance.now(),timeOrigin:performance.timeOrigin,eventTimeStamp:event.timeStamp,isTrusted:event.isTrusted,withinRoot,originalHeldPointer,targetObject:token(element),sourceHit:!!(element&&(element===r.source||r.source.contains(element))),handleHit:!!(element&&(element===r.handle||r.handle.contains(element))),targetTag:element?.tagName??null,targetControl:element?.dataset.editorUiControl??null,
       pointerId:event.pointerId??null,pointerType:event.pointerType??null,isPrimary:event.isPrimary??null,button:event.button??null,buttons:event.buttons??null,x:event.clientX??null,y:event.clientY??null,
       key:event.key??null,code:event.code??null,shiftKey:event.shiftKey??null,metaKey:event.metaKey??null,defaultPreventedAtCapture:event.defaultPrevented,active:active()};
     r.events.push(value);

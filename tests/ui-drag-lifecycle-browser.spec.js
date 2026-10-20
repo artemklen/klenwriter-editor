@@ -15,7 +15,16 @@ const noLateMove=async(page,id,before)=>expect(await semanticCalls(page,id)).toE
 
 for(const locale of ['en','ru'])test(`DL01 ${locale} keyboard handle Move matches frozen pointer destination and returns the original handle`,async({page})=>{
   const id=await mount(page,literal,{locale}),before=await inspect(page,id,'frozen literal before keyboard equivalent');expect(before.canonical).toBe(literal.input);
-  await prepareSource(page,id,literal);await handle(page,id).evaluate(node=>{window.dragKeyboardInitiator=node;node.focus({preventScroll:true});});
+  await prepareSource(page,id,literal);
+  // Setup restores the actual editor focus; only genuine forward Tabs reach the appended handle.
+  await surface(page,id).focus();await expect(surface(page,id)).toBeFocused();
+  let reachedByTab=await handle(page,id).evaluate(node=>node===document.activeElement);
+  for(let i=0;i<16&&!reachedByTab;i++){
+    await page.keyboard.press('Tab');reachedByTab=await handle(page,id).evaluate(node=>node===document.activeElement);
+  }
+  expect(reachedByTab).toBe(true);await expect(handle(page,id)).toBeFocused();
+  nativeUnchanged(await inspect(page,id,'genuine forward Tab reaches original handle without native mutation'),before);
+  await handle(page,id).evaluate(node=>{window.dragKeyboardInitiator=node;node.focus({preventScroll:true});});
   await expect(handle(page,id)).toBeFocused();await page.keyboard.press('Enter');
   const menu=page.locator(`#${id} .kw-ui-popup[role=menu]`);await expect(menu).toBeVisible();await expect(menu.locator('[data-editor-ui-action=up]')).toBeFocused();
   await page.keyboard.press('ArrowDown');await expect(menu.locator('[data-editor-ui-action=down]')).toBeFocused();

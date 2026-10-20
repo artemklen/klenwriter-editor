@@ -63,12 +63,32 @@ async function physical(row,action,{reserved=false}={}){
   coherent(source(),selectedSource);const before=await adapter.call('inspect'),entry={caseId:row.id,locale:row.locale,action,status:'attempted',startedAt:now(),eventOffset:before.eventCount};row.actions.push(entry);report.physicalActions.push(entry);save();
   try{
     entry.platform=await adapter.input(action);entry.status='platform_completed';coherent(source(),selectedSource);
-    let actual=await adapter.call('inspect');
+    // Retain only existing passive replies: initial inspection plus at most the
+    // original five 20 ms polls. This record does not participate in admission.
+    const spec=keySpecs[action],phase=spec?'keyup':action==='down'?'pointerdown':action==='up'?'pointerup':'pointermove';
+    const requested=entry.platform.request,posted=entry.platform.actual;
+    entry.passiveCorrelation={eventOffset:entry.eventOffset,beforeClock:before.clock,beforeEventArrayLength:before.events.length,phase,code:spec?.domCode??null,originalPointerId:row.pointerId??null,
+      requestId:requested.requestId,serial:requested.serial,point:requested.point,
+      constructorTimestampNs:posted.constructorTimestampNs??null,postUptimeNs:posted.postUptimeNs??null};
+    entry.passiveInspections=[];
+    const retainInspection=value=>{
+      const index=value.events.findLastIndex(event=>event.name===phase&&event.isTrusted
+        &&(spec?event.code===spec.domCode:event.pointerType==='mouse'&&event.isPrimary===true));
+      const event=index<0?null:value.events[index],point=requested.point;
+      entry.passiveInspections.push({inspection:entry.passiveInspections.length,receivedAt:now(),clock:value.clock,
+        eventCount:value.eventCount,eventArrayLength:value.events.length,overflow:value.overflow,pointer:value.pointer,
+        lastMatchingPhase:event?{index,sinceOffset:index>=entry.eventOffset,name:event.name,at:event.at,timeOrigin:event.timeOrigin,eventTimeStamp:event.eventTimeStamp??null,
+          pointerId:event.pointerId,pointerType:event.pointerType,isPrimary:event.isPrimary,button:event.button,buttons:event.buttons,x:event.x,y:event.y,
+          code:event.code,withinRoot:event.withinRoot??null,originalHeldPointer:event.originalHeldPointer??null,
+          sameOriginalPointer:row.pointerId===undefined?null:event.pointerId===row.pointerId,
+          matchesRequestedPoint:point?Math.abs(event.x-point.x)<=1&&Math.abs(event.y-point.y)<=1:null}:null});
+    };
+    let actual=await adapter.call('inspect');retainInspection(actual);
     // Passive acknowledgement only, no input replay or authority refresh.
     for(let i=0;i<5;i++){
       const events=actual.events.slice(entry.eventOffset),spec=keySpecs[action];
       const seen=spec?events.some(e=>e.name==='keyup'&&e.isTrusted&&e.code===spec.domCode):events.some(e=>e.name===(action==='down'?'pointerdown':action==='up'?'pointerup':'pointermove')&&e.isTrusted);
-      if(seen||reserved)break;await wait(20);actual=await adapter.call('inspect');
+      if(seen||reserved)break;await wait(20);actual=await adapter.call('inspect');retainInspection(actual);
     }
     const events=actual.events.slice(entry.eventOffset);entry.dom=events;
     if(keySpecs[action]){
@@ -98,7 +118,9 @@ async function perform(row,prepared){
   if(family.zoom===2){for(let i=0;i<8;i++){const v=await adapter.call('inspect');if(Math.abs(v.viewport.pageZoom-2)<.02)break;assert.ok(v.viewport.pageZoom<2);await physical(row,'zoom-in',{reserved:true});}await wait(2000);const z=await checkpoint(row,'actual zoom200 before original gesture');unchanged(z,before);assert.ok(Math.abs(z.viewport.pageZoom-2)<.02);assert.ok(Math.abs(z.dpr/before.dpr-2)<.02);}
   await physical(row,'hover-source');await adapter.call('settle');await physical(row,'move-start');await adapter.call('settle');
   if(family.mode==='keyboard'){
-    let reached=false;for(let i=0;i<16;i++){const v=await adapter.call('inspect');if(v.handleFocused){reached=true;break;}await physical(row,'shift-tab');}
+    let reached=false;for(let i=0;i<16;i++){const v=await adapter.call('inspect');if(v.handleFocused){reached=true;break;}await physical(row,'tab');}
+    // Observe the last allowed Tab without posting a seventeenth key.
+    if(!reached)reached=(await adapter.call('inspect')).handleFocused;
     assert.equal(reached,true,'Original actual handle focus reached without JS focus');await physical(row,'enter');await physical(row,'down-key');const menu=await adapter.call('inspect');const selected=menu.menu.filter(x=>x.focused);assert.equal(selected.length,1);assert.equal(selected[0].label.trim(),row.locale==='ru'?'Ниже':'Move down');await physical(row,'enter');
   }else{
     await physical(row,'down');for(let i=1;i<=8;i++)await physical(row,'move-'+i);
