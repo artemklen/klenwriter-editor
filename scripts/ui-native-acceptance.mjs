@@ -181,7 +181,11 @@ async function perform(entry,prepared){
   await physical(entry,entry.locale==='en'?'ordinary-en':'ordinary-ru');unchanged(await checkpoint(entry,'readonly rejects ordinary layout typing'),readonly);
   await physical(entry,'copy');let copied;const deadline=performance.now()+12000;
   do{copied=await checkpoint(entry,'actual navigator clipboard completion');if(copied.native.clipboardResults?.some(r=>r.status==='copied'&&r.clipboard==='confirmed'))break;await wait(100);}while(performance.now()<deadline);
-  assert.ok(copied.native.clipboardResults?.some(r=>r.status==='copied'&&r.clipboard==='confirmed'),'Actual native clipboard writer must confirm before OS read');entry.clipboardRead=run('/usr/bin/osascript',['-e','the clipboard as text'],{fullStdout:true});assert.equal(entry.clipboardRead.stdout.replace(/\n$/,''),'ab\ncd');unchanged(copied,readonly);
+  assert.ok(copied.native.clipboardResults?.some(r=>r.status==='copied'&&r.clipboard==='confirmed'),'Actual native clipboard writer must confirm before OS read');
+  entry.clipboardAppleScriptRead=run('/usr/bin/osascript',['-e','the clipboard as text'],{fullStdout:true});
+  entry.clipboardRead=run('/usr/bin/env',['LC_ALL=en_US.UTF-8','LC_CTYPE=en_US.UTF-8','LANG=en_US.UTF-8','/usr/bin/pbpaste','-Prefer','txt'],{fullStdout:true});
+  assert.equal(entry.clipboardRead.stdout.replace(/\n$/,''),'ab\ncd');
+  assert.equal(entry.clipboardRead.stdout,'ab\ncd','Direct UTF-8 pbpaste stdout must be the exact LF literal, with no appended newline or CR normalization');unchanged(copied,readonly);
   await physical(entry,'find',{reserved:true});await screenshot(entry,'native-find');entry.findObservation=await checkpoint(entry,'uncancelled trusted native Find');
   assert.ok(entry.findObservation.inputTrace.some(r=>r.event==='keydown'&&r.code==='KeyF'&&r.isTrusted&&r.meta&&!r.defaultPrevented),'Native Find key not intercepted');assert.equal(entry.findObservation.documentFocused,false,'Actual browser Find owns focus outside document');unchanged(entry.findObservation,readonly);await physical(entry,'close-find',{reserved:true});
   entry.preparation.push(await adapter.call('setup','recovery'));entry.preparation.push(await adapter.call('setup','disabled'));const disabled=await checkpoint(entry,'disabled baseline and external recovery access');
