@@ -1,0 +1,45 @@
+{
+  "format": "editor-ui-safari-ax-readiness-manifest/1",
+  "status": "SOURCE_DRAFT_BEFORE_CANDIDATE",
+  "baseHead": "cf0d21d2762a060452812e8c08fb2053a78a73b0",
+  "sourcePins": [
+    {
+      "path": "scripts/ui-native/guard.swift",
+      "bytes": 21890,
+      "sha256": "ae87f0e855e841f232e70a60361291a73e49084bd1d4ffe51c3a8cf1ce6d7cf5"
+    },
+    {
+      "path": "scripts/ui-native/safari-adapter.mjs",
+      "bytes": 15451,
+      "sha256": "5cd79b6d9381c849482005ca8de23e01f634b8519d5fa3d8d67b5180e128db04"
+    },
+    {
+      "path": "scripts/ui-native/input.mjs",
+      "bytes": 54550,
+      "sha256": "1a250729e113f6b26cf4c11eb438661fc224bb05c06c29732ebff623052d5142"
+    },
+    {
+      "path": "scripts/ui-native/protocol.mjs",
+      "bytes": 3850,
+      "sha256": "cc8c66fac2dbeee57d91132c81873d85c3a29ead246a8ee6407f3684ce1a2ee0"
+    }
+  ],
+  "files": [
+    {
+      "path": "contracts/ui/v1.1/safari-ax-readiness/README.md",
+      "bytes": 3165,
+      "sha256": "084c0b43da97071b3003d59c4f43db50d13460afcc942155e3a849106f3359aa"
+    },
+    {
+      "path": "contracts/ui/v1.1/safari-ax-readiness/design.json",
+      "bytes": 4737,
+      "sha256": "3bfb5858e719a6b1429ed5b6288b0671bcad7fd445959f48a9fdf034b2d61921"
+    },
+    {
+      "path": "contracts/ui/v1.1/safari-ax-readiness/cases.json",
+      "bytes": 3122,
+      "sha256": "25f33cbfbd12187ce5d146418f49feb6bd037eb6a22850260ef6b0a013ea98d7"
+    }
+  ],
+  "authoringScope": "ONLY4contractfiles; no candidate/test/runtime/source edits beyondcontract, no compile/OS or commit"
+}

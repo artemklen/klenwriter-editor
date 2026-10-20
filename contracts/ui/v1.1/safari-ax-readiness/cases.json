@@ -1,0 +1,113 @@
+{
+  "format": "editor-ui-safari-ax-readiness-cases/1",
+  "status": "SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "newUnitFile": "tests/ui-native-safari-readiness.node.mjs",
+  "import": "one additive import oldunitentry; all existing167 assertions unchanged",
+  "scope": "finite stub process/clock/delay only; no validhelper/browser/OS execution",
+  "cases": [
+    {
+      "id": "S01",
+      "testName": "S01 first valid Safari AX sample completes readiness without waiting",
+      "sourceInputs": [
+        "exactvalid19fieldproof within500ms"
+      ],
+      "expected": {
+        "status": "ready",
+        "sampleCalls": 1,
+        "waitsMs": [],
+        "inputCalls": 0
+      }
+    },
+    {
+      "id": "S02",
+      "testName": "S02 exact not-ready refusal then valid Safari AX sample performs one passive wait",
+      "sourceInputs": [
+        "exacteligible4fieldexit2",
+        "exactvalid19fieldproof"
+      ],
+      "expected": {
+        "status": "ready",
+        "sampleCalls": 2,
+        "waitsMs": [
+          100
+        ],
+        "inputCalls": 0
+      }
+    },
+    {
+      "id": "S03",
+      "testName": "S03 three exact not-ready refusals stop readiness without a fourth sample",
+      "sourceInputs": [
+        "exacteligible4fieldexit2",
+        "exacteligible4fieldexit2",
+        "exacteligible4fieldexit2"
+      ],
+      "expected": {
+        "status": "refused",
+        "sampleCalls": 3,
+        "waitsMs": [
+          100,
+          100
+        ],
+        "fourthCall": false,
+        "inputCalls": 0
+      }
+    },
+    {
+      "id": "S04",
+      "testName": "S04 Safari AX ownership refusal aborts readiness without retry",
+      "sourceInputs": [
+        "Fixture browser is not frontmost or exactnonce/CFfocus ownership refusal"
+      ],
+      "expected": {
+        "status": "refused",
+        "sampleCalls": 1,
+        "waitsMs": [],
+        "inputCalls": 0
+      }
+    },
+    {
+      "id": "S05",
+      "testName": "S05 Safari AX timeout or malformed refusal never retries",
+      "vectors": [
+        "timeout/error/signal",
+        "nonempty stderr",
+        "wrong command/argv",
+        "malformedJSON",
+        "extra/missing refusalfield",
+        "wrongelapsedtype or >sampledeadline",
+        "otherreason",
+        "exhaustedprivate or originalnavigate budget"
+      ],
+      "expected": {
+        "status": "refused",
+        "sampleCalls": "atmost1 after failure; budgetbeforefirst=>0",
+        "waitsMs": [],
+        "inputCalls": 0
+      }
+    },
+    {
+      "id": "S06",
+      "testName": "S06 foreign or invalid Safari AX success proof never grants readiness",
+      "vectors": [
+        "foreignnonce/title/url/browser/bundle/PID",
+        "invalid/extra successfields",
+        "mismatchedtitle",
+        "rectnonfinite/nonpositive/outside",
+        "viewportsizeoutside2px",
+        "invalidwindow/node/depth/matchcount",
+        "latevalidproof"
+      ],
+      "expected": {
+        "status": "refused",
+        "sampleCalls": 1,
+        "waitsMs": [],
+        "inputCalls": 0
+      }
+    }
+  ],
+  "oldUnits": 167,
+  "newTests": 6,
+  "expectedUnits": 173,
+  "newBrowserCases": 0
+}
