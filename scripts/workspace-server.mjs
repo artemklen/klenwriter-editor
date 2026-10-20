@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { readFile, readdir } from 'node:fs/promises';
 import { loadCompositionContract } from './composition-contract-data.mjs';
 import { compositionStyleDirective } from './composition-csp-policy.mjs';
+import { loadUiSemanticCases } from './ui-semantic-data.mjs';
 
 // Build smoke fixture only; an exact allowlist avoids exposing the checkout.
 const root = new URL('../', import.meta.url);
@@ -25,6 +26,15 @@ const routes = new Map([
   ['/composition-host.js', ['spikes/workspace/composition-host.js', 'text/javascript']],
   ['/composition-native-host.js', ['spikes/workspace/composition-native-host.js', 'text/javascript']],
   ['/composition.css', ['spikes/workspace/composition.css', 'text/css']],
+  ['/ui', ['spikes/workspace/ui.html', 'text/html']],
+  ['/ui-frame', ['spikes/workspace/ui-frame.html', 'text/html']],
+  ['/ui-host.js', ['spikes/workspace/ui-host.js', 'text/javascript']],
+  ['/ui-fixture.css', ['spikes/workspace/ui-fixture.css', 'text/css']],
+  ['/ui-style.css', ['packages/ui/dist/style.css', 'text/css']],
+  ['/ui-contract/geometry-fixtures.json', ['contracts/ui/v1/geometry-fixtures.json', 'application/json']],
+  ['/ui-contract/v1.1/manifest.json', ['contracts/ui/v1.1/manifest.json', 'application/json']],
+  ['/ui-contract/v1.1/toolbar-placement-cases.json', ['contracts/ui/v1.1/toolbar-placement-cases.json', 'application/json']],
+  ['/ui-contract/v1.1/toolbar-placement.md', ['contracts/ui/v1.1/toolbar-placement.md', 'text/plain']],
   ['/fixture-fonts/osr40-jetbrains-mono-regular.ttf', ['tests/fixtures/fonts/JetBrainsMono-Regular.ttf', 'font/ttf']],
   ['/notes-dom.mjs', ['examples/notes-extension/dom.mjs', 'text/javascript']],
   ['/dom-inventory.mjs', ['examples/notes-extension/dom-inventory.mjs', 'text/javascript']],
@@ -45,12 +55,12 @@ async function allowSnippets(directory, prefix) {
   }
 }
 await allowSnippets(new URL('packages/wasm/dist/snippets/', root), '/snippets/');
-for (const name of ['wasm', 'sdk', 'kwdj', 'dom']) {
+for (const name of ['wasm', 'sdk', 'kwdj', 'dom', 'ui']) {
   await allowSnippets(new URL(`packages/${name}/dist/`, root), `/packages/${name}/`);
 }
 // Import maps are static, hash-authorized data. No unsafe-inline/eval or source rewriting.
 const mapHashes = [];
-for (const page of ['sdk-host.html', 'dom-host.html', 'selection.html', 'composition.html']) {
+for (const page of ['sdk-host.html', 'dom-host.html', 'selection.html', 'composition.html', 'ui.html']) {
   const html = await readFile(new URL(`spikes/workspace/${page}`, root), 'utf8');
   const maps = [...html.matchAll(/<script type="importmap">([^<]+)<\/script>/g)];
   if (maps.length !== 1) throw new Error(`One static import map required: ${page}`);
@@ -75,13 +85,15 @@ const compositionJsonRoutes = new Map([
   ['/composition-contract/native-oracles.json', JSON.stringify(compositionContract.native)],
   ['/composition-contract/event-oracles.json', JSON.stringify(compositionContract.events)],
 ]);
+const uiSemanticJson=JSON.stringify(loadUiSemanticCases());
 http.createServer(async (req, res) => {
   const path = new URL(req.url, 'http://localhost').pathname;
   res.setHeader('Cache-Control', 'no-store');
   const fixtureFont = path === '/selection' ? '; font-src http://127.0.0.1:4174/fixture-fonts/osr40-jetbrains-mono-regular.ttf' : '';
   const compositionStyle = path === '/composition'
     ? `; ${compositionStyleDirective}` : '';
-  res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self' 'wasm-unsafe-eval' ${mapHashes.join(' ')}; style-src 'self'${compositionStyle}; img-src http://127.0.0.1:4174/favicon.ico; connect-src 'self'; base-uri 'none'; object-src 'none'${fixtureFont}`);
+  const framePolicy=path==='/ui-frame'?"; frame-src 'self'":'';
+  res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self' 'wasm-unsafe-eval' ${mapHashes.join(' ')}; style-src 'self'${compositionStyle}; img-src http://127.0.0.1:4174/favicon.ico; connect-src 'self'; base-uri 'none'; object-src 'none'${fixtureFont}${framePolicy}`);
   res.setHeader('X-Content-Type-Options', 'nosniff');
   if (req.method !== 'GET') { res.writeHead(405); res.end(); return; }
   // Firefox requests this implicit fixture resource; no authored image is allowed.
@@ -91,6 +103,7 @@ http.createServer(async (req, res) => {
     res.end('<!doctype html><html lang="en"><title>Workspace build smoke</title><link rel="stylesheet" href="/style.css"><main class="editor-surface">Build smoke; no editor.</main></html>');
     return;
   }
+  if(path==='/ui-cases.json'){res.setHeader('Content-Type','application/json');res.end(uiSemanticJson);return;}
   const compositionJson = compositionJsonRoutes.get(path);
   if (compositionJson !== undefined) {
     res.setHeader('Content-Type', 'application/json');

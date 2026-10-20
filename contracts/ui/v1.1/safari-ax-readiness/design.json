@@ -1,0 +1,146 @@
+{
+  "format": "editor-ui-safari-ax-readiness-design/1",
+  "status": "SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "scope": "private Safari bootstrap READONLY readiness only",
+  "callSite": "after existing page/broker handshake, before firstphysicalaction; original navigate deadline retained",
+  "unchanged": [
+    "guard.swift bytes/predicates",
+    "fixedAS bytes/predicates",
+    "input owner module",
+    "all later fresh input guards",
+    "original assertions",
+    "Chrome behavior"
+  ],
+  "caps": {
+    "samples": 3,
+    "sampleRequestAndParentTimeoutMs": 500,
+    "waits": 2,
+    "eachWaitMs": 100,
+    "privateMonotonicBudgetMs": 2000,
+    "originalNavigateBudgetMs": 15000,
+    "sampleTimeout": "floor(min(500,remainingPrivate,remainingOriginalNavigate)), positive only",
+    "afterEachOperation": "require both original remaining budgets; never reset",
+    "waitEligibility": "100ms plus positive nextsample allowance remains in bothbudgets"
+  },
+  "request": {
+    "exactKeys": [
+      "format",
+      "browser",
+      "nonce",
+      "title",
+      "fixtureUrl",
+      "deadlineMs"
+    ],
+    "format": "osr42-native-window-inspection/1",
+    "browser": "safari",
+    "nonce": "exact32lowerhexASCII",
+    "title": "KlenWriter UI native <nonce>",
+    "fixtureUrl": "http://127.0.0.1:4174/ui",
+    "deadlineMs": "sample positive integer<=500",
+    "noViewport": "fixedoldhelper default1024x768; no caller viewport relaxation",
+    "command": "fixed compiled inputHelper path",
+    "argv": [
+      "--inspect-window",
+      "exact JSON.stringify(request)"
+    ],
+    "capture": "fullstdout with finite existingbound; empty stderr; store original execution/request/actual"
+  },
+  "retryOnly": {
+    "exitCode": 2,
+    "error": null,
+    "signal": null,
+    "stderr": "",
+    "exactKeys": [
+      "status",
+      "reason",
+      "delivery",
+      "elapsedMs"
+    ],
+    "status": "refused",
+    "delivery": "not_sent",
+    "reason": "Unique measured AXWebArea viewport unavailable",
+    "elapsedMs": "finite >=0 <=request.deadlineMs",
+    "otherwise": "immediate abort; no wait/retry",
+    "afterThird": "refuse, no fourthsample"
+  },
+  "success": {
+    "exitCode": 0,
+    "error": null,
+    "signal": null,
+    "stderr": "",
+    "exactKeys": [
+      "format",
+      "status",
+      "delivery",
+      "browser",
+      "nonce",
+      "title",
+      "fixtureUrl",
+      "frontBundle",
+      "frontPid",
+      "expectedAxWindowTitle",
+      "observedAxWindowTitle",
+      "axWindowCount",
+      "axMatchCount",
+      "visitedNodes",
+      "maximumDepth",
+      "axWindow",
+      "axViewport",
+      "contained",
+      "elapsedMs"
+    ],
+    "format": "osr42-native-window-inspection/1",
+    "status": "inspected",
+    "delivery": "not_sent",
+    "browser": "safari",
+    "nonceTitleUrl": "exact originalconfig",
+    "frontBundle": "com.apple.Safari",
+    "frontPid": "positiveInt32 actualhelper proof; equal any independentlyknown originalPID",
+    "titles": "both exactly config.title, noChrome suffix",
+    "axWindowCount": "integer1..32",
+    "axMatchCount": 1,
+    "visitedNodes": "integer1..512",
+    "maximumDepth": "integer0..32",
+    "axWindowAndViewport": "closed x/y/width/height, finite positive size/finiteedges",
+    "viewportSize": "abs(width-1024)<=2 && abs(height-768)<=2",
+    "contained": "true and recomputed using existing0.5px containment tolerance",
+    "elapsedMs": "finite>=0 <=sampledeadline and private/originalnavigate budgets",
+    "CFProof": "unchanged helper measureWindow +recheckWindow genuine focusedroot/process/title proof, not exportedcrosscallidentity",
+    "result": "typed preparation ready only; no future inputauthority"
+  },
+  "abort": [
+    "other refusalreason",
+    "ownershiprefusal",
+    "timeout",
+    "nonzero processerror",
+    "signal",
+    "malformed or excess JSONfields",
+    "nonempty stderr",
+    "late completion",
+    "foreign or invalid success",
+    "budgetexhaustion"
+  ],
+  "reporting": "record every sampled request/execution/actual and passivewait plus terminalstatus; preserve original failures and unknowns",
+  "evidence": {
+    "report": {
+      "path": "/tmp/osr-42-safari-owned-viewport-diagnostic-01/report.json",
+      "bytes": 325790,
+      "sha256": "a02ad7a858c9a632efe6f9a9a4df344c254f52d59c3ee3d8ad069157d1adb26f"
+    },
+    "status": "OBSERVATION_COMPLETED_NOT_ACCEPTANCE",
+    "head": "cf0d21d2762a060452812e8c08fb2053a78a73b0",
+    "visitedNodes": 45,
+    "depth": 10,
+    "elapsedMs": 115.823084,
+    "webAreaCount": 1,
+    "scrollAreaCount": 1,
+    "cause": "UNPROVEN; no CSS diagnosis or acceptance inferred"
+  },
+  "inventory": {
+    "oldUnits": 167,
+    "newStubControls": 6,
+    "expectedUnits": 173,
+    "uiBrowser": 216,
+    "overallBrowser": 972
+  }
+}

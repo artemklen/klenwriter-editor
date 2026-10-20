@@ -85,7 +85,7 @@ run(bindgen, ['target/wasm32-unknown-unknown/release/examples/sdk_probe.wasm',
 await buildExtensionConsumers({ baseBuildId: sdkIdentity.buildId, baseSourceHashes: sdkIdentity.sourceHashes });
 writeDependencyNotices();
 // Clean all emitted package files so stale declarations/assets cannot mask omissions.
-const packages = ['wasm', 'sdk', 'dom', 'kwdj', 'vanilla', 'angular'];
+const packages = ['wasm', 'sdk', 'dom', 'kwdj', 'vanilla', 'angular', 'ui'];
 for (const name of packages) {
   rmSync(`packages/${name}/dist`, { recursive: true, force: true });
   rmSync(`packages/${name}/tsconfig.tsbuildinfo`, { force: true });
@@ -132,6 +132,7 @@ for (const name of ['editor_wasm.js', 'editor_wasm_bg.wasm', 'sdk-types.d.ts', '
 copyFileSync('artifacts/sdk-native-manifest.json', 'artifacts/sdk-distribution/sdk-native-manifest.json');
 copyFileSync('artifacts/sdk-native-manifest-v2.json', 'artifacts/sdk-distribution/sdk-native-manifest-v2.json');
 copyFileSync('packages/dom/src/style.css', 'packages/dom/dist/style.css');
+copyFileSync('packages/ui/src/style.css', 'packages/ui/dist/style.css');
 mkdirSync('artifacts', { recursive: true });
 // Input to a separate native/WASM agreement check; not a semantic parity claim.
 run('cargo', ['run', '--locked', '--quiet', '-p', identity.rust.wasm.name, '--example', 'build_info']);

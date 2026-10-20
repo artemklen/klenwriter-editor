@@ -1,0 +1,548 @@
+{
+  "format": "osr42-geometry-source-authoring-pins/1",
+  "time": "2026-10-19T21:47:53.911042+00:00",
+  "head": "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf",
+  "tree": "c701ffcdec8661865a0f7e0ef699e5b470ffd6e0",
+  "cleanTrackedBeforeAfter": true,
+  "sourceFiles": [
+    {
+      "path": "packages/dom/src/view.ts",
+      "bytes": 48264,
+      "sha256": "ba9c0f730280788be122fa42ffe9407c018ad49b7d39afff17ca51998cf88806",
+      "gitBlob": "7d12c1a5785de9eca809eae0921a854e166e69fa",
+      "gitMode": "100644",
+      "actualMode": "0644",
+      "workingBytesEqualCommittedBlob": true
+    },
+    {
+      "path": "packages/dom/src/selection-geometry.ts",
+      "bytes": 5471,
+      "sha256": "4e86a45ce81bd98f6bc341e2a4f8e3d5ebfb709e8b14d0d610ef5a000ee9b5a9",
+      "gitBlob": "d77f292b7d6fe39f8072b86fb5204d4cfa9764b8",
+      "gitMode": "100644",
+      "actualMode": "0644",
+      "workingBytesEqualCommittedBlob": true
+    },
+    {
+      "path": "packages/dom/src/types.ts",
+      "bytes": 11045,
+      "sha256": "26a278f4b20e121ddd57163336dd88a9054b0872670367bb65f4350328ffa401",
+      "gitBlob": "ffc430fb1a086d54316410107b993e0798ac119e",
+      "gitMode": "100644",
+      "actualMode": "0644",
+      "workingBytesEqualCommittedBlob": true
+    },
+    {
+      "path": "packages/dom/src/mounted.ts",
+      "bytes": 34380,
+      "sha256": "8de7eb6cd4db47782ebaafcec874c533e2f3adaa2e72df5ce4647dbd1e2dee53",
+      "gitBlob": "de4286fb787fd5da7f3ccfea2108634fda30a39f",
+      "gitMode": "100644",
+      "actualMode": "0644",
+      "workingBytesEqualCommittedBlob": true
+    },
+    {
+      "path": "packages/dom/src/selection.ts",
+      "bytes": 21151,
+      "sha256": "c17faf3e6d082f5dc939622a380e16fb1e5dcecf648362e26a02083f98f4d4cd",
+      "gitBlob": "f4d68fd91b4487764bb37df650c71811f26b4912",
+      "gitMode": "100644",
+      "actualMode": "0644",
+      "workingBytesEqualCommittedBlob": true
+    },
+    {
+      "path": "packages/dom/src/catalog.ts",
+      "bytes": 10765,
+      "sha256": "e20c825c6ec2e757a3d8d4a36fcd890d5e16eb23ad8dd4ae9ad1199cd316ee0b",
+      "gitBlob": "18ac5337f53388977e9dec5936a7832e039bda23",
+      "gitMode": "100644",
+      "actualMode": "0644",
+      "workingBytesEqualCommittedBlob": true
+    },
+    {
+      "path": "packages/dom/src/index.ts",
+      "bytes": 233,
+      "sha256": "9805f73679c28bd33fa190394700bc8b3dcc284abdf19f337b3590a86b918ddc",
+      "gitBlob": "f8c98bc5fd61e383409823ca8608b5f0541ccf81",
+      "gitMode": "100644",
+      "actualMode": "0644",
+      "workingBytesEqualCommittedBlob": true
+    },
+    {
+      "path": "packages/sdk/src/controller.ts",
+      "bytes": 25035,
+      "sha256": "4bbfc4e4221c91c6a4aaeb6db6ac6ab18267363662f0dc6c8b53a1c516b0b509",
+      "gitBlob": "71270fa1900de76d0b90c0a4bcecbe663d4cf235",
+      "gitMode": "100644",
+      "actualMode": "0644",
+      "workingBytesEqualCommittedBlob": true
+    },
+    {
+      "path": "packages/sdk/src/index.ts",
+      "bytes": 649,
+      "sha256": "185cafbffbb9dcac4f51df81c3cacec7061e05976fee937a87c6637bd2a3b2cb",
+      "gitBlob": "e8dc1dbc21e955eab2c22dac68ad3b481cbc0921",
+      "gitMode": "100644",
+      "actualMode": "0644",
+      "workingBytesEqualCommittedBlob": true
+    },
+    {
+      "path": "packages/wasm/src/sdk-types.ts",
+      "bytes": 7914,
+      "sha256": "309b33ca672d5037f0325f13fe886626e27b164094cfe20b79919d44778b5d66",
+      "gitBlob": "4c1ea4be084a01ffa07df1a5a7acb7dadfc8e79e",
+      "gitMode": "100644",
+      "actualMode": "0644",
+      "workingBytesEqualCommittedBlob": true
+    },
+    {
+      "path": "packages/wasm/src/sdk-types-v2.ts",
+      "bytes": 2708,
+      "sha256": "06f45400e7bb1e1d21194ec294f3cf4436c13d6c716353e48b640ddb6006fea8",
+      "gitBlob": "cccbff2e36ea43f51906bb51c7180429dc633789",
+      "gitMode": "100644",
+      "actualMode": "0644",
+      "workingBytesEqualCommittedBlob": true
+    },
+    {
+      "path": "packages/kwdj/src/dom.ts",
+      "bytes": 12425,
+      "sha256": "6399c1e91a7952bf468cc11246b20282d796425043b4b93e5fc467aad9304a51",
+      "gitBlob": "5e111d6096a3dbb72c45de4ab011cf9b66282230",
+      "gitMode": "100644",
+      "actualMode": "0644",
+      "workingBytesEqualCommittedBlob": true
+    },
+    {
+      "path": "packages/kwdj/src/dom-inventory.ts",
+      "bytes": 37487,
+      "sha256": "22ff9aee4adc422d96e2febeb1fba447f2a7e437786df78a70b81146dcb302d9",
+      "gitBlob": "3eaece73f6dcac0f8a060bc975a4ec7f3d7d135b",
+      "gitMode": "100644",
+      "actualMode": "0644",
+      "workingBytesEqualCommittedBlob": true
+    },
+    {
+      "path": "crates/kwdj/src/registry-base-v1.json",
+      "bytes": 26262,
+      "sha256": "4c9685d0d70059285601a4a624cc3b483b00a25fee0c857542254adfd2c2d922",
+      "gitBlob": "f5a29284eb9c4c04b708103ffae9055c26fda4c5",
+      "gitMode": "100644",
+      "actualMode": "0644",
+      "workingBytesEqualCommittedBlob": true
+    }
+  ],
+  "outsideAuthoredInputs": [
+    {
+      "path": "/tmp/osr-42-implementation-contract-draft-01.md",
+      "bytes": 14971,
+      "sha256": "41cfb323bbb5d63fc061cfe3562a207b61e13e580cce88e8814ec6407e1ed576"
+    },
+    {
+      "path": "/tmp/osr-42-root-preparation-decisions-01.md",
+      "bytes": 3006,
+      "sha256": "cc9dcf7bab7b47ecdf3159d65112be4103718886e9f3091bc86c8f2b6a6f90a4"
+    },
+    {
+      "path": "/tmp/osr-42-api-alignment-source-notes-01.md",
+      "bytes": 8177,
+      "sha256": "65496a031a9511d523669879df1475527aabca7de0e1577f81144f3ff63e8b69"
+    }
+  ],
+  "readOnlyGitCommands": [
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 41,
+      "stdoutSha256": "b07ad81604bbbec869eeef7a5c9f16617befaf999bcf7c26dbf3e3f84aa8d971",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 41,
+      "stdoutSha256": "0d1fc2cb26817f3ca4ca11a1758aebf4480305252f409520aa9040189242a30f",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=no"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf:packages/dom/src/view.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 48264,
+      "stdoutSha256": "ba9c0f730280788be122fa42ffe9407c018ad49b7d39afff17ca51998cf88806",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "ls-tree",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf",
+        "--",
+        "packages/dom/src/view.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 78,
+      "stdoutSha256": "4062e6ad62da2cdb563b83d78f5de4bd6b9da7c42038b459be2a87425a49825b",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf:packages/dom/src/selection-geometry.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 5471,
+      "stdoutSha256": "4e86a45ce81bd98f6bc341e2a4f8e3d5ebfb709e8b14d0d610ef5a000ee9b5a9",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "ls-tree",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf",
+        "--",
+        "packages/dom/src/selection-geometry.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 92,
+      "stdoutSha256": "9b4652246d946863b9eea3dc49f8140b1b9f4a7fd6b1ca38b8e9b8b1a72b195a",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf:packages/dom/src/types.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 11045,
+      "stdoutSha256": "26a278f4b20e121ddd57163336dd88a9054b0872670367bb65f4350328ffa401",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "ls-tree",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf",
+        "--",
+        "packages/dom/src/types.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 79,
+      "stdoutSha256": "c04ff6d5353f9aaaf1030fa19c7baa6a366e1df7cea46f82acadae2d32f8c0d2",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf:packages/dom/src/mounted.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 34380,
+      "stdoutSha256": "8de7eb6cd4db47782ebaafcec874c533e2f3adaa2e72df5ce4647dbd1e2dee53",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "ls-tree",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf",
+        "--",
+        "packages/dom/src/mounted.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 81,
+      "stdoutSha256": "7f1da49ec1e5253b99d6234a71d07e9bfed5e302e58429f7b2b7fb6b7ab29da3",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf:packages/dom/src/selection.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 21151,
+      "stdoutSha256": "c17faf3e6d082f5dc939622a380e16fb1e5dcecf648362e26a02083f98f4d4cd",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "ls-tree",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf",
+        "--",
+        "packages/dom/src/selection.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 83,
+      "stdoutSha256": "a4f143d3296f62d6b73dcf80035e240f5a1eec903e559453aee186a355eab55c",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf:packages/dom/src/catalog.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 10765,
+      "stdoutSha256": "e20c825c6ec2e757a3d8d4a36fcd890d5e16eb23ad8dd4ae9ad1199cd316ee0b",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "ls-tree",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf",
+        "--",
+        "packages/dom/src/catalog.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 81,
+      "stdoutSha256": "397738ee752956224a9e828c7b7c9c14c6668da9866faa3158c4e37e542a7a70",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf:packages/dom/src/index.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 233,
+      "stdoutSha256": "9805f73679c28bd33fa190394700bc8b3dcc284abdf19f337b3590a86b918ddc",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "ls-tree",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf",
+        "--",
+        "packages/dom/src/index.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 79,
+      "stdoutSha256": "524c439f480f8bcbeb4d1c5c898889eb5b7a1ac41a6552bdc852c6da9aa8b0ea",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf:packages/sdk/src/controller.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 25035,
+      "stdoutSha256": "4bbfc4e4221c91c6a4aaeb6db6ac6ab18267363662f0dc6c8b53a1c516b0b509",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "ls-tree",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf",
+        "--",
+        "packages/sdk/src/controller.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 84,
+      "stdoutSha256": "67de2849382c763ff3f92729364fb2b1129c5d8384a53076aae2677b5a50a87a",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf:packages/sdk/src/index.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 649,
+      "stdoutSha256": "185cafbffbb9dcac4f51df81c3cacec7061e05976fee937a87c6637bd2a3b2cb",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "ls-tree",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf",
+        "--",
+        "packages/sdk/src/index.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 79,
+      "stdoutSha256": "cb87bca352a687d32a4e0f12157aab6103b60eedaa3d5de5c5793521e4031a66",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf:packages/wasm/src/sdk-types.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 7914,
+      "stdoutSha256": "309b33ca672d5037f0325f13fe886626e27b164094cfe20b79919d44778b5d66",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "ls-tree",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf",
+        "--",
+        "packages/wasm/src/sdk-types.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 84,
+      "stdoutSha256": "db9d04be9d76108ec5a4ffe9fa4866551689314f7731fb255fa5a0778cd351bd",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf:packages/wasm/src/sdk-types-v2.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 2708,
+      "stdoutSha256": "06f45400e7bb1e1d21194ec294f3cf4436c13d6c716353e48b640ddb6006fea8",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "ls-tree",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf",
+        "--",
+        "packages/wasm/src/sdk-types-v2.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 87,
+      "stdoutSha256": "0db6f3f607baefb99d85f394e31ec3504d9392965450082fe92bbf21753a5c05",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf:packages/kwdj/src/dom.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 12425,
+      "stdoutSha256": "6399c1e91a7952bf468cc11246b20282d796425043b4b93e5fc467aad9304a51",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "ls-tree",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf",
+        "--",
+        "packages/kwdj/src/dom.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 78,
+      "stdoutSha256": "c754693b2217b929cec38f67458ba99959bf9d10ac65975c266373c58ce7ab63",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf:packages/kwdj/src/dom-inventory.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 37487,
+      "stdoutSha256": "22ff9aee4adc422d96e2febeb1fba447f2a7e437786df78a70b81146dcb302d9",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "ls-tree",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf",
+        "--",
+        "packages/kwdj/src/dom-inventory.ts"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 88,
+      "stdoutSha256": "e458838dfe3f9b5be086a30b7c129d3e55b2bc4c66a904ec4457e0c8aa4ce1af",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf:crates/kwdj/src/registry-base-v1.json"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 26262,
+      "stdoutSha256": "4c9685d0d70059285601a4a624cc3b483b00a25fee0c857542254adfd2c2d922",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "ls-tree",
+        "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf",
+        "--",
+        "crates/kwdj/src/registry-base-v1.json"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 91,
+      "stdoutSha256": "d7939186745546369e57c33271805654eadcaf7925745ae1940ea1d3a2129f2b",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 41,
+      "stdoutSha256": "b07ad81604bbbec869eeef7a5c9f16617befaf999bcf7c26dbf3e3f84aa8d971",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=no"
+      ],
+      "actualExit": 0,
+      "stdoutBytes": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": ""
+    }
+  ],
+  "qualification": "Source-authoring metadata only. No candidate exists; no runtime/tests/browser/OS/API/status/Git mutations. Untracked files not observed."
+}

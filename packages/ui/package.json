@@ -1,0 +1,37 @@
+{
+  "name": "@klenwriter/editor-ui",
+  "version": "0.0.0",
+  "private": true,
+  "description": "KlenWriter Editor: optional generic block chrome; unpublished bootstrap",
+  "type": "module",
+  "license": "MIT OR Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artemklen/klenwriter-editor.git",
+    "directory": "packages/ui"
+  },
+  "files": [
+    "dist",
+    "LICENSE-MIT",
+    "LICENSE-APACHE",
+    "NOTICE",
+    "src",
+    "SOURCE-PROVENANCE.json"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "dependencies": {
+    "@klenwriter/editor-dom": "0.0.0",
+    "@klenwriter/editor-sdk": "0.0.0"
+  },
+  "klenwriterEditor": {
+    "role": "ui",
+    "sourceProvenance": "SOURCE-PROVENANCE.json",
+    "publicApiStability": "bootstrap"
+  }
+}

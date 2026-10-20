@@ -1,0 +1,85 @@
+{
+  "format": "editor-ui-chrome-find-cg-phase-sampling/1",
+  "status": "SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "id": "CS01",
+  "scope": "post-complete-program READONLY final phase sampling only",
+  "unchanged": {
+    "maximumPhaseReads": 12,
+    "nodeTotalGuardMs": 1000,
+    "helperDeadlineMs": "original supplied remaining integer1..1000",
+    "normalFindExpected": "open",
+    "normalCloseExpected": "closed",
+    "cleanupExpected": "either exact-owned phase",
+    "ownershipPredicates": "all original CG02 full proof predicates unchanged",
+    "eventPrograms": "unchanged; zero event posts in sampling",
+    "knownCompletedCore": "retained before phase/time acceptance",
+    "oldFailedReports": "immutable FAILED"
+  },
+  "schedule": {
+    "maximumRequestedWaitMs": 64,
+    "resultReserveMs": 16,
+    "firstRead": "immediate if deadlineMs-elapsedMs>16",
+    "loopGuard": "reads<12 && deadlineMs-elapsedMs>16",
+    "afterExactOwnedOppositePhase": {
+      "remainingReads": "12-reads",
+      "usableMs": "max(0,deadlineMs-elapsedMs-16)",
+      "when": "remainingReads>0 && usableMs>0",
+      "requestedWaitMs": "min(64,usableMs/remainingReads)",
+      "else": "stop unobserved"
+    },
+    "afterWait": "fresh monotonic deadline/reserve check before next measurement",
+    "stopImmediately": [
+      "expected phase verified",
+      "ownership refused",
+      "deadline/reserve exhausted",
+      "reads==12"
+    ],
+    "maximumWaitCount": 11,
+    "reserveQualification": "source scheduling policy, not OS timing proof or guarantee",
+    "actualOverrun": "existing outer conservative timeout/unknown behavior unchanged"
+  },
+  "sourceDecisionVectors": [
+    {
+      "case": "ample budget",
+      "deadlineMs": 1000,
+      "elapsedMs": 100,
+      "reads": 1,
+      "expectedRequestedWaitMs": 64
+    },
+    {
+      "case": "proportional final opportunity",
+      "deadlineMs": 1000,
+      "elapsedMs": 920,
+      "reads": 10,
+      "expectedRequestedWaitMs": 32
+    },
+    {
+      "case": "reserve exhausted",
+      "deadlineMs": 1000,
+      "elapsedMs": 984,
+      "reads": 5,
+      "expected": "unobserved/no next read/no wait"
+    },
+    {
+      "case": "read cap",
+      "deadlineMs": 1000,
+      "elapsedMs": 128,
+      "reads": 12,
+      "expected": "unobserved/no13th read/no wait"
+    },
+    {
+      "case": "owner refused",
+      "expected": "completed core plus refused postcondition/no wait/no further read"
+    },
+    {
+      "case": "phase verified",
+      "expected": "completed core plus verified postcondition/no wait/no further read"
+    }
+  ],
+  "expectedInventory": {
+    "units": 163,
+    "uiBrowser": 216,
+    "overallBrowser": 972,
+    "newCases": 0
+  }
+}

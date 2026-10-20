@@ -1,0 +1,112 @@
+{
+  "format": "osr42-composition-observation-cases/1",
+  "status": "SOURCE_AUTHORED_BEFORE_OBSERVER_CANDIDATE",
+  "scope": "Ordering/trust observations only; not executed tests, new native semantic oracles or retrospective disposition changes.",
+  "cases": [
+    {
+      "id": "CO01",
+      "name": "protected gesture remains subject to original assertions",
+      "facts": {
+        "sameDocumentClock": true,
+        "sameGenuineMount": true,
+        "trustedStartObserved": true,
+        "currentPreeditCheckpointGenuine": true,
+        "originalRequestResponseBytesRetained": true,
+        "nativeOracle": "unchanged predeclared fixture binding; not learned from observations",
+        "trustedStartTime": 100,
+        "preeditCheckpointTime": 120,
+        "trustedPointerDownTime": 150,
+        "terminalsThroughGesture": [],
+        "nativeCompositionCallsThroughGesture": []
+      },
+      "expected": {
+        "classification": "RUN_UNCHANGED_PRESERVATION_AND_FIXED_SETTLEMENT_ASSERTIONS",
+        "nativePositiveFromThisOrderingCase": false
+      }
+    },
+    {
+      "id": "CO02",
+      "name": "explicit early terminal plus exact completed native insert",
+      "facts": {
+        "sameDocumentClock": true,
+        "sameGenuineMount": true,
+        "trustedStartObserved": true,
+        "currentPreeditCheckpointGenuine": true,
+        "originalRequestResponseBytesRetained": true,
+        "nativeOracle": "unchanged predeclared fixture binding; not learned from observations",
+        "trustedStartTime": 100,
+        "preeditCheckpointTime": 120,
+        "terminals": [
+          {
+            "time": 140,
+            "event": "compositionend",
+            "isTrusted": false,
+            "recordedBeforePointerDown": true
+          }
+        ],
+        "nativeCompositionCalls": [
+          {
+            "ordinal": 1,
+            "startedAt": 141,
+            "finishedAt": 149,
+            "kind": "command",
+            "commandFamily": "existing profile composition InsertText",
+            "exactPredeclaredExpectedRequestBytesMatch": true,
+            "exactOriginalResponseMatchesUnchangedNativeAssertions": true
+          }
+        ],
+        "trustedPointerDownTime": 150,
+        "otherSemanticCalls": []
+      },
+      "expected": {
+        "classification": "UNOBSERVED",
+        "reason": "native_window_settled_before_distinct_gesture",
+        "protectedGestureAcceptance": false,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    },
+    {
+      "id": "CO03",
+      "name": "missing or ambiguous completion order must fail",
+      "facts": {
+        "sameDocumentClock": true,
+        "sameGenuineMount": true,
+        "trustedStartObserved": true,
+        "currentPreeditCheckpointGenuine": true,
+        "originalRequestResponseBytesRetained": true,
+        "nativeOracle": "unchanged predeclared fixture binding; not learned from observations",
+        "trustedStartTime": 100,
+        "preeditCheckpointTime": 120,
+        "terminals": [
+          {
+            "time": 140,
+            "event": "compositionend",
+            "isTrusted": false,
+            "recordedBeforePointerDown": true
+          }
+        ],
+        "nativeCompositionCalls": [
+          {
+            "ordinal": 1,
+            "startedAt": 141,
+            "finishedAt": null,
+            "exactPredeclaredExpectedRequestBytesMatch": true
+          }
+        ],
+        "trustedPointerDownTime": 150
+      },
+      "alsoFailWithoutRelaxingAssertions": [
+        "finishedAt later than pointerdown",
+        "different document clock or mount",
+        "missing genuine trusted-start checkpoint",
+        "additional semantic/UI command",
+        "request/response mismatch or unknown completion"
+      ],
+      "expected": {
+        "classification": "FAILED",
+        "noInferredOrder": true,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    }
+  ]
+}

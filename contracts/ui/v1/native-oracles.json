@@ -1,0 +1,1771 @@
+{
+  "format": "editor-ui-native-oracles/1",
+  "authoredBeforeRuntime": true,
+  "sourceRevision": "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf",
+  "source": "Independent Rust source analysis/native-source-oracles.md plus earlier independent Notes vectors; no candidate output",
+  "baseline": {
+    "relativeTo": "after public set_selection and drained setup events",
+    "revision": "0",
+    "saved_revision": "0",
+    "undoEntries": "0",
+    "redoEntries": "0",
+    "openTypingGroup": false,
+    "stored_marks": null,
+    "editable": true
+  },
+  "pathConvention": "KWDJ paths from engine synthetic root; Notes imported selection paths from semantic root. Bind opaque actual IDs bijectively, never parse them.",
+  "queryContract": "Identical owned CommandDto/current stamp for query and execute; query publication-free",
+  "cases": [
+    {
+      "id": "V01-forward",
+      "input": {
+        "document": {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "ab",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "cd",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "canonical_json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"cd\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "roles": {
+          "R": [],
+          "P1": [
+            0
+          ],
+          "T1": [
+            0,
+            0
+          ],
+          "P2": [
+            1
+          ],
+          "T2": [
+            1,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "T1",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T2",
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null
+      },
+      "intent": {
+        "kind": "toggle_mark",
+        "mark": {
+          "type_id": "org.klenwriter.kwdj/strong",
+          "attributes": {}
+        }
+      },
+      "expected": {
+        "available": true,
+        "queryEffect": "changed",
+        "queryActive": "mixed",
+        "canonical_json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"cd\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "ab",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "cd",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "T1",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T2",
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        "roles": {
+          "R": [],
+          "P1": [
+            0
+          ],
+          "T1": [
+            0,
+            0
+          ],
+          "P2": [
+            1
+          ],
+          "T2": [
+            1,
+            0
+          ]
+        },
+        "stored_marks": null,
+        "stampDelta": {
+          "revision": "1",
+          "selection_epoch": "0",
+          "history_epoch": "1"
+        },
+        "undoEntries": "1",
+        "redoEntries": "0",
+        "dirty": true,
+        "saved_revision": "0",
+        "documentEvents": 1,
+        "stateEvents": 0,
+        "undo": "exact_input_and_original_ids_selection_marks",
+        "redo": "exact_after_and_same_created_ids",
+        "retainedBytes": "target-local measurement; not a native/WASM constant",
+        "allOriginalIdsSurvive": true,
+        "created": [],
+        "retired": [],
+        "mutationActive": "mixed",
+        "freshQueryActive": "on"
+      }
+    },
+    {
+      "id": "V01-reverse",
+      "input": {
+        "document": {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "ab",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "cd",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "canonical_json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"cd\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "roles": {
+          "R": [],
+          "P1": [
+            0
+          ],
+          "T1": [
+            0,
+            0
+          ],
+          "P2": [
+            1
+          ],
+          "T2": [
+            1,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "T2",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T1",
+            "offset": 0,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null
+      },
+      "intent": {
+        "kind": "toggle_mark",
+        "mark": {
+          "type_id": "org.klenwriter.kwdj/strong",
+          "attributes": {}
+        }
+      },
+      "expected": {
+        "available": true,
+        "queryEffect": "changed",
+        "queryActive": "mixed",
+        "canonical_json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"cd\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "ab",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "cd",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "T2",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T1",
+            "offset": 0,
+            "affinity": "after"
+          }
+        },
+        "roles": {
+          "R": [],
+          "P1": [
+            0
+          ],
+          "T1": [
+            0,
+            0
+          ],
+          "P2": [
+            1
+          ],
+          "T2": [
+            1,
+            0
+          ]
+        },
+        "stored_marks": null,
+        "stampDelta": {
+          "revision": "1",
+          "selection_epoch": "0",
+          "history_epoch": "1"
+        },
+        "undoEntries": "1",
+        "redoEntries": "0",
+        "dirty": true,
+        "saved_revision": "0",
+        "documentEvents": 1,
+        "stateEvents": 0,
+        "undo": "exact_input_and_original_ids_selection_marks",
+        "redo": "exact_after_and_same_created_ids",
+        "retainedBytes": "target-local measurement; not a native/WASM constant",
+        "allOriginalIdsSurvive": true,
+        "created": [],
+        "retired": [],
+        "mutationActive": "mixed",
+        "freshQueryActive": "on"
+      }
+    },
+    {
+      "id": "V02-collapsed-twice",
+      "input": {
+        "document": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "ab",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "T",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T",
+            "offset": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null
+      },
+      "intent": {
+        "kind": "toggle_mark",
+        "mark": {
+          "type_id": "org.klenwriter.kwdj/strong",
+          "attributes": {}
+        }
+      },
+      "expected": {
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "allOriginalIdsSurvive": true,
+        "selection": "same_as_input",
+        "steps": [
+          {
+            "queryActive": "off",
+            "queryEffect": "unchanged",
+            "stored_marks": [
+              {
+                "type_id": "org.klenwriter.kwdj/strong",
+                "attributes": {}
+              }
+            ],
+            "stampDelta": {
+              "revision": "0",
+              "selection_epoch": "1",
+              "history_epoch": "0"
+            },
+            "stateEvents": 1,
+            "documentEvents": 0
+          },
+          {
+            "queryActive": "on",
+            "queryEffect": "unchanged",
+            "stored_marks": [],
+            "stampDelta": {
+              "revision": "0",
+              "selection_epoch": "1",
+              "history_epoch": "0"
+            },
+            "stateEvents": 1,
+            "documentEvents": 0
+          }
+        ],
+        "thirdQueryActive": "off",
+        "undoEntries": "0",
+        "redoEntries": "0",
+        "dirty": false,
+        "saved_revision": "0"
+      }
+    },
+    {
+      "id": "V03-root-gap",
+      "input": {
+        "document": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "ab",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "cd",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"cd\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "roles": {
+          "R": [],
+          "P1": [
+            0
+          ],
+          "T1": [
+            0,
+            0
+          ],
+          "P2": [
+            1
+          ],
+          "T2": [
+            1,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "child",
+            "parent": "R",
+            "index": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "parent": "R",
+            "index": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null
+      },
+      "intent": {
+        "kind": "insert_block",
+        "target": {
+          "kind": "paragraph"
+        }
+      },
+      "expected": {
+        "available": true,
+        "queryEffect": "changed",
+        "queryActive": null,
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"cd\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "ab",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "cd",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "selection": {
+          "anchor": {
+            "kind": "child",
+            "parent": "N",
+            "index": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "parent": "N",
+            "index": 0,
+            "affinity": "after"
+          }
+        },
+        "roles": {
+          "R": [],
+          "P1": [
+            0
+          ],
+          "T1": [
+            0,
+            0
+          ],
+          "N": [
+            1
+          ],
+          "P2": [
+            2
+          ],
+          "T2": [
+            2,
+            0
+          ]
+        },
+        "stored_marks": null,
+        "stampDelta": {
+          "revision": "1",
+          "selection_epoch": "1",
+          "history_epoch": "1"
+        },
+        "undoEntries": "1",
+        "redoEntries": "0",
+        "dirty": true,
+        "saved_revision": "0",
+        "documentEvents": 1,
+        "stateEvents": 0,
+        "undo": "exact_input_and_original_ids_selection_marks",
+        "redo": "exact_after_and_same_created_ids",
+        "retainedBytes": "target-local measurement; not a native/WASM constant",
+        "created": [
+          "N"
+        ],
+        "retired": [],
+        "allOriginalIdsSurvive": true,
+        "preCommandSelectionWrites": 0
+      }
+    },
+    {
+      "id": "V04-up",
+      "input": {
+        "document": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "a",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "b",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "c",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"c\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "roles": {
+          "R": [],
+          "A": [
+            0
+          ],
+          "AT": [
+            0,
+            0
+          ],
+          "B": [
+            1
+          ],
+          "BT": [
+            1,
+            0
+          ],
+          "C": [
+            2
+          ],
+          "CT": [
+            2,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 0,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null
+      },
+      "intent": {
+        "kind": "move",
+        "node": "B",
+        "parent": "R",
+        "before_index": 0
+      },
+      "expected": {
+        "available": true,
+        "queryEffect": "changed",
+        "queryActive": null,
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"c\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "b",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "a",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "c",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 0,
+            "affinity": "after"
+          }
+        },
+        "roles": {
+          "R": [],
+          "A": [
+            1
+          ],
+          "AT": [
+            1,
+            0
+          ],
+          "B": [
+            0
+          ],
+          "BT": [
+            0,
+            0
+          ],
+          "C": [
+            2
+          ],
+          "CT": [
+            2,
+            0
+          ]
+        },
+        "stored_marks": null,
+        "stampDelta": {
+          "revision": "1",
+          "selection_epoch": "0",
+          "history_epoch": "1"
+        },
+        "undoEntries": "1",
+        "redoEntries": "0",
+        "dirty": true,
+        "saved_revision": "0",
+        "documentEvents": 1,
+        "stateEvents": 0,
+        "undo": "exact_input_and_original_ids_selection_marks",
+        "redo": "exact_after_and_same_created_ids",
+        "retainedBytes": "target-local measurement; not a native/WASM constant",
+        "allOriginalIdsSurvive": true,
+        "created": [],
+        "retired": []
+      }
+    },
+    {
+      "id": "V04-down",
+      "input": {
+        "document": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "a",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "b",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "c",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"c\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "roles": {
+          "R": [],
+          "A": [
+            0
+          ],
+          "AT": [
+            0,
+            0
+          ],
+          "B": [
+            1
+          ],
+          "BT": [
+            1,
+            0
+          ],
+          "C": [
+            2
+          ],
+          "CT": [
+            2,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 0,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null
+      },
+      "intent": {
+        "kind": "move",
+        "node": "B",
+        "parent": "R",
+        "before_index": 3
+      },
+      "expected": {
+        "available": true,
+        "queryEffect": "changed",
+        "queryActive": null,
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"c\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "a",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "c",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "b",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 0,
+            "affinity": "after"
+          }
+        },
+        "roles": {
+          "R": [],
+          "A": [
+            0
+          ],
+          "AT": [
+            0,
+            0
+          ],
+          "B": [
+            2
+          ],
+          "BT": [
+            2,
+            0
+          ],
+          "C": [
+            1
+          ],
+          "CT": [
+            1,
+            0
+          ]
+        },
+        "stored_marks": null,
+        "stampDelta": {
+          "revision": "1",
+          "selection_epoch": "0",
+          "history_epoch": "1"
+        },
+        "undoEntries": "1",
+        "redoEntries": "0",
+        "dirty": true,
+        "saved_revision": "0",
+        "documentEvents": 1,
+        "stateEvents": 0,
+        "undo": "exact_input_and_original_ids_selection_marks",
+        "redo": "exact_after_and_same_created_ids",
+        "retainedBytes": "target-local measurement; not a native/WASM constant",
+        "allOriginalIdsSurvive": true,
+        "created": [],
+        "retired": []
+      }
+    },
+    {
+      "id": "V05-same-index",
+      "input": {
+        "document": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "a",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "b",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "c",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"c\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "roles": {
+          "R": [],
+          "A": [
+            0
+          ],
+          "AT": [
+            0,
+            0
+          ],
+          "B": [
+            1
+          ],
+          "BT": [
+            1,
+            0
+          ],
+          "C": [
+            2
+          ],
+          "CT": [
+            2,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 0,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null
+      },
+      "intent": {
+        "kind": "move",
+        "node": "B",
+        "parent": "R",
+        "before_index": 1
+      },
+      "expected": {
+        "available": true,
+        "queryEffect": "unchanged",
+        "code": null,
+        "mutationEffect": "unchanged",
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"c\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "allFacetsUnchanged": true,
+        "stampDelta": {
+          "revision": "0",
+          "selection_epoch": "0",
+          "history_epoch": "0"
+        },
+        "events": 0,
+        "newUndoEntries": 0,
+        "existingRedoPreserved": true
+      }
+    },
+    {
+      "id": "V05-after-self-index",
+      "input": {
+        "document": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "a",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "b",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "c",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"c\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "roles": {
+          "R": [],
+          "A": [
+            0
+          ],
+          "AT": [
+            0,
+            0
+          ],
+          "B": [
+            1
+          ],
+          "BT": [
+            1,
+            0
+          ],
+          "C": [
+            2
+          ],
+          "CT": [
+            2,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 0,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null
+      },
+      "intent": {
+        "kind": "move",
+        "node": "B",
+        "parent": "R",
+        "before_index": 2
+      },
+      "expected": {
+        "available": true,
+        "queryEffect": "unchanged",
+        "code": null,
+        "mutationEffect": "unchanged",
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"c\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "allFacetsUnchanged": true,
+        "stampDelta": {
+          "revision": "0",
+          "selection_epoch": "0",
+          "history_epoch": "0"
+        },
+        "events": 0,
+        "newUndoEntries": 0,
+        "existingRedoPreserved": true
+      }
+    },
+    {
+      "id": "V05-invalid-index",
+      "input": {
+        "document": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "a",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "b",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "c",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"c\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "roles": {
+          "R": [],
+          "A": [
+            0
+          ],
+          "AT": [
+            0,
+            0
+          ],
+          "B": [
+            1
+          ],
+          "BT": [
+            1,
+            0
+          ],
+          "C": [
+            2
+          ],
+          "CT": [
+            2,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 0,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null
+      },
+      "intent": {
+        "kind": "move",
+        "node": "B",
+        "parent": "R",
+        "before_index": 4
+      },
+      "expected": {
+        "available": false,
+        "queryEffect": null,
+        "code": "tree.invalid_index",
+        "mutationEffect": null,
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"c\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "allFacetsUnchanged": true,
+        "stampDelta": {
+          "revision": "0",
+          "selection_epoch": "0",
+          "history_epoch": "0"
+        },
+        "events": 0,
+        "newUndoEntries": 0,
+        "existingRedoPreserved": true
+      }
+    },
+    {
+      "id": "V05-wrong-child",
+      "input": {
+        "document": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "a",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "b",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "c",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"c\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "roles": {
+          "R": [],
+          "A": [
+            0
+          ],
+          "AT": [
+            0,
+            0
+          ],
+          "B": [
+            1
+          ],
+          "BT": [
+            1,
+            0
+          ],
+          "C": [
+            2
+          ],
+          "CT": [
+            2,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 0,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null
+      },
+      "intent": {
+        "kind": "move",
+        "node": "B",
+        "parent": "A",
+        "before_index": 0
+      },
+      "expected": {
+        "available": false,
+        "queryEffect": null,
+        "code": "tree.invalid_structure",
+        "mutationEffect": null,
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"c\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "allFacetsUnchanged": true,
+        "stampDelta": {
+          "revision": "0",
+          "selection_epoch": "0",
+          "history_epoch": "0"
+        },
+        "events": 0,
+        "newUndoEntries": 0,
+        "existingRedoPreserved": true
+      }
+    },
+    {
+      "id": "V05-synthetic-root",
+      "input": {
+        "document": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "a",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "b",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "c",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"c\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "roles": {
+          "R": [],
+          "A": [
+            0
+          ],
+          "AT": [
+            0,
+            0
+          ],
+          "B": [
+            1
+          ],
+          "BT": [
+            1,
+            0
+          ],
+          "C": [
+            2
+          ],
+          "CT": [
+            2,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "BT",
+            "offset": 0,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null
+      },
+      "intent": {
+        "kind": "move",
+        "node": "R",
+        "parent": "R",
+        "before_index": 0
+      },
+      "expected": {
+        "available": false,
+        "queryEffect": null,
+        "code": "kwdj.command_invalid_target",
+        "mutationEffect": null,
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"c\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "allFacetsUnchanged": true,
+        "stampDelta": {
+          "revision": "0",
+          "selection_epoch": "0",
+          "history_epoch": "0"
+        },
+        "events": 0,
+        "newUndoEntries": 0,
+        "existingRedoPreserved": true
+      }
+    },
+    {
+      "id": "V06-NC011-root-title-owned-metadata",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/set-title",
+        "payload": {
+          "title": "new title"
+        }
+      },
+      "expected": {
+        "kind": "changed",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"new title\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": "same_as_before",
+        "storedMarks": null,
+        "documentRevisionDelta": 1,
+        "historyUnitDelta": 1,
+        "events": 1
+      },
+      "runtimeRegistry": "D0",
+      "sourceRegistryLiteral": "D1 base-only literal valid under D0",
+      "source": "contracts/notes/v1/commands/vectors.json",
+      "additionalExpected": {
+        "allOriginalIdsSurvive": true,
+        "selection_epochDelta": "0",
+        "history_epochDelta": "1",
+        "syntheticRootDistinctFromSemanticDocument": true
+      }
+    },
+    {
+      "id": "V06-NC013-identical-title-noop",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/set-title",
+        "payload": {
+          "title": ""
+        }
+      },
+      "expected": {
+        "kind": "unchanged",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": "same_as_before",
+        "storedMarks": null,
+        "documentRevisionDelta": 0,
+        "historyUnitDelta": 0,
+        "events": 0
+      },
+      "runtimeRegistry": "D0",
+      "sourceRegistryLiteral": "D1 base-only literal valid under D0",
+      "source": "contracts/notes/v1/commands/vectors.json",
+      "additionalExpected": {
+        "allOriginalIdsSurvive": true,
+        "selection_epochDelta": "0",
+        "history_epochDelta": "0",
+        "syntheticRootDistinctFromSemanticDocument": true
+      }
+    },
+    {
+      "id": "V06-NC014-title-257-byte-refusal",
+      "registry": "D1",
+      "input": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "command": {
+        "id": "org.example.notes/command/set-title",
+        "payload": {
+          "title": "ééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééa"
+        }
+      },
+      "expected": {
+        "kind": "refused",
+        "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+        "selection": "same_as_before",
+        "storedMarks": null,
+        "documentRevisionDelta": 0,
+        "historyUnitDelta": 0,
+        "events": 0,
+        "code": "notes.invalid_attribute",
+        "path": "/root/attrs/title"
+      },
+      "runtimeRegistry": "D0",
+      "sourceRegistryLiteral": "D1 base-only literal valid under D0",
+      "source": "contracts/notes/v1/commands/vectors.json",
+      "additionalExpected": {
+        "allOriginalIdsSurvive": true,
+        "selection_epochDelta": "0",
+        "history_epochDelta": "0",
+        "syntheticRootDistinctFromSemanticDocument": true
+      }
+    },
+    {
+      "id": "V07-text-caret",
+      "source": "crates/kwdj/src/commands/block.rs1673-1690 and independently authored nesting/text source notes",
+      "input": {
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "ab",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "T",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T",
+            "offset": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null
+      },
+      "intent": {
+        "kind": "insert_block",
+        "target": {
+          "kind": "paragraph"
+        }
+      },
+      "expected": {
+        "available": true,
+        "queryEffect": "changed",
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "document": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "a",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "b",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ],
+          "N": [
+            1
+          ],
+          "PT": [
+            2
+          ],
+          "U": [
+            2,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "U",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "U",
+            "offset": 0,
+            "affinity": "after"
+          }
+        },
+        "created": [
+          "U",
+          "N",
+          "PT"
+        ],
+        "retired": [],
+        "allOriginalIdsSurvive": true,
+        "stored_marks": null,
+        "stampDelta": {
+          "revision": "1",
+          "selection_epoch": "1",
+          "history_epoch": "1"
+        },
+        "undoEntries": "1",
+        "redoEntries": "0",
+        "dirty": true,
+        "saved_revision": "0",
+        "documentEvents": 1,
+        "stateEvents": 0,
+        "preCommandSelectionWrites": 0,
+        "undo": "exact_input_and_original_ids_selection_marks",
+        "redo": "exact_after_and_same_created_ids"
+      }
+    }
+  ]
+}

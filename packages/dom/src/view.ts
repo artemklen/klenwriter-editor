@@ -16,6 +16,15 @@ export interface CapturedBlock {
   readonly provisionalText: string;
 }
 export interface BlockCapture { readonly stamp: DeepReadonly<StampDto> | null; readonly blocks: readonly CapturedBlock[]; readonly region: RecoveryRegion }
+/** Private actual-object witnesses for bounded read-only measurement. */
+export interface GeometryRow {
+  readonly view: DeepReadonly<NodeViewDto>;
+  readonly outer: HTMLElement;
+  readonly content: HTMLElement;
+  readonly wrappers: readonly HTMLElement[];
+  readonly text: Text | null;
+  readonly placeholder: HTMLBRElement | null;
+}
 export interface DomView {
   initialize(state: DeepReadonly<StateDto>): DomRefusal | null;
   patch(event: DeepReadonly<EventDto>, restore?: boolean): DomRefusal | null;
@@ -25,6 +34,9 @@ export interface DomView {
   ownedBlockAt(node: Node | null): string | null;
   textPosition(node: Node, offset: number): DeepReadonly<PositionDto> | DomRefusal | null;
   domPoint(position: DeepReadonly<PositionDto>): DomPoint | DomRefusal;
+  geometryRow(id: string): GeometryRow | null;
+  geometryOwner(node: Node): GeometryRow | null;
+  geometryStamp(): DeepReadonly<StampDto> | null;
   beginProvisional(stamp: DeepReadonly<StampDto>, blockIds?: readonly string[]): DomRefusal | null;
   beginComposition(stamp: DeepReadonly<StampDto>, selection: DeepReadonly<SelectionDto>): CompositionWindow | DomRefusal;
   observeComposition(window: CompositionWindow): CompositionObservation | DomRefusal;
@@ -189,6 +201,18 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
       current = current.parentNode;
     }
     return null;
+  }
+  function geometryRow(id: string): GeometryRow | null {
+    const row = destroyed ? undefined : rows.get(id);
+    return row ? Object.freeze({view:row.view,outer:row.outer,content:row.content,wrappers:row.wrappers,text:row.text,placeholder:row.placeholder}) : null;
+  }
+  function geometryOwner(node: Node): GeometryRow | null {
+    if (destroyed) return null;
+    let id = authority.get(node);
+    if (!id && placeholders.has(node) && node.parentNode) id = authority.get(node.parentNode);
+    const row = id ? rows.get(id) : undefined;
+    return row && (node === row.outer || node === row.content || node === row.text || node === row.placeholder || row.wrappers.includes(node as HTMLElement))
+      ? geometryRow(row.view.id) : null;
   }
   function positionAt(node: Node, offset: number): DeepReadonly<PositionDto> | DomRefusal | null {
     const id = authority.get(node), row = id ? rows.get(id) : undefined;
@@ -665,7 +689,8 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         return restoreSelection(state.selection);
       } catch { return refusal('dom.presentation_unsupported'); }
     },
-    patch, readSelection, restoreSelection, rememberSelection, ownedBlockAt, textPosition: positionAt, domPoint,
+    patch, readSelection, restoreSelection, rememberSelection, ownedBlockAt, textPosition: positionAt, domPoint, geometryRow, geometryOwner,
+    geometryStamp: () => destroyed ? null : currentStamp,
     beginProvisional, beginComposition, observeComposition, captureComposition, restoreComposition, endProvisional() { provisional = null; },
     setComposing(active) { if (provisional) provisional.composing = active; },
     hasProvisional: () => provisional !== null,

@@ -1,0 +1,34 @@
+{
+  "format": "editor-ui-chrome-original-focus-manifest/1",
+  "status": "SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "sourceContractParent": "contracts/ui/v1.1/chrome-find-presentation",
+  "files": [
+    {
+      "path": "chrome-original-focus-design.json",
+      "bytes": 3766,
+      "sha256": "8d82f6e1764f0df554a55459c10c7346fdda272f285132eb6628cb8018b1869a"
+    },
+    {
+      "path": "chrome-original-focus.md",
+      "bytes": 1864,
+      "sha256": "6d9913be484986764afa9b59d95c93608a20a60fe75a8ff39b82f021d52e97d5"
+    }
+  ],
+  "primaryLibraryPins": [
+    {
+      "path": "node_modules/playwright-core/package.json",
+      "bytes": 876,
+      "sha256": "8aa1c9863fa8dea324e674254158cdc79440f4124ef2d84d38053013541cb7d6"
+    },
+    {
+      "path": "node_modules/playwright-core/lib/coreBundle.js",
+      "bytes": 3585406,
+      "sha256": "829521b67ed7be90c7d6d6098ff39f2241562d47e4ad7ccab13710924a56001d"
+    }
+  ],
+  "candidateExecution": "NOT_RUN",
+  "expectedUnits": 163,
+  "expectedUiBrowser": 216,
+  "expectedOverallBrowser": 972,
+  "frozenOriginalAssertions": "UNCHANGED"
+}

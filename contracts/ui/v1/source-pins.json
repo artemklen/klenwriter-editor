@@ -1,0 +1,152 @@
+{
+  "sourceRevision": "857f8cb7b27bb2b0ed36d99780fb19911dcff1cf",
+  "sourceTree": "c701ffcdec8661865a0f7e0ef699e5b470ffd6e0",
+  "status": "READ_BACK_BASE_BYTES_BEFORE_RUNTIME",
+  "editorRuntimeExecuted": false,
+  "pins": [
+    {
+      "path": "docs/m0/architecture.md",
+      "bytes": 64424,
+      "sha256": "13f7a2c183643961331322a5f78afdf8b0b7aa5169972fc581f5368c55fda6e3",
+      "mode": 420
+    },
+    {
+      "path": "docs/m0/master-plan.md",
+      "bytes": 8788,
+      "sha256": "40433e71a0b10a48db9dfe9eac5cc37a004114b549d38ee25101195773a61c14",
+      "mode": 420
+    },
+    {
+      "path": "docs/m0/ux-contract.md",
+      "bytes": 21511,
+      "sha256": "6841a9c011019eebb75c141e5d7bf9e646409b6d7bb0801c507c3f62800a3a29",
+      "mode": 420
+    },
+    {
+      "path": "evidence/osr-62/figma-manifest.json",
+      "bytes": 4258,
+      "sha256": "6a316e114220b7fae4add05036402b79b492445e4bcafb5add012777b856cc0c",
+      "mode": 420
+    },
+    {
+      "path": "package-map.json",
+      "bytes": 3560,
+      "sha256": "5997002bc35ed0ea9d9b0559897ca561d560c7f33151335dcdcb6ba2abe7d944",
+      "mode": 420
+    },
+    {
+      "path": "package.json",
+      "bytes": 4289,
+      "sha256": "7f3b61ed65005c257da2c1d447b85c0997c87b531b0164a445b436486a0dbca7",
+      "mode": 420
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 19712,
+      "sha256": "aeea367a7985d919aaf8af0fd062b0941f553c5fa580119f864a721ba18ebcfa",
+      "mode": 420
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 302,
+      "sha256": "c55802605d61bf40384d194cc5061e337629d9a53ac34960e8ac1951dade87b4",
+      "mode": 420
+    },
+    {
+      "path": "scripts/build-workspace.mjs",
+      "bytes": 10648,
+      "sha256": "e73f3b0cb5c69b73430572b781751b9233fde74e1b6bca02bce306029455f179",
+      "mode": 420
+    },
+    {
+      "path": "scripts/check-workspace.mjs",
+      "bytes": 7533,
+      "sha256": "9a789738b5aa51949c9f939f1c3f7d022015676c881dfc7f92442b7fc9cb2e69",
+      "mode": 420
+    },
+    {
+      "path": "scripts/check-package-metadata.mjs",
+      "bytes": 6637,
+      "sha256": "fe9720bbc62dcbb562679bbb30a34b24116f45cc4bb1bdb0664daefabd569fc6",
+      "mode": 420
+    },
+    {
+      "path": "scripts/generate-sdk-types.mjs",
+      "bytes": 10882,
+      "sha256": "c708f8e8948251af9e29c981efb27da2219409a103e6c5707de4fe60d56e27e2",
+      "mode": 420
+    },
+    {
+      "path": "packages/dom/src/types.ts",
+      "bytes": 11045,
+      "sha256": "26a278f4b20e121ddd57163336dd88a9054b0872670367bb65f4350328ffa401",
+      "mode": 420
+    },
+    {
+      "path": "packages/dom/src/mounted.ts",
+      "bytes": 34380,
+      "sha256": "8de7eb6cd4db47782ebaafcec874c533e2f3adaa2e72df5ce4647dbd1e2dee53",
+      "mode": 420
+    },
+    {
+      "path": "packages/dom/src/selection.ts",
+      "bytes": 21151,
+      "sha256": "c17faf3e6d082f5dc939622a380e16fb1e5dcecf648362e26a02083f98f4d4cd",
+      "mode": 420
+    },
+    {
+      "path": "packages/dom/src/view.ts",
+      "bytes": 48264,
+      "sha256": "ba9c0f730280788be122fa42ffe9407c018ad49b7d39afff17ca51998cf88806",
+      "mode": 420
+    },
+    {
+      "path": "packages/sdk/src/controller.ts",
+      "bytes": 25035,
+      "sha256": "4bbfc4e4221c91c6a4aaeb6db6ac6ab18267363662f0dc6c8b53a1c516b0b509",
+      "mode": 420
+    },
+    {
+      "path": "packages/kwdj/src/index.ts",
+      "bytes": 1536,
+      "sha256": "f369b51656c4840107b4db51dc157ce7b2635888a73896b52ad113be6ce612ca",
+      "mode": 420
+    },
+    {
+      "path": "crates/kwdj/src/commands/block.rs",
+      "bytes": 90571,
+      "sha256": "85ca66ce1c5121f6ef73e6159819bbedc0c934729a18c287cdc03e02b197cc0e",
+      "mode": 420
+    },
+    {
+      "path": "crates/kwdj/src/commands/inline.rs",
+      "bytes": 58026,
+      "sha256": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394",
+      "mode": 420
+    },
+    {
+      "path": "crates/engine/src/tree.rs",
+      "bytes": 197736,
+      "sha256": "d1bc2205af12063d4b3b6386f0198830d321ba35b8f2a1d4ae4962d075caedda",
+      "mode": 420
+    },
+    {
+      "path": "crates/engine/src/dispatch.rs",
+      "bytes": 37299,
+      "sha256": "b85613e1f86b5ae0221834b2557656fde63233ae2399f0fe0cacc2f393b799a3",
+      "mode": 420
+    },
+    {
+      "path": "crates/engine/src/history.rs",
+      "bytes": 56430,
+      "sha256": "43a28d7fc3e48138d71f4e0cb2889a572fa25dc545b39e6a0e793ae6d610382d",
+      "mode": 420
+    },
+    {
+      "path": "crates/bridge/src/lib.rs",
+      "bytes": 36728,
+      "sha256": "1d59524a4db8ac7de9793f9ccd352e34f18c7e2da55b8b408690ed1ce2016600",
+      "mode": 420
+    }
+  ]
+}

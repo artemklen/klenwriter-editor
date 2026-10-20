@@ -1,0 +1,90 @@
+{
+  "format": "editor-ui-pressed-placement-cases/1",
+  "status": "DRAFT_BEFORE_PLACEMENT_IMPLEMENTATION_AND_RED",
+  "case": "PP01",
+  "scope": "One actual NotesD0 managed fixture and SDK/WASM; controlled zero-change composition plus browser-protocol held mouse. Not installed input/IME/AT proof, not reclassification of failed Chrome06.",
+  "fixture": {
+    "nativeOraclePath": "contracts/ui/v1/native-oracles.json",
+    "nativeOracleSha256": "e064ba58d2c579c3cd9c58937a32a09591c8379a283543b40c2828919fe84470",
+    "id": "V06-NC011-root-title-owned-metadata",
+    "runtimeRegistry": "D0",
+    "canonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+    "selection": {
+      "anchor": {
+        "kind": "text",
+        "node": "T",
+        "offset": 1,
+        "affinity": "after"
+      },
+      "focus": {
+        "kind": "text",
+        "node": "T",
+        "offset": 1,
+        "affinity": "after"
+      }
+    },
+    "literalDomPoint": {
+      "path": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "text": "ab",
+      "offset": 1
+    },
+    "locale": "en",
+    "viewport": {
+      "width": 1024,
+      "height": 900
+    },
+    "externalSetupClassBeforeBaseline": "ui-placement-middle"
+  },
+  "bounds": {
+    "toleranceCssPx": 0.5,
+    "normalToolbarGapMinCssPx": 4,
+    "normalToolbarGapMaxCssPx": 24,
+    "viewportInsetCssPx": 8
+  },
+  "sequence": [
+    "normal measured floating toolbar near independent Notes literal caret",
+    "controlled empty compositionstart and existing geometry-unavailable fallback BEFORE down",
+    "move browser pointer to actual Title fallback center",
+    "primary down rejected while same owned button actually matches :active",
+    "empty compositionend while button remains :active; availability restores",
+    "same actual Title rect and original point retained across finite presentation frames",
+    "up/click on same actual Title object; no action/modal/semantic dispatch",
+    "normal geometry resumes next existing presentation frame WITHOUT manual refresh or retry"
+  ],
+  "heldExpected": {
+    "titleRectDelta": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "sameActualControl": true,
+    "samePointHitsActualTitle": true,
+    "activePseudoClass": true,
+    "nativeCanonicalStateRowsContextEvents": "exact unchanged",
+    "editingDomObjectsSelectionFocusScroll": "exact unchanged",
+    "uiSubmissions": 0,
+    "nativeSemanticCalls": 0,
+    "hostDialogOpenCount": 0,
+    "pendingRequests": 0
+  },
+  "releaseExpected": {
+    "activePseudoClass": false,
+    "sameActualUpClickTarget": true,
+    "noDeferredAction": true,
+    "normalToolbarRect": "returns to independently valid pre-composition baseline within0.5px after next bounded RAF, without manual UI refresh",
+    "nativeAndBrowserInvariants": "unchanged"
+  },
+  "policy": {
+    "presentationSignalOnly": "actual owned Control from existing private map/gesture decision AND actual button :active; never DOM ID/class/focus/native action authority",
+    "coverage": "both toolbar and gutter placement, including an existing owned popup control where relevant",
+    "normalCleanup": "existing fatal/disposal/replacement cleanup not delayed",
+    "externalRelease": "if release occurs outside owned click, :active false allows the next ordinary refresh to resume; no global pointer pump/listener/timer/queue"
+  },
+  "existingContracts": "All earlier placement/PG/selection/CSP/32px/label/resource/native contracts unchanged; temporary own-presentation hold is separate from a fresh successful geometry measurement and confers no semantic freshness."
+}

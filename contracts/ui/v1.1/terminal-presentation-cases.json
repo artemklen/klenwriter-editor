@@ -1,0 +1,34 @@
+{
+  "format": "editor-ui-terminal-presentation-cases/2",
+  "cases": [
+    {
+      "id": "TO01",
+      "existingCase": "C01",
+      "uiConstruction": "after actual mounted ready"
+    },
+    {
+      "id": "TO02",
+      "existingCase": "C01-EARLY",
+      "uiConstruction": "while actual mounted loading; real module loader held then released once"
+    }
+  ],
+  "sameTurn": [
+    "existing UI refresh",
+    "empty actual editor compositionend"
+  ],
+  "expected": {
+    "terminalSemanticSubmissions": 0,
+    "uiRafCap": 1,
+    "followups": 2,
+    "newTimers": 0,
+    "newListeners": 0,
+    "listenerTiming": "same4 install after mounted ready; after destroy0",
+    "allOriginalC01Assertions": "retained",
+    "newCasesPerEngine": 1,
+    "uiPerEngine": 72,
+    "uiTotal": 216,
+    "browserOverall": 972,
+    "unitExpectedUnchanged": 145
+  },
+  "proofQualification": "source-authored controlled ordering; no execution or physical/IME evidence"
+}

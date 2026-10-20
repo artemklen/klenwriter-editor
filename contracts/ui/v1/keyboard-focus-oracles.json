@@ -1,0 +1,147 @@
+{
+  "format": "editor-ui-oracles/1",
+  "authoredBeforeRuntime": true,
+  "cases": [
+    {
+      "id": "K01",
+      "action": "Tab/ShiftTab/Left/Right/Home/End",
+      "expected": {
+        "toolbarRole": "toolbar",
+        "rovingStops": 1,
+        "TabTrapped": false,
+        "documentTransactions": 0,
+        "semanticTickets": 0,
+        "minTargetCssPx": 32
+      }
+    },
+    {
+      "id": "T01",
+      "action": "mixed whole-leaf Strong pointer and keyboard, both directions",
+      "nativeFamily": "V01",
+      "expected": {
+        "ariaPressedBefore": "mixed",
+        "ariaPressedAfter": "true",
+        "focus": "native result range",
+        "commands": 1
+      }
+    },
+    {
+      "id": "T02",
+      "action": "collapsed Strong twice",
+      "nativeFamily": "V02",
+      "expected": {
+        "documentTransactions": 0,
+        "focus": "native result range when original synchronous continuity survives"
+      }
+    },
+    {
+      "id": "A01",
+      "action": "Add/Paragraph from explicit root gap",
+      "nativeFamily": "V03",
+      "expected": {
+        "commands": 1,
+        "preCommandSelectionWrites": 0,
+        "caret": "Child(newParagraph,0,after)"
+      }
+    },
+    {
+      "id": "A02",
+      "action": "Add/Paragraph from Text caret",
+      "nativeFamily": "V07",
+      "expected": {
+        "commands": 1,
+        "preCommandSelectionWrites": 0,
+        "rootGapSemanticsReused": false
+      }
+    },
+    {
+      "id": "M01",
+      "action": "up/down/Nest/Unnest menu and local keyboard",
+      "nativeFamily": "V04/V05/N01-N06",
+      "expected": {
+        "nativeQueryAuthority": true,
+        "noTextRangeMultiMove": true,
+        "preserveControlIdentity": true
+      }
+    },
+    {
+      "id": "H01",
+      "action": "host-owned named modal cancel/Escape",
+      "expected": {
+        "documentTransactions": 0,
+        "validRangeExactRestore": true,
+        "invalidRangeGuessed": false,
+        "resourcesAfter": 0
+      }
+    },
+    {
+      "id": "H02",
+      "action": "late accept after edit/selection/history/mode/replace/destroy",
+      "expected": {
+        "commands": 0,
+        "currentDocumentUnchanged": true,
+        "focusStolen": false,
+        "replay": false
+      }
+    },
+    {
+      "id": "H03",
+      "action": "own completion, reentry, queued original ticket",
+      "expected": {
+        "originalSubmissionRetained": true,
+        "secondQueue": false,
+        "newSemanticFocusTicket": false,
+        "foreignContinuityFocus": "not_restored"
+      }
+    },
+    {
+      "id": "P01",
+      "action": "NotesD0 host title command and true native invalid title",
+      "nativeFamily": "V06",
+      "expected": {
+        "genericKwdjImport": false,
+        "refusalCode": "notes.invalid_attribute"
+      }
+    },
+    {
+      "id": "C01",
+      "action": "protected composition conflict on controls",
+      "expected": {
+        "editingFocusStolen": false,
+        "provisionalSubtreeMutated": false,
+        "lateReplay": false
+      }
+    },
+    {
+      "id": "R01",
+      "action": "readOnly/disabled/recovery modes",
+      "expected": {
+        "readOnlySelectionCopyFind": true,
+        "disabledEditingFocus": false,
+        "hostRecoveryReachable": true
+      }
+    },
+    {
+      "id": "L01",
+      "action": "RU/EN,theme,200% zoom",
+      "expected": {
+        "labelsClipped": false,
+        "visibleFocus": true,
+        "toolbarWraps": true,
+        "minTargetCssPx": 32
+      }
+    },
+    {
+      "id": "D01",
+      "action": "destroy during pending work",
+      "expected": {
+        "listeners": 0,
+        "observers": 0,
+        "animationFrames": 0,
+        "hostRequests": 0,
+        "bookmarks": 0,
+        "continuationsAfterOriginalSettlement": 0
+      }
+    }
+  ]
+}

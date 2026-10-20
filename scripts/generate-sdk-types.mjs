@@ -49,7 +49,7 @@ export function computeSdkBuildIdentity() {
   add('crates/wasm/examples/sdk_types_v2.rs');
   add('crates/wasm/examples/sdk_manifest.rs');
   add('crates/wasm/examples/sdk_manifest_v2.rs');
-  for (const name of ['wasm', 'sdk', 'dom', 'kwdj']) {
+  for (const name of ['wasm', 'sdk', 'dom', 'kwdj', 'ui']) {
     add(`packages/${name}/package.json`); add(`packages/${name}/tsconfig.json`);
     walk(`packages/${name}/src`, /\.(?:ts|js|css)$/);
   }
@@ -71,7 +71,7 @@ export function writeSdkBuildIdentity(identity = computeSdkBuildIdentity()) {
   writeFileSync(resolve(root, 'artifacts/sdk-build-identity.json'), JSON.stringify({
     format: 'klenwriter-editor-sdk-build/1', ...identity,
     exclusions: [...excluded],
-    scope: 'Production Rust, SDK/DOM/profile TS/CSS, locked metadata and build/generator inputs. Generated outputs/artifacts/provenance excluded to avoid a file hash cycle.',
+    scope: 'Production Rust, SDK/DOM/profile/optional UI TS/CSS, locked metadata and build/generator inputs. Generated outputs/artifacts/provenance excluded to avoid a file hash cycle.',
   }, null, 2) + '\n');
   return identity;
 }

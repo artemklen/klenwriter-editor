@@ -1,0 +1,22 @@
+{
+  "format": "editor-ui-system-events-exact-role-primary/1",
+  "path": "/System/Library/CoreServices/System Events.app/Contents/Resources/SystemEvents.sdef",
+  "bytes": 111857,
+  "sha256": "4d2a64771a1294f83c30c1a24476624e9148a84aa62365b5086f79e5a984ce7b",
+  "selection": "ONLY static XML class/property declarations, not runtime GUI queries",
+  "properties": [
+    {
+      "class": "UI element",
+      "sourceXml": "<property name=\"entire contents\" code=\"ects\" access=\"r\" description=\"a list of every UI element contained in this UI element and its child UI elements, to the limits of the tree\">\n\t\t\t\t<type type=\"specifier\" list=\"yes\" />\n\t\t\t</property>\n\t\t\t"
+    },
+    {
+      "class": "UI element",
+      "sourceXml": "<property name=\"role\" code=\"role\" type=\"text\" access=\"r\" description=\"an encoded description of the UI element and its capabilities\" />\n\t\t\t"
+    },
+    {
+      "class": "UI element",
+      "sourceXml": "<property name=\"subrole\" code=\"sbrl\" access=\"r\" description=\"an encoded description of the UI element and its capabilities\">\n                <type type=\"text\" />\n                <type type=\"missing value\" />\n                <type type=\"any\" hidden=\"yes\" />\n            </property>\n\t\t\t"
+    }
+  ],
+  "qualification": "Direct role/subrole properties exist; compare same fixed AXWindow/AXStandardWindow/AXUnknown strings, reject missing/other values. Their existence does not prove runtime speed. entire contents is explicitly excluded."
+}

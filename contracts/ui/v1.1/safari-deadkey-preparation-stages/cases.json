@@ -1,0 +1,206 @@
+{
+  "format": "editor-ui-safari-deadkey-preparation-stages-cases/1",
+  "status": "SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "preparation": {
+    "browser": "safari",
+    "action": "deadkey-acute",
+    "casePrefix": "composition-",
+    "actualActionCount": 0,
+    "requestedWaitMs": 200,
+    "location": "physical() before original coherent/source/inspect/action row/adapter.input",
+    "maximumPerFullSafariRun": 8,
+    "record": {
+      "action": "safari-new-mount-deadkey-preparation",
+      "requestedWaitMs": 200,
+      "startedAt": "existing now() at requested preparation",
+      "finishedAt": "existing now() after timer returns",
+      "scope": "New mounted composition fixture preparation only; no input/read/refocus/retry or authority; original fresh guards follow"
+    }
+  },
+  "stageGate": {
+    "argumentCount": 4,
+    "expectedBrowser": "safari",
+    "fixtureActions": [
+      "deadkey-acute",
+      "release-deadkey-acute"
+    ],
+    "afterExistingClosedArgumentValidation": true,
+    "stderrOnly": true,
+    "maximumPerInvocation": 6,
+    "literalSequence": [
+      "OSR42-SD01 PRE begin",
+      "OSR42-SD01 PRE end",
+      "OSR42-SD01 KEYS begin",
+      "OSR42-SD01 KEYS end",
+      "OSR42-SD01 POST begin",
+      "OSR42-SD01 POST end"
+    ],
+    "additionalAXOrWindowReads": 0,
+    "recordsAreAck": false
+  },
+  "cases": [
+    {
+      "id": "SD01-01",
+      "given": {
+        "browser": "safari",
+        "action": "deadkey-acute",
+        "caseId": "composition-dialog",
+        "actualActionCount": 0,
+        "ASPRE": "success",
+        "ASKEYS": "success",
+        "ASPOST": "success"
+      },
+      "expected": {
+        "preparationWaitsMs": [
+          200
+        ],
+        "markers": [
+          "OSR42-SD01 PRE begin",
+          "OSR42-SD01 PRE end",
+          "OSR42-SD01 KEYS begin",
+          "OSR42-SD01 KEYS end",
+          "OSR42-SD01 POST begin",
+          "OSR42-SD01 POST end"
+        ],
+        "originalStdoutCoreUnchanged": true,
+        "originalOneSecondFreshGuardStartsAfterWait": true,
+        "extraInputTransitions": 0
+      }
+    },
+    {
+      "id": "SD01-02",
+      "given": {
+        "browser": "safari",
+        "action": "deadkey-acute",
+        "argumentCount": 4,
+        "ASPRE": "throws"
+      },
+      "expected": {
+        "markers": [
+          "OSR42-SD01 PRE begin"
+        ],
+        "originalFailureAndUncertaintyPolicy": true,
+        "markerBasedCompletionClaim": false,
+        "normalInputRetry": false
+      }
+    },
+    {
+      "id": "SD01-03",
+      "given": {
+        "browser": "safari",
+        "action": "deadkey-acute",
+        "argumentCount": 4,
+        "ASPRE": "success",
+        "ASKEYS": "returns",
+        "ASPOST": "throws"
+      },
+      "expected": {
+        "markers": [
+          "OSR42-SD01 PRE begin",
+          "OSR42-SD01 PRE end",
+          "OSR42-SD01 KEYS begin",
+          "OSR42-SD01 KEYS end",
+          "OSR42-SD01 POST begin"
+        ],
+        "originalFailureAndUncertaintyPolicy": true,
+        "markersBecomeCoreAck": false,
+        "normalInputRetry": false
+      }
+    },
+    {
+      "id": "SD01-04",
+      "given": {
+        "browser": "safari",
+        "action": "release-deadkey-acute",
+        "argumentCount": 4,
+        "originalPendingOwner": "fresh exact owner",
+        "allOriginalStages": "success"
+      },
+      "expected": {
+        "preparationWaitsMs": [],
+        "markers": [
+          "OSR42-SD01 PRE begin",
+          "OSR42-SD01 PRE end",
+          "OSR42-SD01 KEYS begin",
+          "OSR42-SD01 KEYS end",
+          "OSR42-SD01 POST begin",
+          "OSR42-SD01 POST end"
+        ],
+        "program": [
+          "option-up",
+          "key14-up"
+        ],
+        "stdoutCoreUnchanged": true,
+        "cleanupAttemptsMax": 1,
+        "cleanupDownOrReplay": false
+      }
+    },
+    {
+      "id": "SD01-05",
+      "given": {
+        "vectors": [
+          "Chrome deadkey or its cleanup",
+          "Safari other normal key",
+          "Safari SC01 Copy AS5",
+          "Chrome Find AS8"
+        ]
+      },
+      "expected": {
+        "preparationWaitsMs": [],
+        "SDMarkers": [],
+        "originalRoutesAndAcknowledgementsUnchanged": true
+      }
+    },
+    {
+      "id": "SD01-06",
+      "given": {
+        "browser": "safari",
+        "action": "deadkey-acute",
+        "caseId": "composition-move",
+        "actualActionCount": 1
+      },
+      "expected": {
+        "preparationWaitsMs": [],
+        "AS4StageGateStillExact": true,
+        "additionalInputPermissionGranted": false
+      }
+    },
+    {
+      "id": "SD01-07",
+      "given": {
+        "vectors": [
+          "invalidPID",
+          "invalidBrowser",
+          "AS5 wrongtag/browser/action",
+          "AS8 Safari/deadkey"
+        ]
+      },
+      "expected": {
+        "SDMarkers": [],
+        "beforeInputRefusalUnchanged": true
+      }
+    }
+  ],
+  "normalProgram": [
+    "option-down",
+    "key14-down",
+    "key14-up",
+    "option-up"
+  ],
+  "cleanupProgram": [
+    "option-up",
+    "key14-up"
+  ],
+  "unchanged": {
+    "existingUnitCount": 177,
+    "newUnitCount": 0,
+    "uiBrowser": 216,
+    "overallBrowser": 972,
+    "ACKSchema": true,
+    "trustedDOMDownAndUp": true,
+    "originalGuardPredicatesAndReadOrder": true,
+    "platformInputNotHardwareClaim": true
+  },
+  "originalSafari11Status": "FAILED_UNCHANGED",
+  "nativeCause": "UNPROVEN_PRE_VS_POST_UNRESOLVED"
+}

@@ -114,6 +114,11 @@
       "legacyName": "@editor-internal/kwdj",
       "path": "packages/kwdj",
       "role": "Optional KWDJ profile boundary"
+    },
+    "ui": {
+      "name": "@klenwriter/editor-ui",
+      "path": "packages/ui",
+      "role": "Optional framework-free generic toolbar, block controls and host dialog integration"
     }
   }
 }

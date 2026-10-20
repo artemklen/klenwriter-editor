@@ -1,0 +1,50 @@
+{
+  "format": "editor-ui-clipboard-observer-manifest/2",
+  "status": "SOURCE_DRAFT_NOT_EXECUTED",
+  "head": "480ac8c631c8d79ba8fd500086b758d8ad99e9d3",
+  "sourcePins": [
+    {
+      "path": "scripts/ui-native-acceptance.mjs",
+      "bytes": 41370,
+      "sha256": "2c1d770b0901483baed3e4f683b6c02674f0556adb671556fd03fbae59493cd2"
+    }
+  ],
+  "installedPrimaryDocs": [
+    {
+      "installedSource": "/usr/share/man/man1/pbcopy.1",
+      "path": "primary-docs/pbcopy.1",
+      "bytes": 3025,
+      "sha256": "b2a70eec58e3cc7ae85a6cdc80e0627c4b481973664acc407e9a580ee0bcdf27"
+    },
+    {
+      "installedSource": "/usr/share/man/man1/pbpaste.1",
+      "path": "primary-docs/pbpaste.1",
+      "bytes": 18,
+      "sha256": "470f46ab89aa09d6f92d9ccb76169bd6232e034651cd9eb13e6c50455ca4343d"
+    },
+    {
+      "installedSource": "/usr/share/man/man1/locale.1",
+      "path": "primary-docs/locale.1",
+      "bytes": 2330,
+      "sha256": "4af95a76f7317112af1ffc1b4833804ef33944babd04e45d4337cf1df4a151d3"
+    },
+    {
+      "installedSource": "/usr/share/man/man1/env.1",
+      "path": "primary-docs/env.1",
+      "bytes": 14559,
+      "sha256": "341d12a7b2d5d59bbf8694187253bedf6c59f94f762736efef25725b5cdfbd1c"
+    }
+  ],
+  "files": [
+    {
+      "path": "clipboard-observer.md",
+      "bytes": 2657,
+      "sha256": "7635225f54f518c495ef96c9b7f03de358752aa05d129984a36cf54c782d274c"
+    },
+    {
+      "path": "clipboard-observer-cases.json",
+      "bytes": 1374,
+      "sha256": "5e1f18abbea346f9e5f7c26189c47a105d8f440e7be2b4036a1a5d647ffe4997"
+    }
+  ]
+}

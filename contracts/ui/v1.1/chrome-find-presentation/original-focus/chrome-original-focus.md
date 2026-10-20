@@ -1,0 +1,9 @@
+# Original Playwright focus setup — PF01
+
+Source-authored before candidate. Installed Playwright1.64.1 enables focus emulation on its own main FrameSession. Creating another CDP session and sending false there does not address the original sender. Chrome14 remains FAILED; this contract does not reinterpret its actual focus assertion.
+
+For this isolated installed-Chrome harness only, verify the exact package version and package/coreBundle byte hashes in design BEFORE private access. Resolve the original server Page through the fixed in-process `page._connection.toImpl(page)` mapping. Validate every listed reciprocal page/delegate/frame/session/current-connection identity. No dynamic property path, caller-selected session, method, parameters or alternate resolver is permitted. Unavailable/private-layout mismatch refuses setup.
+
+After exact owned fixture navigation/title/module setup, before the first mounted or physical action, send exactly `Emulation.setFocusEmulationEnabled` with `{enabled:false}` on that ORIGINAL main FrameSession client. Record actual target/session IDs, library provenance and the actual response; failure stops preparation. Never substitute the result of a newly attached session. Pinning is deliberate: a future library revision requires fresh source validation.
+
+No native ownership checks, key programs,1s budget, focus assertion, screenshot/native-state checks or old163 expectations change. Do not force document focus, detach automation, grant permissions, invent a CDP getter, or classify a protocol ACK as native Find acceptance. The unchanged actual Find/close/readbacks are the meaningful oracle; no new test merely mirrors this setup glue. Native source/build inputs and editor APIs are unchanged. Public connectOverCDP(noDefaults:true) applies only to an existing default context and is not the chosen lifecycle.

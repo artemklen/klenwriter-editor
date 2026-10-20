@@ -1,0 +1,16 @@
+{
+  "format": "editor-ui-reason-layout-manifest/1",
+  "status": "DRAFT_BEFORE_IMPLEMENTATION_AND_RED",
+  "files": [
+    {
+      "path": "reason-layout.md",
+      "bytes": 3361,
+      "sha256": "98a937ba5c1a885077ac839817b00e43b2ecff0616ead4615a1ebc30545edaec"
+    },
+    {
+      "path": "reason-layout-cases.json",
+      "bytes": 4086,
+      "sha256": "41f938f69a06d756de437b15b7676a0b8d8dace8dac77e2e91fd0dd6b7c5f2f8"
+    }
+  ]
+}

@@ -1,0 +1,872 @@
+{
+  "format": "editor-ui-safari-scroll-viewport-cases/1",
+  "status": "SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "scope": "Synthetic independent geometry/pointer data, not diagnostic output or runtime/API DTO",
+  "syntheticFacts": {
+    "root": {
+      "x": 10,
+      "y": 20,
+      "width": 500,
+      "height": 360
+    },
+    "viewport": {
+      "x": 10,
+      "y": 60,
+      "width": 500,
+      "height": 300
+    },
+    "classicContentWidth": 483,
+    "classicContentHeight": 400,
+    "classicBar": {
+      "x": 493,
+      "y": 80,
+      "width": 17,
+      "height": 330
+    },
+    "CSS100x50AtZoom1MapsTo": {
+      "x": 110,
+      "y": 110
+    }
+  },
+  "sharedStructuralPreconditions": {
+    "browser": "safari",
+    "oldExactWebAreaMatchCount": 0,
+    "completeCFEqualDeduplicatedOwnedRootScan": true,
+    "totalWebAreas": 1,
+    "webAreaHasGenuineDirectScrollAreaParent": true,
+    "nonzeroGapBarHasGenuineDirectSiblingIdentity": true,
+    "originalAllOwnershipAndDeadlineGuardsStillRequired": true,
+    "nodeCap": 512,
+    "depthCap": 32
+  },
+  "tolerances": {
+    "viewportSizePxInclusive": 2,
+    "rootContainmentPxInclusive": 0.5,
+    "contentLeftPxInclusive": 0.5,
+    "contentVerticalCoveragePxInclusive": 0.5,
+    "barHorizontalPxInclusive": 0.5,
+    "rightGapMin": 0,
+    "rightGapMax": 32
+  },
+  "numberEncoding": {
+    "NaN": "The literal JSON string NaN denotes IEEE754 NaN only for pure numeric test construction; never an accepted native AX value or request payload."
+  },
+  "caseCount": 15,
+  "cases": [
+    {
+      "id": "SV01",
+      "purpose": "Exact-width tall content; overlay/no reported bar; bar not required",
+      "input": {
+        "root": {
+          "x": 10,
+          "y": 20,
+          "width": 500,
+          "height": 360
+        },
+        "scroll": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "content": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 400
+        },
+        "verticalScrollbar": null,
+        "scrollbarOrientation": null,
+        "cssViewport": {
+          "width": 500,
+          "height": 300
+        },
+        "pageZoom": 1,
+        "pointerRequired": true,
+        "cssPoint": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      "expected": {
+        "geometryAccepted": true,
+        "basis": "safari-scroll-viewport",
+        "mappingViewport": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "visible": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "mappedPoint": {
+          "x": 110,
+          "y": 110
+        },
+        "pointerAdmitted": true
+      }
+    },
+    {
+      "id": "SV02",
+      "purpose": "Classic17px strip; bar y80/height330 deliberately never sets viewport height",
+      "input": {
+        "root": {
+          "x": 10,
+          "y": 20,
+          "width": 500,
+          "height": 360
+        },
+        "scroll": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "content": {
+          "x": 10,
+          "y": 60,
+          "width": 483,
+          "height": 400
+        },
+        "verticalScrollbar": {
+          "x": 493,
+          "y": 80,
+          "width": 17,
+          "height": 330
+        },
+        "scrollbarOrientation": "AXVerticalOrientation",
+        "cssViewport": {
+          "width": 500,
+          "height": 300
+        },
+        "pageZoom": 1,
+        "pointerRequired": true,
+        "cssPoint": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      "expected": {
+        "geometryAccepted": true,
+        "basis": "safari-scroll-viewport",
+        "mappingViewport": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "visible": {
+          "x": 10,
+          "y": 60,
+          "width": 483,
+          "height": 300
+        },
+        "mappedPoint": {
+          "x": 110,
+          "y": 110
+        },
+        "pointerAdmitted": true
+      }
+    },
+    {
+      "id": "SV03",
+      "purpose": "Content right-gap33 exceeds inclusive32 limit",
+      "input": {
+        "root": {
+          "x": 10,
+          "y": 20,
+          "width": 500,
+          "height": 360
+        },
+        "scroll": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "content": {
+          "x": 10,
+          "y": 60,
+          "width": 467,
+          "height": 400
+        },
+        "verticalScrollbar": {
+          "x": 477,
+          "y": 80,
+          "width": 33,
+          "height": 330
+        },
+        "scrollbarOrientation": "AXVerticalOrientation",
+        "cssViewport": {
+          "width": 500,
+          "height": 300
+        },
+        "pageZoom": 1,
+        "pointerRequired": true,
+        "cssPoint": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      "expected": {
+        "geometryAccepted": false,
+        "basis": null,
+        "mappingViewport": null,
+        "visible": null,
+        "mappedPoint": null,
+        "pointerAdmitted": false
+      }
+    },
+    {
+      "id": "SV04",
+      "purpose": "Content left is1px to right of scroll, beyond0.5 tolerance",
+      "input": {
+        "root": {
+          "x": 10,
+          "y": 20,
+          "width": 500,
+          "height": 360
+        },
+        "scroll": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "content": {
+          "x": 11,
+          "y": 60,
+          "width": 482,
+          "height": 400
+        },
+        "verticalScrollbar": {
+          "x": 493,
+          "y": 80,
+          "width": 17,
+          "height": 330
+        },
+        "scrollbarOrientation": "AXVerticalOrientation",
+        "cssViewport": {
+          "width": 500,
+          "height": 300
+        },
+        "pageZoom": 1,
+        "pointerRequired": true,
+        "cssPoint": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      "expected": {
+        "geometryAccepted": false,
+        "basis": null,
+        "mappingViewport": null,
+        "visible": null,
+        "mappedPoint": null,
+        "pointerAdmitted": false
+      }
+    },
+    {
+      "id": "SV05",
+      "purpose": "Content bottom359 misses required scroll bottom360 by1px",
+      "input": {
+        "root": {
+          "x": 10,
+          "y": 20,
+          "width": 500,
+          "height": 360
+        },
+        "scroll": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "content": {
+          "x": 10,
+          "y": 60,
+          "width": 483,
+          "height": 299
+        },
+        "verticalScrollbar": {
+          "x": 493,
+          "y": 80,
+          "width": 17,
+          "height": 330
+        },
+        "scrollbarOrientation": "AXVerticalOrientation",
+        "cssViewport": {
+          "width": 500,
+          "height": 300
+        },
+        "pageZoom": 1,
+        "pointerRequired": true,
+        "cssPoint": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      "expected": {
+        "geometryAccepted": false,
+        "basis": null,
+        "mappingViewport": null,
+        "visible": null,
+        "mappedPoint": null,
+        "pointerAdmitted": false
+      }
+    },
+    {
+      "id": "SV06",
+      "purpose": "Scroll width497 differs from requested500 by3px; other right geometry coherent",
+      "input": {
+        "root": {
+          "x": 10,
+          "y": 20,
+          "width": 500,
+          "height": 360
+        },
+        "scroll": {
+          "x": 10,
+          "y": 60,
+          "width": 497,
+          "height": 300
+        },
+        "content": {
+          "x": 10,
+          "y": 60,
+          "width": 480,
+          "height": 400
+        },
+        "verticalScrollbar": {
+          "x": 490,
+          "y": 80,
+          "width": 17,
+          "height": 330
+        },
+        "scrollbarOrientation": "AXVerticalOrientation",
+        "cssViewport": {
+          "width": 500,
+          "height": 300
+        },
+        "pageZoom": 1,
+        "pointerRequired": true,
+        "cssPoint": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      "expected": {
+        "geometryAccepted": false,
+        "basis": null,
+        "mappingViewport": null,
+        "visible": null,
+        "mappedPoint": null,
+        "pointerAdmitted": false
+      }
+    },
+    {
+      "id": "SV07",
+      "purpose": "Scroll bottom381 lies1px below owned-root bottom380",
+      "input": {
+        "root": {
+          "x": 10,
+          "y": 20,
+          "width": 500,
+          "height": 360
+        },
+        "scroll": {
+          "x": 10,
+          "y": 81,
+          "width": 500,
+          "height": 300
+        },
+        "content": {
+          "x": 10,
+          "y": 81,
+          "width": 483,
+          "height": 400
+        },
+        "verticalScrollbar": {
+          "x": 493,
+          "y": 80,
+          "width": 17,
+          "height": 330
+        },
+        "scrollbarOrientation": "AXVerticalOrientation",
+        "cssViewport": {
+          "width": 500,
+          "height": 300
+        },
+        "pageZoom": 1,
+        "pointerRequired": true,
+        "cssPoint": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      "expected": {
+        "geometryAccepted": false,
+        "basis": null,
+        "mappingViewport": null,
+        "visible": null,
+        "mappedPoint": null,
+        "pointerAdmitted": false
+      }
+    },
+    {
+      "id": "SV08",
+      "purpose": "Encoded IEEE754 NaN height must refuse before intersection/mapping",
+      "input": {
+        "root": {
+          "x": 10,
+          "y": 20,
+          "width": 500,
+          "height": 360
+        },
+        "scroll": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "content": {
+          "x": 10,
+          "y": 60,
+          "width": 483,
+          "height": "NaN"
+        },
+        "verticalScrollbar": {
+          "x": 493,
+          "y": 80,
+          "width": 17,
+          "height": 330
+        },
+        "scrollbarOrientation": "AXVerticalOrientation",
+        "cssViewport": {
+          "width": 500,
+          "height": 300
+        },
+        "pageZoom": 1,
+        "pointerRequired": true,
+        "cssPoint": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      "expected": {
+        "geometryAccepted": false,
+        "basis": null,
+        "mappingViewport": null,
+        "visible": null,
+        "mappedPoint": null,
+        "pointerAdmitted": false
+      }
+    },
+    {
+      "id": "SV09",
+      "purpose": "Valid geometry but required CSS point lacks y; never default to zero",
+      "input": {
+        "root": {
+          "x": 10,
+          "y": 20,
+          "width": 500,
+          "height": 360
+        },
+        "scroll": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "content": {
+          "x": 10,
+          "y": 60,
+          "width": 483,
+          "height": 400
+        },
+        "verticalScrollbar": {
+          "x": 493,
+          "y": 80,
+          "width": 17,
+          "height": 330
+        },
+        "scrollbarOrientation": "AXVerticalOrientation",
+        "cssViewport": {
+          "width": 500,
+          "height": 300
+        },
+        "pageZoom": 1,
+        "pointerRequired": true,
+        "cssPoint": {
+          "x": 100
+        }
+      },
+      "expected": {
+        "geometryAccepted": true,
+        "basis": "safari-scroll-viewport",
+        "mappingViewport": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "visible": {
+          "x": 10,
+          "y": 60,
+          "width": 483,
+          "height": 300
+        },
+        "mappedPoint": null,
+        "pointerAdmitted": false
+      }
+    },
+    {
+      "id": "SV10",
+      "purpose": "CSS490 lies inside full viewport but maps into classic bar strip; no content-width rescale",
+      "input": {
+        "root": {
+          "x": 10,
+          "y": 20,
+          "width": 500,
+          "height": 360
+        },
+        "scroll": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "content": {
+          "x": 10,
+          "y": 60,
+          "width": 483,
+          "height": 400
+        },
+        "verticalScrollbar": {
+          "x": 493,
+          "y": 80,
+          "width": 17,
+          "height": 330
+        },
+        "scrollbarOrientation": "AXVerticalOrientation",
+        "cssViewport": {
+          "width": 500,
+          "height": 300
+        },
+        "pageZoom": 1,
+        "pointerRequired": true,
+        "cssPoint": {
+          "x": 490,
+          "y": 50
+        }
+      },
+      "expected": {
+        "geometryAccepted": true,
+        "basis": "safari-scroll-viewport",
+        "mappingViewport": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "visible": {
+          "x": 10,
+          "y": 60,
+          "width": 483,
+          "height": 300
+        },
+        "mappedPoint": {
+          "x": 500,
+          "y": 110
+        },
+        "pointerAdmitted": false
+      }
+    },
+    {
+      "id": "SV11",
+      "purpose": "Zoom2 uses full500x300 scroll over CSS250x150; visible stays483x300",
+      "input": {
+        "root": {
+          "x": 10,
+          "y": 20,
+          "width": 500,
+          "height": 360
+        },
+        "scroll": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "content": {
+          "x": 10,
+          "y": 60,
+          "width": 483,
+          "height": 400
+        },
+        "verticalScrollbar": {
+          "x": 493,
+          "y": 80,
+          "width": 17,
+          "height": 330
+        },
+        "scrollbarOrientation": "AXVerticalOrientation",
+        "cssViewport": {
+          "width": 250,
+          "height": 150
+        },
+        "pageZoom": 2,
+        "pointerRequired": true,
+        "cssPoint": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      "expected": {
+        "geometryAccepted": true,
+        "basis": "safari-scroll-viewport",
+        "mappingViewport": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "visible": {
+          "x": 10,
+          "y": 60,
+          "width": 483,
+          "height": 300
+        },
+        "mappedPoint": {
+          "x": 210,
+          "y": 160
+        },
+        "pointerAdmitted": true
+      }
+    },
+    {
+      "id": "SV12",
+      "purpose": "Bar width16 fails17px content-gap proof, beyond0.5 tolerance",
+      "input": {
+        "root": {
+          "x": 10,
+          "y": 20,
+          "width": 500,
+          "height": 360
+        },
+        "scroll": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "content": {
+          "x": 10,
+          "y": 60,
+          "width": 483,
+          "height": 400
+        },
+        "verticalScrollbar": {
+          "x": 493,
+          "y": 80,
+          "width": 16,
+          "height": 330
+        },
+        "scrollbarOrientation": "AXVerticalOrientation",
+        "cssViewport": {
+          "width": 500,
+          "height": 300
+        },
+        "pageZoom": 1,
+        "pointerRequired": true,
+        "cssPoint": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      "expected": {
+        "geometryAccepted": false,
+        "basis": null,
+        "mappingViewport": null,
+        "visible": null,
+        "mappedPoint": null,
+        "pointerAdmitted": false
+      }
+    },
+    {
+      "id": "SV13",
+      "purpose": "A horizontal scrollbar cannot prove the classic vertical strip",
+      "input": {
+        "root": {
+          "x": 10,
+          "y": 20,
+          "width": 500,
+          "height": 360
+        },
+        "scroll": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "content": {
+          "x": 10,
+          "y": 60,
+          "width": 483,
+          "height": 400
+        },
+        "verticalScrollbar": {
+          "x": 493,
+          "y": 80,
+          "width": 17,
+          "height": 330
+        },
+        "scrollbarOrientation": "AXHorizontalOrientation",
+        "cssViewport": {
+          "width": 500,
+          "height": 300
+        },
+        "pageZoom": 1,
+        "pointerRequired": true,
+        "cssPoint": {
+          "x": 100,
+          "y": 50
+        }
+      },
+      "expected": {
+        "geometryAccepted": false,
+        "basis": null,
+        "mappingViewport": null,
+        "visible": null,
+        "mappedPoint": null,
+        "pointerAdmitted": false
+      }
+    },
+    {
+      "id": "SV14",
+      "purpose": "Mapped point on visible right edge is excluded, without clamping",
+      "input": {
+        "root": {
+          "x": 10,
+          "y": 20,
+          "width": 500,
+          "height": 360
+        },
+        "scroll": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "content": {
+          "x": 10,
+          "y": 60,
+          "width": 483,
+          "height": 400
+        },
+        "verticalScrollbar": {
+          "x": 493,
+          "y": 80,
+          "width": 17,
+          "height": 330
+        },
+        "scrollbarOrientation": "AXVerticalOrientation",
+        "cssViewport": {
+          "width": 500,
+          "height": 300
+        },
+        "pageZoom": 1,
+        "pointerRequired": true,
+        "cssPoint": {
+          "x": 483,
+          "y": 50
+        }
+      },
+      "expected": {
+        "geometryAccepted": true,
+        "basis": "safari-scroll-viewport",
+        "mappingViewport": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "visible": {
+          "x": 10,
+          "y": 60,
+          "width": 483,
+          "height": 300
+        },
+        "mappedPoint": {
+          "x": 493,
+          "y": 110
+        },
+        "pointerAdmitted": false
+      }
+    },
+    {
+      "id": "SV15",
+      "purpose": "CSS point on bottom boundary refuses before mapping, without zero-fill or clamping",
+      "input": {
+        "root": {
+          "x": 10,
+          "y": 20,
+          "width": 500,
+          "height": 360
+        },
+        "scroll": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "content": {
+          "x": 10,
+          "y": 60,
+          "width": 483,
+          "height": 400
+        },
+        "verticalScrollbar": {
+          "x": 493,
+          "y": 80,
+          "width": 17,
+          "height": 330
+        },
+        "scrollbarOrientation": "AXVerticalOrientation",
+        "cssViewport": {
+          "width": 500,
+          "height": 300
+        },
+        "pageZoom": 1,
+        "pointerRequired": true,
+        "cssPoint": {
+          "x": 100,
+          "y": 300
+        }
+      },
+      "expected": {
+        "geometryAccepted": true,
+        "basis": "safari-scroll-viewport",
+        "mappingViewport": {
+          "x": 10,
+          "y": 60,
+          "width": 500,
+          "height": 300
+        },
+        "visible": {
+          "x": 10,
+          "y": 60,
+          "width": 483,
+          "height": 300
+        },
+        "mappedPoint": null,
+        "pointerAdmitted": false
+      }
+    }
+  ],
+  "sourceAuthoringQualification": "All input numbers and expected rectangles/points are explicit independent literals before candidate. No editor/native/OS/test/compile execution; structural negatives remain mandatory in contract.md. Bar vertical dimensions intentionally do not match viewport and cannot become coordinate authority."
+}

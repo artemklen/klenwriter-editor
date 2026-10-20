@@ -1,0 +1,24 @@
+{
+  "format": "editor-ui-find-postguard-diagnostic-manifest/2",
+  "status": "SOURCE_DRAFT_NOT_EXECUTED",
+  "head": "4082c5ca4a50cb9dc7979cee3f885af5143aeec8",
+  "sourcePins": [
+    {
+      "path": "scripts/ui-native/input.mjs",
+      "bytes": 14042,
+      "sha256": "49f818231b491dea7c6eee696294ef8b4febb7c1858ee0a2e8beb235d8d27252"
+    }
+  ],
+  "files": [
+    {
+      "path": "find-postguard.md",
+      "bytes": 2924,
+      "sha256": "f9486231c218ccec89087edb37a2905c9660994ebf7dbb2eb2dd48a8d346002b"
+    },
+    {
+      "path": "find-postguard-cases.json",
+      "bytes": 1271,
+      "sha256": "cd2a7813c9edf95c6e7c6f88b5f3899c8501662699931be375b5bbd8552aac12"
+    }
+  ]
+}

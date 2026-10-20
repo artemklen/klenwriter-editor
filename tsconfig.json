@@ -18,6 +18,9 @@
     },
     {
       "path": "packages/angular"
+    },
+    {
+      "path": "packages/ui"
     }
   ]
 }

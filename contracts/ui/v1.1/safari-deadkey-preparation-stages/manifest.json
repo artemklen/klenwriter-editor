@@ -1,0 +1,36 @@
+{
+  "format": "editor-ui-safari-deadkey-preparation-stages-manifest/1",
+  "status": "SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "createdAt": "2026-10-20T09:10:34.928966+00:00",
+  "sourcePins": [
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/scripts/ui-native/input.mjs",
+      "bytes": 56455,
+      "sha256": "dbb193afd6ebe1c93d23d17285503e10db36fd50ddc5f63be018e50bba50c4b5"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/scripts/ui-native-acceptance.mjs",
+      "bytes": 46784,
+      "sha256": "554d1ab10a67071cd6d23038bb45dae9bbb8e33af6be8021de176fb9e4b5261f"
+    }
+  ],
+  "observation": {
+    "path": "/tmp/osr-42-installed-development-6833de4-11/safari/safari.json",
+    "bytes": 46787819,
+    "sha256": "17fd2e5feee9bc680b5810d5eebad1987d3519ffd59b33ffcd605db1e266d668"
+  },
+  "files": [
+    {
+      "path": "/tmp/osr-42-safari-deadkey-preparation-stages-contract-draft-01/contract.md",
+      "bytes": 5100,
+      "sha256": "694cc0daa981782640d8c1f3b89b68748965b190a970dae1e0b2a5d6610e12b1"
+    },
+    {
+      "path": "/tmp/osr-42-safari-deadkey-preparation-stages-contract-draft-01/cases.json",
+      "bytes": 5378,
+      "sha256": "639d54e52b7d6738e8b05c3c3870ea285d7de5d41bd9eceee18906181d942cd3"
+    }
+  ],
+  "candidateAuthored": false,
+  "execution": false
+}

@@ -1,0 +1,194 @@
+{
+  "format": "editor-ui-chrome-close-find-settle-cases/1",
+  "status": "SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "policy": {
+    "action": "close-find",
+    "cleanupOnly": false,
+    "afterAllOriginalPosts": true,
+    "beforeFirstPostPhaseMeasurement": true,
+    "requestedWaitMs": 250,
+    "existingResultReserveMs": 16,
+    "strictRemainingThresholdMs": 266,
+    "remainingThresholdComparator": ">",
+    "insufficientAllowance": "complete core retained; postcondition unobserved, reads0, proof null; no wait or phase measurement",
+    "afterWait": "existing current remaining>16 loop; <=12 fresh full-owner reads; existing<=64ms CS01 scheduling",
+    "newResultFields": [],
+    "newKeyPosts": 0,
+    "deadlineExtensionMs": 0
+  },
+  "cases": [
+    {
+      "id": "CL01",
+      "input": {
+        "action": "close-find",
+        "cleanupOnly": false,
+        "allPostsComplete": true,
+        "remainingBeforeMs": 600,
+        "remainingAfterWaitMs": 350
+      },
+      "expected": {
+        "requestedWaitsMs": [
+          250
+        ],
+        "phaseReadGate": true,
+        "maximumPhaseReads": 12,
+        "originalCorePreserved": true,
+        "additionalKeyPosts": 0
+      }
+    },
+    {
+      "id": "CL02",
+      "input": {
+        "action": "find",
+        "cleanupOnly": false,
+        "allPostsComplete": true,
+        "remainingBeforeMs": 600
+      },
+      "expected": {
+        "requestedPreparationWaitsMs": [],
+        "originalCS01PhaseReadGate": true
+      }
+    },
+    {
+      "id": "CL03",
+      "input": {
+        "action": "close-find",
+        "cleanupOnly": true,
+        "allPostsComplete": true,
+        "remainingBeforeMs": 600
+      },
+      "expected": {
+        "requestedPreparationWaitsMs": [],
+        "originalCS01PhaseReadGate": true
+      }
+    },
+    {
+      "id": "CL04",
+      "input": {
+        "action": "close-find",
+        "cleanupOnly": false,
+        "allPostsComplete": true,
+        "remainingBeforeMs": 266
+      },
+      "expected": {
+        "requestedWaitsMs": [],
+        "phaseReads": 0,
+        "postStatus": "unobserved",
+        "proof": null,
+        "coreComplete": true,
+        "redundantUp": false
+      }
+    },
+    {
+      "id": "CL05",
+      "input": {
+        "action": "close-find",
+        "cleanupOnly": false,
+        "allPostsComplete": true,
+        "remainingBeforeMs": 267,
+        "remainingAfterWaitMs": 17
+      },
+      "expected": {
+        "requestedWaitsMs": [
+          250
+        ],
+        "phaseReadGate": true,
+        "latencyGuarantee": false
+      }
+    },
+    {
+      "id": "CL06",
+      "input": {
+        "action": "close-find",
+        "cleanupOnly": false,
+        "allPostsComplete": true,
+        "remainingBeforeMs": 600,
+        "remainingAfterWaitMs": 15
+      },
+      "expected": {
+        "requestedWaitsMs": [
+          250
+        ],
+        "phaseReads": 0,
+        "postStatus": "unobserved",
+        "proof": null,
+        "coreComplete": true,
+        "redundantUp": false
+      }
+    },
+    {
+      "id": "CL07",
+      "input": {
+        "action": "close-find",
+        "cleanupOnly": false,
+        "allPostsComplete": true,
+        "remainingBeforeMs": 600,
+        "firstFreshMeasurement": "ownership_refused"
+      },
+      "expected": {
+        "requestedWaitsMs": [
+          250
+        ],
+        "phaseReads": 1,
+        "postStatus": "refused",
+        "furtherSamples": 0,
+        "coreComplete": true,
+        "retryOrReplay": false
+      }
+    },
+    {
+      "id": "CL08",
+      "input": {
+        "action": "close-find",
+        "cleanupOnly": false,
+        "allPostsComplete": false
+      },
+      "expected": {
+        "requestedPreparationWaitsMs": [],
+        "postPhaseReads": 0,
+        "originalNotSentOrUnknownRules": true
+      }
+    }
+  ],
+  "auxiliaryDiagnosticBuckets": [
+    {
+      "predicate": "others.count==1 and first binding",
+      "reason": "Exact nonce Find auxiliary count differs",
+      "getterOrder": 0
+    },
+    {
+      "predicate": "axTitle(other)==auxTitle",
+      "reason": "Exact nonce Find auxiliary title differs",
+      "getterOrder": 1
+    },
+    {
+      "predicate": "AXRole==AXWindow",
+      "reason": "Exact nonce Find auxiliary role differs",
+      "getterOrder": 2
+    },
+    {
+      "predicate": "AXSubrole==AXUnknown",
+      "reason": "Exact nonce Find auxiliary subrole differs",
+      "getterOrder": 3
+    },
+    {
+      "predicate": "rectangle(other) returns finite positive original-format frame",
+      "reason": "Exact nonce Find auxiliary frame unavailable",
+      "getterOrder": 4
+    },
+    {
+      "predicate": "same four exact original root containment comparisons",
+      "reason": "Exact nonce Find auxiliary containment differs",
+      "getterOrder": 5
+    }
+  ],
+  "diagnosticCode": "ownership",
+  "preserveReadOrderAndShortCircuit": true,
+  "additionalAXReads": 0,
+  "additionalTitlesOrValuesRecorded": 0,
+  "existingUnits": 177,
+  "newUnits": 0,
+  "uiBrowser": 216,
+  "overallBrowser": 972,
+  "originalChrome22Status": "FAILED_UNCHANGED"
+}

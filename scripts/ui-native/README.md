@@ -1,0 +1,202 @@
+# Installed UI42 acceptance
+
+Source-authored implementation of `contracts/ui/v1/installed-matrix.md`.
+This directory is a separate42 protocol. Existing41 guards are not made to
+accept42 actions, and no earlier installed result is inherited. Nothing in
+this README asserts that this new harness has executed or passed.
+
+The seven matrix families expand into15 independent cases per locale:
+navigation; keyboard/pointer Strong; keyboard/pointer Add; fresh menu-up,
+menu-down, local-key-up and local-key-down Move; host dialog; four independent
+composition conflict gestures; modes/Find/copy/zoom. Each installed browser
+therefore declares30 rows, EN and RU. Separate fresh brokers/reports are required
+for Chrome and Safari. The actual browser version is an explicit CLI pin.
+
+After the final coherent build/local gates and a clean committed source:
+
+```sh
+node scripts/ui-native/server.mjs --directory /absolute/fresh/ui42-broker
+node scripts/ui-native-acceptance.mjs --browser chrome --output /absolute/fresh/chrome.json --broker /absolute/fresh/ui42-broker/config.json --head FULL_COMMITTED_SHA --expected-version ACTUAL_PINNED_VERSION
+```
+
+Stop only that server through its own process handle when it completes. Start
+a new broker for Safari and use `--browser safari`. The server is opt-in and
+serves only the closed nonce modules plus the one exact shared pure protocol
+dependency. Ordinary `/ui` CSP remains unchanged: no composition41 style hash,
+inline-script/style permission, filtering, screenshot-based oracle or synthetic
+input fallback is introduced. A real UA CSP violation fails the row.
+
+Chrome uses a fresh isolated headed installed channel, read-only CDP bootstrap
+measurements and closed page setup/read calls. Safari creates one owned window;
+Apple Events page access ends at bootstrap. Remaining Safari page calls use the
+bounded same-origin HTTP broker. Mutating calls are claimed before dispatch,
+unknown completion disables later actions, and no native call is replayed.
+Chrome explicitly disables Playwright focus emulation before any mount/input,
+recording the CDP method, parameters and response. The
+[original-session contract](../../contracts/ui/v1.1/chrome-find-presentation/original-focus/chrome-original-focus.md)
+pins the installed Playwright library and resolves only the owned page's original
+main FrameSession, which enabled that emulation. Its single fixed command sends
+`enabled:false` there; unavailable identities or library drift refuse setup.
+The separate public CDP session remains a bootstrap measurement channel.
+Actual native Find focus readbacks remain required. Normal fresh-case entry
+activates Chrome once as preparation; a failed entry or uncertain input cannot
+trigger reactivation. Each physical action still requires its fresh OS AX guard.
+
+Physical actions are fixed System Events key programs, closed Chrome Find
+CGEvent key programs or exact-control CGEvent clicks. Each has a new
+page/mount/nonce guard and independent strict AX check of
+the exact foreground process/window. Ordinary actions also measure the actual web area. This is platform input,
+not hardware-device provenance. Navigation is physical. Fixture mounting,
+literal selection setup, explicit focus setup, host edit and native undo/redo
+are labelled setup/host API actions; none is described as physical input.
+
+Safari's ordinary Tab program waits once for200ms after its original key-up,
+before the unchanged final System Events ownership check. This passive wait
+shares the original total1s action deadline; it adds no input or retry. A missing
+final ACK still leaves completion unknown and permits only the existing one
+UP-only cleanup. Preflight, other keys, cleanup and Chrome are unchanged. The
+observed immediate post-Tab title mismatch followed by a normal owned AX root
+motivates this settling wait; the transient window's cause remains unproven.
+
+Actual Safari opts into the private [SC01 Copy program](../../contracts/ui/v1.1/safari-copy-release-first/contract.md):
+Command down, key8 down, Command up, key8 up, followed by the unchanged POST
+ownership check. Only normal Copy receives the exact fifth `sc-copy01` argument;
+its closed receipt names the literal program and all four transitions. Legacy
+four-argument programs, Chrome Find, other keys and original UP-only Copy cleanup
+are unchanged. This posting receipt does not replace actual trusted DOM keydown
+and keyup, clipboard completion or exact OS clipboard bytes. Its effect on Safari
+delivery remains unproven until an installed run records those observations.
+
+Page zoom is changed by guarded native CmdPlus. The zoom oracle uses the
+baseline/current CSS viewport width with unchanged outer window dimensions;
+every action independently matches that viewport to the measured AX web area.
+DPR is recorded as a crosscheck and may remain hardware-fixed in Safari. Pointer
+coordinates use the actual AX-web-area/current-CSS-viewport ratio. The Find row
+requires a trusted unprevented CmdF, actual document focus departure and an
+owned-window screenshot; a single fresh-window-guarded Escape closes it.
+
+Safari alone may use the [direct-scroll fallback](../../contracts/ui/v1.1/safari-scroll-viewport/contract.md)
+after a complete bounded scan finds zero exact-size WebAreas and exactly one
+genuine WebArea directly inside its ScrollArea. The full ScrollArea remains the
+mapping viewport; a genuine vertical sibling scrollbar must prove any classic
+right strip. Pointer points must lie inside the exact visible content intersection,
+never the scrollbar strip. CF ancestry, roles, frames, owner and clipping are
+rechecked before each original post; raw `axViewportProof` records the fallback
+basis/content/scroll/visible/bar measurements only when used. Exact-WebArea,
+Chrome and strict initial Safari-readiness proofs retain their existing meaning.
+No native event, input retry or acceptance is inferred from this geometry proof.
+The [continuity addendum](../../contracts/ui/v1.1/safari-scroll-viewport/continuity.md)
+keeps the full mapping viewport and exact visible clip fixed between original
+posts while allowing document extent changes outside that clip. Each recheck
+still validates the complete current AX proof and original identities; successful
+receipts retain at most three actual recheck proofs beside the initial one.
+
+Chrome's one live native Find episode follows the separate
+[window contract](../../contracts/ui/v1.1/chrome-find-presentation/find-presentation.md).
+Its initial CmdF keeps the ordinary measured-WebArea guard. While Find is open,
+Escape, original UP-only cleanup and its screenshot use explicit window-only
+proofs of the original PID, nonce, mount and root frame, with the exact contained
+Find auxiliary. These proofs provide no viewport or pointer coordinates. The
+screenshot crops the original root rectangle. Unknown completion remains FAILED;
+only one matching original-key UP cleanup is permitted. Ordinary actions and
+Safari retain their existing measurement paths.
+
+Actual Chrome uses the separate
+[CG key contract](../../contracts/ui/v1.1/chrome-find-presentation/cg-transport/chrome-find-cg.md)
+for this episode. The coordinator compiles and pins `find-key.swift`; private
+`cg-fd02` selects only CmdF, Escape and the original UP-only cleanup programs.
+Every posted transition has a fresh complete original-window proof. The first
+transition requires the expected closed/open state, and later transitions allow
+only either exact owned state. Final phase sampling is read-only and shares the
+original total1s deadline. A valid complete posting receipt clears pending keys
+before final phase/deadline checks. A failed postcondition still fails the row;
+an opaque timeout keeps completion unknown. Default controlled AS8 cases and
+all ordinary/Safari routes remain separately covered by their original checks.
+The [CS01 sampling addendum](../../contracts/ui/v1.1/chrome-find-presentation/cg-transport/phase-sampling/cg-phase-sampling.md)
+spreads at most12 read-only phase checks within that same budget, with waits of
+at most64ms and a16ms response reserve. It changes no event or final phase check.
+
+The separate [Chrome Zoom contract](../../contracts/ui/v1.1/chrome-zoom-cg/chrome-zoom-cg.md)
+uses an isolated branch of the same compiled helper for the fixed CmdPlus/Cmd0
+programs and matching UP-only cleanup. Each event keeps the ordinary full native
+WebArea measurement and original PID/root frame. A fresh ordinary postproof follows
+the complete posting receipt. At measured200%, Chrome gets one passive2000ms
+preparation wait before ordinary focus navigation; this grants no input authority.
+The next action still needs its original fresh page, AX and System Events guards.
+The [reset preparation policy](../../contracts/ui/v1.1/chrome-zoom-cg/reset-settle.md)
+also waits once after measured Cmd0, before the next locale's normal input.
+
+For targeted development only, the exact environment value
+`OSR42_NATIVE_DEVELOPMENT_CASE=modes-zoom` selects the existing EN/RU modes rows.
+All30 report rows remain: the other28 are explicitly NOT_RUN, and two PASS still
+produce INCOMPLETE/exit2. This cannot supply full installed acceptance. Unset the
+variable for the normal matrix. The
+[diagnostic contract](../../contracts/ui/v1.1/chrome-find-presentation/stage-development/find-stage-development.md)
+also bounds AS8 stderr stage markers; these observations never replace a key ACK.
+
+Composition rows first require actual trusted compositionstart and an unresolved
+native window. The distinct pointer gesture is separately guarded/acknowledged.
+A window that ended before the gesture is UNOBSERVED only after the additive
+`contracts/ui/v1.1/composition-observation` proof: one genuine current trusted
+start/preedit, an explicitly recorded terminal strictly before actual trusted
+pointerdown, and exactly one predeclared native InsertText finished no later
+than that down. Mount and document-local `performance.timeOrigin` must match;
+all original request/response bytes, native state, identity, one undo unit and
+no-replay assertions remain mandatory. Every terminal keeps its actual trust;
+observed-ended metadata never turns an untrusted event into positive native IME
+evidence. A missing/late/throwing call, another mutation, or ambiguous order
+fails. `composition-observation.mjs` is pinned with the other closed helpers;
+its pure CO units run from the existing transport-unit entry. Source-bound41
+P18/P19 U+00B4 may identify an early spacing-accent insertion for this opportunity
+classification only. It does not count as42 protected-gesture acceptance.
+A separate frozen AFTER-CLICK subset also requires the explicit terminal before
+trusted matching primary down/up/positive-detail click on the exact guarded
+object, one expected InsertText starting at/after click and returning by the
+checkpoint, exact provisional DOM/objects/raw range/focus preservation, and zero
+UI results/dialog openings/pending requests. The original default failure stays
+in the report alongside that separate observation. It permits no interleaving or
+two-command exception and does not turn missed opportunity into protected PASS.
+The separate frozen DURING_POINTER subset keeps those same stronger actual
+target/DOM/raw/focus/no-UI-command checks and permits only the composition's
+one expected original InsertText within down.time<=startedAt<=finishedAt<=click.time,
+with its explicit terminal strictly before down. Both earlier classifier results
+remain recorded. Foreign up/click targets still fail; this cannot replace layout
+stability or accept a replay/second command. Original Chrome05 remains FAILED.
+These are single-threaded event-record/call bounds, not concurrent dispatch proof.
+The source-authored Notes spacing-accent binding is `a´b`/T2 with its distinct
+`{text}` payload; existing Notes é and KWDJ bindings stay unchanged.
+Original Chrome04 remains FAILED under its original before-down contract; only a
+new run with all new actual event/object fields can supply this separate proof.
+Original Chrome03 stays FAILED: its old call rows lack ordering times and also
+contain an additional toolbar command. No historical bytes are rewritten.
+A window observed through
+the gesture must preserve actual text/objects/range/focus and native state; an
+end during the gesture fails preservation. Settlement must show no UI command
+replay. Explicit retained recovery is REFUSED, never a fixed positive commit.
+`settlement-literals.mjs` authors the fixed positive bytes before execution:
+KWDJ F becomes `Aéאב` with the rest of F unchanged; Notes NC011 becomes `aéb`
+with unchanged title/tags. Both collapse at the original T offset2, retain every
+original opaque ID at its independently authored path, publish exactly one
+document event, increment revision/selection/history once and create one undo
+unit. The source fixture hashes, exact native command/payload and original
+native response are checked. These literals are independent expected source;
+they are never constructed from an observed canonical result.
+Prior41 cancel/blur limitations and other platforms are not promoted to42 proof.
+
+Reports retain PASS/REFUSED/FAILED/UNOBSERVED/UNSUPPORTED/NOT_RUN, actual action
+counts and original source/compiled/helper/version/input-source pins. Missing
+or uncertain evidence is not PASS. Source traces are exact original request and
+response bytes from the pass-through fixture. Each actual native call is timed
+immediately around the original call, before reply parsing; a thrown original
+value retains bounded error provenance and no fabricated response/completion.
+This is bounded call ordering, not a performance measurement. Finite bounds and explicit
+overflow failure. Screenshots cover only the exact owned foreground AX window.
+No browser profile/app-data contents are read or copied into evidence.
+
+Each row tears down its own UI/mount and checks SDK/native/DOM/selection/
+clipboard/host-request counters. Owned uncertain keys/pointer receive at most
+one separately recorded release-only cleanup; this never retries a semantic
+action or turns its failed receipt into PASS. Cleanup closes only the owned
+browser/window, then restores the original existing input source and requires
+five coherent readbacks. Restore failure keeps the overall run FAILED even
+when earlier individual rows passed. No settings/permission/login flow occurs.

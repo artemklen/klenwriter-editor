@@ -13,9 +13,13 @@ interface Configuration {
   submit(request:MountedMutation): Submission|DomRefusal;
   guard(): DomRefusal|null; busy():boolean; report(failure:DomRefusal):unknown;
   recover(failure:DomRefusal):void;
+  invalidated?():void;
 }
 interface Entry { readonly bookmark:SelectionBookmark; readonly serial:bigint }
-interface SubmissionFrame { readonly own:boolean; readonly eligible:boolean; readonly serial:bigint; readonly before:DeepReadonly<StampDto>|null; events:number; reentrant:boolean }
+export interface ExactBookmark { readonly selection:DeepReadonly<SelectionDto>|null; readonly stamp:DeepReadonly<StampDto>; readonly context:DeepReadonly<SessionContextV2>; readonly serial:bigint }
+export interface ResultFocusPermit { readonly __resultFocusPermit:unique symbol }
+interface SubmissionFrame { readonly own:boolean; readonly eligible:boolean; readonly serial:bigint; readonly before:DeepReadonly<StampDto>|null; readonly context:DeepReadonly<SessionContextV2>|null; events:number; reentrant:boolean; foreign:boolean; publications:number; publication:DeepReadonly<EventDto>|null; knownInvalidations:number; ended:boolean }
+interface FocusEntry { readonly serial:bigint; readonly stamp:DeepReadonly<StampDto>; readonly selection:DeepReadonly<SelectionDto>|null; readonly context:DeepReadonly<SessionContextV2>; readonly publication:DomRefusal['diagnostic']['publication'] }
 interface PointerOwner { readonly id:number; x:number;y:number;anchor:DomPoint|null }
 type InputIntentObserver = (before:bigint,after:bigint,event:Event|null)=>void;
 /** One per mount: identity, browser correspondence and intent, never document semantics. */
@@ -26,6 +30,8 @@ export class SelectionOwner {
   #publishing=0;#ownPermit=0;#restoreTickets=0;#frames:SubmissionFrame[]=[];#removals:(()=>void)[]=[];
   #pointer:PointerOwner|null=null;#raf:number|null=null;#tabEntry=false;#rangeWriting=0;
   #inputIntentObserver:InputIntentObserver|null=null;
+  #knownInvalidation:SubmissionFrame|null=null;
+  #focusPermits=new WeakMap<ResultFocusPermit,FocusEntry>();
   constructor(readonly configuration:Configuration) {
     this.api=Object.freeze({captureBookmark:()=>this.captureBookmark(),restoreBookmark:(bookmark:SelectionBookmark,options?:{readonly policy?:'exact'|'mapped';readonly focus?:boolean})=>this.restoreBookmark(bookmark,options),releaseBookmark:(bookmark:SelectionBookmark)=>this.releaseBookmark(bookmark)});
   }
@@ -45,10 +51,17 @@ export class SelectionOwner {
   #refuse(code:DomRefusal['diagnostic']['code']):DomRefusal { const failure=this.#failure(code);this.configuration.report(failure);return failure; }
   #guard():DomRefusal|null { if(this.#destroyed)return this.#failure('dom.disposed');if(this.#exhausted)return this.#failure('dom.selection_limit');return this.configuration.guard() ?? (this.#restoreTickets || this.configuration.busy()?this.#failure('dom.busy'):null); }
   invalidate(clear=false,event:Event|null=null):void {
+    for(const frame of this.#frames)if(frame!==this.#knownInvalidation)frame.foreign=true;
     const before=this.#serial;
     if(this.#serial===MAX_SERIAL)this.#exhausted=true;else this.#serial++;
     if(clear){for(const bookmark of this.#live)this.#entries.delete(bookmark);this.#live.clear();}
+    this.configuration.invalidated?.();
     this.#inputIntentObserver?.(before,this.#serial,event);
+  }
+  #invalidateFrame(frame:SubmissionFrame):void {
+    frame.knownInvalidations++;
+    const previous=this.#knownInvalidation;this.#knownInvalidation=frame;
+    try{this.invalidate();}finally{this.#knownInvalidation=previous;}
   }
   #focusChanged():void {if(this.#focusSerial===MAX_SERIAL)this.#exhausted=true;else this.#focusSerial++;}
   cancel():void {
@@ -63,21 +76,88 @@ export class SelectionOwner {
     if(!own && !harmless)this.cancel();
     const eligible=!own && !input && request.kind==='command' && this.#frames.length===0 && !this.configuration.busy();
     if(!own && !eligible && !harmless)this.invalidate();
-    const frame={own,eligible,serial:this.#serial,before:this.configuration.capture(),events:0,reentrant:false};this.#frames.push(frame);return frame;
+    const frame:SubmissionFrame={own,eligible,serial:this.#serial,before:this.configuration.capture(),context:this.configuration.context(),events:0,reentrant:false,foreign:false,publications:0,publication:null,knownInvalidations:0,ended:false};this.#frames.push(frame);return frame;
   }
   endSubmission(frame:SubmissionFrame,result:Submission|DomRefusal):void {
     const current=this.#frames.pop();
     if(current!==frame){this.invalidate();this.#frames=[];return;}
-    if(frame.eligible && (frame.reentrant || frame.events!==1 || frame.serial!==this.#serial || isDomRefusal(result) || result.status!=='completed' || result.response.status!=='ok'))this.invalidate();
+    if(frame.eligible && (frame.reentrant || frame.events!==1 || frame.serial!==this.#serial || isDomRefusal(result) || result.status!=='completed' || result.response.status!=='ok')){
+      // Preserve old bookmark invalidations. Only this ORIGINAL frame may later
+      // recognize its own deterministic invalidation for prospective focus.
+      if(!frame.reentrant && !frame.foreign && !isDomRefusal(result) && result.status==='completed' && result.response.status==='ok')this.#invalidateFrame(frame);
+      else this.invalidate();
+    }
+    frame.ended=true;
   }
   publication(event:DeepReadonly<EventDto>):void {
     const frame=this.#frames.at(-1);
+    if(frame){frame.publications++;if(frame.publications===1)frame.publication=event;else frame.foreign=true;}
     if(frame?.own && frame.events===0 && same(frame.before,event.before)){frame.events++;return;}
     if(frame?.eligible && !frame.reentrant && frame.serial===this.#serial && frame.events===0 && event.change.kind==='document' && same(frame.before,event.before)){frame.events++;return;}
-    this.cancel();this.invalidate();
+    this.cancel();
+    if(frame?.eligible && !frame.reentrant && !frame.foreign && frame.publications===1 && same(frame.before,event.before))this.#invalidateFrame(frame);
+    else this.invalidate();
   }
   #state():DeepReadonly<StateDto>|Response {
     const response=this.configuration.read({kind:'state'});return response.status==='ok' && response.value.kind==='state'?response.value.state:response;
+  }
+  /** Pure exact authority check; unlike restore this never maps, consumes or writes. */
+  validateExact(bookmark:SelectionBookmark):ExactBookmark|DomRefusal|{status:'sdk_failure';response:Response} {
+    const guard=this.#guard();if(guard)return guard;
+    const entry=bookmark && typeof bookmark==='object'?this.#entries.get(bookmark):undefined;
+    if(!entry || !this.#live.has(bookmark))return this.#failure('dom.invalid_bookmark');
+    const serial=this.#serial,state=this.#state();if('status' in state)return {status:'sdk_failure',response:state};
+    const context=this.configuration.context(),view=this.configuration.view(),host=this.configuration.element();
+    if(entry.serial!==serial || !same(bookmark.stamp,state.stamp) || !same(bookmark.context,context))return this.#failure('dom.stale_selection');
+    if(!view || !host || !context)return this.#failure('dom.not_ready');
+    if(bookmark.selection)for(const position of [bookmark.selection.anchor,bookmark.selection.focus]){
+      const point=view.domPoint(position);if(isDomRefusal(point))return point;
+      if(!point.node.isConnected || !host.contains(point.node))return this.#failure('dom.stale_selection');
+    }
+    if(!this.intentAvailable() || this.#serial!==serial || !same(state.stamp,this.configuration.capture()) || !same(context,this.configuration.context()))return this.#failure('dom.stale_selection');
+    return Object.freeze({selection:bookmark.selection,stamp:state.stamp,context,serial});
+  }
+  /** Only an original synchronous frame can mint this private, one-use permit. */
+  resultFocusPermit(frame:SubmissionFrame,result:Submission|DomRefusal):ResultFocusPermit|null {
+    if(!frame.ended || !frame.eligible || frame.reentrant || frame.foreign || !this.intentAvailable() || isDomRefusal(result) || result.status!=='completed' || result.response.status!=='ok' || result.response.value.kind!=='mutation')return null;
+    const state=result.response.value.state,expected=frame.serial+BigInt(frame.knownInvalidations);
+    if(expected>MAX_SERIAL || this.#serial!==expected || !same(frame.context,this.configuration.context()) || !frame.context || !same(state.stamp,this.configuration.capture()))return null;
+    if(frame.publications===0){if(result.response.value.effect!=='unchanged' || !same(frame.before,state.stamp))return null;}
+    else if(frame.publications!==1 || !frame.publication || !same(frame.before,frame.publication.before) || !same(state.stamp,frame.publication.after))return null;
+    const permit=Object.freeze({__resultFocusPermit:Symbol('result-focus')}) as ResultFocusPermit;
+    this.#focusPermits.set(permit,{serial:expected,stamp:state.stamp,selection:state.selection,context:frame.context,publication:result.response.value.effect==='unchanged'?'none':'alreadyPublished'});
+    return permit;
+  }
+  /** Presentation-only RESULT range restoration; never another set_selection. */
+  focusResult(permit:ResultFocusPermit,scope:HTMLElement,continuity:()=>boolean):DomRefusal|{status:'sdk_failure';response:Response}|null {
+    const entry=this.#focusPermits.get(permit);this.#focusPermits.delete(permit);
+    if(!entry)return this.#failure('dom.stale_selection');
+    const host=this.configuration.element(),view=this.configuration.view();
+    const valid=()=>this.intentAvailable() && this.#serial===entry.serial && same(entry.stamp,this.configuration.capture()) && same(entry.context,this.configuration.context()) && !this.#guard() && continuity();
+    if(!host || !view || !valid())return this.#failure('dom.stale_selection',entry.publication);
+    if(!entry.selection)return this.#failure('dom.selection_missing',entry.publication);
+    const doc=host.ownerDocument,active=doc.activeElement;
+    if(!doc.hasFocus() || scope.ownerDocument!==doc || !scope.isConnected || !active || !scope.contains(active))return this.#failure('dom.stale_selection',entry.publication);
+    const state=this.#state();if('status' in state)return {status:'sdk_failure',response:state};
+    if(!same(state.stamp,entry.stamp) || !same(state.selection,entry.selection))return this.#failure('dom.stale_selection',entry.publication);
+    for(const position of [entry.selection.anchor,entry.selection.focus]){
+      const point=view.domPoint(position);if(isDomRefusal(point))return point;
+      if(!point.node.isConnected || !host.contains(point.node))return this.#failure('dom.stale_selection',entry.publication);
+    }
+    const focusSerial=this.#focusSerial;
+    this.#rangeWriting++;
+    try{
+      host.focus({preventScroll:true});
+      if(!valid() || focusSerial!==this.#focusSerial || !doc.hasFocus() || !this.ownsFocus() || !scope.isConnected || scope.ownerDocument!==doc)return this.#failure('dom.stale_selection',entry.publication);
+      for(const position of [entry.selection.anchor,entry.selection.focus]){
+        const point=view.domPoint(position);if(isDomRefusal(point))return point;
+        if(!point.node.isConnected || !host.contains(point.node))return this.#failure('dom.stale_selection',entry.publication);
+      }
+      const failure=view.restoreSelection(entry.selection);if(failure)return failure;
+      if(!valid() || focusSerial!==this.#focusSerial || !this.ownsFocus())return this.#failure('dom.stale_selection',entry.publication);
+      return null;
+    }catch{return this.#failure('dom.presentation_unsupported',entry.publication);}
+    finally{this.#rangeWriting--;}
   }
   captureBookmark():BookmarkCapture {
     const guard=this.#guard();if(guard)return guard;
@@ -213,7 +293,7 @@ export class SelectionOwner {
     listen(doc,'focusin',event=>{
       const returning=this.#tabEntry;this.#tabEntry=false;
       if(!owned(event.target)){this.#focusChanged();this.cancel();return;}
-      if(returning && event.target===host && !this.#guard()){
+      if(returning && event.target===host && !this.#rangeWriting && !this.#guard()){
         const state=this.#state();if(!('status' in state))this.configuration.view()?.restoreSelection(state.selection);
       }
     });

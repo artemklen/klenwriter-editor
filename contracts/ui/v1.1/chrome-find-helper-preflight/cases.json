@@ -1,0 +1,93 @@
+{
+  "format": "editor-ui-chrome-find-helper-preflight-cases/1",
+  "status": "SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "baseSourceRevision": "f9aeed2985815670fe2743e0aaeb38754046b482",
+  "scope": "Closed preparation/source validation; not new Node tests, installed rows or a speed claim",
+  "fixedInvocation": {
+    "browser": "chrome",
+    "binary": "same fresh compiled and pinned findKeyHelper",
+    "argv": ["--request", "{}"],
+    "timeoutMs": 5000,
+    "maxBufferBytesPerStream": 32768,
+    "maximumAttempts": 1,
+    "position": "after compile/pins, before browser creation and any physical gesture"
+  },
+  "expectedReply": {
+    "format": "osr42-chrome-find-key-result/1",
+    "status": "refused",
+    "delivery": "not_sent",
+    "method": "CGEvent/cghidEventTap",
+    "request": {},
+    "programId": null,
+    "program": null,
+    "postedTransitions": [],
+    "postedCount": 0,
+    "preflightProofs": [],
+    "core": null,
+    "postcondition": {
+      "status": "not_attempted",
+      "expectedPhase": null,
+      "observedPhase": null,
+      "reads": 0,
+      "proof": null,
+      "diagnostic": null
+    },
+    "diagnostic": {"code": "request", "reason": "Invalid closed request"},
+    "elapsedMs": {"sourceObservedNumber": true, "finite": true, "minimum": 0, "maximum": 5000}
+  },
+  "cases": [
+    {
+      "id": "CW01",
+      "sourceInput": "Fixed empty request is rejected by existing parser before AX or CG source allocation",
+      "expected": {
+        "actualProcessExitCode": 2,
+        "stageStatus": "PASSED",
+        "validationExitCode": 0,
+        "postedCount": 0,
+        "core": null,
+        "AXCalls": 0,
+        "CGAllocations": 0,
+        "CGPosts": 0,
+        "inputAuthorityGranted": false,
+        "helperArtifactsUnchanged": true,
+        "maximumAttempts": 1
+      }
+    },
+    {
+      "id": "CW02",
+      "sourceInputs": [
+        "unexpected rc0 or nonempty stderr",
+        "extra/missing top-level or nested key",
+        "wrong format/status/delivery/method/request",
+        "nonempty program or postedTransitions/preflightProofs, postedCount>0 or nonnull core",
+        "wrong postcondition or diagnostic literal",
+        "negative/nonfinite/nonnumeric elapsed or elapsed>5000"
+      ],
+      "expected": {"stageStatus": "FAILED", "validationExitCode": 1, "browserCreation": 0, "inputAttempts": 0, "retryCalls": 0, "originalRawPreserved": true}
+    },
+    {
+      "id": "CW03",
+      "sourceInputs": ["timeout", "signal", "spawn error", "empty/truncated/malformed JSON", "over-bound stdout/stderr", "binary bytes/hash/mode changes"],
+      "expected": {"stageStatus": "FAILED", "validationExitCode": 1, "browserCreation": 0, "inputAttempts": 0, "retryCalls": 0, "originalRawPreserved": true}
+    },
+    {
+      "id": "CW04",
+      "sourceInput": "Validated preparation followed by a later independent normal Find",
+      "expected": {
+        "preflightReceiptAcceptedAsGuard": false,
+        "newFreshPageAndPreAXGuard": true,
+        "originalCGProgramAndPerEventGuards": true,
+        "originalCGPostcondition": true,
+        "independentFreshSwiftPostFindProof": true,
+        "originalTotalActionBudgetMs": 1000,
+        "performanceImprovementAssumed": false,
+        "oldChrome21Reclassified": false
+      }
+    }
+  ],
+  "newNodeUnitCount": 0,
+  "expectedNodeUnitsUnchanged": 177,
+  "expectedUiBrowserUnchanged": 216,
+  "expectedOverallBrowserUnchanged": 972,
+  "candidateExecution": "NOT_RUN"
+}

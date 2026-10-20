@@ -1,0 +1,174 @@
+{
+  "format": "editor-ui-chrome-find-cg-cases/1",
+  "status": "SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "cases": [
+    {
+      "id": "FD-C01",
+      "testName": "FD-C01 explicit CG Find creates one owned accepted episode",
+      "vectors": [
+        "literal4events exactflags/order",
+        "firstCLOSED",
+        "later onlyexactOPEN/CLOSED",
+        "finalOPEN",
+        "fullcontext+core beforeaccept"
+      ]
+    },
+    {
+      "id": "FD-C02",
+      "testName": "FD-C02 CG Escape closes the accepted original episode",
+      "vectors": [
+        "literal53down/up flagsnone",
+        "firstOPEN",
+        "laterCLOSEDallowed",
+        "finalCLOSED",
+        "no CmdF duringclose"
+      ]
+    },
+    {
+      "id": "FD-C03",
+      "testName": "FD-C03 typed CG refusal before any post clears pending as not_sent",
+      "vectors": [
+        "validfullcontext0posts/core null",
+        "primary pendingcleared+disabled",
+        "no cleanup/newdown",
+        "NOTtypedcleanupzeroUP"
+      ]
+    },
+    {
+      "id": "FD-C04",
+      "testName": "FD-C04 incomplete CG program retains one matching UP-only cleanup",
+      "vectors": [
+        "strictpartialprefix+matchingproofs/core null",
+        "opaque timeout no core",
+        "oneoriginalUP only",
+        "no eventretry"
+      ]
+    },
+    {
+      "id": "FD-C05",
+      "testName": "FD-C05 CG cleanup cannot retry rebind or send another down",
+      "vectors": [
+        "release55up/key3up flagsnone orkey53up only",
+        "typedcleanupnot_sent retainsoriginalpending",
+        "wrongtuple/frame/focus refuses",
+        "oneattempt",
+        "never newdown/normalcontinue"
+      ]
+    },
+    {
+      "id": "FD-C06",
+      "testName": "FD-C06 complete CG core survives final-phase refusal without redundant UP",
+      "vectors": [
+        "allposts/core retained exit0",
+        "postownerrefusal orphaseunobserved",
+        "latevalidcore knowncompleted",
+        "no redundantUP",
+        "original rowFAILED"
+      ]
+    },
+    {
+      "id": "FD-C07",
+      "testName": "FD-C07 mismatched CG owner or literal program never grants authority",
+      "vectors": [
+        "wrongPID/name/bundle/nonce/rootframe/context",
+        "wrongrole/auxcount/outside",
+        "wrongprogram/keycode/flag/order/prefix/core",
+        "wrongcompletecontext cannotgrantfact"
+      ]
+    },
+    {
+      "id": "FD-C08",
+      "testName": "FD-C08 CG opt-in preserves all legacy Safari and ordinary transports",
+      "vectors": [
+        "newprivateChromeonlytransport",
+        "old155testnames/assertions unchanged",
+        "absent retainsAS8/Safari/ordinary",
+        "newhelper no oldguard/ASedits"
+      ]
+    }
+  ],
+  "newUnitFile": "tests/ui-native-find-cg.node.mjs",
+  "import": "one additive import in existing ui-native-input.node.mjs entry",
+  "newUnitCount": 8,
+  "oldUnitCount": 155,
+  "expectedUnitTotal": 163,
+  "browserCaseAddition": 0,
+  "expectedUiBrowser": 216,
+  "expectedOverallBrowser": 972,
+  "oldExpectations": "all unchanged; no inherited PASS for actualCG transport",
+  "compileOnlyMalformedRequestControls": [
+    {
+      "id": "FD-S01",
+      "name": "unknown action rejected before AX/CG",
+      "mutation": {
+        "field": "action",
+        "value": "other"
+      },
+      "expected": {
+        "exit": 2,
+        "status": "refused",
+        "delivery": "not_sent",
+        "postedCount": 0,
+        "core": null,
+        "AXQueries": 0,
+        "CGAllocations": 0,
+        "CGPosts": 0
+      }
+    },
+    {
+      "id": "FD-S02",
+      "name": "numeric cleanupOnly rejected before AX/CG",
+      "mutation": {
+        "field": "cleanupOnly",
+        "value": 0
+      },
+      "expected": {
+        "exit": 2,
+        "status": "refused",
+        "delivery": "not_sent",
+        "postedCount": 0,
+        "core": null,
+        "AXQueries": 0,
+        "CGAllocations": 0,
+        "CGPosts": 0
+      }
+    },
+    {
+      "id": "FD-S03",
+      "name": "requestId trailing LF rejected before AX/CG",
+      "mutation": {
+        "field": "requestId",
+        "operation": "append-LF"
+      },
+      "expected": {
+        "exit": 2,
+        "status": "refused",
+        "delivery": "not_sent",
+        "postedCount": 0,
+        "core": null,
+        "AXQueries": 0,
+        "CGAllocations": 0,
+        "CGPosts": 0
+      }
+    },
+    {
+      "id": "FD-S04",
+      "name": "extra arbitrary keyCode rejected before AX/CG",
+      "mutation": {
+        "extraField": "keyCode",
+        "value": 3
+      },
+      "expected": {
+        "exit": 2,
+        "status": "refused",
+        "delivery": "not_sent",
+        "postedCount": 0,
+        "core": null,
+        "AXQueries": 0,
+        "CGAllocations": 0,
+        "CGPosts": 0
+      }
+    }
+  ],
+  "malformedControlExecutionScope": "root may compile new source and execute ONLY these four invalid requests; no valid owner/helper or native input; not installed acceptance, not extra Node test count"
+}

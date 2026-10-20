@@ -1,0 +1,83 @@
+{
+  "format": "osr42-notes-early-spacing-accent/1",
+  "status": "SOURCE_AUTHORED_BEFORE_NOTES_COMPOSITION_RUNTIME",
+  "scope": "Additional exact input binding for early completion observation only; not protected-window positive acceptance; existing Notes é and KWDJ literals unchanged.",
+  "profile": "org.example.notes",
+  "sourceInput": {
+    "path": "contracts/ui/v1/native-oracles.json",
+    "case": "V06-NC011-root-title-owned-metadata",
+    "sha256": "e064ba58d2c579c3cd9c58937a32a09591c8379a283543b40c2828919fe84470"
+  },
+  "replacementSource": {
+    "path": "contracts/composition/v1/native-oracles.json",
+    "case": "P18-forward",
+    "sha256": "ac17ce35d4dd94f397782ce89fc0567404b3305da1c63a9277309b8c2e16df6c",
+    "qualification": "Only literal U+00B4 input spelling/one UTF16 unit; no cross-profile native evidence transfer."
+  },
+  "inputCanonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"ab\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+  "afterCanonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"a´b\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}",
+  "roles": {
+    "R": [],
+    "D": [
+      0
+    ],
+    "P": [
+      0,
+      0
+    ],
+    "T": [
+      0,
+      0,
+      0
+    ]
+  },
+  "selection": {
+    "anchor": {
+      "kind": "text",
+      "node": "T",
+      "offset": 1,
+      "affinity": "after"
+    },
+    "focus": {
+      "kind": "text",
+      "node": "T",
+      "offset": 1,
+      "affinity": "after"
+    }
+  },
+  "afterSelection": {
+    "anchor": {
+      "kind": "text",
+      "node": "T",
+      "offset": 2,
+      "affinity": "after"
+    },
+    "focus": {
+      "kind": "text",
+      "node": "T",
+      "offset": 2,
+      "affinity": "after"
+    }
+  },
+  "command": {
+    "id": "org.example.notes/command/insert-text",
+    "payload_json": "{\"text\":\"´\"}"
+  },
+  "history_hint": {
+    "kind": "isolated"
+  },
+  "afterText": "a´b",
+  "stampDelta": {
+    "revision": "1",
+    "selection_epoch": "1",
+    "history_epoch": "1"
+  },
+  "documentEvents": 1,
+  "stateEvents": 0,
+  "undoEntries": "1",
+  "redoEntries": "0",
+  "storedMarks": null,
+  "dirty": true,
+  "savedRevision": "0",
+  "identity": "All original IDs at exact roles survive; original root title/tags, node topology and outside payloads unchanged; retained_bytes target-local, never invented."
+}

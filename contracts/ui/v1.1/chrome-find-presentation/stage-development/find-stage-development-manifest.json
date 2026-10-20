@@ -1,0 +1,49 @@
+{
+  "format": "editor-ui-find-stage-development-manifest/1",
+  "status": "FROZEN_SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "head": "2878720b49205058ec4eb573c85334d043e55cee",
+  "sourcePins": [
+    {
+      "path": "scripts/ui-native/input.mjs",
+      "bytes": 37921,
+      "sha256": "5197bd580b38336dbb16ecd4ed0fe69bd28f9a072b879d73cfdcd08fd39d43ea"
+    },
+    {
+      "path": "scripts/ui-native-acceptance.mjs",
+      "bytes": 41968,
+      "sha256": "1d9c968a598a4c030bafeaa8ae7f48d061fd06d6ba51b28b76972e9dfdc0407e"
+    },
+    {
+      "path": "scripts/ui-native/protocol.mjs",
+      "bytes": 3850,
+      "sha256": "cc8c66fac2dbeee57d91132c81873d85c3a29ead246a8ee6407f3684ce1a2ee0"
+    },
+    {
+      "path": "contracts/ui/v1.1/chrome-find-presentation/find-presentation.md",
+      "bytes": 5892,
+      "sha256": "7365918f5f8fb8e29b71dbc16be11ef0c870e3e747fe2f27f43d18e67fd8ebf3"
+    },
+    {
+      "path": "contracts/ui/v1.1/chrome-find-presentation/as-cost/find-as-cost.md",
+      "bytes": 4353,
+      "sha256": "b4dd7f91062432fd3e9f39be228a69c90cf246860b8982a6e548d20fe2073467"
+    }
+  ],
+  "files": [
+    {
+      "path": "find-stage-development.md",
+      "bytes": 4221,
+      "sha256": "43adf85fea0ea09fe709e084a892970c92ee0d2b8b81132dce5e089cfe3eadb9"
+    },
+    {
+      "path": "find-stage-development-cases.json",
+      "bytes": 3316,
+      "sha256": "3d380d5f226fb5bf528c1774e931bdf82ffd5278929555ead554cb5f49f77bc7"
+    },
+    {
+      "path": "chrome12-observation.json",
+      "bytes": 9416,
+      "sha256": "cf337aacf8128da4c151e572907f401f4a4e72ee3c9887c21d5f245149475b26"
+    }
+  ]
+}

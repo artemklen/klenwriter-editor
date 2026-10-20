@@ -1,0 +1,123 @@
+{
+  "format": "editor-ui-safari-ax-passive-preparation-cases/1",
+  "status": "SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "scope": "Safari navigate only; post final bootstrap viewport and validated page-client handshake, before first SA01 call",
+  "originalNavigateMs": 15000,
+  "requestedPassiveWaitMs": 500,
+  "privateReadinessBudgetMs": 2000,
+  "cases": [
+    {
+      "id": "SA02-01",
+      "given": {
+        "handshakeValid": true,
+        "outerRemainingBeforeMs": 2500,
+        "outerRemainingAfterWaitMs": 2000
+      },
+      "expected": {
+        "preparationWaitsMs": [
+          500
+        ],
+        "readinessCalls": 1,
+        "originalDeadlineReset": false,
+        "inputOrAXDuringWait": 0,
+        "unchangedReadinessValidatesFirstProof": true
+      }
+    },
+    {
+      "id": "SA02-02",
+      "given": {
+        "handshakeValid": true,
+        "outerRemainingBeforeMs": 500
+      },
+      "expected": {
+        "preparationWaitsMs": [],
+        "readinessCalls": 0,
+        "status": "abort_original_outer_budget",
+        "inputActions": 0
+      }
+    },
+    {
+      "id": "SA02-03",
+      "given": {
+        "handshakeValid": true,
+        "outerRemainingBeforeMs": 501,
+        "outerRemainingAfterWaitMs": 0
+      },
+      "expected": {
+        "preparationWaitsMs": [
+          500
+        ],
+        "readinessCalls": 0,
+        "status": "abort_original_outer_budget",
+        "inputActions": 0,
+        "noTimerDurationGuarantee": true
+      }
+    },
+    {
+      "id": "SA02-04",
+      "given": {
+        "handshakeValid": true,
+        "outerRemainingBeforeMs": 2500,
+        "firstSA01Proof": "complete19fields contained=false"
+      },
+      "expected": {
+        "preparationWaitsMs": [
+          500
+        ],
+        "readinessCalls": 1,
+        "SA01Samples": 1,
+        "retryAfterInvalidProof": false,
+        "inputActions": 0,
+        "status": "original_immediate_refusal"
+      }
+    },
+    {
+      "id": "SA02-05",
+      "given": {
+        "handshakeValid": true,
+        "outerRemainingBeforeMs": 2500,
+        "firstSA01Proof": "exact old four-field typed viewport-unavailable refusal"
+      },
+      "expected": {
+        "preparationWaitsMs": [
+          500
+        ],
+        "readinessCalls": 1,
+        "unchangedOriginalSA01RetryPolicy": true,
+        "newRetryClasses": [],
+        "maximumSA01Samples": 3
+      }
+    },
+    {
+      "id": "SA02-06",
+      "given": {
+        "handshakeValid": false
+      },
+      "expected": {
+        "preparationWaitsMs": [],
+        "readinessCalls": 0,
+        "originalHandshakeFailureUnchanged": true,
+        "inputActions": 0
+      }
+    }
+  ],
+  "unchanged": {
+    "readinessSuccessExactFields": 19,
+    "readinessTypedRetryExactFields": 4,
+    "SA01MaximumSamples": 3,
+    "SA01MaximumWaits": 2,
+    "SA01WaitMs": 100,
+    "SA01SampleMaxMs": 500,
+    "readinessSourceBytes": true,
+    "guardSourceBytes": true,
+    "fixedASAndInputOwnerBytes": true,
+    "strictContainment": true,
+    "Chrome": true,
+    "existingUnits": 177,
+    "newUnits": 0,
+    "uiBrowser": 216,
+    "overallBrowser": 972
+  },
+  "cause": "UNPROVEN; no AX-coordinate staleness or OS timing bound inferred",
+  "originalSafari10Status": "NOT_RUN_ALL30_ZERO_INPUT_UNCHANGED"
+}

@@ -5,7 +5,7 @@ import { identity } from './package-identity.mjs';
 
 mkdirSync('artifacts/packages', { recursive: true });
 const results = [];
-for (const name of ['wasm', 'sdk', 'dom', 'kwdj', 'vanilla', 'angular']) {
+for (const name of ['wasm', 'sdk', 'dom', 'kwdj', 'vanilla', 'angular', 'ui']) {
   const result = spawnSync('npm', ['pack', '--workspace', identity.web[name].name,
     '--ignore-scripts', '--json', '--pack-destination', 'artifacts/packages'], { encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
@@ -25,4 +25,4 @@ for (const name of ['wasm', 'sdk', 'dom', 'kwdj', 'vanilla', 'angular']) {
   results.push(pack);
 }
 writeFileSync('artifacts/package-inventory.json', JSON.stringify(results, null, 2) + '\n');
-console.log('6 private package tarballs: exports, declarations, assets and license notices verified');
+console.log('7 private package tarballs: exports, declarations, assets and license notices verified');

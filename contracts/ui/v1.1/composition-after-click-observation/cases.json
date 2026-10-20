@@ -1,0 +1,696 @@
+{
+  "format": "osr42-after-click-observation-cases/1",
+  "status": "SOURCE_AUTHORED_BEFORE_SEPARATE_CLASSIFIER_CANDIDATE",
+  "scope": "Only finite ordering/observation policy. Existing default classifier remains unchanged and original04 remains FAILED. No new canonical/native goldens or executed proof.",
+  "cases": [
+    {
+      "id": "AC01",
+      "name": "one expected insert after completed distinct click",
+      "facts": {
+        "sameOriginalMountContextClock": true,
+        "genuineTrustedStart": 100,
+        "preeditCheckpoint": 120,
+        "terminal": {
+          "ordinal": 2,
+          "time": 140,
+          "isTrusted": false
+        },
+        "down": {
+          "ordinal": 3,
+          "time": 150,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "modifiers": [],
+          "targetObject": 101,
+          "isPrimary": true
+        },
+        "up": {
+          "ordinal": 4,
+          "time": 160,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "click": {
+          "ordinal": 5,
+          "time": 161,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "detail": 1,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "nativeInsert": {
+          "startedAt": 170,
+          "finishedAt": 171,
+          "originalExpectedRequestResponse": true,
+          "fullUnchangedNativeSemanticChecks": true
+        },
+        "checkpoint": 180,
+        "otherSemanticCalls": [],
+        "preeditToFinalDomRootObjectsRawRangeFocus": "exact equal",
+        "uiResults": [],
+        "hostDialogs": null,
+        "focusResults": [],
+        "pendingUiAndMountedHostRequests": 0,
+        "documentFocused": "exact equal",
+        "errors": [],
+        "CSP": [],
+        "guardTargetObject": 101
+      },
+      "expected": {
+        "defaultBeforeDown": "FAILED",
+        "afterClick": "UNOBSERVED",
+        "protectedGestureAcceptance": false,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    },
+    {
+      "id": "AC02",
+      "name": "wrong document clock",
+      "facts": {
+        "sameOriginalMountContextClock": false,
+        "genuineTrustedStart": 100,
+        "preeditCheckpoint": 120,
+        "terminal": {
+          "ordinal": 2,
+          "time": 140,
+          "isTrusted": false
+        },
+        "down": {
+          "ordinal": 3,
+          "time": 150,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "modifiers": [],
+          "targetObject": 101,
+          "isPrimary": true
+        },
+        "up": {
+          "ordinal": 4,
+          "time": 160,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "click": {
+          "ordinal": 5,
+          "time": 161,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "detail": 1,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "nativeInsert": {
+          "startedAt": 170,
+          "finishedAt": 171,
+          "originalExpectedRequestResponse": true,
+          "fullUnchangedNativeSemanticChecks": true
+        },
+        "checkpoint": 180,
+        "otherSemanticCalls": [],
+        "preeditToFinalDomRootObjectsRawRangeFocus": "exact equal",
+        "uiResults": [],
+        "hostDialogs": null,
+        "focusResults": [],
+        "pendingUiAndMountedHostRequests": 0,
+        "documentFocused": "exact equal",
+        "errors": [],
+        "CSP": [],
+        "guardTargetObject": 101
+      },
+      "expected": {
+        "defaultBeforeDown": "FAILED",
+        "afterClick": "FAILED",
+        "protectedGestureAcceptance": false,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    },
+    {
+      "id": "AC03",
+      "name": "missing actual trusted click",
+      "facts": {
+        "sameOriginalMountContextClock": true,
+        "genuineTrustedStart": 100,
+        "preeditCheckpoint": 120,
+        "terminal": {
+          "ordinal": 2,
+          "time": 140,
+          "isTrusted": false
+        },
+        "down": {
+          "ordinal": 3,
+          "time": 150,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "modifiers": [],
+          "targetObject": 101,
+          "isPrimary": true
+        },
+        "up": {
+          "ordinal": 4,
+          "time": 160,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "click": null,
+        "nativeInsert": {
+          "startedAt": 170,
+          "finishedAt": 171,
+          "originalExpectedRequestResponse": true,
+          "fullUnchangedNativeSemanticChecks": true
+        },
+        "checkpoint": 180,
+        "otherSemanticCalls": [],
+        "preeditToFinalDomRootObjectsRawRangeFocus": "exact equal",
+        "uiResults": [],
+        "hostDialogs": null,
+        "focusResults": [],
+        "pendingUiAndMountedHostRequests": 0,
+        "documentFocused": "exact equal",
+        "errors": [],
+        "CSP": [],
+        "guardTargetObject": 101
+      },
+      "expected": {
+        "defaultBeforeDown": "FAILED",
+        "afterClick": "FAILED",
+        "protectedGestureAcceptance": false,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    },
+    {
+      "id": "AC04",
+      "name": "insert begins during down/up",
+      "facts": {
+        "sameOriginalMountContextClock": true,
+        "genuineTrustedStart": 100,
+        "preeditCheckpoint": 120,
+        "terminal": {
+          "ordinal": 2,
+          "time": 140,
+          "isTrusted": false
+        },
+        "down": {
+          "ordinal": 3,
+          "time": 150,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "modifiers": [],
+          "targetObject": 101,
+          "isPrimary": true
+        },
+        "up": {
+          "ordinal": 4,
+          "time": 160,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "click": {
+          "ordinal": 5,
+          "time": 161,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "detail": 1,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "nativeInsert": {
+          "startedAt": 155,
+          "finishedAt": 156,
+          "originalExpectedRequestResponse": true,
+          "fullUnchangedNativeSemanticChecks": true
+        },
+        "checkpoint": 180,
+        "otherSemanticCalls": [],
+        "preeditToFinalDomRootObjectsRawRangeFocus": "exact equal",
+        "uiResults": [],
+        "hostDialogs": null,
+        "focusResults": [],
+        "pendingUiAndMountedHostRequests": 0,
+        "documentFocused": "exact equal",
+        "errors": [],
+        "CSP": [],
+        "guardTargetObject": 101
+      },
+      "expected": {
+        "defaultBeforeDown": "FAILED",
+        "afterClick": "FAILED",
+        "protectedGestureAcceptance": false,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    },
+    {
+      "id": "AC05",
+      "name": "additional Strong command",
+      "facts": {
+        "sameOriginalMountContextClock": true,
+        "genuineTrustedStart": 100,
+        "preeditCheckpoint": 120,
+        "terminal": {
+          "ordinal": 2,
+          "time": 140,
+          "isTrusted": false
+        },
+        "down": {
+          "ordinal": 3,
+          "time": 150,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "modifiers": [],
+          "targetObject": 101,
+          "isPrimary": true
+        },
+        "up": {
+          "ordinal": 4,
+          "time": 160,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "click": {
+          "ordinal": 5,
+          "time": 161,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "detail": 1,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "nativeInsert": {
+          "startedAt": 170,
+          "finishedAt": 171,
+          "originalExpectedRequestResponse": true,
+          "fullUnchangedNativeSemanticChecks": true
+        },
+        "checkpoint": 180,
+        "otherSemanticCalls": [
+          "org.klenwriter.kwdj/command/toggle-mark"
+        ],
+        "preeditToFinalDomRootObjectsRawRangeFocus": "exact equal",
+        "uiResults": [],
+        "hostDialogs": null,
+        "focusResults": [],
+        "pendingUiAndMountedHostRequests": 0,
+        "documentFocused": "exact equal",
+        "errors": [],
+        "CSP": [],
+        "guardTargetObject": 101
+      },
+      "expected": {
+        "defaultBeforeDown": "FAILED",
+        "afterClick": "FAILED",
+        "protectedGestureAcceptance": false,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    },
+    {
+      "id": "AC06",
+      "name": "untrusted pointerdown",
+      "facts": {
+        "sameOriginalMountContextClock": true,
+        "genuineTrustedStart": 100,
+        "preeditCheckpoint": 120,
+        "terminal": {
+          "ordinal": 2,
+          "time": 140,
+          "isTrusted": false
+        },
+        "down": {
+          "ordinal": 3,
+          "time": 150,
+          "isTrusted": false,
+          "button": 0,
+          "pointerId": 17,
+          "modifiers": [],
+          "targetObject": 101,
+          "isPrimary": true
+        },
+        "up": {
+          "ordinal": 4,
+          "time": 160,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "click": {
+          "ordinal": 5,
+          "time": 161,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "detail": 1,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "nativeInsert": {
+          "startedAt": 170,
+          "finishedAt": 171,
+          "originalExpectedRequestResponse": true,
+          "fullUnchangedNativeSemanticChecks": true
+        },
+        "checkpoint": 180,
+        "otherSemanticCalls": [],
+        "preeditToFinalDomRootObjectsRawRangeFocus": "exact equal",
+        "uiResults": [],
+        "hostDialogs": null,
+        "focusResults": [],
+        "pendingUiAndMountedHostRequests": 0,
+        "documentFocused": "exact equal",
+        "errors": [],
+        "CSP": [],
+        "guardTargetObject": 101
+      },
+      "expected": {
+        "defaultBeforeDown": "FAILED",
+        "afterClick": "FAILED",
+        "protectedGestureAcceptance": false,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    },
+    {
+      "id": "AC07",
+      "name": "wrong insert request payload",
+      "facts": {
+        "sameOriginalMountContextClock": true,
+        "genuineTrustedStart": 100,
+        "preeditCheckpoint": 120,
+        "terminal": {
+          "ordinal": 2,
+          "time": 140,
+          "isTrusted": false
+        },
+        "down": {
+          "ordinal": 3,
+          "time": 150,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "modifiers": [],
+          "targetObject": 101,
+          "isPrimary": true
+        },
+        "up": {
+          "ordinal": 4,
+          "time": 160,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "click": {
+          "ordinal": 5,
+          "time": 161,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "detail": 1,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "nativeInsert": {
+          "startedAt": 170,
+          "finishedAt": 171,
+          "originalExpectedRequestResponse": false,
+          "fullUnchangedNativeSemanticChecks": true
+        },
+        "checkpoint": 180,
+        "otherSemanticCalls": [],
+        "preeditToFinalDomRootObjectsRawRangeFocus": "exact equal",
+        "uiResults": [],
+        "hostDialogs": null,
+        "focusResults": [],
+        "pendingUiAndMountedHostRequests": 0,
+        "documentFocused": "exact equal",
+        "errors": [],
+        "CSP": [],
+        "guardTargetObject": 101
+      },
+      "expected": {
+        "defaultBeforeDown": "FAILED",
+        "afterClick": "FAILED",
+        "protectedGestureAcceptance": false,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    },
+    {
+      "id": "AC08",
+      "name": "ambiguous additional terminal",
+      "facts": {
+        "sameOriginalMountContextClock": true,
+        "genuineTrustedStart": 100,
+        "preeditCheckpoint": 120,
+        "terminal": {
+          "ordinal": 2,
+          "time": 140,
+          "isTrusted": false
+        },
+        "down": {
+          "ordinal": 3,
+          "time": 150,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "modifiers": [],
+          "targetObject": 101,
+          "isPrimary": true
+        },
+        "up": {
+          "ordinal": 4,
+          "time": 160,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "click": {
+          "ordinal": 5,
+          "time": 161,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "detail": 1,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "nativeInsert": {
+          "startedAt": 170,
+          "finishedAt": 171,
+          "originalExpectedRequestResponse": true,
+          "fullUnchangedNativeSemanticChecks": true
+        },
+        "checkpoint": 180,
+        "otherSemanticCalls": [],
+        "preeditToFinalDomRootObjectsRawRangeFocus": "exact equal",
+        "uiResults": [],
+        "hostDialogs": null,
+        "focusResults": [],
+        "pendingUiAndMountedHostRequests": 0,
+        "documentFocused": "exact equal",
+        "errors": [],
+        "CSP": [],
+        "additionalTerminal": {
+          "ordinal": 3,
+          "time": 145,
+          "isTrusted": false
+        },
+        "guardTargetObject": 101
+      },
+      "expected": {
+        "defaultBeforeDown": "FAILED",
+        "afterClick": "FAILED",
+        "protectedGestureAcceptance": false,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    },
+    {
+      "id": "AC09",
+      "name": "changed provisional objects/range/focus",
+      "facts": {
+        "sameOriginalMountContextClock": true,
+        "genuineTrustedStart": 100,
+        "preeditCheckpoint": 120,
+        "terminal": {
+          "ordinal": 2,
+          "time": 140,
+          "isTrusted": false
+        },
+        "down": {
+          "ordinal": 3,
+          "time": 150,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "modifiers": [],
+          "targetObject": 101,
+          "isPrimary": true
+        },
+        "up": {
+          "ordinal": 4,
+          "time": 160,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "click": {
+          "ordinal": 5,
+          "time": 161,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "detail": 1,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "nativeInsert": {
+          "startedAt": 170,
+          "finishedAt": 171,
+          "originalExpectedRequestResponse": true,
+          "fullUnchangedNativeSemanticChecks": true
+        },
+        "checkpoint": 180,
+        "otherSemanticCalls": [],
+        "preeditToFinalDomRootObjectsRawRangeFocus": "different",
+        "uiResults": [],
+        "hostDialogs": null,
+        "focusResults": [],
+        "pendingUiAndMountedHostRequests": 0,
+        "documentFocused": "exact equal",
+        "errors": [],
+        "CSP": [],
+        "guardTargetObject": 101
+      },
+      "expected": {
+        "defaultBeforeDown": "FAILED",
+        "afterClick": "FAILED",
+        "protectedGestureAcceptance": false,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    },
+    {
+      "id": "AC10",
+      "name": "UI result/pending or host dialog",
+      "facts": {
+        "sameOriginalMountContextClock": true,
+        "genuineTrustedStart": 100,
+        "preeditCheckpoint": 120,
+        "terminal": {
+          "ordinal": 2,
+          "time": 140,
+          "isTrusted": false
+        },
+        "down": {
+          "ordinal": 3,
+          "time": 150,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "modifiers": [],
+          "targetObject": 101,
+          "isPrimary": true
+        },
+        "up": {
+          "ordinal": 4,
+          "time": 160,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "click": {
+          "ordinal": 5,
+          "time": 161,
+          "isTrusted": true,
+          "button": 0,
+          "pointerId": 17,
+          "detail": 1,
+          "targetObject": 101,
+          "isPrimary": true,
+          "modifiers": []
+        },
+        "nativeInsert": {
+          "startedAt": 170,
+          "finishedAt": 171,
+          "originalExpectedRequestResponse": true,
+          "fullUnchangedNativeSemanticChecks": true
+        },
+        "checkpoint": 180,
+        "otherSemanticCalls": [],
+        "preeditToFinalDomRootObjectsRawRangeFocus": "exact equal",
+        "uiResults": [
+          {
+            "status": "submitted"
+          }
+        ],
+        "hostDialogs": null,
+        "focusResults": [],
+        "pendingUiAndMountedHostRequests": 1,
+        "documentFocused": "exact equal",
+        "errors": [],
+        "CSP": [],
+        "guardTargetObject": 101
+      },
+      "expected": {
+        "defaultBeforeDown": "FAILED",
+        "afterClick": "FAILED",
+        "protectedGestureAcceptance": false,
+        "nativePositiveFromUntrustedTerminal": false
+      }
+    }
+  ],
+  "closedBoundaryChecks": {
+    "startEqualClick": "eligible only with separate event order and all other proof",
+    "returnEqualCheckpoint": "eligible",
+    "insertBeforeClickOrUnknownReturn": "FAILED",
+    "twoCommands": "FAILED",
+    "missingSameMountOrClock": "FAILED",
+    "missingFullSemanticVerifier": "FAILED"
+  }
+}

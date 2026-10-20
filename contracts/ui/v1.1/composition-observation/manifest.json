@@ -1,0 +1,68 @@
+{
+  "format": "osr42-composition-observation-source-manifest/1",
+  "status": "SOURCE_AUTHORED_PROPOSAL_NOT_FREEZE_OR_ACCEPTANCE",
+  "createdAt": "2026-10-20T00:07:50.360750+00:00",
+  "files": [
+    {
+      "path": "observation.md",
+      "bytes": 2127,
+      "sha256": "58f6c639f03f415cc685ad5d5926d1c26755790ef3b798fc594e408e56afa2a6"
+    },
+    {
+      "path": "cases.json",
+      "bytes": 3892,
+      "sha256": "dbaca8b2b133ac449bd033d0293e9c3fe02a4b4911cc0a7b37d2f62eba009fc9"
+    }
+  ],
+  "sourcePins": [
+    {
+      "path": "spikes/workspace/ui-host.js",
+      "bytes": 23096,
+      "sha256": "585d51964297cd2b2dc7745fb3d4c1381d2d9ecfb08e2c5ecea0065d433ad9f8"
+    },
+    {
+      "path": "scripts/ui-native/page-fixture.mjs",
+      "bytes": 13001,
+      "sha256": "b368767624ca7cf8ae9639b1559f4ca45f52c798dc3f4916217476b4ccdcb4f9"
+    },
+    {
+      "path": "scripts/ui-native-acceptance.mjs",
+      "bytes": 38671,
+      "sha256": "8b9492e38a730a0fc449ac9bad8e4ba1f34a88813e342e93904ffdd5ebcc7577"
+    }
+  ],
+  "historicalChrome03": {
+    "path": "/tmp/osr-42-installed-development-ece2996-03/chrome/chrome.json",
+    "sha256": "7de3f1b0c6470e8ca5f11f808b4cfcb62e7c7f730fb80ff58b6d62b3d823aa04",
+    "originalStatus": "FAILED",
+    "originalCounts": {
+      "PASS": 10,
+      "REFUSED": 0,
+      "FAILED": 1,
+      "UNOBSERVED": 0,
+      "UNSUPPORTED": 0,
+      "NOT_RUN": 19
+    },
+    "failureCase": "composition-format",
+    "locale": "en",
+    "terminal": {
+      "time": 32508.90000000596,
+      "isTrusted": false
+    },
+    "pointerdown": {
+      "time": 32509.40000000596,
+      "isTrusted": true
+    },
+    "postGestureOpenFlag": true,
+    "nativeCallRecordFields": [
+      "ordinal",
+      "requestJson",
+      "responseJson"
+    ],
+    "canRetroclassify": false
+  },
+  "nativeOracleChanges": false,
+  "runtimeOrNativeInputExecuted": false,
+  "repoEdits": false,
+  "sourceStableDuringAuthoring": true
+}
