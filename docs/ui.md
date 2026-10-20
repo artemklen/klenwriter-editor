@@ -69,6 +69,10 @@ ancestors, например «Документ / Контейнер». Он св
 Composition блокирует конфликтующие controls, сохраняя native provisional input.
 Read-only сохраняет selection/copy/Find; disabled не предоставляет editing focus.
 После отказа требуется новое явное действие; позднего replay нет.
+Причина недоступности остаётся в `aria-describedby` и показывается при hover/focus
+вне flow controls; focus имеет приоритет. Она не сдвигает editor или Add. Floating
+gutter сохраняет scroll bounds и показывает причину в ограниченной viewport-panel
+для обычного embedding; transformed/clipped hosts не получают обещания escape.
 
 Pointer click связан с тем же control и genuine request, который захвачен на
 его pointerdown. Если down отклонён или исходный request инвалидирован сменой

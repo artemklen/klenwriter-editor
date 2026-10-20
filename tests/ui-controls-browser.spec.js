@@ -335,7 +335,7 @@ test('PG06 controlled admitted down cannot recapture after explicit host selecti
 // Additive source draft for tests/ui-controls-browser.spec.js; retain all old cases.
 const rlPath='contracts/ui/v1.1/reason-layout-cases.json',rlBytes=readFileSync(rlPath),rl=JSON.parse(rlBytes);
 async function rlFrames(page){await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));}
-async function rlRaw(page,id){return page.evaluate(id=>{
+async function rlRaw(page,id){const value=await page.evaluate(id=>{
   const wrapper=document.getElementById(id),editor=document.getElementById(`${id}-editor`),toolbar=wrapper.querySelector('[role=toolbar]'),add=wrapper.querySelector('[data-editor-ui-control=add]');
   window.rlObjects??=new WeakMap();window.rlSerial??=0;const token=node=>{if(!node)return null;if(!window.rlObjects.has(node))window.rlObjects.set(node,++window.rlSerial);return window.rlObjects.get(node);};
   const rect=node=>{const r=node.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height};};
@@ -344,7 +344,7 @@ async function rlRaw(page,id){return page.evaluate(id=>{
   const s=document.getSelection();return {toolbarAllocatedHeight:toolbar.offsetHeight,toolbarAllocatedWidth:toolbar.offsetWidth,toolbarSlotHeight:toolbar.parentElement.getBoundingClientRect().height,
     editorRect:rect(editor),addRect:rect(add),editorHtml:editor.outerHTML,objects,active:token(document.activeElement),selection:s?{rangeCount:s.rangeCount,anchor:token(s.anchorNode),anchorOffset:s.anchorOffset,focus:token(s.focusNode),focusOffset:s.focusOffset}:null,
     scroll:{window:[scrollX,scrollY],ancestors},buttons:[...toolbar.querySelectorAll('button')].map(n=>({object:token(n),parent:token(n.parentNode),key:n.dataset.editorUiAction,label:n.textContent})),addObject:token(add),status:wrapper.querySelector('[role=status]').textContent};
-},id);}
+},id);const record=records.get(page);(record.reasonLayout??=[]).push({id,label:record.checkpoints.at(-1)?.label??null,value});return value;}
 function rlNear(after,before){expect(Math.abs(after-before)).toBeLessThanOrEqual(rl.toleranceCssPx);}
 function rlFlow(after,before){for(const key of ['toolbarAllocatedHeight','toolbarAllocatedWidth','toolbarSlotHeight'])rlNear(after[key],before[key]);for(const role of ['editorRect','addRect'])for(const key of ['x','y','width','height'])rlNear(after[role][key],before[role][key]);}
 function rlBrowser(after,before,{focus=true}={}){for(const key of ['editorHtml','objects','selection','scroll','buttons','addObject'])expect(after[key],key).toEqual(before[key]);if(focus)expect(after.active).toBe(before.active);}
@@ -352,7 +352,7 @@ async function rlReason(page,button,expected){
   const ids=(await button.getAttribute('aria-describedby')).split(/\s+/),reason=page.locator(`[id="${ids[0]}"]`);expect(await reason.textContent()).toBe(expected);await expect(reason).toBeVisible();
   const paint=await reason.evaluate(node=>{const s=getComputedStyle(node),r=document.createRange();r.selectNodeContents(node);return {visibility:s.visibility,opacity:s.opacity,pointerEvents:s.pointerEvents,position:s.position,viewport:{width:innerWidth,height:innerHeight},scrollWidth:node.scrollWidth,clientWidth:node.clientWidth,scrollHeight:node.scrollHeight,clientHeight:node.clientHeight,fragments:[...r.getClientRects()].map(r=>({x:r.x,y:r.y,width:r.width,height:r.height}))};});
   expect(paint.visibility).toBe('visible');expect(Number(paint.opacity)).toBeGreaterThan(0);expect(paint.pointerEvents).toBe('none');expect(paint.scrollWidth).toBeLessThanOrEqual(paint.clientWidth+1);expect(paint.scrollHeight).toBeLessThanOrEqual(paint.clientHeight+1);expect(paint.fragments.length).toBeGreaterThan(0);
-  for(const r of paint.fragments){expect(r.x).toBeGreaterThanOrEqual(-rl.toleranceCssPx);expect(r.y).toBeGreaterThanOrEqual(-rl.toleranceCssPx);expect(r.x+r.width).toBeLessThanOrEqual(paint.viewport.width+rl.toleranceCssPx);expect(r.y+r.height).toBeLessThanOrEqual(paint.viewport.height+rl.toleranceCssPx);}return {reason,paint};
+  for(const r of paint.fragments){expect(r.x).toBeGreaterThanOrEqual(-rl.toleranceCssPx);expect(r.y).toBeGreaterThanOrEqual(-rl.toleranceCssPx);expect(r.x+r.width).toBeLessThanOrEqual(paint.viewport.width+rl.toleranceCssPx);expect(r.y+r.height).toBeLessThanOrEqual(paint.viewport.height+rl.toleranceCssPx);}(records.get(page).reasonPaint??=[]).push({expected,paint});return {reason,paint};
 }
 for(const variant of rl.variants)test(`RL01 ${variant.locale} ${variant.layoutScale*100}%: availability reasons preserve flow and fixed Add gesture while remaining visible`,async({page})=>{
   records.get(page).frozen.push({path:rlPath,bytes:rlBytes.length,sha256:receiptHash(rlBytes)});await page.setViewportSize(variant.viewport);
