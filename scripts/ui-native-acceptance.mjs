@@ -26,7 +26,7 @@ const pin=path=>{const bytes=readFileSync(resolve(root,path));return {path,bytes
 const absolutePin=path=>({...pin(path),path:resolve(path)});
 const walk=path=>readdirSync(path,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()?walk(`${path}/${entry.name}`):entry.isFile()?[`${path}/${entry.name}`]:[]);
 const report={format:'editor-ui-installed/1',browser:browserName,expectedHead,status:'NOT_RUN',startedAt:now(),locales:['en','ru'].map(locale=>({locale,inputSourceId:locale==='en'?'com.apple.keylayout.US':'com.apple.keylayout.Russian',cases:caseIds.map(caseId=>({locale,caseId,status:'NOT_RUN',actualActionCount:0,preparation:[],checkpoints:[],startedAt:null}))})),physicalActions:[],setup:[],restoration:null,
-  scope:'Installed macOS browser; finite42 scenarios, public mounted SDK/native readbacks and original request/response traces. Strict scoped System Events keys, closed Chrome Find CGEvent keys and CGEvent clicks are platform input, not hardware-device provenance. Native preedit windows missing from actual trusted traces remain UNOBSERVED. No synthetic fallback, AT/CJK/mobile claim, previous41 evidence reuse or independent formal-review verdict.'};
+  scope:'Installed macOS browser; finite42 scenarios, public mounted SDK/native readbacks and original request/response traces. Strict scoped System Events keys, closed Chrome Find/Zoom CGEvent keys and CGEvent clicks are platform input, not hardware-device provenance. Native preedit windows missing from actual trusted traces remain UNOBSERVED. No synthetic fallback, AT/CJK/mobile claim, previous41 evidence reuse or independent formal-review verdict.'};
 if(developmentCase!==undefined)report.development={"environment":"OSR42_NATIVE_DEVELOPMENT_CASE","caseId":"modes-zoom","selectedCases":2,"excludedCases":28,"coverage":"INCOMPLETE","acceptance":false};
 const save=()=>writeFileSync(outputPath,JSON.stringify(report,null,2)+'\n');save();
 function run(command,argv,{fullStdout=false,timeout=30000,maxBuffer=1024*1024}={}){
@@ -199,6 +199,11 @@ async function perform(entry,prepared){
   const zoomed=await checkpoint(entry,'actual browser zoom200, no CSS zoom/emulation');assert.ok(Math.abs(zoomed.viewport.pageZoom-2)<.01);
   const physicalWindow=action=>action.proof?.keyGuard?.axWindow??action.proof?.actual?.axWindow,baselineWindow=physicalWindow(report.physicalActions.find(action=>physicalWindow(action))),zoomWindow=physicalWindow(report.physicalActions.at(-1));assert.deepEqual(zoomWindow,baselineWindow);
   entry.zoom={actual:zoomed.viewport,evidence:zoomed.zoomEvidence,baselineWindow,zoomWindow,method:'Guarded native browser CmdPlus; baseline/current CSS viewport width at independently measured fixed AX window, DPR/JS outer dimensions recorded as crosschecks'};
+  if(browserName==='chrome'){
+    entry.zoomUiSettling={method:'fixed passive preparation wait',requestedDurationMs:2000,startedAt:now(),scope:'No input, read, reactivation, retry or authority during the wait. Following ordinary input requires its original fresh page/AX/System Events guards; no browser UI duration guarantee.'};save();
+    await wait(2000);entry.zoomUiSettling.finishedAt=now();
+    const afterWait=await adapter.call('inspect');assert.ok(Math.abs(afterWait.viewport.pageZoom-2)<.01,'Actual zoom200 persists after passive preparation');entry.zoomUiSettling.followingViewport=afterWait.viewport;
+  }
   entry.preparation.push(await adapter.call('setup','editor'));focused(await physical(entry,'shift-tab'),'strong');const focus=await checkpoint(entry,'actual focus at browser zoom200');
   const wanted=entry.locale==='ru'?['Полужирный','Курсив']:['Bold','Italic'];for(const [index,action]of ['strong','emphasis'].entries()){const c=focus.controls.find(c=>c.action===action);assert.equal(c.name,wanted[index]);assert.ok(c.rect.width>=32&&c.rect.height>=32);assert.ok(c.rect.x>=0&&c.rect.x+c.rect.width<=focus.viewport.width+.5);}
   const focusedControl=focus.controls.find(c=>c.action==='strong');assert.ok(focusedControl.outline.style!=='none'&&parseFloat(focusedControl.outline.width)>0);

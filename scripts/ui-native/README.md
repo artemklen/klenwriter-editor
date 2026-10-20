@@ -83,6 +83,14 @@ The [CS01 sampling addendum](../../contracts/ui/v1.1/chrome-find-presentation/cg
 spreads at most12 read-only phase checks within that same budget, with waits of
 at most64ms and a16ms response reserve. It changes no event or final phase check.
 
+The separate [Chrome Zoom contract](../../contracts/ui/v1.1/chrome-zoom-cg/chrome-zoom-cg.md)
+uses an isolated branch of the same compiled helper for the fixed CmdPlus/Cmd0
+programs and matching UP-only cleanup. Each event keeps the ordinary full native
+WebArea measurement and original PID/root frame. A fresh ordinary postproof follows
+the complete posting receipt. At measured200%, Chrome gets one passive2000ms
+preparation wait before ordinary focus navigation; this grants no input authority.
+The next action still needs its original fresh page, AX and System Events guards.
+
 For targeted development only, the exact environment value
 `OSR42_NATIVE_DEVELOPMENT_CASE=modes-zoom` selects the existing EN/RU modes rows.
 All30 report rows remain: the other28 are explicitly NOT_RUN, and two PASS still

@@ -210,7 +210,7 @@ export const fixedKeyScript=requireFixture+findPostGuardDiagnostic+chromeFindPre
  error "Unknown closed UI42 key"
 end run
 `;
-export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,record,guard,cleanupGuard,mountedId,nativeFindEpisode,nativeFindKeyTransport,findKeyHelper}){
+export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,record,guard,cleanupGuard,mountedId,nativeFindEpisode,nativeFindKeyTransport,findKeyHelper,nativeZoomKeyTransport}){
   assert.ok(['chrome','safari'].includes(browser));assert.match(config.nonce,/^[a-f0-9]{32}$/);assert.equal(config.fixtureUrl,'http://127.0.0.1:4174/ui');assert.equal(config.title,'KlenWriter UI native '+config.nonce);
   let disabled=false,serial=0,pending=null,cleanupUsed=false,baselineWindow=null;
   const nativeFind=nativeFindEpisode==='chrome-fd01';
@@ -218,7 +218,10 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
   if(nativeFind){assert.equal(config.nonce.length,32);assert.equal(Buffer.byteLength(config.nonce,'utf8'),32);assert.ok(!/[^a-f0-9]/.test(config.nonce));}
   const nativeFindCg=nativeFindKeyTransport==='cg-fd02';
   assert.ok(nativeFindKeyTransport===undefined||nativeFindCg&&nativeFind&&browser==='chrome','Closed Chrome Find CG transport only');
-  assert.ok(nativeFindCg?typeof findKeyHelper==='string'&&findKeyHelper.startsWith('/')&&findKeyHelper.length<=4096&&!findKeyHelper.includes('\0'):findKeyHelper===undefined,'CG transport requires its fixed helper path');
+  const nativeZoomCg=nativeZoomKeyTransport==='cg-zoom01';
+  assert.ok(nativeZoomKeyTransport===undefined||nativeZoomCg&&browser==='chrome','Closed Chrome Zoom CG transport only');
+  if(nativeZoomCg){assert.equal(config.nonce.length,32);assert.equal(Buffer.byteLength(config.nonce,'utf8'),32);assert.ok(!/[^a-f0-9]/.test(config.nonce));}
+  assert.ok((nativeFindCg||nativeZoomCg)?typeof findKeyHelper==='string'&&findKeyHelper.startsWith('/')&&findKeyHelper.length<=4096&&!findKeyHelper.includes('\0'):findKeyHelper===undefined,'CG transport requires its fixed helper path');
   let findEpisode=null,findBusy=false,findEpoch=0;
   function whole(value,pattern){assert.equal(typeof value,'string');const match=pattern.exec(value);assert.ok(match&&match[0]===value,'Exact private Find identifier required');}
   const findKeys=['format','status','delivery','measurement','purpose','browser','nonce','title','fixtureUrl','mountedId','caseId','findRequestId','requestId','serial','frontPid','frontBundle','expectedAxWindowTitle','observedAxWindowTitle','axWindowCount','axWindow','rootFocused','rootRole','rootSubrole','findAux','contained','elapsedMs','nativeFindPhase'];
@@ -286,6 +289,64 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
     if(value.status==='not_attempted'){assert.equal(value.reads,0);assert.equal(value.proof,null);assert.equal(value.observedPhase,null);return null;}
     assert.equal(value.status,'verified','CG Find final phase '+value.status);assert.ok(value.reads>0);assert.ok(value.proof);assert.ok(expected==='either'||value.observedPhase===expected);return value.observedPhase;
   }
+  const zoomPrograms={
+    'zoom-in':[{keyCode:55,down:true,flags:'command'},{keyCode:56,down:true,flags:'command+shift'},{keyCode:24,down:true,flags:'command+shift'},{keyCode:24,down:false,flags:'command+shift'},{keyCode:56,down:false,flags:'command'},{keyCode:55,down:false,flags:'none'}],
+    'zoom-reset':[{keyCode:55,down:true,flags:'command'},{keyCode:29,down:true,flags:'command'},{keyCode:29,down:false,flags:'command'},{keyCode:55,down:false,flags:'none'}],
+    'release-zoom-in':[{keyCode:55,down:false,flags:'none'},{keyCode:56,down:false,flags:'none'},{keyCode:24,down:false,flags:'none'}],
+    'release-zoom-reset':[{keyCode:55,down:false,flags:'none'},{keyCode:29,down:false,flags:'none'}],
+  };
+  function zoomGeometry(actual,request){
+    const r=frame(actual.axWindow),v=frame(actual.axViewport);assert.deepEqual(r,request.originalRootFrame);
+    assert.ok(v.x>=r.x-.5&&v.y>=r.y-.5&&v.x+v.width<=r.x+r.width+.5&&v.y+v.height<=r.y+r.height+.5);
+    assert.ok(Math.abs(v.width-request.viewport.width*request.viewport.pageZoom)<=2&&Math.abs(v.height-request.viewport.height*request.viewport.pageZoom)<=2);
+    assert.ok(Number.isSafeInteger(actual.axWindowCount)&&actual.axWindowCount>=1&&actual.axWindowCount<=32);
+  }
+  function zoomOrdinaryProof(actual,request,pid,rootFrame){
+    for(const [name,value]of Object.entries({status:'guarded',delivery:'not_sent',cleanupOnly:request.cleanupOnly,frontBundle:'com.google.Chrome',frontPid:pid,expectedAxWindowTitle:config.title+' - Google Chrome',observedAxWindowTitle:config.title+' - Google Chrome',action:request.action,requestId:request.requestId,nonce:config.nonce,mountedId:request.mountedId,caseId:'modes-zoom',target:'focused'}))assert.equal(actual[name],value,'Zoom ordinary proof '+name);
+    zoomGeometry(actual,{...request,originalRootFrame:rootFrame});fixedWindow(actual.axWindow);
+  }
+  function zoomEnvelope(value,request){
+    exactKeys(value,['format','status','delivery','method','request','programId','program','postedTransitions','postedCount','preflightProofs','core','diagnostic','elapsedMs']);
+    assert.equal(value.format,'osr42-chrome-zoom-key-result/1');assert.equal(value.method,'CGEvent/cghidEventTap');assert.deepEqual(value.request,request);
+    const id=(request.cleanupOnly?'release-':'')+request.action,program=zoomPrograms[id];assert.equal(value.programId,id);assert.deepEqual(value.program,program);
+    assert.ok(Number.isSafeInteger(value.postedCount)&&value.postedCount>=0&&value.postedCount<=program.length);assert.deepEqual(value.postedTransitions,program.slice(0,value.postedCount));assert.ok(Array.isArray(value.preflightProofs));assert.equal(value.preflightProofs.length,value.postedCount);
+    for(const p of value.preflightProofs){
+      exactKeys(p,['frontPid','frontName','frontBundle','expectedAxWindowTitle','observedAxWindowTitle','axWindowCount','axMatchCount','axWindow','axViewport','contained','visitedNodes','maximumDepth','rootFocused']);
+      for(const [k,v]of Object.entries({frontPid:request.originalPid,frontName:'Google Chrome',frontBundle:'com.google.Chrome',expectedAxWindowTitle:config.title+' - Google Chrome',observedAxWindowTitle:config.title+' - Google Chrome',axMatchCount:1,contained:true,rootFocused:true}))assert.equal(p[k],v,'Zoom per-post proof '+k);
+      assert.ok(Number.isSafeInteger(p.visitedNodes)&&p.visitedNodes>=1&&p.visitedNodes<=512);assert.ok(Number.isSafeInteger(p.maximumDepth)&&p.maximumDepth>=0&&p.maximumDepth<=32);zoomGeometry(p,request);
+    }
+    cgDiagnostic(value.diagnostic);assert.ok(Number.isFinite(value.elapsedMs)&&value.elapsedMs>=0);return program;
+  }
+  async function performZoom(action,cleanup){
+    assert.equal(findBusy,false,'One private key operation at a time');if(!cleanup){assert.equal(disabled,false);assert.equal(findEpisode,null,'Zoom cannot use an active Find episode');}
+    findBusy=true;let proof=null,preflight=null,execution=null,postflight=null,nativeZoomKeyResult=null,dispatched=false,completed=false,knownNotSent=false;
+    try{
+      const saved=cleanup?pending:null;if(cleanup){assert.ok(saved&&!saved.pointer&&!cleanupUsed);assert.equal(saved.action,action);cleanupUsed=true;}
+      syncFindMount();const epoch=findEpoch;proof=await(cleanup?cleanupGuard(action):guard(action));assert.equal(findEpoch,epoch,'Zoom owner retired during page guard');const v=pageFind(proof,action,cleanup);
+      if(cleanup){assert.equal(mountedId(),saved.mount);assert.equal(v.caseId,saved.caseId);}
+      const original={format:'osr42-native-input/1',browser:'chrome',nonce:config.nonce,title:config.title,fixtureUrl:config.fixtureUrl,mountedId:mountedId(),requestId:proof.id,serial:v.serial,caseId:v.caseId,action,target:'focused',point:null,viewport:v.viewport,pointerDown:false,cleanupOnly:cleanup,deadlineMs:remainingFind(proof)};
+      preflight=run(inputHelper,['--guard-key',JSON.stringify(original)],{timeout:original.deadlineMs,fullStdout:true,maxBuffer:32768});const strict=JSON.parse(preflight.stdout),pid=cleanup?saved.pid:strict.frontPid,rootFrame=cleanup?saved.rootFrame:frame(strict.axWindow);
+      assert.ok(Number.isSafeInteger(pid)&&pid>0&&pid<=2147483647);zoomOrdinaryProof(strict,original,pid,rootFrame);assert.equal(findEpoch,epoch);assert.equal(original.mountedId,mountedId());
+      const left=remainingFind(proof),request={...original,format:'osr42-chrome-zoom-key/1',deadlineMs:left,originalPid:pid,originalRootFrame:{...rootFrame}};assert.ok(Buffer.byteLength(JSON.stringify(request))<=4096);
+      pending={action,pointer:false,pid,mount:mountedId(),caseId:v.caseId,rootFrame:{...rootFrame}};dispatched=true;
+      try{execution=run(findKeyHelper,['--zoom-request',JSON.stringify(request)],{timeout:left,fullStdout:true,maxBuffer:32768});}catch(error){execution=error.execution??null;if(!execution?.stdout)throw error;}
+      nativeZoomKeyResult=JSON.parse(execution.stdout);const program=zoomEnvelope(nativeZoomKeyResult,request);
+      if(nativeZoomKeyResult.status==='completed'){
+        assert.equal(nativeZoomKeyResult.delivery,'sent');assert.equal(nativeZoomKeyResult.postedCount,program.length);exactKeys(nativeZoomKeyResult.core,['status','action','keyCode','modifiers','keyTransitions','frontPid']);coreFindAck(nativeZoomKeyResult.core,action,cleanup,{pid});
+        completed=true;pending=null; // Complete contextual core is known BEFORE time and fresh ordinary postproof.
+        assert.equal(execution.returnCode,0);assert.ok(nativeZoomKeyResult.elapsedMs<=left);assert.equal(findEpoch,epoch);assert.equal(original.mountedId,mountedId());
+        const postRequest={...original,deadlineMs:remainingFind(proof)};
+        try{postflight=run(inputHelper,['--guard-key',JSON.stringify(postRequest)],{timeout:postRequest.deadlineMs,fullStdout:true,maxBuffer:32768});}catch(error){postflight=error.execution??null;throw error;}
+        zoomOrdinaryProof(JSON.parse(postflight.stdout),postRequest,pid,rootFrame);assert.equal(findEpoch,epoch);assert.equal(original.mountedId,mountedId());remainingFind(proof);
+        const value={action,delivery:'sent',actual:nativeZoomKeyResult.core,execution,pageGuard:v,keyGuard:strict,keyGuardExecution:preflight,postKeyGuardExecution:postflight,nativeZoomKeyResult,maximumGuardAgeMs:age(proof.start),guardAgeLimitMs:limits.guardAgeMs,cleanupOnly:cleanup,keysPending:false,requestId:proof.id};record(cleanup?'owned-key-release':'physical-input',value);return value;
+      }
+      assert.equal(nativeZoomKeyResult.core,null);
+      if(nativeZoomKeyResult.status==='refused'){assert.equal(nativeZoomKeyResult.delivery,'not_sent');assert.equal(nativeZoomKeyResult.postedCount,0);assert.equal(execution.returnCode,2);knownNotSent=true;if(!cleanup)pending=null;}
+      else{assert.equal(nativeZoomKeyResult.status,'unknown');assert.equal(nativeZoomKeyResult.delivery,'unknown/may_have_sent');assert.ok(nativeZoomKeyResult.postedCount>0&&nativeZoomKeyResult.postedCount<program.length);}
+      throw Error('CG Zoom program '+nativeZoomKeyResult.status+': '+(nativeZoomKeyResult.diagnostic?.code??'no diagnostic'));
+    }catch(error){disabled=true;record('physical-input-failure',{action,delivery:completed?'sent/known_completed':knownNotSent?'not_sent':dispatched?'unknown/may_have_sent':'not_sent',keysPending:!!pending&&!pending.pointer,pointerDown:false,cleanupOnly:cleanup,error:error.message,execution:execution??error.execution??null,keyGuardExecution:preflight,postKeyGuardExecution:postflight,nativeZoomKeyResult,maximumGuardAgeMs:proof?age(proof.start):null});throw error;}
+    finally{findBusy=false;}
+  }
   async function performFind(action,cleanup){
     assert.equal(findBusy,false,'One private Find operation at a time');
     // Merely denied normal use must not consume a prospective unknown key's UP.
@@ -351,8 +412,9 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
   function fixedWindow(frame){assert.ok(frame&&['x','y','width','height'].every(key=>Number.isFinite(frame[key])));if(baselineWindow)assert.deepEqual(frame,baselineWindow,'Owned AX window changed during installed proof');else baselineWindow={...frame};}
   const clock=()=>process.hrtime.bigint(),age=start=>Number(clock()-start)/1e6;
   async function perform(action,cleanup=false){
+    if(nativeZoomCg&&['zoom-in','zoom-reset'].includes(action))return performZoom(action,cleanup);
     if(nativeFind&&['find','close-find'].includes(action))return performFind(action,cleanup);
-    if(nativeFind)assert.equal(findBusy,false,'One private Find operation at a time');syncFindMount();let proof=null,preflight=null,execution=null,dispatched=false,completed=false;
+    if(nativeFind||nativeZoomCg)assert.equal(findBusy,false,'One private Find operation at a time');syncFindMount();let proof=null,preflight=null,execution=null,dispatched=false,completed=false;
     try {
       const key=keySpecs[action],pointer=pointerTargets[action];assert.ok(key||pointer);assert.ok(mountedId());
       assert.ok(cleanup?pending&&!cleanupUsed&&!pending.pointer:!disabled);if(cleanup){assert.equal(action,pending.action);cleanupUsed=true;}
