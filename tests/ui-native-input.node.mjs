@@ -15,6 +15,7 @@ import './ui-composition-during-pointer.node.mjs';
 import './ui-native-find-episode.node.mjs';
 import './ui-native-find-cg.node.mjs';
 import './ui-native-zoom-cg.node.mjs';
+import './ui-native-safari-readiness.node.mjs';
 
 const keyLiterals={
   enter:{code:36,modifiers:[],caseId:'format-keyboard'},

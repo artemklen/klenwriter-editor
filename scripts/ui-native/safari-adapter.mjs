@@ -5,6 +5,7 @@ import {appendFileSync,mkdtempSync,writeFileSync} from 'node:fs';
 import {resolve,dirname} from 'node:path';
 import {limits,validCall,boundedJson} from './protocol.mjs';
 import {createInputOwner} from './input.mjs';
+import {prepareSafariAxReadiness} from './safari-readiness.mjs';
 
 const wait = ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const now = ()=>process.hrtime.bigint();
@@ -188,6 +189,8 @@ export async function createSafariAdapter({config,report,run,outputPath,inputHel
         }
         await wait(100);
       }
+      report.control.safariAxReadiness=await prepareSafariAxReadiness({config,inputHelper,run,record,remainingNavigate:()=>deadline-Date.now()});
+      if(report.control.safariAxReadiness.status!=='ready')throw new Error('Safari read-only AX readiness refused: '+report.control.safariAxReadiness.reason);
     },
     async focus() {
       const {value} = await rpc('documentGuard');
