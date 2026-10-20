@@ -283,3 +283,51 @@ for(const method of ['fresh-pointer','Enter','Space','detail0'])test(`PG02-05 co
   else {await editorFocus(page,id);await page.keyboard.press('Shift+Tab');await expect(button).toBeFocused();await page.keyboard.press(method==='Space'?'Space':'Enter');}
   await pg42AssertStrong(page,id,settled);
 });
+
+// Draft additive fragment for tests/ui-controls-browser.spec.js after root freeze.
+// Uses its existing helpers/beforeEach/afterEach; do not replace existing cases.
+const pg06Path='contracts/ui/v1.1/pointer-capture-continuity-cases.json';
+const pg06Bytes=readFileSync(pg06Path),pg06=JSON.parse(pg06Bytes),pg06Case=pg06.cases[0];
+const pg06PayloadRows=value=>value.rows.map(({path,node:{stamp,...node}})=>({path,node}));
+const pg06MutationRows=async(page,id)=>(await call(page,'nativeTrace',id)).calls
+  .map(row=>({request:JSON.parse(row.requestJson),response:JSON.parse(row.responseJson)}))
+  .filter(row=>['set_selection','command','history'].includes(row.request.kind));
+
+test('PG06 controlled admitted down cannot recapture after explicit host selection invalidates its original request',async({page})=>{
+  records.get(page).frozen.push({path:pg06Path,bytes:pg06Bytes.length,sha256:receiptHash(pg06Bytes)});
+  const id=await mounted(page,{geometry:'F',nativeTrace:true});await editorFocus(page,id);
+  const button=control(page,id,'strong'),before=await checkpoint(page,id,'PG06 independent frozen F input');
+  expect(before.canonical).toBe(pg06.geometry.inputCanonical);expect(before.state.selection).toEqual(selection(before.roles,pg06.geometry.inputSelection));
+  expect(before.state.stored_marks).toBe(null);expect(before.state.history.undo_entries).toBe('0');expect(before.state.history.redo_entries).toBe('0');
+  expect(before.state.dirty).toBe(false);expect(before.state.saved_revision).toBe('0');expect(before.uiResources.hostRequests).toBe(0);
+  await expect(button).toHaveAttribute('aria-disabled','false');
+  const down=await button.evaluate(node=>{const event=new PointerEvent('pointerdown',{bubbles:true,cancelable:true,button:0,buttons:1,pointerId:83,pointerType:'mouse',isPrimary:true,detail:1});node.dispatchEvent(event);return {prevented:event.defaultPrevented,trusted:event.isTrusted};});
+  expect(down).toEqual({prevented:false,trusted:false});
+  const captured=await checkpoint(page,id,'PG06 actual admitted controlled down, genuine request retained');unchanged(captured,before);
+  expect(captured.uiResources.hostRequests).toBe(1);expect(captured.resources.hostRequests.pending).toBe(1);
+  expect(captured.resources.selection.bookmarks).toBe(1);expect(captured.resources.sdk.host_requests).toBe(1);expect(submitted(captured)).toHaveLength(0);
+  const mutationsBefore=await pg06MutationRows(page,id);
+  const selected=await call(page,'select',id,pg06Case.hostSelection);expect(selected.response.status).toBe('ok');
+  await call(page,'refresh',id);await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  const host=await checkpoint(page,id,'PG06 independently asserted host T0 selection and old request release');
+  expect(host.canonical).toBe(pg06.geometry.inputCanonical);expect(host.state.selection).toEqual(selection(host.roles,pg06Case.hostSelection));
+  expect(idsAt(host)).toEqual(idsAt(before));expect(pg06PayloadRows(host)).toEqual(pg06PayloadRows(before));for(const row of host.rows)expect(row.node.stamp).toEqual(host.state.stamp);
+  expect(host.context).toEqual(before.context);expect(host.state.stamp.session).toBe(before.state.stamp.session);expect(host.state.stamp.generation).toBe(before.state.stamp.generation);
+  for(const key of ['revision','selection_epoch','history_epoch'])expect(BigInt(host.state.stamp[key])-BigInt(before.state.stamp[key])).toBe(BigInt(pg06Case.hostSelectionExpected.stampDelta[key]));
+  expect(host.state.stored_marks).toBe(null);expect(host.state.history).toEqual(before.state.history);expect(host.state.dirty).toBe(false);expect(host.state.saved_revision).toBe('0');
+  expect(documentEvents(host)).toEqual(documentEvents(before));expect(stateEvents(host).length-stateEvents(before).length).toBe(1);expect(stateEvents(host).at(-1).change).toEqual(pg06Case.hostSelectionExpected.eventFlags);
+  expect(host.uiResources.hostRequests).toBe(0);expect(host.resources.hostRequests.pending).toBe(0);expect(host.resources.selection.bookmarks).toBe(0);expect(host.resources.sdk.host_requests).toBe(0);expect(submitted(host)).toHaveLength(0);
+  const hostMutations=await pg06MutationRows(page,id);expect(hostMutations).toHaveLength(mutationsBefore.length+1);expect(hostMutations.slice(0,-1)).toEqual(mutationsBefore);expect(hostMutations.at(-1).request.kind).toBe('set_selection');expect(hostMutations.at(-1).request.selection).toEqual(selection(host.roles,pg06Case.hostSelection));
+  expect(await pg42Commands(page,id)).toHaveLength(0);
+  await button.evaluate(node=>{for(const type of ['pointerup','click'])node.dispatchEvent(new PointerEvent(type,{bubbles:true,cancelable:true,button:0,buttons:0,pointerId:83,pointerType:'mouse',isPrimary:true,detail:1}));});
+  const after=await checkpoint(page,id,'PG06 same admitted-but-invalidated gesture consumed without recapture');unchanged(after,host);expect(after.context).toEqual(host.context);expect(after.activeId).toBe(host.activeId);
+  expect(submitted(after)).toHaveLength(0);expect(await pg06MutationRows(page,id)).toEqual(hostMutations);expect(await pg42Commands(page,id)).toHaveLength(0);
+  expect(after.uiResources.hostRequests).toBe(0);expect(after.resources.hostRequests.pending).toBe(0);expect(after.resources.selection.bookmarks).toBe(0);expect(after.resources.sdk.host_requests).toBe(0);
+  // A later new pointerdown/click has independent authority at the host's T0.
+  await button.click();await waitSubmissions(page,id,1);const fresh=await checkpoint(page,id,'PG06 later fresh gesture may ordinarily toggle Strong at T0');
+  expect(fresh.canonical).toBe(pg06.geometry.inputCanonical);expect(fresh.state.selection).toEqual(selection(fresh.roles,pg06Case.hostSelection));expect(idsAt(fresh)).toEqual(idsAt(host));expect(pg06PayloadRows(fresh)).toEqual(pg06PayloadRows(host));
+  for(const key of ['revision','selection_epoch','history_epoch'])expect(BigInt(fresh.state.stamp[key])-BigInt(host.state.stamp[key])).toBe(BigInt(pg06Case.freshGestureExpected.stampDelta[key]));
+  expect(fresh.state.stored_marks).toEqual(pg06Case.freshGestureExpected.storedMarks);expect(fresh.state.history).toEqual(host.state.history);expect(fresh.state.dirty).toBe(false);expect(fresh.state.saved_revision).toBe('0');
+  expect(documentEvents(fresh)).toEqual(documentEvents(host));expect(stateEvents(fresh).length-stateEvents(host).length).toBe(1);expect(submitted(fresh)).toHaveLength(1);expect(submitted(fresh)[0].response.status).toBe('ok');
+  const commands=await pg42Commands(page,id);expect(commands).toHaveLength(1);expect(commands[0].request.command.id).toBe(pg06Case.freshGestureExpected.nativeCommandId);expect(JSON.parse(commands[0].request.command.payload_json)).toEqual(pg06Case.freshGestureExpected.nativePayload);expect(commands[0].response.status).toBe('ok');
+});
