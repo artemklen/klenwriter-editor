@@ -1,0 +1,13 @@
+{
+  "format": "editor-ui-transient-status-contract/1",
+  "status": "FROZEN_BEFORE_REGRESSION_AND_IMPLEMENTATION",
+  "baseHead": "ba41330e177c1e1cce21f985fb20d61f6982b4f7",
+  "files": [
+    {
+      "path": "transient-status.md",
+      "bytes": 4488,
+      "sha256": "0ac05885a78c55b1d7865624325f6aeb6227132776589152bb2fae0297718043"
+    }
+  ],
+  "claimsExecutionOrReview": false
+}

@@ -1,0 +1,16 @@
+{
+  "format": "editor-ui-pressed-placement-manifest/1",
+  "status": "DRAFT_BEFORE_IMPLEMENTATION_AND_RED",
+  "files": [
+    {
+      "path": "pressed-placement.md",
+      "bytes": 3020,
+      "sha256": "2bd758c23510cea5718ad9163da48ecf9c33b0f3552213b3db69535412be65e9"
+    },
+    {
+      "path": "pressed-placement-cases.json",
+      "bytes": 3901,
+      "sha256": "0d32dc1f3e89f1e5524afa9873a9624d527f299b0ef931d13454ab740c939b9a"
+    }
+  ]
+}
