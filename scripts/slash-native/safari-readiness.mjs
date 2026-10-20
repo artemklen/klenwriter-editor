@@ -35,7 +35,7 @@ export async function prepareSafariAxReadiness({config,inputHelper,run,remaining
       &&Buffer.byteLength(inputHelper)<=4096,'Fixed compiled input helper path required');
     assert.ok(originalPid===null||integer(originalPid,1,2147483647),'Known original PID must be positive Int32');
     for(let sample=1;sample<=3;sample++){
-      const left=budgets(),timeout=Math.floor(Math.min(500,left.privateMs,left.navigateMs));
+      const left=budgets(),timeout=Math.floor(Math.min(sample===1?1000:500,left.privateMs,left.navigateMs));
       assert.ok(timeout>0,'No positive Safari AX sample allowance remains');
       const request={format:inspection,browser:'safari',nonce:config.nonce,title:config.title,fixtureUrl:config.fixtureUrl,deadlineMs:timeout};
       const argv=['--inspect-window',JSON.stringify(request)];
