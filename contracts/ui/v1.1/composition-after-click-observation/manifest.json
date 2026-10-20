@@ -1,0 +1,110 @@
+{
+  "format": "osr42-after-click-observation-source-manifest/1",
+  "createdAt": "2026-10-20T00:45:56.650491+00:00",
+  "status": "SOURCE_AUTHORED_BEFORE_IMPLEMENTATION_NOT_ACCEPTANCE",
+  "files": [
+    {
+      "path": "observation.md",
+      "bytes": 3914,
+      "sha256": "561e911895c8f8985590459028905055628542d072587f4879e6e3451b26f495"
+    },
+    {
+      "path": "cases.json",
+      "bytes": 19108,
+      "sha256": "5f9224fba546dd8b068e1052882103df12c176ca5ba2a946b469fd2223ca1a0b"
+    },
+    {
+      "path": "notes-early-accent.json",
+      "bytes": 2814,
+      "sha256": "49b415b510bd72e0d136ce7c00e44a25aa31f32ed1827d5eb0a9122c647537e2"
+    }
+  ],
+  "sourcePins": [
+    {
+      "path": "contracts/ui/v1/installed-matrix.md",
+      "bytes": 2534,
+      "sha256": "a1139be5f012d77ba71dc3e22ace42a909ba357f9674f00a428720dd391afb0b"
+    },
+    {
+      "path": "contracts/ui/v1.1/composition-observation/observation.md",
+      "bytes": 2127,
+      "sha256": "58f6c639f03f415cc685ad5d5926d1c26755790ef3b798fc594e408e56afa2a6"
+    },
+    {
+      "path": "contracts/ui/v1.1/composition-observation/cases.json",
+      "bytes": 3892,
+      "sha256": "dbaca8b2b133ac449bd033d0293e9c3fe02a4b4911cc0a7b37d2f62eba009fc9"
+    },
+    {
+      "path": "contracts/ui/v1.1/pointer-gesture.md",
+      "bytes": 3003,
+      "sha256": "c834a5ab13d41ebc6861c550556ebe879821378e077a8428cd2b714f1ab02376"
+    },
+    {
+      "path": "contracts/ui/v1.1/pointer-capture-continuity.md",
+      "bytes": 3008,
+      "sha256": "13fd1b809ecc12e75f8ae47ed9092171103cd41ef6ea6ac4e5fa1504c0235c90"
+    },
+    {
+      "path": "scripts/ui-native/composition-observation.mjs",
+      "bytes": 10086,
+      "sha256": "36bf49b93582e06c04d00d52bad8b831a347b5b5f4e76ed7161fe7932e76df4a"
+    },
+    {
+      "path": "scripts/ui-native-acceptance.mjs",
+      "bytes": 40301,
+      "sha256": "15b4312a1d60384786a904511f61b6b99c27ed00d95091e50b280af76c2fc12c"
+    },
+    {
+      "path": "scripts/ui-native/page-fixture.mjs",
+      "bytes": 13818,
+      "sha256": "6cc9a47b3eae548c14658fde62086227af6d186dcf915b6112d5fce086322d11"
+    },
+    {
+      "path": "scripts/ui-native/settlement-literals.mjs",
+      "bytes": 3225,
+      "sha256": "ee6d1817e85fd23bf4ad1d992ccad4b654d44425e7fd24c8a0c72a96cbb866a3"
+    },
+    {
+      "path": "tests/ui-composition-observation.node.mjs",
+      "bytes": 10757,
+      "sha256": "2b59437594ab54dec7b4ccc8bfcb52f5925f6a3117c19b3d3a1097535a23a7c8"
+    },
+    {
+      "path": "examples/notes-extension/dom.mjs",
+      "bytes": 3650,
+      "sha256": "0d4aebb834b03f068e21fc74f7888f60cdfe794ac3d78d1dd7a5967471815205"
+    },
+    {
+      "path": "crates/notes-sdk/src/adapter.rs",
+      "bytes": 2122,
+      "sha256": "36977eff0a37f307d6b617e371fd50228ab439a20d8a2a13ec8de31889e51ed4"
+    },
+    {
+      "path": "crates/notes/src/commands.rs",
+      "bytes": 15308,
+      "sha256": "7035e6b3f98c3b2d11f4d5f1c411cecca081b33467e7eb69f42d40b7f03e9095"
+    },
+    {
+      "path": "contracts/composition/v1/native-oracles.json",
+      "bytes": 847545,
+      "sha256": "ac17ce35d4dd94f397782ce89fc0567404b3305da1c63a9277309b8c2e16df6c"
+    },
+    {
+      "path": "contracts/ui/v1/native-oracles.json",
+      "bytes": 49373,
+      "sha256": "e064ba58d2c579c3cd9c58937a32a09591c8379a283543b40c2828919fe84470"
+    }
+  ],
+  "historicalChrome04": {
+    "path": "/tmp/osr-42-installed-development-0c66092-04/chrome/chrome.json",
+    "bytes": 18154523,
+    "sha256": "aef331c33619fc4f78a333dbf0dac062d1ce2f29910f1842e8a06871b9bcde8c",
+    "status": "FAILED",
+    "classificationNeverRewritten": true,
+    "observationOnly": "untrusted terminal before actual down/up/click; one original InsertText starts/returns after click; current before-down classifier correctly FAILED"
+  },
+  "repoOrFrozenBytesChanged": false,
+  "runtimeOrOSExecuted": false,
+  "notesRuntimeExecutedOrObservedForAuthorship": false
+}
