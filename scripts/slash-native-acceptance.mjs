@@ -59,7 +59,7 @@ function preflightChromeFindHelper(){
   }catch(error){stage.status='FAILED';stage.validationExitCode=1;stage.error={message:error.message};throw error;}
   finally{stage.finishedAt=now();}
 }
-let adapter=null,inputHelper=null,sourceHelper=null,keyScriptPath=null,findKeyHelper=null,originalSource=null,selectedSource=null,config=null,configSha=null;
+let adapter=null,inputHelper=null,sourceHelper=null,keyScriptPath=null,findKeyHelper=null,originalSource=null,selectedSource=null,config=null,configSha=null,sourceWindowReadiness=false;
 const source=()=>JSON.parse(run(sourceHelper,['status'],{fullStdout:true}).stdout);
 function coherent(value,id){assert.equal(value.status,'ok');assert.equal(value.current.id,id);assert.equal(value.current.selected,true);assert.equal(value.current.enabled,true);assert.equal(value.current.selectable,true);assert.ok(value.sources.some(x=>x.id===id&&x.selected&&x.enabled&&x.selectable));}
 async function selectSource(id){
@@ -67,7 +67,9 @@ async function selectSource(id){
  if(before.current.id===id){
   coherent(before,id);report.setup.push({action:'keep-existing-source',requested:id,actual:before,selectionInvoked:false});selectedSource=id;return before;
  }
- const execution=run(sourceHelper,['select',id],{fullStdout:true}),result=JSON.parse(execution.stdout);assert.equal(result.status,'ok');report.setup.push({action:'select-existing-source',before,execution,result});await wait(250);const actual=source();coherent(actual,id);selectedSource=id;return actual;
+ const execution=run(sourceHelper,['select',id],{fullStdout:true}),result=JSON.parse(execution.stdout);assert.equal(result.status,'ok');report.setup.push({action:'select-existing-source',before,execution,result});await wait(250);const actual=source();coherent(actual,id);selectedSource=id;
+ if(sourceWindowReadiness&&typeof adapter?.awaitSourceWindowReady==='function')await adapter.awaitSourceWindowReady(id);
+ return actual;
 }
 const roles=value=>Object.fromEntries(value.native.rows.map(row=>[JSON.stringify(row.path),row.node.id]));
 const ids=value=>value.native.rows.map(row=>row.node.id).sort();
@@ -198,7 +200,7 @@ try {
   report.setup.push({action:'compile-closed-fixture-helpers',executions:helperExecutions});chmodSync(keyScriptPath,0o444);report.helperArtifacts=[sourceHelper,inputHelper,keySource,keyScriptPath,...(findKeyHelper?[findKeyHelper]:[])].map(absolutePin);
   if(browserName==='chrome'){preflightChromeFindHelper();save();}
   const initial=source();coherent(initial,initial.current.id);originalSource=initial.current.id;report.initialInputSources=initial;for(const id of ['com.apple.keylayout.US','com.apple.keylayout.Russian'])assert.ok(initial.sources.some(s=>s.id===id&&s.enabled&&s.selectable),'Existing source '+id);
-  adapter=await(browserName==='chrome'?createChromeAdapter({config,report,inputHelper,keyScriptPath,findKeyHelper,run,save,outputPath}):createSafariAdapter({config,report,inputHelper,keyScriptPath,run,outputPath}));await adapter.navigate();assert.equal(report.browserVersion,report.bundleVersion);
+  adapter=await(browserName==='chrome'?createChromeAdapter({config,report,inputHelper,keyScriptPath,findKeyHelper,run,save,outputPath}):createSafariAdapter({config,report,inputHelper,keyScriptPath,run,outputPath}));await adapter.navigate();assert.equal(report.browserVersion,report.bundleVersion);sourceWindowReadiness=true;
   let blocked=false;
   for(const lane of report.locales){
     const locale=lane.locale;
@@ -219,6 +221,7 @@ try {
   assert.deepEqual(adapter.errors,[]);report.pageErrors=adapter.errors;report.status=report.locales.every(l=>l.status==='PASS')?'PASSED':report.locales.some(l=>l.status==='FAILED')?'FAILED':'INCOMPLETE';
 } catch(error){report.error={message:error.message,stack:error.stack,execution:error.execution??null};report.status=report.physicalActions.length?'FAILED':'NOT_RUN';}
 finally {
+  sourceWindowReadiness=false;
   if(adapter)try{await adapter.close();}catch(error){report.browserCleanupError={message:error.message,execution:error.execution??null};report.status='FAILED';}
   // Restore after closing the owned browser: per-app source switching can occur
   // at window departure. Original failed rows are never rewritten by cleanup.

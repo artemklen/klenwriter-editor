@@ -8,6 +8,7 @@ import {createRequire} from 'node:module';
 import {resolve,dirname} from 'node:path';
 import {limits,validCall} from './protocol.mjs';
 import {createInputOwner,prepareChromeWindow} from './input.mjs';
+import {awaitSourceWindowReady as waitForSourceWindow} from './source-window-readiness.mjs';
 export async function createChromeAdapter({config,report,inputHelper,keyScriptPath,findKeyHelper,run,save,outputPath}){
   const script=text=>run('/usr/bin/osascript',['-e',text]);
   const childHome=mkdtempSync(resolve(dirname(outputPath),'chrome-slash43-appdata-'));
@@ -93,6 +94,25 @@ export async function createChromeAdapter({config,report,inputHelper,keyScriptPa
         windowCommand:(method,params)=>{assert.ok(browserCdp);return browserCdp.send(method,params);},
       });
       bootstrapReady=true;save();
+    },
+    async awaitSourceWindowReady(sourceId){
+      assert.equal(bootstrapReady,true);assert.equal(inputOwner.disabled,false);assert.equal(inputOwner.keysPending,false);assert.equal(inputOwner.pointerDown,false);
+      assert.ok(['com.apple.keylayout.US','com.apple.keylayout.Russian'].includes(sourceId));
+      const stage={action:'passive-own-chrome-window-after-real-source-selection',sourceId,status:'attempted'};report.setup.push(stage);save();
+      try{
+        stage.result=await waitForSourceWindow({config,reference:report.control.bootstrap,
+          pageState:()=>page.evaluate(()=>{
+            const v=visualViewport,selection=getSelection();
+            const point=(node,offset)=>{if(!node)return null;const path=[];let current=node;
+              while(current.parentNode){if(path.length>=64)throw Error('Bounded source preparation selection path');path.unshift(Array.prototype.indexOf.call(current.parentNode.childNodes,current));current=current.parentNode;}
+              return {nodeType:node.nodeType,path,offset};};
+            return {url:location.href,title:document.title,documentFocused:document.hasFocus(),viewport:{width:innerWidth,height:innerHeight,scale:v?.scale,offsetLeft:v?.offsetLeft,offsetTop:v?.offsetTop},
+              selection:{rangeCount:selection?.rangeCount??0,anchor:point(selection?.anchorNode,selection?.anchorOffset),focus:point(selection?.focusNode,selection?.focusOffset)}};
+          }),
+          inspectWindow:request=>{const text=JSON.stringify(request);assert.ok(Buffer.byteLength(text)<=4096);const execution=run(inputHelper,['--inspect-window',text],{timeout:request.deadlineMs,fullStdout:true,maxBuffer:32768});try{return {execution,actual:JSON.parse(execution.stdout)};}catch(error){error.execution=execution;throw error;}},
+        });stage.status='ready';return stage.result;
+      }catch(error){stage.status='refused';stage.result=error.readiness??null;stage.error={message:error.message,execution:error.execution??null};throw error;}
+      finally{save();}
     },
     async focus(){
       assert.equal(bootstrapReady,true,'Completed Chrome bootstrap required before normal case entry');assert.equal(focusEntryFailed,false,'Failed case entry cannot reactivate or retry');
