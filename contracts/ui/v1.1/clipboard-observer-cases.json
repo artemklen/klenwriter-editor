@@ -1,0 +1,56 @@
+{
+  "format": "editor-ui-clipboard-observer-cases/2",
+  "id": "CB01",
+  "existingInstalledCase": "modes-zoom",
+  "observedHistorical": {
+    "source": "parent report of completed Chrome08; not independently re-read in this preparation",
+    "status": "FAILED",
+    "appleScriptStdout": "ab\rcd\n",
+    "notProof": "Does not establish whether original pasteboard is LF or CR"
+  },
+  "reader": {
+    "command": "/usr/bin/env",
+    "argv": [
+      "LC_ALL=en_US.UTF-8",
+      "LC_CTYPE=en_US.UTF-8",
+      "LANG=en_US.UTF-8",
+      "/usr/bin/pbpaste",
+      "-Prefer",
+      "txt"
+    ],
+    "executedUtility": "/usr/bin/pbpaste",
+    "encoding": "utf8",
+    "fullStdout": true,
+    "privateRunHelper": "byte-identical"
+  },
+  "expected": {
+    "stdout": "ab\ncd",
+    "utf8Hex": "61620a6364",
+    "bytes": 5,
+    "clipboardWriter": "copied/confirmed required first",
+    "oldLfAssertion": "retained",
+    "newExactAssertion": "required",
+    "normalization": false,
+    "allOriginalOtherAssertions": "unchanged"
+  },
+  "negativeLiteralExamples": [
+    {
+      "stdout": "ab\rcd",
+      "expected": "FAILED"
+    },
+    {
+      "stdout": "ab\r\ncd",
+      "expected": "FAILED"
+    },
+    {
+      "stdout": "ab\ncd\n",
+      "expected": "FAILED"
+    },
+    {
+      "stdout": "",
+      "expected": "FAILED"
+    }
+  ],
+  "newCases": 0,
+  "status": "SOURCE_AUTHORED_NOT_EXECUTED"
+}
