@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // Public optional UI types; semantics remain in the mounted native editor.
-import type { CommandDto, DeepReadonly, NodeViewDto, SessionContextV2, StateDto, Submission } from "@klenwriter/editor-sdk";
+import type { CommandDto, DeepReadonly, NodeViewDto, SelectionDto, SessionContextV2, StateDto, Submission } from "@klenwriter/editor-sdk";
 import type { BookmarkRestore, DomRefusal, HostFocus, InteractionMode, MountedEditor, SelectionReadFailure } from "@klenwriter/editor-dom";
 export type UiLocale='ru'|'en';
 export type UiText=Readonly<{ru:string;en:string}>;
@@ -23,9 +23,15 @@ export type UiCloseReason='accepted'|'cancelled'|'refused'|'invalidated'|'destro
 export interface UiMoveChoice {readonly id:string;
  readonly direction:'up'|'down'|'nest'|'unnest';readonly label:UiText;
  readonly command:CommandDto|UiUnavailable}
+export interface UiSlashRange {readonly range:DeepReadonly<SelectionDto>;readonly literal:string}
+export interface UiSlashChoice {readonly id:string;readonly label:UiText;
+ readonly keywords:Readonly<{ru:readonly string[];en:readonly string[]}>;
+ readonly command:(captured:UiActionContext,slash:UiSlashRange|null)=>CommandDto|UiUnavailable}
+export interface UiSlashProfile {readonly textBlockTypes:readonly string[];readonly choices:readonly UiSlashChoice[]}
 export interface UiProfile {readonly toolbar:readonly UiAction[];
  readonly insertions:readonly UiCommandAction[];
  readonly blockActions:readonly UiHostAction[];
+ readonly slash?:UiSlashProfile;
  readonly moves:(c:UiActionContext & {readonly block:UiBlockContext})=>
   readonly UiMoveChoice[]|UiUnavailable}
 export type UiFailure=DomRefusal|SelectionReadFailure|Readonly<{status:'ui_refused';

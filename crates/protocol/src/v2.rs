@@ -9,6 +9,74 @@ use serde::{Deserialize, Serialize};
 )]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum TextWindowRequestV2 {
+    TextWindow {
+        stamp: crate::StampDto,
+        before_utf16: u32,
+        after_utf16: u32,
+    },
+}
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct TextWindowSpanV2 {
+    pub node: String,
+    pub from_utf16: u32,
+    pub to_utf16: u32,
+    pub text: String,
+}
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct TextWindowNodeV2 {
+    pub node: String,
+    pub type_id: String,
+    pub primitive: String,
+}
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum TextWindowBoundaryV2 {
+    Block,
+    InlineAtom,
+    HardBreak,
+    WindowLimit,
+}
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum TextWindowReplyV2 {
+    TextWindow {
+        stamp: crate::StampDto,
+        selection: crate::SelectionDto,
+        block: TextWindowNodeV2,
+        caret: crate::PositionDto,
+        ancestors: Vec<TextWindowNodeV2>,
+        before: Vec<TextWindowSpanV2>,
+        after: Vec<TextWindowSpanV2>,
+        before_stop: TextWindowBoundaryV2,
+        after_stop: TextWindowBoundaryV2,
+    },
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub enum SelectionTextRequestV2 {
     SelectionText {
         stamp: crate::StampDto,
@@ -38,6 +106,7 @@ pub enum SelectionTextReplyV2 {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(untagged)]
 pub enum BridgeRequestV2 {
+    TextWindow(TextWindowRequestV2),
     SelectionText(SelectionTextRequestV2),
     Common(crate::BridgeRequest),
 }
@@ -48,6 +117,7 @@ pub enum BridgeRequestV2 {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(untagged)]
 pub enum SdkReplyV2 {
+    TextWindow(TextWindowReplyV2),
     SelectionText(SelectionTextReplyV2),
     Common(crate::SdkReply),
 }

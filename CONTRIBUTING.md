@@ -5,7 +5,10 @@
 plaintext copy/cut реализованы поверх SDK2. [Composition41](docs/composition.md)
 добавляет bounded settlement и retained recovery; browser/installed приёмка
 подтверждается отдельными exact-source receipts. Необязательный [block chrome42](docs/ui.md)
-добавляет toolbar/move/host dialogs. Clipboard47, полная a11y66 и vanilla alpha сохраняют отдельные
+добавляет toolbar/move/host dialogs и optional slash/insertion picker43.
+`npm run test:slash` проверяет frozen contracts, native/sealed semantic literals,
+bounded text-window reads и controlled/public types; slash browser cases входят
+в существующий `test:ui:browser`. Clipboard47, полная a11y66 и vanilla alpha сохраняют отдельные
 задачи и acceptance gates.
 Следуйте [архитектуре](docs/m0/architecture.md)
 и контракту задачи Linear. Реализуйте общую семантику на Rust; KWDJ остаётся отдельным

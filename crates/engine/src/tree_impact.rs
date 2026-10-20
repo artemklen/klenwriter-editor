@@ -175,6 +175,26 @@ impl AddressTree {
             .map(|meta| meta.changed_revision)
             .ok_or(TreeError::InvalidStructure)
     }
+    /// Cached scalar-coordinate total for an already borrowed Text leaf.
+    pub(crate) fn cached_text_utf16(&self, id: NodeId) -> Result<usize, TreeError> {
+        self.metadata
+            .get(&id)
+            .map(|m| m.metrics.text_utf16)
+            .ok_or(TreeError::InvalidStructure)
+    }
+    /// Constant-width cached edge proof; never searches a sibling sequence.
+    pub(crate) fn checked_ordinal(&self, id: NodeId) -> Result<(NodeId, usize), TreeError> {
+        let parent = self.node(id)?.parent().ok_or(TreeError::RootMutation)?;
+        let ordinal = self
+            .metadata
+            .get(&id)
+            .and_then(|m| m.ordinal)
+            .ok_or(TreeError::InvalidStructure)?;
+        if self.node(parent)?.children().get(ordinal) != Some(&id) {
+            return Err(TreeError::InvalidStructure);
+        }
+        Ok((parent, ordinal))
+    }
     pub(crate) fn metrics(&self, id: NodeId) -> Result<NodeMetrics, TreeError> {
         self.node(id)?;
         self.metadata

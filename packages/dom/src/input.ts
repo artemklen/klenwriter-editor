@@ -6,6 +6,7 @@ import type { BlockCapture, CapturedBlock, DomView } from './view.js';
 import { domRegionLimits } from './view.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
 import { CompositionOwner } from './composition.js';
+import type { OrdinaryInputCapture } from './input-observations.js';
 export interface InputOwner {
   destroy(): void; listeners(): number;
   isProtected(): boolean; isCommitting(): boolean;
@@ -19,7 +20,10 @@ interface InputConfiguration {
   readonly capture: () => DeepReadonly<StampDto> | null;
   readonly context: () => DeepReadonly<SessionContextV2> | null;
   readonly readState: () => DeepReadonly<StateDto> | null;
-  readonly submit: (request: MountedMutation) => Submission | DomRefusal;
+  readonly submit: (request: MountedMutation, observation?:OrdinaryInputCapture|null) => Submission | DomRefusal;
+  readonly beforeObservation?: (input:InputEvent) => OrdinaryInputCapture|null;
+  readonly afterObservation?: (capture:OrdinaryInputCapture|null,result:Submission|DomRefusal) => void;
+  readonly observationBusy?: () => boolean;
   readonly submitComposition: (request: MountedMutation) => Submission | DomRefusal;
   readonly report: (failure: DomRefusal) => unknown;
   readonly recover: (failure: DomRefusal, region?: RecoveryRegion | null, composition?: CompositionRecovery | null) => void;
@@ -28,6 +32,7 @@ interface InputConfiguration {
   readonly onResources?: (resources:ReturnType<CompositionOwner['resources']>) => void;
 }
 interface Pending {
+  readonly ownedPermit:boolean; readonly observation:OrdinaryInputCapture|null;
   readonly inputType: string; readonly data: string | null; readonly stamp: DeepReadonly<StampDto>;
   readonly selection: DeepReadonly<SelectionDto>; readonly capture: BlockCapture;
   readonly block: CapturedBlock; readonly parent: Node; readonly previous: ChildNode | null;
@@ -55,10 +60,10 @@ export function attachInput(options: InputConfiguration): InputOwner {
       default: return null;
     }
   }
-  function submit(inputType: string,data: string | null,noncollapsed?:boolean,ownedPermit=false): Submission | DomRefusal {
+  function submit(inputType: string,data: string | null,noncollapsed?:boolean,ownedPermit=false,observation:OrdinaryInputCapture|null=null): Submission | DomRefusal {
     const stamp = options.capture();
     if (!stamp) return refused('dom.not_ready');
-    const dispatch=ownedPermit?options.submitComposition:options.submit;
+    const dispatch=(request:MountedMutation)=>ownedPermit?options.submitComposition(request):options.submit(request,observation);
     if (inputType === 'historyUndo' || inputType === 'historyRedo') return dispatch({kind:'history',stamp:stamp as StampDto,direction:inputType === 'historyUndo' ? 'undo' : 'redo'});
     let dto: CommandDto | null;
     try { dto = command(inputType,data,noncollapsed); } catch { return refused('dom.command_unsupported'); }
@@ -113,7 +118,7 @@ export function attachInput(options: InputConfiguration): InputOwner {
     const captured = region ?? view.captureRegion() ?? Object.freeze({kind:'retained_dom' as const,element,reason:'capture_limit' as const,ownership:'transferred_to_host' as const});
     options.recover(failure(code),captured); pending = null;
   }
-  function begin(event: InputEvent,selection: DeepReadonly<SelectionDto>) {
+  function begin(event: InputEvent,selection: DeepReadonly<SelectionDto>,ownedPermit:boolean,observation:OrdinaryInputCapture|null) {
     const stamp = options.capture(), ids = selectionBlocks(selection);
     if (!stamp || !ids || ids.length !== 1) { preserve('dom.composition_conflict'); return; }
     const firstCapture = view.captureBlocks(ids);
@@ -133,7 +138,7 @@ export function attachInput(options: InputConfiguration): InputOwner {
     if (isDomRefusal(capture)) { preserve('dom.reconcile_limit'); return; }
     const refusal = view.beginProvisional(stamp,affected);
     if (refusal) { preserve(refusal.diagnostic.code); return; }
-    pending = {inputType:event.inputType,data:event.data,stamp,selection,capture,block,parent,previous,next:block.element.nextSibling,anchor,focus,noncollapsed:doc.getSelection()?.isCollapsed===false};
+    pending = {ownedPermit,observation,inputType:event.inputType,data:event.data,stamp,selection,capture,block,parent,previous,next:block.element.nextSibling,anchor,focus,noncollapsed:doc.getSelection()?.isCollapsed===false};
   }
   function bounded(node: Node): string | null { const result = view.boundedText(node); return isDomRefusal(result) ? null : result; }
   function observed(p: Pending): boolean {
@@ -181,7 +186,7 @@ export function attachInput(options: InputConfiguration): InputOwner {
     if (capture?.kind === 'retained_dom') { preserve('dom.reconcile_limit',capture); return; }
     // Retain owned provisional data before native publication is allowed to patch.
     pending = null; view.endProvisional();
-    const result = submit(p.inputType,p.data,p.noncollapsed);
+    const result = submit(p.inputType,p.data,p.noncollapsed,p.ownedPermit,p.observation);
     if (isDomRefusal(result) || result.status !== 'completed' || result.response.status !== 'ok') {
       options.recover(failure('dom.recovery_required'),capture); return;
     }
@@ -189,10 +194,12 @@ export function attachInput(options: InputConfiguration): InputOwner {
     // as recovered provisional input rather than an unreported substitution.
     if ((p.inputType === 'deleteContentBackward' || p.inputType === 'deleteContentForward') && p.anchor > 0) {
       const after = view.captureBlocks([p.block.id]);
-      if (isDomRefusal(after) || capture?.kind === 'bounded' && after.blocks[0]?.originalText !== capture.provisionalText) options.recover(domRefusal('dom.presentation_unsupported','render',options.capture(),null,null,'alreadyPublished'),capture);
+      if (isDomRefusal(after) || capture?.kind === 'bounded' && after.blocks[0]?.originalText !== capture.provisionalText) { options.recover(domRefusal('dom.presentation_unsupported','render',options.capture(),null,null,'alreadyPublished'),capture); return; }
     }
+    if(!p.ownedPermit)options.afterObservation?.(p.observation,result);
   }
   function ordinaryBeforeInput(input:InputEvent,ownedPermit=false):Submission|DomRefusal|null {
+    if(options.observationBusy?.()){if(input.cancelable)input.preventDefault();return failure('dom.busy');}
     options.selection.invalidate(false,input); options.selection.cancel();
     if (destroyed) return null;
     if (!options.canEdit()) { if (input.cancelable) input.preventDefault(); return refused('dom.mode_blocked'); }
@@ -203,19 +210,21 @@ export function attachInput(options: InputConfiguration): InputOwner {
     if (!selection || isDomRefusal(selection)) { if (input.cancelable) input.preventDefault(); return isDomRefusal(selection)?selection:null; }
     if (ownedPermit && !equal(selection,options.readState()?.selection)) { if(input.cancelable)input.preventDefault();return refused('dom.stale_selection'); }
     if (options.busy()) { if (input.cancelable) input.preventDefault(); return refused('dom.busy'); }
+    const observation=ownedPermit?null:options.beforeObservation?.(input)??null;
     let supported = input.inputType === 'historyUndo' || input.inputType === 'historyRedo';
     try { supported ||= command(input.inputType,input.data) !== null; } catch { supported = false; }
     if (!supported) { if (input.cancelable) input.preventDefault(); return refused('dom.command_unsupported'); }
     if (input.cancelable) {
-      input.preventDefault(); const result = submit(input.inputType,input.data,undefined,ownedPermit);
+      input.preventDefault(); const result = submit(input.inputType,input.data,undefined,ownedPermit,observation);
       if (!ownedPermit && !isDomRefusal(result) && result.status === 'completed' && result.response.status === 'refused') refused('dom.command_unsupported');
+      if(!ownedPermit)options.afterObservation?.(observation,result);
       return result;
     }
-    else begin(input,selection);
+    else begin(input,selection,ownedPermit,observation);
     return null;
   }
   const composition=new CompositionOwner({...options,submit:options.submitComposition,ordinary:input=>ordinaryBeforeInput(input,true)});
-  listen(element,'beforeinput',event=>{const input=event as InputEvent;if(!destroyed && !composition.beforeInput(input))ordinaryBeforeInput(input);});
+  listen(element,'beforeinput',event=>{const input=event as InputEvent;if(options.observationBusy?.()){if(input.cancelable)input.preventDefault();return;}if(!destroyed && !composition.beforeInput(input))ordinaryBeforeInput(input);});
   listen(element,'input',event=>{const input=event as InputEvent;if(!destroyed && !composition.input(input))reconcile(input);});
   listen(element,'compositionstart',event=>{if(!destroyed)composition.start(event as CompositionEvent);});
   listen(element,'compositionupdate',event=>{if(!destroyed)composition.update(event as CompositionEvent);});

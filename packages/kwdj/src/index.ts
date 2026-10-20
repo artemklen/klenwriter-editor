@@ -25,3 +25,5 @@ export function kwdjCommand(intent: KwdjIntentDto): CommandDto {
   const name = commandNames[kind.value as KwdjIntentDto['kind']];
   return createCommand(`org.klenwriter.kwdj/command/${name}`, intent);
 }
+
+export { kwdjSlashCandidates, kwdjSlashTextBlockTypes } from './slash-candidates.generated.js';

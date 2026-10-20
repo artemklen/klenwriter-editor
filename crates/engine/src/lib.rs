@@ -8,6 +8,7 @@ pub mod identity;
 pub mod mapping;
 pub mod session;
 pub mod snapshot;
+pub mod text_window;
 pub mod transaction;
 pub mod tree;
 

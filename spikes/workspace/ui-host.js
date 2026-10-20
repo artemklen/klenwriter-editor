@@ -3,12 +3,12 @@
 import { loadSdkV2, sdkBuildId, createCommand } from '@klenwriter/editor-sdk';
 import { mountEditor } from '@klenwriter/editor-dom';
 import { createEditorUi, defineUiHostAction } from '@klenwriter/editor-ui';
-import { kwdjCommand } from '@klenwriter/editor-kwdj';
+import { kwdjCommand, kwdjSlashCandidates, kwdjSlashTextBlockTypes } from '@klenwriter/editor-kwdj';
 import { kwdjBasicRenderers } from '@klenwriter/editor-kwdj/dom';
 import { notesD0Renderers } from '/notes-dom.mjs';
 
 const copy=value=>value===undefined?undefined:structuredClone(value),assert=(condition,message)=>{if(!condition)throw new Error(message);};
-const [module,packet,cases,geometry]=await Promise.all([loadSdkV2(),fetch('/extensions-packet.json').then(r=>r.json()),fetch('/ui-cases.json').then(r=>r.json()),fetch('/ui-contract/geometry-fixtures.json').then(r=>r.json())]);
+const [module,packet,cases,geometry,slashCopy]=await Promise.all([loadSdkV2(),fetch('/extensions-packet.json').then(r=>r.json()),fetch('/ui-cases.json').then(r=>r.json()),fetch('/ui-contract/geometry-fixtures.json').then(r=>r.json()),fetch('/slash-contract/strings.json').then(r=>r.json())]);
 const records=new Map();let serial=0;
 // Call/event ordering only: this clock is local to this actual document, not a
 // throughput measurement or an acknowledgement inferred from a later snapshot.
@@ -65,6 +65,19 @@ function profile(r){
   if(r.notes){const title=hostDialog(r);return ()=>({toolbar:[title],insertions:[],blockActions:[],moves:()=>unavailable('fixture.profile_has_no_move')});}
   const action=(id,label,intent,kind='command')=>({id,label,kind,command:()=>kwdjCommand(intent)});
   return ()=>({toolbar:[action('strong',text('Полужирный','Bold'),{kind:'toggle_mark',mark:{type_id:'org.klenwriter.kwdj/strong',attributes:{}}},'toggle'),action('emphasis',text('Курсив','Italic'),{kind:'toggle_mark',mark:{type_id:'org.klenwriter.kwdj/emphasis',attributes:{}}},'toggle')],
+    ...(r.slash?{slash:{textBlockTypes:kwdjSlashTextBlockTypes,choices:kwdjSlashCandidates.map(candidate=>{
+      const description=slashCopy.choices.find(choice=>candidate.id===`org.klenwriter.kwdj/slash/${choice.id}`);assert(description,'Known source-authored localized candidate');
+      return {id:candidate.id,label:description.label,keywords:description.keywords,command(captured,query){
+        if(r.slashUnavailable===candidate.id)return unavailable('fixture.slash_unavailable');
+        // This controlled fault targets activation after the original lease,
+        // rather than an unrelated presentation refresh before the user's key.
+        if(r.slashFactoryFault===candidate.id&&r.editor.resources().hostRequests.pending>0){
+          r.slashFaultPending.push(r.editor.resources().hostRequests.pending);
+          r.slashFactoryFault=null;const point={kind:'text',node:r.ids.get('T'),offset:0,affinity:'after'};
+          r.slashFaultResults.push(copy(r.editor.submit({kind:'set_selection',stamp:r.editor.capture(),selection:{anchor:point,focus:point}})));}
+        return kwdjCommand(query?{kind:'accept_slash',target:candidate.target,range:query.range,literal:query.literal}:{kind:'insert_block',target:candidate.target});
+      }};
+    })}}:{}),
     insertions:[action('paragraph',text('Абзац','Paragraph'),{kind:'insert_block',target:{kind:'paragraph'}}),action('quote',text('Цитата','Quote'),{kind:'insert_block',target:{kind:'blockquote'}}),action('table',text('Таблица','Table'),{kind:'insert_block',target:{kind:'table'}})],blockActions:[],
     moves(captured){
       const {node,parent,index}=captured.block,read=id=>{const x=r.editor.read({kind:'node',stamp:captured.state.stamp,node:id});return x.status==='ok'&&x.value.kind==='node'?x.value.node:null;};
@@ -79,7 +92,7 @@ function profile(r){
   });
 }
 function publicFailure(value){return value?.status==='sdk_failure'?{status:value.status,response:copy(value.response)}:value?.status==='dom_refused'?copy(value):null;}
-function fixtureFacts(r){return {mode:r.mode,modeResults:copy(r.modeResults),hostAttributes:Object.fromEntries(['contenteditable','tabindex','role','aria-readonly','aria-disabled','aria-label'].map(key=>[key,r.element.getAttribute(key)])),clipboardResults:copy(r.clipboardResults),recoveryResults:copy(r.recoveryResults),nativeTrace:{enabled:r.nativeTraceEnabled,calls:r.nativeCalls.length,bytes:r.nativeTraceBytes,overflow:r.nativeTraceOverflow}};}
+function fixtureFacts(r){return {mode:r.mode,modeResults:copy(r.modeResults),hostAttributes:Object.fromEntries(['contenteditable','tabindex','role','aria-readonly','aria-disabled','aria-label','aria-haspopup','aria-controls','aria-activedescendant','aria-expanded'].map(key=>[key,r.element.getAttribute(key)])),clipboardResults:copy(r.clipboardResults),recoveryResults:copy(r.recoveryResults),...(r.slash?{ordinaryInputs:copy(r.ordinaryInputs??[]),slashFaultResults:copy(r.slashFaultResults),slashFaultPending:copy(r.slashFaultPending),slashCancelFocusTransitions:copy(r.slashCancelFocusTransitions??[])}:{}),nativeTrace:{enabled:r.nativeTraceEnabled,calls:r.nativeCalls.length,bytes:r.nativeTraceBytes,overflow:r.nativeTraceOverflow}};}
 function observedModule(r,{controlled=false,trace=false}={}){
   // Optional finite observation keeps exact call bytes and delegates unchanged.
   // Controlled geometry faults remain a distinct, explicitly labelled lane.
@@ -121,6 +134,10 @@ function createFixtureUi(r){
       r.results.push({status:result.status,action:result.action,submission:result.submission.status,...(result.submission.status==='completed'?{response:copy(result.submission.response)}:{})});
       const work=result.focus.then(value=>r.focusResults.push(copy(value)));r.focusPromises.push(work);
     }else r.results.push(copy(result));
+    if(result.status==='cancelled'&&result.action==='add'&&r.slashCancelTarget?.isConnected){
+      r.slashCancelTarget.focus({preventScroll:true});
+      if(r.slashCancelFocusTransitions.length<8)r.slashCancelFocusTransitions.push({targetId:r.slashCancelTarget.id,activeId:document.activeElement?.id??null});
+    }
   }});
   assert(!('status'in r.ui),JSON.stringify(r.ui));
 }
@@ -130,10 +147,11 @@ export async function mount(config={}){
   element.id=`${id}-editor`;element.className='ui-fixture-editor';element.setAttribute('aria-label',config.locale==='ru'?'Документ':'Document');
   for(const [name,node]of Object.entries({toolbar,gutter,entry}))node.id=`${id}-${name}`;
   wrapper.append(toolbar,element,gutter,entry);document.querySelector('#ui-mounts').append(wrapper);
-  const r={id,wrapper,element,slots:{toolbar,gutter,entry},ids:new Map(),events:[],failures:[],results:[],focusResults:[],focusPromises:[],requests:new Map(),hostConnections:[],hostOpenCount:0,hostCloseReasons:[],locale:config.locale??'en',notes:selected.job.profile.profile_id==='org.example.notes',faultResponses:[],geometryProbeResults:[],mode:config.mode??'editable',modeResults:[],clipboardResults:[],recoveryResults:[],nativeCalls:[],nativeTraceEnabled:config.nativeTrace===true,nativeTraceBytes:0,nativeTraceOverflow:false};records.set(id,r);
+  const r={id,wrapper,element,slots:{toolbar,gutter,entry},ids:new Map(),events:[],failures:[],results:[],focusResults:[],focusPromises:[],requests:new Map(),hostConnections:[],hostOpenCount:0,hostCloseReasons:[],locale:config.locale??'en',notes:selected.job.profile.profile_id==='org.example.notes',faultResponses:[],geometryProbeResults:[],mode:config.mode??'editable',modeResults:[],clipboardResults:[],recoveryResults:[],nativeCalls:[],nativeTraceEnabled:config.nativeTrace===true,nativeTraceBytes:0,nativeTraceOverflow:false,slash:config.slash===true,slashUnavailable:config.slashUnavailable??null,slashFactoryFault:null,slashFaultResults:[],slashFaultPending:[]};records.set(id,r);
   let job=copy(selected.job),rolePaths=selected.expected.rolesBefore;
   if(config.geometry){const f=geometry.fixtures[config.geometry];assert(f,'Closed geometry fixture');job.input=f.canonical_json;rolePaths=f.roles;job.selection=f.selection?resolve(r,f.selection):null;}
   if(config.source!==undefined)job.input=typeof config.source==='string'?config.source:JSON.stringify(config.source);
+  if(config.sourceRoles!==undefined)rolePaths=copy(config.sourceRoles);
   r.source=job.input;r.job=job;
   if(config.direction){assert(config.direction==='rtl','Closed fixture direction');element.dir='rtl';}
   assert(!(config.controlledReadFault&&config.nativeTrace),'Native trace and controlled transport faults are separate lanes');
@@ -149,8 +167,9 @@ export async function mount(config={}){
   }
   if(config.delayed)return {id,lifecycle:r.editor.lifecycle,uiCreated:false};
   const ready=await r.editor.ready;assert(ready.status==='ready',JSON.stringify(ready));r.editor.subscribe(event=>{r.events.push(copy(event));if(r.geometryProbe){const role=r.geometryProbe;r.geometryProbe=null;r.geometryProbeResults.push(copy(r.editor.geometry.read({kind:'block',node:r.ids.get(role),stamp:event.after})));}if(r.destroyProbe){r.destroyProbe=false;const receipt=r.editor.destroy();r.geometryProbeResults.push({phase:r.editor.lifecycle,sdkTicket:receipt.sdk.status,geometry:copy(r.editor.geometry.read({kind:'selection',stamp:event.after}))});}});bind(r,rolePaths);
-  const chosen=config.selection??(config.geometry?geometry.fixtures[config.geometry].selection??null:selected.expected.selectionBefore);
+  const chosen=Object.hasOwn(config,'selection')?config.selection:(config.geometry?geometry.fixtures[config.geometry].selection??null:selected.expected.selectionBefore);
   if(chosen){const request=r.editor.submit({kind:'set_selection',stamp:r.editor.capture(),selection:resolve(r,chosen)});assert(request.status==='completed'&&request.response.status==='ok','Literal selection setup');}
+  if(r.slash){r.ordinaryInputs=[];r.inputObservationRelease=r.editor.inputObservations.subscribe(event=>{assert(r.ordinaryInputs.length<256,'Finite fixture ordinary observations');r.ordinaryInputs.push(copy(event));});assert(typeof r.inputObservationRelease==='function','Real mounted ordinary observer');}
   if(config.geometryOnly)return {id,ready:ready.status,roles:Object.fromEntries(r.ids),uiCreated:false};
   if(!r.ui)createFixtureUi(r);const uiReady=await r.ui.ready;assert(uiReady.status==='ready',JSON.stringify(uiReady));r.events=[];
   return {id,ready:ready.status,uiReady:uiReady.status,roles:Object.fromEntries(r.ids),case:config.case??'V01-forward',...(r.uiCreation?{uiCreation:copy(r.uiCreation)}:{})};
@@ -190,6 +209,13 @@ export async function complete(id,name,intent,options={focus:'none'}){const r=re
 export async function cancel(id,name,options={focus:false}){const r=rec(id),value=r.editor.hostRequests.cancel(r.requests.get(name),options);return value.status==='cancelled'?{status:value.status,restore:value.restore?copy(await done(value.restore)):null}:copy(value);}
 export function lateAccept(id,index,value){const r=rec(id);r.hostConnections[index].accept(value);}
 export function status(id){return copy(rec(id).editor.hostRequests.status());}
+export function slashFactoryFault(id,candidate){const r=rec(id);assert(r.slash,'Closed slash fixture');r.slashFaultPending=[];r.slashFactoryFault=candidate;}
+export function textWindow(id){const r=rec(id);return copy(r.editor.read({kind:'text_window',stamp:r.editor.capture(),before_utf16:256,after_utf16:0}));}
+export function slashCancelFocus(id){const r=rec(id);assert(r.slash,'Closed slash focus fixture');const controls=[];
+  for(const suffix of ['cancel-first','cancel-next']){const button=document.createElement('button');button.type='button';button.tabIndex=0;button.id=`${id}-${suffix}`;button.textContent=suffix;r.wrapper.append(button);controls.push(button);}
+  r.slashCancelFocusTransitions=[];
+  r.slashCancelTarget=controls[0];return controls.map(button=>button.id);
+}
 export async function replace(id,source){const r=rec(id),result=await r.editor.replace(new TextEncoder().encode(typeof source==='string'?source:JSON.stringify(source)));r.ui.refresh();return copy(await done(result));}
 export async function destroy(id){const r=rec(id);if(r.ui)await r.ui.destroy().settled;const receipt=r.editor.destroy();if(receipt.sdk.status==='queued')await receipt.sdk.completion;r.releaseLoader?.();await Promise.resolve();const result={ui:r.ui?copy(r.ui.resources()):{listeners:0,observers:0,animationFrames:0,subscriptions:0,hostRequests:0,continuations:0},mounted:copy(r.editor.resources()),native:copy(r.editor.nativeResources()),...(r.nativeTraceEnabled?{nativeTrace:nativeTrace(id)}:{})};r.wrapper.remove();records.delete(id);return result;}
-window.ui42={mount,inspect,editorFocus,refresh,select,command,history,mode,locale,bindAfter,geometryRead,geometryRawRead,nativeFault,geometryProbeNextEvent,destroySubscriberProbe,destroyMountedProbe,mountedFacts,nativeTrace,nativeHostEdit,capture,release,complete,cancel,lateAccept,status,replace,destroy,publicFailure,cases:copy(cases),geometry:copy(geometry),moduleManifest:copy(module.manifest)};
+window.ui42={mount,inspect,editorFocus,refresh,select,command,history,mode,locale,bindAfter,geometryRead,geometryRawRead,nativeFault,geometryProbeNextEvent,destroySubscriberProbe,destroyMountedProbe,mountedFacts,nativeTrace,nativeHostEdit,capture,release,complete,cancel,lateAccept,status,slashFactoryFault,textWindow,slashCancelFocus,replace,destroy,publicFailure,cases:copy(cases),geometry:copy(geometry),moduleManifest:copy(module.manifest)};

@@ -28,6 +28,7 @@ pub mod convert;
 pub mod distribution;
 pub mod recipes;
 mod selection;
+mod text_window;
 pub use distribution::{CreatedEndpoint, Distribution, DistributionSession, capability_digest};
 pub use selection::SelectionTextData;
 

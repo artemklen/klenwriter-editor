@@ -148,6 +148,16 @@ pub struct SlashCandidate {
     pub target: BlockTarget,
 }
 
+/// Existing insertion source contexts. Presentation generation consumes this
+/// same native predicate; text-block primitive alone does not imply eligibility.
+pub const KWDJ_SLASH_TEXT_BLOCK_TYPES: &[&str] = &[
+    "org.klenwriter.kwdj/paragraph",
+    "org.klenwriter.kwdj/heading",
+];
+pub fn is_slash_text_block(type_id: &str) -> bool {
+    KWDJ_SLASH_TEXT_BLOCK_TYPES.contains(&type_id)
+}
+
 /// Discovery is immutable; exact execution availability is queried separately.
 pub const KWDJ_SLASH_CANDIDATES: &[SlashCandidate] = &[
     SlashCandidate {

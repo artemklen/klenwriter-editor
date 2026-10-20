@@ -152,6 +152,11 @@ impl Endpoint for KwdjEndpoint {
         if let Some(response) = self.inner.retained_fatal_response() {
             return self.inner.encode_response(response);
         }
+        if let Ok(request) = decode::<editor_protocol::v2::TextWindowRequestV2>(json) {
+            return self
+                .inner
+                .call_json_v2(&serde_json::to_string(&request).expect("closed read serializes"));
+        }
         if let Ok(request) = decode::<editor_protocol::v2::SelectionTextRequestV2>(json) {
             return self
                 .inner

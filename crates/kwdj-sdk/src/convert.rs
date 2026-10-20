@@ -6,6 +6,27 @@ use editor_engine::{NodeId, SessionKey};
 use editor_kwdj::KwdjProfileError;
 use editor_kwdj::commands::{BlockTarget, KwdjIntent, ListKind};
 
+/// Build-time/public typed projection of the actual native command target.
+pub fn target_out(v: &BlockTarget) -> BlockTargetDto {
+    match v {
+        BlockTarget::Paragraph => BlockTargetDto::Paragraph {},
+        BlockTarget::Heading { level } => BlockTargetDto::Heading { level: *level },
+        BlockTarget::CodeBlock { language } => BlockTargetDto::CodeBlock {
+            language: language.clone(),
+        },
+        BlockTarget::Blockquote => BlockTargetDto::Blockquote {},
+        BlockTarget::BulletList => BlockTargetDto::BulletList {},
+        BlockTarget::OrderedList { start } => BlockTargetDto::OrderedList {
+            start: start.to_string(),
+        },
+        BlockTarget::TaskList => BlockTargetDto::TaskList {},
+        BlockTarget::SceneBreak => BlockTargetDto::SceneBreak {},
+        BlockTarget::Table => BlockTargetDto::Table {},
+        BlockTarget::Poetry => BlockTargetDto::Poetry {},
+        BlockTarget::Media => BlockTargetDto::Media {},
+    }
+}
+
 pub fn target_in(v: &BlockTargetDto) -> Result<BlockTarget, DiagnosticDto> {
     Ok(match v {
         BlockTargetDto::Paragraph {} => BlockTarget::Paragraph,
