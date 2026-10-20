@@ -143,7 +143,7 @@ for(const scenario of data.cases)for(const variant of scenario.variants)test(`${
   const unsupported=scenario.id==='TP03',preTransform=unsupported?await checkpoint(page,id,'full real SDK canonical before unsupported transform'):null;
   const preTransformRaw=unsupported?await raw(page,id,literal):null;
   if(unsupported){expect(preTransform.native.canonical).toBe(item.input.canonical_json);record.raw.push({label:'before unsupported transform, focus setup complete',...preTransformRaw});}
-  await page.evaluate(({id,setup})=>{const wrapper=document.getElementById(id),editor=document.getElementById(`${id}-editor`);if(setup.wrapperClass)wrapper.classList.add(setup.wrapperClass);if(setup.existingExternalClass)editor.classList.add(setup.existingExternalClass);},{id,setup:scenario.setup});
+  await page.evaluate(({id,setup})=>{const wrapper=document.getElementById(id);if(setup.wrapperClass)wrapper.classList.add(setup.wrapperClass);if(setup.existingExternalClass)wrapper.classList.add(setup.existingExternalClass);},{id,setup:scenario.setup});
   await frames(page);
   const observation=unsupported?{snapshot:false}:undefined;
   const before=await checkpoint(page,id,'baseline after closed setup and real exact bookmark focus',observation);
@@ -165,7 +165,7 @@ for(const scenario of data.cases)for(const variant of scenario.variants)test(`${
   if(unsupported){
     // All unsupported-layout/fallback checks are finished. This is explicit
     // fixture CSS teardown, never focus/scroll/selection assistance to pass them.
-    record.layoutTeardown=await page.evaluate(({id,name})=>{const editor=document.getElementById(`${id}-editor`),present=editor.classList.contains(name);editor.classList.remove(name);return {kind:'remove_only_closed_transform_class_after_unsupported_assertions',name,presentBefore:present,presentAfter:editor.classList.contains(name),focusScrollOrSelectionRequested:false};},{id,name:scenario.setup.existingExternalClass});
+    record.layoutTeardown=await page.evaluate(({id,name})=>{const wrapper=document.getElementById(id),present=wrapper.classList.contains(name);wrapper.classList.remove(name);return {kind:'remove_only_closed_ancestor_transform_class_after_unsupported_assertions',name,presentBefore:present,presentAfter:wrapper.classList.contains(name),focusScrollOrSelectionRequested:false};},{id,name:scenario.setup.existingExternalClass});
     expect(record.layoutTeardown.presentBefore).toBe(true);expect(record.layoutTeardown.presentAfter).toBe(false);await frames(page);
     const restored=await checkpoint(page,id,'full real SDK canonical after explicit unsupported-layout teardown'),restoredRaw=await raw(page,id,literal);
     record.raw.push({label:'after CSS teardown, full canonical observations available',...restoredRaw});
