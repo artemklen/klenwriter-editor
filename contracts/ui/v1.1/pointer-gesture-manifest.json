@@ -1,0 +1,23 @@
+{
+  "format": "editor-ui-pointer-gesture-manifest/1",
+  "status": "DRAFT_READY_FOR_PARENT_FREEZE",
+  "authoredBeforePointerCorrection": true,
+  "sourceRevision": "d41f6740e26539754bc54f3bc679f1fb3e8c63a2",
+  "frozenV1Unchanged": true,
+  "existingToolbarManifestUnchanged": true,
+  "files": [
+    {
+      "path": "pointer-gesture.md",
+      "bytes": 3003,
+      "sha256": "c834a5ab13d41ebc6861c550556ebe879821378e077a8428cd2b714f1ab02376",
+      "mode": 420
+    },
+    {
+      "path": "pointer-gesture-cases.json",
+      "bytes": 4552,
+      "sha256": "a53bfe02f7dd254810e5ea1f1602416fea331d67d207317830ab52afc6f971ef",
+      "mode": 420
+    }
+  ],
+  "scope": "Independent additive pointer decision expectations; drafts/tests/patch outside checkout only. No runtime executed."
+}

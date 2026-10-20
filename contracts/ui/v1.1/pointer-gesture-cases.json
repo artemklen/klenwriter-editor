@@ -1,0 +1,162 @@
+{
+  "format": "editor-ui-pointer-gesture-cases/1",
+  "authoredBeforePointerImplementation": true,
+  "status": "DRAFT_READY_FOR_FREEZE",
+  "scope": "Controlled pointer/lifecycle ordering over actual mounted SDK/WASM. No physical/IME/browser-isTrusted claim; not a reinterpretation of installed development03.",
+  "geometry": {
+    "path": "contracts/ui/v1/geometry-fixtures.json",
+    "sha256": "0e5c03c8b57802ad940e3c1e1c3b3ae3f3c972865879050ef6a394e33f1a017c",
+    "fixture": "F",
+    "inputCanonical": "{\"content\":[{\"content\":[{\"text\":\"A😀éאב\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"text\":\"cd\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"type\":\"scene_break\"},{\"content\":[{\"text\":\"ef\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+    "roles": {
+      "R": [],
+      "P": [
+        0
+      ],
+      "T": [
+        0,
+        0
+      ],
+      "Q": [
+        1
+      ],
+      "P2": [
+        1,
+        0
+      ],
+      "U": [
+        1,
+        0,
+        0
+      ],
+      "S": [
+        2
+      ],
+      "P3": [
+        3
+      ],
+      "V": [
+        3,
+        0
+      ]
+    },
+    "inputSelection": {
+      "anchor": {
+        "kind": "text",
+        "node": "T",
+        "offset": 1,
+        "affinity": "after"
+      },
+      "focus": {
+        "kind": "text",
+        "node": "T",
+        "offset": 5,
+        "affinity": "after"
+      }
+    }
+  },
+  "controlledSettlement": {
+    "replacement": "q",
+    "textBefore": "A😀éאב",
+    "textAfter": "Aqאב",
+    "canonicalAfter": "{\"content\":[{\"content\":[{\"text\":\"Aqאב\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"text\":\"cd\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"type\":\"scene_break\"},{\"content\":[{\"text\":\"ef\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+    "selectionAfter": {
+      "anchor": {
+        "kind": "text",
+        "node": "T",
+        "offset": 2,
+        "affinity": "after"
+      },
+      "focus": {
+        "kind": "text",
+        "node": "T",
+        "offset": 2,
+        "affinity": "after"
+      }
+    },
+    "stampDelta": {
+      "revision": "1",
+      "selection_epoch": "1",
+      "history_epoch": "1"
+    },
+    "documentEvents": 1,
+    "stateEvents": 0,
+    "undoEntries": "1",
+    "redoEntries": "0",
+    "storedMarks": null,
+    "allOriginalIdsSurvive": true,
+    "nativeCommandId": "org.klenwriter.kwdj/command/insert-text",
+    "nativePayload": {
+      "kind": "insert_text",
+      "text": "q"
+    }
+  },
+  "cases": [
+    {
+      "id": "PG01",
+      "sequence": [
+        "controlled compositionstart",
+        "owned Strong pointerdown id73 rejected",
+        "bounded controlled q DOM edit + compositionend",
+        "actual native q settlement + UI available",
+        "same pointerup/click detail1 id73"
+      ],
+      "expected": {
+        "lateUiSubmissions": 0,
+        "lateNativeMutations": 0,
+        "nativeAndDomState": "unchanged from independently verified q settlement",
+        "freshPointerAfterConsumedRejection": "one ordinary Strong state-only action permitted"
+      }
+    },
+    {
+      "id": "PG02",
+      "sequence": [
+        "same rejected-down/q settlement prefix",
+        "new fresh pointerdown/click Strong"
+      ],
+      "expected": {
+        "uiSubmissions": 1,
+        "nativeUiCommand": "Strong",
+        "storedMarks": [
+          {
+            "type_id": "org.klenwriter.kwdj/strong",
+            "attributes": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "PG03",
+      "sequence": [
+        "same rejected-down/q settlement prefix",
+        "keyboard Enter on Strong"
+      ],
+      "expected": {
+        "uiSubmissions": 1,
+        "keyboardEntryUnaffected": true
+      }
+    },
+    {
+      "id": "PG04",
+      "sequence": [
+        "same rejected-down/q settlement prefix",
+        "keyboard Space on Strong"
+      ],
+      "expected": {
+        "uiSubmissions": 1,
+        "keyboardEntryUnaffected": true
+      }
+    },
+    {
+      "id": "PG05",
+      "sequence": [
+        "same rejected-down/q settlement prefix",
+        "controlled AT-compatible MouseEvent click detail0 on Strong"
+      ],
+      "expected": {
+        "uiSubmissions": 1,
+        "scope": "Zero-detail activation compatibility only, not actual assistive technology acceptance"
+      }
+    }
+  ]
+}
