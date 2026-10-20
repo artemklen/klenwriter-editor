@@ -1,0 +1,64 @@
+{
+  "format": "editor-ui-chrome-find-presentation-manifest/3",
+  "status": "FROZEN_SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "head": "a20409bf03f0263ae2e9b96b7e2458cfa6a3a804",
+  "sourcePins": [
+    {
+      "path": "scripts/ui-native/input.mjs",
+      "bytes": 16767,
+      "sha256": "4449d2c81a261a2539a8c0be52bb6c580768b8f379ff973446d8714fdb5ab6fa"
+    },
+    {
+      "path": "scripts/ui-native/guard.swift",
+      "bytes": 14319,
+      "sha256": "39ff755cda7fe8568d45d685fa999133131cde6e392b97a00111b46ef2cb7625"
+    },
+    {
+      "path": "scripts/ui-native/protocol.mjs",
+      "bytes": 3850,
+      "sha256": "cc8c66fac2dbeee57d91132c81873d85c3a29ead246a8ee6407f3684ce1a2ee0"
+    },
+    {
+      "path": "scripts/ui-native/chrome-adapter.mjs",
+      "bytes": 8491,
+      "sha256": "bd7da7e9a817e7279b6f0d472634c91bccd69656a855063469eb79ea9b850856"
+    },
+    {
+      "path": "scripts/ui-native-acceptance.mjs",
+      "bytes": 41706,
+      "sha256": "464e803e806b3de05be77d819913016c006503eb87267d48b5c680d034b78491"
+    },
+    {
+      "path": "scripts/ui-native/page-fixture.mjs",
+      "bytes": 13979,
+      "sha256": "d08db9449e5b62676169c96a493e65a46290ca5f70a8a650f698c4f2d738d7b1"
+    },
+    {
+      "path": "tests/ui-native-input.node.mjs",
+      "bytes": 19267,
+      "sha256": "730f573cdeaa1cd7660e09c61fc5661ccd90967d07546a2a508a44bf94ecf753"
+    }
+  ],
+  "files": [
+    {
+      "path": "find-presentation.md",
+      "bytes": 5892,
+      "sha256": "7365918f5f8fb8e29b71dbc16be11ef0c870e3e747fe2f27f43d18e67fd8ebf3"
+    },
+    {
+      "path": "find-presentation-cases.json",
+      "bytes": 5293,
+      "sha256": "af23462f1bfc2c2516f41399f0ce76c249617c86368df357cf13dc47bf9c43d5"
+    },
+    {
+      "path": "find-presentation-design.json",
+      "bytes": 6730,
+      "sha256": "9142fbf1054eede0085da4fe880bcb530cd1759c16205e6b5cb22071f872083d"
+    },
+    {
+      "path": "chrome10-observation.json",
+      "bytes": 5150,
+      "sha256": "a3af16e1a018d0f49ab5f19770c774f932b02cc7b98ae731e169dde95893ec3c"
+    }
+  ]
+}

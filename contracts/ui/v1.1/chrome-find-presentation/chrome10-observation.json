@@ -1,0 +1,136 @@
+{
+  "format": "editor-ui-chrome-find-observation/1",
+  "sourceReport": {
+    "path": "/tmp/osr-42-installed-development-a20409b-10/chrome/chrome.json",
+    "bytes": 22240511,
+    "sha256": "729fdb7dc84fbfe9e4c5df1770ef6b5e253434dddd89251f4e28ae7f705a3bfe"
+  },
+  "originalStatus": "FAILED",
+  "originalCounts": {
+    "PASS": 10,
+    "REFUSED": 0,
+    "FAILED": 1,
+    "UNOBSERVED": 4,
+    "UNSUPPORTED": 0,
+    "NOT_RUN": 15
+  },
+  "originalActionCount": 48,
+  "failedCase": {
+    "locale": "en",
+    "caseId": "modes-zoom",
+    "status": "FAILED"
+  },
+  "sourceClean": true,
+  "sourceUnchanged": true,
+  "helperStable": true,
+  "restoration": "RESTORED",
+  "preFindOriginalRequest": {
+    "format": "osr42-native-input/1",
+    "browser": "chrome",
+    "nonce": "1060786125850bbed35fb525d7a51405",
+    "title": "KlenWriter UI native 1060786125850bbed35fb525d7a51405",
+    "fixtureUrl": "http://127.0.0.1:4174/ui",
+    "mountedId": "ui42-15",
+    "requestId": "1060786125850bbed35fb525d7a51405:266",
+    "serial": 48,
+    "caseId": "modes-zoom",
+    "action": "find",
+    "target": "focused",
+    "point": null,
+    "viewport": {
+      "width": 1024,
+      "height": 768,
+      "scale": 1,
+      "offsetLeft": 0,
+      "offsetTop": 0,
+      "pageZoom": 1
+    },
+    "pointerDown": false,
+    "cleanupOnly": false,
+    "deadlineMs": 998
+  },
+  "preFindOriginalResponse": {
+    "action": "find",
+    "axViewport": {
+      "height": 768,
+      "width": 1024,
+      "x": 22,
+      "y": 139
+    },
+    "axWindow": {
+      "height": 855,
+      "width": 1026,
+      "x": 22,
+      "y": 52
+    },
+    "axWindowCount": 1,
+    "caseId": "modes-zoom",
+    "cleanupOnly": false,
+    "delivery": "not_sent",
+    "elapsedMs": 33.630208,
+    "expectedAxWindowTitle": "KlenWriter UI native 1060786125850bbed35fb525d7a51405 - Google Chrome",
+    "frontBundle": "com.google.Chrome",
+    "frontPid": 28891,
+    "mountedId": "ui42-15",
+    "nonce": "1060786125850bbed35fb525d7a51405",
+    "observedAxWindowTitle": "KlenWriter UI native 1060786125850bbed35fb525d7a51405 - Google Chrome",
+    "requestId": "1060786125850bbed35fb525d7a51405:266",
+    "status": "guarded",
+    "target": "focused"
+  },
+  "postOriginalExecution": {
+    "command": "/usr/bin/osascript",
+    "argv": [
+      "/tmp/osr-42-installed-development-a20409b-10/chrome/ui42-native-helpers-KiVFKT/fixed-keys.scpt",
+      "chrome",
+      "KlenWriter UI native 1060786125850bbed35fb525d7a51405 - Google Chrome",
+      "28891",
+      "find"
+    ],
+    "returnCode": 1,
+    "signal": null,
+    "stdout": "",
+    "stderr": "UI42 find POST guard diagnostic, 28891, Google Chrome, com.google.Chrome, frontmost, frontmost of «class pcap» Google Chrome, windowCount, 2, windowCap, 32, titleCap, 96\nfocusedWindowTitle, KlenWriter UI native 1060786125850bbed35fb525d7a51405 - Google Chrome\nwindow, 1, name, Find in page\n    KlenWriter UI native 1060786125850bbed35fb525d7a51405, position, 612, 124, size, 403, 84, role, AXWindow, subrole, AXUnknown\nwindow, 2, name, KlenWriter UI native 1060786125850bbed35fb525d7a51405 - Google Chrome, position, 22, 52, size, 1026, 855, role, AXWindow, subrole, AXStandardWindow\n/tmp/osr-42-installed-development-a20409b-10/chrome/ui42-native-helpers-KiVFKT/fixed-keys.scpt: execution error: Fixture title not frontmost (-2700)\n",
+    "error": null
+  },
+  "postWindowFacts": {
+    "provenance": "Literal same-PID AppleScript diagnostic lines, not AX object identity proof",
+    "pid": 28891,
+    "rootFocusedTitle": "KlenWriter UI native 1060786125850bbed35fb525d7a51405 - Google Chrome",
+    "windowCount": 2,
+    "windows": [
+      {
+        "name": "Find in page\n    KlenWriter UI native 1060786125850bbed35fb525d7a51405",
+        "role": "AXWindow",
+        "subrole": "AXUnknown",
+        "frame": {
+          "x": 612,
+          "y": 124,
+          "width": 403,
+          "height": 84
+        }
+      },
+      {
+        "name": "KlenWriter UI native 1060786125850bbed35fb525d7a51405 - Google Chrome",
+        "role": "AXWindow",
+        "subrole": "AXStandardWindow",
+        "frame": {
+          "height": 855,
+          "width": 1026,
+          "x": 22,
+          "y": 52
+        }
+      }
+    ],
+    "auxContainedArithmetic": true,
+    "focusedObjectIdentity": "UNKNOWN_FROM_DIAGNOSTIC; candidate must independently require it",
+    "frontmostDiagnostic": "logged an AppleScript property specifier, not an explicit boolean; original strict postcheck control flow passed frontmost guard before failing title-front order"
+  },
+  "cleanupError": "/tmp/osr-42-installed-development-a20409b-10/chrome/ui42-native-helpers-KiVFKT/fixture-input: {\"delivery\":\"not_sent\",\"elapsedMs\":22.26275,\"reason\":\"Unique measured AXWebArea viewport unavailable\",\"status\":\"refused\"}\n",
+  "currentFindAXWebViewport": "UNKNOWN; original unique-measurement refusal is not evidence of a replacement viewport",
+  "clipboard": {
+    "strictPbpasteStdout": "ab\ncd",
+    "appleScriptStdout": "ab\rcd\n"
+  },
+  "qualification": "Original Chrome10 remains FAILED. No screenshot/findObservation reached. No URL/AXWebArea selector facts invented; no OS action or appdata read."
+}

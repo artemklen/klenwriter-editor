@@ -1,0 +1,146 @@
+{
+  "format": "editor-ui-chrome-find-presentation-cases/3",
+  "status": "SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "cases": [
+    {
+      "id": "FD-N01",
+      "description": "own Find creates one prospective then accepted episode; exact open proof and cap1",
+      "expected": "ACCEPT_WINDOW_ONLY",
+      "vectors": [
+        "coreACK valid",
+        "postphase open",
+        "fresh matching open Swift proof",
+        "no axViewport",
+        "postFind uses original requestId/serial+same1s; no new guard"
+      ]
+    },
+    {
+      "id": "FD-N02",
+      "description": "closeFind under accepted episode and exact Escape closes only owned Find",
+      "expected": "CLOSED_RETIRED",
+      "vectors": [
+        "open preproof",
+        "same Escape transitions",
+        "closedACK old guards+count1+originalframe",
+        "documentFocused true+native unchanged",
+        "own fresh close pageguard/1s, not elapsed Find budget"
+      ]
+    },
+    {
+      "id": "FD-N03",
+      "description": "missing/invalid original coreACK remains unknown",
+      "expected": "FAILED_PENDING_ONE_UP_ONLY",
+      "vectors": [
+        "no accepted episode/screenshot/normalaction",
+        "prospective exacttuple retained",
+        "no CmdF replay"
+      ]
+    },
+    {
+      "id": "FD-N04",
+      "description": "wrong owner tuple never binds or continues",
+      "expected": "REFUSED",
+      "vectors": [
+        "wrongPID",
+        "wrongname/bundle",
+        "wrongnonce",
+        "wrongmount",
+        "wrongcase",
+        "wrongoriginalFindrequest",
+        "wrongserial/deadline"
+      ]
+    },
+    {
+      "id": "FD-N05",
+      "description": "open topology requires complete exact root+aux proof and no fake viewport",
+      "expected": "REFUSED_INVALID_VECTORS",
+      "vectors": [
+        "extra/missing/duplicate windows",
+        "wrong full aux title or nonce",
+        "wrongrole/subrole",
+        "sameobject root/aux",
+        "focusedobject aux instead of root",
+        "outside/zero/nonfinite aux",
+        "changed originalrootframe",
+        "axViewport/point injected"
+      ]
+    },
+    {
+      "id": "FD-N06",
+      "description": "one matching prospective UP-only cleanup succeeds under fresh special ownership",
+      "expected": "FAILED_ORIGINAL_PRESERVED_KEYS_RELEASED",
+      "vectors": [
+        "only original modifier/key UP transitions",
+        "no down/Escape/CmdF replay",
+        "samepid/frame/mount/case/nonce",
+        "one attempt",
+        "original find cleanup command/key3 UP only",
+        "original close-find cleanup key53-up only; never CmdF",
+        "cleanup post exactOPEN or strictCLOSED; still originalFAILED",
+        "fresh explicit release measurement accepts OPEN2 or strictCLOSED1; phase echoed",
+        "never phase guess/trial normal viewport fallback"
+      ]
+    },
+    {
+      "id": "FD-N07",
+      "description": "cleanup mismatch retires special authority and never retries",
+      "expected": "REFUSED_ORIGINAL_FAILURE_PRESERVED",
+      "vectors": [
+        "wrongtuple/frame/topology",
+        "onecleanup attempt consumed",
+        "inputowner remainsdisabled"
+      ]
+    },
+    {
+      "id": "FD-N08",
+      "description": "Find screenshot requires accepted episode and fresh exact read-only closure",
+      "expected": "CROP_ORIGINAL_ROOT_ONLY",
+      "vectors": [
+        "no accepted episode\u2192refuse",
+        "fresh purpose screenshot",
+        "auxcontained",
+        "no axViewport/currentviewportclaim",
+        "ordinary screenshot unchanged",
+        "NEW read-only close-find pageguard advances serial without Escape",
+        "own fresh screenshot pageguard/1s, not elapsed Find budget"
+      ]
+    },
+    {
+      "id": "FD-N09",
+      "description": "finish/mount/context change retires episode; default/Safari/ordinary actions unchanged",
+      "expected": "NO_SPECIAL_AUTHORITY",
+      "vectors": [
+        "default/Safari original4args/oldguards",
+        "ordinarykey/pointer cannotuse specialmode",
+        "finish/mount/context change clears accepted/prospective records"
+      ]
+    },
+    {
+      "id": "FD-N10",
+      "description": "valid original coreACK followed by wrong new phase/postproof/deadline is known completed",
+      "expected": "FAILED_KNOWN_COMPLETED_NO_UP",
+      "vectors": [
+        "pendingcleared BEFORE newphase/postproof",
+        "disable andretire episode",
+        "no redundantUP",
+        "alloldknown-completed-late expectations retained"
+      ]
+    }
+  ],
+  "unitTestNames": [
+    "FD-N01 own Find creates one exact accepted window-only episode",
+    "FD-N02 exact closeFind retires the owned episode",
+    "FD-N03 unknown original key ACK permits only one owned UP cleanup",
+    "FD-N04 owner tuple mismatch refuses special authority",
+    "FD-N05 malformed Find topology never invents a viewport",
+    "FD-N06 prospective Find permits one matching UP-only cleanup",
+    "FD-N07 failed cleanup cannot retry or rebind",
+    "FD-N08 screenshot uses only accepted original-root closure",
+    "FD-N09 finish and context change retire while legacy lanes stay strict",
+    "FD-N10 known-completed key never receives redundant UP after new postcondition failure"
+  ],
+  "expectedAdditionalUnitTests": 10,
+  "expectedUnitTotal": 155,
+  "browserCaseAddition": 0,
+  "noRuntimeProof": true
+}

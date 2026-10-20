@@ -1,0 +1,203 @@
+{
+  "format": "editor-ui-chrome-find-design/3",
+  "privateOptIn": {
+    "name": "nativeFindEpisode",
+    "value": "chrome-fd01",
+    "actualChromeOnly": true,
+    "defaultAndSafari": "original unchanged behavior"
+  },
+  "episode": {
+    "keys": [
+      "pid",
+      "rootFrame",
+      "nonce",
+      "title",
+      "mountedId",
+      "caseId",
+      "findRequestId"
+    ],
+    "cap": 1,
+    "states": [
+      "absent",
+      "prospective",
+      "accepted"
+    ],
+    "noDomRefs": true
+  },
+  "request": {
+    "exactKeys": [
+      "format",
+      "browser",
+      "nonce",
+      "title",
+      "fixtureUrl",
+      "mountedId",
+      "caseId",
+      "findRequestId",
+      "requestId",
+      "serial",
+      "pid",
+      "rootFrame",
+      "purpose",
+      "deadlineMs"
+    ],
+    "formatValue": "osr42-chrome-find-window/1",
+    "browserValue": "chrome",
+    "titleValue": "KlenWriter UI native <nonce>",
+    "fixtureUrlValue": "http://127.0.0.1:4174/ui",
+    "caseIdValue": "modes-zoom",
+    "pid": "positive exact original strict pre-guard PID",
+    "rootFrame": "exact original finite positive {x,y,width,height}",
+    "deadlineMs": "integer1..1000 AND remaining same monotonic guard budget",
+    "nonce": "existing32 lowercasehex rule",
+    "mountedId": "existingui42-mount closed rule",
+    "requestIdAndFindRequestId": "same nonce request namespace; original Find request bound",
+    "serial": "existing1..2048 monotonic rule",
+    "forbidden": [
+      "viewport",
+      "axViewport",
+      "point",
+      "arbitrary action",
+      "arbitrary URL"
+    ]
+  },
+  "modes": {
+    "--inspect-find-window": {
+      "purpose": [
+        "post-find",
+        "screenshot"
+      ],
+      "resultStatus": "inspected",
+      "inputTransitions": 0,
+      "phasePolicy": {
+        "post-find": "OPEN only",
+        "screenshot": "OPEN only"
+      }
+    },
+    "--guard-find-key": {
+      "purpose": [
+        "pre-close-find",
+        "release-find",
+        "release-close-find"
+      ],
+      "resultStatus": "guarded",
+      "inputTransitions": 0,
+      "impliedOriginalAction": {
+        "pre-close-find": "close-find, cleanupOnly false",
+        "release-find": "find, cleanupOnly true, only original pending UP transitions",
+        "release-close-find": "close-find, cleanupOnly true, only original pending key53-up"
+      },
+      "phasePolicy": {
+        "pre-close-find": "OPEN only",
+        "release-find": "fresh measured OPEN2 or strictCLOSED1; original CmdF UP only",
+        "release-close-find": "fresh measured OPEN2 or strictCLOSED1; original key53 UP only"
+      }
+    }
+  },
+  "response": {
+    "exactKeys": [
+      "format",
+      "status",
+      "delivery",
+      "measurement",
+      "purpose",
+      "browser",
+      "nonce",
+      "title",
+      "fixtureUrl",
+      "mountedId",
+      "caseId",
+      "findRequestId",
+      "requestId",
+      "serial",
+      "frontPid",
+      "frontBundle",
+      "expectedAxWindowTitle",
+      "observedAxWindowTitle",
+      "axWindowCount",
+      "axWindow",
+      "rootFocused",
+      "rootRole",
+      "rootSubrole",
+      "findAux",
+      "contained",
+      "elapsedMs",
+      "nativeFindPhase"
+    ],
+    "formatValue": "osr42-chrome-find-window/1",
+    "delivery": "not_sent",
+    "measurement": "native-find-window-only",
+    "rootFocused": true,
+    "rootRole": "AXWindow",
+    "rootSubrole": "AXStandardWindow",
+    "axWindowCount": "2 if open;1 if cleanup-only closed",
+    "axWindow": "actual original root frame, deepEqual private baseline",
+    "findAux": {
+      "exactKeys": [
+        "title",
+        "role",
+        "subrole",
+        "frame"
+      ],
+      "title": "Find in page\n    KlenWriter UI native <nonce>",
+      "role": "AXWindow",
+      "subrole": "AXUnknown",
+      "frame": "actual finite positive fully contained frame"
+    },
+    "contained": true,
+    "noAxViewport": true,
+    "nativeFindPhase": "open or cleanup-only closed, from this fresh actual measurement",
+    "findAuxWhenClosed": null,
+    "closedConstraints": "sole original root exactname/role/subrole/frame; focused genuine same root, normal frontroot, no aux; only release purposes"
+  },
+  "appleScript": {
+    "legacyArgv4": [
+      "browser",
+      "rootTitle",
+      "pid",
+      "action"
+    ],
+    "specialChromeArgv8": [
+      "chrome",
+      "rootTitle",
+      "pid",
+      "find|close-find|release-find|release-close-find",
+      "x",
+      "y",
+      "width",
+      "height"
+    ],
+    "extraArgs": "closed original root frame decimalfinite numbers; only opted-in special actions",
+    "coreAck": "existing status/action/keyCode/modifiers/keyTransitions/frontPid validated BEFORE Find-phase/postproof; valid core implies keys complete even if new acceptance fails",
+    "additiveAckField": "nativeFindPhase",
+    "phaseValues": {
+      "find": "open",
+      "release-find": "fresh OPEN2 or strictCLOSED1 before+after original CmdF UP; no original action acceptance",
+      "close-find": "closed",
+      "release-close-find": "fresh OPEN2 or strictCLOSED1 before+after key53-up; never CmdF transition"
+    },
+    "postFind": "OPEN predicate",
+    "preClose": "OPEN predicate",
+    "postClose": "original strict root front/focus/frame +count1+exact aux absent",
+    "beforeFind": "original strict guard unchanged plus original frame check",
+    "cleanupSelection": "use same explicit AS8 window-only release flow for both measured phases, never try/fallback normal viewport guard or choose from cached phase"
+  },
+  "coordinator": {
+    "screenshot": "accepted episode only, fresh specific window-only proof, original root crop, explicit purpose; no viewport claim",
+    "afterEscape": "fresh documentFocused true +native unchanged checkpoint",
+    "finish": "retire private episode",
+    "unknown": "no retry/normal work; one matching UP-only cleanup may use prospective, row remains FAILED",
+    "postFindFreshness": "Reuse original find guard requestId+serial, all proof work inside SAME original1s budget",
+    "screenshotFreshness": "Obtain NEW read-only guard(close-find), same episode tuple, advance serial and its OWN1s budget, no key; then fresh explicit OS screenshot proof",
+    "unknownCloseFind": "Keep pending.action close-find; fresh window-only release-close-find proof measures OPEN2 or strictCLOSED1; only key53-up. No normal viewport fallback/discovery or stale-phase guessing. Original remains FAILED; no accepted episode.",
+    "closeFreshness": "Actual close-find obtains its own fresh pageguard and1s monotonic budget; never original Find start"
+  },
+  "expectedInventory": {
+    "baseUnits": 145,
+    "newClosedNodeUnits": 10,
+    "totalUnits": 155,
+    "uiBrowser": 216,
+    "overallBrowser": 972
+  },
+  "status": "SOURCE_PROPOSAL_NOT_EXECUTED"
+}
