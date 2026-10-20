@@ -372,7 +372,7 @@ for(const variant of rl.variants)test(`RL01 ${variant.locale} ${variant.layoutSc
   expect(await page.evaluate(()=>window.rlEvents.map(e=>({event:e.event,sameAdd:e.sameAdd})))).toEqual([{event:'pointerdown',sameAdd:true},{event:'pointerup',sameAdd:true},{event:'click',sameAdd:true}]);
   // Explicit noncomposing readonly/focus setup: focus priority, full description,
   // and a real floating gutter retain their own scroll bounds. No native edit.
-  await call(page,'mode',id,'readonly');await rlFrames(page);
+  const modeUpdate=await call(page,'mode',id,'readOnly');expect(modeUpdate).toEqual({status:'updated',mode:'readOnly'});await rlFrames(page);
   const modeBase=await checkpoint(page,id,'RL01 explicit readonly setup at the SAME variant scale');unchanged(modeBase,before);
   const bold=control(page,id,'strong'),italic=control(page,id,'emphasis');await bold.focus();await italic.hover();await rlReason(page,bold,rl.modeReason[variant.locale]);
   const otherId=(await italic.getAttribute('aria-describedby')).split(/\s+/)[0];await expect(page.locator(`[id="${otherId}"]`)).not.toBeVisible();
