@@ -135,8 +135,11 @@ for(const scenario of data.cases)for(const variant of scenario.variants)test(`${
   expect(mounted.ready).toBe('ready');expect(mounted.uiReady).toBe('ready');const id=mounted.id,toolbar=page.locator(`#${id}`).getByRole('toolbar'),bold=toolbar.locator('[data-editor-ui-action=strong]');
   await expect(toolbar).toHaveAccessibleName('Text formatting');expect(await page.locator(`#${id}`).getByRole('status').textContent()).not.toMatch(/^(Открываем документ…|Opening document…)$/);
   const initial=await raw(page,id,literal);record.raw.push({label:'original keyed controls before layout setup',...initial});
+  // Exact bookmark focus is setup, before deliberately unsupported geometry.
+  // It must succeed; presentation-only assertions start after the layout setup.
+  const focused=await call(page,'editorFocus',id);expect(focused.response?.status).toBe('ok');await expect(page.locator(`#${id}-editor`)).toBeFocused();
   await page.evaluate(({id,setup})=>{const wrapper=document.getElementById(id),editor=document.getElementById(`${id}-editor`);if(setup.wrapperClass)wrapper.classList.add(setup.wrapperClass);if(setup.existingExternalClass)editor.classList.add(setup.existingExternalClass);},{id,setup:scenario.setup});
-  const focused=await call(page,'editorFocus',id);expect(focused.response.status).toBe('ok');await expect(page.locator(`#${id}-editor`)).toBeFocused();await frames(page);
+  await frames(page);
   const before=await checkpoint(page,id,'baseline after closed setup and real exact bookmark focus');
   expect(before.native.canonical).toBe(item.input.canonical_json);expect(before.native.state.selection).toEqual(inputSelection(before.native.roles,item.input.selection));expect(before.native.results).toEqual([]);
   const a=await raw(page,id,literal,true);record.raw.push({label:'before explicit presentation refresh',...a});
