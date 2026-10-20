@@ -53,7 +53,22 @@ owned-window screenshot; a single fresh-window-guarded Escape closes it.
 
 Composition rows first require actual trusted compositionstart and an unresolved
 native window. The distinct pointer gesture is separately guarded/acknowledged.
-A window that ended before the gesture is UNOBSERVED. A window observed through
+A window that ended before the gesture is UNOBSERVED only after the additive
+`contracts/ui/v1.1/composition-observation` proof: one genuine current trusted
+start/preedit, an explicitly recorded terminal strictly before actual trusted
+pointerdown, and exactly one predeclared native InsertText finished no later
+than that down. Mount and document-local `performance.timeOrigin` must match;
+all original request/response bytes, native state, identity, one undo unit and
+no-replay assertions remain mandatory. Every terminal keeps its actual trust;
+observed-ended metadata never turns an untrusted event into positive native IME
+evidence. A missing/late/throwing call, another mutation, or ambiguous order
+fails. `composition-observation.mjs` is pinned with the other closed helpers;
+its pure CO units run from the existing transport-unit entry. Source-bound41
+P18/P19 U+00B4 may identify an early spacing-accent insertion for this opportunity
+classification only. It does not count as42 protected-gesture acceptance.
+Original Chrome03 stays FAILED: its old call rows lack ordering times and also
+contain an additional toolbar command. No historical bytes are rewritten.
+A window observed through
 the gesture must preserve actual text/objects/range/focus and native state; an
 end during the gesture fails preservation. Settlement must show no UI command
 replay. Explicit retained recovery is REFUSED, never a fixed positive commit.
@@ -70,7 +85,10 @@ Prior41 cancel/blur limitations and other platforms are not promoted to42 proof.
 Reports retain PASS/REFUSED/FAILED/UNOBSERVED/UNSUPPORTED/NOT_RUN, actual action
 counts and original source/compiled/helper/version/input-source pins. Missing
 or uncertain evidence is not PASS. Source traces are exact original request and
-response bytes from the pass-through fixture, with finite bounds and explicit
+response bytes from the pass-through fixture. Each actual native call is timed
+immediately around the original call, before reply parsing; a thrown original
+value retains bounded error provenance and no fabricated response/completion.
+This is bounded call ordering, not a performance measurement. Finite bounds and explicit
 overflow failure. Screenshots cover only the exact owned foreground AX window.
 No browser profile/app-data contents are read or copied into evidence.
 

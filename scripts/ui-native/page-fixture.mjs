@@ -5,6 +5,7 @@ const check=(condition,message)=>{if(!condition)throw Error(message);};
 const host=()=>{check(window.ui42,'Public42 fixture ready');return window.ui42;};
 let active=null,traceOverflow=false,policyOverflow=false,errorOverflow=false;
 const trace=[],policy=[],errors=[],objects=new WeakMap();let nextObject=0;
+const observationClock=Object.freeze({kind:'performance.now',timeOrigin:performance.timeOrigin});
 function pageError(value){if(errors.length===64){errorOverflow=true;return;}errors.push(String(value).slice(0,2048));}
 window.addEventListener('error',event=>pageError(event.message));window.addEventListener('unhandledrejection',event=>pageError(event.reason?.message??event.reason));
 const token=node=>node?(objects.has(node)?objects.get(node):(objects.set(node,++nextObject),nextObject)):null;
@@ -12,12 +13,18 @@ function bounded(value,max){check(typeof value==='string'&&value.length<=max,'Bo
 function identity(element){return element instanceof Element?{id:element.id,tag:element.tagName,action:element.getAttribute('data-editor-ui-action'),control:element.getAttribute('data-editor-ui-control'),buttonText:element.tagName==='BUTTON'?bounded(element.textContent,256):null}:null;}
 function record(event){
   if(!active)return;if(trace.length>=16384){traceOverflow=true;return;}
-  const row={time:performance.now(),event:event.type,isTrusted:event.isTrusted,target:identity(event.target),active:identity(document.activeElement),key:event.key??null,code:event.code??null,
+  const row={ordinal:trace.length+1,mountId:active.id,clock:observationClock,time:performance.now(),event:event.type,isTrusted:event.isTrusted,target:identity(event.target),active:identity(document.activeElement),key:event.key??null,code:event.code??null,
     shift:!!event.shiftKey,alt:!!event.altKey,meta:!!event.metaKey,ctrl:!!event.ctrlKey,data:event.data==null?null:bounded(event.data,65536),inputType:event.inputType??null,
     button:event.button??null,buttons:event.buttons??null,pointerId:event.pointerId??null,x:event.clientX??null,y:event.clientY??null,defaultPrevented:event.defaultPrevented};
   trace.push(row);queueMicrotask(()=>{row.defaultPrevented=event.defaultPrevented;});
   if(event.isTrusted&&event.type==='compositionstart'){active.composition.open=true;active.composition.starts++;}
   if(event.isTrusted&&event.type==='compositionend'){active.composition.open=false;active.composition.ends++;}
+  // An observed terminal and a TRUSTED native terminal are independent facts.
+  // The former never increments the latter or authorizes a positive IME result.
+  if(event.type==='compositionend'){
+    active.composition.observedEnded=true;
+    active.composition.terminals.push({ordinal:row.ordinal,time:row.time,isTrusted:row.isTrusted,mountId:row.mountId,clock:observationClock});
+  }
   if(event.isTrusted&&event.type==='keydown'&&event.code==='KeyF'&&event.metaKey&&active.caseId==='modes-zoom')active.findArmed=true;
 }
 for(const name of ['keydown','keyup','beforeinput','input','compositionstart','compositionupdate','compositionend','pointerdown','pointerup','click','focusin','focusout','copy'])document.addEventListener(name,record,true);
@@ -49,7 +56,7 @@ export async function prepare(locale,caseId){
   const notes=['host-dialog','composition-dialog'].includes(caseId),geometry=caseId.startsWith('composition-')&&!notes?'F':null;
   const nativeCase=notes?'V06-NC011-root-title-owned-metadata':caseId.startsWith('add-')?'V03-root-gap':caseId.startsWith('move-')?(caseId.endsWith('-down')?'V04-down':'V04-up'):'V01-forward';
   const mounted=await host().mount({case:nativeCase,locale,nativeTrace:true,...geometry?{geometry}: {}});check(mounted.ready==='ready'&&mounted.uiReady==='ready','Actual native+UI readiness');
-  active={id:mounted.id,caseId,locale,nativeCase,baselineDpr:devicePixelRatio,baselineWidth:innerWidth,outerWidth,outerHeight,composition:{open:false,starts:0,ends:0},findArmed:false,restorations:[]};
+  active={id:mounted.id,caseId,locale,nativeCase,baselineDpr:devicePixelRatio,baselineWidth:innerWidth,outerWidth,outerHeight,composition:{open:false,starts:0,ends:0,observedEnded:false,terminals:[]},findArmed:false,restorations:[]};
   for(const name of ['ui-before','ui-after']){const button=document.getElementById(name);active.restorations.push({button,value:button.getAttribute('tabindex')});button.setAttribute('tabindex','0');}
   await host().editorFocus(active.id);host().refresh(active.id);
   if(caseId==='navigation')control('before').focus({preventScroll:true});
@@ -75,8 +82,9 @@ export function cleanupGuard(action){const r=current();check(actions.includes(ac
   return {id:r.id,caseId:r.caseId,action,target:pointerTargets[action]??'focused',editorConnected:!!editor?.isConnected,documentFocused:document.hasFocus(),viewport:viewport(),zoomEvidence:zoomEvidence(),
     allowed:!!editor?.isConnected&&!!root()?.isConnected,point:null,pointerDown:false,releaseOnly:true,normalAvailabilityIgnored:{policyOverflow,policyViolations:policy.length,traceOverflow,errorOverflow},composition:{...r.composition}};
 }
-export async function inspect(){const r=current();return {id:r.id,caseId:r.caseId,locale:r.locale,facts:host().mountedFacts(r.id),composition:{...r.composition},viewport:viewport(),zoomEvidence:zoomEvidence(),page:{scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth,scrollX,scrollY},documentFocused:document.hasFocus(),inputTraceCount:trace.length,inputTrace:trace.slice(),traceOverflow,policyViolations:policy.slice(),policyOverflow,errors:errors.slice(),errorOverflow,dom:dom(),controls:controls()};}
-export async function checkpoint(){const r=current(),value=await host().inspect(r.id);return {...await inspect(),native:value,selectionGeometry:host().geometryRead(r.id,{kind:'selection'}),nativeTrace:host().nativeTrace(r.id)};}
+export async function inspect(){const r=current();return {id:r.id,caseId:r.caseId,locale:r.locale,observation:{mountId:r.id,clock:observationClock,at:performance.now()},facts:host().mountedFacts(r.id),composition:{...r.composition,terminals:r.composition.terminals.slice()},viewport:viewport(),zoomEvidence:zoomEvidence(),page:{scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth,scrollX,scrollY},documentFocused:document.hasFocus(),inputTraceCount:trace.length,inputTrace:trace.slice(),traceOverflow,policyViolations:policy.slice(),policyOverflow,errors:errors.slice(),errorOverflow,dom:dom(),controls:controls()};}
+export async function checkpoint(){const r=current(),value=await host().inspect(r.id),observed=await inspect(),selectionGeometry=host().geometryRead(r.id,{kind:'selection'}),nativeTrace=host().nativeTrace(r.id);
+  return {...observed,native:value,selectionGeometry,nativeTrace,observation:{mountId:r.id,clock:observationClock,at:performance.now()}};}
 export async function settle(){const began=performance.now();let previous=null;do{
   const value=await inspect();if(!value.composition.open&&value.facts.resources.dom.continuations===0){const key=JSON.stringify({stamp:value.facts.stamp,dom:value.dom,composition:value.composition});if(key===previous)return checkpoint();previous=key;}else previous=null;
   await new Promise(resolve=>setTimeout(resolve,50));

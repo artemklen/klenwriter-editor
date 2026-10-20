@@ -12,6 +12,7 @@ import {createSafariAdapter} from './ui-native/safari-adapter.mjs';
 import {captureOwnedWindow,fixedKeyScript} from './ui-native/input.mjs';
 import {caseIds,keySpecs,limits} from './ui-native/protocol.mjs';
 import {compositionSettlementLiterals,compositionSettlementState} from './ui-native/settlement-literals.mjs';
+import {classifyCompositionObservation,earlySpacingAccentBinding} from './ui-native/composition-observation.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');process.chdir(root);
 const args=process.argv.slice(2),names=['--browser','--output','--broker','--head','--expected-version'];
@@ -43,9 +44,11 @@ const docEvents=value=>value.native.events.filter(e=>e.change.kind==='document')
 function clean(value){assert.equal(value.traceOverflow,false);assert.equal(value.policyOverflow,false);assert.deepEqual(value.policyViolations,[]);assert.deepEqual(value.errors,[]);assert.equal(value.errorOverflow,false);assert.equal(value.nativeTrace.overflow,false);assert.equal(value.nativeTrace.enabled,true);assert.equal(value.facts.nativeTrace.overflow,false);assert.equal(value.facts.resources.sdk.callback_errors,0);}
 function unchanged(actual,before){assert.equal(actual.native.canonical,before.native.canonical);assert.deepEqual(actual.native.state,before.native.state);assert.deepEqual(actual.native.rows,before.native.rows);assert.deepEqual(actual.native.events,before.native.events);}
 function semanticCalls(actual,before){assert.equal(actual.nativeTrace.overflow,false);return actual.nativeTrace.calls.slice(before.nativeTrace.calls.length).map(row=>({row,request:JSON.parse(row.requestJson),response:JSON.parse(row.responseJson)})).filter(row=>row.request.kind==='command');}
-function compositionCommitted(actual,before,caseId){
-  const literal=caseId==='composition-dialog'?compositionSettlementLiterals.notes:compositionSettlementLiterals.kwdj,e=compositionSettlementState;
+function compositionCommitted(actual,before,caseId,earlyBinding=null){
+  const original=caseId==='composition-dialog'?compositionSettlementLiterals.notes:compositionSettlementLiterals.kwdj,
+    literal=earlyBinding?{...original,afterCanonical:earlyBinding.afterCanonical,afterText:earlyBinding.afterText}:original,e=compositionSettlementState;
   assert.equal(pin(literal.source.path).sha256,literal.source.sha256,'Independent frozen composition source pin');
+  if(earlyBinding)assert.equal(pin(earlyBinding.source.path).sha256,earlyBinding.source.sha256,'Existing41 source-authored spacing-accent input binding');
   assert.equal(before.native.canonical,literal.inputCanonical,'Composition input is the independently authored literal');
   assert.equal(before.native.state.stamp.revision,'0');assert.equal(before.native.state.stamp.history_epoch,'0');assert.equal(before.native.state.history.undo_entries,'0');assert.equal(before.native.state.history.redo_entries,'0');assert.equal(before.native.state.dirty,false);assert.equal(before.native.state.saved_revision,'0');assert.deepEqual(before.native.state.stored_marks,null);
   assert.equal(actual.native.canonical,literal.afterCanonical,'Exact source-authored composition settlement bytes');
@@ -63,9 +66,9 @@ function compositionCommitted(actual,before,caseId){
   assert.equal(docEvents(actual).length-docEvents(before).length,e.documentEvents);assert.equal(actual.native.events.filter(event=>event.change.kind==='state').length-before.native.events.filter(event=>event.change.kind==='state').length,e.stateEvents);
   assert.equal(actual.native.state.history.undo_entries,e.undoEntries);assert.equal(actual.native.state.history.redo_entries,e.redoEntries);assert.match(actual.native.state.history.retained_bytes,/^(0|[1-9][0-9]*)$/);
   assert.equal(actual.native.state.dirty,e.dirty);assert.equal(actual.native.state.saved_revision,e.savedRevision);assert.deepEqual(actual.native.state.stored_marks,e.storedMarks);
-  const calls=semanticCalls(actual,before);assert.equal(calls.length,1);assert.equal(calls[0].request.command.id,literal.commandId);assert.equal(calls[0].request.command.payload_json,e.payloadJson);assert.deepEqual(calls[0].request.history_hint,{kind:'isolated'});
+  const calls=semanticCalls(actual,before);assert.equal(calls.length,1);assert.equal(calls[0].request.command.id,literal.commandId);assert.equal(calls[0].request.command.payload_json,earlyBinding?.command.payload_json??literal.payloadJson);assert.deepEqual(calls[0].request.history_hint,{kind:'isolated'});
   assert.equal(calls[0].response.status,'ok');assert.equal(calls[0].response.value.kind,'mutation');assert.equal(calls[0].response.value.effect,'changed');assert.deepEqual(calls[0].response.value.state,actual.native.state);
-  return {source:literal.source,expectedCanonical:literal.afterCanonical,expectedSelection:directed(roles,literal.afterSelection),originalIds:Object.values(roles),stampDelta:{revision:'1',selection_epoch:'1',history_epoch:'1'},documentEvents:e.documentEvents,stateEvents:e.stateEvents,undoEntries:e.undoEntries,redoEntries:e.redoEntries};
+  return {source:literal.source,...(earlyBinding?{inputBinding:earlyBinding.source}:{}),expectedCanonical:literal.afterCanonical,expectedSelection:directed(roles,literal.afterSelection),originalIds:Object.values(roles),stampDelta:{revision:'1',selection_epoch:'1',history_epoch:'1'},documentEvents:e.documentEvents,stateEvents:e.stateEvents,undoEntries:e.undoEntries,redoEntries:e.redoEntries};
 }
 function changed(actual,before,caseId){
   clean(actual);const e=literal(caseId).expected;assert.equal(actual.native.canonical,e.canonical_json);assert.equal(docEvents(actual).length-docEvents(before).length,1);assert.equal(actual.native.state.history.undo_entries,'1');assert.equal(actual.native.state.history.redo_entries,'0');
@@ -145,7 +148,17 @@ async function perform(entry,prepared){
     if(!preedit.composition.open||!preedit.inputTrace.some(r=>r.event==='compositionstart'&&r.isTrusted)){entry.disposition='native_preedit_window_unobserved';return 'UNOBSERVED';}
     unchanged(preedit,before);const target={'composition-format':'strong','composition-move':'move','composition-add':'add','composition-dialog':'title'}[id];
     await physical(entry,'click-'+target);const conflict=await checkpoint(entry,'distinct physical gesture during unresolved native preedit');
-    if(!conflict.composition.open){const action=report.physicalActions.at(-1),events=conflict.inputTrace.slice(action.inputTraceBefore),down=events.find(e=>e.event==='pointerdown'&&e.isTrusted),end=events.find(e=>e.event==='compositionend'&&e.isTrusted);if(down&&end&&end.time<down.time){entry.disposition='native_window_settled_before_distinct_gesture';return 'UNOBSERVED';}assert.fail('Observed unresolved composition ended during the distinct gesture; preservation condition failed');}
+    // Fixed finite alternatives, declared from source before inspecting output.
+    // No canonical result, DOM text or observed event.data constructs an oracle.
+    const profileLiteral=id==='composition-dialog'?compositionSettlementLiterals.notes:compositionSettlementLiterals.kwdj,
+      earlyBindings=[{command:{id:profileLiteral.commandId,payload_json:profileLiteral.payloadJson},binding:null},
+        ...(id==='composition-dialog'?[]:[{command:earlySpacingAccentBinding.command,binding:earlySpacingAccentBinding}])],
+      nativeCommands=semanticCalls(conflict,before),expected=earlyBindings.find(candidate=>nativeCommands.length===1&&JSON.stringify(candidate.command)===JSON.stringify(nativeCommands[0].request.command))??earlyBindings[0];
+    entry.compositionObservation=classifyCompositionObservation({before,preedit,gesture:conflict,action:report.physicalActions.at(-1),expectedCommand:expected.command,
+      verifySettlement:()=>{assert.equal(conflict.native.results.filter(r=>r.status==='submitted').length,0,'No UI action or deferred replay');return compositionCommitted(conflict,before,id,expected.binding);}});
+    assert.notEqual(entry.compositionObservation.classification,'FAILED',entry.compositionObservation.error?.message);
+    if(entry.compositionObservation.classification==='UNOBSERVED'){entry.disposition=entry.compositionObservation.reason;return 'UNOBSERVED';}
+    assert.equal(conflict.composition.open,true,'Observed unresolved composition ended during the distinct gesture; preservation condition failed');
     unchanged(conflict,preedit);assert.equal(conflict.dom.html,preedit.dom.html);assert.deepEqual(conflict.dom.objects,preedit.dom.objects);assert.deepEqual(conflict.dom.selection,preedit.dom.selection);assert.deepEqual(conflict.dom.active,preedit.dom.active);assert.equal(semanticCalls(conflict,before).length,0);assert.equal(conflict.native.results.filter(r=>r.status==='submitted').length,0);
     await physical(entry,'complete-e');const settled=await adapter.call('settle');clean(settled);entry.checkpoints.push({label:'actual settlement after protected gesture',value:settled});
     const calls=semanticCalls(settled,before);assert.equal(calls.filter(c=>!c.request.command.id.endsWith('/insert-text')).length,0,'No deferred UI action replay');assert.equal(settled.native.results.filter(r=>r.status==='submitted').length,0);assert.ok(settled.composition.ends>0&&!settled.composition.open);
@@ -183,8 +196,8 @@ try {
   report.os={version:run('/usr/bin/sw_vers',['-productVersion']).stdout.trim(),build:run('/usr/bin/sw_vers',['-buildVersion']).stdout.trim()};
   const identity=computeSdkBuildIdentity(),built=JSON.parse(readFileSync('artifacts/sdk-build-identity.json','utf8'));assert.equal(identity.buildId,built.buildId);assert.deepEqual(identity.sourceHashes,built.sourceHashes);report.buildId=identity.buildId;
   const seal=JSON.parse(readFileSync('artifacts/sdk-wasm-seal.json','utf8'));assert.equal(seal.build_id,identity.buildId);assert.equal(seal.sealed_sha256,pin('packages/wasm/dist/editor_wasm_bg.wasm').sha256);report.seal=seal;
-  const paths=[...new Set([...Object.keys(identity.sourceHashes),...walk('contracts/ui/v1'),...walk('scripts/ui-native'),...['wasm','sdk','dom','kwdj','ui'].flatMap(name=>walk(`packages/${name}/dist`)),
-    'scripts/ui-native-acceptance.mjs','scripts/dom-native-input-source.swift','scripts/selection-native/protocol.mjs','scripts/workspace-server.mjs','scripts/ui-semantic-data.mjs','spikes/workspace/ui-host.js','spikes/workspace/ui.html','spikes/workspace/ui-fixture.css','examples/notes-extension/dom.mjs','examples/notes-extension/dom-inventory.mjs','artifacts/extensions/packet.json','artifacts/sdk-build-identity.json','artifacts/sdk-wasm-seal.json'])].sort();
+  const paths=[...new Set([...Object.keys(identity.sourceHashes),...walk('contracts/ui/v1'),...walk('contracts/ui/v1.1'),...walk('scripts/ui-native'),...['wasm','sdk','dom','kwdj','ui'].flatMap(name=>walk(`packages/${name}/dist`)),
+    'scripts/ui-native-acceptance.mjs',earlySpacingAccentBinding.source.path,'scripts/dom-native-input-source.swift','scripts/selection-native/protocol.mjs','scripts/workspace-server.mjs','scripts/ui-semantic-data.mjs','spikes/workspace/ui-host.js','spikes/workspace/ui.html','spikes/workspace/ui-fixture.css','examples/notes-extension/dom.mjs','examples/notes-extension/dom-inventory.mjs','artifacts/extensions/packet.json','artifacts/sdk-build-identity.json','artifacts/sdk-wasm-seal.json'])].sort();
   report.source={head:run('git',['rev-parse','HEAD']).stdout.trim(),dirty:run('git',['status','--porcelain']).stdout.trim(),pins:paths.map(pin)};assert.equal(report.source.head,expectedHead);assert.equal(report.source.dirty,'','Commit the exact prepared harness/fixture before installed acceptance');
   const configBytes=readFileSync(configPath);assert.ok(configBytes.length<=4096);config=JSON.parse(configBytes);configSha=hash(configBytes);assert.equal(config.format,'osr42-ui-http-broker/1');assert.equal(config.fixtureUrl,'http://127.0.0.1:4174/ui');assert.equal(config.title,'KlenWriter UI native '+config.nonce);assert.ok(Date.now()<config.expiresAt);report.broker={configPath,configSha256:configSha,nonce:config.nonce};
   const bundle=browserName==='chrome'?'/Applications/Google Chrome.app/Contents/Info.plist':'/Applications/Safari.app/Contents/Info.plist';report.bundleVersion=run('/usr/libexec/PlistBuddy',['-c','Print :CFBundleShortVersionString',bundle]).stdout.trim();report.bundleBuild=run('/usr/libexec/PlistBuddy',['-c','Print :CFBundleVersion',bundle]).stdout.trim();assert.equal(report.bundleVersion,option('--expected-version'));

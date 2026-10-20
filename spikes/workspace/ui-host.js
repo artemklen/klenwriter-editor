@@ -10,6 +10,9 @@ import { notesD0Renderers } from '/notes-dom.mjs';
 const copy=value=>value===undefined?undefined:structuredClone(value),assert=(condition,message)=>{if(!condition)throw new Error(message);};
 const [module,packet,cases,geometry]=await Promise.all([loadSdkV2(),fetch('/extensions-packet.json').then(r=>r.json()),fetch('/ui-cases.json').then(r=>r.json()),fetch('/ui-contract/geometry-fixtures.json').then(r=>r.json())]);
 const records=new Map();let serial=0;
+// Call/event ordering only: this clock is local to this actual document, not a
+// throughput measurement or an acknowledgement inferred from a later snapshot.
+const nativeObservationClock=Object.freeze({kind:'performance.now',timeOrigin:performance.timeOrigin});
 const rec=id=>{const value=records.get(id);assert(value,'Known fixture mount');return value;};
 const text=(ru,en)=>({ru,en}),unavailable=(code='fixture.no_destination')=>({status:'unavailable',code,message:text('Нет подходящей позиции.','No suitable destination.')});
 const done=result=>result.status==='queued'?result.completion.then(response=>({status:'queued',response})):Promise.resolve(result);
@@ -91,12 +94,20 @@ function observedModule(r,{controlled=false,trace=false}={}){
       const request=JSON.parse(bytes);if(controlled&&r.pendingFault&&request.kind==='state'){
       const status=r.pendingFault;r.pendingFault=null;const response={status,diagnostic:{code:`fixture.controlled_${status}`,path:'/controlled-geometry-read',category:'transport',details:{fixture:'finite geometry read failure'},stamp:this.stamp,may_have_committed:false}};r.faultResponses.push(copy(response));return JSON.stringify(response);
     }
-      const bytesOut=this.actual.call(bytes),reply=JSON.parse(bytesOut);this.stamp=reply.value?.state?.stamp??this.stamp;
+      let bytesOut,callError=null,failed=false;
+      const startedAt=performance.now();
+      try{bytesOut=this.actual.call(bytes);}catch(error){failed=true;callError=error;}
+      const finishedAt=performance.now();
       if(trace){
-        r.nativeCalls.push({ordinal:r.nativeCalls.length+1,requestJson:bytes,responseJson:bytesOut});
-        r.nativeTraceBytes+=new TextEncoder().encode(bytes).length+new TextEncoder().encode(bytesOut).length;
-        if(r.nativeTraceBytes>8388608){r.nativeTraceOverflow=true;throw new Error('Finite native-call observation byte limit exceeded; original bytes retained, fixture proof failed');}
+        r.nativeCalls.push({ordinal:r.nativeCalls.length+1,mountId:r.id,clock:nativeObservationClock,startedAt,finishedAt,
+          outcome:failed?'threw':'returned',requestJson:bytes,responseJson:failed?null:bytesOut,
+          error:failed?{name:String(callError?.name??'ThrownValue').slice(0,128),message:String(callError?.message??callError).slice(0,2048)}:null});
+        r.nativeTraceBytes+=new TextEncoder().encode(bytes).length+(failed?0:new TextEncoder().encode(bytesOut).length);
+        if(r.nativeTraceBytes>8388608)r.nativeTraceOverflow=true;
       }
+      if(failed)throw callError; // Retain provenance, and rethrow the ORIGINAL value.
+      if(trace&&r.nativeTraceOverflow)throw new Error('Finite native-call observation byte limit exceeded; original bytes retained, fixture proof failed');
+      const reply=JSON.parse(bytesOut);this.stamp=reply.value?.state?.stamp??this.stamp;
       return bytesOut;
     }
     destroy(){this.actual.destroy();}free(){this.actual.free();}
@@ -153,7 +164,7 @@ export function geometryProbeNextEvent(id,role='P'){rec(id).geometryProbe=role;}
 export async function destroySubscriberProbe(id,intent){const r=rec(id);r.destroyProbe=true;const result=await command(id,intent);return {result,probes:copy(r.geometryProbeResults),facts:mountedFacts(id)};}
 export async function destroyMountedProbe(id){const r=rec(id);if(r.ui)await r.ui.destroy().settled;const receipt=r.editor.destroy();const immediate={phase:r.editor.lifecycle,geometry:copy(r.editor.geometry.read({kind:'selection',stamp:{session:'old',generation:'1',revision:'0',selection_epoch:'0',history_epoch:'0'}}))};if(receipt.sdk.status==='queued')await receipt.sdk.completion;r.releaseLoader?.();await Promise.resolve();return {immediate,facts:mountedFacts(id)};}
 export function mountedFacts(id){const r=rec(id);return {lifecycle:r.editor.lifecycle,stamp:copy(r.editor.capture()),context:copy(r.editor.context()),resources:copy(r.editor.resources()),native:copy(r.editor.nativeResources()),faultResponses:copy(r.faultResponses),geometryProbeResults:copy(r.geometryProbeResults),...fixtureFacts(r)};}
-export function nativeTrace(id){const r=rec(id);return {enabled:r.nativeTraceEnabled,overflow:r.nativeTraceOverflow,bytes:r.nativeTraceBytes,calls:copy(r.nativeCalls)};}
+export function nativeTrace(id){const r=rec(id);return {enabled:r.nativeTraceEnabled,overflow:r.nativeTraceOverflow,bytes:r.nativeTraceBytes,mountId:r.id,clock:copy(nativeObservationClock),calls:copy(r.nativeCalls)};}
 export async function nativeHostEdit(id){const r=rec(id);assert(r.notes,'Closed host edit is Notes-only');const result=await done(r.editor.submit({kind:'command',stamp:r.editor.capture(),command:createCommand('org.example.notes/command/set-title',{title:'host-updated'}),history_hint:{kind:'isolated'}}));r.ui.refresh();return copy(result);}
 export function capture(id,name='R',scope='toolbar'){const r=rec(id),focusScope=scope==='dialog'?r.dialog:scope==='external'?document.body:r.slots[scope];const value=r.editor.hostRequests.capture(focusScope?{focusScope}:{});if(value.status==='captured')r.requests.set(name,value.request);return value.status==='captured'?{status:value.status,stamp:copy(value.request.stamp),context:copy(value.request.context)}:copy(value);}
 export function release(id,name='R'){const r=rec(id);return r.editor.hostRequests.release(r.requests.get(name));}
