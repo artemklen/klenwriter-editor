@@ -1,6 +1,7 @@
 {
   "format": "editor-drag-geometry-cases/1",
   "authoredBeforeBrowserExecution": true,
+  "authorshipScope": "DG01-DG16 were authored before initial candidate execution. DG17 is authored after the archived original subpixel-border failure and before execution of its correction; no previous expectation is changed.",
   "authority": "contracts/drag/v1/api.md + original OSR44 AC; selected source-first quarter/midpoint policy; frozen OSR42 input/path bijection",
   "baselineHead": "a21a7f8030afaeb4879fcbbd4953a7c76e098184",
   "fixture": {
@@ -514,6 +515,52 @@
         "pointerCaptures": 0,
         "hostRequests": 0,
         "afterDestroySDKAndNativeCounters": 0
+      }
+    },
+    {
+      "id": "DG17",
+      "lane": "CONTROLLED original-owned-hit and rectangle discrepancy on actual native mount",
+      "name": "Strict subpixel border transit has no destination authority and cannot relax clip, ownership or one-pixel refusal",
+      "authoredAgainstOriginalFailure": {
+        "head": "d0dfc03cd536a061564d1feff337b0d12c9fec79",
+        "archivedBatch": "development-07/index.json",
+        "archivedBatchSha256": "f688315d1519bd35bffa6c32fac37a7add5b617c9fc2fffc4f65b78f67f1a3a1",
+        "originalReportSha256": "6322840ee94dcac9684b5a06c8684cce867a0ccc0d39809667b7d29b77da44f8",
+        "candidateExecutedAtAuthoring": false
+      },
+      "input": {
+        "fixture": "F",
+        "source": "P3",
+        "hit": "Q",
+        "controlledRect": { "x": 320.5, "y": 240.5, "width": 160, "height": 80 },
+        "rows": [
+          { "id": "top-subpixel", "point": { "x": 340.5, "y": 240 }, "outcome": "source_only" },
+          { "id": "bottom-subpixel", "point": { "x": 340.5, "y": 321 }, "outcome": "source_only" },
+          { "id": "left-subpixel", "point": { "x": 320, "y": 260.5 }, "outcome": "source_only" },
+          { "id": "right-subpixel", "point": { "x": 481, "y": 260.5 }, "outcome": "source_only" },
+          { "id": "corner-subpixel", "point": { "x": 320, "y": 240 }, "outcome": "source_only" },
+          { "id": "explicit-parent-subpixel", "point": { "x": 340.5, "y": 240 }, "insideParent": "R", "outcome": "source_only" },
+          { "id": "top-exact-one", "point": { "x": 340.5, "y": 239.5 }, "outcome": "refused" },
+          { "id": "left-exact-one", "point": { "x": 319.5, "y": 260.5 }, "outcome": "refused" },
+          { "id": "far-left", "point": { "x": 318.5, "y": 260.5 }, "outcome": "refused" },
+          { "id": "zero-width", "point": { "x": 320, "y": 260.5 }, "fault": "zero-width", "outcome": "refused" },
+          { "id": "strict-clip-subpixel", "point": { "x": 340.5, "y": 240 }, "fault": "clip-top-at-rect-top", "outcome": "refused" },
+          { "id": "exact-clip-edge-subpixel", "point": { "x": 340.5, "y": 240 }, "fault": "clip-top-at-point", "outcome": "refused" },
+          { "id": "foreign-subpixel", "point": { "x": 340.5, "y": 240 }, "fault": "other-genuine-mount-hit", "outcome": "refused" },
+          { "id": "nonmember-parent-subpixel", "point": { "x": 340.5, "y": 240 }, "insideParent": "P", "outcome": "refused" },
+          { "id": "exact-top-boundary", "point": { "x": 340.5, "y": 240.5 }, "outcome": "ordinary_before" }
+        ]
+      },
+      "expected": {
+        "distancePolicy": "Both outside-axis distances must be strictly less than 1 CSS pixel; the original owned hit rectangle must have positive width and height. Source-only transit must be strictly between all effective clip/viewport edges; normal contained points keep their existing inclusive bounds. No coordinate is changed.",
+        "sourceOnly": { "status": "drag_measured", "hit": null, "insideParents": [], "destination": null, "targetBox": null },
+        "ordinaryDestination": { "placement": "before", "reference": "Q", "parent": "R", "before_index": 1 },
+        "refusalCode": "dom.selection_geometry_unsupported",
+        "nativeRequestsPerRead": ["state"],
+        "documentOrSelectionWrites": 0,
+        "nativeAndBrowserFacetsUnchanged": true,
+        "sharedBudgetsAndFinalRevalidationUnchanged": true,
+        "qualification": "Controlled elementFromPoint/getClientRects and external clipping witnesses on real owned DOM/native sessions; not a UA-produced geometry, installed input, pixel normalization, target fallback or accepted drop."
       }
     }
   ]

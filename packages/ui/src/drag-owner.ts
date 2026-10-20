@@ -67,7 +67,8 @@ export class DragOwner {
     this.#preview = node('kw-ui-drag-preview'); this.#preview.hidden = true; this.#preview.setAttribute('aria-hidden', 'true');
     this.#outline = node('kw-ui-drag-outline'); this.#outline.hidden = true; this.#outline.setAttribute('aria-hidden', 'true');
     this.#line = node('kw-ui-drag-line'); this.#line.hidden = true; this.#line.setAttribute('aria-hidden', 'true');
-    options.gutter.prepend(this.handle, this.#reason); options.gutter.append(this.#preview, this.#outline, this.#line, this.#parents);
+    // Keep the established editor-to-Tab Move stop before the additive handle.
+    options.gutter.append(this.handle, this.#reason, this.#preview, this.#outline, this.#line, this.#parents);
     this.#listen(this.handle, 'pointerdown', event => this.#down(event as PointerEvent));
     this.#listen(this.handle, 'click', event => { event.preventDefault(); event.stopPropagation(); });
     this.#listen(this.handle, 'keydown', event => {

@@ -369,3 +369,68 @@ test('DG16 actual native state-only calls stay pure across repetitions and readO
     unchanged(await checkpoint(page,id,`${mode} repeated reads preserve every facet`),before);await environmentUnchanged(page,id);
   }
 });
+
+test('DG17 CONTROLLED subpixel owned-hit transit grants no drop authority and preserves strict refusal boundaries',async({page})=>{
+  const spec=authored('DG17'),id=await mount(page),other=await mount(page);
+  const before=await checkpoint(page,id,'subpixel controlled baseline'),foreign=await checkpoint(page,other,'independent foreign mount baseline');
+  const original=await read(page,id,spec.input.source);work(original);await remember(page,id);await remember(page,other);
+  const result=await page.evaluate(({id,other,spec})=>{
+    const host=document.getElementById(`${id}-editor`),target=host.children[1],card=document.getElementById(id),foreign=document.getElementById(`${other}-editor`).children[1];
+    const oldRect=Object.getOwnPropertyDescriptor(target,'getClientRects'),oldHit=Object.getOwnPropertyDescriptor(document,'elementFromPoint'),oldCardRect=Object.getOwnPropertyDescriptor(card,'getBoundingClientRect'),oldClass=card.getAttribute('class');
+    const rect=({x,y,width,height})=>({x,y,width,height,left:x,top:y,right:x+width,bottom:y+height});
+    const restore=(object,key,value)=>value?Object.defineProperty(object,key,value):delete object[key];
+    const facts=()=>{const f=window.ui42.mountedFacts(id);return {lifecycle:f.lifecycle,stamp:f.stamp,context:f.context,resources:f.resources,native:f.native};};
+    const originalCardBox=rect(card.getBoundingClientRect()),rows=[];
+    try{
+      for(const row of spec.input.rows){
+        let clipping=null;
+        try{
+          const measured=rect({...spec.input.controlledRect,...(row.fault==='zero-width'?{width:0}:{})});
+          Object.defineProperty(target,'getClientRects',{configurable:true,value:()=>[measured]});
+          const actualHit=row.fault==='other-genuine-mount-hit'?foreign:target;
+          Object.defineProperty(document,'elementFromPoint',{configurable:true,value:()=>actualHit});
+          if(row.fault==='clip-top-at-rect-top'||row.fault==='clip-top-at-point'){
+            card.classList.add('ui-fixture-clip');
+            const clipTop=row.fault==='clip-top-at-point'?row.point.y:spec.input.controlledRect.y;
+            const controlled=rect({...originalCardBox,y:clipTop-card.clientTop});
+            Object.defineProperty(card,'getBoundingClientRect',{configurable:true,value:()=>controlled});
+            clipping={top:controlled.y+card.clientTop,pointY:row.point.y};
+          }
+          const beforeFacts=facts(),browserBefore=window.dragGeometrySaved.get(id).observe(),offset=window.ui42.nativeTrace(id).calls.length;
+          const value=window.ui42.dragGeometryRead(id,spec.input.source,row.point,row.insideParent??null);
+          rows.push({id:row.id,point:row.point,insideParent:row.insideParent??null,measuredRect:measured,clipping,
+            hitOwned:host.contains(actualHit),value,beforeFacts,afterFacts:facts(),browserBefore,browserAfter:window.dragGeometrySaved.get(id).observe(),calls:window.ui42.nativeTrace(id).calls.slice(offset)});
+        }finally{
+          restore(target,'getClientRects',oldRect);restore(document,'elementFromPoint',oldHit);restore(card,'getBoundingClientRect',oldCardRect);
+          if(oldClass===null)card.removeAttribute('class');else card.setAttribute('class',oldClass);
+        }
+      }
+    }finally{
+      restore(target,'getClientRects',oldRect);restore(document,'elementFromPoint',oldHit);restore(card,'getBoundingClientRect',oldCardRect);
+      if(oldClass===null)card.removeAttribute('class');else card.setAttribute('class',oldClass);
+    }
+    return {lane:spec.expected.qualification,rows,traceOverflow:window.ui42.nativeTrace(id).overflow};
+  },{id,other,spec});records.get(page).controlledSubpixel=result;
+  expect(result.rows.map(row=>row.id)).toEqual(spec.input.rows.map(row=>row.id));expect(result.traceOverflow).toBe(false);
+  for(const [index,row]of result.rows.entries()){
+    const expected=spec.input.rows[index];expect(row.afterFacts).toEqual(row.beforeFacts);
+    expect(row.browserBefore).toEqual({identity:true,html:true,selection:true,focus:true,scroll:true});expect(row.browserAfter).toEqual(row.browserBefore);
+    expect(row.calls.map(call=>JSON.parse(call.requestJson))).toEqual(spec.expected.nativeRequestsPerRead.map(kind=>({kind})));
+    expect(row.calls.every(call=>call.outcome==='returned'&&JSON.parse(call.responseJson).status==='ok')).toBe(true);
+    expect(row.hitOwned).toBe(expected.fault!=='other-genuine-mount-hit');
+    if(expected.fault==='clip-top-at-rect-top'){expect(row.clipping.top).toBe(spec.input.controlledRect.y);expect(row.clipping.pointY).toBe(row.clipping.top-0.5);}
+    if(expected.fault==='clip-top-at-point'){expect(row.clipping.top).toBe(expected.point.y);expect(row.clipping.pointY).toBe(row.clipping.top);}
+    if(expected.outcome==='refused')refusal(row.value,spec.expected.refusalCode,before.state.stamp);
+    else{
+      work(row.value);header(row.value.source,before,spec.input.source,authored('DG01').expected.headers.P3);
+      expect(row.value.stamp).toEqual(before.state.stamp);expect(row.value.context).toEqual(before.context);expect(row.value.sourceBox).toEqual(original.sourceBox);expect(row.value.viewport).toEqual(original.viewport);
+      if(expected.outcome==='source_only')expect(row.value).toMatchObject(spec.expected.sourceOnly);
+      else{
+        header(row.value.hit,before,spec.input.hit,authored('DG01').expected.headers.Q);expect(row.value.insideParents.map(parent=>parent.id)).toEqual([before.roles.Q,before.roles.R]);
+        destination(row.value.destination,before,spec.expected.ordinaryDestination);expect(row.value.targetBox.rect).toEqual(spec.input.controlledRect);
+      }
+    }
+  }
+  unchanged(await checkpoint(page,id,'controlled border reads leave complete native facets unchanged'),before);
+  unchanged(await checkpoint(page,other,'foreign mount stays unchanged'),foreign);await environmentUnchanged(page,id);await environmentUnchanged(page,other);
+});

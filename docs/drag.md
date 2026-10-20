@@ -49,6 +49,11 @@ share limits of 1,024 distinct objects/child slots, 128 ancestors and 256 raw
 rectangles, including final validation. Unsupported, clipped, foreign, cloned,
 detached, fragmented or incoherent objects do not become fallback destinations.
 Existing geometry request types and behavior remain available.
+An owned hit less than one CSS pixel outside a positive measured rectangle on
+each axis can retain source-only transit while remaining strictly inside its
+clip. It supplies no hit, parent choices, target box or drop destination; no
+coordinate or endpoint is expanded. Exact one-pixel, clipped and foreign hits
+continue to refuse.
 
 HTML drag events are separate from the pointer feature. Mounted hosts prevent
 cancelable `dragstart`, `dragover`, `drop`, `insertFromDrop` and `deleteByDrag`

@@ -61,7 +61,41 @@ async function moveTo(page,id,item){
   const box=await roleBox(page,id,item.roles_before??item.roles,item.target??item.cancel_target);
   const fraction=item.placement==='after'?frozen.pointer.after_y_fraction:frozen.pointer.before_y_fraction;
   const point={x:box.x+Math.min(32,box.width/2),y:box.y+box.height*fraction};
-  await page.mouse.move(point.x,point.y,{steps:frozen.pointer.held_move_steps});await frames(page);
+  const downs=await page.evaluate(id=>window.dragPointers.get(id).events.filter(e=>e.name==='pointerdown'&&e.targetControl==='drag'),id);
+  expect(downs).toHaveLength(1);const down=downs[0];
+  expect(down.isTrusted).toBe(true);expect(down.pointerType).toBe('mouse');expect(down.button).toBe(0);expect(down.buttons).toBe(1);
+  expect([down.x,down.y,point.x,point.y].every(Number.isFinite)).toBe(true);expect(frozen.pointer.held_move_steps).toBe(8);
+  const record=records.get(page);expect(record.pointPaths).toHaveLength(0);
+  const path={id,caseId:item.id??null,originalDown:down,targetBox:box,targetPoint:point,steps:[],
+    bounds:{paths:1,heldPoints:8,hitsPerPoint:2,ancestorsPerHit:8,rectanglesPerHit:9,feedbackCharacters:4096},
+    scope:'One original held gesture; eight frozen interpolation fractions, each followed by two passive RAFs. Plain DOM/native-read observations never choose or repair an input point.'};
+  record.pointPaths.push(path);
+  for(let step=1;step<=8;step++){
+    const requestedPoint={x:down.x+(point.x-down.x)*step/8,y:down.y+(point.y-down.y)*step/8};
+    await page.mouse.move(requestedPoint.x,requestedPoint.y);await frames(page);
+    const observation=await page.evaluate(({id,requestedPoint,pointerId,downAt})=>{
+      const root=document.getElementById(id),editor=document.getElementById(`${id}-editor`),gutter=root.querySelector('.kw-ui-gutter'),toolbar=root.querySelector('[role=toolbar]'),entry=root.querySelector('.kw-ui-entry');
+      const text=(value,maximum)=>{const result=String(value??'');if(result.length>maximum)throw new Error('Drag point observation string bound');return result;};
+      const rect=element=>{const r=element.getBoundingClientRect(),result={x:r.x,y:r.y,width:r.width,height:r.height,left:r.left,top:r.top,right:r.right,bottom:r.bottom};if(!Object.values(result).every(Number.isFinite))throw new Error('Drag point observation nonfinite rectangle');return result;};
+      const ownership=element=>!element?'none':editor.contains(element)?'editor':gutter?.contains(element)?'gutter':toolbar?.contains(element)?'toolbar':entry?.contains(element)?'entry':root.contains(element)?'fixture':'foreign';
+      const describe=element=>({tag:text(element.tagName,64),class:text(element.getAttribute('class'),256),control:text(element.getAttribute('data-editor-ui-control'),64)||null,ownership:ownership(element),rect:rect(element)});
+      const hit=point=>{
+        const element=document.elementFromPoint(point.x,point.y);if(!element)return {ownership:'none',element:null,ancestors:[],ancestorLimitReached:false};
+        const ancestors=[];let current=root.contains(element)?element.parentElement:null;
+        while(current&&root.contains(current)&&ancestors.length<8){ancestors.push(describe(current));if(current===root){current=null;break;}current=current.parentElement;}
+        return {ownership:ownership(element),element:describe(element),ancestors,ancestorLimitReached:!!current&&root.contains(current)};
+      };
+      const events=window.dragPointers.get(id).events,lastMoveIndex=events.findLastIndex(e=>e.name==='pointermove'&&e.isTrusted&&e.pointerId===pointerId&&e.buttons===1&&e.at>=downAt),lastMove=events[lastMoveIndex]??null;
+      const feedback=text(root.querySelector('[role=status]')?.textContent,4096);
+      return {clock:{kind:'performance.now',timeOrigin:performance.timeOrigin},at:performance.now(),eventCount:events.length,lastTrustedHeldMoveIndex:lastMoveIndex,lastTrustedHeldMove:lastMove,
+        requestedHit:hit(requestedPoint),actualHit:lastMove?hit({x:lastMove.x,y:lastMove.y}):null,feedback};
+    },{id,requestedPoint,pointerId:down.pointerId,downAt:down.at});
+    const entry={step,fraction:step/8,requestedPoint,...observation,fixtureRead:'started'};path.steps.push(entry);
+    const current=await call(page,'inspect',id,{snapshot:false});
+    Object.assign(entry,{fixtureRead:'completed',
+      uiResources:current.uiResources,mountedHostRequests:current.resources.hostRequests,selectionResources:current.resources.selection,
+      nativeStamp:current.state.stamp,nativeTrace:current.nativeTrace,activeId:current.activeId,activeTag:current.activeTag,insideEditor:current.insideEditor});
+  }
   return point;
 }
 function unchanged(after,before){
@@ -107,7 +141,7 @@ async function history(page,id,item,before,after){
   }
 }
 test.beforeEach(async({page,browser},info)=>{
-  const record={engine:info.project.name,browserVersion:browser.version(),installedBrowser:false,oracle:{path:oraclePath,bytes:oracleBytes.length,sha256:createHash('sha256').update(oracleBytes).digest('hex')},errors:[],externalRequests:[],checkpoints:[],gestures:[],cleanup:[],mounts:new Set()};records.set(page,record);
+  const record={engine:info.project.name,browserVersion:browser.version(),installedBrowser:false,oracle:{path:oraclePath,bytes:oracleBytes.length,sha256:createHash('sha256').update(oracleBytes).digest('hex')},errors:[],externalRequests:[],checkpoints:[],gestures:[],pointPaths:[],cleanup:[],mounts:new Set()};records.set(page,record);
   page.on('pageerror',error=>record.errors.push(error.message));page.on('request',request=>{if(!request.url().startsWith('http://127.0.0.1:4174/'))record.externalRequests.push(request.url());});
   await page.addInitScript(()=>{window.dragPolicy=[];document.addEventListener('securitypolicyviolation',e=>window.dragPolicy.push({directive:e.effectiveDirective,blocked:e.blockedURI}));});
   const loaded=await page.goto('/ui');record.csp=loaded.headers()['content-security-policy'];expect(record.csp).toContain("default-src 'none'");expect(record.csp).not.toContain("'unsafe-inline'");expect(record.csp).not.toMatch(/(?:^|\s)'unsafe-eval'/);

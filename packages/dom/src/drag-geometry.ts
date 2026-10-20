@@ -328,24 +328,38 @@ export function readDragGeometry(configuration:Configuration,value:DragGeometryR
     const sourceHeader=measurement.header(source),sourceBox=measurement.box(source);
     let hit:DragNodeHeader|null=null,insideParents:readonly DragNodeHeader[]=Object.freeze([]),destination:DragDestination|null=null,targetBox:DragBox|null=null;
     if(request.point) {
-      const row=measurement.hit(request.point.x,request.point.y);hit=measurement.header(row);
+      const row=measurement.hit(request.point.x,request.point.y),measuredHit=measurement.header(row);
       const hitBox=measurement.box(row);
       const clip={left:hitBox.clip.x,top:hitBox.clip.y,right:hitBox.clip.x+hitBox.clip.width,bottom:hitBox.clip.y+hitBox.clip.height};
       const rect={left:hitBox.rect.x,top:hitBox.rect.y,right:hitBox.rect.x+hitBox.rect.width,bottom:hitBox.rect.y+hitBox.rect.height};
-      if(!contains(clip,request.point.x,request.point.y)||!contains(rect,request.point.x,request.point.y))throw unsupported;
-      insideParents=measurement.insideParents(row);
-      if(request.insideParent!==null) {
-        const parent=insideParents.find(parent=>parent.id===request.insideParent);if(!parent)throw unsupported;
-        targetBox=measurement.box(measurement.row(parent.id));
-        destination=Object.freeze({placement:'inside',reference:parent.id,parent:parent.id,before_index:parent.childCount});
-      } else {
-        if(hit.parent===null||hit.index===null)throw unsupported;
-        const offset=request.point.y-hitBox.rect.y;
-        const placement=hit.primitive==='container'
-          ? offset<hitBox.rect.height/4?'before':offset>=hitBox.rect.height*3/4?'after':null
-          : offset<hitBox.rect.height/2?'before':'after';
-        if(placement)destination=Object.freeze({placement,reference:hit.id,parent:hit.parent,before_index:hit.index+(placement==='after'?1:0)});
-        targetBox=hitBox;
+      if(!contains(clip,request.point.x,request.point.y))throw unsupported;
+      const contained=contains(rect,request.point.x,request.point.y);
+      if(!contained) {
+        if(request.point.x<=clip.left||request.point.x>=clip.right||request.point.y<=clip.top||request.point.y>=clip.bottom)throw unsupported;
+        const outsideX=Math.max(rect.left-request.point.x,request.point.x-rect.right,0);
+        const outsideY=Math.max(rect.top-request.point.y,request.point.y-rect.bottom,0);
+        if(rect.right<=rect.left||rect.bottom<=rect.top||outsideX>=1||outsideY>=1)throw unsupported;
+      }
+      const parents=measurement.insideParents(row);
+      const parent=request.insideParent===null?null:parents.find(parent=>parent.id===request.insideParent);
+      if(request.insideParent!==null&&!parent)throw unsupported;
+      // An owned browser hit may disagree with a fractional rect by less than
+      // one pixel per axis. Preserve only source facts while crossing that
+      // border: no coordinate adjustment, target, parent choices or drop.
+      if(contained) {
+        hit=measuredHit;insideParents=parents;
+        if(parent) {
+          targetBox=measurement.box(measurement.row(parent.id));
+          destination=Object.freeze({placement:'inside',reference:parent.id,parent:parent.id,before_index:parent.childCount});
+        } else {
+          if(hit.parent===null||hit.index===null)throw unsupported;
+          const offset=request.point.y-hitBox.rect.y;
+          const placement=hit.primitive==='container'
+            ? offset<hitBox.rect.height/4?'before':offset>=hitBox.rect.height*3/4?'after':null
+            : offset<hitBox.rect.height/2?'before':'after';
+          if(placement)destination=Object.freeze({placement,reference:hit.id,parent:hit.parent,before_index:hit.index+(placement==='after'?1:0)});
+          targetBox=hitBox;
+        }
       }
     }
     if(!current())return failure('dom.stale_selection');
