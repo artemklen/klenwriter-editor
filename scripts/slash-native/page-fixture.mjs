@@ -102,7 +102,8 @@ export async function inspect(){const r=current();return {id:r.id,caseId:r.caseI
 export async function checkpoint(){const r=current(),value=await host().inspect(r.id),observed=await inspect(),selectionGeometry=host().geometryRead(r.id,{kind:'selection'}),nativeTrace=host().nativeTrace(r.id);
   return {...observed,native:value,selectionGeometry,nativeTrace,observation:{mountId:r.id,clock:observationClock,at:performance.now()}};}
 export async function settle(){const began=performance.now();let previous=null;do{
-  const value=await inspect();if(!value.composition.open&&value.facts.resources.dom.continuations===0){const key=JSON.stringify({stamp:value.facts.stamp,dom:value.dom,composition:value.composition});if(key===previous)return checkpoint();previous=key;}else previous=null;
+  // Observation readiness never rewrites the independent trusted-end counters.
+  const value=await inspect();if((!value.composition.open||value.composition.observedEnded)&&value.facts.resources.dom.continuations===0){const key=JSON.stringify({stamp:value.facts.stamp,dom:value.dom,composition:value.composition});if(key===previous)return checkpoint();previous=key;}else previous=null;
   await new Promise(resolve=>setTimeout(resolve,50));
 }while(performance.now()-began<3000);throw Error('One bounded43 settlement did not complete; no replay');}
 export async function finish(){const r=current(),before=await checkpoint(),disposed=await host().destroy(r.id);for(const {button,value}of r.restorations){check(button.isConnected,'Original fixture focus button remains connected');if(value===null)button.removeAttribute('tabindex');else button.setAttribute('tabindex',value);check(button.getAttribute('tabindex')===value,'Original tabindex restored');}active=null;return {before,disposed,policyViolations:policy.slice(),policyOverflow,traceOverflow};}
