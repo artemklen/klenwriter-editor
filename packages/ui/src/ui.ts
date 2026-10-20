@@ -90,7 +90,7 @@ class Ui implements EditorUi {
   #status: HTMLElement; #blockLabel: HTMLElement; #add: Control; #move: Control;
   #controls = new WeakMap<Element, Control>(); #toolbarControls = new Map<string, Control>(); #blockControls = new Map<string, Control>();
   #pending: Pending | null = null; #popup: Popup | null = null; #tasks = new Set<Task>();
-  #pointerGesture = new WeakMap<Control, { readonly pointerId: number; admitted: boolean }>();
+  #pointerGesture = new WeakMap<Control, { readonly pointerId: number; admitted: boolean; request: MountedHostRequest | null }>();
   #removals: (() => void)[] = []; #observer: ResizeObserver | null = null; #subscription: (() => void) | null = null;
   #raf: number | null = null; #followupFrames = 0; #rendering = false; #refreshAgain = false; #emitting = false; #callbackDepth = 0;
   #onResult: Options['onResult']; #settle: (() => void)[] = [];
@@ -208,12 +208,12 @@ class Ui implements EditorUi {
   #pointerDown(event: PointerEvent): void {
     this.#pointerGesture = new WeakMap();
     const control = this.#find(event.target); if (!control || event.button !== 0 || event.ctrlKey || event.metaKey || event.altKey || this.#destroyed) return;
-    const gesture = { pointerId: event.pointerId, admitted: false }; this.#pointerGesture.set(control, gesture);
+    const gesture = { pointerId: event.pointerId, admitted: false, request: null as MountedHostRequest | null }; this.#pointerGesture.set(control, gesture);
     if (!this.#pending && !this.#tasks.size && !this.#rendering && !this.#callbackDepth) this.#update();
     if (!control.availability.available || this.#tasks.size) { event.preventDefault(); this.#showControl(control); return; }
-    if (this.#popup && control.scope === 'popup') { gesture.admitted = true; return; }
+    if (this.#popup && control.scope === 'popup') { gesture.request = this.#popup.pending.request; gesture.admitted = true; return; }
     const capture = this.#capture(this.#scope(control));
-    gesture.admitted = !!capture;
+    gesture.request = capture?.request ?? null; gesture.admitted = !!capture;
     if (!capture) event.preventDefault();
   }
   #click(event: MouseEvent): void {
@@ -222,7 +222,8 @@ class Ui implements EditorUi {
     if (!control || this.#destroyed) return;
     event.preventDefault();
     const pointerId = (event as PointerEvent).pointerId;
-    if (event.detail > 0 && (!gesture?.admitted || Number.isSafeInteger(pointerId) && pointerId >= 0 && pointerId !== gesture.pointerId)) return;
+    const pending = this.#popup && control.scope === 'popup' ? this.#popup.pending : this.#pending;
+    if (event.detail > 0 && (!gesture?.admitted || !gesture.request || pending?.request !== gesture.request || Number.isSafeInteger(pointerId) && pointerId >= 0 && pointerId !== gesture.pointerId)) return;
     this.#activate(control);
   }
   #key(event: KeyboardEvent): void {
