@@ -120,6 +120,7 @@ class Ui implements EditorUi {
     this.#setStatus(label('loading', this.#locale), 'loading'); this.#wire(); this.#labels();
     this.ready = configuration.editor.ready.then(() => {
       if (this.#destroyed) return failure('ui.disposed');
+      this.#wireInput(); // Mounted input owner is attached before its ready promise resolves.
       this.#initialized = true;
       const subscription = configuration.editor.subscribe(() => this.refresh());
       if (typeof subscription !== 'function') {
@@ -166,12 +167,6 @@ class Ui implements EditorUi {
       }
     });
     this.#listen(configuration.editorElement, 'keyup', () => { if (!this.#pending) { this.#hover = null; this.#pointer = null; } this.refresh(); });
-    for (const name of ['compositionstart', 'beforeinput']) this.#listen(configuration.editorElement, name, () => this.refresh());
-    for (const name of ['compositionend', 'input']) this.#listen(configuration.editorElement, name, () => {
-      // A zero-change composition terminal has no native publication. Two
-      // finite presentation frames follow the terminal, never an action retry.
-      this.#followupFrames = 2; this.refresh();
-    });
     this.#listen(this.#document, 'selectionchange', () => this.refresh());
     this.#listen(this.#document, 'focusin', () => {
       const current = this.#document.activeElement;
@@ -187,6 +182,16 @@ class Ui implements EditorUi {
       this.#observer = new observer(() => this.refresh()); this.#observer.observe(configuration.editorElement);
       for (const slot of Object.values(configuration.slots)) this.#observer.observe(slot);
     }
+  }
+  #wireInput(): void {
+    const element = this.#options!.editorElement;
+    for (const name of ['compositionstart', 'beforeinput']) this.#listen(element, name, () => this.refresh());
+    for (const name of ['compositionend', 'input']) this.#listen(element, name, () => {
+      // An unchanged terminal has no native publication. Discard an older UI
+      // frame so both finite followups are queued after the mounted owner.
+      if (this.#raf !== null) { this.#window.cancelAnimationFrame(this.#raf); this.#raf = null; }
+      this.#followupFrames = 2; this.refresh();
+    });
   }
   #insideUi(element: Element): boolean {
     return !!this.#options && Object.values(this.#options.slots).some(slot => slot.contains(element));

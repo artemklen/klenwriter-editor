@@ -43,6 +43,12 @@ ancestors. Factory создаёт данные, не изменяет редак
 отдельно. `resources()` учитывает listeners, observer, RAF, subscription, requests
 и continuations.
 
+UI подключает собственные composition/input listeners после `editor.ready`,
+поэтому mounted owner обрабатывает terminal раньше presentation даже при создании
+UI во время загрузки. Terminal заменяет старый собственный RAF: два конечных
+обновления идут после owner, включая zero-change settlement без native event.
+Лимит одного собственного RAF и общее число listeners сохраняются.
+
 ## Keyboard и команды
 
 Toolbar имеет имя и один roving Tab stop. Left/Right, Home/End перемещают focus;
