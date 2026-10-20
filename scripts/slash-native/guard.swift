@@ -463,15 +463,30 @@ if let fallback = measurement.safariScroll {
  actual=CGPoint(x:measurement.view.minX+x*measurement.view.width/width,y:measurement.view.minY+y*measurement.view.height/height)
 }
 guard actual.x.isFinite, actual.y.isFinite else { refuse("Finite scoped screen point required") }
-let transitions: [CGEventType] = cleanup ? [.leftMouseUp] : [.leftMouseDown,.leftMouseUp]
+let chromePrelude = browser == "chrome" && !cleanup
+let transitions: [CGEventType] = cleanup ? [.leftMouseUp] : chromePrelude ? [.mouseMoved,.leftMouseDown,.leftMouseUp] : [.leftMouseDown,.leftMouseUp]
+var events: [CGEvent] = []
 for type in transitions {
+ guard let event=CGEvent(mouseEventSource:nil,mouseType:type,mouseCursorPosition:actual,mouseButton:.left) else { refuse("Cannot allocate scoped pointer event") }
+ event.setIntegerValueField(.mouseEventClickState,value:type == .mouseMoved ? 0 : 1)
+ events.append(event)
+}
+var pointerPrelude: [String: Any]? = nil
+for (index, type) in transitions.enumerated() {
  _=recheckWindow(measurement,deadline)
  if let fallback = measurement.safariScroll {
   guard let point = safariScrollViewportPoint(viewport: fallback.scroll, visible: fallback.visible, cssWidth: width, cssHeight: height, x: x, y: y), point == actual else { refuse("Safari pointer no longer belongs to the exact visible content") }
  }
- guard let event=CGEvent(mouseEventSource:nil,mouseType:type,mouseCursorPosition:actual,mouseButton:.left) else { refuse("Cannot allocate scoped pointer event") }
- event.setIntegerValueField(.mouseEventClickState,value:1);posted=true;event.post(tap:.cghidEventTap)
+ posted=true;events[index].post(tap:.cghidEventTap)
+ if type == .mouseMoved {
+  let pauseBegan = DispatchTime.now().uptimeNanoseconds
+  Thread.sleep(forTimeInterval:0.025)
+  let pauseElapsed = Double(DispatchTime.now().uptimeNanoseconds - pauseBegan) / 1_000_000
+  pointerPrelude = ["event":"mouseMoved", "screenPoint":["x":actual.x,"y":actual.y], "requestedPauseMs":25, "elapsedMs":pauseElapsed]
+  _=recheckWindow(measurement,deadline)
+ }
 }
 guard elapsed() <= deadline else { refuse("Pointer completion exceeded authority deadline") }
-result["status"]="sent";result["delivery"]="sent";result["screenPoint"]=["x":actual.x,"y":actual.y];result["transitions"]=cleanup ? ["up"] : ["down","up"];result["elapsedMs"]=elapsed()
+result["status"]="sent";result["delivery"]="sent";result["screenPoint"]=["x":actual.x,"y":actual.y];result["transitions"]=cleanup ? ["up"] : chromePrelude ? ["move","down","up"] : ["down","up"];result["elapsedMs"]=elapsed()
+if let prelude = pointerPrelude { result["prelude"] = prelude }
 result["method"]="exact fixture control point via CGEvent; platform input, not hardware-device provenance";emit(result,0)

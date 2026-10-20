@@ -467,7 +467,12 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
       }
       assert.equal(cleanup,false);pending={action,pointer:true,request};dispatched=true;
       execution=run(inputHelper,['--request',JSON.stringify(request)],{timeout:remaining,fullStdout:true,maxBuffer:32768});const actual=JSON.parse(execution.stdout);
-      assert.equal(actual.status,'sent');assert.equal(actual.delivery,'sent');assert.deepEqual(actual.transitions,['down','up']);assert.equal(actual.action,action);assert.equal(actual.requestId,proof.id);
+      assert.equal(actual.status,'sent');assert.equal(actual.delivery,'sent');assert.deepEqual(actual.transitions,browser==='chrome'?['move','down','up']:['down','up']);assert.equal(actual.action,action);assert.equal(actual.requestId,proof.id);
+      if(browser==='chrome'){
+        exactKeys(actual.screenPoint,['x','y']);assert.ok(Object.values(actual.screenPoint).every(Number.isFinite));
+        exactKeys(actual.prelude,['event','screenPoint','requestedPauseMs','elapsedMs']);assert.equal(actual.prelude.event,'mouseMoved');assert.equal(actual.prelude.requestedPauseMs,25);
+        exactKeys(actual.prelude.screenPoint,['x','y']);assert.deepEqual(actual.prelude.screenPoint,actual.screenPoint);assert.ok(Number.isFinite(actual.prelude.elapsedMs)&&actual.prelude.elapsedMs>=0);
+      }else assert.equal(Object.hasOwn(actual,'prelude'),false);
       fixedWindow(actual.axWindow);
       for(const [name,value]of Object.entries({nonce:config.nonce,mountedId:mountedId(),caseId:v.caseId,target:v.target}))assert.equal(actual[name],value);
       completed=true;pending=null;assert.ok(age(proof.start)<=limits.guardAgeMs,'Total43 pointer guard exceeded1s');
@@ -484,7 +489,7 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
       const remaining=Math.floor(limits.guardAgeMs-age(proof.start));assert.ok(remaining>0);
       request={...saved.request,requestId:proof.id,serial:v.serial,cleanupOnly:true,pointerDown:true,deadlineMs:remaining};
       execution=run(inputHelper,['--request',JSON.stringify(request)],{timeout:remaining,fullStdout:true,maxBuffer:32768});actual=JSON.parse(execution.stdout);
-      assert.equal(actual.status,'sent');assert.equal(actual.delivery,'sent');assert.equal(actual.cleanupOnly,true);assert.deepEqual(actual.transitions,['up']);
+      assert.equal(actual.status,'sent');assert.equal(actual.delivery,'sent');assert.equal(actual.cleanupOnly,true);assert.deepEqual(actual.transitions,['up']);assert.equal(Object.hasOwn(actual,'prelude'),false);
       for(const name of ['action','requestId','nonce','mountedId','caseId','target'])assert.equal(actual[name],request[name]);
       assert.equal(actual.frontBundle,browser==='chrome'?'com.google.Chrome':'com.apple.Safari');assert.ok(Number.isSafeInteger(actual.frontPid)&&actual.frontPid>0);
       const expectedTitle=config.title+(browser==='chrome'?' - Google Chrome':'');assert.equal(actual.expectedAxWindowTitle,expectedTitle);assert.equal(actual.observedAxWindowTitle,expectedTitle);
