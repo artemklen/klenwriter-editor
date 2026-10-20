@@ -170,7 +170,10 @@ const branches=Object.entries(keySpecs).flatMap(([action,spec])=>[false,true].ma
   return ${appleString(prefix)} & expectedPID & ${appleString(',"nativeFindPhase":"')} & nativeFindPhase & ${appleString('"}')}
  end if
  `:'';
-  return `if fixtureAction is "${actual}" then\n if findPresentationEnabled then log "OSR42-AS8 KEYS begin"\n tell application "System Events"\n  ${lines.join('\n  ')}\n end tell\n if findPresentationEnabled then log "OSR42-AS8 KEYS end"\n ${findPost}${postGuard}\n return "${prefix.replaceAll('\\','\\\\').replaceAll('"','\\"')}" & expectedPID & "}"\nend if`;
+  // Allow Safari's Tab presentation to settle after the single complete key
+  // program. The original final ownership check and total1s deadline still apply.
+  const safariTabSettle=actual==='tab'?'if expectedBrowser is "safari" then delay 0.2\n ':'';
+  return `if fixtureAction is "${actual}" then\n if findPresentationEnabled then log "OSR42-AS8 KEYS begin"\n tell application "System Events"\n  ${lines.join('\n  ')}\n end tell\n if findPresentationEnabled then log "OSR42-AS8 KEYS end"\n ${findPost}${safariTabSettle}${postGuard}\n return "${prefix.replaceAll('\\','\\\\').replaceAll('"','\\"')}" & expectedPID & "}"\nend if`;
 })).join('\n');
 export const fixedKeyScript=requireFixture+findPostGuardDiagnostic+chromeFindPresentation+`on run argv
  if (count of argv) is not 4 and (count of argv) is not 8 then error "Closed UI42 key arguments required"

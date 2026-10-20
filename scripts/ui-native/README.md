@@ -50,6 +50,14 @@ not hardware-device provenance. Navigation is physical. Fixture mounting,
 literal selection setup, explicit focus setup, host edit and native undo/redo
 are labelled setup/host API actions; none is described as physical input.
 
+Safari's ordinary Tab program waits once for200ms after its original key-up,
+before the unchanged final System Events ownership check. This passive wait
+shares the original total1s action deadline; it adds no input or retry. A missing
+final ACK still leaves completion unknown and permits only the existing one
+UP-only cleanup. Preflight, other keys, cleanup and Chrome are unchanged. The
+observed immediate post-Tab title mismatch followed by a normal owned AX root
+motivates this settling wait; the transient window's cause remains unproven.
+
 Page zoom is changed by guarded native CmdPlus. The zoom oracle uses the
 baseline/current CSS viewport width with unchanged outer window dimensions;
 every action independently matches that viewport to the measured AX web area.
