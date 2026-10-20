@@ -30,9 +30,31 @@ const report={format:'editor-ui-installed/1',browser:browserName,expectedHead,st
 if(developmentCase!==undefined)report.development={"environment":"OSR42_NATIVE_DEVELOPMENT_CASE","caseId":"modes-zoom","selectedCases":2,"excludedCases":28,"coverage":"INCOMPLETE","acceptance":false};
 const save=()=>writeFileSync(outputPath,JSON.stringify(report,null,2)+'\n');save();
 function run(command,argv,{fullStdout=false,timeout=30000,maxBuffer=1024*1024}={}){
-  const value=spawnSync(command,argv,{cwd:root,encoding:'utf8',timeout,maxBuffer});
-  const execution={command,argv,returnCode:value.status,signal:value.signal,stdout:fullStdout?(value.stdout??''):(value.stdout??'').slice(0,16384),stderr:(value.stderr??'').slice(0,4096),error:value.error?.message??null};
+  const started=process.hrtime.bigint(),value=spawnSync(command,argv,{cwd:root,encoding:'utf8',timeout,maxBuffer}),wallTimeMs=Number(process.hrtime.bigint()-started)/1e6;
+  const execution={command,argv,returnCode:value.status,signal:value.signal,stdout:fullStdout?(value.stdout??''):(value.stdout??'').slice(0,16384),stderr:(value.stderr??'').slice(0,4096),error:value.error?.message??null,wallTimeMs};
   if(value.status!==0)throw Object.assign(Error(`${command}: ${execution.stderr||execution.error||execution.stdout}`),{execution});return execution;
+}
+// CW01: one existing invalid request before the browser; never input authority.
+function preflightChromeFindHelper(){
+  assert.equal(browserName,'chrome');
+  const stage={action:'preflight-closed-chrome-find-helper',status:'attempted',validationExitCode:null,startedAt:now(),scope:'Existing invalid-request process preparation only; no AX, CG allocation/post, input authority or performance guarantee',execution:null,helperBefore:null,helperAfter:null};
+  report.setup.push(stage);
+  try{
+    const helper=findKeyHelper,argv=['--request','{}'];stage.helperBefore=absolutePin(helper);
+    assert.deepEqual(stage.helperBefore,report.helperArtifacts.find(item=>item.path===helper),'Pinned Find helper before preflight');
+    const started=process.hrtime.bigint(),value=spawnSync(helper,argv,{cwd:root,encoding:'utf8',timeout:5000,maxBuffer:32768}),wallTimeMs=Number(process.hrtime.bigint()-started)/1e6;
+    const stdout=value.stdout??'',stderr=value.stderr??'',stdoutBytes=Buffer.byteLength(stdout),stderrBytes=Buffer.byteLength(stderr);
+    stage.execution={command:helper,argv,returnCode:value.status,signal:value.signal,error:value.error?.message??null,stdout:stdout.slice(0,32768),stderr:stderr.slice(0,32768),stdoutBytes,stderrBytes,stdoutTruncated:stdoutBytes>32768,stderrTruncated:stderrBytes>32768,wallTimeMs};
+    stage.helperAfter=absolutePin(helper);assert.deepEqual(stage.helperAfter,stage.helperBefore,'Pinned Find helper after preflight');
+    assert.equal(value.error,undefined);assert.equal(value.signal,null);assert.equal(value.status,2);
+    assert.ok(stdoutBytes<=32768&&stderrBytes<=32768);assert.equal(stderr,'');
+    assert.ok(Number.isFinite(wallTimeMs)&&wallTimeMs>=0);
+    const actual=JSON.parse(stdout);stage.actual=actual;
+    assert.ok(Number.isFinite(actual.elapsedMs)&&actual.elapsedMs>=0&&actual.elapsedMs<=5000);
+    assert.deepEqual(actual,{format:'osr42-chrome-find-key-result/1',status:'refused',delivery:'not_sent',method:'CGEvent/cghidEventTap',request:{},programId:null,program:null,postedTransitions:[],postedCount:0,preflightProofs:[],core:null,postcondition:{status:'not_attempted',expectedPhase:null,observedPhase:null,reads:0,proof:null,diagnostic:null},diagnostic:{code:'request',reason:'Invalid closed request'},elapsedMs:actual.elapsedMs});
+    stage.status='PASSED';stage.validationExitCode=0;
+  }catch(error){stage.status='FAILED';stage.validationExitCode=1;stage.error={message:error.message};throw error;}
+  finally{stage.finishedAt=now();}
 }
 const native=JSON.parse(readFileSync('contracts/ui/v1/native-oracles.json','utf8')),literal=id=>{const value=native.cases.find(c=>c.id===id);assert.ok(value);return value;};
 let adapter=null,inputHelper=null,sourceHelper=null,keyScriptPath=null,findKeyHelper=null,originalSource=null,selectedSource=null,config=null,configSha=null;
@@ -235,6 +257,7 @@ try {
   const helperExecutions=[run('/usr/bin/swiftc',['scripts/dom-native-input-source.swift','-O','-o',sourceHelper]),run('/usr/bin/swiftc',['scripts/ui-native/guard.swift','-O','-o',inputHelper]),run('/usr/bin/osacompile',['-o',keyScriptPath,keySource])];
   if(browserName==='chrome'){findKeyHelper=resolve(helpers,'find-key');helperExecutions.push(run('/usr/bin/swiftc',['scripts/ui-native/find-key.swift','-O','-o',findKeyHelper]));}
   report.setup.push({action:'compile-closed-fixture-helpers',executions:helperExecutions});chmodSync(keyScriptPath,0o444);report.helperArtifacts=[sourceHelper,inputHelper,keySource,keyScriptPath,...(findKeyHelper?[findKeyHelper]:[])].map(absolutePin);
+  if(browserName==='chrome'){preflightChromeFindHelper();save();}
   const initial=source();coherent(initial,initial.current.id);originalSource=initial.current.id;report.initialInputSources=initial;for(const id of ['com.apple.keylayout.US','com.apple.keylayout.Russian'])assert.ok(initial.sources.some(s=>s.id===id&&s.enabled&&s.selectable),'Existing source '+id);
   adapter=await(browserName==='chrome'?createChromeAdapter({config,report,inputHelper,keyScriptPath,findKeyHelper,run,save,outputPath}):createSafariAdapter({config,report,inputHelper,keyScriptPath,run,outputPath}));await adapter.navigate();assert.equal(report.browserVersion,report.bundleVersion);
   let blocked=false;
