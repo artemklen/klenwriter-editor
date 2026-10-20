@@ -1,0 +1,49 @@
+{
+  "format": "editor-ui-terminal-presentation-manifest/2",
+  "status": "SOURCE_DRAFT_NOT_EXECUTED",
+  "head": "124c23e1ca50064da6f717d7e4707ec7bed8ee44",
+  "sourcePins": [
+    {
+      "path": "packages/ui/src/ui.ts",
+      "bytes": 55218,
+      "sha256": "a616983b5c02993ace27ada8ed72ba0edc10a5b57e8bbf3a25b8adef3ba288d4"
+    },
+    {
+      "path": "packages/dom/src/composition.ts",
+      "bytes": 33653,
+      "sha256": "3e832e4922c9553a665b9dc8ef3a2f7adc895891b48f65dd54f21d98518bf9d6"
+    },
+    {
+      "path": "packages/dom/src/input.ts",
+      "bytes": 16385,
+      "sha256": "96d74ec9cbb3f2d0c2daa2297434a4556ca0aac3823e56530af7baf18d77e3ae"
+    },
+    {
+      "path": "packages/dom/src/mounted.ts",
+      "bytes": 37397,
+      "sha256": "818305bdc5e37696ed74fb2c84eefcd5bde72bc01b5a64bbbe22503da8ee2d3a"
+    },
+    {
+      "path": "tests/ui-controls-browser.spec.js",
+      "bytes": 58562,
+      "sha256": "f44ed532da5c5c53a9e926b92e866e40ae982e8c9abe58118e97be69ad0b3618"
+    },
+    {
+      "path": "spikes/workspace/ui-host.js",
+      "bytes": 24716,
+      "sha256": "a8b459031d25f5996b4b62fc249bd1cc3503ae20761ccc1f9f92a379cf3a7a4a"
+    }
+  ],
+  "files": [
+    {
+      "path": "terminal-presentation.md",
+      "bytes": 3030,
+      "sha256": "29a479d815fc15b36413ad0c8ed405a37eb07c6034b170f67b3ceed222318b13"
+    },
+    {
+      "path": "terminal-presentation-cases.json",
+      "bytes": 939,
+      "sha256": "c8f8e8173872ef5f4798401229fc883a415e2c6364f537b5b6e39f46e6753d1a"
+    }
+  ]
+}
