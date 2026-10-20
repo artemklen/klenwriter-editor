@@ -1,0 +1,155 @@
+{
+  "format": "editor-ui-find-cg-source-observation/1",
+  "originalReport": {
+    "path": "/tmp/osr-42-installed-development-6babcb0-13/chrome/chrome.json",
+    "bytes": 1145079,
+    "sha256": "c4c42845aef8f9f16e096d2dd10614c7c9a008c1f42f06d15f055b63469e414a"
+  },
+  "originalStatus": "FAILED",
+  "originalCounts": {
+    "PASS": 0,
+    "REFUSED": 0,
+    "FAILED": 1,
+    "UNOBSERVED": 0,
+    "UNSUPPORTED": 0,
+    "NOT_RUN": 29
+  },
+  "originalActualActions": 3,
+  "originalDevelopment": {
+    "environment": "OSR42_NATIVE_DEVELOPMENT_CASE",
+    "caseId": "modes-zoom",
+    "selectedCases": 2,
+    "excludedCases": 28,
+    "coverage": "INCOMPLETE",
+    "acceptance": false
+  },
+  "sourceClean": true,
+  "sourceStable": true,
+  "restoration": "RESTORED",
+  "failures": [
+    {
+      "cleanupOnly": false,
+      "delivery": "unknown/may_have_sent",
+      "keysPending": true,
+      "guardResponse": {
+        "action": "find",
+        "axViewport": {
+          "height": 768,
+          "width": 1024,
+          "x": 22,
+          "y": 139
+        },
+        "axWindow": {
+          "height": 855,
+          "width": 1026,
+          "x": 22,
+          "y": 52
+        },
+        "axWindowCount": 1,
+        "caseId": "modes-zoom",
+        "cleanupOnly": false,
+        "delivery": "not_sent",
+        "elapsedMs": 31.692,
+        "expectedAxWindowTitle": "KlenWriter UI native 4f8790972acfe4ad21632e1b3b0e3c6a - Google Chrome",
+        "frontBundle": "com.google.Chrome",
+        "frontPid": 43498,
+        "mountedId": "ui42-1",
+        "nonce": "4f8790972acfe4ad21632e1b3b0e3c6a",
+        "observedAxWindowTitle": "KlenWriter UI native 4f8790972acfe4ad21632e1b3b0e3c6a - Google Chrome",
+        "requestId": "4f8790972acfe4ad21632e1b3b0e3c6a:13",
+        "status": "guarded",
+        "target": "focused"
+      },
+      "asExecution": {
+        "command": "/usr/bin/osascript",
+        "argv": [
+          "/tmp/osr-42-installed-development-6babcb0-13/chrome/ui42-native-helpers-2nOdWx/fixed-keys.scpt",
+          "chrome",
+          "KlenWriter UI native 4f8790972acfe4ad21632e1b3b0e3c6a - Google Chrome",
+          "43498",
+          "find",
+          "22",
+          "52",
+          "1026",
+          "855"
+        ],
+        "returnCode": null,
+        "signal": "SIGTERM",
+        "stdout": "",
+        "stderr": "OSR42-AS8 PRE begin\nOSR42-AS8 GUARD begin\nOSR42-AS8 GUARD identity ok\nOSR42-AS8 GUARD root located\nOSR42-AS8 GUARD root frame ok\nOSR42-AS8 GUARD focus ok\nOSR42-AS8 GUARD topology ok\nOSR42-AS8 GUARD final begin\nOSR42-AS8 GUARD final end\nOSR42-AS8 PRE end\nOSR42-AS8 KEYS begin\nOSR42-AS8 KEYS end\nOSR42-AS8 POST begin\nOSR42-AS8 GUARD begin\nOSR42-AS8 GUARD identity ok\nOSR42-AS8 GUARD root located\nOSR42-AS8 GUARD root frame ok\n",
+        "error": "spawnSync /usr/bin/osascript ETIMEDOUT"
+      },
+      "totalGuardAgeMs": 1002.993667
+    },
+    {
+      "cleanupOnly": true,
+      "delivery": "unknown/may_have_sent",
+      "keysPending": true,
+      "guardResponse": {
+        "axWindow": {
+          "height": 855,
+          "width": 1026,
+          "x": 22,
+          "y": 52
+        },
+        "axWindowCount": 2,
+        "browser": "chrome",
+        "caseId": "modes-zoom",
+        "contained": true,
+        "delivery": "not_sent",
+        "elapsedMs": 31.96275,
+        "expectedAxWindowTitle": "KlenWriter UI native 4f8790972acfe4ad21632e1b3b0e3c6a - Google Chrome",
+        "findAux": {
+          "frame": {
+            "height": 84,
+            "width": 403,
+            "x": 612,
+            "y": 124
+          },
+          "role": "AXWindow",
+          "subrole": "AXUnknown",
+          "title": "Find in page\n    KlenWriter UI native 4f8790972acfe4ad21632e1b3b0e3c6a"
+        },
+        "findRequestId": "4f8790972acfe4ad21632e1b3b0e3c6a:13",
+        "fixtureUrl": "http://127.0.0.1:4174/ui",
+        "format": "osr42-chrome-find-window/1",
+        "frontBundle": "com.google.Chrome",
+        "frontPid": 43498,
+        "measurement": "native-find-window-only",
+        "mountedId": "ui42-1",
+        "nativeFindPhase": "open",
+        "nonce": "4f8790972acfe4ad21632e1b3b0e3c6a",
+        "observedAxWindowTitle": "KlenWriter UI native 4f8790972acfe4ad21632e1b3b0e3c6a - Google Chrome",
+        "purpose": "release-find",
+        "requestId": "4f8790972acfe4ad21632e1b3b0e3c6a:14",
+        "rootFocused": true,
+        "rootRole": "AXWindow",
+        "rootSubrole": "AXStandardWindow",
+        "serial": 4,
+        "status": "guarded",
+        "title": "KlenWriter UI native 4f8790972acfe4ad21632e1b3b0e3c6a"
+      },
+      "asExecution": {
+        "command": "/usr/bin/osascript",
+        "argv": [
+          "/tmp/osr-42-installed-development-6babcb0-13/chrome/ui42-native-helpers-2nOdWx/fixed-keys.scpt",
+          "chrome",
+          "KlenWriter UI native 4f8790972acfe4ad21632e1b3b0e3c6a - Google Chrome",
+          "43498",
+          "release-find",
+          "22",
+          "52",
+          "1026",
+          "855"
+        ],
+        "returnCode": null,
+        "signal": "SIGTERM",
+        "stdout": "",
+        "stderr": "OSR42-AS8 PRE begin\nOSR42-AS8 GUARD begin\nOSR42-AS8 GUARD identity ok\nOSR42-AS8 GUARD root located\nOSR42-AS8 GUARD root frame ok\nOSR42-AS8 GUARD focus ok\nOSR42-AS8 GUARD topology ok\nOSR42-AS8 GUARD final begin\nOSR42-AS8 GUARD final end\nOSR42-AS8 PRE end\nOSR42-AS8 KEYS begin\nOSR42-AS8 KEYS end\nOSR42-AS8 POST begin\nOSR42-AS8 GUARD begin\nOSR42-AS8 GUARD identity ok\nOSR42-AS8 GUARD root located\n",
+        "error": "spawnSync /usr/bin/osascript ETIMEDOUT"
+      },
+      "totalGuardAgeMs": 1002.94225
+    }
+  ],
+  "interpretation": "PRE and KEYS markers reached; POST timed out after different guard milestones. Markers are NOT ACK; both outcomes remain unknown. This supports cumulative predicate-cost hypothesis, not one proven stuck getter. No prior PASSES transferred to the new transport."
+}

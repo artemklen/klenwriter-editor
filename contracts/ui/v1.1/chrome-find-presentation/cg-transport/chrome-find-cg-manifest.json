@@ -1,0 +1,71 @@
+{
+  "format": "editor-ui-chrome-find-cg-manifest/1",
+  "status": "SOURCE_DRAFT_BEFORE_CANDIDATE",
+  "head": "6babcb03813b4e5689630072543c7ea2731b5baa",
+  "sourcePins": [
+    {
+      "path": "scripts/ui-native/input.mjs",
+      "bytes": 38437,
+      "sha256": "2e54e3072631a67cb876e6c481dbc422be33fc2ccedd64d3ff9d2639caefb0ab"
+    },
+    {
+      "path": "scripts/ui-native/guard.swift",
+      "bytes": 21890,
+      "sha256": "ae87f0e855e841f232e70a60361291a73e49084bd1d4ffe51c3a8cf1ce6d7cf5"
+    },
+    {
+      "path": "scripts/ui-native/chrome-adapter.mjs",
+      "bytes": 8670,
+      "sha256": "92bda1b5d85d53b3f5c707390ae0df75a1b95881b7380d6e525e628377f54252"
+    },
+    {
+      "path": "scripts/ui-native-acceptance.mjs",
+      "bytes": 42554,
+      "sha256": "5606b059c96b05ffdc8a8596fffaf99a7fb5d0c61396338c87b85404106b45a9"
+    },
+    {
+      "path": "scripts/ui-native/protocol.mjs",
+      "bytes": 3850,
+      "sha256": "cc8c66fac2dbeee57d91132c81873d85c3a29ead246a8ee6407f3684ce1a2ee0"
+    },
+    {
+      "path": "tests/ui-native-find-episode.node.mjs",
+      "bytes": 18926,
+      "sha256": "7c614eadd019313d2a63d6d40df2c56ebcee2c1a6bde2dd31222ddf0ab8cc3db"
+    },
+    {
+      "path": "tests/ui-native-input.node.mjs",
+      "bytes": 19311,
+      "sha256": "310120eac163819a59d316488dfdd6953cc32ae2bfea63fc9982a37e1033079c"
+    }
+  ],
+  "files": [
+    {
+      "path": "chrome-find-cg.md",
+      "bytes": 6130,
+      "sha256": "0f57976780f29dbcb0ba1d8af8f8812c38eeeb76c1995b044f1a4a3cf24fba08"
+    },
+    {
+      "path": "chrome-find-cg-design.json",
+      "bytes": 10598,
+      "sha256": "0592c9041ed96d3bbb316f58ff5e6f3be55995351e8eda3e3f341799d24c11d0"
+    },
+    {
+      "path": "chrome-find-cg-cases.json",
+      "bytes": 4911,
+      "sha256": "b834676af8ec82848a4e5dc9d3ba2011c165c8afd399ab4889bd502ee42dcf62"
+    },
+    {
+      "path": "chrome13-observation.json",
+      "bytes": 5887,
+      "sha256": "2c48c60a4b28a2431a8715c8b5cf9efbea70fe620a14c308fcadea59cbcaece9"
+    }
+  ],
+  "draftRevision": 2,
+  "revisionScope": "SDK primary pins + explicit private CGEventSource/no manual event type + four pre-AX malformed controls only",
+  "previousDraft": {
+    "path": "/tmp/osr-42-chrome-find-cg-contract-draft-01/chrome-find-cg-manifest.json",
+    "bytes": 1996,
+    "sha256": "b0f63b2b43c4c222d5d1bf4f2837c60740b383e4e3a3feaafdb665c108589939"
+  }
+}

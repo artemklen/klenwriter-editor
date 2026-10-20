@@ -1,0 +1,370 @@
+{
+  "format": "editor-ui-chrome-find-cg-design/1",
+  "status": "SOURCE_DRAFT_BEFORE_CANDIDATE",
+  "privateOptions": {
+    "nativeFindEpisode": "chrome-fd01",
+    "nativeFindKeyTransport": "cg-fd02",
+    "findKeyHelper": "fixed compiled/new helper path, required only for CG transport Chrome",
+    "absent": "all old AS8/default/Safari/ordinary code behavior and155 expectations unchanged"
+  },
+  "nativeHelper": {
+    "newSource": "scripts/ui-native/find-key.swift",
+    "cli": [
+      "--request",
+      "CLOSED_JSON"
+    ],
+    "selfContained": true,
+    "existingGuardSwiftAndAS": "unchanged"
+  },
+  "request": {
+    "exactKeys": [
+      "format",
+      "browser",
+      "nonce",
+      "title",
+      "fixtureUrl",
+      "mountedId",
+      "caseId",
+      "findRequestId",
+      "requestId",
+      "serial",
+      "pid",
+      "rootFrame",
+      "purpose",
+      "deadlineMs",
+      "action",
+      "cleanupOnly"
+    ],
+    "format": "osr42-chrome-find-key/1",
+    "browser": "chrome",
+    "purpose": "key",
+    "action": [
+      "find",
+      "close-find"
+    ],
+    "cleanupOnly": "boolean",
+    "caseId": "modes-zoom",
+    "nonce": "exact32 lowercasehex ASCII/UTF8",
+    "title": "KlenWriter UI native <nonce>",
+    "fixtureUrl": "http://127.0.0.1:4174/ui",
+    "mountedId": "whole ^ui42-[1-9][0-9]{0,8}$",
+    "requestIds": "whole ^<nonce>:[1-9][0-9]{0,3}$, original episode exact findRequestId; primaryFind requestId==findRequestId, others fresh !=",
+    "serial": "integer1..2048 and genuine private currentguard serial",
+    "pid": "positive Int32 exact original strict pre-Find guard PID",
+    "rootFrame": "exact original {x,y,width,height}, all finite, positive size, finite sums",
+    "deadlineMs": "integer remaining1..1000, Node total1s unchanged",
+    "forbidden": [
+      "program",
+      "keyCode",
+      "flags",
+      "coordinates",
+      "viewport",
+      "selectors",
+      "arbitrary actions"
+    ]
+  },
+  "programs": {
+    "find": [
+      {
+        "keyCode": 55,
+        "down": true,
+        "flags": "command"
+      },
+      {
+        "keyCode": 3,
+        "down": true,
+        "flags": "command"
+      },
+      {
+        "keyCode": 3,
+        "down": false,
+        "flags": "command"
+      },
+      {
+        "keyCode": 55,
+        "down": false,
+        "flags": "none"
+      }
+    ],
+    "close-find": [
+      {
+        "keyCode": 53,
+        "down": true,
+        "flags": "none"
+      },
+      {
+        "keyCode": 53,
+        "down": false,
+        "flags": "none"
+      }
+    ],
+    "release-find": [
+      {
+        "keyCode": 55,
+        "down": false,
+        "flags": "none"
+      },
+      {
+        "keyCode": 3,
+        "down": false,
+        "flags": "none"
+      }
+    ],
+    "release-close-find": [
+      {
+        "keyCode": 53,
+        "down": false,
+        "flags": "none"
+      }
+    ]
+  },
+  "programSelection": "programId=(cleanupOnly?release-:empty)+action; not caller-supplied",
+  "coreByProgram": {
+    "find": {
+      "status": "key-sent",
+      "action": "find",
+      "keyCode": 3,
+      "modifiers": [
+        "command"
+      ],
+      "keyTransitions": [
+        "command-down",
+        "key3-down",
+        "key3-up",
+        "command-up"
+      ]
+    },
+    "close-find": {
+      "status": "key-sent",
+      "action": "close-find",
+      "keyCode": 53,
+      "modifiers": [],
+      "keyTransitions": [
+        "key53-down",
+        "key53-up"
+      ]
+    },
+    "release-find": {
+      "status": "keys-released",
+      "action": "release-find",
+      "keyCode": 3,
+      "modifiers": [
+        "command"
+      ],
+      "keyTransitions": [
+        "command-up",
+        "key3-up"
+      ]
+    },
+    "release-close-find": {
+      "status": "keys-released",
+      "action": "release-close-find",
+      "keyCode": 53,
+      "modifiers": [],
+      "keyTransitions": [
+        "key53-up"
+      ]
+    }
+  },
+  "coreExactKeys": [
+    "status",
+    "action",
+    "keyCode",
+    "modifiers",
+    "keyTransitions",
+    "frontPid"
+  ],
+  "coreFrontPid": "original request.pid; oldcorelabels map SOURCE literal actual CG program, not SystemEvents provenance",
+  "proof": {
+    "exactKeys": [
+      "frontPid",
+      "frontName",
+      "frontBundle",
+      "rootTitle",
+      "rootRole",
+      "rootSubrole",
+      "rootFrame",
+      "rootFocused",
+      "phase",
+      "windowCount",
+      "findAux",
+      "contained"
+    ],
+    "frontPid": "original request.pid",
+    "frontName": "Google Chrome",
+    "frontBundle": "com.google.Chrome",
+    "rootTitle": "request.title + - Google Chrome suffix",
+    "rootRole": "AXWindow",
+    "rootSubrole": "AXStandardWindow",
+    "rootFrame": "deepEqual original request.rootFrame",
+    "rootFocused": true,
+    "phase": [
+      "open",
+      "closed"
+    ],
+    "windowCount": "open2/closed1",
+    "findAux": {
+      "openExactKeys": [
+        "title",
+        "role",
+        "subrole",
+        "frame"
+      ],
+      "title": "Find in page\n    KlenWriter UI native <nonce>",
+      "role": "AXWindow",
+      "subrole": "AXUnknown",
+      "frame": "actual positivefinite entirelyinside root"
+    },
+    "findAuxWhenClosed": null,
+    "contained": true,
+    "noAXViewport": true
+  },
+  "response": {
+    "exactKeys": [
+      "format",
+      "status",
+      "delivery",
+      "method",
+      "request",
+      "programId",
+      "program",
+      "postedTransitions",
+      "postedCount",
+      "preflightProofs",
+      "core",
+      "postcondition",
+      "diagnostic",
+      "elapsedMs"
+    ],
+    "format": "osr42-chrome-find-key-result/1",
+    "method": "CGEvent/cghidEventTap",
+    "request": "exact original CLOSED16 request echo; malformed CLI may echo null and is never trusted as original context",
+    "programId": "source-derived oneof4, null for unparseable request",
+    "program": "exact immutable SOURCE array",
+    "postedTransitions": "actual posted prefix entries equal program.slice(0,postedCount), each3keys keyCode/down/flags",
+    "postedCount": "integer0..programlength",
+    "preflightProofs": "one full actual ownedproof per postedtransition; length==postedCount, bounded<=4",
+    "core": "old6exact ONLYstatuscompleted/allposts; otherwise null",
+    "diagnostic": "null or fixed bounded {code,reason}; reason<=512 UTF8 bytes, no host dump",
+    "elapsedMs": "finite>=0 initially; <=remaining and Node totalage are checked AFTERvalidcomplete core completion fact"
+  },
+  "truthClasses": {
+    "refused": {
+      "status": "refused",
+      "delivery": "not_sent",
+      "postedCount": 0,
+      "core": null,
+      "exit": 2,
+      "pending": "primary clears new pending; cleanup retains original unknown pending and consumes only attempt"
+    },
+    "unknown": {
+      "status": "unknown",
+      "delivery": "unknown/may_have_sent",
+      "postedCount": "actual strictpartial prefix when typed; opaque/no validJSON retains unknown",
+      "core": null,
+      "exit": 2,
+      "pending": "retain original tuple; at mostone matching UP-only cleanup"
+    },
+    "completed": {
+      "status": "completed",
+      "delivery": "sent",
+      "postedCount": "full program length",
+      "core": "exactold6+fullrequest/program/prefix proof",
+      "exit": 0,
+      "pending": "clear before postphase/deadline checks even if later rejected"
+    }
+  },
+  "postcondition": {
+    "exactKeys": [
+      "status",
+      "expectedPhase",
+      "observedPhase",
+      "reads",
+      "proof",
+      "diagnostic"
+    ],
+    "status": [
+      "verified",
+      "unobserved",
+      "refused",
+      "not_attempted"
+    ],
+    "expectedPhase": {
+      "find": "open",
+      "close-find": "closed",
+      "release-find": "either",
+      "release-close-find": "either"
+    },
+    "observedPhase": [
+      "open",
+      "closed",
+      null
+    ],
+    "reads": "integer0..12 attempts",
+    "proof": "actual last successful measurement for verified/unobserved; null if no read or refused ownership",
+    "diagnostic": "null or fixedbounded code/reason",
+    "verified": "desired phase, exact owner; cleanup any exactopen/closed",
+    "unobserved": "only exact-owned opposite phase until limit/deadline, or no remainingtime; completecore preserved",
+    "refused": "wrong owner immediately, stop; completecore preserved",
+    "not_attempted": "no complete program; zero reads/proofnull",
+    "maximumReadAttempts": 12,
+    "maximumWaitMs": 4,
+    "waits": "read-only only, after exact-owned wrongdesiredphase, inside same remainingdeadline; no eventretry"
+  },
+  "allocationAndPosting": {
+    "allocateMaxEventsBeforeAnyPost": 4,
+    "initialPhase": {
+      "find": "closed",
+      "close-find": "open",
+      "cleanup": "open|closed"
+    },
+    "laterPreTransitionPhase": "open|closed exact same owner only",
+    "retainActualInitialRootWithinHelper": true,
+    "CGTap": "cghidEventTap",
+    "flagSource": {
+      "command": "CGEventFlags.maskCommand",
+      "none": "empty CGEventFlags"
+    },
+    "postedReceiptScope": "API posting returned; platform, not hardware/native delivery",
+    "CGEventSource": "CGEventSource(stateID: .privateState), allocated only after closed request validation; explicit exact flags per event; no manual event.type assignment"
+  },
+  "expectedInventory": {
+    "oldUnits": 155,
+    "newCases": 8,
+    "units": 163,
+    "uiBrowser": 216,
+    "overallBrowser": 972
+  },
+  "primarySDKSourcePins": [
+    {
+      "path": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/CoreGraphics.framework/Versions/A/Headers/CGEvent.h",
+      "bytes": 16961,
+      "sha256": "82c0ad9eb7c2f1ccfe8483fe96f5d71493ee1f5b4a6a68458ba9c07dd728f8bb",
+      "lines": [
+        66,
+        79
+      ],
+      "fact": "CGEventCreateKeyboardEvent creates correct keyDown/keyUp/flagsChanged for virtual key; modifier keystrokes explicitly included"
+    },
+    {
+      "path": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/CoreGraphics.framework/Versions/A/Headers/CGEventTypes.h",
+      "bytes": 19140,
+      "sha256": "0eb5b0aca9a77730d7c1b0449113b18419765771ae02a596708281f56f6c45b4",
+      "lines": [
+        471,
+        484
+      ],
+      "fact": "CGEventSourceState private=-1, combined=0, HID=1; use privateState"
+    },
+    {
+      "path": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Headers/Events.h",
+      "bytes": 29094,
+      "sha256": "b80b0c6e10ea4a06494d02399424cb806cc04a2971724688cb2063e04f2149d6",
+      "lines": [
+        200,
+        271
+      ],
+      "fact": "kVK_ANSI_F=0x03; kVK_Escape=0x35; kVK_Command=0x37"
+    }
+  ]
+}
