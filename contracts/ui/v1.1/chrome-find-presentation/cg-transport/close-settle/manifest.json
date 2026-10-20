@@ -1,0 +1,29 @@
+{
+  "format": "editor-ui-chrome-close-find-settle-manifest/1",
+  "status": "SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "createdAt": "2026-10-20T08:51:48.600378+00:00",
+  "source": {
+    "path": "/Users/artem/projects/klenwriter-editor/scripts/ui-native/find-key.swift",
+    "bytes": 26445,
+    "sha256": "d0ed3ce3518a6d451075f433436f7cfcdc8f14b803d50ff80c97e316363e9aa7"
+  },
+  "observation": {
+    "path": "/tmp/osr-42-installed-development-a24acc4-22/chrome/chrome.json",
+    "bytes": 6231099,
+    "sha256": "1c3bf98eaf95993b1d5e570b1c31edee0466c7a4b725228b1f7ecfca7c57fbea"
+  },
+  "files": [
+    {
+      "path": "/tmp/osr-42-chrome-close-find-settle-contract-draft-01/contract.md",
+      "bytes": 4136,
+      "sha256": "b66530aad2d2e8d51ccf63594bf82c580c223b78613ddb3f93ca61b46369699e"
+    },
+    {
+      "path": "/tmp/osr-42-chrome-close-find-settle-contract-draft-01/cases.json",
+      "bytes": 5021,
+      "sha256": "0756ac7bcfdd780ec0736f31ec06ee7a9db3664b9d55f6d7038f49d1700bb869"
+    }
+  ],
+  "execution": false,
+  "candidateCodeAuthored": false
+}
