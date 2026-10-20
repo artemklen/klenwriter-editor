@@ -468,7 +468,7 @@ if let pid = postingPid {
  guard measurement.front.processIdentifier == pid else { refuse("Original Chrome pointer PID differs from guarded owner") }
  let access = CGPreflightPostEventAccess()
  guard access else { refuse("Existing event posting access unavailable") }
- result["posting"] = ["route":"CGEventPostToPid", "pid":pid, "preflightAccess":access]
+ result["posting"] = ["route":"cghidEventTap", "guardedPid":pid, "preflightAccess":access]
 }
 guard let p = request["point"] as? [String:Any], closed(p,["x","y"]), let x=number(p["x"]), let y=number(p["y"]), x>=0, x<width, y>=0, y<height else { refuse("Closed target point outside actual viewport") }
 let actual: CGPoint
@@ -512,9 +512,7 @@ for (index, type) in transitions.enumerated() {
   previousPostUptime = postUptime
   pairTiming?[["movePostUptimeNs","downPostUptimeNs","upPostUptimeNs"][index]] = String(postUptime)
  }
- posted=true
- if let pid = postingPid { events[index].postToPid(pid) }
- else { events[index].post(tap:.cghidEventTap) }
+ posted=true;events[index].post(tap:.cghidEventTap)
  if type == .mouseMoved {
   let pauseBegan = DispatchTime.now().uptimeNanoseconds
   Thread.sleep(forTimeInterval:0.025)
