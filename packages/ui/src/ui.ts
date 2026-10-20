@@ -87,6 +87,7 @@ class Ui implements EditorUi {
   #destroyed = false; #initialized = false; #profile: UiProfile | null = null; #profileContext: DeepReadonly<SessionContextV2> | null = null;
   #context: UiActionContext | null = null; #hover: string | null = null; #pointer: { x: number; y: number } | null = null;
   #toolbar: HTMLElement; #gutter: HTMLElement; #entry: HTMLElement; #addPopup: HTMLElement; #movePopup: HTMLElement;
+  #statusOwner: 'loading' | 'availability' | 'feedback' = 'loading';
   #status: HTMLElement; #blockLabel: HTMLElement; #add: Control; #move: Control;
   #controls = new WeakMap<Element, Control>(); #toolbarControls = new Map<string, Control>(); #blockControls = new Map<string, Control>();
   #pending: Pending | null = null; #popup: Popup | null = null; #tasks = new Set<Task>();
@@ -116,7 +117,7 @@ class Ui implements EditorUi {
     this.#gutter.append(this.#blockLabel, this.#move.button, this.#move.reason, this.#movePopup);
     this.#entry.append(this.#add.button, this.#add.reason, this.#addPopup, this.#status);
     configuration.slots.toolbar.append(this.#toolbar); configuration.slots.gutter.append(this.#gutter); configuration.slots.entry.append(this.#entry);
-    this.#status.textContent = label('loading', this.#locale); this.#wire(); this.#labels();
+    this.#setStatus(label('loading', this.#locale), 'loading'); this.#wire(); this.#labels();
     this.ready = configuration.editor.ready.then(() => {
       if (this.#destroyed) return failure('ui.disposed');
       this.#initialized = true;
@@ -219,6 +220,7 @@ class Ui implements EditorUi {
   #click(event: MouseEvent): void {
     const control = this.#find(event.target), gesture = control ? this.#pointerGesture.get(control) : undefined;
     this.#pointerGesture = new WeakMap(); // Consume before callbacks or availability re-evaluation.
+    this.refresh(); // Resume current placement next frame, including a refused click.
     if (!control || this.#destroyed) return;
     event.preventDefault();
     const pointerId = (event as PointerEvent).pointerId;
@@ -403,11 +405,11 @@ class Ui implements EditorUi {
     this.#rendering = true;
     try {
       const context = this.#snapshot();
-      if ('status' in context) { this.#disable(context); return context; }
+      if ('status' in context) { this.#disable(context, true, context.status === 'dom_refused' ? 'availability' : 'feedback'); return context; }
       if (!same(this.#profileContext, context.context)) {
         this.#releasePending('invalidated'); this.#hidePopup();
         const selected = profile(this.#callback(() => this.#options!.profile(context.context)));
-        if ('status' in selected) { const result = failure('ui.unavailable'); this.#status.textContent = selected.message[this.#locale]; this.#disable(result, false); return result; }
+        if ('status' in selected) { const result = failure('ui.unavailable'); this.#setStatus(selected.message[this.#locale]); this.#disable(result, false); return result; }
         this.#profile = selected; this.#profileContext = context.context;
       }
       if (!same(context.state.stamp, this.#options.editor.capture()) || !same(context.context, this.#options.editor.context())) return failure('ui.unavailable');
@@ -422,9 +424,9 @@ class Ui implements EditorUi {
       this.#drawAvailability(this.#add); this.#drawAvailability(this.#move);
       this.#blockLabel.textContent = context.block ? `${label('block', this.#locale).replace('{position}', String(context.block.index + 1)).replace('{type}', this.#typeLabel(context.block.node))} — ${[...context.block.ancestors].reverse().map(node => this.#typeLabel(node)).join(' / ')}` : '';
       this.#position(context);
-      if (status.status !== 'available') { this.#releasePending('invalidated'); this.#hidePopup(); this.#status.textContent = this.#reason(status); }
+      if (status.status !== 'available') { this.#releasePending('invalidated'); this.#hidePopup(); this.#setStatus(this.#reason(status), 'availability'); }
       else if (same(context.state.stamp, this.#options.editor.capture()) && same(context.context, this.#options.editor.context())
-        && (this.#status.textContent === label('loading', 'ru') || this.#status.textContent === label('loading', 'en'))) this.#status.textContent = '';
+        && (this.#statusOwner === 'loading' || this.#statusOwner === 'availability')) this.#setStatus('');
       return null;
     } catch (error) {
       const result = this.#error(error); this.#releasePending('invalidated'); this.#hidePopup(); this.#disable(result); return result;
@@ -433,7 +435,12 @@ class Ui implements EditorUi {
       if (this.#refreshAgain) { this.#refreshAgain = false; this.refresh(); }
     }
   }
+  #placementHeld(): boolean {
+    const controls = [...this.#toolbarControls.values(), ...this.#blockControls.values(), this.#add, this.#move, ...(this.#popup?.controls ?? [])];
+    return controls.some(control => this.#pointerGesture.has(control) && control.button.matches(':active'));
+  }
   #position(context: UiActionContext): void {
+    if (this.#placementHeld()) return; // Presentation only; native action guards remain separate.
     this.#positionToolbar(context);
     const clear = () => { this.#gutter.classList.remove('kw-ui-floating'); this.#gutter.style.removeProperty('left'); this.#gutter.style.removeProperty('top'); };
     if (!context.block) { clear(); return; }
@@ -504,14 +511,19 @@ class Ui implements EditorUi {
     return label(node.primitive === 'root' ? 'document' : node.primitive === 'text_block' ? 'textBlock'
       : node.primitive === 'container' ? 'container' : node.primitive === 'block_atom' ? 'object' : 'genericBlock', this.#locale);
   }
-  #disable(result: UiFailure, show = true): void {
+  #disable(result: UiFailure, show = true, owner: 'availability' | 'feedback' = 'feedback'): void {
     this.#clearToolbarPlacement();
     for (const control of [...this.#toolbarControls.values(), ...this.#blockControls.values(), this.#add, this.#move]) {
       control.availability = { available: false, active: null, failure: result, reason: this.#reason(result) }; this.#drawAvailability(control);
     }
-    if (show) this.#status.textContent = this.#reason(result);
+    if (show) this.#setStatus(this.#reason(result), owner);
   }
-  #showControl(control: Control): void { this.#status.textContent = control.availability.reason || label('unavailable', this.#locale); }
+  #setStatus(message: string, owner: 'loading' | 'availability' | 'feedback' = 'feedback'): void {
+    if (this.#destroyed) return;
+    // Writer provenance is updated even when independent feedback has equal text.
+    this.#statusOwner = owner; this.#status.textContent = message;
+  }
+  #showControl(control: Control): void { this.#setStatus(control.availability.reason || label('unavailable', this.#locale), control.availability.failure?.status === 'dom_refused' ? 'availability' : 'feedback'); }
   #reason(result: UiFailure): string {
     const code = result.status === 'dom_refused' ? result.diagnostic.code : result.status === 'sdk_failure'
       ? result.response.status === 'ok' ? '' : result.response.diagnostic.code : result.code;
@@ -521,8 +533,8 @@ class Ui implements EditorUi {
     return `${label(key, this.#locale)}${code ? ` (${code.slice(0, 256)})` : ''}`;
   }
   #error(error: unknown, action: string | null = null): UiFailure { return failure(error instanceof UiError ? error.code : 'ui.callback_failed', action); }
-  #show(result: UiFailure): void { if (!this.#destroyed) this.#status.textContent = this.#reason(result); }
-  #showStale(): void { if (!this.#destroyed) this.#status.textContent = label('stale', this.#locale); }
+  #show(result: UiFailure): void { if (!this.#destroyed) this.#setStatus(this.#reason(result)); }
+  #showStale(): void { if (!this.#destroyed) this.#setStatus(label('stale', this.#locale)); }
   #emit(result: UiResult): void {
     if (this.#destroyed || !this.#onResult || this.#emitting) return;
     this.#emitting = true;
@@ -546,7 +558,7 @@ class Ui implements EditorUi {
       if (!item) throw new UiError('ui.callback_failed');
       const owned = unavailable(item) ?? command(item), availability = this.#availability(owned, pending.context, control.action?.kind === 'toggle');
       if (!availability.available || 'status' in owned) {
-        this.#status.textContent = availability.reason || label('unavailable', this.#locale);
+        this.#setStatus(availability.reason || label('unavailable', this.#locale));
         this.#emit(availability.failure ?? failure('ui.unavailable', control.action?.id ?? control.choice?.id ?? null));
         this.#releasePending('refused'); this.#hidePopup(); return;
       }
@@ -559,7 +571,7 @@ class Ui implements EditorUi {
     const pending = this.#capture(kind === 'add' ? this.#options!.slots.entry : this.#options!.slots.gutter); if (!pending) return;
     const popup = kind === 'add' ? this.#addPopup : this.#movePopup;
     const choices = kind === 'move' && pending.context.block ? moves(this.#callback(() => this.#profile!.moves(pending.context as UiActionContext & { block: UiBlockContext }))) : null;
-    if (choices && 'status' in choices) { this.#status.textContent = choices.message[this.#locale]; this.#releasePending('refused'); return; }
+    if (choices && 'status' in choices) { this.#setStatus(choices.message[this.#locale]); this.#releasePending('refused'); return; }
     popup.replaceChildren(); const controls: Control[] = [];
     if (kind === 'add') {
       for (const item of this.#profile!.insertions) { const control = this.#control(item.id, 'popup'); this.#renderControl(control, item, pending.context); controls.push(control); }
@@ -583,7 +595,7 @@ class Ui implements EditorUi {
       const candidates = popup.controls.filter(control => control.choice?.direction === direction);
       if (candidates.length === 1) this.#activate(candidates[0]!);
       else if (candidates.length) { this.#rove(popup.controls, candidates[0]); candidates[0]!.button.focus(); }
-      else this.#status.textContent = label('unavailable', this.#locale);
+      else this.#setStatus(label('unavailable', this.#locale));
     } catch (error) { const result = this.#error(error); this.#show(result); this.#emit(result); }
   }
   #complete(pending: Pending, actionId: string, owned: CommandDto, moving: boolean): void {
@@ -595,10 +607,10 @@ class Ui implements EditorUi {
     const completion = result.submission.status === 'completed' ? Promise.resolve(result.submission.response) : result.submission.completion;
     this.#track(Promise.all([completion, result.focus]), ([response, focus]) => {
       if (response.status !== 'ok') this.#show({ status: 'sdk_failure', response });
-      else if (moving && response.value.kind === 'mutation' && response.value.effect === 'unchanged') this.#status.textContent = label('unchanged', this.#locale);
+      else if (moving && response.value.kind === 'mutation' && response.value.effect === 'unchanged') this.#setStatus(label('unchanged', this.#locale));
       else if (moving) {
         const context = this.#snapshot();
-        if (!('status' in context) && context.block) this.#status.textContent = label('position', this.#locale).replace('{position}', String(context.block.index + 1));
+        if (!('status' in context) && context.block) this.#setStatus(label('position', this.#locale).replace('{position}', String(context.block.index + 1)));
       } else if (focus.failure) this.#show(focus.failure);
       this.#closeHost(pending, response.status === 'ok' ? 'accepted' : 'refused');
       if (this.#popup === popup && popup) {
@@ -628,13 +640,13 @@ class Ui implements EditorUi {
       const copied = json(value), result = this.#callback(() => host(item)!.command(pending.context, copied));
       const owned = unavailable(result) ?? command(result);
       if ('status' in owned) {
-        this.#status.textContent = owned.message[this.#locale]; this.#emit(failure('ui.unavailable', item.id)); this.#releasePending('refused'); return;
+        this.#setStatus(owned.message[this.#locale]); this.#emit(failure('ui.unavailable', item.id)); this.#releasePending('refused'); return;
       }
       if (this.#destroyed || this.#pending !== pending) return;
       const availability = this.#availability(owned, pending.context);
       if (!availability.available) {
         const stale = !same(pending.context.context, this.#options!.editor.context()) || !same(pending.context.state.stamp, this.#options!.editor.capture());
-        this.#status.textContent = stale ? label('staleDialog', this.#locale) : availability.reason || label('unavailable', this.#locale);
+        this.#setStatus(stale ? label('staleDialog', this.#locale) : availability.reason || label('unavailable', this.#locale));
         this.#emit(availability.failure ?? failure('ui.unavailable', item.id)); this.#releasePending('refused'); return;
       }
       pending.claimed = false; this.#complete(pending, item.id, owned, false);

@@ -69,6 +69,10 @@ ancestors, например «Документ / Контейнер». Он св
 Composition блокирует конфликтующие controls, сохраняя native provisional input.
 Read-only сохраняет selection/copy/Find; disabled не предоставляет editing focus.
 После отказа требуется новое явное действие; позднего replay нет.
+Live status очищает истёкшую причину availability после проверенного восстановления.
+Независимые сообщения о результате, отказе команды или host dialog сохраняются
+при обычном refresh. Частная provenance каждого writer определяет это поведение;
+совпадение текста не определяет владельца сообщения.
 Причина недоступности остаётся в `aria-describedby` и показывается при hover/focus
 вне flow controls; focus имеет приоритет. Она не сдвигает editor или Add. Floating
 gutter сохраняет scroll bounds и показывает причину в ограниченной viewport-panel
@@ -136,7 +140,13 @@ Toolbar располагается рядом с видимым native selection
 позиционирование не сдвигает документ. При unsupported/busy/stale geometry,
 невидимом выделении или нехватке места сохраняется исходный sticky/normal-flow
 entry с теми же controls и Tab order. Geometry не предоставляет authority
-для действия. Stylesheet внешний; finite CSSOM positioning
+для действия. Пока принадлежащий UI pointer gesture удерживает фактическую
+`:active` кнопку, обычный refresh сохраняет положение toolbar/gutter до click.
+Доступность обновляется независимо; отклонённый down не становится действием.
+После click следующий существующий RAF возобновляет текущую geometry. Fatal/disposal
+cleanup не задерживается; release вне UI допускает возобновление при следующем
+обычном refresh без нового глобального pointer listener.
+Stylesheet внешний; finite CSSOM positioning
 проверяется под strict CSP, без unsafe-inline и переноса UA-style exception на UI.
 
 `npm run test:ui` выполняет frozen data check, actual native/packaged WASM semantic
