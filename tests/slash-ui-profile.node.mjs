@@ -48,3 +48,19 @@ test('SL-P07 sparse/accessor/extra array members and non-function command are re
   let reads=0;const accessor=profile();Object.defineProperty(accessor.choices,'0',{get(){reads++;return choice();},enumerable:true});error(accessor);assert.equal(reads,0);
   for(const bad of [null,{},'command']){const value=profile();value.choices[0].command=bad;error(value);}
 });
+test('SL-P08 every catalog array rejects numeric-looking non-index properties without reading them',()=>{
+  const arrays=[v=>v.textBlockTypes,v=>v.choices,v=>v.choices[0].keywords.ru,v=>v.choices[0].keywords.en];
+  for(const select of arrays)for(const key of ['4294967295','9007199254740992']){
+    let reads=0;const value=profile(),array=select(value),length=array.length;
+    Object.defineProperty(array,key,{get(){reads++;throw Error('extra property must not be read');},enumerable:true});
+    assert.equal(array.length,length);error(value);assert.equal(reads,0);
+  }
+});
+test('SL-P09 catalog arrays require the ordinary prototype and enumerable own data indices',()=>{
+  const arrays=[v=>v.textBlockTypes,v=>v.choices,v=>v.choices[0].keywords.ru,v=>v.choices[0].keywords.en];
+  for(const select of arrays){
+    for(const prototype of [null,Object.create(Array.prototype)]){const value=profile();Object.setPrototypeOf(select(value),prototype);error(value);}
+    const hidden=profile(),array=select(hidden);Object.defineProperty(array,'0',{value:array[0],enumerable:false});error(hidden);
+    const frozen=profile();Object.freeze(select(frozen));assert.equal(slashProfile(frozen).choices[0].id,'paragraph');
+  }
+});
