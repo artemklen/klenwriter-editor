@@ -70,6 +70,12 @@ Composition блокирует конфликтующие controls, сохран
 Read-only сохраняет selection/copy/Find; disabled не предоставляет editing focus.
 После отказа требуется новое явное действие; позднего replay нет.
 
+Pointer click связан с тем же control и genuine request, который захвачен на
+его pointerdown. Если down отклонён или исходный request инвалидирован сменой
+selection/stamp/mode, этот click поглощается без повторного capture. Новый down
+проверяется заново; Enter, Space и zero-detail keyboard/AT entry сохраняют свои
+существующие пути. Контролируемый zero-detail тест не подтверждает реальную AT.
+
 ## Host-owned dialog
 
 `defineUiHostAction<T extends UiJson>` связывает paired labels, заранее connected
