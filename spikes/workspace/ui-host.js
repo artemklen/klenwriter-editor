@@ -146,8 +146,17 @@ export async function mount(config={}){
   assert(!('status'in r.ui),JSON.stringify(r.ui));const uiReady=await r.ui.ready;assert(uiReady.status==='ready',JSON.stringify(uiReady));r.events=[];
   return {id,ready:ready.status,uiReady:uiReady.status,roles:Object.fromEntries(r.ids),case:config.case??'V01-forward'};
 }
-export async function inspect(id){
-  const r=rec(id);await Promise.all(r.focusPromises);const actual=rows(r);return {...actual,canonical:await snapshot(r),roles:Object.fromEntries(r.ids),events:copy(r.events),failures:copy(r.failures),results:copy(r.results),focusResults:copy(r.focusResults),activeId:document.activeElement?.id??null,activeTag:document.activeElement?.tagName??null,insideEditor:r.element.contains(document.activeElement),resources:copy(r.editor.resources()),uiResources:copy(r.ui.resources()),context:copy(r.editor.context()),...fixtureFacts(r),dialog:r.dialog?{hidden:r.dialog.hidden,openCount:r.hostOpenCount,closeReasons:copy(r.hostCloseReasons)}:null};
+export async function inspect(id,options){
+  const noSnapshot=options!==undefined;
+  if(noSnapshot){
+    assert(options!==null&&typeof options==='object'&&!Array.isArray(options),'Closed inspect options');
+    const fields=Object.getOwnPropertyDescriptors(options);
+    assert(Reflect.ownKeys(fields).length===1&&fields.snapshot&&'value'in fields.snapshot&&fields.snapshot.value===false,'Only explicit snapshot:false is supported');
+  }
+  // Deliberately unsupported geometry can refuse a mounted snapshot. Observe
+  // pure native reads explicitly; the test must compare real snapshots outside
+  // that layout phase. Default callers retain the original strict snapshot.
+  const r=rec(id);await Promise.all(r.focusPromises);const actual=rows(r);return {...actual,canonical:noSnapshot?null:await snapshot(r),...(noSnapshot?{canonicalObservation:{status:'not_requested'}}:{}),roles:Object.fromEntries(r.ids),events:copy(r.events),failures:copy(r.failures),results:copy(r.results),focusResults:copy(r.focusResults),activeId:document.activeElement?.id??null,activeTag:document.activeElement?.tagName??null,insideEditor:r.element.contains(document.activeElement),resources:copy(r.editor.resources()),uiResources:copy(r.ui.resources()),context:copy(r.editor.context()),...fixtureFacts(r),dialog:r.dialog?{hidden:r.dialog.hidden,openCount:r.hostOpenCount,closeReasons:copy(r.hostCloseReasons)}:null};
 }
 export async function editorFocus(id){const r=rec(id),capture=r.editor.selection.captureBookmark();if(capture.status!=='captured')return copy(capture);return copy(await done(r.editor.selection.restoreBookmark(capture.bookmark,{policy:'exact',focus:true})));}
 export function refresh(id){rec(id).ui.refresh();}

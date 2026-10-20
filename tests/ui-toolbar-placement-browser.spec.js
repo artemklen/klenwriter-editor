@@ -16,12 +16,14 @@ const bounds=data.bounds;
 const inputSelection=(roles,selection)=>Object.fromEntries(Object.entries(selection).map(([key,point])=>[key,Object.fromEntries(Object.entries(point).map(([field,value])=>[field,['node','parent'].includes(field)?roles[value]:value]))]));
 
 async function frames(page){await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));}
-async function checkpoint(page,id,label){
-  const native=await call(page,'inspect',id),facts=await call(page,'mountedFacts',id),trace=await call(page,'nativeTrace',id);
+async function checkpoint(page,id,label,options){
+  const native=await call(page,'inspect',id,options),facts=await call(page,'mountedFacts',id),trace=await call(page,'nativeTrace',id);
   const value={label,native,nativeCounts:facts.native,trace};observations.get(page).checkpoints.push(value);return value;
 }
-function pureNative(after,before){
-  for(const key of ['state','rows','canonical','events','failures','results','focusResults','context','mode','modeResults','hostAttributes','clipboardResults','recoveryResults','resources'])expect(after.native[key],`placement preserves ${key}`).toEqual(before.native[key]);
+function pureNative(after,before,{snapshot=true}={}){
+  if(snapshot)expect(after.native.canonical,'real SDK canonical snapshot is unchanged').toBe(before.native.canonical);
+  else for(const value of [before,after]){expect(value.native.canonical).toBeNull();expect(value.native.canonicalObservation).toEqual({status:'not_requested'});}
+  for(const key of ['state','rows','events','failures','results','focusResults','context','mode','modeResults','hostAttributes','clipboardResults','recoveryResults','resources'])expect(after.native[key],`placement preserves ${key}`).toEqual(before.native[key]);
   expect(after.nativeCounts).toEqual(before.nativeCounts);
   expect(after.trace.overflow).toBe(false);
   const requests=after.trace.calls.slice(before.trace.calls.length).map(row=>JSON.parse(row.requestJson));
@@ -138,10 +140,16 @@ for(const scenario of data.cases)for(const variant of scenario.variants)test(`${
   // Exact bookmark focus is setup, before deliberately unsupported geometry.
   // It must succeed; presentation-only assertions start after the layout setup.
   const focused=await call(page,'editorFocus',id);expect(focused.response?.status).toBe('ok');await expect(page.locator(`#${id}-editor`)).toBeFocused();
+  const unsupported=scenario.id==='TP03',preTransform=unsupported?await checkpoint(page,id,'full real SDK canonical before unsupported transform'):null;
+  const preTransformRaw=unsupported?await raw(page,id,literal):null;
+  if(unsupported){expect(preTransform.native.canonical).toBe(item.input.canonical_json);record.raw.push({label:'before unsupported transform, focus setup complete',...preTransformRaw});}
   await page.evaluate(({id,setup})=>{const wrapper=document.getElementById(id),editor=document.getElementById(`${id}-editor`);if(setup.wrapperClass)wrapper.classList.add(setup.wrapperClass);if(setup.existingExternalClass)editor.classList.add(setup.existingExternalClass);},{id,setup:scenario.setup});
   await frames(page);
-  const before=await checkpoint(page,id,'baseline after closed setup and real exact bookmark focus');
-  expect(before.native.canonical).toBe(item.input.canonical_json);expect(before.native.state.selection).toEqual(inputSelection(before.native.roles,item.input.selection));expect(before.native.results).toEqual([]);
+  const observation=unsupported?{snapshot:false}:undefined;
+  const before=await checkpoint(page,id,'baseline after closed setup and real exact bookmark focus',observation);
+  if(unsupported){expect(before.native.canonical).toBeNull();expect(before.native.canonicalObservation).toEqual({status:'not_requested'});}
+  else expect(before.native.canonical).toBe(item.input.canonical_json);
+  expect(before.native.state.selection).toEqual(inputSelection(before.native.roles,item.input.selection));expect(before.native.results).toEqual([]);
   const a=await raw(page,id,literal,true);record.raw.push({label:'before explicit presentation refresh',...a});
   expect(a.toolbar.object).toBe(initial.toolbar.object);expect(a.buttons).toEqual(initial.buttons);expect(a.toolbarCount).toBe(1);expect(a.rawSelection).toEqual({rangeCount:1,...a.literalSelection});expect(a.scroll.window).toEqual([0,0]);
   const geometry=await call(page,'geometryRead',id,{kind:'selection'});record.geometry.push(geometry);
@@ -152,8 +160,18 @@ for(const scenario of data.cases)for(const variant of scenario.variants)test(`${
     else{expect(fit.above).toBeLessThan(fit.toolbarHeight-bounds.toleranceCssPx);expect(fit.below).toBeLessThan(fit.toolbarHeight-bounds.toleranceCssPx);}
   }
   await call(page,'refresh',id);await frames(page);const b=await raw(page,id,literal);record.raw.push({label:'after presentation refresh',...b});
-  const after=await checkpoint(page,id,'after presentation-only refresh');pureBrowser(b,a);pureNative(after,before);
+  const after=await checkpoint(page,id,'after presentation-only refresh',observation);pureBrowser(b,a);pureNative(after,before,{snapshot:!unsupported});
   if(scenario.expected.placement==='floating')floating(b);else{expect(b.toolbar.left).toBe('');expect(b.toolbar.top).toBe('');expect(b.toolbar.connected).toBe(true);}
+  if(unsupported){
+    // All unsupported-layout/fallback checks are finished. This is explicit
+    // fixture CSS teardown, never focus/scroll/selection assistance to pass them.
+    record.layoutTeardown=await page.evaluate(({id,name})=>{const editor=document.getElementById(`${id}-editor`),present=editor.classList.contains(name);editor.classList.remove(name);return {kind:'remove_only_closed_transform_class_after_unsupported_assertions',name,presentBefore:present,presentAfter:editor.classList.contains(name),focusScrollOrSelectionRequested:false};},{id,name:scenario.setup.existingExternalClass});
+    expect(record.layoutTeardown.presentBefore).toBe(true);expect(record.layoutTeardown.presentAfter).toBe(false);await frames(page);
+    const restored=await checkpoint(page,id,'full real SDK canonical after explicit unsupported-layout teardown'),restoredRaw=await raw(page,id,literal);
+    record.raw.push({label:'after CSS teardown, full canonical observations available',...restoredRaw});
+    expect(restored.native.canonical).toBe(item.input.canonical_json);pureNative(restored,preTransform);pureBrowser(restoredRaw,preTransformRaw);
+    for(const key of ['state','rows','events','results','context'])expect(restored.native[key],`unsupported phase preserved ${key}`).toEqual(after.native[key]);
+  }
   if(scenario.id==='TP01'){
     await page.keyboard.press('Shift+Tab');await expect(bold).toBeFocused();await page.keyboard.press('ArrowRight');await expect(toolbar.locator('[data-editor-ui-action=emphasis]')).toBeFocused();await page.keyboard.press('Home');await expect(bold).toBeFocused();
     expect(await toolbar.locator('button[tabindex="0"]').count()).toBe(1);
