@@ -173,7 +173,13 @@ const branches=Object.entries(keySpecs).flatMap(([action,spec])=>[false,true].ma
   // Allow Safari's Tab presentation to settle after the single complete key
   // program. The original final ownership check and total1s deadline still apply.
   const safariTabSettle=actual==='tab'?'if expectedBrowser is "safari" then delay 0.2\n ':'';
-  return `if fixtureAction is "${actual}" then\n if findPresentationEnabled then log "OSR42-AS8 KEYS begin"\n tell application "System Events"\n  ${lines.join('\n  ')}\n end tell\n if findPresentationEnabled then log "OSR42-AS8 KEYS end"\n ${findPost}${safariTabSettle}${postGuard}\n return "${prefix.replaceAll('\\','\\\\').replaceAll('"','\\"')}" & expectedPID & "}"\nend if`;
+  const safariDeadkeyStages=['deadkey-acute','release-deadkey-acute'].includes(actual)?{
+    keysBegin:'if safariDeadkeyStagesEnabled then log "OSR42-SD01 KEYS begin"\n ',
+    keysEnd:'if safariDeadkeyStagesEnabled then log "OSR42-SD01 KEYS end"\n ',
+    postBegin:'if safariDeadkeyStagesEnabled then log "OSR42-SD01 POST begin"\n ',
+    postEnd:'if safariDeadkeyStagesEnabled then log "OSR42-SD01 POST end"\n '
+  }:{keysBegin:'',keysEnd:'',postBegin:'',postEnd:''};
+  return `if fixtureAction is "${actual}" then\n if findPresentationEnabled then log "OSR42-AS8 KEYS begin"\n ${safariDeadkeyStages.keysBegin}tell application "System Events"\n  ${lines.join('\n  ')}\n end tell\n if findPresentationEnabled then log "OSR42-AS8 KEYS end"\n ${safariDeadkeyStages.keysEnd}${findPost}${safariTabSettle}${safariDeadkeyStages.postBegin}${postGuard}\n ${safariDeadkeyStages.postEnd}return "${prefix.replaceAll('\\','\\\\').replaceAll('"','\\"')}" & expectedPID & "}"\nend if`;
 })).join('\n');
 export const fixedKeyScript=requireFixture+findPostGuardDiagnostic+chromeFindPresentation+`on run argv
  if (count of argv) is not 4 and (count of argv) is not 5 and (count of argv) is not 8 then error "Closed UI42 key arguments required"
@@ -196,6 +202,7 @@ export const fixedKeyScript=requireFixture+findPostGuardDiagnostic+chromeFindPre
  if safariCopyReleaseFirstEnabled then
   if expectedBrowser is not "safari" or fixtureAction is not "copy" or (item 5 of argv) is not "sc-copy01" then error "Closed Safari Copy arguments required"
  end if
+ set safariDeadkeyStagesEnabled to ((count of argv) is 4 and expectedBrowser is "safari" and fixtureAction is in {"deadkey-acute", "release-deadkey-acute"})
  if findPresentationEnabled then
   if expectedBrowser is not "chrome" or fixtureAction is not in {"find", "close-find", "release-find", "release-close-find"} then error "Closed Chrome Find arguments required"
   set originalFindFrame to my requireFiniteFindFrame({(item 5 of argv) as real, (item 6 of argv) as real, (item 7 of argv) as real, (item 8 of argv) as real})
@@ -211,7 +218,9 @@ export const fixedKeyScript=requireFixture+findPostGuardDiagnostic+chromeFindPre
   end if
   log "OSR42-AS8 PRE end"
  else
+  if safariDeadkeyStagesEnabled then log "OSR42-SD01 PRE begin"
   my requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
+  if safariDeadkeyStagesEnabled then log "OSR42-SD01 PRE end"
  end if
  if safariCopyReleaseFirstEnabled then
   tell application "System Events"

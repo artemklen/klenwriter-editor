@@ -111,6 +111,10 @@ function keyAck(value,action,before,{reserved=false}={}){
   assert.ok(down.some(row=>row.shift===spec.modifiers.includes('shift')&&row.alt===spec.modifiers.includes('option')&&row.meta===spec.modifiers.includes('command')),'Actual trusted matching keydown');assert.ok(up.length,'Actual trusted keyup');return {trustedDown:down,trustedUp:up};
 }
 async function physical(entry,action,{reserved=false}={}){
+  if(browserName==='safari'&&action==='deadkey-acute'&&entry.caseId.startsWith('composition-')&&entry.actualActionCount===0){
+    const preparation={action:'safari-new-mount-deadkey-preparation',requestedWaitMs:200,startedAt:now(),finishedAt:null,scope:'New mounted composition fixture preparation only; no input/read/refocus/retry or authority; original fresh guards follow'};
+    entry.preparation.push(preparation);save();await wait(200);preparation.finishedAt=now();save();
+  }
   coherent(source(),selectedSource);const before=await adapter.call('inspect'),row={locale:entry.locale,caseId:entry.caseId,action,status:'attempted',startedAt:now(),inputSourceBefore:source().current,inputTraceBefore:before.inputTraceCount};report.physicalActions.push(row);entry.actualActionCount++;save();
   try {
     row.proof=await adapter.input(action);coherent(source(),selectedSource);row.inputSourceAfter=source().current;row.status='completed';
