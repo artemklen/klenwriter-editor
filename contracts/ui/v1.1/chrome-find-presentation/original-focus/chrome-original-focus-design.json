@@ -1,0 +1,76 @@
+{
+  "format": "editor-ui-chrome-original-focus-design/1",
+  "status": "SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "scope": "Installed isolated Chrome fixture setup only; not editor/public API or physical acceptance",
+  "playwrightCoreVersion": "1.64.1",
+  "runtimeLibraryPins": [
+    {
+      "path": "node_modules/playwright-core/package.json",
+      "bytes": 876,
+      "sha256": "8aa1c9863fa8dea324e674254158cdc79440f4124ef2d84d38053013541cb7d6"
+    },
+    {
+      "path": "node_modules/playwright-core/lib/coreBundle.js",
+      "bytes": 3585406,
+      "sha256": "829521b67ed7be90c7d6d6098ff39f2241562d47e4ad7ccab13710924a56001d"
+    }
+  ],
+  "resolver": {
+    "root": "the already-owned client Page object",
+    "fixedChain": "page._connection.toImpl(page) -> serverPage.delegate._mainFrameSession._client",
+    "checks": [
+      "Runtime package version and both library byte hashes match BEFORE any private access",
+      "page._connection.toImpl is a function; resolve only the already-owned page",
+      "delegate._page === serverPage",
+      "frameSession._crPage === delegate",
+      "frameSession._page === serverPage",
+      "frameSession._targetId === delegate._targetId; targetId is a nonempty bounded string",
+      "delegate._sessions.get(delegate._targetId) === frameSession",
+      "frameSession._parentSession === null",
+      "client is frameSession._client; client.send is a function",
+      "client._connection === delegate._browserContext._browser._connection",
+      "client._connection._sessions.get(client._sessionId) === client; sessionId is a nonempty bounded string",
+      "client._closed === false and client._crashed === false"
+    ]
+  },
+  "onlyCommand": {
+    "method": "Emulation.setFocusEmulationEnabled",
+    "params": {
+      "enabled": false
+    },
+    "count": 1
+  },
+  "placement": "After exact owned fixture navigation/title/module setup, before first mount and any physical input; no later navigation in the finite protocol",
+  "record": {
+    "action": "disable-original-playwright-focus-emulation",
+    "status": "attempted -> completed or failed",
+    "provenance": "Pinned Playwright1.64.1 original main FrameSession; not a newly attached CDP session",
+    "fields": [
+      "library version and actual package/coreBundle paths/bytes/hashes",
+      "actual targetId",
+      "actual originalSessionId",
+      "fixed method/params",
+      "actual protocol response or bounded failure"
+    ]
+  },
+  "failure": "Any version/hash/resolver/send failure stops setup explicitly; no secondary-session fallback or acceptance downgrade",
+  "unchanged": [
+    "Existing strict PID/nonce/AX/root-frame/CG guards and1s deadlines",
+    "Actual native Find open/close/screenshot/document.hasFocus and native-state assertions",
+    "Legacy Safari, regular editor operations and existing163 tests/assertions",
+    "No arbitrary CDP method/path/session input and no public interface",
+    "No browser detach, permission flow, forced DOM focus or synthetic readback"
+  ],
+  "meaningfulValidation": "Actual unchanged Find/close physical readbacks; no new mirror test count",
+  "primaryLineAnchors": {
+    "enable": "lib/coreBundle.js:39020-39024",
+    "mainSession": "lib/coreBundle.js:38670-38678",
+    "frameIdentities": "lib/coreBundle.js:38919-38942",
+    "sessionIdentityMap": "lib/coreBundle.js:36327-36357",
+    "browserConnection": "lib/coreBundle.js:39735-39750",
+    "inprocessToImpl": "lib/coreBundle.js:65524-65550",
+    "newSessionIsSeparate": "lib/coreBundle.js:40194-40206",
+    "publicAlternativeOnlyDefaultContext": "types/types.d.ts:26043-26056"
+  },
+  "evidenceLimits": "Source proves distinct PW/new sessions and exact original sender; actual corrected focus behavior is pending. Chrome14 remains FAILED; no inherited pass."
+}
