@@ -97,9 +97,7 @@ on findFrameOf(ownedWindow)
  if (count of observedPosition) is not 2 or (count of observedSize) is not 2 then error "Chrome Find frame pair differs"
  return my requireFiniteFindFrame({(item 1 of observedPosition) as real, (item 2 of observedPosition) as real, (item 1 of observedSize) as real, (item 2 of observedSize) as real})
 end findFrameOf
-on requireChromeFindFixture(expectedPID, expectedName, expectedBundle, expectedTitle, expectedFrame, allowClosed)
- set pageTitle to my requireFindRootTitle(expectedTitle)
- set auxiliaryTitle to "Find in page" & linefeed & "    " & pageTitle
+on requireChromeFindFixture(expectedPID, expectedName, expectedBundle, expectedTitle, expectedFrame, auxiliaryTitle, allowClosed)
  tell application "System Events"
   set ownedProcesses to (application processes whose unix id is expectedPID)
   if (count of ownedProcesses) is not 1 then error "Exact Chrome Find PID unavailable"
@@ -111,12 +109,14 @@ on requireChromeFindFixture(expectedPID, expectedName, expectedBundle, expectedT
    set matchingRoots to (windows whose name is expectedTitle)
    if (count of matchingRoots) is not 1 then error "Original Chrome Find root is not unique"
    set rootWindow to item 1 of matchingRoots
-   if (value of attribute "AXRole" of rootWindow) is not "AXWindow" or (value of attribute "AXSubrole" of rootWindow) is not "AXStandardWindow" then error "Original Chrome Find root role differs"
+   if (role of rootWindow) is not "AXWindow" or (subrole of rootWindow) is not "AXStandardWindow" then error "Original Chrome Find root role differs"
    if (my findFrameOf(rootWindow)) is not expectedFrame then error "Original Chrome Find root frame changed"
    set focusedRoot to value of attribute "AXFocusedWindow"
    if focusedRoot is not rootWindow then error "Original Chrome Find focused object differs"
+   if (value of attribute "AXTitle" of focusedRoot) is not expectedTitle then error "Fixture title not focused"
    if ownedCount is 1 then
-    if (front window) is not rootWindow then error "Closed Chrome Find root is not frontmost"
+    set frontRoot to front window
+    if frontRoot is not rootWindow or (name of frontRoot) is not expectedTitle then error "Closed Chrome Find root is not frontmost"
     set measuredPhase to "closed"
    else
     set matchingAuxiliaries to (windows whose name is auxiliaryTitle)
@@ -124,7 +124,7 @@ on requireChromeFindFixture(expectedPID, expectedName, expectedBundle, expectedT
     set auxiliaryWindow to item 1 of matchingAuxiliaries
     if auxiliaryWindow is rootWindow then error "Chrome Find auxiliary is not distinct"
     if (front window) is not auxiliaryWindow then error "Exact Chrome Find auxiliary is not frontmost"
-    if (value of attribute "AXRole" of auxiliaryWindow) is not "AXWindow" or (value of attribute "AXSubrole" of auxiliaryWindow) is not "AXUnknown" then error "Exact Chrome Find auxiliary role differs"
+    if (role of auxiliaryWindow) is not "AXWindow" or (subrole of auxiliaryWindow) is not "AXUnknown" then error "Exact Chrome Find auxiliary role differs"
     set auxiliaryFrame to my findFrameOf(auxiliaryWindow)
     if (item 1 of auxiliaryFrame) is less than (item 1 of expectedFrame) or (item 2 of auxiliaryFrame) is less than (item 2 of expectedFrame) or ((item 1 of auxiliaryFrame) + (item 3 of auxiliaryFrame)) is greater than ((item 1 of expectedFrame) + (item 3 of expectedFrame)) or ((item 2 of auxiliaryFrame) + (item 4 of auxiliaryFrame)) is greater than ((item 2 of expectedFrame) + (item 4 of expectedFrame)) then error "Exact Chrome Find auxiliary is outside original root"
     set measuredPhase to "open"
@@ -153,9 +153,9 @@ const branches=Object.entries(keySpecs).flatMap(([action,spec])=>[false,true].ma
   error originalMessage number originalNumber
  end try`:'my requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)';
   const isFindAction=['find','close-find','release-find','release-close-find'].includes(actual);
-  const phaseCheck=actual==='find'?'if nativeFindPhase is not "open" then error "Native Find did not open"':actual==='close-find'?'if nativeFindPhase is not "closed" then error "Native Find did not close"\n  my requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)':'';
+  const phaseCheck=actual==='find'?'if nativeFindPhase is not "open" then error "Native Find did not open"':actual==='close-find'?'if nativeFindPhase is not "closed" then error "Native Find did not close"':'';
   const findPost=isFindAction?`if findPresentationEnabled then
-  set nativeFindPhase to my requireChromeFindFixture(expectedPID, expectedName, expectedBundle, expectedTitle, originalFindFrame, ${actual==='find'?'false':'true'})
+  set nativeFindPhase to my requireChromeFindFixture(expectedPID, expectedName, expectedBundle, expectedTitle, originalFindFrame, originalFindAuxiliaryTitle, ${actual==='find'?'false':'true'})
   ${phaseCheck}
   return ${appleString(prefix)} & expectedPID & ${appleString(',"nativeFindPhase":"')} & nativeFindPhase & ${appleString('"}')}
  end if
@@ -182,13 +182,14 @@ export const fixedKeyScript=requireFixture+findPostGuardDiagnostic+chromeFindPre
  if findPresentationEnabled then
   if expectedBrowser is not "chrome" or fixtureAction is not in {"find", "close-find", "release-find", "release-close-find"} then error "Closed Chrome Find arguments required"
   set originalFindFrame to my requireFiniteFindFrame({(item 5 of argv) as real, (item 6 of argv) as real, (item 7 of argv) as real, (item 8 of argv) as real})
+  set originalFindPageTitle to my requireFindRootTitle(expectedTitle)
+  set originalFindAuxiliaryTitle to "Find in page" & linefeed & "    " & originalFindPageTitle
   if fixtureAction is "find" then
-   my requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
-   if (my requireChromeFindFixture(expectedPID, expectedName, expectedBundle, expectedTitle, originalFindFrame, true)) is not "closed" then error "Native Find precondition is not closed"
+   if (my requireChromeFindFixture(expectedPID, expectedName, expectedBundle, expectedTitle, originalFindFrame, originalFindAuxiliaryTitle, true)) is not "closed" then error "Native Find precondition is not closed"
   else if fixtureAction is "close-find" then
-   if (my requireChromeFindFixture(expectedPID, expectedName, expectedBundle, expectedTitle, originalFindFrame, false)) is not "open" then error "Native Find close precondition is not open"
+   if (my requireChromeFindFixture(expectedPID, expectedName, expectedBundle, expectedTitle, originalFindFrame, originalFindAuxiliaryTitle, false)) is not "open" then error "Native Find close precondition is not open"
   else
-   set cleanupFindPhase to my requireChromeFindFixture(expectedPID, expectedName, expectedBundle, expectedTitle, originalFindFrame, true)
+   set cleanupFindPhase to my requireChromeFindFixture(expectedPID, expectedName, expectedBundle, expectedTitle, originalFindFrame, originalFindAuxiliaryTitle, true)
   end if
  else
   my requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
