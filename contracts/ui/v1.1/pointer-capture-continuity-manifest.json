@@ -1,0 +1,16 @@
+{
+  "format": "editor-ui-pointer-capture-continuity-manifest/1",
+  "status": "FROZEN_BEFORE_CONTINUITY_IMPLEMENTATION_AND_ACTUAL_RED",
+  "files": [
+    {
+      "path": "pointer-capture-continuity.md",
+      "sha256": "13fd1b809ecc12e75f8ae47ed9092171103cd41ef6ea6ac4e5fa1504c0235c90",
+      "bytes": 3008
+    },
+    {
+      "path": "pointer-capture-continuity-cases.json",
+      "sha256": "2882cc645e4755cb25dd6b2a6c5e82d6ee3fe7d1c3fc3913e709d49cb6ded8a0",
+      "bytes": 4374
+    }
+  ]
+}

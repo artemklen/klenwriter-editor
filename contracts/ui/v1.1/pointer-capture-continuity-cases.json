@@ -1,0 +1,147 @@
+{
+  "format": "editor-ui-pointer-capture-continuity-cases/1",
+  "status": "FROZEN_BEFORE_CONTINUITY_IMPLEMENTATION_AND_ACTUAL_RED",
+  "authoredBeforeContinuityImplementation": true,
+  "scope": "Controlled PointerEvent over actual mounted SDK/WASM/UI; genuine captured request, not trusted/physical pointer or actual installed input proof. No composition or installed03 reinterpretation.",
+  "geometry": {
+    "path": "contracts/ui/v1/geometry-fixtures.json",
+    "sha256": "0e5c03c8b57802ad940e3c1e1c3b3ae3f3c972865879050ef6a394e33f1a017c",
+    "fixture": "F",
+    "inputCanonical": "{\"content\":[{\"content\":[{\"text\":\"A\ud83d\ude00e\u0301\u05d0\u05d1\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"text\":\"cd\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"type\":\"scene_break\"},{\"content\":[{\"text\":\"ef\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+    "roles": {
+      "R": [],
+      "P": [
+        0
+      ],
+      "T": [
+        0,
+        0
+      ],
+      "Q": [
+        1
+      ],
+      "P2": [
+        1,
+        0
+      ],
+      "U": [
+        1,
+        0,
+        0
+      ],
+      "S": [
+        2
+      ],
+      "P3": [
+        3
+      ],
+      "V": [
+        3,
+        0
+      ]
+    },
+    "inputSelection": {
+      "anchor": {
+        "kind": "text",
+        "node": "T",
+        "offset": 1,
+        "affinity": "after"
+      },
+      "focus": {
+        "kind": "text",
+        "node": "T",
+        "offset": 5,
+        "affinity": "after"
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "PG06",
+      "sequence": [
+        "mount frozen F and exact editor focus",
+        "owned unmodified primary Strong pointerdown id83 admits a genuine mounted host request before focus moves",
+        "explicit host public set_selection to T@0 After",
+        "UI refresh and two finite presentation frames release the stale captured request",
+        "same pointerup/click detail1 id83",
+        "later fresh independent pointerdown/click Strong"
+      ],
+      "hostSelection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 0,
+          "affinity": "after"
+        }
+      },
+      "hostSelectionExpected": {
+        "responseStatus": "ok",
+        "stampDelta": {
+          "revision": "0",
+          "selection_epoch": "1",
+          "history_epoch": "0"
+        },
+        "documentEvents": 0,
+        "stateEvents": 1,
+        "eventFlags": {
+          "kind": "state",
+          "selection_changed": true,
+          "stored_marks_changed": false,
+          "history_changed": false,
+          "baseline_changed": false
+        },
+        "storedMarks": null,
+        "undoEntries": "0",
+        "redoEntries": "0",
+        "dirty": false,
+        "savedRevision": "0",
+        "allOriginalIdsSurvive": true,
+        "allNativeNodePayloadsUnchangedExceptResponseStamp": true,
+        "canonical": "exact frozen F inputCanonical",
+        "uiSubmissions": 0,
+        "pendingUiAndMountedHostRequests": 0
+      },
+      "sameGestureExpected": {
+        "uiSubmissions": 0,
+        "nativeCommands": 0,
+        "nativeMutationRequestsDelta": 0,
+        "nativeCanonicalStateRowsEventsContext": "exact unchanged from independently verified host selection",
+        "requestRecapture": "forbidden",
+        "pendingUiAndMountedHostRequests": 0
+      },
+      "freshGestureExpected": {
+        "uiSubmissions": 1,
+        "nativeCommands": 1,
+        "nativeCommandId": "org.klenwriter.kwdj/command/toggle-mark",
+        "nativePayload": {
+          "kind": "toggle_mark",
+          "mark": {
+            "type_id": "org.klenwriter.kwdj/strong",
+            "attributes": {}
+          }
+        },
+        "stampDelta": {
+          "revision": "0",
+          "selection_epoch": "1",
+          "history_epoch": "0"
+        },
+        "storedMarks": [
+          {
+            "type_id": "org.klenwriter.kwdj/strong",
+            "attributes": {}
+          }
+        ],
+        "canonical": "exact frozen F inputCanonical",
+        "history": "unchanged undo0/redo0",
+        "documentEvents": 0,
+        "stateEvents": 1
+      }
+    }
+  ]
+}
