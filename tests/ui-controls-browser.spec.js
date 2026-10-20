@@ -188,12 +188,18 @@ for(const caseId of ['V06-NC011-root-title-owned-metadata','V06-NC013-identical-
     // UI must honour the real native availability refusal before complete;
     // execution Refused is independently measured in the sealed native lane.
     unchanged(after,before);expect(submitted(after)).toHaveLength(0);expect(after.results.at(-1)).toEqual({status:'ui_refused',code:'ui.unavailable',action:'title'});await expect(root(page,id).getByRole('status')).toContainText(item.expected.code);
-    // An ordinary presentation refresh preserves independent native refusal feedback.
+    // Independent observation setup follows ALL original action/outcome assertions:
+    // a hidden Apply can remain the transient activeElement until UA focus fixup.
     expect(item.expected.code).toBe('notes.invalid_attribute');const refusalText=await root(page,id).getByRole('status').textContent();
+    await page.locator('#ui-after').focus();await expect(page.locator('#ui-after')).toBeFocused();await rlFrames(page);
+    const feedbackBefore=await checkpoint(page,id,'NC014 explicit connected external focus before feedback-refresh baseline');
+    unchanged(feedbackBefore,after);expect(feedbackBefore.context).toEqual(after.context);expect(feedbackBefore.results).toEqual(after.results);expect(feedbackBefore.failures).toEqual(after.failures);expect(feedbackBefore.focusResults).toEqual(after.focusResults);expect(feedbackBefore.mode).toBe(after.mode);expect(feedbackBefore.dialog).toEqual(after.dialog);expect(submitted(feedbackBefore)).toHaveLength(0);
+    expect(feedbackBefore.activeId).toBe('ui-after');expect(feedbackBefore.activeTag).toBe('BUTTON');expect(feedbackBefore.insideEditor).toBe(false);
+    await expect(root(page,id).getByRole('status')).toHaveText(refusalText);await expect(root(page,id).getByRole('status')).toContainText(item.expected.code);
+    // Refresh itself must preserve the complete stable inspection, including focus.
     await call(page,'refresh',id);await rlFrames(page);await expect(root(page,id).getByRole('status')).toHaveText(refusalText);
     await expect(root(page,id).getByRole('status')).toContainText(item.expected.code);const refreshed=await checkpoint(page,id,'NC014 refusal feedback survives ordinary refresh');
-    unchanged(refreshed,after);expect(refreshed.context).toEqual(after.context);expect(refreshed.results).toEqual(after.results);expect(refreshed.failures).toEqual(after.failures);expect(refreshed.focusResults).toEqual(after.focusResults);
-    expect(refreshed.activeId).toBe(after.activeId);expect(refreshed.activeTag).toBe(after.activeTag);expect(refreshed.insideEditor).toBe(after.insideEditor);expect(refreshed.mode).toBe(after.mode);expect(refreshed.dialog).toEqual(after.dialog);expect(submitted(refreshed)).toHaveLength(0);
+    unchanged(refreshed,feedbackBefore);expect(refreshed).toEqual(feedbackBefore);await expect(page.locator('#ui-after')).toBeFocused();expect(submitted(refreshed)).toHaveLength(0);
   }else if(item.expected.kind==='changed'){
     nativeChanged(after,before,item,{notes:true});expect(after.state.selection).toEqual(before.state.selection);expect(idsAt(after)).toEqual(idsAt(before));await nativeUndoRedo(page,id,item,before,after);
   }else {unchanged(after,before);expect(submitted(after)).toHaveLength(1);expect(submitted(after)[0].response.value.effect).toBe('unchanged');}
