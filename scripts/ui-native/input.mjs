@@ -210,12 +210,15 @@ export const fixedKeyScript=requireFixture+findPostGuardDiagnostic+chromeFindPre
  error "Unknown closed UI42 key"
 end run
 `;
-export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,record,guard,cleanupGuard,mountedId,nativeFindEpisode}){
+export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,record,guard,cleanupGuard,mountedId,nativeFindEpisode,nativeFindKeyTransport,findKeyHelper}){
   assert.ok(['chrome','safari'].includes(browser));assert.match(config.nonce,/^[a-f0-9]{32}$/);assert.equal(config.fixtureUrl,'http://127.0.0.1:4174/ui');assert.equal(config.title,'KlenWriter UI native '+config.nonce);
   let disabled=false,serial=0,pending=null,cleanupUsed=false,baselineWindow=null;
   const nativeFind=nativeFindEpisode==='chrome-fd01';
   assert.ok(nativeFindEpisode===undefined||nativeFind&&browser==='chrome','Closed Chrome Find option only');
   if(nativeFind){assert.equal(config.nonce.length,32);assert.equal(Buffer.byteLength(config.nonce,'utf8'),32);assert.ok(!/[^a-f0-9]/.test(config.nonce));}
+  const nativeFindCg=nativeFindKeyTransport==='cg-fd02';
+  assert.ok(nativeFindKeyTransport===undefined||nativeFindCg&&nativeFind&&browser==='chrome','Closed Chrome Find CG transport only');
+  assert.ok(nativeFindCg?typeof findKeyHelper==='string'&&findKeyHelper.startsWith('/')&&findKeyHelper.length<=4096&&!findKeyHelper.includes('\0'):findKeyHelper===undefined,'CG transport requires its fixed helper path');
   let findEpisode=null,findBusy=false,findEpoch=0;
   function whole(value,pattern){assert.equal(typeof value,'string');const match=pattern.exec(value);assert.ok(match&&match[0]===value,'Exact private Find identifier required');}
   const findKeys=['format','status','delivery','measurement','purpose','browser','nonce','title','fixtureUrl','mountedId','caseId','findRequestId','requestId','serial','frontPid','frontBundle','expectedAxWindowTitle','observedAxWindowTitle','axWindowCount','axWindow','rootFocused','rootRole','rootSubrole','findAux','contained','elapsedMs','nativeFindPhase'];
@@ -251,11 +254,43 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
     const key=keySpecs[action];assert.equal(actual.action,(cleanup?'release-':'')+action);assert.equal(actual.status,cleanup?'keys-released':'key-sent');assert.equal(actual.keyCode,key.code);assert.deepEqual(actual.modifiers,key.modifiers);assert.equal(actual.frontPid,ep.pid);
     assert.deepEqual(actual.keyTransitions,cleanup?[...key.modifiers.map(m=>m+'-up'),`key${key.code}-up`]:[...key.modifiers.map(m=>m+'-down'),`key${key.code}-down`,`key${key.code}-up`,...key.modifiers.toReversed().map(m=>m+'-up')]);
   }
+  const cgPrograms={
+    find:[{keyCode:55,down:true,flags:'command'},{keyCode:3,down:true,flags:'command'},{keyCode:3,down:false,flags:'command'},{keyCode:55,down:false,flags:'none'}],
+    'close-find':[{keyCode:53,down:true,flags:'none'},{keyCode:53,down:false,flags:'none'}],
+    'release-find':[{keyCode:55,down:false,flags:'none'},{keyCode:3,down:false,flags:'none'}],
+    'release-close-find':[{keyCode:53,down:false,flags:'none'}],
+  };
+  function cgDiagnostic(value){if(value===null)return;exactKeys(value,['code','reason']);assert.equal(typeof value.code,'string');assert.ok(value.code.length>0&&Buffer.byteLength(value.code)<=128);assert.equal(typeof value.reason,'string');assert.ok(Buffer.byteLength(value.reason)<=512);}
+  function cgWindowProof(value,ep){
+    exactKeys(value,['frontPid','frontName','frontBundle','rootTitle','rootRole','rootSubrole','rootFrame','rootFocused','phase','windowCount','findAux','contained']);
+    for(const [k,v]of Object.entries({frontPid:ep.pid,frontName:'Google Chrome',frontBundle:'com.google.Chrome',rootTitle:ep.title+' - Google Chrome',rootRole:'AXWindow',rootSubrole:'AXStandardWindow',rootFocused:true,contained:true}))assert.equal(value[k],v,'CG ownership '+k);
+    assert.deepEqual(frame(value.rootFrame),ep.rootFrame);assert.ok(['open','closed'].includes(value.phase));
+    if(value.phase==='closed'){assert.equal(value.windowCount,1);assert.equal(value.findAux,null);}
+    else{assert.equal(value.windowCount,2);exactKeys(value.findAux,['title','role','subrole','frame']);assert.equal(value.findAux.title,'Find in page\n    '+ep.title);assert.equal(value.findAux.role,'AXWindow');assert.equal(value.findAux.subrole,'AXUnknown');const a=frame(value.findAux.frame),r=ep.rootFrame;assert.ok(a.x>=r.x&&a.y>=r.y&&a.x+a.width<=r.x+r.width&&a.y+a.height<=r.y+r.height);}
+    return value.phase;
+  }
+  function cgEnvelope(value,request,ep){
+    exactKeys(value,['format','status','delivery','method','request','programId','program','postedTransitions','postedCount','preflightProofs','core','postcondition','diagnostic','elapsedMs']);
+    assert.equal(value.format,'osr42-chrome-find-key-result/1');assert.equal(value.method,'CGEvent/cghidEventTap');assert.deepEqual(value.request,request);
+    const id=(request.cleanupOnly?'release-':'')+request.action,program=cgPrograms[id];assert.equal(value.programId,id);assert.deepEqual(value.program,program);
+    assert.ok(Number.isSafeInteger(value.postedCount)&&value.postedCount>=0&&value.postedCount<=program.length);assert.deepEqual(value.postedTransitions,program.slice(0,value.postedCount));
+    assert.ok(Array.isArray(value.preflightProofs));assert.equal(value.preflightProofs.length,value.postedCount);
+    for(const [index,proof]of value.preflightProofs.entries()){const phase=cgWindowProof(proof,ep);if(index===0&&!request.cleanupOnly)assert.equal(phase,request.action==='find'?'closed':'open');}
+    assert.ok(Number.isFinite(value.elapsedMs)&&value.elapsedMs>=0);cgDiagnostic(value.diagnostic);return program;
+  }
+  function cgPostcondition(value,request,ep){
+    exactKeys(value,['status','expectedPhase','observedPhase','reads','proof','diagnostic']);cgDiagnostic(value.diagnostic);
+    const expected=request.cleanupOnly?'either':request.action==='find'?'open':'closed';assert.equal(value.expectedPhase,expected);
+    assert.ok(['verified','unobserved','refused','not_attempted'].includes(value.status));assert.ok(['open','closed',null].includes(value.observedPhase));assert.ok(Number.isSafeInteger(value.reads)&&value.reads>=0&&value.reads<=12);
+    if(value.proof!==null){const phase=cgWindowProof(value.proof,ep);assert.equal(phase,value.observedPhase);assert.ok(value.reads>0);}
+    if(value.status==='not_attempted'){assert.equal(value.reads,0);assert.equal(value.proof,null);assert.equal(value.observedPhase,null);return null;}
+    assert.equal(value.status,'verified','CG Find final phase '+value.status);assert.ok(value.reads>0);assert.ok(value.proof);assert.ok(expected==='either'||value.observedPhase===expected);return value.observedPhase;
+  }
   async function performFind(action,cleanup){
     assert.equal(findBusy,false,'One private Find operation at a time');
     // Merely denied normal use must not consume a prospective unknown key's UP.
     if(!cleanup){syncFindMount();assert.equal(disabled,false);if(action==='find')assert.equal(findEpisode,null,'Only one live Find episode');else assert.ok(findEpisode&&findEpisode.state==='accepted','Accepted Find episode required');}
-    findBusy=true;let epoch=null,proof=null,preflight=null,execution=null,postflight=null,dispatched=false,completed=false;
+    findBusy=true;let epoch=null,proof=null,preflight=null,execution=null,postflight=null,nativeFindKeyResult=null,dispatched=false,completed=false,knownNotSent=false;
     try{
       if(cleanup){assert.ok(pending&&!cleanupUsed&&!pending.pointer);assert.equal(action,pending.action);cleanupUsed=true;}
       syncFindMount();epoch=findEpoch;assert.ok(mountedId());
@@ -272,14 +307,36 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
         record('owned-find-prospective',{pid:ep.pid,rootFrame:ep.rootFrame,nonce:ep.nonce,title:ep.title,mountedId:ep.mountedId,caseId:ep.caseId,findRequestId:ep.findRequestId});
       }else{sameFind(ep);if(cleanup){assert.equal(ep.pid,pending.pid);assert.equal(ep.mountedId,pending.mount);assert.equal(ep.caseId,pending.caseId);}preflight=findWindow(ep,proof,cleanup?'release-'+action:'pre-close-find');}
       sameFind(ep);assert.equal(findEpoch,epoch);assert.ok(cleanup||!disabled);const left=remainingFind(proof);pending={action,pointer:false,pid:ep.pid,mount:ep.mountedId,caseId:ep.caseId};ep.state='prospective';dispatched=true;
-      execution=run('/usr/bin/osascript',[keyScriptPath,'chrome',ep.title+' - Google Chrome',String(ep.pid),(cleanup?'release-':'')+action,...['x','y','width','height'].map(k=>String(ep.rootFrame[k]))],{timeout:left,fullStdout:true,maxBuffer:32768});
-      const actual=JSON.parse(execution.stdout);coreFindAck(actual,action,cleanup,ep);completed=true;pending=null; // Actual original transitions are known complete before any new postcondition.
+      let actual;
+      if(nativeFindCg){
+        const request={format:'osr42-chrome-find-key/1',browser:'chrome',nonce:ep.nonce,title:ep.title,fixtureUrl:config.fixtureUrl,mountedId:ep.mountedId,caseId:ep.caseId,findRequestId:ep.findRequestId,requestId:proof.id,serial:proof.value.serial,pid:ep.pid,rootFrame:{...ep.rootFrame},purpose:'key',deadlineMs:left,action,cleanupOnly:cleanup};
+        assert.ok(Buffer.byteLength(JSON.stringify(request))<=4096);
+        try{execution=run(findKeyHelper,['--request',JSON.stringify(request)],{timeout:left,fullStdout:true,maxBuffer:32768});}
+        catch(error){execution=error.execution??null;if(!execution?.stdout)throw error;}
+        nativeFindKeyResult=JSON.parse(execution.stdout);const program=cgEnvelope(nativeFindKeyResult,request,ep);
+        if(nativeFindKeyResult.status==='completed'){
+          assert.equal(nativeFindKeyResult.delivery,'sent');assert.equal(nativeFindKeyResult.postedCount,program.length);exactKeys(nativeFindKeyResult.core,['status','action','keyCode','modifiers','keyTransitions','frontPid']);coreFindAck(nativeFindKeyResult.core,action,cleanup,ep);
+          completed=true;pending=null; // Genuine full program/core is known complete BEFORE final phase/deadline checks.
+          assert.equal(execution.returnCode,0);assert.ok(nativeFindKeyResult.elapsedMs<=left);sameFind(ep);assert.equal(findEpoch,epoch);remainingFind(proof);
+          actual={...nativeFindKeyResult.core,nativeFindPhase:cgPostcondition(nativeFindKeyResult.postcondition,request,ep)};
+        }else{
+          assert.equal(nativeFindKeyResult.core,null);
+          if(nativeFindKeyResult.status==='refused'){
+            assert.equal(nativeFindKeyResult.delivery,'not_sent');assert.equal(nativeFindKeyResult.postedCount,0);assert.equal(execution.returnCode,2);knownNotSent=true;if(!cleanup)pending=null;
+          }else{assert.equal(nativeFindKeyResult.status,'unknown');assert.equal(nativeFindKeyResult.delivery,'unknown/may_have_sent');assert.ok(nativeFindKeyResult.postedCount>0&&nativeFindKeyResult.postedCount<program.length);}
+          assert.equal(nativeFindKeyResult.postcondition.status,'not_attempted');cgPostcondition(nativeFindKeyResult.postcondition,request,ep);
+          throw Error('CG Find program '+nativeFindKeyResult.status+': '+(nativeFindKeyResult.diagnostic?.code??'no diagnostic'));
+        }
+      }else{
+        execution=run('/usr/bin/osascript',[keyScriptPath,'chrome',ep.title+' - Google Chrome',String(ep.pid),(cleanup?'release-':'')+action,...['x','y','width','height'].map(k=>String(ep.rootFrame[k]))],{timeout:left,fullStdout:true,maxBuffer:32768});
+        actual=JSON.parse(execution.stdout);coreFindAck(actual,action,cleanup,ep);completed=true;pending=null; // Actual original transitions are known complete before any new postcondition.
+      }
       sameFind(ep);assert.equal(findEpoch,epoch);
       if(cleanup){assert.ok(['open','closed'].includes(actual.nativeFindPhase));remainingFind(proof);retireFind('owned-up-completed');}
       else if(action==='find'){assert.equal(actual.nativeFindPhase,'open');postflight=findWindow(ep,proof,'post-find');remainingFind(proof);ep.state='accepted';record('owned-find-accepted',{findRequestId:ep.findRequestId,mountedId:ep.mountedId,pid:ep.pid,proof:postflight.actual});}
       else{assert.equal(actual.nativeFindPhase,'closed');remainingFind(proof);retireFind('verified-close');}
-      const value={action,delivery:'sent',actual,execution,pageGuard:proof.value,keyGuard:preflight.actual,keyGuardExecution:preflight.execution,nativeFindWindow:postflight,maximumGuardAgeMs:age(proof.start),guardAgeLimitMs:limits.guardAgeMs,cleanupOnly:cleanup,keysPending:false,requestId:proof.id};record(cleanup?'owned-key-release':'physical-input',value);return value;
-    }catch(error){disabled=true;if(completed||cleanup||!dispatched)retireFind(completed?'known-completed-postcondition-failed':'find-proof-failed');record('physical-input-failure',{action,delivery:completed?'sent/known_completed':dispatched?'unknown/may_have_sent':'not_sent',keysPending:!!pending&&!pending.pointer,pointerDown:false,cleanupOnly:cleanup,error:error.message,execution:execution??error.execution??null,keyGuardExecution:preflight?.execution??error.execution??null,nativeFindWindow:postflight,maximumGuardAgeMs:proof?age(proof.start):null});throw error;}
+      const value={action,delivery:'sent',actual,execution,pageGuard:proof.value,keyGuard:preflight.actual,keyGuardExecution:preflight.execution,nativeFindWindow:postflight,...(nativeFindCg?{nativeFindKeyResult}:{}),maximumGuardAgeMs:age(proof.start),guardAgeLimitMs:limits.guardAgeMs,cleanupOnly:cleanup,keysPending:false,requestId:proof.id};record(cleanup?'owned-key-release':'physical-input',value);return value;
+    }catch(error){disabled=true;if(completed||cleanup||!dispatched||knownNotSent)retireFind(completed?'known-completed-postcondition-failed':'find-proof-failed');record('physical-input-failure',{action,delivery:completed?'sent/known_completed':knownNotSent?'not_sent':dispatched?'unknown/may_have_sent':'not_sent',keysPending:!!pending&&!pending.pointer,pointerDown:false,cleanupOnly:cleanup,error:error.message,execution:execution??error.execution??null,keyGuardExecution:preflight?.execution??error.execution??null,nativeFindWindow:postflight,...(nativeFindCg?{nativeFindKeyResult}:{}),maximumGuardAgeMs:proof?age(proof.start):null});throw error;}
     finally{findBusy=false;}
   }
   async function captureFindWindow(path){

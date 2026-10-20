@@ -36,8 +36,9 @@ recording the CDP method, parameters and response. Normal fresh-case entry
 activates Chrome once as preparation; a failed entry or uncertain input cannot
 trigger reactivation. Each physical action still requires its fresh OS AX guard.
 
-Physical actions are fixed System Events key programs or exact-control CGEvent
-clicks. Each has a new page/mount/nonce guard and independent strict AX check of
+Physical actions are fixed System Events key programs, closed Chrome Find
+CGEvent key programs or exact-control CGEvent clicks. Each has a new
+page/mount/nonce guard and independent strict AX check of
 the exact foreground process/window. Ordinary actions also measure the actual web area. This is platform input,
 not hardware-device provenance. Navigation is physical. Fixture mounting,
 literal selection setup, explicit focus setup, host edit and native undo/redo
@@ -60,6 +61,18 @@ Find auxiliary. These proofs provide no viewport or pointer coordinates. The
 screenshot crops the original root rectangle. Unknown completion remains FAILED;
 only one matching original-key UP cleanup is permitted. Ordinary actions and
 Safari retain their existing measurement paths.
+
+Actual Chrome uses the separate
+[CG key contract](../../contracts/ui/v1.1/chrome-find-presentation/cg-transport/chrome-find-cg.md)
+for this episode. The coordinator compiles and pins `find-key.swift`; private
+`cg-fd02` selects only CmdF, Escape and the original UP-only cleanup programs.
+Every posted transition has a fresh complete original-window proof. The first
+transition requires the expected closed/open state, and later transitions allow
+only either exact owned state. Final phase sampling is read-only and shares the
+original total1s deadline. A valid complete posting receipt clears pending keys
+before final phase/deadline checks. A failed postcondition still fails the row;
+an opaque timeout keeps completion unknown. Default controlled AS8 cases and
+all ordinary/Safari routes remain separately covered by their original checks.
 
 For targeted development only, the exact environment value
 `OSR42_NATIVE_DEVELOPMENT_CASE=modes-zoom` selects the existing EN/RU modes rows.

@@ -6,7 +6,7 @@ import {mkdtempSync} from 'node:fs';
 import {resolve,dirname} from 'node:path';
 import {limits,validCall} from './protocol.mjs';
 import {createInputOwner,prepareChromeWindow} from './input.mjs';
-export async function createChromeAdapter({config,report,inputHelper,keyScriptPath,run,save,outputPath}){
+export async function createChromeAdapter({config,report,inputHelper,keyScriptPath,findKeyHelper,run,save,outputPath}){
   const script=text=>run('/usr/bin/osascript',['-e',text]);
   const childHome=mkdtempSync(resolve(dirname(outputPath),'chrome-ui42-appdata-'));
   report.setup.push({action:'isolate-chrome-child-app-data',variable:'CFFIXED_USER_HOME',directory:childHome,scope:'Only Chrome child; Carbon and scoped CGEvent helper use the real user environment'});
@@ -34,8 +34,8 @@ export async function createChromeAdapter({config,report,inputHelper,keyScriptPa
     assert.equal(value.url,config.fixtureUrl);assert.equal(value.title,config.title);
     return {id:config.nonce+':'+String(serial),start,value:{...value,mountedId,serial:++guardSerial}};
   };
-  const inputOwner=createInputOwner({browser:'chrome',config,inputHelper,keyScriptPath,run,record,mountedId:()=>mountedId,guard:pageGuard('guard'),cleanupGuard:pageGuard('cleanupGuard'),nativeFindEpisode:'chrome-fd01'});
-  report.control={method:'Installed headed Chrome; closed Playwright page setup/read RPC, strict AX preflight, fixed System Events keys and exact-control CGEvent clicks',webDriver:false,
+  const inputOwner=createInputOwner({browser:'chrome',config,inputHelper,keyScriptPath,findKeyHelper,run,record,mountedId:()=>mountedId,guard:pageGuard('guard'),cleanupGuard:pageGuard('cleanupGuard'),nativeFindEpisode:'chrome-fd01',nativeFindKeyTransport:'cg-fd02'});
+  report.control={method:'Installed headed Chrome; closed Playwright page setup/read RPC, strict AX preflight, fixed System Events keys, closed original-owner CGEvent Find keys and exact-control CGEvent clicks',webDriver:false,
     uniqueTitle:config.title,fixtureUrl:config.fixtureUrl,fixtureOnly:true,childOnlyEnvironment:true,launchArguments};
   return {errors,input:action=>{assert.equal(bootstrapReady,true,'Strict Chrome window bootstrap required before input');physicalStarted=true;return inputOwner.input(action);},releaseOwnedPointer:()=>inputOwner.releaseOwnedPointer(),
     releaseOwnedKeys:()=>inputOwner.releaseOwnedKeys(),captureFindWindow:path=>inputOwner.captureFindWindow(path),get keysPending(){return inputOwner.keysPending;},

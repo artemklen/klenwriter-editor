@@ -13,6 +13,7 @@ import './ui-composition-observation.node.mjs';
 import './ui-composition-after-click.node.mjs';
 import './ui-composition-during-pointer.node.mjs';
 import './ui-native-find-episode.node.mjs';
+import './ui-native-find-cg.node.mjs';
 
 const keyLiterals={
   enter:{code:36,modifiers:[],caseId:'format-keyboard'},
