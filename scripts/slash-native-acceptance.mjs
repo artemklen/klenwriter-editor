@@ -12,6 +12,7 @@ import {createSafariAdapter} from './slash-native/safari-adapter.mjs';
 import {fixedKeyScript} from './slash-native/input.mjs';
 import {caseIds,keySpecs,keyText,limits} from './slash-native/protocol.mjs';
 import {untrustedTerminalObservation} from './slash-native/terminal-observation.mjs';
+import {observePointerAcknowledgement} from './slash-native/pointer-observation.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');process.chdir(root);
 const args=process.argv.slice(2),names=['--browser','--output','--broker','--head','--expected-version'];
@@ -110,7 +111,8 @@ function keyAck(value,action,before,reserved){const spec=keySpecs[action],trace=
 async function physical(entry,action,{reserved=false}={}){
  coherent(source(),selectedSource);if(keyText[action])assert.equal(selectedSource,keyText[action].sourceId,'Frozen source before fixed text post');
  const before=await adapter.call('inspect'),row={locale:entry.locale,caseId:entry.caseId,action,status:'attempted',startedAt:now(),inputSourceBefore:source().current,inputTraceBefore:before.inputTraceCount};report.physicalActions.push(row);entry.actualActionCount++;save();
- try{row.proof=await adapter.input(action);row.status='completed';coherent(source(),selectedSource);row.inputSourceAfter=source().current;const after=await adapter.call('inspect');
+ try{row.proof=await adapter.input(action);row.status='completed';coherent(source(),selectedSource);row.inputSourceAfter=source().current;
+  const after=keySpecs[action]?await adapter.call('inspect'):await observePointerAcknowledgement({inspect:()=>adapter.call('inspect'),wait,before,action:row,observations:row.pointerObservations=[]});
   if(keySpecs[action])row.domAcknowledgement=keyAck(after,action,row.inputTraceBefore,reserved);
   else{const trace=after.inputTrace.slice(row.inputTraceBefore),down=trace.filter(x=>x.event==='pointerdown'&&x.isTrusted&&x.button===0),up=trace.filter(x=>x.event==='pointerup'&&x.isTrusted&&x.button===0),click=trace.filter(x=>x.event==='click'&&x.isTrusted&&x.button===0);assert.equal(down.length,1);assert.equal(up.length,1);assert.equal(click.length,1);assert.equal(up[0].pointerId,down[0].pointerId);assert.equal(up[0].targetObject,down[0].targetObject);assert.equal(click[0].targetObject,down[0].targetObject);row.domAcknowledgement={down,up,click};}
   return after;

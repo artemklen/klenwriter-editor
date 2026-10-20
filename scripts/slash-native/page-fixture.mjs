@@ -19,7 +19,9 @@ function record(event){
   if(!active)return;if(trace.length>=16384){traceOverflow=true;return;}
   const row={ordinal:trace.length+1,mountId:active.id,clock:observationClock,time:performance.now(),event:event.type,isTrusted:event.isTrusted,target:identity(event.target),active:identity(document.activeElement),targetObject:token(event.target),detail:event.detail??null,isPrimary:event.isPrimary??null,key:event.key??null,code:event.code??null,
     shift:!!event.shiftKey,alt:!!event.altKey,meta:!!event.metaKey,ctrl:!!event.ctrlKey,data:event.data==null?null:bounded(event.data,65536),inputType:event.inputType??null,
-    button:event.button??null,buttons:event.buttons??null,pointerId:event.pointerId??null,x:event.clientX??null,y:event.clientY??null,defaultPrevented:event.defaultPrevented};
+    button:event.button??null,buttons:event.buttons??null,pointerId:event.pointerId??null,x:event.clientX??null,y:event.clientY??null,defaultPrevented:event.defaultPrevented,
+    guardedTargetObject:active.pointerTarget?token(active.pointerTarget):null,
+    withinGuardedTarget:active.pointerTarget&&event.target instanceof Node?active.pointerTarget===event.target||active.pointerTarget.contains(event.target):null};
   trace.push(row);queueMicrotask(()=>{row.defaultPrevented=event.defaultPrevented;});
   if(event.isTrusted&&event.type==='compositionstart'){active.composition.open=true;active.composition.starts++;}
   if(event.isTrusted&&event.type==='compositionend'){active.composition.open=false;active.composition.ends++;}
@@ -90,6 +92,7 @@ export function guard(action){check(actions.includes(action),'Closed43 physical 
   let p=null,inside=false;
   if(target instanceof HTMLElement&&target.isConnected){if(targetName){p=point(target);const hit=document.elementFromPoint(p.x,p.y);inside=!!hit&&(hit===target||target.contains(hit));}else inside=root().contains(target)||target===control('recovery');}
   const compositionAttempt=/^I43-N09-(en|ru)$/.test(r.caseId)&&action==='click-add';
+  r.pointerTarget=targetName&&target instanceof HTMLElement?target:null;
   return {id:r.id,caseId:r.caseId,action,target:targetName??'focused',targetIdentity:identity(target),targetObject:token(target),editorConnected:editor.isConnected,documentFocused:document.hasFocus(),point:p,pointerDown:false,viewport:v,zoomEvidence:zoomEvidence(),
     allowed:!traceOverflow&&!policyOverflow&&policy.length===0&&editor.isConnected&&(document.hasFocus()||action==='close-find'&&r.findArmed)&&inside&&v.scale===1&&v.offsetLeft===0&&v.offsetTop===0&&v.pageZoom>=1&&v.pageZoom<=2&&(!compositionAttempt||r.composition.open),
     composition:{...r.composition},inputTraceCount:trace.length};
