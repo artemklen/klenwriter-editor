@@ -12,7 +12,7 @@ function clock(value,expected){
   assert.deepEqual(value,expected,'Same actual document clock');
 }
 
-export function classifyCompositionObservation({before,preedit,gesture,action,expectedCommand,verifySettlement}){
+function classifyCompositionObservationPhase({before,preedit,gesture,action,expectedCommand,verifySettlement},phase){
   const scope={protectedGestureAcceptance:false,nativePositiveFromUntrustedTerminal:false};
   try{
     const mount=before.id,documentClock=before.observation?.clock;
@@ -64,6 +64,7 @@ export function classifyCompositionObservation({before,preedit,gesture,action,ex
       else check(readKinds.has(request.kind),'No additional semantic mutation or unknown request');
     }
     if(terminals.length===0){
+      check(phase!=='after-click','AFTER-CLICK requires one explicit terminal');
       check(gesture.composition.open===true&&gesture.composition.observedEnded===false&&semantic.length===0,'No terminal or semantic completion can be inferred');
       return {classification:unchanged,...scope};
     }
@@ -72,7 +73,34 @@ export function classifyCompositionObservation({before,preedit,gesture,action,ex
     assert.deepEqual(gesture.composition.terminals,[{ordinal:terminal.ordinal,time:terminal.time,isTrusted:terminal.isTrusted,mountId:mount,clock:documentClock}],'All observed terminals retained with original trust');
     check(semantic.length===1,'Exactly one expected native InsertText; no deferred or additional command');
     const {row,request,response}=semantic[0];
-    check(row.startedAt>=preedit.observation.at&&row.finishedAt<=down.time,'InsertText completed within the observed window BEFORE the distinct gesture');
+    if(phase==='after-click'){
+      const clickRows=during.filter(event=>event.event==='click'),click=clickRows[0],guard=action.proof?.pageGuard;
+      check(during.filter(event=>event.event==='pointerdown').length===1&&during.filter(event=>event.event==='pointerup').length===1&&clickRows.length===1,'Exactly one actual distinct down/up/click');
+      check(guard?.allowed===true&&guard.id===mount&&guard.mountedId===mount&&guard.caseId===before.caseId&&guard.action===action.action&&guard.target===action.action.slice(6),'Same original closed target guard');
+      check(Number.isSafeInteger(guard.targetObject)&&guard.targetObject>0,'Observed actual closed target object');
+      for(const event of [down,ups[0],click]){
+        check(event.isTrusted===true&&event.button===0&&event.pointerId===down.pointerId&&event.targetObject===guard.targetObject,'Trusted matching original target/pointer');
+        check(event.shift===false&&event.alt===false&&event.meta===false&&event.ctrl===false,'Unmodified distinct pointer gesture');
+      }
+      check(down.isPrimary===true&&ups[0].isPrimary===true,'Actual primary pointer sequence');
+      check(Number.isSafeInteger(click.detail)&&click.detail>0,'Actual positive-detail click');
+      check(down.ordinal<ups[0].ordinal&&ups[0].ordinal<click.ordinal&&ups[0].time<=click.time,'Completed matching pointer event order');
+      check(row.startedAt>=click.time&&row.finishedAt<=gesture.observation.at,'InsertText starts AFTER click and finishes before checkpoint');
+      for(const key of ['html','rootObject','objects','selection','active','activeObject'])assert.deepEqual(gesture.dom?.[key],preedit.dom?.[key],`Exact provisional DOM ${key}`);
+      check(preedit.dom&&gesture.dom&&typeof preedit.dom.html==='string'&&Number.isSafeInteger(preedit.dom.rootObject)&&preedit.dom.rootObject>0&&Array.isArray(preedit.dom.objects)&&preedit.dom.selection&&preedit.dom.active,'Actual full provisional DOM observation');
+      check(Number.isSafeInteger(preedit.dom.activeObject)&&preedit.dom.activeObject>0,'Actual focused object observed');
+      check(typeof preedit.documentFocused==='boolean'&&preedit.documentFocused===gesture.documentFocused,'Actual document focus retained');
+      for(const checkpoint of [preedit,gesture]){
+        assert.deepEqual(checkpoint.native.results,[],'No UI action/result');assert.deepEqual(checkpoint.native.focusResults,[],'No UI focus continuation/result');
+        assert.equal(checkpoint.native.uiResources?.hostRequests,0);assert.equal(checkpoint.facts.resources?.hostRequests?.pending,0);
+        check(checkpoint.native.dialog===null||checkpoint.native.dialog?.hidden===true&&checkpoint.native.dialog.openCount===0,'No host dialog opening');
+        assert.deepEqual(checkpoint.native.dialog,preedit.native.dialog,'Original host dialog remains unchanged');
+        assert.deepEqual(checkpoint.errors,[]);assert.deepEqual(checkpoint.policyViolations,[]);
+        assert.equal(checkpoint.errorOverflow,false);assert.equal(checkpoint.policyOverflow,false);
+      }
+    }else{
+      check(row.startedAt>=preedit.observation.at&&row.finishedAt<=down.time,'InsertText completed within the observed window BEFORE the distinct gesture');
+    }
     check(expectedCommand&&typeof expectedCommand.id==='string'&&typeof expectedCommand.payload_json==='string','Predeclared exact profile command binding');
     const expectedRequest={kind:'command',stamp:before.native.state.stamp,command:expectedCommand,history_hint:{kind:'isolated'}};
     assert.deepEqual(request,expectedRequest,'Exact original base, command, payload and isolated hint');
@@ -82,12 +110,17 @@ export function classifyCompositionObservation({before,preedit,gesture,action,ex
     check(typeof verifySettlement==='function','Full unchanged semantic assertions are mandatory');
     const settlement=verifySettlement({row,request,response});
     check(settlement&&typeof settlement==='object','Semantic proof retained');
-    return {classification:'UNOBSERVED',reason:'native_window_settled_before_distinct_gesture',...scope,
+    return {classification:'UNOBSERVED',reason:phase==='after-click'?'native_terminal_preceded_gesture_insert_settled_after_click':'native_window_settled_before_distinct_gesture',...scope,
       mountId:mount,clock:documentClock,trustedStartOrdinal:starts[0].ordinal,preeditCheckpointAt:preedit.observation.at,
       terminal:{ordinal:terminal.ordinal,time:terminal.time,isTrusted:terminal.isTrusted},pointerdown:{ordinal:down.ordinal,time:down.time},
-      nativeCall:{ordinal:row.ordinal,startedAt:row.startedAt,finishedAt:row.finishedAt,requestJson:row.requestJson,responseJson:row.responseJson},settlement};
+      nativeCall:{ordinal:row.ordinal,startedAt:row.startedAt,finishedAt:row.finishedAt,requestJson:row.requestJson,responseJson:row.responseJson},settlement,...(phase==='after-click'?{phase:'AFTER_CLICK',click:{ordinal:during.find(event=>event.event==='click').ordinal,time:during.find(event=>event.event==='click').time}}:{})};
   }catch(error){return {classification:'FAILED',...scope,error:{name:error.name,message:error.message}};}
 }
+
+// Original BEFORE-DOWN contract/default semantics are intentionally unchanged.
+export function classifyCompositionObservation(input){return classifyCompositionObservationPhase(input,'before-down');}
+// Separate frozen additive subset; never a two-command or interleaving waiver.
+export function classifyCompositionAfterClickObservation(input){return classifyCompositionObservationPhase(input,'after-click');}
 
 // This is an observation-only input binding, not a new native-output oracle.
 // U+00B4/one-unit/caret identity is already frozen in41 P18/P19. The literal
@@ -98,4 +131,18 @@ export const earlySpacingAccentBinding=Object.freeze({
   command:Object.freeze({id:'org.klenwriter.kwdj/command/insert-text',payload_json:'{"kind":"insert_text","text":"´"}'}),
   afterText:'A´אב',
   afterCanonical:'{"content":[{"content":[{"text":"A´אב","type":"text"}],"type":"paragraph"},{"content":[{"content":[{"text":"cd","type":"text"}],"type":"paragraph"}],"type":"blockquote"},{"type":"scene_break"},{"content":[{"text":"ef","type":"text"}],"type":"paragraph"}],"profile":"prose","schema":"klenwriter.document","schema_version":1}',
+});
+
+// Authored/frozen before any Notes composition runtime; original é stays intact.
+export const notesEarlySpacingAccentBinding=Object.freeze({
+  "source": Object.freeze({
+    "path": "contracts/ui/v1.1/composition-after-click-observation/notes-early-accent.json",
+    "sha256": "49b415b510bd72e0d136ce7c00e44a25aa31f32ed1827d5eb0a9122c647537e2"
+  }),
+  "command": Object.freeze({
+    "id": "org.example.notes/command/insert-text",
+    "payload_json": "{\"text\":\"´\"}"
+  }),
+  "afterText": "a´b",
+  "afterCanonical": "{\"root\":{\"attrs\":{\"tags\":[],\"title\":\"\"},\"children\":[{\"attrs\":{},\"children\":[{\"attrs\":{},\"children\":[],\"marks\":[],\"text\":\"a´b\",\"type\":\"org.example.notes/text\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/paragraph\"}],\"marks\":[],\"text\":null,\"type\":\"org.example.notes/document\"},\"schema_version\":1}"
 });

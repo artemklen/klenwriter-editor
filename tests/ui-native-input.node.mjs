@@ -10,6 +10,7 @@ import {validCall} from '../scripts/ui-native/protocol.mjs';
 // This existing explicit unit entry also includes the pure finite CO controls;
 // neither file executes a browser, helper, native editor or platform input.
 import './ui-composition-observation.node.mjs';
+import './ui-composition-after-click.node.mjs';
 
 const keyLiterals={
   enter:{code:36,modifiers:[],caseId:'format-keyboard'},

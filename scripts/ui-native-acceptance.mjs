@@ -12,7 +12,7 @@ import {createSafariAdapter} from './ui-native/safari-adapter.mjs';
 import {captureOwnedWindow,fixedKeyScript} from './ui-native/input.mjs';
 import {caseIds,keySpecs,limits} from './ui-native/protocol.mjs';
 import {compositionSettlementLiterals,compositionSettlementState} from './ui-native/settlement-literals.mjs';
-import {classifyCompositionObservation,earlySpacingAccentBinding} from './ui-native/composition-observation.mjs';
+import {classifyCompositionObservation,classifyCompositionAfterClickObservation,earlySpacingAccentBinding,notesEarlySpacingAccentBinding} from './ui-native/composition-observation.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');process.chdir(root);
 const args=process.argv.slice(2),names=['--browser','--output','--broker','--head','--expected-version'];
@@ -152,11 +152,17 @@ async function perform(entry,prepared){
     // No canonical result, DOM text or observed event.data constructs an oracle.
     const profileLiteral=id==='composition-dialog'?compositionSettlementLiterals.notes:compositionSettlementLiterals.kwdj,
       earlyBindings=[{command:{id:profileLiteral.commandId,payload_json:profileLiteral.payloadJson},binding:null},
-        ...(id==='composition-dialog'?[]:[{command:earlySpacingAccentBinding.command,binding:earlySpacingAccentBinding}])],
+        {command:(id==='composition-dialog'?notesEarlySpacingAccentBinding:earlySpacingAccentBinding).command,binding:id==='composition-dialog'?notesEarlySpacingAccentBinding:earlySpacingAccentBinding}],
       nativeCommands=semanticCalls(conflict,before),expected=earlyBindings.find(candidate=>nativeCommands.length===1&&JSON.stringify(candidate.command)===JSON.stringify(nativeCommands[0].request.command))??earlyBindings[0];
-    entry.compositionObservation=classifyCompositionObservation({before,preedit,gesture:conflict,action:report.physicalActions.at(-1),expectedCommand:expected.command,
-      verifySettlement:()=>{assert.equal(conflict.native.results.filter(r=>r.status==='submitted').length,0,'No UI action or deferred replay');return compositionCommitted(conflict,before,id,expected.binding);}});
-    assert.notEqual(entry.compositionObservation.classification,'FAILED',entry.compositionObservation.error?.message);
+    const observationInput={before,preedit,gesture:conflict,action:report.physicalActions.at(-1),expectedCommand:expected.command,
+      verifySettlement:()=>{assert.equal(conflict.native.results.filter(r=>r.status==='submitted').length,0,'No UI action or deferred replay');return compositionCommitted(conflict,before,id,expected.binding);}};
+    entry.compositionObservation=classifyCompositionObservation(observationInput);
+    if(entry.compositionObservation.classification==='FAILED'){
+      // Keep the original default failure; this is a separately frozen subset.
+      entry.compositionAfterClickObservation=classifyCompositionAfterClickObservation(observationInput);
+      assert.equal(entry.compositionAfterClickObservation.classification,'UNOBSERVED',entry.compositionAfterClickObservation.error?.message??entry.compositionObservation.error?.message);
+      entry.disposition='native_terminal_before_gesture_insert_completed_after_click';return 'UNOBSERVED';
+    }
     if(entry.compositionObservation.classification==='UNOBSERVED'){entry.disposition=entry.compositionObservation.reason;return 'UNOBSERVED';}
     assert.equal(conflict.composition.open,true,'Observed unresolved composition ended during the distinct gesture; preservation condition failed');
     unchanged(conflict,preedit);assert.equal(conflict.dom.html,preedit.dom.html);assert.deepEqual(conflict.dom.objects,preedit.dom.objects);assert.deepEqual(conflict.dom.selection,preedit.dom.selection);assert.deepEqual(conflict.dom.active,preedit.dom.active);assert.equal(semanticCalls(conflict,before).length,0);assert.equal(conflict.native.results.filter(r=>r.status==='submitted').length,0);

@@ -66,6 +66,17 @@ fails. `composition-observation.mjs` is pinned with the other closed helpers;
 its pure CO units run from the existing transport-unit entry. Source-bound41
 P18/P19 U+00B4 may identify an early spacing-accent insertion for this opportunity
 classification only. It does not count as42 protected-gesture acceptance.
+A separate frozen AFTER-CLICK subset also requires the explicit terminal before
+trusted matching primary down/up/positive-detail click on the exact guarded
+object, one expected InsertText starting at/after click and returning by the
+checkpoint, exact provisional DOM/objects/raw range/focus preservation, and zero
+UI results/dialog openings/pending requests. The original default failure stays
+in the report alongside that separate observation. It permits no interleaving or
+two-command exception and does not turn missed opportunity into protected PASS.
+The source-authored Notes spacing-accent binding is `a´b`/T2 with its distinct
+`{text}` payload; existing Notes é and KWDJ bindings stay unchanged.
+Original Chrome04 remains FAILED under its original before-down contract; only a
+new run with all new actual event/object fields can supply this separate proof.
 Original Chrome03 stays FAILED: its old call rows lack ordering times and also
 contain an additional toolbar command. No historical bytes are rewritten.
 A window observed through
