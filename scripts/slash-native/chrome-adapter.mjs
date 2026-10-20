@@ -37,7 +37,7 @@ export async function createChromeAdapter({config,report,inputHelper,keyScriptPa
     assert.equal(value.url,config.fixtureUrl);assert.equal(value.title,config.title);
     return {id:config.nonce+':'+String(serial),start,value:{...value,mountedId,serial:++guardSerial}};
   };
-  const inputOwner=createInputOwner({browser:'chrome',config,inputHelper,keyScriptPath,findKeyHelper,run,record,mountedId:()=>mountedId,guard:pageGuard('guard'),cleanupGuard:pageGuard('cleanupGuard'),nativeFindEpisode:'chrome-fd01',nativeFindKeyTransport:'cg-fd02',nativeZoomKeyTransport:'cg-zoom01'});
+  const inputOwner=createInputOwner({browser:'chrome',config,inputHelper,keyScriptPath,findKeyHelper,run,record,mountedId:()=>mountedId,guard:pageGuard('guard'),cleanupGuard:pageGuard('cleanupGuard'),ownedPointerPid:()=>report.control.bootstrap.ownBrowserPid,nativeFindEpisode:'chrome-fd01',nativeFindKeyTransport:'cg-fd02',nativeZoomKeyTransport:'cg-zoom01'});
   report.control={method:'Installed headed Chrome; closed Playwright page setup/read RPC, strict AX preflight, fixed System Events keys, closed original-owner CGEvent Find/Zoom keys and exact-control CGEvent clicks',webDriver:false,
     uniqueTitle:config.title,fixtureUrl:config.fixtureUrl,fixtureOnly:true,childOnlyEnvironment:true,launchArguments};
   return {errors,input:action=>{assert.equal(bootstrapReady,true,'Strict Chrome window bootstrap required before input');physicalStarted=true;return inputOwner.input(action);},releaseOwnedPointer:()=>inputOwner.releaseOwnedPointer(),

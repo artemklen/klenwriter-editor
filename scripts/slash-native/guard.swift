@@ -410,9 +410,10 @@ if argv.count == 3 && argv[1] == "--inspect-window" {
     if let fallback = measurement.safariScroll { inspection["axViewportProof"] = fallback.proof }
     emit(inspection, 0)
 }
+let baseInputKeys: Set<String> = ["format", "browser", "nonce", "title", "fixtureUrl", "mountedId", "requestId", "serial", "caseId", "action", "target", "point", "viewport", "pointerDown", "cleanupOnly", "deadlineMs"]
 guard argv.count == 3, ["--request", "--guard-key"].contains(argv[1]), let data = argv[2].data(using: .utf8), data.count <= 4096,
  let request = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
- closed(request, ["format", "browser", "nonce", "title", "fixtureUrl", "mountedId", "requestId", "serial", "caseId", "action", "target", "point", "viewport", "pointerDown", "cleanupOnly", "deadlineMs"]),
+ (closed(request, baseInputKeys) || closed(request, baseInputKeys.union(["pid"]))),
  request["format"] as? String == "osr43-native-input/1",
  let browser = request["browser"] as? String, ["chrome", "safari"].contains(browser),
  let nonce = request["nonce"] as? String, nonce.range(of: "^[a-f0-9]{32}$", options: .regularExpression) != nil,
@@ -440,6 +441,15 @@ let pointer = pointerTargets[action] != nil
 let guardingKey = argv[1] == "--guard-key"
 guard pointer ? !guardingKey && target == pointerTargets[action] : guardingKey && keys.contains(action) && target == "focused",
  cleanup ? (pointer ? held : !held) : !held else { refuse("Closed action/target transition differs") }
+let postingPid: pid_t?
+if browser == "chrome" && pointer {
+ guard closed(request, baseInputKeys.union(["pid"])), let pid = number(request["pid"]),
+       pid >= 1, pid <= 2147483647, pid.rounded() == pid else { refuse("Original Chrome pointer PID required") }
+ postingPid = pid_t(pid)
+} else {
+ guard closed(request, baseInputKeys) else { refuse("PID is only admitted for Chrome pointers") }
+ postingPid = nil
+}
 let measurement = measureWindow(browser, expectedTitle, width * zoom, height * zoom)
 guard measurement.contained else { refuse("Owned AX viewport must be contained") }
 let observed = recheckWindow(measurement, deadline)
@@ -453,6 +463,12 @@ if guardingKey {
  if !cleanup, let proof = keyboardLiteralProof(action) { result["keyboardTranslation"] = proof }
  guard elapsed() <= deadline else { refuse("Keyboard translation consumed original deadline") }
  result["status"]="guarded"; result["delivery"]="not_sent"; result["elapsedMs"]=elapsed(); emit(result,0)
+}
+if let pid = postingPid {
+ guard measurement.front.processIdentifier == pid else { refuse("Original Chrome pointer PID differs from guarded owner") }
+ let access = CGPreflightPostEventAccess()
+ guard access else { refuse("Existing event posting access unavailable") }
+ result["posting"] = ["route":"CGEventPostToPid", "pid":pid, "preflightAccess":access]
 }
 guard let p = request["point"] as? [String:Any], closed(p,["x","y"]), let x=number(p["x"]), let y=number(p["y"]), x>=0, x<width, y>=0, y<height else { refuse("Closed target point outside actual viewport") }
 let actual: CGPoint
@@ -493,7 +509,9 @@ for (index, type) in transitions.enumerated() {
   previousTimestamp = timestamp
   pairTiming?[["moveTimestampNs","downTimestampNs","upTimestampNs"][index]] = String(timestamp)
  }
- posted=true;events[index].post(tap:.cghidEventTap)
+ posted=true
+ if let pid = postingPid { events[index].postToPid(pid) }
+ else { events[index].post(tap:.cghidEventTap) }
  if type == .mouseMoved {
   let pauseBegan = DispatchTime.now().uptimeNanoseconds
   Thread.sleep(forTimeInterval:0.025)

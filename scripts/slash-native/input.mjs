@@ -222,7 +222,7 @@ export const fixedKeyScript=requireFixture+findPostGuardDiagnostic+chromeFindPre
  error "Unknown closed Slash43 key"
 end run
 `;
-export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,record,guard,cleanupGuard,mountedId,nativeFindEpisode,nativeFindKeyTransport,findKeyHelper,nativeZoomKeyTransport}){
+export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,record,guard,cleanupGuard,mountedId,nativeFindEpisode,nativeFindKeyTransport,findKeyHelper,nativeZoomKeyTransport,ownedPointerPid}){
   assert.ok(['chrome','safari'].includes(browser));assert.match(config.nonce,/^[a-f0-9]{32}$/);assert.equal(config.fixtureUrl,'http://127.0.0.1:4174/ui');assert.equal(config.title,'KlenWriter Slash native '+config.nonce);
   let disabled=false,serial=0,pending=null,cleanupUsed=false,baselineWindow=null;
   const nativeFind=nativeFindEpisode==='chrome-fd01';
@@ -465,10 +465,13 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
         completed=true;pending=null;assert.ok(age(proof.start)<=limits.guardAgeMs,'Total43 key guard exceeded1s');
         const value={action,delivery:'sent',actual,execution,pageGuard:proof.value,keyGuard:strict,keyGuardExecution:preflight,maximumGuardAgeMs:age(proof.start),guardAgeLimitMs:limits.guardAgeMs,cleanupOnly:cleanup,keysPending:false,requestId:proof.id};record(cleanup?'owned-key-release':'physical-input',value);return value;
       }
-      assert.equal(cleanup,false);pending={action,pointer:true,request};dispatched=true;
+      assert.equal(cleanup,false);
+      if(browser==='chrome'){assert.equal(typeof ownedPointerPid,'function');const pid=ownedPointerPid();assert.ok(Number.isSafeInteger(pid)&&pid>=1&&pid<=2147483647,'Original owned Chrome pointer PID required');request.pid=pid;}
+      pending={action,pointer:true,request};dispatched=true;
       execution=run(inputHelper,['--request',JSON.stringify(request)],{timeout:remaining,fullStdout:true,maxBuffer:32768});const actual=JSON.parse(execution.stdout);
       assert.equal(actual.status,'sent');assert.equal(actual.delivery,'sent');assert.deepEqual(actual.transitions,browser==='chrome'?['move','down','up']:['down','up']);assert.equal(actual.action,action);assert.equal(actual.requestId,proof.id);
       if(browser==='chrome'){
+        exactKeys(actual.posting,['route','pid','preflightAccess']);assert.equal(actual.posting.route,'CGEventPostToPid');assert.equal(actual.posting.preflightAccess,true);assert.ok(Number.isSafeInteger(actual.posting.pid)&&actual.posting.pid>=1&&actual.posting.pid<=2147483647);assert.equal(actual.posting.pid,request.pid);assert.equal(actual.frontPid,request.pid);
         exactKeys(actual.screenPoint,['x','y']);assert.ok(Object.values(actual.screenPoint).every(Number.isFinite));
         exactKeys(actual.prelude,['event','screenPoint','requestedPauseMs','elapsedMs']);assert.equal(actual.prelude.event,'mouseMoved');assert.equal(actual.prelude.requestedPauseMs,25);
         exactKeys(actual.prelude.screenPoint,['x','y']);assert.deepEqual(actual.prelude.screenPoint,actual.screenPoint);assert.ok(Number.isFinite(actual.prelude.elapsedMs)&&actual.prelude.elapsedMs>=0);
@@ -477,7 +480,7 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
         assert.equal(timing.downEventNumber,timing.upEventNumber);let previous=0n;
         for(const name of ['moveTimestampNs','downTimestampNs','upTimestampNs']){const value=timing[name];assert.equal(typeof value,'string');assert.ok(value.length<=20&&/^[1-9][0-9]*$/.test(value));const timestamp=BigInt(value);assert.ok(timestamp<=18446744073709551615n&&timestamp>previous);previous=timestamp;}
         assert.equal(timing.requestedPauseMs,25);assert.ok(Number.isFinite(timing.elapsedMs)&&timing.elapsedMs>=0);
-      }else{assert.equal(Object.hasOwn(actual,'prelude'),false);assert.equal(Object.hasOwn(actual,'pairTiming'),false);}
+      }else{assert.equal(Object.hasOwn(actual,'prelude'),false);assert.equal(Object.hasOwn(actual,'pairTiming'),false);assert.equal(Object.hasOwn(actual,'posting'),false);}
       fixedWindow(actual.axWindow);
       for(const [name,value]of Object.entries({nonce:config.nonce,mountedId:mountedId(),caseId:v.caseId,target:v.target}))assert.equal(actual[name],value);
       completed=true;pending=null;assert.ok(age(proof.start)<=limits.guardAgeMs,'Total43 pointer guard exceeded1s');
@@ -495,6 +498,9 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
       request={...saved.request,requestId:proof.id,serial:v.serial,cleanupOnly:true,pointerDown:true,deadlineMs:remaining};
       execution=run(inputHelper,['--request',JSON.stringify(request)],{timeout:remaining,fullStdout:true,maxBuffer:32768});actual=JSON.parse(execution.stdout);
       assert.equal(actual.status,'sent');assert.equal(actual.delivery,'sent');assert.equal(actual.cleanupOnly,true);assert.deepEqual(actual.transitions,['up']);assert.equal(Object.hasOwn(actual,'prelude'),false);assert.equal(Object.hasOwn(actual,'pairTiming'),false);
+      if(browser==='chrome'){
+        assert.ok(Number.isSafeInteger(request.pid)&&request.pid>=1&&request.pid<=2147483647);exactKeys(actual.posting,['route','pid','preflightAccess']);assert.equal(actual.posting.route,'CGEventPostToPid');assert.equal(actual.posting.preflightAccess,true);assert.ok(Number.isSafeInteger(actual.posting.pid)&&actual.posting.pid>=1&&actual.posting.pid<=2147483647);assert.equal(actual.posting.pid,request.pid);assert.equal(actual.frontPid,request.pid);
+      }else assert.equal(Object.hasOwn(actual,'posting'),false);
       for(const name of ['action','requestId','nonce','mountedId','caseId','target'])assert.equal(actual[name],request[name]);
       assert.equal(actual.frontBundle,browser==='chrome'?'com.google.Chrome':'com.apple.Safari');assert.ok(Number.isSafeInteger(actual.frontPid)&&actual.frontPid>0);
       const expectedTitle=config.title+(browser==='chrome'?' - Google Chrome':'');assert.equal(actual.expectedAxWindowTitle,expectedTitle);assert.equal(actual.observedAxWindowTitle,expectedTitle);
