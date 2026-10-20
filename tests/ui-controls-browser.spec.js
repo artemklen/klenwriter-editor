@@ -218,3 +218,68 @@ test('C01: controlled composition lock preserves provisional objects/focus; only
   await expect(control(page,id,'strong')).toHaveAttribute('aria-disabled','false');const settled=await checkpoint(page,id,'unchanged controlled composition settled');expect(settled.canonical).toBe(before.canonical);expect(settled.state.stamp.revision).toBe(before.state.stamp.revision);expect(submitted(settled)).toHaveLength(0);
   await control(page,id,'strong').click();await waitSubmissions(page,id,1);expect((await checkpoint(page,id,'fresh gesture after terminal')).state.stored_marks).toEqual([{type_id:'org.klenwriter.kwdj/strong',attributes:{}}]);
 });
+
+// Append to tests/ui-controls-browser.spec.js AFTER committing the additive
+// pointer contract. Reuses that file's actual SDK/WASM/CSP/resource helpers.
+// Controlled lifecycle and pointer-event order; never physical/OS IME evidence.
+const pg42 = JSON.parse(readFileSync('contracts/ui/v1.1/pointer-gesture-cases.json'));
+const pg42Manifest = JSON.parse(readFileSync('contracts/ui/v1.1/pointer-gesture-manifest.json'));
+for (const pin of pg42Manifest.files)
+  expect(receiptHash(readFileSync(`contracts/ui/v1.1/${pin.path}`))).toBe(pin.sha256);
+expect(receiptHash(readFileSync(pg42.geometry.path))).toBe(pg42.geometry.sha256);
+const pg42Commands = async(page,id)=>(await call(page,'nativeTrace',id)).calls
+  .map(row=>({request:JSON.parse(row.requestJson),response:JSON.parse(row.responseJson)}))
+  .filter(row=>row.request.kind==='command');
+async function pg42RejectedThenSettled(page){
+  const id=await mounted(page,{geometry:'F',nativeTrace:true});await editorFocus(page,id);
+  const before=await checkpoint(page,id,'PG independent F before controlled composition');
+  expect(before.canonical).toBe(pg42.geometry.inputCanonical);
+  const editor=page.locator(`#${id}-editor`),button=control(page,id,'strong');
+  await editor.evaluate(node=>node.dispatchEvent(new CompositionEvent('compositionstart',{bubbles:true,data:''})));
+  await expect(button).toHaveAttribute('aria-disabled','true');
+  const down=await button.evaluate(node=>{const event=new PointerEvent('pointerdown',{bubbles:true,cancelable:true,button:0,buttons:1,pointerId:73,pointerType:'mouse',isPrimary:true,detail:1});node.dispatchEvent(event);return {prevented:event.defaultPrevented,trusted:event.isTrusted};});
+  expect(down).toEqual({prevented:true,trusted:false});
+  const rejected=await checkpoint(page,id,'PG actual rejected down before terminal');unchanged(rejected,before);expect(submitted(rejected)).toHaveLength(0);
+  await editor.evaluate((node,expected)=>{
+    const text=node.firstElementChild?.firstElementChild?.firstChild;
+    if(!text||text.nodeType!==3||text.data!==expected.textBefore)throw Error('Authored F owned text mismatch');
+    node.dispatchEvent(new InputEvent('beforeinput',{bubbles:true,inputType:'insertCompositionText',data:'q',isComposing:true,cancelable:false}));
+    text.data=expected.textAfter;node.ownerDocument.getSelection().setBaseAndExtent(text,2,text,2);
+    node.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertCompositionText',data:'q',isComposing:true}));
+    node.dispatchEvent(new CompositionEvent('compositionend',{bubbles:true,data:'q'}));
+  },pg42.controlledSettlement);
+  await expect.poll(async()=>(await call(page,'inspect',id)).state.stamp.revision).toBe('1');
+  await expect(button).toHaveAttribute('aria-disabled','false');
+  const settled=await checkpoint(page,id,'PG source-authored q settled by actual native command');
+  const expected=pg42.controlledSettlement;expect(settled.canonical).toBe(expected.canonicalAfter);
+  expect(settled.state.selection).toEqual(selection(settled.roles,expected.selectionAfter));expect(idsAt(settled)).toEqual(idsAt(before));
+  for(const key of ['revision','selection_epoch','history_epoch'])expect(BigInt(settled.state.stamp[key])-BigInt(before.state.stamp[key])).toBe(BigInt(expected.stampDelta[key]));
+  expect(documentEvents(settled).length-documentEvents(before).length).toBe(1);expect(stateEvents(settled).length-stateEvents(before).length).toBe(0);
+  expect(settled.state.history.undo_entries).toBe('1');expect(settled.state.history.redo_entries).toBe('0');expect(settled.state.stored_marks).toBe(null);expect(submitted(settled)).toHaveLength(0);
+  const commands=await pg42Commands(page,id);expect(commands).toHaveLength(1);expect(commands[0].request.command.id).toBe(expected.nativeCommandId);expect(JSON.parse(commands[0].request.command.payload_json)).toEqual(expected.nativePayload);expect(commands[0].response.status).toBe('ok');
+  return {id,button,before,settled};
+}
+async function pg42AssertStrong(page,id,settled){
+  await waitSubmissions(page,id,1);const value=await checkpoint(page,id,'PG fresh independent activation');
+  expect(value.canonical).toBe(pg42.controlledSettlement.canonicalAfter);expect(idsAt(value)).toEqual(idsAt(settled));
+  expect(value.state.stored_marks).toEqual([{type_id:'org.klenwriter.kwdj/strong',attributes:{}}]);
+  expect(value.state.stamp.revision).toBe(settled.state.stamp.revision);expect(value.state.stamp.history_epoch).toBe(settled.state.stamp.history_epoch);
+  expect(value.state.stamp.selection_epoch).toBe(String(BigInt(settled.state.stamp.selection_epoch)+1n));expect(value.state.history).toEqual(settled.state.history);
+  expect((await pg42Commands(page,id)).map(row=>row.request.command.id)).toEqual(['org.klenwriter.kwdj/command/insert-text','org.klenwriter.kwdj/command/toggle-mark']);
+}
+test('PG01 controlled rejected down cannot replay as an enabled click after actual native settlement',async({page})=>{
+  const {id,button,settled}=await pg42RejectedThenSettled(page);
+  await button.evaluate(node=>{for(const type of ['pointerup','click'])node.dispatchEvent(new PointerEvent(type,{bubbles:true,cancelable:true,button:0,buttons:0,pointerId:73,pointerType:'mouse',isPrimary:true,detail:1}));});
+  const after=await checkpoint(page,id,'PG same rejected gesture consumed without action');unchanged(after,settled);expect(submitted(after)).toHaveLength(0);expect(await pg42Commands(page,id)).toHaveLength(1);expect(after.activeId).toBe(settled.activeId);
+  // A duplicate positive-detail click has no new admitted down either.
+  await button.evaluate(node=>node.dispatchEvent(new PointerEvent('click',{bubbles:true,cancelable:true,button:0,pointerId:73,pointerType:'mouse',isPrimary:true,detail:1})));
+  unchanged(await checkpoint(page,id,'PG duplicate click cannot revive consumed rejection'),settled);
+  await button.click();await pg42AssertStrong(page,id,settled);
+});
+for(const method of ['fresh-pointer','Enter','Space','detail0'])test(`PG02-05 controlled ${method} remains a new independent activation after rejected down`,async({page})=>{
+  const {id,button,settled}=await pg42RejectedThenSettled(page);
+  if(method==='fresh-pointer')await button.click();
+  else if(method==='detail0')await button.evaluate(node=>node.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,detail:0})));
+  else {await editorFocus(page,id);await page.keyboard.press('Shift+Tab');await expect(button).toBeFocused();await page.keyboard.press(method==='Space'?'Space':'Enter');}
+  await pg42AssertStrong(page,id,settled);
+});

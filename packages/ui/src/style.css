@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT OR Apache-2.0 */
 .kw-ui-toolbar,.kw-ui-entry,.kw-ui-gutter,.kw-ui-popup{box-sizing:border-box;font:14px/1.4 system-ui,sans-serif;color:#202824;background:#fff}
-.kw-ui-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:4px;border:1px solid #60736a;border-radius:6px;position:sticky;top:0;z-index:2}
+.kw-ui-toolbar{display:flex;flex-wrap:wrap;align-items:center;width:max-content;max-width:min(24rem,100%);gap:4px;padding:4px;border:1px solid #60736a;border-radius:6px;position:sticky;top:0;z-index:2}
+.kw-ui-toolbar-floating{position:relative;z-index:3}
 .kw-ui-entry,.kw-ui-gutter{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:4px}
 .kw-ui-gutter{width:max-content;max-width:min(18rem,100%)}
 .kw-ui-button{box-sizing:border-box;min-width:32px;min-height:32px;max-width:100%;padding:5px 8px;font:inherit;color:inherit;background:#fff;border:1px solid #60736a;border-radius:4px;white-space:normal;overflow-wrap:anywhere;cursor:pointer}

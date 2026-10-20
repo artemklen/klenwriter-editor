@@ -121,7 +121,12 @@ anchor даёт geometry_unsupported; focus может быть null. `visible` 
 Пределы: 256rawrectangles,128distinct inspected ancestors,1024selected objects.
 Heterogeneous clipping, transforms, CSS zoom, vertical writing, rounded clipping
 и iframe могут быть unsupported. Page zoom измеряется в CSS coordinates.
-UI имеет normal-flow fallback. Stylesheet внешний; finite CSSOM positioning
+Toolbar располагается рядом с видимым native selection/caret, когда над ним
+или под ним достаточно места. Собственный flow box сохраняется, поэтому
+позиционирование не сдвигает документ. При unsupported/busy/stale geometry,
+невидимом выделении или нехватке места сохраняется исходный sticky/normal-flow
+entry с теми же controls и Tab order. Geometry не предоставляет authority
+для действия. Stylesheet внешний; finite CSSOM positioning
 проверяется под strict CSP, без unsafe-inline и переноса UA-style exception на UI.
 
 `npm run test:ui` выполняет frozen data check, actual native/packaged WASM semantic

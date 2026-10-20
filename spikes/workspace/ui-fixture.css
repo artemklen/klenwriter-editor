@@ -18,6 +18,10 @@ body { margin: 24px; color: #17201c; background: #f4f6f3; font: 16px/1.5 system-
 .ui-geometry-vertical { writing-mode: vertical-rl; }
 .ui-geometry-rounded-clip { overflow: hidden; border-radius: 12px; }
 .ui-geometry-hidden { display: none; }
+/* Source-authored toolbar placement setups; opt-in before the measurement baseline. */
+.ui-placement-middle .ui-fixture-editor { padding-top: 180px; }
+.ui-placement-nofit .ui-fixture-editor { position: fixed; top: 0; left: 240px; width: 640px; min-height: 0; padding: 0; }
+.ui-placement-nofit .ui-fixture-editor p { height: 100px; min-height: 0; line-height: 100px; margin: 0; }
 .ui-fixture-dialog { position: fixed; z-index: 20; top: 20%; left: 20%; width: min(500px, 60vw); padding: 24px; border: 2px solid #42624f; background: #fff; box-shadow: 0 8px 40px #15271a44; }
 .ui-fixture-dialog[hidden] { display: none; }
 .ui-fixture-dialog label { display: block; }

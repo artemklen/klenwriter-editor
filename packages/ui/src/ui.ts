@@ -90,6 +90,7 @@ class Ui implements EditorUi {
   #status: HTMLElement; #blockLabel: HTMLElement; #add: Control; #move: Control;
   #controls = new WeakMap<Element, Control>(); #toolbarControls = new Map<string, Control>(); #blockControls = new Map<string, Control>();
   #pending: Pending | null = null; #popup: Popup | null = null; #tasks = new Set<Task>();
+  #pointerGesture = new WeakMap<Control, { readonly pointerId: number; admitted: boolean }>();
   #removals: (() => void)[] = []; #observer: ResizeObserver | null = null; #subscription: (() => void) | null = null;
   #raf: number | null = null; #followupFrames = 0; #rendering = false; #refreshAgain = false; #emitting = false; #callbackDepth = 0;
   #onResult: Options['onResult']; #settle: (() => void)[] = [];
@@ -205,16 +206,24 @@ class Ui implements EditorUi {
     return control.scope === 'toolbar' ? roots.toolbar : control.scope === 'add' ? roots.entry : roots.gutter;
   }
   #pointerDown(event: PointerEvent): void {
+    this.#pointerGesture = new WeakMap();
     const control = this.#find(event.target); if (!control || event.button !== 0 || event.ctrlKey || event.metaKey || event.altKey || this.#destroyed) return;
+    const gesture = { pointerId: event.pointerId, admitted: false }; this.#pointerGesture.set(control, gesture);
     if (!this.#pending && !this.#tasks.size && !this.#rendering && !this.#callbackDepth) this.#update();
     if (!control.availability.available || this.#tasks.size) { event.preventDefault(); this.#showControl(control); return; }
-    if (this.#popup && control.scope === 'popup') return;
+    if (this.#popup && control.scope === 'popup') { gesture.admitted = true; return; }
     const capture = this.#capture(this.#scope(control));
+    gesture.admitted = !!capture;
     if (!capture) event.preventDefault();
   }
   #click(event: MouseEvent): void {
-    const control = this.#find(event.target); if (!control || this.#destroyed) return;
-    event.preventDefault(); this.#activate(control);
+    const control = this.#find(event.target), gesture = control ? this.#pointerGesture.get(control) : undefined;
+    this.#pointerGesture = new WeakMap(); // Consume before callbacks or availability re-evaluation.
+    if (!control || this.#destroyed) return;
+    event.preventDefault();
+    const pointerId = (event as PointerEvent).pointerId;
+    if (event.detail > 0 && (!gesture?.admitted || Number.isSafeInteger(pointerId) && pointerId >= 0 && pointerId !== gesture.pointerId)) return;
+    this.#activate(control);
   }
   #key(event: KeyboardEvent): void {
     if (this.#destroyed) return;
@@ -424,6 +433,7 @@ class Ui implements EditorUi {
     }
   }
   #position(context: UiActionContext): void {
+    this.#positionToolbar(context);
     const clear = () => { this.#gutter.classList.remove('kw-ui-floating'); this.#gutter.style.removeProperty('left'); this.#gutter.style.removeProperty('top'); };
     if (!context.block) { clear(); return; }
     const result = this.#options!.editor.geometry.read({ kind: 'block', stamp: context.state.stamp, node: context.block.node.id });
@@ -434,11 +444,67 @@ class Ui implements EditorUi {
       || box.height > result.viewport.height - 16 || box.width <= 0) { clear(); return; }
     this.#gutter.classList.add('kw-ui-floating'); this.#gutter.style.left = `${Math.round(x * 2) / 2}px`; this.#gutter.style.top = `${Math.round(y * 2) / 2}px`;
   }
+  #clearToolbarPlacement(): void {
+    this.#toolbar.classList.remove('kw-ui-toolbar-floating');
+    this.#toolbar.style.removeProperty('left'); this.#toolbar.style.removeProperty('top');
+  }
+  #positionToolbar(context: UiActionContext): void {
+    this.#clearToolbarPlacement();
+    const result = this.#options!.editor.geometry.read({ kind: 'selection', stamp: context.state.stamp });
+    // Unavailable/busy/stale/unsupported geometry keeps the original entry;
+    // geometry never supplies authority to capture or execute a command.
+    if (result.status !== 'measured' || !result.visible) return;
+    const viewport = result.viewport, clip = result.clip;
+    const fragments = [...result.rects, ...(result.anchor ? [result.anchor] : []), ...(result.focus ? [result.focus] : [])].flatMap(rect => {
+      const left = Math.max(rect.x, clip.x, viewport.x), right = Math.min(rect.x + rect.width, clip.x + clip.width, viewport.x + viewport.width);
+      const top = Math.max(rect.y, clip.y, viewport.y), bottom = Math.min(rect.y + rect.height, clip.y + clip.height, viewport.y + viewport.height);
+      return bottom > top && (right > left || rect.width === 0 && right === left) ? [{ left, right, top, bottom }] : [];
+    });
+    if (!fragments.length) return;
+    // Relative offsets keep the toolbar's original flow box: taking it out of
+    // flow would itself move the selection we have just measured.
+    this.#toolbar.classList.add('kw-ui-toolbar-floating');
+    const box = this.#toolbar.getBoundingClientRect(), first = fragments[0]!;
+    const top = Math.min(...fragments.map(rect => rect.top)), bottom = Math.max(...fragments.map(rect => rect.bottom));
+    const minX = viewport.x + 8, maxX = viewport.x + viewport.width - box.width - 8;
+    const above = top - box.height - 8, below = bottom + 8;
+    const y = above >= viewport.y + 8 ? above : below + box.height <= viewport.y + viewport.height - 8 ? below : null;
+    if (y === null || maxX < minX || ![box.x, box.y, box.width, box.height, minX, maxX, y].every(Number.isFinite)
+      || box.width <= 0 || box.height <= 0) { this.#clearToolbarPlacement(); return; }
+    const x = Math.max(minX, Math.min(first.left, maxX));
+    this.#toolbar.style.left = `${Math.round((x - box.x) * 2) / 2}px`;
+    this.#toolbar.style.top = `${Math.round((y - box.y) * 2) / 2}px`;
+    // A transformed host slot may not realize the requested offsets.
+    // Never retain that position as a successful presentation measurement.
+    const placed = this.#toolbar.getBoundingClientRect();
+    if (![placed.x, placed.y, placed.width, placed.height].every(Number.isFinite)
+      || Math.abs(placed.x - x) > 0.5 || Math.abs(placed.y - y) > 0.5
+      || placed.x < minX - 0.5 || placed.x + placed.width > viewport.x + viewport.width - 7.5
+      || placed.y < viewport.y + 7.5 || placed.y + placed.height > viewport.y + viewport.height - 7.5)
+      { this.#clearToolbarPlacement(); return; }
+    // Selection geometry describes editor ancestry, while this slot may have
+    // different paint clips. Inspect at most128 own ancestors, with no retained
+    // witness. Refuse presentation that a host clip could hide.
+    let ancestor = this.#toolbar.parentElement, inspected = 0;
+    while (ancestor) {
+      if (++inspected > 128) { this.#clearToolbarPlacement(); return; }
+      const style = this.#window.getComputedStyle(ancestor), outer = ancestor.getBoundingClientRect();
+      const clipsX = /^(hidden|clip|auto|scroll)$/.test(style.overflowX), clipsY = /^(hidden|clip|auto|scroll)$/.test(style.overflowY);
+      if ((clipsX && (placed.left < outer.left + ancestor.clientLeft - 0.5 || placed.right > outer.left + ancestor.clientLeft + ancestor.clientWidth + 0.5))
+        || (clipsY && (placed.top < outer.top + ancestor.clientTop - 0.5 || placed.bottom > outer.top + ancestor.clientTop + ancestor.clientHeight + 0.5))
+        || style.clipPath !== 'none' || style.transform !== 'none' || style.perspective !== 'none'
+        || (clipsX || clipsY) && [style.borderTopLeftRadius, style.borderTopRightRadius, style.borderBottomLeftRadius, style.borderBottomRightRadius].some(value => parseFloat(value) !== 0)) {
+        this.#clearToolbarPlacement(); return;
+      }
+      ancestor = ancestor.parentElement;
+    }
+  }
   #typeLabel(node: DeepReadonly<NodeViewDto>): string {
     return label(node.primitive === 'root' ? 'document' : node.primitive === 'text_block' ? 'textBlock'
       : node.primitive === 'container' ? 'container' : node.primitive === 'block_atom' ? 'object' : 'genericBlock', this.#locale);
   }
   #disable(result: UiFailure, show = true): void {
+    this.#clearToolbarPlacement();
     for (const control of [...this.#toolbarControls.values(), ...this.#blockControls.values(), this.#add, this.#move]) {
       control.availability = { available: false, active: null, failure: result, reason: this.#reason(result) }; this.#drawAvailability(control);
     }
