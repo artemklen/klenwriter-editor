@@ -210,7 +210,13 @@ async function perform(entry,prepared){
   assert.ok(focus.page.scrollWidth<=focus.page.clientWidth,'No horizontal page overflow at200%');
   const geometry=focus.selectionGeometry;assert.equal(geometry.status,'measured');
   for(const endpoint of [geometry.anchor,geometry.focus]){assert.ok(endpoint&&endpoint.height>0,'Actual selection endpoint measurable at200%');const c=geometry.clip;assert.ok(endpoint.x>=c.x-.5&&endpoint.x+endpoint.width<=c.x+c.width+.5&&endpoint.y>=c.y-.5&&endpoint.y+endpoint.height<=c.y+c.height+.5,'Both actual endpoints visible at200%');}
-  unchanged(focus,before);await screenshot(entry,'zoom200');await physical(entry,'zoom-reset',{reserved:true});assert.ok(Math.abs((await adapter.call('inspect')).viewport.pageZoom-1)<.01);return 'PASS';
+  unchanged(focus,before);await screenshot(entry,'zoom200');await physical(entry,'zoom-reset',{reserved:true});assert.ok(Math.abs((await adapter.call('inspect')).viewport.pageZoom-1)<.01);
+  if(browserName==='chrome'){
+    entry.zoomResetUiSettling={method:'fixed passive preparation wait',requestedDurationMs:2000,startedAt:now(),scope:'After measured reset, before the next locale. No read, input, retry, reactivation or authority during the wait; subsequent ordinary guards remain mandatory.'};save();
+    await wait(2000);entry.zoomResetUiSettling.finishedAt=now();
+    const afterResetWait=await adapter.call('inspect');assert.ok(Math.abs(afterResetWait.viewport.pageZoom-1)<.01,'Actual zoom1 persists after reset preparation');entry.zoomResetUiSettling.followingViewport=afterResetWait.viewport;
+  }
+  return 'PASS';
 }
 function released(finish){assert.equal(finish.traceOverflow,false);assert.equal(finish.policyOverflow,false);assert.deepEqual(finish.policyViolations,[]);const d=finish.disposed;assert.equal(d.nativeTrace.overflow,false);assert.deepEqual(d.native,{sessions:0,snapshot_handles:0,snapshot_bytes:'0',protected_cursors:0});for(const value of Object.values(d.ui))assert.equal(value,0);for(const key of ['listeners','observers','continuations','retainedInputBytes','retainedRecoveryRegions'])assert.equal(d.mounted.dom[key],0);assert.deepEqual(d.mounted.selection,{bookmarks:0,restoreTickets:0,activePointers:0,animationFrames:0});assert.deepEqual(d.mounted.clipboard,{pending:0,continuations:0,retainedTextBytes:0});assert.deepEqual(d.mounted.hostRequests,{pending:0,focusContinuations:0});for(const key of ['sessions','listeners','queued_mutations','queued_bytes','pending_tickets','host_requests','task_continuations','callback_errors'])assert.equal(d.mounted.sdk[key],0);}
 

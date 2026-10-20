@@ -90,6 +90,8 @@ WebArea measurement and original PID/root frame. A fresh ordinary postproof foll
 the complete posting receipt. At measured200%, Chrome gets one passive2000ms
 preparation wait before ordinary focus navigation; this grants no input authority.
 The next action still needs its original fresh page, AX and System Events guards.
+The [reset preparation policy](../../contracts/ui/v1.1/chrome-zoom-cg/reset-settle.md)
+also waits once after measured Cmd0, before the next locale's normal input.
 
 For targeted development only, the exact environment value
 `OSR42_NATIVE_DEVELOPMENT_CASE=modes-zoom` selects the existing EN/RU modes rows.
