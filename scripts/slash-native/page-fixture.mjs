@@ -94,7 +94,7 @@ export function guard(action){check(actions.includes(action),'Closed43 physical 
   const compositionAttempt=/^I43-N09-(en|ru)$/.test(r.caseId)&&action==='click-add';
   r.pointerTarget=targetName&&target instanceof HTMLElement?target:null;
   return {id:r.id,caseId:r.caseId,action,target:targetName??'focused',targetIdentity:identity(target),targetObject:token(target),editorConnected:editor.isConnected,documentFocused:document.hasFocus(),point:p,pointerDown:false,viewport:v,zoomEvidence:zoomEvidence(),
-    allowed:!traceOverflow&&!policyOverflow&&policy.length===0&&editor.isConnected&&(document.hasFocus()||action==='close-find'&&r.findArmed)&&inside&&v.scale===1&&v.offsetLeft===0&&v.offsetTop===0&&v.pageZoom>=1&&v.pageZoom<=2&&(!compositionAttempt||r.composition.open),
+    allowed:!traceOverflow&&!policyOverflow&&policy.length===0&&editor.isConnected&&(document.hasFocus()||action==='close-find'&&r.findArmed)&&inside&&v.scale===1&&v.offsetLeft===0&&v.offsetTop===0&&v.pageZoom>=1&&v.pageZoom<=2&&(!(compositionAttempt||action==='complete-e')||r.composition.open&&!r.composition.observedEnded),
     composition:{...r.composition},inputTraceCount:trace.length};
 }
 export function cleanupGuard(action){const r=current();check(actions.includes(action)&&caseActions[r.caseId].includes(action),'Same closed owner action for release-only cleanup');const editor=element();
