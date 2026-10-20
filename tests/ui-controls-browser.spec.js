@@ -331,3 +331,54 @@ test('PG06 controlled admitted down cannot recapture after explicit host selecti
   expect(documentEvents(fresh)).toEqual(documentEvents(host));expect(stateEvents(fresh).length-stateEvents(host).length).toBe(1);expect(submitted(fresh)).toHaveLength(1);expect(submitted(fresh)[0].response.status).toBe('ok');
   const commands=await pg42Commands(page,id);expect(commands).toHaveLength(1);expect(commands[0].request.command.id).toBe(pg06Case.freshGestureExpected.nativeCommandId);expect(JSON.parse(commands[0].request.command.payload_json)).toEqual(pg06Case.freshGestureExpected.nativePayload);expect(commands[0].response.status).toBe('ok');
 });
+
+// Additive source draft for tests/ui-controls-browser.spec.js; retain all old cases.
+const rlPath='contracts/ui/v1.1/reason-layout-cases.json',rlBytes=readFileSync(rlPath),rl=JSON.parse(rlBytes);
+async function rlFrames(page){await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));}
+async function rlRaw(page,id){return page.evaluate(id=>{
+  const wrapper=document.getElementById(id),editor=document.getElementById(`${id}-editor`),toolbar=wrapper.querySelector('[role=toolbar]'),add=wrapper.querySelector('[data-editor-ui-control=add]');
+  window.rlObjects??=new WeakMap();window.rlSerial??=0;const token=node=>{if(!node)return null;if(!window.rlObjects.has(node))window.rlObjects.set(node,++window.rlSerial);return window.rlObjects.get(node);};
+  const rect=node=>{const r=node.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height};};
+  const walker=document.createTreeWalker(editor,NodeFilter.SHOW_ALL),objects=[];for(let n=walker.currentNode;n;n=walker.nextNode()){if(objects.length>=128)throw Error('Finite frozen F objects');objects.push(token(n));}
+  const ancestors=[];for(let n=editor;n;n=n.parentElement){if(ancestors.length>=64)throw Error('Finite fixture scroll ancestry');ancestors.push({object:token(n),x:n.scrollLeft,y:n.scrollTop});}
+  const s=document.getSelection();return {toolbarAllocatedHeight:toolbar.offsetHeight,toolbarAllocatedWidth:toolbar.offsetWidth,toolbarSlotHeight:toolbar.parentElement.getBoundingClientRect().height,
+    editorRect:rect(editor),addRect:rect(add),editorHtml:editor.outerHTML,objects,active:token(document.activeElement),selection:s?{rangeCount:s.rangeCount,anchor:token(s.anchorNode),anchorOffset:s.anchorOffset,focus:token(s.focusNode),focusOffset:s.focusOffset}:null,
+    scroll:{window:[scrollX,scrollY],ancestors},buttons:[...toolbar.querySelectorAll('button')].map(n=>({object:token(n),parent:token(n.parentNode),key:n.dataset.editorUiAction,label:n.textContent})),addObject:token(add),status:wrapper.querySelector('[role=status]').textContent};
+},id);}
+function rlNear(after,before){expect(Math.abs(after-before)).toBeLessThanOrEqual(rl.toleranceCssPx);}
+function rlFlow(after,before){for(const key of ['toolbarAllocatedHeight','toolbarAllocatedWidth','toolbarSlotHeight'])rlNear(after[key],before[key]);for(const role of ['editorRect','addRect'])for(const key of ['x','y','width','height'])rlNear(after[role][key],before[role][key]);}
+function rlBrowser(after,before,{focus=true}={}){for(const key of ['editorHtml','objects','selection','scroll','buttons','addObject'])expect(after[key],key).toEqual(before[key]);if(focus)expect(after.active).toBe(before.active);}
+async function rlReason(page,button,expected){
+  const ids=(await button.getAttribute('aria-describedby')).split(/\s+/),reason=page.locator(`[id="${ids[0]}"]`);expect(await reason.textContent()).toBe(expected);await expect(reason).toBeVisible();
+  const paint=await reason.evaluate(node=>{const s=getComputedStyle(node),r=document.createRange();r.selectNodeContents(node);return {visibility:s.visibility,opacity:s.opacity,pointerEvents:s.pointerEvents,position:s.position,viewport:{width:innerWidth,height:innerHeight},scrollWidth:node.scrollWidth,clientWidth:node.clientWidth,scrollHeight:node.scrollHeight,clientHeight:node.clientHeight,fragments:[...r.getClientRects()].map(r=>({x:r.x,y:r.y,width:r.width,height:r.height}))};});
+  expect(paint.visibility).toBe('visible');expect(Number(paint.opacity)).toBeGreaterThan(0);expect(paint.pointerEvents).toBe('none');expect(paint.scrollWidth).toBeLessThanOrEqual(paint.clientWidth+1);expect(paint.scrollHeight).toBeLessThanOrEqual(paint.clientHeight+1);expect(paint.fragments.length).toBeGreaterThan(0);
+  for(const r of paint.fragments){expect(r.x).toBeGreaterThanOrEqual(-rl.toleranceCssPx);expect(r.y).toBeGreaterThanOrEqual(-rl.toleranceCssPx);expect(r.x+r.width).toBeLessThanOrEqual(paint.viewport.width+rl.toleranceCssPx);expect(r.y+r.height).toBeLessThanOrEqual(paint.viewport.height+rl.toleranceCssPx);}return {reason,paint};
+}
+for(const variant of rl.variants)test(`RL01 ${variant.locale} ${variant.layoutScale*100}%: availability reasons preserve flow and fixed Add gesture while remaining visible`,async({page})=>{
+  records.get(page).frozen.push({path:rlPath,bytes:rlBytes.length,sha256:receiptHash(rlBytes)});await page.setViewportSize(variant.viewport);
+  const id=await mounted(page,{geometry:'F',locale:variant.locale,nativeTrace:true});await editorFocus(page,id);if(variant.layoutScale===2)await page.evaluate(()=>{document.documentElement.style.zoom='2';});await call(page,'refresh',id);await rlFrames(page);
+  const editor=page.locator(`#${id}-editor`),plus=add(page,id),before=await checkpoint(page,id,'RL01 independent F after explicit viewport/layout-scale setup'),a=await rlRaw(page,id);
+  expect(before.canonical).toBe(rl.fixture.canonical);expect(before.state.selection).toEqual(selection(before.roles,rl.fixture.selection));expect(before.state.stored_marks).toBe(null);expect(before.state.history.undo_entries).toBe('0');expect(before.state.history.redo_entries).toBe('0');
+  await editor.evaluate(node=>node.dispatchEvent(new CompositionEvent('compositionstart',{bubbles:true,data:''})));await expect(plus).toHaveAttribute('aria-disabled','true');await rlFrames(page);
+  const locked=await checkpoint(page,id,'RL01 unchanged native protected window; reasons may not allocate flow'),b=await rlRaw(page,id);unchanged(locked,before);expect(locked.context).toEqual(before.context);rlBrowser(b,a);rlFlow(b,a);expect(submitted(locked)).toHaveLength(0);
+  const point={x:b.addRect.x+b.addRect.width/2,y:b.addRect.y+b.addRect.height/2};await page.mouse.move(point.x,point.y);await rlReason(page,plus,rl.composingReason[variant.locale]);await rlFrames(page);
+  const hover=await checkpoint(page,id,'RL01 visible hovered reason is presentation only'),c=await rlRaw(page,id);unchanged(hover,before);rlBrowser(c,b);rlFlow(c,a);
+  await page.evaluate(id=>{const add=document.querySelector(`#${id} [data-editor-ui-control=add]`);window.rlAdd=add;window.rlEvents=[];for(const name of ['pointerdown','pointerup','click'])document.addEventListener(name,event=>{if(window.rlEvents.length>=8)throw Error('Finite RL pointer trace');window.rlEvents.push({event:name,sameAdd:event.target===window.rlAdd,prevented:event.defaultPrevented,trusted:event.isTrusted});},{once:true});},id);
+  await page.mouse.down();const down=await checkpoint(page,id,'RL01 rejected Add down retains protected native/browser input'),d=await rlRaw(page,id);unchanged(down,before);rlBrowser(d,c);rlFlow(d,a);
+  await editor.evaluate(node=>node.dispatchEvent(new CompositionEvent('compositionend',{bubbles:true,data:''})));await expect(plus).toHaveAttribute('aria-disabled','false');await rlFrames(page);
+  const settled=await checkpoint(page,id,'RL01 empty terminal: no native InsertText or other semantic work'),e=await rlRaw(page,id);unchanged(settled,before);expect(settled.context).toEqual(before.context);rlBrowser(e,d);rlFlow(e,a);
+  expect(await page.evaluate(point=>document.elementFromPoint(point.x,point.y)===window.rlAdd,point)).toBe(true);await page.mouse.up();await rlFrames(page);
+  const up=await checkpoint(page,id,'RL01 same browser-protocol coordinate remains exact Add; no replay'),f=await rlRaw(page,id);unchanged(up,before);rlBrowser(f,e);rlFlow(f,a);expect(submitted(up)).toHaveLength(0);expect(await pg42Commands(page,id)).toHaveLength(0);expect(await root(page,id).getByRole('listbox').count()).toBe(0);
+  expect(await page.evaluate(()=>window.rlEvents.map(e=>({event:e.event,sameAdd:e.sameAdd})))).toEqual([{event:'pointerdown',sameAdd:true},{event:'pointerup',sameAdd:true},{event:'click',sameAdd:true}]);
+  // Explicit noncomposing readonly/focus setup: focus priority, full description,
+  // and a real floating gutter retain their own scroll bounds. No native edit.
+  await call(page,'mode',id,'readonly');await rlFrames(page);
+  const modeBase=await checkpoint(page,id,'RL01 explicit readonly setup at the SAME variant scale');unchanged(modeBase,before);
+  const bold=control(page,id,'strong'),italic=control(page,id,'emphasis');await bold.focus();await italic.hover();await rlReason(page,bold,rl.modeReason[variant.locale]);
+  const otherId=(await italic.getAttribute('aria-describedby')).split(/\s+/)[0];await expect(page.locator(`[id="${otherId}"]`)).not.toBeVisible();
+  // Separate ordinary geometry setup for the fixed-gutter scrollport branch.
+  // The full focused reason above was already verified at the variant's200%.
+  if(variant.layoutScale===2)await page.evaluate(()=>{document.documentElement.style.zoom='1';});await page.setViewportSize({width:1800,height:1400});await call(page,'refresh',id);await rlFrames(page);
+  const gutter=root(page,id).locator('.kw-ui-gutter');expect(await gutter.evaluate(n=>getComputedStyle(n).position)).toBe('fixed');expect(await gutter.evaluate(n=>getComputedStyle(n).overflowY)).toBe('auto');await move(page,id).focus();
+  const focused=await rlReason(page,move(page,id),rl.modeReason[variant.locale]);expect(focused.paint.position).toBe('fixed');unchanged(await checkpoint(page,id,'RL01 visible full focus reason without native mutation'),modeBase);
+});
