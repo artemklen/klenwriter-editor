@@ -54,6 +54,119 @@ func webViewport(_ window: AXUIElement, _ expectedWidth: Double, _ expectedHeigh
     }
     return matches.count == 1 ? (matches[0], seen.count, maximumDepth) : nil
 }
+// BEGIN SAFARI_SCROLL_VIEWPORT_GEOMETRY
+func safariScrollViewportGeometry(root: CGRect, scroll: CGRect, content: CGRect, verticalScrollbar: CGRect?, scrollbarOrientation: String?, expectedWidth: Double, expectedHeight: Double) -> CGRect? {
+    func valid(_ r: CGRect) -> Bool {
+        r.origin.x.isFinite && r.origin.y.isFinite && r.size.width.isFinite && r.size.height.isFinite
+            && r.size.width > 0 && r.size.height > 0
+            && (r.origin.x + r.size.width).isFinite && (r.origin.y + r.size.height).isFinite
+    }
+    guard valid(root), valid(scroll), valid(content), expectedWidth.isFinite, expectedHeight.isFinite,
+          expectedWidth > 0, expectedHeight > 0,
+          abs(scroll.width - expectedWidth) <= 2, abs(scroll.height - expectedHeight) <= 2,
+          scroll.minX >= root.minX - 0.5, scroll.maxX <= root.maxX + 0.5,
+          scroll.minY >= root.minY - 0.5, scroll.maxY <= root.maxY + 0.5,
+          abs(content.minX - scroll.minX) <= 0.5, content.minY <= scroll.minY + 0.5,
+          content.maxY >= scroll.maxY - 0.5 else { return nil }
+    let gap = scroll.maxX - content.maxX
+    guard gap >= 0, gap <= 32 else { return nil }
+    if let bar = verticalScrollbar {
+        guard valid(bar), scrollbarOrientation == "AXVerticalOrientation" else { return nil }
+        if gap > 0 {
+            guard abs(bar.minX - content.maxX) <= 0.5, abs(bar.width - gap) <= 0.5,
+                  abs(bar.maxX - scroll.maxX) <= 0.5 else { return nil }
+        }
+    } else if gap > 0 || scrollbarOrientation != nil { return nil }
+    let left = max(content.minX, scroll.minX), top = max(content.minY, scroll.minY)
+    let right = min(content.maxX, scroll.maxX), bottom = min(content.maxY, scroll.maxY)
+    guard right > left, bottom > top else { return nil }
+    return CGRect(x: left, y: top, width: right - left, height: bottom - top)
+}
+func safariScrollViewportPoint(viewport: CGRect, visible: CGRect, cssWidth: Double, cssHeight: Double, x: Double?, y: Double?) -> CGPoint? {
+    func valid(_ r: CGRect) -> Bool {
+        r.origin.x.isFinite && r.origin.y.isFinite && r.size.width.isFinite && r.size.height.isFinite
+            && r.size.width > 0 && r.size.height > 0
+            && (r.origin.x + r.size.width).isFinite && (r.origin.y + r.size.height).isFinite
+    }
+    guard valid(viewport), valid(visible), cssWidth.isFinite, cssHeight.isFinite, cssWidth > 0, cssHeight > 0,
+          let x = x, let y = y, x.isFinite, y.isFinite, x >= 0, x < cssWidth, y >= 0, y < cssHeight,
+          visible.minX >= viewport.minX, visible.maxX <= viewport.maxX,
+          visible.minY >= viewport.minY, visible.maxY <= viewport.maxY else { return nil }
+    let point = CGPoint(x: viewport.minX + x * viewport.width / cssWidth, y: viewport.minY + y * viewport.height / cssHeight)
+    guard point.x.isFinite, point.y.isFinite, point.x >= visible.minX, point.x < visible.maxX,
+          point.y >= visible.minY, point.y < visible.maxY else { return nil }
+    return point
+}
+// END SAFARI_SCROLL_VIEWPORT_GEOMETRY
+
+struct SafariScrollViewport {
+    let contentElement: AXUIElement
+    let scrollElement: AXUIElement
+    let barElement: AXUIElement?
+    let content: CGRect
+    let scroll: CGRect
+    let bar: CGRect?
+    let orientation: String?
+    let visible: CGRect
+    let expectedWidth: Double
+    let expectedHeight: Double
+    var proof: [String: Any] {
+        var scrollbar: Any = NSNull()
+        if let bar = bar { scrollbar = ["role": "AXScrollBar", "orientation": orientation as Any? ?? NSNull(), "frame": encodedRectangle(bar)] as [String: Any] }
+        return ["basis": "safari-scroll-viewport", "content": encodedRectangle(content), "scrollArea": encodedRectangle(scroll),
+                "visibleContent": encodedRectangle(visible), "scrollBar": scrollbar,
+                "totalWebAreas": 1, "oldExactWebAreaMatches": 0, "genuineDirectParent": true]
+    }
+}
+struct SafariViewportScan {
+    let view: CGRect
+    let visited: Int
+    let depth: Int
+    let fallback: SafariScrollViewport?
+}
+// Same complete CFEqual-bounded walk; fallback never follows an incomplete scan.
+func safariViewport(_ window: AXUIElement, _ rootFrame: CGRect, _ expectedWidth: Double, _ expectedHeight: Double) -> SafariViewportScan? {
+    var todo: [(AXUIElement, Int, AXUIElement?)] = [(window, 0, nil)], seen: [AXUIElement] = [], exact: [CGRect] = []
+    var webAreas: [(AXUIElement, AXUIElement?)] = [], maximumDepth = 0, complete = true
+    while let (element, depth, parent) = todo.popLast() {
+        if seen.contains(where: { CFEqual($0, element) }) { continue }
+        guard seen.count < 512, depth <= 32 else { return nil }
+        seen.append(element); maximumDepth = max(maximumDepth, depth)
+        let role = attribute(element, kAXRoleAttribute as CFString) as? String
+        if role == nil { complete = false }
+        if role == "AXWebArea" {
+            webAreas.append((element, parent))
+            if let r = rectangle(element), abs(r.width - expectedWidth) <= 2, abs(r.height - expectedHeight) <= 2 { exact.append(r) }
+        }
+        var rawChildren: CFTypeRef?
+        let status = AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &rawChildren)
+        if status == .success, let children = rawChildren as? [AXUIElement] {
+            guard children.count <= 512 - seen.count - todo.count else { return nil }
+            for child in children.reversed() { todo.append((child, depth + 1, element)) }
+        } else if status != .attributeUnsupported && status != .noValue { complete = false }
+    }
+    if exact.count == 1 { return SafariViewportScan(view: exact[0], visited: seen.count, depth: maximumDepth, fallback: nil) }
+    guard exact.isEmpty, complete, webAreas.count == 1, let parent = webAreas[0].1,
+          attribute(parent, kAXRoleAttribute as CFString) as? String == "AXScrollArea",
+          let actualParent = attribute(webAreas[0].0, kAXParentAttribute as CFString), CFGetTypeID(actualParent) == AXUIElementGetTypeID(), CFEqual(actualParent, parent),
+          let children = attribute(parent, kAXChildrenAttribute as CFString) as? [AXUIElement], children.count <= 512,
+          children.filter({ CFEqual($0, webAreas[0].0) }).count == 1,
+          let content = rectangle(webAreas[0].0), let scroll = rectangle(parent) else { return nil }
+    let bars = children.filter { attribute($0, kAXRoleAttribute as CFString) as? String == "AXScrollBar" }
+    guard bars.count <= 1 else { return nil }
+    var bar: CGRect?, orientation: String?
+    if let element = bars.first {
+        guard let actualParent = attribute(element, kAXParentAttribute as CFString), CFGetTypeID(actualParent) == AXUIElementGetTypeID(), CFEqual(actualParent, parent),
+              let rect = rectangle(element), let direction = attribute(element, kAXOrientationAttribute as CFString) as? String,
+              direction == "AXVerticalOrientation" else { return nil }
+        bar = rect; orientation = direction
+    }
+    guard let visible = safariScrollViewportGeometry(root: rootFrame, scroll: scroll, content: content, verticalScrollbar: bar,
+        scrollbarOrientation: orientation, expectedWidth: expectedWidth, expectedHeight: expectedHeight) else { return nil }
+    let fallback = SafariScrollViewport(contentElement: webAreas[0].0, scrollElement: parent, barElement: bars.first,
+        content: content, scroll: scroll, bar: bar, orientation: orientation, visible: visible, expectedWidth: expectedWidth, expectedHeight: expectedHeight)
+    return SafariViewportScan(view: scroll, visited: seen.count, depth: maximumDepth, fallback: fallback)
+}
 struct WindowMeasurement {
     let front: NSRunningApplication
     let application: AXUIElement
@@ -65,6 +178,7 @@ struct WindowMeasurement {
     let windowCount: Int
     let visited: Int
     let depth: Int
+    let safariScroll: SafariScrollViewport?
     var contained: Bool {
         view.minX >= frame.minX - 0.5 && view.maxX <= frame.maxX + 0.5 &&
         view.minY >= frame.minY - 0.5 && view.maxY <= frame.maxY + 0.5
@@ -80,9 +194,14 @@ func measureWindow(_ browser: String, _ pageTitle: String, _ expectedWidth: Doub
     let matching = windows.filter { title($0) == expectedTitle }
     guard matching.count == 1, let focused = attribute(application, kAXFocusedWindowAttribute as CFString),
           CFGetTypeID(focused) == AXUIElementGetTypeID(), CFEqual(focused, matching[0]) else { refuse("Exact unique fixture title is not focused") }
+    if browser == "safari" {
+        guard let frame = rectangle(matching[0]), let scan = safariViewport(matching[0], frame, expectedWidth, expectedHeight) else { refuse("Unique measured AXWebArea viewport unavailable") }
+        return WindowMeasurement(front: front, application: application, window: matching[0], view: scan.view, frame: frame,
+            expectedBundle: bundle, expectedTitle: expectedTitle, windowCount: windows.count, visited: scan.visited, depth: scan.depth, safariScroll: scan.fallback)
+    }
     guard let scan = webViewport(matching[0], expectedWidth, expectedHeight), let frame = rectangle(matching[0]) else { refuse("Unique measured AXWebArea viewport unavailable") }
     return WindowMeasurement(front: front, application: application, window: matching[0], view: scan.view, frame: frame,
-        expectedBundle: bundle, expectedTitle: expectedTitle, windowCount: windows.count, visited: scan.visited, depth: scan.depth)
+        expectedBundle: bundle, expectedTitle: expectedTitle, windowCount: windows.count, visited: scan.visited, depth: scan.depth, safariScroll: nil)
 }
 func recheckWindow(_ measurement: WindowMeasurement, _ deadline: Double) -> String {
     guard elapsed() < deadline,
@@ -90,6 +209,24 @@ func recheckWindow(_ measurement: WindowMeasurement, _ deadline: Double) -> Stri
           let focused = attribute(measurement.application, kAXFocusedWindowAttribute as CFString),
           CFGetTypeID(focused) == AXUIElementGetTypeID(), CFEqual(focused, measurement.window),
           let observedTitle = title(measurement.window), observedTitle == measurement.expectedTitle else { refuse("Fixture guard expired or ownership changed before post") }
+    if let saved = measurement.safariScroll {
+        guard NSWorkspace.shared.frontmostApplication?.bundleIdentifier == "com.apple.Safari",
+              let windows = attribute(measurement.application, kAXWindowsAttribute as CFString) as? [AXUIElement], windows.count <= 32 else { refuse("Original Safari scroll viewport changed before post") }
+        let matching = windows.filter { title($0) == measurement.expectedTitle }
+        guard matching.count == 1, CFEqual(matching[0], measurement.window),
+              let frame = rectangle(measurement.window), frame == measurement.frame,
+              let scan = safariViewport(measurement.window, frame, saved.expectedWidth, saved.expectedHeight), let current = scan.fallback,
+              CFEqual(saved.contentElement, current.contentElement), CFEqual(saved.scrollElement, current.scrollElement),
+              saved.content == current.content, saved.scroll == current.scroll, saved.bar == current.bar,
+              saved.orientation == current.orientation, saved.visible == current.visible else { refuse("Original Safari scroll viewport changed before post") }
+        if let bar = saved.barElement {
+            guard let currentBar = current.barElement, CFEqual(bar, currentBar) else { refuse("Original Safari scrollbar identity changed before post") }
+        } else if current.barElement != nil { refuse("Original Safari scrollbar membership changed before post") }
+        guard elapsed() < deadline, NSWorkspace.shared.frontmostApplication?.processIdentifier == measurement.front.processIdentifier,
+              let focused = attribute(measurement.application, kAXFocusedWindowAttribute as CFString), CFGetTypeID(focused) == AXUIElementGetTypeID(),
+              CFEqual(focused, measurement.window), title(measurement.window) == measurement.expectedTitle,
+              rectangle(measurement.window) == measurement.frame else { refuse("Safari scroll viewport authority expired before post") }
+    }
     return observedTitle
 }
 func encodedRectangle(_ value: CGRect) -> [String: Double] {
@@ -209,13 +346,15 @@ if argv.count == 3 && argv[1] == "--inspect-window" {
     let measurement = measureWindow(browser, pageTitle, width, height)
     let observedTitle = recheckWindow(measurement, deadline)
     guard elapsed() <= deadline else { refuse("Window inspection deadline expired") }
-    emit(["format": "osr42-native-window-inspection/1", "status": "inspected", "delivery": "not_sent",
+    var inspection: [String: Any] = ["format": "osr42-native-window-inspection/1", "status": "inspected", "delivery": "not_sent",
         "browser": browser, "nonce": nonce, "title": pageTitle, "fixtureUrl": "http://127.0.0.1:4174/ui",
         "frontBundle": measurement.expectedBundle, "frontPid": measurement.front.processIdentifier,
         "expectedAxWindowTitle": measurement.expectedTitle, "observedAxWindowTitle": observedTitle,
         "axWindowCount": measurement.windowCount, "axMatchCount": 1, "visitedNodes": measurement.visited, "maximumDepth": measurement.depth,
         "axWindow": encodedRectangle(measurement.frame), "axViewport": encodedRectangle(measurement.view),
-        "contained": measurement.contained, "elapsedMs": elapsed()], 0)
+        "contained": measurement.contained, "elapsedMs": elapsed()]
+    if let fallback = measurement.safariScroll { inspection["axViewportProof"] = fallback.proof }
+    emit(inspection, 0)
 }
 guard argv.count == 3, ["--request", "--guard-key"].contains(argv[1]), let data = argv[2].data(using: .utf8), data.count <= 4096,
  let request = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -252,16 +391,26 @@ var result: [String: Any] = ["action":action, "nonce":nonce, "requestId":request
  "cleanupOnly":cleanup, "frontBundle":measurement.expectedBundle, "frontPid":measurement.front.processIdentifier,
  "expectedAxWindowTitle":measurement.expectedTitle, "observedAxWindowTitle":observed, "axWindowCount":measurement.windowCount,
  "axViewport":encodedRectangle(measurement.view), "axWindow":encodedRectangle(measurement.frame)]
+if let fallback = measurement.safariScroll { result["axViewportProof"] = fallback.proof }
 if guardingKey {
  guard request["point"] is NSNull, elapsed() <= deadline else { refuse("Key cannot carry coordinates or expired authority") }
  result["status"]="guarded"; result["delivery"]="not_sent"; result["elapsedMs"]=elapsed(); emit(result,0)
 }
 guard let p = request["point"] as? [String:Any], closed(p,["x","y"]), let x=number(p["x"]), let y=number(p["y"]), x>=0, x<width, y>=0, y<height else { refuse("Closed target point outside actual viewport") }
-let actual=CGPoint(x:measurement.view.minX+x*measurement.view.width/width,y:measurement.view.minY+y*measurement.view.height/height)
+let actual: CGPoint
+if let fallback = measurement.safariScroll {
+ guard let point = safariScrollViewportPoint(viewport: fallback.scroll, visible: fallback.visible, cssWidth: width, cssHeight: height, x: x, y: y) else { refuse("Mapped Safari pointer is outside visible WebArea content") }
+ actual = point
+} else {
+ actual=CGPoint(x:measurement.view.minX+x*measurement.view.width/width,y:measurement.view.minY+y*measurement.view.height/height)
+}
 guard actual.x.isFinite, actual.y.isFinite else { refuse("Finite scoped screen point required") }
 let transitions: [CGEventType] = cleanup ? [.leftMouseUp] : [.leftMouseDown,.leftMouseUp]
 for type in transitions {
  _=recheckWindow(measurement,deadline)
+ if let fallback = measurement.safariScroll {
+  guard let point = safariScrollViewportPoint(viewport: fallback.scroll, visible: fallback.visible, cssWidth: width, cssHeight: height, x: x, y: y), point == actual else { refuse("Safari pointer no longer belongs to the exact visible content") }
+ }
  guard let event=CGEvent(mouseEventSource:nil,mouseType:type,mouseCursorPosition:actual,mouseButton:.left) else { refuse("Cannot allocate scoped pointer event") }
  event.setIntegerValueField(.mouseEventClickState,value:1);posted=true;event.post(tap:.cghidEventTap)
 }

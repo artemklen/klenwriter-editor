@@ -66,6 +66,17 @@ coordinates use the actual AX-web-area/current-CSS-viewport ratio. The Find row
 requires a trusted unprevented CmdF, actual document focus departure and an
 owned-window screenshot; a single fresh-window-guarded Escape closes it.
 
+Safari alone may use the [direct-scroll fallback](../../contracts/ui/v1.1/safari-scroll-viewport/contract.md)
+after a complete bounded scan finds zero exact-size WebAreas and exactly one
+genuine WebArea directly inside its ScrollArea. The full ScrollArea remains the
+mapping viewport; a genuine vertical sibling scrollbar must prove any classic
+right strip. Pointer points must lie inside the exact visible content intersection,
+never the scrollbar strip. CF ancestry, roles, frames, owner and clipping are
+rechecked before each original post; raw `axViewportProof` records the fallback
+basis/content/scroll/visible/bar measurements only when used. Exact-WebArea,
+Chrome and strict initial Safari-readiness proofs retain their existing meaning.
+No native event, input retry or acceptance is inferred from this geometry proof.
+
 Chrome's one live native Find episode follows the separate
 [window contract](../../contracts/ui/v1.1/chrome-find-presentation/find-presentation.md).
 Its initial CmdF keeps the ordinary measured-WebArea guard. While Find is open,
