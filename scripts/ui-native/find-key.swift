@@ -230,7 +230,7 @@ var reads = 0
 var last: Measurement?
 var postStatus = "unobserved"
 var postProblem: Fields? = diagnostic("phase", "Required Find phase was not observed within the original budget")
-while reads < 12 && elapsed() < request.deadline {
+while reads < 12 && request.deadline - elapsed() > 16 {
     reads += 1
     do {
         let measurement = try measure(request, originalRoot)
@@ -240,8 +240,11 @@ while reads < 12 && elapsed() < request.deadline {
             postProblem = nil
             break
         }
-        let remaining = request.deadline - elapsed()
-        if reads < 12 && remaining > 0 { Thread.sleep(forTimeInterval: min(4, remaining) / 1000) }
+        let remainingReads = 12 - reads
+        let usable = max(0, request.deadline - elapsed() - 16)
+        if remainingReads > 0 && usable > 0 {
+            Thread.sleep(forTimeInterval: min(64, usable / Double(remainingReads)) / 1000)
+        } else { break }
     } catch let failure as MeasurementFailure {
         switch failure {
         case .expired: break

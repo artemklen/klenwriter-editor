@@ -79,6 +79,9 @@ original total1s deadline. A valid complete posting receipt clears pending keys
 before final phase/deadline checks. A failed postcondition still fails the row;
 an opaque timeout keeps completion unknown. Default controlled AS8 cases and
 all ordinary/Safari routes remain separately covered by their original checks.
+The [CS01 sampling addendum](../../contracts/ui/v1.1/chrome-find-presentation/cg-transport/phase-sampling/cg-phase-sampling.md)
+spreads at most12 read-only phase checks within that same budget, with waits of
+at most64ms and a16ms response reserve. It changes no event or final phase check.
 
 For targeted development only, the exact environment value
 `OSR42_NATIVE_DEVELOPMENT_CASE=modes-zoom` selects the existing EN/RU modes rows.
