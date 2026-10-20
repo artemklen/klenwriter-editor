@@ -1,0 +1,29 @@
+{
+  "format": "editor-ui-chrome-find-cg-sampling-manifest/1",
+  "status": "SOURCE_DRAFT_BEFORE_CANDIDATE",
+  "head": "f24ac6d34e016a48a6e3340bce3db006e0c3ba4a",
+  "sourcePins": [
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/scripts/ui-native/find-key.swift",
+      "bytes": 14911,
+      "sha256": "839143533605ac6da32b37a589c7a6a3e23d6d7cd65574cc40ad4bb8fa969bbf"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/contracts/ui/v1.1/chrome-find-presentation/cg-transport/chrome-find-cg-design.json",
+      "bytes": 10598,
+      "sha256": "0592c9041ed96d3bbb316f58ff5e6f3be55995351e8eda3e3f341799d24c11d0"
+    }
+  ],
+  "files": [
+    {
+      "path": "cg-phase-sampling.md",
+      "bytes": 2769,
+      "sha256": "4e17883a63fc416008ec5e18ff9202420e4e0cc25959bad93567eeb4e9bb62c9"
+    },
+    {
+      "path": "cg-phase-sampling.json",
+      "bytes": 2673,
+      "sha256": "a5db072941d3ffe76671a4f3910faad73bff2a6f2d53a1e617dee8832691a31b"
+    }
+  ]
+}
