@@ -236,3 +236,4 @@ for(const [name,change]of[
   assert.equal(f.owner.pointerDown,true);assert.equal(f.owner.disabled,true);assert.equal(f.calls.length,priorCalls+2);
   await assert.rejects(f.owner.releaseOwnedPointer());assert.equal(f.calls.length,priorCalls+2);
 });
+import './ui-native-safari-copy.node.mjs';

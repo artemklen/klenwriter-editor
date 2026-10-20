@@ -58,6 +58,15 @@ UP-only cleanup. Preflight, other keys, cleanup and Chrome are unchanged. The
 observed immediate post-Tab title mismatch followed by a normal owned AX root
 motivates this settling wait; the transient window's cause remains unproven.
 
+Actual Safari opts into the private [SC01 Copy program](../../contracts/ui/v1.1/safari-copy-release-first/contract.md):
+Command down, key8 down, Command up, key8 up, followed by the unchanged POST
+ownership check. Only normal Copy receives the exact fifth `sc-copy01` argument;
+its closed receipt names the literal program and all four transitions. Legacy
+four-argument programs, Chrome Find, other keys and original UP-only Copy cleanup
+are unchanged. This posting receipt does not replace actual trusted DOM keydown
+and keyup, clipboard completion or exact OS clipboard bytes. Its effect on Safari
+delivery remains unproven until an installed run records those observations.
+
 Page zoom is changed by guarded native CmdPlus. The zoom oracle uses the
 baseline/current CSS viewport width with unchanged outer window dimensions;
 every action independently matches that viewport to the measured AX web area.

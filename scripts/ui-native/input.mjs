@@ -176,8 +176,9 @@ const branches=Object.entries(keySpecs).flatMap(([action,spec])=>[false,true].ma
   return `if fixtureAction is "${actual}" then\n if findPresentationEnabled then log "OSR42-AS8 KEYS begin"\n tell application "System Events"\n  ${lines.join('\n  ')}\n end tell\n if findPresentationEnabled then log "OSR42-AS8 KEYS end"\n ${findPost}${safariTabSettle}${postGuard}\n return "${prefix.replaceAll('\\','\\\\').replaceAll('"','\\"')}" & expectedPID & "}"\nend if`;
 })).join('\n');
 export const fixedKeyScript=requireFixture+findPostGuardDiagnostic+chromeFindPresentation+`on run argv
- if (count of argv) is not 4 and (count of argv) is not 8 then error "Closed UI42 key arguments required"
+ if (count of argv) is not 4 and (count of argv) is not 5 and (count of argv) is not 8 then error "Closed UI42 key arguments required"
  set findPresentationEnabled to ((count of argv) is 8)
+ set safariCopyReleaseFirstEnabled to ((count of argv) is 5)
  set expectedBrowser to item 1 of argv
  set expectedTitle to item 2 of argv
  set expectedPID to (item 3 of argv) as integer
@@ -191,6 +192,9 @@ export const fixedKeyScript=requireFixture+findPostGuardDiagnostic+chromeFindPre
   set expectedBundle to "com.apple.Safari"
  else
   error "Unknown closed fixture browser"
+ end if
+ if safariCopyReleaseFirstEnabled then
+  if expectedBrowser is not "safari" or fixtureAction is not "copy" or (item 5 of argv) is not "sc-copy01" then error "Closed Safari Copy arguments required"
  end if
  if findPresentationEnabled then
   if expectedBrowser is not "chrome" or fixtureAction is not in {"find", "close-find", "release-find", "release-close-find"} then error "Closed Chrome Find arguments required"
@@ -209,11 +213,21 @@ export const fixedKeyScript=requireFixture+findPostGuardDiagnostic+chromeFindPre
  else
   my requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
  end if
+ if safariCopyReleaseFirstEnabled then
+  tell application "System Events"
+   key down command
+   key down 8
+   key up command
+   key up 8
+  end tell
+  my requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
+  return "{\\"status\\":\\"key-sent\\",\\"action\\":\\"copy\\",\\"keyCode\\":8,\\"modifiers\\":[\\"command\\"],\\"programId\\":\\"safari-copy-release-first/1\\",\\"keyTransitions\\":[\\"command-down\\",\\"key8-down\\",\\"command-up\\",\\"key8-up\\"],\\"frontPid\\":" & expectedPID & "}"
+ end if
  ${branches}
  error "Unknown closed UI42 key"
 end run
 `;
-export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,record,guard,cleanupGuard,mountedId,nativeFindEpisode,nativeFindKeyTransport,findKeyHelper,nativeZoomKeyTransport}){
+export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,record,guard,cleanupGuard,mountedId,nativeFindEpisode,nativeFindKeyTransport,findKeyHelper,nativeZoomKeyTransport,safariCopyKeyTransport}){
   assert.ok(['chrome','safari'].includes(browser));assert.match(config.nonce,/^[a-f0-9]{32}$/);assert.equal(config.fixtureUrl,'http://127.0.0.1:4174/ui');assert.equal(config.title,'KlenWriter UI native '+config.nonce);
   let disabled=false,serial=0,pending=null,cleanupUsed=false,baselineWindow=null;
   const nativeFind=nativeFindEpisode==='chrome-fd01';
@@ -223,6 +237,8 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
   assert.ok(nativeFindKeyTransport===undefined||nativeFindCg&&nativeFind&&browser==='chrome','Closed Chrome Find CG transport only');
   const nativeZoomCg=nativeZoomKeyTransport==='cg-zoom01';
   assert.ok(nativeZoomKeyTransport===undefined||nativeZoomCg&&browser==='chrome','Closed Chrome Zoom CG transport only');
+  const safariCopyReleaseFirst=safariCopyKeyTransport==='sc-copy01';
+  assert.ok(safariCopyKeyTransport===undefined||safariCopyReleaseFirst&&browser==='safari','Closed Safari Copy transport only');
   if(nativeZoomCg){assert.equal(config.nonce.length,32);assert.equal(Buffer.byteLength(config.nonce,'utf8'),32);assert.ok(!/[^a-f0-9]/.test(config.nonce));}
   assert.ok((nativeFindCg||nativeZoomCg)?typeof findKeyHelper==='string'&&findKeyHelper.startsWith('/')&&findKeyHelper.length<=4096&&!findKeyHelper.includes('\0'):findKeyHelper===undefined,'CG transport requires its fixed helper path');
   let findEpisode=null,findBusy=false,findEpoch=0;
@@ -433,13 +449,17 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
       if(key){
         preflight=run(inputHelper,['--guard-key',JSON.stringify(request)],{timeout:remaining,fullStdout:true,maxBuffer:32768});const strict=JSON.parse(preflight.stdout);
         assert.equal(strict.status,'guarded');assert.equal(strict.delivery,'not_sent');assert.equal(strict.cleanupOnly,cleanup);assert.equal(strict.frontBundle,browser==='chrome'?'com.google.Chrome':'com.apple.Safari');
+        const safariCopy=safariCopyReleaseFirst&&action==='copy'&&!cleanup;
+        if(safariCopyReleaseFirst&&action==='copy')assert.ok(Number.isSafeInteger(strict.frontPid)&&strict.frontPid>=1&&strict.frontPid<=2147483647,'Closed Safari Copy PID required');
         fixedWindow(strict.axWindow);
         if(cleanup)assert.equal(strict.frontPid,pending.pid);
         for(const [name,value]of Object.entries({action,requestId:proof.id,nonce:config.nonce,mountedId:mountedId(),caseId:v.caseId,target:v.target}))assert.equal(strict[name],value);
         const left=Math.floor(limits.guardAgeMs-age(proof.start));assert.ok(left>0,'AX guard consumed deadline');pending={action,pointer:false,pid:strict.frontPid,mount:mountedId(),caseId:v.caseId};dispatched=true;
-        execution=run('/usr/bin/osascript',[keyScriptPath,browser,strict.expectedAxWindowTitle,String(strict.frontPid),(cleanup?'release-':'')+action],{timeout:left,fullStdout:true,maxBuffer:32768});
-        const actual=JSON.parse(execution.stdout);assert.equal(actual.action,(cleanup?'release-':'')+action);assert.equal(actual.status,cleanup?'keys-released':'key-sent');assert.equal(actual.keyCode,key.code);assert.deepEqual(actual.modifiers,key.modifiers);assert.equal(actual.frontPid,strict.frontPid);
-        assert.deepEqual(actual.keyTransitions,cleanup?[...key.modifiers.map(m=>m+'-up'),`key${key.code}-up`]:[...key.modifiers.map(m=>m+'-down'),`key${key.code}-down`,`key${key.code}-up`,...key.modifiers.toReversed().map(m=>m+'-up')]);
+        const keyArguments=[keyScriptPath,browser,strict.expectedAxWindowTitle,String(strict.frontPid),(cleanup?'release-':'')+action];if(safariCopy)keyArguments.push('sc-copy01');
+        execution=run('/usr/bin/osascript',keyArguments,{timeout:left,fullStdout:true,maxBuffer:32768});
+        const actual=JSON.parse(execution.stdout);if(safariCopy){exactKeys(actual,['status','action','keyCode','modifiers','programId','keyTransitions','frontPid']);assert.equal(actual.programId,'safari-copy-release-first/1');}
+        assert.equal(actual.action,(cleanup?'release-':'')+action);assert.equal(actual.status,cleanup?'keys-released':'key-sent');assert.equal(actual.keyCode,key.code);assert.deepEqual(actual.modifiers,key.modifiers);assert.equal(actual.frontPid,strict.frontPid);
+        assert.deepEqual(actual.keyTransitions,safariCopy?['command-down','key8-down','command-up','key8-up']:cleanup?[...key.modifiers.map(m=>m+'-up'),`key${key.code}-up`]:[...key.modifiers.map(m=>m+'-down'),`key${key.code}-down`,`key${key.code}-up`,...key.modifiers.toReversed().map(m=>m+'-up')]);
         completed=true;pending=null;assert.ok(age(proof.start)<=limits.guardAgeMs,'Total42 key guard exceeded1s');
         const value={action,delivery:'sent',actual,execution,pageGuard:proof.value,keyGuard:strict,keyGuardExecution:preflight,maximumGuardAgeMs:age(proof.start),guardAgeLimitMs:limits.guardAgeMs,cleanupOnly:cleanup,keysPending:false,requestId:proof.id};record(cleanup?'owned-key-release':'physical-input',value);return value;
       }
