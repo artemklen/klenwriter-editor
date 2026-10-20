@@ -990,6 +990,20 @@
         "type": {
           "const": "verse_line"
         },
+        "attrs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "indent"
+          ],
+          "properties": {
+            "indent": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 8
+            }
+          }
+        },
         "content": {
           "$ref": "#/$defs/inlineContent"
         }

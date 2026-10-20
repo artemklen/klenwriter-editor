@@ -104,7 +104,7 @@ fn every_profile_node_and_mark_round_trips_through_generic_snapshot() {
         |m| json!({"type":"paragraph","content":[{"type":"text","text":"marked","marks":[m]}]}),
     ));
     let poetry = vec![
-        json!({"type":"verse","content":[{"type":"verse_line","content":[{"type":"text","text":"first"}]},{"type":"stanza_break","attrs":{"blank_lines":2}},{"type":"verse_line","content":[]} ]}),
+        json!({"type":"verse","content":[{"type":"verse_line","attrs":{"indent":3},"content":[{"type":"text","text":"first"}]},{"type":"stanza_break","attrs":{"blank_lines":2}},{"type":"verse_line","content":[]} ]}),
     ];
     let mut kinds = BTreeSet::new();
     let mut mark_kinds = BTreeSet::new();

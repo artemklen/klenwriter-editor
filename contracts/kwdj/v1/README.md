@@ -107,6 +107,7 @@ The Rust profile validator is authoritative. A TypeScript validator must use the
 - A `prose` document forbids `verse`, `verse_line`, and `stanza_break` at any depth, including inside container blocks.
 - A `poetry` root may interleave `verse` and common prose blocks. Common blocks never become children of `verse` and never split a `verse_line`.
 - `verse` contains only `verse_line` and `stanza_break`. A normalized verse neither starts nor ends with `stanza_break`, and adjacent breaks merge by summing `blank_lines`.
+- A `verse_line` may carry optional `attrs.indent`, an integer step from 1 through 8. `indent: 0` normalizes to an absent attribute. Negative, fractional, non-integer, and values above 8 are rejected. Leading spaces are not converted into `indent`. `schema_version` stays 1.
 - A `stanza_break` represents one or more deliberate blank source lines. An intentionally empty non-separator line is an empty `verse_line`.
 - A spoiler cannot contain another spoiler at any descendant depth.
 - A warning cannot recursively contain another warning, and a disclosure cannot recursively contain another disclosure, including through an intermediate container.
@@ -196,7 +197,7 @@ Normalization is pure, deterministic, idempotent, and semantics-preserving. In o
 5. merges adjacent text leaves with identical normalized marks;
 6. merges adjacent `stanza_break` nodes by summing positive `blank_lines`;
 7. omits empty optional `marks` and `attrs` members; a normalized `marks` array is non-empty;
-8. omits canonical defaults: ordered-list `start = 1`, cell/header `rowspan = 1`, and cell/header `colspan = 1`; present normalized values begin at `2`;
+8. omits canonical defaults: ordered-list `start = 1`, cell/header `rowspan = 1`, cell/header `colspan = 1`, and verse-line `indent = 0`; present normalized spans begin at `2`, and a present verse-line `indent` is an integer from 1 through 8;
 9. keeps authored characters, Unicode form, whitespace, labels, captions, link targets, list order, block order, and table cells unchanged.
 
 An absent paragraph/heading alignment means natural document alignment and emits no alignment class. `first_line_indent` is present only as `true`. Media alignment and stanza blank-line count have no omitted default.

@@ -348,7 +348,15 @@ fn visit(
             }
             visit_children(content, path, depth, Expected::VerseChild, ancestry, state)?;
         }
-        Node::VerseLine { content } => {
+        Node::VerseLine { attrs, content } => {
+            if let Some(attrs) = attrs
+                && !(1..=8).contains(&attrs.indent)
+            {
+                return Err(KwdjError::new(
+                    KwdjErrorCode::InvalidStructure,
+                    key_path(&key_path(path, "attrs"), "indent"),
+                ));
+            }
             visit_children(content, path, depth, Expected::Inline, ancestry, state)?;
         }
         Node::StanzaBreak { attrs } => {

@@ -24,7 +24,7 @@
       "license": "MIT OR Apache-2.0",
       "grant": "Owner D10/D11 approved rights/transfer2026-10-17",
       "review": "Owner-controlled contract/schema or synthetic fixture data. Reviewed technical grammar, metadata and fixed synthetic payloads; no third-party headers/user documents/secrets/production captures. Schema URI references are identifiers, not copied third-party payloads.",
-      "destinationSha256": "40bec8f8b9c51f4d9440bb35615417b204e36f14a8aff9c057c76254a41d6a25"
+      "destinationSha256": "7f8a7998c9961386d6024e501e172828bab7cecec9f9c14dc21421cd8b5e7762"
     },
     {
       "source": "contracts/kwdj/v1/fixture.schema.json",
@@ -44,7 +44,7 @@
       "license": "MIT OR Apache-2.0",
       "grant": "Owner D10/D11 approved rights/transfer2026-10-17",
       "review": "Owner-controlled contract/schema or synthetic fixture data. Reviewed technical grammar, metadata and fixed synthetic payloads; no third-party headers/user documents/secrets/production captures. Schema URI references are identifiers, not copied third-party payloads.",
-      "destinationSha256": "acd0ab722f91e4fd769e939f59eecccf09b130c54a982e3229171ab8efb150f5",
+      "destinationSha256": "ac926177687998c1574dfffc7237fd1db32fd6e2a54be765c227004de8718ad4",
       "adaptations": "Authority/version/pin/additive rules and current Rust status clarified; original normative content retained."
     },
     {

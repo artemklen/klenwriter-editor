@@ -95,6 +95,24 @@ fn normalize_object(
                 attrs.remove("start");
                 push_event(events, NormalizationEvent::OrderedStartDefaultRemoved);
             }
+            Some("verse_line") => {
+                if let Some(indent) = attrs.get("indent").cloned() {
+                    let step = match &indent {
+                        Value::Number(number) => number.as_u64().filter(|step| *step <= 8),
+                        _ => None,
+                    };
+                    let Some(step) = step else {
+                        return Err(KwdjError::new(
+                            KwdjErrorCode::InvalidStructure,
+                            key_path(&key_path(path, "attrs"), "indent"),
+                        ));
+                    };
+                    if step == 0 {
+                        attrs.remove("indent");
+                        push_event(events, NormalizationEvent::VerseIndentDefaultRemoved);
+                    }
+                }
+            }
             Some("table_cell" | "table_header") => {
                 let mut removed = false;
                 for key in ["rowspan", "colspan"] {
@@ -113,7 +131,14 @@ fn normalize_object(
 
     let optional_attrs = matches!(
         node_type.as_deref(),
-        Some("paragraph" | "code_block" | "ordered_list" | "table_cell" | "table_header")
+        Some(
+            "paragraph"
+                | "code_block"
+                | "ordered_list"
+                | "table_cell"
+                | "table_header"
+                | "verse_line"
+        )
     );
     if optional_attrs
         && object

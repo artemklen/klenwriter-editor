@@ -31,6 +31,7 @@ fn convert_node(node: &model::Node) -> Node {
         N::Warning { attrs, .. } => attributes(attrs),
         N::Spoiler { attrs, .. } | N::Disclosure { attrs, .. } => attributes(attrs),
         N::StanzaBreak { attrs } => attributes(attrs),
+        N::VerseLine { attrs, .. } => attrs.as_ref().map(attributes).unwrap_or_default(),
         _ => Attributes::new(),
     };
     let marks = match node {
