@@ -8,6 +8,7 @@ body { margin: 24px; color: #17201c; background: #f4f6f3; font: 16px/1.5 system-
 .ui-fixture-scroll { max-height: 220px; overflow: auto; border: 1px solid #697e71; }
 .ui-fixture-clip { max-height: 30px; overflow: hidden; }
 /* N03 only: compact vertical framing before baseline; inline layout stays unchanged. */
+body:has(.ui-fixture.ui-drag-zoom200) { margin-block: 0; }
 .ui-fixture.ui-drag-zoom200 { margin-block: 0; padding-block: 0; }
 .ui-drag-zoom200 .ui-fixture-editor { min-height: 0; padding-block: 0; }
 /* Fixed, opt-in held-scroll fixture; set before the native baseline/down. */
