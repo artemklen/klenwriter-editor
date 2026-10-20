@@ -382,3 +382,40 @@ for(const variant of rl.variants)test(`RL01 ${variant.locale} ${variant.layoutSc
   const gutter=root(page,id).locator('.kw-ui-gutter');expect(await gutter.evaluate(n=>getComputedStyle(n).position)).toBe('fixed');expect(await gutter.evaluate(n=>getComputedStyle(n).overflowY)).toBe('auto');await move(page,id).focus();
   const focused=await rlReason(page,move(page,id),rl.modeReason[variant.locale]);expect(focused.paint.position).toBe('fixed');unchanged(await checkpoint(page,id,'RL01 visible full focus reason without native mutation'),modeBase);
 });
+
+// Additive PP01 source draft for tests/ui-controls-browser.spec.js. Reuse
+// its actual mounted/cleanup/CSP and existing rlRaw/rlBrowser/rlFrames helpers.
+const ppPath='contracts/ui/v1.1/pressed-placement-cases.json',ppBytes=readFileSync(ppPath),pp=JSON.parse(ppBytes);
+async function ppRaw(page,id){
+  const browser=await rlRaw(page,id),placement=await page.evaluate(({id,literal})=>{
+    const wrapper=document.getElementById(id),editor=document.getElementById(`${id}-editor`),toolbar=wrapper.querySelector('[role=toolbar]'),title=toolbar.querySelector('[data-editor-ui-action=title]');
+    let text=editor;for(const index of literal.path)text=text.childNodes[index];if(text?.nodeType!==Node.TEXT_NODE||text.data!==literal.text)throw Error('Independent NotesD0 Text endpoint mismatch');
+    const range=document.createRange();range.setStart(text,literal.offset);range.collapse(true);const rect=r=>({x:r.x,y:r.y,width:r.width,height:r.height});
+    return {toolbarRect:rect(toolbar.getBoundingClientRect()),titleRect:rect(title.getBoundingClientRect()),active:title.matches(':active'),left:toolbar.style.left,top:toolbar.style.top,caret:[...range.getClientRects()].map(rect),viewport:{width:innerWidth,height:innerHeight}};
+  },{id,literal:pp.fixture.literalDomPoint});const result={browser,...placement};(records.get(page).pressedPlacement??=[]).push(result);return result;
+}
+function ppRect(after,before){for(const key of ['x','y','width','height'])expect(Math.abs(after[key]-before[key]),`pressed control ${key}`).toBeLessThanOrEqual(pp.bounds.toleranceCssPx);}
+function ppFloating(value){
+  const b=value.toolbarRect,t=pp.bounds.toleranceCssPx,v=value.viewport;expect(value.caret.some(c=>c.height>0)).toBe(true);const c=value.caret.find(c=>c.height>0);
+  expect(b.x).toBeGreaterThanOrEqual(pp.bounds.viewportInsetCssPx-t);expect(b.y).toBeGreaterThanOrEqual(pp.bounds.viewportInsetCssPx-t);expect(b.x+b.width).toBeLessThanOrEqual(v.width-pp.bounds.viewportInsetCssPx+t);expect(b.y+b.height).toBeLessThanOrEqual(v.height-pp.bounds.viewportInsetCssPx+t);
+  const gaps=[c.y-(b.y+b.height),b.y-(c.y+c.height)];expect(gaps.some(g=>g>=pp.bounds.normalToolbarGapMinCssPx-t&&g<=pp.bounds.normalToolbarGapMaxCssPx+t)).toBe(true);expect(b.x).toBeLessThanOrEqual(c.x+24+t);expect(b.x+b.width).toBeGreaterThanOrEqual(c.x-24-t);
+}
+async function ppNoMutation(page,id,before,traceStart){
+  const now=await checkpoint(page,id,'PP01 exact unchanged Notes native state and no host action');unchanged(now,before);expect(now.context).toEqual(before.context);expect(idsAt(now)).toEqual(idsAt(before));expect(submitted(now)).toHaveLength(0);expect(now.dialog.hidden).toBe(true);expect(now.dialog.openCount).toBe(0);expect(now.dialog.closeReasons).toEqual([]);expect(now.uiResources.hostRequests).toBe(0);expect(now.resources.hostRequests.pending).toBe(0);
+  const trace=await call(page,'nativeTrace',id);expect(trace.overflow).toBe(false);expect(trace.calls.slice(traceStart).map(c=>JSON.parse(c.requestJson)).filter(c=>['command','set_selection','history'].includes(c.kind))).toEqual([]);return now;
+}
+test('PP01 controlled NotesD0 held Title keeps its exact fallback point through empty terminal, then resumes geometry without replay',async({page})=>{
+  records.get(page).frozen.push({path:ppPath,bytes:ppBytes.length,sha256:receiptHash(ppBytes)});await page.setViewportSize(pp.fixture.viewport);
+  const id=await mounted(page,{case:pp.fixture.id,locale:pp.fixture.locale,nativeTrace:true});await editorFocus(page,id);await root(page,id).evaluate((node,className)=>node.classList.add(className),pp.fixture.externalSetupClassBeforeBaseline);await call(page,'refresh',id);await rlFrames(page);
+  const editor=page.locator(`#${id}-editor`),title=control(page,id,'title'),before=await checkpoint(page,id,'PP01 independent real NotesD0 baseline');expect(before.canonical).toBe(pp.fixture.canonical);expect(before.state.selection).toEqual(selection(before.roles,pp.fixture.selection));expect(before.context.profile.profile_id).toBe('org.example.notes');
+  const baseline=await ppRaw(page,id);ppFloating(baseline);expect(baseline.active).toBe(false);const traceStart=(await call(page,'nativeTrace',id)).calls.length;
+  await editor.evaluate(node=>node.dispatchEvent(new CompositionEvent('compositionstart',{bubbles:true,data:''})));await expect(title).toHaveAttribute('aria-disabled','true');await rlFrames(page);
+  const fallback=await ppRaw(page,id);expect(fallback.left).toBe('');expect(fallback.top).toBe('');expect(Math.max(Math.abs(fallback.titleRect.x-baseline.titleRect.x),Math.abs(fallback.titleRect.y-baseline.titleRect.y))).toBeGreaterThan(pp.bounds.toleranceCssPx);rlBrowser(fallback.browser,baseline.browser);await ppNoMutation(page,id,before,traceStart);
+  const point={x:fallback.titleRect.x+fallback.titleRect.width/2,y:fallback.titleRect.y+fallback.titleRect.height/2};
+  await title.evaluate(node=>{window.ppTitle=node;window.ppEvents=[];for(const name of ['pointerdown','pointerup','click'])document.addEventListener(name,event=>{if(window.ppEvents.length>=8)throw Error('Finite PP pointer observation');window.ppEvents.push({event:name,sameTitle:event.target===window.ppTitle,prevented:event.defaultPrevented,trusted:event.isTrusted});},{once:true});});
+  await page.mouse.move(point.x,point.y);await page.mouse.down();const down=await ppRaw(page,id);expect(down.active).toBe(true);ppRect(down.titleRect,fallback.titleRect);rlBrowser(down.browser,fallback.browser);await ppNoMutation(page,id,before,traceStart);
+  await editor.evaluate(node=>node.dispatchEvent(new CompositionEvent('compositionend',{bubbles:true,data:''})));await expect(title).toHaveAttribute('aria-disabled','false');await rlFrames(page);
+  const held=await ppRaw(page,id);expect(held.active).toBe(true);await ppNoMutation(page,id,before,traceStart);rlBrowser(held.browser,down.browser);ppRect(held.titleRect,down.titleRect);expect(await page.evaluate(point=>document.elementFromPoint(point.x,point.y)===window.ppTitle,point)).toBe(true);
+  await page.mouse.up();await rlFrames(page);const released=await ppRaw(page,id);expect(released.active).toBe(false);await ppNoMutation(page,id,before,traceStart);rlBrowser(released.browser,baseline.browser);ppFloating(released);ppRect(released.toolbarRect,baseline.toolbarRect);ppRect(released.titleRect,baseline.titleRect);
+  const events=await page.evaluate(()=>window.ppEvents);(records.get(page).pressedPointerEvents??=[]).push(events);expect(events.map(e=>({event:e.event,sameTitle:e.sameTitle}))).toEqual([{event:'pointerdown',sameTitle:true},{event:'pointerup',sameTitle:true},{event:'click',sameTitle:true}]);expect(events[0].prevented).toBe(true);
+});
