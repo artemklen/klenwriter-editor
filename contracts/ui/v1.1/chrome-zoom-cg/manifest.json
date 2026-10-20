@@ -1,0 +1,51 @@
+{
+ "format": "editor-ui-chrome-zoom-cg-manifest/1",
+ "status": "SOURCE_DRAFT_BEFORE_CANDIDATE",
+ "head": "6a58cc6918eb7d07be8a4e68a778e47de94ff1b8",
+ "sourcePins": [
+  {
+   "path": "/Users/artem/projects/klenwriter-editor/scripts/ui-native/find-key.swift",
+   "bytes": 15029,
+   "sha256": "5bcf601516961ef37d7df01cb4896c490e4823c04239dcb916cfb6d26cdec6db"
+  },
+  {
+   "path": "/Users/artem/projects/klenwriter-editor/scripts/ui-native/guard.swift",
+   "bytes": 21890,
+   "sha256": "ae87f0e855e841f232e70a60361291a73e49084bd1d4ffe51c3a8cf1ce6d7cf5"
+  },
+  {
+   "path": "/Users/artem/projects/klenwriter-editor/scripts/ui-native/input.mjs",
+   "bytes": 45505,
+   "sha256": "9fff9cf3ac65db389bd69d9d44b9d68743b91756d396cd056daec40d05b5837c"
+  },
+  {
+   "path": "/Users/artem/projects/klenwriter-editor/scripts/ui-native/protocol.mjs",
+   "bytes": 3850,
+   "sha256": "cc8c66fac2dbeee57d91132c81873d85c3a29ead246a8ee6407f3684ce1a2ee0"
+  }
+ ],
+ "files": [
+  {
+   "path": "chrome-zoom-cg.md",
+   "bytes": 4170,
+   "sha256": "9fc914d37a064385cf8e5b2730449e3c9bb3de74e580aefeaab6e6fc35aeb444"
+  },
+  {
+   "path": "chrome-zoom-cg-design.json",
+   "bytes": 5449,
+   "sha256": "fd0348f384aee669dcefd6a9738abd1960545bac0fa5918141510025fb0ee32c"
+  },
+  {
+   "path": "chrome-zoom-cg-cases.json",
+   "bytes": 1528,
+   "sha256": "2fab1749f1bba11a837405fce083094cbc3e370ab35ae6e4635e1061856c5460"
+  }
+ ],
+ "draftRevision": 3,
+ "revisionScope": "only Chrome coordinator fixed2000ms passive preparation after checked200percent/before ordinaryShiftTab; schemas/programs/4CZ/casebytes unchanged",
+ "previousManifest": {
+  "path": "/tmp/osr-42-chrome-zoom-cg-contract-draft-02/manifest.json",
+  "bytes": 1694,
+  "sha256": "e94d9aad94796dae83c95bbc14f284bfddeb4431686c67f226a8e5395d2d0f49"
+ }
+}
