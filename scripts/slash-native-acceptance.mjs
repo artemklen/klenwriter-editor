@@ -58,7 +58,13 @@ function preflightChromeFindHelper(){
 let adapter=null,inputHelper=null,sourceHelper=null,keyScriptPath=null,findKeyHelper=null,originalSource=null,selectedSource=null,config=null,configSha=null;
 const source=()=>JSON.parse(run(sourceHelper,['status'],{fullStdout:true}).stdout);
 function coherent(value,id){assert.equal(value.status,'ok');assert.equal(value.current.id,id);assert.equal(value.current.selected,true);assert.equal(value.current.enabled,true);assert.equal(value.current.selectable,true);assert.ok(value.sources.some(x=>x.id===id&&x.selected&&x.enabled&&x.selectable));}
-async function selectSource(id){const execution=run(sourceHelper,['select',id],{fullStdout:true}),result=JSON.parse(execution.stdout);assert.equal(result.status,'ok');report.setup.push({action:'select-existing-source',execution,result});await wait(250);const actual=source();coherent(actual,id);selectedSource=id;return actual;}
+async function selectSource(id){
+ const before=source();coherent(before,before.current.id);
+ if(before.current.id===id){
+  coherent(before,id);report.setup.push({action:'keep-existing-source',requested:id,actual:before,selectionInvoked:false});selectedSource=id;return before;
+ }
+ const execution=run(sourceHelper,['select',id],{fullStdout:true}),result=JSON.parse(execution.stdout);assert.equal(result.status,'ok');report.setup.push({action:'select-existing-source',before,execution,result});await wait(250);const actual=source();coherent(actual,id);selectedSource=id;return actual;
+}
 const roles=value=>Object.fromEntries(value.native.rows.map(row=>[JSON.stringify(row.path),row.node.id]));
 const ids=value=>value.native.rows.map(row=>row.node.id).sort();
 const events=(value,kind)=>value.native.events.filter(e=>e.change.kind===kind);
