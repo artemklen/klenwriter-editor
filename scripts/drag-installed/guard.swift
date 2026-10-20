@@ -312,6 +312,11 @@ if pointer {
     else {point=CGPoint(x:m.view.minX+x*m.view.width/w,y:m.view.minY+y*m.view.height/h)}
     let type:CGEventType = ["hover-source","move-start"].contains(action) ? .mouseMoved : action=="down" ? .leftMouseDown : action=="up" ? .leftMouseUp : .leftMouseDragged
     guard let event=CGEvent(mouseEventSource:nil,mouseType:type,mouseCursorPosition:point,mouseButton:.left) else {refuse("Fixed pointer allocation failed")}
+    // Normalize only this allocated pointer event's four keyboard modifiers.
+    // Preserve every other constructor flag; never alter global key state.
+    let constructorPointerFlags = event.flags
+    result["constructorPointerFlagsRaw"] = String(constructorPointerFlags.rawValue)
+    event.flags = constructorPointerFlags.subtracting([.maskShift, .maskControl, .maskAlternate, .maskCommand])
     event.setIntegerValueField(.mouseEventClickState,value:type == .mouseMoved ? 0 : 1)
     if let previous=r["previousScreenPoint"] as? [String:Any] {
         guard closed(previous,["x","y"]),let px=number(previous["x"]),let py=number(previous["y"]) else {refuse("Original pointer delta malformed")}

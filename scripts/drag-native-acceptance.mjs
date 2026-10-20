@@ -98,7 +98,10 @@ async function physical(row,action,{reserved=false}={}){
       const name=action==='down'?'pointerdown':action==='up'?'pointerup':'pointermove',matches=events.filter(e=>e.name===name&&e.isTrusted&&e.pointerType==='mouse'&&e.isPrimary===true);
       assert.ok(matches.length>0,'Actual trusted original pointer phase');
       const expected=entry.platform.request.point;assert.ok(matches.some(e=>Math.abs(e.x-expected.x)<=1&&Math.abs(e.y-expected.y)<=1),'Actual fixed point acknowledgement');
-      for(const e of matches){assert.equal(e.buttons,['hover-source','move-start','up'].includes(action)?0:1);if(['down','up'].includes(action))assert.equal(e.button,0);}
+      for(const e of matches){
+        for(const modifier of ['altKey','ctrlKey','shiftKey','metaKey'])assert.equal(e[modifier],false,'Actual unmodified pointer phase: '+modifier);
+        assert.equal(e.buttons,['hover-source','move-start','up'].includes(action)?0:1);if(['down','up'].includes(action))assert.equal(e.button,0);
+      }
       if(action==='down'){assert.equal(matches.length,1);assert.equal(matches[0].handleHit,true,'Actual original handle/descendant Down');row.pointerId=matches[0].pointerId;}
       if(row.pointerId!==undefined&&!['hover-source','move-start'].includes(action))for(const e of matches)assert.equal(e.pointerId,row.pointerId);
     }

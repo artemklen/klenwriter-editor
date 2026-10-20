@@ -25,7 +25,7 @@ export function installDragNativeHost(config,programs){
     const element=event.target instanceof Element?event.target:null;
     const value={name,at:performance.now(),timeOrigin:performance.timeOrigin,eventTimeStamp:event.timeStamp,isTrusted:event.isTrusted,withinRoot,originalHeldPointer,targetObject:token(element),sourceHit:!!(element&&(element===r.source||r.source.contains(element))),handleHit:!!(element&&(element===r.handle||r.handle.contains(element))),targetTag:element?.tagName??null,targetControl:element?.dataset.editorUiControl??null,
       pointerId:event.pointerId??null,pointerType:event.pointerType??null,isPrimary:event.isPrimary??null,button:event.button??null,buttons:event.buttons??null,x:event.clientX??null,y:event.clientY??null,
-      key:event.key??null,code:event.code??null,shiftKey:event.shiftKey??null,metaKey:event.metaKey??null,defaultPreventedAtCapture:event.defaultPrevented,active:active()};
+      key:event.key??null,code:event.code??null,altKey:event.altKey??null,ctrlKey:event.ctrlKey??null,shiftKey:event.shiftKey??null,metaKey:event.metaKey??null,defaultPreventedAtCapture:event.defaultPrevented,active:active()};
     r.events.push(value);
     const unpressed=name==='pointermove'&&event.isTrusted&&event.pointerType==='mouse'&&event.isPrimary===true&&event.buttons===0;
     if(unpressed&&r.hoverRequest&&value.sourceHit&&value.at>=r.hoverRequest.at&&Math.abs(value.x-r.hoverRequest.point.x)<=1&&Math.abs(value.y-r.hoverRequest.point.y)<=1)r.sourceHover={...value,index:r.events.length-1,sourceObject:token(r.source)};

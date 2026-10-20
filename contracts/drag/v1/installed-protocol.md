@@ -1,5 +1,7 @@
 # Closed installed drag44 protocol v1
 
+Every fixed pointer phase is locally unmodified. The helper clears only Shift/Control/Alternate/Command from the flags of its newly allocated original CG pointer event, preserving all other constructor flags, default timestamp, coordinates, deltas, posting route, original guards/deadline and number of posts. It does not inspect or reset host/global keyboard state or post modifier-key releases. Raw constructor flags and original posted-event properties retain this distinction. Trusted DOM acknowledgements for every original pointer phase must report altKey/ctrlKey/shiftKey/metaKey all false; fixed keyboard programs retain their separately frozen modifier policy.
+
 SOURCE FIRST, before any44 installed candidate execution. The frozen programs describe eight families × EN/RU, sixteen rows in each separately owned installed Chrome/Safari fixture. No compile, controlled test or previous40/43 observation is a44 installed PASS.
 
 The dedicated namespace is `osr44-drag-http-broker/1`, `/drag-native-broker-<nonce>`, exact title `KlenWriter Drag native <nonce>`. `/ui` and genuine `ui42-*` IDs are the existing public mounted fixture infrastructure, not a case/protocol alias. New `window.ui44Native` wraps the public UI fixture; no arbitrary selector, coordinates, text, keycode, JavaScript, URL or command payload can cross its closed RPC.
