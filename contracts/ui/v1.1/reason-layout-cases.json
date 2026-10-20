@@ -1,0 +1,108 @@
+{
+  "format": "editor-ui-reason-layout-cases/1",
+  "status": "DRAFT_BEFORE_CSS_IMPLEMENTATION_AND_RED",
+  "case": "RL01",
+  "scope": "Actual mounted SDK/WASM/UI, controlled C01-style zero-change composition and browser-protocol pointer/focus, not OS input/IME/AT acceptance. No native InsertText is expected or synthesized. Actual installed05 remains FAILED; its separate intentional native insertion is not treated as a pure layout phase.",
+  "fixture": {
+    "path": "contracts/ui/v1/geometry-fixtures.json",
+    "sha256": "0e5c03c8b57802ad940e3c1e1c3b3ae3f3c972865879050ef6a394e33f1a017c",
+    "id": "F",
+    "canonical": "{\"content\":[{\"content\":[{\"text\":\"A😀éאב\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"text\":\"cd\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"type\":\"scene_break\"},{\"content\":[{\"text\":\"ef\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+    "selection": {
+      "anchor": {
+        "kind": "text",
+        "node": "T",
+        "offset": 1,
+        "affinity": "after"
+      },
+      "focus": {
+        "kind": "text",
+        "node": "T",
+        "offset": 5,
+        "affinity": "after"
+      }
+    }
+  },
+  "variants": [
+    {
+      "locale": "en",
+      "layoutScale": 1,
+      "viewport": {
+        "width": 640,
+        "height": 1400
+      }
+    },
+    {
+      "locale": "en",
+      "layoutScale": 2,
+      "viewport": {
+        "width": 640,
+        "height": 1400
+      }
+    },
+    {
+      "locale": "ru",
+      "layoutScale": 1,
+      "viewport": {
+        "width": 640,
+        "height": 1400
+      }
+    },
+    {
+      "locale": "ru",
+      "layoutScale": 2,
+      "viewport": {
+        "width": 640,
+        "height": 1400
+      }
+    }
+  ],
+  "toleranceCssPx": 0.5,
+  "expectedFlowDelta": {
+    "toolbarAllocatedHeight": 0,
+    "toolbarAllocatedWidth": 0,
+    "toolbarSlotHeight": 0,
+    "editorRect": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "addRect": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    }
+  },
+  "composingReason": {
+    "en": "Finish typing to use this action. (dom.composition_conflict)",
+    "ru": "Завершите ввод, чтобы применить действие. (dom.composition_conflict)"
+  },
+  "modeReason": {
+    "en": "Editor temporarily unavailable (dom.mode_blocked)",
+    "ru": "Редактор временно недоступен (dom.mode_blocked)"
+  },
+  "visibility": {
+    "focusedOrHoveredReason": "full nonempty localized reason actually painted within viewport; whitespace wraps, no ellipsis/truncation; ARIA ID/text unchanged",
+    "otherTopLevelReasons": "hidden, focus takes priority over hover in same scope",
+    "pointerEvents": "none",
+    "popupChoiceReasons": "existing in-flow behavior unchanged",
+    "floatingGutter": "preserve overflow:auto; use a viewport-bounded reason presentation that escapes own scrollport, no clipping or new runtime positioning"
+  },
+  "nativeInvariant": {
+    "canonical": "exact frozen F throughout this zero-change case",
+    "fullStateRowsContextEvents": "unchanged throughout composition/hover/down/nil-terminal/up",
+    "semanticCallsDelta": 0,
+    "uiSubmissions": 0,
+    "historyUndo": "0",
+    "historyRedo": "0",
+    "storedMarks": null
+  },
+  "browserInvariant": {
+    "editingHtmlObjectsSelectionFocusScroll": "unchanged within each pure layout phase; explicit focus setup is separate and declared",
+    "visualToolbarAndGutterCoordinates": "may intentionally change on measured-to-busy fallback; not equality oracles",
+    "fixedPointAddGesture": "same actual Add object under original center before up, rejected click never opens popup or submits"
+  },
+  "existingRequirements": "All old frozen native/DOM/selection/CSP/label/32px/200%/keyboard/resource and placement assertions remain. No magic reserved heights, API change, reason deletion, status hiding, classifier widening, source mutation or forced semantic retry."
+}
