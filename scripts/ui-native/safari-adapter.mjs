@@ -189,6 +189,9 @@ export async function createSafariAdapter({config,report,run,outputPath,inputHel
         }
         await wait(100);
       }
+      if(deadline-Date.now()<=500)throw new Error('Safari AX preparation lacks original navigate time');
+      await wait(500);
+      if(Date.now()>=deadline)throw new Error('Safari AX preparation exceeded original navigate deadline');
       report.control.safariAxReadiness=await prepareSafariAxReadiness({config,inputHelper,run,record,remainingNavigate:()=>deadline-Date.now()});
       if(report.control.safariAxReadiness.status!=='ready')throw new Error('Safari read-only AX readiness refused: '+report.control.safariAxReadiness.reason);
     },
