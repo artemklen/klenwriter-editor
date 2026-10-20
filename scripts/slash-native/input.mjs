@@ -472,7 +472,12 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
         exactKeys(actual.screenPoint,['x','y']);assert.ok(Object.values(actual.screenPoint).every(Number.isFinite));
         exactKeys(actual.prelude,['event','screenPoint','requestedPauseMs','elapsedMs']);assert.equal(actual.prelude.event,'mouseMoved');assert.equal(actual.prelude.requestedPauseMs,25);
         exactKeys(actual.prelude.screenPoint,['x','y']);assert.deepEqual(actual.prelude.screenPoint,actual.screenPoint);assert.ok(Number.isFinite(actual.prelude.elapsedMs)&&actual.prelude.elapsedMs>=0);
-      }else assert.equal(Object.hasOwn(actual,'prelude'),false);
+        const timing=actual.pairTiming;exactKeys(timing,['downEventNumber','upEventNumber','moveTimestampNs','downTimestampNs','upTimestampNs','requestedPauseMs','elapsedMs']);
+        for(const name of ['downEventNumber','upEventNumber']){const value=timing[name];assert.equal(typeof value,'string');assert.ok(value.length<=20&&/^(?:0|-?[1-9][0-9]*)$/.test(value));const number=BigInt(value);assert.ok(number>=-9223372036854775808n&&number<=9223372036854775807n);}
+        assert.equal(timing.downEventNumber,timing.upEventNumber);let previous=0n;
+        for(const name of ['moveTimestampNs','downTimestampNs','upTimestampNs']){const value=timing[name];assert.equal(typeof value,'string');assert.ok(value.length<=20&&/^[1-9][0-9]*$/.test(value));const timestamp=BigInt(value);assert.ok(timestamp<=18446744073709551615n&&timestamp>previous);previous=timestamp;}
+        assert.equal(timing.requestedPauseMs,25);assert.ok(Number.isFinite(timing.elapsedMs)&&timing.elapsedMs>=0);
+      }else{assert.equal(Object.hasOwn(actual,'prelude'),false);assert.equal(Object.hasOwn(actual,'pairTiming'),false);}
       fixedWindow(actual.axWindow);
       for(const [name,value]of Object.entries({nonce:config.nonce,mountedId:mountedId(),caseId:v.caseId,target:v.target}))assert.equal(actual[name],value);
       completed=true;pending=null;assert.ok(age(proof.start)<=limits.guardAgeMs,'Total43 pointer guard exceeded1s');
@@ -489,7 +494,7 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
       const remaining=Math.floor(limits.guardAgeMs-age(proof.start));assert.ok(remaining>0);
       request={...saved.request,requestId:proof.id,serial:v.serial,cleanupOnly:true,pointerDown:true,deadlineMs:remaining};
       execution=run(inputHelper,['--request',JSON.stringify(request)],{timeout:remaining,fullStdout:true,maxBuffer:32768});actual=JSON.parse(execution.stdout);
-      assert.equal(actual.status,'sent');assert.equal(actual.delivery,'sent');assert.equal(actual.cleanupOnly,true);assert.deepEqual(actual.transitions,['up']);assert.equal(Object.hasOwn(actual,'prelude'),false);
+      assert.equal(actual.status,'sent');assert.equal(actual.delivery,'sent');assert.equal(actual.cleanupOnly,true);assert.deepEqual(actual.transitions,['up']);assert.equal(Object.hasOwn(actual,'prelude'),false);assert.equal(Object.hasOwn(actual,'pairTiming'),false);
       for(const name of ['action','requestId','nonce','mountedId','caseId','target'])assert.equal(actual[name],request[name]);
       assert.equal(actual.frontBundle,browser==='chrome'?'com.google.Chrome':'com.apple.Safari');assert.ok(Number.isSafeInteger(actual.frontPid)&&actual.frontPid>0);
       const expectedTitle=config.title+(browser==='chrome'?' - Google Chrome':'');assert.equal(actual.expectedAxWindowTitle,expectedTitle);assert.equal(actual.observedAxWindowTitle,expectedTitle);

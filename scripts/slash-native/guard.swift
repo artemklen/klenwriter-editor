@@ -472,10 +472,26 @@ for type in transitions {
  events.append(event)
 }
 var pointerPrelude: [String: Any]? = nil
+var pairTiming: [String: Any]? = nil
+var previousTimestamp: UInt64 = 0
+if chromePrelude {
+ let downNumber = events[1].getIntegerValueField(.mouseEventNumber)
+ events[2].setIntegerValueField(.mouseEventNumber,value:downNumber)
+ let upNumber = events[2].getIntegerValueField(.mouseEventNumber)
+ guard downNumber == upNumber else { refuse("Allocated Chrome mouse pair number differs") }
+ pairTiming = ["downEventNumber":String(downNumber), "upEventNumber":String(upNumber), "requestedPauseMs":25]
+}
 for (index, type) in transitions.enumerated() {
  _=recheckWindow(measurement,deadline)
  if let fallback = measurement.safariScroll {
   guard let point = safariScrollViewportPoint(viewport: fallback.scroll, visible: fallback.visible, cssWidth: width, cssHeight: height, x: x, y: y), point == actual else { refuse("Safari pointer no longer belongs to the exact visible content") }
+ }
+ if chromePrelude {
+  events[index].timestamp = DispatchTime.now().uptimeNanoseconds
+  let timestamp = events[index].timestamp
+  guard timestamp > previousTimestamp else { refuse("Chrome pointer timestamps must increase") }
+  previousTimestamp = timestamp
+  pairTiming?[["moveTimestampNs","downTimestampNs","upTimestampNs"][index]] = String(timestamp)
  }
  posted=true;events[index].post(tap:.cghidEventTap)
  if type == .mouseMoved {
@@ -485,8 +501,15 @@ for (index, type) in transitions.enumerated() {
   pointerPrelude = ["event":"mouseMoved", "screenPoint":["x":actual.x,"y":actual.y], "requestedPauseMs":25, "elapsedMs":pauseElapsed]
   _=recheckWindow(measurement,deadline)
  }
+ if chromePrelude && type == .leftMouseDown {
+  let pauseBegan = DispatchTime.now().uptimeNanoseconds
+  Thread.sleep(forTimeInterval:0.025)
+  pairTiming?["elapsedMs"] = Double(DispatchTime.now().uptimeNanoseconds - pauseBegan) / 1_000_000
+  _=recheckWindow(measurement,deadline)
+ }
 }
 guard elapsed() <= deadline else { refuse("Pointer completion exceeded authority deadline") }
 result["status"]="sent";result["delivery"]="sent";result["screenPoint"]=["x":actual.x,"y":actual.y];result["transitions"]=cleanup ? ["up"] : chromePrelude ? ["move","down","up"] : ["down","up"];result["elapsedMs"]=elapsed()
 if let prelude = pointerPrelude { result["prelude"] = prelude }
+if let timing = pairTiming { result["pairTiming"] = timing }
 result["method"]="exact fixture control point via CGEvent; platform input, not hardware-device provenance";emit(result,0)
