@@ -1,0 +1,46 @@
+{
+  "format": "editor-ui-safari-ax-passive-preparation-manifest/1",
+  "status": "SOURCE_AUTHORED_BEFORE_CANDIDATE",
+  "createdAt": "2026-10-20T08:59:05.820693+00:00",
+  "observation": {
+    "path": "/tmp/osr-42-installed-development-c7a4214-10/safari/safari.json",
+    "bytes": 210655,
+    "sha256": "0c4c576298501f3b8d973b8551483143e43cd7b07cc8911f80cbf4093b29ec41"
+  },
+  "sourcePins": [
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/scripts/ui-native/safari-adapter.mjs",
+      "bytes": 15856,
+      "sha256": "e956d36483637364846e41bfe5fb04a3f094d94385e7c6422423cdfd6e15643e"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/scripts/ui-native/safari-readiness.mjs",
+      "bytes": 6947,
+      "sha256": "a681d78273501ea3a1e087ca0887d3b08522f377d94d7305e0cb7ac4a527410f"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/scripts/ui-native/guard.swift",
+      "bytes": 33404,
+      "sha256": "cf56884952573490de22ed84901188f38bb66f3c1d21906a80e9f7e0f2185105"
+    },
+    {
+      "path": "/Users/artem/projects/klenwriter-editor/scripts/ui-native/input.mjs",
+      "bytes": 56455,
+      "sha256": "dbb193afd6ebe1c93d23d17285503e10db36fd50ddc5f63be018e50bba50c4b5"
+    }
+  ],
+  "files": [
+    {
+      "path": "/tmp/osr-42-safari-ax-passive-preparation-contract-draft-01/contract.md",
+      "bytes": 3720,
+      "sha256": "52c832b67ed16ff3e5dc2d9913ddae7c6be1378d1a2d5ca2accab90eb14b9445"
+    },
+    {
+      "path": "/tmp/osr-42-safari-ax-passive-preparation-contract-draft-01/cases.json",
+      "bytes": 3234,
+      "sha256": "03aaa204cb976e988d310b712b1096874be0be6fb8fd885b73c28c2810aeec37"
+    }
+  ],
+  "candidateAuthored": false,
+  "execution": false
+}
