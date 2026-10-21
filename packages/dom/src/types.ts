@@ -171,7 +171,36 @@ export interface GeometrySnapshot {
  readonly clip:CssRect; readonly viewport:CssRect; readonly visible:boolean;
 }
 export type GeometryRead = GeometrySnapshot|DomRefusal|SelectionReadFailure;
-export interface MountedGeometry {read(request:GeometryRequest):GeometryRead}
+/** Compact native topology facts, never a serialized NodeView or move capability. */
+export interface DragNodeHeader {
+ readonly id:string; readonly typeId:string; readonly primitive:string;
+ readonly parent:string|null; readonly index:number|null; readonly childCount:number;
+}
+export interface DragDestination {
+ readonly placement:'before'|'after'|'inside'; readonly reference:string;
+ readonly parent:string; readonly before_index:number;
+}
+export interface DragBox {readonly rect:CssRect;readonly clip:CssRect}
+export interface DragGeometryRequest {
+ readonly kind:'drag'; readonly stamp:StampDto; readonly context:DeepReadonly<SessionContextV2>;
+ readonly source:string; readonly point:Readonly<{x:number;y:number}>|null;
+ readonly insideParent:string|null;
+}
+export interface DragGeometrySnapshot {
+ readonly status:'drag_measured'; readonly stamp:DeepReadonly<StampDto>;
+ readonly context:DeepReadonly<SessionContextV2>;
+ readonly source:DragNodeHeader; readonly sourceBox:DragBox;
+ readonly hit:DragNodeHeader|null; readonly insideParents:readonly DragNodeHeader[];
+ readonly destination:DragDestination|null; readonly targetBox:DragBox|null;
+ readonly viewport:CssRect;
+ readonly work:Readonly<{objects:number;childSlots:number;ancestors:number;rects:number}>;
+}
+export type DragGeometryRead=DragGeometrySnapshot|DomRefusal|SelectionReadFailure;
+export interface MountedGeometry {
+ read(request:DragGeometryRequest):DragGeometryRead;
+ read(request:GeometryRequest):GeometryRead;
+ read(request:GeometryRequest|DragGeometryRequest):GeometryRead|DragGeometryRead;
+}
 export interface MountedHostRequest {
  readonly stamp:DeepReadonly<StampDto>;
  readonly context:DeepReadonly<SessionContextV2>;

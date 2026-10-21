@@ -36,7 +36,7 @@ function resolve(r,value){
   if(!value||typeof value!=='object')return value;
   return Object.fromEntries(Object.entries(value).map(([key,v])=>[key,['node','parent'].includes(key)&&typeof v==='string'&&r.ids.has(v.replace(/^@/,''))?r.ids.get(v.replace(/^@/,'')):resolve(r,v)]));
 }
-async function snapshot(r){const result=await done(r.editor.submit({kind:'snapshot',stamp:r.editor.capture(),max_bytes:2097152}));assert(result.response?.status==='ok'&&result.response.value.kind==='snapshot','Canonical snapshot');const value=result.response.value;await done(r.editor.submit({kind:'release_snapshot',handle:value.handle}));return value.canonical_json;}
+async function snapshot(r){const result=await done(r.editor.submit({kind:'snapshot',stamp:r.editor.capture()??nativeState(r).stamp,max_bytes:2097152}));assert(result.response?.status==='ok'&&result.response.value.kind==='snapshot','Canonical snapshot');const value=result.response.value;await done(r.editor.submit({kind:'release_snapshot',handle:value.handle}));return value.canonical_json;}
 function hostDialog(r){
   const scope=document.createElement('section');scope.className='ui-fixture-dialog';scope.id=`${r.id}-dialog`;scope.hidden=true;scope.setAttribute('role','dialog');scope.setAttribute('aria-modal','true');
   const heading=document.createElement('h2');heading.id=`${scope.id}-title`;heading.textContent=r.locale==='ru'?'Параметры блока':'Block options';scope.setAttribute('aria-labelledby',heading.id);
@@ -62,7 +62,7 @@ function hostDialog(r){
   return action;
 }
 function profile(r){
-  if(r.notes){const title=hostDialog(r);return ()=>({toolbar:[title],insertions:[],blockActions:[],moves:()=>unavailable('fixture.profile_has_no_move')});}
+  if(r.notes){const title=hostDialog(r);return ()=>({toolbar:[title],insertions:[],blockActions:[],moves:()=>unavailable('fixture.profile_has_no_move'),...(r.drag?{drag:{move:()=>unavailable('fixture.profile_has_no_move')}}:{})});}
   const action=(id,label,intent,kind='command')=>({id,label,kind,command:()=>kwdjCommand(intent)});
   return ()=>({toolbar:[action('strong',text('Полужирный','Bold'),{kind:'toggle_mark',mark:{type_id:'org.klenwriter.kwdj/strong',attributes:{}}},'toggle'),action('emphasis',text('Курсив','Italic'),{kind:'toggle_mark',mark:{type_id:'org.klenwriter.kwdj/emphasis',attributes:{}}},'toggle')],
     ...(r.slash?{slash:{textBlockTypes:kwdjSlashTextBlockTypes,choices:kwdjSlashCandidates.map(candidate=>{
@@ -78,6 +78,16 @@ function profile(r){
         return kwdjCommand(query?{kind:'accept_slash',target:candidate.target,range:query.range,literal:query.literal}:{kind:'insert_block',target:candidate.target});
       }};
     })}}:{}),
+    ...(r.drag?{drag:{move(captured,destination){
+      if(r.dragFault){const fault=r.dragFault;r.dragFault=null;
+        if(fault==='throw')throw new Error('Controlled drag factory refusal');
+        if(fault==='destroy'){r.dragFaultResults.push({kind:fault});void r.ui.destroy();}
+        if(fault==='selection'){const p={kind:'text',node:r.ids.get('BT')??r.ids.get('T'),offset:0,affinity:'after'};r.dragFaultResults.push(copy(r.editor.submit({kind:'set_selection',stamp:r.editor.capture(),selection:{anchor:p,focus:p}})));}
+      }
+      const command=kwdjCommand({kind:'move',node:captured.source.id,parent:destination.parent,before_index:destination.before_index});
+      assert(r.dragCommands.length<128,'Finite drag candidate observation');r.dragCommands.push({captured:copy(captured),destination:copy(destination),command:copy(command)});
+      return command;
+    }}}:{}),
     insertions:[action('paragraph',text('Абзац','Paragraph'),{kind:'insert_block',target:{kind:'paragraph'}}),action('quote',text('Цитата','Quote'),{kind:'insert_block',target:{kind:'blockquote'}}),action('table',text('Таблица','Table'),{kind:'insert_block',target:{kind:'table'}})],blockActions:[],
     moves(captured){
       const {node,parent,index}=captured.block,read=id=>{const x=r.editor.read({kind:'node',stamp:captured.state.stamp,node:id});return x.status==='ok'&&x.value.kind==='node'?x.value.node:null;};
@@ -92,7 +102,7 @@ function profile(r){
   });
 }
 function publicFailure(value){return value?.status==='sdk_failure'?{status:value.status,response:copy(value.response)}:value?.status==='dom_refused'?copy(value):null;}
-function fixtureFacts(r){return {mode:r.mode,modeResults:copy(r.modeResults),hostAttributes:Object.fromEntries(['contenteditable','tabindex','role','aria-readonly','aria-disabled','aria-label','aria-haspopup','aria-controls','aria-activedescendant','aria-expanded'].map(key=>[key,r.element.getAttribute(key)])),clipboardResults:copy(r.clipboardResults),recoveryResults:copy(r.recoveryResults),...(r.slash?{ordinaryInputs:copy(r.ordinaryInputs??[]),slashFaultResults:copy(r.slashFaultResults),slashFaultPending:copy(r.slashFaultPending),slashCancelFocusTransitions:copy(r.slashCancelFocusTransitions??[])}:{}),nativeTrace:{enabled:r.nativeTraceEnabled,calls:r.nativeCalls.length,bytes:r.nativeTraceBytes,overflow:r.nativeTraceOverflow}};}
+function fixtureFacts(r){return {mode:r.mode,modeResults:copy(r.modeResults),hostAttributes:Object.fromEntries(['contenteditable','tabindex','role','aria-readonly','aria-disabled','aria-label','aria-haspopup','aria-controls','aria-activedescendant','aria-expanded'].map(key=>[key,r.element.getAttribute(key)])),clipboardResults:copy(r.clipboardResults),recoveryResults:copy(r.recoveryResults),...(r.slash?{ordinaryInputs:copy(r.ordinaryInputs??[]),slashFaultResults:copy(r.slashFaultResults),slashFaultPending:copy(r.slashFaultPending),slashCancelFocusTransitions:copy(r.slashCancelFocusTransitions??[])}:{}),...(r.drag?{dragCommands:copy(r.dragCommands),dragFaultResults:copy(r.dragFaultResults)}:{}),nativeTrace:{enabled:r.nativeTraceEnabled,calls:r.nativeCalls.length,bytes:r.nativeTraceBytes,overflow:r.nativeTraceOverflow}};}
 function observedModule(r,{controlled=false,trace=false}={}){
   // Optional finite observation keeps exact call bytes and delegates unchanged.
   // Controlled geometry faults remain a distinct, explicitly labelled lane.
@@ -147,7 +157,7 @@ export async function mount(config={}){
   element.id=`${id}-editor`;element.className='ui-fixture-editor';element.setAttribute('aria-label',config.locale==='ru'?'Документ':'Document');
   for(const [name,node]of Object.entries({toolbar,gutter,entry}))node.id=`${id}-${name}`;
   wrapper.append(toolbar,element,gutter,entry);document.querySelector('#ui-mounts').append(wrapper);
-  const r={id,wrapper,element,slots:{toolbar,gutter,entry},ids:new Map(),events:[],failures:[],results:[],focusResults:[],focusPromises:[],requests:new Map(),hostConnections:[],hostOpenCount:0,hostCloseReasons:[],locale:config.locale??'en',notes:selected.job.profile.profile_id==='org.example.notes',faultResponses:[],geometryProbeResults:[],mode:config.mode??'editable',modeResults:[],clipboardResults:[],recoveryResults:[],nativeCalls:[],nativeTraceEnabled:config.nativeTrace===true,nativeTraceBytes:0,nativeTraceOverflow:false,slash:config.slash===true,slashUnavailable:config.slashUnavailable??null,slashFactoryFault:null,slashFaultResults:[],slashFaultPending:[]};records.set(id,r);
+  const r={id,wrapper,element,slots:{toolbar,gutter,entry},ids:new Map(),events:[],failures:[],results:[],focusResults:[],focusPromises:[],requests:new Map(),hostConnections:[],hostOpenCount:0,hostCloseReasons:[],locale:config.locale??'en',notes:selected.job.profile.profile_id==='org.example.notes',faultResponses:[],geometryProbeResults:[],mode:config.mode??'editable',modeResults:[],clipboardResults:[],recoveryResults:[],nativeCalls:[],nativeTraceEnabled:config.nativeTrace===true,nativeTraceBytes:0,nativeTraceOverflow:false,slash:config.slash===true,slashUnavailable:config.slashUnavailable??null,slashFactoryFault:null,slashFaultResults:[],slashFaultPending:[],drag:config.drag===true,dragCommands:[],dragFault:null,dragFaultResults:[]};records.set(id,r);
   let job=copy(selected.job),rolePaths=selected.expected.rolesBefore;
   if(config.geometry){const f=geometry.fixtures[config.geometry];assert(f,'Closed geometry fixture');job.input=f.canonical_json;rolePaths=f.roles;job.selection=f.selection?resolve(r,f.selection):null;}
   if(config.source!==undefined)job.input=typeof config.source==='string'?config.source:JSON.stringify(config.source);
@@ -184,25 +194,27 @@ export async function inspect(id,options){
   // Deliberately unsupported geometry can refuse a mounted snapshot. Observe
   // pure native reads explicitly; the test must compare real snapshots outside
   // that layout phase. Default callers retain the original strict snapshot.
-  const r=rec(id);await Promise.all(r.focusPromises);const actual=rows(r);return {...actual,canonical:noSnapshot?null:await snapshot(r),...(noSnapshot?{canonicalObservation:{status:'not_requested'}}:{}),roles:Object.fromEntries(r.ids),events:copy(r.events),failures:copy(r.failures),results:copy(r.results),focusResults:copy(r.focusResults),activeId:document.activeElement?.id??null,activeTag:document.activeElement?.tagName??null,insideEditor:r.element.contains(document.activeElement),resources:copy(r.editor.resources()),uiResources:copy(r.ui.resources()),context:copy(r.editor.context()),...fixtureFacts(r),dialog:r.dialog?{hidden:r.dialog.hidden,openCount:r.hostOpenCount,closeReasons:copy(r.hostCloseReasons)}:null};
+  const r=rec(id);await Promise.all(r.focusPromises);const actual=rows(r);return {...actual,canonical:noSnapshot?null:await snapshot(r),...(noSnapshot?{canonicalObservation:{status:'not_requested'}}:{}),roles:Object.fromEntries(r.ids),events:copy(r.events),failures:copy(r.failures),results:copy(r.results),focusResults:copy(r.focusResults),activeId:document.activeElement?.id??null,activeTag:document.activeElement?.tagName??null,insideEditor:r.element.contains(document.activeElement),resources:copy(r.editor.resources()),uiResources:r.ui?copy(r.ui.resources()):{listeners:0,observers:0,animationFrames:0,subscriptions:0,hostRequests:0,continuations:0,dragGestures:0,pointerCaptures:0},context:copy(r.editor.context()),...fixtureFacts(r),dialog:r.dialog?{hidden:r.dialog.hidden,openCount:r.hostOpenCount,closeReasons:copy(r.hostCloseReasons)}:null};
 }
 export async function editorFocus(id){const r=rec(id),capture=r.editor.selection.captureBookmark();if(capture.status!=='captured')return copy(capture);return copy(await done(r.editor.selection.restoreBookmark(capture.bookmark,{policy:'exact',focus:true})));}
 export function refresh(id){rec(id).ui.refresh();}
-export async function select(id,literal,{focus=false}={}){const r=rec(id);if(focus)r.element.focus({preventScroll:true});const result=await done(r.editor.submit({kind:'set_selection',stamp:r.editor.capture(),selection:resolve(r,literal)}));r.ui.refresh();return copy(result);}
+export async function select(id,literal,{focus=false}={}){const r=rec(id);if(focus)r.element.focus({preventScroll:true});const result=await done(r.editor.submit({kind:'set_selection',stamp:r.editor.capture(),selection:resolve(r,literal)}));r.ui?.refresh();return copy(result);}
 export async function command(id,intent){const r=rec(id);return copy(await done(r.editor.submit({kind:'command',stamp:r.editor.capture(),command:kwdjCommand(resolve(r,intent)),history_hint:{kind:'isolated'}})));}
-export async function history(id,direction){const r=rec(id);const result=await done(r.editor.submit({kind:'history',stamp:r.editor.capture(),direction}));r.ui.refresh();return copy(result);}
-export function mode(id,value,direct=false){const r=rec(id),result=direct?r.editor.setInteractionMode(value):r.ui.setInteractionMode(value);if(direct)r.ui.refresh();r.modeResults.push(copy(result));if(result.status==='updated')r.mode=result.mode;return copy(result);}
+export async function history(id,direction){const r=rec(id);const result=await done(r.editor.submit({kind:'history',stamp:r.editor.capture(),direction}));r.ui?.refresh();return copy(result);}
+export function mode(id,value,direct=false){const r=rec(id),result=direct?r.editor.setInteractionMode(value):r.ui.setInteractionMode(value);if(direct)r.ui?.refresh();r.modeResults.push(copy(result));if(result.status==='updated')r.mode=result.mode;return copy(result);}
 export function locale(id,value){const r=rec(id);r.locale=value;r.ui.setLocale(value);}
 export function bindAfter(id,paths){return bind(rec(id),paths);}
 export function geometryRead(id,request){const r=rec(id);return copy(r.editor.geometry.read({...request,stamp:request.stamp??r.editor.capture(),...(request.node?{node:r.ids.get(request.node)??request.node}:{})}));}
 export function geometryRawRead(id,request){return copy(rec(id).editor.geometry.read(request));}
+export function dragGeometryRead(id,source,point=null,insideParent=null){const r=rec(id);return copy(r.editor.geometry.read({kind:'drag',stamp:r.editor.capture(),context:r.editor.context(),source:r.ids.get(source)??source,point,insideParent:insideParent===null?null:r.ids.get(insideParent)??insideParent}));}
+export function dragFactoryFault(id,kind){const r=rec(id);assert(r.drag&&['throw','selection','destroy'].includes(kind),'Closed drag factory fault');r.dragFault=kind;}
 export function nativeFault(id,status){assert(['refused','fatal'].includes(status),'Closed controlled fault');rec(id).pendingFault=status;}
 export function geometryProbeNextEvent(id,role='P'){rec(id).geometryProbe=role;}
 export async function destroySubscriberProbe(id,intent){const r=rec(id);r.destroyProbe=true;const result=await command(id,intent);return {result,probes:copy(r.geometryProbeResults),facts:mountedFacts(id)};}
 export async function destroyMountedProbe(id){const r=rec(id);if(r.ui)await r.ui.destroy().settled;const receipt=r.editor.destroy();const immediate={phase:r.editor.lifecycle,geometry:copy(r.editor.geometry.read({kind:'selection',stamp:{session:'old',generation:'1',revision:'0',selection_epoch:'0',history_epoch:'0'}}))};if(receipt.sdk.status==='queued')await receipt.sdk.completion;r.releaseLoader?.();await Promise.resolve();return {immediate,facts:mountedFacts(id)};}
 export function mountedFacts(id){const r=rec(id);return {lifecycle:r.editor.lifecycle,stamp:copy(r.editor.capture()),context:copy(r.editor.context()),resources:copy(r.editor.resources()),native:copy(r.editor.nativeResources()),faultResponses:copy(r.faultResponses),geometryProbeResults:copy(r.geometryProbeResults),...fixtureFacts(r)};}
 export function nativeTrace(id){const r=rec(id);return {enabled:r.nativeTraceEnabled,overflow:r.nativeTraceOverflow,bytes:r.nativeTraceBytes,mountId:r.id,clock:copy(nativeObservationClock),calls:copy(r.nativeCalls)};}
-export async function nativeHostEdit(id){const r=rec(id);assert(r.notes,'Closed host edit is Notes-only');const result=await done(r.editor.submit({kind:'command',stamp:r.editor.capture(),command:createCommand('org.example.notes/command/set-title',{title:'host-updated'}),history_hint:{kind:'isolated'}}));r.ui.refresh();return copy(result);}
+export async function nativeHostEdit(id){const r=rec(id);assert(r.notes,'Closed host edit is Notes-only');const result=await done(r.editor.submit({kind:'command',stamp:r.editor.capture(),command:createCommand('org.example.notes/command/set-title',{title:'host-updated'}),history_hint:{kind:'isolated'}}));r.ui?.refresh();return copy(result);}
 export function capture(id,name='R',scope='toolbar'){const r=rec(id),focusScope=scope==='dialog'?r.dialog:scope==='external'?document.body:r.slots[scope];const value=r.editor.hostRequests.capture(focusScope?{focusScope}:{});if(value.status==='captured')r.requests.set(name,value.request);return value.status==='captured'?{status:value.status,stamp:copy(value.request.stamp),context:copy(value.request.context)}:copy(value);}
 export function release(id,name='R'){const r=rec(id);return r.editor.hostRequests.release(r.requests.get(name));}
 export async function complete(id,name,intent,options={focus:'none'}){const r=rec(id),value=r.editor.hostRequests.complete(r.requests.get(name),kwdjCommand(resolve(r,intent)),options);if(value.status!=='submitted')return copy(value);const submission=await done(value.submission),focus=await value.focus;return {status:value.status,submission:copy(submission),focus:copy(focus)};}
@@ -216,6 +228,6 @@ export function slashCancelFocus(id){const r=rec(id);assert(r.slash,'Closed slas
   r.slashCancelFocusTransitions=[];
   r.slashCancelTarget=controls[0];return controls.map(button=>button.id);
 }
-export async function replace(id,source){const r=rec(id),result=await r.editor.replace(new TextEncoder().encode(typeof source==='string'?source:JSON.stringify(source)));r.ui.refresh();return copy(await done(result));}
-export async function destroy(id){const r=rec(id);if(r.ui)await r.ui.destroy().settled;const receipt=r.editor.destroy();if(receipt.sdk.status==='queued')await receipt.sdk.completion;r.releaseLoader?.();await Promise.resolve();const result={ui:r.ui?copy(r.ui.resources()):{listeners:0,observers:0,animationFrames:0,subscriptions:0,hostRequests:0,continuations:0},mounted:copy(r.editor.resources()),native:copy(r.editor.nativeResources()),...(r.nativeTraceEnabled?{nativeTrace:nativeTrace(id)}:{})};r.wrapper.remove();records.delete(id);return result;}
-window.ui42={mount,inspect,editorFocus,refresh,select,command,history,mode,locale,bindAfter,geometryRead,geometryRawRead,nativeFault,geometryProbeNextEvent,destroySubscriberProbe,destroyMountedProbe,mountedFacts,nativeTrace,nativeHostEdit,capture,release,complete,cancel,lateAccept,status,slashFactoryFault,textWindow,slashCancelFocus,replace,destroy,publicFailure,cases:copy(cases),geometry:copy(geometry),moduleManifest:copy(module.manifest)};
+export async function replace(id,source){const r=rec(id),result=await r.editor.replace(new TextEncoder().encode(typeof source==='string'?source:JSON.stringify(source)));r.ui?.refresh();return copy(await done(result));}
+export async function destroy(id){const r=rec(id);if(r.ui)await r.ui.destroy().settled;const receipt=r.editor.destroy();if(receipt.sdk.status==='queued')await receipt.sdk.completion;r.releaseLoader?.();await Promise.resolve();const result={ui:r.ui?copy(r.ui.resources()):{listeners:0,observers:0,animationFrames:0,subscriptions:0,hostRequests:0,continuations:0,dragGestures:0,pointerCaptures:0},mounted:copy(r.editor.resources()),native:copy(r.editor.nativeResources()),...(r.nativeTraceEnabled?{nativeTrace:nativeTrace(id)}:{})};r.wrapper.remove();records.delete(id);return result;}
+window.ui42={mount,inspect,editorFocus,refresh,select,command,history,mode,locale,bindAfter,geometryRead,geometryRawRead,dragGeometryRead,dragFactoryFault,nativeFault,geometryProbeNextEvent,destroySubscriberProbe,destroyMountedProbe,mountedFacts,nativeTrace,nativeHostEdit,capture,release,complete,cancel,lateAccept,status,slashFactoryFault,textWindow,slashCancelFocus,replace,destroy,publicFailure,cases:copy(cases),geometry:copy(geometry),moduleManifest:copy(module.manifest)};

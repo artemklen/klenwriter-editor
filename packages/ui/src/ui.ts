@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import type { CommandDto, DeepReadonly, NodeViewDto, SessionContextV2, StateDto } from '@klenwriter/editor-sdk';
 import type { HostFocus, InteractionMode, MountedEditor, MountedHostRequest } from '@klenwriter/editor-dom';
-import type { EditorUi, UiAction, UiActionContext, UiBlockContext, UiCloseReason, UiCommandAction, UiFailure, UiHostAction, UiJson, UiLocale, UiMoveChoice, UiProfile, UiResult, UiText, UiUnavailable } from './types.js';
+import type { EditorUi, UiAction, UiActionContext, UiBlockContext, UiCloseReason, UiCommandAction, UiDragProfile, UiFailure, UiHostAction, UiJson, UiLocale, UiMoveChoice, UiProfile, UiResult, UiText, UiUnavailable } from './types.js';
 import { command, element, fields, host, id, json, list, text, UiError, unavailable } from './data.js';
 import { label } from './strings.js';
 import { slashProfile } from './slash-profile.js';
 import { SlashOwner } from './slash-owner.js';
+import { DragOwner } from './drag-owner.js';
 
 interface Options {
   readonly editor: MountedEditor; readonly editorElement: HTMLElement;
@@ -50,11 +51,16 @@ function actions(value: unknown, allowed: 'all' | 'commands' | 'hosts'): readonl
 }
 function profile(value: unknown): UiProfile | UiUnavailable {
   const absent = unavailable(value); if (absent) return absent;
-  const f = fields(value, ['toolbar', 'insertions', 'blockActions', 'moves'], ['slash']);
+  const f = fields(value, ['toolbar', 'insertions', 'blockActions', 'moves'], ['slash', 'drag']);
   if (typeof f.moves !== 'function') throw new UiError('ui.invalid_options');
+  let drag: UiDragProfile | undefined;
+  if (f.drag !== undefined) {
+    const d = fields(f.drag, ['move']); if (typeof d.move !== 'function') throw new UiError('ui.invalid_options');
+    drag = Object.freeze({ move: d.move as UiDragProfile['move'] });
+  }
   return Object.freeze({ toolbar: actions(f.toolbar, 'all'), insertions: actions(f.insertions, 'commands') as readonly UiCommandAction[],
     blockActions: actions(f.blockActions, 'hosts') as readonly UiHostAction[], moves: f.moves as UiProfile['moves'],
-    ...(f.slash !== undefined ? {slash:slashProfile(f.slash)} : {}) });
+    ...(f.slash !== undefined ? {slash:slashProfile(f.slash)} : {}), ...(drag ? { drag } : {}) });
 }
 function moves(value: unknown): readonly UiMoveChoice[] | UiUnavailable {
   const absent = unavailable(value); if (absent) return absent;
@@ -95,6 +101,7 @@ class Ui implements EditorUi {
   #controls = new WeakMap<Element, Control>(); #toolbarControls = new Map<string, Control>(); #blockControls = new Map<string, Control>();
   #pending: Pending | null = null; #popup: Popup | null = null; #tasks = new Set<Task>();
   #slash: SlashOwner | null = null;
+  #drag: DragOwner | null = null;
   #pointerGesture = new WeakMap<Control, { readonly pointerId: number; admitted: boolean; request: MountedHostRequest | null }>();
   #removals: (() => void)[] = []; #observer: ResizeObserver | null = null; #subscription: (() => void) | null = null;
   #raf: number | null = null; #followupFrames = 0; #rendering = false; #refreshAgain = false; #emitting = false; #callbackDepth = 0;
@@ -126,7 +133,7 @@ class Ui implements EditorUi {
       if (this.#destroyed) return failure('ui.disposed');
       this.#wireInput(); // Mounted input owner is attached before its ready promise resolves.
       this.#initialized = true;
-      const subscription = configuration.editor.subscribe(event => { this.#slash?.publication(event); this.refresh(); });
+      const subscription = configuration.editor.subscribe(event => { this.#drag?.publication(event); this.#slash?.publication(event); this.refresh(); });
       if (typeof subscription !== 'function') {
         const result: UiFailure = subscription.status === 'dom_refused' ? subscription : { status: 'sdk_failure', response: subscription };
         this.#show(result); return result;
@@ -190,7 +197,11 @@ class Ui implements EditorUi {
   }
   #wireInput(): void {
     const element = this.#options!.editorElement;
-    for (const name of ['compositionstart', 'beforeinput']) this.#listen(element, name, () => this.refresh());
+    for (const name of ['compositionstart', 'beforeinput']) this.#listen(element, name, () => { this.#drag?.cancel(label('stale', this.#locale)); this.refresh(); });
+    for (const name of ['dragstart', 'drop']) this.#listen(element, name, () => {
+      this.#drag?.cancel(); this.#slash?.retire(); this.#releasePending('invalidated'); this.#hidePopup();
+      this.#setStatus(label('externalDrop', this.#locale)); this.refresh();
+    }, true);
     for (const name of ['compositionend', 'input']) this.#listen(element, name, () => {
       // An unchanged terminal has no native publication. Discard an older UI
       // frame so both finite followups are queued after the mounted owner.
@@ -217,6 +228,7 @@ class Ui implements EditorUi {
     return control.scope === 'toolbar' ? roots.toolbar : control.scope === 'add' ? roots.entry : roots.gutter;
   }
   #pointerDown(event: PointerEvent): void {
+    this.#drag?.cancel();
     this.#slash?.foreignGesture(event.target);
     this.#pointerGesture = new WeakMap();
     const control = this.#find(event.target); if (!control || event.button !== 0 || event.ctrlKey || event.metaKey || event.altKey || this.#destroyed) return;
@@ -413,12 +425,15 @@ class Ui implements EditorUi {
   }
   #update(): UiFailure | null {
     if (this.#destroyed || !this.#options || !this.#initialized) return null;
+    // Drag motion uses compact composite geometry, never ordinary NodeView snapshots.
+    if (this.#drag?.active) { this.#drag.check(); return null; }
     if (this.#rendering) { this.#refreshAgain = true; return null; }
     this.#rendering = true;
     try {
       const context = this.#snapshot();
       if ('status' in context) { this.#disable(context, true, context.status === 'dom_refused' ? 'availability' : 'feedback'); return context; }
       if (!same(this.#profileContext, context.context)) {
+        this.#disposeDrag();
         this.#disposeSlash();
         this.#releasePending('invalidated'); this.#hidePopup();
         const selected = profile(this.#callback(() => this.#options!.profile(context.context)));
@@ -428,6 +443,23 @@ class Ui implements EditorUi {
       if (!same(context.state.stamp, this.#options.editor.capture()) || !same(context.context, this.#options.editor.context())) return failure('ui.unavailable');
       if (this.#pending && !this.#sameCapture(this.#pending, context)) { this.#releasePending('invalidated'); this.#hidePopup(); }
       this.#context = context; this.#labels();
+      if (!this.#drag) this.#drag = new DragOwner({
+        editor: this.#options.editor, element: this.#options.editorElement, gutter: this.#gutter, prefix: this.#prefix,
+        source: () => this.#context?.block?.node.id ?? null,
+        beforeOpen: () => {
+          this.#slash?.retire(); this.#releasePending('invalidated'); this.#hidePopup();
+          if (this.#raf !== null) this.#window.cancelAnimationFrame(this.#raf); this.#raf = null; this.#followupFrames = 0;
+        },
+        keyboard: () => {
+          if (this.#destroyed || this.#callbackDepth || this.#tasks.size) return;
+          try { this.#update(); if (this.#move.availability.available) this.#openPopup('move', this.#drag!.handle); else this.#showControl(this.#move); }
+          catch (error) { const result = this.#error(error); this.#show(result); this.#emit(result); }
+        },
+        invoke: callback => this.#callback(callback), feedback: message => this.#setStatus(message),
+        result: result => this.#emit(result), failure: result => { this.#show(result); this.#emit(result); }, reason: result => this.#reason(result),
+        schedule: () => this.refresh(), moved: source => { this.#hover = source; this.#pointer = null; },
+      }, this.#locale);
+      this.#drag.configure(this.#profile!.drag ?? null, this.#locale);
       if (this.#profile!.slash && !this.#slash) this.#slash = new SlashOwner({
         editor:this.#options.editor,element:this.#options.editorElement,entry:this.#entry,add:this.#add.button,prefix:this.#prefix,
         snapshot:()=>this.#snapshot(true),invoke:callback=>this.#callback(callback),
@@ -534,6 +566,7 @@ class Ui implements EditorUi {
       : node.primitive === 'container' ? 'container' : node.primitive === 'block_atom' ? 'object' : 'genericBlock', this.#locale);
   }
   #disable(result: UiFailure, show = true, owner: 'availability' | 'feedback' = 'feedback'): void {
+    this.#drag?.cancel();
     this.#slash?.retire();
     this.#clearToolbarPlacement();
     for (const control of [...this.#toolbarControls.values(), ...this.#blockControls.values(), this.#add, this.#move]) {
@@ -588,7 +621,8 @@ class Ui implements EditorUi {
       this.#complete(pending, control.action?.id ?? control.choice!.id, owned, control.choice !== null);
     } catch (error) { const result = this.#error(error, control.action?.id ?? null); this.#show(result); this.#emit(result); this.#releasePending('refused'); this.#hidePopup(); }
   }
-  #openPopup(kind: 'add' | 'move'): void {
+  #openPopup(kind: 'add' | 'move', initiating?: HTMLButtonElement): void {
+    this.#drag?.cancel();
     if (this.#popup) { this.#cancelPopup(true); return; }
     if (kind === 'add' && this.#profile?.slash) {
       if (this.#slash?.closeAdd()) { this.#releasePending('cancelled'); return; }
@@ -597,7 +631,7 @@ class Ui implements EditorUi {
       return;
     }
     this.#slash?.retire();
-    const trigger = kind === 'add' ? this.#add.button : this.#move.button;
+    const trigger = initiating ?? (kind === 'add' ? this.#add.button : this.#move.button);
     const pending = this.#capture(kind === 'add' ? this.#options!.slots.entry : this.#options!.slots.gutter); if (!pending) return;
     const popup = kind === 'add' ? this.#addPopup : this.#movePopup;
     const choices = kind === 'move' && pending.context.block ? moves(this.#callback(() => this.#profile!.moves(pending.context as UiActionContext & { block: UiBlockContext }))) : null;
@@ -733,23 +767,29 @@ class Ui implements EditorUi {
   setLocale(locale: UiLocale): void {
     if (this.#destroyed) return;
     if (locale !== 'ru' && locale !== 'en') { this.#show(failure('ui.invalid_options')); return; }
-    this.#locale = locale; this.#labels(); this.refresh();
+    this.#drag?.cancel(); this.#locale = locale; this.#labels(); this.refresh();
   }
   setInteractionMode(mode: InteractionMode): ReturnType<MountedEditor['setInteractionMode']> {
     if (!this.#options || this.#destroyed) return { status: 'dom_refused', diagnostic: { code: 'dom.disposed', phase: 'mode', stamp: null, node: null, typeId: null, publication: 'none' } };
-    const result = this.#options.editor.setInteractionMode(mode); this.#releasePending('invalidated'); this.#hidePopup(); this.#slash?.retire(); this.refresh(); return result;
+    this.#drag?.cancel(); const result = this.#options.editor.setInteractionMode(mode); this.#releasePending('invalidated'); this.#hidePopup(); this.#slash?.retire(); this.refresh(); return result;
   }
   refresh(): void {
     if (this.#destroyed || !this.#initialized || this.#raf !== null) return;
+    if (this.#drag?.active) { this.#drag.check(); return; }
     this.#raf = this.#window.requestAnimationFrame(() => {
       this.#raf = null; if (this.#followupFrames > 0) this.#followupFrames--;
       this.#update(); if (this.#followupFrames > 0) this.refresh();
     });
   }
   resources(): ReturnType<EditorUi['resources']> {
-    const slash = this.#slash?.resources();
-    return Object.freeze({ listeners: this.#removals.length + (slash?.listeners ?? 0), observers: this.#observer ? 1 : 0, animationFrames: this.#raf === null ? 0 : 1,
-      subscriptions: (this.#subscription ? 1 : 0) + (slash?.subscriptions ?? 0), hostRequests: (this.#pending ? 1 : 0) + (slash?.hostRequests ?? 0), continuations: this.#tasks.size + (slash?.continuations ?? 0) });
+    const slash = this.#slash?.resources(), drag = this.#drag?.resources();
+    return Object.freeze({ listeners: this.#removals.length + (slash?.listeners ?? 0) + (drag?.listeners ?? 0), observers: this.#observer ? 1 : 0, animationFrames: (this.#raf === null ? 0 : 1) + (drag?.animationFrames ?? 0),
+      subscriptions: (this.#subscription ? 1 : 0) + (slash?.subscriptions ?? 0), hostRequests: (this.#pending ? 1 : 0) + (slash?.hostRequests ?? 0) + (drag?.hostRequests ?? 0), continuations: this.#tasks.size + (slash?.continuations ?? 0) + (drag?.continuations ?? 0),
+      dragGestures: drag?.dragGestures ?? 0, pointerCaptures: drag?.pointerCaptures ?? 0 });
+  }
+  #disposeDrag(): void {
+    const owner = this.#drag; this.#drag = null;
+    if (owner) this.#track(owner.destroy(), () => {}, () => {});
   }
   #disposeSlash(): void {
     const owner = this.#slash; this.#slash = null;
@@ -762,6 +802,7 @@ class Ui implements EditorUi {
       if (this.#raf !== null) this.#window.cancelAnimationFrame(this.#raf); this.#raf = null; this.#followupFrames = 0;
       this.#releasePending('destroyed'); this.#hidePopup();
       this.#disposeSlash();
+      this.#disposeDrag();
       for (const task of this.#tasks) { task.done = null; task.dispose?.(); task.dispose = null; }
       this.#subscription?.(); this.#subscription = null; this.#observer?.disconnect(); this.#observer = null;
       for (const remove of this.#removals.splice(0)) remove();

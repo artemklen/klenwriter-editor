@@ -29,6 +29,7 @@ const routes = new Map([
   ['/ui', ['spikes/workspace/ui.html', 'text/html']],
   ['/ui-frame', ['spikes/workspace/ui-frame.html', 'text/html']],
   ['/ui-host.js', ['spikes/workspace/ui-host.js', 'text/javascript']],
+  ['/drag-native-host.js', ['spikes/workspace/drag-native-host.js', 'text/javascript']],
   ['/ui-fixture.css', ['spikes/workspace/ui-fixture.css', 'text/css']],
   ['/ui-style.css', ['packages/ui/dist/style.css', 'text/css']],
   ['/ui-contract/geometry-fixtures.json', ['contracts/ui/v1/geometry-fixtures.json', 'application/json']],

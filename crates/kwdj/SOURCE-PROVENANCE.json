@@ -368,5 +368,47 @@
     "authority": "Rust profile query/execute and the existing single SDK pump; geometry is bounded presentation and opaque requests validate genuine ownership/full tokens. UI has no concrete profile/CMS/framework dependency.",
     "dependencies": "Public workspace DOM/SDK only; no new external runtime dependency.",
     "privacy": "Synthetic literal documents and controlled fixtures only; no private documents or production data."
+  },
+  "originalBlockDrag": {
+    "issue": "OSR-44",
+    "source": "Original TypeScript pointer owner, bounded composite geometry and independently authored synthetic contracts; no third-party/CMS source copied",
+    "license": "MIT OR Apache-2.0",
+    "paths": [
+      "packages/dom/src/drag-geometry.ts",
+      "packages/ui/src/drag-owner.ts",
+      "contracts/drag/v1",
+      "scripts/drag-native.mjs",
+      "scripts/drag-semantic-data.mjs",
+      "scripts/drag-semantic-assertions.mjs",
+      "scripts/drag-native-acceptance.mjs",
+      "scripts/drag-installed",
+      "spikes/workspace/drag-native-host.js",
+      "tests/fixtures/drag-native",
+      "tests/drag-*.mjs",
+      "tests/ui-drag*-browser.spec.js",
+      "docs/drag.md"
+    ],
+    "extendedOriginalFoundation": [
+      "packages/dom/src/geometry.ts",
+      "packages/dom/src/types.ts",
+      "packages/dom/src/input.ts",
+      "packages/dom/src/selection.ts",
+      "packages/dom/src/mounted.ts",
+      "packages/dom/src/composition.ts",
+      "packages/ui/src/types.ts",
+      "packages/ui/src/strings.ts",
+      "packages/ui/src/ui.ts",
+      "packages/ui/src/style.css",
+      "scripts/workspace-server.mjs",
+      "spikes/workspace/ui-host.js",
+      "spikes/workspace/ui-fixture.css",
+      "tests/ui-controls-browser.spec.js",
+      "tests/ui-slash-browser.spec.js",
+      "tests/ui-toolbar-placement-browser.spec.js",
+      "tests/selection-controller.node.mjs"
+    ],
+    "authority": "Existing native Move query/execute, original host request and one isolated history group. Pointer geometry and paint grant no schema authority; external HTML drag data is never read.",
+    "dependencies": "Existing public DOM/SDK only; no new runtime dependency.",
+    "privacy": "Synthetic literal documents and finite controlled fixtures only; no private documents or production data."
   }
 }

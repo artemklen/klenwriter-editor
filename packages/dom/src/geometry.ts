@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import type { DeepReadonly, Response, SelectionDto, SessionContextV2, StampDto } from '@klenwriter/editor-sdk';
-import type { CssRect, DomRefusal, GeometryRead, GeometryRequest, GeometrySnapshot, MountedGeometry } from './types.js';
+import type { CssRect, DomRefusal, DragGeometryRead, DragGeometryRequest, GeometryRead, GeometryRequest, GeometrySnapshot, MountedGeometry } from './types.js';
 import type { DomPoint, DomView, GeometryRow } from './view.js';
 import { fields } from './ownership.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
+import { readDragGeometry } from './drag-geometry.js';
 
 interface Configuration {
   element(): HTMLElement | null;
@@ -276,11 +277,17 @@ function visible(rect:CssRect,clip:CssRect):boolean {
 
 /** No subscriptions, native mutations, retained DOM handles or presentation writes. */
 export function createMountedGeometry(configuration:Configuration):MountedGeometry {
-  return Object.freeze({read(value:GeometryRequest):GeometryRead {
+  function read(value:DragGeometryRequest):DragGeometryRead;
+  function read(value:GeometryRequest):GeometryRead;
+  function read(value:GeometryRequest|DragGeometryRequest):GeometryRead|DragGeometryRead;
+  function read(value:GeometryRequest|DragGeometryRequest):GeometryRead|DragGeometryRead {
+    let drag=false;
+    try{drag=!!value&&typeof value==='object'&&Object.getOwnPropertyDescriptor(value,'kind')?.value==='drag';}catch{/* The old request validator retains its refusal path. */}
+    if(drag)return readDragGeometry(configuration,value as DragGeometryRequest);
     const guard=configuration.guard();if(guard)return guard;
     let request:GeometryRequest|undefined;
     const failure=(code:DomRefusal['diagnostic']['code'])=>domRefusal(code,'geometry',configuration.capture(),request?.kind==='block'?request.node:null);
-    try{request=ownRequest(value);}catch{return failure('dom.invalid_options');}
+    try{request=ownRequest(value as GeometryRequest);}catch{return failure('dom.invalid_options');}
     const host=configuration.element(),view=configuration.view(),stamp=configuration.capture(),context=configuration.context();
     if(!host || !view || !stamp || !context)return failure('dom.not_ready');
     if(!sameStamp(request.stamp,stamp))return failure('dom.stale_selection');
@@ -310,5 +317,6 @@ export function createMountedGeometry(configuration:Configuration):MountedGeomet
       if(!current())return failure('dom.stale_selection');
       const after=configuration.guard();return after ?? failure('dom.selection_geometry_unsupported');
     }
-  }});
+  }
+  return Object.freeze({read});
 }

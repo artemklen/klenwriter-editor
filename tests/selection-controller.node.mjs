@@ -4,6 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {SelectionOwner} from '../packages/dom/dist/selection.js';
+import {attachInput} from '../packages/dom/dist/input.js';
 const literals=JSON.parse(readFileSync(new URL('../contracts/selection/v1/bookmark-oracles.json',import.meta.url),'utf8'));
 const copy=value=>structuredClone(value),same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 function fixture(initial='BASE') {
@@ -202,4 +203,135 @@ test('controlled owned selection publications retain a drag; foreign host mutati
   const frame=f.owner.beginSubmission({kind:'command',stamp:f.state.stamp,command:{id:'fixture.document-only',payload_json:'{}'},history_hint:{kind:'isolated'}},false);
   assert.equal(f.owner.resources().activePointers,0);assert.equal(f.frames.size,0);const top=f.host.scrollTop;f.tick();assert.equal(f.host.scrollTop,top);
   f.owner.endSubmission(frame,{status:'completed',response:{status:'ok',value:{kind:'mutation',effect:'unchanged',state:f.state,presentation:null}}});f.owner.destroy();
+});
+
+// Controlled event-order boundary only: this hub explicitly models trusted
+// Window capture before document bubble, not browser/physical-input evidence.
+function replacementSelectionFixture() {
+  class Hub {
+    handlers=new Map();
+    addEventListener(type,fn,capture=false){const rows=this.handlers.get(type)??[];rows.push({fn,capture});this.handlers.set(type,rows);}
+    removeEventListener(type,fn,capture=false){this.handlers.set(type,(this.handlers.get(type)??[]).filter(row=>row.fn!==fn||row.capture!==capture));}
+    fire(type,event){for(const {fn} of [...(this.handlers.get(type)??[])])fn(event);}
+    count(){return [...this.handlers.values()].reduce((n,rows)=>n+rows.length,0);}
+  }
+  class OwnedNode extends Hub {constructor(parent=null){super();this.parentElement=parent;}contains(node){for(let p=node;p;p=p.parentElement)if(p===this)return true;return false;}}
+  const win=new Hub(),doc=new Hub(),host=new OwnedNode(),text=new OwnedNode(host),outside=new OwnedNode();win.Node=OwnedNode;
+  let state=copy(literals.states.NULL),dom=null,busy=false,focused=true,rootFailure=false,setterOutcome=null;
+  const calls={submit:[],restore:[],failures:[],read:[]};
+  Object.assign(host,{ownerDocument:doc,focus(){doc.activeElement=host;}});
+  Object.assign(doc,{defaultView:win,activeElement:host,hasFocus:()=>focused,getSelection:()=>({isCollapsed:true})});
+  const at=offset=>({anchor:{kind:'text',node:literals.states.BASE.selection.anchor.node,offset,affinity:'after'},focus:{kind:'text',node:literals.states.BASE.selection.anchor.node,offset,affinity:'after'}});
+  const view={readSelection:()=>dom,domPoint:()=>({node:text,offset:0}),hasProvisional:()=>false,restoreSelection(value){calls.restore.push(copy(value));dom=copy(value);return null;}};
+  let owner;owner=new SelectionOwner({element:()=>host,view:()=>view,capture:()=>state.stamp,context:()=>literals.contexts.KWDJ_A,guard:()=>null,busy:()=>busy,
+    report:value=>calls.failures.push(value),recover:value=>calls.failures.push(value),
+    read(request){calls.read.push(copy(request));if(request.kind==='state')return {status:'ok',value:{kind:'state',state}};assert.equal(request.kind,'node');return rootFailure?{status:'refused',diagnostic:{code:'controlled.root_refused'}}:{status:'ok',value:{kind:'node',node:{children:['P','P2']}}};},
+    submit(request){calls.submit.push(copy(request));if(setterOutcome)return setterOutcome;const frame=owner.beginSubmission(request,true),before=state.stamp,changed=!same(state.selection,request.selection);state={...state,selection:copy(request.selection)};if(changed){state={...state,stamp:{...state.stamp,selection_epoch:String(BigInt(state.stamp.selection_epoch)+1n)}};owner.publication({before,after:state.stamp,change:{kind:'state'}});}const result={status:'completed',response:{status:'ok',value:{kind:'mutation',effect:changed?'state_changed':'unchanged',state:copy(state),presentation:null}}};owner.endSubmission(frame,result);return result;}});
+  owner.attach();
+  function event(type,values={}){return {type,target:host,isTrusted:true,pointerId:7,pointerType:'mouse',isPrimary:true,button:0,buttons:1,clientX:20,clientY:30,detail:1,key:'',isComposing:false,altKey:false,ctrlKey:false,metaKey:false,shiftKey:false,cancelable:true,defaultPrevented:false,preventDefault(){this.defaultPrevented=true;},...values};}
+  function emit(type,values={},bubble=true){const e=event(type,values);win.fire(type,e);if(bubble)doc.fire(type,e);return e;}
+  return {owner,win,doc,host,outside,view,calls,at,emit,get state(){return state;},set dom(value){dom=value;},set busy(value){busy=value;},set focused(value){focused=value;},set rootFailure(value){rootFailure=value;},set setterOutcome(value){setterOutcome=value;},
+    held(values={}){emit('pointerdown',{target:outside,...values},false);},
+    arm(){this.held();owner.viewReplaced();emit('pointerup',{target:outside,buttons:0},false);dom=at(0);},
+    selectionchange(){doc.fire('selectionchange',event('selectionchange',{target:doc}));},
+    destroyed(){owner.destroy();assert.equal(win.count()+doc.count(),0);assert.deepEqual(owner.resources(),{bookmarks:0,restoreTickets:0,activePointers:0,animationFrames:0});assert.deepEqual(calls.restore,[]);},
+  };
+}
+test('replacement import boundary: held outside down is scalar-only; old terminal cannot import a fresh-view ghost caret',()=>{
+  const f=replacementSelectionFixture(),serial=f.owner.intent();f.held();assert.equal(f.owner.intent(),serial);assert.equal(f.calls.submit.length,0);assert.equal(f.owner.resources().activePointers,0);
+  f.owner.cancel();f.owner.invalidate(true);f.owner.viewReplaced();f.emit('pointerup',{target:f.outside,buttons:0},false);f.dom=f.at(0);f.selectionchange();
+  assert.equal(f.state.selection,null);assert.equal(f.calls.submit.length,0);assert.equal(f.calls.read.length,0);f.destroyed();
+});
+test('replacement import boundary: no held owner, released/cancelled input and foreign or untrusted down retain normal automatic import',()=>{
+  for(const kind of ['none','released','cancelled','untrusted','pen','nonprimary','foreign-focus','document-unfocused','new-foreign-down']){
+    const f=replacementSelectionFixture();
+    if(kind==='new-foreign-down')f.held();
+    if(kind==='foreign-focus'||kind==='new-foreign-down')f.doc.activeElement=f.outside;if(kind==='document-unfocused')f.focused=false;
+    if(kind!=='none')f.held(kind==='untrusted'?{isTrusted:false}:kind==='pen'?{pointerType:'pen'}:kind==='nonprimary'?{isPrimary:false}:{});
+    if(kind==='released'||kind==='cancelled')f.emit(kind==='released'?'pointerup':'pointercancel',{target:f.outside,buttons:0},false);
+    f.owner.viewReplaced();f.doc.activeElement=f.host;f.focused=true;f.dom=f.at(0);f.selectionchange();
+    assert.deepEqual(f.state.selection,f.at(0),kind);assert.equal(f.calls.submit.length,1,kind);f.destroyed();
+  }
+});
+test('replacement import boundary: lost capture and unrelated terminal do not stand in for the original physical up',()=>{
+  for(const terminal of ['lostpointercapture','unrelated-up']){
+    const f=replacementSelectionFixture();f.held();f.emit(terminal==='unrelated-up'?'pointerup':terminal,{target:f.outside,pointerId:terminal==='unrelated-up'?8:7,buttons:terminal==='unrelated-up'?0:1},false);
+    f.owner.cancel();f.owner.viewReplaced();f.dom=f.at(0);f.selectionchange();assert.equal(f.state.selection,null);assert.equal(f.calls.submit.length,0);f.destroyed();
+  }
+});
+test('replacement import boundary: another no-held replacement, focus, invalidation and pure bookmark capture never reopen an armed barrier',()=>{
+  const f=replacementSelectionFixture();f.arm();f.owner.viewReplaced();f.owner.invalidate(true);f.emit('blur');
+  f.doc.activeElement=f.outside;const bookmark=f.owner.api.captureBookmark();assert.equal(bookmark.status,'captured');assert.equal(f.owner.api.releaseBookmark(bookmark.bookmark),true);
+  f.doc.activeElement=f.host;f.emit('focusin');f.selectionchange();assert.equal(f.state.selection,null);assert.equal(f.calls.submit.length,0);f.destroyed();
+});
+test('replacement import boundary: fresh guarded owned mouse down reopens native modified and multiple-click fallback',()=>{
+  for(const properties of [{detail:2},{detail:3},{shiftKey:true},{ctrlKey:true},{altKey:true},{metaKey:true}]){
+    const f=replacementSelectionFixture();f.arm();f.emit('pointerdown');const down=f.emit('mousedown',properties);assert.equal(down.defaultPrevented,false);assert.equal(f.owner.resources().activePointers,0);
+    f.dom=f.at(1);f.selectionchange();assert.deepEqual(f.state.selection,f.at(1));assert.equal(f.calls.submit.length,1);f.destroyed();
+  }
+  for(const kind of ['busy','foreign','untrusted','prevented']){
+    const f=replacementSelectionFixture();f.arm();if(kind==='busy')f.busy=true;
+    f.emit('pointerdown',kind==='foreign'?{target:f.outside}:kind==='untrusted'?{isTrusted:false}:kind==='prevented'?{defaultPrevented:true}:{});f.emit('pointerup',{buttons:0});f.busy=false;
+    f.selectionchange();assert.equal(f.state.selection,null,kind);assert.equal(f.calls.submit.length,0,kind);f.destroyed();
+  }
+});
+test('replacement import boundary: only guarded focused selection navigation reopens automatic import',()=>{
+  for(const key of ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown']){
+    const f=replacementSelectionFixture();f.arm();f.emit('keydown',{key,shiftKey:true});f.dom=f.at(1);f.selectionchange();assert.deepEqual(f.state.selection,f.at(1),key);assert.equal(f.calls.submit.length,1);f.destroyed();
+  }
+  for(const values of [{key:'Tab'},{key:'Escape'},{key:'Enter'},{key:'Backspace'},{key:'Delete'},{key:'f',metaKey:true},{key:'Shift'},{key:'ArrowRight',isComposing:true},{key:'ArrowRight',isTrusted:false},{key:'ArrowRight',defaultPrevented:true},{key:'ArrowRight',foreign:true},{key:'ArrowRight',focusOutside:true},{key:'ArrowRight',documentUnfocused:true},{key:'ArrowRight',busy:true}]){
+    const f=replacementSelectionFixture();f.arm();f.busy=!!values.busy;if(values.focusOutside)f.doc.activeElement=f.outside;if(values.documentUnfocused)f.focused=false;
+    f.emit('keydown',{...values,...(values.foreign?{target:f.outside}:{})});f.busy=false;f.doc.activeElement=f.host;f.focused=true;f.selectionchange();assert.equal(f.state.selection,null,JSON.stringify(values));assert.equal(f.calls.submit.length,0);f.destroyed();
+  }
+});
+test('replacement import boundary: valid fresh-input sync reopens; null, refusal or busy sync does not; explicit sync remains usable',()=>{
+  for(const kind of ['null','refused','busy']){
+    const f=replacementSelectionFixture();f.arm();f.dom=kind==='null'?null:kind==='refused'?{status:'dom_refused',diagnostic:{code:'dom.stale_selection',phase:'selection'}}:f.at(0);f.busy=kind==='busy';
+    f.owner.syncFromDom(true);f.busy=false;f.dom=f.at(0);f.selectionchange();assert.equal(f.state.selection,null,kind);assert.equal(f.calls.submit.length,0);f.destroyed();
+  }
+  const f=replacementSelectionFixture();f.arm();assert.deepEqual(f.owner.syncFromDom(true),f.at(0));f.dom=f.at(1);f.selectionchange();assert.deepEqual(f.state.selection,f.at(1));assert.equal(f.calls.submit.length,2);f.destroyed();
+  const explicit=replacementSelectionFixture();explicit.arm();assert.deepEqual(explicit.owner.syncFromDom(),explicit.at(0));explicit.dom=explicit.at(1);explicit.selectionchange();assert.deepEqual(explicit.state.selection,explicit.at(0));assert.equal(explicit.calls.submit.length,1);explicit.destroyed();
+});
+test('replacement import boundary: refused, queued or non-ok fresh range publication never reopens automatic import',()=>{
+  const refused={status:'dom_refused',diagnostic:{code:'dom.busy',phase:'selection'}},response={status:'refused',diagnostic:{code:'controlled.selection_refused'}};
+  for(const outcome of [refused,{status:'queued',completion:Promise.resolve(response)},{status:'completed',response}]){
+    const f=replacementSelectionFixture();f.arm();f.setterOutcome=outcome;const result=f.owner.syncFromDom(true);
+    if(outcome===refused)assert.equal(result,refused);else refusal(result,'dom.busy');
+    assert.equal(f.calls.submit.length,1);assert.equal(f.state.selection,null);f.setterOutcome=null;f.dom=f.at(1);f.selectionchange();assert.equal(f.calls.submit.length,1);assert.equal(f.state.selection,null);f.destroyed();
+  }
+});
+test('replacement import boundary: select-all still dispatches directly without reopening automatic import',()=>{
+  for(const rootFailure of [false,true]){
+    const f=replacementSelectionFixture();f.arm();f.rootFailure=rootFailure;f.emit('keydown',{key:'a',metaKey:true});
+    if(rootFailure){f.selectionchange();assert.equal(f.state.selection,null);assert.equal(f.calls.submit.length,0);}
+    else{const selected={anchor:{kind:'child',parent:f.state.root,index:0,affinity:'after'},focus:{kind:'child',parent:f.state.root,index:2,affinity:'after'}};assert.deepEqual(f.state.selection,selected);f.dom=f.at(1);f.selectionchange();assert.deepEqual(f.state.selection,selected);assert.equal(f.calls.submit.length,1);}
+    f.destroyed();
+  }
+});
+
+function replacementInput(f,mode){
+  return attachInput({element:f.host,view:f.view,selection:f.owner,bindings:{insertText:()=>null},canEdit:()=>mode!=='mode-blocked',canSelect:()=>true,busy:()=>mode==='busy',
+    capture:()=>f.state.stamp,context:()=>literals.contexts.KWDJ_A,readState:()=>f.state,
+    submit(){assert.fail('This controlled entry-boundary probe has no command capability');},submitComposition(){assert.fail('No composition commit in this controlled probe');},
+    report:value=>f.calls.failures.push(value),recover:value=>f.calls.failures.push(value),composing(){assert.fail('No provisional generation is admitted');},consumeRecords:()=>0});
+}
+test('replacement import boundary: actual ordinary-beforeinput entry preserves pre-sync guards and valid-range synchronization before unsupported-command refusal',()=>{
+  for(const mode of ['mode-blocked','busy','range-missing','valid']){
+    const f=replacementSelectionFixture();f.arm();if(mode==='range-missing')f.dom=null;
+    const input=replacementInput(f,mode),event={type:'beforeinput',target:f.host,inputType:'insertText',data:'x',isComposing:false,cancelable:true,defaultPrevented:false,preventDefault(){this.defaultPrevented=true;}};
+    f.host.fire('beforeinput',event);assert.equal(event.defaultPrevented,true);assert.equal(f.calls.submit.length,mode==='valid'?1:0,mode);
+    f.dom=f.at(1);f.selectionchange();assert.equal(f.calls.submit.length,mode==='valid'?2:0,mode);assert.deepEqual(f.state.selection,mode==='valid'?f.at(1):null,mode);
+    input.destroy();assert.equal(input.listeners(),0);f.destroyed();
+  }
+});
+test('replacement import boundary: actual composition-start entry uses fresh sync only after its guards and before provisional capture [controlled capture stop]',()=>{
+  for(const mode of ['mode-blocked','busy','range-missing','valid']){
+    const f=replacementSelectionFixture();f.arm();if(mode==='range-missing')f.dom=null;
+    let captures=0;const stop=new Error('controlled.stop-before-provisional');f.view.beginComposition=()=>{captures++;throw stop;};
+    const input=replacementInput(f,mode),event={type:'compositionstart',target:f.host,data:'',cancelable:true,defaultPrevented:false};
+    if(mode==='valid')assert.throws(()=>f.host.fire('compositionstart',event),error=>error===stop);else f.host.fire('compositionstart',event);
+    assert.equal(captures,mode==='valid'?1:0,mode);assert.equal(f.calls.submit.length,mode==='valid'?1:0,mode);
+    f.dom=f.at(1);f.selectionchange();assert.equal(f.calls.submit.length,mode==='valid'?2:0,mode);assert.deepEqual(f.state.selection,mode==='valid'?f.at(1):null,mode);
+    input.destroy();assert.equal(input.listeners(),0);f.destroyed();
+  }
 });

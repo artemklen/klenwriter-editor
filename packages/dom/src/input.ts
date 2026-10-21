@@ -45,11 +45,11 @@ export function attachInput(options: InputConfiguration): InputOwner {
   const removals: (() => void)[] = [];
   let destroyed = false, pending: Pending | null = null;
   const failure = (code: DomRefusal['diagnostic']['code']) => domRefusal(code,'command',options.capture());
-  const listen = (target: EventTarget,name: string,callback: EventListener) => {
-    target.addEventListener(name,callback); removals.push(() => target.removeEventListener(name,callback));
+  const listen = (target: EventTarget,name: string,callback: EventListener,capture=false) => {
+    target.addEventListener(name,callback,capture); removals.push(() => target.removeEventListener(name,callback,capture));
   };
   function refused(code: DomRefusal['diagnostic']['code']) { const value = failure(code); options.report(value); return value; }
-  const syncSelection = () => options.selection.syncFromDom();
+  const syncSelection = () => options.selection.syncFromDom(true);
   function command(inputType: string,data: string | null,noncollapsed = doc.getSelection()?.isCollapsed === false): CommandDto | null {
     switch (inputType) {
       case 'insertText': case 'insertReplacementText': return typeof data === 'string' ? options.bindings.insertText?.(data) ?? null : null;
@@ -224,7 +224,25 @@ export function attachInput(options: InputConfiguration): InputOwner {
     return null;
   }
   const composition=new CompositionOwner({...options,submit:options.submitComposition,ordinary:input=>ordinaryBeforeInput(input,true)});
-  listen(element,'beforeinput',event=>{const input=event as InputEvent;if(options.observationBusy?.()){if(input.cancelable)input.preventDefault();return;}if(!destroyed && !composition.beforeInput(input))ordinaryBeforeInput(input);});
+  // Internal block moves use the outside UI's pointer capability, never HTML
+  // drag data. Refuse before the browser can insert/navigate or delete a source.
+  // Capture also covers genuine descendants that stop bubbling. Payloads are
+  // deliberately not inspected, copied or passed to a profile constructor.
+  for(const name of ['dragstart','dragover','drop'])listen(element,name,event=>{
+    if(destroyed)return;
+    if(event.cancelable)event.preventDefault();
+    if(name!=='dragover')refused('dom.command_unsupported');
+  },true);
+  listen(element,'beforeinput',event=>{
+    const input=event as InputEvent;
+    if(destroyed)return;
+    if(input.inputType==='insertFromDrop'||input.inputType==='deleteByDrag'){
+      if(input.cancelable)input.preventDefault();
+      refused('dom.command_unsupported');return;
+    }
+    if(options.observationBusy?.()){if(input.cancelable)input.preventDefault();return;}
+    if(!composition.beforeInput(input))ordinaryBeforeInput(input);
+  });
   listen(element,'input',event=>{const input=event as InputEvent;if(!destroyed && !composition.input(input))reconcile(input);});
   listen(element,'compositionstart',event=>{if(!destroyed)composition.start(event as CompositionEvent);});
   listen(element,'compositionupdate',event=>{if(!destroyed)composition.update(event as CompositionEvent);});
