@@ -1,0 +1,303 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:klenwriter:mounted-corpus:run-binding:1",
+  "title": "run-binding",
+  "$ref": "#/$defs/runBinding",
+  "$defs": {
+    "u64": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Collector must also reject decimals greater than 18446744073709551615. No Number conversion."
+    },
+    "pin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "bytes",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 268435456
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "nativeResources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sessions",
+        "snapshot_handles",
+        "snapshot_bytes",
+        "protected_cursors"
+      ],
+      "properties": {
+        "sessions": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "snapshot_handles": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "snapshot_bytes": {
+          "$ref": "#/$defs/u64"
+        },
+        "protected_cursors": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        }
+      }
+    },
+    "nativeSample": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "timing",
+        "rawJson",
+        "value",
+        "validation"
+      ],
+      "properties": {
+        "source": {
+          "enum": [
+            "module.resourceCounts",
+            "mounted.nativeResources"
+          ]
+        },
+        "timing": {
+          "enum": [
+            "before_owner_construction",
+            "after_destroy_settlement"
+          ]
+        },
+        "rawJson": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "maxLength": 65536
+            }
+          ]
+        },
+        "value": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/nativeResources"
+            }
+          ]
+        },
+        "validation": {
+          "enum": [
+            "valid",
+            "null",
+            "invalid"
+          ]
+        }
+      }
+    },
+    "engine": {
+      "enum": [
+        "chromium",
+        "webkit",
+        "firefox"
+      ]
+    },
+    "runBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocol",
+        "runId",
+        "sourceSHA",
+        "acceptedSource",
+        "corpusIndex",
+        "corpusPackageSha256",
+        "scenarioPins",
+        "build",
+        "environment",
+        "nativeBaselines"
+      ],
+      "properties": {
+        "protocol": {
+          "const": "mounted-corpus/1"
+        },
+        "runId": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "sourceSHA": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "acceptedSource": {
+          "const": "71f47cf75d675c30e13a611bcf1f0be7657e3c23"
+        },
+        "corpusIndex": {
+          "$ref": "#/$defs/pin"
+        },
+        "corpusPackageSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "scenarioPins": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/pin"
+          }
+        },
+        "build": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "buildId",
+            "wasm",
+            "seal",
+            "dependencies"
+          ],
+          "properties": {
+            "buildId": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "wasm": {
+              "$ref": "#/$defs/pin"
+            },
+            "seal": {
+              "$ref": "#/$defs/pin"
+            },
+            "dependencies": {
+              "$ref": "#/$defs/pin"
+            }
+          }
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "nodeVersion",
+            "playwrightVersion",
+            "os",
+            "engines"
+          ],
+          "properties": {
+            "nodeVersion": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "playwrightVersion": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "os": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "platform",
+                "release",
+                "arch"
+              ],
+              "properties": {
+                "platform": {
+                  "type": "string",
+                  "maxLength": 256
+                },
+                "release": {
+                  "type": "string",
+                  "maxLength": 256
+                },
+                "arch": {
+                  "type": "string",
+                  "maxLength": 256
+                }
+              }
+            },
+            "engines": {
+              "type": "array",
+              "maxItems": 3,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "engine",
+                  "browserVersion",
+                  "executablePath",
+                  "executableSha256"
+                ],
+                "properties": {
+                  "engine": {
+                    "$ref": "#/$defs/engine"
+                  },
+                  "browserVersion": {
+                    "type": "string",
+                    "maxLength": 256
+                  },
+                  "executablePath": {
+                    "type": "string",
+                    "maxLength": 4096
+                  },
+                  "executableSha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "nativeBaselines": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "engine",
+              "buildId",
+              "wasmSha256",
+              "sample"
+            ],
+            "properties": {
+              "engine": {
+                "$ref": "#/$defs/engine"
+              },
+              "buildId": {
+                "type": "string",
+                "maxLength": 256
+              },
+              "wasmSha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "sample": {
+                "$ref": "#/$defs/nativeSample"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

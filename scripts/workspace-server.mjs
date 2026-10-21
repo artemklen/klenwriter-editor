@@ -27,6 +27,11 @@ const routes = new Map([
   ['/composition-native-host.js', ['spikes/workspace/composition-native-host.js', 'text/javascript']],
   ['/composition.css', ['spikes/workspace/composition.css', 'text/css']],
   ['/ui', ['spikes/workspace/ui.html', 'text/html']],
+  ['/mounted-corpus', ['spikes/workspace/mounted-corpus.html', 'text/html']],
+  ['/mounted-corpus-client.mjs', ['scripts/mounted-corpus/page-client.mjs', 'text/javascript']],
+  ['/mounted-corpus-protocol.mjs', ['scripts/mounted-corpus/protocol.mjs', 'text/javascript']],
+  ['/mounted-corpus-interactions.mjs', ['scripts/mounted-corpus/interactions.mjs', 'text/javascript']],
+  ['/mounted-corpus-interactions.css', ['scripts/mounted-corpus/interactions.css', 'text/css']],
   ['/ui-frame', ['spikes/workspace/ui-frame.html', 'text/html']],
   ['/ui-host.js', ['spikes/workspace/ui-host.js', 'text/javascript']],
   ['/drag-native-host.js', ['spikes/workspace/drag-native-host.js', 'text/javascript']],
@@ -62,11 +67,14 @@ for (const name of ['wasm', 'sdk', 'kwdj', 'dom', 'ui']) {
 }
 // Import maps are static, hash-authorized data. No unsafe-inline/eval or source rewriting.
 const mapHashes = [];
-for (const page of ['sdk-host.html', 'dom-host.html', 'selection.html', 'composition.html', 'ui.html']) {
+for (const page of ['sdk-host.html', 'dom-host.html', 'selection.html', 'composition.html', 'ui.html', 'mounted-corpus.html']) {
   const html = await readFile(new URL(`spikes/workspace/${page}`, root), 'utf8');
   const maps = [...html.matchAll(/<script type="importmap">([^<]+)<\/script>/g)];
   if (maps.length !== 1) throw new Error(`One static import map required: ${page}`);
   mapHashes.push(`'sha256-${createHash('sha256').update(maps[0][1]).digest('base64')}'`);
+}
+for (const name of ['manifest', 'initial-literals', 'identity-literals', 'interaction-literals', 'observation.schema', 'run-binding.schema', 'report.schema', 'source-pins']) {
+  routes.set(`/mounted-corpus-contract/${name}.json`, [`contracts/mounted-e2e/v1/${name}.json`, 'application/json']);
 }
 const domFixtureNames = ['D0','D1-after-end-split','T03-initial','T03-split','T04-X','T04-XY','T05-styled-EGC','T05-formatted-EGC','T05-backward-EGC','T05-backward-EGC-after','T06-safe-data','T10-replacement','KWDJ-basic-catalog','Notes-D0','Notes-D1-callout-highlight','Notes-D1-highlight-only','composition-initial','composition-outside-edit','ordered-u64-data'];
 for (const name of domFixtureNames) for (const kind of ['inputs','expected']) {
@@ -117,4 +125,6 @@ http.createServer(async (req, res) => {
   try { res.setHeader('Content-Type', route[1]); res.end(await readFile(new URL(route[0], root))); }
   catch { res.writeHead(500); res.end('Build the workspace before running this fixture'); }
 // 4190 is a restricted port in Firefox/WebKit (ManageSieve); use an HTTP dev port.
-}).listen(4174, '127.0.0.1');
+}).listen(4174, '127.0.0.1', () => {
+  process.send?.({ kind: 'workspace-fixture-ready', pid: process.pid });
+});

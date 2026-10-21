@@ -1,0 +1,863 @@
+{
+  "protocol": "mounted-corpus-interactions/1",
+  "status": "SOURCE_AUTHORED_BEFORE_EXECUTION",
+  "acceptedSource": "71f47cf75d675c30e13a611bcf1f0be7657e3c23",
+  "measurementStatus": "NOT_EXECUTED",
+  "scope": "Four bounded cross-cutting browser-protocol routes. No corpus membership expansion, installed OS input, paste, human or assistive-technology claim.",
+  "engines": {
+    "chromium": "required",
+    "webkit": "required",
+    "firefox": "experimental"
+  },
+  "budgets": {
+    "routes": 4,
+    "owners": 2,
+    "checkpoints": 6,
+    "uiResults": 16,
+    "ordinaryInputs": 16,
+    "domEvents": 256,
+    "nativeCalls": 4096,
+    "nativeBytes": 2097152,
+    "artifactBytes": 4194304,
+    "forwardTabs": 16,
+    "heldMoveSteps": 8
+  },
+  "slashCopy": {
+    "status": "source_authored_paired_copy_not_runtime_evidence",
+    "choices": [
+      {
+        "id": "paragraph",
+        "label": {
+          "ru": "Абзац",
+          "en": "Paragraph"
+        },
+        "keywords": {
+          "ru": [
+            "текст"
+          ],
+          "en": [
+            "text"
+          ]
+        }
+      },
+      {
+        "id": "heading2",
+        "label": {
+          "ru": "Заголовок 2",
+          "en": "Heading 2"
+        },
+        "keywords": {
+          "ru": [
+            "раздел"
+          ],
+          "en": [
+            "section"
+          ]
+        }
+      },
+      {
+        "id": "heading3",
+        "label": {
+          "ru": "Заголовок 3",
+          "en": "Heading 3"
+        },
+        "keywords": {
+          "ru": [
+            "подраздел"
+          ],
+          "en": [
+            "subsection"
+          ]
+        }
+      },
+      {
+        "id": "blockquote",
+        "label": {
+          "ru": "Цитата",
+          "en": "Quote"
+        },
+        "keywords": {
+          "ru": [
+            "цитирование"
+          ],
+          "en": [
+            "blockquote"
+          ]
+        }
+      },
+      {
+        "id": "bullet-list",
+        "label": {
+          "ru": "Маркированный список",
+          "en": "Bulleted list"
+        },
+        "keywords": {
+          "ru": [
+            "список"
+          ],
+          "en": [
+            "bullet",
+            "list"
+          ]
+        }
+      },
+      {
+        "id": "ordered-list",
+        "label": {
+          "ru": "Нумерованный список",
+          "en": "Numbered list"
+        },
+        "keywords": {
+          "ru": [
+            "список",
+            "номер"
+          ],
+          "en": [
+            "ordered",
+            "list"
+          ]
+        }
+      },
+      {
+        "id": "task-list",
+        "label": {
+          "ru": "Список задач",
+          "en": "Task list"
+        },
+        "keywords": {
+          "ru": [
+            "задача",
+            "список"
+          ],
+          "en": [
+            "todo",
+            "checklist"
+          ]
+        }
+      },
+      {
+        "id": "code-block",
+        "label": {
+          "ru": "Блок кода",
+          "en": "Code block"
+        },
+        "keywords": {
+          "ru": [
+            "код"
+          ],
+          "en": [
+            "code"
+          ]
+        }
+      },
+      {
+        "id": "scene-break",
+        "label": {
+          "ru": "Разделитель сцен",
+          "en": "Scene break"
+        },
+        "keywords": {
+          "ru": [
+            "сцена",
+            "разделитель"
+          ],
+          "en": [
+            "separator",
+            "scene"
+          ]
+        }
+      }
+    ],
+    "empty": {
+      "ru": "Ничего не найдено",
+      "en": "No results"
+    },
+    "label": {
+      "ru": "Выберите тип блока",
+      "en": "Choose a block type"
+    },
+    "limit": {
+      "ru": "Меню недоступно в этой позиции. Используйте «Добавить блок».",
+      "en": "The picker is unavailable at this position. Use Add block."
+    }
+  },
+  "sourcePins": [
+    {
+      "path": "contracts/slash/v1/lexical-key-oracles.json",
+      "bytes": 17681,
+      "sha256": "920f8a7190717cd66d93dcf610c00ed6c098d1363b187288ea5c2456167e4333"
+    },
+    {
+      "path": "contracts/slash/v1/strings.json",
+      "bytes": 1750,
+      "sha256": "f174669a5a717529480c2652d500ba43a4feacf8ec06713b180f2c8d08f3c5d2"
+    },
+    {
+      "path": "contracts/mounted-e2e/v1/initial-literals.json",
+      "bytes": 112284,
+      "sha256": "e4a8a7f009983d973784f8bd849500ce5952c203579f2ed7131c62aa15f1dcdc"
+    },
+    {
+      "path": "packages/ui/src/types.ts",
+      "bytes": 3807,
+      "sha256": "feb348e85256409547168305f5fb20482f51e5409e8841e1159026f49ffe8dee"
+    },
+    {
+      "path": "packages/ui/src/drag-owner.ts",
+      "bytes": 30944,
+      "sha256": "318b1613ea1a01857e209c9d5170ab1ca8185ef6fac82979568f93d521276e44"
+    },
+    {
+      "path": "packages/dom/src/types.ts",
+      "bytes": 16719,
+      "sha256": "acf7cadb69c9ff6428a904b2d84ad37e2a4e5c396e44631446e3c9141071db3f"
+    },
+    {
+      "path": "packages/dom/src/input.ts",
+      "bytes": 18260,
+      "sha256": "267f9b181330bf1c57f368b596bee1fb3510dd760e0c39a0280b3f2fc4b526ed"
+    },
+    {
+      "path": "packages/ui/src/slash-window.ts",
+      "bytes": 5321,
+      "sha256": "583b6945bfd08ba97f865bd494ad889e81bb26c986f431a8197d2d6daabd23cf"
+    },
+    {
+      "path": "packages/dom/src/selection.ts",
+      "bytes": 30055,
+      "sha256": "d1dc4950acb5455999bd353cc2454f017dac65a77560a1794fa1d080069be2df"
+    },
+    {
+      "path": "packages/kwdj/src/index.ts",
+      "bytes": 1633,
+      "sha256": "59c49a2088554f53c1c2cd9b73dd0dd2fa7de6a8495e15debfef6bcf716a31af"
+    }
+  ],
+  "routes": [
+    {
+      "routeId": "selection-keyboard-replace",
+      "kind": "selection",
+      "source": {
+        "caseId": "DOC-002/unicode_whitespace_hard_break",
+        "literalAuthority": "independent source edit of the approved canonical input; complete selected original leaf is retired by InsertText, replacement role N is fresh and Redo revives the same N"
+      },
+      "input": {
+        "utf8": "{\"content\":[{\"content\":[{\"text\":\"До  <тега> — ё  \",\"type\":\"text\"},{\"type\":\"hard_break\"},{\"text\":\"после\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "bytes": 223,
+        "sha256": "cafd60ee71da6c9f048721c9de591c4674145ea67f3a74ac95e0d23dbfe6ccd7"
+      },
+      "before": {
+        "utf8": "{\"content\":[{\"content\":[{\"text\":\"До  <тега> — ё  \",\"type\":\"text\"},{\"type\":\"hard_break\"},{\"text\":\"после\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "bytes": 223,
+        "sha256": "cafd60ee71da6c9f048721c9de591c4674145ea67f3a74ac95e0d23dbfe6ccd7"
+      },
+      "after": {
+        "utf8": "{\"content\":[{\"content\":[{\"text\":\"До  <тега> — ё  \",\"type\":\"text\"},{\"type\":\"hard_break\"},{\"text\":\"X\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "bytes": 214,
+        "sha256": "b34ff44e29ae8202a87976d198083338de1b7e4e5b5fd7d270a29533e9ffbd37"
+      },
+      "rolesBefore": {
+        "R": [],
+        "P": [
+          0
+        ],
+        "A": [
+          0,
+          0
+        ],
+        "H": [
+          0,
+          1
+        ],
+        "T": [
+          0,
+          2
+        ]
+      },
+      "rolesAfter": {
+        "R": [],
+        "P": [
+          0
+        ],
+        "A": [
+          0,
+          0
+        ],
+        "H": [
+          0,
+          1
+        ],
+        "N": [
+          0,
+          2
+        ]
+      },
+      "surviving": [
+        "R",
+        "P",
+        "A",
+        "H"
+      ],
+      "fresh": [
+        "N"
+      ],
+      "retired": [
+        "T"
+      ],
+      "selectionSetup": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 5,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 5,
+          "affinity": "after"
+        }
+      },
+      "selectionBefore": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 5,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 0,
+          "affinity": "after"
+        }
+      },
+      "selectionAfter": {
+        "anchor": {
+          "kind": "text",
+          "node": "N",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "N",
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "program": [
+        "focus actual native selection via public bookmark",
+        "Shift+ArrowLeft x5",
+        "type X once",
+        "Undo once",
+        "Redo once",
+        "destroy original",
+        "reopen saved bytes in new HTMLElement"
+      ],
+      "history": {
+        "beforeUndoEntries": "0",
+        "afterUndoDelta": 1,
+        "documentDelta": 1,
+        "revisionDelta": 1,
+        "selectionEpochDelta": 1,
+        "historyEpochDelta": 1
+      },
+      "intent": {
+        "kind": "insert_text",
+        "text": "X"
+      },
+      "commandId": "org.klenwriter.kwdj/command/insert-text"
+    },
+    {
+      "routeId": "slash-keyboard-accept",
+      "kind": "slash",
+      "source": {
+        "path": "contracts/slash/v1/lexical-key-oracles.json",
+        "pointer": "/mountedCanonicalSeeds/0",
+        "literalAuthority": "MC01 source-authored literals; ordinary setup typing is measured separately from isolated acceptance",
+        "currentRangeAuthority": "packages/ui/src/slash-window.ts slashRange() retains actual window.caret as range.focus; source-authored task45 range uses After, while MC01 canonical/identity oracles remain unchanged."
+      },
+      "input": {
+        "utf8": "{\"content\":[{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true},\"content\":[{\"text\":\"pre  tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "bytes": 201,
+        "sha256": "f7197b0926d9c12b772c688353290fabf9625391e2d89ccd3492961e90e9da5a"
+      },
+      "before": {
+        "utf8": "{\"content\":[{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true},\"content\":[{\"text\":\"pre /para tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "bytes": 206,
+        "sha256": "3213ca7d31e671d27098713b73af793e6cdf518c080e1d0b792dde23e446e5b8"
+      },
+      "after": {
+        "utf8": "{\"content\":[{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true},\"content\":[{\"text\":\"pre \",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[],\"type\":\"paragraph\"},{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true},\"content\":[{\"text\":\" tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "bytes": 346,
+        "sha256": "6b61aaa708769f98f3163d29a65b57e828ed2a87384bb7e99a2856552256960e"
+      },
+      "rolesBefore": {
+        "R": [],
+        "P": [
+          0
+        ],
+        "T": [
+          0,
+          0
+        ]
+      },
+      "rolesAfter": {
+        "R": [],
+        "P": [
+          0
+        ],
+        "T": [
+          0,
+          0
+        ],
+        "I": [
+          1
+        ],
+        "S": [
+          2
+        ],
+        "U": [
+          2,
+          0
+        ]
+      },
+      "surviving": [
+        "R",
+        "P",
+        "T"
+      ],
+      "fresh": [
+        "I",
+        "S",
+        "U"
+      ],
+      "retired": [],
+      "selectionSetup": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 4,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 4,
+          "affinity": "after"
+        }
+      },
+      "selectionBefore": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 9,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 9,
+          "affinity": "after"
+        }
+      },
+      "selectionAfter": {
+        "anchor": {
+          "kind": "text",
+          "node": "U",
+          "offset": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "U",
+          "offset": 0,
+          "affinity": "after"
+        }
+      },
+      "program": [
+        "focus actual native selection via public bookmark",
+        "type /para scalar keys",
+        "Enter once",
+        "Undo once",
+        "Redo once",
+        "destroy original",
+        "reopen saved bytes in new HTMLElement"
+      ],
+      "history": {
+        "beforeUndoEntries": null,
+        "afterUndoDelta": 1,
+        "documentDelta": 1,
+        "revisionDelta": 1,
+        "selectionEpochDelta": 1,
+        "historyEpochDelta": 1
+      },
+      "intent": {
+        "kind": "accept_slash",
+        "target": {
+          "kind": "paragraph"
+        },
+        "range": {
+          "anchor": {
+            "kind": "text",
+            "node": "T",
+            "offset": 4,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T",
+            "offset": 9,
+            "affinity": "after"
+          }
+        },
+        "literal": "/para"
+      },
+      "commandId": "org.klenwriter.kwdj/command/accept-slash"
+    },
+    {
+      "routeId": "drag-pointer-move",
+      "kind": "drag-pointer",
+      "source": {
+        "literalAuthority": "Own three-block source literal; pre-removal Move(Q,R,3) preserves complete original subtree, strong mark, directed selection and every node ID"
+      },
+      "input": {
+        "utf8": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "bytes": 326,
+        "sha256": "75a805a9180bdea74d5d745f178ec1894290ce149671a170c2dcc0181e772aa6"
+      },
+      "before": {
+        "utf8": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "bytes": 326,
+        "sha256": "75a805a9180bdea74d5d745f178ec1894290ce149671a170c2dcc0181e772aa6"
+      },
+      "after": {
+        "utf8": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "bytes": 326,
+        "sha256": "db5df2d334304dd08c55dcfb19c463bd36131865da27fe3fac299ef6b049bdd1"
+      },
+      "rolesBefore": {
+        "R": [],
+        "A": [
+          0
+        ],
+        "AT": [
+          0,
+          0
+        ],
+        "Q": [
+          1
+        ],
+        "B": [
+          1,
+          0
+        ],
+        "BT": [
+          1,
+          0,
+          0
+        ],
+        "Z": [
+          2
+        ],
+        "ZT": [
+          2,
+          0
+        ]
+      },
+      "rolesAfter": {
+        "R": [],
+        "A": [
+          0
+        ],
+        "AT": [
+          0,
+          0
+        ],
+        "Z": [
+          1
+        ],
+        "ZT": [
+          1,
+          0
+        ],
+        "Q": [
+          2
+        ],
+        "B": [
+          2,
+          0
+        ],
+        "BT": [
+          2,
+          0,
+          0
+        ]
+      },
+      "surviving": [
+        "R",
+        "A",
+        "AT",
+        "Q",
+        "B",
+        "BT",
+        "Z",
+        "ZT"
+      ],
+      "fresh": [],
+      "retired": [],
+      "selectionSetup": {
+        "anchor": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 0,
+          "affinity": "after"
+        }
+      },
+      "selectionBefore": {
+        "anchor": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 0,
+          "affinity": "after"
+        }
+      },
+      "selectionAfter": {
+        "anchor": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 0,
+          "affinity": "after"
+        }
+      },
+      "program": [
+        "hover blockquote outer border inset2px",
+        "one original mouse down on drag handle",
+        "eight held interpolation points to tail after fraction0.875",
+        "one original mouse up",
+        "Undo once",
+        "Redo once",
+        "destroy original",
+        "reopen saved bytes in new HTMLElement"
+      ],
+      "history": {
+        "beforeUndoEntries": "0",
+        "afterUndoDelta": 1,
+        "documentDelta": 1,
+        "revisionDelta": 1,
+        "selectionEpochDelta": 0,
+        "historyEpochDelta": 1
+      },
+      "intent": {
+        "kind": "move",
+        "node": "Q",
+        "parent": "R",
+        "before_index": 3
+      },
+      "commandId": "org.klenwriter.kwdj/command/move",
+      "pointer": {
+        "sourcePath": [
+          1
+        ],
+        "targetPath": [
+          2
+        ],
+        "inset": 2,
+        "targetYFraction": "0.875",
+        "heldMoveSteps": 8
+      }
+    },
+    {
+      "routeId": "drag-keyboard-move",
+      "kind": "drag-keyboard",
+      "source": {
+        "literalAuthority": "Own three-block source literal; pre-removal Move(Q,R,3) preserves complete original subtree, strong mark, directed selection and every node ID"
+      },
+      "input": {
+        "utf8": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "bytes": 326,
+        "sha256": "75a805a9180bdea74d5d745f178ec1894290ce149671a170c2dcc0181e772aa6"
+      },
+      "before": {
+        "utf8": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "bytes": 326,
+        "sha256": "75a805a9180bdea74d5d745f178ec1894290ce149671a170c2dcc0181e772aa6"
+      },
+      "after": {
+        "utf8": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "bytes": 326,
+        "sha256": "db5df2d334304dd08c55dcfb19c463bd36131865da27fe3fac299ef6b049bdd1"
+      },
+      "rolesBefore": {
+        "R": [],
+        "A": [
+          0
+        ],
+        "AT": [
+          0,
+          0
+        ],
+        "Q": [
+          1
+        ],
+        "B": [
+          1,
+          0
+        ],
+        "BT": [
+          1,
+          0,
+          0
+        ],
+        "Z": [
+          2
+        ],
+        "ZT": [
+          2,
+          0
+        ]
+      },
+      "rolesAfter": {
+        "R": [],
+        "A": [
+          0
+        ],
+        "AT": [
+          0,
+          0
+        ],
+        "Z": [
+          1
+        ],
+        "ZT": [
+          1,
+          0
+        ],
+        "Q": [
+          2
+        ],
+        "B": [
+          2,
+          0
+        ],
+        "BT": [
+          2,
+          0,
+          0
+        ]
+      },
+      "surviving": [
+        "R",
+        "A",
+        "AT",
+        "Q",
+        "B",
+        "BT",
+        "Z",
+        "ZT"
+      ],
+      "fresh": [],
+      "retired": [],
+      "selectionSetup": {
+        "anchor": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 0,
+          "affinity": "after"
+        }
+      },
+      "selectionBefore": {
+        "anchor": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 0,
+          "affinity": "after"
+        }
+      },
+      "selectionAfter": {
+        "anchor": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "BT",
+          "offset": 0,
+          "affinity": "after"
+        }
+      },
+      "program": [
+        "hover blockquote outer border inset2px",
+        "focus editor",
+        "forward Tab at most16 to original drag handle",
+        "Enter",
+        "ArrowDown",
+        "Enter",
+        "assert original handle focus",
+        "Undo once",
+        "Redo once",
+        "destroy original",
+        "reopen saved bytes in new HTMLElement"
+      ],
+      "history": {
+        "beforeUndoEntries": "0",
+        "afterUndoDelta": 1,
+        "documentDelta": 1,
+        "revisionDelta": 1,
+        "selectionEpochDelta": 0,
+        "historyEpochDelta": 1
+      },
+      "intent": {
+        "kind": "move",
+        "node": "Q",
+        "parent": "R",
+        "before_index": 3
+      },
+      "commandId": "org.klenwriter.kwdj/command/move",
+      "pointer": {
+        "sourcePath": [
+          1
+        ],
+        "targetPath": [
+          2
+        ],
+        "inset": 2,
+        "targetYFraction": "0.875",
+        "heldMoveSteps": 8
+      }
+    }
+  ]
+}
