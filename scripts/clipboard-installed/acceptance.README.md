@@ -15,6 +15,24 @@ node scripts/clipboard-installed/acceptance.mjs \
   --helper /absolute/pinned/clipboard-input
 ```
 
+That original `strict-relative-1` probe keeps `/owned` in its rich source and
+requires exact source canonical equality. Its lexical URL expectation can fail
+when the platform writer resolves that URL; a failed original observation stays
+failed. The separate `portable-absolute-1` protocol uses a source-authored absolute
+HTTPS link and distinct rich case IDs:
+
+```sh
+node scripts/clipboard-installed/portable-acceptance.mjs \
+  --browser chrome \
+  --out /absolute/fresh/clipboard-portable-chrome-evidence \
+  --helper /absolute/pinned/clipboard-input
+```
+
+Both protocols retain exact canonical, identity, Cut, history and cleanup checks.
+Passing the absolute-URL protocol does not establish relative-URL lexical
+fidelity or change a result from the original probe. Controlled relative-URL
+codec/browser tests have their separate source and expected literals.
+
 Use `--browser safari` for ordinary installed Safari. The helper is compiled
 separately as described in `README.md`. The coordinator never compiles, grants or
 resets permissions, switches input sources, takes a screenshot, or supplies an

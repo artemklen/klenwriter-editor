@@ -104,6 +104,7 @@ function plainBlocks(value:string,mode:Input['mode'],work:Work):Node[] {
 interface Rich {readonly content:Node[];readonly codes:Set<Diagnostic>;readonly failed:boolean;readonly media:boolean;}
 function richBlocks(nodes:readonly Html[],policy:Policy,work:Work):Rich {
   const codes=new Set<Diagnostic>();let failed=false,metadata=false,media=false;
+  const ignoredMetadata=new Set<Html>();
   const reject=():void=>{failed=true;codes.add('clipboard.unsupported_semantics');};
   const attrs=(n:Extract<Html,{kind:'element'}>):Map<string,string>=>new Map(n.attributes.filter(a=>a.namespace===null&&a.prefix===null).map(a=>[a.name,a.value]));
   if(nodes.length>clipboardDecodeLimits.nodes)throw new Limit();
@@ -113,7 +114,13 @@ function richBlocks(nodes:readonly Html[],policy:Policy,work:Work):Rich {
     if(n.kind==='text'||n.kind==='comment'){if(!text(n.value))throw new Invalid();continue;}if(n.kind==='doctype')continue;
     if(n.kind!=='element'||!text(n.tagName,128)||!Array.isArray(n.attributes)||!Array.isArray(n.children))throw new Invalid();
     attributes+=n.attributes.length;if(attributes>clipboardDecodeLimits.attributes||n.children.length>clipboardDecodeLimits.nodes)throw new Limit();
-    if(n.namespaceURI!==HTML_NS||unsupported.has(n.tagName))reject();if(active.has(n.tagName))failed=true;
+    // Browser clipboard serialization may add this inert root declaration. It
+    // remains metered and scanned; other metadata retains the active refusal.
+    const declaration=n.attributes[0];
+    const inertUtf8=depth===1&&n.namespaceURI===HTML_NS&&n.tagName==='meta'&&n.children.length===0&&n.attributes.length===1
+      &&declaration!.name==='charset'&&declaration!.namespace===null&&declaration!.prefix===null&&declaration!.value.length===5&&/^utf-8$/i.test(declaration!.value);
+    if(inertUtf8){metadata=true;ignoredMetadata.add(n);}
+    if(n.namespaceURI!==HTML_NS||unsupported.has(n.tagName))reject();if(active.has(n.tagName)&&!inertUtf8)failed=true;
     for(const a of n.attributes){if(!text(a.name,128)||!text(a.value))throw new Invalid();
       if(/^on/i.test(a.name))failed=true;
       else if(a.namespace!==null||a.prefix!==null||!(n.tagName==='a'&&['href','title'].includes(a.name)||n.tagName==='ol'&&a.name==='start'||['td','th'].includes(n.tagName)&&['colspan','rowspan'].includes(a.name)))metadata=true;}
@@ -142,7 +149,7 @@ function richBlocks(nodes:readonly Html[],policy:Policy,work:Work):Rich {
   }
   function flow(children:readonly Html[],depth=1):Node[]{const out:Node[]=[],run:Html[]=[];
     const flush=():void=>{if(run.some(nonempty)){const content=inline(run,[],depth);if(content.length)out.push(work.node('paragraph',{content}));}run.length=0;};
-    for(const n of children){work.visit(depth);if(n.kind==='comment'||n.kind==='doctype')continue;
+    for(const n of children){work.visit(depth);if(n.kind==='comment'||n.kind==='doctype'||ignoredMetadata.has(n))continue;
       if(n.kind==='element'&&(blocks.has(n.tagName)||wrappers.has(n.tagName))){flush();if(failed)break;
         if(wrappers.has(n.tagName))out.push(...flow(n.children,depth+1));else{const block=convert(n,depth);if(block)out.push(block);}
       }else run.push(n);

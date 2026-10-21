@@ -61,7 +61,8 @@
     "test:drag": "npm run test:drag:native && npm run test:drag:unit",
     "test:mounted-corpus": "node --test tests/mounted-corpus-*.node.mjs && node scripts/mounted-corpus/run.mjs",
     "test:clipboard": "node --test tests/clipboard-capture.node.mjs tests/clipboard-parser.node.mjs tests/clipboard-decode.node.mjs tests/clipboard-codec.node.mjs tests/clipboard-paste.node.mjs tests/clipboard-sdk.node.mjs tests/clipboard-platform.node.mjs && playwright test --config playwright.clipboard.config.js",
-    "test:clipboard:installed": "node scripts/clipboard-installed/acceptance.mjs"
+    "test:clipboard:installed": "node scripts/clipboard-installed/acceptance.mjs",
+    "test:clipboard:installed:portable": "node scripts/clipboard-installed/portable-acceptance.mjs"
   },
   "engines": {
     "node": ">=24.22.0 <25 || >=26 <27"

@@ -105,3 +105,55 @@ test('CDEC20 closed request rejects accessors extra keys and an attempted wideni
   assert.deepEqual(await decodeClipboard({...input(),profile:'inferred'}),{status:'refused',diagnostics:['clipboard.invalid_input']});
   assert.deepEqual(await decodeClipboard(input({url_policy:{allow_origin_relative:true,allowed_schemes:['javascript']}})),{status:'refused',diagnostics:['clipboard.invalid_input']});
 });
+test('CDEC21 inert root UTF-8 declaration preserves literal rich marks breaks and absolute links',async()=>{
+  const rich='<p><strong>A</strong><br><a href="https://example.test/owned?q=1#x" title="literal">B</a></p><p>Tail</p>';
+  for(const charset of['utf-8','UTF-8','uTf-8']){
+    const declaration='<meta charset="'+charset+'">';
+    for(const html of[declaration+rich,declaration+'<html><head></head><body>'+rich+'</body></html>']){
+      const r=await decodeClipboard(input({html,plain:'independent fallback must not replace rich'}));
+      assertCandidate(r,[p({type:'text',text:'A',marks:[{type:'strong'}]},{type:'hard_break'},
+        {type:'text',text:'B',marks:[{type:'link',attrs:{href:'https://example.test/owned?q=1#x',title:'literal'}}]}),p(t('Tail'))],
+        ['clipboard.editor_metadata_ignored']);
+    }
+  }
+});
+test('CDEC22 other meta attributes charsets and nested declarations retain rich refusal and explicit fallback',async()=>{
+  for(const html of[
+    '<meta charset="utf-8" id="extra"><p>rich</p>',
+    '<meta http-equiv="content-type" content="text/html; charset=utf-8"><p>rich</p>',
+    '<meta charset="iso-8859-1"><p>rich</p>',
+    '<meta charset="utf8"><p>rich</p>',
+    '<meta charset=" utf-8 "><p>rich</p>',
+    '<meta charset="utf-8&#10;"><p>rich</p>',
+    '<meta xml:charset="utf-8"><p>rich</p>',
+    '<div><meta charset="utf-8"><p>rich</p></div>',
+    '<p><meta charset="utf-8">rich</p>',
+  ]){
+    assert.deepEqual(await decodeClipboard(input({html,plain:null})),{status:'refused',diagnostics:['clipboard.unsupported_semantics']},html);
+    assertCandidate(await decodeClipboard(input({html,plain:'independent plain'})),[p(t('independent plain'))],
+      ['clipboard.rich_branch_rejected','clipboard.plain_fallback_used','clipboard.unsupported_semantics']);
+  }
+});
+test('CDEC23 allowed and rejected declarations never bypass complete media prescan or authorize media fallback',async()=>{
+  for(const html of[
+    '<meta charset="utf-8"><p>rich</p><img src="https://example.test/image">',
+    '<img src="https://example.test/image"><meta charset="utf-8"><p>rich</p>',
+    '<meta charset="utf-8"><ruby>x</ruby><img src="https://example.test/image">',
+    '<meta charset="utf-8" id="extra"><img src="https://example.test/image">',
+  ])assert.deepEqual(await decodeClipboard(input({html,plain:'independent plain'})),
+    {status:'refused',diagnostics:['clipboard.media_item_forbidden','clipboard.remote_image_forbidden']},html);
+  assert.deepEqual(await decodeClipboard(input({html:'<meta charset="utf-8"><p>rich</p>',media:'present'})),
+    {status:'refused',diagnostics:['clipboard.media_item_forbidden']});
+});
+test('CDEC24 inert declaration does not relax active content URL or source and node limits',async()=>{
+  for(const html of['<form><p>rich</p></form>','<p onclick="bad()">rich</p>']){
+    assert.deepEqual(await decodeClipboard(input({html:'<meta charset="utf-8">'+html,plain:null})),
+      {status:'refused',diagnostics:['clipboard.unsupported_semantics']});
+  }
+  assert.deepEqual(await decodeClipboard(input({html:'<meta charset="utf-8"><p><a href="javascript:bad()">rich</a></p>',plain:null})),
+    {status:'refused',diagnostics:['clipboard.unsafe_url_rejected']});
+  for(const html of['<meta charset="utf-8">'+'x'.repeat(524289),'<meta charset="utf-8">'.repeat(8193)]){
+    assert.deepEqual(await decodeClipboard(input({html,plain:'not a limit fallback'})),
+      {status:'refused',diagnostics:['clipboard.invalid_input']});
+  }
+});

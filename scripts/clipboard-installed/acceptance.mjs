@@ -12,6 +12,9 @@ import {computeSdkBuildIdentity} from '../generate-sdk-types.mjs';
 import {createClipboardPlatform} from './native-platform.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..');
+export async function runInstalledClipboard(protocol='strict-relative-1'){
+assert.ok(['strict-relative-1','portable-absolute-1'].includes(protocol),'Closed source-authored installed protocol');
+const portable=protocol==='portable-absolute-1';
 process.chdir(root);
 const argv=process.argv.slice(2),names=['--browser','--out','--helper'];
 assert.equal(argv.length,6,'Usage: node scripts/clipboard-installed/acceptance.mjs --browser chrome|safari --out /absolute/fresh/directory --helper /absolute/pinned/clipboard-input');
@@ -28,7 +31,7 @@ const nonce=randomBytes(16).toString('hex'),url='http://127.0.0.1:4174/clipboard
 const reportPath=resolve(out,'report.json'),start=performance.now(),runDeadline=start+300000;
 const limits={callMs:12000,rowMs:45000,resultBytes:4*1024*1024,controlBytes:64*1024*1024,calls:768};
 let rowDeadline=runDeadline,controlBytes=0,adapter=null,platform=null,current=null,blocked=false,cleaning=false;
-const report={format:'klenwriter-editor-installed-clipboard/1',browser:browserName,nonce,title,url,status:'NOT_RUN',startedAt:new Date().toISOString(),
+const report={format:portable?'klenwriter-editor-installed-clipboard-portable/1':'klenwriter-editor-installed-clipboard/1',protocol,browser:browserName,nonce,title,url,status:'NOT_RUN',startedAt:new Date().toISOString(),
   scope:'Actual installed macOS Chrome or ordinary Safari, physical fixed CGEvent shortcuts, trusted browser events, actual platform writer and selected NSPasteboard formats. Platform input is not hardware-device evidence. OS-selected scalar UTF-8 bytes, browser-exposed strings and native canonical content are distinct observations. No arbitrary OS UTF-16 preservation claim.',
   invocation:{node:process.version,argv:process.argv.slice(2),cwd:root,requiredContext:'Run from already authorized Terminal; no permission request or reset'},limits,setup:[],controls:[],platformReceipts:[],rows:[],cleanup:null};
 const save=()=>{controlBytes=Buffer.byteLength(JSON.stringify(report.controls));assert.ok(controlBytes<=limits.controlBytes,'Bounded completed control evidence');const text=JSON.stringify(report,null,2)+'\n';assert.ok(Buffer.byteLength(text)<=128*1024*1024,'Bounded complete report');writeFileSync(reportPath,text);};
@@ -52,12 +55,15 @@ const text=(path,offset)=>({kind:'text',path,offset,affinity:'after'}),dom=(path
 const plainSource=doc([p('abc'),p('def')]);
 const plainSelection={anchor:text([0,0],1),focus:text([1,0],2)};
 const plainDom={anchor:dom([0,0,0],1),focus:dom([1,0,0],2)};
-const richSource=doc([{type:'paragraph',content:[{type:'text',text:'a'},{type:'text',text:'bc',marks:[{type:'strong'}]}]},
+const strictRichSource=doc([{type:'paragraph',content:[{type:'text',text:'a'},{type:'text',text:'bc',marks:[{type:'strong'}]}]},
   {type:'paragraph',content:[{type:'text',text:'de',marks:[{type:'link',attrs:{href:'/owned'}}]},{type:'hard_break'},{type:'text',text:'f'}]}]);
+const portableRichSource=doc([{type:'paragraph',content:[{type:'text',text:'a'},{type:'text',text:'bc',marks:[{type:'strong'}]}]},
+  {type:'paragraph',content:[{type:'text',text:'de',marks:[{type:'link',attrs:{href:'https://example.test/clipboard-owned'}}]},{type:'hard_break'},{type:'text',text:'f'}]}]);
+const richSource=portable?portableRichSource:strictRichSource;
 const richSelection={anchor:text([0,1],0),focus:text([1,2],0)};
 const richDom={anchor:dom([0,1,0,0],0),focus:dom([1,2,0],0)};
 const unicodeNfd='Я EN e\u0301 ё 😀',unicodeNfc='Я EN é ё 😀';
-const cases=Object.freeze(['ascii-forward','ascii-reverse','rich-copy-over-selection','rich-cut-paste','unicode-exposure']);
+const cases=Object.freeze(portable?['ascii-forward','ascii-reverse','rich-absolute-copy-over-selection','rich-absolute-cut-paste','unicode-exposure']:['ascii-forward','ascii-reverse','rich-copy-over-selection','rich-cut-paste','unicode-exposure']);
 const published=value=>value.events.filter(e=>e.change.kind==='document').length;
 const canonical=value=>JSON.parse(value.canonical);
 const identities=value=>value.rows.map(({path,node})=>({path,...Object.fromEntries(['id','parent','type_id','primitive','attributes','marks','text','children','stats'].map(key=>[key,node[key]]))}));
@@ -270,7 +276,7 @@ try{
   const owner=platform.inspectOwnedWindow();report.owner=owner;if(browserName==='chrome')assert.equal(owner.pid,adapter.pid,'AX original owner must be the launched browser PID');save();
   for(const caseId of cases){current={caseId,status:'NOT_RUN',checkpoints:[],physical:[],startedAt:new Date().toISOString()};report.rows.push(current);save();if(blocked){current.reason='Earlier original failure disables all later physical input';continue;}
     rowDeadline=Math.min(runDeadline,performance.now()+limits.rowMs);
-    try{if(caseId.startsWith('ascii-'))await ascii(caseId.slice(6));else if(caseId==='rich-copy-over-selection')await rich(false);else if(caseId==='rich-cut-paste')await rich(true);else await unicode();current.status='PASSED';}
+    try{if(caseId.startsWith('ascii-'))await ascii(caseId.slice(6));else if(caseId==='rich-copy-over-selection'||caseId==='rich-absolute-copy-over-selection')await rich(false);else if(caseId==='rich-cut-paste'||caseId==='rich-absolute-cut-paste')await rich(true);else await unicode();current.status='PASSED';}
     catch(error){current.status='FAILED';current.error=errorValue(error);blocked=true;}
     finally{rowDeadline=runDeadline;if(current.id){if(current.status!=='PASSED')try{current.failureObservation=await adapter.call('inspect',current.id);}catch(error){current.failureObservationError=errorValue(error);}
         try{current.disposal=await adapter.call('allDisposed');released(current.disposal);}catch(error){current.disposalError=errorValue(error);current.status='FAILED';blocked=true;}}
@@ -289,3 +295,6 @@ finally{
 }
 process.stdout.write(JSON.stringify({status:report.status,browser:browserName,report:reportPath,rows:report.rows.map(r=>({caseId:r.caseId,status:r.status}))})+'\n');
 if(report.status!=='PASSED')process.exitCode=1;
+
+}
+if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url))await runInstalledClipboard('strict-relative-1');

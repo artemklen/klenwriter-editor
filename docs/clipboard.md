@@ -41,6 +41,12 @@ implicitly normalized to NFC or passed through typography/Markdown rules.
 Raw recovery preserves the exact exposed UTF-16 strings, including unpaired
 surrogates which semantic admission refuses. Browser/OS clipboard transformations
 must be measured separately from exact code-point equality and NFC equivalence.
+Browser writers can also add encoding metadata and resolve relative link URLs.
+The decoder ignores only an inert root HTML `meta` with one exact UTF-8 charset
+attribute, with an explicit metadata diagnostic. It never reconstructs a relative
+URL from an exposed absolute URL. Platform write confirmation acknowledges the
+write; lexical format fidelity is a separate observation. A host requiring only
+portable absolute links can set `allow_origin_relative: false`.
 
 Native clipboard reads expose a small profile context or an ID-free fragment,
 with the original directed selection and stamp. The separate ABI2 formats are
