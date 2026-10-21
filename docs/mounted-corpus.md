@@ -52,6 +52,16 @@ Chrome/Safari EN/RU/dead-key, human manual observations and real assistive
 technology remain distinct lanes, with actual execution required by the task's
 acceptance contract. The browser corpus command does not establish them.
 
+The initial interaction profile intentionally has no formatting actions. Its
+empty toolbar stays hidden and outside the Tab order; populated profiles retain
+their ordinary toolbar. The drag control is the separate button labelled
+“Drag block; Enter opens the move menu”. The interaction fixture reserves room
+for the external gutter beside the source at its declared desktop viewport and
+checks the pointer's gradual approach to the control. When a host's gutter cannot fit beside the
+source block, that button remains in normal flow below the editor. Human
+instructions must identify this actual control rather than infer a handle
+from an empty rounded panel or assume a fixed position.
+
 CI remains build-only. The local pre-send gate runs the new lane after the
 existing checks; independent review and merge still apply to the exact source.
 Rollback is a revert of the additive harness; document persistence is unchanged.

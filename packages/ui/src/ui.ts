@@ -113,6 +113,7 @@ class Ui implements EditorUi {
     this.#document = configuration.editorElement.ownerDocument; this.#window = this.#document.defaultView!;
     this.#onResult = configuration.onResult;
     this.#toolbar = this.#node('div', 'kw-ui-toolbar'); this.#toolbar.setAttribute('role', 'toolbar');
+    this.#toolbar.hidden = true; this.#toolbar.tabIndex = -1;
     this.#gutter = this.#node('div', 'kw-ui-gutter'); this.#entry = this.#node('div', 'kw-ui-entry');
     this.#status = this.#node('div', 'kw-ui-status'); this.#status.setAttribute('role', 'status'); this.#status.setAttribute('aria-live', 'polite');
     this.#blockLabel = this.#node('div', 'kw-ui-context');
@@ -414,7 +415,7 @@ class Ui implements EditorUi {
       next = control.reason.nextSibling;
     }
     for (const [key, control] of map) if (!live.has(key)) { control.button.remove(); control.reason.remove(); map.delete(key); }
-    if (scope === 'toolbar') { this.#rove([...map.values()]); this.#toolbar.tabIndex = map.size ? -1 : 0; }
+    if (scope === 'toolbar') { this.#toolbar.hidden = map.size === 0; this.#rove([...map.values()]); this.#toolbar.tabIndex = -1; }
   }
   #labels(): void {
     this.#toolbar.setAttribute('aria-label', label('toolbar', this.#locale));
@@ -512,6 +513,7 @@ class Ui implements EditorUi {
   }
   #positionToolbar(context: UiActionContext): void {
     this.#clearToolbarPlacement();
+    if (!this.#toolbarControls.size) return;
     const result = this.#options!.editor.geometry.read({ kind: 'selection', stamp: context.state.stamp });
     // Unavailable/busy/stale/unsupported geometry keeps the original entry;
     // geometry never supplies authority to capture or execute a command.

@@ -47,11 +47,14 @@ for (const route of contract.routes) test(`mounted interaction ${route.routeId}`
       const source = await editor.locator(':scope > blockquote').boundingBox();
       if (!source) throw new Error('Authored drag source not rendered');
       await page.mouse.move(source.x + route.pointer.inset, source.y + route.pointer.inset); await frames(page); await expect(handle).toHaveAttribute('aria-disabled', 'false');
+      const gutter = await wrapper.locator('.kw-ui-gutter').boundingBox();
+      if (!gutter || gutter.x < 8 || gutter.x + gutter.width > source.x - 7.5) throw new Error('Declared fixture must leave room beside the source for its external gutter');
       if (route.kind === 'drag-pointer') {
         const h = await handle.boundingBox(), target = await editor.locator(':scope > p').last().boundingBox();
         if (!h || !target) throw new Error('Authored drag endpoint unavailable');
         const down = { x: h.x + h.width / 2, y: h.y + h.height / 2 }, to = { x: target.x + Math.min(32, target.width / 2), y: target.y + target.height * Number(route.pointer.targetYFraction) };
-        await page.mouse.move(down.x, down.y); await frames(page); await page.mouse.down();
+        // Approach through real intermediate hit targets, rather than a single jump.
+        await page.mouse.move(down.x, down.y, { steps: route.pointer.heldMoveSteps }); await frames(page); await page.mouse.down();
         for (let step = 1; step <= route.pointer.heldMoveSteps; step++) { await page.mouse.move(down.x + (to.x - down.x) * step / route.pointer.heldMoveSteps, down.y + (to.y - down.y) * step / route.pointer.heldMoveSteps); await frames(page); }
         await page.mouse.up();
       } else {
