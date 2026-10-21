@@ -19,11 +19,17 @@ const paste=[{keyCode:55,down:true,flags:'command'},{keyCode:9,down:true,flags:'
 const undo=[{keyCode:55,down:true,flags:'command'},{keyCode:6,down:true,flags:'command'},{keyCode:6,down:false,flags:'command'},{keyCode:55,down:false,flags:'none'}];
 const redo=[{keyCode:55,down:true,flags:'command'},{keyCode:56,down:true,flags:'command+shift'},{keyCode:6,down:true,flags:'command+shift'},{keyCode:6,down:false,flags:'command+shift'},{keyCode:56,down:false,flags:'command'},{keyCode:55,down:false,flags:'none'}];
 const safariCopy=[{keyCode:55,down:true,flags:'command'},{keyCode:8,down:true,flags:'command'},{keyCode:55,down:false,flags:'none'},{keyCode:8,down:false,flags:'none'}];
+const safariCut=[{keyCode:55,down:true,flags:'command'},{keyCode:7,down:true,flags:'command'},{keyCode:55,down:false,flags:'none'},{keyCode:7,down:false,flags:'none'}];
+const safariPaste=[{keyCode:55,down:true,flags:'command'},{keyCode:9,down:true,flags:'command'},{keyCode:55,down:false,flags:'none'},{keyCode:9,down:false,flags:'none'}];
+const safariUndo=[{keyCode:55,down:true,flags:'command'},{keyCode:6,down:true,flags:'command'},{keyCode:55,down:false,flags:'none'},{keyCode:6,down:false,flags:'none'}];
+const safariPrograms={copy:safariCopy,cut:safariCut,paste:safariPaste,undo:safariUndo,redo};
+const safariProgramIds={copy:'osr47/copy/safari-release-first/1',cut:'osr47/cut/safari-release-first/1',paste:'osr47/paste/safari-release-first/1',undo:'osr47/undo/safari-release-first/1',redo:'osr47/redo/1'};
+const safariReleaseIds={copy:'osr47/release-copy/safari-release-first/1',cut:'osr47/release-cut/safari-release-first/1',paste:'osr47/release-paste/safari-release-first/1',undo:'osr47/release-undo/safari-release-first/1',redo:'osr47/release-redo/1'};
 const releases={copy:[{keyCode:55,down:false,flags:'none'},{keyCode:8,down:false,flags:'none'}],cut:[{keyCode:55,down:false,flags:'none'},{keyCode:7,down:false,flags:'none'}],paste:[{keyCode:55,down:false,flags:'none'},{keyCode:9,down:false,flags:'none'}],undo:[{keyCode:55,down:false,flags:'none'},{keyCode:6,down:false,flags:'none'}],redo:[{keyCode:55,down:false,flags:'none'},{keyCode:56,down:false,flags:'none'},{keyCode:6,down:false,flags:'none'}]};
 function fixture(t,{browser='chrome',scenario={},onRecord=()=>{}}={}){
   const dir=mkdtempSync(join(tmpdir(),'osr47-clipboard-platform-test-')),helper=join(dir,'closed-node-mock'),config=join(dir,'scenario.json'),log=join(dir,'requests.jsonl');
   t.after(()=>rmSync(dir,{recursive:true,force:true}));
-  const constants={pid,rootFrame,programs:{copy,cut,paste,undo,redo},safariCopy,releases};
+  const constants={pid,rootFrame,programs:{copy,cut,paste,undo,redo},safariCopy,safariPrograms,safariProgramIds,safariReleaseIds,releases};
   const body=`import {readFileSync,appendFileSync} from 'node:fs';
 const config=${JSON.stringify(config)},log=${JSON.stringify(log)},fixed=${JSON.stringify(constants)};
 const scenario=JSON.parse(readFileSync(config,'utf8')),request=JSON.parse(readFileSync(0,'utf8'));
@@ -35,13 +41,13 @@ let value,exit=0;
 if(request.operation==='inspect')value={...base,proof:proof()};
 else if(request.operation==='key'){
   if(!request.cleanupOnly&&scenario.opaque){process.stdout.write('controlled opaque completion');process.exit(23);}
-  const program=request.cleanupOnly?fixed.releases[request.action]:request.browser==='safari'&&request.action==='copy'?fixed.safariCopy:fixed.programs[request.action];
+  const program=request.cleanupOnly?fixed.releases[request.action]:request.browser==='safari'&&!scenario.legacySafariProgram?fixed.safariPrograms[request.action]:fixed.programs[request.action];
   const mode=request.cleanupOnly?scenario.cleanupMode:scenario.keyMode;
   const count=mode==='partial'?1:mode==='refused'?0:program.length;
   const proofs=Array.from({length:count},proof);
   if(!request.cleanupOnly&&scenario.foreignProof&&proofs.length)proofs[0].pid=9999;
   value={...base,status:mode==='partial'?'unknown':mode==='refused'?'refused':'completed',delivery:mode==='partial'?'unknown/may_have_sent':mode==='refused'?'not_sent':'posted',method:'CGEvent/cghidEventTap',
-    programId:'osr47/'+(request.cleanupOnly?'release-':'')+request.action+(request.browser==='safari'&&request.action==='copy'?'/safari-release-first/1':'/1'),program,postedTransitions:program.slice(0,count),postedCount:count,proofs,
+    programId:request.browser==='safari'&&(request.cleanupOnly||!scenario.legacySafariId)?(request.cleanupOnly?fixed.safariReleaseIds[request.action]:fixed.safariProgramIds[request.action]):'osr47/'+(request.cleanupOnly?'release-':'')+request.action+'/1',program,postedTransitions:program.slice(0,count),postedCount:count,proofs,
     postcondition:{status:mode==='bad-final'?'refused':count===program.length?'verified':'not_attempted',proof:mode==='bad-final'||count!==program.length?null:proof()},reason:mode==='bad-final'?'Controlled final ownership failure':count!==program.length?'Controlled incomplete program':null};
   if(!request.cleanupOnly&&scenario.wrongProgram)value.programId='foreign-program/1';
   exit=count===program.length?0:2;
@@ -77,6 +83,11 @@ test('CPPL02 all five fixed Chrome shortcuts and Safari copy preserve independen
     assert.equal(record.request.pid,pid);assert.deepEqual(record.request.rootFrame,rootFrame);assert.equal(record.request.deadlineMs,1000);assert.equal(f.platform.resources().keysPending,false);
   }assert.equal(f.platform.releaseOwnedKeys().status,'not_needed');assert.equal(f.requests().length,6);
   const s=fixture(t,{browser:'safari'});s.platform.inspectOwnedWindow();assert.deepEqual(s.platform.key('copy').result.program,safariCopy);assert.equal(s.requests().length,2);
+  for(const[action,expected]of Object.entries(safariPrograms)){
+    const record=s.platform.key(action);assert.equal(record.result.programId,safariProgramIds[action]);assert.deepEqual(record.result.program,expected);assert.deepEqual(record.result.postedTransitions,expected);assert.equal(record.result.postedCount,expected.length);
+    assert.equal(record.request.pid,pid);assert.deepEqual(record.request.rootFrame,rootFrame);assert.equal(record.request.deadlineMs,1000);assert.equal(s.platform.resources().keysPending,false);
+  }
+  assert.equal(s.platform.releaseOwnedKeys().status,'not_needed');assert.equal(s.requests().length,7);
 });
 test('CPPL03 incomplete key core disables normal input and performs exactly one original-owner UP-only cleanup',t=>{
   const f=fixture(t,{scenario:{keyMode:'partial'}});f.platform.inspectOwnedWindow();const error=thrown(()=>f.platform.key('paste'));
@@ -84,6 +95,14 @@ test('CPPL03 incomplete key core disables normal input and performs exactly one 
   const requests=f.requests();assert.equal(requests.length,3);assert.equal(requests[2].cleanupOnly,true);assert.equal(requests[2].action,'paste');assert.equal(requests[2].pid,pid);assert.deepEqual(requests[2].rootFrame,rootFrame);
   assert.deepEqual(error.cleanup.record.result.program,releases.paste);assert.ok(error.cleanup.record.result.program.every(step=>step.down===false));
   assert.equal(f.platform.resources().keysPending,false);assert.equal(f.platform.resources().disabled,true);assert.throws(()=>f.platform.key('copy'));assert.equal(f.platform.releaseOwnedKeys().status,'not_needed');assert.equal(f.requests().length,3);
+  for(const action of['copy','cut','paste','undo']){
+    const s=fixture(t,{browser:'safari',scenario:{keyMode:'partial'}});s.platform.inspectOwnedWindow();const failure=thrown(()=>s.platform.key(action));
+    assert.equal(failure.record.result.status,'unknown');assert.equal(failure.record.result.delivery,'unknown/may_have_sent');assert.equal(failure.record.result.programId,safariProgramIds[action]);assert.deepEqual(failure.record.result.program,safariPrograms[action]);
+    assert.equal(failure.cleanup.status,'completed');assert.equal(failure.cleanup.record.result.programId,safariReleaseIds[action]);assert.deepEqual(failure.cleanup.record.result.program,releases[action]);assert.ok(failure.cleanup.record.result.postedTransitions.every(step=>!step.down));
+    assert.deepEqual(s.requests().map(r=>[r.action??null,r.cleanupOnly??null]),[[null,null],[action,false],[action,true]]);
+    assert.equal(failure.cleanup.record.request.pid,pid);assert.deepEqual(failure.cleanup.record.request.rootFrame,rootFrame);assert.equal(s.platform.resources().keysPending,false);assert.equal(s.platform.resources().disabled,true);
+    assert.equal(s.platform.releaseOwnedKeys().status,'not_needed');assert.throws(()=>s.platform.key(action));assert.equal(s.requests().length,3);
+  }
 });
 test('CPPL04 failed one-shot redo cleanup cannot replay a down or issue another release',t=>{
   const f=fixture(t,{scenario:{keyMode:'partial',cleanupMode:'partial'}});f.platform.inspectOwnedWindow();const error=thrown(()=>f.platform.key('redo'));
@@ -95,6 +114,11 @@ test('CPPL05 contextual complete core survives final-phase failure without redun
   const f=fixture(t,{scenario:{keyMode:'bad-final'}});f.platform.inspectOwnedWindow();const error=thrown(()=>f.platform.key('cut'));
   assert.equal(error.record.result.status,'completed');assert.deepEqual(error.record.result.postedTransitions,cut);assert.equal(error.cleanup.status,'not_needed');assert.equal(f.platform.resources().keysPending,false);assert.equal(f.platform.resources().disabled,true);
   assert.equal(f.platform.releaseOwnedKeys().status,'not_needed');assert.equal(f.requests().length,2);
+  for(const action of['copy','cut','paste','undo']){
+    const s=fixture(t,{browser:'safari',scenario:{keyMode:'bad-final'}});s.platform.inspectOwnedWindow();const failure=thrown(()=>s.platform.key(action));
+    assert.equal(failure.record.result.status,'completed');assert.equal(failure.record.result.programId,safariProgramIds[action]);assert.deepEqual(failure.record.result.postedTransitions,safariPrograms[action]);
+    assert.equal(failure.cleanup.status,'not_needed');assert.equal(s.platform.resources().keysPending,false);assert.equal(s.platform.resources().disabled,true);assert.equal(s.platform.releaseOwnedKeys().status,'not_needed');assert.equal(s.requests().length,2);
+  }
 });
 test('CPPL06 selected clipboard strings require exact UTF8 bytes/base64 and never accept CRLF or NFC normalization',t=>{
   const plain='e\u0301\r\n\u00a0😀',html='<p>e\u0301\r\n</p>',f=fixture(t,{scenario:{formats:{plain,html}}});f.platform.inspectOwnedWindow();
@@ -116,6 +140,11 @@ test('CPPL08 opaque completion preserves original raw failure and permits only o
 test('CPPL09 mismatched owner or program proof never clears pending or rebinds cleanup authority',t=>{
   for(const scenario of[{foreignProof:true},{wrongProgram:true}]){const f=fixture(t,{scenario});f.platform.inspectOwnedWindow();const error=thrown(()=>f.platform.key('paste'));
     assert.equal(error.cleanup.status,'completed');assert.equal(error.cleanup.record.request.pid,pid);assert.deepEqual(error.cleanup.record.request.rootFrame,rootFrame);assert.deepEqual(error.cleanup.record.result.program,releases.paste);assert.equal(f.requests().length,3);assert.equal(f.platform.resources().disabled,true);
+  }
+  for(const action of['copy','cut','paste','undo'])for(const scenario of[{foreignProof:true},{wrongProgram:true},{legacySafariId:true},{legacySafariProgram:true}]){
+    const s=fixture(t,{browser:'safari',scenario});s.platform.inspectOwnedWindow();const failure=thrown(()=>s.platform.key(action));
+    assert.equal(failure.cleanup.status,'completed');assert.equal(failure.cleanup.record.result.programId,safariReleaseIds[action]);assert.deepEqual(failure.cleanup.record.result.program,releases[action]);
+    assert.equal(failure.cleanup.record.request.pid,pid);assert.deepEqual(failure.cleanup.record.request.rootFrame,rootFrame);assert.equal(s.platform.resources().disabled,true);assert.equal(s.platform.releaseOwnedKeys().status,'not_needed');assert.equal(s.requests().length,3);
   }
 });
 test('CPPL10 evidence callbacks cannot reenter helpers or alter the independently owned next protocol request',t=>{

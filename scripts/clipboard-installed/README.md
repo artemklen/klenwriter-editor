@@ -37,8 +37,13 @@ the OS guard alone is not document/range authority.
 
 Only `copy`, `cut`, `paste`, `undo`, and `redo` are accepted. The fixed programs
 are CmdC/CmdX/CmdV/CmdZ/ShiftCmdZ using key codes8/7/9/6 and modifiers55/56.
-Safari normal Copy releases Command before key8 (the previously source-selected
-SC01 program); the other single-modifier programs release the key first.
+Safari normal Copy/Cut/Paste/Undo release Command before letter key8/7/9/6,
+extending the source-selected SC01 Copy order. Their program IDs end in
+`/safari-release-first/1`; matching UP-only cleanup retains its original
+Command-UP then letter-UP sequence and the same action-specific ID suffix.
+All Chrome programs and Safari Redo retain their original sequences and IDs.
+This source selection does not claim browser keyup delivery: the coordinator
+still requires paired trusted browser key events and exact semantic assertions.
 Events use a private CG source and original constructor timestamps, with all
 finite events allocated before the first post. Every transition has a fresh
 full owner measurement and read-only post-event access check before the program.

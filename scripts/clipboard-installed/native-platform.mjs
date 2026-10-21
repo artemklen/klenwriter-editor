@@ -19,16 +19,17 @@ function rectangle(value) {
   assert.ok(value.width > 0 && value.height > 0 && Number.isFinite(value.x + value.width) && Number.isFinite(value.y + value.height));
   return structuredClone(value);
 }
+const safariReleaseFirst = (browser, action) => browser === 'safari' && ['copy', 'cut', 'paste', 'undo'].includes(action);
 function expectedProgram(browser, action, cleanup) {
   const key = { copy: 8, cut: 7, paste: 9, undo: 6, redo: 6 }[action];
   const step = (keyCode, down, flags) => ({ keyCode, down, flags });
   if (cleanup) return [step(55, false, 'none'), ...(action === 'redo' ? [step(56, false, 'none')] : []), step(key, false, 'none')];
   if (action === 'redo') return [step(55, true, 'command'), step(56, true, 'command+shift'), step(key, true, 'command+shift'), step(key, false, 'command+shift'), step(56, false, 'command'), step(55, false, 'none')];
-  if (browser === 'safari' && action === 'copy') return [step(55, true, 'command'), step(key, true, 'command'), step(55, false, 'none'), step(key, false, 'none')];
+  if (safariReleaseFirst(browser, action)) return [step(55, true, 'command'), step(key, true, 'command'), step(55, false, 'none'), step(key, false, 'none')];
   return [step(55, true, 'command'), step(key, true, 'command'), step(key, false, 'command'), step(55, false, 'none')];
 }
 function expectedProgramId(browser, action, cleanup) {
-  return `osr47/${cleanup ? 'release-' : ''}${action}${browser === 'safari' && action === 'copy' ? '/safari-release-first/1' : '/1'}`;
+  return `osr47/${cleanup ? 'release-' : ''}${action}${safariReleaseFirst(browser, action) ? '/safari-release-first/1' : '/1'}`;
 }
 function scalarText(value) {
   assert.equal(typeof value, 'string');

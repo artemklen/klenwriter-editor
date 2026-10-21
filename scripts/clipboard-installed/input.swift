@@ -158,6 +158,9 @@ struct Step {
     let flagName: String
     var json: Fields { ["keyCode": Int(code), "down": down, "flags": flagName] }
 }
+func safariReleaseFirst(_ r: Request) -> Bool {
+    r.browser == "safari" && ["copy", "cut", "paste", "undo"].contains(r.json["action"] as! String)
+}
 func program(_ r: Request) -> [Step] {
     let action = r.json["action"] as! String
     let code: CGKeyCode = ["copy": 8, "cut": 7, "paste": 9, "undo": 6, "redo": 6][action]!
@@ -172,7 +175,7 @@ func program(_ r: Request) -> [Step] {
         return [step(55, true, "command"), step(56, true, "command+shift"), step(code, true, "command+shift"),
                 step(code, false, "command+shift"), step(56, false, "command"), step(55, false, "none")]
     }
-    if r.browser == "safari" && action == "copy" {
+    if safariReleaseFirst(r) {
         return [step(55, true, "command"), step(code, true, "command"), step(55, false, "none"), step(code, false, "none")]
     }
     return [step(55, true, "command"), step(code, true, "command"), step(code, false, "command"), step(55, false, "none")]
@@ -208,7 +211,7 @@ func keys(_ r: Request) -> Never {
     } catch { reason = (error as? Refusal)?.text ?? "Fixed key program failed" }
     var result = base(r, complete ? "completed" : (posted.isEmpty ? "refused" : "unknown"), complete ? "posted" : (posted.isEmpty ? "not_sent" : "unknown/may_have_sent"))
     result["method"] = "CGEvent/cghidEventTap"
-    result["programId"] = "osr47/" + (boolean(r.json["cleanupOnly"])! ? "release-" : "") + (r.json["action"] as! String) + (r.browser == "safari" && r.json["action"] as? String == "copy" ? "/safari-release-first/1" : "/1")
+    result["programId"] = "osr47/" + (boolean(r.json["cleanupOnly"])! ? "release-" : "") + (r.json["action"] as! String) + (safariReleaseFirst(r) ? "/safari-release-first/1" : "/1")
     result["program"] = steps.map { $0.json }
     result["postedTransitions"] = posted
     result["postedCount"] = posted.count
