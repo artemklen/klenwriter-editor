@@ -17,6 +17,34 @@ const p=text=>({type:'paragraph',content:text===''?[]:[{type:'text',text}]});
 const doc=(content,mode='prose')=>({schema:'klenwriter.document',schema_version:1,profile:mode,content});
 const binding={profile_id:'org.klenwriter.kwdj',profile_version:'1.0.0',codec_id:'org.klenwriter.kwdj/json',wire_version:1};
 const label='CONTROLLED DataTransfer-like string source / trusted host writer; no OS clipboard delivery or installed-input claim';
+const observedPlatformWrites=new WeakSet();
+function activation(){try{const a=navigator.userActivation;return a?{isActive:a.isActive,hasBeenActive:a.hasBeenActive}:null;}catch{return null;}}
+function platformError(error){const read=(key,limit)=>{try{const value=error?.[key];return typeof value==='string'?{value:value.slice(0,limit),truncated:value.length>limit}:null;}catch{return null;}};return{type:typeof error,name:read('name',128),message:read('message',1024)};}
+function observePlatformWrite(r){
+  const observation=r.platformWrites={format:'osr47-platform-write-observation/1',timeOrigin:performance.timeOrigin,installation:'unavailable',calls:[],overflow:false,restore:null};
+  try{
+    const clipboard=navigator.clipboard,original=clipboard?.write;
+    observation.capabilities={secureContext:isSecureContext,clipboardWrite:typeof original,clipboardItem:typeof ClipboardItem,blob:typeof Blob};
+    if(typeof original!=='function')return;
+    if(observedPlatformWrites.has(original)){observation.installation='overlapping_observer';return;}
+    const descriptor=Object.getOwnPropertyDescriptor(clipboard,'write'),then=Promise.prototype.then;
+    function observedWrite(...args){
+      let entry=null;
+      try{if(observation.calls.length<16){entry={sequence:observation.calls.length+1,receiverIsCapturedClipboard:this===clipboard,argumentCount:args.length,itemCount:Array.isArray(args[0])?args[0].length:null,userActivation:activation(),startedAt:performance.now(),outcome:'pending'};observation.calls.push(entry);}else observation.overflow=true;}catch{observation.overflow=true;}
+      const finish=(outcome,error)=>{if(entry)try{entry.outcome=outcome;entry.finishedAt=performance.now();if(error!==undefined)entry.error=platformError(error);}catch{observation.overflow=true;}};
+      let result;
+      try{result=Reflect.apply(original,this,args);}
+      catch(error){finish('synchronous_throw',error);throw error;}
+      if(entry)try{
+        Reflect.apply(then,result,[()=>finish('fulfilled'),error=>finish('rejected',error)]);
+      }catch(error){entry.observationError=platformError(error);}
+      return result; // The default writer receives the exact original result, never an observer Promise.
+    }
+    Object.defineProperty(clipboard,'write',{value:observedWrite,writable:true,configurable:true,enumerable:descriptor?.enumerable??false});
+    observedPlatformWrites.add(observedWrite);observation.installation='installed';
+    r.observers.push(()=>{try{if(Object.getOwnPropertyDescriptor(clipboard,'write')?.value!==observedWrite){observation.restore='foreign_descriptor';return;}if(descriptor)Object.defineProperty(clipboard,'write',descriptor);else if(!Reflect.deleteProperty(clipboard,'write'))throw Error('Original inherited method restoration failed');observation.restore='restored';}catch(error){observation.restore='failed';observation.restoreError=platformError(error);}});
+  }catch(error){observation.installation='failed';observation.installationError=platformError(error);}
+}
 function options(){return{abi:'editor-sdk/2',build_id:sdkBuildId,profile:packet.kwdjProfile,admission:'validate',access:'editable',registry_json:packet.kwdjRegistryJson,profile_options_json:JSON.stringify({identities:{media:[],references:[]},limits:null})};}
 function state(r){const response=r.editor.read({kind:'state'});check(response.status==='ok'&&response.value.kind==='state','Native state refused');return response.value.state;}
 function rows(r){const current=state(r),result=[];let count=0;
@@ -40,10 +68,11 @@ export async function mount(config={}){
   if(r.headless){r.editor=createEditor(shared);r.ready=await r.editor.ready;check(r.ready.status==='ok','Headless SDK admission failed');}
   else{const element=document.createElement('div');element.id=id;element.className='clipboard-example';element.setAttribute('aria-label','Clipboard editor '+serial);document.querySelector('#clipboard-mounts').append(element);r.element=element;
     const write=payload=>{r.writes.push({payload:clone(payload),label,time:performance.now()});if(r.writer==='reject')return Promise.reject(Error('Controlled writer refusal'));if(r.writer==='pending')return new Promise((resolve,reject)=>r.writePending.push({resolve,reject}));return Promise.resolve();};
+    if(r.platform)observePlatformWrite(r);
     r.editor=mountEditor({element,editor:shared,renderers:kwdjBasicRenderers,onRefusal:failure=>r.failures.push(clone(failure)),clipboard:{codec:configured,...(r.platform?{}:{write,writeText:text=>write({text})}),
       onPasteResult:outcome=>{r.pasteResults.push(clone(outcome));document.querySelector('#clipboard-status').textContent=outcome.status==='refused'?'Paste refused; inspect explicit raw-retention receipt.':'Paste '+outcome.status+'.';if(r.throwResult)throw Error('Controlled observer throw');},onResult:outcome=>r.copyResults.push(clone(outcome))}});
     r.ready=await r.editor.ready;check(r.ready.status==='ready','Mounted provider admission failed');
-    if(r.platform)for(const name of ['paste','copy','cut','keydown','keyup','beforeinput']){const observe=event=>{check(r.trustedEvents.length<512,'Installed event observation bound');r.trustedEvents.push({type:name,isTrusted:event.isTrusted,inputType:event.inputType??null,key:event.key??null,code:event.code??null,time:performance.now()});};element.addEventListener(name,observe,true);r.observers.push(()=>element.removeEventListener(name,observe,true));}
+    if(r.platform)for(const name of ['paste','copy','cut','keydown','keyup','beforeinput']){const observe=event=>{check(r.trustedEvents.length<512,'Installed event observation bound');r.trustedEvents.push({type:name,isTrusted:event.isTrusted,inputType:event.inputType??null,key:event.key??null,code:event.code??null,time:performance.now(),userActivation:activation()});};element.addEventListener(name,observe,true);r.observers.push(()=>element.removeEventListener(name,observe,true));}
   }
   records.set(id,r);r.editor.subscribe(event=>r.events.push(clone(event)));return{id,ready:clone(r.ready),label:r.platform?'ACTUAL platform writer and trusted-input observations; key delivery and native effect require separate receipts':label,headless:r.headless};
 }
@@ -57,7 +86,7 @@ export async function select(id,selection,dom){const r=record(id);check(!r.headl
 export async function selectHeadless(id,selection){const r=record(id);const native={anchor:point(r,selection.anchor),focus:point(r,selection.focus)};const result=await settle(r.editor.submit({kind:'set_selection',stamp:r.editor.capture(),selection:native}));check(result.response?.status==='ok','Headless native selection refused');return clone(native);}
 export async function snapshot(id){const r=record(id),result=await settle(r.editor.submit({kind:'snapshot',stamp:r.editor.capture(),max_bytes:2097152}));check(result.response?.status==='ok'&&result.response.value.kind==='snapshot','Native snapshot refused');const value=result.response.value;const release=await settle(r.editor.submit({kind:'release_snapshot',handle:value.handle}));check(release.response?.status==='ok','Native snapshot release refused');return value.canonical_json;}
 export async function inspect(id){const r=record(id),value=rows(r);const selection=value.state.selection;const projection=selection?r.editor.read({kind:'selection_text',stamp:value.state.stamp,max_bytes:1048576}):null;
-  return{...value,canonical:await snapshot(id),projection:clone(projection),context:clone(r.editor.context()),resources:clone(r.editor.resources()),native:clone(r.editor.nativeResources()),raw:raw(r),events:clone(r.events),writes:clone(r.writes),failures:clone(r.failures),pasteResults:clone(r.pasteResults),sourceReads:r.sources.map(s=>({label:s.label,calls:s.calls.slice(),types:s.types})),dom:r.element?.innerHTML??null,...(r.platform?{capturedInputs:clone(r.capturedInputs),trustedEvents:clone(r.trustedEvents),copyResults:clone(r.copyResults)}:{})};}
+  return{...value,canonical:await snapshot(id),projection:clone(projection),context:clone(r.editor.context()),resources:clone(r.editor.resources()),native:clone(r.editor.nativeResources()),raw:raw(r),events:clone(r.events),writes:clone(r.writes),failures:clone(r.failures),pasteResults:clone(r.pasteResults),sourceReads:r.sources.map(s=>({label:s.label,calls:s.calls.slice(),types:s.types})),dom:r.element?.innerHTML??null,...(r.platform?{capturedInputs:clone(r.capturedInputs),trustedEvents:clone(r.trustedEvents),copyResults:clone(r.copyResults),platformWrites:clone(r.platformWrites)}:{})};}
 export async function paste(id,payload){const r=record(id),pending=r.editor.clipboard.paste(source(r,payload));r.sources.at(-1).retire();return clone(await pending);}
 export function startPaste(id,payload){const r=record(id);check(!r.operation,'One fixture operation');r.operation=r.editor.clipboard.paste(source(r,payload));r.sources.at(-1).retire();return asyncState(id);}
 export function dispatchPaste(id,payload,outside=false){const r=record(id),event=new Event('paste',{bubbles:true,cancelable:true}),index=r.pasteResults.length;
@@ -79,7 +108,7 @@ export async function dispose(id){const r=record(id);if(r.disposed)return r.disp
   const sdk=r.headless?receipt:receipt.sdk;if(sdk?.status==='queued')await sdk.completion;
   const transfer=receipt.clipboardRecovery;const recovery=transfer?.status==='pending'?await transfer.completion:transfer?.recovery??null;if(recovery)r.hostTransfers.push(recovery);
   for(const remove of r.observers.splice(0))remove();r.capturedInputs.length=0;
-  r.disposed=true;r.element?.remove();r.disposeReadback={id,resources:clone(r.editor.resources()),native:JSON.parse(module.resourceCounts()),clipboardTransfer:clone(recovery),hostTransferredInputs:r.hostTransfers.length,fixtureObservers:r.observers.length};return r.disposeReadback;
+  r.disposed=true;r.element?.remove();r.disposeReadback={id,resources:clone(r.editor.resources()),native:JSON.parse(module.resourceCounts()),clipboardTransfer:clone(recovery),hostTransferredInputs:r.hostTransfers.length,fixtureObservers:r.observers.length,...(r.platform?{platformWrites:clone(r.platformWrites)}:{})};return r.disposeReadback;
 }
 export async function allDisposed(){const readbacks=[];for(const id of records.keys())readbacks.push(await dispose(id));return{readbacks,native:JSON.parse(module.resourceCounts())};}
 export function metadata(){return{buildId:sdkBuildId,manifest:clone(module.manifest),scope:label,browserSupport:{chromium:'required measurement',webkit:'required measurement',firefox:'experimental behavior; evidence integrity required'},policy};}
