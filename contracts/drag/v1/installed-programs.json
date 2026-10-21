@@ -1538,7 +1538,7 @@
     "scroll_class": "ui-drag-scroll",
     "zoom200_class": "ui-drag-zoom200",
     "zoom200_family": "N03",
-    "authority": "Current external spikes/workspace/ui-fixture.css only; no inline margin/row override",
+    "authority": "External spikes/workspace/ui-fixture.css plus awaited installed-only scripts/drag-installed/fixture.css; static prebaseline block spacing only, no inline or postbaseline override",
     "edge_inset_css_px": 10,
     "setup": "Initial scroll start/end only before baseline; no fixture scroll write after baseline"
   },
