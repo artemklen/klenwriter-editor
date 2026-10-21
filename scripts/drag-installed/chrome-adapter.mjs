@@ -9,6 +9,7 @@ import {resolve,dirname} from 'node:path';
 import {limits,validCall} from './protocol.mjs';
 import {createInputOwner,prepareChromeWindow} from './input.mjs';
 import {awaitSourceWindowReady as waitForSourceWindow} from './source-window-readiness.mjs';
+import {createSender} from './sender.mjs';
 export async function createChromeAdapter({config,report,inputHelper,keyScriptPath,run,save,outputPath}){
   const script=text=>run('/usr/bin/osascript',['-e',text]);
   const childHome=mkdtempSync(resolve(dirname(outputPath),'chrome-drag44-appdata-'));
@@ -19,6 +20,14 @@ export async function createChromeAdapter({config,report,inputHelper,keyScriptPa
   let mountedId=null,serial=0,guardSerial=0,busy=false,navigationStarted=false,bootstrapReady=false,physicalStarted=false,focusEntryFailed=false,browserCdp=null,pageCdp=null;
   page.on('pageerror',error=>errors.push(error.message));report.browserVersion=browser.version();
   const record=(kind,value)=>{report.controlLog??=[];if(report.controlLog.length>=4096)throw Error('Chrome control receipt bound');report.controlLog.push({kind,...value});};
+  let sender=null;
+  const inputRun=(command,argv,options)=>{
+    if(command===inputHelper&&argv[0]==='--request'){
+      assert.ok(sender,'Prepared owned native sender required');assert.equal(argv.length,2);
+      return sender.request(JSON.parse(argv[1]));
+    }
+    return run(command,argv,options);
+  };
   const call=async(method,...args)=>{
     if(busy||++serial>limits.commands||!validCall(method,args))throw Error('Concurrent, excessive or unknown Chrome fixture call');busy=true;
 
@@ -37,7 +46,7 @@ export async function createChromeAdapter({config,report,inputHelper,keyScriptPa
     assert.equal(value.url,config.fixtureUrl);assert.equal(value.title,config.title);
     return {id:config.nonce+':'+String(serial),start,value:{...value,mountedId,serial:++guardSerial}};
   };
-  const inputOwner=createInputOwner({browser:'chrome',config,inputHelper,keyScriptPath,run,record,mountedId:()=>mountedId,guard:pageGuard('guard'),cleanupGuard:pageGuard('cleanupGuard'),ownedPointerPid:()=>report.control.bootstrap.ownBrowserPid});
+  const inputOwner=createInputOwner({browser:'chrome',config,inputHelper,keyScriptPath,run:inputRun,record,mountedId:()=>mountedId,guard:pageGuard('guard'),cleanupGuard:pageGuard('cleanupGuard'),ownedPointerPid:()=>report.control.bootstrap.ownBrowserPid});
   report.control={method:'Installed headed Chrome; closed Playwright page setup/read RPC, strict AX preflight, closed44 fixed CGEvent keys and held-pointer phases',webDriver:false,
     uniqueTitle:config.title,fixtureUrl:config.fixtureUrl,fixtureOnly:true,childOnlyEnvironment:true,launchArguments};
   return {errors,input:action=>{assert.equal(bootstrapReady,true,'Strict Chrome window bootstrap required before input');physicalStarted=true;return inputOwner.input(action);},releaseOwnedPointer:()=>inputOwner.releaseOwnedPointer(),
@@ -93,6 +102,7 @@ export async function createChromeAdapter({config,report,inputHelper,keyScriptPa
         async getTargetInfo(){pageCdp??=await page.context().newCDPSession(page);return (await pageCdp.send('Target.getTargetInfo')).targetInfo;},
         windowCommand:(method,params)=>{assert.ok(browserCdp);return browserCdp.send(method,params);},
       });
+      sender=createSender({command:inputHelper,record});await sender.ready();
       bootstrapReady=true;save();
     },
     async awaitSourceWindowReady(sourceId){
@@ -122,6 +132,11 @@ export async function createChromeAdapter({config,report,inputHelper,keyScriptPa
       catch(error){focusEntryFailed=true;setup.status='failed';setup.error=error.message;throw error;}
       finally{save();}
     },call,
+    async closeSender(){
+      const receipt=sender?await sender.close():{status:'NOT_STARTED',pid:null,reaped:null,requestCount:0,responseCount:0};report.control.senderLifetime=receipt;
+      if(sender){assert.equal(receipt.status,'CLOSED');assert.equal(receipt.reaped,true);assert.equal(receipt.exitCode,0);assert.equal(receipt.signal,null);}
+      return receipt;
+    },
     async close(){await browser.close();report.control.cleanup={status:'owned-chrome-browser-closed',scope:'Only isolated browser instance launched for this fixture'};},
   };
 }

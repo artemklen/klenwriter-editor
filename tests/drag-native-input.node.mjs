@@ -7,7 +7,7 @@ import {caseActions,keySpecs} from '../scripts/drag-installed/protocol.mjs';
 import {createInputOwner,fixedTransitions} from '../scripts/drag-installed/input.mjs';
 const nonce='a'.repeat(32),frame={x:10,y:20,width:1040,height:850};
 const config={format:'osr44-drag-http-broker/1',nonce,title:'KlenWriter Drag native '+nonce,fixtureUrl:'http://127.0.0.1:4174/ui'};
-function setup({mutateGuard,mode,inspectPid=42,caseId='I44-N01-en'}={}){
+function setup({mutateGuard,mode,inspectPid=42,caseId='I44-N01-en',asyncRun=false}={}){
   const invocations=[],records=[];let serial=0;
   const stamp={session:'mock',generation:'1',revision:'0',selection_epoch:'1',history_epoch:'0'},context={build_id:'mock-only'};
   const gate=async(action,cleanup=false)=>{
@@ -16,7 +16,7 @@ function setup({mutateGuard,mode,inspectPid=42,caseId='I44-N01-en'}={}){
       sourceObject:'o1',handleObject:'o2',targetObject:'o3',viewport:{width:1024,height:768,scale:1,offsetLeft:0,offsetTop:0,pageZoom:1},point,actualUnpressedHandleMove:true,stamp,context};
     const g={id:nonce+':'+serial,start:process.hrtime.bigint(),value};mutateGuard?.(g,action,cleanup);return g;
   };
-  const run=(command,args)=>{
+  const execute=(command,args)=>{
     assert.equal(command,'mock-helper-never-executed');const request=JSON.parse(args[1]);invocations.push({flag:args[0],request});
     if(args[0]==='--inspect-window')return{returnCode:0,stdout:JSON.stringify({status:'inspected',delivery:'not_sent',nonce,browser:'chrome',contained:true,frontPid:inspectPid,axWindow:frame})};
     const literalKeys={'tab':{normal:['key48-down','key48-up'],cleanup:['key48-up']},'zoom-in':{normal:['command-down','shift-down','key24-down','key24-up','shift-up','command-up'],cleanup:['command-up','shift-up','key24-up']}};
@@ -24,6 +24,7 @@ function setup({mutateGuard,mode,inspectPid=42,caseId='I44-N01-en'}={}){
     const special=mode?.(request,actual);if(special)throw Object.assign(Error('Controlled opaque/late completion'),{execution:{returnCode:2,stdout:JSON.stringify(special),stderr:'mock-only'}});
     return{returnCode:0,stdout:JSON.stringify(actual)};
   };
+  const run=asyncRun?async(...args)=>execute(...args):execute;
   const owner=createInputOwner({browser:'chrome',config,inputHelper:'mock-helper-never-executed',run,record:(kind,value)=>records.push({kind,value}),guard:a=>gate(a),cleanupGuard:a=>gate(a,true),mountedId:()=>'ui42-1',ownedPointerPid:()=>42});
   return{owner,invocations,records};
 }
@@ -114,4 +115,19 @@ test('D44-I13 unknown bare Tab completion permits only one original key48 Up wit
   assert.deepEqual(cleanup.receipt.actual.postedTransitions,['key48-up']);assert.equal(cleanup.receipt.request.action,'tab');assert.equal(cleanup.receipt.request.cleanupOnly,true);assert.equal(cleanup.receipt.request.point,null);
   const posts=f.invocations.filter(value=>value.flag==='--request').map(value=>value.request);assert.equal(posts.filter(value=>!value.cleanupOnly).length,1);assert.equal(posts.filter(value=>value.cleanupOnly).length,1);
   const n=f.invocations.length;assert.equal((await f.owner.releaseOwnedKeys()).status,'not_required');assert.equal(f.invocations.length,n);
+});
+
+test('D44-I14 asynchronous execution preserves original inspection, ownership and full phase replies',async()=>{
+  const f=setup({asyncRun:true});await down(f);await f.owner.input('move-1');const up=await f.owner.input('up');
+  assert.equal(up.knownCompleteCore,true);assert.equal(up.actual.request.action,'up');assert.equal(f.owner.pointerDown,false);assert.equal(f.owner.disabled,false);
+  assert.deepEqual(f.invocations.map(x=>x.flag),['--inspect-window','--request','--request','--request','--request','--request']);
+  assert.deepEqual(f.invocations.filter(x=>x.flag==='--request').map(x=>x.request.action),['hover-source','move-start','down','move-1','up']);
+});
+test('D44-I15 asynchronous unknown Down still owns exactly one matching Up cleanup',async()=>{
+  const f=setup({asyncRun:true,mode:(r,a)=>r.action==='down'?{...a,coreComplete:false,status:'unknown',delivery:'unknown/may_have_sent'}:null});
+  await f.owner.input('hover-source');await f.owner.input('move-start');await assert.rejects(f.owner.input('down'));assert.equal(f.owner.disabled,true);assert.equal(f.owner.pointerDown,true);
+  await assert.rejects(f.owner.input('down'));assert.equal((await f.owner.releaseOwnedPointer()).status,'released');assert.equal(f.owner.pointerDown,false);
+  assert.equal((await f.owner.releaseOwnedPointer()).status,'not_required');
+  const posts=f.invocations.filter(x=>x.flag==='--request').map(x=>x.request);assert.equal(posts.filter(x=>x.action==='down').length,1);
+  assert.deepEqual(posts.filter(x=>x.cleanupOnly).map(x=>[x.action,x.pointerDown]),[['up',true]]);
 });

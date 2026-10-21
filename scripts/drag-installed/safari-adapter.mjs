@@ -6,6 +6,7 @@ import {resolve,dirname} from 'node:path';
 import {limits,validCall,boundedJson} from './protocol.mjs';
 import {createInputOwner} from './input.mjs';
 import {prepareSafariAxReadiness} from './safari-readiness.mjs';
+import {createSender} from './sender.mjs';
 
 const wait = ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const now = ()=>process.hrtime.bigint();
@@ -131,7 +132,15 @@ export async function createSafariAdapter({config,report,run,outputPath,inputHel
       throw error;
     } finally { inflight = false; }
   }
-  const inputOwner=createInputOwner({browser:'safari',config,inputHelper,keyScriptPath,run,record,guard:action=>rpc('guard',[action]),cleanupGuard:action=>rpc('cleanupGuard',[action]),mountedId:()=>mountedId});
+  let sender=null;
+  const inputRun=(command,argv,options)=>{
+    if(command===inputHelper&&argv[0]==='--request'){
+      if(!sender||argv.length!==2)throw Error('Prepared owned native sender required');
+      return sender.request(JSON.parse(argv[1]));
+    }
+    return run(command,argv,options);
+  };
+  const inputOwner=createInputOwner({browser:'safari',config,inputHelper,keyScriptPath,run:inputRun,record,guard:action=>rpc('guard',[action]),cleanupGuard:action=>rpc('cleanupGuard',[action]),mountedId:()=>mountedId});
   try {
     const status = await exchange('host/status',undefined,now(),limits.commandBytes);
     if (status.stopped || status.ready || status.commands!==0 || status.pending) throw new Error('Broker is expired or already used');
@@ -196,6 +205,7 @@ export async function createSafariAdapter({config,report,run,outputPath,inputHel
       if(Date.now()>=deadline)throw new Error('Safari AX preparation exceeded original navigate deadline');
       report.control.safariAxReadiness=await prepareSafariAxReadiness({config,inputHelper,run,record,remainingNavigate:()=>deadline-Date.now()});
       if(report.control.safariAxReadiness.status!=='ready')throw new Error('Safari read-only AX readiness refused: '+report.control.safariAxReadiness.reason);
+      sender=createSender({command:inputHelper,record});await sender.ready();
     },
     async focus() {
       const {value} = await rpc('documentGuard');
@@ -230,6 +240,11 @@ export async function createSafariAdapter({config,report,run,outputPath,inputHel
     get pointerDown(){return inputOwner.pointerDown;},
     get pointerState(){return inputOwner.pointerState;},
     get inputDisabled(){return inputOwner.disabled;},
+    async closeSender(){
+      const receipt=sender?await sender.close():{status:'NOT_STARTED',pid:null,reaped:null,requestCount:0,responseCount:0};report.control.senderLifetime=receipt;
+      if(sender&&(receipt.status!=='CLOSED'||receipt.reaped!==true||receipt.exitCode!==0||receipt.signal!==null))throw Error('Owned native sender did not close cleanly');
+      return receipt;
+    },
     async close() {
       let pageGuard;
       if (disabled) pageGuard = {status:'unavailable',reason:'broker disabled after transport/unknown completion'};

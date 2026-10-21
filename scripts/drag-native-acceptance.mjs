@@ -183,6 +183,7 @@ try{
   report.pageErrors=adapter.errors;assert.deepEqual(adapter.errors,[]);report.status=report.rows.every(r=>r.status==='PASS')?'PASSED':'FAILED';
 }catch(error){report.status=report.physicalActions.length?'FAILED':'NOT_RUN';report.error={message:error.message,stack:error.stack,execution:error.execution??null};}
 finally{
+  if(adapter)try{await adapter.closeSender();}catch(error){report.senderCleanupError={message:error.message,execution:error.execution??null};report.status='FAILED';}
   if(adapter)try{await adapter.close();}catch(error){report.browserCleanupError={message:error.message,execution:error.execution??null};report.status='FAILED';}
   if(originalSource)try{const first=await ensureSource(originalSource),readbacks=[first];for(let i=0;i<4;i++){await wait(100);const actual=source();coherent(actual,originalSource);readbacks.push(actual);}report.restoration={status:'RESTORED',scope:'Original input source only; separate key/pointer cleanup and fixture close receipts retain their own outcomes',originalSource,readbacks};}catch(error){report.restoration={status:'FAILED',error:error.message,execution:error.execution??null};report.status='FAILED';}
   try{

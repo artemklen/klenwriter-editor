@@ -30,9 +30,9 @@ export function createInputOwner({browser,config,inputHelper,run,record,guard,cl
     if(owner)assert.deepEqual(lineage,owner.lineage,'Original mount/source/handle/target identity differs');
     return {v,lineage};
   }
-  function invoke(request){
+  async function invoke(request){
     const text=JSON.stringify(request);assert.ok(Buffer.byteLength(text)<=4096);
-    try{const execution=run(inputHelper,['--request',text],{timeout:request.deadlineMs,fullStdout:true,maxBuffer:32768});return {execution,actual:JSON.parse(execution.stdout)};}
+    try{const execution=await run(inputHelper,['--request',text],{timeout:request.deadlineMs,fullStdout:true,maxBuffer:32768});return {execution,actual:JSON.parse(execution.stdout)};}
     catch(error){let actual=null;try{actual=JSON.parse(error.execution?.stdout??'');}catch{}error.actual=actual;throw error;}
   }
   function identity(actual,request){
@@ -51,7 +51,7 @@ export function createInputOwner({browser,config,inputHelper,run,record,guard,cl
       if(cleanup){assert.ok(pending,'No original pending release');assert.equal(pending.cleanupAttempted,true);assert.deepEqual(lineage,pending.lineage);assert.deepEqual(v.viewport,pending.viewport);}
       if(!owner){
         const inspect={format:'osr44-native-window-inspection/1',browser,nonce:config.nonce,title:config.title,fixtureUrl:config.fixtureUrl,deadlineMs:remaining(g),viewport:v.viewport};
-        const execution=run(inputHelper,['--inspect-window',JSON.stringify(inspect)],{timeout:inspect.deadlineMs,fullStdout:true,maxBuffer:32768});const actual=JSON.parse(execution.stdout);
+        const execution=await run(inputHelper,['--inspect-window',JSON.stringify(inspect)],{timeout:inspect.deadlineMs,fullStdout:true,maxBuffer:32768});const actual=JSON.parse(execution.stdout);
         log('original-window-binding',{request:inspect,execution,actual});assert.equal(actual.status,'inspected');assert.equal(actual.delivery,'not_sent');assert.equal(actual.nonce,config.nonce);assert.equal(actual.browser,browser);assert.equal(actual.contained,true);assert.ok(rect(actual.axWindow));
         assert.ok(Number.isSafeInteger(actual.frontPid)&&actual.frontPid>0&&actual.frontPid<=2147483647);if(browser==='chrome')assert.equal(actual.frontPid,ownedPointerPid(),'Original owned Chrome PID differs');
         owner={lineage,pid:actual.frontPid,rootFrame:actual.axWindow};
@@ -72,7 +72,7 @@ export function createInputOwner({browser,config,inputHelper,run,record,guard,cl
       if(isPointer&&pointer)pointer.point=point;
       receipt={...receipt,request,status:'dispatched'};log('physical-action',receipt);
       let execution,actual;
-      try{({execution,actual}=invoke(request));}
+      try{({execution,actual}=await invoke(request));}
       catch(error){
         actual=error.actual;let complete=false;
         if(actual){try{complete=identity(actual,request);}catch(validation){error.receiptValidation=validation.message;}}
