@@ -220,7 +220,7 @@ export async function run() {
       || seal.sealed_bytes !== build.wasm.bytes || seal.sealed_sha256 !== build.wasm.sha256) {
       throw new Error('Current source, compiled manifest and sealed WASM do not agree');
     }
-    const extraPaths = ['contracts/mounted-e2e/v1/interaction-literals.json', 'scripts/mounted-corpus/interactions.mjs', 'scripts/mounted-corpus/interactions.css', 'scripts/mounted-corpus/collect-interactions.mjs', 'tests/mounted-corpus-interactions.spec.js', 'tests/mounted-corpus-interactions.node.mjs'];
+    const extraPaths = ['contracts/mounted-e2e/v1/interaction-literals.json', 'scripts/mounted-corpus/interactions.mjs', 'scripts/mounted-corpus/native-observer.mjs', 'scripts/mounted-corpus/interactions.css', 'scripts/mounted-corpus/collect-interactions.mjs', 'tests/mounted-corpus-interactions.spec.js', 'tests/mounted-corpus-interactions.node.mjs'];
     const paths = [...new Set([...sourcePins.files.map(item => item.path), ...REQUIRED_SCENARIO_PATHS, ...extraPaths])].sort();
     const scenarioPins = await Promise.all(paths.map(path => pin(path)));
     const previousEnv = { CFFIXED_USER_HOME: process.env.CFFIXED_USER_HOME, TMPDIR: process.env.TMPDIR, PLAYWRIGHT_SKIP_BROWSER_GC: process.env.PLAYWRIGHT_SKIP_BROWSER_GC };

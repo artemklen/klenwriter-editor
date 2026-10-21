@@ -499,13 +499,16 @@ class Ui implements EditorUi {
     this.#positionToolbar(context);
     const clear = () => { this.#gutter.classList.remove('kw-ui-floating'); this.#gutter.style.removeProperty('left'); this.#gutter.style.removeProperty('top'); };
     if (!context.block) { clear(); return; }
+    // Fit the intended presentation before measuring either source or gutter:
+    // an earlier host slot leaving flow can also move the source block.
+    this.#gutter.classList.add('kw-ui-floating');
     const result = this.#options!.editor.geometry.read({ kind: 'block', stamp: context.state.stamp, node: context.block.node.id });
     if (result.status !== 'measured' || !result.visible || !result.rects.length) { clear(); return; }
     const first = result.rects[0]!, box = this.#gutter.getBoundingClientRect();
     const x = first.x - box.width - 8, y = Math.max(result.viewport.y + 8, Math.min(first.y, result.viewport.y + result.viewport.height - box.height - 8));
     if (![x, y, box.width, box.height].every(Number.isFinite) || x < result.viewport.x + 8
       || box.height > result.viewport.height - 16 || box.width <= 0) { clear(); return; }
-    this.#gutter.classList.add('kw-ui-floating'); this.#gutter.style.left = `${Math.round(x * 2) / 2}px`; this.#gutter.style.top = `${Math.round(y * 2) / 2}px`;
+    this.#gutter.style.left = `${Math.round(x * 2) / 2}px`; this.#gutter.style.top = `${Math.round(y * 2) / 2}px`;
   }
   #clearToolbarPlacement(): void {
     this.#toolbar.classList.remove('kw-ui-toolbar-floating');

@@ -31,6 +31,7 @@ const routes = new Map([
   ['/mounted-corpus-client.mjs', ['scripts/mounted-corpus/page-client.mjs', 'text/javascript']],
   ['/mounted-corpus-protocol.mjs', ['scripts/mounted-corpus/protocol.mjs', 'text/javascript']],
   ['/mounted-corpus-interactions.mjs', ['scripts/mounted-corpus/interactions.mjs', 'text/javascript']],
+  ['/mounted-corpus-native-observer.mjs', ['scripts/mounted-corpus/native-observer.mjs', 'text/javascript']],
   ['/mounted-corpus-interactions.css', ['scripts/mounted-corpus/interactions.css', 'text/css']],
   ['/ui-frame', ['spikes/workspace/ui-frame.html', 'text/html']],
   ['/ui-host.js', ['spikes/workspace/ui-host.js', 'text/javascript']],

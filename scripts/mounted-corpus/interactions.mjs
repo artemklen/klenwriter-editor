@@ -3,6 +3,7 @@
 import { createEditorUi } from '@klenwriter/editor-ui';
 import { kwdjCommand, kwdjSlashCandidates, kwdjSlashTextBlockTypes } from '@klenwriter/editor-kwdj';
 import { ownBoundedData } from '/mounted-corpus-protocol.mjs';
+import { observeNativeModule } from '/mounted-corpus-native-observer.mjs';
 import { ready as baseReady, interactionSetup, createRecorder, openOwner, readTree,
   snapshotAndRelease, closeOwner, call, requireReply, serializeSubmission } from '/mounted-corpus-client.mjs';
 
@@ -35,30 +36,6 @@ function resolve(value, roles) {
   if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([k, v]) => [k,
     ['node', 'parent'].includes(k) && typeof v === 'string' && Object.hasOwn(roles, v) ? roles[v] : resolve(v, roles)]));
   return value;
-}
-function observeModule(module, record, limits) {
-  const append = (method, requestJson, responseJson, error) => {
-    const bytes = encoder.encode(requestJson ?? '').length + encoder.encode(responseJson ?? '').length;
-    if (record.nativeTrace.length >= limits.nativeCalls || record.nativeTraceBytes + bytes > limits.nativeBytes) {
-      record.nativeTraceOverflow = true; fail('Interaction native trace bound');
-    }
-    record.nativeTraceBytes += bytes;
-    record.nativeTrace.push({ ordinal: record.nativeTrace.length, method, requestJson, responseJson, error });
-  };
-  class ObservedSession {
-    constructor(input, options) { this.actual = new module.Session(input, options); }
-    initialization() { const raw = this.actual.initialization(); append('initialization', null, raw, null); return raw; }
-    context() { return this.actual.context(); }
-    call(raw) {
-      let result;
-      try { result = this.actual.call(raw); }
-      catch (error) { append('call', raw, null, { name: typeof error?.name === 'string' ? error.name : null, message: typeof error?.message === 'string' ? error.message : null }); throw error; }
-      append('call', raw, result, null); return result;
-    }
-    destroy() { this.actual.destroy(); }
-    free() { this.actual.free(); }
-  }
-  return { manifest: module.manifest, Session: ObservedSession, resourceCounts: () => module.resourceCounts() };
 }
 function unavailable() { return { status: 'unavailable', code: 'mounted-corpus.unavailable', message: { ru: 'Недоступно', en: 'Unavailable' } }; }
 function makeProfile(route, record, copy) {
@@ -120,7 +97,7 @@ export async function open(routeId, explicitBinding) {
     ordinaryInputs: [], uiReady: null, uiResults: [], commands: [], browserEvents: [], focusSetup: null, errors: recorder.errors, cspViolations: recorder.cspViolations };
   const wrapper = document.createElement('section'); wrapper.className = 'mounted-interaction'; wrapper.id = 'mounted-interaction';
   document.querySelector('#mounted-corpus-host').append(wrapper);
-  const state = active = { route, record, recorder, wrapper, owner: null, pendingUi: [], removals: [], inputRelease: null, saved: null, handle: null, module: observeModule(setup.module, record, contract.budgets), options: setup.options };
+  const state = active = { route, record, recorder, wrapper, owner: null, pendingUi: [], removals: [], inputRelease: null, saved: null, handle: null, module: observeNativeModule(setup.module, record, contract.budgets), options: setup.options };
   for (const name of ['keydown', 'keyup', 'beforeinput', 'input', 'pointerdown', 'pointermove', 'pointerup', 'pointercancel', 'gotpointercapture', 'lostpointercapture']) {
     const listener = event => {
       if (!(event.target instanceof Node) || !wrapper.contains(event.target)) return;

@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { collectInteractions, interactionValidators, assessInteraction } from '../scripts/mounted-corpus/collect-interactions.mjs';
 import { ownBoundedData, RESOURCE_KEYS } from '../scripts/mounted-corpus/protocol.mjs';
+import { observeNativeModule } from '../scripts/mounted-corpus/native-observer.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const literalPath = 'contracts/mounted-e2e/v1/interaction-literals.json';
@@ -25,6 +26,62 @@ const reader = artifacts => async (path, maxBytes) => {
   if (value === undefined) throw new Error(`Controlled missing artifact: ${path}`);
   assert.ok(value.length <= maxBytes, 'Reader respects requested byte bound'); return value;
 };
+
+test('native trace overflow preserves actual replies, errors and one bounded prefix', () => {
+  const request = '{"kind":"state"}', reply = '{"text":"Ё😀"}';
+  const cost = Buffer.byteLength(request) + Buffer.byteLength(reply);
+  for (const limits of [{ nativeCalls: 1, nativeBytes: cost * 4 }, { nativeCalls: 4, nativeBytes: cost }]) {
+    const record = { nativeTrace: [], nativeTraceBytes: 0, nativeTraceOverflow: false }, calls = [];
+    const originalError = new Error('Independent native failure');
+    const manifest = {}, context = {}, resources = {}, input = new Uint8Array([1]), options = {};
+    const observed = observeNativeModule({ manifest, resourceCounts: () => resources, Session: class {
+      constructor(actualInput, actualOptions) { assert.equal(actualInput, input); assert.equal(actualOptions, options); }
+      context() { return context; }
+      call(raw) { calls.push(raw); if (raw === 'throw') throw originalError; return raw === 'short' ? '' : reply; }
+      destroy() { calls.push('destroy'); }
+      free() { calls.push('free'); }
+    } }, record, limits);
+    const session = new observed.Session(input, options);
+    assert.equal(observed.manifest, manifest); assert.equal(observed.resourceCounts(), resources); assert.equal(session.context(), context);
+    assert.equal(session.call(request), reply); assert.equal(record.nativeTraceOverflow, false);
+    const prefix = structuredClone(record.nativeTrace);
+    assert.equal(record.nativeTraceBytes, cost);
+    // A successful actual.call must not turn into an SDK transport exception.
+    assert.equal(session.call(request), reply); assert.equal(record.nativeTraceOverflow, true);
+    // Even a later small observation cannot fill the gap after overflow.
+    assert.equal(session.call('short'), ''); assert.deepEqual(record.nativeTrace, prefix); assert.equal(record.nativeTraceBytes, cost);
+    assert.throws(() => session.call('throw'), error => error === originalError);
+    session.destroy(); session.free();
+    assert.deepEqual(calls, [request, request, 'short', 'throw', 'destroy', 'free']);
+    assert.deepEqual(record.nativeTrace, [{ ordinal: 0, method: 'call', requestJson: request, responseJson: reply, error: null }]);
+  }
+});
+
+test('native initialization overflow returns its original result without an observer exception', () => {
+  const reply = '{"native":"initialization"}', record = { nativeTrace: [], nativeTraceBytes: 0, nativeTraceOverflow: false };
+  let initializations = 0;
+  const observed = observeNativeModule({ Session: class { initialization() { initializations++; return reply; } } }, record, { nativeCalls: 1, nativeBytes: 1 });
+  assert.equal(new observed.Session().initialization(), reply); assert.equal(initializations, 1);
+  assert.equal(record.nativeTraceOverflow, true); assert.equal(record.nativeTraceBytes, 0); assert.deepEqual(record.nativeTrace, []);
+});
+
+test('native trace overflow remains an explicit blocking integrity failure in every engine tier', () => {
+  const validators = interactionValidators(schema), route = contract.routes[0], literalPin = pin(literalPath, bytes);
+  const toyBinding = { ...binding(), sourceSHA: '0'.repeat(40), build: { buildId: 'controlled-toy-build', wasm: { sha256: '0'.repeat(64) } } };
+  for (const engine of engines) {
+    // Deliberately claim a complete terminal: the independent overflow check must still fail.
+    const observation = { protocol: contract.protocol, runId: toyBinding.runId, engine, routeId: route.routeId,
+      binding: { sourceSHA: toyBinding.sourceSHA, buildId: toyBinding.build.buildId, wasmSha256: toyBinding.build.wasm.sha256 },
+      literalPin, scope: 'Independent overflow control; no product execution', stop: { status: 'completed', phase: 'complete', reason: null },
+      original: null, fresh: null, checkpoints: [], nativeTrace: [], nativeTraceBytes: 0, nativeTraceOverflow: true,
+      ordinaryInputs: [], uiReady: null, uiResults: [], commands: [], browserEvents: [], focusSetup: null, errors: [], cspViolations: [] };
+    const assessment = assessInteraction({ observation, route, binding: toyBinding, harnessError: null, contract, pin: literalPin, validators });
+    assert.deepEqual(assessment.checks.find(value => value.name === 'native trace overflow'),
+      { domain: 'integrity', name: 'native trace overflow', status: 'FAIL', actual: true, expected: false });
+    assert.equal(assessment.checks.find(value => value.name === 'complete original terminal').status, 'MET');
+    assert.equal(assessment.integrity, 'FAIL'); assert.equal(assessment.requirement, 'OBSERVATION'); assert.equal(assessment.blocking, true);
+  }
+});
 
 test('interaction literals fit the browser plain-data contract and exact finite inventory', () => {
   const owned = ownBoundedData(contract, 65536);

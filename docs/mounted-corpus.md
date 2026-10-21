@@ -60,7 +60,16 @@ for the external gutter beside the source at its declared desktop viewport and
 checks the pointer's gradual approach to the control. When a host's gutter cannot fit beside the
 source block, that button remains in normal flow below the editor. Human
 instructions must identify this actual control rather than infer a handle
-from an empty rounded panel or assume a fixed position.
+from an empty rounded panel or assume a fixed position. Placement measures both
+the source and the gutter in the intended floating mode, with the same18rem
+gutter cap. A fit decision therefore does not alternate between differently sized
+flow and floating boxes. Narrow hosts retain the normal-flow fallback.
+
+Native observation limits remain strict evidence failures. Reaching the fixed
+call or byte bound latches overflow and retains only its continuous trace prefix;
+the wrapper still returns the original native reply or exception. An incomplete
+trace cannot qualify as a passing observation and must not manufacture an SDK
+transport failure after a successful native call.
 
 CI remains build-only. The local pre-send gate runs the new lane after the
 existing checks; independent review and merge still apply to the exact source.
