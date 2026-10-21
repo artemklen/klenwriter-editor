@@ -39,6 +39,18 @@ test('held shortcut suppresses all matching UA echoes/repeats; keyup restores st
   f.fire('keyup');assert.equal(f.fire('beforeinput',{inputType:'historyUndo'}).defaultPrevented,true);assert.equal(f.requests.length,3);
   f.fire('keydown');assert.equal(f.requests.length,4);f.close();
 });
+test('fresh nonrepeat shortcuts renew intent without keyup while echoes and repeats stay fenced',()=>{
+  const f=fixture(),directions=['undo','redo','undo'];
+  for(const [index,direction] of directions.entries()){
+    const shiftKey=direction==='redo';
+    assert.equal(f.fire('keydown',{shiftKey}).defaultPrevented,true);
+    assert.deepEqual(f.requests.map(value=>value.request.direction),directions.slice(0,index+1));
+    for(let echo=0;echo<2;echo++)assert.equal(f.fire('beforeinput',{inputType:shiftKey?'historyRedo':'historyUndo'}).defaultPrevented,true);
+    assert.equal(f.fire('keydown',{shiftKey,repeat:true}).defaultPrevented,true);
+    assert.equal(f.requests.length,index+1);
+  }
+  assert.equal(f.beforeObservations.length,0);assert.equal(f.reports.length,0);f.close();
+});
 test('reentrant matching echo cannot submit a second native operation; noncancelable echo claims no cancellation',()=>{
   const f=fixture({queued:true});f.onSubmit(()=>{assert.equal(f.fire('beforeinput',{inputType:'historyUndo'}).defaultPrevented,true);});f.fire('keydown');assert.equal(f.requests.length,1);
   assert.equal(f.fire('beforeinput',{inputType:'historyUndo',cancelable:false}).defaultPrevented,false);assert.equal(f.requests.length,1);f.close();

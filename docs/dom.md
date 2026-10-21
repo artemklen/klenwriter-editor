@@ -242,10 +242,12 @@ composition guards не допускают UA edit или native history submiss
 focus, уже отменённое событие и untrusted key не перехватываются. UI handle вне
 редактора сохраняет прежнюю focus/shortcut boundary.
 
-Одно удержание KeyZ исполняется один раз: repeat keydown и matching history
-beforeinput echo не создают вторую native операцию. Matching keyup, новый input,
-pointer gesture, blur или destroy освобождают этот конечный fence; самостоятельный
-history beforeinput после keyup сохраняет прежний путь. Неподходящее направление
+Каждый новый trusted nonrepeat keydown KeyZ исполняется один раз, даже если Safari
+не прислал keyup после предыдущего нажатия. Repeat keydown и matching history
+beforeinput echo не создают вторую native операцию; новый nonrepeat keydown
+обновляет направление этого конечного fence. Matching keyup, новый input, pointer
+gesture, blur или destroy освобождают fence; самостоятельный history beforeinput
+после keyup сохраняет прежний путь. Неподходящее направление
 beforeinput не считается echo. Noncancelable echo не объявляется отменённым:
 native повтор не выполняется, unexpected DOM остаётся за mutation/recovery owner.
 Настоящие keyboard regressions используют клавиши Playwright на packaged WASM;

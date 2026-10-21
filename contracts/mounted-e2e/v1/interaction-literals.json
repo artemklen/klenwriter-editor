@@ -214,8 +214,8 @@
     },
     {
       "path": "packages/dom/src/input.ts",
-      "bytes": 21027,
-      "sha256": "34651fe7f49db691471df1404d4e85792d51ffe647facb275d73d4a889969afa"
+      "bytes": 21002,
+      "sha256": "41150002c416feba4d842b49cedf40e6b19f4cfe45a250a42a280ac0551e5e94"
     },
     {
       "path": "packages/ui/src/slash-window.ts",

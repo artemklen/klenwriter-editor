@@ -234,7 +234,7 @@ export function attachInput(options: InputConfiguration): InputOwner {
       || !event.target || !element.contains(event.target as Node))return;
     // Own the browser default even when an edit guard refuses this shortcut.
     event.preventDefault();
-    if(historyKeyHeld!==null || event.repeat)return;
+    if(event.repeat)return;
     const direction=event.shiftKey?'redo':'undo';historyKeyHeld=direction;
     if(!options.canEdit()){refused('dom.mode_blocked');return;}
     if(options.observationBusy?.() || options.busy()){refused('dom.busy');return;}
