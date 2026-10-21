@@ -12,6 +12,15 @@ The additive [OSR-47 clipboard stage owners](clipboard.md#corpus-ownership-and-v
 measure conversion and native/WASM insertion separately; they preserve this
 frozen ledger and its unavailable poetry/table presentation dispositions.
 
+OSR-47 also records an explicit source continuation for the accepted OSR-45
+contracts. Original source authorities are retained byte for byte, while a
+separate manifest verifies every current source and the eight reviewed deltas.
+Historical aliases are limited to contract authority reads; runtime collection
+always reads actual current artifacts. Before/after sidecars bind both the
+historical join and a closed inventory of 78 actual source artifacts. The
+original scenario-pin ceiling, semantic assertions and 277 memberships remain
+unchanged; retained historical bytes never identify the executing source.
+
 After a coherent build, `npm run test:extensions` (which creates the current
 registry packet) and `npm run check:workspace`, run
 `npm run test:mounted-corpus` under pinned Node24.22.0. The command first checks

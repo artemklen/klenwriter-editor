@@ -1,0 +1,902 @@
+{
+  "format": "mounted-corpus-source-continuation/1",
+  "status": "SOURCE_AUTHORED_BEFORE_EXECUTION",
+  "id": "OSR-47",
+  "license": "MIT OR Apache-2.0",
+  "historicalSource": "441bd3b2d7f9b0a40be26877ba74575b8e1882cd",
+  "historicalCapabilityAnchor": "71f47cf75d675c30e13a611bcf1f0be7657e3c23",
+  "currentProductionAnchor": "e914716db9ed4143bea7e666e8cfb9e03de99479",
+  "frozenContracts": [
+    {
+      "path": "contracts/mounted-e2e/v1/source-pins.json",
+      "bytes": 11465,
+      "sha256": "3d3002372f5948862347c3304aacaddf96b1e8c1119741cf7e3741e4567a07a0"
+    },
+    {
+      "path": "contracts/mounted-e2e/v1/interaction-literals.json",
+      "bytes": 23307,
+      "sha256": "89c459197d4070008c12c16918bbb994e1ff3fdb78b06a5c71a11a22cc67213f"
+    },
+    {
+      "path": "contracts/mounted-e2e/v1/manifest.json",
+      "bytes": 480097,
+      "sha256": "16e1088e27ed1f8664540d3aa0cf607b6810394f3632798a78115718ebd763fa"
+    }
+  ],
+  "changedPaths": [
+    "crates/engine/src/dispatch.rs",
+    "crates/engine/src/tree.rs",
+    "packages/dom/src/input.ts",
+    "packages/dom/src/types.ts",
+    "packages/kwdj/src/dom.ts",
+    "packages/sdk/src/controller.ts",
+    "packages/sdk/src/response.ts",
+    "packages/wasm/src/sdk-types-v2.ts"
+  ],
+  "authorities": [
+    {
+      "path": "contracts/kwdj/v1/README.md",
+      "historical": {
+        "path": "contracts/kwdj/v1/README.md",
+        "bytes": 22516,
+        "sha256": "acd0ab722f91e4fd769e939f59eecccf09b130c54a982e3229171ab8efb150f5"
+      },
+      "current": {
+        "path": "contracts/kwdj/v1/README.md",
+        "bytes": 22516,
+        "sha256": "acd0ab722f91e4fd769e939f59eecccf09b130c54a982e3229171ab8efb150f5"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/README.md",
+        "bytes": 22516,
+        "sha256": "acd0ab722f91e4fd769e939f59eecccf09b130c54a982e3229171ab8efb150f5"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/3"
+        }
+      ]
+    },
+    {
+      "path": "contracts/kwdj/v1/corpus-package.json",
+      "historical": {
+        "path": "contracts/kwdj/v1/corpus-package.json",
+        "bytes": 2555,
+        "sha256": "8c890e1f80b905a66418d45a60fe5ef4196a3232f6c3261dcf1f96aafd1280b5"
+      },
+      "current": {
+        "path": "contracts/kwdj/v1/corpus-package.json",
+        "bytes": 2555,
+        "sha256": "8c890e1f80b905a66418d45a60fe5ef4196a3232f6c3261dcf1f96aafd1280b5"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/corpus-package.json",
+        "bytes": 2555,
+        "sha256": "8c890e1f80b905a66418d45a60fe5ef4196a3232f6c3261dcf1f96aafd1280b5"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/0"
+        }
+      ]
+    },
+    {
+      "path": "contracts/kwdj/v1/fixture.schema.json",
+      "historical": {
+        "path": "contracts/kwdj/v1/fixture.schema.json",
+        "bytes": 14265,
+        "sha256": "0de202b483e108f9f85cfa5fc7782d9725d55646a1cdded2c916824177ab143f"
+      },
+      "current": {
+        "path": "contracts/kwdj/v1/fixture.schema.json",
+        "bytes": 14265,
+        "sha256": "0de202b483e108f9f85cfa5fc7782d9725d55646a1cdded2c916824177ab143f"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/fixture.schema.json",
+        "bytes": 14265,
+        "sha256": "0de202b483e108f9f85cfa5fc7782d9725d55646a1cdded2c916824177ab143f"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/2"
+        }
+      ]
+    },
+    {
+      "path": "contracts/kwdj/v1/fixtures/deferred.json",
+      "historical": {
+        "path": "contracts/kwdj/v1/fixtures/deferred.json",
+        "bytes": 4409,
+        "sha256": "4499b474515516fd7aff7222a910f2115121eb483790e66a63d84b03dc87bf69"
+      },
+      "current": {
+        "path": "contracts/kwdj/v1/fixtures/deferred.json",
+        "bytes": 4409,
+        "sha256": "4499b474515516fd7aff7222a910f2115121eb483790e66a63d84b03dc87bf69"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/fixtures/deferred.json",
+        "bytes": 4409,
+        "sha256": "4499b474515516fd7aff7222a910f2115121eb483790e66a63d84b03dc87bf69"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/7"
+        }
+      ]
+    },
+    {
+      "path": "contracts/kwdj/v1/fixtures/mixed.json",
+      "historical": {
+        "path": "contracts/kwdj/v1/fixtures/mixed.json",
+        "bytes": 40777,
+        "sha256": "f9e472176da723dedf812bff8a5a046946d554c5125e05977cab6a392b19f4a5"
+      },
+      "current": {
+        "path": "contracts/kwdj/v1/fixtures/mixed.json",
+        "bytes": 40777,
+        "sha256": "f9e472176da723dedf812bff8a5a046946d554c5125e05977cab6a392b19f4a5"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/fixtures/mixed.json",
+        "bytes": 40777,
+        "sha256": "f9e472176da723dedf812bff8a5a046946d554c5125e05977cab6a392b19f4a5"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/6"
+        }
+      ]
+    },
+    {
+      "path": "contracts/kwdj/v1/fixtures/negative.json",
+      "historical": {
+        "path": "contracts/kwdj/v1/fixtures/negative.json",
+        "bytes": 12378,
+        "sha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f"
+      },
+      "current": {
+        "path": "contracts/kwdj/v1/fixtures/negative.json",
+        "bytes": 12378,
+        "sha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/fixtures/negative.json",
+        "bytes": 12378,
+        "sha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/5"
+        }
+      ]
+    },
+    {
+      "path": "contracts/kwdj/v1/fixtures/positive.json",
+      "historical": {
+        "path": "contracts/kwdj/v1/fixtures/positive.json",
+        "bytes": 50871,
+        "sha256": "da7fca7fe9d38407b664b704775ac75ed5635c29eb0fcb40d8e9ca9a2394171b"
+      },
+      "current": {
+        "path": "contracts/kwdj/v1/fixtures/positive.json",
+        "bytes": 50871,
+        "sha256": "da7fca7fe9d38407b664b704775ac75ed5635c29eb0fcb40d8e9ca9a2394171b"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/fixtures/positive.json",
+        "bytes": 50871,
+        "sha256": "da7fca7fe9d38407b664b704775ac75ed5635c29eb0fcb40d8e9ca9a2394171b"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/4"
+        }
+      ]
+    },
+    {
+      "path": "contracts/kwdj/v1/manifest.json",
+      "historical": {
+        "path": "contracts/kwdj/v1/manifest.json",
+        "bytes": 4647,
+        "sha256": "987f6b0f12922d406a1e514c41ecd31c5c5187a762058d14d0eaf6472d892d5a"
+      },
+      "current": {
+        "path": "contracts/kwdj/v1/manifest.json",
+        "bytes": 4647,
+        "sha256": "987f6b0f12922d406a1e514c41ecd31c5c5187a762058d14d0eaf6472d892d5a"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/manifest.json",
+        "bytes": 4647,
+        "sha256": "987f6b0f12922d406a1e514c41ecd31c5c5187a762058d14d0eaf6472d892d5a"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/1"
+        }
+      ]
+    },
+    {
+      "path": "contracts/mounted-e2e/v1/initial-literals.json",
+      "historical": {
+        "path": "contracts/mounted-e2e/v1/initial-literals.json",
+        "bytes": 112284,
+        "sha256": "e4a8a7f009983d973784f8bd849500ce5952c203579f2ed7131c62aa15f1dcdc"
+      },
+      "current": {
+        "path": "contracts/mounted-e2e/v1/initial-literals.json",
+        "bytes": 112284,
+        "sha256": "e4a8a7f009983d973784f8bd849500ce5952c203579f2ed7131c62aa15f1dcdc"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/mounted-e2e/v1/initial-literals.json",
+        "bytes": 112284,
+        "sha256": "e4a8a7f009983d973784f8bd849500ce5952c203579f2ed7131c62aa15f1dcdc"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/interaction-literals.json",
+          "pointer": "/sourcePins/2"
+        }
+      ]
+    },
+    {
+      "path": "contracts/slash/v1/lexical-key-oracles.json",
+      "historical": {
+        "path": "contracts/slash/v1/lexical-key-oracles.json",
+        "bytes": 17681,
+        "sha256": "920f8a7190717cd66d93dcf610c00ed6c098d1363b187288ea5c2456167e4333"
+      },
+      "current": {
+        "path": "contracts/slash/v1/lexical-key-oracles.json",
+        "bytes": 17681,
+        "sha256": "920f8a7190717cd66d93dcf610c00ed6c098d1363b187288ea5c2456167e4333"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/slash/v1/lexical-key-oracles.json",
+        "bytes": 17681,
+        "sha256": "920f8a7190717cd66d93dcf610c00ed6c098d1363b187288ea5c2456167e4333"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/interaction-literals.json",
+          "pointer": "/sourcePins/0"
+        }
+      ]
+    },
+    {
+      "path": "contracts/slash/v1/strings.json",
+      "historical": {
+        "path": "contracts/slash/v1/strings.json",
+        "bytes": 1750,
+        "sha256": "f174669a5a717529480c2652d500ba43a4feacf8ec06713b180f2c8d08f3c5d2"
+      },
+      "current": {
+        "path": "contracts/slash/v1/strings.json",
+        "bytes": 1750,
+        "sha256": "f174669a5a717529480c2652d500ba43a4feacf8ec06713b180f2c8d08f3c5d2"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/slash/v1/strings.json",
+        "bytes": 1750,
+        "sha256": "f174669a5a717529480c2652d500ba43a4feacf8ec06713b180f2c8d08f3c5d2"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/interaction-literals.json",
+          "pointer": "/sourcePins/1"
+        }
+      ]
+    },
+    {
+      "path": "crates/engine/src/dispatch.rs",
+      "historical": {
+        "path": "crates/engine/src/dispatch.rs",
+        "bytes": 37299,
+        "sha256": "b85613e1f86b5ae0221834b2557656fde63233ae2399f0fe0cacc2f393b799a3"
+      },
+      "current": {
+        "path": "crates/engine/src/dispatch.rs",
+        "bytes": 38680,
+        "sha256": "5017e79529653e0d8ba36847918550e58cd7c7a70c00f69ef367aab234fcba21"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/crates/engine/src/dispatch.rs",
+        "bytes": 37299,
+        "sha256": "b85613e1f86b5ae0221834b2557656fde63233ae2399f0fe0cacc2f393b799a3"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/20"
+        }
+      ]
+    },
+    {
+      "path": "crates/engine/src/mapping.rs",
+      "historical": {
+        "path": "crates/engine/src/mapping.rs",
+        "bytes": 46845,
+        "sha256": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54"
+      },
+      "current": {
+        "path": "crates/engine/src/mapping.rs",
+        "bytes": 46845,
+        "sha256": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/crates/engine/src/mapping.rs",
+        "bytes": 46845,
+        "sha256": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/19"
+        }
+      ]
+    },
+    {
+      "path": "crates/engine/src/tree.rs",
+      "historical": {
+        "path": "crates/engine/src/tree.rs",
+        "bytes": 197736,
+        "sha256": "d1bc2205af12063d4b3b6386f0198830d321ba35b8f2a1d4ae4962d075caedda"
+      },
+      "current": {
+        "path": "crates/engine/src/tree.rs",
+        "bytes": 201395,
+        "sha256": "4233b804998db59c7e161ac5617b4ac94ad15149eb43ef824c873a8d967459a4"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/crates/engine/src/tree.rs",
+        "bytes": 197736,
+        "sha256": "d1bc2205af12063d4b3b6386f0198830d321ba35b8f2a1d4ae4962d075caedda"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/18"
+        }
+      ]
+    },
+    {
+      "path": "crates/kwdj/src/commands/inline.rs",
+      "historical": {
+        "path": "crates/kwdj/src/commands/inline.rs",
+        "bytes": 58026,
+        "sha256": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394"
+      },
+      "current": {
+        "path": "crates/kwdj/src/commands/inline.rs",
+        "bytes": 58026,
+        "sha256": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/crates/kwdj/src/commands/inline.rs",
+        "bytes": 58026,
+        "sha256": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/21"
+        }
+      ]
+    },
+    {
+      "path": "crates/kwdj/src/edit_normalize.rs",
+      "historical": {
+        "path": "crates/kwdj/src/edit_normalize.rs",
+        "bytes": 41095,
+        "sha256": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a"
+      },
+      "current": {
+        "path": "crates/kwdj/src/edit_normalize.rs",
+        "bytes": 41095,
+        "sha256": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/crates/kwdj/src/edit_normalize.rs",
+        "bytes": 41095,
+        "sha256": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/22"
+        }
+      ]
+    },
+    {
+      "path": "docs/adr/004-canonical-json-v1.md",
+      "historical": {
+        "path": "docs/adr/004-canonical-json-v1.md",
+        "bytes": 10290,
+        "sha256": "5d2a975d5c558e981cb2bb42e8d42b225663e4b7a5873951f22b8ad116110a5c"
+      },
+      "current": {
+        "path": "docs/adr/004-canonical-json-v1.md",
+        "bytes": 10290,
+        "sha256": "5d2a975d5c558e981cb2bb42e8d42b225663e4b7a5873951f22b8ad116110a5c"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/docs/adr/004-canonical-json-v1.md",
+        "bytes": 10290,
+        "sha256": "5d2a975d5c558e981cb2bb42e8d42b225663e4b7a5873951f22b8ad116110a5c"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/24"
+        }
+      ]
+    },
+    {
+      "path": "docs/history.md",
+      "historical": {
+        "path": "docs/history.md",
+        "bytes": 9823,
+        "sha256": "0763ef034a1b71d1417d7bcabc1d6604f1039bd624e2b92a8297a4b94eed8a07"
+      },
+      "current": {
+        "path": "docs/history.md",
+        "bytes": 9823,
+        "sha256": "0763ef034a1b71d1417d7bcabc1d6604f1039bd624e2b92a8297a4b94eed8a07"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/docs/history.md",
+        "bytes": 9823,
+        "sha256": "0763ef034a1b71d1417d7bcabc1d6604f1039bd624e2b92a8297a4b94eed8a07"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/23"
+        }
+      ]
+    },
+    {
+      "path": "packages/dom/src/input.ts",
+      "historical": {
+        "path": "packages/dom/src/input.ts",
+        "bytes": 21002,
+        "sha256": "41150002c416feba4d842b49cedf40e6b19f4cfe45a250a42a280ac0551e5e94"
+      },
+      "current": {
+        "path": "packages/dom/src/input.ts",
+        "bytes": 21249,
+        "sha256": "3a31571a82dc2ce99b0d5eee5c0ffda2f4db339db10d072c0b1d0183f6c5c974"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/dom/src/input.ts",
+        "bytes": 21002,
+        "sha256": "41150002c416feba4d842b49cedf40e6b19f4cfe45a250a42a280ac0551e5e94"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/interaction-literals.json",
+          "pointer": "/sourcePins/6"
+        }
+      ]
+    },
+    {
+      "path": "packages/dom/src/selection.ts",
+      "historical": {
+        "path": "packages/dom/src/selection.ts",
+        "bytes": 30055,
+        "sha256": "d1dc4950acb5455999bd353cc2454f017dac65a77560a1794fa1d080069be2df"
+      },
+      "current": {
+        "path": "packages/dom/src/selection.ts",
+        "bytes": 30055,
+        "sha256": "d1dc4950acb5455999bd353cc2454f017dac65a77560a1794fa1d080069be2df"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/dom/src/selection.ts",
+        "bytes": 30055,
+        "sha256": "d1dc4950acb5455999bd353cc2454f017dac65a77560a1794fa1d080069be2df"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/interaction-literals.json",
+          "pointer": "/sourcePins/8"
+        }
+      ]
+    },
+    {
+      "path": "packages/dom/src/types.ts",
+      "historical": {
+        "path": "packages/dom/src/types.ts",
+        "bytes": 16719,
+        "sha256": "acf7cadb69c9ff6428a904b2d84ad37e2a4e5c396e44631446e3c9141071db3f"
+      },
+      "current": {
+        "path": "packages/dom/src/types.ts",
+        "bytes": 19087,
+        "sha256": "4c47d67819e998fa59cd4513be01dca59a377f51b2b803f12167b276dc928c62"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/dom/src/types.ts",
+        "bytes": 16719,
+        "sha256": "acf7cadb69c9ff6428a904b2d84ad37e2a4e5c396e44631446e3c9141071db3f"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/14"
+        },
+        {
+          "owner": "contracts/mounted-e2e/v1/interaction-literals.json",
+          "pointer": "/sourcePins/5"
+        }
+      ]
+    },
+    {
+      "path": "packages/kwdj/src/dom.ts",
+      "historical": {
+        "path": "packages/kwdj/src/dom.ts",
+        "bytes": 12425,
+        "sha256": "6399c1e91a7952bf468cc11246b20282d796425043b4b93e5fc467aad9304a51"
+      },
+      "current": {
+        "path": "packages/kwdj/src/dom.ts",
+        "bytes": 15258,
+        "sha256": "f6e401845c3430a719221d71885bd3b6a565f35d6439826ebe3ef9450e60865e"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/kwdj/src/dom.ts",
+        "bytes": 12425,
+        "sha256": "6399c1e91a7952bf468cc11246b20282d796425043b4b93e5fc467aad9304a51"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/17"
+        }
+      ]
+    },
+    {
+      "path": "packages/kwdj/src/index.ts",
+      "historical": {
+        "path": "packages/kwdj/src/index.ts",
+        "bytes": 1633,
+        "sha256": "59c49a2088554f53c1c2cd9b73dd0dd2fa7de6a8495e15debfef6bcf716a31af"
+      },
+      "current": {
+        "path": "packages/kwdj/src/index.ts",
+        "bytes": 1633,
+        "sha256": "59c49a2088554f53c1c2cd9b73dd0dd2fa7de6a8495e15debfef6bcf716a31af"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/kwdj/src/index.ts",
+        "bytes": 1633,
+        "sha256": "59c49a2088554f53c1c2cd9b73dd0dd2fa7de6a8495e15debfef6bcf716a31af"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/16"
+        },
+        {
+          "owner": "contracts/mounted-e2e/v1/interaction-literals.json",
+          "pointer": "/sourcePins/9"
+        }
+      ]
+    },
+    {
+      "path": "packages/sdk/src/context.ts",
+      "historical": {
+        "path": "packages/sdk/src/context.ts",
+        "bytes": 2539,
+        "sha256": "9d2e121ad03d13d4075e13505f3bde202222b31e5f3ea39ee44e28d897bb380b"
+      },
+      "current": {
+        "path": "packages/sdk/src/context.ts",
+        "bytes": 2539,
+        "sha256": "9d2e121ad03d13d4075e13505f3bde202222b31e5f3ea39ee44e28d897bb380b"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/sdk/src/context.ts",
+        "bytes": 2539,
+        "sha256": "9d2e121ad03d13d4075e13505f3bde202222b31e5f3ea39ee44e28d897bb380b"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/12"
+        }
+      ]
+    },
+    {
+      "path": "packages/sdk/src/controller.ts",
+      "historical": {
+        "path": "packages/sdk/src/controller.ts",
+        "bytes": 25825,
+        "sha256": "94dad151ff80934160453fa8b346fcb9b519b8eb609398b03bad3a94f15cd9d2"
+      },
+      "current": {
+        "path": "packages/sdk/src/controller.ts",
+        "bytes": 26516,
+        "sha256": "f78888a60a0e31fac553244c2ae1a6014567bae6898ef44a625f7ff62522fc23"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/sdk/src/controller.ts",
+        "bytes": 25825,
+        "sha256": "94dad151ff80934160453fa8b346fcb9b519b8eb609398b03bad3a94f15cd9d2"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/10"
+        }
+      ]
+    },
+    {
+      "path": "packages/sdk/src/data.ts",
+      "historical": {
+        "path": "packages/sdk/src/data.ts",
+        "bytes": 5981,
+        "sha256": "0a58772a4fb0d4101e8a719e12406f939cedc42ad496ce16bb3d581edd04f2c7"
+      },
+      "current": {
+        "path": "packages/sdk/src/data.ts",
+        "bytes": 5981,
+        "sha256": "0a58772a4fb0d4101e8a719e12406f939cedc42ad496ce16bb3d581edd04f2c7"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/sdk/src/data.ts",
+        "bytes": 5981,
+        "sha256": "0a58772a4fb0d4101e8a719e12406f939cedc42ad496ce16bb3d581edd04f2c7"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/13"
+        }
+      ]
+    },
+    {
+      "path": "packages/sdk/src/response.ts",
+      "historical": {
+        "path": "packages/sdk/src/response.ts",
+        "bytes": 12255,
+        "sha256": "bcb132d86dca9d338dd03e20bfdb4bc243f3b752601162a2c3b0abf854d5ee3a"
+      },
+      "current": {
+        "path": "packages/sdk/src/response.ts",
+        "bytes": 12976,
+        "sha256": "ff71774e478f2786d31dcf19282d3fc358276b046d5bf7ba9faa3cfb5f9ce2da"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/sdk/src/response.ts",
+        "bytes": 12255,
+        "sha256": "bcb132d86dca9d338dd03e20bfdb4bc243f3b752601162a2c3b0abf854d5ee3a"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/11"
+        }
+      ]
+    },
+    {
+      "path": "packages/ui/src/drag-owner.ts",
+      "historical": {
+        "path": "packages/ui/src/drag-owner.ts",
+        "bytes": 30944,
+        "sha256": "318b1613ea1a01857e209c9d5170ab1ca8185ef6fac82979568f93d521276e44"
+      },
+      "current": {
+        "path": "packages/ui/src/drag-owner.ts",
+        "bytes": 30944,
+        "sha256": "318b1613ea1a01857e209c9d5170ab1ca8185ef6fac82979568f93d521276e44"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/ui/src/drag-owner.ts",
+        "bytes": 30944,
+        "sha256": "318b1613ea1a01857e209c9d5170ab1ca8185ef6fac82979568f93d521276e44"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/interaction-literals.json",
+          "pointer": "/sourcePins/4"
+        }
+      ]
+    },
+    {
+      "path": "packages/ui/src/slash-window.ts",
+      "historical": {
+        "path": "packages/ui/src/slash-window.ts",
+        "bytes": 5321,
+        "sha256": "583b6945bfd08ba97f865bd494ad889e81bb26c986f431a8197d2d6daabd23cf"
+      },
+      "current": {
+        "path": "packages/ui/src/slash-window.ts",
+        "bytes": 5321,
+        "sha256": "583b6945bfd08ba97f865bd494ad889e81bb26c986f431a8197d2d6daabd23cf"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/ui/src/slash-window.ts",
+        "bytes": 5321,
+        "sha256": "583b6945bfd08ba97f865bd494ad889e81bb26c986f431a8197d2d6daabd23cf"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/interaction-literals.json",
+          "pointer": "/sourcePins/7"
+        }
+      ]
+    },
+    {
+      "path": "packages/ui/src/types.ts",
+      "historical": {
+        "path": "packages/ui/src/types.ts",
+        "bytes": 3807,
+        "sha256": "feb348e85256409547168305f5fb20482f51e5409e8841e1159026f49ffe8dee"
+      },
+      "current": {
+        "path": "packages/ui/src/types.ts",
+        "bytes": 3807,
+        "sha256": "feb348e85256409547168305f5fb20482f51e5409e8841e1159026f49ffe8dee"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/ui/src/types.ts",
+        "bytes": 3807,
+        "sha256": "feb348e85256409547168305f5fb20482f51e5409e8841e1159026f49ffe8dee"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/15"
+        },
+        {
+          "owner": "contracts/mounted-e2e/v1/interaction-literals.json",
+          "pointer": "/sourcePins/3"
+        }
+      ]
+    },
+    {
+      "path": "packages/wasm/src/sdk-types-v2.ts",
+      "historical": {
+        "path": "packages/wasm/src/sdk-types-v2.ts",
+        "bytes": 3474,
+        "sha256": "8eb2b2a26a56c37b0302e5afcc681ee4cf7c96800ef94b4ec244219b96dcfa7b"
+      },
+      "current": {
+        "path": "packages/wasm/src/sdk-types-v2.ts",
+        "bytes": 4230,
+        "sha256": "9f1e9afcce2210f80538b0b6aab90a53c8927224ff517a1e1e25583268e366ab"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/wasm/src/sdk-types-v2.ts",
+        "bytes": 3474,
+        "sha256": "8eb2b2a26a56c37b0302e5afcc681ee4cf7c96800ef94b4ec244219b96dcfa7b"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/9"
+        }
+      ]
+    },
+    {
+      "path": "packages/wasm/src/sdk-types.ts",
+      "historical": {
+        "path": "packages/wasm/src/sdk-types.ts",
+        "bytes": 7914,
+        "sha256": "309b33ca672d5037f0325f13fe886626e27b164094cfe20b79919d44778b5d66"
+      },
+      "current": {
+        "path": "packages/wasm/src/sdk-types.ts",
+        "bytes": 7914,
+        "sha256": "309b33ca672d5037f0325f13fe886626e27b164094cfe20b79919d44778b5d66"
+      },
+      "retained": {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/wasm/src/sdk-types.ts",
+        "bytes": 7914,
+        "sha256": "309b33ca672d5037f0325f13fe886626e27b164094cfe20b79919d44778b5d66"
+      },
+      "references": [
+        {
+          "owner": "contracts/mounted-e2e/v1/source-pins.json",
+          "pointer": "/acceptedSourceFiles/8"
+        }
+      ]
+    }
+  ],
+  "changes": [
+    {
+      "path": "crates/engine/src/dispatch.rs",
+      "reason": "Add payload validation and dispatch for ReplaceInlineFragment; prior operation branches retained.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.1/source-deltas/osr47/01.patch",
+        "bytes": 2518,
+        "sha256": "d9595b96cf11ed41f94868dcd6f6d5a18769bc1a9a3dc2f6dfafb01fb795fc25"
+      }
+    },
+    {
+      "path": "crates/engine/src/tree.rs",
+      "reason": "Implement the new metered flat inline-forest splice; preserve the existing tree operation branches.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.1/source-deltas/osr47/02.patch",
+        "bytes": 7583,
+        "sha256": "4d0c6334a0911b36cc99833be631b79153a248ec4ca203378f8ff076c8e8133a"
+      }
+    },
+    {
+      "path": "packages/dom/src/input.ts",
+      "reason": "Suppress insertFromPaste/insertFromPasteAsQuotation beforeinput echoes so clipboard owner is sole paste dispatch; ordinary typed/selection/history/composition branches retained.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.1/source-deltas/osr47/03.patch",
+        "bytes": 794,
+        "sha256": "f31c2c99bb9766e471e2ad76e78a4d835296040acb9625d9c5682b9ca87a1e16"
+      }
+    },
+    {
+      "path": "packages/dom/src/types.ts",
+      "reason": "Add optional clipboard codec/paste/recovery types and optional clipboard counters; retain original selection/history/host interfaces.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.1/source-deltas/osr47/04.patch",
+        "bytes": 7457,
+        "sha256": "2ae005f9819b45fd2ecdef167d8c286dc25b3b13112cf4c87093e558daecc300"
+      }
+    },
+    {
+      "path": "packages/kwdj/src/dom.ts",
+      "reason": "Add finite mounted renderer coverage for native semantic insert-fragment; prior command branches retained.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.1/source-deltas/osr47/05.patch",
+        "bytes": 4100,
+        "sha256": "90dbcd6cfb5839856df5d8246e3202489454b648debc14a3b439b2b6f1581303"
+      }
+    },
+    {
+      "path": "packages/sdk/src/controller.ts",
+      "reason": "Route the two bounded clipboard reads through the existing stamp/context owner; retain legacy reads and scheduling.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.1/source-deltas/osr47/06.patch",
+        "bytes": 5530,
+        "sha256": "278d9b6b452fe357dc4021f9c6cd21eabdf57b6559f0b5ddfc0dec30da15bda0"
+      }
+    },
+    {
+      "path": "packages/sdk/src/response.ts",
+      "reason": "Decode the two additive closed ABI2 reply variants with independent scalar/UTF8 limits; legacy decoder remains closed.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.1/source-deltas/osr47/07.patch",
+        "bytes": 2450,
+        "sha256": "a736c5fe4791c0520d6b22d342c0aa9813f52f73f7d7cce080f1ec4c26867726"
+      }
+    },
+    {
+      "path": "packages/wasm/src/sdk-types-v2.ts",
+      "reason": "Add ABI2-only clipboard context/selection-fragment request and result DTOs; ABI1 declaration remains unchanged.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.1/source-deltas/osr47/08.patch",
+        "bytes": 3908,
+        "sha256": "4af4749c733b2f1a2eefc52b86677dd3bc0c279a6bdb8038226ba44ebfb74ac6"
+      }
+    }
+  ],
+  "budgets": {
+    "manifestBytes": 131072,
+    "sourceBytes": 262144,
+    "retainedBytes": 1048576,
+    "deltaBytes": 65536,
+    "authorityPaths": 32,
+    "authorityReferences": 35,
+    "changedPaths": 8
+  },
+  "qualification": "Historical source authority is retained verbatim and is never labeled current runtime source. Current exact pins are independently source-authored from e914; this continuation changes no frozen45 semantic input, expected outcome,277-row ledger, assertions or acceptance result."
+}

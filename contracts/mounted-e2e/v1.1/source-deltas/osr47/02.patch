@@ -1,0 +1,183 @@
+diff --git a/crates/engine/src/tree.rs b/crates/engine/src/tree.rs
+index c7606a1..bc5e4f6 100644
+--- a/crates/engine/src/tree.rs
++++ b/crates/engine/src/tree.rs
+@@ -85,6 +85,12 @@ impl EditOrigin {
+     }
+ }
+ 
++#[derive(Clone, Copy)]
++enum InlineReplacement<'a> {
++    Single(Option<&'a Node>),
++    Forest(&'a Document),
++}
++
+ #[derive(Debug, Clone, PartialEq, Eq)]
+ pub enum TreeError {
+     MissingNode,
+@@ -1031,9 +1037,11 @@ impl<A: Allocation> TreeDraft<'_, A> {
+         work.charge_bytes((std::mem::size_of::<NodeId>() * 2) as u64)
+             .map_err(|_| TreeError::ResourceLimit)?;
+         let right = self.range_step(work, |draft| {
+-            draft.split_text_policy(id, Utf16Offset::new(at), BoundaryPolicy::Scalar)
++            let right =
++                draft.split_text_policy(id, Utf16Offset::new(at), BoundaryPolicy::Scalar)?;
++            created.push(right);
++            Ok(right)
+         })?;
+-        created.push(right);
+         Ok(right)
+     }
+ 
+@@ -1245,10 +1253,30 @@ impl<A: Allocation> TreeDraft<'_, A> {
+         range: Selection<NodeId>,
+         inserted: Option<&Node>,
+         work: &mut WorkMeter,
++    ) -> Result<Vec<NodeId>, TreeError> {
++        self.replace_inline(range, InlineReplacement::Single(inserted), work)
++    }
++
++    /// Borrow the entire flat forest through preflight and one sealed splice.
++    /// No deletion publication or newly formed user insertion gap is admitted.
++    pub(crate) fn replace_inline_fragment(
++        &mut self,
++        range: Selection<NodeId>,
++        fragment: &Document,
++        work: &mut WorkMeter,
++    ) -> Result<Vec<NodeId>, TreeError> {
++        self.replace_inline(range, InlineReplacement::Forest(fragment), work)
++    }
++
++    fn replace_inline(
++        &mut self,
++        range: Selection<NodeId>,
++        inserted: InlineReplacement<'_>,
++        work: &mut WorkMeter,
+     ) -> Result<Vec<NodeId>, TreeError> {
+         self.range_endpoint(range.anchor, work)?;
+         self.range_endpoint(range.focus, work)?;
+-        if let Some(node) = inserted {
++        if let InlineReplacement::Single(Some(node)) = inserted {
+             let left = work.limits();
+             let spent = work.usage();
+             let usage = preflight_node_fields(
+@@ -1283,6 +1311,44 @@ impl<A: Allocation> TreeDraft<'_, A> {
+                 return Err(TreeError::InvalidStructure);
+             }
+         }
++        if let InlineReplacement::Forest(fragment) = inserted {
++            let limits = work.limits();
++            let used = work.usage();
++            let metrics = preflight_snapshot(
++                fragment,
++                PreflightBudget {
++                    payload_bytes: limits.bytes.saturating_sub(used.bytes),
++                    values: limits.units.saturating_sub(used.units),
++                    depth: MAX_DEPTH as u64,
++                },
++            )
++            .map_err(|_| TreeError::ResourceLimit)?;
++            work.charge_units(metrics.usage.values)
++                .map_err(|_| TreeError::ResourceLimit)?;
++            work.charge_bytes(
++                metrics
++                    .usage
++                    .payload_bytes
++                    .saturating_mul(8)
++                    .saturating_add(metrics.usage.values.saturating_mul(128)),
++            )
++            .map_err(|_| TreeError::ResourceLimit)?;
++            for node in &fragment.children {
++                if !matches!(
++                    node.primitive,
++                    Primitive::Text | Primitive::HardBreak | Primitive::InlineAtom
++                ) || (node.primitive == Primitive::Text) != node.text.is_some()
++                    || !node.children.is_empty()
++                    || node.type_id.is_empty()
++                {
++                    return Err(TreeError::InvalidStructure);
++                }
++            }
++        }
++        let inserted_count = match inserted {
++            InlineReplacement::Single(node) => usize::from(node.is_some()),
++            InlineReplacement::Forest(fragment) => fragment.children.len(),
++        };
+         let (parent, mut a) = self.inline_point(range.anchor, work)?;
+         let (other, mut b) = self.inline_point(range.focus, work)?;
+         if parent != other || self.node(parent)?.primitive() != Some(Primitive::TextBlock) {
+@@ -1295,7 +1361,7 @@ impl<A: Allocation> TreeDraft<'_, A> {
+             .map_err(|_| TreeError::ResourceLimit)?;
+         let a_order = self.inline_order(a, work)?;
+         let b_order = self.inline_order(b, work)?;
+-        if a_order == b_order && inserted.is_none() {
++        if a_order == b_order && inserted_count == 0 {
+             return Ok(Vec::new());
+         }
+         if a_order > b_order {
+@@ -1346,19 +1412,36 @@ impl<A: Allocation> TreeDraft<'_, A> {
+             for id in remove {
+                 draft.range_step(work, |draft| draft.detach(id).map(|_| ()))?;
+             }
+-            let Some(node) = inserted else {
++            if inserted_count == 0 {
+                 return Ok(Vec::new());
+-            };
+-            work.charge_bytes((std::mem::size_of::<NodeId>() * 2) as u64)
++            }
++            let root_bytes = inserted_count
++                .checked_mul(std::mem::size_of::<NodeId>() * 2)
++                .ok_or(TreeError::ResourceLimit)?;
++            work.charge_bytes(root_bytes as u64)
+                 .map_err(|_| TreeError::ResourceLimit)?;
+-            let fragment = Document {
+-                children: vec![node.clone()],
++            let mut insert = |draft: &mut Self, fragment: &Document, work: &mut WorkMeter| {
++                draft.range_step(work, |draft| {
++                    let roots =
++                        draft.insert_fragment(parent, from, fragment, EditOrigin::Normalization)?;
++                    // Flat roots enumerate ALL fresh fragment writes. Register
++                    // them before the enclosing range-step accounting returns.
++                    created.extend(roots.iter().copied());
++                    Ok(roots)
++                })
+             };
+-            let roots = draft.range_step(work, |draft| {
+-                draft.insert_fragment(parent, from, &fragment, EditOrigin::Normalization)
+-            })?;
+-            created.extend(roots.iter().copied());
+-            Ok(roots)
++            match inserted {
++                InlineReplacement::Forest(fragment) => insert(draft, fragment, work),
++                InlineReplacement::Single(Some(node)) => {
++                    // Legacy one-leaf construction remains behind its charged
++                    // field preflight. The forest path never clones a wrapper.
++                    let fragment = Document {
++                        children: vec![node.clone()],
++                    };
++                    insert(draft, &fragment, work)
++                }
++                InlineReplacement::Single(None) => unreachable!("empty insertion returned above"),
++            }
+         })
+     }
+ 
+@@ -2522,6 +2605,10 @@ impl<A: Allocation> TreeDraft<'_, A> {
+     }
+ }
+ 
++#[cfg(test)]
++#[path = "inline_fragment_tests.rs"]
++mod inline_fragment_tests;
++
+ #[cfg(test)]
+ mod command_range_tests {
+     use super::*;
+@@ -3478,6 +3565,7 @@ impl<A: Allocation> TreeDraft<'_, A> {
+         match operation {
+             Operation::PatchMarkRange { .. }
+             | Operation::ReplaceInlineRange { .. }
++            | Operation::ReplaceInlineFragment { .. }
+             | Operation::MoveInlineGroup { .. } => return Err(TreeError::InvalidStructure),
+             Operation::ReplaceText {
+                 leaf,

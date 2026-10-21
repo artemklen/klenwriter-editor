@@ -1,0 +1,62 @@
+{
+  "package": "klenwriter-kwdj-contract",
+  "package_version": "1.0.0",
+  "kwdj_schema_version": 1,
+  "status": "accepted",
+  "normative_files": {
+    "document_schema": "kwdj.schema.json",
+    "fixture_schema": "fixture.schema.json",
+    "consumer_contract": "README.md"
+  },
+  "fixture_files": [
+    "fixtures/positive.json",
+    "fixtures/negative.json",
+    "fixtures/mixed.json",
+    "fixtures/deferred.json"
+  ],
+  "fixture_count": 34,
+  "fixture_case_count": 59,
+  "fixtures": [
+    { "id": "DOC-001", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/0" },
+    { "id": "DOC-002", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/1" },
+    { "id": "DOC-003", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/2" },
+    { "id": "DOC-004", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/3" },
+    { "id": "DOC-005", "classification": "mixed", "file": "fixtures/mixed.json", "pointer": "/fixtures/0" },
+    { "id": "DOC-006", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/4" },
+    { "id": "DOC-007", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/5" },
+    { "id": "DOC-008", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/6" },
+    { "id": "DOC-009", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/7" },
+    { "id": "DOC-010", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/8" },
+    { "id": "DOC-011", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/9" },
+    { "id": "DOC-012", "classification": "mixed", "file": "fixtures/mixed.json", "pointer": "/fixtures/1" },
+    { "id": "DOC-013", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/10" },
+    { "id": "DOC-014", "classification": "negative", "file": "fixtures/negative.json", "pointer": "/fixtures/0" },
+    { "id": "DOC-015", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/11" },
+    { "id": "DOC-016", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/12" },
+    { "id": "DOC-017", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/13" },
+    { "id": "DOC-018", "classification": "negative", "file": "fixtures/negative.json", "pointer": "/fixtures/1" },
+    { "id": "DOC-019", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/14" },
+    { "id": "DOC-020", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/15" },
+    { "id": "DOC-021", "classification": "negative", "file": "fixtures/negative.json", "pointer": "/fixtures/2" },
+    { "id": "DOC-022", "classification": "mixed", "file": "fixtures/mixed.json", "pointer": "/fixtures/2" },
+    { "id": "DOC-023", "classification": "negative", "file": "fixtures/negative.json", "pointer": "/fixtures/3" },
+    { "id": "DOC-024", "classification": "deferred", "file": "fixtures/deferred.json", "pointer": "/fixtures/0" },
+    { "id": "DOC-025", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/16" },
+    { "id": "DOC-026", "classification": "mixed", "file": "fixtures/mixed.json", "pointer": "/fixtures/3" },
+    { "id": "DOC-027", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/17" },
+    { "id": "DOC-028", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/18" },
+    { "id": "DOC-029", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/19" },
+    { "id": "DOC-030", "classification": "positive", "file": "fixtures/positive.json", "pointer": "/fixtures/20" },
+    { "id": "DOC-031", "classification": "negative", "file": "fixtures/negative.json", "pointer": "/fixtures/4" },
+    { "id": "DOC-032", "classification": "negative", "file": "fixtures/negative.json", "pointer": "/fixtures/5" },
+    { "id": "DOC-033", "classification": "negative", "file": "fixtures/negative.json", "pointer": "/fixtures/6" },
+    { "id": "DOC-034", "classification": "negative", "file": "fixtures/negative.json", "pointer": "/fixtures/7" }
+  ],
+  "known_contract_gaps": [
+    {
+      "code": "no_previous_schema_version",
+      "affects": ["DOC-024"],
+      "effect": "KWDJ v1 is the first version, so a real mixed-version upconversion fixture cannot exist until a later schema is approved."
+    }
+  ]
+}

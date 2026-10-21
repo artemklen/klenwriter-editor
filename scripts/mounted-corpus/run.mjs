@@ -4,7 +4,7 @@ import { spawn, execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { mkdir, readdir, writeFile, lstat, realpath, open } from 'node:fs/promises';
-import { resolve, dirname } from 'node:path';
+import { resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import os from 'node:os';
@@ -13,6 +13,7 @@ import Ajv2020 from 'ajv/dist/2020.js';
 import { PROTOCOL_VERSION, ACCEPTED_SOURCE, ENGINES, BUDGETS, REQUIRED_SCENARIO_PATHS, ownBoundedData } from './protocol.mjs';
 import { loadContract, collect } from './collect.mjs';
 import { collectInteractions, interactionValidators } from './collect-interactions.mjs';
+import { loadMountedSourceContinuation47, SOURCE_CONTINUATION47_PATH } from './source-continuation47.mjs';
 import { computeSdkBuildIdentity } from '../generate-sdk-types.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -205,6 +206,18 @@ export async function run() {
   const browserEnv = { ...process.env, PLAYWRIGHT_SKIP_BROWSER_GC: '1', CFFIXED_USER_HOME: appData, TMPDIR: temporary };
   const receipt = { protocol: PROTOCOL_VERSION, runId, started: new Date().toISOString(), sourceSHA: sourceSHA(), sourceStatusAtStart: sourceStatus(), phase: 'binding' };
   try {
+    // Explicit47 continuation: historical contract authority and actual runtime
+    // bytes remain separate. No frozen45 literal or expected value is rewritten.
+    const continuation = await loadMountedSourceContinuation47({
+      readArtifact: (path, maximum) => boundedFile(root, path, maximum),
+    });
+    const continuationBefore = await continuation.verifyAll();
+    await writeJson(resolve(runRoot, 'source-continuation47-before.json'), continuationBefore);
+    const continuationRuntimeBefore = await continuation.captureRuntimeInventory(receipt.sourceSHA);
+    await writeJson(resolve(runRoot, 'source-continuation47-runtime-before.json'), continuationRuntimeBefore);
+    receipt.sourceContinuation = { scope: 'Historical45 source proof plus exact current47 authority pins; runtime inventories and scenario/build pins always name actual current bytes.',
+      before: await pin('source-continuation47-before.json', runRoot), after: null,
+      runtimeBefore: await pin('source-continuation47-runtime-before.json', runRoot), runtimeAfter: null };
     const sourcePins = json(await boundedFile(root, 'contracts/mounted-e2e/v1/source-pins.json', BUDGETS.observationBytes));
     const manifest = json(await boundedFile(root, 'contracts/mounted-e2e/v1/manifest.json', BUDGETS.observationBytes));
     // Reject source/transport incompatibility before launching a browser owner.
@@ -221,7 +234,13 @@ export async function run() {
       throw new Error('Current source, compiled manifest and sealed WASM do not agree');
     }
     const extraPaths = ['contracts/mounted-e2e/v1/interaction-literals.json', 'scripts/mounted-corpus/interactions.mjs', 'scripts/mounted-corpus/native-observer.mjs', 'scripts/mounted-corpus/interactions.css', 'scripts/mounted-corpus/collect-interactions.mjs', 'tests/mounted-corpus-interactions.spec.js', 'tests/mounted-corpus-interactions.node.mjs'];
-    const paths = [...new Set([...sourcePins.files.map(item => item.path), ...REQUIRED_SCENARIO_PATHS, ...extraPaths])].sort();
+    const continuationSidecarPaths = ['source-continuation47-before.json', 'source-continuation47-runtime-before.json']
+      .map(name => relative(root, resolve(runRoot, name)));
+    const paths = [...new Set([...sourcePins.files.map(item => item.path), ...REQUIRED_SCENARIO_PATHS, ...extraPaths,
+      // Frozen v1 RunBinding permits64 pins. The full78-path actual continuation
+      // inventory is separately pinned above; retain that schema without widening.
+      ...continuationSidecarPaths, SOURCE_CONTINUATION47_PATH, 'scripts/mounted-corpus/source-continuation47.mjs',
+      'tests/mounted-corpus-source-continuation.node.mjs'])].sort();
     const scenarioPins = await Promise.all(paths.map(path => pin(path)));
     const previousEnv = { CFFIXED_USER_HOME: process.env.CFFIXED_USER_HOME, TMPDIR: process.env.TMPDIR, PLAYWRIGHT_SKIP_BROWSER_GC: process.env.PLAYWRIGHT_SKIP_BROWSER_GC };
     let pre;
@@ -246,12 +265,13 @@ export async function run() {
     receipt.browserLog = await pin('browser.log', runRoot);
     receipt.phase = 'collector';
     const readArtifact = (path, maximum) => boundedFile(path.startsWith('observations/') || path.startsWith('interactions/') ? runRoot : root, path, maximum);
-    const contract = await loadContract({ readArtifact });
+    const contract = await loadContract({ readArtifact: continuation.historicalAuthorityReader(readArtifact) });
     const observations = await observationInventory(runRoot);
     const baseReport = await collect({ contract, runBinding: binding, observations, readArtifact, sourceSHA: sourceSHA() });
     await writeJson(resolve(runRoot, 'corpus-report.json'), baseReport);
     receipt.interactionPaths = await interactionInventory(runRoot);
-    const interactions = await collectInteractions({ runBinding: binding, readArtifact });
+    const interactions = await collectInteractions({ runBinding: binding,
+      readArtifact: continuation.historicalAuthorityReader(readArtifact) });
     await writeJson(resolve(runRoot, 'interactions-report.json'), interactions);
     const report = combineReport(baseReport, interactions);
     const schema = json(await boundedFile(root, 'contracts/mounted-e2e/v1/report.schema.json', BUDGETS.observationBytes));
@@ -263,6 +283,14 @@ export async function run() {
       const actual = await pin(expected.path);
       if (actual.bytes !== expected.bytes || actual.sha256 !== expected.sha256) throw new Error(`Run artifact changed: ${expected.path}`);
     }
+    const continuationRuntimeAfter = await continuation.captureRuntimeInventory(sourceSHA());
+    if (JSON.stringify(continuationRuntimeAfter) !== JSON.stringify(continuationRuntimeBefore)) throw new Error('Actual continuation runtime source inventory changed during run');
+    await writeJson(resolve(runRoot, 'source-continuation47-runtime-after.json'), continuationRuntimeAfter);
+    receipt.sourceContinuation.runtimeAfter = await pin('source-continuation47-runtime-after.json', runRoot);
+    const continuationAfter = await continuation.verifyAll();
+    if (JSON.stringify(continuationAfter) !== JSON.stringify(continuationBefore)) throw new Error('Historical/current source continuation changed during run');
+    await writeJson(resolve(runRoot, 'source-continuation47-after.json'), continuationAfter);
+    receipt.sourceContinuation.after = await pin('source-continuation47-after.json', runRoot);
     if (receipt.sourceSHA !== sourceSHA()) throw new Error('Source HEAD changed during run');
     receipt.phase = 'completed';
     receipt.integrity = report.integrity.status;

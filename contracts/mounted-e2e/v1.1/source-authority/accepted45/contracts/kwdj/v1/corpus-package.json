@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "package": "klenwriter-kwdj-contract",
+  "packageVersion": "1.0.0",
+  "kwdjSchemaVersion": 1,
+  "canonicalRule": "klenwriter-canonical-json-v1",
+  "authority": "https://github.com/artemklen/klenwriter-editor",
+  "digestGrammar": "sorted UTF-8: path NUL sha256 NUL decimal-size LF; index excluded",
+  "contentSha256": "c3242ce26108229fbdf151af1e299d3cfe849c92738b0a2afbf733d12aef2b28",
+  "files": [
+    {
+      "path": "LICENSE-APACHE",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "LICENSE-MIT",
+      "bytes": 1087,
+      "sha256": "a80b52ad3f732a8d1c1698433d0133f28ab6b676b9f3277ef94cbdc39cf7d046"
+    },
+    {
+      "path": "NOTICE",
+      "bytes": 435,
+      "sha256": "7b6510756cea9bd4361a798f2f56c8e28f3485e05c0614862dc246ab7df37e16"
+    },
+    {
+      "path": "README.md",
+      "bytes": 22516,
+      "sha256": "acd0ab722f91e4fd769e939f59eecccf09b130c54a982e3229171ab8efb150f5"
+    },
+    {
+      "path": "baseline-cases.json",
+      "bytes": 8495,
+      "sha256": "75a471395783bee8a0f214d0c20db979492b2f65027904545a6c9f3a8f2d38c1"
+    },
+    {
+      "path": "extension-vectors.json",
+      "bytes": 15097,
+      "sha256": "2c02147b10cb07adeadaac930f6949c45c81d2cea69355dd33df4b873ad23037"
+    },
+    {
+      "path": "fixture.schema.json",
+      "bytes": 14265,
+      "sha256": "0de202b483e108f9f85cfa5fc7782d9725d55646a1cdded2c916824177ab143f"
+    },
+    {
+      "path": "fixtures/deferred.json",
+      "bytes": 4409,
+      "sha256": "4499b474515516fd7aff7222a910f2115121eb483790e66a63d84b03dc87bf69"
+    },
+    {
+      "path": "fixtures/mixed.json",
+      "bytes": 40777,
+      "sha256": "f9e472176da723dedf812bff8a5a046946d554c5125e05977cab6a392b19f4a5"
+    },
+    {
+      "path": "fixtures/negative.json",
+      "bytes": 12378,
+      "sha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f"
+    },
+    {
+      "path": "fixtures/positive.json",
+      "bytes": 50871,
+      "sha256": "da7fca7fe9d38407b664b704775ac75ed5635c29eb0fcb40d8e9ca9a2394171b"
+    },
+    {
+      "path": "kwdj.schema.json",
+      "bytes": 23080,
+      "sha256": "40bec8f8b9c51f4d9440bb35615417b204e36f14a8aff9c057c76254a41d6a25"
+    },
+    {
+      "path": "manifest.json",
+      "bytes": 4647,
+      "sha256": "987f6b0f12922d406a1e514c41ecd31c5c5187a762058d14d0eaf6472d892d5a"
+    },
+    {
+      "path": "source-provenance.json",
+      "bytes": 7032,
+      "sha256": "acee3f741d3fead7550e9e4c7f4a03f8867ed3121074a06c079a699dc114fd83"
+    }
+  ]
+}
