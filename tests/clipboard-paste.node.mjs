@@ -24,7 +24,7 @@ function fixture(extra={}){
   query(request){queries.push(request);return extra.query?.(request)??{status:'ok',value:{kind:'availability',available:true,effect:'changed',presentation:null,diagnostic:null}};},
   submit(request,validate){extra.submitGate?.();const refusal=validate?.();if(refusal)return refusal;submissions.push(request);return extra.submit?.(request)??{status:'completed',response:ok()};},
   codec:{contextFormat:'context/1',fragmentFormat:'fragment/1',decode(input){decodedInput=input;return extra.decode?.(input)??decode.promise;},...(extra.encode?{encode:extra.encode}:{})},
-  ...(extra.write?{write:extra.write}:{}),onPasteResult:r=>notifications.push(r)});
+  ...(extra.write?{write:extra.write}:{}),onResult:extra.onResult,onPasteResult:r=>notifications.push(r)});
  return{owner,decode,source,calls,queries,submissions,notifications,reads,timers,input:()=>decodedInput,
    elapse(units){clock+=units;},expire(){const active=[...timers.values()];timers.clear();active.forEach(fn=>fn());},
    mutate(kind){if(kind==='intent')intent++;else if(kind==='context')context={...context,capability_digest:'c'.repeat(64)};else if(kind==='live')liveSelection={...selection,focus:{...selection.focus,offset:3}};else stamp={...stamp,[kind]:String(BigInt(stamp[kind])+1n)};},doc};
@@ -76,4 +76,70 @@ test('PASTE19 context-read exception terminates the live slot and transfers raw'
 });
 test('PASTE20 retirement deadline preserves the first mode cancellation reason',async()=>{
  const f=fixture();const promise=f.owner.paste(f.source);f.owner.cancel('dom.mode_blocked');f.expire();const r=await promise;assert.equal(r.failure.diagnostic.code,'dom.mode_blocked');f.decode.resolve(candidate());await next();assert.equal(f.owner.takeRecovery().reason,'dom.mode_blocked');assert.equal(f.submissions.length,0);f.owner.destroy();
+});
+
+// Controlled DOM event dispatch/platform ACK only; no trusted event or OS-write proof.
+function copyOwnerEvent(f, action, eventWrites) {
+ const event=new Event(action,{cancelable:true});
+ Object.defineProperty(event,'clipboardData',{value:{setData(...args){eventWrites.push(args);}}});
+ f.doc.activeElement.dispatchEvent(event);
+ return event;
+}
+test('RCW01 rich copy and cut invoke one exact custom writer without event payload writes',async()=>{
+ for(const action of ['copy','cut']){
+  const ack=deferred(),finished=deferred(),payloads=[],eventWrites=[],results=[];
+  const f=fixture({encode:()=>({status:'encoded',html:'<p>selected</p>'}),write:payload=>{payloads.push(payload);return ack.promise;},onResult:result=>{results.push(result);finished.resolve(result);}});
+  try{
+   const event=copyOwnerEvent(f,action,eventWrites);
+   assert.equal(event.defaultPrevented,true);assert.deepEqual(eventWrites,[]);
+   assert.deepEqual(payloads,[{text:'selected',html:'<p>selected</p>'}]);assert.equal(f.submissions.length,0);assert.deepEqual(results,[]);
+   ack.resolve();const result=await finished.promise;
+   assert.equal(result.status,action==='copy'?'copied':'cut');assert.equal(result.clipboard,'confirmed');assert.equal(result.failure,null);
+   assert.equal(payloads.length,1);assert.deepEqual(eventWrites,[]);assert.equal(f.submissions.length,action==='copy'?0:1);
+   if(action==='cut')assert.deepEqual(f.submissions[0].history_hint,{kind:'isolated'});
+   assert.deepEqual(f.owner.resources(),zero);
+  }finally{f.owner.destroy();}
+ }
+});
+test('RCW02 default rich ClipboardItem writer receives both exact blobs once without event writes',async()=>{
+ const ack=deferred(),finished=deferred(),writes=[],eventWrites=[];
+ const f=fixture({encode:()=>({status:'encoded',html:'<p>selected</p>'}),onResult:result=>finished.resolve(result)});
+ class ControlledClipboardItem{constructor(representations){this.representations=representations;}}
+ f.doc.defaultView.ClipboardItem=ControlledClipboardItem;f.doc.defaultView.Blob=Blob;
+ f.doc.defaultView.navigator.clipboard={write(items){writes.push(items);return ack.promise;}};
+ try{
+  const event=copyOwnerEvent(f,'cut',eventWrites);
+  assert.equal(event.defaultPrevented,true);assert.deepEqual(eventWrites,[]);assert.equal(writes.length,1);assert.equal(writes[0].length,1);
+  const item=writes[0][0];assert.equal(item instanceof ControlledClipboardItem,true);
+  assert.deepEqual(Object.keys(item.representations),['text/plain','text/html']);
+  assert.equal(item.representations['text/plain'].type,'text/plain');assert.equal(item.representations['text/html'].type,'text/html');
+  assert.equal(await item.representations['text/plain'].text(),'selected');assert.equal(await item.representations['text/html'].text(),'<p>selected</p>');
+  assert.equal(f.submissions.length,0);ack.resolve();const result=await finished.promise;
+  assert.equal(result.status,'cut');assert.equal(result.clipboard,'confirmed');assert.equal(f.submissions.length,1);assert.equal(writes.length,1);
+  assert.deepEqual(eventWrites,[]);assert.deepEqual(f.submissions[0].history_hint,{kind:'isolated'});assert.deepEqual(f.owner.resources(),zero);
+ }finally{f.owner.destroy();}
+});
+test('RCW03 rich cut rejection never deletes or delegates a second writer',async()=>{
+ const ack=deferred(),finished=deferred(),payloads=[],eventWrites=[];
+ const f=fixture({encode:()=>({status:'encoded',html:'<p>selected</p>'}),write:payload=>{payloads.push(payload);return ack.promise;},onResult:result=>finished.resolve(result)});
+ try{
+  const event=copyOwnerEvent(f,'cut',eventWrites);
+  assert.equal(event.defaultPrevented,true);assert.deepEqual(eventWrites,[]);assert.deepEqual(payloads,[{text:'selected',html:'<p>selected</p>'}]);assert.equal(f.submissions.length,0);
+  ack.reject(new Error('controlled platform rejection'));const result=await finished.promise;
+  assert.equal(result.status,'write_failed');assert.equal(result.clipboard,'unconfirmed');assert.equal(result.failure.diagnostic.code,'dom.clipboard_write_failed');
+  assert.equal(f.submissions.length,0);assert.equal(payloads.length,1);assert.deepEqual(eventWrites,[]);assert.deepEqual(f.owner.resources(),zero);
+ }finally{f.owner.destroy();}
+});
+test('RCW04 legacy plain event payload and confirmed writer ordering stay unchanged',async()=>{
+ for(const action of ['copy','cut']){
+  const ack=deferred(),finished=deferred(),writes=[],eventWrites=[];
+  const f=fixture({writeText:text=>{writes.push(text);return ack.promise;},onResult:result=>finished.resolve(result)});
+  try{
+   const event=copyOwnerEvent(f,action,eventWrites);
+   assert.equal(event.defaultPrevented,true);assert.deepEqual(eventWrites,[['text/plain','selected']]);assert.deepEqual(writes,['selected']);assert.equal(f.submissions.length,0);
+   ack.resolve();const result=await finished.promise;
+   assert.equal(result.status,action==='copy'?'copied':'cut');assert.equal(result.clipboard,'confirmed');assert.equal(f.submissions.length,action==='copy'?0:1);
+   assert.deepEqual(eventWrites,[['text/plain','selected']]);assert.deepEqual(writes,['selected']);assert.deepEqual(f.owner.resources(),zero);
+  }finally{f.owner.destroy();}
+ }
 });

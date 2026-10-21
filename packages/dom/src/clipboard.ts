@@ -174,8 +174,10 @@ export function attachClipboard(options: ClipboardOwnerConfiguration): Clipboard
       if (beforeWrite) return outcome(action, 'refused', clipboard, beforeWrite);
       const writeText = writer(operation.html !== null);
       if (!writeText) return outcome(action, 'refused', clipboard, failure('dom.clipboard_unavailable'));
-      // This payload is observation only. setData is never an OS write receipt.
-      if (event?.clipboardData) { try { event.clipboardData.setData('text/plain', operation.text!); if (operation.html !== null) event.clipboardData.setData('text/html', operation.html); } catch { /* Platform writer still decides completion. */ } }
+      // Rich copy/cut has one confirmed writer; event payload data can trigger
+      // a second native pasteboard write after the cancelled handler returns.
+      // Preserve the legacy plain event payload; it is never an OS write receipt.
+      if (operation.html === null && event?.clipboardData) { try { event.clipboardData.setData('text/plain', operation.text!); } catch { /* Platform writer still decides completion. */ } }
       operation.phase = 'write'; clipboard = 'unconfirmed';
       let write: Promise<void>;
       try {

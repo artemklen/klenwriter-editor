@@ -77,8 +77,10 @@ the publication receipt.
 Copy/cut uses a confirmed platform writer. `writeText(text)` supports plain output;
 `write({text,html})` can provide a trusted host rich writer returning a completion
 promise. Defaults use this document's `navigator.clipboard` APIs. Event `setData`
-is observation only. Cut deletes once, only after writer confirmation and a new
-full target check. A late/failed write cannot replay deletion.
+is never write confirmation. Rich copy/cut leaves the event payload empty so the
+browser's event completion cannot race that writer with a second pasteboard write.
+The legacy plain event payload remains available. Cut deletes once, only after
+writer confirmation and a new full target check. A late/failed write cannot replay deletion.
 
 A failed paste retains one raw slot. Further paste attempts cannot displace it:
 
