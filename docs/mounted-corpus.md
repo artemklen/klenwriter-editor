@@ -8,6 +8,9 @@ coverage is 25 rows per engine: 12 unchanged positive documents, eight semantic
 command/edit/history/reopen paths and five expected native admission refusals.
 Clipboard, unavailable presentation/providers and deferred corpus cases retain
 explicit dispositions. Previous codec measurements are separate evidence.
+The additive [OSR-47 clipboard stage owners](clipboard.md#corpus-ownership-and-verification)
+measure conversion and native/WASM insertion separately; they preserve this
+frozen ledger and its unavailable poetry/table presentation dispositions.
 
 After a coherent build, `npm run test:extensions` (which creates the current
 registry packet) and `npm run check:workspace`, run

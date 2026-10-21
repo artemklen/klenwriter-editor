@@ -109,6 +109,14 @@ order. The TS decoder owns conversion; native profile validation owns admission;
 actual SDK2 WASM and mounted fixtures own their respective execution stages.
 Future presentation providers keep separate pending stages.
 
+The frozen OSR-45 ledger retains its seven historical `clipboard_pending`
+memberships. OSR-47 adds the seven CB13 conversion rows per engine without
+rewriting that ledger. Every accepted corpus candidate uses an actual packaged
+SDK2/sealed WASM **headless** session; this does not establish mounted corpus
+presentation. DOC-029 poetry and DOC-030 table presentation remain pending.
+DOC-031/033 have no conversion candidate and dispatch no native insertion.
+The separate native corpus test checks the five accepted unchanged KWDJ literals.
+
 | Fixture | Conversion outcome / diagnostic codes | Admission/presentation boundary |
 | --- | --- | --- |
 | DOC-028 | candidate, none | literal prose; native and WASM insertion |
@@ -127,6 +135,10 @@ separate mandatory protocol and receipts. Controlled writers/events are labelled
 and do not establish OS clipboard behavior. The parser build manifest records
 published dependency versions, original licenses, graph inputs/outputs and
 raw/gzip hashes separately from runtime no-fetch/browser proof.
+Current invocations write `artifacts/clipboard/browser.json` and per-case JSON
+observations under `artifacts/clipboard/browser-results/`. Their source/build
+pins and original exits must be joined to the final revision; historical or
+development observations do not establish final-current-source acceptance.
 
 HTML drop remains the existing OSR-44 explicit refusal, with no DataTransfer body
 reads. Native block Move uses its existing independent route. Clipboard adds no
