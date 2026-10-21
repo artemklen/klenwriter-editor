@@ -234,6 +234,25 @@ selection/revision/history/IDs, trusted UA trace и actual System Events exits.
 microtask имеет отдельное точное имя и не считается post-dispatch наблюдением.
 Public-host undo/redo не является keyboard-shortcut proof.
 
+В сфокусированном editable editor исходный trusted `KeyZ` с Ctrl либо Meta
+отменяет одну native history unit; Shift выполняет Redo. Physical code сохраняет
+shortcut при RU/EN layout. DOM owner отменяет UA default и отправляет обычный
+stamped history request в Rust, без JavaScript-семантики Undo. Read-only, busy и
+composition guards не допускают UA edit или native history submission. Чужой
+focus, уже отменённое событие и untrusted key не перехватываются. UI handle вне
+редактора сохраняет прежнюю focus/shortcut boundary.
+
+Каждый новый trusted nonrepeat keydown KeyZ исполняется один раз, даже если Safari
+не прислал keyup после предыдущего нажатия. Repeat keydown и matching history
+beforeinput echo не создают вторую native операцию; новый nonrepeat keydown
+обновляет направление этого конечного fence. Matching keyup, новый input, pointer
+gesture, blur или destroy освобождают fence; самостоятельный history beforeinput
+после keyup сохраняет прежний путь. Неподходящее направление
+beforeinput не считается echo. Noncancelable echo не объявляется отменённым:
+native повтор не выполняется, unexpected DOM остаётся за mutation/recovery owner.
+Настоящие keyboard regressions используют клавиши Playwright на packaged WASM;
+отдельные controlled duplicate-event tests не называются OS/native input proof.
+
 Safari cleanup отправляет один guarded CmdW только текущей fixture-вкладке и
 проверяет исчезновение её уникального AX title. Native zero resources подтверждает
 отдельный `finish`, а не закрытие вкладки. Исходная input source восстанавливается

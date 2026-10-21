@@ -14,6 +14,11 @@ pointer handle поверх того же native Move и клавиатурно�
 проверяет mounted geometry, pointer и lifecycle во всех трёх движках.
 Clipboard47, полная a11y66 и vanilla alpha сохраняют отдельные
 задачи и acceptance gates.
+`npm run test:mounted-corpus` добавляет [mounted corpus45](docs/mounted-corpus.md):
+независимые source literals, три browser engines, original public receipts,
+save/destroy/fresh reopen и отдельные integrity/requirement результаты. Lane
+входит в локальный `npm run check`; installed/native и ручные наблюдения
+сохраняют собственные обязательные acceptance gates.
 Следуйте [архитектуре](docs/m0/architecture.md)
 и контракту задачи Linear. Реализуйте общую семантику на Rust; KWDJ остаётся отдельным
 профилем. CMS, DB, Angular и browser runtime не входят в native core/profile closure.

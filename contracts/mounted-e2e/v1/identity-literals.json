@@ -1,0 +1,752 @@
+{
+  "protocol": "mounted-corpus/1",
+  "status": "SOURCE_FROZEN_BEFORE_EXECUTION",
+  "acceptedSource": "a21a7f8030afaeb4879fcbbd4953a7c76e098184",
+  "sharedPreconditions": [
+    "Exactly the seven approved corpus inputs and descriptor values pinned by the original static draft; same accepted KWDJ semantics and compatible catalog/profile binding.",
+    "The original target ID is bound through fresh public root/children/node reads at the specified original path, with the same current whole stamp.",
+    "Append selection is collapsed at exact original target UTF16 end; replacement is the entire single target leaf selected backward as in the draft.",
+    "Stored marks are explicitly inheritance/null; no intervening document/selection/typing-context mutation between that setup and actual command.",
+    "One successful isolated InsertText command with the exact descriptor payload; no other operation or recovery path is substituted.",
+    "These small already-normalized inputs have no empty text, joinable equal-mark original neighbor, or other pre-existing normalization defect; for append the only newly joinable pair is original target followed by inserted suffix.",
+    "Result classifications are proposed source-conditionals only. Actual refusal, stale tokens, changed input/profile, timeout or normalization divergence is not a successful observation and cannot use these relations as proof of execution."
+  ],
+  "cases": [
+    {
+      "caseId": "DOC-002/unicode_whitespace_hard_break",
+      "afterEditIdentity": {
+        "survivingOriginalKwdjPointers": [
+          "/content/0",
+          "/content/0/content/0",
+          "/content/0/content/1",
+          "/content/0/content/2"
+        ],
+        "retiredOriginalKwdjPointers": [],
+        "liveCreatedRoles": [],
+        "originalRootAndAllOriginalBlocksSurvive": true,
+        "targetAtSamePublicPath": {
+          "pointer": "/content/0/content/2",
+          "idRelation": "equals original targetText",
+          "role": "$role.targetText.id"
+        },
+        "allOtherOriginalNodeIdsEqual": true,
+        "provisionalRole": {
+          "description": "One inserted Text root exists in the unpublished user-result frame.",
+          "sourceRelation": "Then joins right into original target left and retires before publication.",
+          "publicBinding": "Do not publicly bind or demand an observable transient ID.",
+          "noNumericIdOrAllocatorTotalClaim": true
+        }
+      },
+      "afterEditDirectedSelection": {
+        "templateStatus": "SYMBOLIC_DATA_NOT_WIRE",
+        "direction": "collapsed",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$role.targetText.id",
+            "offset": 6,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$role.targetText.id",
+            "offset": 6,
+            "affinity": "after"
+          }
+        },
+        "sourceUserResult": {
+          "role": "provisional insertedText root[0]",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "normalizationMap": "Insert root offset 1 maps to original target@6 After; deleted=false.",
+        "sources": [
+          "insertPlan",
+          "selectionFrame",
+          "joinMap"
+        ]
+      },
+      "historyIdentityIntent": {
+        "afterOneUndo": {
+          "originalLiveIdentitySet": "All original KWDJ node IDs plus the same original synthetic root",
+          "originalTarget": "same original targetText, original text restored",
+          "replacementRole": null,
+          "directedSelection": {
+            "anchor": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 5,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 5,
+              "affinity": "after"
+            }
+          },
+          "storedMarks": null
+        },
+        "afterOneRedo": {
+          "identitySet": "Exactly the same final committed live-ID relation as afterEdit",
+          "replacementRole": null,
+          "directedSelection": {
+            "anchor": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 6,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 6,
+              "affinity": "after"
+            }
+          },
+          "storedMarks": null
+        },
+        "qualification": "Source-authored identity/history intent, not an observed replay. Numerical revisions remain chronological; no allocator rollback or external bookmark revival is claimed.",
+        "sources": [
+          "history"
+        ]
+      },
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-003/headings_and_layout",
+      "afterEditIdentity": {
+        "survivingOriginalKwdjPointers": [
+          "/content/0",
+          "/content/0/content/0",
+          "/content/1",
+          "/content/1/content/0",
+          "/content/2",
+          "/content/2/content/0",
+          "/content/3",
+          "/content/3/content/0",
+          "/content/4",
+          "/content/4/content/0",
+          "/content/5",
+          "/content/5/content/0",
+          "/content/6"
+        ],
+        "retiredOriginalKwdjPointers": [
+          "/content/6/content/0"
+        ],
+        "liveCreatedRoles": [
+          "$role.replacementText.id"
+        ],
+        "originalRootAndAllOriginalBlocksSurvive": true,
+        "targetAtSamePublicPath": {
+          "pointer": "/content/6/content/0",
+          "idRelation": "fresh replacementText, unequal to every original live ID",
+          "role": "$role.replacementText.id"
+        },
+        "allOtherOriginalNodeIdsEqual": true,
+        "provisionalRole": {
+          "description": "One inserted Text root exists in the unpublished user-result frame.",
+          "sourceRelation": "Remains as the one final live replacement text.",
+          "publicBinding": "Bind replacementText from the current post-command node at targetPointer.",
+          "noNumericIdOrAllocatorTotalClaim": true
+        }
+      },
+      "afterEditDirectedSelection": {
+        "templateStatus": "SYMBOLIC_DATA_NOT_WIRE",
+        "direction": "collapsed",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$role.replacementText.id",
+            "offset": 13,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$role.replacementText.id",
+            "offset": 13,
+            "affinity": "after"
+          }
+        },
+        "sourceUserResult": {
+          "role": "provisional insertedText root[0]",
+          "offset": 13,
+          "affinity": "after"
+        },
+        "normalizationMap": "No normalization join: created replacementText@13 After remains; command does not map retired original selection into a new leaf.",
+        "sources": [
+          "insertPlan",
+          "selectionFrame",
+          "joinMap"
+        ]
+      },
+      "historyIdentityIntent": {
+        "afterOneUndo": {
+          "originalLiveIdentitySet": "All original KWDJ node IDs plus the same original synthetic root",
+          "originalTarget": "revived SAME targetText",
+          "replacementRole": "retired replacementText",
+          "directedSelection": {
+            "anchor": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 6,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 0,
+              "affinity": "after"
+            }
+          },
+          "storedMarks": null
+        },
+        "afterOneRedo": {
+          "identitySet": "Exactly the same final committed live-ID relation as afterEdit",
+          "replacementRole": "revived SAME replacementText allocated by the first edit, not a new command run or new arbitrary ID",
+          "directedSelection": {
+            "anchor": {
+              "kind": "text",
+              "node": "$role.replacementText.id",
+              "offset": 13,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "$role.replacementText.id",
+              "offset": 13,
+              "affinity": "after"
+            }
+          },
+          "storedMarks": null
+        },
+        "qualification": "Source-authored identity/history intent, not an observed replay. Numerical revisions remain chronological; no allocator rollback or external bookmark revival is claimed.",
+        "sources": [
+          "history"
+        ]
+      },
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-005/safe_links",
+      "afterEditIdentity": {
+        "survivingOriginalKwdjPointers": [
+          "/content/0",
+          "/content/0/content/0",
+          "/content/0/content/1",
+          "/content/0/content/2"
+        ],
+        "retiredOriginalKwdjPointers": [],
+        "liveCreatedRoles": [],
+        "originalRootAndAllOriginalBlocksSurvive": true,
+        "targetAtSamePublicPath": {
+          "pointer": "/content/0/content/2",
+          "idRelation": "equals original targetText",
+          "role": "$role.targetText.id"
+        },
+        "allOtherOriginalNodeIdsEqual": true,
+        "provisionalRole": {
+          "description": "One inserted Text root exists in the unpublished user-result frame.",
+          "sourceRelation": "Then joins right into original target left and retires before publication.",
+          "publicBinding": "Do not publicly bind or demand an observable transient ID.",
+          "noNumericIdOrAllocatorTotalClaim": true
+        }
+      },
+      "afterEditDirectedSelection": {
+        "templateStatus": "SYMBOLIC_DATA_NOT_WIRE",
+        "direction": "collapsed",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$role.targetText.id",
+            "offset": 9,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$role.targetText.id",
+            "offset": 9,
+            "affinity": "after"
+          }
+        },
+        "sourceUserResult": {
+          "role": "provisional insertedText root[0]",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "normalizationMap": "Insert root offset 1 maps to original target@9 After; deleted=false.",
+        "sources": [
+          "insertPlan",
+          "selectionFrame",
+          "joinMap"
+        ]
+      },
+      "historyIdentityIntent": {
+        "afterOneUndo": {
+          "originalLiveIdentitySet": "All original KWDJ node IDs plus the same original synthetic root",
+          "originalTarget": "same original targetText, original text restored",
+          "replacementRole": null,
+          "directedSelection": {
+            "anchor": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 8,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 8,
+              "affinity": "after"
+            }
+          },
+          "storedMarks": null
+        },
+        "afterOneRedo": {
+          "identitySet": "Exactly the same final committed live-ID relation as afterEdit",
+          "replacementRole": null,
+          "directedSelection": {
+            "anchor": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 9,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 9,
+              "affinity": "after"
+            }
+          },
+          "storedMarks": null
+        },
+        "qualification": "Source-authored identity/history intent, not an observed replay. Numerical revisions remain chronological; no allocator rollback or external bookmark revival is claimed.",
+        "sources": [
+          "history"
+        ]
+      },
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-007/multi_paragraph_blockquote",
+      "afterEditIdentity": {
+        "survivingOriginalKwdjPointers": [
+          "/content/0",
+          "/content/0/content/0",
+          "/content/0/content/0/content/0",
+          "/content/0/content/1",
+          "/content/0/content/1/content/0"
+        ],
+        "retiredOriginalKwdjPointers": [],
+        "liveCreatedRoles": [],
+        "originalRootAndAllOriginalBlocksSurvive": true,
+        "targetAtSamePublicPath": {
+          "pointer": "/content/0/content/1/content/0",
+          "idRelation": "equals original targetText",
+          "role": "$role.targetText.id"
+        },
+        "allOtherOriginalNodeIdsEqual": true,
+        "provisionalRole": {
+          "description": "One inserted Text root exists in the unpublished user-result frame.",
+          "sourceRelation": "Then joins right into original target left and retires before publication.",
+          "publicBinding": "Do not publicly bind or demand an observable transient ID.",
+          "noNumericIdOrAllocatorTotalClaim": true
+        }
+      },
+      "afterEditDirectedSelection": {
+        "templateStatus": "SYMBOLIC_DATA_NOT_WIRE",
+        "direction": "collapsed",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$role.targetText.id",
+            "offset": 7,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$role.targetText.id",
+            "offset": 7,
+            "affinity": "after"
+          }
+        },
+        "sourceUserResult": {
+          "role": "provisional insertedText root[0]",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "normalizationMap": "Insert root offset 1 maps to original target@7 After; deleted=false.",
+        "sources": [
+          "insertPlan",
+          "selectionFrame",
+          "joinMap"
+        ]
+      },
+      "historyIdentityIntent": {
+        "afterOneUndo": {
+          "originalLiveIdentitySet": "All original KWDJ node IDs plus the same original synthetic root",
+          "originalTarget": "same original targetText, original text restored",
+          "replacementRole": null,
+          "directedSelection": {
+            "anchor": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 6,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 6,
+              "affinity": "after"
+            }
+          },
+          "storedMarks": null
+        },
+        "afterOneRedo": {
+          "identitySet": "Exactly the same final committed live-ID relation as afterEdit",
+          "replacementRole": null,
+          "directedSelection": {
+            "anchor": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 7,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 7,
+              "affinity": "after"
+            }
+          },
+          "storedMarks": null
+        },
+        "qualification": "Source-authored identity/history intent, not an observed replay. Numerical revisions remain chronological; no allocator rollback or external bookmark revival is claimed.",
+        "sources": [
+          "history"
+        ]
+      },
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-008/lists_tasks_ordered_start",
+      "afterEditIdentity": {
+        "survivingOriginalKwdjPointers": [
+          "/content/0",
+          "/content/0/content/0",
+          "/content/0/content/0/content/0",
+          "/content/0/content/0/content/0/content/0",
+          "/content/1",
+          "/content/1/content/0",
+          "/content/1/content/0/content/0",
+          "/content/1/content/0/content/0/content/0",
+          "/content/2",
+          "/content/2/content/0",
+          "/content/2/content/0/content/0",
+          "/content/2/content/0/content/0/content/0",
+          "/content/2/content/1",
+          "/content/2/content/1/content/0"
+        ],
+        "retiredOriginalKwdjPointers": [
+          "/content/2/content/1/content/0/content/0"
+        ],
+        "liveCreatedRoles": [
+          "$role.replacementText.id"
+        ],
+        "originalRootAndAllOriginalBlocksSurvive": true,
+        "targetAtSamePublicPath": {
+          "pointer": "/content/2/content/1/content/0/content/0",
+          "idRelation": "fresh replacementText, unequal to every original live ID",
+          "role": "$role.replacementText.id"
+        },
+        "allOtherOriginalNodeIdsEqual": true,
+        "provisionalRole": {
+          "description": "One inserted Text root exists in the unpublished user-result frame.",
+          "sourceRelation": "Remains as the one final live replacement text.",
+          "publicBinding": "Bind replacementText from the current post-command node at targetPointer.",
+          "noNumericIdOrAllocatorTotalClaim": true
+        }
+      },
+      "afterEditDirectedSelection": {
+        "templateStatus": "SYMBOLIC_DATA_NOT_WIRE",
+        "direction": "collapsed",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$role.replacementText.id",
+            "offset": 5,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$role.replacementText.id",
+            "offset": 5,
+            "affinity": "after"
+          }
+        },
+        "sourceUserResult": {
+          "role": "provisional insertedText root[0]",
+          "offset": 5,
+          "affinity": "after"
+        },
+        "normalizationMap": "No normalization join: created replacementText@5 After remains; command does not map retired original selection into a new leaf.",
+        "sources": [
+          "insertPlan",
+          "selectionFrame",
+          "joinMap"
+        ]
+      },
+      "historyIdentityIntent": {
+        "afterOneUndo": {
+          "originalLiveIdentitySet": "All original KWDJ node IDs plus the same original synthetic root",
+          "originalTarget": "revived SAME targetText",
+          "replacementRole": "retired replacementText",
+          "directedSelection": {
+            "anchor": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 5,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 0,
+              "affinity": "after"
+            }
+          },
+          "storedMarks": null
+        },
+        "afterOneRedo": {
+          "identitySet": "Exactly the same final committed live-ID relation as afterEdit",
+          "replacementRole": "revived SAME replacementText allocated by the first edit, not a new command run or new arbitrary ID",
+          "directedSelection": {
+            "anchor": {
+              "kind": "text",
+              "node": "$role.replacementText.id",
+              "offset": 5,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "$role.replacementText.id",
+              "offset": 5,
+              "affinity": "after"
+            }
+          },
+          "storedMarks": null
+        },
+        "qualification": "Source-authored identity/history intent, not an observed replay. Numerical revisions remain chronological; no allocator rollback or external bookmark revival is claimed.",
+        "sources": [
+          "history"
+        ]
+      },
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-009/literal_code",
+      "afterEditIdentity": {
+        "survivingOriginalKwdjPointers": [
+          "/content/0",
+          "/content/0/content/0"
+        ],
+        "retiredOriginalKwdjPointers": [],
+        "liveCreatedRoles": [],
+        "originalRootAndAllOriginalBlocksSurvive": true,
+        "targetAtSamePublicPath": {
+          "pointer": "/content/0/content/0",
+          "idRelation": "equals original targetText",
+          "role": "$role.targetText.id"
+        },
+        "allOtherOriginalNodeIdsEqual": true,
+        "provisionalRole": {
+          "description": "One inserted Text root exists in the unpublished user-result frame.",
+          "sourceRelation": "Then joins right into original target left and retires before publication.",
+          "publicBinding": "Do not publicly bind or demand an observable transient ID.",
+          "noNumericIdOrAllocatorTotalClaim": true
+        }
+      },
+      "afterEditDirectedSelection": {
+        "templateStatus": "SYMBOLIC_DATA_NOT_WIRE",
+        "direction": "collapsed",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$role.targetText.id",
+            "offset": 60,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$role.targetText.id",
+            "offset": 60,
+            "affinity": "after"
+          }
+        },
+        "sourceUserResult": {
+          "role": "provisional insertedText root[0]",
+          "offset": 4,
+          "affinity": "after"
+        },
+        "normalizationMap": "Insert root offset 4 maps to original target@60 After; deleted=false.",
+        "sources": [
+          "insertPlan",
+          "selectionFrame",
+          "joinMap"
+        ]
+      },
+      "historyIdentityIntent": {
+        "afterOneUndo": {
+          "originalLiveIdentitySet": "All original KWDJ node IDs plus the same original synthetic root",
+          "originalTarget": "same original targetText, original text restored",
+          "replacementRole": null,
+          "directedSelection": {
+            "anchor": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 56,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 56,
+              "affinity": "after"
+            }
+          },
+          "storedMarks": null
+        },
+        "afterOneRedo": {
+          "identitySet": "Exactly the same final committed live-ID relation as afterEdit",
+          "replacementRole": null,
+          "directedSelection": {
+            "anchor": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 60,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 60,
+              "affinity": "after"
+            }
+          },
+          "storedMarks": null
+        },
+        "qualification": "Source-authored identity/history intent, not an observed replay. Numerical revisions remain chronological; no allocator rollback or external bookmark revival is claimed.",
+        "sources": [
+          "history"
+        ]
+      },
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-028/plain_prose_paragraphs",
+      "afterEditIdentity": {
+        "survivingOriginalKwdjPointers": [
+          "/content/0",
+          "/content/0/content/0",
+          "/content/0/content/1",
+          "/content/0/content/2",
+          "/content/1",
+          "/content/1/content/0"
+        ],
+        "retiredOriginalKwdjPointers": [],
+        "liveCreatedRoles": [],
+        "originalRootAndAllOriginalBlocksSurvive": true,
+        "targetAtSamePublicPath": {
+          "pointer": "/content/1/content/0",
+          "idRelation": "equals original targetText",
+          "role": "$role.targetText.id"
+        },
+        "allOtherOriginalNodeIdsEqual": true,
+        "provisionalRole": {
+          "description": "One inserted Text root exists in the unpublished user-result frame.",
+          "sourceRelation": "Then joins right into original target left and retires before publication.",
+          "publicBinding": "Do not publicly bind or demand an observable transient ID.",
+          "noNumericIdOrAllocatorTotalClaim": true
+        }
+      },
+      "afterEditDirectedSelection": {
+        "templateStatus": "SYMBOLIC_DATA_NOT_WIRE",
+        "direction": "collapsed",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$role.targetText.id",
+            "offset": 11,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$role.targetText.id",
+            "offset": 11,
+            "affinity": "after"
+          }
+        },
+        "sourceUserResult": {
+          "role": "provisional insertedText root[0]",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "normalizationMap": "Insert root offset 1 maps to original target@11 After; deleted=false.",
+        "sources": [
+          "insertPlan",
+          "selectionFrame",
+          "joinMap"
+        ]
+      },
+      "historyIdentityIntent": {
+        "afterOneUndo": {
+          "originalLiveIdentitySet": "All original KWDJ node IDs plus the same original synthetic root",
+          "originalTarget": "same original targetText, original text restored",
+          "replacementRole": null,
+          "directedSelection": {
+            "anchor": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 10,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 10,
+              "affinity": "after"
+            }
+          },
+          "storedMarks": null
+        },
+        "afterOneRedo": {
+          "identitySet": "Exactly the same final committed live-ID relation as afterEdit",
+          "replacementRole": null,
+          "directedSelection": {
+            "anchor": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 11,
+              "affinity": "after"
+            },
+            "focus": {
+              "kind": "text",
+              "node": "$role.targetText.id",
+              "offset": 11,
+              "affinity": "after"
+            }
+          },
+          "storedMarks": null
+        },
+        "qualification": "Source-authored identity/history intent, not an observed replay. Numerical revisions remain chronological; no allocator rollback or external bookmark revival is claimed.",
+        "sources": [
+          "history"
+        ]
+      },
+      "measurementStatus": "NOT_EXECUTED"
+    }
+  ],
+  "qualification": "The concise executable expectations are projected into initial-literals.json. DOC-004 full-leaf ToggleMark strike retains every original ID. Five appends retain T; DOC-003/008 retire T and bind fresh N. No cross-owner opaque ID, selection, or history equality."
+}

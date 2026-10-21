@@ -1,0 +1,672 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:klenwriter:mounted-corpus:report:1",
+  "title": "report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol",
+    "runBinding",
+    "integrity",
+    "blockingReasons",
+    "engineSummaries",
+    "rows",
+    "crossCuttingRoutes",
+    "separateLanes"
+  ],
+  "properties": {
+    "protocol": {
+      "const": "mounted-corpus/1"
+    },
+    "runBinding": {
+      "$ref": "#/$defs/runBinding"
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "failures"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "PASS",
+            "FAIL"
+          ]
+        },
+        "failures": {
+          "type": "array",
+          "maxItems": 512,
+          "items": {
+            "$ref": "#/$defs/failure"
+          }
+        }
+      }
+    },
+    "blockingReasons": {
+      "type": "array",
+      "maxItems": 512,
+      "items": {
+        "$ref": "#/$defs/blockingReason"
+      }
+    },
+    "engineSummaries": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "engine",
+          "tier",
+          "observedInitialRows",
+          "integrity",
+          "executed",
+          "pending",
+          "deferred",
+          "notOwned",
+          "met",
+          "gap",
+          "observation"
+        ],
+        "properties": {
+          "engine": {
+            "$ref": "#/$defs/engine"
+          },
+          "tier": {
+            "$ref": "#/$defs/tier"
+          },
+          "observedInitialRows": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 25
+          },
+          "integrity": {
+            "enum": [
+              "PASS",
+              "FAIL"
+            ]
+          },
+          "executed": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 277
+          },
+          "pending": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 277
+          },
+          "deferred": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 277
+          },
+          "notOwned": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 277
+          },
+          "met": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 277
+          },
+          "gap": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 277
+          },
+          "observation": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 277
+          }
+        }
+      }
+    },
+    "rows": {
+      "type": "array",
+      "maxItems": 831,
+      "items": {
+        "$ref": "#/$defs/reportRow"
+      }
+    },
+    "crossCuttingRoutes": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "route",
+          "disposition",
+          "requirement",
+          "reason",
+          "evidence"
+        ],
+        "properties": {
+          "route": {
+            "enum": [
+              "selection",
+              "slash",
+              "paste",
+              "dnd"
+            ]
+          },
+          "disposition": {
+            "enum": [
+              "executed",
+              "pending",
+              "deferred"
+            ]
+          },
+          "requirement": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "enum": [
+                  "MET",
+                  "GAP",
+                  "OBSERVATION"
+                ]
+              }
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 4096
+          },
+          "evidence": {
+            "type": "array",
+            "maxItems": 8,
+            "items": {
+              "$ref": "#/$defs/pin"
+            }
+          }
+        }
+      }
+    },
+    "separateLanes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "installedNative",
+        "humanManual",
+        "realAssistiveTechnology"
+      ],
+      "properties": {
+        "installedNative": {
+          "enum": [
+            "NOT_EXECUTED",
+            "EXECUTED"
+          ]
+        },
+        "humanManual": {
+          "enum": [
+            "NOT_EXECUTED",
+            "EXECUTED"
+          ]
+        },
+        "realAssistiveTechnology": {
+          "const": "deferred"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "u64": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Collector must also reject decimals greater than 18446744073709551615. No Number conversion."
+    },
+    "pin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "bytes",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 268435456
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "nativeResources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sessions",
+        "snapshot_handles",
+        "snapshot_bytes",
+        "protected_cursors"
+      ],
+      "properties": {
+        "sessions": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "snapshot_handles": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "snapshot_bytes": {
+          "$ref": "#/$defs/u64"
+        },
+        "protected_cursors": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        }
+      }
+    },
+    "nativeSample": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "timing",
+        "rawJson",
+        "value",
+        "validation"
+      ],
+      "properties": {
+        "source": {
+          "enum": [
+            "module.resourceCounts",
+            "mounted.nativeResources"
+          ]
+        },
+        "timing": {
+          "enum": [
+            "before_owner_construction",
+            "after_destroy_settlement"
+          ]
+        },
+        "rawJson": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "maxLength": 65536
+            }
+          ]
+        },
+        "value": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/nativeResources"
+            }
+          ]
+        },
+        "validation": {
+          "enum": [
+            "valid",
+            "null",
+            "invalid"
+          ]
+        }
+      }
+    },
+    "failure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 4096
+        }
+      }
+    },
+    "engine": {
+      "enum": [
+        "chromium",
+        "webkit",
+        "firefox"
+      ]
+    },
+    "tier": {
+      "enum": [
+        "required",
+        "experimental"
+      ]
+    },
+    "runBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocol",
+        "runId",
+        "sourceSHA",
+        "acceptedSource",
+        "corpusIndex",
+        "corpusPackageSha256",
+        "scenarioPins",
+        "build",
+        "environment",
+        "nativeBaselines"
+      ],
+      "properties": {
+        "protocol": {
+          "const": "mounted-corpus/1"
+        },
+        "runId": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "sourceSHA": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "acceptedSource": {
+          "const": "71f47cf75d675c30e13a611bcf1f0be7657e3c23"
+        },
+        "corpusIndex": {
+          "$ref": "#/$defs/pin"
+        },
+        "corpusPackageSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "scenarioPins": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/pin"
+          }
+        },
+        "build": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "buildId",
+            "wasm",
+            "seal",
+            "dependencies"
+          ],
+          "properties": {
+            "buildId": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "wasm": {
+              "$ref": "#/$defs/pin"
+            },
+            "seal": {
+              "$ref": "#/$defs/pin"
+            },
+            "dependencies": {
+              "$ref": "#/$defs/pin"
+            }
+          }
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "nodeVersion",
+            "playwrightVersion",
+            "os",
+            "engines"
+          ],
+          "properties": {
+            "nodeVersion": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "playwrightVersion": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "os": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "platform",
+                "release",
+                "arch"
+              ],
+              "properties": {
+                "platform": {
+                  "type": "string",
+                  "maxLength": 256
+                },
+                "release": {
+                  "type": "string",
+                  "maxLength": 256
+                },
+                "arch": {
+                  "type": "string",
+                  "maxLength": 256
+                }
+              }
+            },
+            "engines": {
+              "type": "array",
+              "maxItems": 3,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "engine",
+                  "browserVersion",
+                  "executablePath",
+                  "executableSha256"
+                ],
+                "properties": {
+                  "engine": {
+                    "$ref": "#/$defs/engine"
+                  },
+                  "browserVersion": {
+                    "type": "string",
+                    "maxLength": 256
+                  },
+                  "executablePath": {
+                    "type": "string",
+                    "maxLength": 4096
+                  },
+                  "executableSha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "nativeBaselines": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "engine",
+              "buildId",
+              "wasmSha256",
+              "sample"
+            ],
+            "properties": {
+              "engine": {
+                "$ref": "#/$defs/engine"
+              },
+              "buildId": {
+                "type": "string",
+                "maxLength": 256
+              },
+              "wasmSha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "sample": {
+                "$ref": "#/$defs/nativeSample"
+              }
+            }
+          }
+        }
+      }
+    },
+    "blockingReason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "class",
+        "code",
+        "message"
+      ],
+      "properties": {
+        "class": {
+          "enum": [
+            "integrity",
+            "required_behavior",
+            "cleanup_isolation"
+          ]
+        },
+        "code": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 4096
+        }
+      }
+    },
+    "reportRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engine",
+        "rowId",
+        "caseId",
+        "stage",
+        "tier",
+        "disposition",
+        "measurementStatus",
+        "requirement",
+        "integrity",
+        "cleanup",
+        "blockingReasons",
+        "evidence",
+        "reason"
+      ],
+      "properties": {
+        "engine": {
+          "$ref": "#/$defs/engine"
+        },
+        "rowId": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "caseId": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "stage": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "tier": {
+          "$ref": "#/$defs/tier"
+        },
+        "disposition": {
+          "enum": [
+            "executed",
+            "pending",
+            "deferred",
+            "not_owned"
+          ]
+        },
+        "measurementStatus": {
+          "enum": [
+            "EXECUTED",
+            "NOT_EXECUTED"
+          ]
+        },
+        "requirement": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "enum": [
+                "MET",
+                "GAP",
+                "OBSERVATION"
+              ]
+            }
+          ]
+        },
+        "integrity": {
+          "enum": [
+            "PASS",
+            "FAIL"
+          ]
+        },
+        "cleanup": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "enum": [
+                "PASS",
+                "GAP",
+                "UNAVAILABLE"
+              ]
+            }
+          ]
+        },
+        "blockingReasons": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "$ref": "#/$defs/blockingReason"
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "$ref": "#/$defs/pin"
+          }
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 4096
+        }
+      }
+    }
+  }
+}

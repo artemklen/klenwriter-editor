@@ -1,0 +1,3013 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:klenwriter:mounted-corpus:observation:1",
+  "title": "observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol",
+    "runId",
+    "engine",
+    "rowId",
+    "caseId",
+    "stage",
+    "branch",
+    "route",
+    "stop",
+    "original",
+    "fresh",
+    "errors",
+    "cspViolations"
+  ],
+  "properties": {
+    "protocol": {
+      "const": "mounted-corpus/1"
+    },
+    "runId": {
+      "type": "string",
+      "maxLength": 256
+    },
+    "engine": {
+      "$ref": "#/$defs/engine"
+    },
+    "rowId": {
+      "type": "string",
+      "maxLength": 512
+    },
+    "caseId": {
+      "type": "string",
+      "maxLength": 256
+    },
+    "stage": {
+      "enum": [
+        "editor_round_trip_unchanged",
+        "editor_edit_save_reopen"
+      ]
+    },
+    "branch": {
+      "enum": [
+        "positive",
+        "expected_admission_refusal"
+      ]
+    },
+    "route": {
+      "enum": [
+        "corpus-unchanged",
+        "public-command-edit-history",
+        "native-admission-refusal"
+      ]
+    },
+    "stop": {
+      "$ref": "#/$defs/stop"
+    },
+    "original": {
+      "$ref": "#/$defs/owner"
+    },
+    "fresh": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/owner"
+        }
+      ]
+    },
+    "errors": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "$ref": "#/$defs/failure"
+      }
+    },
+    "cspViolations": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "$ref": "#/$defs/cspViolation"
+      }
+    }
+  },
+  "$defs": {
+    "u64": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$",
+      "maxLength": 20,
+      "description": "Collector must also reject decimals greater than 18446744073709551615. No Number conversion."
+    },
+    "bytes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "utf8",
+        "bytes",
+        "sha256"
+      ],
+      "properties": {
+        "utf8": {
+          "type": "string",
+          "maxLength": 65536
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65536
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "stamp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session",
+        "generation",
+        "revision",
+        "selection_epoch",
+        "history_epoch"
+      ],
+      "properties": {
+        "session": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "generation": {
+          "$ref": "#/$defs/u64"
+        },
+        "revision": {
+          "$ref": "#/$defs/u64"
+        },
+        "selection_epoch": {
+          "$ref": "#/$defs/u64"
+        },
+        "history_epoch": {
+          "$ref": "#/$defs/u64"
+        }
+      }
+    },
+    "position": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "node",
+            "offset",
+            "affinity"
+          ],
+          "properties": {
+            "kind": {
+              "const": "text"
+            },
+            "node": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "affinity": {
+              "enum": [
+                "before",
+                "after"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "parent",
+            "index",
+            "affinity"
+          ],
+          "properties": {
+            "kind": {
+              "const": "child"
+            },
+            "parent": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "index": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "affinity": {
+              "enum": [
+                "before",
+                "after"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "node",
+            "side"
+          ],
+          "properties": {
+            "kind": {
+              "const": "edge"
+            },
+            "node": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "side": {
+              "enum": [
+                "before",
+                "after"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "anchor",
+        "focus"
+      ],
+      "properties": {
+        "anchor": {
+          "$ref": "#/$defs/position"
+        },
+        "focus": {
+          "$ref": "#/$defs/position"
+        }
+      }
+    },
+    "attribute": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "null"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "const": "boolean"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "const": "number"
+            },
+            "value": {
+              "type": "string",
+              "maxLength": 65536,
+              "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "const": "string"
+            },
+            "value": {
+              "type": "string",
+              "maxLength": 65536
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "const": "list"
+            },
+            "value": {
+              "type": "array",
+              "maxItems": 512,
+              "items": {
+                "$ref": "#/$defs/attribute"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "const": "object"
+            },
+            "value": {
+              "type": "object",
+              "maxProperties": 512,
+              "additionalProperties": {
+                "$ref": "#/$defs/attribute"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "mark": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type_id",
+        "attributes"
+      ],
+      "properties": {
+        "type_id": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "attributes": {
+          "type": "object",
+          "maxProperties": 512,
+          "additionalProperties": {
+            "$ref": "#/$defs/attribute"
+          }
+        }
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile_id",
+        "profile_version",
+        "codec_id",
+        "wire_version",
+        "extensions"
+      ],
+      "properties": {
+        "profile_id": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "profile_version": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "codec_id": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "wire_version": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "extensions": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "version"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 1024
+              },
+              "version": {
+                "type": "string",
+                "maxLength": 256
+              }
+            }
+          }
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "build_id",
+        "profile",
+        "registry_digest",
+        "capability_digest"
+      ],
+      "properties": {
+        "build_id": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "profile": {
+          "$ref": "#/$defs/profile"
+        },
+        "registry_digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "capability_digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "history": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "undo_entries",
+        "redo_entries",
+        "retained_bytes"
+      ],
+      "properties": {
+        "undo_entries": {
+          "$ref": "#/$defs/u64"
+        },
+        "redo_entries": {
+          "$ref": "#/$defs/u64"
+        },
+        "retained_bytes": {
+          "$ref": "#/$defs/u64"
+        }
+      }
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stamp",
+        "root",
+        "selection",
+        "stored_marks",
+        "dirty",
+        "saved_revision",
+        "history"
+      ],
+      "properties": {
+        "stamp": {
+          "$ref": "#/$defs/stamp"
+        },
+        "root": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "selection": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/selection"
+            }
+          ]
+        },
+        "stored_marks": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "array",
+              "maxItems": 512,
+              "items": {
+                "$ref": "#/$defs/mark"
+              }
+            }
+          ]
+        },
+        "dirty": {
+          "type": "boolean"
+        },
+        "saved_revision": {
+          "$ref": "#/$defs/u64"
+        },
+        "history": {
+          "$ref": "#/$defs/history"
+        }
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "path",
+        "category",
+        "details",
+        "stamp",
+        "may_have_committed"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "maxLength": 65536
+        },
+        "path": {
+          "type": "string",
+          "maxLength": 65536
+        },
+        "category": {
+          "type": "string",
+          "maxLength": 65536
+        },
+        "details": {
+          "type": "object",
+          "maxProperties": 512,
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 65536
+          }
+        },
+        "stamp": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/stamp"
+            }
+          ]
+        },
+        "may_have_committed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "nativeResources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sessions",
+        "snapshot_handles",
+        "snapshot_bytes",
+        "protected_cursors"
+      ],
+      "properties": {
+        "sessions": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "snapshot_handles": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "snapshot_bytes": {
+          "$ref": "#/$defs/u64"
+        },
+        "protected_cursors": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        }
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stamp",
+        "id",
+        "parent",
+        "type_id",
+        "primitive",
+        "attributes",
+        "marks",
+        "text",
+        "children",
+        "changed_revision",
+        "stats"
+      ],
+      "properties": {
+        "stamp": {
+          "$ref": "#/$defs/stamp"
+        },
+        "id": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "parent": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "maxLength": 256
+            }
+          ]
+        },
+        "type_id": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "primitive": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "attributes": {
+          "type": "object",
+          "maxProperties": 512,
+          "additionalProperties": {
+            "$ref": "#/$defs/attribute"
+          }
+        },
+        "marks": {
+          "type": "array",
+          "maxItems": 512,
+          "items": {
+            "$ref": "#/$defs/mark"
+          }
+        },
+        "text": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "maxLength": 65536
+            }
+          ]
+        },
+        "children": {
+          "type": "array",
+          "maxItems": 512,
+          "items": {
+            "type": "string",
+            "maxLength": 256
+          }
+        },
+        "changed_revision": {
+          "$ref": "#/$defs/u64"
+        },
+        "stats": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "authored_nodes",
+            "text_utf8",
+            "text_utf16",
+            "height"
+          ],
+          "properties": {
+            "authored_nodes": {
+              "$ref": "#/$defs/u64"
+            },
+            "text_utf8": {
+              "$ref": "#/$defs/u64"
+            },
+            "text_utf16": {
+              "$ref": "#/$defs/u64"
+            },
+            "height": {
+              "$ref": "#/$defs/u64"
+            }
+          }
+        }
+      }
+    },
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "active"
+      ],
+      "properties": {
+        "active": {
+          "type": "string",
+          "maxLength": 65536
+        }
+      }
+    },
+    "impact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "upserted",
+        "removed",
+        "ancestors_before",
+        "ancestors_after",
+        "root_order_changed"
+      ],
+      "properties": {
+        "upserted": {
+          "type": "array",
+          "maxItems": 512,
+          "items": {
+            "type": "string",
+            "maxLength": 256
+          }
+        },
+        "removed": {
+          "type": "array",
+          "maxItems": 512,
+          "items": {
+            "type": "string",
+            "maxLength": 256
+          }
+        },
+        "ancestors_before": {
+          "type": "array",
+          "maxItems": 512,
+          "items": {
+            "type": "string",
+            "maxLength": 256
+          }
+        },
+        "ancestors_after": {
+          "type": "array",
+          "maxItems": 512,
+          "items": {
+            "type": "string",
+            "maxLength": 256
+          }
+        },
+        "root_order_changed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "eventChange": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "impact",
+            "from_revision",
+            "to_revision"
+          ],
+          "properties": {
+            "kind": {
+              "const": "document"
+            },
+            "impact": {
+              "$ref": "#/$defs/impact"
+            },
+            "from_revision": {
+              "$ref": "#/$defs/u64"
+            },
+            "to_revision": {
+              "$ref": "#/$defs/u64"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "selection_changed",
+            "stored_marks_changed",
+            "history_changed",
+            "baseline_changed"
+          ],
+          "properties": {
+            "kind": {
+              "const": "state"
+            },
+            "selection_changed": {
+              "type": "boolean"
+            },
+            "stored_marks_changed": {
+              "type": "boolean"
+            },
+            "history_changed": {
+              "type": "boolean"
+            },
+            "baseline_changed": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sequence",
+        "before",
+        "after",
+        "selection_before",
+        "selection_after",
+        "stored_marks_before",
+        "stored_marks_after",
+        "dirty_before",
+        "dirty_after",
+        "history",
+        "change"
+      ],
+      "properties": {
+        "sequence": {
+          "$ref": "#/$defs/u64"
+        },
+        "before": {
+          "$ref": "#/$defs/stamp"
+        },
+        "after": {
+          "$ref": "#/$defs/stamp"
+        },
+        "selection_before": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/selection"
+            }
+          ]
+        },
+        "selection_after": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/selection"
+            }
+          ]
+        },
+        "stored_marks_before": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "array",
+              "maxItems": 512,
+              "items": {
+                "$ref": "#/$defs/mark"
+              }
+            }
+          ]
+        },
+        "stored_marks_after": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "array",
+              "maxItems": 512,
+              "items": {
+                "$ref": "#/$defs/mark"
+              }
+            }
+          ]
+        },
+        "dirty_before": {
+          "type": "boolean"
+        },
+        "dirty_after": {
+          "type": "boolean"
+        },
+        "history": {
+          "$ref": "#/$defs/history"
+        },
+        "change": {
+          "$ref": "#/$defs/eventChange"
+        }
+      }
+    },
+    "windowNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node",
+        "type_id",
+        "primitive"
+      ],
+      "properties": {
+        "node": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "type_id": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "primitive": {
+          "enum": [
+            "text_block",
+            "container"
+          ]
+        }
+      }
+    },
+    "windowSpan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node",
+        "from_utf16",
+        "to_utf16",
+        "text"
+      ],
+      "properties": {
+        "node": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "from_utf16": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "to_utf16": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 65536
+        }
+      }
+    },
+    "reply": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "state"
+          ],
+          "properties": {
+            "kind": {
+              "const": "state"
+            },
+            "state": {
+              "$ref": "#/$defs/state"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "commands"
+          ],
+          "properties": {
+            "kind": {
+              "const": "catalog"
+            },
+            "commands": {
+              "type": "array",
+              "maxItems": 512,
+              "items": {
+                "type": "string",
+                "maxLength": 1024
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "node"
+          ],
+          "properties": {
+            "kind": {
+              "const": "node"
+            },
+            "node": {
+              "$ref": "#/$defs/node"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "available",
+            "effect",
+            "presentation",
+            "diagnostic"
+          ],
+          "properties": {
+            "kind": {
+              "const": "availability"
+            },
+            "available": {
+              "type": "boolean"
+            },
+            "effect": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "maxLength": 65536
+                }
+              ]
+            },
+            "presentation": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$ref": "#/$defs/presentation"
+                }
+              ]
+            },
+            "diagnostic": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$ref": "#/$defs/diagnostic"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "effect",
+            "state",
+            "presentation"
+          ],
+          "properties": {
+            "kind": {
+              "const": "mutation"
+            },
+            "effect": {
+              "type": "string",
+              "maxLength": 65536
+            },
+            "state": {
+              "$ref": "#/$defs/state"
+            },
+            "presentation": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$ref": "#/$defs/presentation"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "handle",
+            "canonical_json",
+            "stamp",
+            "profile",
+            "event_sequence"
+          ],
+          "properties": {
+            "kind": {
+              "const": "snapshot"
+            },
+            "handle": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "canonical_json": {
+              "type": "string",
+              "maxLength": 65536
+            },
+            "stamp": {
+              "$ref": "#/$defs/stamp"
+            },
+            "profile": {
+              "$ref": "#/$defs/profile"
+            },
+            "event_sequence": {
+              "$ref": "#/$defs/u64"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "released"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "status",
+            "position",
+            "deleted",
+            "stamp"
+          ],
+          "properties": {
+            "kind": {
+              "const": "mapped"
+            },
+            "status": {
+              "type": "string",
+              "maxLength": 65536
+            },
+            "position": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$ref": "#/$defs/position"
+                }
+              ]
+            },
+            "deleted": {
+              "type": "boolean"
+            },
+            "stamp": {
+              "$ref": "#/$defs/stamp"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "events",
+            "cursor",
+            "gap"
+          ],
+          "properties": {
+            "kind": {
+              "const": "events"
+            },
+            "events": {
+              "type": "array",
+              "maxItems": 256,
+              "items": {
+                "$ref": "#/$defs/event"
+              }
+            },
+            "cursor": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "gap": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "resources"
+          ],
+          "properties": {
+            "kind": {
+              "const": "resources"
+            },
+            "resources": {
+              "$ref": "#/$defs/nativeResources"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "destroyed"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "stamp",
+            "selection",
+            "projection_id",
+            "text",
+            "empty",
+            "selected_atoms"
+          ],
+          "properties": {
+            "kind": {
+              "const": "selection_text"
+            },
+            "stamp": {
+              "$ref": "#/$defs/stamp"
+            },
+            "selection": {
+              "$ref": "#/$defs/selection"
+            },
+            "projection_id": {
+              "type": "string",
+              "maxLength": 1024
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 65536
+            },
+            "empty": {
+              "type": "boolean"
+            },
+            "selected_atoms": {
+              "type": "array",
+              "maxItems": 512,
+              "items": {
+                "type": "string",
+                "maxLength": 256
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "stamp",
+            "selection",
+            "block",
+            "caret",
+            "ancestors",
+            "before",
+            "after",
+            "before_stop",
+            "after_stop"
+          ],
+          "properties": {
+            "kind": {
+              "const": "text_window"
+            },
+            "stamp": {
+              "$ref": "#/$defs/stamp"
+            },
+            "selection": {
+              "$ref": "#/$defs/selection"
+            },
+            "block": {
+              "$ref": "#/$defs/windowNode"
+            },
+            "caret": {
+              "$ref": "#/$defs/position"
+            },
+            "ancestors": {
+              "type": "array",
+              "maxItems": 126,
+              "items": {
+                "$ref": "#/$defs/windowNode"
+              }
+            },
+            "before": {
+              "type": "array",
+              "maxItems": 256,
+              "items": {
+                "$ref": "#/$defs/windowSpan"
+              }
+            },
+            "after": {
+              "type": "array",
+              "maxItems": 256,
+              "items": {
+                "$ref": "#/$defs/windowSpan"
+              }
+            },
+            "before_stop": {
+              "enum": [
+                "block",
+                "inline_atom",
+                "hard_break",
+                "window_limit"
+              ]
+            },
+            "after_stop": {
+              "enum": [
+                "block",
+                "inline_atom",
+                "hard_break",
+                "window_limit"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "response": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "value"
+          ],
+          "properties": {
+            "status": {
+              "const": "ok"
+            },
+            "value": {
+              "$ref": "#/$defs/reply"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "diagnostic"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "refused",
+                "fatal"
+              ]
+            },
+            "diagnostic": {
+              "$ref": "#/$defs/diagnostic"
+            }
+          }
+        }
+      ]
+    },
+    "domDiagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "phase",
+        "stamp",
+        "node",
+        "typeId",
+        "publication"
+      ],
+      "properties": {
+        "code": {
+          "enum": [
+            "dom.invalid_options",
+            "dom.not_ready",
+            "dom.disposed",
+            "dom.renderer_binding_mismatch",
+            "dom.renderer_missing",
+            "dom.presentation_unsupported",
+            "dom.command_unsupported",
+            "dom.explicit_method_required",
+            "dom.composition_conflict",
+            "dom.mode_blocked",
+            "dom.native_read_only",
+            "dom.busy",
+            "dom.stale_replace",
+            "dom.reconcile_limit",
+            "dom.recovery_required",
+            "dom.recovery_callback_failed",
+            "dom.invalid_bookmark",
+            "dom.stale_selection",
+            "dom.selection_unsynchronized",
+            "dom.selection_missing",
+            "dom.selection_limit",
+            "dom.clipboard_unavailable",
+            "dom.clipboard_write_failed",
+            "dom.clipboard_timeout",
+            "dom.selection_geometry_unsupported",
+            "dom.invalid_host_request",
+            "dom.stale_host_request",
+            "dom.composition_ambiguous",
+            "dom.composition_stale",
+            "dom.composition_settle_limit",
+            "dom.composition_limit"
+          ]
+        },
+        "phase": {
+          "enum": [
+            "mount",
+            "command",
+            "render",
+            "replace",
+            "mode",
+            "destroy",
+            "selection",
+            "clipboard",
+            "composition",
+            "geometry",
+            "host_request"
+          ]
+        },
+        "stamp": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/stamp"
+            }
+          ]
+        },
+        "node": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "maxLength": 256
+            }
+          ]
+        },
+        "typeId": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "maxLength": 1024
+            }
+          ]
+        },
+        "publication": {
+          "enum": [
+            "none",
+            "alreadyPublished",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "domRefusal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "diagnostic"
+      ],
+      "properties": {
+        "status": {
+          "const": "dom_refused"
+        },
+        "diagnostic": {
+          "$ref": "#/$defs/domDiagnostic"
+        }
+      }
+    },
+    "submission": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "response"
+          ],
+          "properties": {
+            "status": {
+              "const": "completed"
+            },
+            "response": {
+              "$ref": "#/$defs/response"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "completion"
+          ],
+          "properties": {
+            "status": {
+              "const": "queued"
+            },
+            "completion": {
+              "$ref": "#/$defs/response"
+            }
+          }
+        }
+      ]
+    },
+    "recoveryRegion": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "stamp",
+            "originalText",
+            "provisionalText",
+            "affectedNodeIds"
+          ],
+          "properties": {
+            "kind": {
+              "const": "bounded"
+            },
+            "stamp": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$ref": "#/$defs/stamp"
+                }
+              ]
+            },
+            "originalText": {
+              "type": "string",
+              "maxLength": 65536
+            },
+            "provisionalText": {
+              "type": "string",
+              "maxLength": 65536
+            },
+            "affectedNodeIds": {
+              "type": "array",
+              "maxItems": 512,
+              "items": {
+                "type": "string",
+                "maxLength": 256
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "reason",
+            "ownership",
+            "elementToken"
+          ],
+          "properties": {
+            "kind": {
+              "const": "retained_dom"
+            },
+            "reason": {
+              "const": "capture_limit"
+            },
+            "ownership": {
+              "const": "transferred_to_host"
+            },
+            "elementToken": {
+              "type": "string",
+              "maxLength": 256
+            }
+          }
+        }
+      ]
+    },
+    "unappliedInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "source",
+            "inputType",
+            "data",
+            "key",
+            "code",
+            "defaultPrevented"
+          ],
+          "properties": {
+            "kind": {
+              "const": "bounded"
+            },
+            "source": {
+              "enum": [
+                "beforeinput",
+                "keydown",
+                "composition",
+                "geometry",
+                "host_request"
+              ]
+            },
+            "inputType": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "maxLength": 65536
+                }
+              ]
+            },
+            "data": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "maxLength": 65536
+                }
+              ]
+            },
+            "key": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "maxLength": 65536
+                }
+              ]
+            },
+            "code": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "maxLength": 65536
+                }
+              ]
+            },
+            "defaultPrevented": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "reason",
+            "ownership",
+            "eventToken"
+          ],
+          "properties": {
+            "kind": {
+              "const": "retained_event"
+            },
+            "reason": {
+              "const": "capture_limit"
+            },
+            "ownership": {
+              "const": "transferred_to_host"
+            },
+            "eventToken": {
+              "type": "string",
+              "maxLength": 256
+            }
+          }
+        }
+      ]
+    },
+    "compositionRecovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "generation",
+        "reason",
+        "context",
+        "base",
+        "selection",
+        "affectedNodeIds",
+        "submission",
+        "response",
+        "nativeOutcome",
+        "unappliedInput",
+        "disposition"
+      ],
+      "properties": {
+        "generation": {
+          "$ref": "#/$defs/u64"
+        },
+        "reason": {
+          "enum": [
+            "native_refused",
+            "native_fatal",
+            "native_unknown",
+            "stale",
+            "ambiguous_tail",
+            "settle_limit",
+            "capture_limit",
+            "generation_limit",
+            "busy",
+            "destroyed"
+          ]
+        },
+        "context": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/context"
+            }
+          ]
+        },
+        "base": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/stamp"
+            }
+          ]
+        },
+        "selection": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/selection"
+            }
+          ]
+        },
+        "affectedNodeIds": {
+          "type": "array",
+          "maxItems": 512,
+          "items": {
+            "type": "string",
+            "maxLength": 256
+          }
+        },
+        "submission": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/submission"
+            }
+          ]
+        },
+        "response": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/response"
+            }
+          ]
+        },
+        "nativeOutcome": {
+          "enum": [
+            "not_submitted",
+            "queued",
+            "completed",
+            "unknown"
+          ]
+        },
+        "unappliedInput": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/unappliedInput"
+            }
+          ]
+        },
+        "disposition": {
+          "enum": [
+            "committed_restored",
+            "provisional_retained",
+            "dom_transferred"
+          ]
+        }
+      }
+    },
+    "recovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "originalInput",
+        "region"
+      ],
+      "properties": {
+        "originalInput": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/bytes"
+            }
+          ]
+        },
+        "region": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/recoveryRegion"
+            }
+          ]
+        },
+        "composition": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/compositionRecovery"
+            }
+          ]
+        }
+      }
+    },
+    "ready": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "response"
+          ],
+          "properties": {
+            "status": {
+              "const": "ready"
+            },
+            "response": {
+              "$ref": "#/$defs/response"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "response",
+            "recovery"
+          ],
+          "properties": {
+            "status": {
+              "const": "sdk_failure"
+            },
+            "response": {
+              "$ref": "#/$defs/response"
+            },
+            "recovery": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$ref": "#/$defs/recovery"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "diagnostic",
+            "response",
+            "recovery"
+          ],
+          "properties": {
+            "status": {
+              "const": "dom_refused"
+            },
+            "diagnostic": {
+              "$ref": "#/$defs/domDiagnostic"
+            },
+            "response": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$ref": "#/$defs/response"
+                }
+              ]
+            },
+            "recovery": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$ref": "#/$defs/recovery"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "command": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "payload_json"
+      ],
+      "properties": {
+        "id": {
+          "enum": [
+            "org.klenwriter.kwdj/command/insert-text",
+            "org.klenwriter.kwdj/command/toggle-mark"
+          ]
+        },
+        "payload_json": {
+          "type": "string",
+          "maxLength": 4096
+        }
+      }
+    },
+    "request": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "state"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "catalog"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "stamp",
+            "node"
+          ],
+          "properties": {
+            "kind": {
+              "const": "node"
+            },
+            "stamp": {
+              "$ref": "#/$defs/stamp"
+            },
+            "node": {
+              "type": "string",
+              "maxLength": 256
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "resources"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "stamp",
+            "command"
+          ],
+          "properties": {
+            "kind": {
+              "const": "query_command"
+            },
+            "stamp": {
+              "$ref": "#/$defs/stamp"
+            },
+            "command": {
+              "$ref": "#/$defs/command"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "stamp",
+            "direction"
+          ],
+          "properties": {
+            "kind": {
+              "const": "query_history"
+            },
+            "stamp": {
+              "$ref": "#/$defs/stamp"
+            },
+            "direction": {
+              "enum": [
+                "undo",
+                "redo"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "stamp",
+            "command",
+            "history_hint"
+          ],
+          "properties": {
+            "kind": {
+              "const": "command"
+            },
+            "stamp": {
+              "$ref": "#/$defs/stamp"
+            },
+            "command": {
+              "$ref": "#/$defs/command"
+            },
+            "history_hint": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind"
+              ],
+              "properties": {
+                "kind": {
+                  "const": "isolated"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "stamp",
+            "direction"
+          ],
+          "properties": {
+            "kind": {
+              "const": "history"
+            },
+            "stamp": {
+              "$ref": "#/$defs/stamp"
+            },
+            "direction": {
+              "enum": [
+                "undo",
+                "redo"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "stamp",
+            "selection"
+          ],
+          "properties": {
+            "kind": {
+              "const": "set_selection"
+            },
+            "stamp": {
+              "$ref": "#/$defs/stamp"
+            },
+            "selection": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$ref": "#/$defs/selection"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "stamp",
+            "marks"
+          ],
+          "properties": {
+            "kind": {
+              "const": "set_stored_marks"
+            },
+            "stamp": {
+              "$ref": "#/$defs/stamp"
+            },
+            "marks": {
+              "const": null
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "stamp",
+            "max_bytes"
+          ],
+          "properties": {
+            "kind": {
+              "const": "snapshot"
+            },
+            "stamp": {
+              "$ref": "#/$defs/stamp"
+            },
+            "max_bytes": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 65536
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "handle"
+          ],
+          "properties": {
+            "kind": {
+              "const": "release_snapshot"
+            },
+            "handle": {
+              "type": "string",
+              "maxLength": 256
+            }
+          }
+        }
+      ]
+    },
+    "call": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "method",
+        "capture",
+        "context",
+        "request",
+        "result"
+      ],
+      "properties": {
+        "label": {
+          "enum": [
+            "initial-state",
+            "initial-node",
+            "setup-selection",
+            "setup-marks",
+            "prepared-state",
+            "prepared-node",
+            "query-edit",
+            "edit",
+            "after-edit-state",
+            "after-edit-node",
+            "snapshot-edit",
+            "release-edit",
+            "query-undo",
+            "undo",
+            "after-undo-state",
+            "after-undo-node",
+            "snapshot-undo",
+            "release-undo",
+            "query-redo",
+            "redo",
+            "after-redo-state",
+            "after-redo-node",
+            "snapshot-save",
+            "release-save",
+            "snapshot-reopen",
+            "release-reopen"
+          ]
+        },
+        "method": {
+          "enum": [
+            "read",
+            "query",
+            "submit"
+          ]
+        },
+        "capture": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/stamp"
+            }
+          ]
+        },
+        "context": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/context"
+            }
+          ]
+        },
+        "request": {
+          "$ref": "#/$defs/request"
+        },
+        "result": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/response"
+            },
+            {
+              "$ref": "#/$defs/domRefusal"
+            },
+            {
+              "$ref": "#/$defs/submission"
+            }
+          ]
+        }
+      }
+    },
+    "sdkResources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lifecycle",
+        "sessions",
+        "listeners",
+        "queued_mutations",
+        "queued_bytes",
+        "pending_tickets",
+        "host_requests",
+        "task_continuations",
+        "original_input_bytes",
+        "callback_errors",
+        "callback_error_handlers"
+      ],
+      "properties": {
+        "lifecycle": {
+          "enum": [
+            "loading",
+            "ready",
+            "disposing",
+            "destroyed",
+            "fatal"
+          ]
+        },
+        "sessions": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "listeners": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "queued_mutations": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "queued_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "pending_tickets": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "host_requests": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "task_continuations": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "original_input_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "callback_errors": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "callback_error_handlers": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        }
+      }
+    },
+    "mountedResources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sdk",
+        "dom",
+        "selection",
+        "clipboard",
+        "hostRequests",
+        "inputObservations",
+        "popupPresentation"
+      ],
+      "properties": {
+        "sdk": {
+          "$ref": "#/$defs/sdkResources"
+        },
+        "dom": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "listeners",
+            "observers",
+            "continuations",
+            "retainedInputBytes",
+            "retainedRecoveryRegions"
+          ],
+          "properties": {
+            "listeners": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "observers": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "continuations": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "retainedInputBytes": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "retainedRecoveryRegions": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            }
+          }
+        },
+        "selection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "bookmarks",
+            "restoreTickets",
+            "activePointers",
+            "animationFrames"
+          ],
+          "properties": {
+            "bookmarks": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "restoreTickets": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "activePointers": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "animationFrames": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            }
+          }
+        },
+        "clipboard": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "pending",
+            "continuations",
+            "retainedTextBytes"
+          ],
+          "properties": {
+            "pending": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "continuations": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "retainedTextBytes": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            }
+          }
+        },
+        "hostRequests": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "pending",
+            "focusContinuations"
+          ],
+          "properties": {
+            "pending": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "focusContinuations": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            }
+          }
+        },
+        "inputObservations": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "subscribers"
+          ],
+          "properties": {
+            "subscribers": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            }
+          }
+        },
+        "popupPresentation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "handles"
+          ],
+          "properties": {
+            "handles": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            }
+          }
+        }
+      }
+    },
+    "uiResources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "listeners",
+        "observers",
+        "animationFrames",
+        "subscriptions",
+        "hostRequests",
+        "continuations",
+        "dragGestures",
+        "pointerCaptures"
+      ],
+      "properties": {
+        "listeners": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "observers": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "animationFrames": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "subscriptions": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "hostRequests": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "continuations": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "dragGestures": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "pointerCaptures": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mounted",
+        "ui"
+      ],
+      "properties": {
+        "mounted": {
+          "$ref": "#/$defs/mountedResources"
+        },
+        "ui": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/uiResources"
+            }
+          ]
+        }
+      }
+    },
+    "nativeSample": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "timing",
+        "rawJson",
+        "value",
+        "validation"
+      ],
+      "properties": {
+        "source": {
+          "enum": [
+            "module.resourceCounts",
+            "mounted.nativeResources"
+          ]
+        },
+        "timing": {
+          "enum": [
+            "before_owner_construction",
+            "after_destroy_settlement"
+          ]
+        },
+        "rawJson": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "maxLength": 65536
+            }
+          ]
+        },
+        "value": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/nativeResources"
+            }
+          ]
+        },
+        "validation": {
+          "enum": [
+            "valid",
+            "null",
+            "invalid"
+          ]
+        }
+      }
+    },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "call",
+        "utf8",
+        "bytes",
+        "sha256",
+        "releaseCall"
+      ],
+      "properties": {
+        "call": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "utf8": {
+          "type": "string",
+          "maxLength": 65536
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65536
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "releaseCall": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
+      }
+    },
+    "destroy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "sdk",
+        "recovery",
+        "callbackFailure"
+      ],
+      "properties": {
+        "status": {
+          "const": "destroy_requested"
+        },
+        "sdk": {
+          "$ref": "#/$defs/submission"
+        },
+        "recovery": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/recovery"
+            }
+          ]
+        },
+        "callbackFailure": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/domRefusal"
+            }
+          ]
+        }
+      }
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "elementToken",
+        "mountOrdinal",
+        "destroyOrdinal",
+        "input",
+        "originalInputBeforeDestroy",
+        "originalInputAfterDestroy",
+        "ready",
+        "context",
+        "calls",
+        "events",
+        "snapshots",
+        "destroy",
+        "resourcesBefore",
+        "resourcesAfter",
+        "nativeBefore",
+        "nativeAfter"
+      ],
+      "properties": {
+        "elementToken": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "mountOrdinal": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4096
+        },
+        "destroyOrdinal": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4096
+        },
+        "input": {
+          "$ref": "#/$defs/bytes"
+        },
+        "originalInputBeforeDestroy": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/bytes"
+            }
+          ]
+        },
+        "originalInputAfterDestroy": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/bytes"
+            }
+          ]
+        },
+        "ready": {
+          "$ref": "#/$defs/ready"
+        },
+        "context": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/context"
+            }
+          ]
+        },
+        "calls": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/call"
+          }
+        },
+        "events": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/event"
+          }
+        },
+        "snapshots": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "$ref": "#/$defs/snapshot"
+          }
+        },
+        "destroy": {
+          "$ref": "#/$defs/destroy"
+        },
+        "resourcesBefore": {
+          "$ref": "#/$defs/resources"
+        },
+        "resourcesAfter": {
+          "$ref": "#/$defs/resources"
+        },
+        "nativeBefore": {
+          "$ref": "#/$defs/nativeSample"
+        },
+        "nativeAfter": {
+          "$ref": "#/$defs/nativeSample"
+        }
+      }
+    },
+    "failure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 4096
+        }
+      }
+    },
+    "stop": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "phase",
+        "status",
+        "reason"
+      ],
+      "properties": {
+        "phase": {
+          "enum": [
+            "complete",
+            "ready",
+            "initial-read",
+            "setup",
+            "query-edit",
+            "edit",
+            "after-edit",
+            "undo",
+            "redo",
+            "snapshot",
+            "release",
+            "destroy",
+            "fresh-mount",
+            "fresh-ready",
+            "fresh-read",
+            "fresh-snapshot",
+            "fresh-release",
+            "fresh-destroy",
+            "capture"
+          ]
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "native_refused",
+            "native_fatal",
+            "dom_refused",
+            "capture_error",
+            "timeout",
+            "thrown"
+          ]
+        },
+        "reason": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "maxLength": 4096
+            }
+          ]
+        }
+      }
+    },
+    "cspViolation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "effectiveDirective",
+        "blockedURI",
+        "sourceFile",
+        "lineNumber",
+        "columnNumber",
+        "disposition"
+      ],
+      "properties": {
+        "effectiveDirective": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "blockedURI": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "sourceFile": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "lineNumber": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "columnNumber": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "disposition": {
+          "type": "string",
+          "maxLength": 256
+        }
+      }
+    },
+    "engine": {
+      "enum": [
+        "chromium",
+        "webkit",
+        "firefox"
+      ]
+    }
+  }
+}

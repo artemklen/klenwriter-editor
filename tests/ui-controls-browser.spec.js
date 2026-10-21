@@ -101,6 +101,144 @@ test('K01: one roving toolbar stop, arrows/Home/End, Tab exit and keyed controls
   const after=await checkpoint(page,id,'after navigation only');unchanged(after,before);expect(submitted(after)).toHaveLength(0);
 });
 
+test('ET01 actual packaged empty toolbar: no painted or tabbable ghost, selection geometry or native change',async({page})=>{
+  try {
+    const initial=await page.evaluate(async()=>{
+      const [{loadSdkV2,sdkBuildId},{mountEditor},{createEditorUi},{kwdjBasicRenderers}]=await Promise.all([
+        import('@klenwriter/editor-sdk'),import('@klenwriter/editor-dom'),import('@klenwriter/editor-ui'),import('@klenwriter/editor-kwdj/dom')]);
+      const module=await loadSdkV2(),item=window.ui42.cases.find(value=>value.job.id==='V01-forward'),job=item.job;
+      const wrapper=document.createElement('section');wrapper.className='ui-fixture';
+      const element=document.createElement('div');element.id='empty-toolbar-editor';element.className='ui-fixture-editor';element.setAttribute('aria-label','Empty toolbar document');
+      const slots=Object.fromEntries(['toolbar','gutter','entry'].map(key=>[key,document.createElement('div')]));
+      wrapper.append(slots.toolbar,element,slots.gutter,slots.entry);document.querySelector('#ui-mounts').append(wrapper);
+      const geometryKinds=[],events=[],fixture=window.emptyToolbarFixture={wrapper,element,geometryKinds,events,module,editor:null,ui:null,unsubscribe:null};
+      const editor=fixture.editor=mountEditor({element,editor:{input:new TextEncoder().encode(job.input),options:{abi:'editor-sdk/2',build_id:sdkBuildId,profile:job.profile,admission:'validate',access:'editable',registry_json:job.registry_json,profile_options_json:job.profile_options_json},loader:()=>Promise.resolve(module)},renderers:kwdjBasicRenderers});
+      // Observation delegates to the actual mounted geometry; no response is replaced.
+      const observed=new Proxy(editor,{get(target,key){if(key==='geometry')return {read(request){if(geometryKinds.length>=128)throw Error('Finite empty-toolbar geometry observations');geometryKinds.push(request.kind);return target.geometry.read(request);}};const value=Reflect.get(target,key,target);return typeof value==='function'?value.bind(target):value;}});
+      const ui=fixture.ui=createEditorUi({editor:observed,editorElement:element,slots,locale:'en',profile:()=>({toolbar:[],insertions:[],blockActions:[],moves:()=>[]})});
+      if('status'in ui)throw Error('Real empty-profile UI creation refused');
+      const toolbar=fixture.toolbar=slots.toolbar.querySelector('[role=toolbar]');
+      fixture.paint=()=>({connected:toolbar.isConnected,hidden:toolbar.hidden,tabIndex:toolbar.tabIndex,rects:toolbar.getClientRects().length,width:toolbar.getBoundingClientRect().width,height:toolbar.getBoundingClientRect().height,left:toolbar.style.left,top:toolbar.style.top});
+      const loading={phase:editor.lifecycle,paint:fixture.paint()};
+      if((await editor.ready).status!=='ready'||(await ui.ready).status!=='ready')throw Error('Actual empty-profile owner not ready');
+      const done=async result=>result.status==='queued'?{status:'queued',response:await result.completion}:result;
+      const readTree=()=>{const response=editor.read({kind:'state'});if(response.status!=='ok'||response.value.kind!=='state')throw Error('Actual native state unavailable');const state=response.value.state,rows=[],queue=[{node:state.root,path:[]}];for(let index=0;index<queue.length;index++){if(index>=128)throw Error('Finite actual empty-toolbar tree');const next=queue[index],reply=editor.read({kind:'node',stamp:state.stamp,node:next.node});if(reply.status!=='ok'||reply.value.kind!=='node')throw Error('Actual native node unavailable');rows.push({path:next.path,node:reply.value.node});reply.value.node.children.forEach((node,i)=>queue.push({node,path:[...next.path,i]}));}return {state,rows};};
+      const tree=readTree(),roles=Object.fromEntries(Object.entries(item.expected.rolesBefore).map(([role,path])=>[role,tree.rows.find(row=>JSON.stringify(row.path)===JSON.stringify(path)).node.id]));
+      const resolve=value=>Array.isArray(value)?value.map(resolve):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([key,v])=>[key,['node','parent'].includes(key)?roles[v]??v:resolve(v)])):value;
+      const selected=await done(editor.submit({kind:'set_selection',stamp:editor.capture(),selection:resolve(item.expected.selectionBefore)}));if(selected.response?.status!=='ok')throw Error('Actual selection setup refused');
+      const bookmark=editor.selection.captureBookmark();if(bookmark.status!=='captured')throw Error('Actual selection capture refused');
+      const focused=await done(editor.selection.restoreBookmark(bookmark.bookmark,{policy:'exact',focus:true}));if(focused.response?.status!=='ok')throw Error('Actual selection focus refused');
+      const unsubscribe=editor.subscribe(event=>events.push(structuredClone(event)));if(typeof unsubscribe!=='function')throw Error('Actual subscription refused');fixture.unsubscribe=unsubscribe;
+      fixture.inspect=async()=>{const tree=readTree(),snapshot=await done(editor.submit({kind:'snapshot',stamp:editor.capture(),max_bytes:2097152}));if(snapshot.response?.status!=='ok'||snapshot.response.value.kind!=='snapshot')throw Error('Actual snapshot refused');const value=snapshot.response.value;const released=await done(editor.submit({kind:'release_snapshot',handle:value.handle}));if(released.response?.status!=='ok')throw Error('Actual snapshot release refused');return {...tree,canonical:value.canonical_json,context:editor.context(),paint:fixture.paint(),geometryKinds:[...geometryKinds],events:structuredClone(events)};};
+      ui.refresh();await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+      return {scope:'Actual packaged SDK2/WASM/DOM/UI and static toolbar:[]; geometry is observed, never replaced.',loading,before:await fixture.inspect()};
+    });
+    records.get(page).emptyToolbar={initial};
+    const hidden={connected:true,hidden:true,tabIndex:-1,rects:0,width:0,height:0,left:'',top:''};
+    expect(initial.loading.phase).toBe('loading');expect(initial.loading.paint).toEqual(hidden);expect(initial.before.paint).toEqual(hidden);
+    expect(initial.before.geometryKinds).not.toContain('selection');
+    const editor=page.locator('#empty-toolbar-editor');await expect(editor).toBeFocused();
+    await page.keyboard.press('Shift+Tab');await expect(page.locator('#ui-before')).toBeFocused();
+    await page.keyboard.press('Tab');await expect(editor).toBeFocused();
+    await page.keyboard.press('Shift+Tab');await expect(page.locator('#ui-before')).toBeFocused();
+    const after=await page.evaluate(async()=>{const f=window.emptyToolbarFixture;const active=document.activeElement;f.toolbar.focus();const emptyCannotFocus=document.activeElement===active;f.ui.refresh();await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));return {emptyCannotFocus,observation:await f.inspect()};});
+    records.get(page).emptyToolbar.after=after;
+    expect(after.emptyCannotFocus).toBe(true);expect(after.observation.paint).toEqual(hidden);expect(after.observation.geometryKinds).not.toContain('selection');
+    for(const key of ['state','rows','canonical','context','events'])expect(after.observation[key],`empty-toolbar presentation preserves actual ${key}`).toEqual(initial.before[key]);
+  } finally {
+    const cleanup=await page.evaluate(async()=>{const f=window.emptyToolbarFixture;if(!f)return null;try{try{if(f.ui&&typeof f.ui.destroy==='function')await f.ui.destroy().settled;}finally{f.unsubscribe?.();if(f.editor){const receipt=f.editor.destroy();if(receipt.sdk.status==='queued')await receipt.sdk.completion;}}return {ui:f.ui?.resources(),mounted:f.editor?.resources(),native:f.editor?.nativeResources()};}finally{f.wrapper.remove();delete window.emptyToolbarFixture;}});
+    if(cleanup){records.get(page).cleanup.push({scope:'Actual standalone empty-toolbar owner',...cleanup});expect(cleanup.ui).toEqual({listeners:0,observers:0,animationFrames:0,subscriptions:0,hostRequests:0,continuations:0,dragGestures:0,pointerCaptures:0});expect(cleanup.mounted.selection).toEqual({bookmarks:0,restoreTickets:0,activePointers:0,animationFrames:0});expect(cleanup.mounted.hostRequests).toEqual({pending:0,focusContinuations:0});expect(cleanup.mounted.clipboard).toEqual({pending:0,continuations:0,retainedTextBytes:0});expect(cleanup.mounted.dom).toEqual({listeners:0,observers:0,continuations:0,retainedInputBytes:0,retainedRecoveryRegions:0});for(const key of ['sessions','listeners','queued_mutations','queued_bytes','pending_tickets','host_requests','task_continuations','original_input_bytes'])expect(cleanup.mounted.sdk[key],key).toBe(0);expect(cleanup.native).toEqual({sessions:0,snapshot_handles:0,snapshot_bytes:'0',protected_cursors:0});}
+  }
+});
+
+test('ET02 controlled presentation context: populated toolbar returns and empty toolbar stops geometry again',async({page})=>{
+  const observation=await page.evaluate(async()=>{
+    const {createEditorUi}=await import('@klenwriter/editor-ui');
+    const wrapper=document.createElement('section'),element=document.createElement('div'),slots=Object.fromEntries(['toolbar','gutter','entry'].map(key=>[key,document.createElement('div')]));
+    wrapper.append(slots.toolbar,element,slots.gutter,slots.entry);document.querySelector('#ui-mounts').append(wrapper);
+    // Controlled presentation data only: no native session/command or context-change claim.
+    let phase=0,releaseReady;const reads=[],stamp={session:'controlled',generation:'1',revision:'0',selection_epoch:'0',history_epoch:'0'};
+    const editor={ready:new Promise(resolve=>{releaseReady=resolve;}),capture:()=>stamp,context:()=>({capability_digest:String(phase)}),
+      read:request=>({status:'ok',value:request.kind==='state'?{kind:'state',state:{stamp,root:'controlled-root',selection:null}}:{kind:'catalog',commands:[]}}),query:()=>{throw Error('Unavailable presentation action must not query or execute');},subscribe:()=>()=>{},
+      hostRequests:{status:()=>({status:'available'})},geometry:{read:request=>{reads.push(request.kind);return {status:'dom_refused',diagnostic:{code:'dom.selection_missing',phase:'geometry',stamp,node:null,typeId:null,publication:'none'}};}}};
+    const action={kind:'command',id:'controlled',label:{ru:'Недоступно',en:'Unavailable'},command:()=>({status:'unavailable',code:'controlled.no_command',message:{ru:'Недоступно',en:'Unavailable'}})};
+    const ui=createEditorUi({editor,editorElement:element,slots,locale:'en',profile:()=>({toolbar:phase===1?[action]:[],insertions:[],blockActions:[],moves:()=>[]})});
+    if('status'in ui)throw Error('Controlled presentation UI refused');
+    const toolbar=slots.toolbar.querySelector('[role=toolbar]'),frames=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    const inspect=()=>({hidden:toolbar.hidden,tabIndex:toolbar.tabIndex,rects:toolbar.getClientRects().length,buttons:toolbar.querySelectorAll('button').length,selectionReads:reads.filter(kind=>kind==='selection').length,left:toolbar.style.left,top:toolbar.style.top});
+    try {
+      const loading=inspect();releaseReady({status:'ready'});if((await ui.ready).status!=='ready')throw Error('Controlled ready refused');await frames();const empty=inspect();
+      phase=1;ui.refresh();await frames();const populated={...inspect(),sameToolbar:slots.toolbar.querySelector('[role=toolbar]')===toolbar,rovingStops:toolbar.querySelectorAll('button[tabindex="0"]').length};
+      phase=2;ui.refresh();await frames();const emptyAgain={...inspect(),sameToolbar:slots.toolbar.querySelector('[role=toolbar]')===toolbar};
+      return {scope:'Controlled presentation-only context transitions; not native/WASM product execution evidence.',loading,empty,populated,emptyAgain};
+    } finally {await ui.destroy().settled;wrapper.remove();}
+  });
+  records.get(page).controlledEmptyToolbar=observation;
+  for(const point of [observation.loading,observation.empty,observation.emptyAgain]){expect(point.hidden).toBe(true);expect(point.tabIndex).toBe(-1);expect(point.rects).toBe(0);expect(point.buttons).toBe(0);expect(point.left).toBe('');expect(point.top).toBe('');}
+  expect(observation.empty.selectionReads).toBe(0);expect(observation.populated.hidden).toBe(false);expect(observation.populated.rects).toBeGreaterThan(0);expect(observation.populated.buttons).toBe(1);expect(observation.populated.rovingStops).toBe(1);expect(observation.populated.sameToolbar).toBe(true);expect(observation.populated.selectionReads).toBeGreaterThan(0);expect(observation.emptyAgain.sameToolbar).toBe(true);expect(observation.emptyAgain.selectionReads).toBe(observation.populated.selectionReads);
+});
+
+const gutterSourcePath='contracts/mounted-e2e/v1/interaction-literals.json',gutterSourceBytes=readFileSync(gutterSourcePath);
+const gutterSource=JSON.parse(gutterSourceBytes).routes.find(value=>value.routeId==='drag-pointer-move');
+for(const layout of [
+  {id:'centered640',width:640,leftEdge:false,beforeEditor:false,floating:true},
+  {id:'left-edge260 fallback',width:260,leftEdge:true,beforeEditor:false,floating:false},
+  {id:'centered640 earlier gutter slot',width:640,leftEdge:false,beforeEditor:true,floating:true},
+])test(`GL01 ${layout.id}: actual gutter placement settles at1200px without resize-driven native queries`,async({page})=>{
+  await page.setViewportSize({width:1200,height:848});
+  records.get(page).frozen.push({path:gutterSourcePath,bytes:gutterSourceBytes.length,sha256:receiptHash(gutterSourceBytes)});
+  try {
+    const observation=await page.evaluate(async({layout,source})=>{
+      const [{loadSdkV2,sdkBuildId},{mountEditor},{createEditorUi},{kwdjBasicRenderers},{kwdjCommand}]=await Promise.all([
+        import('@klenwriter/editor-sdk'),import('@klenwriter/editor-dom'),import('@klenwriter/editor-ui'),import('@klenwriter/editor-kwdj/dom'),import('@klenwriter/editor-kwdj')]);
+      const module=await loadSdkV2(),job=window.ui42.cases.find(value=>value.job.id==='V01-forward').job;
+      const wrapper=document.createElement('section');wrapper.className='ui-fixture';wrapper.style.maxWidth=`${layout.width}px`;
+      if(layout.leftEdge){wrapper.style.marginLeft='0';wrapper.style.marginRight='0';}
+      const element=document.createElement('div');element.className='ui-fixture-editor';element.setAttribute('aria-label','Gutter placement document');
+      const slots=Object.fromEntries(['toolbar','gutter','entry'].map(key=>[key,document.createElement('div')]));
+      wrapper.append(slots.toolbar,...(layout.beforeEditor?[slots.gutter,element]:[element,slots.gutter]),slots.entry);document.querySelector('#ui-mounts').append(wrapper);
+      const fixture=window.gutterPlacementFixture={wrapper,module,editor:null,ui:null,unsubscribe:null},counts={read:0,query:0,geometry:0},events=[],results=[],commands=[];
+      const editor=fixture.editor=mountEditor({element,editor:{input:new TextEncoder().encode(source.input.utf8),options:{abi:'editor-sdk/2',build_id:sdkBuildId,profile:job.profile,admission:'validate',access:'editable',registry_json:job.registry_json,profile_options_json:job.profile_options_json},loader:()=>Promise.resolve(module)},renderers:kwdjBasicRenderers});
+      if((await editor.ready).status!=='ready')throw Error('Actual gutter placement owner not ready');
+      const done=async result=>result.status==='queued'?{status:'queued',response:await result.completion}:result;
+      const tree=()=>{const response=editor.read({kind:'state'});if(response.status!=='ok'||response.value.kind!=='state')throw Error('Actual gutter state unavailable');const state=response.value.state,rows=[],queue=[{node:state.root,path:[]}];for(let index=0;index<queue.length;index++){if(index>=128)throw Error('Finite actual gutter tree');const next=queue[index],reply=editor.read({kind:'node',stamp:state.stamp,node:next.node});if(reply.status!=='ok'||reply.value.kind!=='node')throw Error('Actual gutter node unavailable');rows.push({path:next.path,node:reply.value.node});reply.value.node.children.forEach((node,i)=>queue.push({node,path:[...next.path,i]}));}return {state,rows};};
+      const initial=tree(),roles=Object.fromEntries(Object.entries(source.rolesBefore).map(([role,path])=>[role,initial.rows.find(row=>JSON.stringify(row.path)===JSON.stringify(path)).node.id]));
+      const resolve=value=>Array.isArray(value)?value.map(resolve):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([key,v])=>[key,['node','parent'].includes(key)?roles[v]??v:resolve(v)])):value;
+      for(const request of [{kind:'set_selection',selection:resolve(source.selectionSetup)},{kind:'set_stored_marks',marks:null}])if((await done(editor.submit({...request,stamp:editor.capture()}))).response?.status!=='ok')throw Error('Actual gutter selection/marks setup refused');
+      const bookmark=editor.selection.captureBookmark();if(bookmark.status!=='captured'||(await done(editor.selection.restoreBookmark(bookmark.bookmark,{policy:'exact',focus:true}))).response?.status!=='ok')throw Error('Actual gutter focus setup refused');
+      fixture.unsubscribe=editor.subscribe(event=>{if(events.length>=64)throw Error('Finite gutter event observations');events.push(structuredClone(event));});if(typeof fixture.unsubscribe!=='function')throw Error('Actual gutter subscription refused');
+      const inspect=async()=>{const data=tree(),snapshot=await done(editor.submit({kind:'snapshot',stamp:editor.capture(),max_bytes:4096}));if(snapshot.response?.status!=='ok'||snapshot.response.value.kind!=='snapshot')throw Error('Actual gutter snapshot refused');const value=snapshot.response.value;if((await done(editor.submit({kind:'release_snapshot',handle:value.handle}))).response?.status!=='ok')throw Error('Actual gutter snapshot release refused');return {...data,canonical:value.canonical_json,context:editor.context(),events:structuredClone(events),html:element.innerHTML};};
+      const before=await inspect();
+      // Only observe calls originating in UI; every response is delegated unchanged.
+      const count=key=>{if(++counts[key]>4096)throw Error('Finite actual gutter UI call observations');};
+      const observed=new Proxy(editor,{get(target,key){if(key==='geometry')return {read(request){count('geometry');return target.geometry.read(request);}};if(key==='read'||key==='query')return request=>{count(key);return target[key](request);};const value=Reflect.get(target,key,target);return typeof value==='function'?value.bind(target):value;}});
+      const ui=fixture.ui=createEditorUi({editor:observed,editorElement:element,slots,locale:'en',profile:()=>({toolbar:[],insertions:[],blockActions:[],moves:()=>[],drag:{move(captured,destination){commands.push({captured,destination});return kwdjCommand({kind:'move',node:captured.source.id,parent:destination.parent,before_index:destination.before_index});}}}),onResult:result=>{if(results.length>=16)throw Error('Finite actual gutter UI results');results.push(result);}});
+      if('status'in ui||(await ui.ready).status!=='ready')throw Error('Actual gutter UI not ready');
+      const gutter=slots.gutter.querySelector('.kw-ui-gutter'),rect=node=>{const r=node.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};};
+      const sample=()=>{const sourceGeometry=editor.geometry.read({kind:'block',stamp:editor.capture(),node:roles.B});if(sourceGeometry.status!=='measured'||!sourceGeometry.visible||!sourceGeometry.rects.length)throw Error('Actual source geometry unavailable');return {gutter:rect(gutter),slot:rect(slots.gutter),editor:rect(element),quote:rect(element.querySelector('blockquote')),source:sourceGeometry.rects[0],viewport:sourceGeometry.viewport,floating:gutter.classList.contains('kw-ui-floating'),position:getComputedStyle(gutter).position,maxWidth:getComputedStyle(gutter).maxWidth,counts:{...counts},animationFrames:ui.resources().animationFrames};};
+      const first=sample();await document.fonts.ready;
+      const frames=[];for(let i=0;i<24;i++){await new Promise(resolve=>requestAnimationFrame(resolve));frames.push(sample());}
+      return {scope:'Actual packaged SDK2/WASM/DOM/UI; passive presentation observations, no replacement geometry or command execution.',layout,viewport:{width:innerWidth,height:innerHeight},first,frames,before,after:await inspect(),events,results,commands};
+    },{layout,source:gutterSource});
+    records.get(page).gutterPlacement=observation;
+    expect(observation.viewport).toEqual({width:1200,height:848});
+    for(const key of ['state','rows','canonical','context','events','html'])expect(observation.after[key],`placement preserves actual ${key}`).toEqual(observation.before[key]);
+    expect(observation.before.canonical).toBe(gutterSource.before.utf8);expect(observation.before.state.history).toEqual({undo_entries:'0',redo_entries:'0',retained_bytes:'0'});
+    expect(observation.events).toEqual([]);expect(observation.results).toEqual([]);expect(observation.commands).toEqual([]);
+    const stable=observation.frames.slice(8),reference=stable[0];expect(stable).toHaveLength(16);
+    for(const frame of [observation.first,...stable]){
+      expect(frame.floating).toBe(layout.floating);expect(frame.position).toBe(layout.floating?'fixed':'relative');
+      if(layout.floating){const expectedY=Math.max(frame.viewport.y+8,Math.min(frame.source.y,frame.viewport.y+frame.viewport.height-frame.gutter.height-8));expect(Math.abs(frame.gutter.y-expectedY)).toBeLessThanOrEqual(0.5);expect(Math.abs(frame.gutter.x+frame.gutter.width+8-frame.source.x)).toBeLessThanOrEqual(0.5);expect(frame.gutter.x).toBeGreaterThanOrEqual(frame.viewport.x+8);expect(frame.gutter.x+frame.gutter.width).toBeLessThanOrEqual(frame.source.x-7.5);expect(frame.gutter.width).toBeLessThanOrEqual(288);expect(frame.slot.height).toBe(0);}
+      else {expect(frame.gutter.x).toBe(frame.slot.x);expect(frame.gutter.width).toBeLessThanOrEqual(layout.width);expect(frame.slot.height).toBeGreaterThan(0);expect(frame.source.x-288-8).toBeLessThan(frame.viewport.x+8);}
+    }
+    if(layout.floating){expect(reference.source.x).toBeGreaterThanOrEqual(304);expect(reference.source.x).toBeLessThan(400);}
+    for(const frame of stable){for(const key of ['gutter','slot','editor','quote','source','counts'])expect(frame[key],`stable actual ${key}`).toEqual(reference[key]);expect(frame.animationFrames).toBe(0);}
+  } finally {
+    const cleanup=await page.evaluate(async()=>{const f=window.gutterPlacementFixture;if(!f)return null;try{try{if(f.ui&&typeof f.ui.destroy==='function')await f.ui.destroy().settled;}finally{f.unsubscribe?.();if(f.editor){const receipt=f.editor.destroy();if(receipt.sdk.status==='queued')await receipt.sdk.completion;}}return {ui:f.ui?.resources(),mounted:f.editor?.resources(),native:f.editor?.nativeResources()};}finally{f.wrapper.remove();delete window.gutterPlacementFixture;}});
+    if(cleanup){records.get(page).cleanup.push({scope:'Actual standalone gutter placement owner',...cleanup});expect(cleanup.ui).toEqual({listeners:0,observers:0,animationFrames:0,subscriptions:0,hostRequests:0,continuations:0,dragGestures:0,pointerCaptures:0});expect(cleanup.mounted.selection).toEqual({bookmarks:0,restoreTickets:0,activePointers:0,animationFrames:0});expect(cleanup.mounted.hostRequests).toEqual({pending:0,focusContinuations:0});expect(cleanup.mounted.clipboard).toEqual({pending:0,continuations:0,retainedTextBytes:0});expect(cleanup.mounted.dom).toEqual({listeners:0,observers:0,continuations:0,retainedInputBytes:0,retainedRecoveryRegions:0});for(const key of ['sessions','listeners','queued_mutations','queued_bytes','pending_tickets','host_requests','task_continuations','original_input_bytes'])expect(cleanup.mounted.sdk[key],key).toBe(0);expect(cleanup.native).toEqual({sessions:0,snapshot_handles:0,snapshot_bytes:'0',protected_cursors:0});}
+  }
+});
+
 for(const locale of ['ru','en'])test(`L01 ${locale}: localized labels, 32px targets and 200% layout retain visible focus`,async({page})=>{
   await page.setViewportSize({width:640,height:768});const id=await mounted(page,{case:'V01-forward',locale});
   const toolbar=root(page,id).getByRole('toolbar'),bold=control(page,id,'strong');await expect(toolbar).toHaveAccessibleName(locale==='ru'?'Форматирование текста':'Text formatting');

@@ -113,6 +113,7 @@ class Ui implements EditorUi {
     this.#document = configuration.editorElement.ownerDocument; this.#window = this.#document.defaultView!;
     this.#onResult = configuration.onResult;
     this.#toolbar = this.#node('div', 'kw-ui-toolbar'); this.#toolbar.setAttribute('role', 'toolbar');
+    this.#toolbar.hidden = true; this.#toolbar.tabIndex = -1;
     this.#gutter = this.#node('div', 'kw-ui-gutter'); this.#entry = this.#node('div', 'kw-ui-entry');
     this.#status = this.#node('div', 'kw-ui-status'); this.#status.setAttribute('role', 'status'); this.#status.setAttribute('aria-live', 'polite');
     this.#blockLabel = this.#node('div', 'kw-ui-context');
@@ -414,7 +415,7 @@ class Ui implements EditorUi {
       next = control.reason.nextSibling;
     }
     for (const [key, control] of map) if (!live.has(key)) { control.button.remove(); control.reason.remove(); map.delete(key); }
-    if (scope === 'toolbar') { this.#rove([...map.values()]); this.#toolbar.tabIndex = map.size ? -1 : 0; }
+    if (scope === 'toolbar') { this.#toolbar.hidden = map.size === 0; this.#rove([...map.values()]); this.#toolbar.tabIndex = -1; }
   }
   #labels(): void {
     this.#toolbar.setAttribute('aria-label', label('toolbar', this.#locale));
@@ -498,13 +499,16 @@ class Ui implements EditorUi {
     this.#positionToolbar(context);
     const clear = () => { this.#gutter.classList.remove('kw-ui-floating'); this.#gutter.style.removeProperty('left'); this.#gutter.style.removeProperty('top'); };
     if (!context.block) { clear(); return; }
+    // Fit the intended presentation before measuring either source or gutter:
+    // an earlier host slot leaving flow can also move the source block.
+    this.#gutter.classList.add('kw-ui-floating');
     const result = this.#options!.editor.geometry.read({ kind: 'block', stamp: context.state.stamp, node: context.block.node.id });
     if (result.status !== 'measured' || !result.visible || !result.rects.length) { clear(); return; }
     const first = result.rects[0]!, box = this.#gutter.getBoundingClientRect();
     const x = first.x - box.width - 8, y = Math.max(result.viewport.y + 8, Math.min(first.y, result.viewport.y + result.viewport.height - box.height - 8));
     if (![x, y, box.width, box.height].every(Number.isFinite) || x < result.viewport.x + 8
       || box.height > result.viewport.height - 16 || box.width <= 0) { clear(); return; }
-    this.#gutter.classList.add('kw-ui-floating'); this.#gutter.style.left = `${Math.round(x * 2) / 2}px`; this.#gutter.style.top = `${Math.round(y * 2) / 2}px`;
+    this.#gutter.style.left = `${Math.round(x * 2) / 2}px`; this.#gutter.style.top = `${Math.round(y * 2) / 2}px`;
   }
   #clearToolbarPlacement(): void {
     this.#toolbar.classList.remove('kw-ui-toolbar-floating');
@@ -512,6 +516,7 @@ class Ui implements EditorUi {
   }
   #positionToolbar(context: UiActionContext): void {
     this.#clearToolbarPlacement();
+    if (!this.#toolbarControls.size) return;
     const result = this.#options!.editor.geometry.read({ kind: 'selection', stamp: context.state.stamp });
     // Unavailable/busy/stale/unsupported geometry keeps the original entry;
     // geometry never supplies authority to capture or execute a command.

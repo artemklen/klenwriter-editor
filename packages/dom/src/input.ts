@@ -44,6 +44,8 @@ export function attachInput(options: InputConfiguration): InputOwner {
   const { element,view } = options, doc = element.ownerDocument;
   const removals: (() => void)[] = [];
   let destroyed = false, pending: Pending | null = null;
+  // One held physical shortcut, not a native ticket or a retained DOM event.
+  let historyKeyHeld: 'undo'|'redo'|null = null;
   const failure = (code: DomRefusal['diagnostic']['code']) => domRefusal(code,'command',options.capture());
   const listen = (target: EventTarget,name: string,callback: EventListener,capture=false) => {
     target.addEventListener(name,callback,capture); removals.push(() => target.removeEventListener(name,callback,capture));
@@ -224,6 +226,35 @@ export function attachInput(options: InputConfiguration): InputOwner {
     return null;
   }
   const composition=new CompositionOwner({...options,submit:options.submitComposition,ordinary:input=>ordinaryBeforeInput(input,true)});
+  function historyKeydown(event:KeyboardEvent):void {
+    if(destroyed || !event.isTrusted)return;
+    const shortcut=event.code==='KeyZ' && !event.altKey && event.ctrlKey!==event.metaKey;
+    if(!shortcut){historyKeyHeld=null;return;}
+    if(event.defaultPrevented || !event.cancelable || !doc.hasFocus() || !options.selection.ownsFocus()
+      || !event.target || !element.contains(event.target as Node))return;
+    // Own the browser default even when an edit guard refuses this shortcut.
+    event.preventDefault();
+    if(event.repeat)return;
+    const direction=event.shiftKey?'redo':'undo';historyKeyHeld=direction;
+    if(!options.canEdit()){refused('dom.mode_blocked');return;}
+    if(options.observationBusy?.() || options.busy()){refused('dom.busy');return;}
+    if(event.isComposing || event.keyCode===229 || composition.isProtected() || composition.isCommitting() || view.hasProvisional()){
+      refused('dom.composition_conflict');return;
+    }
+    options.selection.invalidate(false,event);options.selection.cancel();
+    const selection=syncSelection();
+    if(!selection || isDomRefusal(selection))return;
+    const stamp=options.capture(),state=options.readState(),context=options.context();
+    if(!stamp || !state){refused('dom.not_ready');return;}
+    if(!equal(stamp,state.stamp) || !equal(selection,state.selection) || !equal(stamp,options.capture())
+      || !equal(context,options.context())){refused('dom.stale_selection');return;}
+    if(destroyed || !doc.hasFocus() || !options.selection.ownsFocus() || !options.canEdit()
+      || options.observationBusy?.() || options.busy() || composition.isProtected() || view.hasProvisional())return;
+    if(!equal(stamp,options.capture()) || !equal(context,options.context())){refused('dom.stale_selection');return;}
+    // This is the original key's input submission, not a synthetic beforeinput
+    // observation. The native engine owns availability, history and selection.
+    options.submit({kind:'history',stamp:stamp as StampDto,direction},null);
+  }
   // Internal block moves use the outside UI's pointer capability, never HTML
   // drag data. Refuse before the browser can insert/navigate or delete a source.
   // Capture also covers genuine descendants that stop bubbling. Payloads are
@@ -236,6 +267,11 @@ export function attachInput(options: InputConfiguration): InputOwner {
   listen(element,'beforeinput',event=>{
     const input=event as InputEvent;
     if(destroyed)return;
+    if(historyKeyHeld!==null && input.inputType===(historyKeyHeld==='undo'?'historyUndo':'historyRedo')){
+      if(input.cancelable)input.preventDefault();
+      return; // A UA echo of the held shortcut cannot apply history twice.
+    }
+    historyKeyHeld=null;
     if(input.inputType==='insertFromDrop'||input.inputType==='deleteByDrag'){
       if(input.cancelable)input.preventDefault();
       refused('dom.command_unsupported');return;
@@ -244,14 +280,16 @@ export function attachInput(options: InputConfiguration): InputOwner {
     if(!composition.beforeInput(input))ordinaryBeforeInput(input);
   });
   listen(element,'input',event=>{const input=event as InputEvent;if(!destroyed && !composition.input(input))reconcile(input);});
-  listen(element,'compositionstart',event=>{if(!destroyed)composition.start(event as CompositionEvent);});
+  listen(element,'compositionstart',event=>{historyKeyHeld=null;if(!destroyed)composition.start(event as CompositionEvent);});
   listen(element,'compositionupdate',event=>{if(!destroyed)composition.update(event as CompositionEvent);});
   listen(element,'compositionend',event=>{if(!destroyed)composition.end(event as CompositionEvent);});
-  listen(element,'keydown',event=>{if(!destroyed)composition.keydown(event as KeyboardEvent);});
-  listen(element,'keyup',event=>{if(!destroyed)composition.keyup(event as KeyboardEvent);});
-  listen(element,'blur',event=>{if(!destroyed)composition.blur(event);});
+  listen(element,'keydown',event=>{if(!destroyed){composition.keydown(event as KeyboardEvent);historyKeydown(event as KeyboardEvent);}});
+  listen(element,'keyup',event=>{if((event as KeyboardEvent).code==='KeyZ')historyKeyHeld=null;if(!destroyed)composition.keyup(event as KeyboardEvent);});
+  listen(element,'pointerdown',()=>{historyKeyHeld=null;},true);
+  listen(element,'blur',event=>{historyKeyHeld=null;if(!destroyed)composition.blur(event);});
+  if(doc.defaultView?.addEventListener)listen(doc.defaultView,'blur',()=>{historyKeyHeld=null;});
   return {
-    destroy() { if (destroyed) return; destroyed=true;pending=null;composition.destroy();for(const remove of removals.splice(0))remove(); },
+    destroy() { if (destroyed) return; destroyed=true;pending=null;historyKeyHeld=null;composition.destroy();for(const remove of removals.splice(0))remove(); },
     listeners:()=>removals.length,isProtected:()=>composition.isProtected(),isCommitting:()=>composition.isCommitting(),
     retained:reason=>composition.retained(reason),resources:()=>composition.resources(),
     externalSubmission:(request,result)=>composition.externalSubmission(request,result),
