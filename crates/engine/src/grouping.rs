@@ -238,6 +238,9 @@ pub(crate) fn prepare<V: CandidateRead<Id = NodeId>, E>(
                 inserted.as_ref(),
             )
         }
+        // A forest splice is an isolated semantic action, never legacy typing
+        // proof, even when its current payload happens to contain one Text.
+        Operation::ReplaceInlineFragment { .. } => return Ok(None),
         _ => return Ok(None),
     };
     let (Some((a, x)), Some((b, y))) = (start, end) else {

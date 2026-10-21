@@ -156,6 +156,26 @@ where
     P: CommandProvider + RegistryProfile,
     A: BridgeAdapter<P>,
 {
+    fn clipboard_context<V: editor_core::candidate::CandidateRead<Id = NodeId>>(
+        &self,
+        context: &P::Context,
+        view: &V,
+        selection: editor_core::positions::Selection<NodeId>,
+        work: &mut WorkMeter,
+    ) -> Result<crate::ClipboardContextData, DiagnosticDto> {
+        self.inner.clipboard_context(context, view, selection, work)
+    }
+    fn selection_fragment<V: editor_core::candidate::CandidateRead<Id = NodeId>>(
+        &self,
+        context: &P::Context,
+        view: &V,
+        selection: editor_core::positions::Selection<NodeId>,
+        max_bytes: u32,
+        work: &mut WorkMeter,
+    ) -> Result<crate::SelectionFragmentData, DiagnosticDto> {
+        self.inner
+            .selection_fragment(context, view, selection, max_bytes, work)
+    }
     fn selection_text<V: editor_core::candidate::CandidateRead<Id = NodeId>>(
         &self,
         view: &V,

@@ -18,10 +18,10 @@ pub struct SelectionTextData {
     pub empty: bool,
     pub selected_atoms: Vec<NodeId>,
 }
-struct Read<'a, P: CommandProvider> {
-    session: &'a Session<P>,
-    root: NodeId,
-    roots: &'a [NodeId],
+pub(crate) struct Read<'a, P: CommandProvider> {
+    pub(crate) session: &'a Session<P>,
+    pub(crate) root: NodeId,
+    pub(crate) roots: &'a [NodeId],
 }
 impl<P: CommandProvider> CandidateRead for Read<'_, P> {
     type Id = NodeId;
@@ -116,6 +116,13 @@ impl<P: CommandProvider, A: BridgeAdapter<P>> Bridge<P, A> {
             return fatal.into();
         }
         match request {
+            BridgeRequestV2::ClipboardContext(ClipboardContextRequestV2::ClipboardContext {
+                stamp,
+            }) => self.clipboard_context(&stamp),
+            BridgeRequestV2::SelectionFragment(SelectionFragmentRequestV2::SelectionFragment {
+                stamp,
+                max_bytes,
+            }) => self.selection_fragment(&stamp, max_bytes),
             BridgeRequestV2::Common(request) => self.call(request).into(),
             BridgeRequestV2::TextWindow(TextWindowRequestV2::TextWindow {
                 stamp,

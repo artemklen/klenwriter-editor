@@ -92,7 +92,7 @@ fn inventory(
 fn main() {
     let kwdj = inventory(
         &editor_kwdj::registry::registry_descriptor(),
-        &[editor_kwdj::registry::base_registration()],
+        &[editor_kwdj::registry::base_registration_v2()],
     );
     // Static catalog comes from native command targets and the same compiled
     // registration witness; no JavaScript target registry is authored here.

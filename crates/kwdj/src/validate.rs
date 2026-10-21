@@ -99,6 +99,53 @@ pub(crate) fn validate(
     )
 }
 
+/// Validate an ID-free clipboard forest directly, without manufacturing a
+/// complete document or weakening the canonical profile's leaf/domain rules.
+pub(crate) fn validate_fragment(
+    roots: &[Node],
+    profile: Profile,
+    inline: bool,
+    identities: &dyn IdentityResolver,
+    limits: Limits,
+    work: &mut WorkMeter,
+) -> Result<(), KwdjError> {
+    let view = WireView { roots };
+    let mut state = State {
+        profile,
+        identities,
+        node_count: 0,
+        limits,
+        media: Vec::new(),
+        references: Vec::new(),
+        resolved_media: HashSet::new(),
+        resolved_references: HashSet::new(),
+        work: Some(work),
+        known_nodes: false,
+        resolve_identities: true,
+        collect_manifests: false,
+    };
+    let expected = if inline {
+        Expected::Inline
+    } else {
+        match profile {
+            Profile::Prose => Expected::ProseBlock,
+            Profile::Poetry => Expected::PoetryRoot,
+        }
+    };
+    for (index, node) in roots.iter().enumerate() {
+        visit(
+            &view,
+            node,
+            &index_path("/content", index),
+            1,
+            expected,
+            Ancestry::default(),
+            &mut state,
+        )?;
+    }
+    Ok(())
+}
+
 /// One authoritative business-rule walker for typed wire and borrowed candidates.
 pub(crate) fn validate_view<'a, V: ValidationView>(
     view: &V,

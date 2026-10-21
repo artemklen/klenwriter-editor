@@ -12,8 +12,10 @@ bounded text-window reads и controlled/public types; slash browser cases вхо
 pointer handle поверх того же native Move и клавиатурного меню. `npm run test:drag`
 проверяет native/sealed semantics и controlled owner/types; `test:drag:browser`
 проверяет mounted geometry, pointer и lifecycle во всех трёх движках.
-Clipboard47, полная a11y66 и vanilla alpha сохраняют отдельные
-задачи и acceptance gates.
+[Clipboard47](docs/clipboard.md) добавляет optional profile decode, raw recovery и
+atomic insert; `npm run test:clipboard` включает focused Node и три browser engines.
+Installed Chrome/Safari сохраняют отдельную обязательную приёмку. Полная a11y66
+и vanilla alpha сохраняют отдельные задачи и acceptance gates.
 `npm run test:mounted-corpus` добавляет [mounted corpus45](docs/mounted-corpus.md):
 независимые source literals, три browser engines, original public receipts,
 save/destroy/fresh reopen и отдельные integrity/requirement результаты. Lane

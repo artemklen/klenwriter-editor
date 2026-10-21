@@ -4,12 +4,15 @@ import type { ClipboardConfiguration, ClipboardFailure, ClipboardOutcome, Clipbo
 import type { DomView } from './view.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
 import { ownConfiguration } from './ownership.js';
+import { attachPaste, type ClipboardTarget } from './clipboard-paste.js';
+import type { ClipboardRecoveryTransfer, ClipboardPayload } from './types.js';
 
 export interface ClipboardOwner extends MountedClipboardController {
   cancel(code: DomCode): void;
   destroy(): void;
   resources(): ClipboardResourceCounts;
   listeners(): number;
+  transferRecovery(): ClipboardRecoveryTransfer;
 }
 export interface ClipboardOwnerConfiguration extends ClipboardConfiguration {
   readonly element: HTMLElement;
@@ -20,13 +23,13 @@ export interface ClipboardOwnerConfiguration extends ClipboardConfiguration {
   readonly readState: () => DeepReadonly<StateDto> | null;
   readonly read: (request: ReadRequestV2) => ResponseV2 | DomRefusal;
   readonly query: (request: QueryRequest) => Response | DomRefusal;
-  readonly submit: (request: MountedMutation) => Submission | DomRefusal;
+  readonly submit: (request: MountedMutation, validate?: () => DomRefusal | null) => Submission | DomRefusal;
   readonly intent: () => bigint;
   /** Pure preflight: lifecycle, interaction/access, busy and provisional input. */
-  readonly guard: (action: 'copy' | 'cut') => DomRefusal | null;
+  readonly guard: (action: 'copy' | 'cut' | 'paste') => DomRefusal | null;
   readonly report: (failure: DomRefusal) => unknown;
 }
-interface Target {
+interface Target extends ClipboardTarget {
   readonly stamp: DeepReadonly<StampDto>;
   readonly context: DeepReadonly<SessionContextV2>;
   readonly selection: DeepReadonly<SelectionDto>;
@@ -40,6 +43,7 @@ interface Operation {
   target: Target | null;
   text: string | null;
   bytes: number;
+  html: string | null;
   timer: number | null;
   cancelReason: DomCode | null;
   settleWrite: ((settlement: WriteSettlement) => void) | null;
@@ -62,7 +66,7 @@ export function attachClipboard(options: ClipboardOwnerConfiguration): Clipboard
   function release(operation: Operation) {
     if (operation.timer !== null) win.clearTimeout(operation.timer);
     operation.timer = null; operation.settleWrite = null;
-    operation.text = null; operation.bytes = 0; operation.target = null;
+    operation.text = null; operation.html = null; operation.bytes = 0; operation.target = null;
     if (pending === operation) pending = null;
   }
   function notify(result: ClipboardOutcome): ClipboardOutcome {
@@ -99,11 +103,14 @@ export function attachClipboard(options: ClipboardOwnerConfiguration): Clipboard
     if (isDomRefusal(owned)) return failure('dom.stale_selection');
     return same(owned.selection, target.selection) ? null : failure('dom.stale_selection');
   }
-  function writer(): ((text: string) => Promise<void>) | null {
-    if (options.writeText) return options.writeText;
+  function writer(rich: boolean): ((payload: ClipboardPayload) => Promise<void>) | null {
+    if (options.write) return options.write;
+    if (!rich && options.writeText) return payload => options.writeText!(payload.text);
     try {
       const clipboard = win.navigator.clipboard;
-      return clipboard && typeof clipboard.writeText === 'function' ? text => clipboard.writeText(text) : null;
+      if (rich) return clipboard && typeof clipboard.write === 'function' && typeof win.ClipboardItem === 'function'
+        ? payload => clipboard.write([new win.ClipboardItem({'text/plain': new win.Blob([payload.text], {type: 'text/plain'}), 'text/html': new win.Blob([payload.html!], {type: 'text/html'})})]) : null;
+      return clipboard && typeof clipboard.writeText === 'function' ? payload => clipboard.writeText(payload.text) : null;
     } catch { return null; }
   }
   function waitForWrite(operation: Operation, write: Promise<void>): Promise<WriteSettlement> {
@@ -120,9 +127,9 @@ export function attachClipboard(options: ClipboardOwnerConfiguration): Clipboard
   }
   async function run(action: Operation['action'], event?: ClipboardEvent): Promise<ClipboardOutcome> {
     if (destroyed) return outcome(action, 'refused', 'not_attempted', failure('dom.disposed'));
-    if (pending) return outcome(action, 'refused', 'not_attempted', failure('dom.busy'));
+    if (pending || pasteOwner.busy()) return outcome(action, 'refused', 'not_attempted', failure('dom.busy'));
     const operation: Operation = { action, phase: 'preflight', target: null, text: null, bytes: 0,
-      timer: null, cancelReason: null, settleWrite: null };
+      timer: null, cancelReason: null, settleWrite: null, html: null };
     pending = operation;
     let result: ClipboardOutcome, clipboard: ClipboardOutcome['clipboard'] = 'not_attempted';
     let command: CommandDto | null = null, submission: Submission | null = null;
@@ -143,6 +150,17 @@ export function attachClipboard(options: ClipboardOwnerConfiguration): Clipboard
         operation.bytes = new TextEncoder().encode(operation.text).byteLength;
         if (operation.bytes > MAX_TEXT_BYTES) return outcome(action, 'refused', clipboard, failure('dom.selection_limit'));
       }
+      if (options.codec?.encode) {
+        const projection = options.read({kind: 'selection_fragment', stamp: target.stamp as StampDto, max_bytes: 2 * MAX_TEXT_BYTES});
+        if (isDomRefusal(projection) || projection.status !== 'ok' || projection.value.kind !== 'selection_fragment'
+          || projection.value.format_id !== options.codec.fragmentFormat || !same(projection.value.stamp, target.stamp)
+          || !same(projection.value.selection, target.selection)) return outcome(action, 'refused', clipboard, failure('dom.command_unsupported'));
+        const encoded = options.codec.encode(Object.freeze({fragment: Object.freeze({formatId: projection.value.format_id, json: projection.value.fragment_json}), text: operation.text!, sessionContext: target.context}));
+        if (encoded.status !== 'encoded' || typeof encoded.html !== 'string' || encoded.html.length > 2 * MAX_TEXT_BYTES) return outcome(action, 'refused', clipboard, failure('dom.presentation_unsupported'));
+        operation.html = encoded.html;
+        operation.bytes += new TextEncoder().encode(encoded.html).byteLength;
+        if (operation.bytes > 4 * MAX_TEXT_BYTES) return outcome(action, 'refused', clipboard, failure('dom.selection_limit'));
+      }
       if (action === 'cut') {
         try { command = options.bindings.deleteSelection ? ownConfiguration(options.bindings.deleteSelection()) : null; } catch { command = null; }
         if (!command) return outcome(action, 'refused', clipboard, failure('dom.command_unsupported'));
@@ -154,19 +172,19 @@ export function attachClipboard(options: ClipboardOwnerConfiguration): Clipboard
       }
       const beforeWrite = current(operation);
       if (beforeWrite) return outcome(action, 'refused', clipboard, beforeWrite);
-      const writeText = writer();
+      const writeText = writer(operation.html !== null);
       if (!writeText) return outcome(action, 'refused', clipboard, failure('dom.clipboard_unavailable'));
       // This payload is observation only. setData is never an OS write receipt.
-      if (event?.clipboardData) { try { event.clipboardData.setData('text/plain', operation.text!); } catch { /* Platform writer still decides completion. */ } }
+      if (event?.clipboardData) { try { event.clipboardData.setData('text/plain', operation.text!); if (operation.html !== null) event.clipboardData.setData('text/html', operation.html); } catch { /* Platform writer still decides completion. */ } }
       operation.phase = 'write'; clipboard = 'unconfirmed';
       let write: Promise<void>;
       try {
-        write = writeText(operation.text!);
+        write = writeText(Object.freeze({text: operation.text!, ...(operation.html === null ? {} : {html: operation.html})}));
         if (!write || typeof write.then !== 'function') throw new TypeError('clipboard writer did not return a promise');
       } catch { return outcome(action, 'write_failed', clipboard, failure('dom.clipboard_write_failed')); }
       const completion = await waitForWrite(operation, write);
       if (operation.timer !== null) win.clearTimeout(operation.timer);
-      operation.timer = null; operation.settleWrite = null; operation.text = null; operation.bytes = 0;
+      operation.timer = null; operation.settleWrite = null; operation.text = null; operation.html = null; operation.bytes = 0;
       if (completion.kind !== 'confirmed') {
         const code = completion.kind === 'cancelled' ? completion.code : completion.kind === 'timeout' ? 'dom.clipboard_timeout' : 'dom.clipboard_write_failed';
         return outcome(action, 'write_failed', clipboard, failure(code));
@@ -177,7 +195,7 @@ export function attachClipboard(options: ClipboardOwnerConfiguration): Clipboard
       if (beforeDelete) return outcome(action, 'copied_but_not_cut', clipboard, beforeDelete);
       operation.phase = 'native';
       // No await/callback between final target check and this one native call.
-      const submitted = options.submit({ kind: 'command', stamp: target.stamp as StampDto, command: command!, history_hint: { kind: 'isolated' } });
+      const submitted = options.submit({ kind: 'command', stamp: target.stamp as StampDto, command: command!, history_hint: { kind: 'isolated' } }, () => current(operation));
       if (isDomRefusal(submitted)) return outcome(action, 'copied_but_not_cut', clipboard, submitted);
       submission = submitted;
       const response = submitted.status === 'completed' ? submitted.response : await submitted.completion;
@@ -196,10 +214,12 @@ export function attachClipboard(options: ClipboardOwnerConfiguration): Clipboard
   async function perform(action: Operation['action'], event?: ClipboardEvent): Promise<ClipboardOutcome> {
     return notify(await run(action, event));
   }
+  const pasteOwner = attachPaste({...options, captureTarget, copyBusy: () => pending !== null});
   function cancel(code: DomCode) {
+    pasteOwner.cancel(code);
     const operation = pending;
     if (!operation) return;
-    operation.cancelReason = code; operation.text = null; operation.bytes = 0; operation.target = null;
+    operation.cancelReason = code; operation.text = null; operation.html = null; operation.bytes = 0; operation.target = null;
     if (operation.phase === 'write') operation.settleWrite?.({ kind: 'cancelled', code });
     // A native queued command is not revocable. Its actual completion is kept.
   }
@@ -212,12 +232,19 @@ export function attachClipboard(options: ClipboardOwnerConfiguration): Clipboard
     element.addEventListener(action, listener);
     removals.push(() => element.removeEventListener(action, listener));
   }
+  const pasteListener = (event: Event) => {
+    if (destroyed || !event.target || !(event.target === element || element.contains(event.target as Node))) return;
+    event.preventDefault(); void pasteOwner.paste((event as ClipboardEvent).clipboardData);
+  };
+  element.addEventListener('paste', pasteListener);
+  removals.push(() => element.removeEventListener('paste', pasteListener));
   return {
+    paste: pasteOwner.paste, takeRecovery: pasteOwner.takeRecovery, releaseRecovery: pasteOwner.releaseRecovery, transferRecovery: pasteOwner.transfer,
     copy: () => perform('copy'), cut: () => perform('cut'), cancel,
-    destroy() { if (destroyed) return; destroyed = true; cancel('dom.disposed'); for (const remove of removals.splice(0)) remove(); if (pending?.phase !== 'native') { pending = null; } },
-    resources: () => Object.freeze({ pending: pending ? 1 : 0,
-      continuations: pending?.phase === 'write' || pending?.phase === 'native' ? 1 : 0,
-      retainedTextBytes: pending?.bytes ?? 0 }),
+    destroy() { if (destroyed) return; destroyed = true; cancel('dom.disposed'); pasteOwner.destroy(); for (const remove of removals.splice(0)) remove(); if (pending?.phase !== 'native') { pending = null; } },
+    resources: () => { const paste = pasteOwner.resources(); return Object.freeze({...(options.codec || paste.pending || paste.retainedRecoveries ? {retainedUtf16Units:paste.retainedUtf16Units,retainedRecoveries:paste.retainedRecoveries,retiredParsers:paste.retiredParsers} : {}), pending: (pending ? 1 : 0) + paste.pending,
+      continuations: (pending?.phase === 'write' || pending?.phase === 'native' ? 1 : 0) + paste.continuations,
+      retainedTextBytes: pending?.bytes ?? 0}); },
     listeners: () => removals.length,
   };
 }

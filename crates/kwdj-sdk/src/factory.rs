@@ -61,7 +61,7 @@ impl SessionFactory for KwdjFactory {
             KwdjAdapter::prepare_owned(profile_options.identities, profile_options.limits)?;
         let mut work = WorkMeter::new(WorkLimits::default());
         let profile = profile
-            .with_registry_json(
+            .with_clipboard_registry_json(
                 options.registry_json.as_bytes(),
                 CompilerLimits::default(),
                 &mut work,
@@ -78,7 +78,10 @@ impl SessionFactory for KwdjFactory {
             &registry_digest,
             &capability_bytes(&profile)?,
         )?;
-        let adapter = RecipeAdapter::new(adapter, profile.registry_handle());
+        let adapter = RecipeAdapter::new(
+            crate::clipboard_v2::ClipboardAdapterV2(adapter),
+            profile.registry_handle(),
+        );
         let profile =
             Recipes::new(profile, &mut work).map_err(|error| registry_diagnostic(&error))?;
         let inner = Bridge::new(
@@ -142,7 +145,10 @@ fn capability_bytes(profile: &KwdjProfile<'_>) -> Result<Vec<u8>, DiagnosticDto>
     .map_err(|_| diagnostic("sdk.transport_failed", "capabilities"))
 }
 struct KwdjEndpoint {
-    inner: Bridge<Recipes<KwdjProfile<'static>>, RecipeAdapter<KwdjAdapter>>,
+    inner: Bridge<
+        Recipes<KwdjProfile<'static>>,
+        RecipeAdapter<crate::clipboard_v2::ClipboardAdapterV2>,
+    >,
 }
 impl Endpoint for KwdjEndpoint {
     fn initialization(&self) -> SdkResponse {
@@ -151,6 +157,16 @@ impl Endpoint for KwdjEndpoint {
     fn call_json(&mut self, json: &str) -> String {
         if let Some(response) = self.inner.retained_fatal_response() {
             return self.inner.encode_response(response);
+        }
+        if let Ok(request) = decode::<editor_protocol::v2::ClipboardContextRequestV2>(json) {
+            return self.inner.call_json_v2(
+                &serde_json::to_string(&request).expect("closed clipboard read serializes"),
+            );
+        }
+        if let Ok(request) = decode::<editor_protocol::v2::SelectionFragmentRequestV2>(json) {
+            return self.inner.call_json_v2(
+                &serde_json::to_string(&request).expect("closed clipboard read serializes"),
+            );
         }
         if let Ok(request) = decode::<editor_protocol::v2::TextWindowRequestV2>(json) {
             return self
@@ -237,7 +253,7 @@ mod tests {
         assert!(matches!(session.initialization(), SdkResponse::Ok { .. }));
         assert!(session.context().is_some());
         let catalog = call(&mut session, json!({"kind":"catalog"}));
-        assert_eq!(catalog["value"]["commands"].as_array().unwrap().len(), 18);
+        assert_eq!(catalog["value"]["commands"].as_array().unwrap().len(), 19);
         assert!(
             catalog["value"]["commands"]
                 .as_array()
@@ -452,6 +468,7 @@ mod tests {
                                     .map(|id| id.as_str().unwrap())
                                     .collect();
                                 let mut sorted = expected.clone();
+                                sorted.push(editor_kwdj::commands::CLIPBOARD_COMMAND_ID);
                                 sorted.sort_unstable();
                                 assert_eq!(actual, sorted, "{id}: frozenV2catalog IDs");
                                 // ABI1 catalog order remains the original compiled order.
@@ -676,7 +693,7 @@ mod tests {
             KwdjAdapter::prepare_owned(crate::wire::IdentityFactsDto::default(), None).unwrap();
         let mut work = WorkMeter::new(WorkLimits::default());
         let profile = profile
-            .with_registry_json(
+            .with_clipboard_registry_json(
                 serde_json::to_string(&editor_kwdj::registry::registry_descriptor())
                     .unwrap()
                     .as_bytes(),
@@ -685,7 +702,10 @@ mod tests {
             )
             .unwrap();
         let binding = profile.binding().clone();
-        let adapter = RecipeAdapter::new(adapter, profile.registry_handle());
+        let adapter = RecipeAdapter::new(
+            crate::clipboard_v2::ClipboardAdapterV2(adapter),
+            profile.registry_handle(),
+        );
         let profile = Recipes::new(profile, &mut work).unwrap();
         let mut endpoint = KwdjEndpoint {
             inner: Bridge::new(

@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 //! KWDJ legacy SDK adapter over the same typed generic bridge used by other profiles.
+mod clipboard_v2;
 mod convert;
 mod factory;
+pub mod wire_v2;
 pub use convert::target_out;
 pub use factory::{KwdjFactory, KwdjOptionsV2};
 pub mod wire;
@@ -294,6 +296,11 @@ impl FactsAdapter for KwdjAdapter {
 impl FactsAdapter for editor_bridge::recipes::RecipeAdapter<KwdjAdapter> {
     fn kwdj_adapter(&mut self) -> &mut KwdjAdapter {
         self.inner_mut()
+    }
+}
+impl FactsAdapter for editor_bridge::recipes::RecipeAdapter<clipboard_v2::ClipboardAdapterV2> {
+    fn kwdj_adapter(&mut self) -> &mut KwdjAdapter {
+        &mut self.inner_mut().0
     }
 }
 fn dispatch_kwdj<P, A>(inner: &mut Bridge<P, A>, request: SdkRequest) -> SdkResponse
