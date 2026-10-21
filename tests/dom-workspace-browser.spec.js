@@ -40,6 +40,87 @@ test.afterEach(async({page},testInfo)=>{
 });
 async function checkpoint(page,id,label) {const point=await call(page,'inspect',id);observations.get(page).checkpoints.push({label,...point});return point;}
 
+async function recordHistoryKeys(page,id) {
+  await page.locator(`#${id}`).evaluate(element=>{
+    element.historyKeyTrace=[];
+    element.addEventListener('keydown',event=>{
+      if(event.code==='KeyZ'&&element.historyKeyTrace.length<16)element.historyKeyTrace.push({code:event.code,isTrusted:event.isTrusted,
+        metaKey:event.metaKey,ctrlKey:event.ctrlKey,shiftKey:event.shiftKey,defaultPrevented:event.defaultPrevented});
+    });
+  });
+}
+async function historyKeys(page,id) {return page.locator(`#${id}`).evaluate(element=>element.historyKeyTrace);}
+function historyLogicalRows(point) {
+  return point.rows.map(({path,node})=>{
+    // Node reads carry the current monotonic stamp, including after history.
+    // For this authored D0 text edit only its leaf and ancestors change.
+    expect(node.stamp).toEqual(point.state.stamp);
+    expect(node.changed_revision).toBe(['','/0','/0/2'].includes(path)?point.state.stamp.revision:'0');
+    const {stamp,changed_revision,...logical}=node;return {path,node:logical};
+  });
+}
+
+for(const modifier of ['Meta','Control'])test(`HK01 real ${modifier}+KeyZ and Shift redo apply one native history unit`,async({page})=>{
+  const {id,ready}=await call(page,'mount',{fixture:'D0'});expect(ready).toBe('ready');await call(page,'select',id,'/0/2',2);
+  const initial=await checkpoint(page,id,'HK01 initial'),TC=stateRow(initial,'/0/2').id;
+  // Native setup creates no browser undo stack. The actions under test below
+  // are actual trusted keyboard chords, never the fixture's history() helper.
+  expect((await call(page,'command',id,{kind:'insert_text',text:'XY'})).response.status).toBe('ok');
+  const inserted=await checkpoint(page,id,'HK01 native setup');expect(inserted.canonical).toBe(literal('T04-XY'));history(inserted,1,0);caret(inserted,TC,4);
+  await recordHistoryKeys(page,id);await expect(page.locator(`#${id}`)).toBeFocused();
+  await page.keyboard.press(`${modifier}+KeyZ`);const undone=await checkpoint(page,id,'HK01 actual keyboard undo');
+  expect(undone.canonical).toBe(literal('D0'));history(undone,0,1);caret(undone,TC,2);expect(docEvents(undone)).toHaveLength(2);
+  expect(historyLogicalRows(undone)).toEqual(historyLogicalRows(initial));expect(undone.state.selection).toEqual(initial.state.selection);expect(undone.state.stamp.revision).toBe('2');
+  await page.keyboard.press(`Shift+${modifier}+KeyZ`);const redone=await checkpoint(page,id,'HK01 actual keyboard redo');
+  expect(redone.canonical).toBe(literal('T04-XY'));history(redone,1,0);caret(redone,TC,4);expect(docEvents(redone)).toHaveLength(3);
+  expect(historyLogicalRows(redone)).toEqual(historyLogicalRows(inserted));expect(redone.state.selection).toEqual(inserted.state.selection);expect(redone.state.stamp.revision).toBe('3');
+  expect(redone.failures).toEqual([]);expect(await call(page,'nativeSelectionMatches',id,'/0/2',4)).toBe(true);
+  const keys=await historyKeys(page,id);expect(keys).toEqual([false,true].map(shiftKey=>({code:'KeyZ',isTrusted:true,metaKey:modifier==='Meta',ctrlKey:modifier==='Control',shiftKey,defaultPrevented:true})));
+  observations.get(page).historyKeyboard={scope:'Trusted Playwright keyboard in actual packaged SDK/WASM; not installed OS input',keys};
+});
+
+test('HK02 a real shortcut consumes exactly one of two isolated native history units',async({page})=>{
+  const {id}=await call(page,'mount',{fixture:'D0'});await call(page,'select',id,'/0/2',2);
+  for(const text of ['X','Y'])expect((await call(page,'command',id,{kind:'insert_text',text})).response.status).toBe('ok');
+  const inserted=await checkpoint(page,id,'HK02 two independent native setup units');expect(inserted.canonical).toBe(literal('T04-XY'));history(inserted,2,0);
+  await recordHistoryKeys(page,id);await page.keyboard.press('Meta+KeyZ');const undone=await checkpoint(page,id,'HK02 exactly one undo');
+  expect(undone.canonical).toBe(literal('T04-X'));history(undone,1,1);expect(docEvents(undone)).toHaveLength(3);caret(undone,stateRow(inserted,'/0/2').id,3);
+  await page.keyboard.press('Shift+Meta+KeyZ');const redone=await checkpoint(page,id,'HK02 exactly one redo');
+  expect(redone.canonical).toBe(literal('T04-XY'));history(redone,2,0);expect(docEvents(redone)).toHaveLength(4);expect(historyLogicalRows(redone)).toEqual(historyLogicalRows(inserted));
+  expect(redone.state.selection).toEqual(inserted.state.selection);expect(redone.failures).toEqual([]);
+  observations.get(page).historyKeyboard={keys:await historyKeys(page,id)};
+});
+
+test('HK03 real keys respect host prevention, foreign focus and read-only owner without native history edits',async({page})=>{
+  const {id}=await call(page,'mount',{fixture:'D0'});await call(page,'select',id,'/0/2',2);await call(page,'command',id,{kind:'insert_text',text:'XY'});
+  const before=await checkpoint(page,id,'HK03 seeded native history');await recordHistoryKeys(page,id);
+  await page.locator(`#${id}`).evaluate(element=>{
+    element.preventHistory=event=>{if(event.code==='KeyZ')event.preventDefault();};element.addEventListener('keydown',element.preventHistory,true);
+  });
+  await page.keyboard.press('Meta+KeyZ');const prevented=await checkpoint(page,id,'HK03 host prevented trusted chord');
+  expect(prevented.state).toEqual(before.state);expect(prevented.rows).toEqual(before.rows);expect(prevented.canonical).toBe(before.canonical);expect(prevented.events).toEqual(before.events);
+  await page.locator(`#${id}`).evaluate(element=>{element.removeEventListener('keydown',element.preventHistory,true);delete element.preventHistory;});
+  await page.locator('#host-recovery-control').focus();await page.keyboard.press('Meta+KeyZ');const outside=await checkpoint(page,id,'HK03 actual foreign focus');
+  expect(outside.state).toEqual(before.state);expect(outside.canonical).toBe(before.canonical);expect(outside.events).toEqual(before.events);expect(await historyKeys(page,id)).toHaveLength(1);
+  expect((await call(page,'mode',id,'readOnly')).status).toBe('updated');await page.locator(`#${id}`).focus();await expect(page.locator(`#${id}`)).toBeFocused();
+  await page.keyboard.press('Meta+KeyZ');const readonly=await checkpoint(page,id,'HK03 owned read-only shortcut');
+  expect(readonly.state).toEqual(before.state);expect(readonly.rows).toEqual(before.rows);expect(readonly.canonical).toBe(before.canonical);expect(readonly.events).toEqual(before.events);
+  expect(readonly.attributes.contenteditable).toBe('false');expect(readonly.failures.at(-1).diagnostic.code).toBe('dom.mode_blocked');
+  const keys=await historyKeys(page,id);expect(keys).toHaveLength(2);for(const key of keys)expect(key).toMatchObject({isTrusted:true,defaultPrevented:true});
+  observations.get(page).historyKeyboard={keys};
+});
+
+test('HK04 real keyboard history is blocked while controlled composition owns the provisional DOM',async({page})=>{
+  const {id}=await call(page,'mount',{fixture:'composition-initial'});await call(page,'select',id,'/1/0',4);await call(page,'command',id,{kind:'insert_text',text:'!'});
+  // Composition construction is explicitly controlled setup, not an OS IME
+  // claim. The history chord itself is trusted browser keyboard input.
+  await call(page,'beginComposition',id,'/0/0','o\u0301mega.');const before=await checkpoint(page,id,'HK04 actual protected owner');history(before,1,0);await recordHistoryKeys(page,id);
+  await page.keyboard.press('Meta+KeyZ');const after=await checkpoint(page,id,'HK04 trusted keyboard under protected composition');
+  expect(after.state).toEqual(before.state);expect(after.rows).toEqual(before.rows);expect(after.canonical).toBe(before.canonical);expect(after.events).toEqual(before.events);
+  expect(await call(page,'compositionObjectsIntact',id,'/0/0','o\u0301mega.')).toBe(true);history(after,1,0);
+  const keys=await historyKeys(page,id);expect(keys).toHaveLength(1);expect(keys[0]).toMatchObject({isTrusted:true,defaultPrevented:true});observations.get(page).historyKeyboard={compositionSetup:'controlled CompositionEvent and provisional region',keys};
+});
+
 test('T01/T06 exact authored text, nine marks, twelve nodes, attrs and safe static presentation',async({page})=>{
   const initial=await call(page,'mount',{fixture:'D0'});expect(initial.ready).toBe('ready');expect(initial.originalInput).toBeNull();
   const id=initial.id;await call(page,'select',id,'/0/2',2);
