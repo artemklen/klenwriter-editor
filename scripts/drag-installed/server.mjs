@@ -57,7 +57,7 @@ async function body(req,maximum) {
   }
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
-const paths = Object.fromEntries(['config','oracles.json','page-client.mjs','protocol.mjs','page-fixture.mjs','page/ready','page/poll','page/result','host/submit','host/read','host/ack','host/status'].map(path=>[base+'/'+path,path]));
+const paths = Object.fromEntries(['config','oracles.json','page-client.mjs','protocol.mjs','page-fixture.mjs','fixture.css','page/ready','page/poll','page/result','host/submit','host/read','host/ack','host/status'].map(path=>[base+'/'+path,path]));
 // The nonce-served protocol re-exports this exact shared module. Its relative
 // import resolves outside the nonce prefix in the browser, so serve that one
 // fixed dependency only while this opt-in broker is running.
@@ -76,6 +76,10 @@ http.createServer = function(...args) {
       expire();
       if (route === 'config' && req.method === 'GET') return json(res,200,config);
       if (route === 'oracles.json' && req.method === 'GET') { const bytes=readFileSync(new URL('../../contracts/drag/v1/installed-programs.json',import.meta.url));account(bytes.length);res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(bytes);return; }
+      if (route === 'fixture.css' && req.method === 'GET') {
+        const bytes = readFileSync(new URL('./fixture.css',import.meta.url)); account(bytes.length);
+        res.writeHead(200,{'Content-Type':'text/css','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}); res.end(bytes); return;
+      }
       if (['page-client.mjs','protocol.mjs','page-fixture.mjs','selection-protocol.mjs'].includes(route) && req.method === 'GET') {
         const modulePath = route === 'selection-protocol.mjs' ? '../selection-native/protocol.mjs' : './'+route;
         const bytes = readFileSync(new URL(modulePath,import.meta.url)); account(bytes.length);

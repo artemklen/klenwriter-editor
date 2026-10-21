@@ -1,0 +1,5 @@
+/* SPDX-License-Identifier: MIT OR Apache-2.0 */
+/* Installed N02 only, before baseline: compact vertical fixture whitespace.
+ * Keep the genuine menu flow, content, fonts, 32px controls and inline layout. */
+.ui-fixture.ui-drag-keyboard { margin-block: 0; padding-block: 0; }
+.ui-drag-keyboard .ui-fixture-editor { padding-block: 0; }
