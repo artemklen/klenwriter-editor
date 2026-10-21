@@ -3,12 +3,13 @@
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
-import {existsSync,mkdirSync,mkdtempSync,readFileSync,readdirSync,statSync,writeFileSync} from 'node:fs';
+import {existsSync,mkdirSync,mkdtempSync,readFileSync,readdirSync,statSync} from 'node:fs';
 import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {computeSdkBuildIdentity} from './generate-sdk-types.mjs';
 import {createChromeAdapter} from './drag-installed/chrome-adapter.mjs';
 import {createSafariAdapter} from './drag-installed/safari-adapter.mjs';
+import {createReportWriter} from './drag-installed/report-writer.mjs';
 import {caseIds,keySpecs,pointerActions,limits} from './drag-installed/protocol.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');process.chdir(root);
 const args=process.argv.slice(2),names=['--browser','--output','--broker','--head','--expected-version'];
@@ -24,7 +25,7 @@ const programs=JSON.parse(readFileSync('contracts/drag/v1/installed-programs.jso
 const report={format:'editor-drag-installed/1',browser,expectedHead:head,status:'NOT_RUN',startedAt:now(),rows:programs.rows.map(row=>({...row,status:'NOT_RUN',actions:[],checkpoints:[]})),setup:[],physicalActions:[],restoration:null,
   scope:'Sixteen source-authored installed44 core rows. CGEvent platform provenance, not hardware. Separate controlled composition/external boundaries and manual usability remain separately qualified.',
   separateBoundaries:programs.separate_boundaries,historyObservability:{publicFields:['undo_entries','redo_entries','retained_bytes'],openTypingGroup:'NOT_EXPOSED; original isolated request plus exact one-unit Undo/Redo is observed'}};
-const save=()=>writeFileSync(output,JSON.stringify(report,null,2)+'\n');save();
+const recorder=createReportWriter({output,report}),save=recorder.save;save();
 function run(command,argv,{fullStdout=false,timeout=30000,maxBuffer=1048576}={}){
   const start=process.hrtime.bigint(),value=spawnSync(command,argv,{cwd:root,encoding:'utf8',timeout,maxBuffer});
   const execution={command,argv,returnCode:value.status,signal:value.signal,error:value.error?.message??null,stdout:fullStdout?(value.stdout??''):(value.stdout??'').slice(0,16384),stderr:(value.stderr??'').slice(0,8192),wallTimeMs:Number(process.hrtime.bigint()-start)/1e6};
@@ -119,14 +120,18 @@ async function perform(row,prepared){
   const family=programs.families.find(x=>x.id===row.family),fixture=programs.fixtures[family.fixture],before=prepared.baseline;
   clean(before);assert.equal(before.native.canonical,fixture.input);assert.deepEqual(before.native.state.selection,resolveRoles(fixture.selection,before.native.roles));assert.equal(before.native.context.build_id,identity.buildId);
   if(family.zoom===2){for(let i=0;i<8;i++){const v=await adapter.call('inspect');if(Math.abs(v.viewport.pageZoom-2)<.02)break;assert.ok(v.viewport.pageZoom<2);await physical(row,'zoom-in',{reserved:true});}await wait(2000);const z=await checkpoint(row,'actual zoom200 before original gesture');unchanged(z,before);assert.ok(Math.abs(z.viewport.pageZoom-2)<.02);assert.ok(Math.abs(z.dpr/before.dpr-2)<.02);}
-  await physical(row,'hover-source');await adapter.call('settle');await physical(row,'move-start');await adapter.call('settle');
+  // Persist the current prelude without serializing prior rows between its fresh events.
+  await recorder.prelude(row,async()=>{
+    await physical(row,'hover-source');await adapter.call('settle');await physical(row,'move-start');await adapter.call('settle');
+    if(family.mode!=='keyboard')await physical(row,'down');
+  });
   if(family.mode==='keyboard'){
     let reached=false;for(let i=0;i<16;i++){const v=await adapter.call('inspect');if(v.handleFocused){reached=true;break;}await physical(row,'tab');}
     // Observe the last allowed Tab without posting a seventeenth key.
     if(!reached)reached=(await adapter.call('inspect')).handleFocused;
     assert.equal(reached,true,'Original actual handle focus reached without JS focus');await physical(row,'enter');await physical(row,'down-key');const menu=await adapter.call('inspect');const selected=menu.menu.filter(x=>x.focused);assert.equal(selected.length,1);assert.equal(selected[0].label.trim(),row.locale==='ru'?'Ниже':'Move down');await physical(row,'enter');
   }else{
-    await physical(row,'down');for(let i=1;i<=8;i++)await physical(row,'move-'+i);
+    for(let i=1;i<=8;i++)await physical(row,'move-'+i);
     if(['N04','N06'].includes(row.family))await physical(row,'right');
     if(family.scroll){const began=performance.now();let terminal=false;row.scrollObservations=[];while(performance.now()-began<=8000){const v=await adapter.call('inspect');row.scrollObservations.push(v);if(v.scroll.terminal){terminal=true;break;}await wait(100);}assert.equal(terminal,true,'Independent frozen target reached at actual scroll limit within8s');}
     const held=await checkpoint(row,'original held publication-free preview');unchanged(held,before);assert.equal(held.native.uiResources.dragGestures,1);assert.equal(held.native.uiResources.pointerCaptures,1);
