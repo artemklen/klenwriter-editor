@@ -160,22 +160,31 @@ function commandAccounting(before,after,item){
   for(const row of writes){expect(row.outcome).toBe('returned');expect(row.response?.status).toBe('ok');expect(row.request.stamp).toEqual(stamp);expect(row.response.value.kind).toBe('mutation');const next=row.response.value.state.stamp,isSemantic=['command','history','input_command'].includes(row.request.kind);if(isSemantic){semantic++;for(const key of ['revision','selection_epoch','history_epoch'])expect(BigInt(next[key])-BigInt(stamp[key])).toBe(BigInt(item.semanticDelta[key]));}else{expect(['set_selection','barrier']).toContain(row.request.kind);expect(next.revision).toBe(stamp.revision);expect(next.history_epoch).toBe(stamp.history_epoch);expect(BigInt(next.selection_epoch)-BigInt(stamp.selection_epoch)).toBe(row.response.value.effect==='unchanged'?0n:1n);}stamp=next;}
   expect(semantic).toBe(1);expect(after.state.stamp).toEqual(stamp);expect(docs(after).length-docs(before).length).toBe(item.documentEvents);
 }
-async function runChain(page,locale,held){
+async function runChain(page,locale,held,{hoverBeforeMove=false}={}){
   const initial=chain.steps[0],id=await mount(page,{locale,source:chain.canonicalLiterals.C0.json,sourceRoles:initial.roles,selection:initial.selection,focus:true,saveMode:held?'held':'immediate'}),roles={};
-  // Only setup above may call bookmark/selection APIs. Everything from here to
-  // Save/Reopen uses real browser keyboard controls, never locator.focus/select.
+  // Only setup above may call bookmark/selection APIs. Authoring and Save/Reopen
+  // use real keyboard controls; the optional hover never clicks or changes focus.
   await page.keyboard.press('Shift+Tab');await expect(action(page,id,'strong')).toBeFocused();await page.keyboard.press('Tab');await expect(editor(page,id)).toBeFocused();
   let before=await checkpoint(page,id,'C66-00 initial keyboard entry');chainState(before,initial,roles);expect(before.state.stamp.selection_epoch).toBe('1');
   const perform=async(index,operation)=>{await operation();await frames(page);const after=await checkpoint(page,id,chain.steps[index].id);chainState(after,chain.steps[index],roles);commandAccounting(before,after,chain.steps[index]);before=after;return after;};
   await perform(1,()=>page.keyboard.type('x'));
   await perform(2,async()=>{await page.keyboard.press(editingKeys.lineStart);await page.keyboard.press(editingKeys.selectLineEnd);await page.keyboard.press('Shift+Tab');await expect(action(page,id,'strong')).toBeFocused();await page.keyboard.press('Enter');});
   await perform(3,async()=>{await expect(editor(page,id)).toBeFocused();await page.keyboard.press('ArrowLeft');await page.keyboard.press('ArrowRight');await tabTo(page,button(page,id,'add'));await page.keyboard.press('Enter');await expect(shell(page,id).getByRole('option',{name:copy[locale].paragraph,exact:true})).toBeFocused();await page.keyboard.press('Enter');});
+  if(hoverBeforeMove){
+    // Incidental pointer movement must not retarget a subsequent keyboard move.
+    // Hover the first block, which cannot move up, while the caret stays in PT.
+    await editor(page,id).locator(':scope > [data-editor-node]').first().hover();await frames(page);
+    await expect(editor(page,id)).toBeFocused();unchanged(await checkpoint(page,id,'incidental hover keeps the keyboard caret/native state'),before);
+  }
   await perform(4,async()=>{await tabTo(page,button(page,id,'move'));await page.keyboard.press('Alt+ArrowUp');await expect(button(page,id,'move')).toBeFocused();});
   await perform(5,async()=>{await page.keyboard.press('Shift+Tab');await expect(editor(page,id)).toBeFocused();await page.keyboard.press(editingKeys.lineEnd);await page.keyboard.press('Backspace');});
   await perform(6,()=>page.keyboard.press('ControlOrMeta+z'));await expect(editor(page,id)).toBeFocused();
   return {id,roles,before};
 }
 for(const locale of ['ru','en']){
+  test(`A66 keyboard Move ${locale}: Tab uses the caret block after another block was hovered`,async({page})=>{
+    const {id}=await runChain(page,locale,false,{hoverBeforeMove:true});zero(await call(page,'dispose',id));
+  });
   test(`A66-K01/K02/K03/K05/K06/K08 ${locale}: complete keyboard edit/select/format/insert/move/delete/Undo/Save/reopen chain`,async({page})=>{
     const {id,roles,before}=await runChain(page,locale,false);await tabTo(page,page.locator(`#${id}-save`));await page.keyboard.press('Enter');const saved=await checkpoint(page,id,'explicit host receipt then matching acknowledgement');
     expect(saved.canonical).toBe(chain.canonicalLiterals.C4.json);expect(saved.state.stamp).toEqual(before.state.stamp);expect(saved.state.selection).toEqual(before.state.selection);expect(saved.state.history).toEqual(before.state.history);expect(saved.state.saved_revision).toBe('6');expect(saved.state.dirty).toBe(false);expect(docs(saved)).toEqual(docs(before));expect(states(saved).length-states(before).length).toBe(1);expect(states(saved).at(-1).change.baseline_changed).toBe(true);

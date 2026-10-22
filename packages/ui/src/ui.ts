@@ -174,6 +174,8 @@ class Ui implements EditorUi {
       const event = e as KeyboardEvent;
       if (event.key === 'Tab' && !event.altKey && !event.ctrlKey && !event.metaKey && !this.#destroyed) {
         const scope = event.shiftKey ? configuration.slots.toolbar : configuration.slots.entry;
+        // Keyboard ownership follows the caret even after incidental pointer movement.
+        this.#hover = null; this.#pointer = null;
         this.#capture(scope);
       }
     }, true);
