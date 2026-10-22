@@ -84,7 +84,7 @@ function changed(actual,before,caseId){
   const requests=actual.nativeTrace.calls.slice(before.nativeTrace.calls.length).map(row=>JSON.parse(row.requestJson)),commandIndex=requests.findIndex(r=>r.kind==='command');
   assert.equal(requests.slice(0,commandIndex).filter(r=>r.kind==='set_selection').length,0,'No hidden pre-command selection write');
 }
-function focused(value,role){const active=value.dom.active;assert.ok(active);if(role==='editor')assert.equal(active.id,`${value.id}-editor`);else if(['add','move'].includes(role))assert.equal(active.control,role);else if(['before','recovery'].includes(role))assert.equal(active.id,role==='before'?'ui-before':'ui-after');else assert.equal(active.action,role);}
+function focused(value,role){const active=value.dom.active;assert.ok(active);if(role==='editor')assert.equal(active.id,`${value.id}-editor`);else if(['add','move','drag'].includes(role))assert.equal(active.control,role);else if(['before','recovery'].includes(role))assert.equal(active.id,role==='before'?'ui-before':'ui-after');else assert.equal(active.action,role);}
 function keyAck(value,action,before,{reserved=false}={}){
   const spec=keySpecs[action],trace=value.inputTrace.slice(before),down=trace.filter(row=>row.event==='keydown'&&row.isTrusted&&row.code===spec.domCode),up=trace.filter(row=>row.event==='keyup'&&row.isTrusted&&row.code===spec.domCode);
   if(reserved)return {scope:'Browser-reserved shortcut: fixed OS transition proof and actual browser readback; no fabricated DOM ACK',trustedDown:down,trustedUp:up};
@@ -118,7 +118,8 @@ async function perform(entry,prepared){
   if(id==='add-keyboard'){
     {
       focused(before,'editor');focused(await physical(entry,'tab'),'move');let value=await checkpoint(entry,'physical Tab captures the editor range before Move focus');unchanged(value,before);assert.equal(semanticCalls(value,before).length,0);
-      focused(await physical(entry,'tab'),'add');value=await checkpoint(entry,'second physical Tab reaches Add without native mutation');unchanged(value,before);assert.equal(semanticCalls(value,before).length,0);
+      focused(await physical(entry,'tab'),'drag');value=await checkpoint(entry,'second physical Tab reaches the genuine additive Drag stop without activation');unchanged(value,before);assert.equal(semanticCalls(value,before).length,0);
+      focused(await physical(entry,'tab'),'add');value=await checkpoint(entry,'third physical Tab reaches Add without native mutation');unchanged(value,before);assert.equal(semanticCalls(value,before).length,0);
       await physical(entry,'enter');value=await checkpoint(entry,'physical Enter opens the Add picker without native mutation');focused(value,'paragraph');unchanged(value,before);assert.equal(semanticCalls(value,before).length,0);
       const expected=[['paragraph',entry.locale==='ru'?'Абзац':'Paragraph'],['quote',entry.locale==='ru'?'Цитата':'Quote'],['table',entry.locale==='ru'?'Таблица':'Table']],items=value.controls.filter(control=>expected.some(([action])=>action===control.action));
       assert.deepEqual(items.map(control=>[control.action,control.name]),expected,'Frozen picker order and localized accessible names');assert.ok(items.every(control=>control.visible));

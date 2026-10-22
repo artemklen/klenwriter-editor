@@ -579,7 +579,15 @@ class Ui implements EditorUi {
     this.#positionToolbar(context);
     const clear = () => { this.#gutter.classList.remove('kw-ui-floating'); this.#gutter.style.removeProperty('left'); this.#gutter.style.removeProperty('top'); };
     if (!context.block) { clear(); return; }
-    // Fit the intended presentation before measuring either source or gutter:
+    // Reject an already known fallback without temporarily removing the
+    // in-flow gutter and shrinking an ancestor scroll range under host focus.
+    const preliminary = this.#options!.editor.geometry.read({ kind: 'block', stamp: context.state.stamp, node: context.block.node.id });
+    if (preliminary.status !== 'measured' || !preliminary.visible || !preliminary.rects.length) { clear(); return; }
+    const preliminaryBox = this.#gutter.getBoundingClientRect();
+    const preliminaryX = preliminary.rects[0]!.x - preliminaryBox.width - 8;
+    if (![preliminaryX, preliminaryBox.width, preliminary.viewport.x].every(Number.isFinite)
+      || preliminaryBox.width <= 0 || preliminaryX < preliminary.viewport.x + 8) { clear(); return; }
+    // For a viable float, fit the intended presentation before the FINAL read:
     // an earlier host slot leaving flow can also move the source block.
     this.#gutter.classList.add('kw-ui-floating');
     const result = this.#options!.editor.geometry.read({ kind: 'block', stamp: context.state.stamp, node: context.block.node.id });

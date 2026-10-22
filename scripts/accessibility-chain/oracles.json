@@ -1,0 +1,1003 @@
+{
+  "format": "osr66-accessibility-chain-oracles/1",
+  "chain": {
+    "canonicalLiterals": {
+      "C0": {
+        "json": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "utf8Bytes": 142,
+        "sha256": "bb93c9b39f5a1cf5bf3e4bd18772e4b2674cceb46354eb0a26aa1bc35d43d8e5"
+      },
+      "C1": {
+        "json": "{\"content\":[{\"content\":[{\"text\":\"axb\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "utf8Bytes": 143,
+        "sha256": "08970afa8ed43fbeb9edf79883055593bae6c48078f9732b7ff714cb092402fe"
+      },
+      "C2": {
+        "json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"axb\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "utf8Bytes": 171,
+        "sha256": "c04a7a8eb93b1bdbb52dbf508546d84fb41b546f897fcfb64076af7e6d04eae1"
+      },
+      "C3": {
+        "json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[],\"type\":\"paragraph\"},{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"xb\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "utf8Bytes": 292,
+        "sha256": "5968739a223f9e79b0bdf1fd632f636287abe3d9cac072b817f2c449abf136af"
+      },
+      "C4": {
+        "json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"xb\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "utf8Bytes": 292,
+        "sha256": "aeaadc0159c369e682bc4da0a47e6c6496b15c358e1734a08db369ca47d307e6"
+      },
+      "C5": {
+        "json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"x\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "utf8Bytes": 291,
+        "sha256": "48cedd0e379c4ff01fe98e0d106df00e26d3af597fd49bc8a7af6f9ff4c7e462"
+      },
+      "C7": {
+        "json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"xby\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "utf8Bytes": 293,
+        "sha256": "b4f44d1f09089e8112823fa5a60d74a5ff7da2a5cc2f5355354a34fa62c3d347"
+      }
+    },
+    "nativeSteps": [
+      {
+        "id": "C66-00",
+        "keyboardAction": "Before chain only: mount C0, bind R/P/T, set selection T1 and drain setup. Tab from host-before via toolbar into editor.",
+        "canonical": "C0",
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "T",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T",
+            "offset": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "textMarks": {
+          "T": []
+        },
+        "focus": "editor",
+        "revision": "0",
+        "history_epoch": "0",
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "semanticDelta": {
+          "revision": "0",
+          "selection_epoch": "0",
+          "history_epoch": "0"
+        },
+        "documentEvents": 0,
+        "createdLiveRoles": [],
+        "retiredLiveRoles": [],
+        "note": "Only prechain setup may write native selection/focus; selection_epoch1/saved_revision0/dirtyfalse/no open typing group."
+      },
+      {
+        "id": "C66-01",
+        "keyboardAction": "Ordinary literal x, default/off input.",
+        "canonical": "C1",
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "T",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T",
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "textMarks": {
+          "T": []
+        },
+        "focus": "editor",
+        "revision": "1",
+        "history_epoch": "1",
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "semanticDelta": {
+          "revision": "1",
+          "selection_epoch": "1",
+          "history_epoch": "1"
+        },
+        "documentEvents": 1,
+        "createdLiveRoles": [],
+        "retiredLiveRoles": [],
+        "note": "Compatible adjacent text joins into original left T; transient split/insert IDs are not additional live roles. All original IDs survive."
+      },
+      {
+        "id": "C66-02",
+        "keyboardAction": "Home -> T0; Shift+End -> directed T0..T3. Shift+Tab to Bold, Enter.",
+        "canonical": "C2",
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "T",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T",
+            "offset": 3,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "textMarks": {
+          "T": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ]
+        },
+        "focus": "editor",
+        "revision": "2",
+        "history_epoch": "2",
+        "undo_entries": "2",
+        "redo_entries": "0",
+        "semanticDelta": {
+          "revision": "1",
+          "selection_epoch": "0",
+          "history_epoch": "1"
+        },
+        "documentEvents": 1,
+        "createdLiveRoles": [],
+        "retiredLiveRoles": [],
+        "note": "Full leaf formatting keeps T/exact direction. Query off; fresh query on. Mutation presentation may be pre-action off. No fixture selection/focus between steps."
+      },
+      {
+        "id": "C66-03",
+        "keyboardAction": "ArrowLeft collapses whole range to T0; Right1 -> T1. Tab through Move to Add; Enter, choose Paragraph, Enter.",
+        "canonical": "C3",
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ],
+          "N": [
+            1
+          ],
+          "PT": [
+            2
+          ],
+          "U": [
+            2,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "U",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "U",
+            "offset": 0,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "textMarks": {
+          "T": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ],
+          "U": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ]
+        },
+        "focus": "editor",
+        "revision": "3",
+        "history_epoch": "3",
+        "undo_entries": "3",
+        "redo_entries": "0",
+        "semanticDelta": {
+          "revision": "1",
+          "selection_epoch": "1",
+          "history_epoch": "1"
+        },
+        "documentEvents": 1,
+        "createdLiveRoles": [
+          "N",
+          "PT",
+          "U"
+        ],
+        "retiredLiveRoles": [],
+        "note": "V07 text-caret branch with inherited marks: P/T strong a, fresh N empty, PT/U strong xb; no synthesized root gap. Bind fresh IDs by native topology, never allocation serial."
+      },
+      {
+        "id": "C66-04",
+        "keyboardAction": "Tab to Move handle; Alt+ArrowUp only while it is focused.",
+        "canonical": "C4",
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ],
+          "PT": [
+            1
+          ],
+          "U": [
+            1,
+            0
+          ],
+          "N": [
+            2
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "U",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "U",
+            "offset": 0,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "textMarks": {
+          "T": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ],
+          "U": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ]
+        },
+        "focus": "same Move handle",
+        "revision": "4",
+        "history_epoch": "4",
+        "undo_entries": "4",
+        "redo_entries": "0",
+        "semanticDelta": {
+          "revision": "1",
+          "selection_epoch": "0",
+          "history_epoch": "1"
+        },
+        "documentEvents": 1,
+        "createdLiveRoles": [],
+        "retiredLiveRoles": [],
+        "note": "Move PT under R before_index1 before removal. Same IDs, marks and U0; no document-wide Alt interception."
+      },
+      {
+        "id": "C66-05",
+        "keyboardAction": "Shift+Tab from Move into editor; End -> U2; Backspace once.",
+        "canonical": "C5",
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ],
+          "PT": [
+            1
+          ],
+          "U": [
+            1,
+            0
+          ],
+          "N": [
+            2
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "U",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "U",
+            "offset": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "textMarks": {
+          "T": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ],
+          "U": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ]
+        },
+        "focus": "editor",
+        "revision": "5",
+        "history_epoch": "5",
+        "undo_entries": "5",
+        "redo_entries": "0",
+        "semanticDelta": {
+          "revision": "1",
+          "selection_epoch": "1",
+          "history_epoch": "1"
+        },
+        "documentEvents": 1,
+        "createdLiveRoles": [],
+        "retiredLiveRoles": [],
+        "note": "Native previous EGC b removed; U remains strong x. No block join/empty text/raw typography restore slot."
+      },
+      {
+        "id": "C66-06",
+        "keyboardAction": "Platform Undo shortcut once in editor.",
+        "canonical": "C4",
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ],
+          "PT": [
+            1
+          ],
+          "U": [
+            1,
+            0
+          ],
+          "N": [
+            2
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "U",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "U",
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "textMarks": {
+          "T": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ],
+          "U": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ]
+        },
+        "focus": "editor",
+        "revision": "6",
+        "history_epoch": "6",
+        "undo_entries": "4",
+        "redo_entries": "1",
+        "semanticDelta": {
+          "revision": "1",
+          "selection_epoch": "1",
+          "history_epoch": "1"
+        },
+        "documentEvents": 1,
+        "createdLiveRoles": [],
+        "retiredLiveRoles": [],
+        "note": "Exact predelete U/strong xb/IDs/caret2 restored; chronological revision6. Export alone never marks saved."
+      }
+    ],
+    "navigation": {
+      "betweenSteps": "Keyboard only; no fixture selection/focus/native command calls. Instrumented inspect reads do not act.",
+      "authoredSelectionPoints": [
+        {
+          "before": "C66-02",
+          "points": [
+            {
+              "anchor": {
+                "kind": "text",
+                "node": "T",
+                "offset": 0,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "T",
+                "offset": 0,
+                "affinity": "after"
+              }
+            },
+            {
+              "anchor": {
+                "kind": "text",
+                "node": "T",
+                "offset": 0,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "T",
+                "offset": 3,
+                "affinity": "after"
+              }
+            }
+          ]
+        },
+        {
+          "before": "C66-03",
+          "points": [
+            {
+              "anchor": {
+                "kind": "text",
+                "node": "T",
+                "offset": 0,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "T",
+                "offset": 0,
+                "affinity": "after"
+              }
+            },
+            {
+              "anchor": {
+                "kind": "text",
+                "node": "T",
+                "offset": 1,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "T",
+                "offset": 1,
+                "affinity": "after"
+              }
+            }
+          ]
+        },
+        {
+          "before": "C66-05",
+          "points": [
+            {
+              "anchor": {
+                "kind": "text",
+                "node": "U",
+                "offset": 0,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "U",
+                "offset": 0,
+                "affinity": "after"
+              }
+            },
+            {
+              "anchor": {
+                "kind": "text",
+                "node": "U",
+                "offset": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "U",
+                "offset": 2,
+                "affinity": "after"
+              }
+            }
+          ]
+        }
+      ],
+      "epochAccounting": "R/H0..6 and semanticDelta are exact source expectations. Each semantic delta compares the original command-before fullstamp to its response. Full keyboard-triggered set_selection/barrier trace accounts for intervening S/state events: actual changed selection adds1, identical selection is unchanged. All edits isolated/no open typing group, so navigation adds no history unit. Do not guess duplicate browser selectionchange counts or hide document edits."
+    },
+    "save": {
+      "trigger": "Keyboard Tab to host Save, Enter; snapshot is released after receipt/ack. Reopen by keyboard.",
+      "snapshot": {
+        "canonical": "C4",
+        "revision": "6",
+        "maxBytes": 2097152
+      },
+      "beforeAck": {
+        "revision": "6",
+        "saved_revision": "0",
+        "dirty": true,
+        "undo_entries": "4",
+        "redo_entries": "1"
+      },
+      "ack": {
+        "request": "acknowledge_snapshot with current fullstamp and retained original handle after explicit host receipt",
+        "canonical": "C4",
+        "revision": "6",
+        "saved_revision": "6",
+        "dirty": false,
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "U",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "U",
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "history": {
+          "undo_entries": "4",
+          "redo_entries": "1"
+        },
+        "stampDelta": {
+          "revision": "0",
+          "selection_epoch": "0",
+          "history_epoch": "0"
+        },
+        "documentEvents": 0,
+        "stateEvents": 1,
+        "baseline_changed": true
+      },
+      "reopen": {
+        "action": "Fully dispose original UI/Session; fresh mount host-saved canonical; keyboard enters new named editor.",
+        "canonical": "C4",
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ],
+          "PT": [
+            1
+          ],
+          "U": [
+            1,
+            0
+          ],
+          "N": [
+            2
+          ]
+        },
+        "session": "different actual Session token",
+        "generation": "actual fresh value, not global novelty",
+        "nodeIdStrings": "No crossSession global novelty assertion",
+        "stamp": {
+          "revision": "0",
+          "selection_epoch": "0",
+          "history_epoch": "0"
+        },
+        "selection": null,
+        "stored_marks": null,
+        "saved_revision": "0",
+        "dirty": false,
+        "history": {
+          "undo_entries": "0",
+          "redo_entries": "0"
+        },
+        "oldBookmarkTransferred": false
+      }
+    }
+  },
+  "held": {
+    "id": "A66-SAVE-STALE01",
+    "status": "NOT_RUN",
+    "fork": "C66-06 before acknowledgement",
+    "snapshotOld": {
+      "canonical": "C4",
+      "revision": "6"
+    },
+    "keyboardEditWhileReceiptHeld": {
+      "action": "Type y at U2",
+      "canonical": "C7",
+      "roles": {
+        "R": [],
+        "P": [
+          0
+        ],
+        "T": [
+          0,
+          0
+        ],
+        "PT": [
+          1
+        ],
+        "U": [
+          1,
+          0
+        ],
+        "N": [
+          2
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "U",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "U",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "textMarks": {
+        "T": [
+          {
+            "type_id": "org.klenwriter.kwdj/strong",
+            "attributes": {}
+          }
+        ],
+        "U": [
+          {
+            "type_id": "org.klenwriter.kwdj/strong",
+            "attributes": {}
+          }
+        ]
+      },
+      "stored_marks": null,
+      "revision": "7",
+      "saved_revision": "0",
+      "dirty": true,
+      "undo_entries": "5",
+      "redo_entries": "0",
+      "semanticDelta": {
+        "revision": "1",
+        "selection_epoch": "1",
+        "history_epoch": "1"
+      }
+    },
+    "ackOld": {
+      "canonical": "C7",
+      "revision": "7",
+      "saved_revision": "6",
+      "dirty": true,
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "U",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "U",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stampDelta": {
+        "revision": "0",
+        "selection_epoch": "0",
+        "history_epoch": "0"
+      },
+      "historyUnchanged": true,
+      "stateEvents": 1,
+      "documentEvents": 0
+    },
+    "ackCurrentAfterFreshExplicitSave": {
+      "snapshotCanonical": "C7",
+      "snapshotRevision": "7",
+      "saved_revision": "7",
+      "dirty": false,
+      "nativeDocumentSelectionHistoryUnchanged": true
+    },
+    "lateOldAfterCurrent": {
+      "outcome": {
+        "status": "ok",
+        "value": {
+          "kind": "mutation",
+          "effect": "unchanged"
+        }
+      },
+      "saved_revision": "7",
+      "dirty": false,
+      "stateEvents": 0,
+      "documentEvents": 0,
+      "allNativeFacetsUnchanged": true,
+      "internalReasonQualification": "Private Rust SaveAcknowledgement::IgnoredOlder explains why the saved baseline is not moved backwards; it is not a public SDK discriminant. Public bridge discards that enum and compares saved_revision/dirty before/after: unchanged gives Ok mutation effect unchanged (crates/bridge/src/lib.rs:725-746); accepted crates/wasm/examples/support/sdk_observer.rs:675-679 independently asserts unchanged."
+    },
+    "qualification": "Controlled test-host receipt integration, not network/disk/CMS persistence proof; no candidate output oracle."
+  },
+  "keyboard": [
+    {
+      "id": "K02-combining-reverse",
+      "source": "{\"content\":[{\"content\":[{\"text\":\"é\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "after": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"é\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "roles": {
+        "R": [],
+        "P": [
+          0
+        ],
+        "T": [
+          0,
+          0
+        ]
+      },
+      "textRoles": [
+        "T"
+      ],
+      "setupSelection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "keys": [
+        "Shift+ArrowLeft"
+      ],
+      "selected": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 0,
+          "affinity": "after"
+        }
+      },
+      "selectedAtomRoles": [],
+      "expected": {
+        "liveRoles": [
+          "R",
+          "P",
+          "T"
+        ],
+        "newIds": 0,
+        "retiredIds": 0,
+        "marks": {
+          "T": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ]
+        },
+        "apply": {
+          "revision": "1",
+          "history_epoch": "1",
+          "undo_entries": "1",
+          "redo_entries": "0",
+          "semanticSelectionEpochDelta": "0"
+        },
+        "undo": {
+          "revision": "2",
+          "history_epoch": "2",
+          "undo_entries": "0",
+          "redo_entries": "1"
+        },
+        "redo": {
+          "revision": "3",
+          "history_epoch": "3",
+          "undo_entries": "1",
+          "redo_entries": "0"
+        }
+      }
+    },
+    {
+      "id": "K02-atom-nested-root-forward",
+      "source": "{\"content\":[{\"content\":[{\"text\":\"é\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"text\":\"ж\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"type\":\"scene_break\"},{\"content\":[{\"text\":\"👩‍💻\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "after": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"é\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"ж\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"type\":\"scene_break\"},{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"👩‍💻\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "roles": {
+        "R": [],
+        "P": [
+          0
+        ],
+        "T": [
+          0,
+          0
+        ],
+        "Q": [
+          1
+        ],
+        "QP": [
+          1,
+          0
+        ],
+        "QT": [
+          1,
+          0,
+          0
+        ],
+        "S": [
+          2
+        ],
+        "P2": [
+          3
+        ],
+        "T2": [
+          3,
+          0
+        ]
+      },
+      "textRoles": [
+        "T",
+        "QT",
+        "T2"
+      ],
+      "setupSelection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 0,
+          "affinity": "after"
+        }
+      },
+      "keys": [
+        "ControlOrMeta+a"
+      ],
+      "selected": {
+        "anchor": {
+          "kind": "child",
+          "parent": "R",
+          "index": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "child",
+          "parent": "R",
+          "index": 4,
+          "affinity": "after"
+        }
+      },
+      "selectedAtomRoles": [
+        "S"
+      ],
+      "expected": {
+        "liveRoles": [
+          "R",
+          "P",
+          "T",
+          "Q",
+          "QP",
+          "QT",
+          "S",
+          "P2",
+          "T2"
+        ],
+        "newIds": 0,
+        "retiredIds": 0,
+        "marks": {
+          "T": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ],
+          "QT": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ],
+          "T2": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ]
+        },
+        "apply": {
+          "revision": "1",
+          "history_epoch": "1",
+          "undo_entries": "1",
+          "redo_entries": "0",
+          "semanticSelectionEpochDelta": "0"
+        },
+        "undo": {
+          "revision": "2",
+          "history_epoch": "2",
+          "undo_entries": "0",
+          "redo_entries": "1"
+        },
+        "redo": {
+          "revision": "3",
+          "history_epoch": "3",
+          "undo_entries": "1",
+          "redo_entries": "0"
+        }
+      }
+    }
+  ],
+  "qualification": "Unchanged source-authored semantic values; physical Mac editing keys are resolved by macos-keyboard-authoring-erratum-001. UI ru/en both use actual US for Latin x/y. No candidate-output expectations."
+}
