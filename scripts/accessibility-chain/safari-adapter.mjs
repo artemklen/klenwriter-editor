@@ -165,6 +165,7 @@ export async function createSafariAdapter({config,report,run,outputPath,inputHel
         await wait(100);
       }
       const viewportAttempts=[];
+      report.control.bootstrapViewportAttempts=viewportAttempts;
       for(let attempt=0;attempt<=3;attempt++){
         const value=evaluateBootstrap('JSON.stringify({width:innerWidth,height:innerHeight,scale:visualViewport?.scale,offsetLeft:visualViewport?.offsetLeft,offsetTop:visualViewport?.offsetTop})',deadline);
         viewportAttempts.push(value);
@@ -173,7 +174,6 @@ export async function createSafariAdapter({config,report,run,outputPath,inputHel
         run('/usr/bin/osascript',['-e',resizeBootstrap,String(windowId),String(1024-value.width),String(768-value.height)],{timeout:Math.max(1,deadline-Date.now())});
         await wait(100);
       }
-      report.control.bootstrapViewportAttempts=viewportAttempts;
       const modulePath = config.base+'/page-client.mjs';
       const accepted = evaluateBootstrap('(()=>{document.title='+JSON.stringify(config.title)+';document.getElementById("a66-before").focus();import('+JSON.stringify(modulePath)+');return JSON.stringify({accepted:true});})()',deadline);
       if (accepted.accepted !== true) throw new Error('Fixture module bootstrap acknowledgement differs');

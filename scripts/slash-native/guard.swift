@@ -18,8 +18,10 @@ func emit(_ value: [String: Any], _ code: Int32) -> Never {
     let bytes = try! JSONSerialization.data(withJSONObject: output, options: [.sortedKeys])
     FileHandle.standardOutput.write(bytes); FileHandle.standardOutput.write(Data([10])); exit(code)
 }
-func refuse(_ reason: String) -> Never {
-    emit(["status": "refused", "reason": reason, "delivery": posted ? "unknown/may_have_sent" : "not_sent", "elapsedMs": elapsed()], 2)
+func refuse(_ reason: String, viewportDiagnostic: [String: Any]? = nil) -> Never {
+    var output: [String: Any] = ["status": "refused", "reason": reason, "delivery": posted ? "unknown/may_have_sent" : "not_sent", "elapsedMs": elapsed()]
+    if let viewportDiagnostic = viewportDiagnostic { output["viewportDiagnostic"] = viewportDiagnostic }
+    emit(output, 2)
 }
 func closed(_ value: [String: Any], _ keys: Set<String>) -> Bool { Set(value.keys) == keys }
 func number(_ value: Any?) -> Double? {
@@ -451,7 +453,14 @@ if browser == "chrome" && pointer {
  postingPid = nil
 }
 let measurement = measureWindow(browser, expectedTitle, width * zoom, height * zoom)
-guard measurement.contained else { refuse("Owned AX viewport must be contained") }
+guard measurement.contained else {
+    refuse("Owned AX viewport must be contained", viewportDiagnostic: [
+        "axWindow": encodedRectangle(measurement.frame), "axViewport": encodedRectangle(measurement.view),
+        "viewportSource": measurement.safariScroll == nil ? "exact-web-area" : "safari-scroll-viewport",
+        "expectedWidth": width * zoom, "expectedHeight": height * zoom,
+        "visitedNodes": measurement.visited, "maximumDepth": measurement.depth
+    ])
+}
 let observed = recheckWindow(measurement, deadline)
 var result: [String: Any] = ["action":action, "nonce":nonce, "requestId":requestId, "mountedId":mount, "caseId":caseId, "target":target,
  "cleanupOnly":cleanup, "frontBundle":measurement.expectedBundle, "frontPid":measurement.front.processIdentifier,
