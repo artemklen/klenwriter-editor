@@ -61,6 +61,19 @@ async function kwdj(entry,variant){const names=copy[entry.locale];await adapter.
 }
 async function notes(entry,variant){const names=copy[entry.locale];await adapter.call('setup','before');await tabTo(entry,'title');await physical(entry,'enter');let value=await checkpoint(entry,'named Notes modal');assert.equal(value.measurements.surfaces.field.accessibleName,names.title);assert.equal(value.measurements.surfaces.field.tag,'INPUT');const modal=value.measurements.clips.find(c=>c.role==='dialog');assert.ok(modal&&!modal.hidden);assert.equal(modal.modal,'true');assert.equal(modal.accessibleName,names.dialog);variant.focus.push(focusVisible(value,'field'));contrast(value,['field','apply','cancel'],variant);await physical(entry,'tab');variant.focus.push(focusVisible(await adapter.call('inspect'),'apply'));await physical(entry,'tab');const lower=await adapter.call('inspect');variant.focus.push(focusVisible(lower,'cancel'));const lastModal=lower.measurements.clips.find(c=>c.role==='dialog');assert.ok(lastModal.scrollHeight>lastModal.clientHeight&&lastModal.scrollTop>modal.scrollTop,'Declared modal scroll reaches Cancel');await physical(entry,'tab');const upper=await adapter.call('inspect');focused(upper,'field');assert.ok(upper.measurements.clips.find(c=>c.role==='dialog').scrollTop<lastModal.scrollTop);variant.scroll={first:modal,last:lastModal,returned:upper.measurements.clips.find(c=>c.role==='dialog')};await physical(entry,'enter');value=await checkpoint(entry,'empty Apply required field only');assert.ok(value.measurements.surfaces.field.descriptionIds);assert.equal(value.measurements.surfaces.field.invalid,'true');assert.equal(value.measurements.surfaces.field.descriptionText,names.required);variant.focus.push(focusVisible(value,'field'));await physical(entry,'escape');value=await checkpoint(entry,'modal cancelled without title command');return value;}
 async function recovery(entry,variant){const names=copy[entry.locale];await adapter.call('setup','before');let value=await tabTo(entry,'retry');assert.equal(value.measurements.surfaces.retry.accessibleName,names.retry);variant.focus.push(focusVisible(value,'retry'));contrast(value,['retry','original'],variant);value=await physical(entry,'tab');assert.equal(value.measurements.surfaces.original.accessibleName,names.original);variant.focus.push(focusVisible(value,'original'));return checkpoint(entry,'actual rejected-loader host recovery controls, no activation');}
+async function parkBeforeDispose(entry,variant){
+  // Planned genuine keyboard navigation on the successful path only. The
+  // persistent host button survives disposal; no DOM focus or input retry.
+  let value=await adapter.call('inspect'),physicalShiftTabCount=0;
+  for(let i=0;value.active?.id!=='a66-before'&&i<12;i++){
+    value=await physical(entry,'shift-tab');physicalShiftTabCount++;
+  }
+  assert.equal(value.active?.id,'a66-before','Bounded ShiftTab route reaches persistent host button');
+  assert.equal(value.active.tag,'BUTTON');
+  value=await checkpoint(entry,'genuine keyboard focus parked before successful disposal');
+  assert.equal(value.active?.id,'a66-before');assert.equal(value.active.tag,'BUTTON');
+  variant.focusParking={physicalShiftTabCount,active:value.active,inputTraceCount:value.inputTraceCount,scope:'Existing closed ShiftTab program; native unchanged checkpoint before old mount disposal; no programmatic focus, scroll, delivery retry or guard change'};
+}
 async function finishVariant(entry,variant){
   variant.finishAttempted=true;save();
   variant.finish=await adapter.call('finish');entry.finish=variant.finish;
@@ -79,6 +92,7 @@ async function perform(entry){
     // A successful variant returns to the original100% prepare baseline while
     // its own mount/guards still exist. A failure never reaches another mount.
     variant.resetViewport=(await zoom(entry,1)).viewport;
+    await parkBeforeDispose(entry,variant);
     await finishVariant(entry,variant);
     variant.physicalActionEnd=report.physicalActions.length;variant.actualActionCount=variant.physicalActionEnd-variant.physicalActionStart;
     variant.status='PASSED';variant.finishedAt=now();save();
