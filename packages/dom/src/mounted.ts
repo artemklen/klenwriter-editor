@@ -168,14 +168,17 @@ class MountedOwner implements MountedEditor {
       if (!MODES.has(this.#mode) || this.#access === 'read_only' && this.#mode === 'editable') throw new TypeError();
       this.#catalog = options.renderers as RendererCatalog;
       this.#element = element; mountedHosts.add(element);
-      for (const name of ['contenteditable','tabindex','role','aria-readonly','aria-disabled']) this.#attributes.set(name, element.getAttribute(name));
+      for (const name of ['contenteditable','tabindex','role','aria-readonly','aria-disabled','aria-multiline','aria-busy']) this.#attributes.set(name, element.getAttribute(name));
       this.#hadClass = element.classList.contains('editor-surface');
       element.classList.add('editor-surface'); element.setAttribute('contenteditable','false');
       element.setAttribute('role','textbox');
+      element.setAttribute('aria-multiline','true');
+      element.setAttribute('aria-busy','true');
       this.#controller = createEditor(this.#configuration);
       void this.#initialize();
     } catch {
       this.#lifecycle = 'recoveryRequired';
+      this.#element?.setAttribute('aria-busy','false');
       const failure = domRefusal('dom.invalid_options','mount');
       this.#settle({ ...failure, response: null, recovery: this.#packet() });
     }
@@ -226,6 +229,7 @@ class MountedOwner implements MountedEditor {
     if (!this.#recovery && this.#element && ['dom.reconcile_limit','dom.recovery_required','dom.composition_conflict'].includes(failure.diagnostic.code)) this.#recovery = Object.freeze({kind:'retained_dom',element:this.#element,reason:'capture_limit',ownership:'transferred_to_host'});
     this.#lifecycle = this.#controller?.lifecycle === 'fatal' ? 'fatal' : 'recoveryRequired';
     this.#element?.setAttribute('contenteditable','false');
+    this.#element?.setAttribute('aria-busy','false');
     this.#selectionOwner.cancel(); this.#clipboardOwner?.cancel(failure.diagnostic.code);
     this.#notifyCompositionRecovery();
     if (this.#receipt || !this.#element) return;
@@ -241,6 +245,9 @@ class MountedOwner implements MountedEditor {
     element.setAttribute('contenteditable', String(this.#lifecycle === 'ready' && this.#mode === 'editable' && this.#access === 'editable'));
     element.setAttribute('aria-readonly', String(this.#mode !== 'editable' || this.#access === 'read_only'));
     element.setAttribute('aria-disabled', String(this.#mode === 'disabled'));
+    // Initialization and mode writes precede observation (or run disconnected).
+    // Native command queues do not make the accessible document a loading view.
+    element.setAttribute('aria-busy','false');
     element.setAttribute('tabindex', this.#mode === 'disabled' ? '-1' : '0');
     if (this.#mode === 'disabled' && element.ownerDocument.activeElement === element) element.blur();
   }
@@ -254,6 +261,7 @@ class MountedOwner implements MountedEditor {
         reason:'native_fatal',...(compositionSubmission ? {submission:compositionSubmission,response:response as Extract<Response,{status:'fatal'}>,nativeOutcome:'completed' as const} : {})});
       this.#lifecycle = 'fatal';
       this.#element?.setAttribute('contenteditable','false');
+      this.#element?.setAttribute('aria-busy','false');
       this.#observer?.disconnect(); this.#observer = null;
       this.#selectionOwner.destroy(); this.#clipboardOwner?.destroy();
       this.#input?.destroy(); this.#input = null;
@@ -281,6 +289,7 @@ class MountedOwner implements MountedEditor {
     if (this.#lifecycle !== 'loading') return;
     if (response.status !== 'ok') {
       this.#lifecycle = response.status === 'fatal' ? 'fatal' : 'recoveryRequired';
+      this.#element?.setAttribute('aria-busy','false');
       this.#settle({ status:'sdk_failure', response, recovery:this.#packet() }); return;
     }
     const context = controller.context();
@@ -293,6 +302,7 @@ class MountedOwner implements MountedEditor {
     if (failure) {
       const nativeFailure = this.#initialReadFailure; this.#initialReadFailure = null;
       this.#lifecycle = nativeFailure?.status === 'fatal' ? 'fatal' : 'recoveryRequired'; controller.destroy();
+      this.#element?.setAttribute('aria-busy','false');
       this.#view?.destroy({ retainRegion:true }); this.#view = null;
       if (nativeFailure) this.#settle({status:'sdk_failure',response:nativeFailure,recovery:this.#packet()});
       else { this.#settle({ ...failure, response, recovery:this.#packet() }); this.#report(failure); }
@@ -302,6 +312,7 @@ class MountedOwner implements MountedEditor {
     const subscription = controller.subscribe(event => this.#publication(event));
     if (typeof subscription !== 'function') {
       this.#lifecycle = 'recoveryRequired'; controller.destroy();
+      this.#element?.setAttribute('aria-busy','false');
       this.#settle({ status:'sdk_failure', response:subscription, recovery:this.#packet() }); return;
     }
     this.#unsubscribe = subscription;
