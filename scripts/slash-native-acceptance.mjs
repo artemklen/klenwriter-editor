@@ -16,9 +16,11 @@ import {observePointerAcknowledgement} from './slash-native/pointer-observation.
 import {admitEarlyTerminal} from './slash-native/early-terminal-observation.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');process.chdir(root);
-const args=process.argv.slice(2),names=['--browser','--output','--broker','--head','--expected-version'];
-if(args.length!==names.length*2||new Set(args.filter((_,i)=>i%2===0)).size!==names.length||args.filter((_,i)=>i%2===0).some(name=>!names.includes(name)))throw Error('Usage: node scripts/slash-native-acceptance.mjs --browser chrome|safari --output /fresh/outside/report.json --broker /fresh/outside/broker/config.json --head FULL_SHA --expected-version INSTALLED_VERSION');
+const args=process.argv.slice(2),baseNames=['--browser','--output','--broker','--head','--expected-version'],safariKeyBudgetFlag='--safari-key-guard-age-ms',names=args.includes(safariKeyBudgetFlag)?[...baseNames,safariKeyBudgetFlag]:baseNames;
+if(args.length!==names.length*2||new Set(args.filter((_,i)=>i%2===0)).size!==names.length||args.filter((_,i)=>i%2===0).some(name=>!names.includes(name)))throw Error('Usage: node scripts/slash-native-acceptance.mjs --browser chrome|safari --output /fresh/outside/report.json --broker /fresh/outside/broker/config.json --head FULL_SHA --expected-version INSTALLED_VERSION [--safari-key-guard-age-ms 1500 (Safari only)]');
 const option=name=>args[args.indexOf(name)+1],browserName=option('--browser'),expectedHead=option('--head');assert.ok(['chrome','safari'].includes(browserName));assert.match(expectedHead,/^[a-f0-9]{40}$/);
+const safariKeyGuardAgeMs=names.includes(safariKeyBudgetFlag)?1500:1000;
+if(names.includes(safariKeyBudgetFlag)){assert.equal(browserName,'safari','Safari-only explicit key-budget opt-in');assert.equal(option(safariKeyBudgetFlag),'1500','Only the closed1500ms opt-in is admitted');}
 assert.equal(process.env.CFFIXED_USER_HOME,undefined,'Native parent must use the real OS environment');assert.equal(process.env.OSR42_NATIVE_DEVELOPMENT_CASE,undefined,'43 has no42 development selector');
 const outside=value=>{assert.ok(value?.startsWith('/'));const path=resolve(value);assert.ok(path!==root&&!path.startsWith(root+'/'),'Evidence must remain outside checkout');return path;};
 const outputPath=outside(option('--output')),configPath=outside(option('--broker'));assert.equal(existsSync(outputPath),false,'Preserve prior evidence; output must be fresh');mkdirSync(dirname(outputPath),{recursive:true});
@@ -31,6 +33,7 @@ const earlyTerminalLiteral=JSON.parse(readFileSync('contracts/slash/v1.1/install
 const report={format:'editor-slash-installed/1',browser:browserName,expectedHead,status:'NOT_RUN',startedAt:now(),locales:['en','ru'].map(locale=>({locale,inputSourceId:'com.apple.keylayout.US',cases:caseIds.filter(id=>id.endsWith('-'+locale)).map(caseId=>({locale,caseId,status:'NOT_RUN',actualActionCount:0,preparation:[],checkpoints:[],startedAt:null}))})),physicalActions:[],setup:[],restoration:null,
  historyObservability:{publicHistoryFields:['undo_entries','redo_entries','retained_bytes'],openTypingGroup:{status:'NOT_EXPOSED_BY_PUBLIC_DTO',directObservation:false,basis:'Fresh genuine session plus exact isolated history_hint request and one native unit Undo/Redo; no internal group-state boolean is observed or invented'}},
  scope:'Installed43 platform System Events/CGEvent with independent AX/DOM/native facts; not hardware provenance or42 proof. Missing genuine composition opportunity remains UNOBSERVED; no retry/normalization/classifier inheritance, screenshots, AT/CJK/mobile or independent-review claim.'};
+report.inputGuardBudget={defaultMs:limits.guardAgeMs,safariFixedKeyMs:safariKeyGuardAgeMs,selection:names.includes(safariKeyBudgetFlag)?'explicit Safari1500 opt-in; owner approval required before use':'original43 default1000',scope:'Safari fixed SystemEvents key cycle and same-owner UP cleanup; Chrome/pointer/bootstrap/inspect remain1000; no retry'};
 const save=()=>writeFileSync(outputPath,JSON.stringify(report,null,2)+'\n');save();
 function run(command,argv,{fullStdout=false,timeout=30000,maxBuffer=1024*1024}={}){
   const started=process.hrtime.bigint(),value=spawnSync(command,argv,{cwd:root,encoding:'utf8',timeout,maxBuffer}),wallTimeMs=Number(process.hrtime.bigint()-started)/1e6;
@@ -207,7 +210,7 @@ try {
   report.setup.push({action:'compile-closed-fixture-helpers',executions:helperExecutions});chmodSync(keyScriptPath,0o444);report.helperArtifacts=[sourceHelper,inputHelper,keySource,keyScriptPath,...(findKeyHelper?[findKeyHelper]:[])].map(absolutePin);
   if(browserName==='chrome'){preflightChromeFindHelper();save();}
   const initial=source();coherent(initial,initial.current.id);originalSource=initial.current.id;report.initialInputSources=initial;for(const id of ['com.apple.keylayout.US','com.apple.keylayout.Russian'])assert.ok(initial.sources.some(s=>s.id===id&&s.enabled&&s.selectable),'Existing source '+id);
-  adapter=await(browserName==='chrome'?createChromeAdapter({config,report,inputHelper,keyScriptPath,findKeyHelper,run,save,outputPath}):createSafariAdapter({config,report,inputHelper,keyScriptPath,run,outputPath}));await adapter.navigate();assert.equal(report.browserVersion,report.bundleVersion);sourceWindowReadiness=true;
+  adapter=await(browserName==='chrome'?createChromeAdapter({config,report,inputHelper,keyScriptPath,findKeyHelper,run,save,outputPath}):createSafariAdapter({config,report,inputHelper,keyScriptPath,run,outputPath,safariKeyGuardAgeMs}));await adapter.navigate();assert.equal(report.browserVersion,report.bundleVersion);sourceWindowReadiness=true;
   let blocked=false;
   for(const lane of report.locales){
     const locale=lane.locale;

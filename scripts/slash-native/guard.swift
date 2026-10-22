@@ -427,7 +427,7 @@ guard argv.count == 3, ["--request", "--guard-key"].contains(argv[1]), let data 
  ["I43-N01-en","I43-N02-en","I43-N03-en","I43-N04-en","I43-N05-en","I43-N06-en","I43-N07-en","I43-N08-en","I43-N09-en","I43-N10-en","I43-N01-ru","I43-N02-ru","I43-N03-ru","I43-N04-ru","I43-N05-ru","I43-N06-ru","I43-N07-ru","I43-N08-ru","I43-N09-ru","I43-N10-ru"].contains(caseId),
  let target = request["target"] as? String,
  let held = boolean(request["pointerDown"]), let cleanup = boolean(request["cleanupOnly"]),
- let deadline = number(request["deadlineMs"]), deadline >= 1, deadline <= 1000,
+ let deadline = number(request["deadlineMs"]), deadline >= 1, deadline <= (browser == "safari" && argv[1] == "--guard-key" ? 1500 : 1000),
  let viewport = request["viewport"] as? [String: Any], closed(viewport, ["width", "height", "scale", "offsetLeft", "offsetTop", "pageZoom"]),
  let width = number(viewport["width"]), let height = number(viewport["height"]), let zoom = number(viewport["pageZoom"]),
  width >= 1, width <= 1024, height >= 1, height <= 768, zoom >= 1, zoom <= 2,

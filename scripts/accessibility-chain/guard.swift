@@ -290,7 +290,7 @@ guard argv.count == 3, ["--request", "--guard-key"].contains(argv[1]), let data 
  ["integrated-chain", "selection-combining-reverse", "selection-atom-nested-root-forward", "held-save"].contains(caseId),
  let target = request["target"] as? String,
  let held = boolean(request["pointerDown"]), let cleanup = boolean(request["cleanupOnly"]),
- let deadline = number(request["deadlineMs"]), deadline >= 1, deadline <= 1000,
+ let deadline = number(request["deadlineMs"]), deadline >= 1, deadline <= (browser == "safari" && argv[1] == "--guard-key" ? 1500 : 1000),
  let viewport = request["viewport"] as? [String: Any], closed(viewport, ["width", "height", "scale", "offsetLeft", "offsetTop", "pageZoom"]),
  let width = number(viewport["width"]), let height = number(viewport["height"]), let zoom = number(viewport["pageZoom"]),
  width >= 1, width <= 1024, height >= 1, height <= 768, zoom >= 1, zoom <= 2,

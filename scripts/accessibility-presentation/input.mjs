@@ -48,7 +48,10 @@ export const fixedKeyScript=requireFixture+`on run argv
  error "Unknown closed accessibility66 key"
 end run
 `;
-export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,record,guard,cleanupGuard,mountedId,nativeFindEpisode,nativeFindKeyTransport,findKeyHelper,nativeZoomKeyTransport,safariCopyKeyTransport}){
+export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,record,guard,cleanupGuard,mountedId,nativeFindEpisode,nativeFindKeyTransport,findKeyHelper,nativeZoomKeyTransport,safariCopyKeyTransport,safariKeyGuardAgeMs=1000}){
+  // Explicit OSR66 opt-in only; fixed programs/default1s and all non-Safari-key budgets stay unchanged.
+  assert.ok([1000,1500].includes(safariKeyGuardAgeMs),'Closed Safari fixed-key guard budget');
+  assert.ok(browser==='safari'||safariKeyGuardAgeMs===1000,'Safari-only fixed-key guard option');
   assert.ok(['chrome','safari'].includes(browser));assert.match(config.nonce,/^[a-f0-9]{32}$/);assert.equal(config.format,'osr66-accessibility-http-broker/1');assert.equal(config.fixtureUrl,'http://127.0.0.1:4174/accessibility');assert.equal(config.title,'KlenWriter Accessibility native '+config.nonce);
   let disabled=false,serial=0,pending=null,cleanupUsed=false,baselineWindow=null;
   assert.equal(nativeFindEpisode,undefined,'Find is outside the closed presentation transport');
@@ -142,6 +145,7 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
   async function perform(action,cleanup=false){
     if(nativeZoomCg&&['zoom-in','zoom-reset'].includes(action))return performZoom(action,cleanup);
     if(nativeZoomCg)assert.equal(operationBusy,false,'One private key operation at a time');let proof=null,preflight=null,execution=null,dispatched=false,completed=false;
+    const keyGuardAgeMs=browser==='safari'&&keySpecs[action]?safariKeyGuardAgeMs:limits.guardAgeMs;
     try {
       const key=keySpecs[action],pointer=pointerTargets[action];assert.ok(key||pointer);assert.ok(mountedId());
       assert.ok(cleanup?pending&&!cleanupUsed&&!pending.pointer:!disabled);if(cleanup){assert.equal(action,pending.action);cleanupUsed=true;}
@@ -152,31 +156,34 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
       assert.ok(Math.abs(v.zoomEvidence.dprRatio-1)<.01||Math.abs(v.zoomEvidence.dprRatio-v.viewport.pageZoom)<.01,'Unexpected hardware/DPR transition during fixed-window zoom');
       assert.ok(cleanup?v.releaseOnly===true:v.documentFocused===true);assert.equal(v.editorConnected,true);assert.equal(v.target,pointer??'focused');assert.equal(v.pointerDown,false);
       assert.ok(Number.isSafeInteger(v.serial)&&v.serial>serial);serial=v.serial;
-      const remaining=Math.floor(limits.guardAgeMs-age(proof.start));assert.ok(remaining>0,'Fresh66 page guard expired');
+      const remaining=Math.floor(keyGuardAgeMs-age(proof.start));assert.ok(remaining>0,'Fresh66 page guard expired');
       const request={format:'osr66-native-input/1',browser,nonce:config.nonce,title:config.title,fixtureUrl:config.fixtureUrl,mountedId:mountedId(),requestId:proof.id,serial,caseId:v.caseId,action,target:v.target,point:v.point,viewport:v.viewport,pointerDown:false,cleanupOnly:cleanup,deadlineMs:remaining};
+      // One bounded number for this original pointer pair; pending.request owns cleanup's number.
+      if(pointer){assert.ok(Number.isSafeInteger(serial)&&serial>=1&&serial<=2048);request.mouseEventNumber=serial;}
       if(key){
         preflight=run(inputHelper,['--guard-key',JSON.stringify(request)],{timeout:remaining,fullStdout:true,maxBuffer:32768});const strict=JSON.parse(preflight.stdout);
         assert.equal(strict.status,'guarded');assert.equal(strict.delivery,'not_sent');assert.equal(strict.cleanupOnly,cleanup);assert.equal(strict.frontBundle,browser==='chrome'?'com.google.Chrome':'com.apple.Safari');
         fixedWindow(strict.axWindow);
         if(cleanup)assert.equal(strict.frontPid,pending.pid);
         for(const [name,value]of Object.entries({action,requestId:proof.id,nonce:config.nonce,mountedId:mountedId(),caseId:v.caseId,target:v.target}))assert.equal(strict[name],value);
-        const left=Math.floor(limits.guardAgeMs-age(proof.start));assert.ok(left>0,'AX guard consumed deadline');pending={action,pointer:false,pid:strict.frontPid,mount:mountedId(),caseId:v.caseId};dispatched=true;
+        const left=Math.floor(keyGuardAgeMs-age(proof.start));assert.ok(left>0,'AX guard consumed deadline');pending={action,pointer:false,pid:strict.frontPid,mount:mountedId(),caseId:v.caseId};dispatched=true;
         const keyArguments=[keyScriptPath,browser,strict.expectedAxWindowTitle,String(strict.frontPid),(cleanup?'release-':'')+action];
         execution=run('/usr/bin/osascript',keyArguments,{timeout:left,fullStdout:true,maxBuffer:32768});
         const actual=JSON.parse(execution.stdout);
         assert.equal(actual.action,(cleanup?'release-':'')+action);assert.equal(actual.status,cleanup?'keys-released':'key-sent');assert.equal(actual.keyCode,key.code);assert.deepEqual(actual.modifiers,key.modifiers);assert.equal(actual.frontPid,strict.frontPid);
         assert.deepEqual(actual.keyTransitions,cleanup?[...key.modifiers.map(m=>m+'-up'),`key${key.code}-up`]:[...key.modifiers.map(m=>m+'-down'),`key${key.code}-down`,`key${key.code}-up`,...key.modifiers.toReversed().map(m=>m+'-up')]);
-        completed=true;pending=null;assert.ok(age(proof.start)<=limits.guardAgeMs,'Total66 key guard exceeded1s');
-        const value={action,delivery:'sent',actual,execution,pageGuard:proof.value,keyGuard:strict,keyGuardExecution:preflight,maximumGuardAgeMs:age(proof.start),guardAgeLimitMs:limits.guardAgeMs,cleanupOnly:cleanup,keysPending:false,requestId:proof.id};record(cleanup?'owned-key-release':'physical-input',value);return value;
+        completed=true;pending=null;assert.ok(age(proof.start)<=keyGuardAgeMs,keyGuardAgeMs===1000?'Total66 key guard exceeded1s':'Total66 key guard exceeded1500ms');
+        const value={action,delivery:'sent',actual,execution,pageGuard:proof.value,keyGuard:strict,keyGuardExecution:preflight,maximumGuardAgeMs:age(proof.start),guardAgeLimitMs:keyGuardAgeMs,cleanupOnly:cleanup,keysPending:false,requestId:proof.id};record(cleanup?'owned-key-release':'physical-input',value);return value;
       }
       assert.equal(cleanup,false);pending={action,pointer:true,request};dispatched=true;
       execution=run(inputHelper,['--request',JSON.stringify(request)],{timeout:remaining,fullStdout:true,maxBuffer:32768});const actual=JSON.parse(execution.stdout);
       assert.equal(actual.status,'sent');assert.equal(actual.delivery,'sent');assert.deepEqual(actual.transitions,['down','up']);assert.equal(actual.action,action);assert.equal(actual.requestId,proof.id);
       fixedWindow(actual.axWindow);
+      assert.equal(actual.mouseEventNumber,request.mouseEventNumber);assert.deepEqual(actual.constructedMouseEventNumbers,[request.mouseEventNumber,request.mouseEventNumber]);
       for(const [name,value]of Object.entries({nonce:config.nonce,mountedId:mountedId(),caseId:v.caseId,target:v.target}))assert.equal(actual[name],value);
       completed=true;pending=null;assert.ok(age(proof.start)<=limits.guardAgeMs,'Total66 pointer guard exceeded1s');
       const value={action,delivery:'sent',actual,execution,pageGuard:proof.value,maximumGuardAgeMs:age(proof.start),guardAgeLimitMs:limits.guardAgeMs,cleanupOnly:false,keysPending:false,pointerDown:false,requestId:proof.id};record('physical-input',value);return value;
-    } catch(error){let knownNotSent=false;if(pointerTargets[action]&&error.execution?.stdout)try{knownNotSent=JSON.parse(error.execution.stdout).delivery==='not_sent';}catch{}if(knownNotSent)pending=null;disabled=true;record('physical-input-failure',{action,delivery:completed?'sent/known_completed':knownNotSent?'not_sent':dispatched?'unknown/may_have_sent':'not_sent',keysPending:!!pending&&!pending.pointer,pointerDown:!!pending?.pointer,cleanupOnly:cleanup,error:error.message,execution:execution??error.execution??null,keyGuardExecution:preflight,maximumGuardAgeMs:proof?age(proof.start):null});throw error;}
+    } catch(error){let knownNotSent=false;if(pointerTargets[action]&&error.execution?.stdout)try{knownNotSent=JSON.parse(error.execution.stdout).delivery==='not_sent';}catch{}if(knownNotSent)pending=null;disabled=true;record('physical-input-failure',{action,delivery:completed?'sent/known_completed':knownNotSent?'not_sent':dispatched?'unknown/may_have_sent':'not_sent',keysPending:!!pending&&!pending.pointer,pointerDown:!!pending?.pointer,cleanupOnly:cleanup,error:error.message,execution:execution??error.execution??null,keyGuardExecution:preflight,maximumGuardAgeMs:proof?age(proof.start):null,guardAgeLimitMs:keyGuardAgeMs});throw error;}
   }
   return {input:action=>perform(action),retireFindEpisode:()=>{ownerEpoch++;},get disabled(){return disabled;},get keysPending(){return !!pending&&!pending.pointer;},get pointerDown(){return !!pending?.pointer;},get pointerState(){return pending?.pointer?'unknown':'up';},
     releaseOwnedKeys:()=>{assert.ok(pending&&!pending.pointer);return perform(pending.action,true);},async releaseOwnedPointer(){
@@ -186,9 +193,12 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
       assert.equal(v.nonce,config.nonce);assert.equal(v.id,mountedId());assert.equal(v.id,saved.request.mountedId);assert.equal(v.mountedId,saved.request.mountedId);assert.equal(v.action,saved.action);assert.equal(v.target,saved.request.target);assert.equal(v.releaseOnly,true);assert.equal(v.allowed,true);assert.equal(v.editorConnected,true);
       assert.equal(v.url,config.fixtureUrl);assert.equal(v.title,config.title);assert.equal(v.caseId,saved.request.caseId);assert.deepEqual(v.viewport,saved.request.viewport);
       const remaining=Math.floor(limits.guardAgeMs-age(proof.start));assert.ok(remaining>0);
+      // Fresh cleanup proof retains the original pair's number, never its new guard serial.
+      assert.ok(Number.isSafeInteger(saved.request.mouseEventNumber)&&saved.request.mouseEventNumber>=1&&saved.request.mouseEventNumber<=2048&&saved.request.mouseEventNumber<=v.serial);
       request={...saved.request,requestId:proof.id,serial:v.serial,cleanupOnly:true,pointerDown:true,deadlineMs:remaining};
       execution=run(inputHelper,['--request',JSON.stringify(request)],{timeout:remaining,fullStdout:true,maxBuffer:32768});actual=JSON.parse(execution.stdout);
       assert.equal(actual.status,'sent');assert.equal(actual.delivery,'sent');assert.equal(actual.cleanupOnly,true);assert.deepEqual(actual.transitions,['up']);
+      assert.equal(actual.mouseEventNumber,saved.request.mouseEventNumber);assert.deepEqual(actual.constructedMouseEventNumbers,[saved.request.mouseEventNumber]);
       for(const name of ['action','requestId','nonce','mountedId','caseId','target'])assert.equal(actual[name],request[name]);
       assert.equal(actual.frontBundle,browser==='chrome'?'com.google.Chrome':'com.apple.Safari');assert.ok(Number.isSafeInteger(actual.frontPid)&&actual.frontPid>0);
       const expectedTitle=config.title+(browser==='chrome'?' - Google Chrome':'');assert.equal(actual.expectedAxWindowTitle,expectedTitle);assert.equal(actual.observedAxWindowTitle,expectedTitle);

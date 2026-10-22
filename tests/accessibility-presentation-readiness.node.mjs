@@ -214,3 +214,130 @@ test('APR16 three exact notReady samples retain all raw refusals and never make 
   assert.deepEqual(f.waits,[100,100]);assert.deepEqual(r.samples.map(s=>s.actual),[notReady(),notReady(),notReady()]);
   assert.deepEqual(r.samples.map(s=>s.execution.returnCode),[2,2,2]);assert.equal(r.elapsedMs,260);
 });
+
+// Additive paired-number controls: real owner, in-memory callbacks only. No child process.
+// Expected numbers/transitions below are literal fixtures, never copied from the request under test.
+import {createInputOwner} from '../scripts/accessibility-presentation/input.mjs';
+
+function pointerClock(t){
+  const clock={now:0n};t.mock.method(process.hrtime,'bigint',()=>clock.now);
+  clock.advance=ms=>{clock.now+=BigInt(ms)*1000000n;};return clock;
+}
+function pointerFixture(clock,steps,{firstSerial=1,foreignCleanup=false}={}){
+  let nextSerial=firstSerial;
+  const f={calls:[],guards:[],records:[],steps:[...steps]};
+  const ownConfig={...config,format:'osr66-accessibility-http-broker/1'};
+  const viewport={width:1024,height:768,scale:1,offsetLeft:0,offsetTop:0,pageZoom:1};
+  function page(action,cleanup){
+    assert.equal(action,'click-strong','Only the original fixed pointer action is allowed');
+    const serial=nextSerial++,mount=cleanup&&foreignCleanup?'a66-2':'a66-1';
+    const value={nonce,url:config.fixtureUrl,title,id:mount,mountedId:mount,caseId:'presentation-kwdj',action,
+      target:'strong',point:{x:40,y:40},viewport:{...viewport},pointerDown:false,editorConnected:true,
+      documentFocused:true,allowed:true,serial,zoomEvidence:{dprRatio:1},...(cleanup?{releaseOnly:true}:{})};
+    const proof={id:nonce+':'+serial,start:clock.now,value};f.guards.push({cleanup,proof:structuredClone(proof)});return proof;
+  }
+  // This stub is the ONLY execution seam. No native helper, shell or process is callable.
+  function run(command,argv,options){
+    assert.equal(command,'/stub/a66-pointer');assert.equal(argv.length,2);assert.equal(argv[0],'--request');
+    const request=JSON.parse(argv[1]);
+    assert.deepEqual(Object.keys(request).sort(),['format','browser','nonce','title','fixtureUrl','mountedId','requestId','serial','caseId','action','target','point','viewport','pointerDown','cleanupOnly','deadlineMs','mouseEventNumber'].sort());
+    assert.deepEqual({format:request.format,browser:request.browser,nonce:request.nonce,title:request.title,fixtureUrl:request.fixtureUrl,mountedId:request.mountedId,caseId:request.caseId,action:request.action,target:request.target,point:request.point,viewport:request.viewport},
+      {format:'osr66-native-input/1',browser:'chrome',nonce,title,fixtureUrl:config.fixtureUrl,mountedId:'a66-1',caseId:'presentation-kwdj',action:'click-strong',target:'strong',point:{x:40,y:40},viewport});
+    assert.ok(Number.isInteger(request.deadlineMs)&&request.deadlineMs>0&&request.deadlineMs<=1000);
+    assert.equal(options.timeout,request.deadlineMs);assert.equal(options.fullStdout,true);assert.equal(options.maxBuffer,32768);
+    f.calls.push({command,argv:structuredClone(argv),options:structuredClone(options),request});
+    const step=f.steps.shift();assert.equal(typeof step,'function','No extra native call is permitted');
+    return step(request,f);
+  }
+  f.owner=createInputOwner({browser:'chrome',config:ownConfig,inputHelper:'/stub/a66-pointer',keyScriptPath:'/stub/never-key-script',
+    run,record:(kind,value)=>f.records.push({kind,value:structuredClone(value)}),
+    guard:async action=>page(action,false),cleanupGuard:async action=>page(action,true),mountedId:()=> 'a66-1'});
+  return f;
+}
+function pointerAck(request,{cleanup=false,number=1,numbers=[1,1]}={}){
+  return {action:'click-strong',status:'sent',delivery:'sent',cleanupOnly:cleanup,transitions:cleanup?['up']:['down','up'],
+    requestId:request.requestId,nonce,mountedId:'a66-1',caseId:'presentation-kwdj',target:'strong',
+    frontBundle:'com.google.Chrome',frontPid:4312,expectedAxWindowTitle:title+' - Google Chrome',observedAxWindowTitle:title+' - Google Chrome',
+    axWindowCount:1,axWindow:{x:80,y:60,width:1200,height:900},mouseEventNumber:number,constructedMouseEventNumbers:[...numbers]};
+}
+function pointerExecution(request,actual){return {command:'/stub/a66-pointer',argv:['--request',JSON.stringify(request)],returnCode:0,signal:null,error:null,stdout:JSON.stringify(actual),stderr:''};}
+function unknownPointer(request){
+  const execution={...pointerExecution(request,{status:'refused',delivery:'unknown/may_have_sent',reason:'Controlled interruption after Down'}),returnCode:2};
+  throw Object.assign(Error('Controlled unknown pointer completion'),{execution});
+}
+
+test('APR17 pointer pair uses original serial1 and exact independently-authored getter ACK[1,1]',async t=>{
+  const f=pointerFixture(pointerClock(t),[(request)=>pointerExecution(request,pointerAck(request))]);
+  const result=await f.owner.input('click-strong');
+  assert.equal(f.calls.length,1);assert.equal(f.calls[0].request.serial,1);assert.equal(f.calls[0].request.mouseEventNumber,1);
+  assert.equal(f.calls[0].request.cleanupOnly,false);assert.equal(f.calls[0].request.pointerDown,false);
+  assert.equal(result.actual.mouseEventNumber,1);assert.deepEqual(result.actual.constructedMouseEventNumbers,[1,1]);
+  assert.equal(f.owner.disabled,false);assert.equal(f.owner.pointerDown,false);assert.equal(f.owner.pointerState,'up');assert.equal(f.owner.keysPending,false);
+  await assert.rejects(()=>f.owner.releaseOwnedPointer());assert.equal(f.calls.length,1);assert.equal(f.steps.length,0);
+});
+
+test('APR18 bounded pointer serial2048 succeeds while next2049 refuses before any further helper call',async t=>{
+  const f=pointerFixture(pointerClock(t),[request=>pointerExecution(request,pointerAck(request,{number:2048,numbers:[2048,2048]}))],{firstSerial:2048});
+  const result=await f.owner.input('click-strong');assert.equal(result.actual.mouseEventNumber,2048);
+  assert.equal(f.calls[0].request.serial,2048);assert.equal(f.calls[0].request.mouseEventNumber,2048);
+  await assert.rejects(()=>f.owner.input('click-strong'));assert.equal(f.guards.length,2);assert.equal(f.guards[1].proof.value.serial,2049);
+  assert.equal(f.calls.length,1);assert.equal(f.owner.disabled,true);assert.equal(f.owner.pointerDown,false);assert.equal(f.owner.keysPending,false);
+});
+
+test('APR19 UNKNOWN allows only one owned UP with fresh serial2 and ORIGINAL eventNumber1',async t=>{
+  const f=pointerFixture(pointerClock(t),[unknownPointer,request=>pointerExecution(request,pointerAck(request,{cleanup:true,number:1,numbers:[1]}))]);
+  await assert.rejects(()=>f.owner.input('click-strong'),/Controlled unknown pointer completion/);
+  assert.equal(f.owner.disabled,true);assert.equal(f.owner.pointerDown,true);assert.equal(f.owner.pointerState,'unknown');
+  const result=await f.owner.releaseOwnedPointer();
+  assert.equal(f.calls.length,2);assert.deepEqual(f.calls.map(c=>[c.request.serial,c.request.mouseEventNumber,c.request.cleanupOnly,c.request.pointerDown]),[[1,1,false,false],[2,1,true,true]]);
+  assert.equal(result.request.requestId,nonce+':2');assert.equal(result.actual.mouseEventNumber,1);assert.deepEqual(result.actual.constructedMouseEventNumbers,[1]);
+  assert.deepEqual(result.actual.transitions,['up']);assert.equal(f.owner.pointerDown,false);assert.equal(f.owner.pointerState,'up');assert.equal(f.owner.disabled,true);
+  await assert.rejects(()=>f.owner.releaseOwnedPointer());await assert.rejects(()=>f.owner.input('click-strong'));
+  assert.equal(f.calls.length,2);assert.equal(f.guards.length,2);assert.equal(f.steps.length,0);
+  assert.equal(f.records.filter(r=>r.kind==='owned-pointer-release').length,1);
+});
+
+test('APR20 contextual complete pair clears pending BEFORE a late1001ms failure and never sends UP',async t=>{
+  const clock=pointerClock(t),f=pointerFixture(clock,[request=>{const execution=pointerExecution(request,pointerAck(request));clock.advance(1001);return execution;}]);
+  await assert.rejects(()=>f.owner.input('click-strong'),/Total66 pointer guard exceeded1s/);
+  assert.equal(f.calls.length,1);assert.equal(f.owner.disabled,true);assert.equal(f.owner.pointerDown,false);assert.equal(f.owner.pointerState,'up');assert.equal(f.owner.keysPending,false);
+  const failure=f.records.at(-1);assert.equal(failure.kind,'physical-input-failure');assert.equal(failure.value.delivery,'sent/known_completed');
+  assert.equal(failure.value.pointerDown,false);assert.equal(failure.value.maximumGuardAgeMs,1001);
+  await assert.rejects(()=>f.owner.releaseOwnedPointer());assert.equal(f.calls.length,1);assert.equal(f.guards.length,1);
+});
+
+test('APR21 missing or wrong original/pair metadata never becomes a completed pointer ACK',async t=>{
+  const clock=pointerClock(t),vectors=[
+    ['missing original number',v=>{delete v.mouseEventNumber;}],['wrong original number',v=>{v.mouseEventNumber=2;}],
+    ['missing getter pair',v=>{delete v.constructedMouseEventNumbers;}],['mismatched getter pair',v=>{v.constructedMouseEventNumbers=[1,2];}],
+    ['partial getter pair',v=>{v.constructedMouseEventNumbers=[1];}],
+  ];
+  for(const [label,change]of vectors){
+    clock.now=0n;
+    const f=pointerFixture(clock,[request=>{const actual=pointerAck(request);change(actual);return pointerExecution(request,actual);},
+      request=>pointerExecution(request,pointerAck(request,{cleanup:true,number:1,numbers:[1]}))]);
+    await assert.rejects(()=>f.owner.input('click-strong'),undefined,label);
+    assert.equal(f.owner.disabled,true,label);assert.equal(f.owner.pointerDown,true,label);
+    assert.equal(f.records.at(-1).value.delivery,'unknown/may_have_sent',label);
+    await f.owner.releaseOwnedPointer();
+    assert.deepEqual(f.calls.map(c=>[c.request.serial,c.request.mouseEventNumber,c.request.cleanupOnly]),[[1,1,false],[2,1,true]],label);
+    assert.equal(f.owner.pointerDown,false,label);await assert.rejects(()=>f.owner.releaseOwnedPointer(),undefined,label);assert.equal(f.calls.length,2,label);
+  }
+});
+
+test('APR22 a cleanup ACK rebound to fresh serial2 is refused and cannot trigger a second UP or DOWN',async t=>{
+  const f=pointerFixture(pointerClock(t),[unknownPointer,request=>pointerExecution(request,pointerAck(request,{cleanup:true,number:2,numbers:[2]}))]);
+  await assert.rejects(()=>f.owner.input('click-strong'));await assert.rejects(()=>f.owner.releaseOwnedPointer());
+  assert.deepEqual(f.calls.map(c=>[c.request.serial,c.request.mouseEventNumber,c.request.cleanupOnly]),[[1,1,false],[2,1,true]]);
+  assert.equal(f.owner.disabled,true);assert.equal(f.owner.pointerDown,true);assert.equal(f.owner.pointerState,'unknown');
+  assert.equal(f.records.at(-1).kind,'owned-pointer-release-failure');
+  await assert.rejects(()=>f.owner.releaseOwnedPointer());await assert.rejects(()=>f.owner.input('click-strong'));assert.equal(f.calls.length,2);assert.equal(f.guards.length,2);
+});
+
+test('APR23 a fresh cleanup proof for a foreign mount never acquires original pointer ownership',async t=>{
+  const f=pointerFixture(pointerClock(t),[unknownPointer],{foreignCleanup:true});
+  await assert.rejects(()=>f.owner.input('click-strong'));await assert.rejects(()=>f.owner.releaseOwnedPointer());
+  assert.equal(f.guards.length,2);assert.equal(f.guards[1].proof.value.id,'a66-2');assert.equal(f.calls.length,1);
+  assert.equal(f.owner.pointerDown,true);assert.equal(f.owner.disabled,true);assert.equal(f.records.at(-1).kind,'owned-pointer-release-failure');
+  await assert.rejects(()=>f.owner.releaseOwnedPointer());assert.equal(f.calls.length,1);assert.equal(f.guards.length,2);
+});

@@ -276,7 +276,7 @@ if argv.count == 3 && argv[1] == "--inspect-window" {
 }
 guard argv.count == 3, ["--request", "--guard-key"].contains(argv[1]), let data = argv[2].data(using: .utf8), data.count <= 4096,
  let request = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
- closed(request, ["format", "browser", "nonce", "title", "fixtureUrl", "mountedId", "requestId", "serial", "caseId", "action", "target", "point", "viewport", "pointerDown", "cleanupOnly", "deadlineMs"]),
+ closed(request, Set(["format", "browser", "nonce", "title", "fixtureUrl", "mountedId", "requestId", "serial", "caseId", "action", "target", "point", "viewport", "pointerDown", "cleanupOnly", "deadlineMs"]).union(request["action"] as? String == "click-strong" ? ["mouseEventNumber"] : [])),
  request["format"] as? String == "osr66-native-input/1",
  let browser = request["browser"] as? String, ["chrome", "safari"].contains(browser),
  let nonce = request["nonce"] as? String, nonce.range(of: "^[a-f0-9]{32}$", options: .regularExpression) != nil,
@@ -290,7 +290,7 @@ guard argv.count == 3, ["--request", "--guard-key"].contains(argv[1]), let data 
  ["presentation-kwdj", "presentation-notes", "presentation-recovery"].contains(caseId),
  let target = request["target"] as? String,
  let held = boolean(request["pointerDown"]), let cleanup = boolean(request["cleanupOnly"]),
- let deadline = number(request["deadlineMs"]), deadline >= 1, deadline <= 1000,
+ let deadline = number(request["deadlineMs"]), deadline >= 1, deadline <= (browser == "safari" && argv[1] == "--guard-key" ? 1500 : 1000),
  let viewport = request["viewport"] as? [String: Any], closed(viewport, ["width", "height", "scale", "offsetLeft", "offsetTop", "pageZoom"]),
  let width = number(viewport["width"]), let height = number(viewport["height"]), let zoom = number(viewport["pageZoom"]),
  width >= 1, width <= 1024, height >= 1, height <= 768, zoom >= 1, zoom <= 2,
@@ -308,6 +308,12 @@ let pointer = pointerTargets[action] != nil
 let guardingKey = argv[1] == "--guard-key"
 guard pointer ? !guardingKey && target == pointerTargets[action] : guardingKey && keys.contains(action) && target == "focused",
  cleanup ? (pointer ? held : !held) : !held else { refuse("Closed action/target transition differs") }
+var mouseEventNumber: Int64 = 0
+if pointer {
+ guard let value = number(request["mouseEventNumber"]), value >= 1, value <= 2048, value.rounded() == value,
+       cleanup ? value <= serial : value == serial else { refuse("Original pointer event number differs") }
+ mouseEventNumber = Int64(value)
+}
 let measurement = measureWindow(browser, expectedTitle, width * zoom, height * zoom)
 guard measurement.contained else { refuse("Owned AX viewport must be contained") }
 let observed = recheckWindow(measurement, deadline)
@@ -330,14 +336,20 @@ if let fallback = measurement.safariScroll {
 }
 guard actual.x.isFinite, actual.y.isFinite else { refuse("Finite scoped screen point required") }
 let transitions: [CGEventType] = cleanup ? [.leftMouseUp] : [.leftMouseDown,.leftMouseUp]
+var constructedMouseEventNumbers: [Int64] = []
 for type in transitions {
  _=recheckWindow(measurement,deadline)
  if let fallback = measurement.safariScroll {
   guard let point = safariScrollViewportPoint(viewport: fallback.scroll, visible: fallback.visible, cssWidth: width, cssHeight: height, x: x, y: y), point == actual else { refuse("Safari pointer no longer belongs to the exact visible content") }
  }
  guard let event=CGEvent(mouseEventSource:nil,mouseType:type,mouseCursorPosition:actual,mouseButton:.left) else { refuse("Cannot allocate scoped pointer event") }
- event.setIntegerValueField(.mouseEventClickState,value:1);posted=true;event.post(tap:.cghidEventTap)
+ // Explicit paired metadata only: preserve nil source, timestamp, flags and single-click state.
+ event.setIntegerValueField(.mouseEventNumber,value:mouseEventNumber)
+ event.setIntegerValueField(.mouseEventClickState,value:1)
+ constructedMouseEventNumbers.append(event.getIntegerValueField(.mouseEventNumber)) // Getter immediately before post.
+ posted=true;event.post(tap:.cghidEventTap)
 }
 guard elapsed() <= deadline else { refuse("Pointer completion exceeded authority deadline") }
+result["mouseEventNumber"]=mouseEventNumber;result["constructedMouseEventNumbers"]=constructedMouseEventNumbers
 result["status"]="sent";result["delivery"]="sent";result["screenPoint"]=["x":actual.x,"y":actual.y];result["transitions"]=cleanup ? ["up"] : ["down","up"];result["elapsedMs"]=elapsed()
 result["method"]="exact fixture control point via CGEvent; platform input, not hardware-device provenance";emit(result,0)
