@@ -25,6 +25,7 @@ const reportPath=resolve(out,'report.json'),start=performance.now(),runDeadline=
 const limits={callMs:12000,rowMs:45000,resultBytes:4*1024*1024,controlBytes:64*1024*1024,calls:768};
 let rowDeadline=runDeadline,adapter=null,current=null,blocked=false,cleaning=false,owner=null,pending=null,helperDisabled=false,releaseAttempted=false,originalSource=null;
 let authorityReadPersistenceDeferred=false;
+let authorityEvidenceBudget=null,authorityEvidenceParity=null;
 const oraclePath=resolve(root,'scripts/typography-installed/oracles.json'),oracles=JSON.parse(readFileSync(oraclePath));
 assert.equal(oracles.format,'osr48-installed-typography-oracles/1');assert.equal(oracles.rows.length,6);
 const report={format:'osr48-installed-typography/1',browser:browserName,nonce,title,url,status:'NOT_RUN',startedAt:new Date().toISOString(),
@@ -34,7 +35,24 @@ const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 const pin=path=>{const bytes=readFileSync(path);return{path,bytes:bytes.length,sha256:hash(bytes)};};
 const walk=path=>readdirSync(path,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(resolve(path,e.name)):e.isFile()?[resolve(path,e.name)]:[]);
 const errorValue=error=>({message:String(error.message),stack:String(error.stack??'').slice(0,16384),execution:error.execution??null,lastObservation:error.lastObservation??null});
-const save=()=>{assert.ok(Buffer.byteLength(JSON.stringify(report.controls))<=limits.controlBytes,'Control evidence cap');const bytes=JSON.stringify(report,null,2)+'\n';assert.ok(Buffer.byteLength(bytes)<=128*1024*1024,'Report evidence cap');if(!authorityReadPersistenceDeferred)writeFileSync(reportPath,bytes);};
+// Exact JSON byte accounting for the closed final-authority write set only.
+// No historical entry is mutated during this interval; new facade records may
+// acquire value/error, and the last physical receipt may acquire its authority.
+function evidencePrettyBytes(value,depth){const text=JSON.stringify(value,null,2);assert.equal(typeof text,'string');let lines=0;for(let at=text.indexOf('\n');at!==-1;at=text.indexOf('\n',at+1))lines++;return Buffer.byteLength(text)+2*depth*lines;}
+function evidenceAppendBytes(values,start,depth){assert.ok(Array.isArray(values)&&Number.isInteger(start)&&start>=0&&start<=values.length,'Original append-only evidence prefix');let compact=0,pretty=0;const count=values.length-start;
+  for(let i=start;i<values.length;i++){assert.ok(Object.hasOwn(values,i),'Dense source-authored evidence suffix');const text=JSON.stringify(values[i]);assert.equal(typeof text,'string');compact+=Buffer.byteLength(text);pretty+=evidencePrettyBytes(values[i],depth+1)+2*(depth+1);}
+  return{compact:count?compact+count-1+(start?1:0):0,pretty:count?pretty+2*count+(start?0:2*depth):0};
+}
+function captureAuthorityEvidence(report,row,receipt,sizes){assert.equal(report.rows.at(-1),row);assert.equal(row.physical.at(-1),receipt);return{report,row,controls:report.controls,controlCount:report.controls.length,helpers:report.helperReceipts,helperCount:report.helperReceipts.length,checkpoints:row.checkpoints,checkpointCount:row.checkpoints.length,physical:row.physical,physicalCount:row.physical.length,receipt,receiptBytes:evidencePrettyBytes(receipt,4),controlBytes:sizes.controlBytes,reportBytes:sizes.reportBytes};}
+function measureAuthorityEvidence(budget,report,row){assert.equal(budget.report,report);assert.equal(budget.row,row);assert.equal(report.rows.at(-1),row);assert.equal(budget.controls,report.controls);assert.equal(budget.helpers,report.helperReceipts);assert.equal(budget.checkpoints,row.checkpoints);assert.equal(budget.physical,row.physical);assert.equal(row.physical.length,budget.physicalCount);assert.equal(row.physical.at(-1),budget.receipt);
+  const controls=evidenceAppendBytes(report.controls,budget.controlCount,1),helpers=evidenceAppendBytes(report.helperReceipts,budget.helperCount,1),checkpoints=evidenceAppendBytes(row.checkpoints,budget.checkpointCount,3);
+  const sizes={controlBytes:budget.controlBytes+controls.compact,reportBytes:budget.reportBytes+controls.pretty+helpers.pretty+checkpoints.pretty+evidencePrettyBytes(budget.receipt,4)-budget.receiptBytes};assert.ok(Number.isSafeInteger(sizes.controlBytes)&&sizes.controlBytes>=2&&Number.isSafeInteger(sizes.reportBytes)&&sizes.reportBytes>0,'Finite exact evidence sizes');return sizes;
+}
+function assertEvidenceCaps(sizes){assert.ok(sizes.controlBytes<=limits.controlBytes,'Control evidence cap');assert.ok(sizes.reportBytes<=128*1024*1024,'Report evidence cap');}
+const save=()=>{if(authorityReadPersistenceDeferred){assert.ok(authorityEvidenceBudget);const sizes=measureAuthorityEvidence(authorityEvidenceBudget,report,current);assertEvidenceCaps(sizes);return sizes;}
+  const controlBytes=Buffer.byteLength(JSON.stringify(report.controls));assert.ok(controlBytes<=limits.controlBytes,'Control evidence cap');const bytes=JSON.stringify(report,null,2)+'\n',sizes={controlBytes,reportBytes:Buffer.byteLength(bytes)};assertEvidenceCaps(sizes);writeFileSync(reportPath,bytes);
+  if(authorityEvidenceParity){assert.deepEqual(measureAuthorityEvidence(authorityEvidenceParity,report,current),sizes,'Exact cached evidence sizes match fully serialized durable report');authorityEvidenceParity=null;}return sizes;
+};
 function remaining(maximum=limits.callMs){const value=Math.floor(Math.min(maximum,(cleaning?rowDeadline:runDeadline)-performance.now(),rowDeadline-performance.now()));assert.ok(value>0,'Original run/row or separate cleanup deadline expired');return value;}
 async function bounded(promise,maximum=limits.callMs){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Original deadline expired; outcome unknown, no replay')),remaining(maximum));})]);}finally{clearTimeout(timer);}}
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -240,14 +258,14 @@ function resultExpected(row,before,after){const type='org.klenwriter.kwdj/text',
 async function physical(id,action,expected){assert.ok(!blocked&&!helperDisabled&&!pending);const source=JSON.parse(command(sourceHelper,['status'],{timeout:3000}).stdout);assert.equal(source.status,'ok');assert.equal(source.current.id,current.sourceId,'Original frozen source must remain selected, no layout retry');
   // Persist an incomplete intent before reading dispatch authority. Null authority
   // fields do not attest that a key was dispatched; the helper receipt is required.
-  const receipt={action,source:source.current,beforeEventCount:null,guard:null,before:null,at:null};current.physical.push(receipt);save();
-  assert.equal(authorityReadPersistenceDeferred,false);authorityReadPersistenceDeferred=true;
+  const receipt={action,source:source.current,beforeEventCount:null,guard:null,before:null,at:null};current.physical.push(receipt);const baseline=save();
+  assert.equal(authorityReadPersistenceDeferred,false);assert.equal(authorityEvidenceBudget,null);assert.equal(authorityEvidenceParity,null);authorityEvidenceBudget=captureAuthorityEvidence(report,current,receipt,baseline);authorityReadPersistenceDeferred=true;let authorityValidated=false;
   try{const began=performance.now(),fresh=await checkpoint(id,'original authority before '+action),guard=await adapter.guard(id);
     assert.deepEqual(fresh.state,expected.state);assert.deepEqual(fresh.context,expected.context);assert.equal(fresh.canonical,expected.canonical);assert.deepEqual(fresh.rawDom,expected.rawDom);assert.equal(fresh.rawDom.inside,true);
     assert.deepEqual(guard,{url,title,documentFocused:true,activeId:id,connected:true,contentEditable:'true'});assert.ok(performance.now()-began<=1000,'Fresh original browser/native authority deadline');
-    Object.assign(receipt,{beforeEventCount:fresh.inputTrace.length,guard,before:structuredClone(fresh.state),at:new Date().toISOString()});save();assert.ok(performance.now()-began<=1000,'Persistence cannot age original dispatch authority');
-  }finally{authorityReadPersistenceDeferred=false;}
-  receipt.helper=send(action);save();return receipt;
+    Object.assign(receipt,{beforeEventCount:fresh.inputTrace.length,guard,before:structuredClone(fresh.state),at:new Date().toISOString()});save();assert.ok(performance.now()-began<=1000,'Persistence cannot age original dispatch authority');authorityValidated=true;
+  }finally{authorityReadPersistenceDeferred=false;authorityEvidenceParity=authorityValidated?authorityEvidenceBudget:null;authorityEvidenceBudget=null;}
+  try{receipt.helper=send(action);}finally{authorityEvidenceParity=null;}save();return receipt;
 }
 function paired(value,action){const events=value.inputTrace.slice(action.beforeEventCount),code=browserCodes[action.action];return events.some(e=>e.event==='keydown'&&e.code===code&&e.isTrusted)&&events.some(e=>e.event==='keyup'&&e.code===code&&e.isTrusted);}
 function trusted(value,action,{inputType=null,data=null,composition=false}={}){const events=value.inputTrace.slice(action.beforeEventCount),code=browserCodes[action.action];assert.ok(events.every(e=>e.isTrusted===true),'No synthetic event may satisfy installed observations');for(const name of ['keydown','keyup'])assert.equal(events.filter(e=>e.event===name&&e.code===code).length,1,'One original trusted '+code+' '+name);
