@@ -1,0 +1,137 @@
+{
+  "format": "osr48-installed-typography-oracles/1",
+  "status": "SOURCE_AUTHORED_BEFORE_INSTALLED_EXECUTION",
+  "scope": "Finite installed Chrome/Safari, explicit RU/EN locale and preexisting keyboard sources; original rules/DOM authorities remain frozen. Exact full canonical content includes unchanged tail. No screenshot/capture.",
+  "sourceContracts": [
+    "docs/typography.md",
+    "contracts/typography/v1/rules-contract.json",
+    "contracts/typography/v1/dom-oracles.json"
+  ],
+  "rows": [
+    {
+      "id": "en-quote-history",
+      "locale": "en",
+      "sourceId": "com.apple.keylayout.US",
+      "before": "{\"content\":[{\"content\":[{\"text\":\" \",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "typedAction": "quote-en",
+      "typedCode": "Quote",
+      "typedData": "\"",
+      "cookedText": " “",
+      "cooked": "{\"content\":[{\"content\":[{\"text\":\" “\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "rawText": " \"",
+      "raw": "{\"content\":[{\"content\":[{\"text\":\" \\\"\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "specialBackspace": true,
+      "completeReversalHistory": true
+    },
+    {
+      "id": "en-dash",
+      "locale": "en",
+      "sourceId": "com.apple.keylayout.US",
+      "before": "{\"content\":[{\"content\":[{\"text\":\" --\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "typedAction": "space",
+      "typedCode": "Space",
+      "typedData": " ",
+      "cookedText": " — ",
+      "cooked": "{\"content\":[{\"content\":[{\"text\":\" — \",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "rawText": " -- ",
+      "raw": "{\"content\":[{\"content\":[{\"text\":\" -- \",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "specialBackspace": true,
+      "completeReversalHistory": false
+    },
+    {
+      "id": "ru-quote-history",
+      "locale": "ru",
+      "sourceId": "com.apple.keylayout.Russian",
+      "before": "{\"content\":[{\"content\":[{\"text\":\" \",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "typedAction": "quote-ru",
+      "typedCode": "Digit2",
+      "typedData": "\"",
+      "cookedText": " «",
+      "cooked": "{\"content\":[{\"content\":[{\"text\":\" «\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "rawText": " \"",
+      "raw": "{\"content\":[{\"content\":[{\"text\":\" \\\"\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "specialBackspace": true,
+      "completeReversalHistory": true
+    },
+    {
+      "id": "ru-dash",
+      "locale": "ru",
+      "sourceId": "com.apple.keylayout.Russian",
+      "before": "{\"content\":[{\"content\":[{\"text\":\" --\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "typedAction": "space",
+      "typedCode": "Space",
+      "typedData": " ",
+      "cookedText": " — ",
+      "cooked": "{\"content\":[{\"content\":[{\"text\":\" — \",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "rawText": " -- ",
+      "raw": "{\"content\":[{\"content\":[{\"text\":\" -- \",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "specialBackspace": true,
+      "completeReversalHistory": false
+    },
+    {
+      "id": "ru-nbsp",
+      "locale": "ru",
+      "sourceId": "com.apple.keylayout.Russian",
+      "before": "{\"content\":[{\"content\":[{\"text\":\"а \",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "typedAction": "ru-letter",
+      "typedCode": "KeyF",
+      "typedData": "а",
+      "cookedText": "а а",
+      "cooked": "{\"content\":[{\"content\":[{\"text\":\"а а\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "rawText": "а ",
+      "raw": "{\"content\":[{\"content\":[{\"text\":\"а \",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "specialBackspace": false,
+      "completeReversalHistory": false
+    },
+    {
+      "id": "en-real-deadkey-composition",
+      "locale": "en",
+      "sourceId": "com.apple.keylayout.US",
+      "before": "{\"content\":[{\"content\":[{\"text\":\"old\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": [
+            0,
+            0
+          ],
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "physicalSequence": [
+        "dead-e",
+        "letter-e"
+      ],
+      "composedText": "é",
+      "composed": "{\"content\":[{\"content\":[{\"text\":\"é\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "expectedOrigin": "composition_commit",
+      "expectedResult": null,
+      "history": true,
+      "qualification": "US dead key Option-E/E, one scalar composed content. Controlled three-engine result-join cases separately establish transformation; this installed case proves original native composition ownership with enabled rules, without claiming hardware/CJK input."
+    }
+  ],
+  "historySequence": [
+    "backspace",
+    "undo",
+    "undo",
+    "redo",
+    "redo"
+  ],
+  "finalResources": "all numeric owner counts0 and native exactzero; disposed slot0; fixture listeners0",
+  "inputSourceConfiguration": {
+    "reason": "Bounded read-only TIS status before first installed candidate run confirms enabled U.S. and Russian, ABC absent; physical programs/content expectations unchanged.",
+    "statusReceipt": "/private/tmp/osr48-installed-helper-development-01/source-status.json",
+    "allowedEnglishSource": "com.apple.keylayout.US",
+    "noRuntimeFallback": true
+  }
+}

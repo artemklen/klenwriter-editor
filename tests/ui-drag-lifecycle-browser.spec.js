@@ -6,7 +6,7 @@ import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {install,frozen,records,call,surface,handle,frames,mount,inspect,prepareSource,arm,moveTo,nativeUnchanged,idle,identities,moved,semanticCalls,browserState,dispose,resolve,submitted,dragSubmissions} from './drag-browser-fixture.mjs';
 
-test.use({trace:{mode:'retain-on-failure',screenshots:false,snapshots:true,sources:true}});
+test.use({trace:{mode:'off',screenshots:false,snapshots:true,sources:true}});
 install();
 const literal=frozen.cases.find(item=>item.id==='M44-01');
 const mutationsNamed=(calls,kind)=>calls.filter(row=>row.request.kind===kind);

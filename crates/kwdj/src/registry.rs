@@ -39,6 +39,39 @@ pub fn base_registration_v2() -> ExtensionDescriptor {
     registration
 }
 
+pub const TYPING_EXTENSION_ID: &str = "org.klenwriter.kwdj/typing-rules";
+pub const TYPING_EXTENSION_VERSION: &str = "1.0.0";
+
+/// The two input-only commands have compiled provenance, not host recipes.
+pub fn typing_registration() -> ExtensionDescriptor {
+    ExtensionDescriptor {
+        id: TYPING_EXTENSION_ID.into(),
+        version: TYPING_EXTENSION_VERSION.into(),
+        dependencies: vec![ExtensionIdentity {
+            id: crate::KWDJ_BASE_EXTENSION_ID.into(),
+            version: crate::KWDJ_BASE_EXTENSION_VERSION.into(),
+        }],
+        nodes: vec![],
+        marks: vec![],
+        commands: [
+            crate::commands::TYPED_INPUT_COMMAND_ID,
+            crate::commands::RESTORE_INPUT_COMMAND_ID,
+        ]
+        .into_iter()
+        .map(|id| editor_registry::CommandDescriptor::Compiled { id: id.into() })
+        .collect(),
+    }
+}
+
+pub fn typing_registry_descriptor() -> RegistryDescriptor {
+    let mut descriptor = registry_descriptor();
+    descriptor.selected_extensions.push(ExtensionIdentity {
+        id: TYPING_EXTENSION_ID.into(),
+        version: TYPING_EXTENSION_VERSION.into(),
+    });
+    descriptor
+}
+
 /// The codec accepts prose and poetry; the contextual domain validator owns
 /// their distinct root policies. This common schema describes their union.
 pub fn registry_descriptor() -> RegistryDescriptor {

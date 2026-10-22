@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import type { ClipboardCapture } from './clipboard-capture.js';
 // OSR-40 adds selection/clipboard capabilities; the OSR-39 contract snapshot remains frozen.
-import type { CommandDto, CreateEditorOptionsV2, DeepReadonly, EditorControllerV2, EventDto, MarkDto, MutationRequestV2, NodeViewDto, ProfileDto, QueryRequest, ReadRequest, ReadRequestV2, Response, ResponseV2, SelectionDto, SelectionTextRequestV2, SessionContextV2, StampDto, Submission, TextWindowRequestV2, TextWindowReplyV2 } from '@klenwriter/editor-sdk';
+import type { CommandDto, CreateEditorOptionsV2, DeepReadonly, EditorControllerV2, EventDto, InputCommandRequestV2, InputSubmissionV2, MarkDto, MutationRequestV2, NodeViewDto, ProfileDto, QueryRequestV2, RawInputRestoreV2, ReadRequest, ReadRequestV2, Response, ResponseV2, SelectionDto, SelectionTextRequestV2, SessionContextV2, StampDto, Submission, TextWindowRequestV2, TextWindowReplyV2 } from '@klenwriter/editor-sdk';
 export type InteractionMode = 'editable' | 'readOnly' | 'disabled';
 export type OrdinaryInputType = 'insertText'|'insertReplacementText'|'insertParagraph'|'insertLineBreak'|'deleteContentBackward'|'deleteContentForward'|'historyUndo'|'historyRedo';
 export interface OrdinaryInputObservation {
@@ -29,12 +29,21 @@ export interface DomDiagnostic {
   readonly publication: 'none' | 'alreadyPublished' | 'unknown';
 }
 export interface DomRefusal { readonly status: 'dom_refused'; readonly diagnostic: DomDiagnostic }
-export type MountedMutation = Exclude<MutationRequestV2, { kind: 'remount' | 'destroy' }>;
+export type MountedMutation = Exclude<MutationRequestV2, { kind: 'remount' | 'destroy' | 'input_command' }>;
+export type MountedMutationV2 = MountedMutation | InputCommandRequestV2;
 export type MountedSubmission = Submission | DomRefusal;
+export type MountedInputSubmissionV2 = InputSubmissionV2 | DomRefusal;
 export type RecoveryRegion =
   | { readonly kind: 'bounded'; readonly stamp: DeepReadonly<StampDto> | null; readonly originalText: string; readonly provisionalText: string; readonly affectedNodeIds: readonly string[] }
   | { readonly kind: 'retained_dom'; readonly element: HTMLElement; readonly reason: 'capture_limit'; readonly ownership: 'transferred_to_host' };
-export interface RecoveryPacket { readonly originalInput: Uint8Array | null; readonly region: RecoveryRegion | null; readonly composition?: CompositionRecovery | null }
+export interface TypedInputRecovery {
+  readonly format:'typed-input-recovery/1'; readonly origin:'ordinary_insert_text'|'composition_commit'|'raw_restore';
+  readonly original:Readonly<{kind:'bounded';text:string}>|Readonly<{kind:'retained_event';event:InputEvent;reason:'capture_limit';ownership:'transferred_to_host'}>;
+  readonly stamp:DeepReadonly<StampDto>; readonly selection:DeepReadonly<SelectionDto>; readonly context:DeepReadonly<SessionContextV2>;
+  readonly nativeOutcome:'not_submitted'|'queued'|'completed'|'unknown'; readonly response:ResponseV2|null;
+  readonly retainedBytes:number;
+}
+export interface RecoveryPacket { readonly originalInput: Uint8Array | null; readonly region: RecoveryRegion | null; readonly composition?: CompositionRecovery | null; readonly typedInput?:TypedInputRecovery }
 export interface DestroyReceipt { readonly status: 'destroy_requested'; readonly sdk: Submission; readonly recovery: RecoveryPacket | null; readonly callbackFailure: DomRefusal | null; readonly clipboardRecovery?: ClipboardRecoveryTransfer }
 export type MountedReady = { readonly status: 'ready'; readonly response: Response }
   | { readonly status: 'sdk_failure'; readonly response: Response; readonly recovery: RecoveryPacket | null }
@@ -48,19 +57,21 @@ export interface TrustedRegistryInventory { readonly nodes: readonly RegistryNod
 export interface NodeRendererDefinition { readonly primitive: string; readonly attributes: readonly string[]; readonly present: (node: DeepReadonly<NodeViewDto>) => DomPresentation | DomRefusal }
 export interface MarkRendererDefinition { readonly attributes: readonly string[]; readonly present: (mark: DeepReadonly<MarkDto>) => DomPresentation | DomRefusal }
 /** Data-only command construction for browser gestures; semantics remain native. */
-export interface InputCommandBindings { readonly insertText?: (text: string) => CommandDto; readonly enter?: () => CommandDto; readonly lineBreak?: () => CommandDto; readonly deleteBackward?: () => CommandDto; readonly deleteSelection?: () => CommandDto }
+export interface InputCommandBindings { readonly insertText?: (text: string) => CommandDto; readonly enter?: () => CommandDto; readonly lineBreak?: () => CommandDto; readonly deleteBackward?: () => CommandDto; readonly deleteSelection?: () => CommandDto;
+  readonly insertTypedText?:(data:Readonly<{text:string;origin:'ordinary_insert_text'|'composition_commit'}>)=>CommandDto;
+  readonly restoreTypedText?:(data:DeepReadonly<RawInputRestoreV2>)=>CommandDto }
 export interface RendererCatalogDefinition {
   readonly binding: Readonly<{ buildId: string; profile: DeepReadonly<ProfileDto>; registryDigest: string }>;
   readonly inventory: TrustedRegistryInventory;
   readonly nodes: Readonly<Record<string, NodeRendererDefinition>>;
   readonly marks: Readonly<Record<string, MarkRendererDefinition>>;
-  readonly commandGate: (request: DeepReadonly<QueryRequest | MountedMutation>) => DomRefusal | null;
+  readonly commandGate: (request: DeepReadonly<QueryRequestV2 | MountedMutationV2>) => DomRefusal | null;
   readonly input?: InputCommandBindings;
 }
 /** Created only by defineRendererCatalog; opaque trusted capability witness. */
 export interface RendererCatalog { readonly definition: RendererCatalogDefinition; readonly __rendererCatalog: unique symbol }
 export interface MountEditorOptions { readonly element: HTMLElement; readonly editor: CreateEditorOptionsV2; readonly renderers: RendererCatalog; readonly mode?: InteractionMode; readonly onRecovery?: (packet: RecoveryPacket) => void; readonly onRefusal?: (failure: DomRefusal) => void; readonly clipboard?: ClipboardConfiguration }
-export interface MountedResourceCounts { readonly sdk: ReturnType<EditorControllerV2['resources']>; readonly dom: Readonly<{ listeners: number; observers: number; continuations: number; retainedInputBytes: number; retainedRecoveryRegions: number }>; readonly selection: SelectionResourceCounts; readonly clipboard: ClipboardResourceCounts; readonly hostRequests: Readonly<{pending:number;focusContinuations:number}>; readonly inputObservations: Readonly<{subscribers:number}>; readonly popupPresentation: Readonly<{handles:number}> }
+export interface MountedResourceCounts { readonly sdk: ReturnType<EditorControllerV2['resources']>; readonly dom: Readonly<{ listeners: number; observers: number; continuations: number; retainedInputBytes: number; retainedRecoveryRegions: number }>; readonly selection: SelectionResourceCounts; readonly clipboard: ClipboardResourceCounts; readonly hostRequests: Readonly<{pending:number;focusContinuations:number}>; readonly inputObservations: Readonly<{subscribers:number}>; readonly popupPresentation: Readonly<{handles:number}>; readonly typing?:Readonly<{armedSlots:number;backspaceCandidates:number;pendingDispatches:number;retainedBytes:number}> }
 export interface MountedEditor {
   readonly ready: Promise<MountedReady>;
   readonly lifecycle: MountedLifecycle;
@@ -76,8 +87,10 @@ export interface MountedEditor {
   read(request: SelectionTextRequestV2): ResponseV2 | DomRefusal;
   read(request: TextWindowRequestV2): ResponseV2 | DomRefusal;
   read(request: ReadRequestV2): ResponseV2 | DomRefusal;
-  query(request: QueryRequest): Response | DomRefusal;
+  query(request: QueryRequestV2): Response | DomRefusal;
+  submit(request: InputCommandRequestV2): MountedInputSubmissionV2;
   submit(request: MountedMutation): MountedSubmission;
+  submit(request: MountedMutationV2): MountedInputSubmissionV2;
   subscribe(listener: (event: DeepReadonly<EventDto>) => void): ReturnType<EditorControllerV2['subscribe']> | DomRefusal;
   setInteractionMode(mode: InteractionMode): { readonly status: 'updated'; readonly mode: InteractionMode } | DomRefusal;
   replace(input: Uint8Array): Promise<Submission | DomRefusal>;
@@ -178,8 +191,8 @@ export interface CompositionRecovery {
   readonly selection: DeepReadonly<SelectionDto> | null;
   readonly affectedNodeIds: readonly string[];
   /** The actual native ticket; no replacement ticket or invented terminal response. */
-  readonly submission: Submission | null;
-  readonly response: DeepReadonly<Response> | null;
+  readonly submission: InputSubmissionV2 | null;
+  readonly response: DeepReadonly<ResponseV2> | null;
   readonly nativeOutcome: 'not_submitted' | 'queued' | 'completed' | 'unknown';
   readonly unappliedInput: CompositionUnappliedInput | null;
   readonly disposition: 'committed_restored' | 'provisional_retained' | 'dom_transferred';

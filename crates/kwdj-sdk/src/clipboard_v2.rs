@@ -18,6 +18,14 @@ fn native(error: editor_kwdj::KwdjError) -> DiagnosticDto {
     profile_error(&KwdjProfileError::Document(error))
 }
 impl BridgeAdapter<KwdjProfile<'static>> for ClipboardAdapterV2 {
+    fn decode_input_command(
+        &self,
+        key: SessionKey,
+        stamp: &editor_protocol::StampDto,
+        command: &CommandDto,
+    ) -> Result<KwdjIntent<NodeId>, DiagnosticDto> {
+        crate::typing_v2::decode_input(key, stamp, command)
+    }
     fn clipboard_context<V: CandidateRead<Id = NodeId>>(
         &self,
         context: &Profile,

@@ -98,5 +98,9 @@ name = "sdk_probe"
 crate-type = ["cdylib"]
 
 [[example]]
+name = "typography_probe"
+crate-type = ["cdylib"]
+
+[[example]]
 name = "drag_native"
 path = "../../tests/fixtures/drag-native/main.rs"

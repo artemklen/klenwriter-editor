@@ -772,6 +772,17 @@ pub struct TreeDraft<'a, A = RealAllocation> {
 }
 
 impl<A: Allocation> TreeDraft<'_, A> {
+    /// Reuse the exact user-operation EGC admission before an input planner's
+    /// net splice widens the original source range. This never writes a draft.
+    pub(crate) fn validate_user_range(
+        &self,
+        range: Selection<NodeId>,
+        work: &mut WorkMeter,
+    ) -> Result<(), TreeError> {
+        self.range_endpoint(range.anchor, work)?;
+        self.range_endpoint(range.focus, work)
+    }
+
     fn range_boundary(
         &self,
         leaf: NodeId,

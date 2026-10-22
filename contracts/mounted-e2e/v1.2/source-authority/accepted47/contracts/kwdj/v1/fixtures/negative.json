@@ -1,0 +1,170 @@
+{
+  "fixture_schema_version": 1,
+  "fixtures": [
+    {
+      "id": "DOC-014",
+      "purpose": "A missing media identity or legacy storage mismatch blocks migration without exposing body content.",
+      "classification": "negative",
+      "cases": [
+        {
+          "name": "missing_media_identity",
+          "polarity": "negative",
+          "input": { "kind": "legacy_markdown", "profile": "prose", "value": "<!-- kw:block type=media_image media_id=550e8400-e29b-41d4-a716-446655440014 storage=images/wrong.webp alt=Missing align=center -->\nCaption\n<!-- /kw:block -->", "identity_state": { "existing_media_ids": [], "media_public_paths": {} }, "source_annotations": ["The media ID has no matching asset and the storage path is not authoritative."] },
+          "kwdj": null,
+          "edit": null,
+          "expected": { "outcome": "blocked", "diagnostic_codes": ["migration.media_identity_unresolved", "migration.media_storage_mismatch"], "normalized_kwdj": null, "public_html": null, "full_text": null, "search_index_text": null, "public_snippet_text": null, "media_manifest": [], "reference_manifest": [], "notes": ["Diagnostics contain safe source identity only; authored caption and alt are not logged."] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "identity_manifest_extraction", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-018",
+      "purpose": "Unknown versions, nodes, marks, and attributes fail closed and never flatten.",
+      "classification": "negative",
+      "cases": [
+        {
+          "name": "future_schema_version",
+          "polarity": "negative",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": { "schema": "klenwriter.document", "schema_version": 2, "profile": "prose", "content": [{ "type": "paragraph", "content": [] }] },
+          "edit": null,
+          "expected": { "outcome": "rejected", "diagnostic_codes": ["kwdj.unsupported_schema_version"], "normalized_kwdj": null, "public_html": null, "full_text": null, "search_index_text": null, "public_snippet_text": null, "media_manifest": [], "reference_manifest": [], "notes": ["Public rendering returns a safe content-unavailable state outside the canonical projection."] },
+          "pipeline_stages": ["validate_normalize", "editor_round_trip_unchanged", "public_render", "schema_upconversion", "determinism"]
+        },
+        {
+          "name": "unknown_node",
+          "polarity": "negative",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": { "schema": "klenwriter.document", "schema_version": 1, "profile": "prose", "content": [{ "type": "raw_html", "content": [] }] },
+          "edit": null,
+          "expected": { "outcome": "rejected", "diagnostic_codes": ["kwdj.unknown_node"], "normalized_kwdj": null, "public_html": null, "full_text": null, "search_index_text": null, "public_snippet_text": null, "media_manifest": [], "reference_manifest": [], "notes": [] },
+          "pipeline_stages": ["validate_normalize", "editor_round_trip_unchanged", "public_render", "determinism"]
+        },
+        {
+          "name": "unknown_mark",
+          "polarity": "negative",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": { "schema": "klenwriter.document", "schema_version": 1, "profile": "prose", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "x", "marks": [{ "type": "rainbow" }] }] }] },
+          "edit": null,
+          "expected": { "outcome": "rejected", "diagnostic_codes": ["kwdj.unknown_mark"], "normalized_kwdj": null, "public_html": null, "full_text": null, "search_index_text": null, "public_snippet_text": null, "media_manifest": [], "reference_manifest": [], "notes": [] },
+          "pipeline_stages": ["validate_normalize", "editor_round_trip_unchanged", "public_render", "determinism"]
+        },
+        {
+          "name": "unknown_attribute",
+          "polarity": "negative",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": { "schema": "klenwriter.document", "schema_version": 1, "profile": "prose", "content": [{ "type": "paragraph", "attrs": { "class": "admin" }, "content": [{ "type": "text", "text": "x" }] }] },
+          "edit": null,
+          "expected": { "outcome": "rejected", "diagnostic_codes": ["kwdj.unknown_attribute"], "normalized_kwdj": null, "public_html": null, "full_text": null, "search_index_text": null, "public_snippet_text": null, "media_manifest": [], "reference_manifest": [], "notes": [] },
+          "pipeline_stages": ["validate_normalize", "editor_round_trip_unchanged", "public_render", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-021",
+      "purpose": "A legacy directive with spaced quoted title or alt is audited because JS and Rust grammars disagree.",
+      "classification": "negative",
+      "cases": [
+        {
+          "name": "spaced_directive_attributes",
+          "polarity": "negative",
+          "input": { "kind": "legacy_markdown", "profile": "prose", "value": "<!-- kw:block type=spoiler title=\"Кто убийца\" -->\nТекст\n<!-- /kw:block -->\n<!-- kw:block type=media_image media_id=550e8400-e29b-41d4-a716-446655440021 alt=\"Ночной лес\" storage=images/a.webp align=center -->\nПодпись\n<!-- /kw:block -->", "source_annotations": ["Current JavaScript accepts quoted whitespace; current Rust tokenization does not preserve the same value."] },
+          "kwdj": null,
+          "edit": null,
+          "expected": { "outcome": "audit", "diagnostic_codes": ["migration.directive_grammar_disagreement"], "normalized_kwdj": null, "public_html": null, "full_text": null, "search_index_text": null, "public_snippet_text": null, "media_manifest": [], "reference_manifest": [], "notes": ["No automatic KWDJ is asserted until an explicit row disposition selects intended values."] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-023",
+      "purpose": "WordPress shortcode, upload URL, and Gutenberg constructs require source-aware audit or block.",
+      "classification": "negative",
+      "cases": [
+        {
+          "name": "wordpress_source_artifacts",
+          "polarity": "negative",
+          "input": { "kind": "legacy_markdown", "profile": "prose", "value": "<!-- wp:image {\"id\":42} -->\n[gallery ids=\"42,43\"]\nhttps://old.example/wp-content/uploads/2020/01/photo.jpg\n<!-- /wp:image -->", "source_annotations": ["WordPress source artifact"] },
+          "kwdj": null,
+          "edit": null,
+          "expected": { "outcome": "audit", "diagnostic_codes": ["migration.wordpress_semantics_unresolved", "migration.media_identity_unresolved"], "normalized_kwdj": null, "public_html": null, "full_text": null, "search_index_text": null, "public_snippet_text": null, "media_manifest": [], "reference_manifest": [], "notes": ["Stripped mapper output is not evidence of lossless conversion."] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-031",
+      "purpose": "Unsupported rich-text semantics are rejected or use an explicit diagnosed text-preserving fallback.",
+      "classification": "negative",
+      "cases": [
+        {
+          "name": "unsupported_rich_semantics",
+          "polarity": "negative",
+          "input": { "kind": "clipboard_html", "profile": "prose", "insertion_context": "root", "value": "<ruby>漢<rt>kan</rt></ruby><math><mi>x</mi></math>", "clipboard_items": ["text/html"] },
+          "kwdj": null,
+          "edit": null,
+          "expected": { "outcome": "rejected", "diagnostic_codes": ["clipboard.unsupported_semantics"], "normalized_kwdj": null, "public_html": null, "full_text": null, "search_index_text": null, "public_snippet_text": null, "media_manifest": [], "reference_manifest": [], "notes": ["Ruby annotation and MathML cannot be silently flattened by v1."] },
+          "pipeline_stages": ["clipboard_rich_to_kwdj", "validate_normalize", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-032",
+      "purpose": "Active clipboard content and unsafe URLs never execute or enter KWDJ; explicit plain fallback is allowed.",
+      "classification": "negative",
+      "cases": [
+        {
+          "name": "active_html_plain_fallback",
+          "polarity": "negative",
+          "input": { "kind": "clipboard_html", "profile": "prose", "insertion_context": "root", "value": "<script>alert(1)</script><a href=\"javascript:alert(2)\" onclick=\"alert(3)\">Visible</a><iframe src=\"https://example.test\"></iframe>", "plain_fallback": "Visible", "clipboard_items": ["text/plain", "text/html"] },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Visible" }] }]
+          },
+          "edit": null,
+          "expected": { "outcome": "accepted", "diagnostic_codes": ["clipboard.rich_branch_rejected", "clipboard.plain_fallback_used", "clipboard.unsafe_url_rejected"], "normalized_kwdj": "$case.kwdj", "public_html": "<p>Visible</p>", "full_text": "Visible", "search_index_text": "Visible", "public_snippet_text": "Visible", "media_manifest": [], "reference_manifest": [], "notes": ["The plain representation is converted independently; no script, handler, iframe, or unsafe href survives."] },
+          "pipeline_stages": ["clipboard_rich_to_kwdj", "validate_normalize", "editor_round_trip_unchanged", "public_render", "plain_text_projection", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-033",
+      "purpose": "Clipboard images, files, blobs, data images, and remote img elements are rejected.",
+      "classification": "negative",
+      "cases": [
+        {
+          "name": "clipboard_media_items",
+          "polarity": "negative",
+          "input": { "kind": "clipboard_html", "profile": "prose", "insertion_context": "root", "value": "<img src=\"data:image/png;base64,AAAA\" alt=\"x\"><img src=\"https://example.test/x.png\" alt=\"y\">", "clipboard_items": ["text/html", "image", "file", "blob"] },
+          "kwdj": null,
+          "edit": null,
+          "expected": { "outcome": "rejected", "diagnostic_codes": ["clipboard.media_item_forbidden", "clipboard.remote_image_forbidden"], "normalized_kwdj": null, "public_html": null, "full_text": null, "search_index_text": null, "public_snippet_text": null, "media_manifest": [], "reference_manifest": [], "notes": ["media_image requires a validated media-library ID obtained outside clipboard conversion."] },
+          "pipeline_stages": ["clipboard_rich_to_kwdj", "validate_normalize", "identity_manifest_extraction", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-034",
+      "purpose": "Editor-shaped DOM and Tiptap or ProseMirror metadata never become canonical authority.",
+      "classification": "negative",
+      "cases": [
+        {
+          "name": "editor_metadata_ignored",
+          "polarity": "negative",
+          "input": { "kind": "clipboard_html", "profile": "prose", "insertion_context": "root", "value": "<p data-pm-slice=\"1 1 []\" data-node-view-content=\"true\" class=\"ProseMirror-selectednode\" style=\"color:red\">Visible</p>", "plain_fallback": "Visible", "clipboard_items": ["text/plain", "text/html"] },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Visible" }] }]
+          },
+          "edit": null,
+          "expected": { "outcome": "accepted", "diagnostic_codes": ["clipboard.editor_metadata_ignored"], "normalized_kwdj": "$case.kwdj", "public_html": "<p>Visible</p>", "full_text": "Visible", "search_index_text": "Visible", "public_snippet_text": "Visible", "media_manifest": [], "reference_manifest": [], "notes": ["Only allowlisted visible paragraph semantics survive; DOM classes, styles, and editor state do not."] },
+          "pipeline_stages": ["clipboard_rich_to_kwdj", "validate_normalize", "editor_round_trip_unchanged", "public_render", "plain_text_projection", "determinism"]
+        }
+      ]
+    }
+  ]
+}

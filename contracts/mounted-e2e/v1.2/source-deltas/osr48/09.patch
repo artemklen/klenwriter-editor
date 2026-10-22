@@ -1,0 +1,192 @@
+--- a/packages/sdk/src/controller.ts
++++ b/packages/sdk/src/controller.ts
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: MIT OR Apache-2.0
+ import { loadSdk, loadSdkV2, verifyLoadedSdk, verifyLoadedSdkV2 } from '@klenwriter/editor-wasm';
+-import type { BridgeRequestV2, EventDto, LazyWasmLoader, LazyWasmLoaderV2, LoadedSdkV1, LoadedSdkV2, OpenOptions, OpenOptionsV2, ProfileDto, RawSdkSessionV1, RawSdkSessionV2, SdkRequest, SdkResponse, SdkResponseV2, SelectionTextRequestV2, TextWindowRequestV2, ClipboardContextRequestV2, SelectionFragmentRequestV2, SessionContextV2, StampDto, StateDto } from '@klenwriter/editor-wasm';
++import type { BridgeRequestV2, EventDto, InputCommandRequestV2, QueryInputCommandRequestV2, LazyWasmLoader, LazyWasmLoaderV2, LoadedSdkV1, LoadedSdkV2, OpenOptions, OpenOptionsV2, ProfileDto, RawSdkSessionV1, RawSdkSessionV2, SdkRequest, SdkResponse, SdkResponseV2, SelectionTextRequestV2, TextWindowRequestV2, ClipboardContextRequestV2, SelectionFragmentRequestV2, SessionContextV2, StampDto, StateDto } from '@klenwriter/editor-wasm';
+ import { copyInput, DataError, freezeData, HARD_REQUEST_BYTES, ownData, plainFields } from './data.js';
+ import type { OwnedData } from './data.js';
+ import { decodeResponse, decodeResponseV2 } from './response.js';
+@@ -14,11 +14,15 @@
+ export type ReadRequest = Extract<SdkRequest, { kind: 'state' | 'catalog' | 'node' | 'map_position' | 'resources' }>;
+ export type ReadRequestV2 = ReadRequest | SelectionTextRequestV2 | TextWindowRequestV2 | ClipboardContextRequestV2 | SelectionFragmentRequestV2;
+ export type QueryRequest = Extract<SdkRequest, { kind: 'query_command' | 'query_history' }>;
++export type QueryRequestV2 = QueryRequest | QueryInputCommandRequestV2;
+ export type MutationRequest = Exclude<SdkRequest, ReadRequest | QueryRequest | { kind: 'events' | 'acknowledge_events' }>;
+ export type StampedMutation = Extract<MutationRequest, { stamp: StampDto }>;
+-export type MutationRequestV2 = Exclude<BridgeRequestV2, ReadRequestV2 | QueryRequest | { kind: 'events' | 'acknowledge_events' }>;
++export type MutationRequestV2 = Exclude<BridgeRequestV2, ReadRequestV2 | QueryRequestV2 | { kind: 'events' | 'acknowledge_events' }>;
+ export type StampedMutationV2 = Extract<MutationRequestV2, { stamp: StampDto }>;
+ export type Submission = { readonly status: 'completed'; readonly response: Response } | { readonly status: 'queued'; readonly completion: Promise<Response> };
++/** Additive ABI2 tickets; the legacy Submission/Response declarations stay closed. */
++export type InputSubmissionV2 = { readonly status: 'completed'; readonly response: ResponseV2 } | { readonly status: 'queued'; readonly completion: Promise<ResponseV2> };
++type OwnedMutation = MutationRequest | InputCommandRequestV2;
+ export interface ControllerLimits { readonly pending?: number; readonly requestBytes?: number; readonly queuedBytes?: number; readonly listeners?: number }
+ export interface CallbackError { readonly code: 'sdk.listener_error'; readonly listener: string }
+ interface ControllerConfiguration {
+@@ -39,7 +43,7 @@
+ export interface HostRequest { readonly id: string; readonly stamp: DeepReadonly<StampDto> }
+ export type HostCapture = { readonly status: 'captured'; readonly request: HostRequest } | { readonly status: 'refused'; readonly response: Response };
+ type Listener = (event: DeepReadonly<EventDto>) => void;
+-type Pending = { owned: OwnedData<MutationRequest>; resolve: (result: Response) => void };
++type Pending = { owned: OwnedData<OwnedMutation>; resolve: (result: ResponseV2) => void };
+ const READS = new Set(['state', 'catalog', 'node', 'map_position', 'resources']);
+ const QUERIES = new Set(['query_command', 'query_history']);
+ const MUTATIONS = new Set(['command', 'history', 'set_selection', 'set_stored_marks', 'barrier', 'snapshot', 'acknowledge_snapshot', 'reconcile_snapshot', 'release_snapshot', 'remount', 'update_facts', 'destroy']);
+@@ -56,7 +60,7 @@
+   #module: LoadedSdkV1 | LoadedSdkV2 | null = null;
+   #abi: 'editor-sdk/1' | 'editor-sdk/2' = 'editor-sdk/1';
+   #context: SessionContextV2 | null = null;
+-  #state: StateDto | null = null;
++  #state: DeepReadonly<StateDto> | null = null;
+   #original: Uint8Array | null = null;
+   #pending: Pending[] = [];
+   #queuedBytes = 0;
+@@ -122,18 +126,31 @@
+     } catch { return this.#readonly(request as ReadRequest, READS); }
+     return this.#readonly(request as ReadRequest, READS);
+   }
+-  query(request: QueryRequest): Response { return this.#readonly(request, QUERIES); }
+-
+-  submit(request: MutationRequest): Submission {
++  query(request: QueryRequest): Response;
++  query(request: QueryRequestV2): Response {
++    try {
++      const kind = plainFields(request).kind?.value;
++      if (kind === 'query_input_command') {
++        if (this.#abi !== 'editor-sdk/2') return this.#refusal('sdk.invalid_request_kind');
++        return this.#readonly(request, new Set(['query_input_command']));
++      }
++    } catch { return this.#refusal('sdk.invalid_input'); }
++    return this.#readonly(request as QueryRequest, QUERIES);
++  }
++
++  submit(request: MutationRequest): Submission;
++  submit(request: OwnedMutation): InputSubmissionV2 {
+     if (this.#lifecycle !== 'ready' || this.#destroyRequested) return this.#completed(this.#unavailable());
+-    let owned: OwnedData<MutationRequest>;
++    let owned: OwnedData<OwnedMutation>;
+     try {
+       owned = ownData(request, this.#limits.requestBytes);
+-      if (!owned.value || !MUTATIONS.has(owned.value.kind)) throw new DataError('sdk.invalid_request_kind');
++      if (!owned.value || !MUTATIONS.has(owned.value.kind) && !(this.#abi === 'editor-sdk/2' && owned.value.kind === 'input_command')) throw new DataError('sdk.invalid_request_kind');
+     } catch (error) { return this.#completed(this.#refusal(error instanceof DataError ? error.code : 'sdk.invalid_input')); }
+     return this.#submitOwned(owned);
+   }
+-  #submitOwned(owned: OwnedData<MutationRequest>): Submission {
++  #submitOwned(owned: OwnedData<MutationRequest>): Submission;
++  #submitOwned(owned: OwnedData<OwnedMutation>): InputSubmissionV2;
++  #submitOwned(owned: OwnedData<OwnedMutation>): InputSubmissionV2 {
+     if (this.#lifecycle !== 'ready' || this.#destroyRequested) return this.#completed(this.#unavailable());
+     if (this.#abi === 'editor-sdk/2' && owned.value.kind === 'update_facts') return this.#completed(this.#refusal('sdk.invalid_request_kind'));
+     if (owned.value.kind === 'destroy') {
+@@ -169,7 +186,8 @@
+     const entry = this.#hostRequest(request);
+     return entry ? this.#hostRequests.delete(entry.id) : false;
+   }
+-  completeHostRequest(request: HostRequest, mutation: StampedMutation): Submission {
++  completeHostRequest(request: HostRequest, mutation: StampedMutation): Submission;
++  completeHostRequest(request: HostRequest, mutation: StampedMutation | InputCommandRequestV2): InputSubmissionV2 {
+     const entry = this.#hostRequest(request);
+     if (!entry) return this.#completed(this.#refusal('sdk.stale_request'));
+     this.#hostRequests.delete(entry.id);
+@@ -178,7 +196,7 @@
+     try {
+       const owned = ownData(mutation, this.#limits.requestBytes);
+       if (!('stamp' in owned.value) || !stampEqual(owned.value.stamp, entry.stamp)) return this.#completed(this.#refusal('sdk.stale_request'));
+-      if (!MUTATIONS.has(owned.value.kind)) return this.#completed(this.#refusal('sdk.invalid_request_kind'));
++      if (!MUTATIONS.has(owned.value.kind) && !(this.#abi === 'editor-sdk/2' && owned.value.kind === 'input_command')) return this.#completed(this.#refusal('sdk.invalid_request_kind'));
+       return this.#submitOwned(owned);
+     } catch (error) { return this.#completed(this.#refusal(error instanceof DataError ? error.code : 'sdk.invalid_input')); }
+   }
+@@ -253,7 +271,9 @@
+     return 'sdk.load_failed';
+   }
+   #settleReady(result: Response) { if (!this.#readySettled) { this.#readySettled = true; this.#resolveReady(result); } }
+-  #completed(response: Response): Submission { return Object.freeze({ status: 'completed', response }); }
++  #completed(response: Response): Submission;
++  #completed(response: ResponseV2): InputSubmissionV2;
++  #completed(response: ResponseV2): InputSubmissionV2 { return Object.freeze({ status: 'completed', response }); }
+   #refusal(code: string): Response {
+     return freezeData({ status: 'refused', diagnostic: { code, path: '', category: 'sdk', details: {}, stamp: this.#state?.stamp ?? null, may_have_committed: false } });
+   }
+@@ -266,13 +286,15 @@
+   #deliveryFatal(failure: FatalResponse): Response {
+     return freezeData({ status: 'fatal', diagnostic: { ...failure.diagnostic, may_have_committed: true } });
+   }
+-  #readonly(request: ReadRequest | QueryRequest, allowed: Set<string>): Response {
++  #readonly(request: ReadRequest | QueryRequestV2, allowed: Set<string>): Response {
+     if (this.#lifecycle !== 'ready' || this.#destroyRequested) return this.#unavailable();
+     try {
+       const owned = ownData(request, this.#limits.requestBytes);
+       if (!owned.value || !allowed.has(owned.value.kind)) return this.#refusal('sdk.invalid_request_kind');
+       if (this.#lifecycle !== 'ready' || this.#destroyRequested) return this.#unavailable();
+-      return this.#wire(owned.json, false);
++      const response = this.#wire(owned.json, false);
++      if (owned.value.kind === 'query_input_command' && response.status === 'ok' && response.value.kind !== 'availability') return this.#fatal('sdk.invalid_response', false);
++      return response;
+     } catch (error) { return this.#refusal(error instanceof DataError ? error.code : 'sdk.invalid_input'); }
+   }
+   #boundedRead(request: Exclude<ReadRequestV2, ReadRequest>): ResponseV2 {
+@@ -312,19 +334,30 @@
+       return response;
+     } catch { return this.#fatal('sdk.transport_failure', mutation) as SdkResponse; }
+   }
+-  #enqueue(owned: OwnedData<MutationRequest>, disposing = false): Submission {
++  #enqueue(owned: OwnedData<MutationRequest>, disposing?: boolean): Submission;
++  #enqueue(owned: OwnedData<OwnedMutation>, disposing?: boolean): InputSubmissionV2;
++  #enqueue(owned: OwnedData<OwnedMutation>, disposing = false): InputSubmissionV2 {
+     if (!disposing && (this.#pending.length >= this.#limits.pending || owned.bytes > this.#limits.queuedBytes - this.#queuedBytes)) return this.#completed(this.#refusal('sdk.queue_limit'));
+-    let resolve!: (response: Response) => void;
+-    const completion = new Promise<Response>(done => { resolve = done; });
++    let resolve!: (response: ResponseV2) => void;
++    const completion = new Promise<ResponseV2>(done => { resolve = done; });
+     this.#pending.push({ owned, resolve }); this.#queuedBytes += owned.bytes;
+     return Object.freeze({ status: 'queued', completion });
+   }
+-  #execute(owned: OwnedData<MutationRequest>): Response {
++  #execute(owned: OwnedData<OwnedMutation>): ResponseV2 {
+     if (owned.value.kind === 'destroy') { this.#dispose('destroyed'); return destroyed(); }
+     if (this.#destroyRequested || this.#lifecycle !== 'ready') return this.#unavailable();
+     const before = this.#state?.stamp;
+-    const response = this.#wire(owned.json, true);
+-    if (response.status === 'ok' && (response.value.kind === 'state' || response.value.kind === 'mutation')) {
++    let response: ResponseV2;
++    if (owned.value.kind === 'input_command') {
++      try {
++        response = decodeResponseV2(this.#raw!.call(owned.json), 'input_mutation');
++        if (response.status === 'ok' && (response.value.kind !== 'input_mutation'
++          || response.value.result !== null && (!stampEqual(response.value.result.before_stamp, owned.value.stamp)
++            || !before || !stampEqual(before, owned.value.stamp)))) return this.#fatal('sdk.invalid_response', true);
++        if (response.status === 'fatal') { this.#terminalFailure = response; this.#dispose('fatal'); }
++      } catch { return this.#fatal('sdk.transport_failure', true); }
++    } else response = this.#wire(owned.json, true);
++    if (response.status === 'ok' && (response.value.kind === 'state' || response.value.kind === 'mutation' || response.value.kind === 'input_mutation')) {
+       this.#state = response.value.state;
+       if (before && (before.session !== this.#state.stamp.session || before.generation !== this.#state.stamp.generation)) {
+         this.#lastSequence = 0n; this.#hostRequests.clear(); this.#cancelPending('sdk.stale_generation');
+@@ -405,15 +438,20 @@
+   }
+ }
+ 
+-export type EditorControllerV2 = Omit<EditorController, 'read' | 'submit' | 'completeHostRequest'> & {
++export type EditorControllerV2 = Omit<EditorController, 'read' | 'query' | 'submit' | 'completeHostRequest'> & {
+   read(request: ReadRequest): Response;
+   read(request: SelectionTextRequestV2): ResponseV2;
+   read(request: TextWindowRequestV2): ResponseV2;
+   read(request: ClipboardContextRequestV2): ResponseV2;
+   read(request: SelectionFragmentRequestV2): ResponseV2;
+   read(request: ReadRequestV2): ResponseV2;
+-  submit(request: MutationRequestV2): Submission;
+-  completeHostRequest(request: HostRequest, mutation: StampedMutationV2): Submission;
++  query(request: QueryRequestV2): Response;
++  submit(request: InputCommandRequestV2): InputSubmissionV2;
++  submit(request: Exclude<MutationRequestV2, InputCommandRequestV2>): Submission;
++  submit(request: MutationRequestV2): InputSubmissionV2;
++  completeHostRequest(request: HostRequest, mutation: InputCommandRequestV2): InputSubmissionV2;
++  completeHostRequest(request: HostRequest, mutation: Exclude<StampedMutationV2, InputCommandRequestV2>): Submission;
++  completeHostRequest(request: HostRequest, mutation: StampedMutationV2): InputSubmissionV2;
+ };
+ export function createEditor(options: CreateEditorOptionsV2): EditorControllerV2;
+ export function createEditor(options: CreateEditorOptionsV1): EditorController;

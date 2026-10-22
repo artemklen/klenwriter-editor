@@ -107,10 +107,16 @@ pub enum TransactionError<E> {
     JournalLimit,
     History(HistoryError),
     Events(EventError),
+    InputResult(crate::input_result::InputResultError),
 }
 impl<E> From<EventError> for TransactionError<E> {
     fn from(error: EventError) -> Self {
         Self::Events(error)
+    }
+}
+impl<E> From<crate::input_result::InputResultError> for TransactionError<E> {
+    fn from(error: crate::input_result::InputResultError) -> Self {
+        Self::InputResult(error)
     }
 }
 impl<E> From<TreeError> for TransactionError<E> {
@@ -146,6 +152,7 @@ pub fn error_code<E>(
     profile: impl FnOnce(&E) -> &'static str,
 ) -> &'static str {
     match error {
+        TransactionError::InputResult(error) => error.as_str(),
         TransactionError::State(error) => match error {
             StateError::StaleSession => "session.stale_session",
             StateError::StaleRevision => "session.stale_revision",

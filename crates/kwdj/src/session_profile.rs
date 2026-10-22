@@ -42,6 +42,7 @@ pub struct KwdjProfile<'a> {
     limits: Limits,
     budget: AdmissionBudget,
     clipboard_v2: bool,
+    typing_rules: Option<crate::typing::TypingRules>,
 }
 
 impl<'a> KwdjProfile<'a> {
@@ -67,6 +68,7 @@ impl<'a> KwdjProfile<'a> {
             limits: limits.effective(),
             budget: budget.effective(),
             clipboard_v2: false,
+            typing_rules: None,
         }
     }
 
@@ -93,6 +95,34 @@ impl<'a> KwdjProfile<'a> {
     }
     pub(crate) fn clipboard_v2(&self) -> bool {
         self.clipboard_v2
+    }
+
+    pub fn typing_rules(&self) -> Option<crate::typing::TypingRules> {
+        self.typing_rules
+    }
+
+    /// Optional compiled registration and effective rules are frozen together.
+    /// The ordinary ABI2 base registration stays at exactly eighteen commands.
+    pub fn with_typing_registry_json(
+        self,
+        rules: crate::typing::TypingRules,
+        input: &[u8],
+        limits: CompilerLimits,
+        work: &mut WorkMeter,
+    ) -> Result<Self, KwdjProfileError> {
+        let registry = editor_registry::compile_json(
+            input,
+            &[
+                crate::registry::base_registration_v2(),
+                crate::registry::typing_registration(),
+            ],
+            limits,
+            work,
+        )?;
+        let mut profile = self.with_compiled_registry(registry)?;
+        profile.clipboard_v2 = true;
+        profile.typing_rules = Some(rules);
+        Ok(profile)
     }
 
     pub fn with_clipboard_registry_json(

@@ -28,7 +28,7 @@ test.beforeEach(async({page},info)=>{
   page.on('pageerror',error=>record.errors.push(error.message));page.on('request',request=>{if(!request.url().startsWith('http://127.0.0.1:4174/'))record.external.push(request.url());});
   // S17/S18 control scheduling. Install before navigation as required by the
   // pinned Playwright Clock API; all native input still uses the real mounted SDK.
-  if(/^S(?:17|18) /.test(info.title))await page.clock.install({time:new Date('2030-01-01T00:00:00Z')});
+  if(/^S(?:17|18|19) /.test(info.title))await page.clock.install({time:new Date('2030-01-01T00:00:00Z')});
   await page.addInitScript(()=>{window.slashPolicy=[];document.addEventListener('securitypolicyviolation',e=>window.slashPolicy.push({directive:e.effectiveDirective,blocked:e.blockedURI}));});
   const response=await page.goto('/ui');record.csp=response.headers()['content-security-policy'];expect(record.csp).not.toContain("'unsafe-inline'");expect(record.csp).not.toContain("'unsafe-eval'");
   await page.waitForFunction(()=>!!window.ui42);
@@ -230,4 +230,33 @@ test('S18 stale owned Enter before pending presentation RAF refuses without nati
   await expect(menu(page,id)).toBeHidden();const later=await inspect(page,id,'finite resumed RAF cannot revive refused anchor or replay Enter');unchanged(later,pending);
   expect(later.rows).toEqual(pending.rows);expect(later.ordinaryInputs).toEqual(pending.ordinaryInputs);expect(later.results).toEqual([]);
   expect(later.resources.hostRequests.pending).toBe(0);expect(later.resources.popupPresentation.handles).toBe(0);await expect(surface(page,id)).toBeFocused();
+});
+
+// S19: Escape dismisses the owned slash anchor even when presentation tokens
+// predate a completed ordinary input. It must not acquire mutation authority.
+test('S19 Escape cancels a stale displayed slash frame before RAF without mutation or later anchor revival',async({page})=>{
+  const id=await mount(page);await page.keyboard.type('/');await expect(menu(page,id)).toBeVisible();await expect(rows(page,id)).toHaveCount(9);
+  const rendered=await inspect(page,id,'S19 genuine rendered slash before controlled stale Escape');
+  expect(rendered.canonical).toBe(seed('MC01').preAcceptCanonical.replace('/para','/'));
+  const pauseAt=await page.evaluate(()=>Date.now()+1000);await page.clock.pauseAt(pauseAt);
+  records.get(page).scheduler={kind:'Playwright Clock',scope:'Controlled presentation scheduling only; no installed/OS evidence',pausedAt:pauseAt,advancedMs:100};
+  let pending,cancelled;
+  try{
+    await page.keyboard.type('p');pending=await inspect(page,id,'S19 native p committed while original slash frame still awaits RAF');
+    expect(pending.canonical).toBe(seed('MC01').preAcceptCanonical.replace('/para','/p'));
+    expect(pending.ordinaryInputs.map(row=>row.dataHint)).toEqual(['/','p']);expect(pending.ordinaryInputs[1].before).toEqual(pending.ordinaryInputs[0].after);
+    expect(BigInt(pending.state.stamp.revision)-BigInt(rendered.state.stamp.revision)).toBe(1n);expect(pending.results).toEqual([]);expect(pending.uiResources.animationFrames).toBe(1);
+    await expect(rows(page,id)).toHaveCount(9);await expect(surface(page,id)).toBeFocused();
+    await page.keyboard.press('Escape');await expect(menu(page,id)).toBeHidden();
+    cancelled=await inspect(page,id,'S19 stale owned Escape emits original cancellation with zero native mutation');
+    expect(cancelled.canonical).toBe(pending.canonical);expect(cancelled.state).toEqual(pending.state);expect(cancelled.rows).toEqual(pending.rows);expect(cancelled.events).toEqual(pending.events);
+    expect(cancelled.results).toEqual([{status:'cancelled',action:'slash',restore:null}]);expect(cancelled.ordinaryInputs).toEqual(pending.ordinaryInputs);expect(cancelled.failures).toEqual(pending.failures);
+    expect(cancelled.activeId).toBe(pending.activeId);expect(cancelled.insideEditor).toBe(true);await expect(surface(page,id)).toBeFocused();
+    await page.clock.runFor(50);await expect(menu(page,id)).toBeHidden();const drained=await inspect(page,id,'S19 pending RAF cannot revive the dismissed anchor');
+    unchanged(drained,cancelled);expect(drained.rows).toEqual(cancelled.rows);expect(drained.ordinaryInputs).toEqual(cancelled.ordinaryInputs);await expect(surface(page,id)).toBeFocused();
+    await page.keyboard.type('x');await page.clock.runFor(50);
+  }finally{await page.clock.resume();}
+  await expect(menu(page,id)).toBeHidden();await expect(surface(page,id)).toBeFocused();const later=await inspect(page,id,'S19 later ordinary x remains literal without reopening the old slash anchor');
+  expect(later.canonical).toBe(seed('MC01').preAcceptCanonical.replace('/para','/px'));expect(later.ordinaryInputs.map(row=>row.dataHint)).toEqual(['/','p','x']);expect(later.results).toEqual(cancelled.results);
+  expect(BigInt(later.state.stamp.revision)-BigInt(cancelled.state.stamp.revision)).toBe(1n);expect(later.activeId).toBe(cancelled.activeId);expect(later.insideEditor).toBe(true);
 });

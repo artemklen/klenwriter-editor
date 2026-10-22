@@ -6,6 +6,7 @@ pub mod clipboard;
 mod delete;
 mod inline;
 mod selection;
+pub mod typing;
 pub use selection::{SelectionText, SelectionTextError, selected_text};
 
 use editor_core::candidate::CandidateRead;
@@ -90,9 +91,18 @@ pub enum KwdjIntent<I> {
     InsertFragment {
         fragment: clipboard::Fragment,
     },
+    InsertTypedText {
+        text: String,
+        origin: editor_core::commands::InputOrigin,
+    },
+    RestoreTypedText {
+        restore: crate::typing::Restore<I>,
+    },
 }
 
 pub const CLIPBOARD_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-fragment";
+pub const TYPED_INPUT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-typed-text";
+pub const RESTORE_INPUT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/restore-typed-text";
 
 pub const KWDJ_COMMANDS: &[CommandDescriptor] = &[
     CommandDescriptor {
@@ -240,6 +250,8 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::DeleteBackward => KWDJ_COMMANDS[15].id,
             KwdjIntent::DeleteSelection => KWDJ_COMMANDS[16].id,
             KwdjIntent::InsertFragment { .. } => CLIPBOARD_COMMAND_ID,
+            KwdjIntent::InsertTypedText { .. } => TYPED_INPUT_COMMAND_ID,
+            KwdjIntent::RestoreTypedText { .. } => RESTORE_INPUT_COMMAND_ID,
         }
     }
 
@@ -252,6 +264,9 @@ impl CommandProvider for KwdjProfile<'_> {
         plan: &mut PlanBuilder<'_, V::Id>,
     ) -> Result<CommandPresentation, Self::Error> {
         Ok(match intent {
+            KwdjIntent::InsertTypedText { .. } | KwdjIntent::RestoreTypedText { .. } => {
+                return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());
+            }
             KwdjIntent::ToggleMark { mark } => inline::toggle_mark(view, state, mark, plan)?,
             KwdjIntent::SetLink { href, title } => {
                 inline::set_link(view, state, href, title.as_deref(), plan)?
@@ -266,6 +281,38 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::DismissSlash => CommandPresentation { active: None },
             _ => block::prepare(*context, view, state, intent, plan)?,
         })
+    }
+
+    fn supports_input_command<I: Copy + Eq + Ord>(&self, intent: &KwdjIntent<I>) -> bool {
+        self.typing_rules().is_some()
+            && matches!(
+                intent,
+                KwdjIntent::InsertTypedText { .. } | KwdjIntent::RestoreTypedText { .. }
+            )
+    }
+
+    fn prepare_input_command<V: CandidateRead>(
+        &self,
+        context: &Self::Context,
+        view: &V,
+        state: CommandState<'_, V::Id>,
+        intent: &KwdjIntent<V::Id>,
+        policy: editor_core::commands::InputCommandPolicy,
+        plan: &mut PlanBuilder<'_, V::Id>,
+    ) -> Result<CommandPresentation, Self::Error> {
+        let rules = self
+            .typing_rules()
+            .ok_or_else(|| refusal(KwdjErrorCode::CommandUnsupportedContext))?;
+        match intent {
+            KwdjIntent::InsertTypedText { text, origin } => {
+                typing::prepare(rules, view, state, text, *origin, policy, plan).map_err(Into::into)
+            }
+            KwdjIntent::RestoreTypedText { restore } => {
+                typing::restore(self, *context, rules, view, state, restore, plan)
+                    .map_err(Into::into)
+            }
+            _ => Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into()),
+        }
     }
 
     fn finalize_typing_override<V: CandidateRead>(

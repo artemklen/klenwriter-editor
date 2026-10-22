@@ -14,3 +14,7 @@ implementation; historical design drafts retain their original status text.
 
 Optional generic block chrome, additive geometry/host requests and independently
 authored UI/native/keyboard/focus literals: [UI v1 (OSR-42)](ui/v1/README.md).
+
+Optional profile typography, source-authority transfer, native atomic result and
+DOM correspondence: [typography v1](../docs/typography.md). Omitted config keeps
+rules off; its source bytes and independent goldens were frozen before candidate.

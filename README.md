@@ -29,6 +29,10 @@ Add/move controls, geometry and host-owned dialogs. Paste/HTML clipboard handlin
 slash/physical drag, complete accessibility and installable vanilla alpha retain
 separate gates; this is not a published editor release.
 
+KWDJ consumers can explicitly enable [RU/EN typography](docs/typography-integration.md)
+with a separate renderer catalog and immutable native configuration. It is off
+by default; literal insertion and clipboard keep their existing semantics.
+
 ## Build the standalone workspace
 
 Use Node 24.22.0, npm 11.14.0 and rustup (Rust 1.97.1 is pinned automatically):

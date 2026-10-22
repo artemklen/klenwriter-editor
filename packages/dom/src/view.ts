@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-import type { DeepReadonly, EventDto, NodeViewDto, PositionDto, Response, SelectionDto, StampDto, StateDto } from '@klenwriter/editor-sdk';
-import type { DomDiagnostic, DomRefusal, MountedMutation, RecoveryRegion, RendererCatalog } from './types.js';
+import type { DeepReadonly, EventDto, InputFinalRegionV2, NodeViewDto, PositionDto, Response, SelectionDto, StampDto, StateDto, TextReplacementResultV2 } from '@klenwriter/editor-sdk';
+import type { DomDiagnostic, DomRefusal, MountedMutationV2, RecoveryRegion, RendererCatalog } from './types.js';
 import { prepareNode, type PreparedNode } from './catalog.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
-import { createCompositionCorrespondence, type CompositionWindow, type CompositionObservation } from './composition-view.js';
-export type { CompositionWindow, CompositionObservation } from './composition-view.js';
+import { createCompositionCorrespondence, type CompositionWindow, type CompositionObservation, type CompositionTerminalTicket } from './composition-view.js';
+import {literalCompositionBytes,sameLiteralNode,verifyLiteralComposition,type LiteralCompositionSource} from './composition-literal.js';
+export type { CompositionWindow, CompositionObservation, CompositionTerminalTicket } from './composition-view.js';
 
 export const domRegionLimits = Object.freeze({ blocks: 8, nodes: 131072, depth: 128, utf16: 2097152, mutations: 4096 });
 export interface DomPoint { readonly node: Node; readonly offset: number }
@@ -37,9 +38,22 @@ export interface DomView {
   geometryRow(id: string): GeometryRow | null;
   geometryOwner(node: Node): GeometryRow | null;
   geometryStamp(): DeepReadonly<StampDto> | null;
+  /** Bounded generic final native text/mark/DOM correspondence, never rule matching. */
+  checkInputRegion(region:DeepReadonly<InputFinalRegionV2>,stamp:DeepReadonly<StampDto>):DomRefusal|null;
+  checkInputResult(result:DeepReadonly<TextReplacementResultV2>):DomRefusal|null;
+  captureLiteralComposition(window:CompositionWindow,text:string,marks:DeepReadonly<StateDto>['stored_marks']):LiteralCompositionSource|DomRefusal|null;
+  checkLiteralComposition(source:LiteralCompositionSource,event:DeepReadonly<EventDto>,state:DeepReadonly<StateDto>):DomRefusal|null;
+  checkLiteralCompositionWindow(window:CompositionWindow,state:DeepReadonly<StateDto>):DomRefusal|null;
   beginProvisional(stamp: DeepReadonly<StampDto>, blockIds?: readonly string[]): DomRefusal | null;
   beginComposition(stamp: DeepReadonly<StampDto>, selection: DeepReadonly<SelectionDto>): CompositionWindow | DomRefusal;
   observeComposition(window: CompositionWindow): CompositionObservation | DomRefusal;
+  /** Private composing-only terminal correspondence; default observers stay unchanged. */
+  captureTerminalDeletion(window:CompositionWindow,event:InputEvent):CompositionTerminalTicket|DomRefusal|null;
+  observeTerminalDeletion(ticket:CompositionTerminalTicket,event:InputEvent):DomRefusal|null;
+  captureTerminalInsertion(ticket:CompositionTerminalTicket,event:InputEvent):DomRefusal|null;
+  observeTerminalInsertion(ticket:CompositionTerminalTicket,event:InputEvent):CompositionObservation|DomRefusal;
+  releaseTerminal(ticket:CompositionTerminalTicket):void;
+  terminalRetainedBytes(ticket:CompositionTerminalTicket):number;
   /** Recovery diagnostics only; this never admits a replacement command. */
   captureComposition(window: CompositionWindow): RecoveryRegion | DomRefusal;
   restoreComposition(window: CompositionWindow): DomRefusal | null;
@@ -47,7 +61,7 @@ export interface DomView {
   setComposing(active: boolean): void;
   hasProvisional(): boolean;
   protectedIds(): readonly string[];
-  conflicts(request: DeepReadonly<MountedMutation>): boolean;
+  conflicts(request: DeepReadonly<MountedMutationV2>): boolean;
   captureBlocks(blockIds?: readonly string[]): BlockCapture | DomRefusal;
   captureRegion(): RecoveryRegion | null;
   /** Counts every node and text unit before copying; unknown DOM has no model authority. */
@@ -82,6 +96,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
   let placeholders = new WeakSet<Node>();
   let compositionGeneration: object = {};
   const unrestorableCompositions = new WeakSet<CompositionWindow>();
+  const literalSources=new WeakMap<LiteralCompositionSource,CompositionWindow>();
   const correspondence = createCompositionCorrespondence({host,limits:domRegionLimits,row:id=>rows.get(id),ownedId:node=>authority.get(node),
     placeholder:node=>placeholders.has(node),point:domPoint,selection:readSelection,generation:()=>compositionGeneration});
   const refusal = (code: 'dom.renderer_missing' | 'dom.presentation_unsupported' | 'dom.composition_conflict' | 'dom.reconcile_limit' | 'dom.disposed',
@@ -97,6 +112,55 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
       return domRefusal('dom.presentation_unsupported', 'render', stamp, id, null, publication);
     }
     return result.value.node;
+  }
+  function matchesPresentation(element:HTMLElement,p:PreparedNode['presentation'],outer:boolean):boolean {
+    if(element.tagName.toLowerCase()!==p.tag)return false;
+    const expected=new Map(Object.entries(p.attributes??{}));
+    if(p.classes?.length)expected.set('class',p.classes.join(' '));
+    const actual=[...element.attributes].filter(a=>!outer||!['id','data-editor-node'].includes(a.name));
+    return actual.length===expected.size&&actual.every(a=>expected.get(a.name)===a.value);
+  }
+  function checkInputRegion(region:DeepReadonly<InputFinalRegionV2>,stamp:DeepReadonly<StampDto>):DomRefusal|null {
+    const fail=()=>domRefusal('dom.presentation_unsupported','render',stamp,region.block,null,'alreadyPublished');
+    if(destroyed||!currentStamp||!stampSame(currentStamp,stamp)||region.spans.length===0||region.spans.length>12)return fail();
+    const block=rows.get(region.block);
+    if(!block||block.view.primitive!=='text_block'||!host.contains(block.outer))return fail();
+    let bytes=0,previous=-1;
+    const seen=new Set<string>();
+    for(const span of region.spans){
+      const row=rows.get(span.node),native=read(stamp,span.node,'alreadyPublished');
+      bytes+=new TextEncoder().encode(span.text).byteLength;
+      if(bytes>12||seen.has(span.node)||!row||isDomRefusal(native)||native.primitive!=='text'||native.parent!==region.block
+        ||native.text===null||!row.text||!host.contains(row.outer)||row.outer.parentNode!==block.content
+        ||!scalarBoundary(native.text,span.from_utf16)||!scalarBoundary(native.text,span.to_utf16)
+        ||span.from_utf16>=span.to_utf16||native.text.slice(span.from_utf16,span.to_utf16)!==span.text
+        ||row.text.data!==native.text||native.type_id!==span.type_id||!equal(native.attributes,span.attributes)||!equal(native.marks,span.marks)
+        ||row.view.type_id!==native.type_id||!equal(row.view.attributes,native.attributes)||!equal(row.view.marks,native.marks))return fail();
+      const index=block.view.children.indexOf(span.node);
+      if(index<0||previous>=0&&index!==previous+1||block.content.childNodes[index]!==row.outer)return fail();
+      previous=index;seen.add(span.node);
+      const prepared=prepare(native,'alreadyPublished');
+      if(isDomRefusal(prepared)||!matchesPresentation(row.outer,prepared.presentation,true)||row.wrappers.length!==prepared.marks.length)return fail();
+      let parent:HTMLElement=row.outer;
+      for(let i=0;i<row.wrappers.length;i++){
+        const wrapper=row.wrappers[i];
+        if(parent.childNodes.length!==1||parent.firstChild!==wrapper||!matchesPresentation(wrapper,prepared.marks[i],false))return fail();
+        parent=wrapper;
+      }
+      if(parent.childNodes.length!==1||parent.firstChild!==row.text)return fail();
+    }
+    const first=region.spans[0],last=region.spans.at(-1)!;
+    if(region.range.anchor.kind!=='text'||region.range.focus.kind!=='text'||region.range.anchor.node!==first.node
+      ||region.range.anchor.offset!==first.from_utf16||region.range.focus.node!==last.node||region.range.focus.offset!==last.to_utf16)return fail();
+    for(let i=1;i<region.spans.length;i++){
+      const left=region.spans[i-1],right=region.spans[i],l=rows.get(left.node),r=rows.get(right.node);
+      if(!l?.text||!r?.text||left.to_utf16!==l.text.length||right.from_utf16!==0)return fail();
+    }
+    return stampSame(currentStamp,stamp)?null:fail();
+  }
+  function checkInputResult(result:DeepReadonly<TextReplacementResultV2>):DomRefusal|null {
+    return result.before.block!==result.after.block?refusal('dom.presentation_unsupported',result.after.block,'alreadyPublished')
+      :checkInputRegion(result.after,result.after_stamp);
   }
   function applyPresentation(element: HTMLElement, p: PreparedNode['presentation']): void {
     for (const attr of [...element.attributes]) if (attr.name !== 'id' && attr.name !== 'data-editor-node') element.removeAttribute(attr.name);
@@ -441,6 +505,116 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     if (destroyed) return refusal('dom.disposed');
     return correspondence.observe(window);
   }
+  function terminalCurrent(window:CompositionWindow):DomRefusal|null {
+    return destroyed||!currentStamp||!stampSame(currentStamp,window.stamp)||!correspondence.owns(window)
+      ?compositionRefusal('dom.composition_stale',window):null;
+  }
+  function captureTerminalDeletion(window:CompositionWindow,event:InputEvent):CompositionTerminalTicket|DomRefusal|null {
+    return terminalCurrent(window)??correspondence.captureTerminalDeletion(window,event);
+  }
+  function observeTerminalDeletion(ticket:CompositionTerminalTicket,event:InputEvent):DomRefusal|null {
+    return terminalCurrent(ticket.window)??correspondence.observeTerminalDeletion(ticket,event);
+  }
+  function captureTerminalInsertion(ticket:CompositionTerminalTicket,event:InputEvent):DomRefusal|null {
+    return terminalCurrent(ticket.window)??correspondence.captureTerminalInsertion(ticket,event);
+  }
+  function observeTerminalInsertion(ticket:CompositionTerminalTicket,event:InputEvent):CompositionObservation|DomRefusal {
+    return terminalCurrent(ticket.window)??correspondence.observeTerminalInsertion(ticket,event);
+  }
+  function releaseTerminal(ticket:CompositionTerminalTicket):void {correspondence.releaseTerminal(ticket);}
+  function terminalRetainedBytes(ticket:CompositionTerminalTicket):number {return correspondence.terminalRetainedBytes(ticket);}
+  function captureLiteralComposition(window:CompositionWindow,text:string,marks:DeepReadonly<StateDto>['stored_marks']):LiteralCompositionSource|DomRefusal|null {
+    if(destroyed||!currentStamp||!stampSame(currentStamp,window.stamp)||rootId===null)return compositionRefusal('dom.composition_stale',window);
+    const cached=correspondence.literalSource(window,text,marks,rootId);
+    if(!cached||isDomRefusal(cached))return cached;
+    if(literalCompositionBytes(cached)===null)return compositionRefusal('dom.composition_limit',window);
+    const fresh=(previous:DeepReadonly<NodeViewDto>):DeepReadonly<NodeViewDto>|DomRefusal=>{
+      const value=read(window.stamp,previous.id,'none');
+      return isDomRefusal(value)?value:sameLiteralNode(previous,value)?value:compositionRefusal('dom.composition_stale',window);
+    };
+    const leaf=fresh(cached.leaf),block=fresh(cached.block);
+    if(isDomRefusal(leaf))return leaf;if(isDomRefusal(block))return block;
+    const ancestors:DeepReadonly<NodeViewDto>[]=[];
+    for(const previous of cached.ancestors??[cached.parent]){const value=fresh(previous);if(isDomRefusal(value))return value;ancestors.push(value);}
+    if(!ancestors.length||!currentStamp||!stampSame(currentStamp,window.stamp))return compositionRefusal('dom.composition_stale',window);
+    const source=Object.freeze({...cached,leaf,block,parent:ancestors[0],ancestors:Object.freeze(ancestors)});
+    literalSources.set(source,window);return source;
+  }
+  function checkLiteralComposition(source:LiteralCompositionSource,event:DeepReadonly<EventDto>,state:DeepReadonly<StateDto>):DomRefusal|null {
+    const window=literalSources.get(source);
+    if(destroyed||!window||!currentStamp||!stampSame(currentStamp,state.stamp)||!correspondence.owns(window))return compositionRefusal('dom.composition_stale',window);
+    const outsideFailure=correspondence.literalOutside(window);if(outsideFailure)return outsideFailure;
+    const selection=state.selection;
+    if(!selection||selection.anchor.kind!=='text'||selection.focus.kind!=='text')return compositionRefusal('dom.composition_stale',window);
+    const block=read(state.stamp,source.block.id,'alreadyPublished'),leaf=read(state.stamp,selection.focus.node,'alreadyPublished');
+    if(isDomRefusal(block))return block;if(isDomRefusal(leaf))return leaf;
+    const ancestors:DeepReadonly<NodeViewDto>[]=[];
+    for(const previous of source.ancestors??[source.parent]){const value=read(state.stamp,previous.id,'alreadyPublished');if(isDomRefusal(value))return value;ancestors.push(value);}
+    if(!ancestors.length||!verifyLiteralComposition(source,{effect:'changed',state,event,block,leaf,parent:ancestors[0],ancestors}))return compositionRefusal('dom.composition_stale',window);
+    // Literal composition uses the original41 bounded region, independently
+    // of the compact typography receipt's12UTF8 byte presentation limit.
+    const fail=()=>compositionRefusal('dom.composition_stale',window);
+    const blockRow=rows.get(block.id),leafRow=rows.get(leaf.id);
+    if(!blockRow||!leafRow||!leafRow.text||source.text.length>domRegionLimits.utf16
+      ||!sameLiteralNode(blockRow.view,block)||!sameLiteralNode(leafRow.view,leaf)
+      ||blockRow.outer!==window.entries[0].element||blockRow.outer.parentNode!==window.parent
+      ||blockRow.outer.previousSibling!==window.before||blockRow.outer.nextSibling!==window.after
+      ||leafRow.outer.parentNode!==blockRow.content||blockRow.content.childNodes.length!==1
+      ||blockRow.content.firstChild!==leafRow.outer||leafRow.text.data!==source.text)return fail();
+    let nodes=0,metadata=0;
+    const presentation=(row:Row,native:DeepReadonly<NodeViewDto>):boolean=>{
+      const prepared=prepare(native,'alreadyPublished');
+      if(isDomRefusal(prepared)||row.wrappers.length!==prepared.marks.length)return false;
+      const matches=(element:HTMLElement,value:PreparedNode['presentation'],outer:boolean):boolean=>{
+        if(++nodes>domRegionLimits.nodes||element.attributes.length>domRegionLimits.nodes-nodes)return false;
+        for(const attribute of element.attributes){
+          const units=attribute.name.length+attribute.value.length;
+          if(units>domRegionLimits.utf16-metadata)return false;metadata+=units;
+        }
+        return matchesPresentation(element,value,outer);
+      };
+      if(!matches(row.outer,prepared.presentation,true))return false;
+      let content=row.outer;
+      for(let i=0;i<row.wrappers.length;i++){
+        const wrapper=row.wrappers[i];
+        if(content.childNodes.length!==1||content.firstChild!==wrapper||!matches(wrapper,prepared.marks[i],false))return false;
+        content=wrapper;
+      }
+      return content===row.content&&(!row.text||content.childNodes.length===1&&content.firstChild===row.text);
+    };
+    if(!presentation(blockRow,block)||!presentation(leafRow,leaf))return fail();
+    for(const native of ancestors){
+      const row=rows.get(native.id);
+      if(!row||!sameLiteralNode(row.view,native)||row.content.childNodes.length!==native.children.length
+        ||native.children.length>domRegionLimits.nodes-nodes)return fail();
+      nodes+=native.children.length;
+      for(let i=0;i<native.children.length;i++)if(row.content.childNodes[i]!==rows.get(native.children[i])?.outer)return fail();
+    }
+    return currentStamp&&stampSame(currentStamp,state.stamp)?null:fail();
+  }
+  function checkLiteralCompositionWindow(window:CompositionWindow,state:DeepReadonly<StateDto>):DomRefusal|null {
+    const fail=()=>compositionRefusal('dom.composition_stale',window),selection=state.selection,region=window.originalRegion;
+    if(destroyed||!currentStamp||!stampSame(currentStamp,state.stamp)||!correspondence.owns(window)
+      ||!stampSame(window.stamp,state.stamp)||!equal(window.selection,selection)||!selection||!equal(selection.anchor,selection.focus)
+      ||selection.focus.kind!=='text'||region.kind!=='bounded'||region.originalText.length===0||region.originalText.length>domRegionLimits.utf16
+      ||region.originalText!==region.provisionalText||selection.focus.offset!==region.originalText.length||window.entries.length!==1)return fail();
+    const expected=window.entries[0].view;
+    if(expected.primitive!=='text_block'||expected.children.length!==1||expected.children[0]!==selection.focus.node)return fail();
+    const block=read(state.stamp,expected.id,'alreadyPublished'),leaf=read(state.stamp,selection.focus.node,'alreadyPublished');
+    if(isDomRefusal(block))return block;if(isDomRefusal(leaf))return leaf;
+    const blockRow=rows.get(block.id),leafRow=rows.get(leaf.id);
+    if(!blockRow||!leafRow||!leafRow.text||!sameLiteralNode(expected,block)||!sameLiteralNode(blockRow.view,block)||!sameLiteralNode(leafRow.view,leaf)
+      ||leaf.primitive!=='text'||leaf.parent!==block.id||leaf.children.length!==0||leaf.text!==region.originalText
+      ||blockRow.outer!==window.entries[0].element||blockRow.outer.parentNode!==window.parent
+      ||blockRow.outer.previousSibling!==window.before||blockRow.outer.nextSibling!==window.after
+      ||leafRow.outer.parentNode!==blockRow.content||blockRow.content.childNodes.length!==1||blockRow.content.firstChild!==leafRow.outer
+      ||leafRow.text.data!==leaf.text)return fail();
+    const outsideFailure=correspondence.literalOutside(window);if(outsideFailure)return outsideFailure;
+    const observed=correspondence.observe(window);
+    if(isDomRefusal(observed))return observed;
+    return observed.unchanged&&observed.region.kind==='bounded'&&observed.region.originalText===region.originalText
+      &&observed.region.provisionalText===region.originalText&&currentStamp&&stampSame(currentStamp,state.stamp)?null:fail();
+  }
   function captureComposition(window: CompositionWindow): RecoveryRegion | DomRefusal {
     if (destroyed) return refusal('dom.disposed');
     if (!correspondence.owns(window)) return compositionRefusal('dom.composition_stale',window);
@@ -689,9 +863,9 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         return restoreSelection(state.selection);
       } catch { return refusal('dom.presentation_unsupported'); }
     },
-    patch, readSelection, restoreSelection, rememberSelection, ownedBlockAt, textPosition: positionAt, domPoint, geometryRow, geometryOwner,
+    patch, readSelection, restoreSelection, rememberSelection, ownedBlockAt, textPosition: positionAt, domPoint, geometryRow, geometryOwner,checkInputRegion,checkInputResult,captureLiteralComposition,checkLiteralComposition,checkLiteralCompositionWindow,
     geometryStamp: () => destroyed ? null : currentStamp,
-    beginProvisional, beginComposition, observeComposition, captureComposition, restoreComposition, endProvisional() { provisional = null; },
+    beginProvisional, beginComposition, observeComposition, captureTerminalDeletion, observeTerminalDeletion, captureTerminalInsertion, observeTerminalInsertion, releaseTerminal, terminalRetainedBytes, captureComposition, restoreComposition, endProvisional() { provisional = null; },
     setComposing(active) { if (provisional) provisional.composing = active; },
     hasProvisional: () => provisional !== null,
     protectedIds: () => Object.freeze([...(provisional?.protected ?? [])]),

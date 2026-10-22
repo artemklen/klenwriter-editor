@@ -130,6 +130,17 @@
       "thirdPartyHeaders": [],
       "sourcePayload": "Application-authored TypeScript conversion and URL policy only; no user data, capture or documents",
       "adaptations": "Source-derived closed diagnostics, plain conversion and HTML allowlist; isolated parse5 data adapter replaces CMS DOMParser; no CMS app/Tiptap/runtime dependency; native fragment admission remains authoritative"
+    },
+    {
+      "source": "frontend/admin-spa/src/app/editor/typing-typography.ts",
+      "sourceRevision": "07f2f565877d127abb001f1efe538dec854c6c0e",
+      "sha256": "0464e277aeb44f74cc92dee5f1fb7c91b2a59e81bdb91d537685f77630dde9cd",
+      "destination": "crates/kwdj/src/commands/typing.rs",
+      "grant": "Owner D10/D11, accepted 2026-10-17; owner-controlled typography semantics and synthetic contract adaptation, audited OSR-48",
+      "license": "MIT OR Apache-2.0",
+      "thirdPartyHeaders": [],
+      "sourcePayload": "Application-authored four input-rule semantics and17 synthetic source test bodies; source bytes retained as noncompiled .source.txt authority; no user documents",
+      "adaptations": "Original bounded native matcher with profile config; RU four-rule parity, explicit EN extension; no Tiptap implementation/runtime dependency; generic engine atomic result/history and DOM lineage remain separate authorities"
     }
   ],
   "localAdaptations": [
@@ -470,5 +481,25 @@
     "authority": "Existing native Move query/execute, original host request and one isolated history group. Pointer geometry and paint grant no schema authority; external HTML drag data is never read.",
     "dependencies": "Existing public DOM/SDK only; no new runtime dependency.",
     "privacy": "Synthetic literal documents and finite controlled fixtures only; no private documents or production data."
+  },
+  "originalTypography": {
+    "issue": "OSR-48",
+    "source": "Original Rust/TypeScript generic input-result, profile matcher/config, SDK/DOM lineage and source-authored synthetic contracts; owner-controlled CMS semantics adapted under D10/D11",
+    "license": "MIT OR Apache-2.0",
+    "paths": [
+      "crates/core/src/input.rs",
+      "crates/engine/src/input_result.rs",
+      "crates/bridge/src/input.rs",
+      "crates/kwdj/src/typing.rs",
+      "crates/kwdj/src/commands/typing.rs",
+      "crates/kwdj-sdk/src/typing_v2.rs",
+      "packages/dom/src/input-result.ts",
+      "packages/dom/src/composition-literal.ts",
+      "contracts/typography/v1",
+      "docs/typography.md"
+    ],
+    "authority": "Frozen sources/oracles commit d547673 precedes candidate; native matcher has no JS policy counterpart. Runtime default stays off. Exact source-byte and fixed canonical assertions are retained.",
+    "dependencies": "No new runtime dependency; existing pinned serializers and Unicode segmentation reused",
+    "privacy": "Synthetic literal documents and finite controlled browser fixtures only; no private documents or production captures"
   }
 }

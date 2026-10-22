@@ -10,8 +10,8 @@ const authored=id=>contract.cases.find(row=>row.id===id);
 const scoped=(before,value)=>before.roles[value]??value;
 const sourceRole='P3';
 
-// Retain DOM snapshots/traces for failures, never screenshot this fixture.
-test.use({trace:{mode:'retain-on-failure',screenshots:false,snapshots:true,sources:true}});
+// Diagnostic browser capture is disabled for this fixture.
+test.use({trace:{mode:'off',screenshots:false,snapshots:true,sources:true}});
 
 async function mount(page,config={}) {
   const value=await call(page,'mount',{geometry:'F',geometryOnly:true,nativeTrace:true,...config});

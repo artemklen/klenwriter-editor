@@ -1,0 +1,17 @@
+{
+  "status": "source_authored_paired_copy_not_runtime_evidence",
+  "choices": [
+    {"id":"paragraph","label":{"ru":"Абзац","en":"Paragraph"},"keywords":{"ru":["текст"],"en":["text"]}},
+    {"id":"heading2","label":{"ru":"Заголовок 2","en":"Heading 2"},"keywords":{"ru":["раздел"],"en":["section"]}},
+    {"id":"heading3","label":{"ru":"Заголовок 3","en":"Heading 3"},"keywords":{"ru":["подраздел"],"en":["subsection"]}},
+    {"id":"blockquote","label":{"ru":"Цитата","en":"Quote"},"keywords":{"ru":["цитирование"],"en":["blockquote"]}},
+    {"id":"bullet-list","label":{"ru":"Маркированный список","en":"Bulleted list"},"keywords":{"ru":["список"],"en":["bullet","list"]}},
+    {"id":"ordered-list","label":{"ru":"Нумерованный список","en":"Numbered list"},"keywords":{"ru":["список","номер"],"en":["ordered","list"]}},
+    {"id":"task-list","label":{"ru":"Список задач","en":"Task list"},"keywords":{"ru":["задача","список"],"en":["todo","checklist"]}},
+    {"id":"code-block","label":{"ru":"Блок кода","en":"Code block"},"keywords":{"ru":["код"],"en":["code"]}},
+    {"id":"scene-break","label":{"ru":"Разделитель сцен","en":"Scene break"},"keywords":{"ru":["сцена","разделитель"],"en":["separator","scene"]}}
+  ],
+  "empty":{"ru":"Ничего не найдено","en":"No results"},
+  "label":{"ru":"Выберите тип блока","en":"Choose a block type"},
+  "limit":{"ru":"Меню недоступно в этой позиции. Используйте «Добавить блок».","en":"The picker is unavailable at this position. Use Add block."}
+}

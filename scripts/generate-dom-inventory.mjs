@@ -9,6 +9,7 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 const outputs = [
   ['packages/kwdj/src/dom-inventory.ts', 'kwdj', true],
+  ['packages/kwdj/src/typing-dom-inventory.ts', 'kwdjTyping', true],
   ['examples/notes-extension/dom-inventory.mjs', 'notesD0', false],
 ];
 
@@ -58,6 +59,13 @@ export function generateDomInventory({ check = false, locked = true } = {}) {
   } else writeFileSync(resolve(root, catalogPath), catalogSource);
   files.push({path: catalogPath, sha256: digest(catalogSource), bytes: Buffer.byteLength(catalogSource), registryDigest: native.kwdj.registryDigest});
   mkdirSync(resolve(root, 'artifacts'), { recursive: true });
+  if (!native.kwdjTypingRegistry || !native.kwdjTyping?.profile) throw new Error('Missing native optional typing profile');
+  writeFileSync(resolve(root, 'artifacts/typography-profile.json'), JSON.stringify({
+    format: 'klenwriter-editor-typography-profile/1',
+    profile: native.kwdjTyping.profile,
+    registryJson: JSON.stringify(native.kwdjTypingRegistry),
+    registryDigest: native.kwdjTyping.registryDigest,
+  }, null, 2) + '\n');
   writeFileSync(resolve(root, 'artifacts/dom-inventory.json'), JSON.stringify({
     format: native.format, source: 'public mandatory registrations resolved through FrozenRegistry',
     nativeOutputSha256: digest(result.stdout), files,

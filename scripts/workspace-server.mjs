@@ -23,6 +23,9 @@ const routes = new Map([
   ['/selection-native-host.js', ['spikes/workspace/selection-native-host.js', 'text/javascript']],
   ['/selection.css', ['spikes/workspace/selection.css', 'text/css']],
   ['/clipboard', ['spikes/workspace/clipboard.html', 'text/html']],
+  ['/typing', ['spikes/workspace/typing-host.html', 'text/html']],
+  ['/typing.browser.mjs', ['spikes/workspace/typing.browser.mjs', 'text/javascript']],
+  ['/typing-contract/dom-oracles.json', ['contracts/typography/v1/dom-oracles.json', 'application/json']],
   ['/clipboard-host.js', ['spikes/workspace/clipboard-host.js', 'text/javascript']],
   ['/clipboard.css', ['spikes/workspace/clipboard.css', 'text/css']],
   ['/clipboard-contract/positive.json', ['contracts/kwdj/v1/fixtures/positive.json', 'application/json']],
@@ -73,7 +76,7 @@ for (const name of ['wasm', 'sdk', 'kwdj', 'dom', 'ui']) {
 }
 // Import maps are static, hash-authorized data. No unsafe-inline/eval or source rewriting.
 const mapHashes = [];
-for (const page of ['sdk-host.html', 'dom-host.html', 'selection.html', 'clipboard.html', 'composition.html', 'ui.html', 'mounted-corpus.html']) {
+for (const page of ['sdk-host.html', 'dom-host.html', 'selection.html', 'clipboard.html', 'composition.html', 'ui.html', 'mounted-corpus.html', 'typing-host.html']) {
   const html = await readFile(new URL(`spikes/workspace/${page}`, root), 'utf8');
   const maps = [...html.matchAll(/<script type="importmap">([^<]+)<\/script>/g)];
   if (maps.length !== 1) throw new Error(`One static import map required: ${page}`);

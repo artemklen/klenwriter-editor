@@ -3,6 +3,7 @@
 mod clipboard_v2;
 mod convert;
 mod factory;
+mod typing_v2;
 pub mod wire_v2;
 pub use convert::target_out;
 pub use factory::{KwdjFactory, KwdjOptionsV2};

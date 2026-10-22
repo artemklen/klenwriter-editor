@@ -331,3 +331,52 @@ do not prove physical input, and Firefox experimental policy never excuses
 instrumentation errors, wrong data/offsets, loss or stale overwrite. Fresh local,
 installed, CI and independent exact-SHA review receipts are still required
 before OSR-41 acceptance.
+
+## OSR-48 opt-in terminal correspondence
+
+The explicitly enabled typed-input/result path adds private correspondence for
+one terminal deletion/insertion pair. The default binding and ordinary-gesture
+policy above remain unchanged. Admission requires an original registered window
+with one nonempty, unmarked Text selected in full. An owned deletion
+`beforeinput` captures a private ticket before the DOM empties, binding the
+actual preedit range and selection to the original native stamp, full controller
+context, directed selection, intent and focused editable host.
+
+Its matching deletion `input` may prove that the same block contains exactly one
+new attribute-free, childless BR with a collapsed caret at block offset0. This
+is a private composing-only transient state: it is neither an empty native edit
+nor a model placeholder, and the BR receives no native identity. Basic/off paths,
+an uncorrelated BR, a missing matching input or a ticket still pending at end
+retain the existing refusal/recovery behavior. The default scanner is unchanged.
+
+Only a matching owned insertion `beforeinput`/`input` pair can consume that
+state. The actual direct Text payload must be present under the same block
+**before** `compositionend`, with the old SPAN and transient BR absent and the
+actual caret at the Text's UTF-16 end. Normal bounded observation proves its
+complete fingerprint and unchanged outside scope. Event data is diagnostic,
+never replacement authority; end cannot supply a missing insertion.
+
+After end, that completed proof can classify at most one matching original
+closing-code keydown as nonmutating bookkeeping before the first settlement RAF.
+It must be non-composing, without modifiers or repeat, and retain the same full
+native/context/selection/intent, focus, actual caret and payload proof. A legacy
+`keyCode === 229` label may accompany this already-delivered closing echo; it does not
+establish an ordinary permit. The ordinary `keyCode === 229`/`isComposing` exclusions
+above remain intact. Any additional or late keydown while this terminal generation
+is settling still refuses, including after the first RAF or a consumed echo.
+No ordinary handler, text authority or extra native command comes from the echo,
+and any subsequent ordinary `beforeinput` remains busy until settlement completes.
+
+The original two stable RAF reads, maximum eight post-end reads, 250ms deadline,
+4096-record generation ceiling and bounded node/depth/text/metadata reads remain
+in force. Tickets, callbacks and echo classification do not renew those budgets.
+The sole final claim still owns publication. Transformed and literal `result:null`
+outcomes require their checked final native-to-DOM frame; a full literal
+replacement uses the fresh Text identity returned by the actual native edit,
+not an ID fabricated for the browser's Text object. No second submit or locale,
+punctuation or regular-expression matching is added to generic DOM code.
+
+A separate plain-contenteditable Safari observation measured a non-composing
+closing KeyE with legacy `keyCode`/`which` equal to 229 after the payload was delivered.
+That platform observation contains no editor or native candidate and does not
+assert installed-editor acceptance; installed run receipts remain separate.

@@ -283,6 +283,37 @@ impl<A: Allocation> CandidateChanges for DraftChanges<'_, '_, A> {
 }
 
 impl<A: Allocation> TreeDraft<'_, A> {
+    /// Borrow an already prepared ordinal; no linear sibling-search fallback.
+    pub(crate) fn input_ordinal(&self, id: NodeId) -> Result<(NodeId, usize), TreeError> {
+        let parent = self.node(id)?.parent().ok_or(TreeError::RootMutation)?;
+        let metadata = match &self.topology {
+            Some(plan) if plan.stamp == self.mutation_stamp => plan.metadata.get(&id),
+            None if self.mutation_stamp == 0 => None,
+            _ => return Err(TreeError::InvalidStructure),
+        };
+        let index = metadata
+            .or_else(|| self.base.metadata.get(&id))
+            .and_then(|value| value.ordinal)
+            .ok_or(TreeError::InvalidStructure)?;
+        if self.node(parent)?.children().get(index) != Some(&id) {
+            return Err(TreeError::InvalidStructure);
+        }
+        Ok((parent, index))
+    }
+
+    pub(crate) fn input_text_utf16(&self, id: NodeId) -> Result<usize, TreeError> {
+        self.node(id)?;
+        let metadata = match &self.topology {
+            Some(plan) if plan.stamp == self.mutation_stamp => plan.metadata.get(&id),
+            None if self.mutation_stamp == 0 => None,
+            _ => return Err(TreeError::InvalidStructure),
+        };
+        metadata
+            .or_else(|| self.base.metadata.get(&id))
+            .map(|value| value.metrics.text_utf16)
+            .ok_or(TreeError::InvalidStructure)
+    }
+
     pub(super) fn touch(&mut self) {
         // A frame consumes positive copy budget or a bounded map slot. No
         // request can approach u64::MAX successful frames.

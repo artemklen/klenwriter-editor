@@ -156,6 +156,22 @@ where
     P: CommandProvider + RegistryProfile,
     A: BridgeAdapter<P>,
 {
+    fn decode_input_command(
+        &self,
+        key: SessionKey,
+        stamp: &editor_protocol::StampDto,
+        command: &CommandDto,
+    ) -> Result<Intent<NodeId, P::Intent<NodeId>>, DiagnosticDto> {
+        if !matches!(
+            self.registry.command(&command.id).map(|c| c.descriptor),
+            Some(CommandDescriptor::Compiled { .. })
+        ) {
+            return Err(diagnostic("input.unsupported", "command"));
+        }
+        self.inner
+            .decode_input_command(key, stamp, command)
+            .map(Intent::Compiled)
+    }
     fn clipboard_context<V: editor_core::candidate::CandidateRead<Id = NodeId>>(
         &self,
         context: &P::Context,

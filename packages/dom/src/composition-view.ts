@@ -3,6 +3,8 @@
 import type { DeepReadonly, NodeViewDto, PositionDto, SelectionDto, StampDto } from '@klenwriter/editor-sdk';
 import type { DomRefusal, RecoveryRegion } from './types.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
+import type { LiteralCompositionSource } from './composition-literal.js';
+import type { MarkDto } from '@klenwriter/editor-sdk';
 
 export interface CompositionPoint { readonly node: Node; readonly offset: number }
 export interface CompositionEntry {
@@ -25,6 +27,8 @@ export interface CompositionWindow {
   readonly affectedNodeIds: readonly string[];
   readonly originalRegion: RecoveryRegion;
 }
+/** Opaque private beforeinput capability; copied fields are never authority. */
+export interface CompositionTerminalTicket { readonly window:CompositionWindow }
 export interface CompositionObservation {
   readonly region: RecoveryRegion;
   readonly unchanged: boolean;
@@ -104,6 +108,8 @@ const presentationAttributes = (attributes: Attributes) => attributes.filter(([n
 export function createCompositionCorrespondence(access: CompositionAccess) {
   const windows = new WeakMap<CompositionWindow,WindowState>(), ids = new WeakMap<Node,number>();
   const doc=access.host.ownerDocument;let nextId=0;
+  interface TerminalState {readonly window:CompositionWindow;readonly source:WindowState;readonly generation:object;readonly span:HTMLElement;readonly leaf:DeepReadonly<NodeViewDto>;readonly frames:readonly {row:CompositionRow;view:DeepReadonly<NodeViewDto>}[];readonly preedit:Text;readonly preeditText:string;phase:'deleting'|'empty'|'inserting';br:Element|null}
+  const terminals=new WeakMap<CompositionTerminalTicket,TerminalState>();
   const failure=(code: 'dom.composition_limit'|'dom.composition_stale'|'dom.composition_ambiguous',stamp:DeepReadonly<StampDto>|null,node:string|null=null) => domRefusal(code,'composition',stamp,node);
   function identity(node: Node): number {
     let id=ids.get(node);
@@ -255,6 +261,13 @@ export function createCompositionCorrespondence(access: CompositionAccess) {
     }
     return node.isConnected===access.host.isConnected;
   }
+  function outside(window:CompositionWindow,state:WindowState,budget:Budget,recoveryOnly=false):DomRefusal|null {
+    const parent=window.parent;
+    if(window.before&&window.before.parentNode!==parent||window.after&&window.after.parentNode!==parent)return failure('dom.composition_stale',window.stamp);
+    for(const ancestor of state.ancestors){if(++budget.nodes>access.limits.nodes)return failure('dom.composition_limit',window.stamp);if(ancestor.row.outer.parentNode!==ancestor.parent||!recoveryOnly&&ancestor.row.outer!==access.host&&!attrsEqual(ancestor.row.outer,ancestor.attributes))return failure('dom.composition_stale',window.stamp);}
+    if(!recoveryOnly)for(const sentinel of state.outside){if(sentinel.node.parentNode!==parent||sentinel.node===window.before&&sentinel.node.previousSibling!==sentinel.previous||sentinel.node===window.after&&sentinel.node.nextSibling!==sentinel.next||!sameOutside(sentinel,budget))return failure('dom.composition_stale',window.stamp);}
+    return null;
+  }
   function begin(stamp:DeepReadonly<StampDto>,selection:DeepReadonly<SelectionDto>):CompositionWindow|DomRefusal {
     try {
       const actual=access.selection();if(!actual||isDomRefusal(actual)||!sameSelection(actual,selection))return failure('dom.composition_stale',stamp);
@@ -329,13 +342,11 @@ export function createCompositionCorrespondence(access: CompositionAccess) {
       return window;
     } catch {return failure('dom.composition_limit',stamp);}
   }
-  function observe(window:CompositionWindow,recoveryOnly=false):CompositionObservation|DomRefusal {
+  function observe(window:CompositionWindow,recoveryOnly=false,sharedBudget?:Budget):CompositionObservation|DomRefusal {
     const state=windows.get(window);if(!state||state.generation!==access.generation())return failure('dom.composition_stale',window.stamp);
     try {
-      const budget:Budget={nodes:0,units:0,metadata:0},parent=window.parent;
-      if(window.before&&window.before.parentNode!==parent||window.after&&window.after.parentNode!==parent)return failure('dom.composition_stale',window.stamp);
-      for(const ancestor of state.ancestors){if(++budget.nodes>access.limits.nodes)return failure('dom.composition_limit',window.stamp);if(ancestor.row.outer.parentNode!==ancestor.parent||!recoveryOnly&&ancestor.row.outer!==access.host&&!attrsEqual(ancestor.row.outer,ancestor.attributes))return failure('dom.composition_stale',window.stamp);}
-      if(!recoveryOnly)for(const sentinel of state.outside){if(sentinel.node.parentNode!==parent||sentinel.node===window.before&&sentinel.node.previousSibling!==sentinel.previous||sentinel.node===window.after&&sentinel.node.nextSibling!==sentinel.next||!sameOutside(sentinel,budget))return failure('dom.composition_stale',window.stamp);}
+      const budget:Budget=sharedBudget??{nodes:0,units:0,metadata:0},parent=window.parent;
+      const outsideFailure=outside(window,state,budget,recoveryOnly);if(outsideFailure)return outsideFailure;
       const actual:Node[]=[];let node:ChildNode|null=window.before?window.before.nextSibling:parent.firstChild;
       while(node!==window.after){if(!node||actual.length>=access.limits.blocks)return failure('dom.composition_limit',window.stamp);actual.push(node);node=node.nextSibling;}
       if(!actual.length||actual[0]!==window.entries[0].element)return failure('dom.composition_ambiguous',window.stamp);
@@ -368,5 +379,120 @@ export function createCompositionCorrespondence(access: CompositionAccess) {
       return Object.freeze({region,unchanged,replacement:unchanged?state.originalSelected:current.text.slice(state.prefixUnits,current.units-state.suffixUnits),fingerprint});
     } catch{return failure('dom.composition_limit',window.stamp);}
   }
-  return {begin,observe:(window:CompositionWindow)=>observe(window),capture:(window:CompositionWindow)=>observe(window,true),owns:(window:CompositionWindow)=>windows.get(window)?.generation===access.generation()};
+  // This capability never changes the default scan/observe fresh-BR policy.
+  function terminalBase(window:CompositionWindow,budget:Budget):{source:WindowState;entry:CompositionEntry;leaf:CompositionRow}|DomRefusal|null {
+    const source=windows.get(window),entry=window.entries[0];
+    if(!source||source.generation!==access.generation())return failure('dom.composition_stale',window.stamp);
+    if(window.entries.length!==1||source.scans.length!==1||source.prefixUnits!==0||source.suffixUnits!==0||window.selectedAtomIds.length
+      ||entry.view.primitive!=='text_block'||entry.view.children.length!==1||entry.content!==entry.element)return null;
+    const leaf=access.row(entry.view.children[0]),selection=window.selection;
+    if(!leaf||leaf.view.primitive!=='text'||leaf.view.text===null||leaf.view.text.length===0||leaf.view.children.length||leaf.view.parent!==entry.id
+      ||leaf.view.marks.length||selection.anchor.kind!=='text'||selection.focus.kind!=='text'
+      ||selection.anchor.node!==leaf.view.id||selection.focus.node!==leaf.view.id
+      ||!((selection.anchor.offset===0&&selection.focus.offset===leaf.view.text.length)||(selection.focus.offset===0&&selection.anchor.offset===leaf.view.text.length)))return null;
+    for(const key in leaf.view.attributes)if(Object.hasOwn(leaf.view.attributes,key))return null;
+    const original=source.originals.get(leaf.outer);
+    if(!original?.transparentTextRow||source.scans[0].segments.length!==1||source.scans[0].segments[0].kind!=='text')return null;
+    const block=access.row(entry.id),blockRecord=source.originals.get(entry.element);
+    if(!blockRecord||!attrsEqual(entry.element,blockRecord.attributes))return failure('dom.composition_ambiguous',window.stamp);
+    if(!block||block.view!==entry.view||block.outer!==entry.element||entry.element.parentNode!==window.parent
+      ||entry.element.previousSibling!==window.before||entry.element.nextSibling!==window.after)return failure('dom.composition_stale',window.stamp);
+    if(++budget.nodes>access.limits.nodes)return failure('dom.composition_limit',window.stamp);
+    return {source,entry,leaf};
+  }
+  function terminalStable(value:TerminalState,budget:Budget,checkOutside=true):DomRefusal|null {
+    const base=terminalBase(value.window,budget);if(!base)return failure('dom.composition_ambiguous',value.window.stamp);if(isDomRefusal(base))return base;
+    if(base.source!==value.source||base.leaf.view!==value.leaf||base.leaf.outer!==value.span||value.generation!==access.generation())return failure('dom.composition_stale',value.window.stamp);
+    for(const frame of value.frames){
+      if(++budget.nodes>access.limits.nodes||frame.view.children.length>access.limits.nodes-budget.nodes)return failure('dom.composition_limit',value.window.stamp);
+      if(frame.row.view!==frame.view||frame.row.content.childNodes.length!==frame.view.children.length)return failure('dom.composition_stale',value.window.stamp);
+      for(let i=0;i<frame.view.children.length;i++){budget.nodes++;if(frame.row.content.childNodes[i]!==access.row(frame.view.children[i])?.outer)return failure('dom.composition_stale',value.window.stamp);}
+    }
+    return checkOutside?outside(value.window,value.source,budget):null;
+  }
+  function terminalSelection(node:Node,offsetValue:number):boolean {
+    const browser=doc.getSelection();return !!browser&&browser.isCollapsed&&browser.anchorNode===node&&browser.focusNode===node
+      &&browser.anchorOffset===offsetValue&&browser.focusOffset===offsetValue&&access.host.contains(node);
+  }
+  function terminalRange(event:InputEvent,node:Node,start:number,end:number):boolean {
+    const ranges=event.getTargetRanges?.()??[];
+    return ranges.length===1&&ranges[0].startContainer===node&&ranges[0].endContainer===node&&ranges[0].startOffset===start&&ranges[0].endOffset===end;
+  }
+  function terminalEmpty(value:TerminalState,budget:Budget):DomRefusal|null {
+    const stale=terminalStable(value,budget);if(stale)return stale;
+    const entry=value.window.entries[0],br=entry.element.firstChild;
+    if(budget.nodes+2>access.limits.nodes)return failure('dom.composition_limit',value.window.stamp);budget.nodes+=2;
+    if(entry.element.childNodes.length!==1||!br||br.nodeType!==1||(br as Element).tagName!=='BR'||(br as Element).attributes.length!==0||br.childNodes.length!==0
+      ||access.ownedId(br)!==undefined||access.placeholder(br)||value.source.originals.has(br)||access.host.contains(value.span)||access.host.contains(value.preedit)
+      ||value.br!==null&&value.br!==br||!terminalSelection(entry.element,0))return failure('dom.composition_ambiguous',value.window.stamp);
+    value.br=br as Element;return null;
+  }
+  function captureTerminalDeletion(window:CompositionWindow,event:InputEvent):CompositionTerminalTicket|DomRefusal|null {
+    try {
+      if(event.inputType!=='deleteCompositionText'||!event.isComposing||event.cancelable)return null;
+      const budget:Budget={nodes:0,units:0,metadata:0},base=terminalBase(window,budget);if(!base||isDomRefusal(base))return base;
+      const {source,entry,leaf}=base;
+      const frames=Object.freeze(source.ancestors.map(a=>Object.freeze({row:a.row,view:a.row.view})));
+      const text=leaf.outer.firstChild;
+      if(entry.element.childNodes.length!==1||entry.element.firstChild!==leaf.outer||leaf.outer.childNodes.length!==1||!text||text.nodeType!==3)return null;
+      const value:TerminalState={window,source,generation:access.generation(),span:leaf.outer,leaf:leaf.view,frames,preedit:text as Text,preeditText:(text as Text).data,phase:'deleting',br:null};
+      const length=value.preeditText.length;
+      // Target ranges are callback-capable; all actual geometry is checked after them.
+      if(!terminalRange(event,text,0,length))return failure('dom.composition_ambiguous',window.stamp);
+      const stale=terminalStable(value,budget);if(stale)return stale;
+      const current=scan(entry.element,budget,source.originals);if(!current)return failure('dom.composition_limit',window.stamp);
+      const browser=doc.getSelection();
+      if(length===0||current.segments.length!==1||current.segments[0].kind!=='text'||current.segments[0].node!==text||current.text!==value.preeditText
+        ||!browser||!((browser.anchorNode===text&&browser.focusNode===text&&browser.anchorOffset===0&&browser.focusOffset===length)
+          ||(browser.anchorNode===text&&browser.focusNode===text&&browser.anchorOffset===length&&browser.focusOffset===0)))return failure('dom.composition_ambiguous',window.stamp);
+      const ticket=Object.freeze({window});terminals.set(ticket,value);return ticket;
+    }catch{return failure('dom.composition_limit',window.stamp);}
+  }
+  function observeTerminalDeletion(ticket:CompositionTerminalTicket,event:InputEvent):DomRefusal|null {
+    const value=terminals.get(ticket);if(!value||value.phase!=='deleting'||event.inputType!=='deleteCompositionText'||!event.isComposing||event.cancelable)return failure('dom.composition_ambiguous',ticket.window.stamp);
+    try{const failureValue=terminalEmpty(value,{nodes:0,units:0,metadata:0});if(failureValue)return failureValue;value.phase='empty';return null;}
+    catch{return failure('dom.composition_limit',ticket.window.stamp);}
+  }
+  function captureTerminalInsertion(ticket:CompositionTerminalTicket,event:InputEvent):DomRefusal|null {
+    const value=terminals.get(ticket);if(!value||value.phase!=='empty'||event.inputType!=='insertFromComposition'||!event.isComposing||!event.cancelable)return failure('dom.composition_ambiguous',ticket.window.stamp);
+    try{if(!terminalRange(event,value.window.entries[0].element,0,0)||terminals.get(ticket)!==value||value.phase!=='empty')return failure('dom.composition_ambiguous',ticket.window.stamp);
+      const failureValue=terminalEmpty(value,{nodes:0,units:0,metadata:0});if(failureValue)return failureValue;value.phase='inserting';return null;
+    }catch{return failure('dom.composition_limit',ticket.window.stamp);}
+  }
+  function observeTerminalInsertion(ticket:CompositionTerminalTicket,event:InputEvent):CompositionObservation|DomRefusal {
+    const value=terminals.get(ticket);if(!value||value.phase!=='inserting'||event.inputType!=='insertFromComposition'||!event.isComposing||event.cancelable)return failure('dom.composition_ambiguous',ticket.window.stamp);
+    try {
+      const budget:Budget={nodes:0,units:0,metadata:0},stale=terminalStable(value,budget,false);if(stale)return stale;
+      const entry=value.window.entries[0],text=entry.element.firstChild;
+      if(budget.nodes+2>access.limits.nodes)return failure('dom.composition_limit',ticket.window.stamp);budget.nodes+=2;
+      if(entry.element.childNodes.length!==1||!text||text.nodeType!==3||(text as Text).data.length===0||access.host.contains(value.span)
+        ||value.br===null||access.host.contains(value.br)||!terminalSelection(text,(text as Text).data.length))return failure('dom.composition_ambiguous',ticket.window.stamp);
+      const observed=observe(ticket.window,false,budget);if(isDomRefusal(observed))return observed;
+      if(observed.region.kind!=='bounded'||observed.region.provisionalText!==(text as Text).data||observed.replacement!==(text as Text).data)return failure('dom.composition_ambiguous',ticket.window.stamp);
+      terminals.delete(ticket);return observed;
+    }catch{return failure('dom.composition_limit',ticket.window.stamp);}
+  }
+  function releaseTerminal(ticket:CompositionTerminalTicket):void {terminals.delete(ticket);}
+  function terminalRetainedBytes(ticket:CompositionTerminalTicket):number {const value=terminals.get(ticket);return value?2*value.preeditText.length+8*(2*value.frames.length+8):0;}
+  function literalSource(window:CompositionWindow,text:string,stored_marks:DeepReadonly<readonly MarkDto[]>|null,root:string):LiteralCompositionSource|DomRefusal|null {
+    const state=windows.get(window);
+    if(!state||state.generation!==access.generation())return failure('dom.composition_stale',window.stamp);
+    if(window.entries.length!==1||state.scans.length!==1||state.prefixUnits!==0||state.suffixUnits!==0||window.selectedAtomIds.length||text.length===0)return null;
+    const block=window.entries[0].view,selected=window.selection;
+    if(block.primitive!=='text_block'||block.children.length!==1||selected.anchor.kind!=='text'||selected.focus.kind!=='text'
+      ||selected.anchor.node!==block.children[0]||selected.focus.node!==block.children[0])return null;
+    const leaf=access.row(block.children[0])?.view,parent=block.parent?access.row(block.parent)?.view:undefined;
+    if(!leaf||!parent||leaf.primitive!=='text'||leaf.text===null||leaf.children.length||leaf.parent!==block.id
+      ||!((selected.anchor.offset===0&&selected.focus.offset===leaf.text.length)||(selected.focus.offset===0&&selected.anchor.offset===leaf.text.length)))return null;
+    const observed=observe(window);
+    if(isDomRefusal(observed))return observed;
+    if(observed.region.kind!=='bounded'||observed.region.originalText!==leaf.text||observed.region.provisionalText!==text||observed.replacement!==text)return failure('dom.composition_stale',window.stamp);
+    return Object.freeze({stamp:window.stamp,selection:selected,stored_marks,root,text,leaf,block,parent,ancestors:Object.freeze(state.ancestors.map(ancestor=>ancestor.row.view))});
+  }
+  function literalOutside(window:CompositionWindow):DomRefusal|null {
+    const state=windows.get(window);
+    if(!state||state.generation!==access.generation())return failure('dom.composition_stale',window.stamp);
+    try{return outside(window,state,{nodes:0,units:0,metadata:0});}catch{return failure('dom.composition_limit',window.stamp);}
+  }
+  return {begin,observe:(window:CompositionWindow)=>observe(window),capture:(window:CompositionWindow)=>observe(window,true),owns:(window:CompositionWindow)=>windows.get(window)?.generation===access.generation(),literalSource,literalOutside,captureTerminalDeletion,observeTerminalDeletion,captureTerminalInsertion,observeTerminalInsertion,releaseTerminal,terminalRetainedBytes};
 }

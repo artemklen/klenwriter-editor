@@ -1,0 +1,3288 @@
+{
+  "protocol": "mounted-corpus/1",
+  "status": "SOURCE_FROZEN_BEFORE_EXECUTION",
+  "acceptedSource": "a21a7f8030afaeb4879fcbbd4953a7c76e098184",
+  "provenance": "Independent static literals from approved corpus inputs/edits and accepted public command semantics; no observed output is expected data. Approved case.kwdj inputs do not execute their legacy/clipboard input adapters.",
+  "positiveCases": [
+    {
+      "caseId": "DOC-001/empty_prose",
+      "source": {
+        "fixtureFile": "contracts/kwdj/v1/fixtures/positive.json",
+        "fixturePointer": "/fixtures/0",
+        "casePointer": "/fixtures/0/cases/0",
+        "approvedInputPointer": "/fixtures/0/cases/0/kwdj",
+        "editDescriptorPointer": "/fixtures/0/cases/0/edit",
+        "expectedNormalizedPointer": "/fixtures/0/cases/0/expected/normalized_kwdj",
+        "inputSourceKind": "kwdj"
+      },
+      "input": {
+        "value": {
+          "content": [
+            {
+              "content": [],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-001--empty_prose/approved-input.canonical.kwdj.json",
+        "bytes": 115,
+        "sha256": "aca2886f336f05ba1451469e7cc8de578bda2efbd22c0700d34da80ce59bf8e1"
+      },
+      "roundTrip": {
+        "value": {
+          "content": [
+            {
+              "content": [],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-001--empty_prose/approved-input.canonical.kwdj.json",
+        "bytes": 115,
+        "sha256": "aca2886f336f05ba1451469e7cc8de578bda2efbd22c0700d34da80ce59bf8e1"
+      },
+      "edit": null,
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-002/unicode_whitespace_hard_break",
+      "source": {
+        "fixtureFile": "contracts/kwdj/v1/fixtures/positive.json",
+        "fixturePointer": "/fixtures/1",
+        "casePointer": "/fixtures/1/cases/0",
+        "approvedInputPointer": "/fixtures/1/cases/0/kwdj",
+        "editDescriptorPointer": "/fixtures/1/cases/0/edit",
+        "expectedNormalizedPointer": "/fixtures/1/cases/0/expected/normalized_kwdj",
+        "inputSourceKind": "legacy_markdown"
+      },
+      "input": {
+        "value": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "До  <тега> — ё  ",
+                  "type": "text"
+                },
+                {
+                  "type": "hard_break"
+                },
+                {
+                  "text": "после",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"text\":\"До  <тега> — ё  \",\"type\":\"text\"},{\"type\":\"hard_break\"},{\"text\":\"после\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-002--unicode_whitespace_hard_break/approved-input.canonical.kwdj.json",
+        "bytes": 223,
+        "sha256": "cafd60ee71da6c9f048721c9de591c4674145ea67f3a74ac95e0d23dbfe6ccd7"
+      },
+      "roundTrip": {
+        "value": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "До  <тега> — ё  ",
+                  "type": "text"
+                },
+                {
+                  "type": "hard_break"
+                },
+                {
+                  "text": "после",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"text\":\"До  <тега> — ё  \",\"type\":\"text\"},{\"type\":\"hard_break\"},{\"text\":\"после\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-002--unicode_whitespace_hard_break/approved-input.canonical.kwdj.json",
+        "bytes": 223,
+        "sha256": "cafd60ee71da6c9f048721c9de591c4674145ea67f3a74ac95e0d23dbfe6ccd7"
+      },
+      "edit": {
+        "descriptor": {
+          "operation": "append_text",
+          "path": "/content/0/content/2/text",
+          "value": "!"
+        },
+        "target": {
+          "kwdjPointer": "/content/0/content/2",
+          "publicReadPath": [
+            0,
+            2
+          ],
+          "expectedTypeId": "org.klenwriter.kwdj/text",
+          "textBefore": "после",
+          "utf16LengthBefore": 5,
+          "textAfter": "после!",
+          "utf16LengthAfter": 6
+        },
+        "selection": {
+          "setup": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 5,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 5,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterEdit": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 6,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 6,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterUndo": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 5,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 5,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterRedo": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 6,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 6,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "scope": "Original owner only; fresh reopen rebinds paths and has no persisted-selection expectation"
+        },
+        "intent": {
+          "kind": "insert_text",
+          "text": "!"
+        },
+        "commandId": "org.klenwriter.kwdj/command/insert-text",
+        "expectedEffect": "changed",
+        "historyHint": {
+          "kind": "isolated"
+        },
+        "history": {
+          "initial": {
+            "undo_entries": "0",
+            "redo_entries": "0"
+          },
+          "afterEdit": {
+            "undo_entries": "1",
+            "redo_entries": "0"
+          },
+          "afterUndo": {
+            "undo_entries": "0",
+            "redo_entries": "1"
+          },
+          "afterRedo": {
+            "undo_entries": "1",
+            "redo_entries": "0"
+          }
+        },
+        "identity": {
+          "originalKwdjNodes": [
+            {
+              "kwdjPointer": "/content/0",
+              "type": "paragraph"
+            },
+            {
+              "kwdjPointer": "/content/0/content/0",
+              "type": "text"
+            },
+            {
+              "kwdjPointer": "/content/0/content/1",
+              "type": "hard_break"
+            },
+            {
+              "kwdjPointer": "/content/0/content/2",
+              "type": "text"
+            }
+          ],
+          "syntheticRootSurvives": true,
+          "survivingOriginalPointers": [
+            "/content/0",
+            "/content/0/content/0",
+            "/content/0/content/1",
+            "/content/0/content/2"
+          ],
+          "retiredOriginalPointers": [],
+          "liveCreatedRoles": [],
+          "afterUndo": "all original IDs; replacement absent",
+          "afterRedo": "same final IDs as afterEdit, including same replacement role when present",
+          "targetRoleAfterEdit": "targetText",
+          "noAllocatorTotalAssertion": true,
+          "crossOwnerIdentityAssertion": false
+        },
+        "expected": {
+          "value": {
+            "content": [
+              {
+                "content": [
+                  {
+                    "text": "До  <тега> — ё  ",
+                    "type": "text"
+                  },
+                  {
+                    "type": "hard_break"
+                  },
+                  {
+                    "text": "после!",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              }
+            ],
+            "profile": "prose",
+            "schema": "klenwriter.document",
+            "schema_version": 1
+          },
+          "utf8": "{\"content\":[{\"content\":[{\"text\":\"До  <тега> — ё  \",\"type\":\"text\"},{\"type\":\"hard_break\"},{\"text\":\"после!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "file": "cases/DOC-002--unicode_whitespace_hard_break/expected-post-edit.canonical.kwdj.json",
+          "bytes": 224,
+          "sha256": "bbcd3f475b07ee2cb9ac0504ca18de6e885d47e64284e2a53507348ed7f7fcc7"
+        }
+      },
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-003/headings_and_layout",
+      "source": {
+        "fixtureFile": "contracts/kwdj/v1/fixtures/positive.json",
+        "fixturePointer": "/fixtures/2",
+        "casePointer": "/fixtures/2/cases/0",
+        "approvedInputPointer": "/fixtures/2/cases/0/kwdj",
+        "editDescriptorPointer": "/fixtures/2/cases/0/edit",
+        "expectedNormalizedPointer": "/fixtures/2/cases/0/expected/normalized_kwdj",
+        "inputSourceKind": "kwdj"
+      },
+      "input": {
+        "value": {
+          "content": [
+            {
+              "attrs": {
+                "level": 1
+              },
+              "content": [
+                {
+                  "text": "H1",
+                  "type": "text"
+                }
+              ],
+              "type": "heading"
+            },
+            {
+              "attrs": {
+                "level": 2
+              },
+              "content": [
+                {
+                  "text": "H2",
+                  "type": "text"
+                }
+              ],
+              "type": "heading"
+            },
+            {
+              "attrs": {
+                "level": 3
+              },
+              "content": [
+                {
+                  "text": "H3",
+                  "type": "text"
+                }
+              ],
+              "type": "heading"
+            },
+            {
+              "attrs": {
+                "level": 4
+              },
+              "content": [
+                {
+                  "text": "H4",
+                  "type": "text"
+                }
+              ],
+              "type": "heading"
+            },
+            {
+              "attrs": {
+                "level": 5
+              },
+              "content": [
+                {
+                  "text": "H5",
+                  "type": "text"
+                }
+              ],
+              "type": "heading"
+            },
+            {
+              "attrs": {
+                "level": 6
+              },
+              "content": [
+                {
+                  "text": "H6",
+                  "type": "text"
+                }
+              ],
+              "type": "heading"
+            },
+            {
+              "attrs": {
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "text": "Layout",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"attrs\":{\"level\":1},\"content\":[{\"text\":\"H1\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"level\":2},\"content\":[{\"text\":\"H2\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"H3\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"level\":4},\"content\":[{\"text\":\"H4\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"level\":5},\"content\":[{\"text\":\"H5\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"level\":6},\"content\":[{\"text\":\"H6\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true},\"content\":[{\"text\":\"Layout\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-003--headings_and_layout/approved-input.canonical.kwdj.json",
+        "bytes": 672,
+        "sha256": "3c0546222d07de7d3a25e5b8f3fcda59d5d20585007ee34b6f1caf5a15c5983d"
+      },
+      "roundTrip": {
+        "value": {
+          "content": [
+            {
+              "attrs": {
+                "level": 1
+              },
+              "content": [
+                {
+                  "text": "H1",
+                  "type": "text"
+                }
+              ],
+              "type": "heading"
+            },
+            {
+              "attrs": {
+                "level": 2
+              },
+              "content": [
+                {
+                  "text": "H2",
+                  "type": "text"
+                }
+              ],
+              "type": "heading"
+            },
+            {
+              "attrs": {
+                "level": 3
+              },
+              "content": [
+                {
+                  "text": "H3",
+                  "type": "text"
+                }
+              ],
+              "type": "heading"
+            },
+            {
+              "attrs": {
+                "level": 4
+              },
+              "content": [
+                {
+                  "text": "H4",
+                  "type": "text"
+                }
+              ],
+              "type": "heading"
+            },
+            {
+              "attrs": {
+                "level": 5
+              },
+              "content": [
+                {
+                  "text": "H5",
+                  "type": "text"
+                }
+              ],
+              "type": "heading"
+            },
+            {
+              "attrs": {
+                "level": 6
+              },
+              "content": [
+                {
+                  "text": "H6",
+                  "type": "text"
+                }
+              ],
+              "type": "heading"
+            },
+            {
+              "attrs": {
+                "align": "center",
+                "first_line_indent": true
+              },
+              "content": [
+                {
+                  "text": "Layout",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"attrs\":{\"level\":1},\"content\":[{\"text\":\"H1\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"level\":2},\"content\":[{\"text\":\"H2\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"H3\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"level\":4},\"content\":[{\"text\":\"H4\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"level\":5},\"content\":[{\"text\":\"H5\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"level\":6},\"content\":[{\"text\":\"H6\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true},\"content\":[{\"text\":\"Layout\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-003--headings_and_layout/approved-input.canonical.kwdj.json",
+        "bytes": 672,
+        "sha256": "3c0546222d07de7d3a25e5b8f3fcda59d5d20585007ee34b6f1caf5a15c5983d"
+      },
+      "edit": {
+        "descriptor": {
+          "operation": "replace_text",
+          "path": "/content/6/content/0/text",
+          "value": "Layout edited"
+        },
+        "target": {
+          "kwdjPointer": "/content/6/content/0",
+          "publicReadPath": [
+            6,
+            0
+          ],
+          "expectedTypeId": "org.klenwriter.kwdj/text",
+          "textBefore": "Layout",
+          "utf16LengthBefore": 6,
+          "textAfter": "Layout edited",
+          "utf16LengthAfter": 13
+        },
+        "selection": {
+          "setup": {
+            "direction": "backward",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 6,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 0,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterEdit": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.replacementText.id",
+                "offset": 13,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.replacementText.id",
+                "offset": 13,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterUndo": {
+            "direction": "backward",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 6,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 0,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterRedo": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.replacementText.id",
+                "offset": 13,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.replacementText.id",
+                "offset": 13,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "scope": "Original owner only; fresh reopen rebinds paths and has no persisted-selection expectation"
+        },
+        "intent": {
+          "kind": "insert_text",
+          "text": "Layout edited"
+        },
+        "commandId": "org.klenwriter.kwdj/command/insert-text",
+        "expectedEffect": "changed",
+        "historyHint": {
+          "kind": "isolated"
+        },
+        "history": {
+          "initial": {
+            "undo_entries": "0",
+            "redo_entries": "0"
+          },
+          "afterEdit": {
+            "undo_entries": "1",
+            "redo_entries": "0"
+          },
+          "afterUndo": {
+            "undo_entries": "0",
+            "redo_entries": "1"
+          },
+          "afterRedo": {
+            "undo_entries": "1",
+            "redo_entries": "0"
+          }
+        },
+        "identity": {
+          "originalKwdjNodes": [
+            {
+              "kwdjPointer": "/content/0",
+              "type": "heading"
+            },
+            {
+              "kwdjPointer": "/content/0/content/0",
+              "type": "text"
+            },
+            {
+              "kwdjPointer": "/content/1",
+              "type": "heading"
+            },
+            {
+              "kwdjPointer": "/content/1/content/0",
+              "type": "text"
+            },
+            {
+              "kwdjPointer": "/content/2",
+              "type": "heading"
+            },
+            {
+              "kwdjPointer": "/content/2/content/0",
+              "type": "text"
+            },
+            {
+              "kwdjPointer": "/content/3",
+              "type": "heading"
+            },
+            {
+              "kwdjPointer": "/content/3/content/0",
+              "type": "text"
+            },
+            {
+              "kwdjPointer": "/content/4",
+              "type": "heading"
+            },
+            {
+              "kwdjPointer": "/content/4/content/0",
+              "type": "text"
+            },
+            {
+              "kwdjPointer": "/content/5",
+              "type": "heading"
+            },
+            {
+              "kwdjPointer": "/content/5/content/0",
+              "type": "text"
+            },
+            {
+              "kwdjPointer": "/content/6",
+              "type": "paragraph"
+            },
+            {
+              "kwdjPointer": "/content/6/content/0",
+              "type": "text"
+            }
+          ],
+          "syntheticRootSurvives": true,
+          "survivingOriginalPointers": [
+            "/content/0",
+            "/content/0/content/0",
+            "/content/1",
+            "/content/1/content/0",
+            "/content/2",
+            "/content/2/content/0",
+            "/content/3",
+            "/content/3/content/0",
+            "/content/4",
+            "/content/4/content/0",
+            "/content/5",
+            "/content/5/content/0",
+            "/content/6"
+          ],
+          "retiredOriginalPointers": [
+            "/content/6/content/0"
+          ],
+          "liveCreatedRoles": [
+            {
+              "role": "replacementText",
+              "pointer": "/content/6/content/0",
+              "distinctFromEveryOriginalId": true
+            }
+          ],
+          "afterUndo": "all original IDs; replacement absent",
+          "afterRedo": "same final IDs as afterEdit, including same replacement role when present",
+          "targetRoleAfterEdit": "replacementText",
+          "noAllocatorTotalAssertion": true,
+          "crossOwnerIdentityAssertion": false
+        },
+        "expected": {
+          "value": {
+            "content": [
+              {
+                "attrs": {
+                  "level": 1
+                },
+                "content": [
+                  {
+                    "text": "H1",
+                    "type": "text"
+                  }
+                ],
+                "type": "heading"
+              },
+              {
+                "attrs": {
+                  "level": 2
+                },
+                "content": [
+                  {
+                    "text": "H2",
+                    "type": "text"
+                  }
+                ],
+                "type": "heading"
+              },
+              {
+                "attrs": {
+                  "level": 3
+                },
+                "content": [
+                  {
+                    "text": "H3",
+                    "type": "text"
+                  }
+                ],
+                "type": "heading"
+              },
+              {
+                "attrs": {
+                  "level": 4
+                },
+                "content": [
+                  {
+                    "text": "H4",
+                    "type": "text"
+                  }
+                ],
+                "type": "heading"
+              },
+              {
+                "attrs": {
+                  "level": 5
+                },
+                "content": [
+                  {
+                    "text": "H5",
+                    "type": "text"
+                  }
+                ],
+                "type": "heading"
+              },
+              {
+                "attrs": {
+                  "level": 6
+                },
+                "content": [
+                  {
+                    "text": "H6",
+                    "type": "text"
+                  }
+                ],
+                "type": "heading"
+              },
+              {
+                "attrs": {
+                  "align": "center",
+                  "first_line_indent": true
+                },
+                "content": [
+                  {
+                    "text": "Layout edited",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              }
+            ],
+            "profile": "prose",
+            "schema": "klenwriter.document",
+            "schema_version": 1
+          },
+          "utf8": "{\"content\":[{\"attrs\":{\"level\":1},\"content\":[{\"text\":\"H1\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"level\":2},\"content\":[{\"text\":\"H2\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"level\":3},\"content\":[{\"text\":\"H3\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"level\":4},\"content\":[{\"text\":\"H4\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"level\":5},\"content\":[{\"text\":\"H5\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"level\":6},\"content\":[{\"text\":\"H6\",\"type\":\"text\"}],\"type\":\"heading\"},{\"attrs\":{\"align\":\"center\",\"first_line_indent\":true},\"content\":[{\"text\":\"Layout edited\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "file": "cases/DOC-003--headings_and_layout/expected-post-edit.canonical.kwdj.json",
+          "bytes": 679,
+          "sha256": "f552c85b0f06c7fec5a6f816d626c6ee4fd04786e1d53bf53fef32e5c92b28b5"
+        }
+      },
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-004/nested_compatible_marks",
+      "source": {
+        "fixtureFile": "contracts/kwdj/v1/fixtures/positive.json",
+        "fixturePointer": "/fixtures/3",
+        "casePointer": "/fixtures/3/cases/0",
+        "approvedInputPointer": "/fixtures/3/cases/0/kwdj",
+        "editDescriptorPointer": "/fixtures/3/cases/0/edit",
+        "expectedNormalizedPointer": "/fixtures/3/cases/0/expected/normalized_kwdj",
+        "inputSourceKind": "kwdj"
+      },
+      "input": {
+        "value": {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    },
+                    {
+                      "type": "emphasis"
+                    },
+                    {
+                      "attrs": {
+                        "token": "accent"
+                      },
+                      "type": "text_color"
+                    },
+                    {
+                      "attrs": {
+                        "href": "https://example.test/read",
+                        "title": "Read"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "marked",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"},{\"type\":\"emphasis\"},{\"attrs\":{\"token\":\"accent\"},\"type\":\"text_color\"},{\"attrs\":{\"href\":\"https://example.test/read\",\"title\":\"Read\"},\"type\":\"link\"}],\"text\":\"marked\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-004--nested_compatible_marks/approved-input.canonical.kwdj.json",
+        "bytes": 319,
+        "sha256": "5d04dfe363c0d99de656360d4ff8a01fee46e78ba415ebcf33e35225fbb0f245"
+      },
+      "roundTrip": {
+        "value": {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    },
+                    {
+                      "type": "emphasis"
+                    },
+                    {
+                      "attrs": {
+                        "token": "accent"
+                      },
+                      "type": "text_color"
+                    },
+                    {
+                      "attrs": {
+                        "href": "https://example.test/read",
+                        "title": "Read"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "marked",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"},{\"type\":\"emphasis\"},{\"attrs\":{\"token\":\"accent\"},\"type\":\"text_color\"},{\"attrs\":{\"href\":\"https://example.test/read\",\"title\":\"Read\"},\"type\":\"link\"}],\"text\":\"marked\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-004--nested_compatible_marks/approved-input.canonical.kwdj.json",
+        "bytes": 319,
+        "sha256": "5d04dfe363c0d99de656360d4ff8a01fee46e78ba415ebcf33e35225fbb0f245"
+      },
+      "edit": {
+        "descriptor": {
+          "operation": "toggle_mark",
+          "path": "/content/0/content/0/marks",
+          "value": "strike"
+        },
+        "target": {
+          "kwdjPointer": "/content/0/content/0",
+          "publicReadPath": [
+            0,
+            0
+          ],
+          "expectedTypeId": "org.klenwriter.kwdj/text",
+          "textBefore": "marked",
+          "utf16LengthBefore": 6,
+          "textAfter": "marked",
+          "utf16LengthAfter": 6
+        },
+        "selection": {
+          "setup": {
+            "direction": "forward",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 0,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 6,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterEdit": {
+            "direction": "forward",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 0,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 6,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterUndo": {
+            "direction": "forward",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 0,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 6,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterRedo": {
+            "direction": "forward",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 0,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 6,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "scope": "Original owner only; fresh reopen rebinds paths and has no persisted-selection expectation"
+        },
+        "intent": {
+          "kind": "toggle_mark",
+          "mark": {
+            "type_id": "org.klenwriter.kwdj/strike",
+            "attributes": {}
+          }
+        },
+        "commandId": "org.klenwriter.kwdj/command/toggle-mark",
+        "expectedEffect": "changed",
+        "historyHint": {
+          "kind": "isolated"
+        },
+        "history": {
+          "initial": {
+            "undo_entries": "0",
+            "redo_entries": "0"
+          },
+          "afterEdit": {
+            "undo_entries": "1",
+            "redo_entries": "0"
+          },
+          "afterUndo": {
+            "undo_entries": "0",
+            "redo_entries": "1"
+          },
+          "afterRedo": {
+            "undo_entries": "1",
+            "redo_entries": "0"
+          }
+        },
+        "identity": {
+          "originalKwdjNodes": [
+            {
+              "kwdjPointer": "/content/0",
+              "type": "paragraph"
+            },
+            {
+              "kwdjPointer": "/content/0/content/0",
+              "type": "text"
+            }
+          ],
+          "syntheticRootSurvives": true,
+          "survivingOriginalPointers": [
+            "/content/0",
+            "/content/0/content/0"
+          ],
+          "retiredOriginalPointers": [],
+          "liveCreatedRoles": [],
+          "afterUndo": "all original IDs; replacement absent",
+          "afterRedo": "same final IDs as afterEdit, including same replacement role when present",
+          "targetRoleAfterEdit": "targetText",
+          "noAllocatorTotalAssertion": true,
+          "crossOwnerIdentityAssertion": false
+        },
+        "expected": {
+          "value": {
+            "content": [
+              {
+                "content": [
+                  {
+                    "marks": [
+                      {
+                        "type": "strong"
+                      },
+                      {
+                        "type": "emphasis"
+                      },
+                      {
+                        "type": "strike"
+                      },
+                      {
+                        "attrs": {
+                          "token": "accent"
+                        },
+                        "type": "text_color"
+                      },
+                      {
+                        "attrs": {
+                          "href": "https://example.test/read",
+                          "title": "Read"
+                        },
+                        "type": "link"
+                      }
+                    ],
+                    "text": "marked",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              }
+            ],
+            "profile": "prose",
+            "schema": "klenwriter.document",
+            "schema_version": 1
+          },
+          "utf8": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"},{\"type\":\"emphasis\"},{\"type\":\"strike\"},{\"attrs\":{\"token\":\"accent\"},\"type\":\"text_color\"},{\"attrs\":{\"href\":\"https://example.test/read\",\"title\":\"Read\"},\"type\":\"link\"}],\"text\":\"marked\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "file": "cases/DOC-004--nested_compatible_marks/expected-post-edit.canonical.kwdj.json",
+          "bytes": 337,
+          "sha256": "4cadcf5e3d657bce63c4a2537ab7a05fe198be5134dd7239c2d5a73db8c3d5ed"
+        }
+      },
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-005/safe_links",
+      "source": {
+        "fixtureFile": "contracts/kwdj/v1/fixtures/mixed.json",
+        "fixturePointer": "/fixtures/0",
+        "casePointer": "/fixtures/0/cases/0",
+        "approvedInputPointer": "/fixtures/0/cases/0/kwdj",
+        "editDescriptorPointer": "/fixtures/0/cases/0/edit",
+        "expectedNormalizedPointer": "/fixtures/0/cases/0/expected/normalized_kwdj",
+        "inputSourceKind": "kwdj"
+      },
+      "input": {
+        "value": {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://example.test/a?b=1#c",
+                        "title": "Example"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "external",
+                  "type": "text"
+                },
+                {
+                  "text": " and ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "/works/a"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "internal",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"marks\":[{\"attrs\":{\"href\":\"https://example.test/a?b=1#c\",\"title\":\"Example\"},\"type\":\"link\"}],\"text\":\"external\",\"type\":\"text\"},{\"text\":\" and \",\"type\":\"text\"},{\"marks\":[{\"attrs\":{\"href\":\"/works/a\"},\"type\":\"link\"}],\"text\":\"internal\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-005--safe_links/approved-input.canonical.kwdj.json",
+        "bytes": 359,
+        "sha256": "7bd281306e88b83ccefea00d276c7d67cc87be53eefecefc4f8220651efd5d8e"
+      },
+      "roundTrip": {
+        "value": {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "https://example.test/a?b=1#c",
+                        "title": "Example"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "external",
+                  "type": "text"
+                },
+                {
+                  "text": " and ",
+                  "type": "text"
+                },
+                {
+                  "marks": [
+                    {
+                      "attrs": {
+                        "href": "/works/a"
+                      },
+                      "type": "link"
+                    }
+                  ],
+                  "text": "internal",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"marks\":[{\"attrs\":{\"href\":\"https://example.test/a?b=1#c\",\"title\":\"Example\"},\"type\":\"link\"}],\"text\":\"external\",\"type\":\"text\"},{\"text\":\" and \",\"type\":\"text\"},{\"marks\":[{\"attrs\":{\"href\":\"/works/a\"},\"type\":\"link\"}],\"text\":\"internal\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-005--safe_links/approved-input.canonical.kwdj.json",
+        "bytes": 359,
+        "sha256": "7bd281306e88b83ccefea00d276c7d67cc87be53eefecefc4f8220651efd5d8e"
+      },
+      "edit": {
+        "descriptor": {
+          "operation": "append_text",
+          "path": "/content/0/content/2/text",
+          "value": "."
+        },
+        "target": {
+          "kwdjPointer": "/content/0/content/2",
+          "publicReadPath": [
+            0,
+            2
+          ],
+          "expectedTypeId": "org.klenwriter.kwdj/text",
+          "textBefore": "internal",
+          "utf16LengthBefore": 8,
+          "textAfter": "internal.",
+          "utf16LengthAfter": 9
+        },
+        "selection": {
+          "setup": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 8,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 8,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterEdit": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 9,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 9,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterUndo": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 8,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 8,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterRedo": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 9,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 9,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "scope": "Original owner only; fresh reopen rebinds paths and has no persisted-selection expectation"
+        },
+        "intent": {
+          "kind": "insert_text",
+          "text": "."
+        },
+        "commandId": "org.klenwriter.kwdj/command/insert-text",
+        "expectedEffect": "changed",
+        "historyHint": {
+          "kind": "isolated"
+        },
+        "history": {
+          "initial": {
+            "undo_entries": "0",
+            "redo_entries": "0"
+          },
+          "afterEdit": {
+            "undo_entries": "1",
+            "redo_entries": "0"
+          },
+          "afterUndo": {
+            "undo_entries": "0",
+            "redo_entries": "1"
+          },
+          "afterRedo": {
+            "undo_entries": "1",
+            "redo_entries": "0"
+          }
+        },
+        "identity": {
+          "originalKwdjNodes": [
+            {
+              "kwdjPointer": "/content/0",
+              "type": "paragraph"
+            },
+            {
+              "kwdjPointer": "/content/0/content/0",
+              "type": "text"
+            },
+            {
+              "kwdjPointer": "/content/0/content/1",
+              "type": "text"
+            },
+            {
+              "kwdjPointer": "/content/0/content/2",
+              "type": "text"
+            }
+          ],
+          "syntheticRootSurvives": true,
+          "survivingOriginalPointers": [
+            "/content/0",
+            "/content/0/content/0",
+            "/content/0/content/1",
+            "/content/0/content/2"
+          ],
+          "retiredOriginalPointers": [],
+          "liveCreatedRoles": [],
+          "afterUndo": "all original IDs; replacement absent",
+          "afterRedo": "same final IDs as afterEdit, including same replacement role when present",
+          "targetRoleAfterEdit": "targetText",
+          "noAllocatorTotalAssertion": true,
+          "crossOwnerIdentityAssertion": false
+        },
+        "expected": {
+          "value": {
+            "content": [
+              {
+                "content": [
+                  {
+                    "marks": [
+                      {
+                        "attrs": {
+                          "href": "https://example.test/a?b=1#c",
+                          "title": "Example"
+                        },
+                        "type": "link"
+                      }
+                    ],
+                    "text": "external",
+                    "type": "text"
+                  },
+                  {
+                    "text": " and ",
+                    "type": "text"
+                  },
+                  {
+                    "marks": [
+                      {
+                        "attrs": {
+                          "href": "/works/a"
+                        },
+                        "type": "link"
+                      }
+                    ],
+                    "text": "internal.",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              }
+            ],
+            "profile": "prose",
+            "schema": "klenwriter.document",
+            "schema_version": 1
+          },
+          "utf8": "{\"content\":[{\"content\":[{\"marks\":[{\"attrs\":{\"href\":\"https://example.test/a?b=1#c\",\"title\":\"Example\"},\"type\":\"link\"}],\"text\":\"external\",\"type\":\"text\"},{\"text\":\" and \",\"type\":\"text\"},{\"marks\":[{\"attrs\":{\"href\":\"/works/a\"},\"type\":\"link\"}],\"text\":\"internal.\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "file": "cases/DOC-005--safe_links/expected-post-edit.canonical.kwdj.json",
+          "bytes": 360,
+          "sha256": "a97ce10f1d21db9b51e05fea24becd042816c1c2e10a9e74eed186a46d11fc30"
+        }
+      },
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-007/multi_paragraph_blockquote",
+      "source": {
+        "fixtureFile": "contracts/kwdj/v1/fixtures/positive.json",
+        "fixturePointer": "/fixtures/5",
+        "casePointer": "/fixtures/5/cases/0",
+        "approvedInputPointer": "/fixtures/5/cases/0/kwdj",
+        "editDescriptorPointer": "/fixtures/5/cases/0/edit",
+        "expectedNormalizedPointer": "/fixtures/5/cases/0/expected/normalized_kwdj",
+        "inputSourceKind": "legacy_markdown"
+      },
+      "input": {
+        "value": {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Первый",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "text": "Второй",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "blockquote"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"content\":[{\"text\":\"Первый\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Второй\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-007--multi_paragraph_blockquote/approved-input.canonical.kwdj.json",
+        "bytes": 257,
+        "sha256": "1f7ed3bd17b633633b477a04187b78bce62f43f183c869d17ea40fb2db81b41c"
+      },
+      "roundTrip": {
+        "value": {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Первый",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                },
+                {
+                  "content": [
+                    {
+                      "text": "Второй",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "blockquote"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"content\":[{\"text\":\"Первый\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Второй\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-007--multi_paragraph_blockquote/approved-input.canonical.kwdj.json",
+        "bytes": 257,
+        "sha256": "1f7ed3bd17b633633b477a04187b78bce62f43f183c869d17ea40fb2db81b41c"
+      },
+      "edit": {
+        "descriptor": {
+          "operation": "append_text",
+          "path": "/content/0/content/1/content/0/text",
+          "value": "."
+        },
+        "target": {
+          "kwdjPointer": "/content/0/content/1/content/0",
+          "publicReadPath": [
+            0,
+            1,
+            0
+          ],
+          "expectedTypeId": "org.klenwriter.kwdj/text",
+          "textBefore": "Второй",
+          "utf16LengthBefore": 6,
+          "textAfter": "Второй.",
+          "utf16LengthAfter": 7
+        },
+        "selection": {
+          "setup": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 6,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 6,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterEdit": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 7,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 7,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterUndo": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 6,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 6,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterRedo": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 7,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 7,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "scope": "Original owner only; fresh reopen rebinds paths and has no persisted-selection expectation"
+        },
+        "intent": {
+          "kind": "insert_text",
+          "text": "."
+        },
+        "commandId": "org.klenwriter.kwdj/command/insert-text",
+        "expectedEffect": "changed",
+        "historyHint": {
+          "kind": "isolated"
+        },
+        "history": {
+          "initial": {
+            "undo_entries": "0",
+            "redo_entries": "0"
+          },
+          "afterEdit": {
+            "undo_entries": "1",
+            "redo_entries": "0"
+          },
+          "afterUndo": {
+            "undo_entries": "0",
+            "redo_entries": "1"
+          },
+          "afterRedo": {
+            "undo_entries": "1",
+            "redo_entries": "0"
+          }
+        },
+        "identity": {
+          "originalKwdjNodes": [
+            {
+              "kwdjPointer": "/content/0",
+              "type": "blockquote"
+            },
+            {
+              "kwdjPointer": "/content/0/content/0",
+              "type": "paragraph"
+            },
+            {
+              "kwdjPointer": "/content/0/content/0/content/0",
+              "type": "text"
+            },
+            {
+              "kwdjPointer": "/content/0/content/1",
+              "type": "paragraph"
+            },
+            {
+              "kwdjPointer": "/content/0/content/1/content/0",
+              "type": "text"
+            }
+          ],
+          "syntheticRootSurvives": true,
+          "survivingOriginalPointers": [
+            "/content/0",
+            "/content/0/content/0",
+            "/content/0/content/0/content/0",
+            "/content/0/content/1",
+            "/content/0/content/1/content/0"
+          ],
+          "retiredOriginalPointers": [],
+          "liveCreatedRoles": [],
+          "afterUndo": "all original IDs; replacement absent",
+          "afterRedo": "same final IDs as afterEdit, including same replacement role when present",
+          "targetRoleAfterEdit": "targetText",
+          "noAllocatorTotalAssertion": true,
+          "crossOwnerIdentityAssertion": false
+        },
+        "expected": {
+          "value": {
+            "content": [
+              {
+                "content": [
+                  {
+                    "content": [
+                      {
+                        "text": "Первый",
+                        "type": "text"
+                      }
+                    ],
+                    "type": "paragraph"
+                  },
+                  {
+                    "content": [
+                      {
+                        "text": "Второй.",
+                        "type": "text"
+                      }
+                    ],
+                    "type": "paragraph"
+                  }
+                ],
+                "type": "blockquote"
+              }
+            ],
+            "profile": "prose",
+            "schema": "klenwriter.document",
+            "schema_version": 1
+          },
+          "utf8": "{\"content\":[{\"content\":[{\"content\":[{\"text\":\"Первый\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Второй.\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "file": "cases/DOC-007--multi_paragraph_blockquote/expected-post-edit.canonical.kwdj.json",
+          "bytes": 258,
+          "sha256": "dbe772bd6316889a0811e1da761885b24eb68fda21e0bdd890d55b22ce9d987e"
+        }
+      },
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-008/lists_tasks_ordered_start",
+      "source": {
+        "fixtureFile": "contracts/kwdj/v1/fixtures/positive.json",
+        "fixturePointer": "/fixtures/6",
+        "casePointer": "/fixtures/6/cases/0",
+        "approvedInputPointer": "/fixtures/6/cases/0/kwdj",
+        "editDescriptorPointer": "/fixtures/6/cases/0/edit",
+        "expectedNormalizedPointer": "/fixtures/6/cases/0/expected/normalized_kwdj",
+        "inputSourceKind": "kwdj"
+      },
+      "input": {
+        "value": {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Пункт",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "list_item"
+                }
+              ],
+              "type": "bullet_list"
+            },
+            {
+              "attrs": {
+                "start": 3
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Третий",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "list_item"
+                }
+              ],
+              "type": "ordered_list"
+            },
+            {
+              "content": [
+                {
+                  "attrs": {
+                    "checked": true
+                  },
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Готово",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "task_item"
+                },
+                {
+                  "attrs": {
+                    "checked": false
+                  },
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Позже",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "task_item"
+                }
+              ],
+              "type": "task_list"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"content\":[{\"content\":[{\"text\":\"Пункт\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"}],\"type\":\"bullet_list\"},{\"attrs\":{\"start\":3},\"content\":[{\"content\":[{\"content\":[{\"text\":\"Третий\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"}],\"type\":\"ordered_list\"},{\"content\":[{\"attrs\":{\"checked\":true},\"content\":[{\"content\":[{\"text\":\"Готово\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"task_item\"},{\"attrs\":{\"checked\":false},\"content\":[{\"content\":[{\"text\":\"Позже\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"task_item\"}],\"type\":\"task_list\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-008--lists_tasks_ordered_start/approved-input.canonical.kwdj.json",
+        "bytes": 668,
+        "sha256": "bf64e302d38862159c61502dec1e5c827f2b96ae599d1aa9cb7b4d162b6a9b12"
+      },
+      "roundTrip": {
+        "value": {
+          "content": [
+            {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Пункт",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "list_item"
+                }
+              ],
+              "type": "bullet_list"
+            },
+            {
+              "attrs": {
+                "start": 3
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Третий",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "list_item"
+                }
+              ],
+              "type": "ordered_list"
+            },
+            {
+              "content": [
+                {
+                  "attrs": {
+                    "checked": true
+                  },
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Готово",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "task_item"
+                },
+                {
+                  "attrs": {
+                    "checked": false
+                  },
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Позже",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "task_item"
+                }
+              ],
+              "type": "task_list"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"content\":[{\"content\":[{\"text\":\"Пункт\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"}],\"type\":\"bullet_list\"},{\"attrs\":{\"start\":3},\"content\":[{\"content\":[{\"content\":[{\"text\":\"Третий\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"}],\"type\":\"ordered_list\"},{\"content\":[{\"attrs\":{\"checked\":true},\"content\":[{\"content\":[{\"text\":\"Готово\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"task_item\"},{\"attrs\":{\"checked\":false},\"content\":[{\"content\":[{\"text\":\"Позже\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"task_item\"}],\"type\":\"task_list\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-008--lists_tasks_ordered_start/approved-input.canonical.kwdj.json",
+        "bytes": 668,
+        "sha256": "bf64e302d38862159c61502dec1e5c827f2b96ae599d1aa9cb7b4d162b6a9b12"
+      },
+      "edit": {
+        "descriptor": {
+          "operation": "replace_text",
+          "path": "/content/2/content/1/content/0/content/0/text",
+          "value": "Скоро"
+        },
+        "target": {
+          "kwdjPointer": "/content/2/content/1/content/0/content/0",
+          "publicReadPath": [
+            2,
+            1,
+            0,
+            0
+          ],
+          "expectedTypeId": "org.klenwriter.kwdj/text",
+          "textBefore": "Позже",
+          "utf16LengthBefore": 5,
+          "textAfter": "Скоро",
+          "utf16LengthAfter": 5
+        },
+        "selection": {
+          "setup": {
+            "direction": "backward",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 5,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 0,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterEdit": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.replacementText.id",
+                "offset": 5,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.replacementText.id",
+                "offset": 5,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterUndo": {
+            "direction": "backward",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 5,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 0,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterRedo": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.replacementText.id",
+                "offset": 5,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.replacementText.id",
+                "offset": 5,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "scope": "Original owner only; fresh reopen rebinds paths and has no persisted-selection expectation"
+        },
+        "intent": {
+          "kind": "insert_text",
+          "text": "Скоро"
+        },
+        "commandId": "org.klenwriter.kwdj/command/insert-text",
+        "expectedEffect": "changed",
+        "historyHint": {
+          "kind": "isolated"
+        },
+        "history": {
+          "initial": {
+            "undo_entries": "0",
+            "redo_entries": "0"
+          },
+          "afterEdit": {
+            "undo_entries": "1",
+            "redo_entries": "0"
+          },
+          "afterUndo": {
+            "undo_entries": "0",
+            "redo_entries": "1"
+          },
+          "afterRedo": {
+            "undo_entries": "1",
+            "redo_entries": "0"
+          }
+        },
+        "identity": {
+          "originalKwdjNodes": [
+            {
+              "kwdjPointer": "/content/0",
+              "type": "bullet_list"
+            },
+            {
+              "kwdjPointer": "/content/0/content/0",
+              "type": "list_item"
+            },
+            {
+              "kwdjPointer": "/content/0/content/0/content/0",
+              "type": "paragraph"
+            },
+            {
+              "kwdjPointer": "/content/0/content/0/content/0/content/0",
+              "type": "text"
+            },
+            {
+              "kwdjPointer": "/content/1",
+              "type": "ordered_list"
+            },
+            {
+              "kwdjPointer": "/content/1/content/0",
+              "type": "list_item"
+            },
+            {
+              "kwdjPointer": "/content/1/content/0/content/0",
+              "type": "paragraph"
+            },
+            {
+              "kwdjPointer": "/content/1/content/0/content/0/content/0",
+              "type": "text"
+            },
+            {
+              "kwdjPointer": "/content/2",
+              "type": "task_list"
+            },
+            {
+              "kwdjPointer": "/content/2/content/0",
+              "type": "task_item"
+            },
+            {
+              "kwdjPointer": "/content/2/content/0/content/0",
+              "type": "paragraph"
+            },
+            {
+              "kwdjPointer": "/content/2/content/0/content/0/content/0",
+              "type": "text"
+            },
+            {
+              "kwdjPointer": "/content/2/content/1",
+              "type": "task_item"
+            },
+            {
+              "kwdjPointer": "/content/2/content/1/content/0",
+              "type": "paragraph"
+            },
+            {
+              "kwdjPointer": "/content/2/content/1/content/0/content/0",
+              "type": "text"
+            }
+          ],
+          "syntheticRootSurvives": true,
+          "survivingOriginalPointers": [
+            "/content/0",
+            "/content/0/content/0",
+            "/content/0/content/0/content/0",
+            "/content/0/content/0/content/0/content/0",
+            "/content/1",
+            "/content/1/content/0",
+            "/content/1/content/0/content/0",
+            "/content/1/content/0/content/0/content/0",
+            "/content/2",
+            "/content/2/content/0",
+            "/content/2/content/0/content/0",
+            "/content/2/content/0/content/0/content/0",
+            "/content/2/content/1",
+            "/content/2/content/1/content/0"
+          ],
+          "retiredOriginalPointers": [
+            "/content/2/content/1/content/0/content/0"
+          ],
+          "liveCreatedRoles": [
+            {
+              "role": "replacementText",
+              "pointer": "/content/2/content/1/content/0/content/0",
+              "distinctFromEveryOriginalId": true
+            }
+          ],
+          "afterUndo": "all original IDs; replacement absent",
+          "afterRedo": "same final IDs as afterEdit, including same replacement role when present",
+          "targetRoleAfterEdit": "replacementText",
+          "noAllocatorTotalAssertion": true,
+          "crossOwnerIdentityAssertion": false
+        },
+        "expected": {
+          "value": {
+            "content": [
+              {
+                "content": [
+                  {
+                    "content": [
+                      {
+                        "content": [
+                          {
+                            "text": "Пункт",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    "type": "list_item"
+                  }
+                ],
+                "type": "bullet_list"
+              },
+              {
+                "attrs": {
+                  "start": 3
+                },
+                "content": [
+                  {
+                    "content": [
+                      {
+                        "content": [
+                          {
+                            "text": "Третий",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    "type": "list_item"
+                  }
+                ],
+                "type": "ordered_list"
+              },
+              {
+                "content": [
+                  {
+                    "attrs": {
+                      "checked": true
+                    },
+                    "content": [
+                      {
+                        "content": [
+                          {
+                            "text": "Готово",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    "type": "task_item"
+                  },
+                  {
+                    "attrs": {
+                      "checked": false
+                    },
+                    "content": [
+                      {
+                        "content": [
+                          {
+                            "text": "Скоро",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "paragraph"
+                      }
+                    ],
+                    "type": "task_item"
+                  }
+                ],
+                "type": "task_list"
+              }
+            ],
+            "profile": "prose",
+            "schema": "klenwriter.document",
+            "schema_version": 1
+          },
+          "utf8": "{\"content\":[{\"content\":[{\"content\":[{\"content\":[{\"text\":\"Пункт\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"}],\"type\":\"bullet_list\"},{\"attrs\":{\"start\":3},\"content\":[{\"content\":[{\"content\":[{\"text\":\"Третий\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"list_item\"}],\"type\":\"ordered_list\"},{\"content\":[{\"attrs\":{\"checked\":true},\"content\":[{\"content\":[{\"text\":\"Готово\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"task_item\"},{\"attrs\":{\"checked\":false},\"content\":[{\"content\":[{\"text\":\"Скоро\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"task_item\"}],\"type\":\"task_list\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "file": "cases/DOC-008--lists_tasks_ordered_start/expected-post-edit.canonical.kwdj.json",
+          "bytes": 668,
+          "sha256": "6bcd1686ae6b35e2a3c05ec981ac7e73354fe871c4d291f774b3872f78dd53fd"
+        }
+      },
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-009/literal_code",
+      "source": {
+        "fixtureFile": "contracts/kwdj/v1/fixtures/positive.json",
+        "fixturePointer": "/fixtures/7",
+        "casePointer": "/fixtures/7/cases/0",
+        "approvedInputPointer": "/fixtures/7/cases/0/kwdj",
+        "editDescriptorPointer": "/fixtures/7/cases/0/edit",
+        "expectedNormalizedPointer": "/fixtures/7/cases/0/expected/normalized_kwdj",
+        "inputSourceKind": "legacy_markdown"
+      },
+      "input": {
+        "value": {
+          "content": [
+            {
+              "attrs": {
+                "language": "html"
+              },
+              "content": [
+                {
+                  "text": "<script>alert(1)</script>\n<!-- kw:block type=spoiler -->",
+                  "type": "text"
+                }
+              ],
+              "type": "code_block"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"attrs\":{\"language\":\"html\"},\"content\":[{\"text\":\"<script>alert(1)</script>\\n<!-- kw:block type=spoiler -->\",\"type\":\"text\"}],\"type\":\"code_block\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-009--literal_code/approved-input.canonical.kwdj.json",
+        "bytes": 226,
+        "sha256": "fa5e3665bad899ef962d78a3695b90f62317a12dcfe855878e726098c71090e2"
+      },
+      "roundTrip": {
+        "value": {
+          "content": [
+            {
+              "attrs": {
+                "language": "html"
+              },
+              "content": [
+                {
+                  "text": "<script>alert(1)</script>\n<!-- kw:block type=spoiler -->",
+                  "type": "text"
+                }
+              ],
+              "type": "code_block"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"attrs\":{\"language\":\"html\"},\"content\":[{\"text\":\"<script>alert(1)</script>\\n<!-- kw:block type=spoiler -->\",\"type\":\"text\"}],\"type\":\"code_block\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-009--literal_code/approved-input.canonical.kwdj.json",
+        "bytes": 226,
+        "sha256": "fa5e3665bad899ef962d78a3695b90f62317a12dcfe855878e726098c71090e2"
+      },
+      "edit": {
+        "descriptor": {
+          "operation": "append_text",
+          "path": "/content/0/content/0/text",
+          "value": "\nend"
+        },
+        "target": {
+          "kwdjPointer": "/content/0/content/0",
+          "publicReadPath": [
+            0,
+            0
+          ],
+          "expectedTypeId": "org.klenwriter.kwdj/text",
+          "textBefore": "<script>alert(1)</script>\n<!-- kw:block type=spoiler -->",
+          "utf16LengthBefore": 56,
+          "textAfter": "<script>alert(1)</script>\n<!-- kw:block type=spoiler -->\nend",
+          "utf16LengthAfter": 60
+        },
+        "selection": {
+          "setup": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 56,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 56,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterEdit": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 60,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 60,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterUndo": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 56,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 56,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterRedo": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 60,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 60,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "scope": "Original owner only; fresh reopen rebinds paths and has no persisted-selection expectation"
+        },
+        "intent": {
+          "kind": "insert_text",
+          "text": "\nend"
+        },
+        "commandId": "org.klenwriter.kwdj/command/insert-text",
+        "expectedEffect": "changed",
+        "historyHint": {
+          "kind": "isolated"
+        },
+        "history": {
+          "initial": {
+            "undo_entries": "0",
+            "redo_entries": "0"
+          },
+          "afterEdit": {
+            "undo_entries": "1",
+            "redo_entries": "0"
+          },
+          "afterUndo": {
+            "undo_entries": "0",
+            "redo_entries": "1"
+          },
+          "afterRedo": {
+            "undo_entries": "1",
+            "redo_entries": "0"
+          }
+        },
+        "identity": {
+          "originalKwdjNodes": [
+            {
+              "kwdjPointer": "/content/0",
+              "type": "code_block"
+            },
+            {
+              "kwdjPointer": "/content/0/content/0",
+              "type": "text"
+            }
+          ],
+          "syntheticRootSurvives": true,
+          "survivingOriginalPointers": [
+            "/content/0",
+            "/content/0/content/0"
+          ],
+          "retiredOriginalPointers": [],
+          "liveCreatedRoles": [],
+          "afterUndo": "all original IDs; replacement absent",
+          "afterRedo": "same final IDs as afterEdit, including same replacement role when present",
+          "targetRoleAfterEdit": "targetText",
+          "noAllocatorTotalAssertion": true,
+          "crossOwnerIdentityAssertion": false
+        },
+        "expected": {
+          "value": {
+            "content": [
+              {
+                "attrs": {
+                  "language": "html"
+                },
+                "content": [
+                  {
+                    "text": "<script>alert(1)</script>\n<!-- kw:block type=spoiler -->\nend",
+                    "type": "text"
+                  }
+                ],
+                "type": "code_block"
+              }
+            ],
+            "profile": "prose",
+            "schema": "klenwriter.document",
+            "schema_version": 1
+          },
+          "utf8": "{\"content\":[{\"attrs\":{\"language\":\"html\"},\"content\":[{\"text\":\"<script>alert(1)</script>\\n<!-- kw:block type=spoiler -->\\nend\",\"type\":\"text\"}],\"type\":\"code_block\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "file": "cases/DOC-009--literal_code/expected-post-edit.canonical.kwdj.json",
+          "bytes": 231,
+          "sha256": "13073be7221674810a523932e98caa118c38cabef3bc22ba56647104cb5091f5"
+        }
+      },
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-025/projection_determinism",
+      "source": {
+        "fixtureFile": "contracts/kwdj/v1/fixtures/positive.json",
+        "fixturePointer": "/fixtures/16",
+        "casePointer": "/fixtures/16/cases/0",
+        "approvedInputPointer": "/fixtures/16/cases/0/kwdj",
+        "editDescriptorPointer": "/fixtures/16/cases/0/edit",
+        "expectedNormalizedPointer": "/fixtures/16/cases/0/expected/normalized_kwdj",
+        "inputSourceKind": "kwdj"
+      },
+      "input": {
+        "value": {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "Stable",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"Stable\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-025--projection_determinism/approved-input.canonical.kwdj.json",
+        "bytes": 174,
+        "sha256": "c8befa3d8d985ab3c69943c6be281398c781374d1fb0ba1e9cef2bc6d3b71f0d"
+      },
+      "roundTrip": {
+        "value": {
+          "content": [
+            {
+              "content": [
+                {
+                  "marks": [
+                    {
+                      "type": "strong"
+                    }
+                  ],
+                  "text": "Stable",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"Stable\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-025--projection_determinism/approved-input.canonical.kwdj.json",
+        "bytes": 174,
+        "sha256": "c8befa3d8d985ab3c69943c6be281398c781374d1fb0ba1e9cef2bc6d3b71f0d"
+      },
+      "edit": null,
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-028/plain_prose_paragraphs",
+      "source": {
+        "fixtureFile": "contracts/kwdj/v1/fixtures/positive.json",
+        "fixturePointer": "/fixtures/18",
+        "casePointer": "/fixtures/18/cases/0",
+        "approvedInputPointer": "/fixtures/18/cases/0/kwdj",
+        "editDescriptorPointer": "/fixtures/18/cases/0/edit",
+        "expectedNormalizedPointer": "/fixtures/18/cases/0/expected/normalized_kwdj",
+        "inputSourceKind": "clipboard_plain"
+      },
+      "input": {
+        "value": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "# Literal **text**",
+                  "type": "text"
+                },
+                {
+                  "type": "hard_break"
+                },
+                {
+                  "text": "single break",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "Second <p>",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"text\":\"# Literal **text**\",\"type\":\"text\"},{\"type\":\"hard_break\"},{\"text\":\"single break\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Second <p>\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-028--plain_prose_paragraphs/approved-input.canonical.kwdj.json",
+        "bytes": 287,
+        "sha256": "814e3316352352f6b25369219c7e02c393ebb850cd1a130664dae94fe052c4ba"
+      },
+      "roundTrip": {
+        "value": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "# Literal **text**",
+                  "type": "text"
+                },
+                {
+                  "type": "hard_break"
+                },
+                {
+                  "text": "single break",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "content": [
+                {
+                  "text": "Second <p>",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"text\":\"# Literal **text**\",\"type\":\"text\"},{\"type\":\"hard_break\"},{\"text\":\"single break\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Second <p>\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-028--plain_prose_paragraphs/approved-input.canonical.kwdj.json",
+        "bytes": 287,
+        "sha256": "814e3316352352f6b25369219c7e02c393ebb850cd1a130664dae94fe052c4ba"
+      },
+      "edit": {
+        "descriptor": {
+          "operation": "append_text",
+          "path": "/content/1/content/0/text",
+          "value": "."
+        },
+        "target": {
+          "kwdjPointer": "/content/1/content/0",
+          "publicReadPath": [
+            1,
+            0
+          ],
+          "expectedTypeId": "org.klenwriter.kwdj/text",
+          "textBefore": "Second <p>",
+          "utf16LengthBefore": 10,
+          "textAfter": "Second <p>.",
+          "utf16LengthAfter": 11
+        },
+        "selection": {
+          "setup": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 10,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 10,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterEdit": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 11,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 11,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterUndo": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 10,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 10,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "afterRedo": {
+            "direction": "collapsed",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 11,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "$role.targetText.id",
+                "offset": 11,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null
+          },
+          "scope": "Original owner only; fresh reopen rebinds paths and has no persisted-selection expectation"
+        },
+        "intent": {
+          "kind": "insert_text",
+          "text": "."
+        },
+        "commandId": "org.klenwriter.kwdj/command/insert-text",
+        "expectedEffect": "changed",
+        "historyHint": {
+          "kind": "isolated"
+        },
+        "history": {
+          "initial": {
+            "undo_entries": "0",
+            "redo_entries": "0"
+          },
+          "afterEdit": {
+            "undo_entries": "1",
+            "redo_entries": "0"
+          },
+          "afterUndo": {
+            "undo_entries": "0",
+            "redo_entries": "1"
+          },
+          "afterRedo": {
+            "undo_entries": "1",
+            "redo_entries": "0"
+          }
+        },
+        "identity": {
+          "originalKwdjNodes": [
+            {
+              "kwdjPointer": "/content/0",
+              "type": "paragraph"
+            },
+            {
+              "kwdjPointer": "/content/0/content/0",
+              "type": "text"
+            },
+            {
+              "kwdjPointer": "/content/0/content/1",
+              "type": "hard_break"
+            },
+            {
+              "kwdjPointer": "/content/0/content/2",
+              "type": "text"
+            },
+            {
+              "kwdjPointer": "/content/1",
+              "type": "paragraph"
+            },
+            {
+              "kwdjPointer": "/content/1/content/0",
+              "type": "text"
+            }
+          ],
+          "syntheticRootSurvives": true,
+          "survivingOriginalPointers": [
+            "/content/0",
+            "/content/0/content/0",
+            "/content/0/content/1",
+            "/content/0/content/2",
+            "/content/1",
+            "/content/1/content/0"
+          ],
+          "retiredOriginalPointers": [],
+          "liveCreatedRoles": [],
+          "afterUndo": "all original IDs; replacement absent",
+          "afterRedo": "same final IDs as afterEdit, including same replacement role when present",
+          "targetRoleAfterEdit": "targetText",
+          "noAllocatorTotalAssertion": true,
+          "crossOwnerIdentityAssertion": false
+        },
+        "expected": {
+          "value": {
+            "content": [
+              {
+                "content": [
+                  {
+                    "text": "# Literal **text**",
+                    "type": "text"
+                  },
+                  {
+                    "type": "hard_break"
+                  },
+                  {
+                    "text": "single break",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              },
+              {
+                "content": [
+                  {
+                    "text": "Second <p>.",
+                    "type": "text"
+                  }
+                ],
+                "type": "paragraph"
+              }
+            ],
+            "profile": "prose",
+            "schema": "klenwriter.document",
+            "schema_version": 1
+          },
+          "utf8": "{\"content\":[{\"content\":[{\"text\":\"# Literal **text**\",\"type\":\"text\"},{\"type\":\"hard_break\"},{\"text\":\"single break\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Second <p>.\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "file": "cases/DOC-028--plain_prose_paragraphs/expected-post-edit.canonical.kwdj.json",
+          "bytes": 288,
+          "sha256": "c721dd41064b4a1084790d3148bf762c02aa5514e44fccf0f02b80f0ffbb0ac7"
+        }
+      },
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-032/active_html_plain_fallback",
+      "source": {
+        "fixtureFile": "contracts/kwdj/v1/fixtures/negative.json",
+        "fixturePointer": "/fixtures/5",
+        "casePointer": "/fixtures/5/cases/0",
+        "approvedInputPointer": "/fixtures/5/cases/0/kwdj",
+        "editDescriptorPointer": "/fixtures/5/cases/0/edit",
+        "expectedNormalizedPointer": "/fixtures/5/cases/0/expected/normalized_kwdj",
+        "inputSourceKind": "clipboard_html"
+      },
+      "input": {
+        "value": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Visible",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"text\":\"Visible\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-032--active_html_plain_fallback/approved-input.canonical.kwdj.json",
+        "bytes": 147,
+        "sha256": "680671c21b429e3c8395502cfcd65593999fd0e09dc3d9131e8bae5f5682d069"
+      },
+      "roundTrip": {
+        "value": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Visible",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"text\":\"Visible\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-032--active_html_plain_fallback/approved-input.canonical.kwdj.json",
+        "bytes": 147,
+        "sha256": "680671c21b429e3c8395502cfcd65593999fd0e09dc3d9131e8bae5f5682d069"
+      },
+      "edit": null,
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-034/editor_metadata_ignored",
+      "source": {
+        "fixtureFile": "contracts/kwdj/v1/fixtures/negative.json",
+        "fixturePointer": "/fixtures/7",
+        "casePointer": "/fixtures/7/cases/0",
+        "approvedInputPointer": "/fixtures/7/cases/0/kwdj",
+        "editDescriptorPointer": "/fixtures/7/cases/0/edit",
+        "expectedNormalizedPointer": "/fixtures/7/cases/0/expected/normalized_kwdj",
+        "inputSourceKind": "clipboard_html"
+      },
+      "input": {
+        "value": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Visible",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"text\":\"Visible\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-034--editor_metadata_ignored/approved-input.canonical.kwdj.json",
+        "bytes": 147,
+        "sha256": "680671c21b429e3c8395502cfcd65593999fd0e09dc3d9131e8bae5f5682d069"
+      },
+      "roundTrip": {
+        "value": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "Visible",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "profile": "prose",
+          "schema": "klenwriter.document",
+          "schema_version": 1
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"text\":\"Visible\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "file": "cases/DOC-034--editor_metadata_ignored/approved-input.canonical.kwdj.json",
+        "bytes": 147,
+        "sha256": "680671c21b429e3c8395502cfcd65593999fd0e09dc3d9131e8bae5f5682d069"
+      },
+      "edit": null,
+      "measurementStatus": "NOT_EXECUTED"
+    }
+  ],
+  "negativeCases": [
+    {
+      "caseId": "DOC-018/future_schema_version",
+      "rowId": "DOC-018/future_schema_version::editor_round_trip_unchanged",
+      "source": {
+        "file": "contracts/kwdj/v1/fixtures/negative.json",
+        "casePointer": "/fixtures/1/cases/0",
+        "inputPointer": "/fixtures/1/cases/0/kwdj",
+        "expectedPointer": "/fixtures/1/cases/0/expected",
+        "filePin": {
+          "kind": "accepted_git_object",
+          "sourceCommit": "a21a7f8030afaeb4879fcbbd4953a7c76e098184",
+          "repositoryPath": "contracts/kwdj/v1/fixtures/negative.json",
+          "gitObject": "f013883af1095f1e5c4693379a6be06cd6178bb2",
+          "file": "accepted-source/contracts/kwdj/v1/fixtures/negative.json",
+          "bytes": 12378,
+          "sha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f"
+        }
+      },
+      "input": {
+        "value": {
+          "schema": "klenwriter.document",
+          "schema_version": 2,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": []
+            }
+          ]
+        },
+        "utf8": "{\"content\":[{\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":2}",
+        "bytes": 115,
+        "sha256": "b1054bb2612b362c3d1938d0028d4e40fc72623f7e311bd63b62361377748033"
+      },
+      "expectedReadyStatus": "sdk_failure",
+      "expectedNativeStatus": "refused",
+      "fixtureOutcome": "rejected",
+      "fixtureDiagnosticCodes": [
+        "kwdj.unsupported_schema_version"
+      ],
+      "diagnostic": {
+        "code": "kwdj.unsupported_schema_version",
+        "category": "profile",
+        "details": {},
+        "stamp": null,
+        "may_have_committed": false,
+        "path": {
+          "assessment": "additional_source_supported_exact",
+          "exact": "/schema_version"
+        }
+      },
+      "canonical": null,
+      "fresh": null,
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-018/unknown_node",
+      "rowId": "DOC-018/unknown_node::editor_round_trip_unchanged",
+      "source": {
+        "file": "contracts/kwdj/v1/fixtures/negative.json",
+        "casePointer": "/fixtures/1/cases/1",
+        "inputPointer": "/fixtures/1/cases/1/kwdj",
+        "expectedPointer": "/fixtures/1/cases/1/expected",
+        "filePin": {
+          "kind": "accepted_git_object",
+          "sourceCommit": "a21a7f8030afaeb4879fcbbd4953a7c76e098184",
+          "repositoryPath": "contracts/kwdj/v1/fixtures/negative.json",
+          "gitObject": "f013883af1095f1e5c4693379a6be06cd6178bb2",
+          "file": "accepted-source/contracts/kwdj/v1/fixtures/negative.json",
+          "bytes": 12378,
+          "sha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f"
+        }
+      },
+      "input": {
+        "value": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "raw_html",
+              "content": []
+            }
+          ]
+        },
+        "utf8": "{\"content\":[{\"content\":[],\"type\":\"raw_html\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "bytes": 114,
+        "sha256": "b7ece3b76b87002766e44dac80efee80a9f69ad2b5ec40df8414a4db4b230375"
+      },
+      "expectedReadyStatus": "sdk_failure",
+      "expectedNativeStatus": "refused",
+      "fixtureOutcome": "rejected",
+      "fixtureDiagnosticCodes": [
+        "kwdj.unknown_node"
+      ],
+      "diagnostic": {
+        "code": "kwdj.unknown_node",
+        "category": "profile",
+        "details": {},
+        "stamp": null,
+        "may_have_committed": false,
+        "path": {
+          "assessment": "additional_source_supported_exact",
+          "exact": "/content/0/type"
+        }
+      },
+      "canonical": null,
+      "fresh": null,
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-018/unknown_mark",
+      "rowId": "DOC-018/unknown_mark::editor_round_trip_unchanged",
+      "source": {
+        "file": "contracts/kwdj/v1/fixtures/negative.json",
+        "casePointer": "/fixtures/1/cases/2",
+        "inputPointer": "/fixtures/1/cases/2/kwdj",
+        "expectedPointer": "/fixtures/1/cases/2/expected",
+        "filePin": {
+          "kind": "accepted_git_object",
+          "sourceCommit": "a21a7f8030afaeb4879fcbbd4953a7c76e098184",
+          "repositoryPath": "contracts/kwdj/v1/fixtures/negative.json",
+          "gitObject": "f013883af1095f1e5c4693379a6be06cd6178bb2",
+          "file": "accepted-source/contracts/kwdj/v1/fixtures/negative.json",
+          "bytes": 12378,
+          "sha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f"
+        }
+      },
+      "input": {
+        "value": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "x",
+                  "marks": [
+                    {
+                      "type": "rainbow"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"rainbow\"}],\"text\":\"x\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "bytes": 170,
+        "sha256": "9bb0e7bc5d374877aa36a759c37c3575e3b79395bfaec33cf30fa18133845003"
+      },
+      "expectedReadyStatus": "sdk_failure",
+      "expectedNativeStatus": "refused",
+      "fixtureOutcome": "rejected",
+      "fixtureDiagnosticCodes": [
+        "kwdj.unknown_mark"
+      ],
+      "diagnostic": {
+        "code": "kwdj.unknown_mark",
+        "category": "profile",
+        "details": {},
+        "stamp": null,
+        "may_have_committed": false,
+        "path": {
+          "assessment": "additional_source_supported_exact",
+          "exact": "/content/0/content/0/marks/0/type"
+        }
+      },
+      "canonical": null,
+      "fresh": null,
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-018/unknown_attribute",
+      "rowId": "DOC-018/unknown_attribute::editor_round_trip_unchanged",
+      "source": {
+        "file": "contracts/kwdj/v1/fixtures/negative.json",
+        "casePointer": "/fixtures/1/cases/3",
+        "inputPointer": "/fixtures/1/cases/3/kwdj",
+        "expectedPointer": "/fixtures/1/cases/3/expected",
+        "filePin": {
+          "kind": "accepted_git_object",
+          "sourceCommit": "a21a7f8030afaeb4879fcbbd4953a7c76e098184",
+          "repositoryPath": "contracts/kwdj/v1/fixtures/negative.json",
+          "gitObject": "f013883af1095f1e5c4693379a6be06cd6178bb2",
+          "file": "accepted-source/contracts/kwdj/v1/fixtures/negative.json",
+          "bytes": 12378,
+          "sha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f"
+        }
+      },
+      "input": {
+        "value": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "class": "admin"
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "x"
+                }
+              ]
+            }
+          ]
+        },
+        "utf8": "{\"content\":[{\"attrs\":{\"class\":\"admin\"},\"content\":[{\"text\":\"x\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "bytes": 167,
+        "sha256": "043f958eb60511d61833762f98b1ec427fd3b7c864be4cde0527bd7610c271d6"
+      },
+      "expectedReadyStatus": "sdk_failure",
+      "expectedNativeStatus": "refused",
+      "fixtureOutcome": "rejected",
+      "fixtureDiagnosticCodes": [
+        "kwdj.unknown_attribute"
+      ],
+      "diagnostic": {
+        "code": "kwdj.unknown_attribute",
+        "category": "profile",
+        "details": {},
+        "stamp": null,
+        "may_have_committed": false,
+        "path": {
+          "assessment": "not_normative_fixture_oracle",
+          "exact": null
+        }
+      },
+      "canonical": null,
+      "fresh": null,
+      "measurementStatus": "NOT_EXECUTED"
+    },
+    {
+      "caseId": "DOC-012/malformed_effective_grid",
+      "rowId": "DOC-012/malformed_effective_grid::editor_round_trip_unchanged",
+      "source": {
+        "file": "contracts/kwdj/v1/fixtures/mixed.json",
+        "casePointer": "/fixtures/1/cases/1",
+        "inputPointer": "/fixtures/1/cases/1/kwdj",
+        "expectedPointer": "/fixtures/1/cases/1/expected",
+        "filePin": {
+          "kind": "accepted_git_object",
+          "sourceCommit": "a21a7f8030afaeb4879fcbbd4953a7c76e098184",
+          "repositoryPath": "contracts/kwdj/v1/fixtures/mixed.json",
+          "gitObject": "42d17d22ed65076ceea562444573eba18c3585f1",
+          "file": "accepted-source/contracts/kwdj/v1/fixtures/mixed.json",
+          "bytes": 40777,
+          "sha256": "f9e472176da723dedf812bff8a5a046946d554c5125e05977cab6a392b19f4a5"
+        }
+      },
+      "input": {
+        "value": {
+          "schema": "klenwriter.document",
+          "schema_version": 1,
+          "profile": "prose",
+          "content": [
+            {
+              "type": "table",
+              "content": [
+                {
+                  "type": "table_row",
+                  "content": [
+                    {
+                      "type": "table_cell",
+                      "attrs": {
+                        "rowspan": 2
+                      },
+                      "content": [
+                        {
+                          "type": "paragraph",
+                          "content": [
+                            {
+                              "type": "text",
+                              "text": "A"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "table_cell",
+                      "content": [
+                        {
+                          "type": "paragraph",
+                          "content": [
+                            {
+                              "type": "text",
+                              "text": "B"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "table_row",
+                  "content": [
+                    {
+                      "type": "table_cell",
+                      "attrs": {
+                        "colspan": 2
+                      },
+                      "content": [
+                        {
+                          "type": "paragraph",
+                          "content": [
+                            {
+                              "type": "text",
+                              "text": "overlap"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "utf8": "{\"content\":[{\"content\":[{\"content\":[{\"attrs\":{\"rowspan\":2},\"content\":[{\"content\":[{\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_cell\"},{\"content\":[{\"content\":[{\"text\":\"B\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_cell\"}],\"type\":\"table_row\"},{\"content\":[{\"attrs\":{\"colspan\":2},\"content\":[{\"content\":[{\"text\":\"overlap\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_cell\"}],\"type\":\"table_row\"}],\"type\":\"table\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "bytes": 508,
+        "sha256": "9ab38a6208021bc6a2be720aa1a04e7b12bcf11f7be42affb10af9e501a6d8d0"
+      },
+      "expectedReadyStatus": "sdk_failure",
+      "expectedNativeStatus": "refused",
+      "fixtureOutcome": "rejected",
+      "fixtureDiagnosticCodes": [
+        "kwdj.table_not_rectangular"
+      ],
+      "diagnostic": {
+        "code": "kwdj.table_not_rectangular",
+        "category": "profile",
+        "details": {},
+        "stamp": null,
+        "may_have_committed": false,
+        "path": {
+          "assessment": "additional_source_supported_exact",
+          "exact": "/content/0"
+        }
+      },
+      "canonical": null,
+      "fresh": null,
+      "measurementStatus": "NOT_EXECUTED"
+    }
+  ]
+}

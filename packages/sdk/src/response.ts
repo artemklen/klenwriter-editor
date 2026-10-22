@@ -146,15 +146,80 @@ const selectionFragment: Check = value => shape(value, {
   kind: literal('selection_fragment'), stamp, selection, format_id: token,
   fragment_json: utf8Bound(2 * 1024 * 1024), empty: bool,
 });
+const sameData = (left: unknown, right: unknown): boolean => JSON.stringify(left) === JSON.stringify(right);
+/** Local new-result ceilings; the preexisting state/whole reply keeps its transport ceiling. */
+function boundedResult(value: unknown, bytes: number, depth: number, values: number): boolean {
+  const pending: {value: unknown; depth: number}[] = [{value, depth: 0}];
+  let count = 0;
+  while (pending.length) {
+    const entry = pending.pop()!;
+    if (++count > values || entry.depth > depth) return false;
+    if (entry.value && typeof entry.value === 'object') {
+      for (const child of Object.values(entry.value)) pending.push({value: child, depth: entry.depth + 1});
+      if (pending.length > values - count) return false;
+    }
+  }
+  return new TextEncoder().encode(JSON.stringify(value)).byteLength <= bytes;
+}
+const inputRun: Check = value => shape(value, {type_id: token, attributes: dictionary(attribute), marks: list(mark), text: scalarText})
+  && object(value) && typeof value.text === 'string' && value.text.length > 0;
+const inputSpan: Check = value => shape(value, {node: token, from_utf16: size, to_utf16: size,
+  type_id: token, attributes: dictionary(attribute), marks: list(mark), text: scalarText})
+  && object(value) && typeof value.text === 'string' && value.text.length > 0
+  && typeof value.from_utf16 === 'number' && typeof value.to_utf16 === 'number'
+  && value.to_utf16 > value.from_utf16 && value.to_utf16 - value.from_utf16 === value.text.length;
+function tinyRuns(value: unknown, span: boolean): boolean {
+  return Array.isArray(value) && value.length > 0 && value.length <= 12 && value.every(span ? inputSpan : inputRun)
+    && new TextEncoder().encode(value.map(run => run.text).join('')).byteLength <= 12
+    && (!span || new Set(value.map(run => run.node)).size === value.length);
+}
+const inputRegion: Check = value => shape(value, {block: token, range: selection, spans: v => tinyRuns(v, true)})
+  && object(value) && (() => {
+    const range = value.range as {anchor: Record<string, unknown>; focus: Record<string, unknown>};
+    const spans = value.spans as {node: string; from_utf16: number; to_utf16: number}[];
+    return range.anchor.kind === 'text' && range.focus.kind === 'text'
+      && range.anchor.node === spans[0].node && range.anchor.offset === spans[0].from_utf16
+      && range.focus.node === spans.at(-1)!.node && range.focus.offset === spans.at(-1)!.to_utf16
+      && !spans.some(s => s.node === value.block);
+  })();
+// Native metadata depth/value ceilings are relative to attributes, not this wire envelope.
+const rawInputRestore: Check = value => boundedResult(value, 4096, 64, 4096) && shape(value, {
+  format_id: literal('org.klenwriter.editor/raw-input-restore/1'), stamp, selection,
+  stored_marks: nullable(list(mark)), cooked: inputRegion, raw: v => tinyRuns(v, false),
+  raw_caret_utf16: size, raw_stored_marks: nullable(list(mark)),
+}) && object(value) && typeof value.raw_caret_utf16 === 'number'
+  && value.raw_caret_utf16 <= (value.raw as {text: string}[]).reduce((n, run) => n + run.text.length, 0);
+const textReplacement: Check = value => boundedResult(value, 16384, 64, 16384) && shape(value, {
+  kind: literal('text_replacement'), before_stamp: stamp, after_stamp: stamp,
+  original: v => shape(v, {origin: literal('ordinary_insert_text', 'composition_commit'), selection,
+    text: v => scalarText(v) && Array.from(v).length === 1}),
+  before: v => shape(v, {block: token, range: selection}), after: inputRegion,
+  after_selection: selection, after_stored_marks: nullable(list(mark)), raw_restore: nullable(rawInputRestore),
+}) && object(value) && (() => {
+  const before = value.before as {block: string}, after = value.after as {block: string};
+  const selected = value.after_selection as {anchor: unknown; focus: unknown};
+  const raw = value.raw_restore as Record<string, unknown> | null;
+  return before.block === after.block && sameData(selected.anchor, selected.focus)
+    && (!raw || sameData(raw.stamp, value.after_stamp) && sameData(raw.selection, selected)
+      && sameData(raw.stored_marks, value.after_stored_marks) && sameData(raw.cooked, after));
+})();
+const inputMutation: Check = value => shape(value, {kind: literal('input_mutation'),
+  effect: literal('changed', 'state_changed', 'unchanged'), state, presentation: nullable(presentation), result: nullable(textReplacement)})
+  && object(value) && (value.result === null || value.effect === 'changed' && (() => {
+    const result = value.result as Record<string, unknown>, current = value.state as Record<string, unknown>;
+    return sameData(result.after_stamp, current.stamp) && sameData(result.after_selection, current.selection)
+      && sameData(result.after_stored_marks, current.stored_marks);
+  })());
 /** ABI2 bounded pure replies; legacy decoder and command tickets stay closed. */
-export function decodeResponseV2(raw: string, expectedKind?: 'selection_text' | 'text_window' | 'clipboard_context' | 'selection_fragment'): SdkResponseV2 {
+export function decodeResponseV2(raw: string, expectedKind?: 'selection_text' | 'text_window' | 'clipboard_context' | 'selection_fragment' | 'input_mutation'): SdkResponseV2 {
   try {
-    const maximum = expectedKind === 'text_window' ? TEXT_WINDOW_REPLY_BYTES : expectedKind === 'clipboard_context' ? 64 * 1024 : expectedKind === 'selection_fragment' ? 16 * 1024 * 1024 : SELECTION_REPLY_BYTES;
+    const maximum = expectedKind === 'text_window' ? TEXT_WINDOW_REPLY_BYTES : expectedKind === 'clipboard_context' ? 64 * 1024 : expectedKind === 'selection_fragment' || expectedKind === 'input_mutation' ? 16 * 1024 * 1024 : SELECTION_REPLY_BYTES;
     if (typeof raw !== 'string' || raw.length > maximum || new TextEncoder().encode(raw).byteLength > maximum) throw new DataError('sdk.invalid_response');
     const parsed: unknown = JSON.parse(raw);
     const value = ownData(parsed, 16 * 1024 * 1024).value;
     if (!object(value) || !(value.status === 'ok'
-      ? shape(value, { status: literal('ok'), value: v => reply(v) || selectionText(v) || textWindow(v) || clipboardContext(v) || selectionFragment(v) })
+      ? shape(value, { status: literal('ok'), value: v => reply(v) || selectionText(v) || textWindow(v) || clipboardContext(v) || selectionFragment(v)
+        || expectedKind === 'input_mutation' && inputMutation(v) })
       : shape(value, { status: literal('refused', 'fatal'), diagnostic }))) throw new DataError('sdk.invalid_response');
     if (value.status === 'ok' && object(value.value) && value.value.kind === 'text_window'
       && new TextEncoder().encode(raw).byteLength > TEXT_WINDOW_REPLY_BYTES) throw new DataError('sdk.invalid_response');

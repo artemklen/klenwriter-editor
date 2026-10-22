@@ -10,6 +10,7 @@ pub mod candidate;
 pub mod commands;
 pub mod document;
 pub mod history;
+pub mod input;
 pub mod json;
 pub mod limits;
 pub mod positions;

@@ -1,0 +1,346 @@
+{
+  "format": "osr48-generic-result-source-oracles/1",
+  "status": "SOURCE_AUTHORED_BEFORE_IMPLEMENTATION_NOT_EXECUTED",
+  "at": "2026-10-22T00:36:00.436517+00:00",
+  "acceptedBase": "753c77aadd5215a5a5f81448b71d45d17d77f85e",
+  "governingContractSha256": "912c79b9052840427045f1e395880eb98ae301a84ab152c615758999274576a7",
+  "scope": "Controlled compiled generic fixture only; no CMS/KWDJ matcher, not domain/native/sealed/installed acceptance. Symbolic birth roles assert actual operation references and native normalization, not numeric ID predictions. Existing frozen tests untouched.",
+  "baseline": {
+    "tree": {
+      "role": "root",
+      "children": [
+        {
+          "role": "P",
+          "type_id": "fixture/block",
+          "primitive": "text_block",
+          "children": []
+        }
+      ]
+    },
+    "selection": {
+      "anchor": {
+        "kind": "child",
+        "parent": "P",
+        "index": 0,
+        "affinity": "after"
+      },
+      "focus": {
+        "kind": "child",
+        "parent": "P",
+        "index": 0,
+        "affinity": "after"
+      }
+    },
+    "stored_marks": null,
+    "revision": 0,
+    "selection_epoch": 1,
+    "history_epoch": 0,
+    "undo_units": 0,
+    "redo_units": 0
+  },
+  "defaultPlan": {
+    "original": {
+      "origin": "ordinary_insert_text",
+      "text": "X",
+      "selection": "exact baseline directed selection"
+    },
+    "before": {
+      "block": "P",
+      "range": "exact baseline range"
+    },
+    "net": "one ReplaceInlineFragment inserting fixture/text Y",
+    "after_user_range": "Created(operation=0,path=[0]) offsets0..1",
+    "raw_restore": {
+      "raw": "fixture/text X",
+      "raw_caret_utf16": 1,
+      "raw_stored_marks": null
+    },
+    "history_hint": "isolated"
+  },
+  "cases": [
+    {
+      "id": "GR01",
+      "purpose": "actual created result identity, empty Child source",
+      "baseline": {
+        "tree": {
+          "role": "root",
+          "children": [
+            {
+              "role": "P",
+              "type_id": "fixture/block",
+              "primitive": "text_block",
+              "children": []
+            }
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "child",
+            "parent": "P",
+            "index": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "parent": "P",
+            "index": 0,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "revision": 0,
+        "selection_epoch": 1,
+        "history_epoch": 0,
+        "undo_units": 0,
+        "redo_units": 0
+      },
+      "plan": {
+        "original": {
+          "origin": "ordinary_insert_text",
+          "text": "X",
+          "selection": "exact baseline directed selection"
+        },
+        "before": {
+          "block": "P",
+          "range": "exact baseline range"
+        },
+        "net": "one ReplaceInlineFragment inserting fixture/text Y",
+        "after_user_range": "Created(operation=0,path=[0]) offsets0..1",
+        "raw_restore": {
+          "raw": "fixture/text X",
+          "raw_caret_utf16": 1,
+          "raw_stored_marks": null
+        },
+        "history_hint": "isolated"
+      },
+      "expected": {
+        "status": "changed",
+        "canonical_roles": [
+          "P",
+          "NEW_TEXT:Y"
+        ],
+        "after_selection": "NEW_TEXT@1/after collapsed",
+        "after_range": "NEW_TEXT@0..1",
+        "after_spans": [
+          {
+            "node": "NEW_TEXT",
+            "from_utf16": 0,
+            "to_utf16": 1,
+            "text": "Y",
+            "type_id": "fixture/text",
+            "attributes": {},
+            "marks": []
+          }
+        ],
+        "raw": "X",
+        "revision": 1,
+        "selection_epoch": 2,
+        "history_epoch": 1,
+        "undo_units": 1,
+        "redo_units": 0,
+        "document_publications": 1
+      }
+    },
+    {
+      "id": "GR02",
+      "purpose": "Created ID retired by real normalization suffix",
+      "baseline_override": "P contains original T=\"A\", caret T@1",
+      "plan_override": "GR01 insertion at T@1; compiled fixture normalization joins T and NEW_TEXT",
+      "expected": {
+        "canonical_roles": [
+          "P",
+          "T:AY"
+        ],
+        "survives": [
+          "P",
+          "T"
+        ],
+        "retired": [
+          "NEW_TEXT"
+        ],
+        "after_range": "T@1..2",
+        "after_spans": [
+          {
+            "node": "T",
+            "from_utf16": 1,
+            "to_utf16": 2,
+            "text": "Y"
+          }
+        ],
+        "after_selection": "T@2 collapsed",
+        "document_publications": 1,
+        "history_units": 1
+      }
+    },
+    {
+      "id": "GR03",
+      "purpose": "original user EGC endpoint cannot be laundered by widened safe endpoints",
+      "baseline_override": "P/T text e+U0301; scalar-admitted caret T@1",
+      "plan_override": "declare original T@1 but net range T@0..2 and cooked Y",
+      "expected": {
+        "status": "refused_original_grapheme_endpoint",
+        "all_native_facets_unchanged": true,
+        "result": null,
+        "document_publications": 0,
+        "forced_literal_calls": 0
+      }
+    },
+    {
+      "id": "GR04",
+      "purpose": "declared original range differs from actual selection",
+      "plan_override": "GR01 original selection at another admitted gap",
+      "expected": {
+        "status": "refused_invalid_input_result",
+        "all_native_facets_unchanged": true,
+        "result": null
+      }
+    },
+    {
+      "id": "GR05",
+      "purpose": "declared final range does not cover the actual splice",
+      "baseline_override": "P contains T=\"AB\", caret T@1",
+      "plan_override": "insert Y at T@1 but after_range declares untouched T@0..1",
+      "expected": {
+        "status": "refused_invalid_input_result",
+        "all_native_facets_unchanged": true,
+        "result": null
+      }
+    },
+    {
+      "id": "GR06",
+      "purpose": "pure preview never exposes/mints result or publishes",
+      "operation": "query_input_command with GR01 plan twice",
+      "expected": {
+        "available": true,
+        "effect": "changed",
+        "public_result_field_absent": true,
+        "all_native_facets_unchanged": true,
+        "document_publications": 0,
+        "next_real_create_matches_fresh_control": true
+      }
+    },
+    {
+      "id": "GR07",
+      "purpose": "local raw/cooked cap forces one literal preparation without matcher replay",
+      "plan_override": "GR01 raw restore text 13 ASCII bytes (hard cap12)",
+      "expected": {
+        "status": "changed",
+        "canonical_text": "X",
+        "result": null,
+        "rules_allowed_calls": 1,
+        "literal_only_calls": 1,
+        "document_publications": 1,
+        "history_units": 1,
+        "spent_work_includes_both_preparations": true
+      }
+    },
+    {
+      "id": "GR08",
+      "purpose": "global exhaustion is never optional bypass",
+      "operation": "GR01 with global meter insufficient for preparation",
+      "expected": {
+        "status": "refused_global_limit",
+        "all_native_facets_unchanged": true,
+        "result": null,
+        "literal_only_calls": 0
+      }
+    },
+    {
+      "id": "GR09",
+      "purpose": "late result local failure keeps the same spent meter",
+      "controlled_fixture": "first rule candidate reaches final result-local capacity failure; literal branch is separately bounded and fits remaining global budget",
+      "expected": {
+        "status": "changed",
+        "canonical_text": "X",
+        "result": null,
+        "rules_allowed_calls": 1,
+        "literal_only_calls": 1,
+        "document_publications": 1,
+        "history_units": 1,
+        "work_not_reset": true
+      }
+    },
+    {
+      "id": "GR10",
+      "purpose": "ReadOnly/native mode guard",
+      "operation": "GR01 in ReadOnly Session",
+      "expected": {
+        "status": "refused_read_only",
+        "result": null,
+        "all_native_facets_unchanged": true
+      }
+    },
+    {
+      "id": "GR11",
+      "purpose": "old entry cannot discard an input result",
+      "operation": "ordinary execute_command/query_command on a fixture intent which emits GR01 result",
+      "expected": {
+        "execute": "refused_input_route_required",
+        "query": "unavailable_input_route_required",
+        "all_native_facets_unchanged": true,
+        "result": null
+      }
+    },
+    {
+      "id": "GR12",
+      "purpose": "unopted profile has no new input authority",
+      "operation": "input entry on default supports_input_command=false provider",
+      "expected": {
+        "execute": "refused_input_unsupported",
+        "query": "unavailable_input_unsupported",
+        "prepare_calls": 0,
+        "all_native_facets_unchanged": true
+      }
+    },
+    {
+      "id": "GR13",
+      "purpose": "fixed isolated history cannot join a preceding typing unit",
+      "operation": "GR01 supplied with Typing hint",
+      "expected": {
+        "history_policy": "input route admits only isolated; reject nonisolated request",
+        "status": "refused",
+        "all_native_facets_unchanged": true
+      }
+    },
+    {
+      "id": "GR14",
+      "purpose": "correspondence-only transformation has no raw reversal",
+      "plan_override": "GR01 raw_restore=None",
+      "expected": {
+        "status": "changed",
+        "result_kind": "text_replacement",
+        "after_text": "Y",
+        "raw_restore": null,
+        "history_units": 1,
+        "document_publications": 1
+      }
+    },
+    {
+      "id": "GR15",
+      "purpose": "global failure in forced-literal branch refuses entire command",
+      "controlled_fixture": "rule candidate consumes work then local result limit; LiteralOnly also exhausts remaining global work",
+      "expected": {
+        "status": "refused_global_limit",
+        "all_native_facets_unchanged": true,
+        "rules_allowed_calls": 1,
+        "literal_only_calls": 1,
+        "document_publications": 0,
+        "result": null
+      }
+    },
+    {
+      "id": "GR16",
+      "purpose": "restore/unchanged results never mint another descriptor",
+      "operation": "supported fixture input command returns literal unchanged or restoration plan with no requested result",
+      "expected": {
+        "result": null,
+        "no_retained_session_receipt_slot": true,
+        "unchanged_document_publications": 0,
+        "restoration_changed_publications": 1,
+        "restoration_own_history_unit": true
+      }
+    }
+  ],
+  "caseCount": 16,
+  "executions": 0
+}

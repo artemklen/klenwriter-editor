@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-import type { DeepReadonly, EventDto, PositionDto, ReadRequest, Response, SelectionDto, SessionContextV2, StampDto, StateDto, Submission } from '@klenwriter/editor-sdk';
-import type { BookmarkCapture, BookmarkRestore, DomRefusal, MountedMutation, MountedSelectionController, SelectionBookmark, SelectionResourceCounts } from './types.js';
+import type { DeepReadonly, EventDto, InputSubmissionV2, PositionDto, ReadRequest, Response, SelectionDto, SessionContextV2, StampDto, StateDto, Submission } from '@klenwriter/editor-sdk';
+import type { BookmarkCapture, BookmarkRestore, DomRefusal, MountedMutation, MountedMutationV2, MountedSelectionController, SelectionBookmark, SelectionResourceCounts } from './types.js';
 import type { DomPoint, DomView } from './view.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
 import { fields } from './ownership.js';
@@ -72,7 +72,7 @@ export class SelectionOwner {
   }
   /** Actual remount only: the old held gesture cannot supply a fresh-view caret. */
   viewReplaced():void { if(!this.#destroyed && this.#heldMouse!==null)this.#retiredViewImport=true; }
-  beginSubmission(request:MountedMutation,input:boolean):SubmissionFrame {
+  beginSubmission(request:MountedMutationV2,input:boolean):SubmissionFrame {
     const own=this.#ownPermit>0;if(own)this.#ownPermit--;
     for(const frame of this.#frames)frame.reentrant=true;
     const harmless=['snapshot','release_snapshot'].includes(request.kind);
@@ -81,7 +81,7 @@ export class SelectionOwner {
     if(!own && !eligible && !harmless)this.invalidate();
     const frame:SubmissionFrame={own,eligible,serial:this.#serial,before:this.configuration.capture(),context:this.configuration.context(),events:0,reentrant:false,foreign:false,publications:0,publication:null,knownInvalidations:0,ended:false};this.#frames.push(frame);return frame;
   }
-  endSubmission(frame:SubmissionFrame,result:Submission|DomRefusal):void {
+  endSubmission(frame:SubmissionFrame,result:InputSubmissionV2|DomRefusal):void {
     const current=this.#frames.pop();
     if(current!==frame){this.invalidate();this.#frames=[];return;}
     if(frame.eligible && (frame.reentrant || frame.events!==1 || frame.serial!==this.#serial || isDomRefusal(result) || result.status!=='completed' || result.response.status!=='ok')){
@@ -121,7 +121,7 @@ export class SelectionOwner {
     return Object.freeze({selection:bookmark.selection,stamp:state.stamp,context,serial});
   }
   /** Only an original synchronous frame can mint this private, one-use permit. */
-  resultFocusPermit(frame:SubmissionFrame,result:Submission|DomRefusal):ResultFocusPermit|null {
+  resultFocusPermit(frame:SubmissionFrame,result:InputSubmissionV2|DomRefusal):ResultFocusPermit|null {
     if(!frame.ended || !frame.eligible || frame.reentrant || frame.foreign || !this.intentAvailable() || isDomRefusal(result) || result.status!=='completed' || result.response.status!=='ok' || result.response.value.kind!=='mutation')return null;
     const state=result.response.value.state,expected=frame.serial+BigInt(frame.knownInvalidations);
     if(expected>MAX_SERIAL || this.#serial!==expected || !same(frame.context,this.configuration.context()) || !frame.context || !same(state.stamp,this.configuration.capture()))return null;

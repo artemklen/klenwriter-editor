@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-import type { DeepReadonly, ResponseV2, SessionContextV2, StampDto, StateDto, Submission } from '@klenwriter/editor-sdk';
-import type { DomRefusal, MountedInputObservations, MountedMutation, OrdinaryInputObservation, OrdinaryInputType } from './types.js';
+import type { DeepReadonly, InputSubmissionV2, ResponseV2, SessionContextV2, StampDto, StateDto } from '@klenwriter/editor-sdk';
+import type { DomRefusal, MountedInputObservations, MountedMutationV2, OrdinaryInputObservation, OrdinaryInputType } from './types.js';
 import { domRefusal } from './refusal.js';
 
 interface Configuration {
@@ -27,7 +27,7 @@ export class InputObservationOwner {
   #observers = new Set<Observer>();
   #epoch: object = {};
   #delivery = false;
-  #expected: MountedMutation | null = null;
+  #expected: MountedMutationV2 | null = null;
   #claimed = false;
   constructor(configuration: Configuration) {
     this.#configuration = configuration;
@@ -63,20 +63,20 @@ export class InputObservationOwner {
       before:state.stamp,after:state.stamp,context,selectionBefore:state.selection,selectionAfter:state.selection,beforeWindow }) };
   }
   /** Only this exact private request can be the original observation's dispatch. */
-  submission<T>(capture: OrdinaryInputCapture | null, request: MountedMutation, dispatch: () => T): T {
+  submission<T>(capture: OrdinaryInputCapture | null, request: MountedMutationV2, dispatch: () => T): T {
     const previous = this.#expected, claimed = this.#claimed;
     this.#expected = capture?.epoch === this.#epoch ? request : null; this.#claimed = false;
     try { return dispatch(); }
     finally { this.#expected = previous; this.#claimed = claimed; }
   }
-  forward(request: MountedMutation): void {
+  forward(request: MountedMutationV2): void {
     if (this.#expected === request && !this.#claimed) this.#claimed = true;
     else this.invalidate(); // Includes same-stamp/no-op and refused reentrant attempts.
   }
-  after(capture: OrdinaryInputCapture | null, result: Submission | DomRefusal): void {
+  after(capture: OrdinaryInputCapture | null, result: InputSubmissionV2 | DomRefusal): void {
     const c = this.#configuration;
     if (!capture || !c || this.#delivery || capture.epoch !== this.#epoch || result.status !== 'completed'
-      || result.response.status !== 'ok' || result.response.value.kind !== 'mutation' || result.response.value.effect !== 'changed') return;
+      || result.response.status !== 'ok' || result.response.value.kind !== 'mutation'&&result.response.value.kind!=='input_mutation' || result.response.value.effect !== 'changed') return;
     const state = result.response.value.state;
     const fresh = () => this.#configuration === c && capture.epoch === this.#epoch && !c.guard()
       && same(capture.event.context,c.context()) && same(state.stamp,c.capture()) && c.corresponds(state);

@@ -1,0 +1,176 @@
+{
+  "format": "osr48-rules-contract-proposal/1",
+  "status": "PROPOSAL_NOT_IMPLEMENTATION_OR_ACCEPTANCE",
+  "baseSource": "753c77aadd5215a5a5f81448b71d45d17d77f85e",
+  "authority": "D14 plus exact four-rule CMS source. EN defaults and added link/limit/history policies are new source-authored proposals.",
+  "standaloneDefault": null,
+  "configuration": {
+    "shape": {
+      "version": 1,
+      "locale": "ru | en",
+      "rules": "null for locale defaults, or unique subset of locale-supported fixed rule names",
+      "limits": "null for defaults, or complete fixed numeric object bounded 0..hardCeiling"
+    },
+    "localeTags": [
+      "ru",
+      "en"
+    ],
+    "normalization": "No BCP47 expansion, casefold, UI/input-layout inference or text language detection. Unknown locale/version/field/duplicate ID rejects at open, not silent fallback.",
+    "ruDefault": [
+      "spaced_em_dash",
+      "double_quotes",
+      "cyrillic_nbsp"
+    ],
+    "enDefault": [
+      "spaced_em_dash",
+      "double_quotes"
+    ],
+    "ruleOrder": "fixed canonical spaced_em_dash, opening_double_quote, closing_double_quote, cyrillic_nbsp; host subsets cannot reorder",
+    "ruAllowedSubsets": 8,
+    "enAllowedSubsets": 4,
+    "cyrillicNbspEn": "not supported; explicit inclusion rejects",
+    "emptySubset": "literal typed input; no reversal receipt",
+    "frozen": "Effective configuration participates in immutable per-session capability identity; new locale/rules require explicit new session and preserved dirty/composition recovery."
+  },
+  "ruRules": {
+    "spaced_em_dash": {
+      "before": "S immediately followed by two existing U+002D",
+      "trigger": "S",
+      "result": "same preceding S + U+2014 + same original whitespace trigger scalar",
+      "replace": "two existing hyphens plus original trigger; preceding S unchanged",
+      "S": "exact ECMAScript2026 whitespace set below",
+      "specialBackspace": true
+    },
+    "double_quotes": {
+      "trigger": "U+0022",
+      "openingContext": "logical inline line start OR one preceding code point in S or ( [ { U+2014 U+2013 U+002D U+002F U+FFFC",
+      "openingResult": "U+00AB",
+      "otherwise": "U+00BB",
+      "nesting": "No balancing/stack/pairing or recursive quote convention",
+      "specialBackspace": true
+    },
+    "cyrillic_nbsp": {
+      "prefix": "start OR S OR sentinel U+FFFC; then one C, then literal U+0020",
+      "trigger": "one C",
+      "C": "U+0410..U+042F, U+0430..U+044F, U+0401, U+0451",
+      "result": "preserve preceding one-letter C, replace following U+0020 by U+00A0, retain trigger C",
+      "specialBackspace": false
+    }
+  },
+  "enRules": {
+    "status": "NEW_REVERSIBLE_CONTRACT_NO_CMS_PARITY_SOURCE",
+    "spaced_em_dash": "Identical finite spaced_em_dash transform and whitespace retention as RU.",
+    "double_quotes": "Identical opening-context predicate and fallback, but opening U+201C and closing U+201D.",
+    "excluded": "No apostrophe/single-quote, ellipsis, English one-letter glue, dash-style inference or quotation balancing."
+  },
+  "whitespace": {
+    "source": "Official ECMAScript2026 WhiteSpace + LineTerminator; explicit Zs members from Unicode17 category data. This finite set is independently inferred from primary tables, not runtime regex output.",
+    "codepointsHex": [
+      "0009",
+      "000A",
+      "000B",
+      "000C",
+      "000D",
+      "0020",
+      "00A0",
+      "1680",
+      "2000",
+      "2001",
+      "2002",
+      "2003",
+      "2004",
+      "2005",
+      "2006",
+      "2007",
+      "2008",
+      "2009",
+      "200A",
+      "2028",
+      "2029",
+      "202F",
+      "205F",
+      "3000",
+      "FEFF"
+    ],
+    "count": 25,
+    "notMembersHex": [
+      "0085",
+      "180E",
+      "200B",
+      "200C",
+      "200D",
+      "2060"
+    ],
+    "noNormalization": "Do not call trim/is_whitespace or normalize scalars; preserve same actual whitespace trigger and all outside code points."
+  },
+  "eligibility": {
+    "ordinaryInsertText": "Exact one Unicode scalar (1 or2 UTF16 units) under existing verified ordinary owner; semantic trigger rules use BMP scalars. No splitting.",
+    "noncancelableInsertText": "Same exact1scalar only after original raw DOM delta has been bounded and verified; distinct declared origin, same single final native plan.",
+    "insertReplacementText": "Literal even if exact1scalar; distinguish autocorrect/substitution intent.",
+    "bulkOrEmptyPayload": "Literal, including multi-scalar final composition and combining sequences; no scalar-by-scalar simulation.",
+    "selectionReplacement": "Single-scalar insertText may replace a directed same-block noncollapsed selection; original code/link checks and EGC endpoint admission apply before any widened lexical match. Cross-block typography bypasses literal without changing underlying native insertion admission.",
+    "compositionFinal": "Only original OSR41 verified non-unchanged final claim, exact1scalar replacement, original range/stamp/context/ticket/deadline. No preedit matching, no end-event observer or second command.",
+    "compositionUnchangedOrOldEndOnly": "Original OSR41 zero-publication handling; no typography repair of already committed text. T15 content tested through an explicitly translated admitted final quote intent.",
+    "literalOrigins": [
+      "paste",
+      "drop",
+      "import",
+      "export",
+      "programmatic literal insert_text",
+      "explicit literal host intent",
+      "history replay"
+    ],
+    "protectedContexts": "Literal bypass when active/current/stored insertion marks, any original selected span, any inspected matched prefix/suffix, or enclosing literal/code context has code/link/reference_link. No mark stripping or DOM rule mutation.",
+    "marks": "Existing predecessor scalars keep their original per-span marks. EmDash inherits the FIRST existing hyphen marks; NBSP inherits the replaced SPACE marks; the newly typed trigger keeps the original native insertion/current stored marks. Mixed styles alone do not bypass if the bounded flat fragment is representable. Protected code/link anywhere in original range or inspected suffix still bypasses literal. If cap/unrepresentable fragment prevents exact preservation, literal explicit bypass; never flatten or silently drop styling.",
+    "sentinels": "HardBreak and inline atom are lexical U+FFFC boundaries; may supply opening context / preceding word boundary only. Never edit, delete, enter or match text across an atom, hard break or TextBlock boundary."
+  },
+  "numericCapsProposal": {
+    "inputEligibleScalars": 1,
+    "inputEligibleUtf16": 2,
+    "inputEligibleUtf8": 4,
+    "lookbehindScalars": 3,
+    "lookbehindUtf16": 6,
+    "lookbehindUtf8": 12,
+    "lookbehindOwnedBufferBytes": 16,
+    "inlineSlotsVisited": 32,
+    "ancestorDepth": 32,
+    "originalSelectedGuardScalars": 4096,
+    "originalSelectedGuardUtf8": 16384,
+    "originalSelectedGuardInlineNodes": 256,
+    "markRecordsInspected": 1024,
+    "lexicalWorkUnits": 32768,
+    "lexicalWorkBytes": 65536,
+    "reversalSlots": 1,
+    "reversalRawUtf8": 12,
+    "reversalCookedUtf8": 12,
+    "reversalPayloadMetadataBytes": 4096,
+    "rationale": "Longest lexical predicate needs boundary+C+SPACE or S-- (3scalars); quote needs1. Structural/guard caps are explicit operational limits for optional typography, not new normative KWDJ admission ceilings. Small local buffers plus bounded metadata prevent whole-document copying. Numeric guard/work values are source-first conservative proposals, not benchmark-backed SLA."
+  },
+  "budgetPolicy": {
+    "staticIneligible": "Literal path, explicit bypass classification if observation is requested. Never publish a transformation then undo it.",
+    "localTypographyCap": "Stop lexical/guard work immediately; record bypass.limit and plan the original literal insertion once under the SAME still-spent global meter. No regex retry, alternate matcher, truncation or fresh meter.",
+    "globalWorkAllocationCounterOrNativeAdmissionFailure": "Existing typed atomic refusal preserving model/history/revision; retain original raw ordinary/composition input through existing recovery owner. No fallback retry on a reset budget.",
+    "receiptCapacityBeforePublication": "If quote/dash reversal authority cannot be reserved within its cap before publication, choose explicit literal bypass. Never publish a rule effect without its promised immediate reversal capability.",
+    "hostLimits": "0..ceiling numeric lowering-only; unknown/missing/wrong-type/out-of-range config refused before session creation. Engine hard limits remain unchanged."
+  },
+  "historyAndBackspaceProposal": {
+    "ordinaryRuleCommit": "One isolated atomic trigger+rule unit; ordinary Undo restores exact pre-trigger state, not raw inserted trigger. Redo restores cooked state; intermediate raw insertion never published.",
+    "specialReversal": "Quote/dash only. One next eligible deleteContentBackward with exact native receipt/generation/revision/selection/history/context restores exact raw trigger result as one isolated unit, consumes receipt. No text-pattern guessing or exposed unrestricted inverse command.",
+    "specialReversalHistory": "New proposed policy: Undo of reversal returns cooked state; second Undo restores pre-trigger state. Two Redo restore cooked then raw. No rearming by replay. CMS T07 proves raw text restoration only, not this full history policy.",
+    "invalidators": [
+      "intervening input intent or rule",
+      "selection/context movement",
+      "focus loss",
+      "access/mode change",
+      "explicit external replacement",
+      "history operation",
+      "new generation/remount",
+      "composition start",
+      "stale/fatal/closed/disposed result"
+    ],
+    "nbsp": "No special reversal receipt. Ordinary Backspace from в<U+00A0>л deletes л to в<U+00A0>; ordinary Undo restores it, earlier rule-unit Undo restores в<U+0020>. T08 original assertion is undoInputRule=false, not physical Backspace proof.",
+    "unmodifiedLiteralSmartQuotes": "No receipt; ordinary deletion. Same text is not original-input authority.",
+    "receiptPayload": "Only the transformed existing suffix scalars (two hyphens or SPACE as applicable), their exact original marks, the original typed trigger and native provenance tokens. Never store copied deleted selection text as rule receipt; raw reversal preserves deletion. Ordinary undo already owns original deleted selection in history.",
+    "rawMarks": "Dash raw reversal restores two hyphens with EACH original mark vector, plus original typed whitespace with native insertion marks. Quote raw reversal restores U+0022 with original insertion marks. NBSP has no special reversal."
+  }
+}

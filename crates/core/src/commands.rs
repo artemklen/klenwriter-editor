@@ -4,6 +4,10 @@
 use crate::admission::{PreflightBudget, preflight_node_fields};
 use crate::candidate::CandidateRead;
 use crate::document::{Attributes, Mark};
+pub use crate::input::{
+    InputCommandPolicy, InputOrigin, InputOriginal, InputSourceRegion, InputTextRun,
+    RawInputRestorePlan, TextReplacementPlan,
+};
 use crate::limits::{LimitExceeded, check};
 use crate::positions::{Position, Selection};
 use crate::transaction::{Operation, TransactionProfile, WorkMeter};
@@ -141,6 +145,7 @@ pub struct CommandPlan<I> {
     pub operations: Vec<Operation<LocalRef<I>>>,
     pub selection: SelectionIntent<I>,
     pub stored_marks: StoredMarksUpdate,
+    pub input_result: Option<TextReplacementPlan<I>>,
 }
 
 pub struct PlanBuilder<'a, I> {
@@ -224,6 +229,7 @@ impl<'a, I> PlanBuilder<'a, I> {
                 operations: Vec::new(),
                 selection: SelectionIntent::MapCurrent,
                 stored_marks: StoredMarksUpdate::Keep,
+                input_result: None,
             },
         }
     }
@@ -316,6 +322,23 @@ impl<'a, I> PlanBuilder<'a, I> {
         self.plan.stored_marks = marks;
         Ok(())
     }
+    /// At most one closed input result. All owned payloads must already have
+    /// been charged through this builder's meter; the engine checks final
+    /// representation and actual frame correspondence before publication.
+    pub fn set_input_result(
+        &mut self,
+        result: TextReplacementPlan<I>,
+    ) -> Result<(), LimitExceeded> {
+        check(
+            "input_result_count",
+            1,
+            u64::from(self.plan.input_result.is_some()) + 1,
+        )?;
+        position(&result.after_range.anchor, self.len(), self.work)?;
+        position(&result.after_range.focus, self.len(), self.work)?;
+        self.plan.input_result = Some(result);
+        Ok(())
+    }
     pub fn finish(self) -> CommandPlan<I> {
         self.plan
     }
@@ -331,6 +354,23 @@ pub trait CommandProvider: TransactionProfile {
         CommandCatalog::Static(Self::COMMANDS)
     }
     fn command_id<I: Copy + Eq + Ord>(intent: &Self::Intent<I>) -> &str;
+    /// New input transport is explicitly opted in by the immutable profile.
+    fn supports_input_command<I: Copy + Eq + Ord>(&self, _intent: &Self::Intent<I>) -> bool {
+        false
+    }
+    /// LiteralOnly is a single fallback preparation after an optional local
+    /// result limit; it must not rerun matching or restore a raw descriptor.
+    fn prepare_input_command<V: CandidateRead>(
+        &self,
+        context: &Self::Context,
+        view: &V,
+        state: CommandState<'_, V::Id>,
+        intent: &Self::Intent<V::Id>,
+        _policy: InputCommandPolicy,
+        plan: &mut PlanBuilder<'_, V::Id>,
+    ) -> Result<CommandPresentation, Self::Error> {
+        self.prepare_command(context, view, state, intent, plan)
+    }
     fn prepare_command<V: CandidateRead>(
         &self,
         context: &Self::Context,

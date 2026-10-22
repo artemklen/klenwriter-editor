@@ -1,0 +1,181 @@
+{
+  "format": "osr48-rules-proposal-provenance/1",
+  "status": "PROPOSED_SOURCE_ONLY_NOT_EXECUTED_NOT_FROZEN",
+  "editorSource": "753c77aadd5215a5a5f81448b71d45d17d77f85e",
+  "editorInputPins": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 1057,
+      "sha256": "a2fd2a6c0c6c6cce32d7e8b3729af27f1844a76239cb98f853b8f94a297d8a08"
+    },
+    {
+      "path": "docs/m0/decision-register.md",
+      "bytes": 7863,
+      "sha256": "fc16398aa4f028386588db64d36f14f6a7a4e7c157eeddfd77159038e80e67f3"
+    },
+    {
+      "path": "docs/m0/licensing.md",
+      "bytes": 1553,
+      "sha256": "326ed2228ed650e1fd3f3c2ee41275638c50a90da1f0c708bf68e8a9def1d1e9"
+    },
+    {
+      "path": "docs/history.md",
+      "bytes": 9823,
+      "sha256": "0763ef034a1b71d1417d7bcabc1d6604f1039bd624e2b92a8297a4b94eed8a07"
+    },
+    {
+      "path": "NOTICE",
+      "bytes": 394,
+      "sha256": "7feeb0954dc5809445f766fa8e8b339c2b65387d8c61ff675a09800329b3c4c0"
+    },
+    {
+      "path": "crates/kwdj/src/commands/inline.rs",
+      "bytes": 58026,
+      "sha256": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394"
+    },
+    {
+      "path": "crates/kwdj/src/session_profile.rs",
+      "bytes": 18600,
+      "sha256": "2070bc7817ec319a7834f6cdabf61e6f6d97e37196e7d7ed2fb82ff5b4d6ba00"
+    },
+    {
+      "path": "crates/kwdj-sdk/src/factory.rs",
+      "bytes": 36334,
+      "sha256": "1d142f4ec3bf0c082be2a8948b14f5f510eb7f5e67efc21ff5dd6f6e562dfc3a"
+    },
+    {
+      "path": "crates/core/src/transaction.rs",
+      "bytes": 15693,
+      "sha256": "cd9ce8db37da0d27477813d05a3166d18a9f858ac6c5316091c0e61c2da0fb8f"
+    },
+    {
+      "path": "packages/dom/src/input.ts",
+      "bytes": 21249,
+      "sha256": "3a31571a82dc2ce99b0d5eee5c0ffda2f4db339db10d072c0b1d0183f6c5c974"
+    },
+    {
+      "path": "packages/dom/src/composition.ts",
+      "bytes": 33657,
+      "sha256": "6e0446e8df07b754134df3de1c0eb86ceaa6db260054bc432fea2fb0a16b3d30"
+    },
+    {
+      "path": "packages/kwdj/src/dom.ts",
+      "bytes": 15258,
+      "sha256": "f6e401845c3430a719221d71885bd3b6a565f35d6439826ebe3ef9450e60865e"
+    },
+    {
+      "path": "crates/engine/src/tree.rs",
+      "bytes": 201395,
+      "sha256": "4233b804998db59c7e161ac5617b4ac94ad15149eb43ef824c873a8d967459a4"
+    },
+    {
+      "path": "crates/engine/src/mapping.rs",
+      "bytes": 46845,
+      "sha256": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54"
+    },
+    {
+      "path": "crates/engine/src/dispatch.rs",
+      "bytes": 38680,
+      "sha256": "5017e79529653e0d8ba36847918550e58cd7c7a70c00f69ef367aab234fcba21"
+    },
+    {
+      "path": "crates/engine/src/history.rs",
+      "bytes": 56430,
+      "sha256": "43a28d7fc3e48138d71f4e0cb2889a572fa25dc545b39e6a0e793ae6d610382d"
+    },
+    {
+      "path": "crates/kwdj/src/edit_normalize.rs",
+      "bytes": 41095,
+      "sha256": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a"
+    },
+    {
+      "path": "crates/core/src/commands.rs",
+      "bytes": 19966,
+      "sha256": "92341438525be377ba6fb08bc030d5f6350e36d78fb869058e89612f2fa0b23a"
+    },
+    {
+      "path": "contracts/dom/v1/expected/T05-formatted-EGC.canonical.json",
+      "bytes": 247,
+      "sha256": "2a1ac6c540b4bda25bc3a296ca7d06a702054e0d50f071558356bd9e0469c9a8"
+    },
+    {
+      "path": "contracts/dom/v1/expected/T03-initial.canonical.json",
+      "bytes": 225,
+      "sha256": "5e41257c95e7119ac1e8dac3d390abd5ea5a85855d0fb12a47f9956a23513c1e"
+    },
+    {
+      "path": "contracts/history/v1/vectors.json",
+      "bytes": 44902,
+      "sha256": "22882d577677eb409172ba33ae675bc2e3754dcda2c8198f0c4468e719f07a08"
+    },
+    {
+      "path": "contracts/commands/v1/vectors.json",
+      "bytes": 80586,
+      "sha256": "1a067f1ca197ccc1aa7a4689e950db250973c269314bf3d38d143b97c248cb3f"
+    },
+    {
+      "path": "LICENSE-MIT",
+      "bytes": 1087,
+      "sha256": "a80b52ad3f732a8d1c1698433d0133f28ab6b676b9f3277ef94cbdc39cf7d046"
+    },
+    {
+      "path": "LICENSE-APACHE",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "NOTICE",
+      "bytes": 394,
+      "sha256": "7feeb0954dc5809445f766fa8e8b339c2b65387d8c61ff675a09800329b3c4c0"
+    }
+  ],
+  "cmsSelectedSource": "07f2f565877d127abb001f1efe538dec854c6c0e",
+  "cmsHistoricalSource": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+  "cmsBaselineEqualsHistorical": true,
+  "cmsSourcePins": [
+    {
+      "path": "frontend/admin-spa/src/app/editor/typing-typography.ts",
+      "capturedPath": "/tmp/osr48-cms-typography-baseline-readonly-01/current-master-typing-typography.ts",
+      "bytes": 3420,
+      "sha256": "0464e277aeb44f74cc92dee5f1fb7c91b2a59e81bdb91d537685f77630dde9cd"
+    },
+    {
+      "path": "frontend/admin-spa/src/app/editor/typing-typography.spec.ts",
+      "capturedPath": "/tmp/osr48-cms-typography-baseline-readonly-01/current-master-typing-typography.spec.ts",
+      "bytes": 7784,
+      "sha256": "affa250f355a08fc7da2956376622cc7a96cf79c0721faa976f3a6e15c845a9c"
+    }
+  ],
+  "baselineInventoryPin": {
+    "bytes": 15401,
+    "sha256": "fd68d74d9ae7aa40a953ffbe3290c1c69a8e92e74261423c49e54af7d59a23f2"
+  },
+  "d10d11": "Accepted owner-controlled source/synthetic-fixture transfer, MIT OR Apache-2.0; no blanket third-party or production-content grant.",
+  "headersReviewed": "Both saved CMS files have no SPDX/license header; implementation has KW-887 prose and imports @tiptap APIs. No third-party implementation is copied into this proposal.",
+  "lastScopedCmsChange": {
+    "commit": "6131a19d6d9aeeb7947168addb77fd596e98ebe2",
+    "authorName": "Claude",
+    "at": "2026-09-28T02:22:13Z",
+    "subject": "KW-887: review follow-ups — safe positions for multi-character input, code check over the whole range",
+    "qualification": "Read existing local Git object only. Author metadata is provenance, not an independent rights certificate. Owner D11 grant is the authority."
+  },
+  "officialSources": [
+    {
+      "title": "ECMAScript2026 lexical grammar §§12.2–12.3",
+      "url": "https://tc39.es/ecma262/2026/multipage/ecmascript-language-lexical-grammar.html#sec-white-space"
+    },
+    {
+      "title": "ECMAScript2026 CharacterClassEscape s",
+      "url": "https://tc39.es/ecma262/2026/multipage/text-processing.html#sec-runtime-semantics-compiletocharset"
+    },
+    {
+      "title": "Unicode17 PropList whitespace category data",
+      "url": "https://www.unicode.org/Public/17.0.0/ucd/PropList.txt"
+    }
+  ],
+  "noCmsRefetch": true,
+  "noRepositoryEdits": true,
+  "noTestsOrCandidateExecution": true,
+  "noLinearMutation": true,
+  "rootTechnicalChoices": "Root approved3 public feature IDs with paired quote rules; RU exact4 internal rules, EN quote/dash default. Root specified source-mark preservation per changed scalar. This is root-approved proposal detail, not runtime/AC acceptance."
+}

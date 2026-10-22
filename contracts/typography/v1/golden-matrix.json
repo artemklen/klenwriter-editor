@@ -1,0 +1,2797 @@
+{
+  "format": "osr48-source-first-golden-matrix/1",
+  "common": {
+    "status": "SOURCE_FIRST_LOGICAL_GOLDEN_MATRIX_PROPOSAL_NOT_EXECUTED_NOT_SEALED_NATIVE_ORACLE",
+    "generationMethod": "Authored exclusively from preserved source literals, D14 and explicit new policy. No editor/candidate/regex execution or output sampling.",
+    "sourceFixturesPreserved": 17,
+    "ruSubsetVectors": 8,
+    "enSubsetVectors": 4,
+    "allCasesRequire": {
+      "document": "Exact canonical/profile structure, untouched outside scalar sequence, marks/attrs/links/opaque node identities; new native full-object goldens must be authored separately, never copied from candidate output.",
+      "originalSelection": "Admit original directed UTF16/EGC endpoints before lexical widening. Reversed endpoints must yield same content with prescribed collapsed resulting caret.",
+      "expectedOrdinaryCommit": "When admitted nonempty insertion changes content: exactly1 document publication/revision step,1 isolated undo unit; new caret at end of inserted cooked or literal result. Empty collapsed insertion:0.",
+      "history": "One Undo to exact pre-trigger model/selection, one Redo to cooked/literal result. Special reversal histories use explicit rows.",
+      "resources": "Original native resources and receipt lifecycle checked separately, no retained receipt after invalidation/destroy; no full export/readback per key.",
+      "nativeIdentityBinding": "No fixture may substitute live candidate-generated IDs/canonical expected data. Before runtime, independent native author must bind existing source-contract allocator/normalizer identities or closed symbolic captures with explicit preservation/recreation predicates. This matrix deliberately does not pretend text-only CMS tests contain those unknown physical identities."
+    }
+  },
+  "caseCount": 192,
+  "groupCounts": {
+    "ATOMIC_REFUSAL": 10,
+    "BOUNDARY_SENTINEL": 2,
+    "CMS_SOURCE_PARITY_17": 17,
+    "COMPOSITION_TRANSLATION": 1,
+    "COMPOSITION_ZERO_PUBLICATION": 7,
+    "CONFIG_ADMISSION": 12,
+    "CONFIG_SUBSET": 12,
+    "EN_SCOPE_LITERAL": 3,
+    "HISTORY_AND_SPECIAL_BACKSPACE": 3,
+    "LIMIT_ACCOUNTING": 30,
+    "ORIGIN_LITERAL": 13,
+    "OUTSIDE_EXACT": 5,
+    "PRIMITIVE_SINGLE_SCALAR": 21,
+    "PROTECTED_LITERAL": 14,
+    "PURE_LEXICAL_CLASS": 31,
+    "RANGE_AND_MARKS": 2,
+    "REVERSAL_PROVENANCE": 9
+  },
+  "cases": [
+    {
+      "id": "CMS-T01",
+      "group": "CMS_SOURCE_PARITY_17",
+      "sourceAuthority": "07f2f565877d127abb001f1efe538dec854c6c0e:frontend/admin-spa/src/app/editor/typing-typography.spec.ts:71",
+      "exactOriginalFixture": {
+        "id": "CMS-T01",
+        "sourceLine": 71,
+        "name": "straight quotes around a word",
+        "setup": "empty prose paragraph",
+        "actions": [
+          {
+            "type": "Он сказал \"да\" и ушёл.",
+            "delivery": "one Unicode scalar per helper call"
+          }
+        ],
+        "expected": {
+          "text": "Он сказал «да» и ушёл."
+        },
+        "additionalAssertions": [],
+        "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+      },
+      "nativeAdaptation": "Author complete native state/identity/history bindings before candidate. Do not relabel old synthetic DOM trace as physical input; T15 has separate translated content and zero-op old-trace rows below.",
+      "expectedBehaviorStatus": "SOURCE_EXPECTATION_NOT_EXECUTED"
+    },
+    {
+      "id": "CMS-T02",
+      "group": "CMS_SOURCE_PARITY_17",
+      "sourceAuthority": "07f2f565877d127abb001f1efe538dec854c6c0e:frontend/admin-spa/src/app/editor/typing-typography.spec.ts:77",
+      "exactOriginalFixture": {
+        "id": "CMS-T02",
+        "sourceLine": 77,
+        "name": "opening quote at start/bracket/dash",
+        "setup": "empty prose paragraph",
+        "actions": [
+          {
+            "type": "\"Да\" (т. е. \"нет\") — \"может\""
+          }
+        ],
+        "expected": {
+          "text": "«Да» (т. е. «нет») — «может»"
+        },
+        "additionalAssertions": [],
+        "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+      },
+      "nativeAdaptation": "Author complete native state/identity/history bindings before candidate. Do not relabel old synthetic DOM trace as physical input; T15 has separate translated content and zero-op old-trace rows below.",
+      "expectedBehaviorStatus": "SOURCE_EXPECTATION_NOT_EXECUTED"
+    },
+    {
+      "id": "CMS-T03",
+      "group": "CMS_SOURCE_PARITY_17",
+      "sourceAuthority": "07f2f565877d127abb001f1efe538dec854c6c0e:frontend/admin-spa/src/app/editor/typing-typography.spec.ts:83",
+      "exactOriginalFixture": {
+        "id": "CMS-T03",
+        "sourceLine": 83,
+        "name": "spaced double hyphen",
+        "setup": "empty prose paragraph",
+        "actions": [
+          {
+            "type": "Москва -- столица"
+          }
+        ],
+        "expected": {
+          "text": "Москва — столица"
+        },
+        "additionalAssertions": [],
+        "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+      },
+      "nativeAdaptation": "Author complete native state/identity/history bindings before candidate. Do not relabel old synthetic DOM trace as physical input; T15 has separate translated content and zero-op old-trace rows below.",
+      "expectedBehaviorStatus": "SOURCE_EXPECTATION_NOT_EXECUTED"
+    },
+    {
+      "id": "CMS-T04",
+      "group": "CMS_SOURCE_PARITY_17",
+      "sourceAuthority": "07f2f565877d127abb001f1efe538dec854c6c0e:frontend/admin-spa/src/app/editor/typing-typography.spec.ts:89",
+      "exactOriginalFixture": {
+        "id": "CMS-T04",
+        "sourceLine": 89,
+        "name": "in-word or unfinished double hyphen stays literal",
+        "setup": "empty prose paragraph",
+        "actions": [
+          {
+            "type": "ключ--значение --"
+          }
+        ],
+        "expected": {
+          "text": "ключ--значение --"
+        },
+        "additionalAssertions": [],
+        "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+      },
+      "nativeAdaptation": "Author complete native state/identity/history bindings before candidate. Do not relabel old synthetic DOM trace as physical input; T15 has separate translated content and zero-op old-trace rows below.",
+      "expectedBehaviorStatus": "SOURCE_EXPECTATION_NOT_EXECUTED"
+    },
+    {
+      "id": "CMS-T05",
+      "group": "CMS_SOURCE_PARITY_17",
+      "sourceAuthority": "07f2f565877d127abb001f1efe538dec854c6c0e:frontend/admin-spa/src/app/editor/typing-typography.spec.ts:95",
+      "exactOriginalFixture": {
+        "id": "CMS-T05",
+        "sourceLine": 95,
+        "name": "one-letter Cyrillic chain",
+        "setup": "empty prose paragraph",
+        "actions": [
+          {
+            "type": "Мы шли в лес и к реке"
+          }
+        ],
+        "expected": {
+          "text": "Мы шли в лес и к реке"
+        },
+        "additionalAssertions": [],
+        "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+      },
+      "nativeAdaptation": "Author complete native state/identity/history bindings before candidate. Do not relabel old synthetic DOM trace as physical input; T15 has separate translated content and zero-op old-trace rows below.",
+      "expectedBehaviorStatus": "SOURCE_EXPECTATION_NOT_EXECUTED"
+    },
+    {
+      "id": "CMS-T06",
+      "group": "CMS_SOURCE_PARITY_17",
+      "sourceAuthority": "07f2f565877d127abb001f1efe538dec854c6c0e:frontend/admin-spa/src/app/editor/typing-typography.spec.ts:101",
+      "exactOriginalFixture": {
+        "id": "CMS-T06",
+        "sourceLine": 101,
+        "name": "combined quote/dash/NBSP sentence",
+        "setup": "empty prose paragraph",
+        "actions": [
+          {
+            "type": "Она ответила \"нет\" -- и я ушёл"
+          }
+        ],
+        "expected": {
+          "text": "Она ответила «нет» — и я ушёл"
+        },
+        "additionalAssertions": [],
+        "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+      },
+      "nativeAdaptation": "Author complete native state/identity/history bindings before candidate. Do not relabel old synthetic DOM trace as physical input; T15 has separate translated content and zero-op old-trace rows below.",
+      "expectedBehaviorStatus": "SOURCE_EXPECTATION_NOT_EXECUTED"
+    },
+    {
+      "id": "CMS-T07",
+      "group": "CMS_SOURCE_PARITY_17",
+      "sourceAuthority": "07f2f565877d127abb001f1efe538dec854c6c0e:frontend/admin-spa/src/app/editor/typing-typography.spec.ts:107",
+      "exactOriginalFixture": {
+        "id": "CMS-T07",
+        "sourceLine": 107,
+        "name": "immediate Backspace reverts quote/dash input rule",
+        "setup": "empty prose paragraph",
+        "actions": [
+          {
+            "type": "а \"",
+            "expectedText": "а «"
+          },
+          {
+            "key": "Backspace",
+            "expectedText": "а \""
+          },
+          {
+            "type": "x -- ",
+            "expectedText": "а \"x — "
+          },
+          {
+            "key": "Backspace",
+            "expectedText": "а \"x -- "
+          }
+        ],
+        "expected": {
+          "text": "а \"x -- "
+        },
+        "additionalAssertions": [],
+        "qualification": "Source test uses synthetic keydown + Tiptap undoInputRule behavior; not CmdZ, not native history, and not physical input."
+      },
+      "nativeAdaptation": "Author complete native state/identity/history bindings before candidate. Do not relabel old synthetic DOM trace as physical input; T15 has separate translated content and zero-op old-trace rows below.",
+      "expectedBehaviorStatus": "SOURCE_EXPECTATION_NOT_EXECUTED"
+    },
+    {
+      "id": "CMS-T08",
+      "group": "CMS_SOURCE_PARITY_17",
+      "sourceAuthority": "07f2f565877d127abb001f1efe538dec854c6c0e:frontend/admin-spa/src/app/editor/typing-typography.spec.ts:120",
+      "exactOriginalFixture": {
+        "id": "CMS-T08",
+        "sourceLine": 120,
+        "name": "NBSP does not supply undoInputRule",
+        "setup": "empty prose paragraph",
+        "actions": [
+          {
+            "type": "в л"
+          }
+        ],
+        "expected": {
+          "text": "в л",
+          "undoInputRule": false
+        },
+        "additionalAssertions": [],
+        "qualification": "Despite its title, the fixture does not press Backspace or assert the resulting deletion. It checks undoInputRule(state)===false; this does not exclude the edit from normal history Undo."
+      },
+      "nativeAdaptation": "Author complete native state/identity/history bindings before candidate. Do not relabel old synthetic DOM trace as physical input; T15 has separate translated content and zero-op old-trace rows below.",
+      "expectedBehaviorStatus": "SOURCE_EXPECTATION_NOT_EXECUTED"
+    },
+    {
+      "id": "CMS-T09",
+      "group": "CMS_SOURCE_PARITY_17",
+      "sourceAuthority": "07f2f565877d127abb001f1efe538dec854c6c0e:frontend/admin-spa/src/app/editor/typing-typography.spec.ts:127",
+      "exactOriginalFixture": {
+        "id": "CMS-T09",
+        "sourceLine": 127,
+        "name": "code block stays literal",
+        "setup": {
+          "code_block": "x",
+          "tiptapCaret": 2
+        },
+        "actions": [
+          {
+            "type": " = \"a\" -- в к"
+          }
+        ],
+        "expected": {
+          "text": "x = \"a\" -- в к"
+        },
+        "additionalAssertions": [],
+        "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+      },
+      "nativeAdaptation": "Author complete native state/identity/history bindings before candidate. Do not relabel old synthetic DOM trace as physical input; T15 has separate translated content and zero-op old-trace rows below.",
+      "expectedBehaviorStatus": "SOURCE_EXPECTATION_NOT_EXECUTED"
+    },
+    {
+      "id": "CMS-T10",
+      "group": "CMS_SOURCE_PARITY_17",
+      "sourceAuthority": "07f2f565877d127abb001f1efe538dec854c6c0e:frontend/admin-spa/src/app/editor/typing-typography.spec.ts:134",
+      "exactOriginalFixture": {
+        "id": "CMS-T10",
+        "sourceLine": 134,
+        "name": "inline stored code mark stays literal",
+        "setup": {
+          "paragraph": [],
+          "toggleMark": "code"
+        },
+        "actions": [
+          {
+            "type": "say \"hi\" -- в к"
+          }
+        ],
+        "expected": {
+          "text": "say \"hi\" -- в к",
+          "firstLeafMarks": [
+            "code"
+          ]
+        },
+        "additionalAssertions": [],
+        "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+      },
+      "nativeAdaptation": "Author complete native state/identity/history bindings before candidate. Do not relabel old synthetic DOM trace as physical input; T15 has separate translated content and zero-op old-trace rows below.",
+      "expectedBehaviorStatus": "SOURCE_EXPECTATION_NOT_EXECUTED"
+    },
+    {
+      "id": "CMS-T11",
+      "group": "CMS_SOURCE_PARITY_17",
+      "sourceAuthority": "07f2f565877d127abb001f1efe538dec854c6c0e:frontend/admin-spa/src/app/editor/typing-typography.spec.ts:145",
+      "exactOriginalFixture": {
+        "id": "CMS-T11",
+        "sourceLine": 145,
+        "name": "active strong mark survives replacement",
+        "setup": {
+          "paragraph": [],
+          "toggleMark": "strong"
+        },
+        "actions": [
+          {
+            "type": "\"да\""
+          }
+        ],
+        "expected": {
+          "firstLeafText": "«да»",
+          "firstLeafMarks": [
+            "strong"
+          ]
+        },
+        "additionalAssertions": [],
+        "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+      },
+      "nativeAdaptation": "Author complete native state/identity/history bindings before candidate. Do not relabel old synthetic DOM trace as physical input; T15 has separate translated content and zero-op old-trace rows below.",
+      "expectedBehaviorStatus": "SOURCE_EXPECTATION_NOT_EXECUTED"
+    },
+    {
+      "id": "CMS-T12",
+      "group": "CMS_SOURCE_PARITY_17",
+      "sourceAuthority": "07f2f565877d127abb001f1efe538dec854c6c0e:frontend/admin-spa/src/app/editor/typing-typography.spec.ts:154",
+      "exactOriginalFixture": {
+        "id": "CMS-T12",
+        "sourceLine": 154,
+        "name": "quote after hard break",
+        "setup": {
+          "paragraph": [
+            {
+              "text": "а"
+            },
+            {
+              "hard_break": true
+            }
+          ],
+          "tiptapCaret": 3
+        },
+        "actions": [
+          {
+            "type": "\"б\""
+          }
+        ],
+        "expected": {
+          "lastInlineChildText": "«б»"
+        },
+        "additionalAssertions": [],
+        "qualification": "Source asserts last child text only, not full canonical/selection/IDs."
+      },
+      "nativeAdaptation": "Author complete native state/identity/history bindings before candidate. Do not relabel old synthetic DOM trace as physical input; T15 has separate translated content and zero-op old-trace rows below.",
+      "expectedBehaviorStatus": "SOURCE_EXPECTATION_NOT_EXECUTED"
+    },
+    {
+      "id": "CMS-T13",
+      "group": "CMS_SOURCE_PARITY_17",
+      "sourceAuthority": "07f2f565877d127abb001f1efe538dec854c6c0e:frontend/admin-spa/src/app/editor/typing-typography.spec.ts:163",
+      "exactOriginalFixture": {
+        "id": "CMS-T13",
+        "sourceLine": 163,
+        "name": "immediately adjacent empty quote pair",
+        "setup": "empty prose paragraph",
+        "actions": [
+          {
+            "type": "пусто \"\""
+          }
+        ],
+        "expected": {
+          "text": "пусто «»"
+        },
+        "additionalAssertions": [],
+        "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+      },
+      "nativeAdaptation": "Author complete native state/identity/history bindings before candidate. Do not relabel old synthetic DOM trace as physical input; T15 has separate translated content and zero-op old-trace rows below.",
+      "expectedBehaviorStatus": "SOURCE_EXPECTATION_NOT_EXECUTED"
+    },
+    {
+      "id": "CMS-T14",
+      "group": "CMS_SOURCE_PARITY_17",
+      "sourceAuthority": "07f2f565877d127abb001f1efe538dec854c6c0e:frontend/admin-spa/src/app/editor/typing-typography.spec.ts:169",
+      "exactOriginalFixture": {
+        "id": "CMS-T14",
+        "sourceLine": 169,
+        "name": "multi-character delivery is left as supplied",
+        "setup": "four independent source literal variants",
+        "actions": [
+          {
+            "before": "",
+            "input": "в л",
+            "atOnce": true,
+            "expected": "в л"
+          },
+          {
+            "before": "a",
+            "input": " -- ",
+            "atOnce": true,
+            "expected": "a -- "
+          },
+          {
+            "before": "",
+            "input": " \"",
+            "atOnce": true,
+            "expected": " \""
+          },
+          {
+            "before": "a",
+            "input": "(\"",
+            "atOnce": true,
+            "expected": "a(\""
+          }
+        ],
+        "expected": {
+          "variantTexts": [
+            "в л",
+            "a -- ",
+            " \"",
+            "a(\""
+          ]
+        },
+        "additionalAssertions": [],
+        "qualification": "Four source literal cases in one test. The helper invokes handleTextInput with a whole string; no real autocorrect/dictation transport is tested."
+      },
+      "nativeAdaptation": "Author complete native state/identity/history bindings before candidate. Do not relabel old synthetic DOM trace as physical input; T15 has separate translated content and zero-op old-trace rows below.",
+      "expectedBehaviorStatus": "SOURCE_EXPECTATION_NOT_EXECUTED"
+    },
+    {
+      "id": "CMS-T15",
+      "group": "CMS_SOURCE_PARITY_17",
+      "sourceAuthority": "07f2f565877d127abb001f1efe538dec854c6c0e:frontend/admin-spa/src/app/editor/typing-typography.spec.ts:186",
+      "exactOriginalFixture": {
+        "id": "CMS-T15",
+        "sourceLine": 186,
+        "name": "quote already committed when compositionend arrives",
+        "setup": {
+          "paragraphText": "а \"",
+          "tiptapCaret": 4
+        },
+        "actions": [
+          {
+            "syntheticCompositionEvent": "compositionend",
+            "bubbles": true
+          },
+          {
+            "passiveTaskWaitMs": 0
+          }
+        ],
+        "expected": {
+          "text": "а «"
+        },
+        "additionalAssertions": [],
+        "qualification": "Synthetic untrusted terminal-only event; no compositionstart/update/native IME, exact-once publication or history assertion. It establishes a source requirement for post-commit eligibility, not permission to modify protected preedit."
+      },
+      "nativeAdaptation": "Author complete native state/identity/history bindings before candidate. Do not relabel old synthetic DOM trace as physical input; T15 has separate translated content and zero-op old-trace rows below.",
+      "expectedBehaviorStatus": "SOURCE_EXPECTATION_NOT_EXECUTED"
+    },
+    {
+      "id": "CMS-T16",
+      "group": "CMS_SOURCE_PARITY_17",
+      "sourceAuthority": "07f2f565877d127abb001f1efe538dec854c6c0e:frontend/admin-spa/src/app/editor/typing-typography.spec.ts:194",
+      "exactOriginalFixture": {
+        "id": "CMS-T16",
+        "sourceLine": 194,
+        "name": "selection replaced with converted quote",
+        "setup": {
+          "paragraphText": "а слово",
+          "tiptapSelection": [
+            3,
+            8
+          ],
+          "equivalentTextUtf16Range": [
+            2,
+            7
+          ]
+        },
+        "actions": [
+          {
+            "type": "\""
+          }
+        ],
+        "expected": {
+          "text": "а «",
+          "selectionEmpty": true
+        },
+        "additionalAssertions": [],
+        "qualification": "Tiptap absolute coordinates are recorded separately from derived same-text UTF16 offsets; no exact final caret/ID/native stamp is asserted by this CMS fixture."
+      },
+      "nativeAdaptation": "Author complete native state/identity/history bindings before candidate. Do not relabel old synthetic DOM trace as physical input; T15 has separate translated content and zero-op old-trace rows below.",
+      "expectedBehaviorStatus": "SOURCE_EXPECTATION_NOT_EXECUTED"
+    },
+    {
+      "id": "CMS-T17",
+      "group": "CMS_SOURCE_PARITY_17",
+      "sourceAuthority": "07f2f565877d127abb001f1efe538dec854c6c0e:frontend/admin-spa/src/app/editor/typing-typography.spec.ts:204",
+      "exactOriginalFixture": {
+        "id": "CMS-T17",
+        "sourceLine": 204,
+        "name": "selection touching inline code keeps literal quote",
+        "setup": {
+          "paragraph": [
+            {
+              "text": "а "
+            },
+            {
+              "text": "xy",
+              "marks": [
+                "code"
+              ]
+            }
+          ],
+          "tiptapSelection": [
+            3,
+            4
+          ],
+          "equivalentTextUtf16Range": [
+            2,
+            3
+          ]
+        },
+        "actions": [
+          {
+            "type": "\""
+          }
+        ],
+        "expected": {
+          "text": "а \"y"
+        },
+        "additionalAssertions": [],
+        "qualification": "Source asserts scalar text only. The selected code-marked x blocks conversion; y survives. No complete marks/canonical/ID golden is supplied."
+      },
+      "nativeAdaptation": "Author complete native state/identity/history bindings before candidate. Do not relabel old synthetic DOM trace as physical input; T15 has separate translated content and zero-op old-trace rows below.",
+      "expectedBehaviorStatus": "SOURCE_EXPECTATION_NOT_EXECUTED"
+    },
+    {
+      "id": "RU-open-start",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "«",
+      "locale": "ru",
+      "expectedRule": "double_quotes"
+    },
+    {
+      "id": "RU-open-space",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "a «",
+      "locale": "ru",
+      "expectedRule": "double_quotes"
+    },
+    {
+      "id": "RU-open-bracket",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a(",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "a(«",
+      "locale": "ru",
+      "expectedRule": "double_quotes"
+    },
+    {
+      "id": "RU-open-dash",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a—",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "a—«",
+      "locale": "ru",
+      "expectedRule": "double_quotes"
+    },
+    {
+      "id": "RU-close-letter",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "a»",
+      "locale": "ru",
+      "expectedRule": "double_quotes"
+    },
+    {
+      "id": "RU-close-opening",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "«",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "«»",
+      "locale": "ru",
+      "expectedRule": "double_quotes"
+    },
+    {
+      "id": "RU-spaced-dash",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a --",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": " "
+      },
+      "expectedText": "a — ",
+      "locale": "ru",
+      "expectedRule": "spaced_em_dash"
+    },
+    {
+      "id": "RU-in-word-dash",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a--",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "b"
+      },
+      "expectedText": "a--b",
+      "locale": "ru",
+      "expectedRule": "none"
+    },
+    {
+      "id": "RU-unfinished-dash",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a -",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "-"
+      },
+      "expectedText": "a --",
+      "locale": "ru",
+      "expectedRule": "none"
+    },
+    {
+      "id": "RU-no-apostrophe",
+      "group": "EN_SCOPE_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "can",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "'"
+      },
+      "expectedText": "can'",
+      "locale": "ru",
+      "expectedRule": "none"
+    },
+    {
+      "id": "EN-open-start",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "“",
+      "locale": "en",
+      "expectedRule": "double_quotes"
+    },
+    {
+      "id": "EN-open-space",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "a “",
+      "locale": "en",
+      "expectedRule": "double_quotes"
+    },
+    {
+      "id": "EN-open-bracket",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a(",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "a(“",
+      "locale": "en",
+      "expectedRule": "double_quotes"
+    },
+    {
+      "id": "EN-open-dash",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a—",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "a—“",
+      "locale": "en",
+      "expectedRule": "double_quotes"
+    },
+    {
+      "id": "EN-close-letter",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "a”",
+      "locale": "en",
+      "expectedRule": "double_quotes"
+    },
+    {
+      "id": "EN-close-opening",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "“",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "“”",
+      "locale": "en",
+      "expectedRule": "double_quotes"
+    },
+    {
+      "id": "EN-spaced-dash",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a --",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": " "
+      },
+      "expectedText": "a — ",
+      "locale": "en",
+      "expectedRule": "spaced_em_dash"
+    },
+    {
+      "id": "EN-in-word-dash",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a--",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "b"
+      },
+      "expectedText": "a--b",
+      "locale": "en",
+      "expectedRule": "none"
+    },
+    {
+      "id": "EN-unfinished-dash",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a -",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "-"
+      },
+      "expectedText": "a --",
+      "locale": "en",
+      "expectedRule": "none"
+    },
+    {
+      "id": "EN-no-apostrophe",
+      "group": "EN_SCOPE_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "can",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "'"
+      },
+      "expectedText": "can'",
+      "locale": "en",
+      "expectedRule": "none"
+    },
+    {
+      "id": "RU-nbsp-basic",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "в ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "л"
+      },
+      "expectedText": "в л",
+      "locale": "ru",
+      "expectedRule": "cyrillic_nbsp"
+    },
+    {
+      "id": "EN-no-cyrillic-nbsp",
+      "group": "EN_SCOPE_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "в ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "л"
+      },
+      "expectedText": "в л",
+      "locale": "en",
+      "expectedRule": "none"
+    },
+    {
+      "id": "RU-no-latin-nbsp",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "b"
+      },
+      "expectedText": "a b",
+      "locale": "ru",
+      "expectedRule": "none"
+    },
+    {
+      "id": "RU-yo-class",
+      "group": "PRIMITIVE_SINGLE_SCALAR",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "ё ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "Ё"
+      },
+      "expectedText": "ё Ё",
+      "locale": "ru",
+      "expectedRule": "cyrillic_nbsp"
+    },
+    {
+      "id": "RU-subset-0",
+      "group": "CONFIG_SUBSET",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "",
+      "packet": {
+        "origin": "typed_sequence",
+        "data": "\"a\" -- в л",
+        "delivery": "each Unicode scalar as a distinct explicit typed intent"
+      },
+      "expectedText": "\"a\" -- в л",
+      "locale": "ru",
+      "enabledRules": []
+    },
+    {
+      "id": "RU-subset-1",
+      "group": "CONFIG_SUBSET",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "",
+      "packet": {
+        "origin": "typed_sequence",
+        "data": "\"a\" -- в л",
+        "delivery": "each Unicode scalar as a distinct explicit typed intent"
+      },
+      "expectedText": "\"a\" — в л",
+      "locale": "ru",
+      "enabledRules": [
+        "spaced_em_dash"
+      ]
+    },
+    {
+      "id": "RU-subset-2",
+      "group": "CONFIG_SUBSET",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "",
+      "packet": {
+        "origin": "typed_sequence",
+        "data": "\"a\" -- в л",
+        "delivery": "each Unicode scalar as a distinct explicit typed intent"
+      },
+      "expectedText": "«a» -- в л",
+      "locale": "ru",
+      "enabledRules": [
+        "double_quotes"
+      ]
+    },
+    {
+      "id": "RU-subset-3",
+      "group": "CONFIG_SUBSET",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "",
+      "packet": {
+        "origin": "typed_sequence",
+        "data": "\"a\" -- в л",
+        "delivery": "each Unicode scalar as a distinct explicit typed intent"
+      },
+      "expectedText": "«a» — в л",
+      "locale": "ru",
+      "enabledRules": [
+        "spaced_em_dash",
+        "double_quotes"
+      ]
+    },
+    {
+      "id": "RU-subset-4",
+      "group": "CONFIG_SUBSET",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "",
+      "packet": {
+        "origin": "typed_sequence",
+        "data": "\"a\" -- в л",
+        "delivery": "each Unicode scalar as a distinct explicit typed intent"
+      },
+      "expectedText": "\"a\" -- в л",
+      "locale": "ru",
+      "enabledRules": [
+        "cyrillic_nbsp"
+      ]
+    },
+    {
+      "id": "RU-subset-5",
+      "group": "CONFIG_SUBSET",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "",
+      "packet": {
+        "origin": "typed_sequence",
+        "data": "\"a\" -- в л",
+        "delivery": "each Unicode scalar as a distinct explicit typed intent"
+      },
+      "expectedText": "\"a\" — в л",
+      "locale": "ru",
+      "enabledRules": [
+        "spaced_em_dash",
+        "cyrillic_nbsp"
+      ]
+    },
+    {
+      "id": "RU-subset-6",
+      "group": "CONFIG_SUBSET",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "",
+      "packet": {
+        "origin": "typed_sequence",
+        "data": "\"a\" -- в л",
+        "delivery": "each Unicode scalar as a distinct explicit typed intent"
+      },
+      "expectedText": "«a» -- в л",
+      "locale": "ru",
+      "enabledRules": [
+        "double_quotes",
+        "cyrillic_nbsp"
+      ]
+    },
+    {
+      "id": "RU-subset-7",
+      "group": "CONFIG_SUBSET",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "",
+      "packet": {
+        "origin": "typed_sequence",
+        "data": "\"a\" -- в л",
+        "delivery": "each Unicode scalar as a distinct explicit typed intent"
+      },
+      "expectedText": "«a» — в л",
+      "locale": "ru",
+      "enabledRules": [
+        "spaced_em_dash",
+        "double_quotes",
+        "cyrillic_nbsp"
+      ]
+    },
+    {
+      "id": "EN-subset-0",
+      "group": "CONFIG_SUBSET",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "",
+      "packet": {
+        "origin": "typed_sequence",
+        "data": "\"a\" -- в л",
+        "delivery": "each Unicode scalar as a distinct explicit typed intent"
+      },
+      "expectedText": "\"a\" -- в л",
+      "locale": "en",
+      "enabledRules": []
+    },
+    {
+      "id": "EN-subset-1",
+      "group": "CONFIG_SUBSET",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "",
+      "packet": {
+        "origin": "typed_sequence",
+        "data": "\"a\" -- в л",
+        "delivery": "each Unicode scalar as a distinct explicit typed intent"
+      },
+      "expectedText": "\"a\" — в л",
+      "locale": "en",
+      "enabledRules": [
+        "spaced_em_dash"
+      ]
+    },
+    {
+      "id": "EN-subset-2",
+      "group": "CONFIG_SUBSET",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "",
+      "packet": {
+        "origin": "typed_sequence",
+        "data": "\"a\" -- в л",
+        "delivery": "each Unicode scalar as a distinct explicit typed intent"
+      },
+      "expectedText": "“a” -- в л",
+      "locale": "en",
+      "enabledRules": [
+        "double_quotes"
+      ]
+    },
+    {
+      "id": "EN-subset-3",
+      "group": "CONFIG_SUBSET",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "",
+      "packet": {
+        "origin": "typed_sequence",
+        "data": "\"a\" -- в л",
+        "delivery": "each Unicode scalar as a distinct explicit typed intent"
+      },
+      "expectedText": "“a” — в л",
+      "locale": "en",
+      "enabledRules": [
+        "spaced_em_dash",
+        "double_quotes"
+      ]
+    },
+    {
+      "id": "ORIGIN-bulk-cyrillic",
+      "group": "ORIGIN_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "в л"
+      },
+      "expectedText": "в л",
+      "locale": "ru",
+      "expectedRule": "none",
+      "publications": 1
+    },
+    {
+      "id": "ORIGIN-bulk-dash",
+      "group": "ORIGIN_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": " -- "
+      },
+      "expectedText": "a -- ",
+      "locale": "ru",
+      "expectedRule": "none",
+      "publications": 1
+    },
+    {
+      "id": "ORIGIN-bulk-open",
+      "group": "ORIGIN_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": " \""
+      },
+      "expectedText": " \"",
+      "locale": "ru",
+      "expectedRule": "none",
+      "publications": 1
+    },
+    {
+      "id": "ORIGIN-bulk-bracket",
+      "group": "ORIGIN_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "(\""
+      },
+      "expectedText": "a(\"",
+      "locale": "ru",
+      "expectedRule": "none",
+      "publications": 1
+    },
+    {
+      "id": "ORIGIN-replacement-single",
+      "group": "ORIGIN_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a ",
+      "packet": {
+        "origin": "insert_replacement_text",
+        "data": "\""
+      },
+      "expectedText": "a \"",
+      "locale": "ru",
+      "expectedRule": "none",
+      "publications": 1
+    },
+    {
+      "id": "ORIGIN-final-bulk",
+      "group": "ORIGIN_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a ",
+      "packet": {
+        "origin": "composition_final",
+        "data": "\"x\""
+      },
+      "expectedText": "a \"x\"",
+      "locale": "ru",
+      "expectedRule": "none",
+      "publications": 1
+    },
+    {
+      "id": "ORIGIN-combining-bulk",
+      "group": "ORIGIN_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "é"
+      },
+      "expectedText": "a é",
+      "locale": "ru",
+      "expectedRule": "none",
+      "publications": 1
+    },
+    {
+      "id": "ORIGIN-empty",
+      "group": "ORIGIN_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": ""
+      },
+      "expectedText": "a ",
+      "locale": "ru",
+      "expectedRule": "none",
+      "publications": 0
+    },
+    {
+      "id": "ORIGIN-paste",
+      "group": "ORIGIN_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a ",
+      "packet": {
+        "origin": "paste",
+        "data": "\""
+      },
+      "expectedText": "a \"",
+      "locale": "ru",
+      "expectedRule": "none",
+      "qualification": "No typing-rule participation; actual owning pipeline retains its own admission/history/resource contract."
+    },
+    {
+      "id": "ORIGIN-drop",
+      "group": "ORIGIN_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a ",
+      "packet": {
+        "origin": "drop",
+        "data": "\""
+      },
+      "expectedText": "a \"",
+      "locale": "ru",
+      "expectedRule": "none",
+      "qualification": "No typing-rule participation; actual owning pipeline retains its own admission/history/resource contract."
+    },
+    {
+      "id": "ORIGIN-import",
+      "group": "ORIGIN_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a ",
+      "packet": {
+        "origin": "import",
+        "data": "\""
+      },
+      "expectedText": "a \"",
+      "locale": "ru",
+      "expectedRule": "none",
+      "qualification": "No typing-rule participation; actual owning pipeline retains its own admission/history/resource contract."
+    },
+    {
+      "id": "ORIGIN-literal_host_insert_text",
+      "group": "ORIGIN_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a ",
+      "packet": {
+        "origin": "literal_host_insert_text",
+        "data": "\""
+      },
+      "expectedText": "a \"",
+      "locale": "ru",
+      "expectedRule": "none",
+      "qualification": "No typing-rule participation; actual owning pipeline retains its own admission/history/resource contract."
+    },
+    {
+      "id": "ORIGIN-history_replay",
+      "group": "ORIGIN_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "a ",
+      "packet": {
+        "origin": "history_replay",
+        "data": "\""
+      },
+      "expectedText": "a \"",
+      "locale": "ru",
+      "expectedRule": "none",
+      "qualification": "No typing-rule participation; actual owning pipeline retains its own admission/history/resource contract."
+    },
+    {
+      "id": "RANGE-forward",
+      "group": "RANGE_AND_MARKS",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а слово",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "а «",
+      "locale": "ru",
+      "selection": {
+        "anchorUtf16": 2,
+        "focusUtf16": 7
+      },
+      "expectedCaretUtf16": 3,
+      "expectedRule": "double_quotes",
+      "publications": 1
+    },
+    {
+      "id": "RANGE-reverse",
+      "group": "RANGE_AND_MARKS",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а слово",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "а «",
+      "locale": "ru",
+      "selection": {
+        "anchorUtf16": 7,
+        "focusUtf16": 2
+      },
+      "expectedCaretUtf16": 3,
+      "expectedRule": "double_quotes",
+      "publications": 1
+    },
+    {
+      "id": "PROTECT-code_block",
+      "group": "PROTECTED_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "а \"",
+      "locale": "ru",
+      "protectedContext": "code_block",
+      "expectedRule": "none",
+      "expectedCaretUtf16": 3,
+      "publications": 1,
+      "preserve": "All original per-span marks, IDs, attrs and link target bytes; new quote follows native literal insertion marks."
+    },
+    {
+      "id": "PROTECT-stored_code",
+      "group": "PROTECTED_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "а \"",
+      "locale": "ru",
+      "protectedContext": "stored_code",
+      "expectedRule": "none",
+      "expectedCaretUtf16": 3,
+      "publications": 1,
+      "preserve": "All original per-span marks, IDs, attrs and link target bytes; new quote follows native literal insertion marks."
+    },
+    {
+      "id": "PROTECT-current_code",
+      "group": "PROTECTED_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "а \"",
+      "locale": "ru",
+      "protectedContext": "current_code",
+      "expectedRule": "none",
+      "expectedCaretUtf16": 3,
+      "publications": 1,
+      "preserve": "All original per-span marks, IDs, attrs and link target bytes; new quote follows native literal insertion marks."
+    },
+    {
+      "id": "PROTECT-selected_code_span",
+      "group": "PROTECTED_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "а \"",
+      "locale": "ru",
+      "protectedContext": "selected_code_span",
+      "expectedRule": "none",
+      "expectedCaretUtf16": 3,
+      "publications": 1,
+      "preserve": "All original per-span marks, IDs, attrs and link target bytes; new quote follows native literal insertion marks."
+    },
+    {
+      "id": "PROTECT-matched_suffix_code",
+      "group": "PROTECTED_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "а \"",
+      "locale": "ru",
+      "protectedContext": "matched_suffix_code",
+      "expectedRule": "none",
+      "expectedCaretUtf16": 3,
+      "publications": 1,
+      "preserve": "All original per-span marks, IDs, attrs and link target bytes; new quote follows native literal insertion marks."
+    },
+    {
+      "id": "PROTECT-stored_link",
+      "group": "PROTECTED_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "а \"",
+      "locale": "ru",
+      "protectedContext": "stored_link",
+      "expectedRule": "none",
+      "expectedCaretUtf16": 3,
+      "publications": 1,
+      "preserve": "All original per-span marks, IDs, attrs and link target bytes; new quote follows native literal insertion marks."
+    },
+    {
+      "id": "PROTECT-current_link",
+      "group": "PROTECTED_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "а \"",
+      "locale": "ru",
+      "protectedContext": "current_link",
+      "expectedRule": "none",
+      "expectedCaretUtf16": 3,
+      "publications": 1,
+      "preserve": "All original per-span marks, IDs, attrs and link target bytes; new quote follows native literal insertion marks."
+    },
+    {
+      "id": "PROTECT-selected_link_span",
+      "group": "PROTECTED_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "а \"",
+      "locale": "ru",
+      "protectedContext": "selected_link_span",
+      "expectedRule": "none",
+      "expectedCaretUtf16": 3,
+      "publications": 1,
+      "preserve": "All original per-span marks, IDs, attrs and link target bytes; new quote follows native literal insertion marks."
+    },
+    {
+      "id": "PROTECT-matched_suffix_link",
+      "group": "PROTECTED_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "а \"",
+      "locale": "ru",
+      "protectedContext": "matched_suffix_link",
+      "expectedRule": "none",
+      "expectedCaretUtf16": 3,
+      "publications": 1,
+      "preserve": "All original per-span marks, IDs, attrs and link target bytes; new quote follows native literal insertion marks."
+    },
+    {
+      "id": "PROTECT-stored_reference_link",
+      "group": "PROTECTED_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "а \"",
+      "locale": "ru",
+      "protectedContext": "stored_reference_link",
+      "expectedRule": "none",
+      "expectedCaretUtf16": 3,
+      "publications": 1,
+      "preserve": "All original per-span marks, IDs, attrs and link target bytes; new quote follows native literal insertion marks."
+    },
+    {
+      "id": "PROTECT-current_reference_link",
+      "group": "PROTECTED_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "а \"",
+      "locale": "ru",
+      "protectedContext": "current_reference_link",
+      "expectedRule": "none",
+      "expectedCaretUtf16": 3,
+      "publications": 1,
+      "preserve": "All original per-span marks, IDs, attrs and link target bytes; new quote follows native literal insertion marks."
+    },
+    {
+      "id": "PROTECT-selected_reference_link_span",
+      "group": "PROTECTED_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "а \"",
+      "locale": "ru",
+      "protectedContext": "selected_reference_link_span",
+      "expectedRule": "none",
+      "expectedCaretUtf16": 3,
+      "publications": 1,
+      "preserve": "All original per-span marks, IDs, attrs and link target bytes; new quote follows native literal insertion marks."
+    },
+    {
+      "id": "PROTECT-matched_suffix_reference_link",
+      "group": "PROTECTED_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "а \"",
+      "locale": "ru",
+      "protectedContext": "matched_suffix_reference_link",
+      "expectedRule": "none",
+      "expectedCaretUtf16": 3,
+      "publications": 1,
+      "preserve": "All original per-span marks, IDs, attrs and link target bytes; new quote follows native literal insertion marks."
+    },
+    {
+      "id": "PROTECT-explicit_literal",
+      "group": "PROTECTED_LITERAL",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "а \"",
+      "locale": "ru",
+      "protectedContext": "explicit_literal",
+      "expectedRule": "none",
+      "expectedCaretUtf16": 3,
+      "publications": 1,
+      "preserve": "All original per-span marks, IDs, attrs and link target bytes; new quote follows native literal insertion marks."
+    },
+    {
+      "id": "BOUNDARY-hard_break",
+      "group": "BOUNDARY_SENTINEL",
+      "sourceAuthority": "CMS-T12 / exact RU U+FFFC context; atom is new finite native boundary proposal",
+      "beforeInline": [
+        {
+          "text": "а"
+        },
+        {
+          "kind": "hard_break",
+          "identity": "B"
+        }
+      ],
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedInline": [
+        {
+          "text": "а"
+        },
+        {
+          "kind": "hard_break",
+          "identity": "B"
+        },
+        {
+          "text": "«"
+        }
+      ],
+      "expectedRule": "double_quotes",
+      "expectedPreservedIdentity": "B",
+      "forbidden": "No deletion, mutation or traversal into/across boundary entity; no match spans separate TextBlocks."
+    },
+    {
+      "id": "BOUNDARY-inline_atom",
+      "group": "BOUNDARY_SENTINEL",
+      "sourceAuthority": "CMS-T12 / exact RU U+FFFC context; atom is new finite native boundary proposal",
+      "beforeInline": [
+        {
+          "text": "а"
+        },
+        {
+          "kind": "inline_atom",
+          "identity": "B"
+        }
+      ],
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedInline": [
+        {
+          "text": "а"
+        },
+        {
+          "kind": "inline_atom",
+          "identity": "B"
+        },
+        {
+          "text": "«"
+        }
+      ],
+      "expectedRule": "double_quotes",
+      "expectedPreservedIdentity": "B",
+      "forbidden": "No deletion, mutation or traversal into/across boundary entity; no match spans separate TextBlocks."
+    },
+    {
+      "id": "UNICODE-NFD",
+      "group": "OUTSIDE_EXACT",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "é ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "é «",
+      "locale": "ru",
+      "expectedRule": "double_quotes",
+      "outsideUTF16AndScalarsExact": true
+    },
+    {
+      "id": "UNICODE-NFC",
+      "group": "OUTSIDE_EXACT",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "é ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "é «",
+      "locale": "ru",
+      "expectedRule": "double_quotes",
+      "outsideUTF16AndScalarsExact": true
+    },
+    {
+      "id": "UNICODE-ZWJ",
+      "group": "OUTSIDE_EXACT",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "👩‍💻 ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "👩‍💻 «",
+      "locale": "ru",
+      "expectedRule": "double_quotes",
+      "outsideUTF16AndScalarsExact": true
+    },
+    {
+      "id": "UNICODE-flag",
+      "group": "OUTSIDE_EXACT",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "🇷🇺 ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "🇷🇺 «",
+      "locale": "ru",
+      "expectedRule": "double_quotes",
+      "outsideUTF16AndScalarsExact": true
+    },
+    {
+      "id": "UNICODE-emoji",
+      "group": "OUTSIDE_EXACT",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "🙂 ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "\""
+      },
+      "expectedText": "🙂 «",
+      "locale": "ru",
+      "expectedRule": "double_quotes",
+      "outsideUTF16AndScalarsExact": true
+    },
+    {
+      "id": "WS-0009",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "0009",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-000A",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "000A",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-000B",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "000B",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-000C",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "000C",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-000D",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "000D",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-0020",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "0020",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-00A0",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "00A0",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-1680",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "1680",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-2000",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "2000",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-2001",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "2001",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-2002",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "2002",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-2003",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "2003",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-2004",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "2004",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-2005",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "2005",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-2006",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "2006",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-2007",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "2007",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-2008",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "2008",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-2009",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "2009",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-200A",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "200A",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-2028",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "2028",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-2029",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "2029",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-202F",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "202F",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-205F",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "205F",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-3000",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "3000",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "WS-FEFF",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "ECMAScript2026 primary tables + Unicode17 Zs; independently expanded finite table",
+      "codepointHex": "FEFF",
+      "expectedWhitespace": true,
+      "quoteContext": "opening",
+      "dashGuard": "accepted as same retained preceding/trigger whitespace",
+      "qualification": "Lexical predicate vector only; not a claim that every control can be physically entered or is admitted in every KWDJ block."
+    },
+    {
+      "id": "NOT-WS-0085",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "Exact finite table exclusion; new source-first negative",
+      "codepointHex": "0085",
+      "expectedWhitespace": false,
+      "quoteContext": "closing unless another explicitly listed opening condition applies",
+      "dashGuard": "does not satisfy S"
+    },
+    {
+      "id": "NOT-WS-180E",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "Exact finite table exclusion; new source-first negative",
+      "codepointHex": "180E",
+      "expectedWhitespace": false,
+      "quoteContext": "closing unless another explicitly listed opening condition applies",
+      "dashGuard": "does not satisfy S"
+    },
+    {
+      "id": "NOT-WS-200B",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "Exact finite table exclusion; new source-first negative",
+      "codepointHex": "200B",
+      "expectedWhitespace": false,
+      "quoteContext": "closing unless another explicitly listed opening condition applies",
+      "dashGuard": "does not satisfy S"
+    },
+    {
+      "id": "NOT-WS-200C",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "Exact finite table exclusion; new source-first negative",
+      "codepointHex": "200C",
+      "expectedWhitespace": false,
+      "quoteContext": "closing unless another explicitly listed opening condition applies",
+      "dashGuard": "does not satisfy S"
+    },
+    {
+      "id": "NOT-WS-200D",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "Exact finite table exclusion; new source-first negative",
+      "codepointHex": "200D",
+      "expectedWhitespace": false,
+      "quoteContext": "closing unless another explicitly listed opening condition applies",
+      "dashGuard": "does not satisfy S"
+    },
+    {
+      "id": "NOT-WS-2060",
+      "group": "PURE_LEXICAL_CLASS",
+      "sourceAuthority": "Exact finite table exclusion; new source-first negative",
+      "codepointHex": "2060",
+      "expectedWhitespace": false,
+      "quoteContext": "closing unless another explicitly listed opening condition applies",
+      "dashGuard": "does not satisfy S"
+    },
+    {
+      "id": "CMS-T15-content-final",
+      "group": "COMPOSITION_TRANSLATION",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "verified_composition_final",
+        "data": "\"",
+        "baseModel": "а ",
+        "observedRawFinal": "а \"",
+        "onceOnlyOriginalTicket": true
+      },
+      "expectedText": "а «",
+      "locale": "ru",
+      "expectedRule": "double_quotes",
+      "publications": 1,
+      "undoText": "а ",
+      "redoText": "а «",
+      "qualification": "Same resulting text as original T15; intentionally different owned final-commit setup, not exact old synthetic trace parity."
+    },
+    {
+      "id": "CMS-T15-old-end-only",
+      "group": "COMPOSITION_ZERO_PUBLICATION",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а \"",
+      "packet": {
+        "origin": "unowned_synthetic_compositionend",
+        "data": null
+      },
+      "expectedText": "а \"",
+      "locale": "ru",
+      "publications": 0,
+      "expectedRule": "none",
+      "qualification": "Original source T15 remains preserved unchanged; this is new41-safe protocol behavior, not a passing execution of old plugin trace."
+    },
+    {
+      "id": "IME-composition_preedit",
+      "group": "COMPOSITION_ZERO_PUBLICATION",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "composition_preedit",
+        "data": "\""
+      },
+      "expectedText": "а ",
+      "locale": "ru",
+      "publications": 0,
+      "qualification": "No typography publication. Existing41 provisional DOM/recovery remains its own original-input authority."
+    },
+    {
+      "id": "IME-composition_settling",
+      "group": "COMPOSITION_ZERO_PUBLICATION",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "composition_settling",
+        "data": "\""
+      },
+      "expectedText": "а ",
+      "locale": "ru",
+      "publications": 0,
+      "qualification": "No typography publication. Existing41 provisional DOM/recovery remains its own original-input authority."
+    },
+    {
+      "id": "IME-composition_unchanged",
+      "group": "COMPOSITION_ZERO_PUBLICATION",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "composition_unchanged",
+        "data": ""
+      },
+      "expectedText": "а ",
+      "locale": "ru",
+      "publications": 0,
+      "qualification": "No typography publication. Existing41 provisional DOM/recovery remains its own original-input authority."
+    },
+    {
+      "id": "IME-composition_cancelled",
+      "group": "COMPOSITION_ZERO_PUBLICATION",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "composition_cancelled",
+        "data": ""
+      },
+      "expectedText": "а ",
+      "locale": "ru",
+      "publications": 0,
+      "qualification": "No typography publication. Existing41 provisional DOM/recovery remains its own original-input authority."
+    },
+    {
+      "id": "IME-late_composition_tail",
+      "group": "COMPOSITION_ZERO_PUBLICATION",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "late_composition_tail",
+        "data": "\""
+      },
+      "expectedText": "а ",
+      "locale": "ru",
+      "publications": 0,
+      "qualification": "No typography publication. Existing41 provisional DOM/recovery remains its own original-input authority."
+    },
+    {
+      "id": "IME-empty_composition_final",
+      "group": "COMPOSITION_ZERO_PUBLICATION",
+      "sourceAuthority": "NEW_SOURCE_AUTHORED_PROPOSAL",
+      "beforeText": "а ",
+      "packet": {
+        "origin": "empty_composition_final",
+        "data": ""
+      },
+      "expectedText": "а ",
+      "locale": "ru",
+      "publications": 0,
+      "qualification": "No typography publication. Existing41 provisional DOM/recovery remains its own original-input authority."
+    },
+    {
+      "id": "HISTORY-quote",
+      "group": "HISTORY_AND_SPECIAL_BACKSPACE",
+      "sourceAuthority": "CMS-T07 raw restoration + D14 one history Undo; subsequent reversal history is NEW proposal",
+      "beforeText": "а ",
+      "trigger": "\"",
+      "checkpoints": [
+        {
+          "action": "typed_insert_text",
+          "text": "а «",
+          "docPublicationDelta": 1,
+          "undoUnitsDelta": 1
+        },
+        {
+          "action": "ordinary_history_undo",
+          "text": "а ",
+          "docPublicationDelta": 1
+        },
+        {
+          "action": "ordinary_history_redo",
+          "text": "а «",
+          "docPublicationDelta": 1,
+          "specialReceiptRearmed": false
+        }
+      ],
+      "freshSpecialReversalCheckpoints": [
+        {
+          "action": "typed_insert_text from before",
+          "text": "а «",
+          "docPublicationDelta": 1
+        },
+        {
+          "action": "first eligible Backspace",
+          "text": "а \"",
+          "docPublicationDelta": 1,
+          "undoUnitsDelta": 1,
+          "receiptConsumed": true
+        },
+        {
+          "action": "Undo reversal",
+          "text": "а «"
+        },
+        {
+          "action": "Undo original rule unit",
+          "text": "а "
+        },
+        {
+          "action": "Redo original rule unit",
+          "text": "а «"
+        },
+        {
+          "action": "Redo reversal",
+          "text": "а \""
+        }
+      ],
+      "historyPolicyQualification": "Original CMS text-only fixture does not assert these full history checkpoints; root must accept this proposed isolated reversal policy before implementation."
+    },
+    {
+      "id": "HISTORY-dash",
+      "group": "HISTORY_AND_SPECIAL_BACKSPACE",
+      "sourceAuthority": "CMS-T07 raw restoration + D14 one history Undo; subsequent reversal history is NEW proposal",
+      "beforeText": "a --",
+      "trigger": " ",
+      "checkpoints": [
+        {
+          "action": "typed_insert_text",
+          "text": "a — ",
+          "docPublicationDelta": 1,
+          "undoUnitsDelta": 1
+        },
+        {
+          "action": "ordinary_history_undo",
+          "text": "a --",
+          "docPublicationDelta": 1
+        },
+        {
+          "action": "ordinary_history_redo",
+          "text": "a — ",
+          "docPublicationDelta": 1,
+          "specialReceiptRearmed": false
+        }
+      ],
+      "freshSpecialReversalCheckpoints": [
+        {
+          "action": "typed_insert_text from before",
+          "text": "a — ",
+          "docPublicationDelta": 1
+        },
+        {
+          "action": "first eligible Backspace",
+          "text": "a -- ",
+          "docPublicationDelta": 1,
+          "undoUnitsDelta": 1,
+          "receiptConsumed": true
+        },
+        {
+          "action": "Undo reversal",
+          "text": "a — "
+        },
+        {
+          "action": "Undo original rule unit",
+          "text": "a --"
+        },
+        {
+          "action": "Redo original rule unit",
+          "text": "a — "
+        },
+        {
+          "action": "Redo reversal",
+          "text": "a -- "
+        }
+      ],
+      "historyPolicyQualification": "Original CMS text-only fixture does not assert these full history checkpoints; root must accept this proposed isolated reversal policy before implementation."
+    },
+    {
+      "id": "HISTORY-nbsp",
+      "group": "HISTORY_AND_SPECIAL_BACKSPACE",
+      "sourceAuthority": "CMS-T08 undoInputRule=false; physical Backspace + history are NEW independently authored policy",
+      "beforeText": "в ",
+      "packet": {
+        "origin": "typed_insert_text",
+        "data": "л"
+      },
+      "cookedText": "в л",
+      "specialReceipt": false,
+      "checkpoints": [
+        {
+          "action": "Backspace",
+          "text": "в "
+        },
+        {
+          "action": "Undo Backspace",
+          "text": "в л"
+        },
+        {
+          "action": "Undo rule unit",
+          "text": "в "
+        },
+        {
+          "action": "Redo rule unit",
+          "text": "в л"
+        }
+      ]
+    },
+    {
+      "id": "RECEIPT-invalidate-intervening_input_intent_or_rule",
+      "group": "REVERSAL_PROVENANCE",
+      "sourceAuthority": "NEW bounded native receipt contract",
+      "start": "fresh eligible quote/dash cooked result",
+      "interveningAction": "intervening input intent or rule",
+      "expectedSpecialReversalAuthority": false,
+      "nextBackspace": "Use existing ordinary delete only if that current input is otherwise admitted; otherwise original owner refusal/recovery. Never recover raw text by visible punctuation matching."
+    },
+    {
+      "id": "RECEIPT-invalidate-selection_context_movement",
+      "group": "REVERSAL_PROVENANCE",
+      "sourceAuthority": "NEW bounded native receipt contract",
+      "start": "fresh eligible quote/dash cooked result",
+      "interveningAction": "selection/context movement",
+      "expectedSpecialReversalAuthority": false,
+      "nextBackspace": "Use existing ordinary delete only if that current input is otherwise admitted; otherwise original owner refusal/recovery. Never recover raw text by visible punctuation matching."
+    },
+    {
+      "id": "RECEIPT-invalidate-focus_loss",
+      "group": "REVERSAL_PROVENANCE",
+      "sourceAuthority": "NEW bounded native receipt contract",
+      "start": "fresh eligible quote/dash cooked result",
+      "interveningAction": "focus loss",
+      "expectedSpecialReversalAuthority": false,
+      "nextBackspace": "Use existing ordinary delete only if that current input is otherwise admitted; otherwise original owner refusal/recovery. Never recover raw text by visible punctuation matching."
+    },
+    {
+      "id": "RECEIPT-invalidate-access_mode_change",
+      "group": "REVERSAL_PROVENANCE",
+      "sourceAuthority": "NEW bounded native receipt contract",
+      "start": "fresh eligible quote/dash cooked result",
+      "interveningAction": "access/mode change",
+      "expectedSpecialReversalAuthority": false,
+      "nextBackspace": "Use existing ordinary delete only if that current input is otherwise admitted; otherwise original owner refusal/recovery. Never recover raw text by visible punctuation matching."
+    },
+    {
+      "id": "RECEIPT-invalidate-explicit_external_replacement",
+      "group": "REVERSAL_PROVENANCE",
+      "sourceAuthority": "NEW bounded native receipt contract",
+      "start": "fresh eligible quote/dash cooked result",
+      "interveningAction": "explicit external replacement",
+      "expectedSpecialReversalAuthority": false,
+      "nextBackspace": "Use existing ordinary delete only if that current input is otherwise admitted; otherwise original owner refusal/recovery. Never recover raw text by visible punctuation matching."
+    },
+    {
+      "id": "RECEIPT-invalidate-history_operation",
+      "group": "REVERSAL_PROVENANCE",
+      "sourceAuthority": "NEW bounded native receipt contract",
+      "start": "fresh eligible quote/dash cooked result",
+      "interveningAction": "history operation",
+      "expectedSpecialReversalAuthority": false,
+      "nextBackspace": "Use existing ordinary delete only if that current input is otherwise admitted; otherwise original owner refusal/recovery. Never recover raw text by visible punctuation matching."
+    },
+    {
+      "id": "RECEIPT-invalidate-new_generation_remount",
+      "group": "REVERSAL_PROVENANCE",
+      "sourceAuthority": "NEW bounded native receipt contract",
+      "start": "fresh eligible quote/dash cooked result",
+      "interveningAction": "new generation/remount",
+      "expectedSpecialReversalAuthority": false,
+      "nextBackspace": "Use existing ordinary delete only if that current input is otherwise admitted; otherwise original owner refusal/recovery. Never recover raw text by visible punctuation matching."
+    },
+    {
+      "id": "RECEIPT-invalidate-composition_start",
+      "group": "REVERSAL_PROVENANCE",
+      "sourceAuthority": "NEW bounded native receipt contract",
+      "start": "fresh eligible quote/dash cooked result",
+      "interveningAction": "composition start",
+      "expectedSpecialReversalAuthority": false,
+      "nextBackspace": "Use existing ordinary delete only if that current input is otherwise admitted; otherwise original owner refusal/recovery. Never recover raw text by visible punctuation matching."
+    },
+    {
+      "id": "RECEIPT-invalidate-stale_fatal_closed_disposed_result",
+      "group": "REVERSAL_PROVENANCE",
+      "sourceAuthority": "NEW bounded native receipt contract",
+      "start": "fresh eligible quote/dash cooked result",
+      "interveningAction": "stale/fatal/closed/disposed result",
+      "expectedSpecialReversalAuthority": false,
+      "nextBackspace": "Use existing ordinary delete only if that current input is otherwise admitted; otherwise original owner refusal/recovery. Never recover raw text by visible punctuation matching."
+    },
+    {
+      "id": "CAP-lookbehindScalars-3",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "lookbehindScalars",
+      "hardCeiling": 3,
+      "attempted": 3,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "within this dimension; other admission and real work still checked",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-lookbehindScalars-4",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "lookbehindScalars",
+      "hardCeiling": 3,
+      "attempted": 4,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "literal bypass.limit before rule publication; no partial receipt or fresh meter",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-lookbehindUtf16-6",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "lookbehindUtf16",
+      "hardCeiling": 6,
+      "attempted": 6,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "within this dimension; other admission and real work still checked",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-lookbehindUtf16-7",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "lookbehindUtf16",
+      "hardCeiling": 6,
+      "attempted": 7,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "literal bypass.limit before rule publication; no partial receipt or fresh meter",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-lookbehindUtf8-12",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "lookbehindUtf8",
+      "hardCeiling": 12,
+      "attempted": 12,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "within this dimension; other admission and real work still checked",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-lookbehindUtf8-13",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "lookbehindUtf8",
+      "hardCeiling": 12,
+      "attempted": 13,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "literal bypass.limit before rule publication; no partial receipt or fresh meter",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-lookbehindOwnedBufferBytes-16",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "lookbehindOwnedBufferBytes",
+      "hardCeiling": 16,
+      "attempted": 16,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "within this dimension; other admission and real work still checked",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-lookbehindOwnedBufferBytes-17",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "lookbehindOwnedBufferBytes",
+      "hardCeiling": 16,
+      "attempted": 17,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "literal bypass.limit before rule publication; no partial receipt or fresh meter",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-inlineSlotsVisited-32",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "inlineSlotsVisited",
+      "hardCeiling": 32,
+      "attempted": 32,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "within this dimension; other admission and real work still checked",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-inlineSlotsVisited-33",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "inlineSlotsVisited",
+      "hardCeiling": 32,
+      "attempted": 33,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "literal bypass.limit before rule publication; no partial receipt or fresh meter",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-ancestorDepth-32",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "ancestorDepth",
+      "hardCeiling": 32,
+      "attempted": 32,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "within this dimension; other admission and real work still checked",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-ancestorDepth-33",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "ancestorDepth",
+      "hardCeiling": 32,
+      "attempted": 33,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "literal bypass.limit before rule publication; no partial receipt or fresh meter",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-originalSelectedGuardScalars-4096",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "originalSelectedGuardScalars",
+      "hardCeiling": 4096,
+      "attempted": 4096,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "within this dimension; other admission and real work still checked",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-originalSelectedGuardScalars-4097",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "originalSelectedGuardScalars",
+      "hardCeiling": 4096,
+      "attempted": 4097,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "literal bypass.limit before rule publication; no partial receipt or fresh meter",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-originalSelectedGuardUtf8-16384",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "originalSelectedGuardUtf8",
+      "hardCeiling": 16384,
+      "attempted": 16384,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "within this dimension; other admission and real work still checked",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-originalSelectedGuardUtf8-16385",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "originalSelectedGuardUtf8",
+      "hardCeiling": 16384,
+      "attempted": 16385,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "literal bypass.limit before rule publication; no partial receipt or fresh meter",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-originalSelectedGuardInlineNodes-256",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "originalSelectedGuardInlineNodes",
+      "hardCeiling": 256,
+      "attempted": 256,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "within this dimension; other admission and real work still checked",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-originalSelectedGuardInlineNodes-257",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "originalSelectedGuardInlineNodes",
+      "hardCeiling": 256,
+      "attempted": 257,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "literal bypass.limit before rule publication; no partial receipt or fresh meter",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-markRecordsInspected-1024",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "markRecordsInspected",
+      "hardCeiling": 1024,
+      "attempted": 1024,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "within this dimension; other admission and real work still checked",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-markRecordsInspected-1025",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "markRecordsInspected",
+      "hardCeiling": 1024,
+      "attempted": 1025,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "literal bypass.limit before rule publication; no partial receipt or fresh meter",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-lexicalWorkUnits-32768",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "lexicalWorkUnits",
+      "hardCeiling": 32768,
+      "attempted": 32768,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "within this dimension; other admission and real work still checked",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-lexicalWorkUnits-32769",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "lexicalWorkUnits",
+      "hardCeiling": 32768,
+      "attempted": 32769,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "literal bypass.limit before rule publication; no partial receipt or fresh meter",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-lexicalWorkBytes-65536",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "lexicalWorkBytes",
+      "hardCeiling": 65536,
+      "attempted": 65536,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "within this dimension; other admission and real work still checked",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-lexicalWorkBytes-65537",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "lexicalWorkBytes",
+      "hardCeiling": 65536,
+      "attempted": 65537,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "literal bypass.limit before rule publication; no partial receipt or fresh meter",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-reversalRawUtf8-12",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "reversalRawUtf8",
+      "hardCeiling": 12,
+      "attempted": 12,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "within this dimension; other admission and real work still checked",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-reversalRawUtf8-13",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "reversalRawUtf8",
+      "hardCeiling": 12,
+      "attempted": 13,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "receipt cannot be reserved; literal bypass before any rule publication",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-reversalCookedUtf8-12",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "reversalCookedUtf8",
+      "hardCeiling": 12,
+      "attempted": 12,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "within this dimension; other admission and real work still checked",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-reversalCookedUtf8-13",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "reversalCookedUtf8",
+      "hardCeiling": 12,
+      "attempted": 13,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "receipt cannot be reserved; literal bypass before any rule publication",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-reversalPayloadMetadataBytes-4096",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "reversalPayloadMetadataBytes",
+      "hardCeiling": 4096,
+      "attempted": 4096,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "within this dimension; other admission and real work still checked",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "CAP-reversalPayloadMetadataBytes-4097",
+      "group": "LIMIT_ACCOUNTING",
+      "sourceAuthority": "NEW finite proposed cap; source-first amount boundary",
+      "dimension": "reversalPayloadMetadataBytes",
+      "hardCeiling": 4096,
+      "attempted": 4097,
+      "globalBudget": "otherwise sufficient; actual spent work retained",
+      "expected": "receipt cannot be reserved; literal bypass before any rule publication",
+      "originalData": "byte/scalar exact; no silent truncation"
+    },
+    {
+      "id": "REFUSE-shared_work_units_exhausted",
+      "group": "ATOMIC_REFUSAL",
+      "sourceAuthority": "Existing atomic/session/history/source-owner contracts, not a typography fallback waiver",
+      "condition": "shared_work_units_exhausted",
+      "expectedPublicationDelta": 0,
+      "documentSelectionRevisionHistory": "unchanged",
+      "rawInput": "preserved through appropriate original ordinary/composition recovery owner when browser already produced raw input",
+      "retry": "No automatic fresh-meter or second command retry"
+    },
+    {
+      "id": "REFUSE-shared_work_bytes_exhausted",
+      "group": "ATOMIC_REFUSAL",
+      "sourceAuthority": "Existing atomic/session/history/source-owner contracts, not a typography fallback waiver",
+      "condition": "shared_work_bytes_exhausted",
+      "expectedPublicationDelta": 0,
+      "documentSelectionRevisionHistory": "unchanged",
+      "rawInput": "preserved through appropriate original ordinary/composition recovery owner when browser already produced raw input",
+      "retry": "No automatic fresh-meter or second command retry"
+    },
+    {
+      "id": "REFUSE-native_validation_refusal",
+      "group": "ATOMIC_REFUSAL",
+      "sourceAuthority": "Existing atomic/session/history/source-owner contracts, not a typography fallback waiver",
+      "condition": "native_validation_refusal",
+      "expectedPublicationDelta": 0,
+      "documentSelectionRevisionHistory": "unchanged",
+      "rawInput": "preserved through appropriate original ordinary/composition recovery owner when browser already produced raw input",
+      "retry": "No automatic fresh-meter or second command retry"
+    },
+    {
+      "id": "REFUSE-history_budget_exhausted",
+      "group": "ATOMIC_REFUSAL",
+      "sourceAuthority": "Existing atomic/session/history/source-owner contracts, not a typography fallback waiver",
+      "condition": "history_budget_exhausted",
+      "expectedPublicationDelta": 0,
+      "documentSelectionRevisionHistory": "unchanged",
+      "rawInput": "preserved through appropriate original ordinary/composition recovery owner when browser already produced raw input",
+      "retry": "No automatic fresh-meter or second command retry"
+    },
+    {
+      "id": "REFUSE-counter_overflow",
+      "group": "ATOMIC_REFUSAL",
+      "sourceAuthority": "Existing atomic/session/history/source-owner contracts, not a typography fallback waiver",
+      "condition": "counter_overflow",
+      "expectedPublicationDelta": 0,
+      "documentSelectionRevisionHistory": "unchanged",
+      "rawInput": "preserved through appropriate original ordinary/composition recovery owner when browser already produced raw input",
+      "retry": "No automatic fresh-meter or second command retry"
+    },
+    {
+      "id": "REFUSE-stale_original_range",
+      "group": "ATOMIC_REFUSAL",
+      "sourceAuthority": "Existing atomic/session/history/source-owner contracts, not a typography fallback waiver",
+      "condition": "stale_original_range",
+      "expectedPublicationDelta": 0,
+      "documentSelectionRevisionHistory": "unchanged",
+      "rawInput": "preserved through appropriate original ordinary/composition recovery owner when browser already produced raw input",
+      "retry": "No automatic fresh-meter or second command retry"
+    },
+    {
+      "id": "REFUSE-closed_session",
+      "group": "ATOMIC_REFUSAL",
+      "sourceAuthority": "Existing atomic/session/history/source-owner contracts, not a typography fallback waiver",
+      "condition": "closed_session",
+      "expectedPublicationDelta": 0,
+      "documentSelectionRevisionHistory": "unchanged",
+      "rawInput": "preserved through appropriate original ordinary/composition recovery owner when browser already produced raw input",
+      "retry": "No automatic fresh-meter or second command retry"
+    },
+    {
+      "id": "REFUSE-poisoned_session",
+      "group": "ATOMIC_REFUSAL",
+      "sourceAuthority": "Existing atomic/session/history/source-owner contracts, not a typography fallback waiver",
+      "condition": "poisoned_session",
+      "expectedPublicationDelta": 0,
+      "documentSelectionRevisionHistory": "unchanged",
+      "rawInput": "preserved through appropriate original ordinary/composition recovery owner when browser already produced raw input",
+      "retry": "No automatic fresh-meter or second command retry"
+    },
+    {
+      "id": "REFUSE-read_only",
+      "group": "ATOMIC_REFUSAL",
+      "sourceAuthority": "Existing atomic/session/history/source-owner contracts, not a typography fallback waiver",
+      "condition": "read_only",
+      "expectedPublicationDelta": 0,
+      "documentSelectionRevisionHistory": "unchanged",
+      "rawInput": "preserved through appropriate original ordinary/composition recovery owner when browser already produced raw input",
+      "retry": "No automatic fresh-meter or second command retry"
+    },
+    {
+      "id": "REFUSE-disabled_owner",
+      "group": "ATOMIC_REFUSAL",
+      "sourceAuthority": "Existing atomic/session/history/source-owner contracts, not a typography fallback waiver",
+      "condition": "disabled_owner",
+      "expectedPublicationDelta": 0,
+      "documentSelectionRevisionHistory": "unchanged",
+      "rawInput": "preserved through appropriate original ordinary/composition recovery owner when browser already produced raw input",
+      "retry": "No automatic fresh-meter or second command retry"
+    },
+    {
+      "id": "CONFIG-REFUSE-unknown_locale",
+      "group": "CONFIG_ADMISSION",
+      "sourceAuthority": "NEW closed immutable configuration proposal",
+      "condition": "unknown_locale",
+      "expected": "typed open/config refusal before session publication; original document bytes retained; no config side effect"
+    },
+    {
+      "id": "CONFIG-REFUSE-unknown_rule_name",
+      "group": "CONFIG_ADMISSION",
+      "sourceAuthority": "NEW closed immutable configuration proposal",
+      "condition": "unknown_rule_name",
+      "expected": "typed open/config refusal before session publication; original document bytes retained; no config side effect"
+    },
+    {
+      "id": "CONFIG-REFUSE-duplicate_rule",
+      "group": "CONFIG_ADMISSION",
+      "sourceAuthority": "NEW closed immutable configuration proposal",
+      "condition": "duplicate_rule",
+      "expected": "typed open/config refusal before session publication; original document bytes retained; no config side effect"
+    },
+    {
+      "id": "CONFIG-REFUSE-host_rule_reordering",
+      "group": "CONFIG_ADMISSION",
+      "sourceAuthority": "NEW closed immutable configuration proposal",
+      "condition": "host_rule_reordering",
+      "expected": "typed open/config refusal before session publication; original document bytes retained; no config side effect"
+    },
+    {
+      "id": "CONFIG-REFUSE-EN_cyrillic_nbsp_enabled",
+      "group": "CONFIG_ADMISSION",
+      "sourceAuthority": "NEW closed immutable configuration proposal",
+      "condition": "EN_cyrillic_nbsp_enabled",
+      "expected": "typed open/config refusal before session publication; original document bytes retained; no config side effect"
+    },
+    {
+      "id": "CONFIG-REFUSE-unknown_config_field",
+      "group": "CONFIG_ADMISSION",
+      "sourceAuthority": "NEW closed immutable configuration proposal",
+      "condition": "unknown_config_field",
+      "expected": "typed open/config refusal before session publication; original document bytes retained; no config side effect"
+    },
+    {
+      "id": "CONFIG-REFUSE-wrong_version",
+      "group": "CONFIG_ADMISSION",
+      "sourceAuthority": "NEW closed immutable configuration proposal",
+      "condition": "wrong_version",
+      "expected": "typed open/config refusal before session publication; original document bytes retained; no config side effect"
+    },
+    {
+      "id": "CONFIG-REFUSE-cap_above_ceiling",
+      "group": "CONFIG_ADMISSION",
+      "sourceAuthority": "NEW closed immutable configuration proposal",
+      "condition": "cap_above_ceiling",
+      "expected": "typed open/config refusal before session publication; original document bytes retained; no config side effect"
+    },
+    {
+      "id": "CONFIG-REFUSE-negative_cap",
+      "group": "CONFIG_ADMISSION",
+      "sourceAuthority": "NEW closed immutable configuration proposal",
+      "condition": "negative_cap",
+      "expected": "typed open/config refusal before session publication; original document bytes retained; no config side effect"
+    },
+    {
+      "id": "CONFIG-REFUSE-fractional_cap",
+      "group": "CONFIG_ADMISSION",
+      "sourceAuthority": "NEW closed immutable configuration proposal",
+      "condition": "fractional_cap",
+      "expected": "typed open/config refusal before session publication; original document bytes retained; no config side effect"
+    },
+    {
+      "id": "CONFIG-REFUSE-nonfinite_cap",
+      "group": "CONFIG_ADMISSION",
+      "sourceAuthority": "NEW closed immutable configuration proposal",
+      "condition": "nonfinite_cap",
+      "expected": "typed open/config refusal before session publication; original document bytes retained; no config side effect"
+    },
+    {
+      "id": "CONFIG-REFUSE-nondata_callback",
+      "group": "CONFIG_ADMISSION",
+      "sourceAuthority": "NEW closed immutable configuration proposal",
+      "condition": "nondata_callback",
+      "expected": "typed open/config refusal before session publication; original document bytes retained; no config side effect"
+    }
+  ]
+}
