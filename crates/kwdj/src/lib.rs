@@ -13,6 +13,7 @@ pub mod commands;
 mod core_bridge;
 mod edit_normalize;
 pub mod model;
+pub mod typing;
 pub use admission::{AdmissionBudget, RAW_INPUT_BYTE_CEILING};
 pub use core_bridge::{admit_core_document, admit_core_document_with_budget};
 mod normalize;

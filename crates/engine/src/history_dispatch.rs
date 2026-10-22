@@ -229,6 +229,7 @@ impl<P: HistoryProfile> Session<P> {
             cache_update: Some(validated.cache),
             impact,
             notification: None,
+            input_result: None,
             work: work.usage(),
             trace: work.trace(),
         };

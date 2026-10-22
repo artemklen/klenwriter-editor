@@ -2,8 +2,8 @@
 //! Full command availability and execution share one publication-free prepare.
 
 use editor_core::commands::{
-    CatalogError, CommandCatalog, CommandPresentation, CommandProvider, CommandState, MAX_COMMANDS,
-    PlanBuilder, StoredMarksUpdate,
+    CatalogError, CommandCatalog, CommandPresentation, CommandProvider, CommandState,
+    InputCommandPolicy, MAX_COMMANDS, PlanBuilder, StoredMarksUpdate,
 };
 use editor_core::document::Mark;
 use editor_core::transaction::{WorkMeter, WorkUsage};
@@ -12,6 +12,9 @@ use super::dispatch::{PreparedFor, TypingPolicy};
 use super::{AccessMode, Session, SessionError, SessionState, StateError};
 use crate::history::HistoryHint;
 use crate::identity::{NodeId, SessionKey};
+pub use crate::input_result::{
+    InputFinalRegion, InputResultError, InputTextSpan, RawInputRestore, TextReplacementResult,
+};
 use crate::mapping::PositionMap;
 use crate::transaction::{DispatchOutcome, Transaction, TransactionError, TransactionLimits};
 use crate::tree::{Allocation, TreeDraft};
@@ -56,10 +59,16 @@ pub enum CommandError<E> {
     Catalog(CatalogError),
     UnknownCommand,
     Transaction(TransactionError<E>),
+    InputUnsupported,
+    InputRouteRequired,
+    InputResult(InputResultError),
 }
 impl<E> From<TransactionError<E>> for CommandError<E> {
     fn from(error: TransactionError<E>) -> Self {
-        Self::Transaction(error)
+        match error {
+            TransactionError::InputResult(error) => Self::InputResult(error),
+            error => Self::Transaction(error),
+        }
     }
 }
 
@@ -101,10 +110,31 @@ pub enum CommandOutcome<E> {
     },
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[expect(
+    clippy::large_enum_variant,
+    reason = "Prepared bounded input data transfers without a post-publication allocation"
+)]
+pub enum InputCommandOutcome<E> {
+    Completed {
+        presentation: CommandPresentation,
+        outcome: DispatchOutcome<E>,
+        result: Option<TextReplacementResult>,
+    },
+    Refused {
+        reason: &'static str,
+        error: CommandError<E>,
+        work: WorkUsage,
+    },
+}
+
 fn reason<P: CommandProvider>(error: &CommandError<P::Error>) -> &'static str {
     match error {
         CommandError::Catalog(error) => error.as_str(),
         CommandError::UnknownCommand => "command.unknown",
+        CommandError::InputUnsupported => "command.input_unsupported",
+        CommandError::InputRouteRequired => "command.input_route_required",
+        CommandError::InputResult(error) => error.as_str(),
         CommandError::Transaction(error) => crate::transaction::error_code(error, P::error_code),
     }
 }
@@ -170,6 +200,7 @@ impl<P: CommandProvider> Session<P> {
         request: &CommandRequest<P::Intent<NodeId>>,
         draft: TreeDraft<'_, A>,
         work: &mut WorkMeter,
+        input_policy: Option<InputCommandPolicy>,
     ) -> CommandPreparation<P, A> {
         self.guard(request.session, Some(request.revision))
             .map_err(|error| CommandError::Transaction(TransactionError::State(error)))?;
@@ -185,6 +216,14 @@ impl<P: CommandProvider> Session<P> {
             return Err(CommandError::Transaction(TransactionError::State(
                 StateError::StaleHistoryEpoch,
             )));
+        }
+        if input_policy.is_some() {
+            if !self.profile.supports_input_command(&request.intent) {
+                return Err(CommandError::InputUnsupported);
+            }
+            if request.history_hint != HistoryHint::Isolated {
+                return Err(CommandError::InputResult(InputResultError::Invalid));
+            }
         }
         // Both static and instance catalogs are immutable profile-owned views.
         // Meter the bounded duplicate comparison before inspecting their IDs.
@@ -203,20 +242,36 @@ impl<P: CommandProvider> Session<P> {
             return Err(CommandError::UnknownCommand);
         }
         let mut builder = PlanBuilder::new(work, request.limits.operations);
-        let presentation = self
-            .profile
-            .prepare_command(
+        let state = CommandState {
+            selection: self.selection.as_ref(),
+            stored_marks: self.stored_marks.as_deref(),
+        };
+        let presentation = match input_policy {
+            None => self.profile.prepare_command(
                 &self.context,
                 &self.tree,
-                CommandState {
-                    selection: self.selection.as_ref(),
-                    stored_marks: self.stored_marks.as_deref(),
-                },
+                state,
                 &request.intent,
                 &mut builder,
-            )
-            .map_err(|error| CommandError::Transaction(TransactionError::Profile(error)))?;
+            ),
+            Some(policy) => self.profile.prepare_input_command(
+                &self.context,
+                &self.tree,
+                state,
+                &request.intent,
+                policy,
+                &mut builder,
+            ),
+        }
+        .map_err(|error| CommandError::Transaction(TransactionError::Profile(error)))?;
         let plan = builder.finish();
+        if plan.input_result.is_some() && input_policy.is_none() {
+            return Err(CommandError::InputRouteRequired);
+        }
+        if plan.input_result.is_some() && input_policy == Some(InputCommandPolicy::LiteralOnly) {
+            return Err(CommandError::InputResult(InputResultError::Invalid));
+        }
+
         let transaction = Transaction {
             session: request.session,
             revision: request.revision,
@@ -227,10 +282,11 @@ impl<P: CommandProvider> Session<P> {
             selection: plan.selection,
             limits: request.limits,
         };
-        let prepared = self.prepare_transaction(
+        let prepared = self.prepare_transaction_with_input(
             transaction,
             draft,
             TypingPolicy::Command(plan.stored_marks),
+            plan.input_result,
             work,
             |view, selection, proposed, work| {
                 self.profile
@@ -249,7 +305,7 @@ impl<P: CommandProvider> Session<P> {
         request: &CommandRequest<P::Intent<NodeId>>,
     ) -> CommandAvailability<P::Error> {
         let mut work = self.preparation_work(request.limits.work);
-        match self.prepare_command_request(request, self.tree.prepare_preview(), &mut work) {
+        match self.prepare_command_request(request, self.tree.prepare_preview(), &mut work, None) {
             Ok((prepared, presentation)) => CommandAvailability::Available {
                 presentation,
                 effect: if prepared.changed() {
@@ -274,13 +330,93 @@ impl<P: CommandProvider> Session<P> {
         request: &CommandRequest<P::Intent<NodeId>>,
     ) -> CommandOutcome<P::Error> {
         let mut work = self.preparation_work(request.limits.work);
-        let prepared = self.prepare_command_request(request, self.tree.prepare(), &mut work);
+        let prepared = self.prepare_command_request(request, self.tree.prepare(), &mut work, None);
         match prepared {
             Ok((prepared, presentation)) => CommandOutcome::Completed {
                 presentation,
                 outcome: self.publish_prepared(prepared),
             },
             Err(error) => CommandOutcome::Refused {
+                reason: reason::<P>(&error),
+                error,
+                work: work.usage(),
+            },
+        }
+    }
+    /// Same complete native preparation as input execution; preview returns no
+    /// result or usable allocation identities and retains no receipt state.
+    pub fn query_input_command(
+        &self,
+        request: &CommandRequest<P::Intent<NodeId>>,
+    ) -> CommandAvailability<P::Error> {
+        let mut work = self.preparation_work(request.limits.work);
+        let prepared = self.prepare_command_request(
+            request,
+            self.tree.prepare_preview(),
+            &mut work,
+            Some(InputCommandPolicy::AllowRules),
+        );
+        let prepared = match prepared {
+            Err(CommandError::InputResult(InputResultError::LocalLimit)) => self
+                .prepare_command_request(
+                    request,
+                    self.tree.prepare_preview(),
+                    &mut work,
+                    Some(InputCommandPolicy::LiteralOnly),
+                ),
+            other => other,
+        };
+        match prepared {
+            Ok((prepared, presentation)) => CommandAvailability::Available {
+                presentation,
+                effect: if prepared.changed() {
+                    CommandEffect::Changed
+                } else {
+                    CommandEffect::Unchanged
+                },
+                selection_changed: prepared.selection_changed,
+                stored_marks_changed: prepared.stored_marks_changed,
+                work: work.usage(),
+            },
+            Err(error) => CommandAvailability::Unavailable {
+                reason: reason::<P>(&error),
+                error,
+                work: work.usage(),
+            },
+        }
+    }
+
+    pub fn execute_input_command(
+        &mut self,
+        request: &CommandRequest<P::Intent<NodeId>>,
+    ) -> InputCommandOutcome<P::Error> {
+        let mut work = self.preparation_work(request.limits.work);
+        let prepared = self.prepare_command_request(
+            request,
+            self.tree.prepare(),
+            &mut work,
+            Some(InputCommandPolicy::AllowRules),
+        );
+        let prepared = match prepared {
+            Err(CommandError::InputResult(InputResultError::LocalLimit)) => self
+                .prepare_command_request(
+                    request,
+                    self.tree.prepare(),
+                    &mut work,
+                    Some(InputCommandPolicy::LiteralOnly),
+                ),
+            other => other,
+        };
+        match prepared {
+            Ok((mut prepared, presentation)) => {
+                let result = prepared.input_result.take();
+                InputCommandOutcome::Completed {
+                    presentation,
+                    outcome: self.publish_prepared(prepared),
+                    result,
+                }
+            }
+            Err(error) => InputCommandOutcome::Refused {
                 reason: reason::<P>(&error),
                 error,
                 work: work.usage(),

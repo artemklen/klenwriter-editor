@@ -2,7 +2,7 @@
 /** Profile-specific command construction; all semantic checks remain in Rust. */
 export { artifactStage } from '@klenwriter/editor-sdk';
 import { createCommand } from '@klenwriter/editor-sdk';
-import type { CommandDto, KwdjIntentDto } from '@klenwriter/editor-sdk';
+import type { CommandDto, DeepReadonly, KwdjIntentDto, RawInputRestoreV2 } from '@klenwriter/editor-sdk';
 
 export type { KwdjIntentDto, BlockTargetDto, ListKindDto, MarkDto } from '@klenwriter/editor-sdk';
 
@@ -24,6 +24,14 @@ export function kwdjCommand(intent: KwdjIntentDto): CommandDto {
   }
   const name = commandNames[kind.value as KwdjIntentDto['kind']];
   return createCommand(`org.klenwriter.kwdj/command/${name}`, intent);
+}
+
+/** Explicit ABI2 input route only; configuration and semantics belong to the native profile. */
+export function kwdjTypedTextCommand(text:string,origin:'ordinary_insert_text'|'composition_commit'):CommandDto {
+  return createCommand('org.klenwriter.kwdj/command/insert-typed-text',{kind:'insert_typed_text',text,origin});
+}
+export function kwdjRestoreTypedTextCommand(restore:DeepReadonly<RawInputRestoreV2>):CommandDto {
+  return createCommand('org.klenwriter.kwdj/command/restore-typed-text',{kind:'restore_typed_text',restore});
 }
 
 export { kwdjSlashCandidates, kwdjSlashTextBlockTypes } from './slash-candidates.generated.js';

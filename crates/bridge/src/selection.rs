@@ -116,6 +116,14 @@ impl<P: CommandProvider, A: BridgeAdapter<P>> Bridge<P, A> {
             return fatal.into();
         }
         match request {
+            BridgeRequestV2::InputCommand(InputCommandRequestV2::InputCommand {
+                stamp,
+                command,
+            }) => self.input_command(stamp, command, false),
+            BridgeRequestV2::QueryInputCommand(QueryInputCommandRequestV2::QueryInputCommand {
+                stamp,
+                command,
+            }) => self.input_command(stamp, command, true),
             BridgeRequestV2::ClipboardContext(ClipboardContextRequestV2::ClipboardContext {
                 stamp,
             }) => self.clipboard_context(&stamp),

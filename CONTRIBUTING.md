@@ -225,3 +225,9 @@ notices; пользовательские документы/секреты не
 Пакеты включают точную копию `provenance/source-files.json`. После отдельной
 проверки изменения owner grant выполните `npm run sync:provenance`; metadata lint
 отказывает при stale копии или расхождении лицензий с корнем.
+
+`npm run test:typography` проверяет [опциональные input rules](docs/typography.md):
+независимые native/compiled-WASM goldens, контролируемые SDK/DOM owners и sealed
+SDK во всех трёх браузерных движках. Lane входит в `npm run check`; installed
+Chrome/Safari используют отдельный физический ввод в обычном Terminal.
+Исходные CMS17, 69 полных canonical-файлов и прежние assertions сохраняются.

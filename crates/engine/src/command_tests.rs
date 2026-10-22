@@ -1427,3 +1427,6 @@ fn explicit_typing_setter_checks_readonly_and_every_captured_context_token() {
         assert_eq!(s.profile.finalizer_calls.get(), calls);
     }
 }
+
+#[path = "input_command_tests.rs"]
+mod input_tests;

@@ -1,0 +1,412 @@
+{
+  "format": "osr48-additional-source-oracles/1",
+  "task": "OSR-48",
+  "provenance": {
+    "authority": [
+      "contracts/typography/v1/rules-contract.json",
+      "contracts/typography/v1/golden-matrix.json",
+      "docs/m0/decision-register.md#D14"
+    ],
+    "authoredBeforeCandidateExecution": true,
+    "expectedDataNeverDerivedFromRuntime": true,
+    "qualification": "New bounded native ABI2 coverage, additional to the immutable 69 canonical files and 16 complete native state/history/map oracles. No browser, physical input or old CMS link parity claim."
+  },
+  "localCaps": [
+    {
+      "id": "CAP-ZERO-lookbehind_scalars",
+      "limit": "lookbehind_scalars",
+      "maximum": 3,
+      "beforeCanonical": "{\"content\":[{\"content\":[{\"text\":\"а \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "typed": {
+        "text": "\"",
+        "origin": "ordinary_insert_text"
+      },
+      "expectedCanonical": "{\"content\":[{\"content\":[{\"text\":\"а \\\"\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "expectedResult": null,
+      "rationale": "A quote after Cyrillic plus SPACE requires a bounded lexical/proposal check; zero admits the ordinary literal insertion only."
+    },
+    {
+      "id": "CAP-ZERO-inline_slots",
+      "limit": "inline_slots",
+      "maximum": 32,
+      "beforeCanonical": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"а \",\"type\":\"text\"},{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"x\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "child",
+          "path": "/content/0",
+          "index": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "child",
+          "path": "/content/0",
+          "index": 1,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": [
+        {
+          "type": "strong"
+        }
+      ],
+      "typed": {
+        "text": "\"",
+        "origin": "ordinary_insert_text"
+      },
+      "expectedCanonical": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"а \\\"\",\"type\":\"text\"},{\"marks\":[{\"type\":\"emphasis\"}],\"text\":\"x\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "expectedResult": null,
+      "rationale": "A Child gap between differently styled leaves requires the previous inline slot for the SPACE predecessor. Explicit strong stored marks fix the literal quote inheritance; the right emphasis leaf survives."
+    },
+    {
+      "id": "CAP-ZERO-ancestor_depth",
+      "limit": "ancestor_depth",
+      "maximum": 32,
+      "beforeCanonical": "{\"content\":[{\"content\":[{\"text\":\"а \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "typed": {
+        "text": "\"",
+        "origin": "ordinary_insert_text"
+      },
+      "expectedCanonical": "{\"content\":[{\"content\":[{\"text\":\"а \\\"\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "expectedResult": null,
+      "rationale": "A quote after Cyrillic plus SPACE requires a bounded lexical/proposal check; zero admits the ordinary literal insertion only."
+    },
+    {
+      "id": "CAP-ZERO-selected_scalars",
+      "limit": "selected_scalars",
+      "maximum": 4096,
+      "beforeCanonical": "{\"content\":[{\"content\":[{\"text\":\"а слово\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "offset": 7,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "typed": {
+        "text": "\"",
+        "origin": "ordinary_insert_text"
+      },
+      "expectedCanonical": "{\"content\":[{\"content\":[{\"text\":\"а \\\"\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "expectedResult": null,
+      "rationale": "The nonempty five-scalar/ten-UTF8-byte selection intersects one text node. Its selected dimension exceeds zero; literal insertion still replaces the selected word."
+    },
+    {
+      "id": "CAP-ZERO-selected_utf8",
+      "limit": "selected_utf8",
+      "maximum": 16384,
+      "beforeCanonical": "{\"content\":[{\"content\":[{\"text\":\"а слово\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "offset": 7,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "typed": {
+        "text": "\"",
+        "origin": "ordinary_insert_text"
+      },
+      "expectedCanonical": "{\"content\":[{\"content\":[{\"text\":\"а \\\"\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "expectedResult": null,
+      "rationale": "The nonempty five-scalar/ten-UTF8-byte selection intersects one text node. Its selected dimension exceeds zero; literal insertion still replaces the selected word."
+    },
+    {
+      "id": "CAP-ZERO-selected_nodes",
+      "limit": "selected_nodes",
+      "maximum": 256,
+      "beforeCanonical": "{\"content\":[{\"content\":[{\"text\":\"а слово\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "offset": 7,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "typed": {
+        "text": "\"",
+        "origin": "ordinary_insert_text"
+      },
+      "expectedCanonical": "{\"content\":[{\"content\":[{\"text\":\"а \\\"\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "expectedResult": null,
+      "rationale": "The nonempty five-scalar/ten-UTF8-byte selection intersects one text node. Its selected dimension exceeds zero; literal insertion still replaces the selected word."
+    },
+    {
+      "id": "CAP-ZERO-mark_records",
+      "limit": "mark_records",
+      "maximum": 1024,
+      "beforeCanonical": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"а \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "typed": {
+        "text": "\"",
+        "origin": "ordinary_insert_text"
+      },
+      "expectedCanonical": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"а \\\"\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "expectedResult": null,
+      "rationale": "The actual nonprotected strong mark must be examined. Zero mark-record capacity bypasses typography, while native insertion keeps strong."
+    },
+    {
+      "id": "CAP-ZERO-work_units",
+      "limit": "work_units",
+      "maximum": 32768,
+      "beforeCanonical": "{\"content\":[{\"content\":[{\"text\":\"а \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "typed": {
+        "text": "\"",
+        "origin": "ordinary_insert_text"
+      },
+      "expectedCanonical": "{\"content\":[{\"content\":[{\"text\":\"а \\\"\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "expectedResult": null,
+      "rationale": "A quote after Cyrillic plus SPACE requires a bounded lexical/proposal check; zero admits the ordinary literal insertion only."
+    },
+    {
+      "id": "CAP-ZERO-work_bytes",
+      "limit": "work_bytes",
+      "maximum": 65536,
+      "beforeCanonical": "{\"content\":[{\"content\":[{\"text\":\"а \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "typed": {
+        "text": "\"",
+        "origin": "ordinary_insert_text"
+      },
+      "expectedCanonical": "{\"content\":[{\"content\":[{\"text\":\"а \\\"\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "expectedResult": null,
+      "rationale": "A quote after Cyrillic plus SPACE requires a bounded lexical/proposal check; zero admits the ordinary literal insertion only."
+    },
+    {
+      "id": "CAP-ZERO-restoration_bytes",
+      "limit": "restoration_bytes",
+      "maximum": 4096,
+      "beforeCanonical": "{\"content\":[{\"content\":[{\"text\":\"а \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "path": "/content/0/content/0",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "storedMarks": null,
+      "typed": {
+        "text": "\"",
+        "origin": "ordinary_insert_text"
+      },
+      "expectedCanonical": "{\"content\":[{\"content\":[{\"text\":\"а \\\"\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "expectedResult": null,
+      "rationale": "A quote after Cyrillic plus SPACE requires a bounded lexical/proposal check; zero admits the ordinary literal insertion only."
+    }
+  ],
+  "invalidConfigurations": [
+    {
+      "version": 1,
+      "locale": "de",
+      "rules": null,
+      "limits": null
+    },
+    {
+      "version": 2,
+      "locale": "ru",
+      "rules": null,
+      "limits": null
+    },
+    {
+      "version": 1,
+      "locale": "en",
+      "rules": [
+        "cyrillic_nbsp"
+      ],
+      "limits": null
+    },
+    {
+      "version": 1,
+      "locale": "ru",
+      "rules": [
+        "double_quotes",
+        "double_quotes"
+      ],
+      "limits": null
+    },
+    {
+      "version": 1,
+      "locale": "ru",
+      "rules": [
+        "unknown"
+      ],
+      "limits": null
+    },
+    {
+      "version": 1,
+      "locale": "ru",
+      "rules": null,
+      "limits": {
+        "unknown": 0
+      }
+    },
+    {
+      "version": 1,
+      "locale": "ru",
+      "rules": null,
+      "limits": {
+        "lookbehind_scalars": -1
+      }
+    },
+    {
+      "version": 1,
+      "locale": "ru",
+      "rules": null,
+      "limits": {
+        "lookbehind_scalars": 1.5
+      }
+    },
+    {
+      "version": 1,
+      "locale": "ru",
+      "rules": null,
+      "limits": {
+        "lookbehind_scalars": false
+      }
+    }
+  ],
+  "referenceProtection": {
+    "id": "PROTECT-REFERENCE-CURRENT-STORED",
+    "beforeCanonical": "{\"content\":[{\"content\":[{\"marks\":[{\"attrs\":{\"reference_entity_id\":\"550e8400-e29b-41d4-a716-446655440006\"},\"type\":\"reference_link\"}],\"text\":\"а \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+    "selection": {
+      "anchor": {
+        "kind": "text",
+        "path": "/content/0/content/0",
+        "offset": 2,
+        "affinity": "after"
+      },
+      "focus": {
+        "kind": "text",
+        "path": "/content/0/content/0",
+        "offset": 2,
+        "affinity": "after"
+      }
+    },
+    "storedMarks": [
+      {
+        "type": "reference_link",
+        "attrs": {
+          "reference_entity_id": "550e8400-e29b-41d4-a716-446655440006"
+        }
+      }
+    ],
+    "identities": {
+      "media": [],
+      "references": [
+        {
+          "id": "550e8400-e29b-41d4-a716-446655440006",
+          "status": "exists"
+        }
+      ]
+    },
+    "typed": {
+      "text": "\"",
+      "origin": "ordinary_insert_text"
+    },
+    "expectedCanonical": "{\"content\":[{\"content\":[{\"marks\":[{\"attrs\":{\"reference_entity_id\":\"550e8400-e29b-41d4-a716-446655440006\"},\"type\":\"reference_link\"}],\"text\":\"а \\\"\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+    "expectedResult": null
+  }
+}

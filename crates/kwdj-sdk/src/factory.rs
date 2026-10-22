@@ -29,6 +29,9 @@ pub struct KwdjOptionsV2 {
     pub identities: IdentityFactsDto,
     #[serde(deserialize_with = "required_option")]
     pub limits: Option<ProfileLimitsDto>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[cfg_attr(all(feature = "sdk-types", not(target_arch = "wasm32")), ts(optional = nullable))]
+    pub typing_rules: Option<crate::wire_v2::KwdjTypingRulesV2>,
 }
 fn required_option<'de, T: Deserialize<'de>, D: Deserializer<'de>>(
     d: D,
@@ -45,10 +48,16 @@ impl SessionFactory for KwdjFactory {
             profile_version: editor_kwdj::KWDJ_PROFILE_VERSION.into(),
             codec_id: editor_kwdj::KWDJ_CODEC_ID.into(),
             wire_version: 1,
-            compiled_extensions: vec![ExtensionDto {
-                id: editor_kwdj::KWDJ_BASE_EXTENSION_ID.into(),
-                version: editor_kwdj::KWDJ_BASE_EXTENSION_VERSION.into(),
-            }],
+            compiled_extensions: vec![
+                ExtensionDto {
+                    id: editor_kwdj::KWDJ_BASE_EXTENSION_ID.into(),
+                    version: editor_kwdj::KWDJ_BASE_EXTENSION_VERSION.into(),
+                },
+                ExtensionDto {
+                    id: editor_kwdj::registry::TYPING_EXTENSION_ID.into(),
+                    version: editor_kwdj::registry::TYPING_EXTENSION_VERSION.into(),
+                },
+            ],
         }
     }
     fn open(
@@ -60,13 +69,25 @@ impl SessionFactory for KwdjFactory {
         let (adapter, profile) =
             KwdjAdapter::prepare_owned(profile_options.identities, profile_options.limits)?;
         let mut work = WorkMeter::new(WorkLimits::default());
-        let profile = profile
-            .with_clipboard_registry_json(
+        let typing = profile_options
+            .typing_rules
+            .map(typing_config)
+            .transpose()?;
+        let profile = if let Some(typing) = typing {
+            profile.with_typing_registry_json(
+                typing,
                 options.registry_json.as_bytes(),
                 CompilerLimits::default(),
                 &mut work,
             )
-            .map_err(|error| profile_error(&error))?;
+        } else {
+            profile.with_clipboard_registry_json(
+                options.registry_json.as_bytes(),
+                CompilerLimits::default(),
+                &mut work,
+            )
+        }
+        .map_err(|error| profile_error(&error))?;
         let binding = profile_in(&options.profile)?;
         profile
             .binding()
@@ -112,7 +133,7 @@ fn capability_bytes(profile: &KwdjProfile<'_>) -> Result<Vec<u8>, DiagnosticDto>
     let budget = profile.budget();
     // Fixed-order field names and exact decimal strings; aliases/oversized host
     // reductions produce the same effective capability, never a raw-input hash.
-    serde_json::to_vec(&[
+    let mut fields = vec![
         ("document_bytes", limits.document_bytes.to_string()),
         ("tree_depth", limits.tree_depth.to_string()),
         ("node_count", limits.node_count.to_string()),
@@ -141,8 +162,72 @@ fn capability_bytes(profile: &KwdjProfile<'_>) -> Result<Vec<u8>, DiagnosticDto>
             "admission_cache_work_bytes",
             profile.admission_cache_work_limits().bytes.to_string(),
         ),
-    ])
-    .map_err(|_| diagnostic("sdk.transport_failed", "capabilities"))
+    ];
+    if let Some(typing) = profile.typing_rules() {
+        fields.push(("typing_rules_version", "1".into()));
+        fields.push((
+            "typing_locale",
+            match typing.locale() {
+                editor_kwdj::typing::Locale::Ru => "ru",
+                editor_kwdj::typing::Locale::En => "en",
+            }
+            .into(),
+        ));
+        fields.push(("typing_features", typing.feature_names().join(",")));
+        fields.extend(
+            typing
+                .limits()
+                .values()
+                .map(|(name, value)| (name, value.to_string())),
+        );
+    }
+    serde_json::to_vec(&fields).map_err(|_| diagnostic("sdk.transport_failed", "capabilities"))
+}
+
+fn typing_config(
+    value: crate::wire_v2::KwdjTypingRulesV2,
+) -> Result<editor_kwdj::typing::TypingRules, DiagnosticDto> {
+    use crate::wire_v2::{KwdjTypingFeatureV2 as F, KwdjTypingLocaleV2 as L};
+    use editor_kwdj::typing::{Feature, Locale, TypingLimits, TypingRules};
+    let invalid = || diagnostic("kwdj.typing_invalid_configuration", "typing_rules");
+    if value.version != 1 {
+        return Err(invalid());
+    }
+    let mut limits = TypingLimits::default();
+    if let Some(v) = value.limits {
+        macro_rules! reduce { ($($field:ident),*) => { $(if let Some(value) = v.$field { limits.$field = value; })* }; }
+        reduce!(
+            lookbehind_scalars,
+            inline_slots,
+            ancestor_depth,
+            selected_scalars,
+            selected_utf8,
+            selected_nodes,
+            mark_records,
+            work_units,
+            work_bytes,
+            restoration_bytes
+        );
+    }
+    let features = value.rules.map(|values| {
+        values
+            .into_iter()
+            .map(|v| match v {
+                F::SpacedEmDash => Feature::SpacedEmDash,
+                F::DoubleQuotes => Feature::DoubleQuotes,
+                F::CyrillicNbsp => Feature::CyrillicNbsp,
+            })
+            .collect::<Vec<_>>()
+    });
+    TypingRules::new(
+        match value.locale {
+            L::Ru => Locale::Ru,
+            L::En => Locale::En,
+        },
+        features.as_deref(),
+        limits,
+    )
+    .ok_or_else(invalid)
 }
 struct KwdjEndpoint {
     inner: Bridge<
@@ -157,6 +242,16 @@ impl Endpoint for KwdjEndpoint {
     fn call_json(&mut self, json: &str) -> String {
         if let Some(response) = self.inner.retained_fatal_response() {
             return self.inner.encode_response(response);
+        }
+        if let Ok(request) = decode::<editor_protocol::v2::InputCommandRequestV2>(json) {
+            return self
+                .inner
+                .call_json_v2(&serde_json::to_string(&request).expect("closed input serializes"));
+        }
+        if let Ok(request) = decode::<editor_protocol::v2::QueryInputCommandRequestV2>(json) {
+            return self.inner.call_json_v2(
+                &serde_json::to_string(&request).expect("closed input query serializes"),
+            );
         }
         if let Ok(request) = decode::<editor_protocol::v2::ClipboardContextRequestV2>(json) {
             return self.inner.call_json_v2(

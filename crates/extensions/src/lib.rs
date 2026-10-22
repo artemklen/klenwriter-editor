@@ -360,6 +360,46 @@ impl<P: CommandProvider + RegistryProfile> CommandProvider for Recipes<P> {
             Intent::Recipe(i) => &i.id,
         }
     }
+    fn supports_input_command<I: Copy + Eq + Ord>(&self, intent: &Self::Intent<I>) -> bool {
+        match intent {
+            Intent::Compiled(intent) => self.profile.supports_input_command(intent),
+            Intent::Recipe(_) => false,
+        }
+    }
+    fn prepare_input_command<V: CandidateRead>(
+        &self,
+        context: &Self::Context,
+        view: &V,
+        state: CommandState<'_, V::Id>,
+        intent: &Self::Intent<V::Id>,
+        policy: editor_core::commands::InputCommandPolicy,
+        plan: &mut PlanBuilder<'_, V::Id>,
+    ) -> Result<CommandPresentation, Self::Error> {
+        let Intent::Compiled(intent) = intent else {
+            return Err(Error::Registry(diagnostic(
+                RegistryErrorCode::InvalidRecipe,
+                "input requires compiled registration",
+                plan.work(),
+            )));
+        };
+        let id = P::command_id(intent);
+        charge(plan.work(), 1, id.len().min(129) as u64).map_err(Error::Registry)?;
+        if self
+            .registry()
+            .compiled_catalog_ids()
+            .binary_search_by(|expected| expected.as_str().cmp(id))
+            .is_err()
+        {
+            return Err(Error::Registry(diagnostic(
+                RegistryErrorCode::InvalidRecipe,
+                "input requires compiled registration",
+                plan.work(),
+            )));
+        }
+        self.profile
+            .prepare_input_command(context, view, state, intent, policy, plan)
+            .map_err(Error::Profile)
+    }
     fn prepare_command<V: CandidateRead>(
         &self,
         c: &Self::Context,

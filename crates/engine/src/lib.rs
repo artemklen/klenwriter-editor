@@ -5,6 +5,7 @@ pub mod events;
 mod grouping;
 pub mod history;
 pub mod identity;
+pub mod input_result;
 pub mod mapping;
 pub mod session;
 pub mod snapshot;
@@ -19,6 +20,8 @@ pub use identity::{IdentityTokenError, MAX_IDENTITY_TOKEN_BYTES, NodeId, Session
 pub use session::commands;
 pub use session::commands::{
     CommandAvailability, CommandEffect, CommandError, CommandOutcome, CommandRequest,
+    InputCommandOutcome, InputFinalRegion, InputResultError, InputTextSpan, RawInputRestore,
+    TextReplacementResult,
 };
 pub use session::history_dispatch::{
     HistoryAvailability, HistoryBoundaryEvent, HistoryOutcome, HistoryRequest,

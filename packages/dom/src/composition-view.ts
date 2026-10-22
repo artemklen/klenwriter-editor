@@ -3,6 +3,8 @@
 import type { DeepReadonly, NodeViewDto, PositionDto, SelectionDto, StampDto } from '@klenwriter/editor-sdk';
 import type { DomRefusal, RecoveryRegion } from './types.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
+import type { LiteralCompositionSource } from './composition-literal.js';
+import type { MarkDto } from '@klenwriter/editor-sdk';
 
 export interface CompositionPoint { readonly node: Node; readonly offset: number }
 export interface CompositionEntry {
@@ -255,6 +257,13 @@ export function createCompositionCorrespondence(access: CompositionAccess) {
     }
     return node.isConnected===access.host.isConnected;
   }
+  function outside(window:CompositionWindow,state:WindowState,budget:Budget,recoveryOnly=false):DomRefusal|null {
+    const parent=window.parent;
+    if(window.before&&window.before.parentNode!==parent||window.after&&window.after.parentNode!==parent)return failure('dom.composition_stale',window.stamp);
+    for(const ancestor of state.ancestors){if(++budget.nodes>access.limits.nodes)return failure('dom.composition_limit',window.stamp);if(ancestor.row.outer.parentNode!==ancestor.parent||!recoveryOnly&&ancestor.row.outer!==access.host&&!attrsEqual(ancestor.row.outer,ancestor.attributes))return failure('dom.composition_stale',window.stamp);}
+    if(!recoveryOnly)for(const sentinel of state.outside){if(sentinel.node.parentNode!==parent||sentinel.node===window.before&&sentinel.node.previousSibling!==sentinel.previous||sentinel.node===window.after&&sentinel.node.nextSibling!==sentinel.next||!sameOutside(sentinel,budget))return failure('dom.composition_stale',window.stamp);}
+    return null;
+  }
   function begin(stamp:DeepReadonly<StampDto>,selection:DeepReadonly<SelectionDto>):CompositionWindow|DomRefusal {
     try {
       const actual=access.selection();if(!actual||isDomRefusal(actual)||!sameSelection(actual,selection))return failure('dom.composition_stale',stamp);
@@ -333,9 +342,7 @@ export function createCompositionCorrespondence(access: CompositionAccess) {
     const state=windows.get(window);if(!state||state.generation!==access.generation())return failure('dom.composition_stale',window.stamp);
     try {
       const budget:Budget={nodes:0,units:0,metadata:0},parent=window.parent;
-      if(window.before&&window.before.parentNode!==parent||window.after&&window.after.parentNode!==parent)return failure('dom.composition_stale',window.stamp);
-      for(const ancestor of state.ancestors){if(++budget.nodes>access.limits.nodes)return failure('dom.composition_limit',window.stamp);if(ancestor.row.outer.parentNode!==ancestor.parent||!recoveryOnly&&ancestor.row.outer!==access.host&&!attrsEqual(ancestor.row.outer,ancestor.attributes))return failure('dom.composition_stale',window.stamp);}
-      if(!recoveryOnly)for(const sentinel of state.outside){if(sentinel.node.parentNode!==parent||sentinel.node===window.before&&sentinel.node.previousSibling!==sentinel.previous||sentinel.node===window.after&&sentinel.node.nextSibling!==sentinel.next||!sameOutside(sentinel,budget))return failure('dom.composition_stale',window.stamp);}
+      const outsideFailure=outside(window,state,budget,recoveryOnly);if(outsideFailure)return outsideFailure;
       const actual:Node[]=[];let node:ChildNode|null=window.before?window.before.nextSibling:parent.firstChild;
       while(node!==window.after){if(!node||actual.length>=access.limits.blocks)return failure('dom.composition_limit',window.stamp);actual.push(node);node=node.nextSibling;}
       if(!actual.length||actual[0]!==window.entries[0].element)return failure('dom.composition_ambiguous',window.stamp);
@@ -368,5 +375,25 @@ export function createCompositionCorrespondence(access: CompositionAccess) {
       return Object.freeze({region,unchanged,replacement:unchanged?state.originalSelected:current.text.slice(state.prefixUnits,current.units-state.suffixUnits),fingerprint});
     } catch{return failure('dom.composition_limit',window.stamp);}
   }
-  return {begin,observe:(window:CompositionWindow)=>observe(window),capture:(window:CompositionWindow)=>observe(window,true),owns:(window:CompositionWindow)=>windows.get(window)?.generation===access.generation()};
+  function literalSource(window:CompositionWindow,text:string,stored_marks:DeepReadonly<readonly MarkDto[]>|null,root:string):LiteralCompositionSource|DomRefusal|null {
+    const state=windows.get(window);
+    if(!state||state.generation!==access.generation())return failure('dom.composition_stale',window.stamp);
+    if(window.entries.length!==1||state.scans.length!==1||state.prefixUnits!==0||state.suffixUnits!==0||window.selectedAtomIds.length||text.length===0)return null;
+    const block=window.entries[0].view,selected=window.selection;
+    if(block.primitive!=='text_block'||block.children.length!==1||selected.anchor.kind!=='text'||selected.focus.kind!=='text'
+      ||selected.anchor.node!==block.children[0]||selected.focus.node!==block.children[0])return null;
+    const leaf=access.row(block.children[0])?.view,parent=block.parent?access.row(block.parent)?.view:undefined;
+    if(!leaf||!parent||leaf.primitive!=='text'||leaf.text===null||leaf.children.length||leaf.parent!==block.id
+      ||!((selected.anchor.offset===0&&selected.focus.offset===leaf.text.length)||(selected.focus.offset===0&&selected.anchor.offset===leaf.text.length)))return null;
+    const observed=observe(window);
+    if(isDomRefusal(observed))return observed;
+    if(observed.region.kind!=='bounded'||observed.region.originalText!==leaf.text||observed.region.provisionalText!==text||observed.replacement!==text)return failure('dom.composition_stale',window.stamp);
+    return Object.freeze({stamp:window.stamp,selection:selected,stored_marks,root,text,leaf,block,parent,ancestors:Object.freeze(state.ancestors.map(ancestor=>ancestor.row.view))});
+  }
+  function literalOutside(window:CompositionWindow):DomRefusal|null {
+    const state=windows.get(window);
+    if(!state||state.generation!==access.generation())return failure('dom.composition_stale',window.stamp);
+    try{return outside(window,state,{nodes:0,units:0,metadata:0});}catch{return failure('dom.composition_limit',window.stamp);}
+  }
+  return {begin,observe:(window:CompositionWindow)=>observe(window),capture:(window:CompositionWindow)=>observe(window,true),owns:(window:CompositionWindow)=>windows.get(window)?.generation===access.generation(),literalSource,literalOutside};
 }

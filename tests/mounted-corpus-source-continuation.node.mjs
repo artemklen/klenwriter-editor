@@ -7,11 +7,22 @@ import {
   loadMountedSourceContinuation47,
   SOURCE_CONTINUATION47_PATH,
 } from '../scripts/mounted-corpus/source-continuation47.mjs';
+import { loadMountedSourceContinuation48 } from '../scripts/mounted-corpus/source-continuation48.mjs';
 
 // Source-authored finite integrity controls. These do not execute an editor,
 // native/WASM candidate, browser, mounted scenario, or semantic oracle.
 const ROOT = new URL('../', import.meta.url);
 const MAXIMUM = 4 * 1024 * 1024;
+// These unchanged assertion bodies control the accepted47 layer. The explicit
+// reader validates actual48 first, then supplies byte-exact retained47 input.
+// New48 controls independently inspect the unaliased current runtime bytes.
+const actualSourceReader = async (path, maximum) => {
+  const bytes = await readFile(new URL(path, ROOT));
+  assert.ok(bytes.byteLength <= maximum, 'Actual48 source read remains bounded');
+  return new Uint8Array(bytes);
+};
+const accepted47Layer = await loadMountedSourceContinuation48({ readArtifact: actualSourceReader });
+const accepted47SourceReader = accepted47Layer.retained47SourceReader(actualSourceReader);
 const HISTORICAL_SOURCE = '441bd3b2d7f9b0a40be26877ba74575b8e1882cd';
 const CURRENT_ANCHOR = 'e914716db9ed4143bea7e666e8cfb9e03de99479';
 const MANIFEST_PATH = 'contracts/mounted-e2e/v1.1/source-continuation47.json';
@@ -142,7 +153,7 @@ function readerWith(overrides = new Map()) {
   return async (path, maximum) => {
     const bytes = overrides.has(path)
       ? Buffer.from(overrides.get(path))
-      : await readFile(new URL(path, ROOT));
+      : await accepted47SourceReader(path, maximum);
     assert.ok(Number.isSafeInteger(maximum) && maximum >= 0, 'Bounded reader maximum');
     assert.ok(bytes.byteLength <= maximum, `Fixture artifact exceeds maximum: ${path}`);
     return new Uint8Array(bytes);

@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-import type { DeepReadonly, Response, SelectionDto, SessionContextV2, StampDto, StateDto, Submission } from '@klenwriter/editor-sdk';
+import type { DeepReadonly, InputCommandRequestV2, InputSubmissionV2, ResponseV2, SelectionDto, SessionContextV2, StampDto, StateDto } from '@klenwriter/editor-sdk';
 import type { CompositionObservation, CompositionWindow } from './composition-view.js';
 import type { DomView } from './view.js';
 import type { SelectionOwner } from './selection.js';
-import type { CompositionRecovery, CompositionUnappliedInput, DomRefusal, InputCommandBindings, MountedMutation, RecoveryRegion } from './types.js';
+import type { CompositionRecovery, CompositionUnappliedInput, DomRefusal, InputCommandBindings, MountedMutation, MountedMutationV2, RecoveryRegion } from './types.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
+import type { InputResultOwner, PreparedInput } from './input-result.js';
 
 export interface CompositionResources { readonly continuations:number; readonly retainedInputBytes:number; readonly retainedRecoveryRegions:number }
 export interface CompositionConfiguration {
@@ -12,8 +13,11 @@ export interface CompositionConfiguration {
   readonly canEdit:()=>boolean; readonly busy:()=>boolean;
   readonly capture:()=>DeepReadonly<StampDto>|null; readonly context:()=>DeepReadonly<SessionContextV2>|null;
   readonly readState:()=>DeepReadonly<StateDto>|null;
-  readonly submit:(request:MountedMutation)=>Submission|DomRefusal;
-  readonly ordinary:(event:InputEvent)=>Submission|DomRefusal|null;
+  readonly submit:(request:MountedMutation)=>InputSubmissionV2|DomRefusal;
+  readonly submitInput?:(request:InputCommandRequestV2)=>InputSubmissionV2|DomRefusal;
+  readonly ordinary:(event:InputEvent)=>InputSubmissionV2|DomRefusal|null;
+  readonly typed?:InputResultOwner;
+  readonly observeIntent?:(before:bigint,after:bigint,event:Event|null)=>void;
   readonly report:(failure:DomRefusal)=>unknown;
   readonly recover:(failure:DomRefusal,region?:RecoveryRegion|null,composition?:CompositionRecovery|null)=>void;
   readonly composing:(active:boolean)=>void; readonly consumeRecords:()=>number;
@@ -30,9 +34,10 @@ interface Generation {
   readonly id:bigint; window:CompositionWindow; readonly base:DeepReadonly<StampDto>;
   readonly context:DeepReadonly<SessionContextV2>; readonly selection:DeepReadonly<SelectionDto>;
   phase:Phase; serial:bigint; latest:CompositionObservation|null; mutations:number; captureExhausted:boolean;
+  claimed:CompositionObservation|null; resultWindow:CompositionWindow|null; literalWindow:CompositionWindow|null;
   reads:number; priorRaf:string|null; priorRafMutations:number; stable:number; deadline:number|null;
   closingKey:string|null; foreignDuringClaim:boolean;
-  submission:Submission|null; response:DeepReadonly<Response>|null; outcome:CompositionRecovery['nativeOutcome'];
+  submission:InputSubmissionV2|null; response:ResponseV2|null; outcome:CompositionRecovery['nativeOutcome'];
   accepted:Accepted|null;
 }
 interface Permit { readonly key:string; readonly code:string; readonly shift:boolean; serial:bigint; readonly accepted:Accepted }
@@ -60,6 +65,7 @@ export class CompositionOwner {
     this.#next=generation;
     this.#configuration=configuration;this.#sink=configuration.onResources;
     this.#unsubscribe=configuration.selection.observeInputIntent((before,after,event)=>{
+      configuration.observeIntent?.(before,after,event);
       const g=this.#generation;if(!g)return;
       if(!configuration.selection.intentAvailable()){g.foreignDuringClaim=true;return;}
       if(event && this.#ownedEvents.has(event) && before===g.serial){
@@ -119,7 +125,7 @@ export class CompositionOwner {
     const count=c.consumeRecords();
     if(!Number.isSafeInteger(count)||count<0||count>4096-g.mutations){g.captureExhausted=true;return this.#failure('capture_limit');}
     g.mutations+=count;
-    const result=c.view.observeComposition(g.window);
+    const result=c.view.observeComposition(g.resultWindow??g.window);
     if(!isDomRefusal(result)){g.latest=result;this.#emit();}
     return result;
   }
@@ -142,21 +148,22 @@ export class CompositionOwner {
     if(!c||!state||!c.selection.ownsFocus()||!this.#coherent(g))return null;
     return c.view.restoreSelection(state.selection);
   }
-  #recover(reason:Reason,event?:InputEvent|KeyboardEvent|CompositionEvent,region?:RecoveryRegion,restore=false):void {
+  #recover(reason:Reason,event?:InputEvent|KeyboardEvent|CompositionEvent,region?:RecoveryRegion,restore=false,publication?:'alreadyPublished'|'unknown'):void {
     if(this.#destroyed||!this.#configuration)return;
     if(event)this.#retainEvent(event);
     const g=this.#generation;
     if(this.#blocked)return;this.#blocked=true;
+    this.#configuration.typed?.retire();
     this.#stop();this.#clearKeys();
     // The safe copy/actual DOM capability is owned BEFORE any restoration/callback.
     const preserveClaim=reason==='native_fatal'||reason==='native_unknown';
-    const captured=g?.captureExhausted?this.#transfer():region??(preserveClaim?g?.latest?.region:null)??this.#recoveryRegion();
+    const captured=g?.captureExhausted?this.#transfer():region??(preserveClaim?(this.#ordinaryFrame?g?.latest?.region:g?.claimed?.region??g?.latest?.region):null)??this.#recoveryRegion();
     this.#packet=this.#snapshot(reason,captured);
     if(g)g.phase='committing';this.#emit();
     if(restore&&g){
       this.#unprotect();
       if(this.#destroyed)return;
-      let failure=this.#configuration?.view.restoreComposition(g.window);
+      let failure=this.#configuration?.view.restoreComposition(g.resultWindow??g.window);
       if(!failure&&!this.#destroyed)failure=this.#restoreOwnedSelection(g);
       if(!failure&&this.#packet){
         this.#packet=Object.freeze({region:this.#packet.region,composition:Object.freeze({...this.#packet.composition,disposition:'committed_restored'})});
@@ -165,7 +172,7 @@ export class CompositionOwner {
     if(this.#destroyed)return;
     if(g)g.phase='recovery';
     const packet=this.#packet,c=this.#configuration;
-    if(packet&&c)try{c.recover(this.#failure(reason),packet.region,packet.composition);}catch{/* Root already stored the sole copy; never replace the native cause. */}
+    if(packet&&c)try{const failure=this.#failure(reason);c.recover(publication?{...failure,diagnostic:{...failure.diagnostic,publication}}:failure,packet.region,packet.composition);}catch{/* Root already stored the sole copy; never replace the native cause. */}
     this.#emit();
   }
   #watch(deadline:number):void {
@@ -209,26 +216,40 @@ export class CompositionOwner {
     g.accepted={stamp:state.stamp,context,selection:state.selection,fingerprint:observation.fingerprint,serial:g.serial};
     g.phase=g.submission?'committed':'cancelled';this.#packet=null;this.#unapplied=null;this.#emit();
   }
-  #complete(id:bigint,response:DeepReadonly<Response>):void {
+  #complete(id:bigint,response:ResponseV2):void {
     const g=this.#generation;if(this.#destroyed||!g||g.id!==id)return;
     g.response=response;g.outcome='completed';
     if(this.#blocked)return;
     if(response.status==='refused'){this.#recover('native_refused',undefined,g.latest?.region,true);return;}
     if(response.status==='fatal'){this.#recover('native_fatal');return;}
     const c=this.#configuration,st=c?.readState();
-    if(!c||response.value.kind!=='mutation'||!st||!same(st,response.value.state)||!same(st.stamp,c.capture())){this.#recover('native_unknown');return;}
+    if(!c||(response.value.kind!=='mutation'&&response.value.kind!=='input_mutation')||!st||!same(st,response.value.state)||!same(st.stamp,c.capture())){this.#recover('native_unknown');return;}
+    if(response.value.kind==='input_mutation'&&(response.value.result!==null||!this.#ordinaryFrame)){
+      const window=c.typed?.joined(response);
+      if(window&&isDomRefusal(window)){
+        const publication=window.diagnostic.publication;
+        this.#recover('native_unknown',undefined,g.claimed?.region,false,publication==='none'?undefined:publication);return;
+      }
+      if(window){
+        g.resultWindow=window;g.literalWindow=response.value.result===null?window:null;
+        this.#accept(g);
+        if(response.value.result!==null&&!this.#blocked&&g.phase==='committed')c.typed?.arm(response);
+        return;
+      }
+      if(response.value.result!==null){this.#recover('native_unknown',undefined,g.claimed?.region,false,'alreadyPublished');return;}
+    }
     if(this.#ordinaryFrame){
       // Enter/delete may change the structural topology. The completed native
       // ordinary operation gets a new checked correspondence window; the old
       // composition range never authorizes that new target or its next permit.
       if(!st.selection){this.#recover('stale');return;}
       const window=c.view.beginComposition(st.stamp,st.selection);
-      try{if(isDomRefusal(window)){this.#recover('stale',undefined,this.#recoveryRegion());return;}g.window=window;}
+      try{if(isDomRefusal(window)){this.#recover('stale',undefined,this.#recoveryRegion());return;}g.window=window;g.resultWindow=null;}
       finally{c.view.endProvisional();}
     }
     this.#accept(g);
   }
-  #ticket(g:Generation,result:Submission|DomRefusal|null):void {
+  #ticket(g:Generation,result:InputSubmissionV2|DomRefusal|null):void {
     if(!result||isDomRefusal(result)){if(!this.#destroyed){g.outcome='not_submitted';this.#recover('busy');}return;}
     g.submission=result;
     if(result.status==='completed'){if(!this.#destroyed)this.#complete(g.id,result.response);return;}
@@ -237,7 +258,7 @@ export class CompositionOwner {
     this.#pending++;this.#emit();
     this.#await(g.id,result.completion);
   }
-  #await(id:bigint,completion:Promise<Response>):void {
+  #await(id:bigint,completion:Promise<ResponseV2>):void {
     // This closure captures only the owner/id, never a Generation/window/local
     // configuration. Destroy drops those owner fields while the SDK ticket runs.
     void completion.then(response=>this.#complete(id,response),()=>{if(!this.#destroyed){const current=this.#generation;if(current?.id===id){current.outcome='unknown';this.#recover('native_unknown');}}}).finally(()=>{
@@ -250,7 +271,7 @@ export class CompositionOwner {
     if(!this.#coherent(g)){this.#recover('stale');return;}
     if(c.busy()){this.#recover('busy');return;}
     if(this.#now()>=g.deadline){this.#recover('settle_limit');return;}
-    this.#stop();g.latest=observation;g.phase='committing';g.foreignDuringClaim=false;
+    this.#stop();g.latest=observation;g.claimed=c.typed?.enabled()?observation:null;g.phase='committing';g.foreignDuringClaim=false;
     this.#packet=this.#snapshot('native_unknown',observation.region);this.#emit();
     if(observation.unchanged){
       this.#unprotect();if(this.#destroyed)return;
@@ -258,8 +279,11 @@ export class CompositionOwner {
       if(failure){this.#recover('capture_limit',undefined,observation.region);return;}
       this.#accept(g);return;
     }
-    let command;
-    try{command=c.bindings.insertText?.(observation.replacement);}catch{this.#recover('ambiguous_tail');return;}
+    let command,prepared:PreparedInput|DomRefusal|null=null;
+    try{prepared=c.typed?.prepare(observation.replacement,'composition_commit',g.window,true)??null;
+      if(isDomRefusal(prepared)){this.#recover('stale');return;}
+      command=prepared?.command??c.bindings.insertText?.(observation.replacement);
+    }catch{this.#recover('ambiguous_tail');return;}
     if(this.#destroyed)return;
     if(!command){this.#recover('ambiguous_tail');return;}
     if(this.#now()>=g.deadline){this.#recover('settle_limit');return;}
@@ -267,7 +291,7 @@ export class CompositionOwner {
     if(this.#now()>=g.deadline){this.#recover('settle_limit');return;}
     g.outcome='unknown';this.#packet=this.#snapshot('native_unknown',observation.region);
     this.#nativeScope=true;this.#dispatching++;this.#emit();
-    try{const result=c.submit({kind:'command',stamp:g.base as StampDto,command,history_hint:{kind:'isolated'}});this.#nativeScope=false;this.#ticket(g,result);}
+    try{const result=prepared&&c.typed&&c.submitInput?c.typed.dispatch(prepared,c.submitInput):c.submit({kind:'command',stamp:g.base as StampDto,command,history_hint:{kind:'isolated'}});this.#nativeScope=false;this.#ticket(g,result);}
     catch{this.#nativeScope=false;if(!this.#destroyed)this.#recover('native_unknown');}
     finally{this.#dispatching--;this.#emit();if(this.#destroyed&&this.#pending===0)this.#sink=undefined;}
   }
@@ -286,7 +310,7 @@ export class CompositionOwner {
     const window=c.view.beginComposition(base,state.selection);
     if(isDomRefusal(window)){this.#recover('capture_limit',event,this.#transfer());return;}
     this.#clearKeys();
-    this.#next++;this.#generation={id:this.#next,window,base,context,selection:state.selection,phase:'composing',serial:c.selection.intent(),latest:null,mutations:0,captureExhausted:false,reads:0,priorRaf:null,priorRafMutations:0,stable:0,deadline:null,closingKey:null,foreignDuringClaim:false,submission:null,response:null,outcome:'not_submitted',accepted:null};
+    this.#next++;this.#generation={id:this.#next,window,base,context,selection:state.selection,phase:'composing',serial:c.selection.intent(),latest:null,claimed:null,resultWindow:null,literalWindow:null,mutations:0,captureExhausted:false,reads:0,priorRaf:null,priorRafMutations:0,stable:0,deadline:null,closingKey:null,foreignDuringClaim:false,submission:null,response:null,outcome:'not_submitted',accepted:null};
     this.#packet=null;this.#ordinaryFrame=null;this.#permit=null;this.#enterReleased=false;
     c.selection.cancel();c.view.setComposing(true);c.composing(true);this.#observe();this.#emit();
   }
@@ -340,9 +364,10 @@ export class CompositionOwner {
     if((g.phase==='committed'||g.phase==='cancelled')&&!event.isComposing&&!compositionType(event.inputType)&&this.#permit){
       const permit=this.#permit;this.#permit=null;this.#retainEvent(event);
       const inputType=permit.key==='Backspace'?'deleteContentBackward':permit.key==='Delete'?'deleteContentForward':permit.key==='Enter'?(permit.shift?'insertLineBreak':'insertParagraph'):'insertText';
-      if(!event.cancelable||event.inputType!==inputType||inputType==='insertText'&&event.data!==permit.key||!this.#accepted(permit.accepted,permit.serial)||!this.#targetRange(event)){
+      if(!event.cancelable||event.inputType!==inputType||inputType==='insertText'&&event.data!==permit.key||!this.#accepted(permit.accepted,permit.serial)||!this.#targetRange(event)&&!this.#typedBackspaceRange(event,permit)&&!this.#literalBackspaceRange(event,permit)){
         this.#recover('ambiguous_tail',event);if(event.cancelable)event.preventDefault();return true;
       }
+      g.literalWindow=null;
       const state=c.readState();if(!state?.selection){this.#recover('stale',event);event.preventDefault();return true;}
       const node=(p:DeepReadonly<SelectionDto>['anchor'])=>p.kind==='child'?p.parent:p.node;
       this.#ordinaryFrame={base:state.stamp,context:permit.accepted.context,selection:state.selection,affected:Object.freeze([...new Set([node(state.selection.anchor),node(state.selection.focus)])])};
@@ -382,6 +407,63 @@ export class CompositionOwner {
     if(!c||!browser||!browser.isCollapsed||!browser.anchorNode||!c.element.contains(browser.anchorNode))return false;
     try{const ranges=event.getTargetRanges?.()??[];return ranges.length===0||ranges.length===1&&ranges[0].startContainer===browser.anchorNode&&ranges[0].endContainer===browser.focusNode&&ranges[0].startOffset===browser.anchorOffset&&ranges[0].endOffset===browser.focusOffset;}catch{return false;}
   }
+  #typedBackspaceRange(event:InputEvent,permit:Permit):boolean {
+    const c=this.#configuration,g=this.#generation,response=g?.response;
+    if(!c||!g||!c.typed?.enabled()||!g.resultWindow||g.phase!=='committed'||g.accepted!==permit.accepted
+      ||permit.key!=='Backspace'||permit.shift||event.inputType!=='deleteContentBackward'||event.isComposing||!event.cancelable
+      ||response?.status!=='ok'||response.value.kind!=='input_mutation'||response.value.effect!=='changed')return false;
+    const result=response.value.result,state=c.readState();
+    if(!result||!state||!c.canEdit()||c.busy()||!same(state,response.value.state)||!same(state.stamp,result.after_stamp)
+      ||!same(result.after_stamp,permit.accepted.stamp)||!same(result.after_selection,permit.accepted.selection)
+      ||!same(result.after_selection,state.selection)||!same(result.after_stored_marks,state.stored_marks)
+      ||!same(result.after_selection.anchor,result.after_selection.focus)||!same(result.after.range.focus,result.after_selection.focus)
+      ||!same(g.resultWindow.stamp,result.after_stamp)||!same(g.resultWindow.selection,result.after_selection)
+      ||result.after.spans.length===0||result.after.spans.length>12)return false;
+    try {
+      const browser=c.element.ownerDocument.getSelection(),ranges=event.getTargetRanges?.()??[];
+      if(!browser?.isCollapsed||!browser.anchorNode||!browser.focusNode||!c.element.contains(browser.anchorNode)||!c.element.contains(browser.focusNode)||ranges.length!==1)return false;
+      const range=ranges[0];
+      if(!c.element.contains(range.startContainer)||!c.element.contains(range.endContainer))return false;
+      const start=c.view.textPosition(range.startContainer,range.startOffset),end=c.view.textPosition(range.endContainer,range.endOffset);
+      if(!start||!end||isDomRefusal(start)||isDomRefusal(end)||start.kind!=='text'||end.kind!=='text'||!same(end,result.after_selection.focus))return false;
+      const index=result.after.spans.findIndex(span=>span.node===start.node&&start.offset>=span.from_utf16&&start.offset<=span.to_utf16);
+      if(index<0||index===result.after.spans.length-1&&start.offset>=end.offset)return false;
+      // Only the actual completed native result can extend the old caret gate.
+      // A fresh bounded native/DOM join owns this cooked tail, including NBSP
+      // results without raw restoration; event labels never supply that proof.
+      if(c.view.checkInputRegion(result.after,result.after_stamp)!==null)return false;
+      return !this.#destroyed&&!this.#blocked&&this.#configuration===c&&this.#generation===g&&g.response===response
+        &&g.accepted===permit.accepted&&c.canEdit()&&!c.busy()&&this.#accepted(permit.accepted,permit.serial);
+    }catch{return false;}
+  }
+  #literalBackspaceRange(event:InputEvent,permit:Permit):boolean {
+    const c=this.#configuration,g=this.#generation,response=g?.response,window=g?.literalWindow;
+    if(!c||!g||!window||window!==g.resultWindow||!c.typed?.enabled()||g.phase!=='committed'||g.accepted!==permit.accepted
+      ||permit.key!=='Backspace'||permit.shift||event.inputType!=='deleteContentBackward'||event.isComposing||!event.cancelable
+      ||response?.status!=='ok'||response.value.kind!=='input_mutation'||response.value.effect!=='changed'||response.value.result!==null)return false;
+    try {
+      const state=c.readState(),selection=state?.selection,region=window.originalRegion;
+      if(!state||!selection||!c.canEdit()||c.busy()||!c.element.ownerDocument.hasFocus()||!same(state,response.value.state)
+        ||!same(state.stamp,permit.accepted.stamp)||!same(selection,permit.accepted.selection)
+        ||!same(window.stamp,state.stamp)||!same(window.selection,selection)||!same(selection.anchor,selection.focus)
+        ||selection.focus.kind!=='text'||region.kind!=='bounded'||region.originalText.length===0||region.originalText.length>TEXT_LIMIT
+        ||region.originalText!==region.provisionalText||selection.focus.offset!==region.originalText.length
+        ||window.entries.length!==1||!this.#accepted(permit.accepted,permit.serial))return false;
+      const browser=c.element.ownerDocument.getSelection(),ranges=event.getTargetRanges?.()??[];
+      if(!browser?.isCollapsed||!browser.anchorNode||!browser.focusNode||!c.element.contains(browser.anchorNode)||!c.element.contains(browser.focusNode)||ranges.length!==1)return false;
+      const range=ranges[0];
+      if(!c.element.contains(range.startContainer)||!c.element.contains(range.endContainer))return false;
+      const start=c.view.textPosition(range.startContainer,range.startOffset),end=c.view.textPosition(range.endContainer,range.endOffset);
+      if(!start||!end||isDomRefusal(start)||isDomRefusal(end)||start.kind!=='text'||end.kind!=='text'
+        ||start.node!==selection.focus.node||!same(end,selection.focus)||start.offset<0||start.offset>=end.offset||end.offset>region.originalText.length)return false;
+      // This marker came only from the once-consumed owned null-result join.
+      // Re-read the registered literal frame; native ordinary deletion owns EGC.
+      if(c.view.checkLiteralCompositionWindow(window,state)!==null)return false;
+      return !this.#destroyed&&!this.#blocked&&this.#configuration===c&&this.#generation===g&&g.response===response
+        &&g.literalWindow===window&&g.resultWindow===window&&g.accepted===permit.accepted&&c.canEdit()&&!c.busy()
+        &&same(c.readState(),state)&&this.#accepted(permit.accepted,permit.serial);
+    }catch{return false;}
+  }
   keydown(event:KeyboardEvent):void {
     const c=this.#configuration,g=this.#generation;if(this.#destroyed||!c||!g||this.#blocked||g.phase==='recovery')return;
     // Idle typing keeps the existing ordinary path. Only this generation owns
@@ -413,7 +495,7 @@ export class CompositionOwner {
     if(this.#permit&&(this.#permit.code||this.#permit.key)===(event.code||event.key))this.#permit=null;
     this.#emit();
   }
-  externalSubmission(request:MountedMutation,result:Submission|DomRefusal):void {
+  externalSubmission(request:MountedMutationV2,result:InputSubmissionV2|DomRefusal):void {
     const c=this.#configuration,g=this.#generation;
     if(!c||!g||this.#destroyed||!['committed','cancelled'].includes(g.phase)||['snapshot','release_snapshot','acknowledge_snapshot','reconcile_snapshot','barrier'].includes(request.kind)||isDomRefusal(result)||result.status!=='completed'||result.response.status!=='ok')return;
     const state=c.readState();if(!state?.selection||!same(state.stamp,c.capture())||!same(c.context(),g.context)||!c.selection.intentAvailable())return;
@@ -433,7 +515,7 @@ export class CompositionOwner {
   }
   resources():CompositionResources {
     const regions=new Set<RecoveryRegion>();
-    if(!this.#destroyed){if(this.#packet)regions.add(this.#packet.region);if(this.#generation?.latest)regions.add(this.#generation.latest.region);if(this.#generation)regions.add(this.#generation.window.originalRegion);}
+    if(!this.#destroyed){if(this.#packet)regions.add(this.#packet.region);if(this.#generation?.latest)regions.add(this.#generation.latest.region);if(this.#generation?.claimed)regions.add(this.#generation.claimed.region);if(this.#generation)regions.add(this.#generation.window.originalRegion);if(this.#generation?.resultWindow)regions.add(this.#generation.resultWindow.originalRegion);}
     let retainedInputBytes=0;for(const region of regions)if(region.kind==='bounded')retainedInputBytes+=2*(region.originalText.length+region.provisionalText.length);
     if(!this.#destroyed&&this.#generation){
       const g=this.#generation;

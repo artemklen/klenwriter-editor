@@ -94,6 +94,14 @@ fn main() {
         &editor_kwdj::registry::registry_descriptor(),
         &[editor_kwdj::registry::base_registration_v2()],
     );
+    let typing_descriptor = editor_kwdj::registry::typing_registry_descriptor();
+    let kwdj_typing = inventory(
+        &typing_descriptor,
+        &[
+            editor_kwdj::registry::base_registration_v2(),
+            editor_kwdj::registry::typing_registration(),
+        ],
+    );
     // Static catalog comes from native command targets and the same compiled
     // registration witness; no JavaScript target registry is authored here.
     for id in [
@@ -135,7 +143,7 @@ fn main() {
     );
     serde_json::to_writer_pretty(
         std::io::stdout(),
-        &serde_json::json!({"format": "klenwriter-editor-dom-inventory/1", "kwdj": kwdj, "notesD0": notes, "kwdjInsertions": {"candidates": insertions, "textBlockTypes": text_types}}),
+        &serde_json::json!({"format": "klenwriter-editor-dom-inventory/1", "kwdj": kwdj, "kwdjTyping": kwdj_typing, "kwdjTypingRegistry": typing_descriptor, "notesD0": notes, "kwdjInsertions": {"candidates": insertions, "textBlockTypes": text_types}}),
     )
     .unwrap();
     println!();

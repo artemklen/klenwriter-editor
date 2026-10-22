@@ -443,6 +443,7 @@ pub(super) struct Prepared<A: Allocation, C: CandidateCache> {
     pub(super) notification: Option<EventPlan>,
     pub(super) work: WorkUsage,
     pub(super) trace: WorkTrace,
+    pub(super) input_result: Option<crate::input_result::TextReplacementResult>,
 }
 impl<A: Allocation, C: CandidateCache> Prepared<A, C> {
     pub(super) fn changed(&self) -> bool {
@@ -622,8 +623,25 @@ impl<P: TransactionProfile> Session<P> {
     pub(super) fn prepare_transaction<A: Allocation>(
         &self,
         transaction: Transaction,
+        draft: TreeDraft<'_, A>,
+        typing: TypingPolicy,
+        work: &mut WorkMeter,
+        finalize_marks: impl FnOnce(
+            &TreeDraft<'_, A>,
+            Option<Selection<NodeId>>,
+            Option<&[Mark]>,
+            &mut WorkMeter,
+        ) -> Result<Option<Vec<Mark>>, TransactionError<P::Error>>,
+    ) -> Result<PreparedFor<P, A>, TransactionError<P::Error>> {
+        self.prepare_transaction_with_input(transaction, draft, typing, None, work, finalize_marks)
+    }
+
+    pub(super) fn prepare_transaction_with_input<A: Allocation>(
+        &self,
+        transaction: Transaction,
         mut draft: TreeDraft<'_, A>,
         typing: TypingPolicy,
+        input_plan: Option<editor_core::commands::TextReplacementPlan<NodeId>>,
         work: &mut WorkMeter,
         finalize_marks: impl FnOnce(
             &TreeDraft<'_, A>,
@@ -649,6 +667,15 @@ impl<P: TransactionProfile> Session<P> {
             && !transaction.operations.is_empty()
         {
             return Err(StateError::ReadOnly.into());
+        }
+        if let Some(plan) = &input_plan {
+            crate::input_result::validate_plan(
+                &draft,
+                plan,
+                self.selection,
+                &transaction.operations,
+                work,
+            )?;
         }
         let limits = transaction.limits.effective();
         check(
@@ -694,6 +721,16 @@ impl<P: TransactionProfile> Session<P> {
             }
             other => (None, other),
         };
+        let mut input_range = input_plan
+            .as_ref()
+            .map(|plan| {
+                let resolved =
+                    resolve_selection(Some(plan.after_range.clone()), &created, &draft, work)?
+                        .ok_or(crate::input_result::InputResultError::Invalid)?;
+                crate::input_result::validate_user_result(&draft, resolved, &created, work)?;
+                Ok::<_, TransactionError<P::Error>>(resolved)
+            })
+            .transpose()?;
         let normalization_start = draft.steps().len();
         let mut normalization_operations = 0usize;
         let mut validation = ValidationStats::default();
@@ -725,7 +762,24 @@ impl<P: TransactionProfile> Session<P> {
                     {
                         grouping = None;
                     }
+                    if let (Some(plan), Some(range)) = (&input_plan, input_range) {
+                        draft.prepare_changes(work)?;
+                        crate::input_result::validate_normalization(
+                            &draft,
+                            &operation,
+                            plan.before.block,
+                            range,
+                            work,
+                        )?;
+                    }
+                    let input_step_start = draft.steps().len();
                     apply(&mut draft, &operation, EditOrigin::Normalization, work)?;
+                    if let Some(range) = input_range {
+                        let steps = &draft.steps()[input_step_start..];
+                        work.charge_bytes(map_bytes(steps)? as u64)?;
+                        let suffix = PositionMap::new(0, 1, steps.to_vec())?;
+                        input_range = map_selection(&suffix, Some(range))?;
+                    }
                     normalization_operations += 1;
                 }
             }
@@ -813,6 +867,29 @@ impl<P: TransactionProfile> Session<P> {
         } else {
             None
         };
+        let mut input_result = match (input_plan, input_range) {
+            (Some(plan), Some(range)) => {
+                if !changed {
+                    return Err(crate::input_result::InputResultError::Invalid.into());
+                }
+                Some(crate::input_result::prepare_result(
+                    &draft,
+                    plan,
+                    range,
+                    selection,
+                    stored_marks.as_deref(),
+                    self.stamp(),
+                    SessionStamp {
+                        revision: next_revision,
+                        selection_epoch: epoch,
+                        ..self.stamp()
+                    },
+                    work,
+                )?)
+            }
+            (None, None) => None,
+            _ => return Err(crate::input_result::InputResultError::Invalid.into()),
+        };
         let patch = draft.prepare_patch()?;
         work.charge_bytes((patch.prepared_copy_bytes() - before_copy) as u64)?;
         debug_assert_eq!(changed, patch.changed());
@@ -875,6 +952,14 @@ impl<P: TransactionProfile> Session<P> {
         } else if selection_changed || stored_marks_changed {
             history_plan = self.history.plan_barrier(work)?;
         }
+        if let Some(result) = &mut input_result {
+            result.after_stamp.history_epoch = history_plan
+                .as_ref()
+                .map_or_else(|| self.history.summary().epoch, |plan| plan.summary().epoch);
+            if let Some(raw) = &mut result.raw_restore {
+                raw.stamp = result.after_stamp;
+            }
+        }
         let mut prepared = Prepared {
             patch,
             map,
@@ -897,6 +982,7 @@ impl<P: TransactionProfile> Session<P> {
             cache_update,
             impact,
             notification: None,
+            input_result,
             work: work.usage(),
             trace: work.trace(),
         };

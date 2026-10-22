@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import { createEditor } from '@klenwriter/editor-sdk';
-import type { CreateEditorOptionsV2, DeepReadonly, EditorControllerV2, EventDto, HostRequest, MutationRequestV2, QueryRequest, ReadRequest, ReadRequestV2, Response, ResponseV2, SelectionTextRequestV2, SessionContextV2, StampDto, StateDto, Submission, TextWindowRequestV2 } from '@klenwriter/editor-sdk';
+import type { CreateEditorOptionsV2, DeepReadonly, EditorControllerV2, EventDto, HostRequest, InputCommandRequestV2, InputSubmissionV2, MutationRequestV2, QueryRequestV2, ReadRequest, ReadRequestV2, Response, ResponseV2, SelectionTextRequestV2, SessionContextV2, StampDto, StateDto, Submission, TextWindowRequestV2 } from '@klenwriter/editor-sdk';
 import { admitCatalog, isRendererCatalog } from './catalog.js';
 import { domRefusal } from './refusal.js';
 import { fields, ownConfiguration, ownInput } from './ownership.js';
@@ -12,10 +12,10 @@ import { HostRequestOwner } from './host-request.js';
 import { createMountedGeometry } from './geometry.js';
 import { attachClipboard, type ClipboardOwner } from './clipboard.js';
 import { attachInput } from './input.js';
-import type { InputOwner } from './input.js';
+import type { InputOwner, InputResources } from './input.js';
 import { InputObservationOwner } from './input-observations.js';
 import { PopupPresentationOwner } from './popup-presentation.js';
-import type { ClipboardOutcome, CompositionRecovery, MountedClipboardController, DestroyReceipt, DomDiagnostic, DomRefusal, InteractionMode, MountedEditor, MountedLifecycle, MountedMutation, MountedReady, MountedResourceCounts, MountEditorOptions, RecoveryPacket, RecoveryRegion, RendererCatalog, SelectionReadFailure } from './types.js';
+import type { ClipboardOutcome, CompositionRecovery, MountedClipboardController, DestroyReceipt, DomDiagnostic, DomRefusal, InteractionMode, MountedEditor, MountedLifecycle, MountedMutation, MountedMutationV2, MountedReady, MountedResourceCounts, MountEditorOptions, RecoveryPacket, RecoveryRegion, RendererCatalog, SelectionReadFailure, TypedInputRecovery } from './types.js';
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 const isFailure = (value: unknown): value is DomRefusal => !!value && (value as DomRefusal).status === 'dom_refused';
 const emptyDestroyed = (): Submission => Object.freeze({ status: 'completed', response: { status: 'ok' as const, value: { kind: 'destroyed' as const } } });
@@ -44,10 +44,11 @@ class MountedOwner implements MountedEditor {
   #replacementInput: Uint8Array | null = null;
   #recovery: RecoveryRegion | null = null;
   #compositionRecovery: CompositionRecovery | null = null;
+  #typedRecovery:TypedInputRecovery|null=null;
   #recoveryNotified = false;
   #recoveryCallbackFailure: DomRefusal | null = null;
   // A late original ticket updates only numbers, never a released DOM owner.
-  #inputResources = { continuations:0, retainedInputBytes:0, retainedRecoveryRegions:0 };
+  #inputResources:InputResources = { continuations:0, retainedInputBytes:0, retainedRecoveryRegions:0 };
   #temporary: EditorControllerV2 | null = null;
   #replacement = false;
   #request: HostRequest | null = null;
@@ -198,15 +199,16 @@ class MountedOwner implements MountedEditor {
   #packet(): RecoveryPacket | null {
     const source = this.#original ?? this.#replacementInput;
     const region = this.#recovery;
-    return source || region || this.#compositionRecovery ? Object.freeze({ originalInput: source?.slice() ?? null, region,
-      ...(this.#compositionRecovery ? {composition:this.#compositionRecovery} : {}) }) : null;
+    return source || region || this.#compositionRecovery || this.#typedRecovery ? Object.freeze({ originalInput: source?.slice() ?? null, region,
+      ...(this.#compositionRecovery ? {composition:this.#compositionRecovery} : {}),...(this.#typedRecovery?{typedInput:this.#typedRecovery}:{}) }) : null;
   }
   #retainInput(reason:CompositionRecovery['reason']): void {
     const retained=this.#input?.retained(reason);
     if (retained) { this.#recovery=retained.region; this.#compositionRecovery=retained.composition; }
+    this.#typedRecovery=this.#input?.takeTypedRecovery()??this.#typedRecovery;
   }
   #notifyCompositionRecovery(): void {
-    if (!this.#compositionRecovery || this.#recoveryNotified) return;
+    if ((!this.#compositionRecovery&&!this.#typedRecovery) || this.#recoveryNotified) return;
     const packet=this.#packet();
     this.#recoveryNotified=true;
     try { if(packet)this.#onRecovery?.(packet); }
@@ -242,7 +244,7 @@ class MountedOwner implements MountedEditor {
     element.setAttribute('tabindex', this.#mode === 'disabled' ? '-1' : '0');
     if (this.#mode === 'disabled' && element.ownerDocument.activeElement === element) element.blur();
   }
-  #reflectFatal<T extends ResponseV2>(response: T, compositionSubmission?:Submission): T {
+  #reflectFatal<T extends ResponseV2>(response: T, compositionSubmission?:InputSubmissionV2): T {
     if (this.#lifecycle === 'disposing' || this.#lifecycle === 'destroyed') return response;
     if (response.status === 'fatal') {
       this.#inputObservations.destroy();this.#popupPresentation.destroy();
@@ -316,10 +318,12 @@ class MountedOwner implements MountedEditor {
       canSelect:() => this.#lifecycle === 'ready' && this.#mode !== 'disabled',
       busy:() => this.#busy(), capture:() => controller.capture(), context:() => controller.context(), readState:() => this.#state(),
       submit:(request,observation) => this.#inputObservations.submission(observation??null,request,()=>this.#submit(request,true)),
+      submitInput:(request,observation)=>this.#inputObservations.submission(observation??null,request,()=>this.#submit(request,true)),
       beforeObservation:input=>this.#inputObservations.before(input),
       afterObservation:(capture,result)=>this.#inputObservations.after(capture,result),
       observationBusy:()=>{if(!this.#inputObservations.delivering())return false;this.#inputObservations.invalidate();return true;},
       submitComposition:request => this.#submit(request,true,true),
+      submitCompositionInput:request=>this.#submit(request,true,true),
       report:failure => this.#report(failure),
       recover:(failure,region,composition) => this.#recover(failure,region,composition),
       composing:active => { this.#composing = active; view.setComposing(active); if(active){this.#inputObservations.invalidate();this.#popupPresentation.retire();this.#hostOwner.retire();this.#selectionOwner.cancel();this.#clipboardOwner?.cancel('dom.composition_conflict');} },
@@ -357,6 +361,7 @@ class MountedOwner implements MountedEditor {
       const pending = this.#observer?.takeRecords() ?? [];
       if (pending.length) { this.#mutations(pending); if (this.#lifecycle !== 'ready') return; }
       this.#observer?.disconnect();
+      this.#input?.publication(event);
       this.#selectionOwner.publication(event);
       this.#hostOwner.publication();
       const failure = this.#view!.patch(event,this.#selectionOwner.ownsFocus());
@@ -371,7 +376,7 @@ class MountedOwner implements MountedEditor {
   read(request: TextWindowRequestV2): ResponseV2 | DomRefusal;
   read(request: ReadRequestV2): ResponseV2 | DomRefusal;
   read(request: ReadRequestV2): ResponseV2 | DomRefusal { const guard = this.#lifecycle === 'recoveryRequired' && this.#controller?.lifecycle === 'ready' ? null : this.#guard(); return guard ? this.#report(guard) : this.#nativeRead(request); }
-  query(request: QueryRequest): Response | DomRefusal {
+  query(request: QueryRequestV2): Response | DomRefusal {
     try { request = ownConfiguration(request); if (!request || typeof request !== 'object' || Array.isArray(request) || typeof request.kind !== 'string') throw new TypeError(); } catch { return this.#report(this.#failure('dom.invalid_options')); }
     const lifecycle = this.#lifecycle === 'recoveryRequired' && this.#controller?.lifecycle === 'ready' ? null : this.#guard();
     if (lifecycle) return this.#report(lifecycle);
@@ -379,12 +384,26 @@ class MountedOwner implements MountedEditor {
     try { gate = this.#catalog!.definition.commandGate(request); } catch { gate = this.#failure('dom.command_unsupported'); }
     return gate ? this.#report(gate) : this.#reflectFatal(this.#controller!.query(request));
   }
-  submit(request: MountedMutation) { return this.#submit(request,false); }
-  #submit(request: MountedMutation, input: boolean, compositionClaim=false, validate?:()=>DomRefusal|null): Submission | DomRefusal {
-    return this.#forward(request,input,compositionClaim,owned=>this.#controller!.submit(owned),validate) as Submission|DomRefusal;
+  submit(request:InputCommandRequestV2):InputSubmissionV2|DomRefusal;
+  submit(request:MountedMutation):Submission|DomRefusal;
+  submit(request:MountedMutationV2):InputSubmissionV2|DomRefusal;
+  submit(request:MountedMutationV2):InputSubmissionV2|DomRefusal { return this.#submit(request,false); }
+  #submit(request:MountedMutation,input:boolean,compositionClaim?:boolean,validate?:()=>DomRefusal|null):Submission|DomRefusal;
+  #submit(request:MountedMutationV2,input:boolean,compositionClaim?:boolean,validate?:()=>DomRefusal|null):InputSubmissionV2|DomRefusal;
+  #submit(request: MountedMutationV2, input: boolean, compositionClaim=false, validate?:()=>DomRefusal|null): InputSubmissionV2 | DomRefusal {
+    return this.#forward(request,input,compositionClaim,owned=>this.#controller!.submit(owned),validate) as InputSubmissionV2|DomRefusal;
   }
   #forward<T extends MountedMutation>(request:T,input:boolean,compositionClaim:boolean,dispatch:(request:T)=>Submission,
-    validate?:()=>DomRefusal|SelectionReadFailure|null,prospective?:(permit:ResultFocusPermit|null)=>void):Submission|DomRefusal|SelectionReadFailure {
+    validate?:()=>DomRefusal|SelectionReadFailure|null,prospective?:(permit:ResultFocusPermit|null)=>void):Submission|DomRefusal|SelectionReadFailure;
+  #forward<T extends MountedMutationV2>(request:T,input:boolean,compositionClaim:boolean,dispatch:(request:T)=>InputSubmissionV2,
+    validate?:()=>DomRefusal|SelectionReadFailure|null,prospective?:(permit:ResultFocusPermit|null)=>void):InputSubmissionV2|DomRefusal|SelectionReadFailure;
+  #forward<T extends MountedMutationV2>(request:T,input:boolean,compositionClaim:boolean,dispatch:(request:T)=>InputSubmissionV2,
+    validate?:()=>DomRefusal|SelectionReadFailure|null,prospective?:(permit:ResultFocusPermit|null)=>void):InputSubmissionV2|DomRefusal|SelectionReadFailure {
+    if(!input){
+      let harmless=false;
+      try{harmless=['snapshot','release_snapshot'].includes(Object.getOwnPropertyDescriptor(request,'kind')?.value);}catch{/* Invalid host input still retires edit lineage. */}
+      if(!harmless)this.#input?.externalIntent();
+    }
     this.#inputObservations.forward(request);
     if(this.#inputObservations.delivering()||this.#presentationWriting)return this.#failure('dom.busy');
     // The claim precedes configuration getters, selection invalidation and native
@@ -410,13 +429,13 @@ class MountedOwner implements MountedEditor {
       const result = dispatch(request);
       this.#selectionOwner.endSubmission(selectionFrame,result);
       prospective?.(this.#selectionOwner.resultFocusPermit(selectionFrame,result));
-      const terminal = (response: Response) => { if (response.status === 'fatal') this.#reflectFatal(response,compositionClaim?result:undefined); };
+      const terminal = (response: ResponseV2) => { if (response.status === 'fatal') this.#reflectFatal(response,compositionClaim?result:undefined); };
       if (result.status === 'completed') terminal(result.response); else void result.completion.then(terminal);
       if(!compositionClaim)this.#input?.externalSubmission(request,result);
       return result;
     } finally { this.#forwarding--; }
   }
-  #outsideTyping(request: MountedMutation): boolean {
+  #outsideTyping(request: MountedMutationV2): boolean {
     if (!this.#composing || request.kind !== 'command') return false;
     const selection = this.#state()?.selection;
     if (!selection || selection.anchor.kind !== 'text' || selection.focus.kind !== 'text' || selection.anchor.node !== selection.focus.node) return false;
@@ -430,6 +449,7 @@ class MountedOwner implements MountedEditor {
     return typeof subscription === 'function' ? subscription : this.#reflectFatal(subscription);
   }
   setInteractionMode(mode: InteractionMode) {
+    this.#input?.externalIntent();
     this.#inputObservations.invalidate();
     if(this.#inputObservations.delivering()||this.#presentationWriting){this.#inputObservations.invalidate();return this.#failure('dom.busy','mode');}
     const guard = this.#guard('mode');
@@ -445,6 +465,7 @@ class MountedOwner implements MountedEditor {
     return Object.freeze({ status:'updated' as const,mode });
   }
   async replace(input: Uint8Array): Promise<Submission | DomRefusal> {
+    this.#input?.externalIntent();
     if(this.#inputObservations.delivering()||this.#presentationWriting){this.#inputObservations.invalidate();return this.#failure('dom.busy','replace');}
     this.#inputObservations.invalidate();this.#popupPresentation.retire();
     this.#hostOwner.retire();
@@ -545,7 +566,7 @@ class MountedOwner implements MountedEditor {
       if (!this.#hadClass) this.#element.classList.remove('editor-surface');
     }
     this.#replacement = false; this.#initialReadFailure = null; this.#configuration = null; this.#catalog = null; this.#context = null;
-    this.#original = null; this.#replacementInput = null; this.#recovery = null; this.#compositionRecovery=null; this.#element = null; this.#attributes.clear(); this.#records = 0;
+    this.#original = null; this.#replacementInput = null; this.#recovery = null; this.#compositionRecovery=null;this.#typedRecovery=null; this.#element = null; this.#attributes.clear(); this.#records = 0;
     // A reentrant destroy may already have returned this exact frozen receipt.
     if(!Object.isFrozen(receipt)){receipt.callbackFailure=callbackFailure ?? this.#recoveryCallbackFailure;Object.freeze(receipt);}
     if (sdk.status === 'completed') this.#lifecycle = 'destroyed'; else void sdk.completion.then(() => { this.#lifecycle = 'destroyed'; });
@@ -554,7 +575,7 @@ class MountedOwner implements MountedEditor {
   }
   resources(): MountedResourceCounts {
     const sdk = this.#controller?.resources() ?? {lifecycle:'destroyed' as const,sessions:0,listeners:0,queued_mutations:0,queued_bytes:0,pending_tickets:0,host_requests:0,task_continuations:0,original_input_bytes:0,callback_errors:0,callback_error_handlers:0};
-    return Object.freeze({sdk,dom:Object.freeze({listeners:(this.#input?.listeners() ?? 0)+this.#selectionOwner.listeners()+(this.#clipboardOwner?.listeners() ?? 0),observers:this.#observer ? 1 : 0,continuations:(this.#replacement ? 1 : 0)+this.#selectionOwner.resources().restoreTickets+this.#selectionOwner.resources().animationFrames+(this.#clipboardOwner?.resources().continuations ?? 0)+this.#inputResources.continuations+this.#hostOwner.resources().focusContinuations,retainedInputBytes:(this.#original?.byteLength ?? 0)+(this.#replacementInput?.byteLength ?? 0)+this.#inputResources.retainedInputBytes,retainedRecoveryRegions:Math.max(this.#recovery || this.#view?.hasProvisional() ? 1 : 0,this.#inputResources.retainedRecoveryRegions)}),selection:this.#selectionOwner.resources(),clipboard:this.#clipboardOwner?.resources() ?? Object.freeze({pending:0,continuations:0,retainedTextBytes:0}),hostRequests:this.#hostOwner.resources(),inputObservations:this.#inputObservations.resources(),popupPresentation:this.#popupPresentation.resources()});
+    return Object.freeze({sdk,dom:Object.freeze({listeners:(this.#input?.listeners() ?? 0)+this.#selectionOwner.listeners()+(this.#clipboardOwner?.listeners() ?? 0),observers:this.#observer ? 1 : 0,continuations:(this.#replacement ? 1 : 0)+this.#selectionOwner.resources().restoreTickets+this.#selectionOwner.resources().animationFrames+(this.#clipboardOwner?.resources().continuations ?? 0)+this.#inputResources.continuations+this.#hostOwner.resources().focusContinuations,retainedInputBytes:(this.#original?.byteLength ?? 0)+(this.#replacementInput?.byteLength ?? 0)+this.#inputResources.retainedInputBytes+(this.#typedRecovery?.retainedBytes??0),retainedRecoveryRegions:Math.max(this.#recovery || this.#typedRecovery || this.#view?.hasProvisional() ? 1 : 0,this.#inputResources.retainedRecoveryRegions)}),selection:this.#selectionOwner.resources(),clipboard:this.#clipboardOwner?.resources() ?? Object.freeze({pending:0,continuations:0,retainedTextBytes:0}),hostRequests:this.#hostOwner.resources(),inputObservations:this.#inputObservations.resources(),popupPresentation:this.#popupPresentation.resources(),...(this.#inputResources.typing?{typing:this.#inputResources.typing}:{})});
   }
   nativeResources() { return this.#controller?.nativeResources() ?? null; }
 }

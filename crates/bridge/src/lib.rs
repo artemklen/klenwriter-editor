@@ -27,6 +27,7 @@ use editor_protocol::*;
 mod clipboard;
 pub mod convert;
 pub mod distribution;
+mod input;
 pub mod recipes;
 mod selection;
 mod text_window;
@@ -121,6 +122,14 @@ pub fn resource_counts() -> ResourceCountsDto {
 
 /// Profile-owned wire decoding and diagnostics. Session semantics remain typed.
 pub trait BridgeAdapter<P: CommandProvider> {
+    fn decode_input_command(
+        &self,
+        _key: editor_engine::SessionKey,
+        _stamp: &StampDto,
+        _command: &CommandDto,
+    ) -> Result<P::Intent<editor_engine::NodeId>, DiagnosticDto> {
+        Err(diagnostic("input.unsupported", "command"))
+    }
     fn clipboard_context<V: editor_core::candidate::CandidateRead<Id = editor_engine::NodeId>>(
         &self,
         _context: &P::Context,
@@ -385,6 +394,9 @@ impl<P: CommandProvider, A: BridgeAdapter<P>> Bridge<P, A> {
         match e {
             CommandError::Catalog(e) => diagnostic(e.as_str(), "command"),
             CommandError::UnknownCommand => diagnostic("command.unknown", "command.id"),
+            CommandError::InputUnsupported => diagnostic("input.unsupported", "command"),
+            CommandError::InputRouteRequired => diagnostic("input.route_required", "command"),
+            CommandError::InputResult(error) => diagnostic(error.as_str(), "input.result"),
             CommandError::Transaction(e) => Self::transaction_error(e),
         }
     }

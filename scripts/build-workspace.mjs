@@ -81,6 +81,12 @@ run('cargo', ['build', '--locked', '--release', '--target', 'wasm32-unknown-unkn
   '-p', identity.rust.wasm.name, '--example', 'sdk_probe']);
 run(bindgen, ['target/wasm32-unknown-unknown/release/examples/sdk_probe.wasm',
   '--target', 'web', '--out-dir', 'artifacts/sdk', '--out-name', 'probe']);
+// Independent typography literals execute on both actual Rust targets. This
+// test-only module is distinct from the sealed distributable SDK below.
+run('cargo', ['build', '--locked', '--release', '--target', 'wasm32-unknown-unknown',
+  '-p', identity.rust.wasm.name, '--example', 'typography_probe']);
+run(bindgen, ['target/wasm32-unknown-unknown/release/examples/typography_probe.wasm',
+  '--target', 'web', '--out-dir', 'artifacts/typography-native', '--out-name', 'probe']);
 // Independent external consumers compile only the chosen public profile module.
 // Their explicit module choices and complete fixture bytes have separate IDs.
 await buildExtensionConsumers({ baseBuildId: sdkIdentity.buildId, baseSourceHashes: sdkIdentity.sourceHashes });

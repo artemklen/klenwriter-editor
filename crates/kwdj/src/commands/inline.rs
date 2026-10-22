@@ -357,7 +357,7 @@ fn ensure_format_block<V: CandidateRead>(
     Ok(())
 }
 
-fn caret_marks<'a, V: CandidateRead>(
+pub(super) fn caret_marks<'a, V: CandidateRead>(
     view: &'a V,
     state: CommandState<'a, V::Id>,
     position: Position<V::Id>,
@@ -425,7 +425,7 @@ fn map_position<I>(position: Position<I>) -> Position<LocalRef<I>> {
         },
     }
 }
-fn map_selection<I>(selection: Selection<I>) -> Selection<LocalRef<I>> {
+pub(super) fn map_selection<I>(selection: Selection<I>) -> Selection<LocalRef<I>> {
     Selection {
         anchor: map_position(selection.anchor),
         focus: map_position(selection.focus),

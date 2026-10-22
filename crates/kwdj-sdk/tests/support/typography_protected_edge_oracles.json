@@ -1,0 +1,307 @@
+{
+  "format": "osr48-protected-current-source-oracles/1",
+  "status": "SOURCE_AUTHORED_BEFORE_CORRESPONDING_FIX_NOT_EXECUTED",
+  "scope": "Seven new public native controls; original69 cases and all earlier assertions untouched. Explicit descriptor is untrusted editing intent, not automatic input authority. No browser/OS proof.",
+  "currentLeafCases": [
+    {
+      "id": "CURRENT-code",
+      "mark": {
+        "type": "code"
+      },
+      "identities": {
+        "media": [],
+        "references": [
+          {
+            "id": "550e8400-e29b-41d4-a716-446655440006",
+            "status": "exists"
+          }
+        ]
+      },
+      "beforeCanonical": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"code\"}],\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "sourceCaret": {
+        "path": [
+          0,
+          0
+        ],
+        "offset": 0,
+        "affinity": "after"
+      },
+      "storedMarks": [],
+      "typed": {
+        "text": "\"",
+        "origin": "ordinary_insert_text"
+      },
+      "afterCanonical": "{\"content\":[{\"content\":[{\"text\":\"\\\"\",\"type\":\"text\"},{\"marks\":[{\"type\":\"code\"}],\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "expected": {
+        "effect": "changed",
+        "result": null,
+        "revisionDelta": 1,
+        "selectionEpochDelta": 1,
+        "historyEpochDelta": 1,
+        "undoEntries": "1",
+        "redoEntries": "0",
+        "afterCaret": {
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        },
+        "survivingRoles": [
+          "root",
+          "P",
+          "T"
+        ],
+        "freshRoles": [
+          "LITERAL_TEXT"
+        ],
+        "undoCanonical": "beforeCanonical",
+        "redoCanonical": "afterCanonical"
+      }
+    },
+    {
+      "id": "CURRENT-link",
+      "mark": {
+        "type": "link",
+        "attrs": {
+          "href": "https://example.com/owned"
+        }
+      },
+      "identities": {
+        "media": [],
+        "references": [
+          {
+            "id": "550e8400-e29b-41d4-a716-446655440006",
+            "status": "exists"
+          }
+        ]
+      },
+      "beforeCanonical": "{\"content\":[{\"content\":[{\"marks\":[{\"attrs\":{\"href\":\"https://example.com/owned\"},\"type\":\"link\"}],\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "sourceCaret": {
+        "path": [
+          0,
+          0
+        ],
+        "offset": 0,
+        "affinity": "after"
+      },
+      "storedMarks": [],
+      "typed": {
+        "text": "\"",
+        "origin": "ordinary_insert_text"
+      },
+      "afterCanonical": "{\"content\":[{\"content\":[{\"text\":\"\\\"\",\"type\":\"text\"},{\"marks\":[{\"attrs\":{\"href\":\"https://example.com/owned\"},\"type\":\"link\"}],\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "expected": {
+        "effect": "changed",
+        "result": null,
+        "revisionDelta": 1,
+        "selectionEpochDelta": 1,
+        "historyEpochDelta": 1,
+        "undoEntries": "1",
+        "redoEntries": "0",
+        "afterCaret": {
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        },
+        "survivingRoles": [
+          "root",
+          "P",
+          "T"
+        ],
+        "freshRoles": [
+          "LITERAL_TEXT"
+        ],
+        "undoCanonical": "beforeCanonical",
+        "redoCanonical": "afterCanonical"
+      }
+    },
+    {
+      "id": "CURRENT-reference_link",
+      "mark": {
+        "type": "reference_link",
+        "attrs": {
+          "reference_entity_id": "550e8400-e29b-41d4-a716-446655440006"
+        }
+      },
+      "identities": {
+        "media": [],
+        "references": [
+          {
+            "id": "550e8400-e29b-41d4-a716-446655440006",
+            "status": "exists"
+          }
+        ]
+      },
+      "beforeCanonical": "{\"content\":[{\"content\":[{\"marks\":[{\"attrs\":{\"reference_entity_id\":\"550e8400-e29b-41d4-a716-446655440006\"},\"type\":\"reference_link\"}],\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "sourceCaret": {
+        "path": [
+          0,
+          0
+        ],
+        "offset": 0,
+        "affinity": "after"
+      },
+      "storedMarks": [],
+      "typed": {
+        "text": "\"",
+        "origin": "ordinary_insert_text"
+      },
+      "afterCanonical": "{\"content\":[{\"content\":[{\"text\":\"\\\"\",\"type\":\"text\"},{\"marks\":[{\"attrs\":{\"reference_entity_id\":\"550e8400-e29b-41d4-a716-446655440006\"},\"type\":\"reference_link\"}],\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "expected": {
+        "effect": "changed",
+        "result": null,
+        "revisionDelta": 1,
+        "selectionEpochDelta": 1,
+        "historyEpochDelta": 1,
+        "undoEntries": "1",
+        "redoEntries": "0",
+        "afterCaret": {
+          "path": [
+            0,
+            0
+          ],
+          "offset": 1,
+          "affinity": "after"
+        },
+        "survivingRoles": [
+          "root",
+          "P",
+          "T"
+        ],
+        "freshRoles": [
+          "LITERAL_TEXT"
+        ],
+        "undoCanonical": "beforeCanonical",
+        "redoCanonical": "afterCanonical"
+      }
+    }
+  ],
+  "protectedRestoreCases": [
+    {
+      "id": "RESTORE-STORED-code",
+      "mark": {
+        "type": "code"
+      },
+      "identities": {
+        "media": [],
+        "references": [
+          {
+            "id": "550e8400-e29b-41d4-a716-446655440006",
+            "status": "exists"
+          }
+        ]
+      },
+      "beforeCanonical": "{\"content\":[{\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "cookedCanonical": "{\"content\":[{\"content\":[{\"text\":\"«\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "setup": "Obtain actual own ordinary quote result on empty paragraph; set current stored marks to this protected mark. Construct an explicit untrusted edit descriptor from original raw_restore, replacing ONLY stamp/stored_marks/raw_stored_marks with actual current state; cooked span and raw runs stay exact. This is not old-receipt authenticity or automatic DOM authority.",
+      "expected": {
+        "status": "refused",
+        "stateUnchanged": true,
+        "canonicalUnchanged": true,
+        "noNewHistoryUnit": true,
+        "noLiteralFallback": true
+      }
+    },
+    {
+      "id": "RESTORE-STORED-link",
+      "mark": {
+        "type": "link",
+        "attrs": {
+          "href": "https://example.com/owned"
+        }
+      },
+      "identities": {
+        "media": [],
+        "references": [
+          {
+            "id": "550e8400-e29b-41d4-a716-446655440006",
+            "status": "exists"
+          }
+        ]
+      },
+      "beforeCanonical": "{\"content\":[{\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "cookedCanonical": "{\"content\":[{\"content\":[{\"text\":\"«\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "setup": "Obtain actual own ordinary quote result on empty paragraph; set current stored marks to this protected mark. Construct an explicit untrusted edit descriptor from original raw_restore, replacing ONLY stamp/stored_marks/raw_stored_marks with actual current state; cooked span and raw runs stay exact. This is not old-receipt authenticity or automatic DOM authority.",
+      "expected": {
+        "status": "refused",
+        "stateUnchanged": true,
+        "canonicalUnchanged": true,
+        "noNewHistoryUnit": true,
+        "noLiteralFallback": true
+      }
+    },
+    {
+      "id": "RESTORE-STORED-reference_link",
+      "mark": {
+        "type": "reference_link",
+        "attrs": {
+          "reference_entity_id": "550e8400-e29b-41d4-a716-446655440006"
+        }
+      },
+      "identities": {
+        "media": [],
+        "references": [
+          {
+            "id": "550e8400-e29b-41d4-a716-446655440006",
+            "status": "exists"
+          }
+        ]
+      },
+      "beforeCanonical": "{\"content\":[{\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "cookedCanonical": "{\"content\":[{\"content\":[{\"text\":\"«\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "setup": "Obtain actual own ordinary quote result on empty paragraph; set current stored marks to this protected mark. Construct an explicit untrusted edit descriptor from original raw_restore, replacing ONLY stamp/stored_marks/raw_stored_marks with actual current state; cooked span and raw runs stay exact. This is not old-receipt authenticity or automatic DOM authority.",
+      "expected": {
+        "status": "refused",
+        "stateUnchanged": true,
+        "canonicalUnchanged": true,
+        "noNewHistoryUnit": true,
+        "noLiteralFallback": true
+      }
+    }
+  ],
+  "highlightRestore": {
+    "id": "RESTORE-HIGHLIGHT-PUBLIC-WIRE",
+    "mark": {
+      "type": "highlight",
+      "attrs": {
+        "token": "accent"
+      }
+    },
+    "identities": {
+      "media": [],
+      "references": []
+    },
+    "beforeCanonical": "{\"content\":[{\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+    "cookedCanonical": "{\"content\":[{\"content\":[{\"marks\":[{\"attrs\":{\"token\":\"accent\"},\"type\":\"highlight\"}],\"text\":\"«\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+    "rawCanonical": "{\"content\":[{\"content\":[{\"marks\":[{\"attrs\":{\"token\":\"accent\"},\"type\":\"highlight\"}],\"text\":\"\\\"\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+    "expected": {
+      "ruleEffect": "changed",
+      "rawRestorePresent": true,
+      "restoreStatus": "ok",
+      "restoreEffect": "changed",
+      "ruleRevisionDelta": 1,
+      "restoreRevisionDelta": 1,
+      "ruleHistoryUnits": "1",
+      "restoreHistoryUnits": "2",
+      "unchangedStoredMarks": true,
+      "undoRedoCanonicalOrder": [
+        "cookedCanonical",
+        "beforeCanonical",
+        "cookedCanonical",
+        "rawCanonical"
+      ],
+      "nativeIds": "Original root/P survive; actual Q and R birth roles are distinct; Undo/Redo restores the exact Q/R IDs, no predicted numeric tokens."
+    }
+  },
+  "resources": {
+    "sessions": 0,
+    "snapshot_handles": 0,
+    "snapshot_bytes": "0",
+    "protected_cursors": 0
+  }
+}
