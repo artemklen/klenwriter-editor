@@ -8,6 +8,8 @@ import Carbon
 let began = DispatchTime.now().uptimeNanoseconds
 var posted = false
 var safariScrollRecheckProofs: [[String: Any]] = []
+// Failure-only Safari scan facts; never read AX again to explain a refusal.
+var safariViewportFailure: [String: Any]? = nil
 func elapsed() -> Double { Double(DispatchTime.now().uptimeNanoseconds - began) / 1_000_000 }
 func emit(_ value: [String: Any], _ code: Int32) -> Never {
     var output = value
@@ -20,7 +22,7 @@ func emit(_ value: [String: Any], _ code: Int32) -> Never {
 }
 func refuse(_ reason: String, viewportDiagnostic: [String: Any]? = nil) -> Never {
     var output: [String: Any] = ["status": "refused", "reason": reason, "delivery": posted ? "unknown/may_have_sent" : "not_sent", "elapsedMs": elapsed()]
-    if let viewportDiagnostic = viewportDiagnostic { output["viewportDiagnostic"] = viewportDiagnostic }
+    if let viewportDiagnostic = viewportDiagnostic ?? safariViewportFailure { output["viewportDiagnostic"] = viewportDiagnostic }
     emit(output, 2)
 }
 func closed(_ value: [String: Any], _ keys: Set<String>) -> Bool { Set(value.keys) == keys }
@@ -143,14 +145,45 @@ struct SafariViewportScan {
 }
 // Same complete CFEqual-bounded walk; fallback never follows an incomplete scan.
 func safariViewport(_ window: AXUIElement, _ rootFrame: CGRect, _ expectedWidth: Double, _ expectedHeight: Double, requireScrollViewport: Bool = false) -> SafariViewportScan? {
+    safariViewportFailure = nil
     var todo: [(AXUIElement, Int, AXUIElement?)] = [(window, 0, nil)], seen: [AXUIElement] = [], exact: [CGRect] = []
     var webAreas: [(AXUIElement, AXUIElement?)] = [], maximumDepth = 0, complete = true
+    var missingRoles = 0, childFailures = 0
+    var firstIncomplete: (kind: String, ordinal: Int, depth: Int, status: Int32?)?
+    var contentFrame: CGRect?, scrollFrame: CGRect?, barFrame: CGRect?
+    var parentChildCount: Int?, contentChildMatches: Int?, scrollbarMatches: Int?
+    func failed(_ stage: String, attemptedDepth: Int? = nil, childCount: Int? = nil) -> SafariViewportScan? {
+        var facts: [String: Any] = ["stage": stage, "requireScrollViewport": requireScrollViewport,
+            "expectedWidth": expectedWidth, "expectedHeight": expectedHeight, "rootFrame": encodedRectangle(rootFrame),
+            "visitedNodes": seen.count, "queuedNodes": todo.count, "maximumDepth": maximumDepth,
+            "scanComplete": complete, "missingRoleCount": missingRoles, "childrenFailureCount": childFailures,
+            "exactDimensionMatches": exact.count, "webAreaCount": webAreas.count]
+        if let depth = attemptedDepth { facts["attemptedDepth"] = depth }
+        if let count = childCount { facts["pendingChildrenCount"] = count }
+        if let first = firstIncomplete {
+            var firstFacts: [String: Any] = ["kind": first.kind, "visitedOrdinal": first.ordinal, "depth": first.depth]
+            if let status = first.status { firstFacts["axStatus"] = status }
+            facts["firstIncomplete"] = firstFacts
+        }
+        if exact.count == 1 { facts["exactWebAreaFrame"] = encodedRectangle(exact[0]) }
+        if let frame = contentFrame { facts["contentFrame"] = encodedRectangle(frame) }
+        if let frame = scrollFrame { facts["scrollFrame"] = encodedRectangle(frame) }
+        if let frame = barFrame { facts["scrollbarFrame"] = encodedRectangle(frame) }
+        if let count = parentChildCount { facts["parentChildCount"] = count }
+        if let count = contentChildMatches { facts["contentChildMatches"] = count }
+        if let count = scrollbarMatches { facts["scrollbarMatches"] = count }
+        safariViewportFailure = facts
+        return nil
+    }
     while let (element, depth, parent) = todo.popLast() {
         if seen.contains(where: { CFEqual($0, element) }) { continue }
-        guard seen.count < 512, depth <= 32 else { return nil }
+        guard seen.count < 512, depth <= 32 else { return failed("scan.node-or-depth-bound", attemptedDepth: depth) }
         seen.append(element); maximumDepth = max(maximumDepth, depth)
         let role = attribute(element, kAXRoleAttribute as CFString) as? String
-        if role == nil { complete = false }
+        if role == nil {
+            complete = false; missingRoles += 1
+            if case nil = firstIncomplete { firstIncomplete = ("missing-role", seen.count, depth, nil) }
+        }
         if role == "AXWebArea" {
             webAreas.append((element, parent))
             if let r = rectangle(element), abs(r.width - expectedWidth) <= 2, abs(r.height - expectedHeight) <= 2 { exact.append(r) }
@@ -158,32 +191,40 @@ func safariViewport(_ window: AXUIElement, _ rootFrame: CGRect, _ expectedWidth:
         var rawChildren: CFTypeRef?
         let status = AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &rawChildren)
         if status == .success, let children = rawChildren as? [AXUIElement] {
-            guard children.count <= 512 - seen.count - todo.count else { return nil }
+            guard children.count <= 512 - seen.count - todo.count else { return failed("scan.queued-children-bound", childCount: children.count) }
             for child in children.reversed() { todo.append((child, depth + 1, element)) }
-        } else if status != .attributeUnsupported && status != .noValue { complete = false }
+        } else if status != .attributeUnsupported && status != .noValue {
+            complete = false; childFailures += 1
+            if case nil = firstIncomplete { firstIncomplete = (status == .success ? "children-type" : "children-status", seen.count, depth, status.rawValue) }
+        }
     }
     // A dimension match alone is not coordinate authority; keep the original0.5 containment.
     // A saved scroll route is rechecked through that same route, even if content becomes exact-sized.
     if !requireScrollViewport, exact.count == 1, viewportContainedByWindow(exact[0], rootFrame) {
         return SafariViewportScan(view: exact[0], visited: seen.count, depth: maximumDepth, fallback: nil)
     }
-    guard exact.count <= 1, complete, webAreas.count == 1, let parent = webAreas[0].1,
-          attribute(parent, kAXRoleAttribute as CFString) as? String == "AXScrollArea",
-          let actualParent = attribute(webAreas[0].0, kAXParentAttribute as CFString), CFGetTypeID(actualParent) == AXUIElementGetTypeID(), CFEqual(actualParent, parent),
-          let children = attribute(parent, kAXChildrenAttribute as CFString) as? [AXUIElement], children.count <= 512,
-          children.filter({ CFEqual($0, webAreas[0].0) }).count == 1,
-          let content = rectangle(webAreas[0].0), let scroll = rectangle(parent) else { return nil }
+    guard exact.count <= 1, complete, webAreas.count == 1, let parent = webAreas[0].1 else { return failed("fallback.scan-metadata-or-parent-missing") }
+    guard attribute(parent, kAXRoleAttribute as CFString) as? String == "AXScrollArea" else { return failed("fallback.direct-parent-role") }
+    guard let actualParent = attribute(webAreas[0].0, kAXParentAttribute as CFString), CFGetTypeID(actualParent) == AXUIElementGetTypeID(), CFEqual(actualParent, parent) else { return failed("fallback.direct-parent-identity") }
+    guard let children = attribute(parent, kAXChildrenAttribute as CFString) as? [AXUIElement] else { return failed("fallback.parent-children-unavailable") }
+    parentChildCount = children.count
+    guard children.count <= 512 else { return failed("fallback.parent-children-bound") }
+    contentChildMatches = children.filter({ CFEqual($0, webAreas[0].0) }).count
+    guard contentChildMatches == 1 else { return failed("fallback.content-child-membership") }
+    guard let content = rectangle(webAreas[0].0) else { return failed("fallback.content-rectangle") }; contentFrame = content
+    guard let scroll = rectangle(parent) else { return failed("fallback.scroll-rectangle") }; scrollFrame = scroll
     let bars = children.filter { attribute($0, kAXRoleAttribute as CFString) as? String == "AXScrollBar" }
-    guard bars.count <= 1 else { return nil }
+    scrollbarMatches = bars.count
+    guard bars.count <= 1 else { return failed("fallback.scrollbar-count") }
     var bar: CGRect?, orientation: String?
     if let element = bars.first {
-        guard let actualParent = attribute(element, kAXParentAttribute as CFString), CFGetTypeID(actualParent) == AXUIElementGetTypeID(), CFEqual(actualParent, parent),
-              let rect = rectangle(element), let direction = attribute(element, kAXOrientationAttribute as CFString) as? String,
-              direction == "AXVerticalOrientation" else { return nil }
+        guard let actualParent = attribute(element, kAXParentAttribute as CFString), CFGetTypeID(actualParent) == AXUIElementGetTypeID(), CFEqual(actualParent, parent) else { return failed("fallback.scrollbar-parent") }
+        guard let rect = rectangle(element) else { return failed("fallback.scrollbar-rectangle") }; barFrame = rect
+        guard let direction = attribute(element, kAXOrientationAttribute as CFString) as? String, direction == "AXVerticalOrientation" else { return failed("fallback.scrollbar-orientation") }
         bar = rect; orientation = direction
     }
     guard let visible = safariScrollViewportGeometry(root: rootFrame, scroll: scroll, content: content, verticalScrollbar: bar,
-        scrollbarOrientation: orientation, expectedWidth: expectedWidth, expectedHeight: expectedHeight) else { return nil }
+        scrollbarOrientation: orientation, expectedWidth: expectedWidth, expectedHeight: expectedHeight) else { return failed("fallback.geometry") }
     let fallback = SafariScrollViewport(contentElement: webAreas[0].0, scrollElement: parent, barElement: bars.first,
         content: content, scroll: scroll, bar: bar, orientation: orientation, visible: visible, expectedWidth: expectedWidth, expectedHeight: expectedHeight,
         oldExactWebAreaMatches: exact.count)
@@ -214,7 +255,8 @@ func measureWindow(_ browser: String, _ pageTitle: String, _ expectedWidth: Doub
     guard matching.count == 1, let focused = attribute(application, kAXFocusedWindowAttribute as CFString),
           CFGetTypeID(focused) == AXUIElementGetTypeID(), CFEqual(focused, matching[0]) else { refuse("Exact unique fixture title is not focused") }
     if browser == "safari" {
-        guard let frame = rectangle(matching[0]), let scan = safariViewport(matching[0], frame, expectedWidth, expectedHeight) else { refuse("Unique measured AXWebArea viewport unavailable") }
+        guard let frame = rectangle(matching[0]) else { refuse("Unique measured AXWebArea viewport unavailable", viewportDiagnostic: ["stage": "window.rectangle", "expectedWidth": expectedWidth, "expectedHeight": expectedHeight]) }
+        guard let scan = safariViewport(matching[0], frame, expectedWidth, expectedHeight) else { refuse("Unique measured AXWebArea viewport unavailable") }
         return WindowMeasurement(front: front, application: application, window: matching[0], view: scan.view, frame: frame,
             expectedBundle: bundle, expectedTitle: expectedTitle, windowCount: windows.count, visited: scan.visited, depth: scan.depth, safariScroll: scan.fallback)
     }

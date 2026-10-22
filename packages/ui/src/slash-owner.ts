@@ -180,11 +180,13 @@ export class SlashOwner {
     const geometry=o.editor.geometry.read({kind:'selection',stamp:frame.context.state.stamp});
     if(geometry.status!=='measured'||!geometry.visible)return;
     const point=geometry.focus??geometry.rects.at(-1);if(!point)return;
+    // Floating CSS changes the available height and width. Place the final box,
+    // rather than validating a differently sized absolute-positioned popup.
+    list.classList.add('kw-ui-floating');
     const box=list.getBoundingClientRect(),v=geometry.viewport;
     const maxX=v.x+v.width-box.width-8,maxY=v.y+v.height-box.height-8;
     if(![point.x,point.y,point.height,box.width,box.height,maxX,maxY].every(Number.isFinite)
-      ||box.width<=0||box.height<=0||maxX<v.x+8||maxY<v.y+8)return;
-    list.classList.add('kw-ui-floating');
+      ||box.width<=0||box.height<=0||maxX<v.x+8||maxY<v.y+8){list.classList.remove('kw-ui-floating');return;}
     list.style.left=`${Math.round(Math.max(v.x+8,Math.min(point.x,maxX))*2)/2}px`;
     list.style.top=`${Math.round(Math.max(v.y+8,Math.min(point.y+point.height+8,maxY))*2)/2}px`;
     const placed=list.getBoundingClientRect();

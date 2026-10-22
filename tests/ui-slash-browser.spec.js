@@ -143,6 +143,28 @@ test('S13 200% zoom and active-option scrolling preserve the native document/car
   const facts=await clip();
   expect(facts.activeTop).toBeGreaterThanOrEqual(facts.listTop-1);expect(facts.activeBottom).toBeLessThanOrEqual(facts.listBottom+1);expect(Number.isFinite(facts.scroll)).toBe(true);
 });
+for(const locale of ['en','ru'])test(`S20 ${locale} compact viewport uses final popup dimensions without moving the page or caret`,async({page})=>{
+  await page.setViewportSize({width:512,height:384});const id=await mount(page,{locale});
+  await page.keyboard.type('/');await expect(rows(page,id)).toHaveCount(9);
+  const before=await inspect(page,id,'compact viewport ordinary slash'),scroll=await page.evaluate(()=>[scrollX,scrollY]);
+  const measurements=[];
+  for(const key of [null,'ArrowUp','ArrowDown']){
+    if(key)await page.keyboard.press(key);
+    await expect(key==='ArrowUp'?rows(page,id).last():rows(page,id).first()).toHaveAttribute('aria-selected','true');
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+    const facts=await menu(page,id).evaluate(node=>{
+      const popup=node.getBoundingClientRect(),active=node.querySelector('[aria-selected=true]').getBoundingClientRect();
+      return {popup:popup.toJSON(),active:active.toJSON(),width:innerWidth,height:innerHeight,clientTop:node.clientTop,clientHeight:node.clientHeight};
+    });measurements.push({key,...facts});
+    expect(facts.popup.left).toBeGreaterThanOrEqual(7.5);expect(facts.popup.right).toBeLessThanOrEqual(facts.width-7.5);
+    expect(facts.popup.top).toBeGreaterThanOrEqual(7.5);expect(facts.popup.bottom).toBeLessThanOrEqual(facts.height-7.5);
+    expect(facts.active.top).toBeGreaterThanOrEqual(facts.popup.top+facts.clientTop-.5);
+    expect(facts.active.bottom).toBeLessThanOrEqual(facts.popup.top+facts.clientTop+facts.clientHeight+.5);
+    await expect(surface(page,id)).toBeFocused();expect(await page.evaluate(()=>[scrollX,scrollY])).toEqual(scroll);
+    unchanged(await inspect(page,id,`compact viewport ${key??'initial'} presentation only`),before);
+  }
+  records.get(page).compactViewportMeasurements=measurements;
+});
 test('S14 interrupted pointer gestures release their original request without mutation',async({page})=>{
   const id=await mount(page);await page.keyboard.type('/');await expect(rows(page,id)).toHaveCount(9);const before=await inspect(page,id,'before interrupted gestures');
   const option=rows(page,id).first();
