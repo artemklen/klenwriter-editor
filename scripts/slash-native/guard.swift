@@ -108,6 +108,13 @@ func safariScrollViewportPoint(viewport: CGRect, visible: CGRect, cssWidth: Doub
 }
 // END SAFARI_SCROLL_VIEWPORT_GEOMETRY
 
+// BEGIN OWNED_VIEWPORT_CONTAINMENT
+private func viewportContainedByWindow(_ view: CGRect, _ frame: CGRect) -> Bool {
+        view.minX >= frame.minX - 0.5 && view.maxX <= frame.maxX + 0.5 &&
+        view.minY >= frame.minY - 0.5 && view.maxY <= frame.maxY + 0.5
+}
+// END OWNED_VIEWPORT_CONTAINMENT
+
 struct SafariScrollViewport {
     let contentElement: AXUIElement
     let scrollElement: AXUIElement
@@ -119,12 +126,13 @@ struct SafariScrollViewport {
     let visible: CGRect
     let expectedWidth: Double
     let expectedHeight: Double
+    let oldExactWebAreaMatches: Int
     var proof: [String: Any] {
         var scrollbar: Any = NSNull()
         if let bar = bar { scrollbar = ["role": "AXScrollBar", "orientation": orientation as Any? ?? NSNull(), "frame": encodedRectangle(bar)] as [String: Any] }
         return ["basis": "safari-scroll-viewport", "content": encodedRectangle(content), "scrollArea": encodedRectangle(scroll),
                 "visibleContent": encodedRectangle(visible), "scrollBar": scrollbar,
-                "totalWebAreas": 1, "oldExactWebAreaMatches": 0, "genuineDirectParent": true]
+                "totalWebAreas": 1, "oldExactWebAreaMatches": oldExactWebAreaMatches, "genuineDirectParent": true]
     }
 }
 struct SafariViewportScan {
@@ -134,7 +142,7 @@ struct SafariViewportScan {
     let fallback: SafariScrollViewport?
 }
 // Same complete CFEqual-bounded walk; fallback never follows an incomplete scan.
-func safariViewport(_ window: AXUIElement, _ rootFrame: CGRect, _ expectedWidth: Double, _ expectedHeight: Double) -> SafariViewportScan? {
+func safariViewport(_ window: AXUIElement, _ rootFrame: CGRect, _ expectedWidth: Double, _ expectedHeight: Double, requireScrollViewport: Bool = false) -> SafariViewportScan? {
     var todo: [(AXUIElement, Int, AXUIElement?)] = [(window, 0, nil)], seen: [AXUIElement] = [], exact: [CGRect] = []
     var webAreas: [(AXUIElement, AXUIElement?)] = [], maximumDepth = 0, complete = true
     while let (element, depth, parent) = todo.popLast() {
@@ -154,8 +162,12 @@ func safariViewport(_ window: AXUIElement, _ rootFrame: CGRect, _ expectedWidth:
             for child in children.reversed() { todo.append((child, depth + 1, element)) }
         } else if status != .attributeUnsupported && status != .noValue { complete = false }
     }
-    if exact.count == 1 { return SafariViewportScan(view: exact[0], visited: seen.count, depth: maximumDepth, fallback: nil) }
-    guard exact.isEmpty, complete, webAreas.count == 1, let parent = webAreas[0].1,
+    // A dimension match alone is not coordinate authority; keep the original0.5 containment.
+    // A saved scroll route is rechecked through that same route, even if content becomes exact-sized.
+    if !requireScrollViewport, exact.count == 1, viewportContainedByWindow(exact[0], rootFrame) {
+        return SafariViewportScan(view: exact[0], visited: seen.count, depth: maximumDepth, fallback: nil)
+    }
+    guard exact.count <= 1, complete, webAreas.count == 1, let parent = webAreas[0].1,
           attribute(parent, kAXRoleAttribute as CFString) as? String == "AXScrollArea",
           let actualParent = attribute(webAreas[0].0, kAXParentAttribute as CFString), CFGetTypeID(actualParent) == AXUIElementGetTypeID(), CFEqual(actualParent, parent),
           let children = attribute(parent, kAXChildrenAttribute as CFString) as? [AXUIElement], children.count <= 512,
@@ -173,7 +185,8 @@ func safariViewport(_ window: AXUIElement, _ rootFrame: CGRect, _ expectedWidth:
     guard let visible = safariScrollViewportGeometry(root: rootFrame, scroll: scroll, content: content, verticalScrollbar: bar,
         scrollbarOrientation: orientation, expectedWidth: expectedWidth, expectedHeight: expectedHeight) else { return nil }
     let fallback = SafariScrollViewport(contentElement: webAreas[0].0, scrollElement: parent, barElement: bars.first,
-        content: content, scroll: scroll, bar: bar, orientation: orientation, visible: visible, expectedWidth: expectedWidth, expectedHeight: expectedHeight)
+        content: content, scroll: scroll, bar: bar, orientation: orientation, visible: visible, expectedWidth: expectedWidth, expectedHeight: expectedHeight,
+        oldExactWebAreaMatches: exact.count)
     return SafariViewportScan(view: scroll, visited: seen.count, depth: maximumDepth, fallback: fallback)
 }
 struct WindowMeasurement {
@@ -188,10 +201,7 @@ struct WindowMeasurement {
     let visited: Int
     let depth: Int
     let safariScroll: SafariScrollViewport?
-    var contained: Bool {
-        view.minX >= frame.minX - 0.5 && view.maxX <= frame.maxX + 0.5 &&
-        view.minY >= frame.minY - 0.5 && view.maxY <= frame.maxY + 0.5
-    }
+    var contained: Bool { viewportContainedByWindow(view, frame) }
 }
 func measureWindow(_ browser: String, _ pageTitle: String, _ expectedWidth: Double = 1024, _ expectedHeight: Double = 768) -> WindowMeasurement {
     guard AXIsProcessTrusted() else { refuse("Existing Accessibility permission is unavailable") }
@@ -224,7 +234,7 @@ func recheckWindow(_ measurement: WindowMeasurement, _ deadline: Double) -> Stri
         let matching = windows.filter { title($0) == measurement.expectedTitle }
         guard matching.count == 1, CFEqual(matching[0], measurement.window),
               let frame = rectangle(measurement.window), frame == measurement.frame,
-              let scan = safariViewport(measurement.window, frame, saved.expectedWidth, saved.expectedHeight), let current = scan.fallback,
+              let scan = safariViewport(measurement.window, frame, saved.expectedWidth, saved.expectedHeight, requireScrollViewport: true), let current = scan.fallback,
               CFEqual(saved.contentElement, current.contentElement), CFEqual(saved.scrollElement, current.scrollElement),
               saved.scroll == current.scroll, saved.bar == current.bar,
               saved.orientation == current.orientation, saved.visible == current.visible else { refuse("Original Safari scroll viewport changed before post") }
