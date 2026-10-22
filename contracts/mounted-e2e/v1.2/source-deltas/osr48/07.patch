@@ -1,0 +1,66 @@
+--- a/packages/kwdj/src/dom.ts
++++ b/packages/kwdj/src/dom.ts
+@@ -1,11 +1,12 @@
+ // SPDX-License-Identifier: MIT OR Apache-2.0
+ /** Optional trusted KWDJ presentation. No document semantics live in this module. */
+ import { defineRendererCatalog } from '@klenwriter/editor-dom';
+-import type { DomPresentation, DomRefusal, MarkRendererDefinition, MountedMutation, NodeRendererDefinition, RendererCatalog } from '@klenwriter/editor-dom';
++import type { DomPresentation, DomRefusal, MarkRendererDefinition, MountedMutationV2, NodeRendererDefinition, RendererCatalog } from '@klenwriter/editor-dom';
+ import { createCommand, sdkBuildId } from '@klenwriter/editor-sdk';
+-import type { AttributeDto, DeepReadonly, MarkDto, NodeViewDto, QueryRequest } from '@klenwriter/editor-sdk';
+-import { kwdjCommand } from './index.js';
++import type { AttributeDto, DeepReadonly, MarkDto, NodeViewDto, QueryRequestV2 } from '@klenwriter/editor-sdk';
++import { kwdjCommand, kwdjTypedTextCommand, kwdjRestoreTypedTextCommand } from './index.js';
+ import { kwdjDomInventory } from './dom-inventory.js';
++import { kwdjTypingDomInventory } from './typing-dom-inventory.js';
+ 
+ const prefix = 'org.klenwriter.kwdj/';
+ const colorTokens = ['muted', 'accent', 'manuscript', 'warning', 'success', 'danger'];
+@@ -18,7 +19,7 @@
+   return { status: 'dom_refused', diagnostic: { code: 'dom.presentation_unsupported', phase: 'render',
+     stamp: node?.stamp ?? null, node: node?.id ?? null, typeId, publication: 'none' } };
+ }
+-function commandRefusal(request: DeepReadonly<QueryRequest | MountedMutation>): DomRefusal {
++function commandRefusal(request: DeepReadonly<QueryRequestV2 | MountedMutationV2>): DomRefusal {
+   return { status: 'dom_refused', diagnostic: { code: 'dom.command_unsupported', phase: 'command',
+     stamp: 'stamp' in request ? request.stamp : null, node: null, typeId: null, publication: 'none' } };
+ }
+@@ -181,7 +182,7 @@
+  * presentation refuses; this gate must not pretend that native publication failed.
+  * Unknown recipes/compositions cannot enter this catalog even if IDs look similar.
+  */
+-function commandGate(request: DeepReadonly<QueryRequest | MountedMutation>): DomRefusal | null {
++function commandGate(request: DeepReadonly<QueryRequestV2 | MountedMutationV2>): DomRefusal | null {
+   if (request.kind === 'set_stored_marks') {
+     return request.marks === null || Array.isArray(request.marks) && request.marks.length <= 128 && request.marks.every(coveredMark)
+       ? null : commandRefusal(request);
+@@ -217,3 +218,29 @@
+ });
+ if ('status' in result) throw new Error('Invalid shipped KWDJ renderer catalog');
+ export const kwdjBasicRenderers: RendererCatalog = result;
++
++/** Explicit optional compiled typing inventory; no locale/configuration is captured in JS. */
++export function createKwdjTypingRenderers():RendererCatalog {
++  const typedId=`${prefix}command/insert-typed-text`,restoreId=`${prefix}command/restore-typed-text`;
++  const gate=(request:DeepReadonly<QueryRequestV2|MountedMutationV2>):DomRefusal|null=>{
++    if(request.kind!=='input_command'&&request.kind!=='query_input_command')return commandGate(request);
++    const {command}=request;
++    if(![typedId,restoreId].includes(command.id)||typeof command.payload_json!=='string'||command.payload_json.length>2097152)return commandRefusal(request);
++    try{
++      const payload:unknown=JSON.parse(command.payload_json);
++      if(command.id===typedId)return closed(payload,['kind','text','origin'])&&payload.kind==='insert_typed_text'
++        &&typeof payload.text==='string'&&['ordinary_insert_text','composition_commit'].includes(payload.origin as string)?null:commandRefusal(request);
++      return closed(payload,['kind','restore'])&&payload.kind==='restore_typed_text'&&object(payload.restore)
++        &&payload.restore.format_id==='org.klenwriter.editor/raw-input-restore/1'
++        &&new TextEncoder().encode(JSON.stringify(payload.restore)).byteLength<=4096?null:commandRefusal(request);
++    }catch{return commandRefusal(request);}
++  };
++  const catalog=defineRendererCatalog({
++    binding:{buildId:sdkBuildId,profile:kwdjTypingDomInventory.profile,registryDigest:kwdjTypingDomInventory.registryDigest},
++    inventory:{nodes:kwdjTypingDomInventory.inventory.nodes.map(({id,owner,primitive,attributes})=>({id,owner,primitive,attributes})),
++      marks:kwdjTypingDomInventory.inventory.marks.map(({id,owner,attributes})=>({id,owner,attributes})),commands:kwdjTypingDomInventory.inventory.commands},
++    nodes,marks,commandGate:gate,input:{...kwdjBasicRenderers.definition.input,insertTypedText:data=>kwdjTypedTextCommand(data.text,data.origin),restoreTypedText:kwdjRestoreTypedTextCommand},
++  });
++  if('status'in catalog)throw new Error('Invalid shipped KWDJ typing renderer catalog');
++  return catalog;
++}

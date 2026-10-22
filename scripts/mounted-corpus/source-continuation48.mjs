@@ -10,7 +10,7 @@ const CONTROL_PATH = 'tests/mounted-corpus-source-continuation48.node.mjs';
 // Deliberately fail closed until the production/generated source is quiet and
 // the independently reviewed manifest has been finalized. No draft alias runs.
 const MANIFEST_PIN = Object.freeze({ path: SOURCE_CONTINUATION48_PATH,
-  bytes: 0, sha256: 'PENDING_SOURCE_QUIET' });
+  bytes: 34648, sha256: '87f7c7b4059b662bcee05f0e90301eb44dcff329a15cc68e22e0bc335ac02ca7' });
 const ACCEPTED47 = '753c77aadd5215a5a5f81448b71d45d17d77f85e';
 const LEGACY_HELPER = 'scripts/mounted-corpus/source-continuation47.mjs';
 const LEGACY_CONTROL = 'tests/mounted-corpus-source-continuation.node.mjs';

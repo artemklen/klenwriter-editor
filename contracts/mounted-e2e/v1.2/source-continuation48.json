@@ -1,10 +1,10 @@
 {
   "format": "mounted-corpus-source-continuation/2",
-  "status": "SOURCE_PINS_PENDING_NOT_EXECUTABLE",
+  "status": "FINALIZED_SOURCE_CONTRACT",
   "id": "OSR-48",
   "license": "MIT OR Apache-2.0",
   "accepted47Commit": "753c77aadd5215a5a5f81448b71d45d17d77f85e",
-  "currentProductionAnchor": null,
+  "currentProductionAnchor": "946c7465742154f184f388448188e7176ed16879",
   "legacy47": {
     "manifest": {
       "path": "contracts/mounted-e2e/v1.1/source-continuation47.json",
@@ -42,7 +42,11 @@
         "bytes": 22516,
         "sha256": "acd0ab722f91e4fd769e939f59eecccf09b130c54a982e3229171ab8efb150f5"
       },
-      "current48": null
+      "current48": {
+        "path": "contracts/kwdj/v1/README.md",
+        "bytes": 22516,
+        "sha256": "acd0ab722f91e4fd769e939f59eecccf09b130c54a982e3229171ab8efb150f5"
+      }
     },
     {
       "path": "contracts/kwdj/v1/corpus-package.json",
@@ -56,7 +60,11 @@
         "bytes": 2555,
         "sha256": "8c890e1f80b905a66418d45a60fe5ef4196a3232f6c3261dcf1f96aafd1280b5"
       },
-      "current48": null
+      "current48": {
+        "path": "contracts/kwdj/v1/corpus-package.json",
+        "bytes": 2555,
+        "sha256": "8c890e1f80b905a66418d45a60fe5ef4196a3232f6c3261dcf1f96aafd1280b5"
+      }
     },
     {
       "path": "contracts/kwdj/v1/fixture.schema.json",
@@ -70,7 +78,11 @@
         "bytes": 14265,
         "sha256": "0de202b483e108f9f85cfa5fc7782d9725d55646a1cdded2c916824177ab143f"
       },
-      "current48": null
+      "current48": {
+        "path": "contracts/kwdj/v1/fixture.schema.json",
+        "bytes": 14265,
+        "sha256": "0de202b483e108f9f85cfa5fc7782d9725d55646a1cdded2c916824177ab143f"
+      }
     },
     {
       "path": "contracts/kwdj/v1/fixtures/deferred.json",
@@ -84,7 +96,11 @@
         "bytes": 4409,
         "sha256": "4499b474515516fd7aff7222a910f2115121eb483790e66a63d84b03dc87bf69"
       },
-      "current48": null
+      "current48": {
+        "path": "contracts/kwdj/v1/fixtures/deferred.json",
+        "bytes": 4409,
+        "sha256": "4499b474515516fd7aff7222a910f2115121eb483790e66a63d84b03dc87bf69"
+      }
     },
     {
       "path": "contracts/kwdj/v1/fixtures/mixed.json",
@@ -98,7 +114,11 @@
         "bytes": 40777,
         "sha256": "f9e472176da723dedf812bff8a5a046946d554c5125e05977cab6a392b19f4a5"
       },
-      "current48": null
+      "current48": {
+        "path": "contracts/kwdj/v1/fixtures/mixed.json",
+        "bytes": 40777,
+        "sha256": "f9e472176da723dedf812bff8a5a046946d554c5125e05977cab6a392b19f4a5"
+      }
     },
     {
       "path": "contracts/kwdj/v1/fixtures/negative.json",
@@ -112,7 +132,11 @@
         "bytes": 12378,
         "sha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f"
       },
-      "current48": null
+      "current48": {
+        "path": "contracts/kwdj/v1/fixtures/negative.json",
+        "bytes": 12378,
+        "sha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f"
+      }
     },
     {
       "path": "contracts/kwdj/v1/fixtures/positive.json",
@@ -126,7 +150,11 @@
         "bytes": 50871,
         "sha256": "da7fca7fe9d38407b664b704775ac75ed5635c29eb0fcb40d8e9ca9a2394171b"
       },
-      "current48": null
+      "current48": {
+        "path": "contracts/kwdj/v1/fixtures/positive.json",
+        "bytes": 50871,
+        "sha256": "da7fca7fe9d38407b664b704775ac75ed5635c29eb0fcb40d8e9ca9a2394171b"
+      }
     },
     {
       "path": "contracts/kwdj/v1/manifest.json",
@@ -140,7 +168,11 @@
         "bytes": 4647,
         "sha256": "987f6b0f12922d406a1e514c41ecd31c5c5187a762058d14d0eaf6472d892d5a"
       },
-      "current48": null
+      "current48": {
+        "path": "contracts/kwdj/v1/manifest.json",
+        "bytes": 4647,
+        "sha256": "987f6b0f12922d406a1e514c41ecd31c5c5187a762058d14d0eaf6472d892d5a"
+      }
     },
     {
       "path": "contracts/mounted-e2e/v1/initial-literals.json",
@@ -154,7 +186,11 @@
         "bytes": 112284,
         "sha256": "e4a8a7f009983d973784f8bd849500ce5952c203579f2ed7131c62aa15f1dcdc"
       },
-      "current48": null
+      "current48": {
+        "path": "contracts/mounted-e2e/v1/initial-literals.json",
+        "bytes": 112284,
+        "sha256": "e4a8a7f009983d973784f8bd849500ce5952c203579f2ed7131c62aa15f1dcdc"
+      }
     },
     {
       "path": "contracts/slash/v1/lexical-key-oracles.json",
@@ -168,7 +204,11 @@
         "bytes": 17681,
         "sha256": "920f8a7190717cd66d93dcf610c00ed6c098d1363b187288ea5c2456167e4333"
       },
-      "current48": null
+      "current48": {
+        "path": "contracts/slash/v1/lexical-key-oracles.json",
+        "bytes": 17681,
+        "sha256": "920f8a7190717cd66d93dcf610c00ed6c098d1363b187288ea5c2456167e4333"
+      }
     },
     {
       "path": "contracts/slash/v1/strings.json",
@@ -182,7 +222,11 @@
         "bytes": 1750,
         "sha256": "f174669a5a717529480c2652d500ba43a4feacf8ec06713b180f2c8d08f3c5d2"
       },
-      "current48": null
+      "current48": {
+        "path": "contracts/slash/v1/strings.json",
+        "bytes": 1750,
+        "sha256": "f174669a5a717529480c2652d500ba43a4feacf8ec06713b180f2c8d08f3c5d2"
+      }
     },
     {
       "path": "crates/engine/src/dispatch.rs",
@@ -196,7 +240,11 @@
         "bytes": 38680,
         "sha256": "5017e79529653e0d8ba36847918550e58cd7c7a70c00f69ef367aab234fcba21"
       },
-      "current48": null
+      "current48": {
+        "path": "crates/engine/src/dispatch.rs",
+        "bytes": 42347,
+        "sha256": "8d80c3ad01c152d945933c7b9fd215b434be7ffd51cdd5bf148ee2bcd945de7e"
+      }
     },
     {
       "path": "crates/engine/src/mapping.rs",
@@ -210,7 +258,11 @@
         "bytes": 46845,
         "sha256": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54"
       },
-      "current48": null
+      "current48": {
+        "path": "crates/engine/src/mapping.rs",
+        "bytes": 46845,
+        "sha256": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54"
+      }
     },
     {
       "path": "crates/engine/src/tree.rs",
@@ -224,7 +276,11 @@
         "bytes": 201395,
         "sha256": "4233b804998db59c7e161ac5617b4ac94ad15149eb43ef824c873a8d967459a4"
       },
-      "current48": null
+      "current48": {
+        "path": "crates/engine/src/tree.rs",
+        "bytes": 201809,
+        "sha256": "8cf2281a1c6bf0a84e7b00e22312d2e9f94cf480bbf34ff69be1b34d4378d0ef"
+      }
     },
     {
       "path": "crates/kwdj/src/commands/inline.rs",
@@ -238,7 +294,11 @@
         "bytes": 58026,
         "sha256": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394"
       },
-      "current48": null
+      "current48": {
+        "path": "crates/kwdj/src/commands/inline.rs",
+        "bytes": 58048,
+        "sha256": "d11c251bc92bef5d7302f36622f99bfa7dcf13cbea0eee7d72674421858f5913"
+      }
     },
     {
       "path": "crates/kwdj/src/edit_normalize.rs",
@@ -252,7 +312,11 @@
         "bytes": 41095,
         "sha256": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a"
       },
-      "current48": null
+      "current48": {
+        "path": "crates/kwdj/src/edit_normalize.rs",
+        "bytes": 41095,
+        "sha256": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a"
+      }
     },
     {
       "path": "docs/adr/004-canonical-json-v1.md",
@@ -266,7 +330,11 @@
         "bytes": 10290,
         "sha256": "5d2a975d5c558e981cb2bb42e8d42b225663e4b7a5873951f22b8ad116110a5c"
       },
-      "current48": null
+      "current48": {
+        "path": "docs/adr/004-canonical-json-v1.md",
+        "bytes": 10290,
+        "sha256": "5d2a975d5c558e981cb2bb42e8d42b225663e4b7a5873951f22b8ad116110a5c"
+      }
     },
     {
       "path": "docs/history.md",
@@ -280,7 +348,11 @@
         "bytes": 9823,
         "sha256": "0763ef034a1b71d1417d7bcabc1d6604f1039bd624e2b92a8297a4b94eed8a07"
       },
-      "current48": null
+      "current48": {
+        "path": "docs/history.md",
+        "bytes": 9823,
+        "sha256": "0763ef034a1b71d1417d7bcabc1d6604f1039bd624e2b92a8297a4b94eed8a07"
+      }
     },
     {
       "path": "packages/dom/src/input.ts",
@@ -294,7 +366,11 @@
         "bytes": 21249,
         "sha256": "3a31571a82dc2ce99b0d5eee5c0ffda2f4db339db10d072c0b1d0183f6c5c974"
       },
-      "current48": null
+      "current48": {
+        "path": "packages/dom/src/input.ts",
+        "bytes": 24956,
+        "sha256": "356226cf6635794447d783458ea16c4bda62ecca368e7f5f589799e1cf370eea"
+      }
     },
     {
       "path": "packages/dom/src/selection.ts",
@@ -308,7 +384,11 @@
         "bytes": 30055,
         "sha256": "d1dc4950acb5455999bd353cc2454f017dac65a77560a1794fa1d080069be2df"
       },
-      "current48": null
+      "current48": {
+        "path": "packages/dom/src/selection.ts",
+        "bytes": 30109,
+        "sha256": "bcc20bd5d144e4c3568d999ee56406590ff9e1f736bd648f492df21ca345e742"
+      }
     },
     {
       "path": "packages/dom/src/types.ts",
@@ -322,7 +402,11 @@
         "bytes": 19087,
         "sha256": "4c47d67819e998fa59cd4513be01dca59a377f51b2b803f12167b276dc928c62"
       },
-      "current48": null
+      "current48": {
+        "path": "packages/dom/src/types.ts",
+        "bytes": 20428,
+        "sha256": "f5d262a0b6b44a66ef5fac42cee222166090d8497496b7db5e23f182f4bae32f"
+      }
     },
     {
       "path": "packages/kwdj/src/dom.ts",
@@ -336,7 +420,11 @@
         "bytes": 15258,
         "sha256": "f6e401845c3430a719221d71885bd3b6a565f35d6439826ebe3ef9450e60865e"
       },
-      "current48": null
+      "current48": {
+        "path": "packages/kwdj/src/dom.ts",
+        "bytes": 17490,
+        "sha256": "c2a3e1ba076acc159d3a36711cbf471e929ac69471b0eebaa1db8da9f48f5a9b"
+      }
     },
     {
       "path": "packages/kwdj/src/index.ts",
@@ -350,7 +438,11 @@
         "bytes": 1633,
         "sha256": "59c49a2088554f53c1c2cd9b73dd0dd2fa7de6a8495e15debfef6bcf716a31af"
       },
-      "current48": null
+      "current48": {
+        "path": "packages/kwdj/src/index.ts",
+        "bytes": 2202,
+        "sha256": "33860e6fa5cbcbf861866387755b553d1bacccbf78438d31b2fb03554e3fa112"
+      }
     },
     {
       "path": "packages/sdk/src/context.ts",
@@ -364,7 +456,11 @@
         "bytes": 2539,
         "sha256": "9d2e121ad03d13d4075e13505f3bde202222b31e5f3ea39ee44e28d897bb380b"
       },
-      "current48": null
+      "current48": {
+        "path": "packages/sdk/src/context.ts",
+        "bytes": 2539,
+        "sha256": "9d2e121ad03d13d4075e13505f3bde202222b31e5f3ea39ee44e28d897bb380b"
+      }
     },
     {
       "path": "packages/sdk/src/controller.ts",
@@ -378,7 +474,11 @@
         "bytes": 26516,
         "sha256": "f78888a60a0e31fac553244c2ae1a6014567bae6898ef44a625f7ff62522fc23"
       },
-      "current48": null
+      "current48": {
+        "path": "packages/sdk/src/controller.ts",
+        "bytes": 29459,
+        "sha256": "76cc9f9899db61d59224e91601177b2bddc00103916ba9e422ff56eace0fc10d"
+      }
     },
     {
       "path": "packages/sdk/src/data.ts",
@@ -392,7 +492,11 @@
         "bytes": 5981,
         "sha256": "0a58772a4fb0d4101e8a719e12406f939cedc42ad496ce16bb3d581edd04f2c7"
       },
-      "current48": null
+      "current48": {
+        "path": "packages/sdk/src/data.ts",
+        "bytes": 5981,
+        "sha256": "0a58772a4fb0d4101e8a719e12406f939cedc42ad496ce16bb3d581edd04f2c7"
+      }
     },
     {
       "path": "packages/sdk/src/response.ts",
@@ -406,7 +510,11 @@
         "bytes": 12976,
         "sha256": "ff71774e478f2786d31dcf19282d3fc358276b046d5bf7ba9faa3cfb5f9ce2da"
       },
-      "current48": null
+      "current48": {
+        "path": "packages/sdk/src/response.ts",
+        "bytes": 17860,
+        "sha256": "1ec433af48b44701e57fca92b4cba0bbabcf3aad33209f07aa7d1b7b67a999a3"
+      }
     },
     {
       "path": "packages/ui/src/drag-owner.ts",
@@ -420,7 +528,11 @@
         "bytes": 30944,
         "sha256": "318b1613ea1a01857e209c9d5170ab1ca8185ef6fac82979568f93d521276e44"
       },
-      "current48": null
+      "current48": {
+        "path": "packages/ui/src/drag-owner.ts",
+        "bytes": 30944,
+        "sha256": "318b1613ea1a01857e209c9d5170ab1ca8185ef6fac82979568f93d521276e44"
+      }
     },
     {
       "path": "packages/ui/src/slash-window.ts",
@@ -434,7 +546,11 @@
         "bytes": 5321,
         "sha256": "583b6945bfd08ba97f865bd494ad889e81bb26c986f431a8197d2d6daabd23cf"
       },
-      "current48": null
+      "current48": {
+        "path": "packages/ui/src/slash-window.ts",
+        "bytes": 5321,
+        "sha256": "583b6945bfd08ba97f865bd494ad889e81bb26c986f431a8197d2d6daabd23cf"
+      }
     },
     {
       "path": "packages/ui/src/types.ts",
@@ -448,7 +564,11 @@
         "bytes": 3807,
         "sha256": "feb348e85256409547168305f5fb20482f51e5409e8841e1159026f49ffe8dee"
       },
-      "current48": null
+      "current48": {
+        "path": "packages/ui/src/types.ts",
+        "bytes": 3807,
+        "sha256": "feb348e85256409547168305f5fb20482f51e5409e8841e1159026f49ffe8dee"
+      }
     },
     {
       "path": "packages/wasm/src/sdk-types-v2.ts",
@@ -462,7 +582,11 @@
         "bytes": 4230,
         "sha256": "9f1e9afcce2210f80538b0b6aab90a53c8927224ff517a1e1e25583268e366ab"
       },
-      "current48": null
+      "current48": {
+        "path": "packages/wasm/src/sdk-types-v2.ts",
+        "bytes": 6946,
+        "sha256": "87d50c660794ad04779603af2f6b5ed4c3c28fbe473ad938392eb18ae6658ef1"
+      }
     },
     {
       "path": "packages/wasm/src/sdk-types.ts",
@@ -476,7 +600,11 @@
         "bytes": 7914,
         "sha256": "309b33ca672d5037f0325f13fe886626e27b164094cfe20b79919d44778b5d66"
       },
-      "current48": null
+      "current48": {
+        "path": "packages/wasm/src/sdk-types.ts",
+        "bytes": 7914,
+        "sha256": "309b33ca672d5037f0325f13fe886626e27b164094cfe20b79919d44778b5d66"
+      }
     }
   ],
   "harness": [
@@ -492,7 +620,11 @@
         "bytes": 21005,
         "sha256": "0fbbf17e2dbfa6ab259c6470462052323e99d5b975b61772d237a67f226990fe"
       },
-      "current48": null
+      "current48": {
+        "path": "scripts/mounted-corpus/run.mjs",
+        "bytes": 21020,
+        "sha256": "79d70c47253e4228e1f7f1a63c06d9e72f98f4d151570049e4cbf029693fc03f"
+      }
     },
     {
       "path": "tests/mounted-corpus-source-continuation.node.mjs",
@@ -506,7 +638,11 @@
         "bytes": 20606,
         "sha256": "dd3d5ac1d8c3d2084fedca2aefb20d4b8a0e60f013aba0740e466bb63dc7c20d"
       },
-      "current48": null
+      "current48": {
+        "path": "tests/mounted-corpus-source-continuation.node.mjs",
+        "bytes": 21368,
+        "sha256": "ae0d2faaeb3c85a3fb4d13279245ccb1b883de075cb6b8ca081c2955277b3d9a"
+      }
     },
     {
       "path": "tests/mounted-corpus-collector.node.mjs",
@@ -520,7 +656,11 @@
         "bytes": 36459,
         "sha256": "ccea900f0badbc0f566d3cd718c85517bca7d6f30f7c8cd4ad1c9cd6d71aa4e0"
       },
-      "current48": null
+      "current48": {
+        "path": "tests/mounted-corpus-collector.node.mjs",
+        "bytes": 36484,
+        "sha256": "00115778c59b9f0a1c57159b337faea50289e7494d6aebb05a098ac9a481a330"
+      }
     },
     {
       "path": "tests/mounted-corpus-interactions.node.mjs",
@@ -534,11 +674,167 @@
         "bytes": 15946,
         "sha256": "9714c2b0cd6da3386f747708b99ad115a863f2f318db0991d377b871b8c0b07f"
       },
-      "current48": null
+      "current48": {
+        "path": "tests/mounted-corpus-interactions.node.mjs",
+        "bytes": 15946,
+        "sha256": "172af16a331afde4d4b73f5b4688cd0cee85e8e6eb0b59792cc4968180cc8257"
+      }
     }
   ],
-  "changedPaths": null,
-  "changes": null,
+  "changedPaths": [
+    "crates/engine/src/dispatch.rs",
+    "crates/engine/src/tree.rs",
+    "crates/kwdj/src/commands/inline.rs",
+    "packages/dom/src/input.ts",
+    "packages/dom/src/selection.ts",
+    "packages/dom/src/types.ts",
+    "packages/kwdj/src/dom.ts",
+    "packages/kwdj/src/index.ts",
+    "packages/sdk/src/controller.ts",
+    "packages/sdk/src/response.ts",
+    "packages/wasm/src/sdk-types-v2.ts",
+    "scripts/mounted-corpus/run.mjs",
+    "tests/mounted-corpus-collector.node.mjs",
+    "tests/mounted-corpus-interactions.node.mjs",
+    "tests/mounted-corpus-source-continuation.node.mjs"
+  ],
+  "changes": [
+    {
+      "path": "crates/engine/src/dispatch.rs",
+      "reason": "Add the opt-in generic input-result dispatch path, original-range EGC admission and bounded prepublication result preparation/literal fallback under the shared meter; legacy publication and history proof remain separately exercised.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/01.patch",
+        "bytes": 5768,
+        "sha256": "e534acda50b6517ddfde34cb59629225ffccf65bed065a3e3ca5dc23de12ea3b"
+      }
+    },
+    {
+      "path": "crates/engine/src/tree.rs",
+      "reason": "Expose an internal read-only user-range endpoint validator that reuses existing EGC admission before a net input plan widens the original range; no draft mutation.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/02.patch",
+        "bytes": 618,
+        "sha256": "267e22da4fe5edc1f1fea383893dbc82769abcd9dcd23d05275e096f060b084e"
+      }
+    },
+    {
+      "path": "crates/kwdj/src/commands/inline.rs",
+      "reason": "Widen only two existing helper visibilities to pub(super) so the native typing command can reuse caret marks and position mapping; helper bodies are unchanged.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/03.patch",
+        "bytes": 609,
+        "sha256": "3b36b81e8cdda4d420dbafe58e01930c3c65c1464aa3126ab1a2f1b75b059f72"
+      }
+    },
+    {
+      "path": "packages/dom/src/input.ts",
+      "reason": "Route explicitly opted-in owned ordinary/composition input through typed-input ownership while retaining literal/default paths, original intent fences and bounded recovery/Backspace integration; lexical rules remain native.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/04.patch",
+        "bytes": 17684,
+        "sha256": "03c2f0800793624e83afbc5ceca77cc2ab710d380b4921274b2226c93d63c2b3"
+      }
+    },
+    {
+      "path": "packages/dom/src/selection.ts",
+      "reason": "Extend submission-frame type signatures to the additive V2 input submission/mutation unions; existing selection-frame logic and legacy mutation focus permit predicates remain unchanged.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/05.patch",
+        "bytes": 3326,
+        "sha256": "a7b8d5f51287091791756fbcddf43c3ce5c9e878e5fc56c07f64fe3b3d7a26d2"
+      }
+    },
+    {
+      "path": "packages/dom/src/types.ts",
+      "reason": "Expose the additive typed-input renderer hooks and V2 submission/query unions required for optional native input-result integration; generic DOM retains no profile punctuation matcher.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/06.patch",
+        "bytes": 8876,
+        "sha256": "eb5a10368914cdfdac2adda3b52498a4bccfcab31caa29073b016b5c62b3c8b8"
+      }
+    },
+    {
+      "path": "packages/kwdj/src/dom.ts",
+      "reason": "Add the explicitly selected native-typing renderer inventory and closed input-command gate/factories while preserving the existing basic renderer and command gate.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/07.patch",
+        "bytes": 4810,
+        "sha256": "88beaac1e87c9a928d9dc2f23171ff5245a0399bd68daaba174bcf5a4c63a7ba"
+      }
+    },
+    {
+      "path": "packages/kwdj/src/index.ts",
+      "reason": "Export two explicit ABI2 typed-input/restore command constructors using native intent DTOs; no JavaScript lexical matching or implicit command conversion.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/08.patch",
+        "bytes": 1301,
+        "sha256": "d0d43456c6c418fe6b285b6f1461e25e058b88401b841205a08ca98c2602eace"
+      }
+    },
+    {
+      "path": "packages/sdk/src/controller.ts",
+      "reason": "Carry the additive input_command/query_input_command route and input_mutation response through owned submissions, synchronous/queued publication and listeners while preserving legacy request handling.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/09.patch",
+        "bytes": 13866,
+        "sha256": "e7f2d02a09f7fadcc081a67997d502494e939334743d03998488253c796cdec8"
+      }
+    },
+    {
+      "path": "packages/sdk/src/response.ts",
+      "reason": "Add closed bounded typed result/restore validation and permit input_mutation only for a matching expected response; retain preexisting state/whole-reply transport limits and legacy decoder.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/10.patch",
+        "bytes": 6976,
+        "sha256": "fb6707efcf0071a687167f1ea4b3793c60dc2a7cda655d5620650e8de8652d0f"
+      }
+    },
+    {
+      "path": "packages/wasm/src/sdk-types-v2.ts",
+      "reason": "Regenerate additive ABI2 input request/result, restoration and optional KWDJ typing configuration DTOs; ABI1 sdk-types.ts stays byte-identical.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/11.patch",
+        "bytes": 4839,
+        "sha256": "e422af4b02d4091c307e1c7913a225c7a91a77c0e46b0312f6a38434b170c9c6"
+      }
+    },
+    {
+      "path": "scripts/mounted-corpus/run.mjs",
+      "reason": "Select the explicit48 provenance loader and48 before/after sidecars; preserve actual unaliased RunBinding/build/collector readers and the original64 scenario-pin schema.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/12.patch",
+        "bytes": 6510,
+        "sha256": "aa530cc0476e7b47a54dc00d4c6fcc74019fd956b004bbc1e94dc239aaca8ede"
+      }
+    },
+    {
+      "path": "tests/mounted-corpus-collector.node.mjs",
+      "reason": "Change only the provenance-loader import and source-reader preparation to the explicit48 wrapper; all original test/assertion bodies remain byte-identical.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/13.patch",
+        "bytes": 1478,
+        "sha256": "b9bbe3c1064d33e652438a8cb913caa789f5f4994ed47071e2b6b2101a44caae"
+      }
+    },
+    {
+      "path": "tests/mounted-corpus-interactions.node.mjs",
+      "reason": "Change only the provenance-loader import and source-reader preparation to the explicit48 wrapper; all original test/assertion bodies remain byte-identical.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/14.patch",
+        "bytes": 1359,
+        "sha256": "fa6fcc83ea457fef39f29a512e3a1866ac0e9a6325544e04b1e2ac0da2c84a24"
+      }
+    },
+    {
+      "path": "tests/mounted-corpus-source-continuation.node.mjs",
+      "reason": "Change only reader/import plumbing: validate actual48 first, then supply exact retained47 sources to the original47 controls. Every original assertion/test body from first test to EOF remains byte-identical.",
+      "delta": {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/15.patch",
+        "bytes": 1932,
+        "sha256": "3a31a53f185eea9a1b440d09a908653ddea1b48c7508018e06a37a499d2bb740"
+      }
+    }
+  ],
   "budgets": {
     "manifestBytes": 262144,
     "sourceBytes": 262144,
@@ -548,5 +844,5 @@
     "runtimeArtifactBytes": 1048576,
     "runtimeAggregateBytes": 8388608
   },
-  "qualification": "Two explicit source layers: actual48 is independently checked before retained47 is supplied to the unchanged47 helper, which still proves original45 authority. No old semantic literal/ledger/schema/assertion is rewritten. This scaffold is NOT executable until source quiet/final pins; runtime actualHEAD/build/observations remain separate."
+  "qualification": "Finalized source-only OSR-48 continuation at reviewed production anchor 946c7465742154f184f388448188e7176ed16879. Actual48 authority/harness bytes are checked before exact retained47 sources reach the unchanged47 helper, which still verifies original45 authority. All original semantic literals, ledgers, schemas, helper and assertion bodies remain unchanged. These36 paths are the inherited provenance authority subset, not a replacement for full production build/source identity. Runtime actualHEAD/build/observations and semantic/installed acceptance remain separate; no execution is claimed by this manifest."
 }
