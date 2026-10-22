@@ -241,6 +241,16 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
   function whole(value,pattern){assert.equal(typeof value,'string');const match=pattern.exec(value);assert.ok(match&&match[0]===value,'Exact private Find identifier required');}
   const findKeys=['format','status','delivery','measurement','purpose','browser','nonce','title','fixtureUrl','mountedId','caseId','findRequestId','requestId','serial','frontPid','frontBundle','expectedAxWindowTitle','observedAxWindowTitle','axWindowCount','axWindow','rootFocused','rootRole','rootSubrole','findAux','contained','elapsedMs','nativeFindPhase'];
   function exactKeys(value,keys){assert.ok(value&&typeof value==='object'&&!Array.isArray(value));assert.deepEqual(Object.keys(value).sort(),[...keys].sort());}
+  function safariPointerProgram(actual,request){
+    exactKeys(actual.screenPoint,['x','y']);assert.ok(Object.values(actual.screenPoint).every(Number.isFinite));
+    const move=actual.prepMove;exactKeys(move,['event','program','screenPoint','postedCount','requestedPauseMs','elapsedMs']);
+    assert.equal(move.event,'mouseMoved');assert.deepEqual(move.program,['move','down','up']);exactKeys(move.screenPoint,['x','y']);assert.deepEqual(move.screenPoint,actual.screenPoint);
+    assert.equal(move.postedCount,1);assert.equal(move.requestedPauseMs,25);
+    const pause=actual.pairPause;exactKeys(pause,['after','count','requestedPauseMs','elapsedMs']);
+    assert.equal(pause.after,'down');assert.equal(pause.count,1);assert.equal(pause.requestedPauseMs,25);
+    assert.ok(Number.isFinite(actual.elapsedMs)&&actual.elapsedMs>=0&&actual.elapsedMs<=request.deadlineMs&&request.deadlineMs<=1000);
+    for(const value of [move.elapsedMs,pause.elapsedMs])assert.ok(Number.isFinite(value)&&value>=0&&value<=actual.elapsedMs);
+  }
   function frame(value){exactKeys(value,['x','y','width','height']);assert.ok(Object.values(value).every(Number.isFinite)&&value.width>0&&value.height>0&&Number.isFinite(value.x+value.width)&&Number.isFinite(value.y+value.height));return {...value};}
   function retireFind(reason){const old=findEpisode;findEpisode=null;findEpoch++;if(old)record('owned-find-retired',{reason,findRequestId:old.findRequestId,mountedId:old.mountedId,caseId:old.caseId,state:old.state});}
   function syncFindMount(){if(findEpisode&&findEpisode.mountedId!==mountedId())retireFind('mount-changed');}
@@ -444,6 +454,8 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
       assert.ok(Number.isSafeInteger(v.serial)&&v.serial>serial);serial=v.serial;
       const remaining=Math.floor(keyGuardAgeMs-age(proof.start));assert.ok(remaining>0,'Fresh43 page guard expired');
       const request={format:'osr43-native-input/1',browser,nonce:config.nonce,title:config.title,fixtureUrl:config.fixtureUrl,mountedId:mountedId(),requestId:proof.id,serial,caseId:v.caseId,action,target:v.target,point:v.point,viewport:v.viewport,pointerDown:false,cleanupOnly:cleanup,deadlineMs:remaining};
+      // Safari only: pending.request owns this original pair's bounded number.
+      if(browser==='safari'&&pointer){assert.ok(Number.isSafeInteger(serial)&&serial>=1&&serial<=2048);request.mouseEventNumber=serial;}
       if(key){
         preflight=run(inputHelper,['--guard-key',JSON.stringify(request)],{timeout:remaining,fullStdout:true,maxBuffer:32768});const strict=JSON.parse(preflight.stdout);
         assert.equal(strict.status,'guarded');assert.equal(strict.delivery,'not_sent');assert.equal(strict.cleanupOnly,cleanup);assert.equal(strict.frontBundle,browser==='chrome'?'com.google.Chrome':'com.apple.Safari');
@@ -488,6 +500,7 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
         assert.equal(timing.requestedPauseMs,25);assert.ok(Number.isFinite(timing.elapsedMs)&&timing.elapsedMs>=0);
       }else{assert.equal(Object.hasOwn(actual,'prelude'),false);assert.equal(Object.hasOwn(actual,'pairTiming'),false);assert.equal(Object.hasOwn(actual,'posting'),false);}
       fixedWindow(actual.axWindow);
+      if(browser==='safari'){safariPointerProgram(actual,request);assert.equal(actual.mouseEventNumber,request.mouseEventNumber);assert.deepEqual(actual.constructedMouseEventNumbers,[request.mouseEventNumber,request.mouseEventNumber]);}
       for(const [name,value]of Object.entries({nonce:config.nonce,mountedId:mountedId(),caseId:v.caseId,target:v.target}))assert.equal(actual[name],value);
       completed=true;pending=null;assert.ok(age(proof.start)<=limits.guardAgeMs,'Total43 pointer guard exceeded1s');
       const value={action,delivery:'sent',actual,execution,pageGuard:proof.value,maximumGuardAgeMs:age(proof.start),guardAgeLimitMs:limits.guardAgeMs,cleanupOnly:false,keysPending:false,pointerDown:false,requestId:proof.id};record('physical-input',value);return value;
@@ -501,9 +514,12 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
       assert.equal(v.nonce,config.nonce);assert.equal(v.id,mountedId());assert.equal(v.id,saved.request.mountedId);assert.equal(v.mountedId,saved.request.mountedId);assert.equal(v.action,saved.action);assert.equal(v.target,saved.request.target);assert.equal(v.releaseOnly,true);assert.equal(v.allowed,true);assert.equal(v.editorConnected,true);
       assert.equal(v.url,config.fixtureUrl);assert.equal(v.title,config.title);assert.equal(v.caseId,saved.request.caseId);assert.deepEqual(v.viewport,saved.request.viewport);
       const remaining=Math.floor(limits.guardAgeMs-age(proof.start));assert.ok(remaining>0);
+      // Fresh cleanup authority retains the ORIGINAL Safari pair's number.
+      if(browser==='safari')assert.ok(Number.isSafeInteger(saved.request.mouseEventNumber)&&saved.request.mouseEventNumber>=1&&saved.request.mouseEventNumber<=2048&&saved.request.mouseEventNumber<=v.serial);
       request={...saved.request,requestId:proof.id,serial:v.serial,cleanupOnly:true,pointerDown:true,deadlineMs:remaining};
       execution=run(inputHelper,['--request',JSON.stringify(request)],{timeout:remaining,fullStdout:true,maxBuffer:32768});actual=JSON.parse(execution.stdout);
       assert.equal(actual.status,'sent');assert.equal(actual.delivery,'sent');assert.equal(actual.cleanupOnly,true);assert.deepEqual(actual.transitions,['up']);assert.equal(Object.hasOwn(actual,'prelude'),false);assert.equal(Object.hasOwn(actual,'pairTiming'),false);
+      if(browser==='safari'){assert.equal(Object.hasOwn(actual,'prepMove'),false);assert.equal(Object.hasOwn(actual,'pairPause'),false);assert.equal(actual.mouseEventNumber,saved.request.mouseEventNumber);assert.deepEqual(actual.constructedMouseEventNumbers,[saved.request.mouseEventNumber]);}
       if(browser==='chrome'){
         assert.ok(Number.isSafeInteger(request.pid)&&request.pid>=1&&request.pid<=2147483647);exactKeys(actual.posting,['route','guardedPid','preflightAccess']);assert.equal(actual.posting.route,'cghidEventTap');assert.equal(actual.posting.preflightAccess,true);assert.ok(Number.isSafeInteger(actual.posting.guardedPid)&&actual.posting.guardedPid>=1&&actual.posting.guardedPid<=2147483647);assert.equal(actual.posting.guardedPid,request.pid);assert.equal(actual.frontPid,request.pid);
       }else assert.equal(Object.hasOwn(actual,'posting'),false);

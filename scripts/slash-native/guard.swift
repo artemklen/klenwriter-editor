@@ -415,7 +415,8 @@ if argv.count == 3 && argv[1] == "--inspect-window" {
 let baseInputKeys: Set<String> = ["format", "browser", "nonce", "title", "fixtureUrl", "mountedId", "requestId", "serial", "caseId", "action", "target", "point", "viewport", "pointerDown", "cleanupOnly", "deadlineMs"]
 guard argv.count == 3, ["--request", "--guard-key"].contains(argv[1]), let data = argv[2].data(using: .utf8), data.count <= 4096,
  let request = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
- (closed(request, baseInputKeys) || closed(request, baseInputKeys.union(["pid"]))),
+ (closed(request, baseInputKeys) || closed(request, baseInputKeys.union(["pid"])) ||
+  (request["browser"] as? String == "safari" && ["click-quote", "click-add", "click-recovery"].contains(request["action"] as? String ?? "") && closed(request, baseInputKeys.union(["mouseEventNumber"])))),
  request["format"] as? String == "osr43-native-input/1",
  let browser = request["browser"] as? String, ["chrome", "safari"].contains(browser),
  let nonce = request["nonce"] as? String, nonce.range(of: "^[a-f0-9]{32}$", options: .regularExpression) != nil,
@@ -443,13 +444,19 @@ let pointer = pointerTargets[action] != nil
 let guardingKey = argv[1] == "--guard-key"
 guard pointer ? !guardingKey && target == pointerTargets[action] : guardingKey && keys.contains(action) && target == "focused",
  cleanup ? (pointer ? held : !held) : !held else { refuse("Closed action/target transition differs") }
+var mouseEventNumber: Int64 = 0
+if browser == "safari" && pointer {
+ guard let value = number(request["mouseEventNumber"]), value >= 1, value <= 2048, value.rounded() == value,
+       cleanup ? value <= serial : value == serial else { refuse("Original Safari pointer event number differs") }
+ mouseEventNumber = Int64(value)
+}
 let postingPid: pid_t?
 if browser == "chrome" && pointer {
  guard closed(request, baseInputKeys.union(["pid"])), let pid = number(request["pid"]),
        pid >= 1, pid <= 2147483647, pid.rounded() == pid else { refuse("Original Chrome pointer PID required") }
  postingPid = pid_t(pid)
 } else {
- guard closed(request, baseInputKeys) else { refuse("PID is only admitted for Chrome pointers") }
+ guard closed(request, browser == "safari" && pointer ? baseInputKeys.union(["mouseEventNumber"]) : baseInputKeys) else { refuse("PID is only admitted for Chrome pointers") }
  postingPid = nil
 }
 let measurement = measureWindow(browser, expectedTitle, width * zoom, height * zoom)
@@ -493,6 +500,8 @@ let transitions: [CGEventType] = cleanup ? [.leftMouseUp] : chromePrelude ? [.mo
 var events: [CGEvent] = []
 for type in transitions {
  guard let event=CGEvent(mouseEventSource:nil,mouseType:type,mouseCursorPosition:actual,mouseButton:.left) else { refuse("Cannot allocate scoped pointer event") }
+ // Safari paired metadata only; preserve source, timestamp, flags and click state.
+ if browser == "safari" { event.setIntegerValueField(.mouseEventNumber,value:mouseEventNumber) }
  event.setIntegerValueField(.mouseEventClickState,value:type == .mouseMoved ? 0 : 1)
  events.append(event)
 }
@@ -506,6 +515,22 @@ if chromePrelude {
  let upNumber = events[2].getIntegerValueField(.mouseEventNumber)
  guard downNumber == upNumber else { refuse("Allocated Chrome mouse pair number differs") }
  pairTiming = ["timestampPolicy":"constructor-default", "downEventNumber":String(downNumber), "upEventNumber":String(upNumber), "requestedPauseMs":25]
+}
+var constructedMouseEventNumbers: [Int64] = []
+// Safari-only finite program, using the existing initial original-owner recheck.
+// Both fixed pauses consume the SAME pointer deadline; no AX proof count increase.
+let safariPrelude = browser == "safari" && !cleanup
+var prepMove: [String: Any]? = nil
+var pairPause: [String: Any]? = nil
+if safariPrelude {
+ guard elapsed() < deadline else { refuse("Safari movement authority expired before post") }
+ guard let move=CGEvent(mouseEventSource:nil,mouseType:.mouseMoved,mouseCursorPosition:actual,mouseButton:.left) else { refuse("Cannot allocate scoped Safari movement event") }
+ move.setIntegerValueField(.mouseEventClickState,value:0)
+ posted=true;move.post(tap:.cghidEventTap)
+ let pauseBegan = DispatchTime.now().uptimeNanoseconds
+ Thread.sleep(forTimeInterval:0.025)
+ let pauseElapsed = Double(DispatchTime.now().uptimeNanoseconds - pauseBegan) / 1_000_000
+ prepMove = ["event":"mouseMoved", "program":["move","down","up"], "screenPoint":["x":actual.x,"y":actual.y], "postedCount":1, "requestedPauseMs":25, "elapsedMs":pauseElapsed]
 }
 for (index, type) in transitions.enumerated() {
  _=recheckWindow(measurement,deadline)
@@ -521,7 +546,14 @@ for (index, type) in transitions.enumerated() {
   previousPostUptime = postUptime
   pairTiming?[["movePostUptimeNs","downPostUptimeNs","upPostUptimeNs"][index]] = String(postUptime)
  }
+ if browser == "safari" { constructedMouseEventNumbers.append(events[index].getIntegerValueField(.mouseEventNumber)) } // Getter immediately before post.
  posted=true;events[index].post(tap:.cghidEventTap)
+ if safariPrelude && type == .leftMouseDown {
+  let pauseBegan = DispatchTime.now().uptimeNanoseconds
+  Thread.sleep(forTimeInterval:0.025)
+  pairPause = ["after":"down", "count":1, "requestedPauseMs":25, "elapsedMs":Double(DispatchTime.now().uptimeNanoseconds - pauseBegan) / 1_000_000]
+  // The unchanged next-iteration recheck is the full after-pause UP guard.
+ }
  if type == .mouseMoved {
   let pauseBegan = DispatchTime.now().uptimeNanoseconds
   Thread.sleep(forTimeInterval:0.025)
@@ -537,7 +569,10 @@ for (index, type) in transitions.enumerated() {
  }
 }
 guard elapsed() <= deadline else { refuse("Pointer completion exceeded authority deadline") }
+if browser == "safari" { result["mouseEventNumber"]=mouseEventNumber;result["constructedMouseEventNumbers"]=constructedMouseEventNumbers }
 result["status"]="sent";result["delivery"]="sent";result["screenPoint"]=["x":actual.x,"y":actual.y];result["transitions"]=cleanup ? ["up"] : chromePrelude ? ["move","down","up"] : ["down","up"];result["elapsedMs"]=elapsed()
+if let move = prepMove { result["prepMove"] = move }
+if let pause = pairPause { result["pairPause"] = pause }
 if let prelude = pointerPrelude { result["prelude"] = prelude }
 if let timing = pairTiming { result["pairTiming"] = timing }
 result["method"]="exact fixture control point via CGEvent; platform input, not hardware-device provenance";emit(result,0)

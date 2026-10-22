@@ -337,6 +337,21 @@ if let fallback = measurement.safariScroll {
 guard actual.x.isFinite, actual.y.isFinite else { refuse("Finite scoped screen point required") }
 let transitions: [CGEventType] = cleanup ? [.leftMouseUp] : [.leftMouseDown,.leftMouseUp]
 var constructedMouseEventNumbers: [Int64] = []
+// Safari-only finite program, using the existing initial original-owner recheck.
+// Both fixed pauses consume the SAME pointer deadline; no AX proof count increase.
+let safariPrelude = browser == "safari" && !cleanup
+var prepMove: [String: Any]? = nil
+var pairPause: [String: Any]? = nil
+if safariPrelude {
+ guard elapsed() < deadline else { refuse("Safari movement authority expired before post") }
+ guard let move=CGEvent(mouseEventSource:nil,mouseType:.mouseMoved,mouseCursorPosition:actual,mouseButton:.left) else { refuse("Cannot allocate scoped Safari movement event") }
+ move.setIntegerValueField(.mouseEventClickState,value:0)
+ posted=true;move.post(tap:.cghidEventTap)
+ let pauseBegan = DispatchTime.now().uptimeNanoseconds
+ Thread.sleep(forTimeInterval:0.025)
+ let pauseElapsed = Double(DispatchTime.now().uptimeNanoseconds - pauseBegan) / 1_000_000
+ prepMove = ["event":"mouseMoved", "program":["move","down","up"], "screenPoint":["x":actual.x,"y":actual.y], "postedCount":1, "requestedPauseMs":25, "elapsedMs":pauseElapsed]
+}
 for type in transitions {
  _=recheckWindow(measurement,deadline)
  if let fallback = measurement.safariScroll {
@@ -348,8 +363,16 @@ for type in transitions {
  event.setIntegerValueField(.mouseEventClickState,value:1)
  constructedMouseEventNumbers.append(event.getIntegerValueField(.mouseEventNumber)) // Getter immediately before post.
  posted=true;event.post(tap:.cghidEventTap)
+ if safariPrelude && type == .leftMouseDown {
+  let pauseBegan = DispatchTime.now().uptimeNanoseconds
+  Thread.sleep(forTimeInterval:0.025)
+  pairPause = ["after":"down", "count":1, "requestedPauseMs":25, "elapsedMs":Double(DispatchTime.now().uptimeNanoseconds - pauseBegan) / 1_000_000]
+  // The unchanged next-iteration recheck is the full after-pause UP guard.
+ }
 }
 guard elapsed() <= deadline else { refuse("Pointer completion exceeded authority deadline") }
 result["mouseEventNumber"]=mouseEventNumber;result["constructedMouseEventNumbers"]=constructedMouseEventNumbers
 result["status"]="sent";result["delivery"]="sent";result["screenPoint"]=["x":actual.x,"y":actual.y];result["transitions"]=cleanup ? ["up"] : ["down","up"];result["elapsedMs"]=elapsed()
+if let move = prepMove { result["prepMove"] = move }
+if let pause = pairPause { result["pairPause"] = pause }
 result["method"]="exact fixture control point via CGEvent; platform input, not hardware-device provenance";emit(result,0)

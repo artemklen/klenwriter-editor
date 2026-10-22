@@ -64,6 +64,16 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
   let operationBusy=false,ownerEpoch=0;
   function whole(value,pattern){assert.equal(typeof value,'string');const match=pattern.exec(value);assert.ok(match&&match[0]===value,'Exact presentation identifier required');}
   function exactKeys(value,keys){assert.ok(value&&typeof value==='object'&&!Array.isArray(value));assert.deepEqual(Object.keys(value).sort(),[...keys].sort());}
+  function safariPointerProgram(actual,request){
+    exactKeys(actual.screenPoint,['x','y']);assert.ok(Object.values(actual.screenPoint).every(Number.isFinite));
+    const move=actual.prepMove;exactKeys(move,['event','program','screenPoint','postedCount','requestedPauseMs','elapsedMs']);
+    assert.equal(move.event,'mouseMoved');assert.deepEqual(move.program,['move','down','up']);exactKeys(move.screenPoint,['x','y']);assert.deepEqual(move.screenPoint,actual.screenPoint);
+    assert.equal(move.postedCount,1);assert.equal(move.requestedPauseMs,25);
+    const pause=actual.pairPause;exactKeys(pause,['after','count','requestedPauseMs','elapsedMs']);
+    assert.equal(pause.after,'down');assert.equal(pause.count,1);assert.equal(pause.requestedPauseMs,25);
+    assert.ok(Number.isFinite(actual.elapsedMs)&&actual.elapsedMs>=0&&actual.elapsedMs<=request.deadlineMs&&request.deadlineMs<=1000);
+    for(const value of [move.elapsedMs,pause.elapsedMs])assert.ok(Number.isFinite(value)&&value>=0&&value<=actual.elapsedMs);
+  }
   function frame(value){exactKeys(value,['x','y','width','height']);assert.ok(Object.values(value).every(Number.isFinite)&&value.width>0&&value.height>0&&Number.isFinite(value.x+value.width)&&Number.isFinite(value.y+value.height));return {...value};}
   function pageZoom(proof,action,cleanup=false){
     const v=proof.value;assert.equal(typeof proof.start,'bigint');whole(proof.id,new RegExp('^'+config.nonce+':[1-9][0-9]{0,3}$'));whole(mountedId(),/^a66-[1-9][0-9]{0,8}$/);
@@ -178,6 +188,7 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
       assert.equal(cleanup,false);pending={action,pointer:true,request};dispatched=true;
       execution=run(inputHelper,['--request',JSON.stringify(request)],{timeout:remaining,fullStdout:true,maxBuffer:32768});const actual=JSON.parse(execution.stdout);
       assert.equal(actual.status,'sent');assert.equal(actual.delivery,'sent');assert.deepEqual(actual.transitions,['down','up']);assert.equal(actual.action,action);assert.equal(actual.requestId,proof.id);
+      if(browser==='safari')safariPointerProgram(actual,request);
       fixedWindow(actual.axWindow);
       assert.equal(actual.mouseEventNumber,request.mouseEventNumber);assert.deepEqual(actual.constructedMouseEventNumbers,[request.mouseEventNumber,request.mouseEventNumber]);
       for(const [name,value]of Object.entries({nonce:config.nonce,mountedId:mountedId(),caseId:v.caseId,target:v.target}))assert.equal(actual[name],value);
@@ -198,6 +209,7 @@ export function createInputOwner({browser,config,inputHelper,keyScriptPath,run,r
       request={...saved.request,requestId:proof.id,serial:v.serial,cleanupOnly:true,pointerDown:true,deadlineMs:remaining};
       execution=run(inputHelper,['--request',JSON.stringify(request)],{timeout:remaining,fullStdout:true,maxBuffer:32768});actual=JSON.parse(execution.stdout);
       assert.equal(actual.status,'sent');assert.equal(actual.delivery,'sent');assert.equal(actual.cleanupOnly,true);assert.deepEqual(actual.transitions,['up']);
+      if(browser==='safari'){assert.equal(Object.hasOwn(actual,'prepMove'),false);assert.equal(Object.hasOwn(actual,'pairPause'),false);}
       assert.equal(actual.mouseEventNumber,saved.request.mouseEventNumber);assert.deepEqual(actual.constructedMouseEventNumbers,[saved.request.mouseEventNumber]);
       for(const name of ['action','requestId','nonce','mountedId','caseId','target'])assert.equal(actual[name],request[name]);
       assert.equal(actual.frontBundle,browser==='chrome'?'com.google.Chrome':'com.apple.Safari');assert.ok(Number.isSafeInteger(actual.frontPid)&&actual.frontPid>0);
