@@ -2,7 +2,7 @@
 // A human supplies every semantic action. This observer has no input helper,
 // command/select/focus replay, browser protocol, screen or recording API.
 import {sdkBuildId} from '@klenwriter/editor-sdk';
-import '/accessibility-host.js';
+import {humanCaptureBudget,HUMAN_BASE_PLAN_SHA256,completeWireCheckpointChunks} from '/accessibility-host.js';
 const PLAN_SHA256='7f10a395d854caf33a3b8bfa017a970517d90a978b4a55706be983c5d5754c6e';
 const $=id=>document.getElementById(id),encoder=new TextEncoder();
 const check=(ok,why)=>{if(!ok)throw Error(why);};
@@ -14,13 +14,15 @@ const controls={start:$('a66-human-start'),stop:$('a66-human-stop'),status:$('a6
 const query=new URL(location.href).searchParams,nonce=query.get('nonce');
 check(query.size===1&&/^[a-f0-9]{64}$/.test(nonce??''),'Exact manual launch nonce');
 const planBytes=new Uint8Array(await (await fetch('/accessibility-human/plan.json',{cache:'no-store'})).arrayBuffer());
-check(await sha(planBytes)===PLAN_SHA256,'Frozen source-first plan bytes');const plan=JSON.parse(new TextDecoder().decode(planBytes)),limits=plan.limits;
+check(await sha(planBytes)===PLAN_SHA256,'Frozen source-first plan bytes');const plan=JSON.parse(new TextDecoder().decode(planBytes));
 const configResponse=await fetch(`/accessibility-human/config?nonce=${nonce}`,{cache:'no-store'});check(configResponse.ok,'Explicit fresh manual sink configuration required');const config=await configResponse.json();
 check(config.nonce===nonce&&config.expectedBuildId===sdkBuildId&&config.expectedPlanSha256===PLAN_SHA256,'Actual sealed build/plan matches root launch');
+check(HUMAN_BASE_PLAN_SHA256===PLAN_SHA256,'Budget erratum binds unchanged frozen plan');
+const budget=humanCaptureBudget(config.captureBudget),limits=Object.freeze({...plan.limits,...(budget??{})});
 const browserUserAgent=navigator.userAgent;check(browserUserAgent.includes('Safari/')&&!/Chrome|Chromium|CriOS|Edg\//.test(browserUserAgent),'This finite human lane is Safari, not another browser');
 for(const key of ['chunkCount','chunkBytes','totalBytes'])check(config.caps[key]===limits[key],'Exact page/sink caps');
 const host=window.accessibilityHost;check(host&&window.accessibilityHostReady===true,'Existing real public host facade');
-const state={phase:'idle',openedAt:new Date().toISOString(),startedAt:null,exerciseStartedAt:null,deadline:Date.now()+limits.idleMs,mountId:null,freshId:null,semantic:0,machineComplete:false,freshFocused:false,roles:{},freshRoles:{},inspects:0,eventCount:0,eventBytes:0,wireCount:0,wireBytes:0,ordinal:0,totalBytes:0,wire:new Map(),accountStamp:null,stateEvents:0,setup:null,last:null,closed:false,issues:[],source:{planSha256:PLAN_SHA256,buildId:sdkBuildId,browserUserAgent,rootPins:config.sourcePins}};
+const state={phase:'idle',openedAt:new Date().toISOString(),startedAt:null,exerciseStartedAt:null,deadline:Date.now()+limits.idleMs,mountId:null,freshId:null,semantic:0,machineComplete:false,freshFocused:false,roles:{},freshRoles:{},inspects:0,eventCount:0,eventBytes:0,wireCount:0,wireBytes:0,ordinal:0,totalBytes:0,wire:new Map(),accountStamp:null,stateEvents:0,setup:null,last:null,closed:false,issues:[],source:{planSha256:PLAN_SHA256,buildId:sdkBuildId,browserUserAgent,rootPins:config.sourcePins,captureBudget:config.captureBudget??null,captureLimits:budget}};
 const removals=[],pendingCodes=new Set();let pendingEvents=[],pendingWrites=Promise.resolve(),inspection=Promise.resolve(),startup=null,finalization=null,timer=null,frame=null,inspectionRequested=false;
 function listen(target,type,fn,options){target.addEventListener(type,fn,options);removals.push(()=>target.removeEventListener(type,fn,options));}
 function announce(text){controls.status.textContent=text;}
@@ -92,7 +94,9 @@ async function inspect(id,label,{initial=false,fresh=false}={}){
   check(++state.inspects<=limits.inspectCount,'Finite readonly inspection cap');const value=await host.inspect(id),wire=originalWire(value,id),events=pendingEvents;pendingEvents=[];
   // One bounded chunk per normal inspection. Original evidence reaches durable
   // storage before canonical/counter validation, including a failing outcome.
-  await observation({kind:'native-checkpoint',label,mountId:id,events,wire,value:withoutWire(value)});
+  const payload={kind:'native-checkpoint',label,mountId:id,events,wire,value:withoutWire(value)};
+  if(!budget)await observation(payload);
+  else for(const chunk of completeWireCheckpointChunks(payload,{nonce,checkpoint:state.inspects,firstRecord:state.wireCount-wire.length+1}))await observation(chunk);
   if(!initial&&!fresh)for(const row of wire)account(row);return value;
 }
 function documentEvents(value){return value.events.filter(event=>event.change.kind==='document');}
@@ -143,7 +147,7 @@ async function start(event){
   if(state.phase!=='idle')return;check(event.isTrusted,'Start is a human action');state.phase='starting';controls.start.disabled=true;state.startedAt=new Date().toISOString();
   try{
     await observation({kind:'actual-human-start',performer:'owner',isTrusted:event.isTrusted,at:state.startedAt});if(state.closed)return;
-    const mounted=await host.mount(copy(plan.setup));if(state.closed)return;check(mounted.ready.status==='ready','Actual manually started host ready');state.mountId=mounted.id;const setup=await inspect(state.mountId,'Start only: authored initial selection and exact public focus',{initial:true});if(state.closed)return;assertMaterial(setup,plan.nativeSteps[0],state.roles);check(setup.insideEditor&&setup.state.stamp.selection_epoch==='1'&&!setup.state.dirty&&setup.state.saved_revision==='0','Exact initial caret/focus/baseline');
+    const mountOptions=copy(plan.setup);if(budget)mountOptions.captureBudget=config.captureBudget;const mounted=await host.mount(mountOptions);if(state.closed)return;check(mounted.ready.status==='ready','Actual manually started host ready');state.mountId=mounted.id;const setup=await inspect(state.mountId,'Start only: authored initial selection and exact public focus',{initial:true});if(state.closed)return;assertMaterial(setup,plan.nativeSteps[0],state.roles);check(setup.insideEditor&&setup.state.stamp.selection_epoch==='1'&&!setup.state.dirty&&setup.state.saved_revision==='0','Exact initial caret/focus/baseline');
     state.setup=withoutWire(setup);state.accountStamp=copy(setup.state.stamp);state.last={semantic:0,saved:false,value:withoutWire(setup)};state.phase='exercise';state.exerciseStartedAt=new Date().toISOString();state.deadline=Date.now()+limits.exerciseMs;controls.stop.disabled=false;announce('Начали: 5 минут. Введи x, затем следуй шагам справа. После изменений дождись отметки; между шагами нажимать подтверждения не нужно.');progress(null);
   }catch(error){fail(error);}
 }

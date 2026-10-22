@@ -4,6 +4,7 @@
 import {readFile,mkdir,writeFile,rename,lstat} from 'node:fs/promises';
 import {isAbsolute,resolve,dirname,basename,join} from 'node:path';
 import {createHash} from 'node:crypto';
+import {humanCaptureBudget} from './capture-budget.mjs';
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 const check=(ok,why)=>{if(!ok)throw Error(why);};
 const CAP=Object.freeze({chunkCount:32,chunkBytes:524288,totalBytes:8388608,depth:32,nodes:200000});
@@ -15,7 +16,8 @@ export async function createHumanReceiptSink(configurationPath){
   if(!configurationPath)return null;
   check(isAbsolute(configurationPath)&&resolve(configurationPath)===configurationPath,'Explicit absolute sink config');
   const configBytes=await regular(configurationPath,16384),config=JSON.parse(configBytes);finite(config);
-  check(own(config,['schema','nonce','out','expectedBuildId','expectedPlanSha256','sourcePins']),'Exact sink configuration fields');check(config.schema==='kwe-a66-human-sink/1','Sink schema');
+  check(own(config,['schema','nonce','out','expectedBuildId','expectedPlanSha256','sourcePins'])||own(config,['schema','nonce','out','expectedBuildId','expectedPlanSha256','sourcePins','captureBudget']),'Exact sink configuration fields');check(config.schema==='kwe-a66-human-sink/1','Sink schema');
+  const budget=humanCaptureBudget(config.captureBudget),caps=budget?Object.freeze({...CAP,chunkCount:budget.chunkCount,chunkBytes:budget.chunkBytes,totalBytes:budget.totalBytes}):CAP;
   check(/^[a-f0-9]{64}$/.test(config.nonce)&&/^sha256:[a-f0-9]{64}$/.test(config.expectedBuildId)&&/^[a-f0-9]{64}$/.test(config.expectedPlanSha256),'Exact source/build/nonce hex');
   check(isAbsolute(config.out)&&resolve(config.out)===config.out&&basename(config.out).startsWith('osr66-human-'),'Explicit fresh owned output');
   check(dirname(config.out)==='/private/tmp'||dirname(config.out)==='/Users/artem/projects/.evidence-archives/editor-wasm/osr-66','Fixed output parent');
@@ -23,11 +25,11 @@ export async function createHumanReceiptSink(configurationPath){
   for(const pin of config.sourcePins)check(own(pin,['path','bytes','sha256'])&&typeof pin.path==='string'&&pin.path.length<=512&&Number.isSafeInteger(pin.bytes)&&pin.bytes>=0&&/^[a-f0-9]{64}$/.test(pin.sha256),'Exact root-supplied pin');
   const parent=await lstat(dirname(config.out));check(parent.isDirectory()&&!parent.isSymbolicLink(),'Regular owned output parent');await mkdir(config.out,{mode:0o700});
   const startedAt=new Date().toISOString(),chunks=[];let total=0,closed=false,serial=Promise.resolve();
-  await writeFile(join(config.out,'000-launch.json'),JSON.stringify({status:'WAITING_FOR_HUMAN',startedAt,configurationPath,configurationSha256:sha(configBytes),config,caps:CAP,qualification:'Source/build pins are supplied by root after independent preflight; no browser/OS/input operation from this sink.'},null,2)+'\n',{flag:'wx',mode:0o600});
-  async function body(req){req.setTimeout(5000,()=>req.destroy(Error('Finite receipt read timeout')));const parts=[];let bytes=0;for await(const part of req){bytes+=part.length;check(bytes<=CAP.chunkBytes,'Chunk byte cap');parts.push(part);}req.setTimeout(0);return Buffer.concat(parts);}
+  await writeFile(join(config.out,'000-launch.json'),JSON.stringify({status:'WAITING_FOR_HUMAN',startedAt,configurationPath,configurationSha256:sha(configBytes),config,caps,qualification:'Source/build pins are supplied by root after independent preflight; no browser/OS/input operation from this sink.'},null,2)+'\n',{flag:'wx',mode:0o600});
+  async function body(req){req.setTimeout(5000,()=>req.destroy(Error('Finite receipt read timeout')));const parts=[];let bytes=0;for await(const part of req){bytes+=part.length;check(bytes<=caps.chunkBytes,'Chunk byte cap');parts.push(part);}req.setTimeout(0);return Buffer.concat(parts);}
   async function post(req,res){
-    check(!closed&&chunks.length<CAP.chunkCount,'Open finite receipt');check(req.headers.origin==='http://127.0.0.1:4174','Same-origin receipt');check(req.headers['x-a66-human-nonce']===config.nonce,'Exact nonce header');check((req.headers['content-type']??'').split(';')[0]==='application/json','JSON receipt');
-    const bytes=await body(req);check(total+bytes.length<=CAP.totalBytes,'Total receipt byte cap');const value=JSON.parse(bytes);finite(value);
+    check(!closed&&chunks.length<caps.chunkCount,'Open finite receipt');check(req.headers.origin==='http://127.0.0.1:4174','Same-origin receipt');check(req.headers['x-a66-human-nonce']===config.nonce,'Exact nonce header');check((req.headers['content-type']??'').split(';')[0]==='application/json','JSON receipt');
+    const bytes=await body(req);check(total+bytes.length<=caps.totalBytes,'Total receipt byte cap');const value=JSON.parse(bytes);finite(value);
     check(own(value,['schema','nonce','ordinal','kind','payload'])&&value.schema===schema&&value.nonce===config.nonce&&value.ordinal===chunks.length,'Exact immutable next chunk');check(['intent','observation','final'].includes(value.kind),'Closed receipt kind');check(chunks.length===0?value.kind==='intent':value.kind!=='intent','Exactly one first intent');
     const name=`${String(chunks.length+1).padStart(3,'0')}-${value.kind}.json`,hash=sha(bytes);await writeFile(join(config.out,name),bytes,{flag:'wx',mode:0o600});chunks.push({ordinal:value.ordinal,kind:value.kind,path:name,bytes:bytes.length,sha256:hash});total+=bytes.length;
     if(value.kind==='final'){
@@ -37,7 +39,7 @@ export async function createHumanReceiptSink(configurationPath){
     send(res,201,{status:'recorded',ordinal:value.ordinal,bytes:bytes.length,sha256:hash,closed});
   }
   return Object.freeze({
-    configuration:Object.freeze({nonce:config.nonce,expectedBuildId:config.expectedBuildId,expectedPlanSha256:config.expectedPlanSha256,sourcePins:config.sourcePins,caps:CAP,startedAt}),
+    configuration:Object.freeze({nonce:config.nonce,expectedBuildId:config.expectedBuildId,expectedPlanSha256:config.expectedPlanSha256,sourcePins:config.sourcePins,...(budget?{captureBudget:config.captureBudget}:{}),caps,startedAt}),
     async handle(req,res,path){
       if(path!=='/accessibility-human/config'&&path!=='/accessibility-human/receipt')return false;
       if(!['127.0.0.1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress)){send(res,403,{status:'refused',reason:'localhost only'});return true;}

@@ -150,3 +150,5 @@ test('HR12 total-byte bound is independent of each valid small-enough chunk',()=
   for(let ordinal=1;ordinal<=16;ordinal++){const bytes=encode(ordinal,'observation',{...synthetic,padding:'x'.repeat(500000)});assert.ok(bytes.length<524288);assert.equal((await request(sink,{bytes})).status,201);}
   const prefix=await files(f.out),last=encode(17,'observation',{...synthetic,padding:'x'.repeat(500000)});assert.ok(last.length<524288);await refused(sink,f.out,prefix,{bytes:last});await absent(join(f.out,'index.json'));
 }));
+
+await import('./accessibility-human-capture-budget.node.mjs');

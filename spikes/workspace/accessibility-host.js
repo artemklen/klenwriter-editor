@@ -6,6 +6,47 @@ import {createEditorUi,defineUiHostAction} from '@klenwriter/editor-ui';
 import {kwdjCommand} from '@klenwriter/editor-kwdj';
 import {kwdjBasicRenderers} from '@klenwriter/editor-kwdj/dom';
 import {notesD0Renderers} from '/notes-dom.mjs';
+// BEGIN HUMAN_COMPLETE_WIRE_BUDGET_ERRATUM
+// SPDX-License-Identifier: MIT OR Apache-2.0
+// Proposed human-only evidence-budget erratum. Requires the owner's explicit
+// approval before opt-in. The frozen plan, semantic checks and all raw wires stay.
+export const HUMAN_COMPLETE_WIRE_ID='human-complete-wire/1';
+export const HUMAN_BASE_PLAN_SHA256='7f10a395d854caf33a3b8bfa017a970517d90a978b4a55706be983c5d5754c6e';
+export const HUMAN_COMPLETE_WIRE_LIMITS=Object.freeze({wireRecords:8192,wireUtf8Bytes:8388608,chunkCount:128,chunkBytes:524288,totalBytes:33554432});
+const captureEncoder=new TextEncoder(),captureCheck=(ok,why)=>{if(!ok)throw Error(why);};
+export function humanCaptureBudget(id){
+  if(id===undefined)return null;
+  captureCheck(id===HUMAN_COMPLETE_WIRE_ID,'Exact explicit human complete-wire capture budget');
+  return HUMAN_COMPLETE_WIRE_LIMITS;
+}
+// Every original row remains an unmodified chronological row. The ordinal127
+// envelope and maximal counters conservatively bound all actual envelope sizes.
+export function completeWireCheckpointChunks(payload,{nonce,checkpoint,firstRecord}){
+  const cap=HUMAN_COMPLETE_WIRE_LIMITS;
+  captureCheck(/^[a-f0-9]{64}$/.test(nonce)&&Number.isSafeInteger(checkpoint)&&checkpoint>=1&&checkpoint<=24,'Closed human checkpoint identity');
+  captureCheck(payload.kind==='native-checkpoint'&&typeof payload.mountId==='string'&&typeof payload.label==='string'&&Array.isArray(payload.wire),'Original native checkpoint');
+  const {wire,...metadata}=payload;
+  captureCheck(Number.isSafeInteger(firstRecord)&&firstRecord>=1&&wire.length<=cap.wireRecords&&firstRecord+wire.length-1<=cap.wireRecords,'Exact bounded chronological wire range');
+  const envelope=value=>({schema:'kwe-a66-human-chunk/1',nonce,ordinal:cap.chunkCount-1,kind:'observation',payload:value});
+  const bytes=value=>captureEncoder.encode(JSON.stringify(value)).length;
+  const make=(rows,part,parts,start)=>({kind:'native-wire',checkpoint,mountId:payload.mountId,label:payload.label,part,parts,firstRecord:start,lastRecord:start+rows.length-1,records:rows.length,wire:rows});
+  const overhead=bytes(envelope({...make([],127,128,8192),lastRecord:8192,records:8192}));
+  const groups=[];let rows=[],rowBytes=0;
+  for(const row of wire){
+    const size=bytes(row);captureCheck(overhead+size<=cap.chunkBytes,'One original wire row exceeds unchanged per-chunk cap');
+    if(rows.length&&overhead+rowBytes+size+rows.length>cap.chunkBytes){groups.push(rows);rows=[];rowBytes=0;}
+    rows.push(row);rowBytes+=size;
+  }
+  if(rows.length)groups.push(rows);
+  captureCheck(groups.length<cap.chunkCount,'Finite original wire chunk count');
+  let start=firstRecord;
+  const chunks=groups.map((group,part)=>{const value=make(group,part,groups.length,start);start+=group.length;return value;});
+  const checkpointValue={...metadata,wire:[],wireChunks:{schema:'kwe-a66-human-wire-chunks/1',checkpoint,parts:chunks.length,records:wire.length,firstRecord:wire.length?firstRecord:null,lastRecord:wire.length?firstRecord+wire.length-1:null}};
+  chunks.push(checkpointValue);
+  for(const value of chunks)captureCheck(bytes(envelope(value))<=cap.chunkBytes,'Unchanged complete envelope byte cap; never truncate');
+  return chunks;
+}
+// END HUMAN_COMPLETE_WIRE_BUDGET_ERRATUM
 const [module,packet,cases]=await Promise.all([loadSdkV2(),fetch('/extensions-packet.json').then(r=>r.json()),fetch('/ui-cases.json').then(r=>r.json())]);
 const records=new Map(),encoder=new TextEncoder();let serial=0;
 const clone=value=>value===undefined?undefined:structuredClone(value),check=(ok,why)=>{if(!ok)throw Error(why);};
@@ -27,12 +68,12 @@ function tracedModule(r){
     initialization(){const bytes=this.actual.initialization();this.stamp=JSON.parse(bytes).value?.state?.stamp??null;return bytes;}
     context(){return this.actual.context();}
     call(bytes){
-      check(r.trace.length<1024&&r.traceBytes<2097152,'Finite original wire trace');const request=JSON.parse(bytes),at=performance.now();let reply,error;
+      check(r.trace.length<r.wireLimits.records&&r.traceBytes<r.wireLimits.bytes,'Finite original wire trace');const request=JSON.parse(bytes),at=performance.now();let reply,error;
       if(r.controlledFatal&&request.kind==='state'){
         r.controlledFatal=false;reply=JSON.stringify({status:'fatal',diagnostic:{code:'fixture.controlled_fatal',path:'/controlled-accessibility-state',category:'transport',details:{fixture:'source-authored controlled fatal read, no native mutation'},stamp:this.stamp,may_have_committed:false}});
       }else try{reply=this.actual.call(bytes);}catch(value){error=value;}
-      boundedPush(r.trace,{requestJson:bytes,responseJson:reply??null,startedAt:at,finishedAt:performance.now(),outcome:error?'threw':'returned',...(error?{error:{name:String(error.name),message:String(error.message)}}:{})},1024);
-      r.traceBytes+=encoder.encode(bytes).length+(reply?encoder.encode(reply).length:0);check(r.traceBytes<=2097152,'Original wire byte cap');if(error)throw error;
+      boundedPush(r.trace,{requestJson:bytes,responseJson:reply??null,startedAt:at,finishedAt:performance.now(),outcome:error?'threw':'returned',...(error?{error:{name:String(error.name),message:String(error.message)}}:{})},r.wireLimits.records);
+      r.traceBytes+=encoder.encode(bytes).length+(reply?encoder.encode(reply).length:0);check(r.traceBytes<=r.wireLimits.bytes,'Original wire byte cap');if(error)throw error;
       this.stamp=JSON.parse(reply).value?.state?.stamp??this.stamp;return reply;
     }
     destroy(){this.actual.destroy();}free(){this.actual.free();}
@@ -70,6 +111,8 @@ function showHostError(r,kind){
   r.error.hidden=false;r.errorHeading.textContent=words[r.locale][kind==='load'?'loadError':'runtimeError'];r.retry.textContent=words[r.locale].retry;r.original.textContent=words[r.locale].original;r.error.dataset.failure=kind;
 }
 export async function mount(options={}){
+  const captureBudget=humanCaptureBudget(options.captureBudget);
+  const wireLimits=Object.freeze(captureBudget?{records:captureBudget.wireRecords,bytes:captureBudget.wireUtf8Bytes}:{records:1024,bytes:2097152});
   check([...records.values()].filter(r=>!r.disposed).length<4&&records.size<12,'Finite mounts');const locale=options.locale??'en';check(['ru','en'].includes(locale),'Closed locale');
   const selected=cases.find(c=>c.job.id===(options.caseId??'V01-forward'));check(selected,'Authored UI case');const job=clone(selected.job),id=`a66-${++serial}`;
   if(options.source!==undefined){check(typeof options.source==='string'&&encoder.encode(options.source).length<=16384,'Bounded authored canonical input');job.input=options.source;}
@@ -83,7 +126,7 @@ export async function mount(options={}){
   const toolbar=document.createElement('div'),gutter=document.createElement('div'),entry=document.createElement('div');wrapper.append(label,toolbar,element,gutter,entry);
   const controls=document.createElement('div');controls.className='a66-host-controls';const save=document.createElement('button'),reopen=document.createElement('button'),hostStatus=document.createElement('p');save.id=`${id}-save`;reopen.id=`${id}-reopen`;save.textContent=words[locale].save;reopen.textContent=words[locale].reopen;save.type=reopen.type='button';save.tabIndex=reopen.tabIndex=0;reopen.disabled=true;hostStatus.setAttribute('role','status');controls.append(save,reopen,hostStatus);wrapper.append(controls);
   const error=document.createElement('section'),errorHeading=document.createElement('h2'),retry=document.createElement('button'),original=document.createElement('button');error.className='a66-host-error';error.hidden=true;error.setAttribute('role','alert');errorHeading.id=`${id}-error-title`;error.setAttribute('aria-labelledby',errorHeading.id);retry.type=original.type='button';retry.tabIndex=original.tabIndex=0;error.append(errorHeading,retry,original);wrapper.append(error);document.getElementById('a66-mounts').append(wrapper);
-  const r={id,locale,wrapper,label,element,slots:{toolbar,gutter,entry},job,source:job.input,options:clone(options),notes:job.profile.profile_id==='org.example.notes',roles:{},hostAttributes,events:[],results:[],failures:[],fixtureErrors:[],recoveries:[],closedDialogs:[],trace:[],traceBytes:0,focusTasks:[],hostTasks:[],saves:[],save,reopen,hostStatus,error,errorHeading,retry,original,removals:[],disposed:null,disposing:null};records.set(id,r);
+  const r={id,locale,wrapper,label,element,slots:{toolbar,gutter,entry},job,source:job.input,options:clone(options),notes:job.profile.profile_id==='org.example.notes',roles:{},hostAttributes,events:[],results:[],failures:[],fixtureErrors:[],recoveries:[],closedDialogs:[],trace:[],traceBytes:0,wireLimits,focusTasks:[],hostTasks:[],saves:[],save,reopen,hostStatus,error,errorHeading,retry,original,removals:[],disposed:null,disposing:null};records.set(id,r);
   const listen=(node,type,fn)=>{node.addEventListener(type,fn);r.removals.push(()=>node.removeEventListener(type,fn));};
   listen(save,'click',()=>track(r,'host',saveSnapshot(id)));listen(reopen,'click',()=>track(r,'host',reopenSaved(id)));listen(retry,'click',()=>track(r,'host',restart(id)));listen(original,'click',()=>{r.originalRecovery={bytes:encoder.encode(r.source).length,input:r.source,qualification:'Controlled test-host original payload; no edited/saved claim'};});
   let loaded=Promise.resolve(tracedModule(r));
