@@ -220,6 +220,9 @@ export class SlashOwner {
       &&!(frame.kind==='add'&&event.key===' '))return;
     const navigation=frame.kind==='add'?['ArrowUp','ArrowDown','Home','End']:['ArrowUp','ArrowDown'];
     if(!this.#admitted()||!this.#focused(frame)){this.retire();return;}
+    // An unclaimed slash picker may await a newer ordinary-input RAF.
+    // Dismissal publishes no native edit and needs no execution stamp.
+    if(frame.kind==='slash'&&!frame.claimed&&event.key==='Escape'){event.preventDefault();event.stopPropagation();this.#cancel(true);return;}
     if(!this.#tokens(frame)){
       // A displayed picker owns these gestures even when a newer ordinary edit
       // is waiting for its presentation frame. Refuse that stale action without
