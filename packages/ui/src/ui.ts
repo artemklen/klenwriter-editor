@@ -174,8 +174,6 @@ class Ui implements EditorUi {
       const event = e as KeyboardEvent;
       if (event.key === 'Tab' && !event.altKey && !event.ctrlKey && !event.metaKey && !this.#destroyed) {
         const scope = event.shiftKey ? configuration.slots.toolbar : configuration.slots.entry;
-        // Keyboard ownership follows the caret even after incidental pointer movement.
-        this.#hover = null; this.#pointer = null;
         this.#capture(scope);
       }
     }, true);
@@ -341,7 +339,7 @@ class Ui implements EditorUi {
         : (Math.max(0, at) + (event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 1) + controls.length) % controls.length;
       this.#rove(controls, controls[next]); controls[next]!.button.focus(); return;
     }
-    if (control && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); if (!event.repeat) this.#activate(control); }
+    if (control && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); if (!event.repeat) this.#activate(control, true); }
   }
   #rove(controls: readonly Control[], active?: Control): void {
     const selected = active ?? controls.find(c => c.button.tabIndex === 0) ?? controls[0];
@@ -402,15 +400,16 @@ class Ui implements EditorUi {
   #sameCapture(pending: Pending, context: UiActionContext): boolean {
     return same(pending.context.context, context.context) && same(pending.context.state.stamp, context.state.stamp) && same(pending.context.state.selection, context.state.selection);
   }
-  #capture(scope: HTMLElement): Pending | null {
+  #capture(scope: HTMLElement, preferSelection = false): Pending | null {
     if (this.#destroyed || !this.#initialized || this.#tasks.size) return null;
     const editor = this.#options!.editor, status = editor.hostRequests.status();
     if (status.status !== 'available') { this.#show(status); return null; }
-    const context = this.#snapshot(); if ('status' in context) { this.#show(context); return null; }
+    const context = this.#snapshot(preferSelection); if ('status' in context) { this.#show(context); return null; }
+    if (preferSelection) { this.#hover = context.block?.node.id ?? null; this.#pointer = null; }
     if (this.#pending) {
       const old = this.#pending;
       if (old.abort || old.claimed || !this.#sameCapture(old, context)) { this.#releasePending('invalidated'); this.#showStale(); return null; }
-      if (old.scope === scope) return old;
+      if (old.scope === scope && (!preferSelection || old.context.block?.node.id === context.block?.node.id)) return old;
       this.#pending = null;
       if (!editor.hostRequests.release(old.request)) { this.#showStale(); return null; }
       if (this.#popup?.pending === old) this.#hidePopup();
@@ -696,12 +695,12 @@ class Ui implements EditorUi {
     this.#callbackDepth++;
     try { return callback(); } finally { this.#callbackDepth--; }
   }
-  #activate(control: Control): void {
+  #activate(control: Control, keyboard = false): void {
     if (!this.#destroyed && !this.#pending && !this.#tasks.size && !this.#rendering && !this.#callbackDepth) this.#update();
     if (!this.#options || this.#destroyed || this.#tasks.size || this.#callbackDepth || this.#rendering || !control.availability.available) { this.#showControl(control); return; }
     try {
       if (control.scope === 'add') { this.#openPopup('add'); return; }
-      if (control.scope === 'move') { this.#openPopup('move'); return; }
+      if (control.scope === 'move') { this.#openPopup('move', undefined, keyboard); return; }
       const pending = this.#popup && control.scope === 'popup' ? this.#popup.pending : this.#capture(this.#scope(control));
       if (!pending) return;
       if (control.action?.kind === 'host') { this.#openHost(control.action, pending); return; }
@@ -716,7 +715,7 @@ class Ui implements EditorUi {
       this.#complete(pending, control.action?.id ?? control.choice!.id, owned, control.choice !== null);
     } catch (error) { const result = this.#error(error, control.action?.id ?? null); this.#show(result); this.#emit(result); this.#releasePending('refused'); this.#hidePopup(); }
   }
-  #openPopup(kind: 'add' | 'move', initiating?: HTMLButtonElement): void {
+  #openPopup(kind: 'add' | 'move', initiating?: HTMLButtonElement, preferSelection = false): void {
     this.#drag?.cancel();
     if (this.#popup) { this.#cancelPopup(true); return; }
     if (kind === 'add' && this.#profile?.slash) {
@@ -727,7 +726,10 @@ class Ui implements EditorUi {
     }
     this.#slash?.retire();
     const trigger = initiating ?? (kind === 'add' ? this.#add.button : this.#move.button);
-    const pending = this.#capture(kind === 'add' ? this.#options!.slots.entry : this.#options!.slots.gutter); if (!pending) return;
+    const pending = this.#capture(kind === 'add' ? this.#options!.slots.entry : this.#options!.slots.gutter, preferSelection); if (!pending) return;
+    // Normal keyboard Move names and positions the captured caret block. The
+    // explicitly hovered Drag handle keeps its own source and existing request.
+    if (preferSelection && (this.#update() || this.#pending !== pending)) return;
     const popup = kind === 'add' ? this.#addPopup : this.#movePopup;
     const choices = kind === 'move' && pending.context.block ? moves(this.#callback(() => this.#profile!.moves(pending.context as UiActionContext & { block: UiBlockContext }))) : null;
     if (choices && 'status' in choices) { this.#setStatus(choices.message[this.#locale]); this.#releasePending('refused'); return; }
@@ -749,7 +751,7 @@ class Ui implements EditorUi {
   }
   #shortcut(direction: UiMoveChoice['direction']): void {
     try {
-      if (!this.#popup) this.#openPopup('move');
+      if (!this.#popup) this.#openPopup('move', undefined, true);
       const popup = this.#popup; if (!popup || popup.kind !== 'move') return;
       const candidates = popup.controls.filter(control => control.choice?.direction === direction);
       if (candidates.length === 1) this.#activate(candidates[0]!);

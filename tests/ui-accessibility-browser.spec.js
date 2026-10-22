@@ -160,7 +160,7 @@ function commandAccounting(before,after,item){
   for(const row of writes){expect(row.outcome).toBe('returned');expect(row.response?.status).toBe('ok');expect(row.request.stamp).toEqual(stamp);expect(row.response.value.kind).toBe('mutation');const next=row.response.value.state.stamp,isSemantic=['command','history','input_command'].includes(row.request.kind);if(isSemantic){semantic++;for(const key of ['revision','selection_epoch','history_epoch'])expect(BigInt(next[key])-BigInt(stamp[key])).toBe(BigInt(item.semanticDelta[key]));}else{expect(['set_selection','barrier']).toContain(row.request.kind);expect(next.revision).toBe(stamp.revision);expect(next.history_epoch).toBe(stamp.history_epoch);expect(BigInt(next.selection_epoch)-BigInt(stamp.selection_epoch)).toBe(row.response.value.effect==='unchanged'?0n:1n);}stamp=next;}
   expect(semantic).toBe(1);expect(after.state.stamp).toEqual(stamp);expect(docs(after).length-docs(before).length).toBe(item.documentEvents);
 }
-async function runChain(page,locale,held,{hoverBeforeMove=false}={}){
+async function runChain(page,locale,held,{hoverBeforeMove=false,moveWithMenu=false}={}){
   const initial=chain.steps[0],id=await mount(page,{locale,source:chain.canonicalLiterals.C0.json,sourceRoles:initial.roles,selection:initial.selection,focus:true,saveMode:held?'held':'immediate'}),roles={};
   // Only setup above may call bookmark/selection APIs. Authoring and Save/Reopen
   // use real keyboard controls; the optional hover never clicks or changes focus.
@@ -176,14 +176,16 @@ async function runChain(page,locale,held,{hoverBeforeMove=false}={}){
     await editor(page,id).locator(':scope > [data-editor-node]').first().hover();await frames(page);
     await expect(editor(page,id)).toBeFocused();unchanged(await checkpoint(page,id,'incidental hover keeps the keyboard caret/native state'),before);
   }
-  await perform(4,async()=>{await tabTo(page,button(page,id,'move'));await page.keyboard.press('Alt+ArrowUp');await expect(button(page,id,'move')).toBeFocused();});
+  await perform(4,async()=>{await tabTo(page,button(page,id,'move'));
+    if(moveWithMenu){await page.keyboard.press('Enter');await expect(shell(page,id).getByRole('menu')).toBeVisible();await expect(shell(page,id).locator('.kw-ui-context')).toContainText(locale==='ru'?'Блок 3:':'Block 3:');await expect(action(page,id,'up')).toBeFocused();await page.keyboard.press('Enter');}
+    else await page.keyboard.press('Alt+ArrowUp');await expect(button(page,id,'move')).toBeFocused();});
   await perform(5,async()=>{await page.keyboard.press('Shift+Tab');await expect(editor(page,id)).toBeFocused();await page.keyboard.press(editingKeys.lineEnd);await page.keyboard.press('Backspace');});
   await perform(6,()=>page.keyboard.press('ControlOrMeta+z'));await expect(editor(page,id)).toBeFocused();
   return {id,roles,before};
 }
 for(const locale of ['ru','en']){
   test(`A66 keyboard Move ${locale}: Tab uses the caret block after another block was hovered`,async({page})=>{
-    const {id}=await runChain(page,locale,false,{hoverBeforeMove:true});zero(await call(page,'dispose',id));
+    for(const moveWithMenu of [false,true]){const {id}=await runChain(page,locale,false,{hoverBeforeMove:true,moveWithMenu});zero(await call(page,'dispose',id));}
   });
   test(`A66-K01/K02/K03/K05/K06/K08 ${locale}: complete keyboard edit/select/format/insert/move/delete/Undo/Save/reopen chain`,async({page})=>{
     const {id,roles,before}=await runChain(page,locale,false);await tabTo(page,page.locator(`#${id}-save`));await page.keyboard.press('Enter');const saved=await checkpoint(page,id,'explicit host receipt then matching acknowledgement');
