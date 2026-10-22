@@ -58,6 +58,9 @@ function recordEvent(event){
     if(event.type==='focusin'&&state.freshId&&event.target?.id===`${state.freshId}-editor`)state.freshFocused=true;
     if(state.phase==='exercise'&&event.type==='keydown'&&(event.code==='KeyX'||event.key==='Enter'||event.key==='Backspace'||event.code==='KeyZ'&&(event.metaKey||event.ctrlKey)||event.key==='ArrowUp'&&event.altKey))pendingCodes.add(event.code);
     if(state.phase==='exercise'&&event.type==='keyup'&&pendingCodes.delete(event.code))requestInspection();
+    // A platform may release Meta/Control after trusted KeyZ-down without a
+    // delivered KeyZ-up. This ends only the already captured Undo chord wait.
+    if(state.phase==='exercise'&&event.type==='keyup'&&['Meta','Control'].includes(event.key)&&pendingCodes.delete('KeyZ'))requestInspection();
   }catch(error){fail(error);}
 }
 function point(roles,value){return value===null?null:Object.fromEntries(Object.entries(value).map(([key,v])=>[key,['node','parent'].includes(key)?roles[v]:v]));}
