@@ -6,7 +6,7 @@ import {createHash} from 'node:crypto';
 
 const oraclePath='contracts/drag/v1/mounted-oracles.json';
 const oracleBytes=readFileSync(oraclePath),frozen=JSON.parse(oracleBytes),records=new WeakMap();
-test.use({trace:{mode:'retain-on-failure',screenshots:false,snapshots:true,sources:true}});
+test.use({trace:{mode:'off',screenshots:false,snapshots:true,sources:true}});
 const call=(page,method,...args)=>page.evaluate(({method,args})=>window.ui42[method](...args),{method,args});
 const handle=(page,id)=>page.locator(`#${id} [data-editor-ui-control="drag"]`);
 const submissions=value=>value.results.filter(r=>r.status==='submitted'&&r.action==='drag-move');
