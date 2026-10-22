@@ -1,0 +1,15 @@
+diff --git a/packages/dom/src/input.ts b/packages/dom/src/input.ts
+index 93459ae..e199562 100644
+--- a/packages/dom/src/input.ts
++++ b/packages/dom/src/input.ts
+@@ -272,6 +272,10 @@ export function attachInput(options: InputConfiguration): InputOwner {
+       return; // A UA echo of the held shortcut cannot apply history twice.
+     }
+     historyKeyHeld=null;
++    if(input.inputType==='insertFromPaste'||input.inputType==='insertFromPasteAsQuotation'){
++      if(input.cancelable)input.preventDefault();
++      return; // Clipboard owner is the sole paste dispatch route; UA echoes cannot insert twice.
++    }
+     if(input.inputType==='insertFromDrop'||input.inputType==='deleteByDrag'){
+       if(input.cancelable)input.preventDefault();
+       refused('dom.command_unsupported');return;

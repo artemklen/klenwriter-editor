@@ -31,7 +31,7 @@ export function computeSdkBuildIdentity() {
   };
   for (const path of ['Cargo.toml', 'Cargo.lock', 'rust-toolchain.toml', 'package.json', 'package-lock.json',
     'package-map.json', 'tsconfig.base.json', 'tsconfig.json', 'scripts/generate-sdk-types.mjs',
-    'scripts/build-workspace.mjs', 'scripts/generate-dom-inventory.mjs', 'scripts/build-extensions-consumers.mjs', 'scripts/dependency-notices.mjs', 'scripts/package-identity.mjs', 'scripts/seal-sdk-wasm.mjs', 'scripts/sdk-distribution.mjs',
+    'scripts/build-workspace.mjs', 'scripts/build-clipboard-parser.mjs', 'scripts/generate-dom-inventory.mjs', 'scripts/build-extensions-consumers.mjs', 'scripts/dependency-notices.mjs', 'scripts/package-identity.mjs', 'scripts/seal-sdk-wasm.mjs', 'scripts/sdk-distribution.mjs',
     'provenance/licenses/ts-rs-12.0.1-MIT.txt', 'provenance/licenses/sdk-generator-license-sources.json']) add(path);
   // Every workspace library contributes, including original extension modules
   // and semantic JSON registrations. A new crate cannot escape build identity
@@ -143,8 +143,9 @@ export function generateSdkTypes({ check = false, locked = true } = {}) {
   if (v2Result.status !== 0) throw new Error(`Native SDK V2 type generation failed (${v2Result.status}):\n${v2Result.stderr}`);
   if (v2Result.stderr) process.stderr.write(v2Result.stderr);
   const v2Generated = v2Result.stdout.replaceAll('\r\n', '\n');
-  const v2Names = [...readFileSync(resolve(root, 'crates/protocol/src/v2.rs'), 'utf8')
-    .matchAll(/^pub (?:struct|enum) (\w+)/gm)].map(match => match[1]).concat('BridgeRequest').sort();
+  const v2Wire = ['crates/protocol/src/v2.rs', 'crates/kwdj-sdk/src/wire_v2.rs']
+    .map(path => readFileSync(resolve(root, path), 'utf8')).join('\n');
+  const v2Names = [...v2Wire.matchAll(/^pub (?:struct|enum) (\w+)/gm)].map(match => match[1]).concat('BridgeRequest').sort();
   const v2Exported = [...v2Generated.matchAll(/^export type (\w+)/gm)].map(match => match[1]).sort();
   if (new Set(v2Names).size !== v2Names.length || JSON.stringify(v2Names) !== JSON.stringify(v2Exported)) {
     throw new Error('Native SDK V2 generator must enumerate every additive wire DTO exactly once');

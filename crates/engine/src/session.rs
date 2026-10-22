@@ -235,6 +235,17 @@ impl<P: FrozenProfile> Session<P> {
         &self.binding
     }
 
+    /// Trusted compiled profile reads may inspect their admitted context under
+    /// the ordinary session guard. The context never becomes a wire snapshot.
+    pub fn with_profile_context<T>(
+        &self,
+        key: SessionKey,
+        read: impl FnOnce(&P::Context) -> T,
+    ) -> Result<T, SessionError<P::Error>> {
+        self.guard(key, None)?;
+        Ok(read(&self.context))
+    }
+
     pub fn stamp(&self) -> SessionStamp {
         SessionStamp {
             session: self.key,

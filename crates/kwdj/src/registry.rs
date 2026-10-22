@@ -28,6 +28,17 @@ pub fn base_registration() -> ExtensionDescriptor {
     registration
 }
 
+/// The ABI2 clipboard command is absent from the legacy static catalog.
+pub fn base_registration_v2() -> ExtensionDescriptor {
+    let mut registration = base_registration();
+    registration
+        .commands
+        .push(editor_registry::CommandDescriptor::Compiled {
+            id: crate::commands::CLIPBOARD_COMMAND_ID.into(),
+        });
+    registration
+}
+
 /// The codec accepts prose and poetry; the contextual domain validator owns
 /// their distinct root policies. This common schema describes their union.
 pub fn registry_descriptor() -> RegistryDescriptor {

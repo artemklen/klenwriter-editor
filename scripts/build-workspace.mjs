@@ -9,6 +9,7 @@ import { computeSdkBuildIdentity, generateSdkTypes, writeSdkBuildIdentity, write
 import { generateDomInventory } from './generate-dom-inventory.mjs';
 import { defaultSdkDistribution, defaultSdkCargoFeatures } from './sdk-distribution.mjs';
 import { buildExtensionConsumers } from './build-extensions-consumers.mjs';
+import { buildClipboardParser } from './build-clipboard-parser.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 process.chdir(root);
@@ -91,6 +92,7 @@ for (const name of packages) {
   rmSync(`packages/${name}/tsconfig.tsbuildinfo`, { force: true });
 }
 run(process.execPath, ['node_modules/typescript/bin/tsc', '-b', '--force']);
+await buildClipboardParser();
 run(bindgen, [`target/wasm32-unknown-unknown/release/${identity.rust.wasm.name.replaceAll('-', '_')}.wasm`,
   '--target', 'web', '--out-dir', 'packages/wasm/dist', '--out-name', 'editor_wasm']);
 // Native manifest is compiled with the same source ID as this exact WASM build.

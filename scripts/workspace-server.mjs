@@ -22,6 +22,11 @@ const routes = new Map([
   ['/selection-host.js', ['spikes/workspace/selection-host.js', 'text/javascript']],
   ['/selection-native-host.js', ['spikes/workspace/selection-native-host.js', 'text/javascript']],
   ['/selection.css', ['spikes/workspace/selection.css', 'text/css']],
+  ['/clipboard', ['spikes/workspace/clipboard.html', 'text/html']],
+  ['/clipboard-host.js', ['spikes/workspace/clipboard-host.js', 'text/javascript']],
+  ['/clipboard.css', ['spikes/workspace/clipboard.css', 'text/css']],
+  ['/clipboard-contract/positive.json', ['contracts/kwdj/v1/fixtures/positive.json', 'application/json']],
+  ['/clipboard-contract/negative.json', ['contracts/kwdj/v1/fixtures/negative.json', 'application/json']],
   ['/composition', ['spikes/workspace/composition.html', 'text/html']],
   ['/composition-host.js', ['spikes/workspace/composition-host.js', 'text/javascript']],
   ['/composition-native-host.js', ['spikes/workspace/composition-native-host.js', 'text/javascript']],
@@ -68,7 +73,7 @@ for (const name of ['wasm', 'sdk', 'kwdj', 'dom', 'ui']) {
 }
 // Import maps are static, hash-authorized data. No unsafe-inline/eval or source rewriting.
 const mapHashes = [];
-for (const page of ['sdk-host.html', 'dom-host.html', 'selection.html', 'composition.html', 'ui.html', 'mounted-corpus.html']) {
+for (const page of ['sdk-host.html', 'dom-host.html', 'selection.html', 'clipboard.html', 'composition.html', 'ui.html', 'mounted-corpus.html']) {
   const html = await readFile(new URL(`spikes/workspace/${page}`, root), 'utf8');
   const maps = [...html.matchAll(/<script type="importmap">([^<]+)<\/script>/g)];
   if (maps.length !== 1) throw new Error(`One static import map required: ${page}`);

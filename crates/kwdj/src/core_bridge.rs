@@ -172,7 +172,7 @@ pub(crate) fn encode_attributes(
     Ok(serde_json::Value::Object(object))
 }
 
-fn encode_node(node: &Node, path: &str) -> Result<serde_json::Value, crate::KwdjError> {
+pub(crate) fn encode_node(node: &Node, path: &str) -> Result<serde_json::Value, crate::KwdjError> {
     use crate::KwdjErrorCode;
     let kind = local_name(
         &node.type_id,

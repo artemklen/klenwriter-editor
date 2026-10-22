@@ -1,0 +1,74 @@
+diff --git a/packages/dom/src/types.ts b/packages/dom/src/types.ts
+index 6bd0ef4..f6d571c 100644
+--- a/packages/dom/src/types.ts
++++ b/packages/dom/src/types.ts
+@@ -1,4 +1,5 @@
+ // SPDX-License-Identifier: MIT OR Apache-2.0
++import type { ClipboardCapture } from './clipboard-capture.js';
+ // OSR-40 adds selection/clipboard capabilities; the OSR-39 contract snapshot remains frozen.
+ import type { CommandDto, CreateEditorOptionsV2, DeepReadonly, EditorControllerV2, EventDto, MarkDto, MutationRequestV2, NodeViewDto, ProfileDto, QueryRequest, ReadRequest, ReadRequestV2, Response, ResponseV2, SelectionDto, SelectionTextRequestV2, SessionContextV2, StampDto, Submission, TextWindowRequestV2, TextWindowReplyV2 } from '@klenwriter/editor-sdk';
+ export type InteractionMode = 'editable' | 'readOnly' | 'disabled';
+@@ -18,7 +19,7 @@ export interface MountedPopupPresentation {
+   open(options:{readonly element:HTMLElement;readonly listbox:HTMLElement;readonly activeOption:HTMLElement|null}):Readonly<{status:'opened';presentation:MountedPopupPresentationHandle;stamp:DeepReadonly<StampDto>;context:DeepReadonly<SessionContextV2>}>|DomRefusal;
+ }
+ export type MountedLifecycle = 'loading' | 'ready' | 'recoveryRequired' | 'disposing' | 'destroyed' | 'fatal';
+-export type DomCode = 'dom.invalid_options' | 'dom.not_ready' | 'dom.disposed' | 'dom.renderer_binding_mismatch' | 'dom.renderer_missing' | 'dom.presentation_unsupported' | 'dom.command_unsupported' | 'dom.explicit_method_required' | 'dom.composition_conflict' | 'dom.mode_blocked' | 'dom.native_read_only' | 'dom.busy' | 'dom.stale_replace' | 'dom.reconcile_limit' | 'dom.recovery_required' | 'dom.recovery_callback_failed' | 'dom.invalid_bookmark' | 'dom.stale_selection' | 'dom.selection_unsynchronized' | 'dom.selection_missing' | 'dom.selection_limit' | 'dom.clipboard_unavailable' | 'dom.clipboard_write_failed' | 'dom.clipboard_timeout' | 'dom.selection_geometry_unsupported' | 'dom.invalid_host_request' | 'dom.stale_host_request' | CompositionDomCode;
++export type DomCode = 'dom.invalid_options' | 'dom.not_ready' | 'dom.disposed' | 'dom.renderer_binding_mismatch' | 'dom.renderer_missing' | 'dom.presentation_unsupported' | 'dom.command_unsupported' | 'dom.explicit_method_required' | 'dom.composition_conflict' | 'dom.mode_blocked' | 'dom.native_read_only' | 'dom.busy' | 'dom.stale_replace' | 'dom.reconcile_limit' | 'dom.recovery_required' | 'dom.recovery_callback_failed' | 'dom.invalid_bookmark' | 'dom.stale_selection' | 'dom.selection_unsynchronized' | 'dom.selection_missing' | 'dom.selection_limit' | 'dom.clipboard_unavailable' | 'dom.clipboard_write_failed' | 'dom.clipboard_timeout' | 'dom.clipboard_decode_failed' | 'dom.clipboard_recovery_pending' | 'dom.selection_geometry_unsupported' | 'dom.invalid_host_request' | 'dom.stale_host_request' | CompositionDomCode;
+ export interface DomDiagnostic {
+   readonly code: DomCode;
+   readonly phase: 'mount' | 'command' | 'render' | 'replace' | 'mode' | 'destroy' | 'selection' | 'clipboard' | 'composition' | 'geometry' | 'host_request';
+@@ -34,7 +35,7 @@ export type RecoveryRegion =
+   | { readonly kind: 'bounded'; readonly stamp: DeepReadonly<StampDto> | null; readonly originalText: string; readonly provisionalText: string; readonly affectedNodeIds: readonly string[] }
+   | { readonly kind: 'retained_dom'; readonly element: HTMLElement; readonly reason: 'capture_limit'; readonly ownership: 'transferred_to_host' };
+ export interface RecoveryPacket { readonly originalInput: Uint8Array | null; readonly region: RecoveryRegion | null; readonly composition?: CompositionRecovery | null }
+-export interface DestroyReceipt { readonly status: 'destroy_requested'; readonly sdk: Submission; readonly recovery: RecoveryPacket | null; readonly callbackFailure: DomRefusal | null }
++export interface DestroyReceipt { readonly status: 'destroy_requested'; readonly sdk: Submission; readonly recovery: RecoveryPacket | null; readonly callbackFailure: DomRefusal | null; readonly clipboardRecovery?: ClipboardRecoveryTransfer }
+ export type MountedReady = { readonly status: 'ready'; readonly response: Response }
+   | { readonly status: 'sdk_failure'; readonly response: Response; readonly recovery: RecoveryPacket | null }
+   | (DomRefusal & { readonly response: Response | null; readonly recovery: RecoveryPacket | null });
+@@ -119,13 +120,44 @@ export interface ClipboardOutcome {
+ export interface MountedClipboardController {
+   copy(): Promise<ClipboardOutcome>;
+   cut(): Promise<ClipboardOutcome>;
++  /** Captures exposed strings synchronously. Never retains a DataTransfer or event. */
++  paste(source: unknown): Promise<ClipboardPasteOutcome>;
++  takeRecovery(): ClipboardRecovery | null;
++  releaseRecovery(): boolean;
++}
++export interface ClipboardPayload { readonly text: string; readonly html?: string }
++export interface ClipboardCodec {
++  readonly contextFormat: string;
++  readonly fragmentFormat: string;
++  decode(input: Readonly<{capture: ClipboardCapture; nativeContext: Readonly<{formatId: string; json: string}>;
++    sessionContext: DeepReadonly<SessionContextV2>}>): Promise<ClipboardDecodeOutcome>;
++  encode?(input: Readonly<{fragment: Readonly<{formatId: string; json: string}>; text: string;
++    sessionContext: DeepReadonly<SessionContextV2>}>): Readonly<{status: 'encoded'; html: string}> | Readonly<{status: 'refused'}>;
++}
++export type ClipboardDecodeOutcome = Readonly<{status: 'candidate'; command: CommandDto; diagnostics: readonly string[]}>
++  | Readonly<{status: 'refused'; diagnostics: readonly string[]}>;
++export interface ClipboardRecovery {
++  readonly format: 'clipboard-recovery/1'; readonly capture: ClipboardCapture;
++  readonly reason: string; readonly diagnostics: readonly string[];
++  readonly stamp: DeepReadonly<StampDto> | null; readonly context: DeepReadonly<SessionContextV2> | null;
++}
++export type ClipboardRecoveryTransfer = Readonly<{status: 'transferred'; recovery: ClipboardRecovery | null}>
++  | Readonly<{status: 'pending'; completion: Promise<ClipboardRecovery | null>}>;
++export interface ClipboardPasteOutcome {
++  readonly action: 'paste'; readonly status: 'inserted' | 'empty' | 'refused' | 'indeterminate';
++  readonly failure: ClipboardFailure | null; readonly diagnostics: readonly string[];
++  readonly submission: Submission | null; readonly recovery: 'none' | 'retained' | 'pending';
+ }
+ export interface ClipboardConfiguration {
+   /** Trusted host platform adapter; default is this document's navigator.clipboard.writeText. */
+   readonly writeText?: (text: string) => Promise<void>;
++  /** Confirmed rich platform write, used when a codec supplies HTML. */
++  readonly write?: (payload: ClipboardPayload) => Promise<void>;
++  readonly codec?: ClipboardCodec;
++  readonly onPasteResult?: (outcome: ClipboardPasteOutcome) => void;
+   readonly onResult?: (outcome: ClipboardOutcome) => void;
+ }
+-export interface ClipboardResourceCounts { readonly pending: number; readonly continuations: number; readonly retainedTextBytes: number }
++export interface ClipboardResourceCounts { readonly pending: number; readonly continuations: number; readonly retainedTextBytes: number; readonly retainedUtf16Units?: number; readonly retainedRecoveries?: number; readonly retiredParsers?: number }
+ 
+ // OSR-41 additive recovery provenance, frozen before implementation.
+ /** An immutable description; referenced DOM/Event objects remain host-owned capabilities. */

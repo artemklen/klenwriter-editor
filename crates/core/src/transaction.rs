@@ -52,6 +52,12 @@ pub enum Operation<I> {
         range: Selection<I>,
         inserted: Option<Node>,
     },
+    /// One sealed same-TextBlock splice of an ID-free, flat inline forest.
+    /// Every root is a childless Text, HardBreak or InlineAtom prototype.
+    ReplaceInlineFragment {
+        range: Selection<I>,
+        fragment: Document,
+    },
     MoveInlineGroup {
         nodes: Vec<I>,
         parent: I,
@@ -159,6 +165,13 @@ impl<I> Operation<I> {
                     focus: position(range.focus, &mut resolve)?,
                 },
                 inserted,
+            },
+            Self::ReplaceInlineFragment { range, fragment } => Operation::ReplaceInlineFragment {
+                range: Selection {
+                    anchor: position(range.anchor, &mut resolve)?,
+                    focus: position(range.focus, &mut resolve)?,
+                },
+                fragment,
             },
             Self::MoveInlineGroup {
                 nodes,

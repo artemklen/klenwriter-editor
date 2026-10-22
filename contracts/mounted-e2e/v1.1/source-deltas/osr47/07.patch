@@ -1,0 +1,32 @@
+diff --git a/packages/sdk/src/response.ts b/packages/sdk/src/response.ts
+index 40d6e84..745424c 100644
+--- a/packages/sdk/src/response.ts
++++ b/packages/sdk/src/response.ts
+@@ -137,15 +137,24 @@ const textWindow: Check = value => {
+   return before.every(a => after.every(b => a.node !== b.node || a.node === caret.node));
+ };
+ 
++const utf8Bound = (maximum: number): Check => value => scalarText(value) && value.length <= maximum
++  && new TextEncoder().encode(value).byteLength <= maximum;
++const clipboardContext: Check = value => shape(value, {
++  kind: literal('clipboard_context'), stamp, selection, format_id: token, context_json: utf8Bound(4096),
++});
++const selectionFragment: Check = value => shape(value, {
++  kind: literal('selection_fragment'), stamp, selection, format_id: token,
++  fragment_json: utf8Bound(2 * 1024 * 1024), empty: bool,
++});
+ /** ABI2 bounded pure replies; legacy decoder and command tickets stay closed. */
+-export function decodeResponseV2(raw: string, expectedKind?: 'selection_text' | 'text_window'): SdkResponseV2 {
++export function decodeResponseV2(raw: string, expectedKind?: 'selection_text' | 'text_window' | 'clipboard_context' | 'selection_fragment'): SdkResponseV2 {
+   try {
+-    const maximum = expectedKind === 'text_window' ? TEXT_WINDOW_REPLY_BYTES : SELECTION_REPLY_BYTES;
++    const maximum = expectedKind === 'text_window' ? TEXT_WINDOW_REPLY_BYTES : expectedKind === 'clipboard_context' ? 64 * 1024 : expectedKind === 'selection_fragment' ? 16 * 1024 * 1024 : SELECTION_REPLY_BYTES;
+     if (typeof raw !== 'string' || raw.length > maximum || new TextEncoder().encode(raw).byteLength > maximum) throw new DataError('sdk.invalid_response');
+     const parsed: unknown = JSON.parse(raw);
+     const value = ownData(parsed, 16 * 1024 * 1024).value;
+     if (!object(value) || !(value.status === 'ok'
+-      ? shape(value, { status: literal('ok'), value: v => reply(v) || selectionText(v) || textWindow(v) })
++      ? shape(value, { status: literal('ok'), value: v => reply(v) || selectionText(v) || textWindow(v) || clipboardContext(v) || selectionFragment(v) })
+       : shape(value, { status: literal('refused', 'fatal'), diagnostic }))) throw new DataError('sdk.invalid_response');
+     if (value.status === 'ok' && object(value.value) && value.value.kind === 'text_window'
+       && new TextEncoder().encode(raw).byteLength > TEXT_WINDOW_REPLY_BYTES) throw new DataError('sdk.invalid_response');

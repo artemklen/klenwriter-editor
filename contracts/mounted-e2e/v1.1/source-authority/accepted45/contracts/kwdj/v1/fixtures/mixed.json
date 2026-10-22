@@ -1,0 +1,1083 @@
+{
+  "fixture_schema_version": 1,
+  "fixtures": [
+    {
+      "id": "DOC-005",
+      "purpose": "Safe external and internal links round-trip while an unsafe scheme is rejected.",
+      "classification": "mixed",
+      "cases": [
+        {
+          "name": "safe_links",
+          "polarity": "positive",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "paragraph", "content": [
+                { "type": "text", "text": "external", "marks": [{ "type": "link", "attrs": { "href": "https://example.test/a?b=1#c", "title": "Example" } }] },
+                { "type": "text", "text": " and " },
+                { "type": "text", "text": "internal", "marks": [{ "type": "link", "attrs": { "href": "/works/a" } }] }
+              ] }
+            ]
+          },
+          "edit": { "operation": "append_text", "path": "/content/0/content/2/text", "value": "." },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<p><a href=\"https://example.test/a?b=1#c\" title=\"Example\" rel=\"noopener noreferrer\">external</a> and <a href=\"/works/a\">internal</a></p>", "full_text": "external and internal", "search_index_text": "external and internal", "public_snippet_text": "external and internal", "media_manifest": [], "reference_manifest": [], "notes": [] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "determinism"]
+        },
+        {
+          "name": "unsafe_link_scheme",
+          "polarity": "negative",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "paragraph", "content": [{ "type": "text", "text": "unsafe", "marks": [{ "type": "link", "attrs": { "href": "javascript:alert(1)" } }] }] }
+            ]
+          },
+          "edit": null,
+          "expected": { "outcome": "rejected", "diagnostic_codes": ["kwdj.unsafe_url"], "normalized_kwdj": null, "public_html": null, "full_text": null, "search_index_text": null, "public_snippet_text": null, "media_manifest": [], "reference_manifest": [], "notes": ["The validator does not silently unlink canonical text."] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "public_render", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-012",
+      "purpose": "Valid table geometry is accepted; malformed overlap or incomplete effective rows fail without cell loss.",
+      "classification": "mixed",
+      "cases": [
+        {
+          "name": "valid_effective_grid",
+          "polarity": "positive",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "table", "content": [
+                { "type": "table_row", "content": [{ "type": "table_cell", "attrs": { "colspan": 2 }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "AB" }] }] }] },
+                { "type": "table_row", "content": [
+                  { "type": "table_cell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "A" }] }] },
+                  { "type": "table_cell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "B" }] }] }
+                ] }
+              ] }
+            ]
+          },
+          "edit": null,
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<table><tbody><tr><td colspan=\"2\"><p>AB</p></td></tr><tr><td><p>A</p></td><td><p>B</p></td></tr></tbody></table>", "full_text": "AB\nA\tB", "search_index_text": "AB\nA\tB", "public_snippet_text": "AB\nA\tB", "media_manifest": [], "reference_manifest": [], "notes": [] },
+          "pipeline_stages": ["validate_normalize", "editor_round_trip_unchanged", "public_render", "plain_text_projection", "determinism"]
+        },
+        {
+          "name": "malformed_effective_grid",
+          "polarity": "negative",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "table", "content": [
+                { "type": "table_row", "content": [{ "type": "table_cell", "attrs": { "rowspan": 2 }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "A" }] }] }, { "type": "table_cell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "B" }] }] }] },
+                { "type": "table_row", "content": [{ "type": "table_cell", "attrs": { "colspan": 2 }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "overlap" }] }] }] }
+              ] }
+            ]
+          },
+          "edit": null,
+          "expected": { "outcome": "rejected", "diagnostic_codes": ["kwdj.table_not_rectangular"], "normalized_kwdj": null, "public_html": null, "full_text": null, "search_index_text": null, "public_snippet_text": null, "media_manifest": [], "reference_manifest": [], "notes": ["The second row expands beyond the two-column effective width; no repair may drop, split, or shift cells."] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "editor_round_trip_unchanged", "public_render", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-022",
+      "purpose": "Authored XSS-shaped strings are escaped, while unsafe active link targets fail validation.",
+      "classification": "mixed",
+      "cases": [
+        {
+          "name": "escaped_strings",
+          "polarity": "positive",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj", "identity_state": { "existing_media_ids": ["550e8400-e29b-41d4-a716-446655440022"], "media_public_paths": { "550e8400-e29b-41d4-a716-446655440022": "/media/derived/xss.webp" } } },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "paragraph", "content": [{ "type": "text", "text": "<script>alert(1)</script>" }] },
+              { "type": "warning", "attrs": { "kind": "content", "label": "\" onmouseover=\"alert(2)" }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "<img src=x onerror=alert(3)>" }] }] },
+              { "type": "media_image", "attrs": { "media_asset_id": "550e8400-e29b-41d4-a716-446655440022", "alt": "\" onerror=\"alert(4)", "align": "none" }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "</figcaption><script>alert(5)</script>" }] }] }
+            ]
+          },
+          "edit": null,
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<p>&lt;script&gt;alert(1)&lt;/script&gt;</p><aside class=\"kw-warning kw-warning--content\"><div class=\"kw-warning__label\">&quot; onmouseover=&quot;alert(2)</div><p>&lt;img src=x onerror=alert(3)&gt;</p></aside><figure class=\"kw-media kw-media--none\"><img src=\"/media/derived/xss.webp\" alt=\"&quot; onerror=&quot;alert(4)\"><figcaption><p>&lt;/figcaption&gt;&lt;script&gt;alert(5)&lt;/script&gt;</p></figcaption></figure>", "full_text": "<script>alert(1)</script>\n\" onmouseover=\"alert(2)\n<img src=x onerror=alert(3)>\n\" onerror=\"alert(4)\n</figcaption><script>alert(5)</script>", "search_index_text": "<script>alert(1)</script>\n\" onmouseover=\"alert(2)\n<img src=x onerror=alert(3)>\n\" onerror=\"alert(4)\n</figcaption><script>alert(5)</script>", "public_snippet_text": "<script>alert(1)</script>\n\" onmouseover=\"alert(2)\n<img src=x onerror=alert(3)>\n\" onerror=\"alert(4)\n</figcaption><script>alert(5)</script>", "media_manifest": [{ "media_asset_id": "550e8400-e29b-41d4-a716-446655440022", "locator": "/content/2" }], "reference_manifest": [], "notes": ["Escaping is contextual; string contents are not executed or parsed as HTML."] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "editor_round_trip_unchanged", "public_render", "plain_text_projection", "identity_manifest_extraction", "determinism"]
+        },
+        {
+          "name": "active_link_target",
+          "polarity": "negative",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": { "schema": "klenwriter.document", "schema_version": 1, "profile": "prose", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "click", "marks": [{ "type": "link", "attrs": { "href": "data:text/html,<script>alert(1)</script>" } }] }] }] },
+          "edit": null,
+          "expected": { "outcome": "rejected", "diagnostic_codes": ["kwdj.unsafe_url"], "normalized_kwdj": null, "public_html": null, "full_text": null, "search_index_text": null, "public_snippet_text": null, "media_manifest": [], "reference_manifest": [], "notes": [] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "public_render", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-026",
+      "purpose": "All seven inclusive domain resource limits accept just-below/exact values and reject over-limit values atomically.",
+      "classification": "mixed",
+      "cases": [
+        {
+          "name": "just_below_document_bytes",
+          "polarity": "positive",
+          "input": {
+            "kind": "resource_boundary",
+            "value": {
+              "limit_name": "document_bytes",
+              "generator": "pad_utf8_document",
+              "target_path": "/",
+              "document_template": {
+                "schema": "klenwriter.document",
+                "schema_version": 1,
+                "profile": "prose",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "$extend_to_boundary"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "limit_value": 2097152,
+              "unit": "utf8_bytes",
+              "boundary_points": [
+                {
+                  "position": "just_below",
+                  "measured_value": 2097151
+                },
+                {
+                  "position": "at_limit",
+                  "measured_value": 2097152
+                }
+              ]
+            }
+          },
+          "kwdj": null,
+          "edit": null,
+          "expected": {
+            "outcome": "accepted",
+            "diagnostic_codes": [],
+            "normalized_kwdj": null,
+            "public_html": null,
+            "full_text": null,
+            "search_index_text": null,
+            "public_snippet_text": null,
+            "media_manifest": [],
+            "reference_manifest": [],
+            "notes": [
+              "Generate deterministic values measured at 2097151 and the inclusive maximum 2097152; both must be accepted with complete canonical output, projections, and manifests."
+            ]
+          },
+          "pipeline_stages": [
+            "validate_normalize",
+            "determinism"
+          ]
+        },
+        {
+          "name": "over_document_bytes",
+          "polarity": "negative",
+          "input": {
+            "kind": "resource_boundary",
+            "value": {
+              "limit_name": "document_bytes",
+              "generator": "pad_utf8_document",
+              "target_path": "/",
+              "document_template": {
+                "schema": "klenwriter.document",
+                "schema_version": 1,
+                "profile": "prose",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "$extend_to_boundary"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "limit_value": 2097152,
+              "unit": "utf8_bytes",
+              "boundary_points": [
+                {
+                  "position": "over_limit",
+                  "measured_value": 2097153
+                }
+              ]
+            }
+          },
+          "kwdj": null,
+          "edit": null,
+          "expected": {
+            "outcome": "rejected",
+            "diagnostic_codes": [
+              "kwdj.resource_limit_exceeded"
+            ],
+            "normalized_kwdj": null,
+            "public_html": null,
+            "full_text": null,
+            "search_index_text": null,
+            "public_snippet_text": null,
+            "media_manifest": [],
+            "reference_manifest": [],
+            "notes": [
+              "Generate a deterministic value measured at 2097153; reject atomically without truncation, repair, revision, projection, or manifest output."
+            ],
+            "atomic_failure": {
+              "canonical_value_created": false,
+              "revision_created": false,
+              "projections_created": false,
+              "manifests_created": false
+            }
+          },
+          "pipeline_stages": [
+            "validate_normalize",
+            "determinism"
+          ]
+        },
+        {
+          "name": "just_below_tree_depth",
+          "polarity": "positive",
+          "input": {
+            "kind": "resource_boundary",
+            "value": {
+              "limit_name": "tree_depth",
+              "generator": "nest_blockquotes",
+              "target_path": "/content/0",
+              "document_template": {
+                "schema": "klenwriter.document",
+                "schema_version": 1,
+                "profile": "prose",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Depth"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "limit_value": 32,
+              "unit": "node_levels",
+              "boundary_points": [
+                {
+                  "position": "just_below",
+                  "measured_value": 31
+                },
+                {
+                  "position": "at_limit",
+                  "measured_value": 32
+                }
+              ]
+            }
+          },
+          "kwdj": null,
+          "edit": null,
+          "expected": {
+            "outcome": "accepted",
+            "diagnostic_codes": [],
+            "normalized_kwdj": null,
+            "public_html": null,
+            "full_text": null,
+            "search_index_text": null,
+            "public_snippet_text": null,
+            "media_manifest": [],
+            "reference_manifest": [],
+            "notes": [
+              "Generate deterministic values measured at 31 and the inclusive maximum 32; both must be accepted with complete canonical output, projections, and manifests."
+            ]
+          },
+          "pipeline_stages": [
+            "validate_normalize",
+            "determinism"
+          ]
+        },
+        {
+          "name": "over_tree_depth",
+          "polarity": "negative",
+          "input": {
+            "kind": "resource_boundary",
+            "value": {
+              "limit_name": "tree_depth",
+              "generator": "nest_blockquotes",
+              "target_path": "/content/0",
+              "document_template": {
+                "schema": "klenwriter.document",
+                "schema_version": 1,
+                "profile": "prose",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Depth"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "limit_value": 32,
+              "unit": "node_levels",
+              "boundary_points": [
+                {
+                  "position": "over_limit",
+                  "measured_value": 33
+                }
+              ]
+            }
+          },
+          "kwdj": null,
+          "edit": null,
+          "expected": {
+            "outcome": "rejected",
+            "diagnostic_codes": [
+              "kwdj.resource_limit_exceeded"
+            ],
+            "normalized_kwdj": null,
+            "public_html": null,
+            "full_text": null,
+            "search_index_text": null,
+            "public_snippet_text": null,
+            "media_manifest": [],
+            "reference_manifest": [],
+            "notes": [
+              "Generate a deterministic value measured at 33; reject atomically without truncation, repair, revision, projection, or manifest output."
+            ],
+            "atomic_failure": {
+              "canonical_value_created": false,
+              "revision_created": false,
+              "projections_created": false,
+              "manifests_created": false
+            }
+          },
+          "pipeline_stages": [
+            "validate_normalize",
+            "determinism"
+          ]
+        },
+        {
+          "name": "just_below_node_count",
+          "polarity": "positive",
+          "input": {
+            "kind": "resource_boundary",
+            "value": {
+              "limit_name": "node_count",
+              "generator": "fill_node_count",
+              "target_path": "/content",
+              "document_template": {
+                "schema": "klenwriter.document",
+                "schema_version": 1,
+                "profile": "prose",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Node"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "limit_value": 50000,
+              "unit": "nodes",
+              "boundary_points": [
+                {
+                  "position": "just_below",
+                  "measured_value": 49999
+                },
+                {
+                  "position": "at_limit",
+                  "measured_value": 50000
+                }
+              ]
+            }
+          },
+          "kwdj": null,
+          "edit": null,
+          "expected": {
+            "outcome": "accepted",
+            "diagnostic_codes": [],
+            "normalized_kwdj": null,
+            "public_html": null,
+            "full_text": null,
+            "search_index_text": null,
+            "public_snippet_text": null,
+            "media_manifest": [],
+            "reference_manifest": [],
+            "notes": [
+              "Generate deterministic values measured at 49999 and the inclusive maximum 50000; both must be accepted with complete canonical output, projections, and manifests."
+            ]
+          },
+          "pipeline_stages": [
+            "validate_normalize",
+            "determinism"
+          ]
+        },
+        {
+          "name": "over_node_count",
+          "polarity": "negative",
+          "input": {
+            "kind": "resource_boundary",
+            "value": {
+              "limit_name": "node_count",
+              "generator": "fill_node_count",
+              "target_path": "/content",
+              "document_template": {
+                "schema": "klenwriter.document",
+                "schema_version": 1,
+                "profile": "prose",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Node"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "limit_value": 50000,
+              "unit": "nodes",
+              "boundary_points": [
+                {
+                  "position": "over_limit",
+                  "measured_value": 50001
+                }
+              ]
+            }
+          },
+          "kwdj": null,
+          "edit": null,
+          "expected": {
+            "outcome": "rejected",
+            "diagnostic_codes": [
+              "kwdj.resource_limit_exceeded"
+            ],
+            "normalized_kwdj": null,
+            "public_html": null,
+            "full_text": null,
+            "search_index_text": null,
+            "public_snippet_text": null,
+            "media_manifest": [],
+            "reference_manifest": [],
+            "notes": [
+              "Generate a deterministic value measured at 50001; reject atomically without truncation, repair, revision, projection, or manifest output."
+            ],
+            "atomic_failure": {
+              "canonical_value_created": false,
+              "revision_created": false,
+              "projections_created": false,
+              "manifests_created": false
+            }
+          },
+          "pipeline_stages": [
+            "validate_normalize",
+            "determinism"
+          ]
+        },
+        {
+          "name": "just_below_text_length",
+          "polarity": "positive",
+          "input": {
+            "kind": "resource_boundary",
+            "value": {
+              "limit_name": "text_length",
+              "generator": "extend_text_leaf",
+              "target_path": "/content/0/content/0/text",
+              "document_template": {
+                "schema": "klenwriter.document",
+                "schema_version": 1,
+                "profile": "prose",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "$extend_to_boundary"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "limit_value": 262144,
+              "unit": "utf8_bytes",
+              "boundary_points": [
+                {
+                  "position": "just_below",
+                  "measured_value": 262143
+                },
+                {
+                  "position": "at_limit",
+                  "measured_value": 262144
+                }
+              ]
+            }
+          },
+          "kwdj": null,
+          "edit": null,
+          "expected": {
+            "outcome": "accepted",
+            "diagnostic_codes": [],
+            "normalized_kwdj": null,
+            "public_html": null,
+            "full_text": null,
+            "search_index_text": null,
+            "public_snippet_text": null,
+            "media_manifest": [],
+            "reference_manifest": [],
+            "notes": [
+              "Generate deterministic values measured at 262143 and the inclusive maximum 262144; both must be accepted with complete canonical output, projections, and manifests."
+            ]
+          },
+          "pipeline_stages": [
+            "validate_normalize",
+            "determinism"
+          ]
+        },
+        {
+          "name": "over_text_length",
+          "polarity": "negative",
+          "input": {
+            "kind": "resource_boundary",
+            "value": {
+              "limit_name": "text_length",
+              "generator": "extend_text_leaf",
+              "target_path": "/content/0/content/0/text",
+              "document_template": {
+                "schema": "klenwriter.document",
+                "schema_version": 1,
+                "profile": "prose",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "$extend_to_boundary"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "limit_value": 262144,
+              "unit": "utf8_bytes",
+              "boundary_points": [
+                {
+                  "position": "over_limit",
+                  "measured_value": 262145
+                }
+              ]
+            }
+          },
+          "kwdj": null,
+          "edit": null,
+          "expected": {
+            "outcome": "rejected",
+            "diagnostic_codes": [
+              "kwdj.resource_limit_exceeded"
+            ],
+            "normalized_kwdj": null,
+            "public_html": null,
+            "full_text": null,
+            "search_index_text": null,
+            "public_snippet_text": null,
+            "media_manifest": [],
+            "reference_manifest": [],
+            "notes": [
+              "Generate a deterministic value measured at 262145; reject atomically without truncation, repair, revision, projection, or manifest output."
+            ],
+            "atomic_failure": {
+              "canonical_value_created": false,
+              "revision_created": false,
+              "projections_created": false,
+              "manifests_created": false
+            }
+          },
+          "pipeline_stages": [
+            "validate_normalize",
+            "determinism"
+          ]
+        },
+        {
+          "name": "just_below_table_rows",
+          "polarity": "positive",
+          "input": {
+            "kind": "resource_boundary",
+            "value": {
+              "limit_name": "table_rows",
+              "generator": "repeat_table_row",
+              "target_path": "/content/0/content",
+              "document_template": {
+                "schema": "klenwriter.document",
+                "schema_version": 1,
+                "profile": "prose",
+                "content": [
+                  {
+                    "type": "table",
+                    "content": [
+                      {
+                        "type": "table_row",
+                        "content": [
+                          {
+                            "type": "table_cell",
+                            "content": [
+                              {
+                                "type": "paragraph",
+                                "content": [
+                                  {
+                                    "type": "text",
+                                    "text": "Cell"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "limit_value": 500,
+              "unit": "rows",
+              "boundary_points": [
+                {
+                  "position": "just_below",
+                  "measured_value": 499
+                },
+                {
+                  "position": "at_limit",
+                  "measured_value": 500
+                }
+              ]
+            }
+          },
+          "kwdj": null,
+          "edit": null,
+          "expected": {
+            "outcome": "accepted",
+            "diagnostic_codes": [],
+            "normalized_kwdj": null,
+            "public_html": null,
+            "full_text": null,
+            "search_index_text": null,
+            "public_snippet_text": null,
+            "media_manifest": [],
+            "reference_manifest": [],
+            "notes": [
+              "Generate deterministic values measured at 499 and the inclusive maximum 500; both must be accepted with complete canonical output, projections, and manifests."
+            ]
+          },
+          "pipeline_stages": [
+            "validate_normalize",
+            "determinism"
+          ]
+        },
+        {
+          "name": "over_table_rows",
+          "polarity": "negative",
+          "input": {
+            "kind": "resource_boundary",
+            "value": {
+              "limit_name": "table_rows",
+              "generator": "repeat_table_row",
+              "target_path": "/content/0/content",
+              "document_template": {
+                "schema": "klenwriter.document",
+                "schema_version": 1,
+                "profile": "prose",
+                "content": [
+                  {
+                    "type": "table",
+                    "content": [
+                      {
+                        "type": "table_row",
+                        "content": [
+                          {
+                            "type": "table_cell",
+                            "content": [
+                              {
+                                "type": "paragraph",
+                                "content": [
+                                  {
+                                    "type": "text",
+                                    "text": "Cell"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "limit_value": 500,
+              "unit": "rows",
+              "boundary_points": [
+                {
+                  "position": "over_limit",
+                  "measured_value": 501
+                }
+              ]
+            }
+          },
+          "kwdj": null,
+          "edit": null,
+          "expected": {
+            "outcome": "rejected",
+            "diagnostic_codes": [
+              "kwdj.resource_limit_exceeded"
+            ],
+            "normalized_kwdj": null,
+            "public_html": null,
+            "full_text": null,
+            "search_index_text": null,
+            "public_snippet_text": null,
+            "media_manifest": [],
+            "reference_manifest": [],
+            "notes": [
+              "Generate a deterministic value measured at 501; reject atomically without truncation, repair, revision, projection, or manifest output."
+            ],
+            "atomic_failure": {
+              "canonical_value_created": false,
+              "revision_created": false,
+              "projections_created": false,
+              "manifests_created": false
+            }
+          },
+          "pipeline_stages": [
+            "validate_normalize",
+            "determinism"
+          ]
+        },
+        {
+          "name": "just_below_table_effective_columns",
+          "polarity": "positive",
+          "input": {
+            "kind": "resource_boundary",
+            "value": {
+              "limit_name": "table_effective_columns",
+              "generator": "repeat_table_cell",
+              "target_path": "/content/0/content/0/content",
+              "document_template": {
+                "schema": "klenwriter.document",
+                "schema_version": 1,
+                "profile": "prose",
+                "content": [
+                  {
+                    "type": "table",
+                    "content": [
+                      {
+                        "type": "table_row",
+                        "content": [
+                          {
+                            "type": "table_cell",
+                            "content": [
+                              {
+                                "type": "paragraph",
+                                "content": [
+                                  {
+                                    "type": "text",
+                                    "text": "Cell"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "limit_value": 50,
+              "unit": "effective_columns",
+              "boundary_points": [
+                {
+                  "position": "just_below",
+                  "measured_value": 49
+                },
+                {
+                  "position": "at_limit",
+                  "measured_value": 50
+                }
+              ]
+            }
+          },
+          "kwdj": null,
+          "edit": null,
+          "expected": {
+            "outcome": "accepted",
+            "diagnostic_codes": [],
+            "normalized_kwdj": null,
+            "public_html": null,
+            "full_text": null,
+            "search_index_text": null,
+            "public_snippet_text": null,
+            "media_manifest": [],
+            "reference_manifest": [],
+            "notes": [
+              "Generate deterministic values measured at 49 and the inclusive maximum 50; both must be accepted with complete canonical output, projections, and manifests."
+            ]
+          },
+          "pipeline_stages": [
+            "validate_normalize",
+            "determinism"
+          ]
+        },
+        {
+          "name": "over_table_effective_columns",
+          "polarity": "negative",
+          "input": {
+            "kind": "resource_boundary",
+            "value": {
+              "limit_name": "table_effective_columns",
+              "generator": "repeat_table_cell",
+              "target_path": "/content/0/content/0/content",
+              "document_template": {
+                "schema": "klenwriter.document",
+                "schema_version": 1,
+                "profile": "prose",
+                "content": [
+                  {
+                    "type": "table",
+                    "content": [
+                      {
+                        "type": "table_row",
+                        "content": [
+                          {
+                            "type": "table_cell",
+                            "content": [
+                              {
+                                "type": "paragraph",
+                                "content": [
+                                  {
+                                    "type": "text",
+                                    "text": "Cell"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "limit_value": 50,
+              "unit": "effective_columns",
+              "boundary_points": [
+                {
+                  "position": "over_limit",
+                  "measured_value": 51
+                }
+              ]
+            }
+          },
+          "kwdj": null,
+          "edit": null,
+          "expected": {
+            "outcome": "rejected",
+            "diagnostic_codes": [
+              "kwdj.resource_limit_exceeded"
+            ],
+            "normalized_kwdj": null,
+            "public_html": null,
+            "full_text": null,
+            "search_index_text": null,
+            "public_snippet_text": null,
+            "media_manifest": [],
+            "reference_manifest": [],
+            "notes": [
+              "Generate a deterministic value measured at 51; reject atomically without truncation, repair, revision, projection, or manifest output."
+            ],
+            "atomic_failure": {
+              "canonical_value_created": false,
+              "revision_created": false,
+              "projections_created": false,
+              "manifests_created": false
+            }
+          },
+          "pipeline_stages": [
+            "validate_normalize",
+            "determinism"
+          ]
+        },
+        {
+          "name": "just_below_attribute_length",
+          "polarity": "positive",
+          "input": {
+            "kind": "resource_boundary",
+            "value": {
+              "limit_name": "attribute_length",
+              "generator": "extend_attribute",
+              "target_path": "/content/0/content/0/marks/0/attrs/title",
+              "document_template": {
+                "schema": "klenwriter.document",
+                "schema_version": 1,
+                "profile": "prose",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Link",
+                        "marks": [
+                          {
+                            "type": "link",
+                            "attrs": {
+                              "href": "/works/example",
+                              "title": "$extend_to_boundary"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "limit_value": 8192,
+              "unit": "utf8_bytes",
+              "boundary_points": [
+                {
+                  "position": "just_below",
+                  "measured_value": 8191
+                },
+                {
+                  "position": "at_limit",
+                  "measured_value": 8192
+                }
+              ]
+            }
+          },
+          "kwdj": null,
+          "edit": null,
+          "expected": {
+            "outcome": "accepted",
+            "diagnostic_codes": [],
+            "normalized_kwdj": null,
+            "public_html": null,
+            "full_text": null,
+            "search_index_text": null,
+            "public_snippet_text": null,
+            "media_manifest": [],
+            "reference_manifest": [],
+            "notes": [
+              "Generate deterministic values measured at 8191 and the inclusive maximum 8192; both must be accepted with complete canonical output, projections, and manifests."
+            ]
+          },
+          "pipeline_stages": [
+            "validate_normalize",
+            "determinism"
+          ]
+        },
+        {
+          "name": "over_attribute_length",
+          "polarity": "negative",
+          "input": {
+            "kind": "resource_boundary",
+            "value": {
+              "limit_name": "attribute_length",
+              "generator": "extend_attribute",
+              "target_path": "/content/0/content/0/marks/0/attrs/title",
+              "document_template": {
+                "schema": "klenwriter.document",
+                "schema_version": 1,
+                "profile": "prose",
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "Link",
+                        "marks": [
+                          {
+                            "type": "link",
+                            "attrs": {
+                              "href": "/works/example",
+                              "title": "$extend_to_boundary"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "limit_value": 8192,
+              "unit": "utf8_bytes",
+              "boundary_points": [
+                {
+                  "position": "over_limit",
+                  "measured_value": 8193
+                }
+              ]
+            }
+          },
+          "kwdj": null,
+          "edit": null,
+          "expected": {
+            "outcome": "rejected",
+            "diagnostic_codes": [
+              "kwdj.resource_limit_exceeded"
+            ],
+            "normalized_kwdj": null,
+            "public_html": null,
+            "full_text": null,
+            "search_index_text": null,
+            "public_snippet_text": null,
+            "media_manifest": [],
+            "reference_manifest": [],
+            "notes": [
+              "Generate a deterministic value measured at 8193; reject atomically without truncation, repair, revision, projection, or manifest output."
+            ],
+            "atomic_failure": {
+              "canonical_value_created": false,
+              "revision_created": false,
+              "projections_created": false,
+              "manifests_created": false
+            }
+          },
+          "pipeline_stages": [
+            "validate_normalize",
+            "determinism"
+          ]
+        }
+      ]
+    }
+  ]
+}

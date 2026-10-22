@@ -26,11 +26,16 @@
     "./dom": {
       "types": "./dist/dom.d.ts",
       "import": "./dist/dom.js"
+    },
+    "./clipboard": {
+      "types": "./dist/clipboard.d.ts",
+      "import": "./dist/clipboard.js"
     }
   },
   "dependencies": {
+    "@klenwriter/editor-dom": "0.0.0",
     "@klenwriter/editor-sdk": "0.0.0",
-    "@klenwriter/editor-dom": "0.0.0"
+    "parse5": "8.0.1"
   },
   "klenwriterEditor": {
     "role": "kwdj",

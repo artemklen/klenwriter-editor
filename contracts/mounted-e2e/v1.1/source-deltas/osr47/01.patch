@@ -1,0 +1,56 @@
+diff --git a/crates/engine/src/dispatch.rs b/crates/engine/src/dispatch.rs
+index 7431f4b..7571c17 100644
+--- a/crates/engine/src/dispatch.rs
++++ b/crates/engine/src/dispatch.rs
+@@ -153,6 +153,33 @@ fn payload<E>(
+                 }
+             }
+         }
++        Operation::ReplaceInlineFragment { range, fragment } => {
++            input_position(&range.anchor, work)?;
++            input_position(&range.focus, work)?;
++            let limits = work.limits();
++            let used = work.usage();
++            let measured = preflight_snapshot(
++                fragment,
++                PreflightBudget {
++                    payload_bytes: limits.bytes.saturating_sub(used.bytes),
++                    values: limits.units.saturating_sub(used.units),
++                    depth: 128,
++                },
++            )?;
++            work.charge_units(measured.usage.values)?;
++            work.charge_bytes(measured.usage.payload_bytes)?;
++            for node in &fragment.children {
++                if !matches!(
++                    node.primitive,
++                    Primitive::Text | Primitive::HardBreak | Primitive::InlineAtom
++                ) || (node.primitive == Primitive::Text) != node.text.is_some()
++                    || !node.children.is_empty()
++                    || node.type_id.is_empty()
++                {
++                    return Err(TreeError::InvalidStructure.into());
++                }
++            }
++        }
+         Operation::MoveInlineGroup { nodes, parent, .. } => {
+             work.charge_units(nodes.len() as u64)?;
+             work.charge_bytes(std::mem::size_of_val(nodes.as_slice()) as u64)?;
+@@ -311,6 +338,9 @@ fn apply<E, A: Allocation>(
+         Operation::ReplaceInlineRange { range, inserted } => {
+             return Ok(draft.replace_inline_range(*range, inserted.as_ref(), work)?);
+         }
++        Operation::ReplaceInlineFragment { range, fragment } => {
++            return Ok(draft.replace_inline_fragment(*range, fragment, work)?);
++        }
+         Operation::MoveInlineGroup {
+             nodes,
+             parent,
+@@ -350,6 +380,7 @@ fn apply<E, A: Allocation>(
+         Operation::SetAttribute { .. } | Operation::Transform { .. } => {}
+         Operation::PatchMarkRange { .. }
+         | Operation::ReplaceInlineRange { .. }
++        | Operation::ReplaceInlineFragment { .. }
+         | Operation::MoveInlineGroup { .. } => unreachable!("metered ranges returned above"),
+     }
+     let before = draft.prepared_copy_bytes();

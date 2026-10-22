@@ -2,6 +2,7 @@
 //! Frozen compiled KWDJ command policies. No engine import or publication authority.
 
 mod block;
+pub mod clipboard;
 mod delete;
 mod inline;
 mod selection;
@@ -86,7 +87,12 @@ pub enum KwdjIntent<I> {
     DismissSlash,
     DeleteBackward,
     DeleteSelection,
+    InsertFragment {
+        fragment: clipboard::Fragment,
+    },
 }
+
+pub const CLIPBOARD_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-fragment";
 
 pub const KWDJ_COMMANDS: &[CommandDescriptor] = &[
     CommandDescriptor {
@@ -206,6 +212,14 @@ impl CommandProvider for KwdjProfile<'_> {
     type Intent<I: Copy + Eq + Ord> = KwdjIntent<I>;
     const COMMANDS: &'static [CommandDescriptor] = KWDJ_COMMANDS;
 
+    fn command_catalog(&self) -> editor_core::commands::CommandCatalog<'_> {
+        if self.clipboard_v2() {
+            editor_core::commands::CommandCatalog::Runtime(self.registry().compiled_catalog_ids())
+        } else {
+            editor_core::commands::CommandCatalog::Static(KWDJ_COMMANDS)
+        }
+    }
+
     fn command_id<I: Copy + Eq + Ord>(intent: &KwdjIntent<I>) -> &'static str {
         match intent {
             KwdjIntent::Enter => KWDJ_COMMANDS[0].id,
@@ -225,6 +239,7 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::DismissSlash => KWDJ_COMMANDS[14].id,
             KwdjIntent::DeleteBackward => KWDJ_COMMANDS[15].id,
             KwdjIntent::DeleteSelection => KWDJ_COMMANDS[16].id,
+            KwdjIntent::InsertFragment { .. } => CLIPBOARD_COMMAND_ID,
         }
     }
 
@@ -245,6 +260,9 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::InsertText { text } => inline::insert_text(view, state, text, plan)?,
             KwdjIntent::DeleteBackward => delete::prepare(view, state, plan)?,
             KwdjIntent::DeleteSelection => selection::prepare(view, state, plan)?,
+            KwdjIntent::InsertFragment { fragment } => {
+                clipboard::prepare(self, *context, view, state, fragment, plan)?
+            }
             KwdjIntent::DismissSlash => CommandPresentation { active: None },
             _ => block::prepare(*context, view, state, intent, plan)?,
         })

@@ -114,12 +114,49 @@ function coveredList(value: unknown): boolean {
   return object(value) && (['bullet', 'task'].includes(String(value.kind)) ? closed(value, ['kind'])
     : value.kind === 'ordered' && closed(value, ['kind', 'start']) && start(value.start));
 }
+/** Finite presentation coverage only; native owns candidate grammar and admission. */
+function coveredClipboard(value: unknown): boolean {
+  if (!closed(value, ['format_id','source_profile','mode','kind','content','open_start','open_end'])
+    || value.format_id !== 'org.klenwriter.kwdj/clipboard-fragment/1' || value.mode !== 'prose'
+    || !['inline','blocks'].includes(value.kind as string) || typeof value.open_start !== 'boolean' || typeof value.open_end !== 'boolean'
+    || !Array.isArray(value.content) || value.content.length > 8192) return false;
+  let count = 0;
+  const visit = (node: unknown, depth: number): boolean => {
+    if (++count > 8192 || depth > 64 || !object(node) || typeof node.type !== 'string'
+      || Object.keys(node).some(k => !['type','attrs','text','marks','content'].includes(k))) return false;
+    const renderer = Object.hasOwn(nodes, prefix + node.type) ? nodes[prefix + node.type] : null;
+    if (!renderer) return false;
+    const attrs = node.attrs === undefined ? {} : node.attrs;
+    if (!object(attrs) || Object.keys(attrs).some(k => !renderer.attributes.includes(k))) return false;
+    for (const [key, field] of Object.entries(attrs)) {
+      if (key === 'align' && !['left','center','right','justify'].includes(field as string)
+        || key === 'first_line_indent' && typeof field !== 'boolean'
+        || key === 'level' && (!Number.isInteger(field) || Number(field) < 1 || Number(field) > 6)
+        || key === 'language' && !smallString(field)
+        || key === 'start' && (!Number.isSafeInteger(field) || !start(String(field)))
+        || key === 'checked' && typeof field !== 'boolean') return false;
+    }
+    if (node.text !== undefined && typeof node.text !== 'string') return false;
+    if (node.marks !== undefined && (!Array.isArray(node.marks) || node.marks.length > 128 || node.marks.some(m => {
+      if (!object(m) || typeof m.type !== 'string' || Object.keys(m).some(k => !['type','attrs'].includes(k))) return true;
+      const a = m.attrs === undefined ? {} : m.attrs;
+      if (!object(a) || Object.values(a).some(v => typeof v !== 'string')) return true;
+      return !coveredMark({type_id: prefix + m.type, attributes: Object.fromEntries(Object.entries(a).map(([k,v]) => [k,{kind:'string',value:v}]))});
+    }))) return false;
+    return node.content === undefined || Array.isArray(node.content) && node.content.length <= 8192 && node.content.every(n => visit(n, depth + 1));
+  };
+  return value.content.every(n => visit(n, 1));
+}
 function coveredCommand(id: string, payload: Record<string, unknown>): boolean {
   const name = id.slice(`${prefix}command/`.length);
   if (!id.startsWith(`${prefix}command/`) || payload.kind !== name.replaceAll('-', '_')) return false;
   switch (name) {
     case 'enter': case 'shift-enter': case 'delete-backward': case 'delete-selection': case 'unset-link': case 'toggle-quote': case 'dismiss-slash':
       return closed(payload, ['kind']);
+    case 'insert-fragment': {
+      if (!closed(payload, ['kind','fragment_json']) || payload.kind !== 'insert_fragment' || typeof payload.fragment_json !== 'string' || payload.fragment_json.length > 2_097_152) return false;
+      try { return coveredClipboard(JSON.parse(payload.fragment_json)); } catch { return false; }
+    }
     case 'insert-text': return closed(payload, ['kind', 'text']) && typeof payload.text === 'string';
     case 'toggle-mark': return closed(payload, ['kind', 'mark']) && coveredMark(payload.mark);
     case 'set-link': return closed(payload, ['kind', 'href', 'title']) && safeHref(payload.href) && (payload.title === null || smallString(payload.title));

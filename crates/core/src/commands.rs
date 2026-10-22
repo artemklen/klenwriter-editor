@@ -255,7 +255,8 @@ impl<'a, I> PlanBuilder<'a, I> {
                 local_ref(right, index, self.work)?;
             }
             Operation::PatchMarkRange { range, .. }
-            | Operation::ReplaceInlineRange { range, .. } => {
+            | Operation::ReplaceInlineRange { range, .. }
+            | Operation::ReplaceInlineFragment { range, .. } => {
                 position(&range.anchor, index, self.work)?;
                 position(&range.focus, index, self.work)?;
             }

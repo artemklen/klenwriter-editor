@@ -9,8 +9,15 @@ import { join } from 'node:path';
 import { collectInteractions, interactionValidators, assessInteraction } from '../scripts/mounted-corpus/collect-interactions.mjs';
 import { ownBoundedData, RESOURCE_KEYS } from '../scripts/mounted-corpus/protocol.mjs';
 import { observeNativeModule } from '../scripts/mounted-corpus/native-observer.mjs';
+import { loadMountedSourceContinuation47 } from '../scripts/mounted-corpus/source-continuation47.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
+const currentSourceReader = async (path, maximum) => {
+  const value = await readFile(join(root, path));
+  assert.ok(value.length <= maximum, 'Current source reader respects exact continuation bound'); return value;
+};
+const continuation = await loadMountedSourceContinuation47({ readArtifact: currentSourceReader });
+const historicalSourceReader = continuation.historicalAuthorityReader(currentSourceReader);
 const literalPath = 'contracts/mounted-e2e/v1/interaction-literals.json';
 const schemaPath = 'contracts/mounted-e2e/v1/observation.schema.json';
 const bytes = await readFile(join(root, literalPath)), schemaBytes = await readFile(join(root, schemaPath));
@@ -21,11 +28,11 @@ const ids = ['selection-keyboard-replace', 'slash-keyboard-accept', 'drag-pointe
 const engines = ['chromium', 'webkit', 'firefox'];
 const binding = () => ({ runId: 'controlled-data-only-run', acceptedSource: contract.acceptedSource,
   scenarioPins: [pin(literalPath, bytes), pin(schemaPath, schemaBytes)] });
-const reader = artifacts => async (path, maxBytes) => {
+const reader = artifacts => continuation.historicalAuthorityReader(async (path, maxBytes) => {
   const value = path.startsWith('interactions/') ? artifacts[path] : await readFile(join(root, path));
   if (value === undefined) throw new Error(`Controlled missing artifact: ${path}`);
   assert.ok(value.length <= maxBytes, 'Reader respects requested byte bound'); return value;
-};
+});
 
 test('native trace overflow preserves actual replies, errors and one bounded prefix', () => {
   const request = '{"kind":"state"}', reply = '{"text":"Ё😀"}';
@@ -109,7 +116,10 @@ test('interaction literals fit the browser plain-data contract and exact finite 
 });
 
 test('all interaction oracle authority bytes retain their independently frozen source hashes', async () => {
-  for (const expected of contract.sourcePins) assert.deepEqual(pin(expected.path, await readFile(join(root, expected.path))), expected);
+  // Exact old hash assertions remain historical authority checks. The helper
+  // separately verifies current source against the closed47 continuation.
+  for (const expected of contract.sourcePins) assert.deepEqual(pin(expected.path, await historicalSourceReader(expected.path, expected.bytes)), expected);
+  await continuation.verifyAll();
   const lexical = JSON.parse(await readFile(join(root, 'contracts/slash/v1/lexical-key-oracles.json')));
   const mc01 = lexical.mountedCanonicalSeeds.find(value => value.id === 'MC01');
   const slash = contract.routes.find(value => value.kind === 'slash');

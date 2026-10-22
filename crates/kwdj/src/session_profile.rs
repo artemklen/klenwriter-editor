@@ -41,6 +41,7 @@ pub struct KwdjProfile<'a> {
     identities: ResolverBacking<'a>,
     limits: Limits,
     budget: AdmissionBudget,
+    clipboard_v2: bool,
 }
 
 impl<'a> KwdjProfile<'a> {
@@ -65,6 +66,7 @@ impl<'a> KwdjProfile<'a> {
             identities,
             limits: limits.effective(),
             budget: budget.effective(),
+            clipboard_v2: false,
         }
     }
 
@@ -88,6 +90,26 @@ impl<'a> KwdjProfile<'a> {
     }
     pub fn registry_handle(&self) -> Arc<FrozenRegistry> {
         Arc::clone(&self.registry)
+    }
+    pub(crate) fn clipboard_v2(&self) -> bool {
+        self.clipboard_v2
+    }
+
+    pub fn with_clipboard_registry_json(
+        self,
+        input: &[u8],
+        limits: CompilerLimits,
+        work: &mut WorkMeter,
+    ) -> Result<Self, KwdjProfileError> {
+        let registry = editor_registry::compile_json(
+            input,
+            &[crate::registry::base_registration_v2()],
+            limits,
+            work,
+        )?;
+        let mut profile = self.with_compiled_registry(registry)?;
+        profile.clipboard_v2 = true;
+        Ok(profile)
     }
 
     /// Consumes an unmounted profile. Mandatory KWDJ definitions always come

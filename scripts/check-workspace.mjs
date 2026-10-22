@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { gzipSync } from 'node:zlib';
 import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { identity } from './package-identity.mjs';
+import { clipboardParserManifestPath, verifyClipboardParserBuild } from './build-clipboard-parser.mjs';
 
 function output(command, args) {
   const result = spawnSync(command, args, { encoding: 'utf8' });
@@ -82,13 +83,15 @@ for (const pkg of metadata.packages) {
   }
 }
 const lock = JSON.parse(readFileSync('package-lock.json', 'utf8'));
-// ADR-005: optional concrete-profile DOM subpath; no generic package imports it.
+// ADR-005/006: optional concrete-profile subpaths; parse5 belongs only to KWDJ.
 const packageGraph = { wasm: [], sdk: ['wasm'], dom: ['sdk'], kwdj: ['sdk', 'dom'], vanilla: ['dom'], angular: ['vanilla'], ui: ['dom','sdk'] };
 for (const [name, allowed] of Object.entries(packageGraph)) {
   const manifest = JSON.parse(readFileSync(`packages/${name}/package.json`, 'utf8'));
-  assert.deepEqual(Object.keys(manifest.dependencies).sort(), allowed.map(name => identity.web[name].name).sort(),
+  const runtime = [...allowed.map(name => identity.web[name].name), ...(name === 'kwdj' ? ['parse5'] : [])];
+  assert.deepEqual(Object.keys(manifest.dependencies).sort(), runtime.sort(),
     `${name}: review a changed runtime dependency boundary against the ADR`);
 }
+const clipboardParser = verifyClipboardParserBuild();
 for (const [path, pkg] of Object.entries(lock.packages)) {
   assert(!pkg.resolved || pkg.link || pkg.resolved.startsWith('https://registry.npmjs.org/'), `Nonpublic npm source ${path}`);
 }
@@ -122,8 +125,11 @@ const report = {
     dev: pkg.dev ?? false, link: pkg.link ?? false, dependencies: pkg.dependencies ?? {}, integrity: pkg.integrity })),
   artifacts: files.sort((a,b) => a.path.localeCompare(b.path)),
   unicode: { implementation: 'unicode-segmentation', version: '1.13.3', unicodeVersion: '17.0.0', scope: 'logical extended grapheme boundaries; no browser layout proof' },
-  plannedNotInstalled: ['parse5 (clipboard proof, OSR-47)',
-    'Angular (peer only at binding implementation, OSR-49)', 'property/fuzz/benchmark tools (OSR-38)'],
+  clipboardParser: { manifest: clipboardParserManifestPath, graph: clipboardParser.graph,
+    runtimePackages: clipboardParser.runtimePackages.map(({ name, version, license, integrity }) => ({ name, version, license, integrity })),
+    buildTool: { name: 'esbuild', version: clipboardParser.buildTool.version, role: 'build-only' },
+    browserNoFetchProof: clipboardParser.browserNoFetchProof, parserSemanticsProof: clipboardParser.parserSemanticsProof },
+  plannedNotInstalled: ['Angular (peer only at binding implementation, OSR-49)', 'property/fuzz/benchmark tools (OSR-38)'],
   sdkTypeGeneration: { implementation: 'ts-rs', version: '12.0.1', scope: 'Optional native-only build generation; absent from default normal/WASM runtime closure' },
 };
 mkdirSync('artifacts', { recursive: true });

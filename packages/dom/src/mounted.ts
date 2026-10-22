@@ -86,7 +86,9 @@ class MountedOwner implements MountedEditor {
   readonly geometry=createMountedGeometry({element:()=>this.#element,view:()=>this.#view,capture:()=>this.#controller?.capture() ?? null,
     context:()=>this.#controller?.context() ?? null,readState:()=>this.#nativeRead({kind:'state'}),guard:()=>this.#geometryGuard()});
   readonly selection = this.#selectionOwner.api;
-  readonly clipboard: MountedClipboardController = Object.freeze({copy:()=>this.#clipboardCall('copy'),cut:()=>this.#clipboardCall('cut')});
+  readonly clipboard: MountedClipboardController = Object.freeze({copy:()=>this.#clipboardCall('copy'),cut:()=>this.#clipboardCall('cut'),
+    paste:(source:unknown)=>this.#clipboardOwner?.paste(source) ?? Promise.resolve({action:'paste' as const,status:'refused' as const,failure:this.#guard('clipboard') ?? this.#failure('dom.not_ready','clipboard'),diagnostics:Object.freeze([]),submission:null,recovery:'none' as const}),
+    takeRecovery:()=>this.#clipboardOwner?.takeRecovery() ?? null,releaseRecovery:()=>this.#clipboardOwner?.releaseRecovery() ?? false});
   #clipboardCall(action:'copy'|'cut'):Promise<ClipboardOutcome> {
     if(this.#clipboardOwner)return this.#clipboardOwner[action]();
     return Promise.resolve({action,status:'refused',clipboard:'not_attempted',failure:this.#guard('clipboard') ?? this.#failure('dom.not_ready','clipboard'),submission:null});
@@ -121,9 +123,9 @@ class MountedOwner implements MountedEditor {
       ?? (this.#composing || this.#view?.hasProvisional() || this.#input?.isProtected()?this.#failure('dom.composition_conflict','selection'):null)
       ?? (this.#busy()?this.#failure('dom.busy','selection'):null);
   }
-  #clipboardGuard(action:'copy'|'cut'):DomRefusal|null {
-    return this.#guard('clipboard') ?? (action==='cut' && this.#access==='read_only'?this.#failure('dom.native_read_only','clipboard'):null)
-      ?? (this.#mode==='disabled' || action==='cut' && this.#mode!=='editable'?this.#failure('dom.mode_blocked','clipboard'):null)
+  #clipboardGuard(action:'copy'|'cut'|'paste'):DomRefusal|null {
+    return this.#guard('clipboard') ?? (action!=='copy' && this.#access==='read_only'?this.#failure('dom.native_read_only','clipboard'):null)
+      ?? (this.#mode==='disabled' || action!=='copy' && this.#mode!=='editable'?this.#failure('dom.mode_blocked','clipboard'):null)
       ?? (this.#composing || this.#view?.hasProvisional() || this.#input?.isProtected()?this.#failure('dom.composition_conflict','clipboard'):null)
       ?? (this.#busy()?this.#failure('dom.busy','clipboard'):null);
   }
@@ -142,7 +144,18 @@ class MountedOwner implements MountedEditor {
       if (nativeOptions.abi !== 'editor-sdk/2') throw new TypeError();
       if (editor.loader !== undefined && typeof editor.loader !== 'function' || editor.onCallbackError !== undefined && typeof editor.onCallbackError !== 'function') throw new TypeError();
       for (const callback of ['onRecovery','onRefusal']) if (options[callback] !== undefined && typeof options[callback] !== 'function') throw new TypeError();
-      if(options.clipboard!==undefined){const clipboard=fields(options.clipboard);if(Object.keys(clipboard).some(key=>!['writeText','onResult'].includes(key)) || Object.values(clipboard).some(value=>typeof value!=='function'))throw new TypeError();this.#clipboardConfiguration=Object.freeze({...clipboard}) as MountEditorOptions['clipboard'];}
+      if(options.clipboard!==undefined){
+        const clipboard=fields(options.clipboard);
+        if(Object.keys(clipboard).some(key=>!['writeText','write','onResult','onPasteResult','codec'].includes(key)))throw new TypeError();
+        for(const key of ['writeText','write','onResult','onPasteResult'])if(clipboard[key]!==undefined&&typeof clipboard[key]!=='function')throw new TypeError();
+        if(clipboard.codec!==undefined){const codec=fields(clipboard.codec);
+          if(Object.keys(codec).some(key=>!['contextFormat','fragmentFormat','decode','encode'].includes(key))
+            ||typeof codec.contextFormat!=='string'||codec.contextFormat.length>256||typeof codec.fragmentFormat!=='string'||codec.fragmentFormat.length>256
+            ||typeof codec.decode!=='function'||codec.encode!==undefined&&typeof codec.encode!=='function')throw new TypeError();
+          clipboard.codec=Object.freeze({...codec});
+        }
+        this.#clipboardConfiguration=Object.freeze({...clipboard}) as MountEditorOptions['clipboard'];
+      }
       this.#onRecovery = options.onRecovery as MountEditorOptions['onRecovery'];
       this.#onRefusal = options.onRefusal as MountEditorOptions['onRefusal'];
       this.#configuration = { input: this.#original, options: nativeOptions,
@@ -294,7 +307,7 @@ class MountedOwner implements MountedEditor {
     const view = this.#view!;
     this.#selectionOwner.attach();
     this.#clipboardOwner = attachClipboard({element:this.#element!,view,bindings:this.#catalog!.definition.input ?? {},
-      capture:()=>controller.capture(),context:()=>controller.context(),readState:()=>this.#state(),read:request=>this.read(request),query:request=>this.query(request),submit:request=>this.#submit(request,true),
+      capture:()=>controller.capture(),context:()=>controller.context(),readState:()=>this.#state(),read:request=>this.read(request),query:request=>this.query(request),submit:(request,validate)=>this.#submit(request,true,false,validate),
       intent:()=>this.#selectionOwner.intent(),guard:action=>this.#clipboardGuard(action),report:failure=>this.#report(failure),...this.#clipboardConfiguration});
     this.#clipboardConfiguration=undefined;
     this.#input = attachInput({ element:this.#element!,view,selection:this.#selectionOwner,
@@ -367,8 +380,8 @@ class MountedOwner implements MountedEditor {
     return gate ? this.#report(gate) : this.#reflectFatal(this.#controller!.query(request));
   }
   submit(request: MountedMutation) { return this.#submit(request,false); }
-  #submit(request: MountedMutation, input: boolean, compositionClaim=false): Submission | DomRefusal {
-    return this.#forward(request,input,compositionClaim,owned=>this.#controller!.submit(owned)) as Submission|DomRefusal;
+  #submit(request: MountedMutation, input: boolean, compositionClaim=false, validate?:()=>DomRefusal|null): Submission | DomRefusal {
+    return this.#forward(request,input,compositionClaim,owned=>this.#controller!.submit(owned),validate) as Submission|DomRefusal;
   }
   #forward<T extends MountedMutation>(request:T,input:boolean,compositionClaim:boolean,dispatch:(request:T)=>Submission,
     validate?:()=>DomRefusal|SelectionReadFailure|null,prospective?:(permit:ResultFocusPermit|null)=>void):Submission|DomRefusal|SelectionReadFailure {
@@ -517,7 +530,9 @@ class MountedOwner implements MountedEditor {
     this.#request = null;
     // The host callback cannot alter the receipt's only binary copy.
     const sdk = this.#controller?.destroy() ?? emptyDestroyed();
-    const receipt: {status:'destroy_requested';sdk:Submission;recovery:RecoveryPacket|null;callbackFailure:DomRefusal|null} = {status:'destroy_requested',sdk,recovery:packet,callbackFailure:this.#recoveryCallbackFailure};
+    const clipboardRecovery = this.#clipboardOwner?.transferRecovery();
+    const receipt: {status:'destroy_requested';sdk:Submission;recovery:RecoveryPacket|null;callbackFailure:DomRefusal|null;clipboardRecovery?:import('./types.js').ClipboardRecoveryTransfer} = {status:'destroy_requested',sdk,recovery:packet,callbackFailure:this.#recoveryCallbackFailure,
+      ...(clipboardRecovery && (clipboardRecovery.status==='pending'||clipboardRecovery.recovery) ? {clipboardRecovery} : {})};
     this.#receipt = receipt;
     const callback = this.#onRecovery;
     this.#onRecovery = undefined; this.#onRefusal = undefined;

@@ -7,3 +7,6 @@ Keep those versioned decisions as the source; subsequent ADRs go here.
 
 [ADR-005](005-profile-dom-bindings.md) records explicit optional profile DOM
 bindings and their native inventory/presentation coverage boundary.
+
+[ADR-006](006-clipboard-parser-boundary.md) records the optional clipboard parser
+and browser bundle boundary; runtime acceptance remains a separate task gate.

@@ -266,7 +266,7 @@ pub(super) struct CutInline<I> {
     pub tail: Vec<LocalRef<I>>,
     pub at_start: bool,
     pub at_end: bool,
-    deletion: Option<Selection<LocalRef<I>>>,
+    pub(super) deletion: Option<Selection<LocalRef<I>>>,
 }
 
 /// Make the surviving suffix addressable before one sealed range deletion.
@@ -284,7 +284,7 @@ pub(super) fn cut_inline_range<V: CandidateRead>(
 
 /// Address the suffix while the selected separator still protects its original
 /// grapheme boundary. Recipes moving that suffix must finish deletion afterwards.
-fn prepare_inline_cut<V: CandidateRead>(
+pub(super) fn prepare_inline_cut<V: CandidateRead>(
     view: &V,
     range: Selection<V::Id>,
     plan: &mut PlanBuilder<'_, V::Id>,
@@ -351,7 +351,7 @@ fn prepare_inline_cut<V: CandidateRead>(
     })
 }
 
-fn finish_inline_cut<I>(
+pub(super) fn finish_inline_cut<I>(
     cut: &mut CutInline<I>,
     plan: &mut PlanBuilder<'_, I>,
 ) -> Result<(), KwdjError> {

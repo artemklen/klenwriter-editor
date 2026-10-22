@@ -60,6 +60,14 @@ export const kwdjDomInventory = {
     },
     {
       "descriptor": {
+        "id": "org.klenwriter.kwdj/command/insert-fragment",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/insert-fragment",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
         "id": "org.klenwriter.kwdj/command/insert-text",
         "kind": "compiled"
       },
@@ -154,6 +162,7 @@ export const kwdjDomInventory = {
       "org.klenwriter.kwdj/command/duplicate",
       "org.klenwriter.kwdj/command/enter",
       "org.klenwriter.kwdj/command/insert-block",
+      "org.klenwriter.kwdj/command/insert-fragment",
       "org.klenwriter.kwdj/command/insert-text",
       "org.klenwriter.kwdj/command/move",
       "org.klenwriter.kwdj/command/remove",
@@ -1419,5 +1428,5 @@ export const kwdjDomInventory = {
     "profile_version": "1.0.0",
     "wire_version": 1
   },
-  "registryDigest": "5f342288843be336a343f3989db50ef2128f6cad2a66493fbcbf318e4dde81af"
+  "registryDigest": "121ba2ecb7fbc0ca8ad4f90caa65770644e11bf4b91181fe6053b474f1c559f9"
 } as const;

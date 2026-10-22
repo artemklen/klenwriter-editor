@@ -75,6 +75,61 @@
       "grant": "D10/D11, owner-controlled synthetic tests",
       "sourcePayload": "Synthetic JSON builders, example.test URLs, fixed UUIDs; no file input or production data",
       "adaptations": "crate import only"
+    },
+    {
+      "source": "frontend/admin-spa/src/app/editor/kwdj/clipboard/types.ts",
+      "sourceRevision": "818289740caab708d99ad2cfa69554392e2add4e",
+      "sha256": "b6b1e1c5b5a1fd89c26815393812fb2e180ab99434870ce54883985b20c65541",
+      "destination": "packages/kwdj/src/clipboard-types.ts",
+      "grant": "Owner D10/D11, accepted 2026-10-17; owner-controlled clipboard semantics and synthetic contract adaptation, audited OSR-47",
+      "license": "MIT OR Apache-2.0",
+      "thirdPartyHeaders": [],
+      "sourcePayload": "Application-authored TypeScript conversion and URL policy only; no user data, capture or documents",
+      "adaptations": "Source-derived closed diagnostics, plain conversion and HTML allowlist; isolated parse5 data adapter replaces CMS DOMParser; no CMS app/Tiptap/runtime dependency; native fragment admission remains authoritative"
+    },
+    {
+      "source": "frontend/admin-spa/src/app/editor/kwdj/clipboard/plain.ts",
+      "sourceRevision": "818289740caab708d99ad2cfa69554392e2add4e",
+      "sha256": "8d49351a8b577a35be89289a9b5838b14912f74e496ac43da00604f0d06a47b2",
+      "destination": "packages/kwdj/src/clipboard-decode.ts",
+      "grant": "Owner D10/D11, accepted 2026-10-17; owner-controlled clipboard semantics and synthetic contract adaptation, audited OSR-47",
+      "license": "MIT OR Apache-2.0",
+      "thirdPartyHeaders": [],
+      "sourcePayload": "Application-authored TypeScript conversion and URL policy only; no user data, capture or documents",
+      "adaptations": "Source-derived closed diagnostics, plain conversion and HTML allowlist; isolated parse5 data adapter replaces CMS DOMParser; no CMS app/Tiptap/runtime dependency; native fragment admission remains authoritative"
+    },
+    {
+      "source": "frontend/admin-spa/src/app/editor/kwdj/clipboard/rich.ts",
+      "sourceRevision": "818289740caab708d99ad2cfa69554392e2add4e",
+      "sha256": "f17333aa76403c274ab6be3238c1a4002818489f58e21359d6ded892cdbf5d71",
+      "destination": "packages/kwdj/src/clipboard-decode.ts",
+      "grant": "Owner D10/D11, accepted 2026-10-17; owner-controlled clipboard semantics and synthetic contract adaptation, audited OSR-47",
+      "license": "MIT OR Apache-2.0",
+      "thirdPartyHeaders": [],
+      "sourcePayload": "Application-authored TypeScript conversion and URL policy only; no user data, capture or documents",
+      "adaptations": "Source-derived closed diagnostics, plain conversion and HTML allowlist; isolated parse5 data adapter replaces CMS DOMParser; no CMS app/Tiptap/runtime dependency; native fragment admission remains authoritative"
+    },
+    {
+      "source": "frontend/admin-spa/src/app/editor/kwdj/clipboard/index.ts",
+      "sourceRevision": "818289740caab708d99ad2cfa69554392e2add4e",
+      "sha256": "1555a580763b22cf72b9c22fea38407cc3658d484d79e758d3bdbe572b20e656",
+      "destination": "packages/kwdj/src/clipboard-decode.ts",
+      "grant": "Owner D10/D11, accepted 2026-10-17; owner-controlled clipboard semantics and synthetic contract adaptation, audited OSR-47",
+      "license": "MIT OR Apache-2.0",
+      "thirdPartyHeaders": [],
+      "sourcePayload": "Application-authored TypeScript conversion and URL policy only; no user data, capture or documents",
+      "adaptations": "Source-derived closed diagnostics, plain conversion and HTML allowlist; isolated parse5 data adapter replaces CMS DOMParser; no CMS app/Tiptap/runtime dependency; native fragment admission remains authoritative"
+    },
+    {
+      "source": "frontend/admin-spa/src/app/editor/kwdj/url-policy.ts",
+      "sourceRevision": "818289740caab708d99ad2cfa69554392e2add4e",
+      "sha256": "7bd9655d7f02917e687fee0f057f3aa478b7f2c37f7f1b069c2efff2db576e81",
+      "destination": "packages/kwdj/src/clipboard-decode.ts",
+      "grant": "Owner D10/D11, accepted 2026-10-17; owner-controlled clipboard semantics and synthetic contract adaptation, audited OSR-47",
+      "license": "MIT OR Apache-2.0",
+      "thirdPartyHeaders": [],
+      "sourcePayload": "Application-authored TypeScript conversion and URL policy only; no user data, capture or documents",
+      "adaptations": "Source-derived closed diagnostics, plain conversion and HTML allowlist; isolated parse5 data adapter replaces CMS DOMParser; no CMS app/Tiptap/runtime dependency; native fragment admission remains authoritative"
     }
   ],
   "localAdaptations": [
@@ -102,6 +157,11 @@
       "issue": "OSR-37",
       "path": "crates/kwdj/src/validate.rs",
       "change": "The same authoritative walker accepts engine-proved sparse roots/children and cached static summaries; table/verse/identity rules remain shared with full native validation. Current external identity answers are never retained across transactions."
+    },
+    {
+      "issue": "OSR-47",
+      "path": "packages/kwdj/src/clipboard-decode.ts",
+      "change": "Optional source-derived clipboard conversion and explicit narrowing URL policy; raw capture/lifecycle/native atomic command are independent layers"
     }
   ],
   "corpusProvenance": "provenance/kwdj-corpus.json",

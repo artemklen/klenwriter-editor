@@ -106,6 +106,8 @@ pub enum SelectionTextReplyV2 {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(untagged)]
 pub enum BridgeRequestV2 {
+    ClipboardContext(ClipboardContextRequestV2),
+    SelectionFragment(SelectionFragmentRequestV2),
     TextWindow(TextWindowRequestV2),
     SelectionText(SelectionTextRequestV2),
     Common(crate::BridgeRequest),
@@ -117,6 +119,8 @@ pub enum BridgeRequestV2 {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(untagged)]
 pub enum SdkReplyV2 {
+    ClipboardContext(ClipboardContextReplyV2),
+    SelectionFragment(SelectionFragmentReplyV2),
     TextWindow(TextWindowReplyV2),
     SelectionText(SelectionTextReplyV2),
     Common(crate::SdkReply),
@@ -145,6 +149,57 @@ impl From<crate::SdkResponse> for SdkResponseV2 {
 }
 
 pub const SDK_ABI_V2: &str = "editor-sdk/2";
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum ClipboardContextRequestV2 {
+    ClipboardContext { stamp: crate::StampDto },
+}
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum ClipboardContextReplyV2 {
+    ClipboardContext {
+        stamp: crate::StampDto,
+        selection: crate::SelectionDto,
+        format_id: String,
+        context_json: String,
+    },
+}
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum SelectionFragmentRequestV2 {
+    SelectionFragment {
+        stamp: crate::StampDto,
+        max_bytes: u32,
+    },
+}
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum SelectionFragmentReplyV2 {
+    SelectionFragment {
+        stamp: crate::StampDto,
+        selection: crate::SelectionDto,
+        format_id: String,
+        fragment_json: String,
+        empty: bool,
+    },
+}
 pub const REGISTRY_FORMAT: &str = "editor-registry/1";
 
 #[cfg_attr(

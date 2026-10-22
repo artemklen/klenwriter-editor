@@ -24,11 +24,13 @@ use serde::de::DeserializeOwned;
 use crate::convert::*;
 use editor_protocol::*;
 
+mod clipboard;
 pub mod convert;
 pub mod distribution;
 pub mod recipes;
 mod selection;
 mod text_window;
+pub use clipboard::{ClipboardContextData, SelectionFragmentData};
 pub use distribution::{CreatedEndpoint, Distribution, DistributionSession, capability_digest};
 pub use selection::SelectionTextData;
 
@@ -119,6 +121,25 @@ pub fn resource_counts() -> ResourceCountsDto {
 
 /// Profile-owned wire decoding and diagnostics. Session semantics remain typed.
 pub trait BridgeAdapter<P: CommandProvider> {
+    fn clipboard_context<V: editor_core::candidate::CandidateRead<Id = editor_engine::NodeId>>(
+        &self,
+        _context: &P::Context,
+        _view: &V,
+        _selection: editor_core::positions::Selection<editor_engine::NodeId>,
+        _work: &mut WorkMeter,
+    ) -> Result<ClipboardContextData, DiagnosticDto> {
+        Err(diagnostic("profile.clipboard_unsupported", ""))
+    }
+    fn selection_fragment<V: editor_core::candidate::CandidateRead<Id = editor_engine::NodeId>>(
+        &self,
+        _context: &P::Context,
+        _view: &V,
+        _selection: editor_core::positions::Selection<editor_engine::NodeId>,
+        _max_bytes: u32,
+        _work: &mut WorkMeter,
+    ) -> Result<SelectionFragmentData, DiagnosticDto> {
+        Err(diagnostic("profile.clipboard_unsupported", ""))
+    }
     fn selection_text<V: editor_core::candidate::CandidateRead<Id = editor_engine::NodeId>>(
         &self,
         _view: &V,
