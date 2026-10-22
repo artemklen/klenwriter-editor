@@ -1,0 +1,78 @@
+/**
+ * Russian typography while typing (KW-887).
+ *
+ * Paste already turns straight quotes into «ёлочки», ` -- ` into ` — ` and
+ * glues one-letter Cyrillic words to the next word (paste.ts), but typed text
+ * kept the raw characters, so the same sentence came out differently depending
+ * on how it got into the editor. These rules make the same three kinds of
+ * replacement as the author types. Unlike paste, which pairs quotes within a
+ * line, a typed quote is decided by the character before it, and every
+ * one-letter word is glued, including the second of two in a row. Code blocks
+ * and inline code are left alone. Tiptap's core Backspace runs
+ * `undoInputRule` first, so Backspace right after a quote or dash replacement
+ * brings back what was typed; the non-breaking space is not undoable, so
+ * Backspace after it deletes the letter as usual.
+ */
+
+import { InputRule, inputRules } from '@tiptap/pm/inputrules';
+import type { Mark } from '@tiptap/pm/model';
+import type { EditorState, Plugin } from '@tiptap/pm/state';
+
+/**
+ * KWDJ's `code` mark carries no `code` flag in its spec, so the input rules
+ * plugin cannot see it; check it here, including a mark about to be typed.
+ */
+function touchesInlineCode(state: EditorState, from: number, to: number): boolean {
+  const isCode = (marks: readonly Mark[]) => marks.some((mark) => mark.type.name === 'code');
+  if (isCode(state.storedMarks ?? state.doc.resolve(to).marks())) {
+    return true;
+  }
+  let found = false;
+  state.doc.nodesBetween(from, to, (node) => {
+    found ||= node.isInline && isCode(node.marks);
+  });
+  return found;
+}
+
+/**
+ * Replace the last character of the match and the `before` characters in
+ * front of it; `$1` is the rule's capture. The last character is either being
+ * typed or, after an IME composition, already in the document. Input that
+ * carries more than one character at once (autocorrect, dictation, text
+ * substitution) is left as typed: the characters to replace must all be in the
+ * document already, in front of the replaced range.
+ */
+function replaceTyped(before: number, text: string) {
+  return (state: EditorState, match: RegExpMatchArray, start: number, end: number) => {
+    const at = start + match[0].length - 1 - before;
+    if (
+      at > end ||
+      state.doc.textBetween(start, at, '', '\ufffc') !== match[0].slice(0, at - start) ||
+      touchesInlineCode(state, start, end)
+    ) {
+      return null;
+    }
+    return state.tr.insertText(text.replace('$1', match[1] ?? ''), at, end);
+  };
+}
+
+/** A straight quote opens a quotation at the start of a line or after a space, bracket, dash or line break. */
+const openingQuote = new InputRule(/(?:^|[\s([{\u2014\u2013\-/\ufffc])"$/, replaceTyped(0, '«'), {
+  inCodeMark: false,
+});
+
+const closingQuote = new InputRule(/"$/, replaceTyped(0, '»'), { inCodeMark: false });
+
+/** ` --` followed by a space becomes ` — `. */
+const emDash = new InputRule(/\s--(\s)$/, replaceTyped(2, '—$1'), { inCodeMark: false });
+
+/** A one-letter Cyrillic word is glued to the next with a non-breaking space once its first letter is typed. */
+const oneLetterWord = new InputRule(
+  /(?:^|[\s\ufffc])[А-Яа-яЁё] ([А-Яа-яЁё])$/u,
+  replaceTyped(1, '\u00a0$1'),
+  { inCodeMark: false, undoable: false },
+);
+
+export function typingTypography(): Plugin {
+  return inputRules({ rules: [emDash, openingQuote, closingQuote, oneLetterWord] });
+}

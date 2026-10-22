@@ -1,0 +1,11 @@
+{
+  "format": "typography-source-authority/1",
+  "issue": "OSR-48",
+  "base": "753c77aadd5215a5a5f81448b71d45d17d77f85e",
+  "beforeCandidateFreeze": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-48/source-freeze-before-candidate-01/index.json",
+  "freezeIndexSha256": "ca1f597020b6232e41399871f68e26e94277d817d435f4671d6bd35234ee7d19",
+  "governingDocument": "docs/typography.md",
+  "rootOverrides": "No whole reply32KiBlimit; existingoutertransportceiling; no wireSDKcontext. Compactnativeeffectresult/restore only. Configuredemptysubset usesexplicittypingextension.",
+  "status": "FROZEN_SOURCE_AUTHORED_NOT_EXECUTED",
+  "rulesAndNative": "Pinned independent data copiedbyteexact fromsourcefreeze. OriginalCMS sources savedas.txt andnevercompiled. Logical/sourcevocabulary is translated explicitly in new test adapters only, not learned fromruntime."
+}

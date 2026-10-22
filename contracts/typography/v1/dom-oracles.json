@@ -1,0 +1,3753 @@
+{
+  "format": "osr48-dom-sdk-source-oracles/1",
+  "status": "SOURCE_AUTHORED_NOT_EXECUTED_BEFORE_CANDIDATE",
+  "acceptedHead": "753c77aadd5215a5a5f81448b71d45d17d77f85e",
+  "authority": [
+    {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-48/refine-before-start-01/contract-ready.md",
+      "bytes": 15801,
+      "sha256": "912c79b9052840427045f1e395880eb98ae301a84ab152c615758999274576a7",
+      "precedence": "governing Ready; no new whole reply32KiB ceiling; result16KiB/restore4096B only; old outer16MiB unchanged"
+    },
+    {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-48/refine-before-start-01/contract-draft.md",
+      "bytes": 10783,
+      "sha256": "ea24e9546461f6617daab0a07bfb38cb3d29b6970ee7159090adde50eb461d2f"
+    },
+    {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-48/dom-route-contract-proposal-01/proposal.md",
+      "bytes": 18948,
+      "sha256": "454212f1e0de13ca2fef965c806e0ca07666e432af6f514f9276d46537c830c8"
+    },
+    {
+      "path": "/Users/artem/projects/.evidence-archives/editor-wasm/osr-48/native-result-contract-proposal-01/proposal.json",
+      "bytes": 4213,
+      "sha256": "7b308cddc20fb24800239c081b7445b2cfd2699f4fca0ad57be861d1870da03b"
+    }
+  ],
+  "normalizationIdentityContract": "All positive fixtures have a nonempty retained prefix in the initial text leaf. Current native exact inline splice and left-join normalization retain that initial left leaf ID; result selection/spans must use that source-bound ID, never bind from result output. Source TextBlock/root IDs survive. If root chooses a different intentionally valid identity contract before implementation, preserve this original file and author an explicit new oracle version before candidate.",
+  "bindingRules": {
+    "source": "Only initial native IDs and initial captured stamp/context are bound. They are not read from candidate result.",
+    "stamp": "Exact decimal add expression to initial fixture base; unchanged session/generation/context. History epoch equals stamp.history_epoch.",
+    "canonical": "Complete literal sorted-key compact UTF8 JSON; exact Unicode codepoints; canonical ordering follows accepted core/json.rs17–47 source, no candidate serializer called.",
+    "noUnknownFiction": "Fatal/unknown rows distinguish retained last-known canonical from unassertable actual native outcome; no atomic-failure claim after possible publication.",
+    "receipt": "Logical private counters, field placement may be adapted without relaxing values.",
+    "dirty": "Fresh initial false; every document mutation and later Undo/Redo remains true without an explicit saved-baseline acknowledgement. Equal canonical text does not imply clean."
+  },
+  "fixtures": {
+    "quote": {
+      "source": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "a "
+              }
+            ]
+          }
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "config": {
+        "locale": "ru",
+        "features": "defaults"
+      },
+      "initial": {
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "stamp": {
+          "session": "$base.session",
+          "generation": "$base.generation",
+          "revision": {
+            "base": "$base.revision",
+            "add": 0
+          },
+          "selection_epoch": {
+            "base": "$base.selection_epoch",
+            "add": 0
+          },
+          "history_epoch": {
+            "base": "$base.history_epoch",
+            "add": 0
+          }
+        },
+        "history": {
+          "undo_entries": "0",
+          "redo_entries": "0",
+          "epoch": {
+            "base": "$base.history_epoch",
+            "add": 0
+          }
+        },
+        "documentPublicationsSinceBase": 0,
+        "privateInputState": {
+          "phase": "ready",
+          "armedSlots": 0,
+          "backspaceCandidates": 0,
+          "pendingDispatches": 0
+        },
+        "context": "$base.context",
+        "dirty": false
+      },
+      "identityAuthority": {
+        "text": "initial native Text ID at canonical path [0,0]",
+        "block": "initial native TextBlock ID at canonical path [0]",
+        "root": "initial root ID"
+      },
+      "historySetup": "empty history; capture base after exact explicit fixture selection; no open typing group"
+    },
+    "closing": {
+      "source": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "a"
+              }
+            ]
+          }
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 1,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 1,
+          "affinity": "after"
+        }
+      },
+      "config": {
+        "locale": "ru",
+        "features": "defaults"
+      },
+      "initial": {
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "stamp": {
+          "session": "$base.session",
+          "generation": "$base.generation",
+          "revision": {
+            "base": "$base.revision",
+            "add": 0
+          },
+          "selection_epoch": {
+            "base": "$base.selection_epoch",
+            "add": 0
+          },
+          "history_epoch": {
+            "base": "$base.history_epoch",
+            "add": 0
+          }
+        },
+        "history": {
+          "undo_entries": "0",
+          "redo_entries": "0",
+          "epoch": {
+            "base": "$base.history_epoch",
+            "add": 0
+          }
+        },
+        "documentPublicationsSinceBase": 0,
+        "privateInputState": {
+          "phase": "ready",
+          "armedSlots": 0,
+          "backspaceCandidates": 0,
+          "pendingDispatches": 0
+        },
+        "context": "$base.context",
+        "dirty": false
+      },
+      "identityAuthority": {
+        "text": "initial native Text ID at canonical path [0,0]",
+        "block": "initial native TextBlock ID at canonical path [0]",
+        "root": "initial root ID"
+      },
+      "historySetup": "empty history; capture base after exact explicit fixture selection; no open typing group"
+    },
+    "dash": {
+      "source": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "a --"
+              }
+            ]
+          }
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 4,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 4,
+          "affinity": "after"
+        }
+      },
+      "config": {
+        "locale": "ru",
+        "features": "defaults"
+      },
+      "initial": {
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a --\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 4,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 4,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "stamp": {
+          "session": "$base.session",
+          "generation": "$base.generation",
+          "revision": {
+            "base": "$base.revision",
+            "add": 0
+          },
+          "selection_epoch": {
+            "base": "$base.selection_epoch",
+            "add": 0
+          },
+          "history_epoch": {
+            "base": "$base.history_epoch",
+            "add": 0
+          }
+        },
+        "history": {
+          "undo_entries": "0",
+          "redo_entries": "0",
+          "epoch": {
+            "base": "$base.history_epoch",
+            "add": 0
+          }
+        },
+        "documentPublicationsSinceBase": 0,
+        "privateInputState": {
+          "phase": "ready",
+          "armedSlots": 0,
+          "backspaceCandidates": 0,
+          "pendingDispatches": 0
+        },
+        "context": "$base.context",
+        "dirty": false
+      },
+      "identityAuthority": {
+        "text": "initial native Text ID at canonical path [0,0]",
+        "block": "initial native TextBlock ID at canonical path [0]",
+        "root": "initial root ID"
+      },
+      "historySetup": "empty history; capture base after exact explicit fixture selection; no open typing group"
+    },
+    "nbsp": {
+      "source": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "а "
+              }
+            ]
+          }
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "config": {
+        "locale": "ru",
+        "features": "defaults"
+      },
+      "initial": {
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"а \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "stamp": {
+          "session": "$base.session",
+          "generation": "$base.generation",
+          "revision": {
+            "base": "$base.revision",
+            "add": 0
+          },
+          "selection_epoch": {
+            "base": "$base.selection_epoch",
+            "add": 0
+          },
+          "history_epoch": {
+            "base": "$base.history_epoch",
+            "add": 0
+          }
+        },
+        "history": {
+          "undo_entries": "0",
+          "redo_entries": "0",
+          "epoch": {
+            "base": "$base.history_epoch",
+            "add": 0
+          }
+        },
+        "documentPublicationsSinceBase": 0,
+        "privateInputState": {
+          "phase": "ready",
+          "armedSlots": 0,
+          "backspaceCandidates": 0,
+          "pendingDispatches": 0
+        },
+        "context": "$base.context",
+        "dirty": false
+      },
+      "identityAuthority": {
+        "text": "initial native Text ID at canonical path [0,0]",
+        "block": "initial native TextBlock ID at canonical path [0]",
+        "root": "initial root ID"
+      },
+      "historySetup": "empty history; capture base after exact explicit fixture selection; no open typing group"
+    },
+    "selected": {
+      "source": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "a слово!"
+              }
+            ]
+          }
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 7,
+          "affinity": "before"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "config": {
+        "locale": "ru",
+        "features": "defaults"
+      },
+      "initial": {
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a слово!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 7,
+            "affinity": "before"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "stamp": {
+          "session": "$base.session",
+          "generation": "$base.generation",
+          "revision": {
+            "base": "$base.revision",
+            "add": 0
+          },
+          "selection_epoch": {
+            "base": "$base.selection_epoch",
+            "add": 0
+          },
+          "history_epoch": {
+            "base": "$base.history_epoch",
+            "add": 0
+          }
+        },
+        "history": {
+          "undo_entries": "0",
+          "redo_entries": "0",
+          "epoch": {
+            "base": "$base.history_epoch",
+            "add": 0
+          }
+        },
+        "documentPublicationsSinceBase": 0,
+        "privateInputState": {
+          "phase": "ready",
+          "armedSlots": 0,
+          "backspaceCandidates": 0,
+          "pendingDispatches": 0
+        },
+        "context": "$base.context",
+        "dirty": false
+      },
+      "identityAuthority": {
+        "text": "initial native Text ID at canonical path [0,0]",
+        "block": "initial native TextBlock ID at canonical path [0]",
+        "root": "initial root ID"
+      },
+      "historySetup": "empty history; capture base after exact explicit fixture selection; no open typing group"
+    },
+    "bulk": {
+      "source": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "k "
+              }
+            ]
+          }
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "config": {
+        "locale": "ru",
+        "features": "defaults"
+      },
+      "initial": {
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"k \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "stamp": {
+          "session": "$base.session",
+          "generation": "$base.generation",
+          "revision": {
+            "base": "$base.revision",
+            "add": 0
+          },
+          "selection_epoch": {
+            "base": "$base.selection_epoch",
+            "add": 0
+          },
+          "history_epoch": {
+            "base": "$base.history_epoch",
+            "add": 0
+          }
+        },
+        "history": {
+          "undo_entries": "0",
+          "redo_entries": "0",
+          "epoch": {
+            "base": "$base.history_epoch",
+            "add": 0
+          }
+        },
+        "documentPublicationsSinceBase": 0,
+        "privateInputState": {
+          "phase": "ready",
+          "armedSlots": 0,
+          "backspaceCandidates": 0,
+          "pendingDispatches": 0
+        },
+        "context": "$base.context",
+        "dirty": false
+      },
+      "identityAuthority": {
+        "text": "initial native Text ID at canonical path [0,0]",
+        "block": "initial native TextBlock ID at canonical path [0]",
+        "root": "initial root ID"
+      },
+      "historySetup": "empty history; capture base after exact explicit fixture selection; no open typing group"
+    },
+    "marked": {
+      "source": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "a ",
+                "marks": [
+                  {
+                    "type": "strong"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "config": {
+        "locale": "ru",
+        "features": "defaults"
+      },
+      "initial": {
+        "canonical_json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "stamp": {
+          "session": "$base.session",
+          "generation": "$base.generation",
+          "revision": {
+            "base": "$base.revision",
+            "add": 0
+          },
+          "selection_epoch": {
+            "base": "$base.selection_epoch",
+            "add": 0
+          },
+          "history_epoch": {
+            "base": "$base.history_epoch",
+            "add": 0
+          }
+        },
+        "history": {
+          "undo_entries": "0",
+          "redo_entries": "0",
+          "epoch": {
+            "base": "$base.history_epoch",
+            "add": 0
+          }
+        },
+        "documentPublicationsSinceBase": 0,
+        "privateInputState": {
+          "phase": "ready",
+          "armedSlots": 0,
+          "backspaceCandidates": 0,
+          "pendingDispatches": 0
+        },
+        "context": "$base.context",
+        "dirty": false
+      },
+      "identityAuthority": {
+        "text": "initial native Text ID at canonical path [0,0]",
+        "block": "initial native TextBlock ID at canonical path [0]",
+        "root": "initial root ID"
+      },
+      "historySetup": "empty history; capture base after exact explicit fixture selection; no open typing group"
+    },
+    "en_quote": {
+      "source": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "a "
+              }
+            ]
+          }
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "config": {
+        "locale": "en",
+        "features": "defaults"
+      },
+      "initial": {
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "stamp": {
+          "session": "$base.session",
+          "generation": "$base.generation",
+          "revision": {
+            "base": "$base.revision",
+            "add": 0
+          },
+          "selection_epoch": {
+            "base": "$base.selection_epoch",
+            "add": 0
+          },
+          "history_epoch": {
+            "base": "$base.history_epoch",
+            "add": 0
+          }
+        },
+        "history": {
+          "undo_entries": "0",
+          "redo_entries": "0",
+          "epoch": {
+            "base": "$base.history_epoch",
+            "add": 0
+          }
+        },
+        "documentPublicationsSinceBase": 0,
+        "privateInputState": {
+          "phase": "ready",
+          "armedSlots": 0,
+          "backspaceCandidates": 0,
+          "pendingDispatches": 0
+        },
+        "context": "$base.context",
+        "dirty": false
+      },
+      "identityAuthority": {
+        "text": "initial native Text ID at canonical path [0,0]",
+        "block": "initial native TextBlock ID at canonical path [0]",
+        "root": "initial root ID"
+      },
+      "historySetup": "empty history; capture base after exact explicit fixture selection; no open typing group"
+    }
+  },
+  "states": {
+    "quote_cooked": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a «\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 1
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 1
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "documentPublicationsSinceBase": 1,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 1,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "quote_raw_restored": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a \\\"\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 2
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 1
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "history": {
+        "undo_entries": "2",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "documentPublicationsSinceBase": 2,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "quote_undo_restore": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a «\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 3
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 1
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 3
+        }
+      },
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "1",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 3
+        }
+      },
+      "documentPublicationsSinceBase": 3,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "quote_undo_twice": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 4
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 2
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 4
+        }
+      },
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "2",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 4
+        }
+      },
+      "documentPublicationsSinceBase": 4,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "quote_redo_cooked": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a «\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 5
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 3
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 5
+        }
+      },
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "1",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 5
+        }
+      },
+      "documentPublicationsSinceBase": 5,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "quote_redo_raw": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a \\\"\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 6
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 3
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 6
+        }
+      },
+      "history": {
+        "undo_entries": "2",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 6
+        }
+      },
+      "documentPublicationsSinceBase": 6,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "quote_undo_direct": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 2
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 2
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "1",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "documentPublicationsSinceBase": 2,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "quote_redo_direct": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a «\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 3
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 3
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 3
+        }
+      },
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 3
+        }
+      },
+      "documentPublicationsSinceBase": 3,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "quote_plain_backspace_after_retire": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 2
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 2
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "history": {
+        "undo_entries": "2",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "documentPublicationsSinceBase": 2,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "closing_cooked": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a»\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 1
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 1
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "documentPublicationsSinceBase": 1,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 1,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "closing_raw_restored": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a\\\"\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 2
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 1
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "history": {
+        "undo_entries": "2",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "documentPublicationsSinceBase": 2,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "en_quote_cooked": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a “\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 1
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 1
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "documentPublicationsSinceBase": 1,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 1,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "dash_cooked": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a — \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 4,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 4,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 1
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 0
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "documentPublicationsSinceBase": 1,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 1,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "dash_raw_restored": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a -- \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 5,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 5,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 2
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 1
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "history": {
+        "undo_entries": "2",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "documentPublicationsSinceBase": 2,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "dash_undo_direct": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a --\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 4,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 4,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 2
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 0
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "1",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "documentPublicationsSinceBase": 2,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "nbsp_cooked": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"а я\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 1
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 1
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "documentPublicationsSinceBase": 1,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "nbsp_backspace": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"а \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 2
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 2
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "history": {
+        "undo_entries": "2",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "documentPublicationsSinceBase": 2,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "nbsp_undo_backspace": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"а я\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 3
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 3
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 3
+        }
+      },
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "1",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 3
+        }
+      },
+      "documentPublicationsSinceBase": 3,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "nbsp_undo_twice": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"а \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 4
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 4
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 4
+        }
+      },
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "2",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 4
+        }
+      },
+      "documentPublicationsSinceBase": 4,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "selected_cooked": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a «!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 1
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 1
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "documentPublicationsSinceBase": 1,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 1,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "selected_raw_restored": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a \\\"!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 2
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 1
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "history": {
+        "undo_entries": "2",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "documentPublicationsSinceBase": 2,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "selected_undo_direct": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a слово!\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 7,
+          "affinity": "before"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 2
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 2
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "history": {
+        "undo_entries": "0",
+        "redo_entries": "1",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "documentPublicationsSinceBase": 2,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "bulk_literal": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"k a -- \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 7,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 7,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 1
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 1
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "documentPublicationsSinceBase": 1,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "dash_literal": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a -- \",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 5,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 5,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 1
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 1
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "documentPublicationsSinceBase": 1,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "quote_literal": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a \\\"\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 1
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 1
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "documentPublicationsSinceBase": 1,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "quote_then_host_x": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a «x\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 4,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 4,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 2
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 2
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "history": {
+        "undo_entries": "2",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "documentPublicationsSinceBase": 2,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "quote_cooked_retired": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a «\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 1
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 1
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "documentPublicationsSinceBase": 1,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "quote_strong_stored": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a «\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": [
+        {
+          "type_id": "org.klenwriter.kwdj/strong",
+          "attributes": {}
+        }
+      ],
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 1
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 2
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "documentPublicationsSinceBase": 1,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "marked_cooked": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a «\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 1
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 1
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "history": {
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 1
+        }
+      },
+      "documentPublicationsSinceBase": 1,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 1,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    },
+    "marked_raw_restored": {
+      "canonical_json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a \\\"\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stored_marks": null,
+      "stamp": {
+        "session": "$base.session",
+        "generation": "$base.generation",
+        "revision": {
+          "base": "$base.revision",
+          "add": 2
+        },
+        "selection_epoch": {
+          "base": "$base.selection_epoch",
+          "add": 1
+        },
+        "history_epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "history": {
+        "undo_entries": "2",
+        "redo_entries": "0",
+        "epoch": {
+          "base": "$base.history_epoch",
+          "add": 2
+        }
+      },
+      "documentPublicationsSinceBase": 2,
+      "privateInputState": {
+        "phase": "ready",
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0
+      },
+      "context": "$base.context",
+      "dirty": true
+    }
+  },
+  "results": {
+    "quote": {
+      "kind": "text_replacement",
+      "before_stamp": "$base.stamp",
+      "after_stamp": "$states.quote_cooked.stamp",
+      "original": {
+        "origin": "ordinary_insert_text",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        "text": "\""
+      },
+      "before": {
+        "block": "$source.block",
+        "range": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          }
+        }
+      },
+      "after": {
+        "block": "$source.block",
+        "range": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 3,
+            "affinity": "after"
+          }
+        },
+        "spans": [
+          {
+            "node": "$source.text",
+            "from_utf16": 2,
+            "to_utf16": 3,
+            "type_id": "org.klenwriter.kwdj/text",
+            "attributes": {},
+            "marks": [],
+            "text": "«"
+          }
+        ]
+      },
+      "after_selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "after_stored_marks": null,
+      "raw_restore": {
+        "format_id": "org.klenwriter.editor/raw-input-restore/1",
+        "stamp": "$states.quote_cooked.stamp",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 3,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 3,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "cooked": "$results.quote.after",
+        "raw": [
+          {
+            "type_id": "org.klenwriter.kwdj/text",
+            "attributes": {},
+            "marks": [],
+            "text": "\""
+          }
+        ],
+        "raw_caret_utf16": 1,
+        "raw_stored_marks": null
+      }
+    },
+    "dash": {
+      "kind": "text_replacement",
+      "before_stamp": "$base.stamp",
+      "after_stamp": "$states.dash_cooked.stamp",
+      "original": {
+        "origin": "ordinary_insert_text",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 4,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 4,
+            "affinity": "after"
+          }
+        },
+        "text": " "
+      },
+      "before": {
+        "block": "$source.block",
+        "range": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 4,
+            "affinity": "after"
+          }
+        }
+      },
+      "after": {
+        "block": "$source.block",
+        "range": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 4,
+            "affinity": "after"
+          }
+        },
+        "spans": [
+          {
+            "node": "$source.text",
+            "from_utf16": 2,
+            "to_utf16": 4,
+            "type_id": "org.klenwriter.kwdj/text",
+            "attributes": {},
+            "marks": [],
+            "text": "— "
+          }
+        ]
+      },
+      "after_selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 4,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 4,
+          "affinity": "after"
+        }
+      },
+      "after_stored_marks": null,
+      "raw_restore": {
+        "format_id": "org.klenwriter.editor/raw-input-restore/1",
+        "stamp": "$states.dash_cooked.stamp",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 4,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 4,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "cooked": "$results.dash.after",
+        "raw": [
+          {
+            "type_id": "org.klenwriter.kwdj/text",
+            "attributes": {},
+            "marks": [],
+            "text": "-- "
+          }
+        ],
+        "raw_caret_utf16": 3,
+        "raw_stored_marks": null
+      }
+    },
+    "nbsp": {
+      "kind": "text_replacement",
+      "before_stamp": "$base.stamp",
+      "after_stamp": "$states.nbsp_cooked.stamp",
+      "original": {
+        "origin": "ordinary_insert_text",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        "text": "я"
+      },
+      "before": {
+        "block": "$source.block",
+        "range": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 2,
+            "affinity": "after"
+          }
+        }
+      },
+      "after": {
+        "block": "$source.block",
+        "range": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 3,
+            "affinity": "after"
+          }
+        },
+        "spans": [
+          {
+            "node": "$source.text",
+            "from_utf16": 1,
+            "to_utf16": 3,
+            "type_id": "org.klenwriter.kwdj/text",
+            "attributes": {},
+            "marks": [],
+            "text": " я"
+          }
+        ]
+      },
+      "after_selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "$source.text",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "after_stored_marks": null,
+      "raw_restore": null
+    }
+  },
+  "scenarios": [
+    {
+      "id": "D48-01",
+      "fixture": "quote",
+      "actions": [
+        {
+          "kind": "ordinary",
+          "inputType": "insertText",
+          "data": "\"",
+          "cancelable": true
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "quote_cooked",
+          "result": "quote",
+          "submitCount": 1,
+          "requestKind": "input_command",
+          "trustedClaim": false
+        }
+      ]
+    },
+    {
+      "id": "D48-02",
+      "fixture": "closing",
+      "actions": [
+        {
+          "kind": "ordinary",
+          "inputType": "insertText",
+          "data": "\"",
+          "cancelable": true
+        },
+        {
+          "kind": "backspaceLineage",
+          "keyEvent": "K1",
+          "beforeInputEvent": "I1",
+          "cancelable": true
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "closing_cooked",
+          "resultKind": "text_replacement"
+        },
+        {
+          "afterAction": 1,
+          "state": "closing_raw_restored",
+          "additionalSubmits": 1,
+          "result": null
+        }
+      ]
+    },
+    {
+      "id": "D48-03",
+      "fixture": "dash",
+      "actions": [
+        {
+          "kind": "ordinary",
+          "inputType": "insertText",
+          "data": " ",
+          "cancelable": true
+        },
+        {
+          "kind": "backspaceLineage",
+          "keyEvent": "K1",
+          "beforeInputEvent": "I1",
+          "cancelable": true
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "dash_cooked",
+          "result": "dash"
+        },
+        {
+          "afterAction": 1,
+          "state": "dash_raw_restored",
+          "additionalSubmits": 1,
+          "result": null
+        }
+      ]
+    },
+    {
+      "id": "D48-04",
+      "fixture": "nbsp",
+      "actions": [
+        {
+          "kind": "ordinary",
+          "inputType": "insertText",
+          "data": "я",
+          "cancelable": true
+        },
+        {
+          "kind": "backspaceLineage",
+          "keyEvent": "K1",
+          "beforeInputEvent": "I1",
+          "cancelable": true
+        },
+        {
+          "kind": "history",
+          "direction": "undo"
+        },
+        {
+          "kind": "history",
+          "direction": "undo"
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "nbsp_cooked",
+          "result": "nbsp"
+        },
+        {
+          "afterAction": 1,
+          "state": "nbsp_backspace",
+          "requestKind": "command",
+          "result": null
+        },
+        {
+          "afterAction": 2,
+          "state": "nbsp_undo_backspace",
+          "result": null
+        },
+        {
+          "afterAction": 3,
+          "state": "nbsp_undo_twice",
+          "result": null
+        }
+      ]
+    },
+    {
+      "id": "D48-05",
+      "fixture": "quote",
+      "actions": [
+        {
+          "kind": "ordinary",
+          "inputType": "insertText",
+          "data": "\"",
+          "cancelable": true
+        },
+        {
+          "kind": "backspaceLineage",
+          "keyEvent": "K1",
+          "beforeInputEvent": "I1",
+          "cancelable": true
+        },
+        {
+          "kind": "history",
+          "direction": "undo"
+        },
+        {
+          "kind": "history",
+          "direction": "undo"
+        },
+        {
+          "kind": "history",
+          "direction": "redo"
+        },
+        {
+          "kind": "history",
+          "direction": "redo"
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "quote_cooked",
+          "result": "quote"
+        },
+        {
+          "afterAction": 1,
+          "state": "quote_raw_restored",
+          "result": null
+        },
+        {
+          "afterAction": 2,
+          "state": "quote_undo_restore",
+          "result": null
+        },
+        {
+          "afterAction": 3,
+          "state": "quote_undo_twice",
+          "result": null
+        },
+        {
+          "afterAction": 4,
+          "state": "quote_redo_cooked",
+          "result": null
+        },
+        {
+          "afterAction": 5,
+          "state": "quote_redo_raw",
+          "result": null
+        }
+      ]
+    },
+    {
+      "id": "D48-06",
+      "fixture": "quote",
+      "actions": [
+        {
+          "kind": "ordinary",
+          "inputType": "insertText",
+          "data": "\"",
+          "cancelable": true
+        },
+        {
+          "kind": "physicalHistoryShortcut",
+          "code": "KeyZ",
+          "direction": "undo"
+        },
+        {
+          "kind": "history",
+          "direction": "redo"
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "quote_cooked"
+        },
+        {
+          "afterAction": 1,
+          "state": "quote_undo_direct"
+        },
+        {
+          "afterAction": 2,
+          "state": "quote_redo_direct",
+          "receiptRearmed": false
+        }
+      ]
+    },
+    {
+      "id": "D48-07",
+      "fixture": "selected",
+      "actions": [
+        {
+          "kind": "ordinary",
+          "inputType": "insertText",
+          "data": "\"",
+          "cancelable": true
+        },
+        {
+          "kind": "backspaceLineage",
+          "keyEvent": "K1",
+          "beforeInputEvent": "I1",
+          "cancelable": true
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "selected_cooked"
+        },
+        {
+          "afterAction": 1,
+          "state": "selected_raw_restored",
+          "deletedWordRestored": false
+        }
+      ]
+    },
+    {
+      "id": "D48-08",
+      "fixture": "selected",
+      "actions": [
+        {
+          "kind": "ordinary",
+          "inputType": "insertText",
+          "data": "\"",
+          "cancelable": true
+        },
+        {
+          "kind": "history",
+          "direction": "undo"
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "selected_cooked"
+        },
+        {
+          "afterAction": 1,
+          "state": "selected_undo_direct"
+        }
+      ]
+    },
+    {
+      "id": "D48-09",
+      "fixture": "marked",
+      "actions": [
+        {
+          "kind": "ordinary",
+          "inputType": "insertText",
+          "data": "\"",
+          "cancelable": true
+        },
+        {
+          "kind": "backspaceLineage",
+          "keyEvent": "K1",
+          "beforeInputEvent": "I1",
+          "cancelable": true
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "marked_cooked"
+        },
+        {
+          "afterAction": 1,
+          "state": "marked_raw_restored"
+        }
+      ]
+    },
+    {
+      "id": "D48-10",
+      "fixture": "en_quote",
+      "actions": [
+        {
+          "kind": "ordinary",
+          "inputType": "insertText",
+          "data": "\"",
+          "cancelable": true
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "en_quote_cooked",
+          "rawRestoreText": "\""
+        }
+      ]
+    },
+    {
+      "id": "D48-11",
+      "fixture": "dash",
+      "actions": [
+        {
+          "kind": "composition",
+          "generation": "G1",
+          "preeditText": " ",
+          "rawProvisionalBlock": "a -- ",
+          "endData": "misleading",
+          "stableRafs": 2,
+          "terminalPayload": " "
+        },
+        {
+          "kind": "lateCompositionEcho",
+          "generation": "G1",
+          "sameAcceptedFingerprint": true
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "dash_cooked",
+          "result": "dash",
+          "resultOriginalOrigin": "composition_commit",
+          "submits": 1,
+          "sourceFrameStillOriginal": true,
+          "acceptedFrame": "newCheckedResultFrame",
+          "oldPrefixCheckCannotBeClaimedPassed": true
+        },
+        {
+          "afterAction": 1,
+          "state": "dash_cooked",
+          "additionalSubmits": 0
+        }
+      ]
+    },
+    {
+      "id": "D48-12",
+      "fixture": "quote",
+      "actions": [
+        {
+          "kind": "composition",
+          "generation": "G1",
+          "preeditText": "\"",
+          "rawProvisionalBlock": "a \"",
+          "stableRafs": 2,
+          "terminalPayload": "\""
+        },
+        {
+          "kind": "backspaceLineage",
+          "keyEvent": "K1",
+          "beforeInputEvent": "I1",
+          "cancelable": true
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "quote_cooked",
+          "resultOriginalOrigin": "composition_commit"
+        },
+        {
+          "afterAction": 1,
+          "state": "quote_raw_restored",
+          "existing41FreshPermitRequired": true
+        }
+      ]
+    },
+    {
+      "id": "D48-13",
+      "fixture": "quote",
+      "actions": [
+        {
+          "kind": "composition",
+          "generation": "G1",
+          "rawProvisionalBlock": "a ",
+          "terminalPayload": "\"",
+          "stableRafs": 2
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "$fixture.initial",
+          "submits": 0,
+          "phase": "cancelled",
+          "receiptArmed": false
+        }
+      ],
+      "reason": "compositionend.data cannot manufacture a changed claim"
+    },
+    {
+      "id": "D48-14",
+      "fixture": "quote",
+      "actions": [
+        {
+          "kind": "ordinary",
+          "inputType": "insertText",
+          "data": "\"",
+          "cancelable": false,
+          "verifiedRawDelta": "a \""
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "quote_cooked",
+          "result": "quote",
+          "privateDelivery": "reconciled_noncancelable",
+          "submitCount": 1
+        }
+      ]
+    },
+    {
+      "id": "D48-15",
+      "fixture": "bulk",
+      "actions": [
+        {
+          "kind": "ordinary",
+          "inputType": "insertText",
+          "data": "a -- ",
+          "cancelable": true
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "bulk_literal",
+          "result": null,
+          "scalarSplitting": false
+        }
+      ]
+    },
+    {
+      "id": "D48-16",
+      "fixture": "dash",
+      "actions": [
+        {
+          "kind": "insertReplacementText",
+          "data": " "
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "dash_literal",
+          "result": null,
+          "receiptArmed": false
+        }
+      ]
+    },
+    {
+      "id": "D48-17",
+      "fixture": "dash",
+      "actions": [
+        {
+          "kind": "programmatic_insert_text",
+          "data": " "
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "dash_literal",
+          "result": null,
+          "receiptArmed": false
+        }
+      ]
+    },
+    {
+      "id": "D48-18",
+      "fixture": "dash",
+      "actions": [
+        {
+          "kind": "paste_plain",
+          "data": " "
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "dash_literal",
+          "result": null,
+          "receiptArmed": false
+        }
+      ]
+    },
+    {
+      "id": "D48-19",
+      "fixture": "quote",
+      "actions": [
+        {
+          "kind": "ordinary",
+          "inputType": "insertText",
+          "data": "\"",
+          "cancelable": true
+        }
+      ],
+      "checkpoints": [
+        {
+          "afterAction": 0,
+          "state": "quote_literal",
+          "result": null
+        }
+      ],
+      "configOverride": null
+    }
+  ],
+  "terminalCases": [
+    {
+      "id": "Q48-01",
+      "schedule": "owned ticket queued without publication; actual matching changed terminal later",
+      "beforeTerminal": "$fixture.initial",
+      "pendingSlot": 0,
+      "terminalState": "quote_cooked",
+      "terminalResult": "quote",
+      "slotAfterTerminal": 1,
+      "submitCount": 1
+    },
+    {
+      "id": "Q48-02",
+      "schedule": "queued then exact native stale-stamp refusal before publication",
+      "beforeTerminal": "$fixture.initial",
+      "terminalState": "$fixture.initial",
+      "diagnostic": "session.stale_revision",
+      "slotAfterTerminal": 0,
+      "submitCount": 1,
+      "literalRetryCount": 0
+    },
+    {
+      "id": "Q48-03",
+      "schedule": "scripted fatal before any publication; no usable result",
+      "beforeTerminal": "$fixture.initial",
+      "terminalStateAuthority": "lastKnownOnly",
+      "lastKnownState": "$fixture.initial",
+      "nativeActualCanonical": "unassertable_after_fatal",
+      "slotAfterTerminal": 0,
+      "recoveryPublication": "unknown",
+      "literalRetryCount": 0
+    },
+    {
+      "id": "Q48-04",
+      "schedule": "lost/rejected queued terminal after possible publication",
+      "beforeTerminal": "$fixture.initial",
+      "terminalStateAuthority": "unknown",
+      "nativeActualCanonical": "unassertable_unknown_outcome",
+      "slotAfterTerminal": 0,
+      "recoveryPublication": "unknown",
+      "literalRetryCount": 0
+    },
+    {
+      "id": "Q48-05",
+      "schedule": "actual changed original publication; foreign host literal x supersedes before original completion continuation",
+      "terminalState": "quote_then_host_x",
+      "terminalResult": "quote",
+      "slotAfterTerminal": 0,
+      "expectedOriginalAfterStampCurrent": false,
+      "literalRetryCount": 0
+    },
+    {
+      "id": "Q48-06",
+      "schedule": "actual changed composition result; final span DOM correspondence fails after publication",
+      "nativeTerminalState": "quote_cooked",
+      "domAuthority": "original raw/provisional source plus divergent current DOM retained separately",
+      "slotAfterTerminal": 0,
+      "recoveryPublication": "alreadyPublished",
+      "acceptedResultFrame": false,
+      "additionalNativeSubmits": 0
+    },
+    {
+      "id": "Q48-07",
+      "schedule": "native input_mutation result delivered for old ordinary command request",
+      "slotAfterTerminal": 0,
+      "sdkDisposition": "transport protocol failure",
+      "cachedStateAdopted": false,
+      "literalRetryCount": 0
+    },
+    {
+      "id": "Q48-08",
+      "schedule": "pure query_input_command returns available",
+      "terminalState": "$fixture.initial",
+      "result": null,
+      "slotAfterTerminal": 0,
+      "documentPublications": 0,
+      "historyUnits": 0
+    }
+  ],
+  "invalidatorCases": [
+    {
+      "id": "I48-01",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "ArrowRight at end, native and DOM selection unchanged",
+      "expectedKnownNativeState": "quote_cooked_retired",
+      "stampUnchangedFromCooked": true,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": "quote_plain_backspace_after_retire",
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    },
+    {
+      "id": "I48-02",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "ArrowLeft, await explicit native selection publication, ArrowRight, await publication; visible caret restored",
+      "expectedKnownNativeState": "$afterExplicitNavigationState",
+      "stampUnchangedFromCooked": false,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": null,
+      "stateConstraints": {
+        "canonical_json": "{\"content\":[{\"content\":[{\"text\":\"a «\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 3,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "$source.text",
+            "offset": 3,
+            "affinity": "after"
+          }
+        },
+        "revisionDeltaFromBase": 1,
+        "selectionEpochDeltaFromBase": 3,
+        "historyEpochDeltaFromBase": 1,
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "documentPublicationsSinceBase": 1,
+        "dirty": true
+      },
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    },
+    {
+      "id": "I48-03",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "owned pointerdown at same caret, before any selection write",
+      "expectedKnownNativeState": "quote_cooked_retired",
+      "stampUnchangedFromCooked": true,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": "quote_plain_backspace_after_retire",
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    },
+    {
+      "id": "I48-04",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "host set_selection to exact same selection; native no-op",
+      "expectedKnownNativeState": "quote_cooked_retired",
+      "stampUnchangedFromCooked": true,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": "quote_plain_backspace_after_retire",
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    },
+    {
+      "id": "I48-05",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "host insert_text empty at collapsed caret; native no-op",
+      "expectedKnownNativeState": "quote_cooked_retired",
+      "stampUnchangedFromCooked": true,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": "quote_plain_backspace_after_retire",
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    },
+    {
+      "id": "I48-06",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "foreign command attempt refused by presentation/native gate",
+      "expectedKnownNativeState": "quote_cooked_retired",
+      "stampUnchangedFromCooked": true,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": "quote_plain_backspace_after_retire",
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    },
+    {
+      "id": "I48-07",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "focus blur then refocus without native change",
+      "expectedKnownNativeState": "quote_cooked_retired",
+      "stampUnchangedFromCooked": true,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": "quote_plain_backspace_after_retire",
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    },
+    {
+      "id": "I48-08",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "editable to readOnly to editable",
+      "expectedKnownNativeState": "quote_cooked_retired",
+      "stampUnchangedFromCooked": true,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": "quote_plain_backspace_after_retire",
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    },
+    {
+      "id": "I48-09",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "editable to disabled to editable",
+      "expectedKnownNativeState": "quote_cooked_retired",
+      "stampUnchangedFromCooked": true,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": "quote_plain_backspace_after_retire",
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    },
+    {
+      "id": "I48-10",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "compositionstart admitted before any preedit delta",
+      "expectedKnownNativeState": "quote_cooked_retired",
+      "stampUnchangedFromCooked": true,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": null,
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state",
+      "privatePhase": "composing/protected; old slot retired before any delta"
+    },
+    {
+      "id": "I48-11",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "paste intent with controlled codec refusal before native dispatch",
+      "expectedKnownNativeState": "quote_cooked_retired",
+      "stampUnchangedFromCooked": true,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": "quote_plain_backspace_after_retire",
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    },
+    {
+      "id": "I48-12",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "drop or deleteByDrag prevented/refused",
+      "expectedKnownNativeState": "quote_cooked_retired",
+      "stampUnchangedFromCooked": true,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": "quote_plain_backspace_after_retire",
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    },
+    {
+      "id": "I48-13",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "new ordinary unsupported input intent prevented/refused",
+      "expectedKnownNativeState": "quote_cooked_retired",
+      "stampUnchangedFromCooked": true,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": "quote_plain_backspace_after_retire",
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    },
+    {
+      "id": "I48-14",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "same-stamp native barrier/host history attempt with no additional available direction",
+      "expectedKnownNativeState": "quote_cooked_retired",
+      "stampUnchangedFromCooked": true,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": "quote_plain_backspace_after_retire",
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    },
+    {
+      "id": "I48-15",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "host set_stored_marks strong",
+      "expectedKnownNativeState": "quote_strong_stored",
+      "stampUnchangedFromCooked": false,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": null,
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    },
+    {
+      "id": "I48-16",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "host actual literal x insert",
+      "expectedKnownNativeState": "quote_then_host_x",
+      "stampUnchangedFromCooked": false,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": null,
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    },
+    {
+      "id": "I48-17",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "CmdZ replay",
+      "expectedKnownNativeState": "quote_undo_direct",
+      "stampUnchangedFromCooked": false,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": null,
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    },
+    {
+      "id": "I48-18",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "remount/view replacement retires old owner before fresh fixture selection",
+      "expectedKnownNativeState": "quote_cooked_retired",
+      "stampUnchangedFromCooked": true,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": null,
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    },
+    {
+      "id": "I48-19",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "destroy before next key; late callbacks arrive afterwards",
+      "expectedKnownNativeState": "quote_cooked_retired",
+      "stampUnchangedFromCooked": true,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": null,
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state",
+      "privatePhase": "destroyed; no late slot installation"
+    },
+    {
+      "id": "I48-20",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "reentrant foreign attempt during result observer, even if refused/no-op",
+      "expectedKnownNativeState": "quote_cooked_retired",
+      "stampUnchangedFromCooked": true,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": "quote_plain_backspace_after_retire",
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    },
+    {
+      "id": "I48-21",
+      "fixture": "quote",
+      "startsAt": "quote_cooked",
+      "intent": "same-stamp selection intent with exhausted/nonavailable serial",
+      "expectedKnownNativeState": "quote_cooked_retired",
+      "stampUnchangedFromCooked": true,
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "automaticRearm": false,
+      "afterRetirementOrdinaryBackspaceState": null,
+      "stateProjection": "expectedKnownNativeState selects canonical/selection/marks/stamps/history/dirty only; row owns private slot/candidate disposition; lifecycle phase is not inferred from native state"
+    }
+  ],
+  "lineageCases": [
+    {
+      "id": "L48-01",
+      "sequence": [
+        "claim armed slot on original K1",
+        "CompositionOwner owns/invalidate(K1)",
+        "document bubble invalidate(K1)",
+        "beforeInput I1 admitted by existing41 permit",
+        "ordinary invalidate(I1)",
+        "claim pending before constructor",
+        "restore once"
+      ],
+      "state": "quote_raw_restored",
+      "submitCountAfterCooked": 1,
+      "slot": 0
+    },
+    {
+      "id": "L48-02",
+      "sequence": [
+        "claim K1",
+        "document invalidate(K1)",
+        "foreign invalidate(K2)",
+        "I1 deleteContentBackward"
+      ],
+      "state": "quote_plain_backspace_after_retire",
+      "specialRestoreCount": 0,
+      "normalDeleteCount": 1,
+      "slot": 0
+    },
+    {
+      "id": "L48-03",
+      "sequence": [
+        "claim K1",
+        "keyup K1 before beforeinput",
+        "later I1 deleteContentBackward"
+      ],
+      "state": "quote_plain_backspace_after_retire",
+      "specialRestoreCount": 0,
+      "normalDeleteCount": 1,
+      "slot": 0
+    },
+    {
+      "id": "L48-04",
+      "sequence": [
+        "repeat Backspace keydown against armed slot",
+        "deleteContentBackward"
+      ],
+      "state": "quote_plain_backspace_after_retire",
+      "specialRestoreCount": 0,
+      "normalDeleteCount": 1,
+      "slot": 0
+    },
+    {
+      "id": "L48-05",
+      "sequence": [
+        "claim K1",
+        "matching I1 but foreign target range/caret"
+      ],
+      "specialRestoreCount": 0,
+      "disposition": "existing41/ordinary refusal or raw recovery; never retarget restore",
+      "slot": 0
+    },
+    {
+      "id": "L48-06",
+      "sequence": [
+        "claim K1",
+        "noncancelable I1 deleteContentBackward"
+      ],
+      "specialRestoreCount": 0,
+      "disposition": "existing noncancelable raw reconcile, never restore-after-UA-delete",
+      "slot": 0
+    },
+    {
+      "id": "L48-07",
+      "sequence": [
+        "claim K1",
+        "I1 consumed before constructor",
+        "constructor reenters same beforeinput identity I1"
+      ],
+      "specialRestoreCount": 0,
+      "reentrantMutationCount": 0,
+      "slot": 0,
+      "mustNotDoubleClaim": true,
+      "specialRestoreCountMeaning": "A foreign reentrant mutation attempt during pure constructor invalidates lineage before the final pre-dispatch guard; zero native restore attempts, zero reentrant edits, no fallback. Original prevented beforeinput retained as unapplied/recovery when necessary.",
+      "normalFallbackCount": 0,
+      "finalState": "quote_cooked_retired"
+    },
+    {
+      "id": "L48-08",
+      "sequence": [
+        "claim K1",
+        "I1 consumed",
+        "native restore refused stale",
+        "UA echo input"
+      ],
+      "specialRestoreCount": 1,
+      "normalFallbackCount": 0,
+      "recoveryRequired": true,
+      "slot": 0
+    },
+    {
+      "id": "L48-09",
+      "sequence": [
+        "successful restore K1/I1",
+        "same event objects K1/I1 replayed"
+      ],
+      "specialRestoreCount": 1,
+      "secondAutomaticRestoreCount": 0,
+      "slot": 0
+    },
+    {
+      "id": "L48-10",
+      "sequence": [
+        "public explicit typed host command transforms",
+        "next owned K1/I1"
+      ],
+      "automaticSlotArmedByHostCommand": false,
+      "specialRestoreCount": 0
+    },
+    {
+      "id": "L48-11",
+      "sequence": [
+        "captured restore descriptor after cooked",
+        "restore succeeds",
+        "identical stamped explicit replay"
+      ],
+      "nativeReplayDiagnostic": "session.stale_revision",
+      "secondDocumentPublicationCount": 0,
+      "finalState": "quote_raw_restored"
+    }
+  ],
+  "resourceOracle": {
+    "afterAllOriginalTicketsSettleAndDestroy": {
+      "sdkLifecycle": "destroyed",
+      "sdkAllNumericResources": 0,
+      "native": {
+        "sessions": 0,
+        "snapshot_handles": 0,
+        "snapshot_bytes": "0",
+        "protected_cursors": 0
+      },
+      "dom": {
+        "listeners": 0,
+        "observers": 0,
+        "continuations": 0,
+        "retainedInputBytes": 0,
+        "retainedRecoveryRegions": 0
+      },
+      "selectionAllNumericResources": 0,
+      "clipboardAllNumericResources": 0,
+      "hostRequestsAllNumericResources": 0,
+      "inputObservationsAllNumericResources": 0,
+      "popupPresentationAllNumericResources": 0,
+      "typing": {
+        "armedSlots": 0,
+        "backspaceCandidates": 0,
+        "pendingDispatches": 0,
+        "retainedBytes": 0
+      }
+    },
+    "whileOnlyArmedSlot": {
+      "armedSlots": 1,
+      "backspaceCandidates": 0,
+      "pendingDispatches": 0,
+      "retainedBytesUpperBound": 4096
+    },
+    "afterClaimBeforeSubmit": {
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "pendingDispatches": 1
+    },
+    "afterSuccessfulRestore": {
+      "armedSlots": 0,
+      "backspaceCandidates": 0,
+      "pendingDispatches": 0,
+      "retainedBytes": 0
+    }
+  },
+  "sourceOnlyAuthoringCorrections": [
+    {
+      "before": "oracles-before-candidate.authoring-01.json",
+      "reason": "Before any candidate/import/execution, read accepted core/json.rs17–47 and existing canonical fixture: sort canonical JSON keys recursively; preserve literal expected text. Add source-backed dirty semantics. Governing Ready overrides old proposed whole-reply32KiB ceiling.",
+      "derivedFromRuntime": false
+    },
+    {
+      "reason": "Exact constructor reentry must invalidate before the final dispatch guard: L48-07 expects zero restore attempts, not one. Invalidation rows project known native state separately from private composition/destroy lifecycle. Source reasoning only, before candidate/import/execution.",
+      "derivedFromRuntime": false
+    }
+  ]
+}

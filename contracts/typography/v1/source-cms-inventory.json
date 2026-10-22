@@ -1,0 +1,471 @@
+{
+  "format": "osr48-cms-typography-inventory/1",
+  "status": "SOURCE_ONLY_NOT_EXECUTED_NOT_READY",
+  "selectedCommittedCmsBaseline": "07f2f565877d127abb001f1efe538dec854c6c0e",
+  "contentEqualsHistoricalInventory": "a7f8a081b7827dd31097ad6c9104654366ae6e04",
+  "sourceImplementation": {
+    "path": "frontend/admin-spa/src/app/editor/typing-typography.ts",
+    "gitBlob": "4c8fcbecc7c800f51679f0210479ce6c81cd1da9",
+    "sha256": "0464e277aeb44f74cc92dee5f1fb7c91b2a59e81bdb91d537685f77630dde9cd"
+  },
+  "sourceTests": {
+    "path": "frontend/admin-spa/src/app/editor/typing-typography.spec.ts",
+    "gitBlob": "fc87ad56c3936f18f2db0f2919acb0115fb91ba1",
+    "sha256": "affa250f355a08fc7da2956376622cc7a96cf79c0721faa976f3a6e15c845a9c",
+    "testBodies": 17
+  },
+  "commonGuard": {
+    "sourceLines": [
+      25,
+      55
+    ],
+    "checks": [
+      "Compute at=start+match[0].length-1-before using source JS UTF16 coordinates.",
+      "Reject at>end.",
+      "Require actual doc.textBetween(start,at,emptySeparator,FFFC) to equal the matched prefix already in the document.",
+      "Reject active stored/current code mark or any inline code-marked node intersecting source start..end.",
+      "Insert replacement at..end, substituting capture1 or empty string."
+    ],
+    "claimedPolicy": "Multi-character input remains literal; four existing fixture variants independently assert this. Do not treat the comment as exhaustive verification for all selection/bulk cases."
+  },
+  "rules": [
+    {
+      "id": "emDash",
+      "order": 1,
+      "sourceLine": 67,
+      "pattern": "\\s--(\\s)$",
+      "flags": "",
+      "before": 2,
+      "replacement": "—$1",
+      "inCodeMark": false,
+      "undoable": "InputRule default (not overridden)",
+      "meaning": "After a whitespace-prefixed double hyphen, typing trailing whitespace replaces the two hyphens and trailing trigger with em dash plus captured same trailing whitespace; preceding context remains."
+    },
+    {
+      "id": "openingQuote",
+      "order": 2,
+      "sourceLine": 60,
+      "pattern": "(?:^|[\\s([{\\u2014\\u2013\\-/\\ufffc])\"$",
+      "flags": "",
+      "before": 0,
+      "replacement": "«",
+      "inCodeMark": false,
+      "undoable": "InputRule default (not overridden)",
+      "meaning": "A final straight quote opens at text start or after the exact source whitespace/bracket/dash/hyphen/slash/FFFC class."
+    },
+    {
+      "id": "closingQuote",
+      "order": 3,
+      "sourceLine": 64,
+      "pattern": "\"$",
+      "flags": "",
+      "before": 0,
+      "replacement": "»",
+      "inCodeMark": false,
+      "undoable": "InputRule default (not overridden)",
+      "meaning": "Fallback final straight quote closes when the earlier opening rule did not match."
+    },
+    {
+      "id": "oneLetterWord",
+      "order": 4,
+      "sourceLine": 70,
+      "pattern": "(?:^|[\\s\\ufffc])[А-Яа-яЁё] ([А-Яа-яЁё])$",
+      "flags": "u",
+      "before": 1,
+      "replacement": " $1",
+      "inCodeMark": false,
+      "undoable": false,
+      "meaning": "After an isolated one-letter Cyrillic word plus literal ASCII space, typing the next word first Cyrillic letter replaces that space with NBSP and retains the letter. Includes Ё/ё explicitly and supports consecutive one-letter words."
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "CMS-T01",
+      "sourceLine": 71,
+      "name": "straight quotes around a word",
+      "setup": "empty prose paragraph",
+      "actions": [
+        {
+          "type": "Он сказал \"да\" и ушёл.",
+          "delivery": "one Unicode scalar per helper call"
+        }
+      ],
+      "expected": {
+        "text": "Он сказал «да» и ушёл."
+      },
+      "additionalAssertions": [],
+      "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+    },
+    {
+      "id": "CMS-T02",
+      "sourceLine": 77,
+      "name": "opening quote at start/bracket/dash",
+      "setup": "empty prose paragraph",
+      "actions": [
+        {
+          "type": "\"Да\" (т. е. \"нет\") — \"может\""
+        }
+      ],
+      "expected": {
+        "text": "«Да» (т. е. «нет») — «может»"
+      },
+      "additionalAssertions": [],
+      "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+    },
+    {
+      "id": "CMS-T03",
+      "sourceLine": 83,
+      "name": "spaced double hyphen",
+      "setup": "empty prose paragraph",
+      "actions": [
+        {
+          "type": "Москва -- столица"
+        }
+      ],
+      "expected": {
+        "text": "Москва — столица"
+      },
+      "additionalAssertions": [],
+      "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+    },
+    {
+      "id": "CMS-T04",
+      "sourceLine": 89,
+      "name": "in-word or unfinished double hyphen stays literal",
+      "setup": "empty prose paragraph",
+      "actions": [
+        {
+          "type": "ключ--значение --"
+        }
+      ],
+      "expected": {
+        "text": "ключ--значение --"
+      },
+      "additionalAssertions": [],
+      "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+    },
+    {
+      "id": "CMS-T05",
+      "sourceLine": 95,
+      "name": "one-letter Cyrillic chain",
+      "setup": "empty prose paragraph",
+      "actions": [
+        {
+          "type": "Мы шли в лес и к реке"
+        }
+      ],
+      "expected": {
+        "text": "Мы шли в лес и к реке"
+      },
+      "additionalAssertions": [],
+      "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+    },
+    {
+      "id": "CMS-T06",
+      "sourceLine": 101,
+      "name": "combined quote/dash/NBSP sentence",
+      "setup": "empty prose paragraph",
+      "actions": [
+        {
+          "type": "Она ответила \"нет\" -- и я ушёл"
+        }
+      ],
+      "expected": {
+        "text": "Она ответила «нет» — и я ушёл"
+      },
+      "additionalAssertions": [],
+      "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+    },
+    {
+      "id": "CMS-T07",
+      "sourceLine": 107,
+      "name": "immediate Backspace reverts quote/dash input rule",
+      "setup": "empty prose paragraph",
+      "actions": [
+        {
+          "type": "а \"",
+          "expectedText": "а «"
+        },
+        {
+          "key": "Backspace",
+          "expectedText": "а \""
+        },
+        {
+          "type": "x -- ",
+          "expectedText": "а \"x — "
+        },
+        {
+          "key": "Backspace",
+          "expectedText": "а \"x -- "
+        }
+      ],
+      "expected": {
+        "text": "а \"x -- "
+      },
+      "additionalAssertions": [],
+      "qualification": "Source test uses synthetic keydown + Tiptap undoInputRule behavior; not CmdZ, not native history, and not physical input."
+    },
+    {
+      "id": "CMS-T08",
+      "sourceLine": 120,
+      "name": "NBSP does not supply undoInputRule",
+      "setup": "empty prose paragraph",
+      "actions": [
+        {
+          "type": "в л"
+        }
+      ],
+      "expected": {
+        "text": "в л",
+        "undoInputRule": false
+      },
+      "additionalAssertions": [],
+      "qualification": "Despite its title, the fixture does not press Backspace or assert the resulting deletion. It checks undoInputRule(state)===false; this does not exclude the edit from normal history Undo."
+    },
+    {
+      "id": "CMS-T09",
+      "sourceLine": 127,
+      "name": "code block stays literal",
+      "setup": {
+        "code_block": "x",
+        "tiptapCaret": 2
+      },
+      "actions": [
+        {
+          "type": " = \"a\" -- в к"
+        }
+      ],
+      "expected": {
+        "text": "x = \"a\" -- в к"
+      },
+      "additionalAssertions": [],
+      "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+    },
+    {
+      "id": "CMS-T10",
+      "sourceLine": 134,
+      "name": "inline stored code mark stays literal",
+      "setup": {
+        "paragraph": [],
+        "toggleMark": "code"
+      },
+      "actions": [
+        {
+          "type": "say \"hi\" -- в к"
+        }
+      ],
+      "expected": {
+        "text": "say \"hi\" -- в к",
+        "firstLeafMarks": [
+          "code"
+        ]
+      },
+      "additionalAssertions": [],
+      "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+    },
+    {
+      "id": "CMS-T11",
+      "sourceLine": 145,
+      "name": "active strong mark survives replacement",
+      "setup": {
+        "paragraph": [],
+        "toggleMark": "strong"
+      },
+      "actions": [
+        {
+          "type": "\"да\""
+        }
+      ],
+      "expected": {
+        "firstLeafText": "«да»",
+        "firstLeafMarks": [
+          "strong"
+        ]
+      },
+      "additionalAssertions": [],
+      "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+    },
+    {
+      "id": "CMS-T12",
+      "sourceLine": 154,
+      "name": "quote after hard break",
+      "setup": {
+        "paragraph": [
+          {
+            "text": "а"
+          },
+          {
+            "hard_break": true
+          }
+        ],
+        "tiptapCaret": 3
+      },
+      "actions": [
+        {
+          "type": "\"б\""
+        }
+      ],
+      "expected": {
+        "lastInlineChildText": "«б»"
+      },
+      "additionalAssertions": [],
+      "qualification": "Source asserts last child text only, not full canonical/selection/IDs."
+    },
+    {
+      "id": "CMS-T13",
+      "sourceLine": 163,
+      "name": "immediately adjacent empty quote pair",
+      "setup": "empty prose paragraph",
+      "actions": [
+        {
+          "type": "пусто \"\""
+        }
+      ],
+      "expected": {
+        "text": "пусто «»"
+      },
+      "additionalAssertions": [],
+      "qualification": "Existing source-authored CMS fixture only; not executed in this intake, not a new Rust/WASM/physical-input golden."
+    },
+    {
+      "id": "CMS-T14",
+      "sourceLine": 169,
+      "name": "multi-character delivery is left as supplied",
+      "setup": "four independent source literal variants",
+      "actions": [
+        {
+          "before": "",
+          "input": "в л",
+          "atOnce": true,
+          "expected": "в л"
+        },
+        {
+          "before": "a",
+          "input": " -- ",
+          "atOnce": true,
+          "expected": "a -- "
+        },
+        {
+          "before": "",
+          "input": " \"",
+          "atOnce": true,
+          "expected": " \""
+        },
+        {
+          "before": "a",
+          "input": "(\"",
+          "atOnce": true,
+          "expected": "a(\""
+        }
+      ],
+      "expected": {
+        "variantTexts": [
+          "в л",
+          "a -- ",
+          " \"",
+          "a(\""
+        ]
+      },
+      "additionalAssertions": [],
+      "qualification": "Four source literal cases in one test. The helper invokes handleTextInput with a whole string; no real autocorrect/dictation transport is tested."
+    },
+    {
+      "id": "CMS-T15",
+      "sourceLine": 186,
+      "name": "quote already committed when compositionend arrives",
+      "setup": {
+        "paragraphText": "а \"",
+        "tiptapCaret": 4
+      },
+      "actions": [
+        {
+          "syntheticCompositionEvent": "compositionend",
+          "bubbles": true
+        },
+        {
+          "passiveTaskWaitMs": 0
+        }
+      ],
+      "expected": {
+        "text": "а «"
+      },
+      "additionalAssertions": [],
+      "qualification": "Synthetic untrusted terminal-only event; no compositionstart/update/native IME, exact-once publication or history assertion. It establishes a source requirement for post-commit eligibility, not permission to modify protected preedit."
+    },
+    {
+      "id": "CMS-T16",
+      "sourceLine": 194,
+      "name": "selection replaced with converted quote",
+      "setup": {
+        "paragraphText": "а слово",
+        "tiptapSelection": [
+          3,
+          8
+        ],
+        "equivalentTextUtf16Range": [
+          2,
+          7
+        ]
+      },
+      "actions": [
+        {
+          "type": "\""
+        }
+      ],
+      "expected": {
+        "text": "а «",
+        "selectionEmpty": true
+      },
+      "additionalAssertions": [],
+      "qualification": "Tiptap absolute coordinates are recorded separately from derived same-text UTF16 offsets; no exact final caret/ID/native stamp is asserted by this CMS fixture."
+    },
+    {
+      "id": "CMS-T17",
+      "sourceLine": 204,
+      "name": "selection touching inline code keeps literal quote",
+      "setup": {
+        "paragraph": [
+          {
+            "text": "а "
+          },
+          {
+            "text": "xy",
+            "marks": [
+              "code"
+            ]
+          }
+        ],
+        "tiptapSelection": [
+          3,
+          4
+        ],
+        "equivalentTextUtf16Range": [
+          2,
+          3
+        ]
+      },
+      "actions": [
+        {
+          "type": "\""
+        }
+      ],
+      "expected": {
+        "text": "а \"y"
+      },
+      "additionalAssertions": [],
+      "qualification": "Source asserts scalar text only. The selected code-marked x blocks conversion; y survives. No complete marks/canonical/ID golden is supplied."
+    }
+  ],
+  "omissions": [
+    "No runtime configuration/disabled rule subset/locale argument; typingTypography() always installs the four fixed rules. No English curly-quote preset is specified.",
+    "No ordinary-link/reference-link exclusion or link fixture. AC48.2 needs an explicit policy; do not pretend the baseline already protects links.",
+    "No normal CmdZ/redo, complete canonical bytes, exact final directed selection, identity, stamp or publication count goldens. Immediate Backspace undoInputRule differs from normal history.",
+    "No genuine OS composition/dead-key or trusted terminal proof. The single composition fixture is an untrusted end-only event on an already changed document.",
+    "No paste/drop/import/export transformation tests in this source pair; the introductory paste.ts comment is context, not authority to change OSR47 literal paste policy.",
+    "No stale/reentrant/queued/fatal/readOnly/disabled/disposal or resource-limit tests.",
+    "No cross-block/foreign tree/partial structural range or full rich boundary corpus; hard break and one inline-code selection are covered narrowly.",
+    "No exact whitespace-class portability cases; freeze the ECMAScript source class rather than assume a Rust predicate is equivalent.",
+    "No Ё/ё-positive, all opening-prefix characters, mark-split EGC/nonBMP/decomposed, Unicode whitespace, native maps, high-water or bounded-work goldens.",
+    "No no-full-export assertion; new48 must measure its actual implementation without inheriting old CMS typing architecture."
+  ]
+}

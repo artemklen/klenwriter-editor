@@ -1,0 +1,220 @@
+import { afterEach, describe, expect, it } from 'vitest';
+import type { Editor } from '@tiptap/core';
+import { TextSelection } from '@tiptap/pm/state';
+import { toggleMark } from '@tiptap/pm/commands';
+import { undoInputRule } from '@tiptap/pm/inputrules';
+
+import { mountEditableKwdjEditor } from './create-editable-kwdj-editor';
+import { kwdjToTiptap } from './kwdj/kwdj-to-tiptap';
+import type { KwdjDocument } from './kwdj/models';
+
+const NBSP = ' ';
+const editors: Editor[] = [];
+
+function mount(content: KwdjDocument['content']): Editor {
+  const converted = kwdjToTiptap({
+    schema: 'klenwriter.document',
+    schema_version: 1,
+    profile: 'prose',
+    content,
+  });
+  if (!converted.ok) throw new Error(converted.code);
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  const editor = mountEditableKwdjEditor({
+    profile: converted.profile,
+    element: host,
+    content: converted.doc,
+  });
+  editors.push(editor);
+  return editor;
+}
+
+function empty(): Editor {
+  const editor = mount([{ type: 'paragraph', content: [] }]);
+  caret(editor, 1);
+  return editor;
+}
+
+function caret(editor: Editor, pos: number): void {
+  editor.view.dispatch(editor.state.tr.setSelection(TextSelection.create(editor.state.doc, pos)));
+}
+
+/**
+ * Type like the browser does: each character goes through `handleTextInput`
+ * first. `atOnce` sends the whole string as one input, as autocorrect does.
+ */
+function type(editor: Editor, text: string, atOnce = false): void {
+  for (const ch of atOnce ? [text] : text) {
+    const view = editor.view;
+    const { from, to } = view.state.selection;
+    const insert = () => view.state.tr.insertText(ch, from, to);
+    const handled = view.someProp('handleTextInput', (f) => f(view, from, to, ch, insert));
+    if (!handled) view.dispatch(insert());
+  }
+}
+
+function press(editor: Editor, key: string): void {
+  editor.view.dom.dispatchEvent(
+    new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+  );
+}
+
+const text = (editor: Editor) => editor.state.doc.textContent;
+
+afterEach(() => {
+  while (editors.length) editors.pop()?.destroy();
+  document.body.replaceChildren();
+});
+
+describe('KW-887 typography while typing', () => {
+  it('turns straight quotes into «ёлочки» around a word', () => {
+    const editor = empty();
+    type(editor, 'Он сказал "да" и ушёл.');
+    expect(text(editor)).toBe(`Он сказал «да» и${NBSP}ушёл.`);
+  });
+
+  it('opens a quote at the start of a line and after a bracket or dash', () => {
+    const editor = empty();
+    type(editor, '"Да" (т. е. "нет") — "может"');
+    expect(text(editor)).toBe('«Да» (т. е. «нет») — «может»');
+  });
+
+  it('turns " -- " into an em dash with spaces', () => {
+    const editor = empty();
+    type(editor, 'Москва -- столица');
+    expect(text(editor)).toBe('Москва — столица');
+  });
+
+  it('leaves -- inside a word and at the end without a space alone', () => {
+    const editor = empty();
+    type(editor, 'ключ--значение --');
+    expect(text(editor)).toBe('ключ--значение --');
+  });
+
+  it('glues a one-letter word to the next word with a non-breaking space', () => {
+    const editor = empty();
+    type(editor, 'Мы шли в лес и к реке');
+    expect(text(editor)).toBe(`Мы шли в${NBSP}лес и${NBSP}к${NBSP}реке`);
+  });
+
+  it('handles quotes, a dash and one-letter words in one sentence', () => {
+    const editor = empty();
+    type(editor, 'Она ответила "нет" -- и я ушёл');
+    expect(text(editor)).toBe(`Она ответила «нет» — и${NBSP}я${NBSP}ушёл`);
+  });
+
+  it('brings back the straight quote and the dashes on Backspace right after the replacement', () => {
+    const editor = empty();
+    type(editor, 'а "');
+    expect(text(editor)).toBe('а «');
+    press(editor, 'Backspace');
+    expect(text(editor)).toBe('а "');
+
+    type(editor, 'x -- ');
+    expect(text(editor)).toBe('а "x — ');
+    press(editor, 'Backspace');
+    expect(text(editor)).toBe('а "x -- ');
+  });
+
+  it('leaves Backspace after a non-breaking space to delete the letter', () => {
+    const editor = empty();
+    type(editor, 'в л');
+    expect(text(editor)).toBe(`в${NBSP}л`);
+    expect(undoInputRule(editor.state)).toBe(false);
+  });
+
+  it('keeps straight quotes and dashes in a code block', () => {
+    const editor = mount([{ type: 'code_block', content: [{ type: 'text', text: 'x' }] }]);
+    caret(editor, 2);
+    type(editor, ' = "a" -- в к');
+    expect(text(editor)).toBe('x = "a" -- в к');
+  });
+
+  it('keeps straight quotes and dashes in inline code', () => {
+    const editor = empty();
+    const code = editor.state.schema.marks['code'];
+    toggleMark(code)(editor.state, editor.view.dispatch);
+    type(editor, 'say "hi" -- в к');
+    expect(text(editor)).toBe('say "hi" -- в к');
+    expect(editor.state.doc.firstChild?.firstChild?.marks.map((m) => m.type.name)).toEqual([
+      'code',
+    ]);
+  });
+
+  it('keeps the active marks on the replaced characters', () => {
+    const editor = empty();
+    toggleMark(editor.state.schema.marks['strong'])(editor.state, editor.view.dispatch);
+    type(editor, '"да"');
+    const node = editor.state.doc.firstChild?.firstChild;
+    expect(node?.text).toBe('«да»');
+    expect(node?.marks.map((m) => m.type.name)).toEqual(['strong']);
+  });
+
+  it('opens a quote after a line break', () => {
+    const editor = mount([
+      { type: 'paragraph', content: [{ type: 'text', text: 'а' }, { type: 'hard_break' }] },
+    ]);
+    caret(editor, 3);
+    type(editor, '"б"');
+    expect(editor.state.doc.firstChild?.lastChild?.text).toBe('«б»');
+  });
+
+  it('closes a quote typed right after an opening one', () => {
+    const editor = empty();
+    type(editor, 'пусто ""');
+    expect(text(editor)).toBe('пусто «»');
+  });
+
+  it('leaves input that carries several characters at once as typed', () => {
+    const cases: [string, string, string][] = [
+      ['', 'в л', 'в л'],
+      ['a', ' -- ', 'a -- '],
+      ['', ' "', ' "'],
+      ['a', '("', 'a("'],
+    ];
+    for (const [before, input, expected] of cases) {
+      const editor = before
+        ? mount([{ type: 'paragraph', content: [{ type: 'text', text: before }] }])
+        : empty();
+      caret(editor, 1 + before.length);
+      type(editor, input, true);
+      expect(text(editor)).toBe(expected);
+    }
+  });
+
+  it('replaces a quote finished by an IME composition', async () => {
+    const editor = mount([{ type: 'paragraph', content: [{ type: 'text', text: 'а "' }] }]);
+    caret(editor, 4);
+    editor.view.dom.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(text(editor)).toBe('а «');
+  });
+
+  it('replaces a selection with the converted quote', () => {
+    const editor = mount([{ type: 'paragraph', content: [{ type: 'text', text: 'а слово' }] }]);
+    editor.view.dispatch(
+      editor.state.tr.setSelection(TextSelection.create(editor.state.doc, 3, 8)),
+    );
+    type(editor, '"');
+    expect(text(editor)).toBe('а «');
+    expect(editor.state.selection.empty).toBe(true);
+  });
+
+  it('keeps a straight quote when the selection starts inside inline code', () => {
+    const editor = mount([
+      {
+        type: 'paragraph',
+        content: [
+          { type: 'text', text: 'а ' },
+          { type: 'text', text: 'xy', marks: [{ type: 'code' }] },
+        ],
+      },
+    ]);
+    editor.view.dispatch(
+      editor.state.tr.setSelection(TextSelection.create(editor.state.doc, 3, 4)),
+    );
+    type(editor, '"');
+    expect(text(editor)).toBe('а "y');
+  });
+});

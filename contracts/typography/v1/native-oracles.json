@@ -1,0 +1,4030 @@
+{
+  "format": "osr48-independent-small-native-oracle-proposal/1",
+  "status": "SOURCE_AUTHORED_OUTSIDE_REPO_BEFORE_CANDIDATE_NO_EXECUTION",
+  "baseSource": "753c77aadd5215a5a5f81448b71d45d17d77f85e",
+  "caseCount": 16,
+  "canonicalPolicy": "Exact sorted-key compact UTF8 JSON, no trailing newline. Format derived from accepted canonical fixture bytes, not a candidate serializer output.",
+  "opaqueIdentityPolicy": "IDs bind only once to declared before paths, and declared fresh aliases to exact after paths after semantic checks. Fixed equality/freshness/live-path relations are authored here. No expected document, text, marks, selection, history count or map result is learned from runtime. History must restore/reuse declared IDs exactly. Private discarded intermediate split IDs are not constrained.",
+  "statePolicy": "E0/H0 are captured after the specified authored selection and stored-marks setup on a fresh clean session (revision0, no units). Selection epoch increments iff final exact selection or stored marks changes, per dispatch.rs780–805; each recorded isolated document history publication advances history epoch1. Dirty remains true after edits/Undo because no saved-baseline canonical comparison is invoked; equality to initial content does not fake a saved acknowledgement.",
+  "queryPolicy": "Availability/query must not mutate bytes/IDs/epochs/history or create a receipt. All apply oracles are separately valid from query.",
+  "sourceProofs": [
+    "contracts/dom/v1/expected/T05-formatted-EGC.canonical.json exact canonical ordering/marks",
+    "contracts/dom/v1/expected/T03-initial.canonical.json exact Unicode JSON representation",
+    "contracts/history/v1/vectors.json H01 exact scalar private inverse and IDs",
+    "crates/kwdj/src/edit_normalize.rs368–391 equal-metadata joins preserve left ID",
+    "crates/engine/src/tree.rs1271–1445 original endpoint admission, split-retaining prefix and sealed flat splice",
+    "crates/engine/src/dispatch.rs780–805 exact selection/stored change epoch rule",
+    "crates/core/src/commands.rs StoredMarksUpdate::Keep",
+    "crates/engine/src/mapping.rs MapResult/ordered map semantics"
+  ],
+  "cases": [
+    {
+      "id": "N01-ru-quote",
+      "status": "SOURCE_AUTHORED_PROPOSED_NATIVE_ORACLE_NOT_EXECUTED",
+      "locale": "ru",
+      "intent": {
+        "origin": "typed_insert_text",
+        "text": "\""
+      },
+      "bindBeforeIds": {
+        "method": "Bind opaque IDs ONCE from known pre-open canonical paths; reject absent/duplicate IDs. This captures identities, never expected semantic output.",
+        "bindings": {
+          "/content/0": "P0",
+          "/content/0/content/0": "T0",
+          "/content/1": "P1",
+          "/content/1/content/0": "TAIL"
+        }
+      },
+      "newBindings": {
+        "method": "Bind declared fresh aliases only at their authored exact result paths after all canonical/state checks; assert pairwise distinct and not equal to any original ID. Reuse identical aliases on Redo, restored old aliases on Undo.",
+        "aliases": []
+      },
+      "checkpoints": [
+        {
+          "label": "before",
+          "canonical": {
+            "path": "native-oracles/canonical/N01-ru-quote/before.kwdj.json",
+            "bytes": 206,
+            "sha256": "8b68143b4f2b275885f691aa709562e38d0e3564360f4bba84bbb94f62f6b2b9"
+          },
+          "state": {
+            "revision": 0,
+            "selectionEpoch": "E0",
+            "historyEpoch": "H0",
+            "undoUnits": 0,
+            "redoUnits": 0,
+            "dirty": false,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          }
+        },
+        {
+          "label": "apply",
+          "canonical": {
+            "path": "native-oracles/canonical/N01-ru-quote/apply.kwdj.json",
+            "bytes": 208,
+            "sha256": "55502ff1effec2df407ddb3529e83115e93a30d2f6f37b62575e8e9b52b91c61"
+          },
+          "state": {
+            "revision": 1,
+            "selectionEpoch": "E0+1",
+            "historyEpoch": "H0+1",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1,
+          "rule": "double_quotes",
+          "typographyBypass": null,
+          "refusalSemantic": null
+        },
+        {
+          "label": "undo",
+          "canonical": {
+            "path": "native-oracles/canonical/N01-ru-quote/undo.kwdj.json",
+            "bytes": 206,
+            "sha256": "8b68143b4f2b275885f691aa709562e38d0e3564360f4bba84bbb94f62f6b2b9"
+          },
+          "state": {
+            "revision": 2,
+            "selectionEpoch": "E0+2",
+            "historyEpoch": "H0+2",
+            "undoUnits": 0,
+            "redoUnits": 1,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        },
+        {
+          "label": "redo",
+          "canonical": {
+            "path": "native-oracles/canonical/N01-ru-quote/redo.kwdj.json",
+            "bytes": 208,
+            "sha256": "55502ff1effec2df407ddb3529e83115e93a30d2f6f37b62575e8e9b52b91c61"
+          },
+          "state": {
+            "revision": 3,
+            "selectionEpoch": "E0+3",
+            "historyEpoch": "H0+3",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        }
+      ],
+      "expectedMap": {
+        "changedPublicationMapCount": 1,
+        "applyFromRevision": 0,
+        "applyToRevision": 1,
+        "probeCases": [
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "TAIL",
+              "utf16": 2,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "TAIL",
+                "utf16": 2,
+                "affinity": "before"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "edge",
+              "node": "P1",
+              "side": "start",
+              "affinity": "after"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "edge",
+                "node": "P1",
+                "side": "start",
+                "affinity": "after"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "T0",
+              "utf16": 0,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 0,
+                "affinity": "before"
+              }
+            }
+          }
+        ],
+        "refusal": null,
+        "qualification": "Semantic probe results are fixed, not a golden learned from returned StepMaps. No assertion on private temporary split IDs or number of internal preparation steps."
+      },
+      "outside": "P1/TAIL exact IDs, bytes, parent/order/marks/attrs remain unchanged at every checkpoint; P0 parent identity unchanged.",
+      "dataAuthorship": "Before/after documents, directed selection, history counts, marks and ID relations are fixed from sources/declared policy. Actual candidate output cannot populate or rewrite any field."
+    },
+    {
+      "id": "N02-en-quote",
+      "status": "SOURCE_AUTHORED_PROPOSED_NATIVE_ORACLE_NOT_EXECUTED",
+      "locale": "en",
+      "intent": {
+        "origin": "typed_insert_text",
+        "text": "\""
+      },
+      "bindBeforeIds": {
+        "method": "Bind opaque IDs ONCE from known pre-open canonical paths; reject absent/duplicate IDs. This captures identities, never expected semantic output.",
+        "bindings": {
+          "/content/0": "P0",
+          "/content/0/content/0": "T0",
+          "/content/1": "P1",
+          "/content/1/content/0": "TAIL"
+        }
+      },
+      "newBindings": {
+        "method": "Bind declared fresh aliases only at their authored exact result paths after all canonical/state checks; assert pairwise distinct and not equal to any original ID. Reuse identical aliases on Redo, restored old aliases on Undo.",
+        "aliases": []
+      },
+      "checkpoints": [
+        {
+          "label": "before",
+          "canonical": {
+            "path": "native-oracles/canonical/N02-en-quote/before.kwdj.json",
+            "bytes": 205,
+            "sha256": "1c2cde968a298cd95e529ce3fca68983666e37ab15215197c879480f7ab09272"
+          },
+          "state": {
+            "revision": 0,
+            "selectionEpoch": "E0",
+            "historyEpoch": "H0",
+            "undoUnits": 0,
+            "redoUnits": 0,
+            "dirty": false,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          }
+        },
+        {
+          "label": "apply",
+          "canonical": {
+            "path": "native-oracles/canonical/N02-en-quote/apply.kwdj.json",
+            "bytes": 208,
+            "sha256": "4203a4481576e20e56427d6f1161f046da7c0a96d88e93e4db0d3d0ce2267e06"
+          },
+          "state": {
+            "revision": 1,
+            "selectionEpoch": "E0+1",
+            "historyEpoch": "H0+1",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1,
+          "rule": "double_quotes",
+          "typographyBypass": null,
+          "refusalSemantic": null
+        },
+        {
+          "label": "undo",
+          "canonical": {
+            "path": "native-oracles/canonical/N02-en-quote/undo.kwdj.json",
+            "bytes": 205,
+            "sha256": "1c2cde968a298cd95e529ce3fca68983666e37ab15215197c879480f7ab09272"
+          },
+          "state": {
+            "revision": 2,
+            "selectionEpoch": "E0+2",
+            "historyEpoch": "H0+2",
+            "undoUnits": 0,
+            "redoUnits": 1,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        },
+        {
+          "label": "redo",
+          "canonical": {
+            "path": "native-oracles/canonical/N02-en-quote/redo.kwdj.json",
+            "bytes": 208,
+            "sha256": "4203a4481576e20e56427d6f1161f046da7c0a96d88e93e4db0d3d0ce2267e06"
+          },
+          "state": {
+            "revision": 3,
+            "selectionEpoch": "E0+3",
+            "historyEpoch": "H0+3",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        }
+      ],
+      "expectedMap": {
+        "changedPublicationMapCount": 1,
+        "applyFromRevision": 0,
+        "applyToRevision": 1,
+        "probeCases": [
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "TAIL",
+              "utf16": 2,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "TAIL",
+                "utf16": 2,
+                "affinity": "before"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "edge",
+              "node": "P1",
+              "side": "start",
+              "affinity": "after"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "edge",
+                "node": "P1",
+                "side": "start",
+                "affinity": "after"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "T0",
+              "utf16": 0,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 0,
+                "affinity": "before"
+              }
+            }
+          }
+        ],
+        "refusal": null,
+        "qualification": "Semantic probe results are fixed, not a golden learned from returned StepMaps. No assertion on private temporary split IDs or number of internal preparation steps."
+      },
+      "outside": "P1/TAIL exact IDs, bytes, parent/order/marks/attrs remain unchanged at every checkpoint; P0 parent identity unchanged.",
+      "dataAuthorship": "Before/after documents, directed selection, history counts, marks and ID relations are fixed from sources/declared policy. Actual candidate output cannot populate or rewrite any field."
+    },
+    {
+      "id": "N03-dash",
+      "status": "SOURCE_AUTHORED_PROPOSED_NATIVE_ORACLE_NOT_EXECUTED",
+      "locale": "ru",
+      "intent": {
+        "origin": "typed_insert_text",
+        "text": " "
+      },
+      "bindBeforeIds": {
+        "method": "Bind opaque IDs ONCE from known pre-open canonical paths; reject absent/duplicate IDs. This captures identities, never expected semantic output.",
+        "bindings": {
+          "/content/0": "P0",
+          "/content/0/content/0": "T0",
+          "/content/1": "P1",
+          "/content/1/content/0": "TAIL"
+        }
+      },
+      "newBindings": {
+        "method": "Bind declared fresh aliases only at their authored exact result paths after all canonical/state checks; assert pairwise distinct and not equal to any original ID. Reuse identical aliases on Redo, restored old aliases on Undo.",
+        "aliases": []
+      },
+      "checkpoints": [
+        {
+          "label": "before",
+          "canonical": {
+            "path": "native-oracles/canonical/N03-dash/before.kwdj.json",
+            "bytes": 207,
+            "sha256": "56025b628243c40aabdc5ef7552aa86b99db9c9f488e5234d4dfa5fc5a74fd0a"
+          },
+          "state": {
+            "revision": 0,
+            "selectionEpoch": "E0",
+            "historyEpoch": "H0",
+            "undoUnits": 0,
+            "redoUnits": 0,
+            "dirty": false,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 4,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 4,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          }
+        },
+        {
+          "label": "apply",
+          "canonical": {
+            "path": "native-oracles/canonical/N03-dash/apply.kwdj.json",
+            "bytes": 209,
+            "sha256": "ab1f3988240046c8c095595aa4550f9cd213d7c68c52d869a288160f82fad2d5"
+          },
+          "state": {
+            "revision": 1,
+            "selectionEpoch": "E0+0",
+            "historyEpoch": "H0+1",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 4,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 4,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1,
+          "rule": "spaced_em_dash",
+          "typographyBypass": null,
+          "refusalSemantic": null
+        },
+        {
+          "label": "undo",
+          "canonical": {
+            "path": "native-oracles/canonical/N03-dash/undo.kwdj.json",
+            "bytes": 207,
+            "sha256": "56025b628243c40aabdc5ef7552aa86b99db9c9f488e5234d4dfa5fc5a74fd0a"
+          },
+          "state": {
+            "revision": 2,
+            "selectionEpoch": "E0+0",
+            "historyEpoch": "H0+2",
+            "undoUnits": 0,
+            "redoUnits": 1,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 4,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 4,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        },
+        {
+          "label": "redo",
+          "canonical": {
+            "path": "native-oracles/canonical/N03-dash/redo.kwdj.json",
+            "bytes": 209,
+            "sha256": "ab1f3988240046c8c095595aa4550f9cd213d7c68c52d869a288160f82fad2d5"
+          },
+          "state": {
+            "revision": 3,
+            "selectionEpoch": "E0+0",
+            "historyEpoch": "H0+3",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 4,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 4,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        }
+      ],
+      "expectedMap": {
+        "changedPublicationMapCount": 1,
+        "applyFromRevision": 0,
+        "applyToRevision": 1,
+        "probeCases": [
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "TAIL",
+              "utf16": 2,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "TAIL",
+                "utf16": 2,
+                "affinity": "before"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "edge",
+              "node": "P1",
+              "side": "start",
+              "affinity": "after"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "edge",
+                "node": "P1",
+                "side": "start",
+                "affinity": "after"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "T0",
+              "utf16": 0,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 0,
+                "affinity": "before"
+              }
+            }
+          }
+        ],
+        "refusal": null,
+        "qualification": "Semantic probe results are fixed, not a golden learned from returned StepMaps. No assertion on private temporary split IDs or number of internal preparation steps."
+      },
+      "outside": "P1/TAIL exact IDs, bytes, parent/order/marks/attrs remain unchanged at every checkpoint; P0 parent identity unchanged.",
+      "dataAuthorship": "Before/after documents, directed selection, history counts, marks and ID relations are fixed from sources/declared policy. Actual candidate output cannot populate or rewrite any field."
+    },
+    {
+      "id": "N04-nbsp",
+      "status": "SOURCE_AUTHORED_PROPOSED_NATIVE_ORACLE_NOT_EXECUTED",
+      "locale": "ru",
+      "intent": {
+        "origin": "typed_insert_text",
+        "text": "л"
+      },
+      "bindBeforeIds": {
+        "method": "Bind opaque IDs ONCE from known pre-open canonical paths; reject absent/duplicate IDs. This captures identities, never expected semantic output.",
+        "bindings": {
+          "/content/0": "P0",
+          "/content/0/content/0": "T0",
+          "/content/1": "P1",
+          "/content/1/content/0": "TAIL"
+        }
+      },
+      "newBindings": {
+        "method": "Bind declared fresh aliases only at their authored exact result paths after all canonical/state checks; assert pairwise distinct and not equal to any original ID. Reuse identical aliases on Redo, restored old aliases on Undo.",
+        "aliases": []
+      },
+      "checkpoints": [
+        {
+          "label": "before",
+          "canonical": {
+            "path": "native-oracles/canonical/N04-nbsp/before.kwdj.json",
+            "bytes": 206,
+            "sha256": "79071b9395c5f7027b1f2ceb8213f1db789560600877937f4f5fc2efd231b992"
+          },
+          "state": {
+            "revision": 0,
+            "selectionEpoch": "E0",
+            "historyEpoch": "H0",
+            "undoUnits": 0,
+            "redoUnits": 0,
+            "dirty": false,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          }
+        },
+        {
+          "label": "apply",
+          "canonical": {
+            "path": "native-oracles/canonical/N04-nbsp/apply.kwdj.json",
+            "bytes": 209,
+            "sha256": "3b8878d1dca6d73be6de17e08d278b802bacda2f3c0e7905e6416a33bcf18328"
+          },
+          "state": {
+            "revision": 1,
+            "selectionEpoch": "E0+1",
+            "historyEpoch": "H0+1",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1,
+          "rule": "cyrillic_nbsp",
+          "typographyBypass": null,
+          "refusalSemantic": null
+        },
+        {
+          "label": "undo",
+          "canonical": {
+            "path": "native-oracles/canonical/N04-nbsp/undo.kwdj.json",
+            "bytes": 206,
+            "sha256": "79071b9395c5f7027b1f2ceb8213f1db789560600877937f4f5fc2efd231b992"
+          },
+          "state": {
+            "revision": 2,
+            "selectionEpoch": "E0+2",
+            "historyEpoch": "H0+2",
+            "undoUnits": 0,
+            "redoUnits": 1,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        },
+        {
+          "label": "redo",
+          "canonical": {
+            "path": "native-oracles/canonical/N04-nbsp/redo.kwdj.json",
+            "bytes": 209,
+            "sha256": "3b8878d1dca6d73be6de17e08d278b802bacda2f3c0e7905e6416a33bcf18328"
+          },
+          "state": {
+            "revision": 3,
+            "selectionEpoch": "E0+3",
+            "historyEpoch": "H0+3",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        }
+      ],
+      "expectedMap": {
+        "changedPublicationMapCount": 1,
+        "applyFromRevision": 0,
+        "applyToRevision": 1,
+        "probeCases": [
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "TAIL",
+              "utf16": 2,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "TAIL",
+                "utf16": 2,
+                "affinity": "before"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "edge",
+              "node": "P1",
+              "side": "start",
+              "affinity": "after"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "edge",
+                "node": "P1",
+                "side": "start",
+                "affinity": "after"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "T0",
+              "utf16": 0,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 0,
+                "affinity": "before"
+              }
+            }
+          }
+        ],
+        "refusal": null,
+        "qualification": "Semantic probe results are fixed, not a golden learned from returned StepMaps. No assertion on private temporary split IDs or number of internal preparation steps."
+      },
+      "outside": "P1/TAIL exact IDs, bytes, parent/order/marks/attrs remain unchanged at every checkpoint; P0 parent identity unchanged.",
+      "dataAuthorship": "Before/after documents, directed selection, history counts, marks and ID relations are fixed from sources/declared policy. Actual candidate output cannot populate or rewrite any field."
+    },
+    {
+      "id": "N05-reverse-selection",
+      "status": "SOURCE_AUTHORED_PROPOSED_NATIVE_ORACLE_NOT_EXECUTED",
+      "locale": "ru",
+      "intent": {
+        "origin": "typed_insert_text",
+        "text": "\""
+      },
+      "bindBeforeIds": {
+        "method": "Bind opaque IDs ONCE from known pre-open canonical paths; reject absent/duplicate IDs. This captures identities, never expected semantic output.",
+        "bindings": {
+          "/content/0": "P0",
+          "/content/0/content/0": "T0",
+          "/content/1": "P1",
+          "/content/1/content/0": "TAIL"
+        }
+      },
+      "newBindings": {
+        "method": "Bind declared fresh aliases only at their authored exact result paths after all canonical/state checks; assert pairwise distinct and not equal to any original ID. Reuse identical aliases on Redo, restored old aliases on Undo.",
+        "aliases": []
+      },
+      "checkpoints": [
+        {
+          "label": "before",
+          "canonical": {
+            "path": "native-oracles/canonical/N05-reverse-selection/before.kwdj.json",
+            "bytes": 216,
+            "sha256": "acf46804f6083f588ab3413c96770e718d67bbb6be7936eafa0176e5df74d356"
+          },
+          "state": {
+            "revision": 0,
+            "selectionEpoch": "E0",
+            "historyEpoch": "H0",
+            "undoUnits": 0,
+            "redoUnits": 0,
+            "dirty": false,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 7,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          }
+        },
+        {
+          "label": "apply",
+          "canonical": {
+            "path": "native-oracles/canonical/N05-reverse-selection/apply.kwdj.json",
+            "bytes": 208,
+            "sha256": "55502ff1effec2df407ddb3529e83115e93a30d2f6f37b62575e8e9b52b91c61"
+          },
+          "state": {
+            "revision": 1,
+            "selectionEpoch": "E0+1",
+            "historyEpoch": "H0+1",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1,
+          "rule": "double_quotes",
+          "typographyBypass": null,
+          "refusalSemantic": null
+        },
+        {
+          "label": "undo",
+          "canonical": {
+            "path": "native-oracles/canonical/N05-reverse-selection/undo.kwdj.json",
+            "bytes": 216,
+            "sha256": "acf46804f6083f588ab3413c96770e718d67bbb6be7936eafa0176e5df74d356"
+          },
+          "state": {
+            "revision": 2,
+            "selectionEpoch": "E0+2",
+            "historyEpoch": "H0+2",
+            "undoUnits": 0,
+            "redoUnits": 1,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 7,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        },
+        {
+          "label": "redo",
+          "canonical": {
+            "path": "native-oracles/canonical/N05-reverse-selection/redo.kwdj.json",
+            "bytes": 208,
+            "sha256": "55502ff1effec2df407ddb3529e83115e93a30d2f6f37b62575e8e9b52b91c61"
+          },
+          "state": {
+            "revision": 3,
+            "selectionEpoch": "E0+3",
+            "historyEpoch": "H0+3",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        }
+      ],
+      "expectedMap": {
+        "changedPublicationMapCount": 1,
+        "applyFromRevision": 0,
+        "applyToRevision": 1,
+        "probeCases": [
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "TAIL",
+              "utf16": 2,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "TAIL",
+                "utf16": 2,
+                "affinity": "before"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "edge",
+              "node": "P1",
+              "side": "start",
+              "affinity": "after"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "edge",
+                "node": "P1",
+                "side": "start",
+                "affinity": "after"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "T0",
+              "utf16": 0,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 0,
+                "affinity": "before"
+              }
+            }
+          }
+        ],
+        "refusal": null,
+        "qualification": "Semantic probe results are fixed, not a golden learned from returned StepMaps. No assertion on private temporary split IDs or number of internal preparation steps."
+      },
+      "outside": "P1/TAIL exact IDs, bytes, parent/order/marks/attrs remain unchanged at every checkpoint; P0 parent identity unchanged.",
+      "dataAuthorship": "Before/after documents, directed selection, history counts, marks and ID relations are fixed from sources/declared policy. Actual candidate output cannot populate or rewrite any field.",
+      "specialReversalRawTarget": {
+        "path": "native-oracles/canonical/N05-reverse-selection/backspace-raw-target.kwdj.json",
+        "bytes": 208,
+        "sha256": "ab84f8f1100e7f1cd297f0836544efa4c78722be421f70b6127deb0542126714"
+      },
+      "receiptExclusion": "Deleted selection слово is NOT in the rule reversal receipt. Ordinary Undo uses existing history; special Backspace preserves its deletion and restores only raw authored trigger."
+    },
+    {
+      "id": "N06-dash-mixed-marks",
+      "status": "SOURCE_AUTHORED_PROPOSED_NATIVE_ORACLE_NOT_EXECUTED",
+      "locale": "ru",
+      "intent": {
+        "origin": "typed_insert_text",
+        "text": " "
+      },
+      "bindBeforeIds": {
+        "method": "Bind opaque IDs ONCE from known pre-open canonical paths; reject absent/duplicate IDs. This captures identities, never expected semantic output.",
+        "bindings": {
+          "/content/0": "P0",
+          "/content/0/content/0": "T0",
+          "/content/0/content/1": "H2",
+          "/content/1": "P1",
+          "/content/1/content/0": "TAIL"
+        }
+      },
+      "newBindings": {
+        "method": "Bind declared fresh aliases only at their authored exact result paths after all canonical/state checks; assert pairwise distinct and not equal to any original ID. Reuse identical aliases on Redo, restored old aliases on Undo.",
+        "aliases": [
+          "CSPACE"
+        ]
+      },
+      "checkpoints": [
+        {
+          "label": "before",
+          "canonical": {
+            "path": "native-oracles/canonical/N06-dash-mixed-marks/before.kwdj.json",
+            "bytes": 291,
+            "sha256": "1c837cb356a0019c69b646b7433b8394edbe44dc2e143a0ec16b46df4c55bbde"
+          },
+          "state": {
+            "revision": 0,
+            "selectionEpoch": "E0",
+            "historyEpoch": "H0",
+            "undoUnits": 0,
+            "redoUnits": 0,
+            "dirty": false,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "H2",
+                "utf16": 1,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "H2",
+                "utf16": 1,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": [
+              {
+                "type": "emphasis"
+              }
+            ],
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/0/content/1": "H2",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          }
+        },
+        {
+          "label": "apply",
+          "canonical": {
+            "path": "native-oracles/canonical/N06-dash-mixed-marks/apply.kwdj.json",
+            "bytes": 293,
+            "sha256": "a7bd3027a9b04bd2fbf98a4e20b12605d3c8b273f531b91b48051d83765da740"
+          },
+          "state": {
+            "revision": 1,
+            "selectionEpoch": "E0+1",
+            "historyEpoch": "H0+1",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "CSPACE",
+                "utf16": 1,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "CSPACE",
+                "utf16": 1,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": [
+              {
+                "type": "emphasis"
+              }
+            ],
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/0/content/1": "CSPACE",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1,
+          "rule": "spaced_em_dash",
+          "typographyBypass": null,
+          "refusalSemantic": null
+        },
+        {
+          "label": "undo",
+          "canonical": {
+            "path": "native-oracles/canonical/N06-dash-mixed-marks/undo.kwdj.json",
+            "bytes": 291,
+            "sha256": "1c837cb356a0019c69b646b7433b8394edbe44dc2e143a0ec16b46df4c55bbde"
+          },
+          "state": {
+            "revision": 2,
+            "selectionEpoch": "E0+2",
+            "historyEpoch": "H0+2",
+            "undoUnits": 0,
+            "redoUnits": 1,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "H2",
+                "utf16": 1,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "H2",
+                "utf16": 1,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": [
+              {
+                "type": "emphasis"
+              }
+            ],
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/0/content/1": "H2",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        },
+        {
+          "label": "redo",
+          "canonical": {
+            "path": "native-oracles/canonical/N06-dash-mixed-marks/redo.kwdj.json",
+            "bytes": 293,
+            "sha256": "a7bd3027a9b04bd2fbf98a4e20b12605d3c8b273f531b91b48051d83765da740"
+          },
+          "state": {
+            "revision": 3,
+            "selectionEpoch": "E0+3",
+            "historyEpoch": "H0+3",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "CSPACE",
+                "utf16": 1,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "CSPACE",
+                "utf16": 1,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": [
+              {
+                "type": "emphasis"
+              }
+            ],
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/0/content/1": "CSPACE",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        }
+      ],
+      "expectedMap": {
+        "changedPublicationMapCount": 1,
+        "applyFromRevision": 0,
+        "applyToRevision": 1,
+        "probeCases": [
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "TAIL",
+              "utf16": 2,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "TAIL",
+                "utf16": 2,
+                "affinity": "before"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "edge",
+              "node": "P1",
+              "side": "start",
+              "affinity": "after"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "edge",
+                "node": "P1",
+                "side": "start",
+                "affinity": "after"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "T0",
+              "utf16": 0,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 0,
+                "affinity": "before"
+              }
+            }
+          }
+        ],
+        "refusal": null,
+        "qualification": "Semantic probe results are fixed, not a golden learned from returned StepMaps. No assertion on private temporary split IDs or number of internal preparation steps."
+      },
+      "outside": "P1/TAIL exact IDs, bytes, parent/order/marks/attrs remain unchanged at every checkpoint; P0 parent identity unchanged.",
+      "dataAuthorship": "Before/after documents, directed selection, history counts, marks and ID relations are fixed from sources/declared policy. Actual candidate output cannot populate or rewrite any field.",
+      "markPolicy": "EmDash takes first existing hyphen strong marks; original trigger takes native stored emphasis. Whole removed H2 stays retired after apply; existing left prefix T0 remains. Undo revives H2; Redo restores exact CSPACE.",
+      "plannedSpliceAuthority": "One sealed flat fragment over original matched hyphens; prefix-retaining split plus left-biased joins per engine/tree.rs and kwdj/edit_normalize.rs.",
+      "specialReversalRawTarget": {
+        "path": "native-oracles/canonical/N06-dash-mixed-marks/backspace-raw-target.kwdj.json",
+        "bytes": 292,
+        "sha256": "32442c6164a237d5d213289b4241052f36d48b8b34253f464220ff4ee18f6e0b"
+      }
+    },
+    {
+      "id": "N07-nbsp-mixed-marks",
+      "status": "SOURCE_AUTHORED_PROPOSED_NATIVE_ORACLE_NOT_EXECUTED",
+      "locale": "ru",
+      "intent": {
+        "origin": "typed_insert_text",
+        "text": "л"
+      },
+      "bindBeforeIds": {
+        "method": "Bind opaque IDs ONCE from known pre-open canonical paths; reject absent/duplicate IDs. This captures identities, never expected semantic output.",
+        "bindings": {
+          "/content/0": "P0",
+          "/content/0/content/0": "T0",
+          "/content/1": "P1",
+          "/content/1/content/0": "TAIL"
+        }
+      },
+      "newBindings": {
+        "method": "Bind declared fresh aliases only at their authored exact result paths after all canonical/state checks; assert pairwise distinct and not equal to any original ID. Reuse identical aliases on Redo, restored old aliases on Undo.",
+        "aliases": [
+          "LETTER"
+        ]
+      },
+      "checkpoints": [
+        {
+          "label": "before",
+          "canonical": {
+            "path": "native-oracles/canonical/N07-nbsp-mixed-marks/before.kwdj.json",
+            "bytes": 234,
+            "sha256": "218ca721ee3bf1efa310ffe4065578ab965333ba7cc2352a01b5b0a09fc8c6b6"
+          },
+          "state": {
+            "revision": 0,
+            "selectionEpoch": "E0",
+            "historyEpoch": "H0",
+            "undoUnits": 0,
+            "redoUnits": 0,
+            "dirty": false,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": [
+              {
+                "type": "emphasis"
+              }
+            ],
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          }
+        },
+        {
+          "label": "apply",
+          "canonical": {
+            "path": "native-oracles/canonical/N07-nbsp-mixed-marks/apply.kwdj.json",
+            "bytes": 293,
+            "sha256": "562982a940e972d42de71c153f9b1694396df5cf3c1e3ab78345a95fc06d2436"
+          },
+          "state": {
+            "revision": 1,
+            "selectionEpoch": "E0+1",
+            "historyEpoch": "H0+1",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "LETTER",
+                "utf16": 1,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "LETTER",
+                "utf16": 1,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": [
+              {
+                "type": "emphasis"
+              }
+            ],
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL",
+              "/content/0/content/1": "LETTER"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1,
+          "rule": "cyrillic_nbsp",
+          "typographyBypass": null,
+          "refusalSemantic": null
+        },
+        {
+          "label": "undo",
+          "canonical": {
+            "path": "native-oracles/canonical/N07-nbsp-mixed-marks/undo.kwdj.json",
+            "bytes": 234,
+            "sha256": "218ca721ee3bf1efa310ffe4065578ab965333ba7cc2352a01b5b0a09fc8c6b6"
+          },
+          "state": {
+            "revision": 2,
+            "selectionEpoch": "E0+2",
+            "historyEpoch": "H0+2",
+            "undoUnits": 0,
+            "redoUnits": 1,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": [
+              {
+                "type": "emphasis"
+              }
+            ],
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        },
+        {
+          "label": "redo",
+          "canonical": {
+            "path": "native-oracles/canonical/N07-nbsp-mixed-marks/redo.kwdj.json",
+            "bytes": 293,
+            "sha256": "562982a940e972d42de71c153f9b1694396df5cf3c1e3ab78345a95fc06d2436"
+          },
+          "state": {
+            "revision": 3,
+            "selectionEpoch": "E0+3",
+            "historyEpoch": "H0+3",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "LETTER",
+                "utf16": 1,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "LETTER",
+                "utf16": 1,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": [
+              {
+                "type": "emphasis"
+              }
+            ],
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL",
+              "/content/0/content/1": "LETTER"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        }
+      ],
+      "expectedMap": {
+        "changedPublicationMapCount": 1,
+        "applyFromRevision": 0,
+        "applyToRevision": 1,
+        "probeCases": [
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "TAIL",
+              "utf16": 2,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "TAIL",
+                "utf16": 2,
+                "affinity": "before"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "edge",
+              "node": "P1",
+              "side": "start",
+              "affinity": "after"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "edge",
+                "node": "P1",
+                "side": "start",
+                "affinity": "after"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "T0",
+              "utf16": 0,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 0,
+                "affinity": "before"
+              }
+            }
+          }
+        ],
+        "refusal": null,
+        "qualification": "Semantic probe results are fixed, not a golden learned from returned StepMaps. No assertion on private temporary split IDs or number of internal preparation steps."
+      },
+      "outside": "P1/TAIL exact IDs, bytes, parent/order/marks/attrs remain unchanged at every checkpoint; P0 parent identity unchanged.",
+      "dataAuthorship": "Before/after documents, directed selection, history counts, marks and ID relations are fixed from sources/declared policy. Actual candidate output cannot populate or rewrite any field.",
+      "markPolicy": "NBSP takes replaced SPACE strong marks; trigger л takes native stored emphasis. Existing prefix T0 remains and adjacent equal strong text joins; LETTER is fresh, distinct from all before IDs, exact on Redo.",
+      "ordinaryBackspaceTarget": {
+        "path": "native-oracles/canonical/N07-nbsp-mixed-marks/backspace-target.kwdj.json",
+        "bytes": 235,
+        "sha256": "d7b86c34592d26d1ff239db21fe26b53391b8b8e9830df1d257ca71b349fa0c9"
+      },
+      "specialReceipt": false
+    },
+    {
+      "id": "N08-EGC-original-interior",
+      "status": "SOURCE_AUTHORED_PROPOSED_NATIVE_ORACLE_NOT_EXECUTED",
+      "locale": "ru",
+      "intent": {
+        "origin": "typed_insert_text",
+        "text": "\""
+      },
+      "bindBeforeIds": {
+        "method": "Bind opaque IDs ONCE from known pre-open canonical paths; reject absent/duplicate IDs. This captures identities, never expected semantic output.",
+        "bindings": {
+          "/content/0": "P0",
+          "/content/0/content/0": "T0",
+          "/content/0/content/1": "ACCENT",
+          "/content/1": "P1",
+          "/content/1/content/0": "TAIL"
+        }
+      },
+      "newBindings": {
+        "method": "Bind declared fresh aliases only at their authored exact result paths after all canonical/state checks; assert pairwise distinct and not equal to any original ID. Reuse identical aliases on Redo, restored old aliases on Undo.",
+        "aliases": []
+      },
+      "checkpoints": [
+        {
+          "label": "before",
+          "canonical": {
+            "path": "native-oracles/canonical/N08-EGC-original-interior/before.kwdj.json",
+            "bytes": 290,
+            "sha256": "201e6fd590a92f28d8533e5fe773d24cc3f4be6b2bab8e325a4c55d27fac28dc"
+          },
+          "state": {
+            "revision": 0,
+            "selectionEpoch": "E0",
+            "historyEpoch": "H0",
+            "undoUnits": 0,
+            "redoUnits": 0,
+            "dirty": false,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 1,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 1,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/0/content/1": "ACCENT",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          }
+        },
+        {
+          "label": "apply",
+          "canonical": {
+            "path": "native-oracles/canonical/N08-EGC-original-interior/apply.kwdj.json",
+            "bytes": 290,
+            "sha256": "201e6fd590a92f28d8533e5fe773d24cc3f4be6b2bab8e325a4c55d27fac28dc"
+          },
+          "state": {
+            "revision": 0,
+            "selectionEpoch": "E0",
+            "historyEpoch": "H0",
+            "undoUnits": 0,
+            "redoUnits": 0,
+            "dirty": false,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 1,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 1,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/0/content/1": "ACCENT",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Refused",
+          "publicationDelta": 0,
+          "rule": null,
+          "typographyBypass": null,
+          "refusalSemantic": "not_grapheme_boundary"
+        }
+      ],
+      "expectedMap": {
+        "changedPublicationMapCount": 0,
+        "applyFromRevision": 0,
+        "applyToRevision": 0,
+        "probeCases": [],
+        "refusal": "No new map/history/event/counter publication and unchanged map-query results.",
+        "qualification": "Semantic probe results are fixed, not a golden learned from returned StepMaps. No assertion on private temporary split IDs or number of internal preparation steps."
+      },
+      "outside": "P1/TAIL exact IDs, bytes, parent/order/marks/attrs remain unchanged at every checkpoint; P0 parent identity unchanged.",
+      "dataAuthorship": "Before/after documents, directed selection, history counts, marks and ID relations are fixed from sources/declared policy. Actual candidate output cannot populate or rewrite any field.",
+      "reason": "T0/end and ACCENT/start is scalar-valid but inside whole e+U0301 EGC. Typographic widening cannot authorize it. No codepoint normalization or deletion; no receipt."
+    },
+    {
+      "id": "N09-global-work-zero",
+      "status": "SOURCE_AUTHORED_PROPOSED_NATIVE_ORACLE_NOT_EXECUTED",
+      "locale": "ru",
+      "intent": {
+        "origin": "typed_insert_text",
+        "text": "\"",
+        "workLimits": {
+          "units": 0,
+          "bytes": 0
+        }
+      },
+      "bindBeforeIds": {
+        "method": "Bind opaque IDs ONCE from known pre-open canonical paths; reject absent/duplicate IDs. This captures identities, never expected semantic output.",
+        "bindings": {
+          "/content/0": "P0",
+          "/content/0/content/0": "T0",
+          "/content/1": "P1",
+          "/content/1/content/0": "TAIL"
+        }
+      },
+      "newBindings": {
+        "method": "Bind declared fresh aliases only at their authored exact result paths after all canonical/state checks; assert pairwise distinct and not equal to any original ID. Reuse identical aliases on Redo, restored old aliases on Undo.",
+        "aliases": []
+      },
+      "checkpoints": [
+        {
+          "label": "before",
+          "canonical": {
+            "path": "native-oracles/canonical/N09-global-work-zero/before.kwdj.json",
+            "bytes": 206,
+            "sha256": "8b68143b4f2b275885f691aa709562e38d0e3564360f4bba84bbb94f62f6b2b9"
+          },
+          "state": {
+            "revision": 0,
+            "selectionEpoch": "E0",
+            "historyEpoch": "H0",
+            "undoUnits": 0,
+            "redoUnits": 0,
+            "dirty": false,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          }
+        },
+        {
+          "label": "apply",
+          "canonical": {
+            "path": "native-oracles/canonical/N09-global-work-zero/apply.kwdj.json",
+            "bytes": 206,
+            "sha256": "8b68143b4f2b275885f691aa709562e38d0e3564360f4bba84bbb94f62f6b2b9"
+          },
+          "state": {
+            "revision": 0,
+            "selectionEpoch": "E0",
+            "historyEpoch": "H0",
+            "undoUnits": 0,
+            "redoUnits": 0,
+            "dirty": false,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Refused",
+          "publicationDelta": 0,
+          "rule": null,
+          "typographyBypass": null,
+          "refusalSemantic": "resource_limit"
+        }
+      ],
+      "expectedMap": {
+        "changedPublicationMapCount": 0,
+        "applyFromRevision": 0,
+        "applyToRevision": 0,
+        "probeCases": [],
+        "refusal": "No new map/history/event/counter publication and unchanged map-query results.",
+        "qualification": "Semantic probe results are fixed, not a golden learned from returned StepMaps. No assertion on private temporary split IDs or number of internal preparation steps."
+      },
+      "outside": "P1/TAIL exact IDs, bytes, parent/order/marks/attrs remain unchanged at every checkpoint; P0 parent identity unchanged.",
+      "dataAuthorship": "Before/after documents, directed selection, history counts, marks and ID relations are fixed from sources/declared policy. Actual candidate output cannot populate or rewrite any field.",
+      "budget": "Actual shared global meter has zero available preparation work; no optional literal retry or raw loss."
+    },
+    {
+      "id": "N10-local-lexical-zero",
+      "status": "SOURCE_AUTHORED_PROPOSED_NATIVE_ORACLE_NOT_EXECUTED",
+      "locale": "ru",
+      "intent": {
+        "origin": "typed_insert_text",
+        "text": "\"",
+        "typographyLimits": {
+          "lookbehindScalars": 0
+        },
+        "globalBudget": "otherwise adequate"
+      },
+      "bindBeforeIds": {
+        "method": "Bind opaque IDs ONCE from known pre-open canonical paths; reject absent/duplicate IDs. This captures identities, never expected semantic output.",
+        "bindings": {
+          "/content/0": "P0",
+          "/content/0/content/0": "T0",
+          "/content/1": "P1",
+          "/content/1/content/0": "TAIL"
+        }
+      },
+      "newBindings": {
+        "method": "Bind declared fresh aliases only at their authored exact result paths after all canonical/state checks; assert pairwise distinct and not equal to any original ID. Reuse identical aliases on Redo, restored old aliases on Undo.",
+        "aliases": []
+      },
+      "checkpoints": [
+        {
+          "label": "before",
+          "canonical": {
+            "path": "native-oracles/canonical/N10-local-lexical-zero/before.kwdj.json",
+            "bytes": 206,
+            "sha256": "8b68143b4f2b275885f691aa709562e38d0e3564360f4bba84bbb94f62f6b2b9"
+          },
+          "state": {
+            "revision": 0,
+            "selectionEpoch": "E0",
+            "historyEpoch": "H0",
+            "undoUnits": 0,
+            "redoUnits": 0,
+            "dirty": false,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          }
+        },
+        {
+          "label": "apply",
+          "canonical": {
+            "path": "native-oracles/canonical/N10-local-lexical-zero/apply.kwdj.json",
+            "bytes": 208,
+            "sha256": "ab84f8f1100e7f1cd297f0836544efa4c78722be421f70b6127deb0542126714"
+          },
+          "state": {
+            "revision": 1,
+            "selectionEpoch": "E0+1",
+            "historyEpoch": "H0+1",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1,
+          "rule": null,
+          "typographyBypass": "local_limit",
+          "refusalSemantic": null
+        },
+        {
+          "label": "undo",
+          "canonical": {
+            "path": "native-oracles/canonical/N10-local-lexical-zero/undo.kwdj.json",
+            "bytes": 206,
+            "sha256": "8b68143b4f2b275885f691aa709562e38d0e3564360f4bba84bbb94f62f6b2b9"
+          },
+          "state": {
+            "revision": 2,
+            "selectionEpoch": "E0+2",
+            "historyEpoch": "H0+2",
+            "undoUnits": 0,
+            "redoUnits": 1,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        },
+        {
+          "label": "redo",
+          "canonical": {
+            "path": "native-oracles/canonical/N10-local-lexical-zero/redo.kwdj.json",
+            "bytes": 208,
+            "sha256": "ab84f8f1100e7f1cd297f0836544efa4c78722be421f70b6127deb0542126714"
+          },
+          "state": {
+            "revision": 3,
+            "selectionEpoch": "E0+3",
+            "historyEpoch": "H0+3",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        }
+      ],
+      "expectedMap": {
+        "changedPublicationMapCount": 1,
+        "applyFromRevision": 0,
+        "applyToRevision": 1,
+        "probeCases": [
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "TAIL",
+              "utf16": 2,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "TAIL",
+                "utf16": 2,
+                "affinity": "before"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "edge",
+              "node": "P1",
+              "side": "start",
+              "affinity": "after"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "edge",
+                "node": "P1",
+                "side": "start",
+                "affinity": "after"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "T0",
+              "utf16": 0,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 0,
+                "affinity": "before"
+              }
+            }
+          }
+        ],
+        "refusal": null,
+        "qualification": "Semantic probe results are fixed, not a golden learned from returned StepMaps. No assertion on private temporary split IDs or number of internal preparation steps."
+      },
+      "outside": "P1/TAIL exact IDs, bytes, parent/order/marks/attrs remain unchanged at every checkpoint; P0 parent identity unchanged.",
+      "dataAuthorship": "Before/after documents, directed selection, history counts, marks and ID relations are fixed from sources/declared policy. Actual candidate output cannot populate or rewrite any field.",
+      "budget": "The optional source/context cannot be inspected under local cap; one literal insertion, explicit bypass.limit, same spent global meter, no rule receipt."
+    },
+    {
+      "id": "N11-T15-owned-final",
+      "status": "SOURCE_AUTHORED_PROPOSED_NATIVE_ORACLE_NOT_EXECUTED",
+      "locale": "ru",
+      "intent": {
+        "origin": "verified_final_composition",
+        "replacement": "\"",
+        "rawObservedFinal": "а \"",
+        "verifiedOriginalRange": true,
+        "onceOnlyOriginalTicket": true
+      },
+      "bindBeforeIds": {
+        "method": "Bind opaque IDs ONCE from known pre-open canonical paths; reject absent/duplicate IDs. This captures identities, never expected semantic output.",
+        "bindings": {
+          "/content/0": "P0",
+          "/content/0/content/0": "T0",
+          "/content/1": "P1",
+          "/content/1/content/0": "TAIL"
+        }
+      },
+      "newBindings": {
+        "method": "Bind declared fresh aliases only at their authored exact result paths after all canonical/state checks; assert pairwise distinct and not equal to any original ID. Reuse identical aliases on Redo, restored old aliases on Undo.",
+        "aliases": []
+      },
+      "checkpoints": [
+        {
+          "label": "before",
+          "canonical": {
+            "path": "native-oracles/canonical/N11-T15-owned-final/before.kwdj.json",
+            "bytes": 206,
+            "sha256": "8b68143b4f2b275885f691aa709562e38d0e3564360f4bba84bbb94f62f6b2b9"
+          },
+          "state": {
+            "revision": 0,
+            "selectionEpoch": "E0",
+            "historyEpoch": "H0",
+            "undoUnits": 0,
+            "redoUnits": 0,
+            "dirty": false,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          }
+        },
+        {
+          "label": "apply",
+          "canonical": {
+            "path": "native-oracles/canonical/N11-T15-owned-final/apply.kwdj.json",
+            "bytes": 208,
+            "sha256": "55502ff1effec2df407ddb3529e83115e93a30d2f6f37b62575e8e9b52b91c61"
+          },
+          "state": {
+            "revision": 1,
+            "selectionEpoch": "E0+1",
+            "historyEpoch": "H0+1",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1,
+          "rule": "double_quotes",
+          "typographyBypass": null,
+          "refusalSemantic": null
+        },
+        {
+          "label": "undo",
+          "canonical": {
+            "path": "native-oracles/canonical/N11-T15-owned-final/undo.kwdj.json",
+            "bytes": 206,
+            "sha256": "8b68143b4f2b275885f691aa709562e38d0e3564360f4bba84bbb94f62f6b2b9"
+          },
+          "state": {
+            "revision": 2,
+            "selectionEpoch": "E0+2",
+            "historyEpoch": "H0+2",
+            "undoUnits": 0,
+            "redoUnits": 1,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        },
+        {
+          "label": "redo",
+          "canonical": {
+            "path": "native-oracles/canonical/N11-T15-owned-final/redo.kwdj.json",
+            "bytes": 208,
+            "sha256": "55502ff1effec2df407ddb3529e83115e93a30d2f6f37b62575e8e9b52b91c61"
+          },
+          "state": {
+            "revision": 3,
+            "selectionEpoch": "E0+3",
+            "historyEpoch": "H0+3",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        }
+      ],
+      "expectedMap": {
+        "changedPublicationMapCount": 1,
+        "applyFromRevision": 0,
+        "applyToRevision": 1,
+        "probeCases": [
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "TAIL",
+              "utf16": 2,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "TAIL",
+                "utf16": 2,
+                "affinity": "before"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "edge",
+              "node": "P1",
+              "side": "start",
+              "affinity": "after"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "edge",
+                "node": "P1",
+                "side": "start",
+                "affinity": "after"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "T0",
+              "utf16": 0,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 0,
+                "affinity": "before"
+              }
+            }
+          }
+        ],
+        "refusal": null,
+        "qualification": "Semantic probe results are fixed, not a golden learned from returned StepMaps. No assertion on private temporary split IDs or number of internal preparation steps."
+      },
+      "outside": "P1/TAIL exact IDs, bytes, parent/order/marks/attrs remain unchanged at every checkpoint; P0 parent identity unchanged.",
+      "dataAuthorship": "Before/after documents, directed selection, history counts, marks and ID relations are fixed from sources/declared policy. Actual candidate output cannot populate or rewrite any field.",
+      "sourceQualification": "Preserves CMS-T15 content through an explicit41-owned final-commit translation; old unowned synthetic end-only trace remains separate zero-publication. Late tail produces no additional publication."
+    },
+    {
+      "id": "N12-code-literal",
+      "status": "SOURCE_AUTHORED_PROPOSED_NATIVE_ORACLE_NOT_EXECUTED",
+      "locale": "ru",
+      "intent": {
+        "origin": "typed_insert_text",
+        "text": "\""
+      },
+      "bindBeforeIds": {
+        "method": "Bind opaque IDs ONCE from known pre-open canonical paths; reject absent/duplicate IDs. This captures identities, never expected semantic output.",
+        "bindings": {
+          "/content/0": "P0",
+          "/content/0/content/0": "T0",
+          "/content/1": "P1",
+          "/content/1/content/0": "TAIL"
+        }
+      },
+      "newBindings": {
+        "method": "Bind declared fresh aliases only at their authored exact result paths after all canonical/state checks; assert pairwise distinct and not equal to any original ID. Reuse identical aliases on Redo, restored old aliases on Undo.",
+        "aliases": []
+      },
+      "checkpoints": [
+        {
+          "label": "before",
+          "canonical": {
+            "path": "native-oracles/canonical/N12-code-literal/before.kwdj.json",
+            "bytes": 232,
+            "sha256": "7911909debb34985ac1cb29299b0400caadb13e09b435557372f06d026806bb1"
+          },
+          "state": {
+            "revision": 0,
+            "selectionEpoch": "E0",
+            "historyEpoch": "H0",
+            "undoUnits": 0,
+            "redoUnits": 0,
+            "dirty": false,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": [
+              {
+                "type": "code"
+              }
+            ],
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          }
+        },
+        {
+          "label": "apply",
+          "canonical": {
+            "path": "native-oracles/canonical/N12-code-literal/apply.kwdj.json",
+            "bytes": 234,
+            "sha256": "7fe0402a36d7d4654f586515bbaed1509b6ead5f6438a96ac5bf7e575ed552e7"
+          },
+          "state": {
+            "revision": 1,
+            "selectionEpoch": "E0+1",
+            "historyEpoch": "H0+1",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": [
+              {
+                "type": "code"
+              }
+            ],
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1,
+          "rule": null,
+          "typographyBypass": null,
+          "refusalSemantic": null
+        },
+        {
+          "label": "undo",
+          "canonical": {
+            "path": "native-oracles/canonical/N12-code-literal/undo.kwdj.json",
+            "bytes": 232,
+            "sha256": "7911909debb34985ac1cb29299b0400caadb13e09b435557372f06d026806bb1"
+          },
+          "state": {
+            "revision": 2,
+            "selectionEpoch": "E0+2",
+            "historyEpoch": "H0+2",
+            "undoUnits": 0,
+            "redoUnits": 1,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": [
+              {
+                "type": "code"
+              }
+            ],
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        },
+        {
+          "label": "redo",
+          "canonical": {
+            "path": "native-oracles/canonical/N12-code-literal/redo.kwdj.json",
+            "bytes": 234,
+            "sha256": "7fe0402a36d7d4654f586515bbaed1509b6ead5f6438a96ac5bf7e575ed552e7"
+          },
+          "state": {
+            "revision": 3,
+            "selectionEpoch": "E0+3",
+            "historyEpoch": "H0+3",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": [
+              {
+                "type": "code"
+              }
+            ],
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        }
+      ],
+      "expectedMap": {
+        "changedPublicationMapCount": 1,
+        "applyFromRevision": 0,
+        "applyToRevision": 1,
+        "probeCases": [
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "TAIL",
+              "utf16": 2,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "TAIL",
+                "utf16": 2,
+                "affinity": "before"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "edge",
+              "node": "P1",
+              "side": "start",
+              "affinity": "after"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "edge",
+                "node": "P1",
+                "side": "start",
+                "affinity": "after"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "T0",
+              "utf16": 0,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 0,
+                "affinity": "before"
+              }
+            }
+          }
+        ],
+        "refusal": null,
+        "qualification": "Semantic probe results are fixed, not a golden learned from returned StepMaps. No assertion on private temporary split IDs or number of internal preparation steps."
+      },
+      "outside": "P1/TAIL exact IDs, bytes, parent/order/marks/attrs remain unchanged at every checkpoint; P0 parent identity unchanged.",
+      "dataAuthorship": "Before/after documents, directed selection, history counts, marks and ID relations are fixed from sources/declared policy. Actual candidate output cannot populate or rewrite any field.",
+      "protectedContext": "stored/current/original code; literal native insertion, no typography receipt."
+    },
+    {
+      "id": "N13-link-literal",
+      "status": "SOURCE_AUTHORED_PROPOSED_NATIVE_ORACLE_NOT_EXECUTED",
+      "locale": "ru",
+      "intent": {
+        "origin": "typed_insert_text",
+        "text": "\""
+      },
+      "bindBeforeIds": {
+        "method": "Bind opaque IDs ONCE from known pre-open canonical paths; reject absent/duplicate IDs. This captures identities, never expected semantic output.",
+        "bindings": {
+          "/content/0": "P0",
+          "/content/0/content/0": "T0",
+          "/content/1": "P1",
+          "/content/1/content/0": "TAIL"
+        }
+      },
+      "newBindings": {
+        "method": "Bind declared fresh aliases only at their authored exact result paths after all canonical/state checks; assert pairwise distinct and not equal to any original ID. Reuse identical aliases on Redo, restored old aliases on Undo.",
+        "aliases": []
+      },
+      "checkpoints": [
+        {
+          "label": "before",
+          "canonical": {
+            "path": "native-oracles/canonical/N13-link-literal/before.kwdj.json",
+            "bytes": 298,
+            "sha256": "11892f173e5919ce87871bb00e2c6e99f67bb41fea00ad15ed323d7532ca0008"
+          },
+          "state": {
+            "revision": 0,
+            "selectionEpoch": "E0",
+            "historyEpoch": "H0",
+            "undoUnits": 0,
+            "redoUnits": 0,
+            "dirty": false,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://example.test/a?b=1#c",
+                  "title": "Example"
+                }
+              }
+            ],
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          }
+        },
+        {
+          "label": "apply",
+          "canonical": {
+            "path": "native-oracles/canonical/N13-link-literal/apply.kwdj.json",
+            "bytes": 300,
+            "sha256": "3c418d9fca1fbcdda3b8ad8d5701adbe3e8d1e1d6673b5424c13b6c9fedcbf35"
+          },
+          "state": {
+            "revision": 1,
+            "selectionEpoch": "E0+1",
+            "historyEpoch": "H0+1",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://example.test/a?b=1#c",
+                  "title": "Example"
+                }
+              }
+            ],
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1,
+          "rule": null,
+          "typographyBypass": null,
+          "refusalSemantic": null
+        },
+        {
+          "label": "undo",
+          "canonical": {
+            "path": "native-oracles/canonical/N13-link-literal/undo.kwdj.json",
+            "bytes": 298,
+            "sha256": "11892f173e5919ce87871bb00e2c6e99f67bb41fea00ad15ed323d7532ca0008"
+          },
+          "state": {
+            "revision": 2,
+            "selectionEpoch": "E0+2",
+            "historyEpoch": "H0+2",
+            "undoUnits": 0,
+            "redoUnits": 1,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://example.test/a?b=1#c",
+                  "title": "Example"
+                }
+              }
+            ],
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        },
+        {
+          "label": "redo",
+          "canonical": {
+            "path": "native-oracles/canonical/N13-link-literal/redo.kwdj.json",
+            "bytes": 300,
+            "sha256": "3c418d9fca1fbcdda3b8ad8d5701adbe3e8d1e1d6673b5424c13b6c9fedcbf35"
+          },
+          "state": {
+            "revision": 3,
+            "selectionEpoch": "E0+3",
+            "historyEpoch": "H0+3",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://example.test/a?b=1#c",
+                  "title": "Example"
+                }
+              }
+            ],
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        }
+      ],
+      "expectedMap": {
+        "changedPublicationMapCount": 1,
+        "applyFromRevision": 0,
+        "applyToRevision": 1,
+        "probeCases": [
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "TAIL",
+              "utf16": 2,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "TAIL",
+                "utf16": 2,
+                "affinity": "before"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "edge",
+              "node": "P1",
+              "side": "start",
+              "affinity": "after"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "edge",
+                "node": "P1",
+                "side": "start",
+                "affinity": "after"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "T0",
+              "utf16": 0,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 0,
+                "affinity": "before"
+              }
+            }
+          }
+        ],
+        "refusal": null,
+        "qualification": "Semantic probe results are fixed, not a golden learned from returned StepMaps. No assertion on private temporary split IDs or number of internal preparation steps."
+      },
+      "outside": "P1/TAIL exact IDs, bytes, parent/order/marks/attrs remain unchanged at every checkpoint; P0 parent identity unchanged.",
+      "dataAuthorship": "Before/after documents, directed selection, history counts, marks and ID relations are fixed from sources/declared policy. Actual candidate output cannot populate or rewrite any field.",
+      "protectedContext": "stored/current/original link; raw href/title bytes exact; literal native insertion, no typography receipt. New policy, not CMS link golden."
+    },
+    {
+      "id": "N14-replacement-literal",
+      "status": "SOURCE_AUTHORED_PROPOSED_NATIVE_ORACLE_NOT_EXECUTED",
+      "locale": "ru",
+      "intent": {
+        "origin": "insert_replacement_text",
+        "text": "\""
+      },
+      "bindBeforeIds": {
+        "method": "Bind opaque IDs ONCE from known pre-open canonical paths; reject absent/duplicate IDs. This captures identities, never expected semantic output.",
+        "bindings": {
+          "/content/0": "P0",
+          "/content/0/content/0": "T0",
+          "/content/1": "P1",
+          "/content/1/content/0": "TAIL"
+        }
+      },
+      "newBindings": {
+        "method": "Bind declared fresh aliases only at their authored exact result paths after all canonical/state checks; assert pairwise distinct and not equal to any original ID. Reuse identical aliases on Redo, restored old aliases on Undo.",
+        "aliases": []
+      },
+      "checkpoints": [
+        {
+          "label": "before",
+          "canonical": {
+            "path": "native-oracles/canonical/N14-replacement-literal/before.kwdj.json",
+            "bytes": 206,
+            "sha256": "8b68143b4f2b275885f691aa709562e38d0e3564360f4bba84bbb94f62f6b2b9"
+          },
+          "state": {
+            "revision": 0,
+            "selectionEpoch": "E0",
+            "historyEpoch": "H0",
+            "undoUnits": 0,
+            "redoUnits": 0,
+            "dirty": false,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          }
+        },
+        {
+          "label": "apply",
+          "canonical": {
+            "path": "native-oracles/canonical/N14-replacement-literal/apply.kwdj.json",
+            "bytes": 208,
+            "sha256": "ab84f8f1100e7f1cd297f0836544efa4c78722be421f70b6127deb0542126714"
+          },
+          "state": {
+            "revision": 1,
+            "selectionEpoch": "E0+1",
+            "historyEpoch": "H0+1",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1,
+          "rule": null,
+          "typographyBypass": null,
+          "refusalSemantic": null
+        },
+        {
+          "label": "undo",
+          "canonical": {
+            "path": "native-oracles/canonical/N14-replacement-literal/undo.kwdj.json",
+            "bytes": 206,
+            "sha256": "8b68143b4f2b275885f691aa709562e38d0e3564360f4bba84bbb94f62f6b2b9"
+          },
+          "state": {
+            "revision": 2,
+            "selectionEpoch": "E0+2",
+            "historyEpoch": "H0+2",
+            "undoUnits": 0,
+            "redoUnits": 1,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        },
+        {
+          "label": "redo",
+          "canonical": {
+            "path": "native-oracles/canonical/N14-replacement-literal/redo.kwdj.json",
+            "bytes": 208,
+            "sha256": "ab84f8f1100e7f1cd297f0836544efa4c78722be421f70b6127deb0542126714"
+          },
+          "state": {
+            "revision": 3,
+            "selectionEpoch": "E0+3",
+            "historyEpoch": "H0+3",
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "dirty": true,
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            },
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation"
+          },
+          "outcome": "Changed",
+          "publicationDelta": 1
+        }
+      ],
+      "expectedMap": {
+        "changedPublicationMapCount": 1,
+        "applyFromRevision": 0,
+        "applyToRevision": 1,
+        "probeCases": [
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "TAIL",
+              "utf16": 2,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "TAIL",
+                "utf16": 2,
+                "affinity": "before"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "edge",
+              "node": "P1",
+              "side": "start",
+              "affinity": "after"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "edge",
+                "node": "P1",
+                "side": "start",
+                "affinity": "after"
+              }
+            }
+          },
+          {
+            "from": {
+              "kind": "text",
+              "leaf": "T0",
+              "utf16": 0,
+              "affinity": "before"
+            },
+            "expect": {
+              "kind": "Mapped",
+              "position": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 0,
+                "affinity": "before"
+              }
+            }
+          }
+        ],
+        "refusal": null,
+        "qualification": "Semantic probe results are fixed, not a golden learned from returned StepMaps. No assertion on private temporary split IDs or number of internal preparation steps."
+      },
+      "outside": "P1/TAIL exact IDs, bytes, parent/order/marks/attrs remain unchanged at every checkpoint; P0 parent identity unchanged.",
+      "dataAuthorship": "Before/after documents, directed selection, history counts, marks and ID relations are fixed from sources/declared policy. Actual candidate output cannot populate or rewrite any field.",
+      "qualification": "ReplacementText remains literal even one scalar; distinguish ordinary selection replacement in N05."
+    },
+    {
+      "id": "N15-backspace-quote",
+      "status": "NEW_SOURCE_AUTHORED_REVERSAL_HISTORY_POLICY_NOT_EXECUTED",
+      "bindBeforeIds": {
+        "/content/0": "P0",
+        "/content/0/content/0": "T0",
+        "/content/1": "P1",
+        "/content/1/content/0": "TAIL"
+      },
+      "checkpoints": [
+        {
+          "label": "before",
+          "canonical": {
+            "path": "native-oracles/canonical/N15-backspace-quote/before.kwdj.json",
+            "bytes": 206,
+            "sha256": "8b68143b4f2b275885f691aa709562e38d0e3564360f4bba84bbb94f62f6b2b9"
+          },
+          "state": {
+            "revision": 0,
+            "selectionEpoch": "E0+0",
+            "historyEpoch": "H0+0",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "dirty": false,
+            "undoUnits": 0,
+            "redoUnits": 0,
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation",
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            }
+          },
+          "ruleReceiptLive": false
+        },
+        {
+          "label": "rule",
+          "canonical": {
+            "path": "native-oracles/canonical/N15-backspace-quote/rule.kwdj.json",
+            "bytes": 208,
+            "sha256": "55502ff1effec2df407ddb3529e83115e93a30d2f6f37b62575e8e9b52b91c61"
+          },
+          "state": {
+            "revision": 1,
+            "selectionEpoch": "E0+1",
+            "historyEpoch": "H0+1",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "dirty": true,
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation",
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            }
+          },
+          "ruleReceiptLive": true
+        },
+        {
+          "label": "raw-reversal",
+          "canonical": {
+            "path": "native-oracles/canonical/N15-backspace-quote/raw-reversal.kwdj.json",
+            "bytes": 208,
+            "sha256": "ab84f8f1100e7f1cd297f0836544efa4c78722be421f70b6127deb0542126714"
+          },
+          "state": {
+            "revision": 2,
+            "selectionEpoch": "E0+1",
+            "historyEpoch": "H0+2",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "dirty": true,
+            "undoUnits": 2,
+            "redoUnits": 0,
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation",
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            }
+          },
+          "ruleReceiptLive": false
+        },
+        {
+          "label": "undo-reversal",
+          "canonical": {
+            "path": "native-oracles/canonical/N15-backspace-quote/undo-reversal.kwdj.json",
+            "bytes": 208,
+            "sha256": "55502ff1effec2df407ddb3529e83115e93a30d2f6f37b62575e8e9b52b91c61"
+          },
+          "state": {
+            "revision": 3,
+            "selectionEpoch": "E0+1",
+            "historyEpoch": "H0+3",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "dirty": true,
+            "undoUnits": 1,
+            "redoUnits": 1,
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation",
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            }
+          },
+          "ruleReceiptLive": false
+        },
+        {
+          "label": "undo-rule",
+          "canonical": {
+            "path": "native-oracles/canonical/N15-backspace-quote/undo-rule.kwdj.json",
+            "bytes": 206,
+            "sha256": "8b68143b4f2b275885f691aa709562e38d0e3564360f4bba84bbb94f62f6b2b9"
+          },
+          "state": {
+            "revision": 4,
+            "selectionEpoch": "E0+2",
+            "historyEpoch": "H0+4",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 2,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "dirty": true,
+            "undoUnits": 0,
+            "redoUnits": 2,
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation",
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            }
+          },
+          "ruleReceiptLive": false
+        },
+        {
+          "label": "redo-rule",
+          "canonical": {
+            "path": "native-oracles/canonical/N15-backspace-quote/redo-rule.kwdj.json",
+            "bytes": 208,
+            "sha256": "55502ff1effec2df407ddb3529e83115e93a30d2f6f37b62575e8e9b52b91c61"
+          },
+          "state": {
+            "revision": 5,
+            "selectionEpoch": "E0+3",
+            "historyEpoch": "H0+5",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "dirty": true,
+            "undoUnits": 1,
+            "redoUnits": 1,
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation",
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            }
+          },
+          "ruleReceiptLive": false
+        },
+        {
+          "label": "redo-reversal",
+          "canonical": {
+            "path": "native-oracles/canonical/N15-backspace-quote/redo-reversal.kwdj.json",
+            "bytes": 208,
+            "sha256": "ab84f8f1100e7f1cd297f0836544efa4c78722be421f70b6127deb0542126714"
+          },
+          "state": {
+            "revision": 6,
+            "selectionEpoch": "E0+3",
+            "historyEpoch": "H0+6",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 3,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "dirty": true,
+            "undoUnits": 2,
+            "redoUnits": 0,
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation",
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            }
+          },
+          "ruleReceiptLive": false
+        }
+      ],
+      "receipt": "Native one-shot proof for original matched hyphens/quote+trigger metadata only. No deleted selection copy; no resurrection of retired node IDs except owned ordinary history. Rule receipt is not rearmed by Undo/Redo.",
+      "expectedMap": {
+        "changedMaps": 6,
+        "eachAdjacentRevisionContiguous": true,
+        "unrelatedProbe": {
+          "from": {
+            "kind": "text",
+            "leaf": "TAIL",
+            "utf16": 2,
+            "affinity": "before"
+          },
+          "expect": {
+            "kind": "Mapped",
+            "position": {
+              "kind": "text",
+              "leaf": "TAIL",
+              "utf16": 2,
+              "affinity": "before"
+            }
+          }
+        }
+      },
+      "afterSecondBackspaceQualification": "A fresh second immediate Backspace after raw-reversal uses ordinary delete; it cannot toggle the transformation back."
+    },
+    {
+      "id": "N16-backspace-dash",
+      "status": "NEW_SOURCE_AUTHORED_REVERSAL_HISTORY_POLICY_NOT_EXECUTED",
+      "bindBeforeIds": {
+        "/content/0": "P0",
+        "/content/0/content/0": "T0",
+        "/content/1": "P1",
+        "/content/1/content/0": "TAIL"
+      },
+      "checkpoints": [
+        {
+          "label": "before",
+          "canonical": {
+            "path": "native-oracles/canonical/N16-backspace-dash/before.kwdj.json",
+            "bytes": 207,
+            "sha256": "56025b628243c40aabdc5ef7552aa86b99db9c9f488e5234d4dfa5fc5a74fd0a"
+          },
+          "state": {
+            "revision": 0,
+            "selectionEpoch": "E0+0",
+            "historyEpoch": "H0+0",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 4,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 4,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "dirty": false,
+            "undoUnits": 0,
+            "redoUnits": 0,
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation",
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            }
+          },
+          "ruleReceiptLive": false
+        },
+        {
+          "label": "rule",
+          "canonical": {
+            "path": "native-oracles/canonical/N16-backspace-dash/rule.kwdj.json",
+            "bytes": 209,
+            "sha256": "ab1f3988240046c8c095595aa4550f9cd213d7c68c52d869a288160f82fad2d5"
+          },
+          "state": {
+            "revision": 1,
+            "selectionEpoch": "E0+0",
+            "historyEpoch": "H0+1",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 4,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 4,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "dirty": true,
+            "undoUnits": 1,
+            "redoUnits": 0,
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation",
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            }
+          },
+          "ruleReceiptLive": true
+        },
+        {
+          "label": "raw-reversal",
+          "canonical": {
+            "path": "native-oracles/canonical/N16-backspace-dash/raw-reversal.kwdj.json",
+            "bytes": 208,
+            "sha256": "92b16edfeec4013dac7812b28f238d70c2ac4e8921c4b778da48564640a4f4ac"
+          },
+          "state": {
+            "revision": 2,
+            "selectionEpoch": "E0+1",
+            "historyEpoch": "H0+2",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 5,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 5,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "dirty": true,
+            "undoUnits": 2,
+            "redoUnits": 0,
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation",
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            }
+          },
+          "ruleReceiptLive": false
+        },
+        {
+          "label": "undo-reversal",
+          "canonical": {
+            "path": "native-oracles/canonical/N16-backspace-dash/undo-reversal.kwdj.json",
+            "bytes": 209,
+            "sha256": "ab1f3988240046c8c095595aa4550f9cd213d7c68c52d869a288160f82fad2d5"
+          },
+          "state": {
+            "revision": 3,
+            "selectionEpoch": "E0+2",
+            "historyEpoch": "H0+3",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 4,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 4,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "dirty": true,
+            "undoUnits": 1,
+            "redoUnits": 1,
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation",
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            }
+          },
+          "ruleReceiptLive": false
+        },
+        {
+          "label": "undo-rule",
+          "canonical": {
+            "path": "native-oracles/canonical/N16-backspace-dash/undo-rule.kwdj.json",
+            "bytes": 207,
+            "sha256": "56025b628243c40aabdc5ef7552aa86b99db9c9f488e5234d4dfa5fc5a74fd0a"
+          },
+          "state": {
+            "revision": 4,
+            "selectionEpoch": "E0+2",
+            "historyEpoch": "H0+4",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 4,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 4,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "dirty": true,
+            "undoUnits": 0,
+            "redoUnits": 2,
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation",
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            }
+          },
+          "ruleReceiptLive": false
+        },
+        {
+          "label": "redo-rule",
+          "canonical": {
+            "path": "native-oracles/canonical/N16-backspace-dash/redo-rule.kwdj.json",
+            "bytes": 209,
+            "sha256": "ab1f3988240046c8c095595aa4550f9cd213d7c68c52d869a288160f82fad2d5"
+          },
+          "state": {
+            "revision": 5,
+            "selectionEpoch": "E0+2",
+            "historyEpoch": "H0+5",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 4,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 4,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "dirty": true,
+            "undoUnits": 1,
+            "redoUnits": 1,
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation",
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            }
+          },
+          "ruleReceiptLive": false
+        },
+        {
+          "label": "redo-reversal",
+          "canonical": {
+            "path": "native-oracles/canonical/N16-backspace-dash/redo-reversal.kwdj.json",
+            "bytes": 208,
+            "sha256": "92b16edfeec4013dac7812b28f238d70c2ac4e8921c4b778da48564640a4f4ac"
+          },
+          "state": {
+            "revision": 6,
+            "selectionEpoch": "E0+3",
+            "historyEpoch": "H0+6",
+            "selection": {
+              "anchor": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 5,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "leaf": "T0",
+                "utf16": 5,
+                "affinity": "after"
+              }
+            },
+            "storedMarks": null,
+            "dirty": true,
+            "undoUnits": 2,
+            "redoUnits": 0,
+            "key": "BASE.key",
+            "sessionGeneration": "BASE.generation",
+            "liveIds": {
+              "/content/0": "P0",
+              "/content/0/content/0": "T0",
+              "/content/1": "P1",
+              "/content/1/content/0": "TAIL"
+            }
+          },
+          "ruleReceiptLive": false
+        }
+      ],
+      "receipt": "Native one-shot proof for original matched hyphens/quote+trigger metadata only. No deleted selection copy; no resurrection of retired node IDs except owned ordinary history. Rule receipt is not rearmed by Undo/Redo.",
+      "expectedMap": {
+        "changedMaps": 6,
+        "eachAdjacentRevisionContiguous": true,
+        "unrelatedProbe": {
+          "from": {
+            "kind": "text",
+            "leaf": "TAIL",
+            "utf16": 2,
+            "affinity": "before"
+          },
+          "expect": {
+            "kind": "Mapped",
+            "position": {
+              "kind": "text",
+              "leaf": "TAIL",
+              "utf16": 2,
+              "affinity": "before"
+            }
+          }
+        }
+      },
+      "afterSecondBackspaceQualification": "A fresh second immediate Backspace after raw-reversal uses ordinary delete; it cannot toggle the transformation back."
+    }
+  ]
+}
