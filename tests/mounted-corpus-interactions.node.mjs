@@ -9,14 +9,14 @@ import { join } from 'node:path';
 import { collectInteractions, interactionValidators, assessInteraction } from '../scripts/mounted-corpus/collect-interactions.mjs';
 import { ownBoundedData, RESOURCE_KEYS } from '../scripts/mounted-corpus/protocol.mjs';
 import { observeNativeModule } from '../scripts/mounted-corpus/native-observer.mjs';
-import { loadMountedSourceContinuation48 } from '../scripts/mounted-corpus/source-continuation48.mjs';
+import { loadMountedSourceContinuation66 } from '../scripts/mounted-corpus/source-continuation66.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const currentSourceReader = async (path, maximum) => {
   const value = await readFile(join(root, path));
   assert.ok(value.length <= maximum, 'Current source reader respects exact continuation bound'); return value;
 };
-const continuation = await loadMountedSourceContinuation48({ readArtifact: currentSourceReader });
+const continuation = await loadMountedSourceContinuation66({ readArtifact: currentSourceReader });
 const historicalSourceReader = continuation.historicalAuthorityReader(currentSourceReader);
 const literalPath = 'contracts/mounted-e2e/v1/interaction-literals.json';
 const schemaPath = 'contracts/mounted-e2e/v1/observation.schema.json';

@@ -1,0 +1,571 @@
+{
+  "format": "editor-accessibility-presentation-cases/1",
+  "issue": "OSR-66",
+  "status": "SOURCE_AUTHORED_NOT_RUN",
+  "acceptedBase": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+  "checklistSha256": "1c969827f988a7cf464fb028590640edc02f7f1feff355af948fe9330b0af82b",
+  "scope": "Additive finite presentation/keyboard expectations only; frozen checklist and prior assertions unchanged. No candidate/runtime generated golden.",
+  "thresholds": {
+    "text": 4.5,
+    "boundary": 3,
+    "projectTarget": 32,
+    "tolerance": 1,
+    "maxNodes": 128,
+    "maxRects": 256,
+    "maxAncestors": 32
+  },
+  "nonColorCue": {
+    "rule": "On and mixed each differ from off and from each other in actual non-color visual signatures; preserve exact aria-pressed/name/native state. No candidate-specific decoration chosen as expected.",
+    "excluded": [
+      "color",
+      "background-color",
+      "border-color",
+      "outline-color",
+      "aria-pressed"
+    ]
+  },
+  "states": [
+    {
+      "id": "off",
+      "pressed": "false",
+      "source": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "roles": {
+        "R": [],
+        "P": [
+          0
+        ],
+        "T": [
+          0,
+          0
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "after"
+        }
+      }
+    },
+    {
+      "id": "on",
+      "pressed": "true",
+      "source": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "roles": {
+        "R": [],
+        "P": [
+          0
+        ],
+        "T": [
+          0,
+          0
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "after"
+        }
+      }
+    },
+    {
+      "id": "mixed",
+      "pressed": "mixed",
+      "source": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"},{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "roles": {
+        "R": [],
+        "P": [
+          0
+        ],
+        "A": [
+          0,
+          0
+        ],
+        "B": [
+          0,
+          1
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "A",
+          "offset": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "B",
+          "offset": 1,
+          "affinity": "after"
+        }
+      }
+    }
+  ],
+  "prose": {
+    "en": {
+      "source": "{\"content\":[{\"content\":[{\"text\":\"A quiet garden holds small bright flowers beside the stone path. Every sentence remains readable when the space between words grows.\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"The second paragraph keeps its full text and a clear route to each nearby control.\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "texts": [
+        "A quiet garden holds small bright flowers beside the stone path. Every sentence remains readable when the space between words grows.",
+        "The second paragraph keeps its full text and a clear route to each nearby control."
+      ],
+      "roles": {
+        "R": [],
+        "P": [
+          0
+        ],
+        "T": [
+          0,
+          0
+        ],
+        "P2": [
+          1
+        ],
+        "T2": [
+          1,
+          0
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 132,
+          "affinity": "after"
+        }
+      }
+    },
+    "ru": {
+      "source": "{\"content\":[{\"content\":[{\"text\":\"Тихий сад хранит яркие цветы рядом с каменной дорожкой. Каждая строка остаётся читаемой, когда расстояние между словами становится больше.\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Второй абзац сохраняет весь текст и понятный путь к каждой соседней кнопке.\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "texts": [
+        "Тихий сад хранит яркие цветы рядом с каменной дорожкой. Каждая строка остаётся читаемой, когда расстояние между словами становится больше.",
+        "Второй абзац сохраняет весь текст и понятный путь к каждой соседней кнопке."
+      ],
+      "roles": {
+        "R": [],
+        "P": [
+          0
+        ],
+        "T": [
+          0,
+          0
+        ],
+        "P2": [
+          1
+        ],
+        "T2": [
+          1,
+          0
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 138,
+          "affinity": "after"
+        }
+      }
+    }
+  },
+  "long": {
+    "source": "{\"content\":[{\"content\":[{\"text\":\"Paragraph 01: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Paragraph 02: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Paragraph 03: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Paragraph 04: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Paragraph 05: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Paragraph 06: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Paragraph 07: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Paragraph 08: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Paragraph 09: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Paragraph 10: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Paragraph 11: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Paragraph 12: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+    "texts": [
+      "Paragraph 01: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.",
+      "Paragraph 02: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.",
+      "Paragraph 03: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.",
+      "Paragraph 04: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.",
+      "Paragraph 05: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.",
+      "Paragraph 06: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.",
+      "Paragraph 07: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.",
+      "Paragraph 08: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.",
+      "Paragraph 09: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.",
+      "Paragraph 10: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.",
+      "Paragraph 11: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling.",
+      "Paragraph 12: A bounded garden path stays readable beside the quiet wall and the bright flowers. The same source text remains present during scrolling."
+    ],
+    "roles": {
+      "R": [],
+      "P0": [
+        0
+      ],
+      "T0": [
+        0,
+        0
+      ],
+      "P1": [
+        1
+      ],
+      "T1": [
+        1,
+        0
+      ],
+      "P2": [
+        2
+      ],
+      "T2": [
+        2,
+        0
+      ],
+      "P3": [
+        3
+      ],
+      "T3": [
+        3,
+        0
+      ],
+      "P4": [
+        4
+      ],
+      "T4": [
+        4,
+        0
+      ],
+      "P5": [
+        5
+      ],
+      "T5": [
+        5,
+        0
+      ],
+      "P6": [
+        6
+      ],
+      "T6": [
+        6,
+        0
+      ],
+      "P7": [
+        7
+      ],
+      "T7": [
+        7,
+        0
+      ],
+      "P8": [
+        8
+      ],
+      "T8": [
+        8,
+        0
+      ],
+      "P9": [
+        9
+      ],
+      "T9": [
+        9,
+        0
+      ],
+      "P10": [
+        10
+      ],
+      "T10": [
+        10,
+        0
+      ],
+      "P11": [
+        11
+      ],
+      "T11": [
+        11,
+        0
+      ]
+    },
+    "variants": [
+      {
+        "id": "start",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "T0",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T0",
+            "offset": 0,
+            "affinity": "after"
+          }
+        }
+      },
+      {
+        "id": "end",
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "T11",
+            "offset": 151,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T11",
+            "offset": 151,
+            "affinity": "after"
+          }
+        }
+      }
+    ]
+  },
+  "keyboard": [
+    {
+      "id": "K02-combining-reverse",
+      "source": "{\"content\":[{\"content\":[{\"text\":\"é\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "after": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"é\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "roles": {
+        "R": [],
+        "P": [
+          0
+        ],
+        "T": [
+          0,
+          0
+        ]
+      },
+      "textRoles": [
+        "T"
+      ],
+      "setupSelection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "after"
+        }
+      },
+      "keys": [
+        "Shift+ArrowLeft"
+      ],
+      "selected": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 2,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 0,
+          "affinity": "after"
+        }
+      },
+      "selectedAtomRoles": [],
+      "expected": {
+        "liveRoles": [
+          "R",
+          "P",
+          "T"
+        ],
+        "newIds": 0,
+        "retiredIds": 0,
+        "marks": {
+          "T": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ]
+        },
+        "apply": {
+          "revision": "1",
+          "history_epoch": "1",
+          "undo_entries": "1",
+          "redo_entries": "0",
+          "semanticSelectionEpochDelta": "0"
+        },
+        "undo": {
+          "revision": "2",
+          "history_epoch": "2",
+          "undo_entries": "0",
+          "redo_entries": "1"
+        },
+        "redo": {
+          "revision": "3",
+          "history_epoch": "3",
+          "undo_entries": "1",
+          "redo_entries": "0"
+        }
+      }
+    },
+    {
+      "id": "K02-atom-nested-root-forward",
+      "source": "{\"content\":[{\"content\":[{\"text\":\"é\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"text\":\"ж\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"type\":\"scene_break\"},{\"content\":[{\"text\":\"👩‍💻\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "after": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"é\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"ж\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"blockquote\"},{\"type\":\"scene_break\"},{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"👩‍💻\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+      "roles": {
+        "R": [],
+        "P": [
+          0
+        ],
+        "T": [
+          0,
+          0
+        ],
+        "Q": [
+          1
+        ],
+        "QP": [
+          1,
+          0
+        ],
+        "QT": [
+          1,
+          0,
+          0
+        ],
+        "S": [
+          2
+        ],
+        "P2": [
+          3
+        ],
+        "T2": [
+          3,
+          0
+        ]
+      },
+      "textRoles": [
+        "T",
+        "QT",
+        "T2"
+      ],
+      "setupSelection": {
+        "anchor": {
+          "kind": "text",
+          "node": "T",
+          "offset": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "T",
+          "offset": 0,
+          "affinity": "after"
+        }
+      },
+      "keys": [
+        "ControlOrMeta+a"
+      ],
+      "selected": {
+        "anchor": {
+          "kind": "child",
+          "parent": "R",
+          "index": 0,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "child",
+          "parent": "R",
+          "index": 4,
+          "affinity": "after"
+        }
+      },
+      "selectedAtomRoles": [
+        "S"
+      ],
+      "expected": {
+        "liveRoles": [
+          "R",
+          "P",
+          "T",
+          "Q",
+          "QP",
+          "QT",
+          "S",
+          "P2",
+          "T2"
+        ],
+        "newIds": 0,
+        "retiredIds": 0,
+        "marks": {
+          "T": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ],
+          "QT": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ],
+          "T2": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ]
+        },
+        "apply": {
+          "revision": "1",
+          "history_epoch": "1",
+          "undo_entries": "1",
+          "redo_entries": "0",
+          "semanticSelectionEpochDelta": "0"
+        },
+        "undo": {
+          "revision": "2",
+          "history_epoch": "2",
+          "undo_entries": "0",
+          "redo_entries": "1"
+        },
+        "redo": {
+          "revision": "3",
+          "history_epoch": "3",
+          "undo_entries": "1",
+          "redo_entries": "0"
+        }
+      }
+    }
+  ],
+  "nativeKeyboardAuthority": [
+    {
+      "path": "contracts/selection/v1/unicode-oracles.json",
+      "claim": "U-COMB e+combining acute UTF16 2, one EGC, ShiftLeft2->0 exact reverse selection"
+    },
+    {
+      "path": "contracts/selection/v1/formatting-oracles.json",
+      "claim": "Full text leaves gain Strong; scene atom and nested container remain structural; no whole-leaf split; original IDs/attributes and directed range retained"
+    },
+    {
+      "path": "contracts/ui/v1/native-oracles.json",
+      "claim": "V01 command toggleMark preserves full selected IDs/range; one isolated history unit"
+    }
+  ],
+  "selectionPaintQualification": "Actual DOM range/rects and exposed computed ::selection are retained; unexposed native UA paint is unresolved, never fabricated as an OS palette/AT or screenshot claim."
+}

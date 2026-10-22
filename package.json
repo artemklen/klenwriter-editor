@@ -18,7 +18,7 @@
     "check:packages": "node scripts/check-packages.mjs",
     "test:workspace": "node --test tests/workspace.node.mjs",
     "check:rust": "cargo fmt --all --check && cargo clippy --workspace --all-targets --locked -- -D warnings && cargo test --workspace --locked",
-    "check": "npm run check:rust && npm run test:canonical && npm run build && npm run test:codec && npm run test:corpus && npm run test:session && npm run test:transactions && npm run test:commands && npm run test:history && npm run test:deltas && npm run test:sdk && npm run test:extensions && npm run check:metadata && npm run check:workspace && npm run check:packages && npm run test:sdk:consumer && npm run test:workspace && npm run check:m0 && npm run perf:verify && npm run test:workspace:browser && npm run test:dom && npm run test:selection && npm run test:composition && npm run test:ui && npm run test:slash && npm run test:drag && npm run test:mounted-corpus && npm run test:clipboard && npm run test:typography",
+    "check": "npm run check:rust && npm run test:canonical && npm run build && npm run test:codec && npm run test:corpus && npm run test:session && npm run test:transactions && npm run test:commands && npm run test:history && npm run test:deltas && npm run test:sdk && npm run test:extensions && npm run check:metadata && npm run check:workspace && npm run check:packages && npm run test:sdk:consumer && npm run test:workspace && npm run check:m0 && npm run perf:verify && npm run test:workspace:browser && npm run test:dom && npm run test:selection && npm run test:composition && npm run test:ui && npm run test:accessibility:unit && npm run test:slash && npm run test:drag && npm run test:mounted-corpus && npm run test:clipboard && npm run test:typography",
     "test:session": "node --test tests/session.node.mjs",
     "test:transactions": "node --test tests/transactions.node.mjs",
     "test:commands": "node --test tests/commands.node.mjs",
@@ -66,7 +66,8 @@
     "test:typography:native": "node --test tests/typography-native.node.mjs",
     "test:typography:unit": "node --test tests/typing-*.node.mjs",
     "test:typography:browser": "node scripts/prepare-typography-fixture.mjs && playwright test --config playwright.typography.config.js",
-    "test:typography": "npm run test:typography:native && npm run test:typography:unit && npm run test:typography:browser"
+    "test:typography": "npm run test:typography:native && npm run test:typography:unit && npm run test:typography:browser",
+    "test:accessibility:unit": "node --test tests/accessibility-human-receipt.node.mjs tests/accessibility-presentation-readiness.node.mjs"
   },
   "engines": {
     "node": ">=24.22.0 <25 || >=26 <27"

@@ -5,17 +5,19 @@ export interface SlashListItem {
 interface Option {readonly element:HTMLDivElement;readonly label:HTMLSpanElement;readonly reason:HTMLSpanElement}
 /** Literal presentation only; these option identities never authorize commands. */
 export class SlashList {
-  readonly element:HTMLDivElement;
+  readonly container:HTMLDivElement;readonly element:HTMLDivElement;
   #options=new Map<string,Option>();#owned=new WeakMap<Node,string>();
   #active:HTMLElement|null=null;#serial=0;#empty:HTMLDivElement;#destroyed=false;
   constructor(readonly document:Document,readonly prefix:string){
+    this.container=document.createElement('div');this.container.id=`${prefix}-popup`;
+    this.container.className='kw-ui-popup kw-ui-slash';this.container.hidden=true;
     this.element=document.createElement('div');this.element.id=`${prefix}-list`;
-    this.element.className='kw-ui-popup kw-ui-slash';this.element.setAttribute('role','listbox');this.element.hidden=true;
+    this.element.className='kw-ui-slash-list';this.element.setAttribute('role','listbox');this.container.append(this.element);
     this.#empty=document.createElement('div');this.#empty.className='kw-ui-reason';this.#empty.setAttribute('role','status');
   }
   update(items:readonly SlashListItem[],activeId:string|null,label:string,emptyLabel:string,locale:'ru'|'en'):void {
     if(this.#destroyed)return;
-    this.element.setAttribute('aria-label',label);this.element.lang=locale;this.#active=null;
+    this.element.setAttribute('aria-label',label);this.element.lang=locale;this.container.lang=locale;this.#active=null;
     const live=new Set(items.map(item=>item.id));
     for(const [id,option]of this.#options)if(!live.has(id)){option.element.remove();this.#owned.delete(option.element);this.#options.delete(id);}
     if(items.length)this.#empty.remove();
@@ -36,7 +38,7 @@ export class SlashList {
       if(option.element!==next)this.element.insertBefore(option.element,next);
       next=option.element.nextSibling;
     }
-    if(!items.length){this.#empty.textContent=emptyLabel;this.element.append(this.#empty);}
+    if(!items.length){this.#empty.textContent=emptyLabel;this.container.append(this.#empty);}
   }
   get activeOption():HTMLElement|null{return this.#active;}
   optionFor(target:EventTarget|null):string|null {
@@ -52,16 +54,16 @@ export class SlashList {
     return null;
   }
   scrollActive():void {
-    const active=this.#active;if(this.#destroyed||!active||!this.element.isConnected||this.element.hidden)return;
-    const list=this.element.getBoundingClientRect(),option=active.getBoundingClientRect();
-    const current=this.element.scrollTop,max=Math.max(0,this.element.scrollHeight-this.element.clientHeight);
-    const scale=list.height/this.element.offsetHeight;
+    const active=this.#active;if(this.#destroyed||!active||!this.container.isConnected||this.container.hidden)return;
+    const list=this.container.getBoundingClientRect(),option=active.getBoundingClientRect();
+    const current=this.container.scrollTop,max=Math.max(0,this.container.scrollHeight-this.container.clientHeight);
+    const scale=list.height/this.container.offsetHeight;
     if(![list.top,list.bottom,option.top,option.bottom,current,max,scale].every(Number.isFinite)||scale<=0)return;
     // Rects include CSS zoom; scrollTop/clientHeight use the element's local
     // CSS units. Convert only this list's measured scroll, never page scroll.
-    const top=list.top+this.element.clientTop*scale,bottom=top+this.element.clientHeight*scale;
+    const top=list.top+this.container.clientTop*scale,bottom=top+this.container.clientHeight*scale;
     const delta=option.top<top?option.top-top:option.bottom>bottom?option.bottom-bottom:0;
-    this.element.scrollTop=Math.max(0,Math.min(max,current+delta/scale));
+    this.container.scrollTop=Math.max(0,Math.min(max,current+delta/scale));
   }
-  destroy():void{if(this.#destroyed)return;this.#destroyed=true;this.element.remove();this.#options.clear();this.#owned=new WeakMap();this.#active=null;this.#empty.remove();}
+  destroy():void{if(this.#destroyed)return;this.#destroyed=true;this.container.remove();this.#options.clear();this.#owned=new WeakMap();this.#active=null;this.#empty.remove();}
 }

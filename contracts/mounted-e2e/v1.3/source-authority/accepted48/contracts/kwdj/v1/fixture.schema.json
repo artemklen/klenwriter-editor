@@ -1,0 +1,627 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:klenwriter:kwdj:v1:fixture-set",
+  "title": "KWDJ v1 golden fixture set",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "fixture_schema_version",
+    "fixtures"
+  ],
+  "properties": {
+    "fixture_schema_version": {
+      "const": 1
+    },
+    "fixtures": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/fixture"
+      }
+    }
+  },
+  "$defs": {
+    "fixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "purpose",
+        "classification",
+        "cases"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^DOC-(00[1-9]|0[12][0-9]|03[0-4])$"
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1
+        },
+        "classification": {
+          "enum": [
+            "positive",
+            "negative",
+            "mixed",
+            "deferred"
+          ]
+        },
+        "cases": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/case"
+          }
+        }
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "polarity",
+        "input",
+        "kwdj",
+        "expected",
+        "pipeline_stages"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]*$"
+        },
+        "polarity": {
+          "enum": [
+            "positive",
+            "negative"
+          ]
+        },
+        "input": {
+          "$ref": "#/$defs/input"
+        },
+        "kwdj": {
+          "oneOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "edit": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/edit"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expected": {
+          "$ref": "#/$defs/expected"
+        },
+        "pipeline_stages": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "legacy_import_parse",
+              "clipboard_plain_to_kwdj",
+              "clipboard_rich_to_kwdj",
+              "validate_normalize",
+              "editor_round_trip_unchanged",
+              "editor_edit_save_reopen",
+              "public_render",
+              "plain_text_projection",
+              "identity_manifest_extraction",
+              "schema_upconversion",
+              "determinism"
+            ]
+          }
+        }
+      }
+    },
+    "input": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/kwdjInput"
+        },
+        {
+          "$ref": "#/$defs/legacyMarkdownInput"
+        },
+        {
+          "$ref": "#/$defs/clipboardInput"
+        },
+        {
+          "$ref": "#/$defs/retainedRevisionsInput"
+        },
+        {
+          "$ref": "#/$defs/resourceBoundaryInput"
+        }
+      ]
+    },
+    "kwdjInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "const": "kwdj"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_ref": {
+          "const": "$case.kwdj"
+        },
+        "identity_state": {
+          "$ref": "#/$defs/identityState"
+        },
+        "repeat_count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "value": {}
+          },
+          "required": [
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "value_ref": {}
+          },
+          "required": [
+            "value_ref"
+          ]
+        }
+      ]
+    },
+    "legacyMarkdownInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "profile",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "const": "legacy_markdown"
+        },
+        "profile": {
+          "enum": [
+            "prose",
+            "poetry"
+          ]
+        },
+        "value": {
+          "type": "string"
+        },
+        "identity_state": {
+          "$ref": "#/$defs/identityState"
+        },
+        "source_annotations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "clipboardInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "profile",
+        "insertion_context",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "clipboard_plain",
+            "clipboard_html"
+          ]
+        },
+        "profile": {
+          "enum": [
+            "prose",
+            "poetry"
+          ]
+        },
+        "insertion_context": {
+          "enum": [
+            "root",
+            "prose_block",
+            "verse"
+          ]
+        },
+        "value": {
+          "type": "string"
+        },
+        "plain_fallback": {
+          "type": "string"
+        },
+        "clipboard_items": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "text/plain",
+              "text/html",
+              "image",
+              "file",
+              "blob"
+            ]
+          }
+        }
+      }
+    },
+    "retainedRevisionsInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "const": "retained_revisions"
+        },
+        "value": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "revisions",
+            "restore_sequence"
+          ],
+          "properties": {
+            "revisions": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 10,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "sequence",
+                  "schema_version",
+                  "document"
+                ],
+                "properties": {
+                  "sequence": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "schema_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "document": {
+                    "type": "object"
+                  }
+                }
+              }
+            },
+            "restore_sequence": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    },
+    "resourceBoundaryInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "const": "resource_boundary"
+        },
+        "value": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "limit_name",
+            "limit_value",
+            "unit",
+            "boundary_points",
+            "generator",
+            "target_path",
+            "document_template"
+          ],
+          "properties": {
+            "limit_name": {
+              "enum": [
+                "document_bytes",
+                "tree_depth",
+                "node_count",
+                "text_length",
+                "table_rows",
+                "table_effective_columns",
+                "attribute_length"
+              ]
+            },
+            "limit_value": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "unit": {
+              "enum": [
+                "utf8_bytes",
+                "node_levels",
+                "nodes",
+                "rows",
+                "effective_columns"
+              ]
+            },
+            "boundary_points": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 2,
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "position",
+                  "measured_value"
+                ],
+                "properties": {
+                  "position": {
+                    "enum": [
+                      "just_below",
+                      "at_limit",
+                      "over_limit"
+                    ]
+                  },
+                  "measured_value": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            },
+            "generator": {
+              "enum": [
+                "pad_utf8_document",
+                "nest_blockquotes",
+                "fill_node_count",
+                "extend_text_leaf",
+                "repeat_table_row",
+                "repeat_table_cell",
+                "extend_attribute"
+              ]
+            },
+            "target_path": {
+              "type": "string",
+              "pattern": "^/"
+            },
+            "document_template": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "identityState": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "existing_media_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "existing_reference_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "media_public_paths": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "reference_public_paths": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "edit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation",
+        "path",
+        "value"
+      ],
+      "properties": {
+        "operation": {
+          "enum": [
+            "append_text",
+            "replace_text",
+            "toggle_mark",
+            "insert_block"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "value": {}
+      }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "outcome",
+        "diagnostic_codes",
+        "normalized_kwdj",
+        "public_html",
+        "full_text",
+        "search_index_text",
+        "public_snippet_text",
+        "media_manifest",
+        "reference_manifest",
+        "notes"
+      ],
+      "properties": {
+        "outcome": {
+          "enum": [
+            "accepted",
+            "rejected",
+            "audit",
+            "blocked",
+            "deferred"
+          ]
+        },
+        "diagnostic_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]*$"
+          }
+        },
+        "normalized_kwdj": {
+          "oneOf": [
+            {
+              "$ref": "urn:klenwriter:kwdj:v1"
+            },
+            {
+              "const": "$case.kwdj"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "public_html": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "full_text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "search_index_text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "public_snippet_text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "atomic_failure": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "canonical_value_created",
+            "revision_created",
+            "projections_created",
+            "manifests_created"
+          ],
+          "properties": {
+            "canonical_value_created": {
+              "const": false
+            },
+            "revision_created": {
+              "const": false
+            },
+            "projections_created": {
+              "const": false
+            },
+            "manifests_created": {
+              "const": false
+            }
+          }
+        },
+        "media_manifest": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "media_asset_id",
+              "locator"
+            ],
+            "properties": {
+              "media_asset_id": {
+                "type": "string"
+              },
+              "locator": {
+                "type": "string",
+                "pattern": "^/content/"
+              }
+            }
+          }
+        },
+        "reference_manifest": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "reference_entity_id",
+              "locator"
+            ],
+            "properties": {
+              "reference_entity_id": {
+                "type": "string"
+              },
+              "locator": {
+                "type": "string",
+                "pattern": "^/content/"
+              }
+            }
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "format": "osr66-installed-presentation-programs/1",
+  "status": "SOURCE_AUTHORED_BEFORE_EXECUTION",
+  "task": "OSR-66",
+  "episodes": [
+    {
+      "browser": "chrome",
+      "locale": "en",
+      "freshBrowserAndNonce": true
+    },
+    {
+      "browser": "chrome",
+      "locale": "ru",
+      "freshBrowserAndNonce": true
+    },
+    {
+      "browser": "safari",
+      "locale": "en",
+      "freshBrowserAndNonce": true
+    },
+    {
+      "browser": "safari",
+      "locale": "ru",
+      "freshBrowserAndNonce": true
+    }
+  ],
+  "variants": [
+    {
+      "theme": "default",
+      "pageZoom": 1
+    },
+    {
+      "theme": "highContrast",
+      "pageZoom": 1
+    },
+    {
+      "theme": "highContrast",
+      "pageZoom": 2
+    },
+    {
+      "theme": "default",
+      "pageZoom": 2
+    }
+  ],
+  "scenes": [
+    {
+      "caseId": "presentation-kwdj",
+      "sourceFixture": "contracts/ui/v1/native-oracles.json#/cases/V01-forward",
+      "setup": "Actual public host mount with original authored range. Focus-before/mode/theme are closed preparation, not physical proof.",
+      "fixedProgramme": [
+        "before; ≤12 acknowledged Tab to Strong",
+        "Right Italic; Left Strong; Tab editor; Tab Move; Tab Drag; Tab Add; Enter picker",
+        "Down Quote; Home Paragraph; Escape cancel",
+        "readonly; before; ≤12 Tab Strong; click Strong; Escape reason",
+        "editable; before; ≤12 Tab Strong; Tab editor: actual native endpoint geometry",
+        "≤12 Tab Save: lower host scroll; before; ≤12 Tab Strong: upper return; Tab editor"
+      ],
+      "expectations": [
+        "Original localized Bold name and mixed state; actual non-color cue",
+        "Native canonical, IDs, marks, revision and history unchanged; no command/input_command/Undo/Redo/save acknowledgement",
+        "Actual trusted down/up for nonreserved keys, actual control focus and outline/hit/contrast",
+        "Actual lower/upper popup and host scroll progress",
+        "Readonly reason associated and visible; Escape only hides reason, same focus",
+        "Measured native selection endpoints within current clip after keyboard return"
+      ]
+    },
+    {
+      "caseId": "presentation-notes",
+      "sourceFixture": "contracts/ui/v1/native-oracles.json#/cases/V06-NC011-root-title-owned-metadata",
+      "setup": "Actual Notes profile; parent current three-control modal Tab handler must be retained.",
+      "fixedProgramme": [
+        "before; ≤12 Tab Title; Enter",
+        "Tab Apply; Tab Cancel; Tab wraps field",
+        "Enter with empty field; Escape"
+      ],
+      "expectations": [
+        "Actual dialog role/modal/name, localized labeled field and Apply/Cancel names",
+        "Focus-visible input/Apply/Cancel and actual lower/upper modal scroll",
+        "Only empty required-field validation; aria-invalid and exact associated localized error",
+        "No nonempty metadata submit; native canonical/IDs/history remain original"
+      ]
+    },
+    {
+      "caseId": "presentation-recovery",
+      "sourceFixture": "V01-forward with fixed source-authored rejected loader",
+      "setup": "Actual public host rejected-loader state, not runtime/native-ready or OS clipboard recovery.",
+      "fixedProgramme": [
+        "before; ≤12 Tab Retry; Tab Original"
+      ],
+      "expectations": [
+        "Actual localized rejected-loader controls and keyboard focus/outline/contrast",
+        "No recovery action activation; null public state/canonical/context remains; native resource counts unchanged",
+        "V07 target-size observations are supplementary facts only"
+      ]
+    }
+  ],
+  "frozenMeasurements": {
+    "textContrastMinimum": 4.5,
+    "nonTextContrastMinimum": 3,
+    "focusOutlineWidthMinimumCssPx": 2,
+    "contrastAncestorCap": 32,
+    "layoutTargetCap": 256,
+    "pointerHitPoints": 5,
+    "nativeAXNodes": 512,
+    "nativeAXDepth": 32,
+    "nativeAXWindows": 32,
+    "zoom": "Actual independent AX window, initial/current CSS width ratio 1 or 2±0.01; visualViewport.scale remains1. Original helper performs fresh owner proof per CG transition on Chrome."
+  },
+  "scope": {
+    "mandatoryRowsCovered": [
+      "A66-V01 selected actual installed surfaces/default+declared high-contrast theme",
+      "A66-V02 actual popup/modal/host-scroll keyboard focus",
+      "A66-V03 actual native 100/200% zoom, selected geometry and native invariants"
+    ],
+    "additionalFacts": [
+      "A66-V07 control dimensions, not substitute for frozen sealed-three-engine method"
+    ],
+    "notCovered": [
+      "Old18 interaction semantics (separate unchanged coordinator)",
+      "Human integrated Undo/Save/reopen",
+      "AT or hardware input provenance",
+      "Runtime/clipboard/composition recovery variants",
+      "CJK/mobile/arbitrary themes",
+      "OS forced-colors switching",
+      "Full WCAG or formal acceptance"
+    ]
+  },
+  "failurePolicy": "Every failed/opaque physical action disables later programme; preserve original unknown completion and permit at most one same-owner matching UP-only cleanup. No retry/replay, semantic acceptance, capture or settings/permission flow.",
+  "budget": "Existing protocol limits remain unchanged. Result/log/traffic exhaustion fails; no promise that an unexecuted programme fits the wire/log caps."
+}

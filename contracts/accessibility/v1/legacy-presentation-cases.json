@@ -1,0 +1,28 @@
+{
+  "format": "osr66-independent-legacy-presentation/1",
+  "status": "SOURCE_AUTHORED_NOT_EXECUTED",
+  "scope": "Supplemental A66-S03 and K06 on the accepted /ui window.ui42 host. No installed browser, OS, AT, or conformance claim.",
+  "authority": ["contracts/accessibility/v1/checklist.json#/semantics", "contracts/ui/v1/native-oracles.json", "contracts/ui/v1/nesting-oracles.json", "contracts/slash/v1/strings.json", "packages/ui/src/strings.ts"],
+  "slash": {
+    "canonical": "{\"content\":[{\"content\":[{\"text\":\"pre  tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+    "noResultsCanonical": "{\"content\":[{\"content\":[{\"text\":\"pre /zzzz tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+    "roles": {"R": [], "P": [0], "T": [0,0]},
+    "selection": {"anchor": {"kind":"text","node":"T","offset":4,"affinity":"after"},"focus":{"kind":"text","node":"T","offset":4,"affinity":"after"}},
+    "options": {
+      "en": ["Paragraph","Heading 2","Heading 3","Quote","Bulleted list","Numbered list","Task list","Code block","Scene break"],
+      "ru": ["Абзац","Заголовок 2","Заголовок 3","Цитата","Маркированный список","Нумерованный список","Список задач","Блок кода","Разделитель сцен"]
+    }
+  },
+  "labels": {
+    "en": {"editor":"Document","picker":"Choose a block type","empty":"No results","add":"Add block","move":"Move block","addOptions":["Paragraph","Quote","Table"],"moveOptions":["Move up","Move down","Nest","Unnest"],"N01Before":"Block 2: Text block — Document","N01After":"Block 2: Text block — Document / Container","N02Before":"Block 2: Text block — Document / Container","N02After":"Block 2: Text block — Document"},
+    "ru": {"editor":"Документ","picker":"Выберите тип блока","empty":"Ничего не найдено","add":"Добавить блок","move":"Переместить блок","addOptions":["Абзац","Цитата","Таблица"],"moveOptions":["Выше","Ниже","Внутрь","Наружу"],"N01Before":"Блок 2: Текстовый блок — Документ","N01After":"Блок 2: Текстовый блок — Документ / Контейнер","N02Before":"Блок 2: Текстовый блок — Документ / Контейнер","N02After":"Блок 2: Текстовый блок — Документ"}
+  },
+  "nesting": [{"id":"N01","choice":"nest","downKeys":2},{"id":"N02","choice":"unnest","downKeys":3}],
+  "qualification": {
+    "ordinaryAddAndMove": "Named connected listbox/menu and expanded state; no aria-controls relationship invented for these ordinary controls.",
+    "slash": "Textbox owns current connected listbox/current active option. Textbox aria-expanded absent; Add expanded true while open. Slash Add may expose the actual listbox controls relationship.",
+    "nesting": "One initial public focus setup, then keyboard Tab/Enter/Home/ArrowDown/Enter only for activation. History API is explicitly native history verification, not physical Undo/Redo proof.",
+    "targetLocal": ["history.retained_bytes", "opaque session/generation/node IDs", "event sequence base"],
+    "K02": "NOT_AUTHORED_HERE; independent Unicode/atom/nested literal authority and source proof required before extension."
+  }
+}

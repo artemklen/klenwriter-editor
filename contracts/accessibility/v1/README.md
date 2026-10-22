@@ -1,0 +1,13 @@
+# Accessibility contract v1 — OSR-66
+
+Accepted base: `bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a`. This is independent source-authored acceptance data, before OSR-66 product changes or execution. All27 rows in [checklist.json](checklist.json) are `NOT_RUN`; these files are not accessibility results or formal review.
+
+The original card and preserved Refine3e25ad8a govern AC1–AC4. Existing UX, D05/D15 and pinned UI/selection/slash/Notes/typography expectations remain unchanged. Paths/hashes bind accepted authority. Product-source reasoning pins describe that accepted revision, not future runtime bytes; actual candidate source/build is bound separately.
+
+Exact27 IDs: S01–S05, K01–K08, M01–M03, L01, V01–V09, E01 with prefix `A66-`. Variants stay within those rows. `integratedKeyboardChain` supplies literal canonical bytes, ID relations, marks, directed points, semantic epochs/history and focus before candidate. Only initial setup may write selection/focus; later fixture writes cannot count as keyboard input. `heldSaveBranch` covers stale receipts; test-host storage proves no CMS/server persistence.
+
+The source fixes names/roles/states, code/label pairs and one dark host theme. Host document language is supplied before mount. Live name changes use a prebound external `aria-labelledby` target; changing root `aria-label`/`lang` is not a new supported live API and must not bypass mutation guards. Selected A/AA mappings are finite;4.1.3 records programmatic status semantics only. Real VoiceOver/NVDA/announcements remain deferred D05. D15 keeps product Save/modal/recovery with host; later authoring/mobile/CJK/collaboration/virtualization/publication remain outside scope.
+
+Record automation, synthetic events, physical helper input, browser zoom, available AX and actual human keyboard/focus separately. One prepared Safari human scenario addresses original manual wording without owner signoff per row. Existing installed9families×RU/EN=18 remain distinct from new integrated chain; their host Undo/Redo is setup, not physical proof. Unselected12 legacy rows stay NOT_SELECTED, not a full30 claim. Genuine fixture-tab closure does not claim wholeSafari shutdown.
+
+Forced-colors/reduced-motion are labelled media emulation; CSSzoom is not installed200%;320-CSS reflow is separate. No screenshot/video/recording/trace archive is requested. Before execution root reads/freezes contract and tests. Each row receives actual method/status/version/receipt/limits/defects/cleanup; preserve originalFAIL/unknown outcome. Exact nine local gates, matching build-only CI and independent exact-head review remain mandatory.

@@ -1,0 +1,18 @@
+--- a/packages/dom/src/selection.ts
++++ b/packages/dom/src/selection.ts
+@@ -243,6 +243,15 @@
+     const host=this.configuration.element(),doc=host?.ownerDocument,win=doc?.defaultView;if(!host || !doc || !win)return;this.#attached=true;
+     const listen=(target:EventTarget,type:string,fn:EventListener,capture=false)=>{target.addEventListener(type,fn,capture);this.#removals.push(()=>target.removeEventListener(type,fn,capture));};
+     const owned=(target:EventTarget|null)=>target instanceof win.Node && host.contains(target);
++    // A browser selectionchange may still be queued when Tab leaves the root.
++    // Window capture runs before outside UI's bookmark capture. Import only a
++    // live user range; a range retired by native publication stays retired.
++    // Bookmark/host-request capture itself remains pure and rejects mismatch.
++    listen(win,'keydown',event=>{
++      const key=event as KeyboardEvent;
++      if(owned(key.target) && key.isTrusted && key.key==='Tab' && !key.altKey && !key.ctrlKey && !key.metaKey
++        && !key.isComposing && !key.defaultPrevented && !this.#retiredViewImport && doc.hasFocus() && this.ownsFocus() && !this.#guard())this.syncFromDom();
++    },true);
+     // Window capture precedes an outside UI handle's stopped document bubble.
+     // Retain only physical identity, not an event, target or selection capability.
+     listen(win,'pointerdown',event=>{

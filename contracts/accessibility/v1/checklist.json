@@ -1,0 +1,2208 @@
+{
+  "format": "klenwriter-editor-accessibility-checklist/1",
+  "issue": "OSR-66",
+  "status": "SOURCE_AUTHORED_BEFORE_CANDIDATE_NOT_EXECUTED",
+  "acceptedBase": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+  "authoredBeforeCandidate": true,
+  "executionResultsIncluded": false,
+  "rowCount": 27,
+  "scope": {
+    "criteria": "Selected WCAG2.2 A/AA mappings only, not full conformance/AT. 4.1.3 programmatic portion; actual announcements deferred D05.",
+    "formalDependencies": [
+      "OSR-40",
+      "OSR-41",
+      "OSR-42",
+      "OSR-43",
+      "OSR-44"
+    ],
+    "sequentialContext": "48 Done before66, not invented Linear edge",
+    "ownership": "Rust document/selection/history; DOM correspondence; optional UI chrome; host save/modal/recovery",
+    "exposedCapabilitiesOnly": true,
+    "deferred": [
+      "Real VoiceOver/NVDA/AT/announcements D05",
+      "Mobile/CJK/collaboration",
+      "Virtualization46",
+      "Future authoring50/51/52/68",
+      "CMS persistence/migration/auth",
+      "Windows/Linux from Mac evidence",
+      "Arbitrary consumer themes",
+      "Publishing/deploy"
+    ],
+    "excludedEvidence": [
+      "screenshots",
+      "video",
+      "recording/Playwright/desktop trace archives",
+      "stopped OSR38 campaigns"
+    ]
+  },
+  "sources": [
+    {
+      "id": "native-ui",
+      "path": "contracts/ui/v1/native-oracles.json",
+      "bytes": 49373,
+      "sha256": "e064ba58d2c579c3cd9c58937a32a09591c8379a283543b40c2828919fe84470",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "role": "accepted independent authority, unchanged by66; not execution"
+    },
+    {
+      "id": "ui-keyboard",
+      "path": "contracts/ui/v1/keyboard-focus-oracles.json",
+      "bytes": 3745,
+      "sha256": "e5f085cdbde9bac3f7caf3161d43ae46b7d7e21c28cb960e928e5fd87c37d4b6",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "role": "accepted independent authority, unchanged by66; not execution"
+    },
+    {
+      "id": "host-requests",
+      "path": "contracts/ui/v1/host-request-oracles.json",
+      "bytes": 6034,
+      "sha256": "e854614917419c382c4bd4976585200e356961a29f30e3956217989ad68cf846",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "role": "accepted independent authority, unchanged by66; not execution"
+    },
+    {
+      "id": "nesting",
+      "path": "contracts/ui/v1/nesting-oracles.json",
+      "bytes": 88937,
+      "sha256": "a36060d26da183934206bdb49b20129a6c40c41da1bf2a255452014bdd921b84",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "role": "accepted independent authority, unchanged by66; not execution"
+    },
+    {
+      "id": "slash",
+      "path": "contracts/slash/v1/lexical-key-oracles.json",
+      "bytes": 17681,
+      "sha256": "920f8a7190717cd66d93dcf610c00ed6c098d1363b187288ea5c2456167e4333",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "role": "accepted independent authority, unchanged by66; not execution"
+    },
+    {
+      "id": "unicode-selection",
+      "path": "contracts/selection/v1/unicode-oracles.json",
+      "bytes": 18177,
+      "sha256": "adb2b9c04cd3e8b16340e68c419b00aac81fbcae29dae3117cd50db3fbf0f2e2",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "role": "accepted independent authority, unchanged by66; not execution"
+    },
+    {
+      "id": "selection-native",
+      "path": "contracts/selection/v1/native-oracles.json",
+      "bytes": 338776,
+      "sha256": "d1fe9a0f7139066eb34725a9bd6b2568752b3a6204f73474dd9436eaa25f73e1",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "role": "accepted independent authority, unchanged by66; not execution"
+    },
+    {
+      "id": "notes-commands",
+      "path": "contracts/notes/v1/commands/vectors.json",
+      "bytes": 34354,
+      "sha256": "43d060a1e3a07d1c44d9eaa9e57d7aa47347d8f13790e8641acbd38aad20e4f9",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "role": "accepted independent authority, unchanged by66; not execution"
+    },
+    {
+      "id": "typography-dom",
+      "path": "contracts/typography/v1/dom-oracles.json",
+      "bytes": 107762,
+      "sha256": "a0c271d6dc5fa3b06f4f284a41b0f845df5796ae4020a0f0c3c8978385896386",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "role": "accepted independent authority, unchanged by66; not execution"
+    },
+    {
+      "id": "typography-rules",
+      "path": "contracts/typography/v1/rules-contract.json",
+      "bytes": 10692,
+      "sha256": "417e1b11b6d23fc82da7b257feaa266fe9243b4b6b67f77cbd868254bd99e2e1",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "role": "accepted independent authority, unchanged by66; not execution"
+    },
+    {
+      "id": "ux",
+      "path": "docs/m0/ux-contract.md",
+      "bytes": 21511,
+      "sha256": "6841a9c011019eebb75c141e5d7bf9e646409b6d7bb0801c507c3f62800a3a29",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "role": "accepted independent authority, unchanged by66; not execution"
+    },
+    {
+      "id": "decisions",
+      "path": "docs/m0/decision-register.md",
+      "bytes": 7863,
+      "sha256": "fc16398aa4f028386588db64d36f14f6a7a4e7c157eeddfd77159038e80e67f3",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "role": "accepted independent authority, unchanged by66; not execution"
+    },
+    {
+      "id": "architecture",
+      "path": "docs/m0/architecture.md",
+      "bytes": 64424,
+      "sha256": "13f7a2c183643961331322a5f78afdf8b0b7aa5169972fc581f5368c55fda6e3",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "role": "accepted independent authority, unchanged by66; not execution"
+    }
+  ],
+  "acceptedSourceReasoning": [
+    {
+      "path": "crates/kwdj/src/commands/inline.rs",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "lines": [
+        552,
+        811,
+        869
+      ],
+      "bytes": 58048,
+      "sha256": "d11c251bc92bef5d7302f36622f99bfa7dcf13cbea0eee7d72674421858f5913",
+      "role": "pre-candidate source proof; not future runtime-source pin"
+    },
+    {
+      "path": "crates/kwdj/src/commands/block.rs",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "lines": [
+        1616,
+        1673,
+        1813
+      ],
+      "bytes": 90591,
+      "sha256": "212a321fa9abbe4890304101b120689440a0a6bff7266d51e74b7fa8c6c51055",
+      "role": "pre-candidate source proof; not future runtime-source pin"
+    },
+    {
+      "path": "crates/kwdj/src/commands/delete.rs",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "lines": [
+        260
+      ],
+      "bytes": 13495,
+      "sha256": "13df2854d90b0072f7706e80e743491be9a1031cb6dc0333dd581909617b609c",
+      "role": "pre-candidate source proof; not future runtime-source pin"
+    },
+    {
+      "path": "crates/kwdj/src/edit_normalize.rs",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "lines": [
+        356,
+        390
+      ],
+      "bytes": 41095,
+      "sha256": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a",
+      "role": "pre-candidate source proof; not future runtime-source pin"
+    },
+    {
+      "path": "crates/engine/src/tree.rs",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "lines": [
+        2001
+      ],
+      "bytes": 201809,
+      "sha256": "8cf2281a1c6bf0a84e7b00e22312d2e9f94cf480bbf34ff69be1b34d4378d0ef",
+      "role": "pre-candidate source proof; not future runtime-source pin"
+    },
+    {
+      "path": "crates/engine/src/history.rs",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "lines": [
+        249,
+        318,
+        361
+      ],
+      "bytes": 56430,
+      "sha256": "43a28d7fc3e48138d71f4e0cb2889a572fa25dc545b39e6a0e793ae6d610382d",
+      "role": "pre-candidate source proof; not future runtime-source pin"
+    },
+    {
+      "path": "crates/engine/src/history_dispatch.rs",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "lines": [
+        106
+      ],
+      "bytes": 10241,
+      "sha256": "5c41e2e8ca729bb5bb047eded54d668cdd6f64e38fcd6dce301012f6ae73b0a2",
+      "role": "pre-candidate source proof; not future runtime-source pin"
+    },
+    {
+      "path": "crates/engine/src/session.rs",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "lines": [
+        635
+      ],
+      "bytes": 36188,
+      "sha256": "d0871a6560c245e6c221c6b19d47d1e516b89a14f6d62b3e66df4ef79b725644",
+      "role": "pre-candidate source proof; not future runtime-source pin"
+    },
+    {
+      "path": "packages/dom/src/input.ts",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "lines": [
+        98
+      ],
+      "bytes": 24956,
+      "sha256": "356226cf6635794447d783458ea16c4bda62ecca368e7f5f589799e1cf370eea",
+      "role": "pre-candidate source proof; not future runtime-source pin"
+    },
+    {
+      "path": "packages/dom/src/selection.ts",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "lines": [
+        229
+      ],
+      "bytes": 30109,
+      "sha256": "bcc20bd5d144e4c3568d999ee56406590ff9e1f736bd648f492df21ca345e742",
+      "role": "pre-candidate source proof; not future runtime-source pin"
+    },
+    {
+      "path": "packages/ui/src/ui.ts",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "lines": [
+        116,
+        670
+      ],
+      "bytes": 60718,
+      "sha256": "d79be50517e7bb4780dcbdbe3e17c62f27b80bfedbd3fc63a41f5b704b78fc60",
+      "role": "pre-candidate source proof; not future runtime-source pin"
+    },
+    {
+      "path": "packages/ui/src/strings.ts",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "lines": [
+        3
+      ],
+      "bytes": 3413,
+      "sha256": "799be5ba5bf85056995fd306a4ae36f9e3cc18c53dd8cf96c7f185631fed21a3",
+      "role": "pre-candidate source proof; not future runtime-source pin"
+    },
+    {
+      "path": "crates/bridge/src/lib.rs",
+      "revision": "bd92d9469e05a4ba1d43a71700b41fb9d1a50c8a",
+      "lines": [
+        725,
+        736,
+        738,
+        742,
+        746
+      ],
+      "bytes": 38197,
+      "sha256": "ab8ce45d338092191d621d84ae621326505905cb6e391785e694d579634277c2",
+      "role": "accepted public snapshot-ack boundary proof: AcknowledgeSnapshot discards private acknowledgement variant; compares saved_revision/dirty; returns mutation state_changed or unchanged. No private enum is exposed."
+    }
+  ],
+  "preservedLinearAuthority": [
+    {
+      "archive": "osr-66/accepted-intake-bd92-01",
+      "file": "refine.md",
+      "bytes": 5436,
+      "sha256": "e0e31bc08436007605898921daaea02237579ae018318a0f445d9746c572737d"
+    },
+    {
+      "archive": "osr-66/accepted-intake-bd92-01",
+      "file": "issue.json",
+      "bytes": 7188,
+      "sha256": "a676030920329db69ba90f331dea4d715cff38cf6324f4e8c4614ceadcf7467c"
+    }
+  ],
+  "standards": {
+    "url": "https://www.w3.org/TR/2024/REC-WCAG22-20241212/",
+    "edition": "W3C Recommendation12December2024",
+    "selected": [
+      "1.1.1",
+      "1.3.1",
+      "1.3.2",
+      "1.4.1",
+      "1.4.3",
+      "1.4.4",
+      "1.4.10",
+      "1.4.11",
+      "1.4.12",
+      "1.4.13",
+      "2.1.1",
+      "2.1.2",
+      "2.4.3",
+      "2.4.6",
+      "2.4.7",
+      "2.4.11",
+      "2.5.3",
+      "2.5.7",
+      "2.5.8",
+      "3.1.1",
+      "3.2.1",
+      "3.2.2",
+      "3.3.1",
+      "3.3.2",
+      "4.1.2",
+      "4.1.3"
+    ],
+    "qualification": [
+      "No full-page/process conformance",
+      "2.4.13 AAA not selected",
+      "4.1.1 removed/obsolete not selected",
+      "Project32px stronger than AA24px",
+      "KeyboardMove alone not2.5.7 pointer proof"
+    ]
+  },
+  "evidenceMethods": {
+    "automated": [
+      "Chromium",
+      "WebKit",
+      "Firefox experimental behavior, integrity mandatory"
+    ],
+    "installed": [
+      "Chrome/macOS RU/EN",
+      "Safari/macOS RU/EN"
+    ],
+    "installedLegacyFamilies": {
+      "selected": 9,
+      "localeVariants": 18,
+      "unselected": 12,
+      "unselectedStatus": "NOT_SELECTED, never full30 claim",
+      "families": [
+        "navigation",
+        "format-keyboard",
+        "add-keyboard",
+        "move-menu-up",
+        "move-menu-down",
+        "move-key-up",
+        "move-key-down",
+        "host-dialog",
+        "modes-zoom"
+      ],
+      "nativeUndoRedo": "Host API setup in reused finite lane, not physical Undo proof",
+      "keyboardDeleteUndoSave": "New integrated chain/browser and separate human lane",
+      "SafariCleanup": "Genuine fixture-tab-closed proof, not fullwindow/process-shutdown claim"
+    },
+    "manualKeyboardFocus": {
+      "scenario": "One prepared source-frozen Safari keyboard/focus scenario on completed fixture",
+      "record": "Actual human action separately from physical helper/protocol automation; bounded written/event/focus observations, no recordings",
+      "perRowOwnerGate": false
+    },
+    "zoom": "Actual installed200% distinct from CSSzoom/device-scale/viewport-only control",
+    "media": "forced-colors/reduced-motion explicitly emulated, not system switch",
+    "themes": [
+      "default",
+      "hostHighContrast"
+    ]
+  },
+  "hostHighContrast": {
+    "authoredBeforeCandidate": true,
+    "tokens": {
+      "background": "#000000",
+      "foreground": "#ffffff",
+      "boundary": "#ffffff",
+      "focus": "#00ffff",
+      "selectedBackground": "#002b36",
+      "selectedForeground": "#ffffff",
+      "reasonForeground": "#ffff00",
+      "unavailableBackground": "#000000",
+      "unavailableForeground": "#ffffff"
+    },
+    "thresholds": {
+      "normalTextReason": 4.5,
+      "largeText": 3,
+      "meaningfulBoundaryFocus": 3,
+      "projectTargetCssPx": 32
+    },
+    "evidence": "Actual composite-color measurement required; tokens alone not PASS."
+  },
+  "labels": {
+    "editor": {
+      "ru": "Документ",
+      "en": "Document"
+    },
+    "toolbar": {
+      "ru": "Форматирование текста",
+      "en": "Text formatting"
+    },
+    "strong": {
+      "ru": "Полужирный",
+      "en": "Bold"
+    },
+    "emphasis": {
+      "ru": "Курсив",
+      "en": "Italic"
+    },
+    "add": {
+      "ru": "Добавить блок",
+      "en": "Add block"
+    },
+    "move": {
+      "ru": "Переместить блок",
+      "en": "Move block"
+    },
+    "paragraph": {
+      "ru": "Абзац",
+      "en": "Paragraph"
+    },
+    "picker": {
+      "ru": "Выберите тип блока",
+      "en": "Choose a block type"
+    },
+    "emptyResults": {
+      "ru": "Ничего не найдено",
+      "en": "No results"
+    },
+    "save": {
+      "ru": "Сохранить документ",
+      "en": "Save document"
+    },
+    "reopen": {
+      "ru": "Открыть сохранённую копию",
+      "en": "Reopen saved copy"
+    },
+    "dialog": {
+      "ru": "Параметры блока",
+      "en": "Block options"
+    },
+    "title": {
+      "ru": "Заголовок",
+      "en": "Title"
+    },
+    "apply": {
+      "ru": "Применить",
+      "en": "Apply"
+    },
+    "cancel": {
+      "ru": "Отмена",
+      "en": "Cancel"
+    }
+  },
+  "stableReasonPairs": [
+    {
+      "code": "dom.composition_conflict",
+      "label": {
+        "ru": "Завершите ввод, чтобы применить действие.",
+        "en": "Finish typing to use this action."
+      }
+    },
+    {
+      "code": "dom.mode_blocked",
+      "label": {
+        "ru": "Редактор временно недоступен",
+        "en": "Editor temporarily unavailable"
+      }
+    },
+    {
+      "code": "dom.native_read_only",
+      "label": {
+        "ru": "Только чтение",
+        "en": "Read-only"
+      }
+    },
+    {
+      "code": "dom.stale_selection",
+      "label": {
+        "ru": "Выделение изменилось. Выберите текст снова.",
+        "en": "The selection changed. Select the text again."
+      }
+    },
+    {
+      "code": "notes.invalid_attribute",
+      "label": {
+        "ru": "Недоступно в этом документе.",
+        "en": "Unavailable in this document."
+      }
+    }
+  ],
+  "reasonRendering": "Stable localized prefixes above may append current generic space+(unchanged code). Machine code remains separately observed, not translated. No raw stack as primary label.",
+  "semantics": {
+    "editor": {
+      "role": "textbox",
+      "name": "labels.editor resolved by host aria-labelledby target outside editing root, bound before mount",
+      "aria-multiline": "true",
+      "aria-busy": {
+        "loading": "true",
+        "ready": "false",
+        "readOnly": "false",
+        "disabled": "false",
+        "error": "false",
+        "fatal": "false"
+      },
+      "aria-readonly": {
+        "editable": "false",
+        "readOnly": "true",
+        "disabled": "true"
+      },
+      "aria-disabled": {
+        "editable": "false",
+        "readOnly": "false",
+        "disabled": "true"
+      },
+      "tabindex": {
+        "editable": "0",
+        "readOnly": "0",
+        "disabled": "-1"
+      }
+    },
+    "toolbar": {
+      "role": "toolbar",
+      "name": "labels.toolbar",
+      "rovingStops": 1,
+      "pressed": [
+        "false",
+        "true",
+        "mixed"
+      ],
+      "unavailable": "aria-disabled true with connected reason aria-describedby"
+    },
+    "slash": {
+      "role": "listbox",
+      "name": "labels.picker",
+      "optionRole": "option",
+      "activeOptionCount": 1,
+      "inputFocus": "editor",
+      "textboxOwns": [
+        "aria-haspopup=listbox",
+        "aria-controls=current connected listbox",
+        "aria-activedescendant=current option or absent when no-results"
+      ],
+      "textboxExpanded": "absent per accepted43",
+      "addExpanded": "true open/false closed",
+      "noResults": "status, never option"
+    },
+    "move": {
+      "trigger": "named button, haspopup menu",
+      "popup": "menu",
+      "choice": "menuitem",
+      "context": "localized type/position/breadcrumb association"
+    },
+    "status": {
+      "role": "status",
+      "aria-live": "polite",
+      "focusMovedForMessage": false,
+      "actualATDelivery": "DEFERRED D05"
+    },
+    "hostModal": {
+      "role": "dialog",
+      "aria-modal": "true only active genuinely modal",
+      "name": "labels.dialog",
+      "field": "labels.title",
+      "trap": "only active modal",
+      "exit": "Apply/Cancel/Escape according original request"
+    },
+    "language": "UI chrome lang follows setLocale. Host supplies editor/document lang before mount and never guesses authored text. Live document-name localization uses aria-labelledby set before mount to a connected external host label; only external label text/lang changes with UI locale. Do not mutate mounted root aria-label/lang without documented ownership; ordinary mutation guards remain intact.",
+    "attributeOwnership": "Original host role/ARIA/tabindex snapshot restored on destroy; owned additions never enter canonical/native transaction"
+  },
+  "axe": {
+    "package": "@axe-core/playwright",
+    "version": "4.14.0",
+    "tags": [
+      "wcag2a",
+      "wcag2aa",
+      "wcag21a",
+      "wcag21aa",
+      "wcag22aa"
+    ],
+    "scope": "Owned fixture section plus explicit modal/recovery in finite states, not arbitrary whole host",
+    "results": "Retain all violations/incomplete/inapplicable/passes+actual rules/version/scope; applicable selected violations FAIL; incomplete needs explicit measured disposition, never silentPASS",
+    "AX": "DOM/ARIA, available browser/platform AX and actualAT are different evidence; no invented unavailable AX dump"
+  },
+  "commonExpectations": {
+    "presentationOnly": "No document/history mutation; preserve any separately documented native selection/barrier behavior rather than zeroing all counters.",
+    "all": "No content telemetry, no rewritten eventtrust, native refusals/unknown outcomes retained, original source/input losslessly retained, public owned API only.",
+    "cleanup": "Original tickets settle; final UI/DOM/SDK/native resources0, with cleanup failures preserved.",
+    "evidenceStatus": "Every row NOT_RUN until real receipt; DEFERRED/BLOCKED needs explicit reason, never PASS alias."
+  },
+  "integratedKeyboardChain": {
+    "id": "A66-C01",
+    "status": "NOT_RUN",
+    "authoredBeforeCandidate": true,
+    "configuration": {
+      "profile": "KWDJ prose",
+      "renderer": "kwdjBasicRenderers",
+      "typingRules": "off/default",
+      "admission": "validate",
+      "access": "editable",
+      "locale": [
+        "ru",
+        "en"
+      ],
+      "fixture": "host-before, toolbar Bold/Italic, editor, Move, Add/Paragraph, host Save/Reopen/after; no optional drag handle"
+    },
+    "canonicalLiterals": {
+      "C0": {
+        "json": "{\"content\":[{\"content\":[{\"text\":\"ab\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "utf8Bytes": 142,
+        "sha256": "bb93c9b39f5a1cf5bf3e4bd18772e4b2674cceb46354eb0a26aa1bc35d43d8e5"
+      },
+      "C1": {
+        "json": "{\"content\":[{\"content\":[{\"text\":\"axb\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "utf8Bytes": 143,
+        "sha256": "08970afa8ed43fbeb9edf79883055593bae6c48078f9732b7ff714cb092402fe"
+      },
+      "C2": {
+        "json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"axb\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "utf8Bytes": 171,
+        "sha256": "c04a7a8eb93b1bdbb52dbf508546d84fb41b546f897fcfb64076af7e6d04eae1"
+      },
+      "C3": {
+        "json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[],\"type\":\"paragraph\"},{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"xb\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "utf8Bytes": 292,
+        "sha256": "5968739a223f9e79b0bdf1fd632f636287abe3d9cac072b817f2c449abf136af"
+      },
+      "C4": {
+        "json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"xb\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "utf8Bytes": 292,
+        "sha256": "aeaadc0159c369e682bc4da0a47e6c6496b15c358e1734a08db369ca47d307e6"
+      },
+      "C5": {
+        "json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"x\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "utf8Bytes": 291,
+        "sha256": "48cedd0e379c4ff01fe98e0d106df00e26d3af597fd49bc8a7af6f9ff4c7e462"
+      },
+      "C7": {
+        "json": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"a\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"xby\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "utf8Bytes": 293,
+        "sha256": "b4f44d1f09089e8112823fa5a60d74a5ff7da2a5cc2f5355354a34fa62c3d347"
+      }
+    },
+    "identityPolicy": "Bind original roles once before chain from actual native rows/full stamp/context. Bind N/PT/U from C03 native topology plus original-ID retention. Never parse tokens. Reopen is a different Session with a fresh role mapping; globally novel NodeID strings across sessions are NOT required.",
+    "steps": [
+      {
+        "id": "C66-00",
+        "keyboardAction": "Before chain only: mount C0, bind R/P/T, set selection T1 and drain setup. Tab from host-before via toolbar into editor.",
+        "canonical": "C0",
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "T",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T",
+            "offset": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "textMarks": {
+          "T": []
+        },
+        "focus": "editor",
+        "revision": "0",
+        "history_epoch": "0",
+        "undo_entries": "0",
+        "redo_entries": "0",
+        "semanticDelta": {
+          "revision": "0",
+          "selection_epoch": "0",
+          "history_epoch": "0"
+        },
+        "documentEvents": 0,
+        "createdLiveRoles": [],
+        "retiredLiveRoles": [],
+        "note": "Only prechain setup may write native selection/focus; selection_epoch1/saved_revision0/dirtyfalse/no open typing group."
+      },
+      {
+        "id": "C66-01",
+        "keyboardAction": "Ordinary literal x, default/off input.",
+        "canonical": "C1",
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "T",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T",
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "textMarks": {
+          "T": []
+        },
+        "focus": "editor",
+        "revision": "1",
+        "history_epoch": "1",
+        "undo_entries": "1",
+        "redo_entries": "0",
+        "semanticDelta": {
+          "revision": "1",
+          "selection_epoch": "1",
+          "history_epoch": "1"
+        },
+        "documentEvents": 1,
+        "createdLiveRoles": [],
+        "retiredLiveRoles": [],
+        "note": "Compatible adjacent text joins into original left T; transient split/insert IDs are not additional live roles. All original IDs survive."
+      },
+      {
+        "id": "C66-02",
+        "keyboardAction": "Home -> T0; Shift+End -> directed T0..T3. Shift+Tab to Bold, Enter.",
+        "canonical": "C2",
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "T",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "T",
+            "offset": 3,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "textMarks": {
+          "T": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ]
+        },
+        "focus": "editor",
+        "revision": "2",
+        "history_epoch": "2",
+        "undo_entries": "2",
+        "redo_entries": "0",
+        "semanticDelta": {
+          "revision": "1",
+          "selection_epoch": "0",
+          "history_epoch": "1"
+        },
+        "documentEvents": 1,
+        "createdLiveRoles": [],
+        "retiredLiveRoles": [],
+        "note": "Full leaf formatting keeps T/exact direction. Query off; fresh query on. Mutation presentation may be pre-action off. No fixture selection/focus between steps."
+      },
+      {
+        "id": "C66-03",
+        "keyboardAction": "ArrowLeft collapses whole range to T0; Right1 -> T1. Tab through Move to Add; Enter, choose Paragraph, Enter.",
+        "canonical": "C3",
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ],
+          "N": [
+            1
+          ],
+          "PT": [
+            2
+          ],
+          "U": [
+            2,
+            0
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "U",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "U",
+            "offset": 0,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "textMarks": {
+          "T": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ],
+          "U": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ]
+        },
+        "focus": "editor",
+        "revision": "3",
+        "history_epoch": "3",
+        "undo_entries": "3",
+        "redo_entries": "0",
+        "semanticDelta": {
+          "revision": "1",
+          "selection_epoch": "1",
+          "history_epoch": "1"
+        },
+        "documentEvents": 1,
+        "createdLiveRoles": [
+          "N",
+          "PT",
+          "U"
+        ],
+        "retiredLiveRoles": [],
+        "note": "V07 text-caret branch with inherited marks: P/T strong a, fresh N empty, PT/U strong xb; no synthesized root gap. Bind fresh IDs by native topology, never allocation serial."
+      },
+      {
+        "id": "C66-04",
+        "keyboardAction": "Tab to Move handle; Alt+ArrowUp only while it is focused.",
+        "canonical": "C4",
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ],
+          "PT": [
+            1
+          ],
+          "U": [
+            1,
+            0
+          ],
+          "N": [
+            2
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "U",
+            "offset": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "U",
+            "offset": 0,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "textMarks": {
+          "T": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ],
+          "U": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ]
+        },
+        "focus": "same Move handle",
+        "revision": "4",
+        "history_epoch": "4",
+        "undo_entries": "4",
+        "redo_entries": "0",
+        "semanticDelta": {
+          "revision": "1",
+          "selection_epoch": "0",
+          "history_epoch": "1"
+        },
+        "documentEvents": 1,
+        "createdLiveRoles": [],
+        "retiredLiveRoles": [],
+        "note": "Move PT under R before_index1 before removal. Same IDs, marks and U0; no document-wide Alt interception."
+      },
+      {
+        "id": "C66-05",
+        "keyboardAction": "Shift+Tab from Move into editor; End -> U2; Backspace once.",
+        "canonical": "C5",
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ],
+          "PT": [
+            1
+          ],
+          "U": [
+            1,
+            0
+          ],
+          "N": [
+            2
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "U",
+            "offset": 1,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "U",
+            "offset": 1,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "textMarks": {
+          "T": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ],
+          "U": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ]
+        },
+        "focus": "editor",
+        "revision": "5",
+        "history_epoch": "5",
+        "undo_entries": "5",
+        "redo_entries": "0",
+        "semanticDelta": {
+          "revision": "1",
+          "selection_epoch": "1",
+          "history_epoch": "1"
+        },
+        "documentEvents": 1,
+        "createdLiveRoles": [],
+        "retiredLiveRoles": [],
+        "note": "Native previous EGC b removed; U remains strong x. No block join/empty text/raw typography restore slot."
+      },
+      {
+        "id": "C66-06",
+        "keyboardAction": "Platform Undo shortcut once in editor.",
+        "canonical": "C4",
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ],
+          "PT": [
+            1
+          ],
+          "U": [
+            1,
+            0
+          ],
+          "N": [
+            2
+          ]
+        },
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "U",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "U",
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "textMarks": {
+          "T": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ],
+          "U": [
+            {
+              "type_id": "org.klenwriter.kwdj/strong",
+              "attributes": {}
+            }
+          ]
+        },
+        "focus": "editor",
+        "revision": "6",
+        "history_epoch": "6",
+        "undo_entries": "4",
+        "redo_entries": "1",
+        "semanticDelta": {
+          "revision": "1",
+          "selection_epoch": "1",
+          "history_epoch": "1"
+        },
+        "documentEvents": 1,
+        "createdLiveRoles": [],
+        "retiredLiveRoles": [],
+        "note": "Exact predelete U/strong xb/IDs/caret2 restored; chronological revision6. Export alone never marks saved."
+      }
+    ],
+    "navigation": {
+      "betweenSteps": "Keyboard only; no fixture selection/focus/native command calls. Instrumented inspect reads do not act.",
+      "authoredSelectionPoints": [
+        {
+          "before": "C66-02",
+          "points": [
+            {
+              "anchor": {
+                "kind": "text",
+                "node": "T",
+                "offset": 0,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "T",
+                "offset": 0,
+                "affinity": "after"
+              }
+            },
+            {
+              "anchor": {
+                "kind": "text",
+                "node": "T",
+                "offset": 0,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "T",
+                "offset": 3,
+                "affinity": "after"
+              }
+            }
+          ]
+        },
+        {
+          "before": "C66-03",
+          "points": [
+            {
+              "anchor": {
+                "kind": "text",
+                "node": "T",
+                "offset": 0,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "T",
+                "offset": 0,
+                "affinity": "after"
+              }
+            },
+            {
+              "anchor": {
+                "kind": "text",
+                "node": "T",
+                "offset": 1,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "T",
+                "offset": 1,
+                "affinity": "after"
+              }
+            }
+          ]
+        },
+        {
+          "before": "C66-05",
+          "points": [
+            {
+              "anchor": {
+                "kind": "text",
+                "node": "U",
+                "offset": 0,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "U",
+                "offset": 0,
+                "affinity": "after"
+              }
+            },
+            {
+              "anchor": {
+                "kind": "text",
+                "node": "U",
+                "offset": 2,
+                "affinity": "after"
+              },
+              "focus": {
+                "kind": "text",
+                "node": "U",
+                "offset": 2,
+                "affinity": "after"
+              }
+            }
+          ]
+        }
+      ],
+      "epochAccounting": "R/H0..6 and semanticDelta are exact source expectations. Each semantic delta compares the original command-before fullstamp to its response. Full keyboard-triggered set_selection/barrier trace accounts for intervening S/state events: actual changed selection adds1, identical selection is unchanged. All edits isolated/no open typing group, so navigation adds no history unit. Do not guess duplicate browser selectionchange counts or hide document edits."
+    },
+    "save": {
+      "trigger": "Keyboard Tab to host Save, Enter; snapshot is released after receipt/ack. Reopen by keyboard.",
+      "snapshot": {
+        "canonical": "C4",
+        "revision": "6",
+        "maxBytes": 2097152
+      },
+      "beforeAck": {
+        "revision": "6",
+        "saved_revision": "0",
+        "dirty": true,
+        "undo_entries": "4",
+        "redo_entries": "1"
+      },
+      "ack": {
+        "request": "acknowledge_snapshot with current fullstamp and retained original handle after explicit host receipt",
+        "canonical": "C4",
+        "revision": "6",
+        "saved_revision": "6",
+        "dirty": false,
+        "selection": {
+          "anchor": {
+            "kind": "text",
+            "node": "U",
+            "offset": 2,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "text",
+            "node": "U",
+            "offset": 2,
+            "affinity": "after"
+          }
+        },
+        "stored_marks": null,
+        "history": {
+          "undo_entries": "4",
+          "redo_entries": "1"
+        },
+        "stampDelta": {
+          "revision": "0",
+          "selection_epoch": "0",
+          "history_epoch": "0"
+        },
+        "documentEvents": 0,
+        "stateEvents": 1,
+        "baseline_changed": true
+      },
+      "reopen": {
+        "action": "Fully dispose original UI/Session; fresh mount host-saved canonical; keyboard enters new named editor.",
+        "canonical": "C4",
+        "roles": {
+          "R": [],
+          "P": [
+            0
+          ],
+          "T": [
+            0,
+            0
+          ],
+          "PT": [
+            1
+          ],
+          "U": [
+            1,
+            0
+          ],
+          "N": [
+            2
+          ]
+        },
+        "session": "different actual Session token",
+        "generation": "actual fresh value, not global novelty",
+        "nodeIdStrings": "No crossSession global novelty assertion",
+        "stamp": {
+          "revision": "0",
+          "selection_epoch": "0",
+          "history_epoch": "0"
+        },
+        "selection": null,
+        "stored_marks": null,
+        "saved_revision": "0",
+        "dirty": false,
+        "history": {
+          "undo_entries": "0",
+          "redo_entries": "0"
+        },
+        "oldBookmarkTransferred": false
+      }
+    },
+    "sourceDerivation": [
+      "Insert x uses accepted inline.rs ReplaceInlineRange plus compatible-sibling JoinText; original left T survives.",
+      "Full leaf Strong uses accepted V01 whole-leaf identity policy.",
+      "Marked text-caret insertion uses V07 exact split/caret/identity branch and unchanged inline cut preserving original marks.",
+      "Move uses existing V04 preremoval-index semantics.",
+      "Delete last ASCII EGC in U uses native delete.rs; source split keeps left U and normalization preserves strong.",
+      "Undo restores exact historical material/selection/marks, independent chronological revision; save acknowledgement uses retained snapshot revision, not byte equality."
+    ]
+  },
+  "heldSaveBranch": {
+    "id": "A66-SAVE-STALE01",
+    "status": "NOT_RUN",
+    "fork": "C66-06 before acknowledgement",
+    "snapshotOld": {
+      "canonical": "C4",
+      "revision": "6"
+    },
+    "keyboardEditWhileReceiptHeld": {
+      "action": "Type y at U2",
+      "canonical": "C7",
+      "roles": {
+        "R": [],
+        "P": [
+          0
+        ],
+        "T": [
+          0,
+          0
+        ],
+        "PT": [
+          1
+        ],
+        "U": [
+          1,
+          0
+        ],
+        "N": [
+          2
+        ]
+      },
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "U",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "U",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "textMarks": {
+        "T": [
+          {
+            "type_id": "org.klenwriter.kwdj/strong",
+            "attributes": {}
+          }
+        ],
+        "U": [
+          {
+            "type_id": "org.klenwriter.kwdj/strong",
+            "attributes": {}
+          }
+        ]
+      },
+      "stored_marks": null,
+      "revision": "7",
+      "saved_revision": "0",
+      "dirty": true,
+      "undo_entries": "5",
+      "redo_entries": "0",
+      "semanticDelta": {
+        "revision": "1",
+        "selection_epoch": "1",
+        "history_epoch": "1"
+      }
+    },
+    "ackOld": {
+      "canonical": "C7",
+      "revision": "7",
+      "saved_revision": "6",
+      "dirty": true,
+      "selection": {
+        "anchor": {
+          "kind": "text",
+          "node": "U",
+          "offset": 3,
+          "affinity": "after"
+        },
+        "focus": {
+          "kind": "text",
+          "node": "U",
+          "offset": 3,
+          "affinity": "after"
+        }
+      },
+      "stampDelta": {
+        "revision": "0",
+        "selection_epoch": "0",
+        "history_epoch": "0"
+      },
+      "historyUnchanged": true,
+      "stateEvents": 1,
+      "documentEvents": 0
+    },
+    "ackCurrentAfterFreshExplicitSave": {
+      "snapshotCanonical": "C7",
+      "snapshotRevision": "7",
+      "saved_revision": "7",
+      "dirty": false,
+      "nativeDocumentSelectionHistoryUnchanged": true
+    },
+    "lateOldAfterCurrent": {
+      "outcome": {
+        "status": "ok",
+        "value": {
+          "kind": "mutation",
+          "effect": "unchanged"
+        }
+      },
+      "saved_revision": "7",
+      "dirty": false,
+      "stateEvents": 0,
+      "documentEvents": 0,
+      "allNativeFacetsUnchanged": true,
+      "internalReasonQualification": "Private Rust SaveAcknowledgement::IgnoredOlder explains why the saved baseline is not moved backwards; it is not a public SDK discriminant. Public bridge discards that enum and compares saved_revision/dirty before/after: unchanged gives Ok mutation effect unchanged (crates/bridge/src/lib.rs:725-746); accepted crates/wasm/examples/support/sdk_observer.rs:675-679 independently asserts unchanged."
+    },
+    "qualification": "Controlled test-host receipt integration, not network/disk/CMS persistence proof; no candidate output oracle."
+  },
+  "rows": [
+    {
+      "id": "A66-S01",
+      "ac": [
+        2
+      ],
+      "wcag": [
+        "1.1.1",
+        "1.3.1",
+        "2.4.6",
+        "4.1.2"
+      ],
+      "surface": "editing surface",
+      "variants": [
+        "ready",
+        "empty",
+        "RU",
+        "EN"
+      ],
+      "method": "sealed_three_engine_DOM_AX_axe",
+      "expected": "One host-named editing root: role textbox, aria-multiline true; loading aria-busy true; terminal ready/empty/readOnly/disabled/error/fatal busy false. Placeholder, when present, is neither accessible name nor document content; decorative icons hidden. Native document order stays truthful.",
+      "authority": "UX states/copy; accepted DOM semantics",
+      "status": "NOT_RUN",
+      "testId": "A66-S01",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ]
+    },
+    {
+      "id": "A66-S02",
+      "ac": [
+        2,
+        3
+      ],
+      "wcag": [
+        "2.5.3",
+        "4.1.2"
+      ],
+      "surface": "toolbar",
+      "variants": [
+        "on",
+        "off",
+        "mixed",
+        "unavailable",
+        "RU",
+        "EN"
+      ],
+      "method": "sealed_three_engine_DOM_AX_axe",
+      "expected": "Named toolbar; current native pressed state; visible label occurs in accessible name; reason associated with unavailable discoverable control.",
+      "authority": "UI T01/T02; UX toolbar",
+      "status": "NOT_RUN",
+      "testId": "A66-S02",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ]
+    },
+    {
+      "id": "A66-S03",
+      "ac": [
+        2
+      ],
+      "wcag": [
+        "1.3.1",
+        "4.1.2"
+      ],
+      "surface": "insertion and move menus",
+      "variants": [
+        "slash options",
+        "slash no-results",
+        "Add",
+        "Move",
+        "RU",
+        "EN"
+      ],
+      "method": "sealed_three_engine_DOM_AX_axe",
+      "expected": "Named listbox/menu/options and one active choice; no-results is non-option; ownership IDs point to connected nodes; exact accepted ARIA ownership (expanded on Add, not invented on textbox).",
+      "authority": "UI A01/A02/M01; slash contract; docs/ui",
+      "status": "NOT_RUN",
+      "testId": "A66-S03",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ]
+    },
+    {
+      "id": "A66-S04",
+      "ac": [
+        2,
+        3,
+        4
+      ],
+      "wcag": [
+        "1.3.1",
+        "2.4.6",
+        "4.1.2",
+        "4.1.3"
+      ],
+      "surface": "state and refusal presentation",
+      "variants": [
+        "loading",
+        "readOnly",
+        "disabled",
+        "command refusal",
+        "recoverable load error",
+        "fatal/recovery",
+        "RU",
+        "EN"
+      ],
+      "method": "sealed_three_engine_DOM_AX_axe",
+      "expected": "Truthful busy/readonly/disabled/status semantics, meaningful visible localized reason plus unchanged machine code; resource-dependent recovery controls exist only when that original/recoverable resource exists. No focus theft. Status-role evidence is programmatic only; actual AT delivery deferred D05.",
+      "authority": "UX state table; UI R01/L01; D05",
+      "status": "NOT_RUN",
+      "testId": "A66-S04",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ]
+    },
+    {
+      "id": "A66-S05",
+      "ac": [
+        2
+      ],
+      "wcag": [
+        "2.4.6",
+        "4.1.2"
+      ],
+      "surface": "host modal",
+      "variants": [
+        "open",
+        "closed",
+        "RU",
+        "EN"
+      ],
+      "method": "sealed_three_engine_DOM_AX_axe + test_host_public_API_no_CMS_persistence_claim",
+      "expected": "Named genuinely modal dialog, labelled fields and explicit Apply/Cancel; closed scope has no active modal/focus ownership.",
+      "authority": "UX host dialog; UI H01-H03; D15",
+      "status": "NOT_RUN",
+      "testId": "A66-S05",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ]
+    },
+    {
+      "id": "A66-K01",
+      "ac": [
+        1,
+        2
+      ],
+      "wcag": [
+        "2.1.1",
+        "2.1.2",
+        "2.4.3"
+      ],
+      "surface": "page/editor/toolbar",
+      "variants": [
+        "forward Tab",
+        "reverse Tab",
+        "Left/Right/Home/End"
+      ],
+      "method": "sealed_three_engine_keyboard_plus_installed_Chrome_Safari",
+      "expected": "In chain fixture without optional drag handle: host-before -> roving toolbar -> editor -> Move -> Add -> host Save/Reopen/after and reverse. Toolbar Left/Right/Home/End; ordinary Tab exits, only genuine modal temporarily contains Tab. No document transaction.",
+      "authority": "UX-K01; UI K01",
+      "status": "NOT_RUN",
+      "testId": "A66-K01",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ],
+      "integratedOracle": "#/integratedKeyboardChain"
+    },
+    {
+      "id": "A66-K02",
+      "ac": [
+        1
+      ],
+      "wcag": [
+        "2.1.1",
+        "2.4.3"
+      ],
+      "surface": "directed selection/format",
+      "variants": [
+        "forward",
+        "reverse",
+        "Unicode",
+        "atom/nested boundary"
+      ],
+      "method": "sealed_three_engine_keyboard_plus_installed_Chrome_Safari",
+      "expected": "Existing native range retained through keyboard toolbar; one accepted format, exact marks/IDs/selection/history; refused stale bookmark never targets another range.",
+      "authority": "UX-K02; accepted40; UI T01/T02",
+      "status": "NOT_RUN",
+      "testId": "A66-K02",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ],
+      "oracleRefs": [
+        "native-ui:V01-forward",
+        "native-ui:V01-reverse",
+        "selection-native",
+        "unicode-selection"
+      ],
+      "integratedOracle": "#/integratedKeyboardChain"
+    },
+    {
+      "id": "A66-K03",
+      "ac": [
+        1
+      ],
+      "wcag": [
+        "2.1.1"
+      ],
+      "surface": "text delete/history",
+      "variants": [
+        "selected text",
+        "previous EGC",
+        "Undo",
+        "Redo"
+      ],
+      "method": "sealed_three_engine_keyboard_plus_installed_Chrome_Safari",
+      "expected": "Integrated Backspace deletes final b from strong xb, retaining U and mark; keyboard Undo restores same U, strong xb, caret2. Existing independent UI native Undo/Redo vectors separately retain exact IDs/direction and chronological epochs. No new block-delete UI or browser-history authority.",
+      "authority": "AC1; accepted35/40/42 native vectors",
+      "status": "NOT_RUN",
+      "testId": "A66-K03",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ],
+      "oracleRefs": [
+        "native-ui:V07-text-caret",
+        "native-ui:V01-forward"
+      ],
+      "integratedOracle": "#/integratedKeyboardChain"
+    },
+    {
+      "id": "A66-K04",
+      "ac": [
+        1,
+        2
+      ],
+      "wcag": [
+        "2.1.1",
+        "2.1.2",
+        "2.4.3"
+      ],
+      "surface": "slash",
+      "variants": [
+        "Up/Down/Enter",
+        "Escape",
+        "Tab",
+        "no-results",
+        "pending ordinary RAF"
+      ],
+      "method": "sealed_three_engine_keyboard_plus_installed_Chrome_Safari",
+      "expected": "Up/Down/Enter accepts once. Escape/Tab retain exact query/native state; unclaimed stale rendered slash Escape emits cancelled without command, stale Enter never inserts paragraph. Dismissed anchor never revives. Native Find untouched.",
+      "authority": "UX-K03; slash S03/S06/S17/S18; accepted48 continuation",
+      "status": "NOT_RUN",
+      "testId": "A66-K04",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ],
+      "oracleRefs": [
+        "slash:MC01",
+        "slash:MC02",
+        "slash:MC04"
+      ]
+    },
+    {
+      "id": "A66-K05",
+      "ac": [
+        1
+      ],
+      "wcag": [
+        "2.1.1",
+        "2.4.3"
+      ],
+      "surface": "Add",
+      "variants": [
+        "text caret",
+        "root gap",
+        "Cancel"
+      ],
+      "method": "sealed_three_engine_keyboard_plus_installed_Chrome_Safari",
+      "expected": "Always reachable labelled Add; exact original insertion position; one native action or explicit refusal; cancellation obeys genuine bookmark rules.",
+      "authority": "UX insertion; UI A01/A02",
+      "status": "NOT_RUN",
+      "testId": "A66-K05",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ],
+      "oracleRefs": [
+        "native-ui:V03-root-gap",
+        "native-ui:V07-text-caret"
+      ],
+      "integratedOracle": "#/integratedKeyboardChain"
+    },
+    {
+      "id": "A66-K06",
+      "ac": [
+        1,
+        4
+      ],
+      "wcag": [
+        "2.1.1",
+        "2.4.3"
+      ],
+      "surface": "block Move",
+      "variants": [
+        "up",
+        "down",
+        "nest",
+        "unnest",
+        "invalid destination"
+      ],
+      "method": "sealed_three_engine_keyboard_plus_installed_Chrome_Safari",
+      "expected": "Keyboard menu/local Alt arrows execute only native legal Move; exact order/IDs/focus and visible position; refused destination preserves document.",
+      "authority": "UX-K04; UI M01; accepted44",
+      "status": "NOT_RUN",
+      "testId": "A66-K06",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ],
+      "oracleRefs": [
+        "native-ui:V04-up",
+        "native-ui:V04-down",
+        "nesting"
+      ],
+      "integratedOracle": "#/integratedKeyboardChain"
+    },
+    {
+      "id": "A66-K07",
+      "ac": [
+        1
+      ],
+      "wcag": [
+        "2.1.1",
+        "2.1.2",
+        "2.4.3",
+        "3.2.1"
+      ],
+      "surface": "host dialog return",
+      "variants": [
+        "valid Cancel/Escape",
+        "valid Accept",
+        "stale/late reply",
+        "external focus"
+      ],
+      "method": "sealed_three_engine_keyboard_plus_installed_Chrome_Safari + test_host_public_API_no_CMS_persistence_claim",
+      "expected": "Named modal receives appropriate initial focus; Tab wraps only while genuinely modal; Apply/Cancel/Escape exit. Valid cancel restores original bookmark; stale/late result neither guesses caret nor steals outside focus. Original queued/refused/fatal outcome retained; submitted command never relabelled cancelled.",
+      "authority": "UX-K07; UI H01-H03; D15",
+      "status": "NOT_RUN",
+      "testId": "A66-K07",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ],
+      "oracleRefs": [
+        "host-requests:HR18-HR34"
+      ]
+    },
+    {
+      "id": "A66-K08",
+      "ac": [
+        1
+      ],
+      "wcag": [
+        "2.1.1",
+        "3.2.2"
+      ],
+      "surface": "host Save",
+      "variants": [
+        "matching ack",
+        "newer edit before old ack",
+        "fresh reopen"
+      ],
+      "method": "sealed_three_engine_keyboard_plus_installed_Chrome_Safari + test_host_public_API_no_CMS_persistence_claim",
+      "expected": "Reach host Save/Reopen by keyboard. Explicit snapshot/receipt/matchingack and freshSession reopen follow integratedKeyboardChain; stale receipt follows heldSaveBranch. Test-host retained bytes do not prove CMS/server persistence.",
+      "authority": "AC1; architecture save; D15; accepted snapshot semantics",
+      "status": "NOT_RUN",
+      "testId": "A66-K08",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ],
+      "integratedOracle": "#/integratedKeyboardChain"
+    },
+    {
+      "id": "A66-M01",
+      "ac": [
+        1,
+        2,
+        4
+      ],
+      "wcag": [
+        "2.1.1",
+        "2.1.2",
+        "4.1.2"
+      ],
+      "surface": "readOnly",
+      "variants": [
+        "select",
+        "copy",
+        "native Find",
+        "mutation attempt"
+      ],
+      "method": "sealed_three_engine_keyboard_plus_installed_Chrome_Safari",
+      "expected": "Read-only selectable/copyable; native Find unhandled; mutation unavailable with name/reason, exact canonical preserved.",
+      "authority": "UX-K08/K10; UI R01",
+      "status": "NOT_RUN",
+      "testId": "A66-M01",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ]
+    },
+    {
+      "id": "A66-M02",
+      "ac": [
+        1,
+        2,
+        4
+      ],
+      "wcag": [
+        "2.1.2",
+        "2.4.3",
+        "4.1.2"
+      ],
+      "surface": "disabled/error exit",
+      "variants": [
+        "disabled",
+        "load error",
+        "runtime recovery"
+      ],
+      "method": "sealed_three_engine_keyboard_plus_installed_Chrome_Safari + test_host_public_API_no_CMS_persistence_claim",
+      "expected": "No editing focus/commands in disabled; normal host entry/recovery reachable; content/recoverable input retained; no false empty-success or saved claim.",
+      "authority": "UX-K08; D15; accepted lifecycle",
+      "status": "NOT_RUN",
+      "testId": "A66-M02",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ]
+    },
+    {
+      "id": "A66-M03",
+      "ac": [
+        1,
+        4
+      ],
+      "wcag": [
+        "2.1.1",
+        "3.2.2"
+      ],
+      "surface": "composition/command focus",
+      "variants": [
+        "RU",
+        "EN",
+        "ordinary dead key",
+        "off/default",
+        "explicit typed opt-in"
+      ],
+      "method": "sealed_three_engine_keyboard_plus_installed_Chrome_Safari",
+      "expected": "Protected native preedit survives attempted conflicting UI command without replay/focus theft. All accepted41/48 default and explicit opt-in input/null-result/Backspace guards remain unchanged. Synthetic composition is controlled integration, not installed OS proof.",
+      "authority": "UX-K06; accepted41/48 oracles",
+      "status": "NOT_RUN",
+      "testId": "A66-M03",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ],
+      "oracleRefs": [
+        "typography-dom",
+        "typography-rules",
+        "host-requests:HR05"
+      ]
+    },
+    {
+      "id": "A66-L01",
+      "ac": [
+        2,
+        3
+      ],
+      "wcag": [
+        "2.4.6",
+        "2.5.3",
+        "3.1.1",
+        "4.1.2"
+      ],
+      "surface": "locale API",
+      "variants": [
+        "RU -> EN",
+        "EN -> RU",
+        "unavailable reason",
+        "mode/status"
+      ],
+      "method": "sealed_three_engine_DOM_AX_axe",
+      "expected": "Existing setLocale updates keyed chrome names/reasons/UIlang without changing focused control identity or native canonical/selection/history. Set aria-labelledby to connected external host label BEFORE mount; locale may change that external label text/lang. Editor/document lang supplied before mount stays host-owned; never mutate root aria-label/lang live or guess authored-text language. Diagnostic code unchanged.",
+      "authority": "AC3; UI L01; UiText/setLocale; host language responsibility",
+      "status": "NOT_RUN",
+      "testId": "A66-L01",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ]
+    },
+    {
+      "id": "A66-V01",
+      "ac": [
+        4
+      ],
+      "wcag": [
+        "1.4.1",
+        "1.4.3",
+        "1.4.11"
+      ],
+      "surface": "contrast",
+      "variants": [
+        "default theme",
+        "one explicit host theme",
+        "hover",
+        "focus",
+        "selected",
+        "reason"
+      ],
+      "method": "controlled_layout_plus_installed_measurement",
+      "expected": "Measure actual composite colors in default plus defined hostHighContrast: normal text/reasons >=4.5:1, large text >=3:1, meaningful boundaries/focus >=3:1. State/reason/destination has non-color cue. Inactive WCAG exceptions are distinct from readable visible project reasons.",
+      "authority": "UX visual foundation; WCAG dated normative reference",
+      "status": "NOT_RUN",
+      "testId": "A66-V01",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ]
+    },
+    {
+      "id": "A66-V02",
+      "ac": [
+        4
+      ],
+      "wcag": [
+        "2.4.7",
+        "2.4.11"
+      ],
+      "surface": "focus visibility",
+      "variants": [
+        "toolbar",
+        "list overflow",
+        "gutter",
+        "modal",
+        "scroll extremes"
+      ],
+      "method": "controlled_layout_plus_installed_measurement",
+      "expected": "Real keyboard focus is visible and not wholly hidden by author content; stronger UX endpoint visibility measured separately, no accidental AAA-focus-size claim.",
+      "authority": "UX-K01/K09/K10; UI L01; WCAG dated reference",
+      "status": "NOT_RUN",
+      "testId": "A66-V02",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ]
+    },
+    {
+      "id": "A66-V03",
+      "ac": [
+        4
+      ],
+      "wcag": [
+        "1.4.4"
+      ],
+      "surface": "200% resize",
+      "variants": [
+        "RU",
+        "EN",
+        "default",
+        "host theme"
+      ],
+      "method": "installed_Chrome_Safari_actual_browser_zoom_plus_separate_controlled_CSS_lane",
+      "expected": "Actual installed Chrome/Safari browser200% with recorded method/viewport; retain labels/status/actions/focus/selection endpoint. Restore owned zoom in cleanup. CSSzoom/scale/device emulation cannot satisfy this installed row.",
+      "authority": "UX-K09; AC4; WCAG dated reference",
+      "status": "NOT_RUN",
+      "testId": "A66-V03",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ]
+    },
+    {
+      "id": "A66-V04",
+      "ac": [
+        4
+      ],
+      "wcag": [
+        "1.4.10"
+      ],
+      "surface": "desktop reflow",
+      "variants": [
+        "320 CSS viewport",
+        "RU",
+        "EN"
+      ],
+      "method": "sealed_three_engine_DOM_AX_axe + bounded visual geometry",
+      "expected": "Desktop viewport320 CSSpx in RU/EN/default/highContrast: prose and chrome expose content/actions without whole-shell two-axis scrolling. Menus/reasons wrap or boundedscroll; focus remains visible. Any necessary2D exception names only that part, not futureauthoring/mobile support.",
+      "authority": "UX wrapping; WCAG dated reference",
+      "status": "NOT_RUN",
+      "testId": "A66-V04",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ]
+    },
+    {
+      "id": "A66-V05",
+      "ac": [
+        4
+      ],
+      "wcag": [
+        "1.4.12"
+      ],
+      "surface": "spacing override",
+      "variants": [
+        "RU",
+        "EN"
+      ],
+      "method": "sealed_three_engine_DOM_AX_axe + bounded visual geometry",
+      "expected": "Together set line-height1.5, paragraph2em, letter0.12em, word0.16em; RU/EN/default/highContrast retain content/actions/focus without clipping. Canonical/selection/history unchanged.",
+      "authority": "WCAG dated reference; UX theme separation",
+      "status": "NOT_RUN",
+      "testId": "A66-V05",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ]
+    },
+    {
+      "id": "A66-V06",
+      "ac": [
+        2,
+        4
+      ],
+      "wcag": [
+        "1.4.13"
+      ],
+      "surface": "unavailable reasons",
+      "variants": [
+        "hover",
+        "keyboard focus",
+        "pointer enters reason",
+        "Escape dismissal"
+      ],
+      "method": "sealed_three_engine_DOM_AX_axe",
+      "expected": "Focus or hover actual unavailable control; associated reason is readable/stable. Pointer can enter the visible reason without losing it; it persists during active trigger/reason use. Escape dismisses obscuring reason without moving focus/native edit; unrelated modal/native shortcuts retain authority. Fresh trigger may show again; focused reason outranks other hover.",
+      "authority": "docs/ui hover/focus reason ownership; WCAG dated reference",
+      "status": "NOT_RUN",
+      "testId": "A66-V06",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ]
+    },
+    {
+      "id": "A66-V07",
+      "ac": [
+        4
+      ],
+      "wcag": [
+        "2.5.8"
+      ],
+      "surface": "target geometry",
+      "variants": [
+        "toolbar",
+        "Add",
+        "Move",
+        "option",
+        "host recovery"
+      ],
+      "method": "sealed_three_engine_DOM_AX_axe",
+      "expected": "Project32x32 CSS targets verified separately from AA24px minimum/explicit exceptions; wrapped/zoomed hit regions and spacing preserve distinct controls.",
+      "authority": "UX visual foundation; UI K01/L01; WCAG dated reference",
+      "status": "NOT_RUN",
+      "testId": "A66-V07",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ]
+    },
+    {
+      "id": "A66-V08",
+      "ac": [
+        1,
+        4
+      ],
+      "wcag": [
+        "2.5.7"
+      ],
+      "surface": "non-drag pointer alternative",
+      "variants": [
+        "click Move -> destination",
+        "keyboard Move distinct"
+      ],
+      "method": "controlled_real_pointer_public_controls_plus_keyboard_distinct",
+      "expected": "Single-pointer clicks on Move and legal choice achieve native relocation without dragging. KeyboardMove is separate evidence, not2.5.7 proof. Exact order/IDs/selection/history follows native vector.",
+      "authority": "accepted44; UX Move; WCAG dated reference",
+      "status": "NOT_RUN",
+      "testId": "A66-V08",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ],
+      "oracleRefs": [
+        "native-ui:V04-up",
+        "native-ui:V04-down"
+      ]
+    },
+    {
+      "id": "A66-V09",
+      "ac": [
+        4
+      ],
+      "wcag": [],
+      "surface": "forced colors/reduced motion",
+      "variants": [
+        "forced-colors active",
+        "prefers-reduced-motion reduce"
+      ],
+      "method": "sealed_browser_media_emulation",
+      "expected": "Explicit forced-colors active and reduced-motion reduce media emulation preserves distinguishable focus/selection/reason/control boundaries/destination. No OS-theme-switch or AT claim.",
+      "authority": "UX visual foundation; existing style.css",
+      "status": "NOT_RUN",
+      "testId": "A66-V09",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ]
+    },
+    {
+      "id": "A66-E01",
+      "ac": [
+        2,
+        3
+      ],
+      "wcag": [
+        "1.3.2",
+        "3.3.1",
+        "3.3.2"
+      ],
+      "surface": "independent profile and refused host form",
+      "variants": [
+        "Notes profile",
+        "invalid host field",
+        "known native refusal"
+      ],
+      "method": "sealed_three_engine_DOM_AX_axe + test_host_public_API_no_CMS_persistence_claim",
+      "expected": "Independent Notes registered command/provider uses generic UI/host form; truthful labels/error association. NC011 valid new NBSP title and NC014 fixed UTF8-overlimit native notes.invalid_attribute preserve independent expectations. No KWDJ command or technical ID label invented.",
+      "authority": "UI P01/V06; Notes NC011/NC014; named host form; D15",
+      "status": "NOT_RUN",
+      "testId": "A66-E01",
+      "requiredEvidence": [
+        "exact source/build/browser/locale/method",
+        "original native/semantic/focus observations",
+        "actual status/defect/limits/cleanup"
+      ],
+      "oracleRefs": [
+        "native-ui:V06-NC011-root-title-owned-metadata",
+        "native-ui:V06-NC014-title-257-byte-refusal",
+        "notes-commands:NC011",
+        "notes-commands:NC014"
+      ]
+    }
+  ]
+}

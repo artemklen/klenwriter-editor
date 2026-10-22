@@ -4,6 +4,9 @@ import { readFile, readdir } from 'node:fs/promises';
 import { loadCompositionContract } from './composition-contract-data.mjs';
 import { compositionStyleDirective } from './composition-csp-policy.mjs';
 import { loadUiSemanticCases } from './ui-semantic-data.mjs';
+import { createHumanReceiptSink } from './accessibility-human/receipt-sink.mjs';
+const humanSink = await createHumanReceiptSink(process.env.KWE_ACCESSIBILITY_HUMAN_CONFIG);
+const humanPaths = new Set(['/accessibility-human','/accessibility-human.mjs','/accessibility-human.css','/accessibility-human/plan.json','/accessibility-human/config','/accessibility-human/receipt']);
 
 // Build smoke fixture only; an exact allowlist avoids exposing the checkout.
 const root = new URL('../', import.meta.url);
@@ -35,6 +38,13 @@ const routes = new Map([
   ['/composition-native-host.js', ['spikes/workspace/composition-native-host.js', 'text/javascript']],
   ['/composition.css', ['spikes/workspace/composition.css', 'text/css']],
   ['/ui', ['spikes/workspace/ui.html', 'text/html']],
+  ['/accessibility', ['spikes/workspace/accessibility-host.html', 'text/html']],
+  ['/accessibility-human', ['spikes/workspace/accessibility-human.html', 'text/html']],
+  ['/accessibility-human.mjs', ['scripts/accessibility-human/page.mjs', 'text/javascript']],
+  ['/accessibility-human.css', ['spikes/workspace/accessibility-human.css', 'text/css']],
+  ['/accessibility-human/plan.json', ['scripts/accessibility-human/plan.json', 'application/json']],
+  ['/accessibility-host.js', ['spikes/workspace/accessibility-host.js', 'text/javascript']],
+  ['/accessibility-fixture.css', ['spikes/workspace/accessibility-fixture.css', 'text/css']],
   ['/mounted-corpus', ['spikes/workspace/mounted-corpus.html', 'text/html']],
   ['/mounted-corpus-client.mjs', ['scripts/mounted-corpus/page-client.mjs', 'text/javascript']],
   ['/mounted-corpus-protocol.mjs', ['scripts/mounted-corpus/protocol.mjs', 'text/javascript']],
@@ -76,7 +86,7 @@ for (const name of ['wasm', 'sdk', 'kwdj', 'dom', 'ui']) {
 }
 // Import maps are static, hash-authorized data. No unsafe-inline/eval or source rewriting.
 const mapHashes = [];
-for (const page of ['sdk-host.html', 'dom-host.html', 'selection.html', 'clipboard.html', 'composition.html', 'ui.html', 'mounted-corpus.html', 'typing-host.html']) {
+for (const page of ['sdk-host.html', 'dom-host.html', 'selection.html', 'clipboard.html', 'composition.html', 'ui.html', 'accessibility-host.html', 'accessibility-human.html', 'mounted-corpus.html', 'typing-host.html']) {
   const html = await readFile(new URL(`spikes/workspace/${page}`, root), 'utf8');
   const maps = [...html.matchAll(/<script type="importmap">([^<]+)<\/script>/g)];
   if (maps.length !== 1) throw new Error(`One static import map required: ${page}`);
@@ -114,6 +124,10 @@ http.createServer(async (req, res) => {
   const framePolicy=path==='/ui-frame'?"; frame-src 'self'":'';
   res.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self' 'wasm-unsafe-eval' ${mapHashes.join(' ')}; style-src 'self'${compositionStyle}; img-src http://127.0.0.1:4174/favicon.ico; connect-src 'self'; base-uri 'none'; object-src 'none'${fixtureFont}${framePolicy}`);
   res.setHeader('X-Content-Type-Options', 'nosniff');
+  if (humanPaths.has(path)) {
+    if (!humanSink) { res.writeHead(404); res.end(); return; }
+    if (await humanSink.handle(req,res,path)) return;
+  }
   if (req.method !== 'GET') { res.writeHead(405); res.end(); return; }
   // Firefox requests this implicit fixture resource; no authored image is allowed.
   if (path === '/favicon.ico') { res.writeHead(204); res.end(); return; }

@@ -1,0 +1,640 @@
+{
+  "fixture_schema_version": 1,
+  "fixtures": [
+    {
+      "id": "DOC-001",
+      "purpose": "Empty prose remains a valid required empty paragraph through normalization and reopen/save.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "empty_prose",
+          "polarity": "positive",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "paragraph", "content": [] }
+            ]
+          },
+          "edit": null,
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<p></p>", "full_text": "", "search_index_text": "", "public_snippet_text": "", "media_manifest": [], "reference_manifest": [], "notes": ["The empty paragraph is semantic and must not be removed."] },
+          "pipeline_stages": ["validate_normalize", "editor_round_trip_unchanged", "public_render", "plain_text_projection", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-002",
+      "purpose": "Unicode, authored whitespace, a hard break, and escaped text survive every projection.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "unicode_whitespace_hard_break",
+          "polarity": "positive",
+          "input": { "kind": "legacy_markdown", "profile": "prose", "value": "До  <тега> — ё  \nпосле" },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "paragraph", "content": [
+                { "type": "text", "text": "До  <тега> — ё  " },
+                { "type": "hard_break" },
+                { "type": "text", "text": "после" }
+              ] }
+            ]
+          },
+          "edit": { "operation": "append_text", "path": "/content/0/content/2/text", "value": "!" },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<p>До  &lt;тега&gt; — ё  <br>после</p>", "full_text": "До  <тега> — ё  \nпосле", "search_index_text": "До  <тега> — ё  \nпосле", "public_snippet_text": "До  <тега> — ё  \nпосле", "media_manifest": [], "reference_manifest": [], "notes": ["Unicode normalization and trimming are forbidden."] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-003",
+      "purpose": "Heading levels H1-H6 and semantic paragraph layout remain representable.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "headings_and_layout",
+          "polarity": "positive",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "heading", "attrs": { "level": 1 }, "content": [{ "type": "text", "text": "H1" }] },
+              { "type": "heading", "attrs": { "level": 2 }, "content": [{ "type": "text", "text": "H2" }] },
+              { "type": "heading", "attrs": { "level": 3 }, "content": [{ "type": "text", "text": "H3" }] },
+              { "type": "heading", "attrs": { "level": 4 }, "content": [{ "type": "text", "text": "H4" }] },
+              { "type": "heading", "attrs": { "level": 5 }, "content": [{ "type": "text", "text": "H5" }] },
+              { "type": "heading", "attrs": { "level": 6 }, "content": [{ "type": "text", "text": "H6" }] },
+              { "type": "paragraph", "attrs": { "align": "center", "first_line_indent": true }, "content": [{ "type": "text", "text": "Layout" }] }
+            ]
+          },
+          "edit": { "operation": "replace_text", "path": "/content/6/content/0/text", "value": "Layout edited" },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<h1>H1</h1><h2>H2</h2><h3>H3</h3><h4>H4</h4><h5>H5</h5><h6>H6</h6><p class=\"kw-align-center kw-first-line-indent\">Layout</p>", "full_text": "H1\nH2\nH3\nH4\nH5\nH6\nLayout", "search_index_text": "H1\nH2\nH3\nH4\nH5\nH6\nLayout", "public_snippet_text": "H1\nH2\nH3\nH4\nH5\nH6\nLayout", "media_manifest": [], "reference_manifest": [], "notes": ["The editor may restrict creation UI but must preserve every valid level."] },
+          "pipeline_stages": ["validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-004",
+      "purpose": "Compatible nested marks use canonical order and preserve all characters.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "nested_compatible_marks",
+          "polarity": "positive",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "paragraph", "content": [
+                { "type": "text", "text": "marked", "marks": [
+                  { "type": "strong" },
+                  { "type": "emphasis" },
+                  { "type": "text_color", "attrs": { "token": "accent" } },
+                  { "type": "link", "attrs": { "href": "https://example.test/read", "title": "Read" } }
+                ] }
+              ] }
+            ]
+          },
+          "edit": { "operation": "toggle_mark", "path": "/content/0/content/0/marks", "value": "strike" },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<p><a href=\"https://example.test/read\" title=\"Read\" rel=\"noopener noreferrer\"><span class=\"kw-text-color-accent\"><em><strong>marked</strong></em></span></a></p>", "full_text": "marked", "search_index_text": "marked", "public_snippet_text": "marked", "media_manifest": [], "reference_manifest": [], "notes": ["Mark array order is canonical; renderer nesting is server-owned."] },
+          "pipeline_stages": ["validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "determinism"]
+        },
+        {
+          "name": "pre_normalized_empty_marks_removed",
+          "polarity": "positive",
+          "input": { "kind": "kwdj", "value": { "schema": "klenwriter.document", "schema_version": 1, "profile": "prose", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "plain", "marks": [] }] }] } },
+          "kwdj": { "schema": "klenwriter.document", "schema_version": 1, "profile": "prose", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "plain" }] }] },
+          "edit": null,
+          "expected": { "outcome": "accepted", "diagnostic_codes": ["kwdj.normalized_empty_marks_removed"], "normalized_kwdj": "$case.kwdj", "public_html": "<p>plain</p>", "full_text": "plain", "search_index_text": "plain", "public_snippet_text": "plain", "media_manifest": [], "reference_manifest": [], "notes": ["The input is a pre-normalized adapter value; the canonical output omits an empty marks member."] },
+          "pipeline_stages": ["validate_normalize", "public_render", "plain_text_projection", "determinism"]
+        },
+        {
+          "name": "normalized_empty_marks_rejected",
+          "polarity": "negative",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": { "schema": "klenwriter.document", "schema_version": 1, "profile": "prose", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "plain", "marks": [] }] }] },
+          "edit": null,
+          "expected": { "outcome": "rejected", "diagnostic_codes": ["kwdj.non_normalized_empty_marks"], "normalized_kwdj": null, "public_html": null, "full_text": null, "search_index_text": null, "public_snippet_text": null, "media_manifest": [], "reference_manifest": [], "notes": ["A value already claiming normalized KWDJ cannot retain marks: []."] },
+          "pipeline_stages": ["validate_normalize", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-006",
+      "purpose": "A reference link keeps stable UUID identity while the resolved public slug changes.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "reference_slug_changed",
+          "polarity": "positive",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj", "identity_state": { "existing_reference_ids": ["550e8400-e29b-41d4-a716-446655440006"], "reference_public_paths": { "550e8400-e29b-41d4-a716-446655440006": "/world/new-slug" } } },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "paragraph", "content": [
+                { "type": "text", "text": "Имя", "marks": [{ "type": "reference_link", "attrs": { "reference_entity_id": "550e8400-e29b-41d4-a716-446655440006" } }] }
+              ] }
+            ]
+          },
+          "edit": { "operation": "append_text", "path": "/content/0/content/0/text", "value": " героя" },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<p><a href=\"/world/new-slug\">Имя</a></p>", "full_text": "Имя", "search_index_text": "Имя", "public_snippet_text": "Имя", "media_manifest": [], "reference_manifest": [{ "reference_entity_id": "550e8400-e29b-41d4-a716-446655440006", "locator": "/content/0/content/0/marks/0" }], "notes": ["No authored href is stored on reference_link."] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "identity_manifest_extraction", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-007",
+      "purpose": "Simple and multi-paragraph blockquotes preserve block boundaries.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "multi_paragraph_blockquote",
+          "polarity": "positive",
+          "input": { "kind": "legacy_markdown", "profile": "prose", "value": "> Первый\n>\n> Второй" },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "blockquote", "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": "Первый" }] },
+                { "type": "paragraph", "content": [{ "type": "text", "text": "Второй" }] }
+              ] }
+            ]
+          },
+          "edit": { "operation": "append_text", "path": "/content/0/content/1/content/0/text", "value": "." },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<blockquote><p>Первый</p><p>Второй</p></blockquote>", "full_text": "Первый\nВторой", "search_index_text": "Первый\nВторой", "public_snippet_text": "Первый\nВторой", "media_manifest": [], "reference_manifest": [], "notes": [] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-008",
+      "purpose": "Bullet, ordered, nested, and task lists preserve order, start, and checked state.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "lists_tasks_ordered_start",
+          "polarity": "positive",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "bullet_list", "content": [
+                { "type": "list_item", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Пункт" }] }] }
+              ] },
+              { "type": "ordered_list", "attrs": { "start": 3 }, "content": [
+                { "type": "list_item", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Третий" }] }] }
+              ] },
+              { "type": "task_list", "content": [
+                { "type": "task_item", "attrs": { "checked": true }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Готово" }] }] },
+                { "type": "task_item", "attrs": { "checked": false }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Позже" }] }] }
+              ] }
+            ]
+          },
+          "edit": { "operation": "replace_text", "path": "/content/2/content/1/content/0/content/0/text", "value": "Скоро" },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<ul><li><p>Пункт</p></li></ul><ol start=\"3\"><li><p>Третий</p></li></ol><ul class=\"kw-task-list\"><li data-checked=\"true\"><p>Готово</p></li><li data-checked=\"false\"><p>Позже</p></li></ul>", "full_text": "Пункт\nТретий\nГотово\nПозже", "search_index_text": "Пункт\nТретий\nГотово\nПозже", "public_snippet_text": "Пункт\nТретий\nГотово\nПозже", "media_manifest": [], "reference_manifest": [], "notes": [] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "determinism"]
+        },
+        {
+          "name": "pre_normalized_ordered_start_default_removed",
+          "polarity": "positive",
+          "input": { "kind": "kwdj", "value": { "schema": "klenwriter.document", "schema_version": 1, "profile": "prose", "content": [{ "type": "ordered_list", "attrs": { "start": 1 }, "content": [{ "type": "list_item", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "First" }] }] }] }] } },
+          "kwdj": { "schema": "klenwriter.document", "schema_version": 1, "profile": "prose", "content": [{ "type": "ordered_list", "content": [{ "type": "list_item", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "First" }] }] }] }] },
+          "edit": null,
+          "expected": { "outcome": "accepted", "diagnostic_codes": ["kwdj.normalized_ordered_start_default_removed"], "normalized_kwdj": "$case.kwdj", "public_html": "<ol><li><p>First</p></li></ol>", "full_text": "First", "search_index_text": "First", "public_snippet_text": "First", "media_manifest": [], "reference_manifest": [], "notes": ["The pre-normalized start=1 default becomes an absent attrs member."] },
+          "pipeline_stages": ["validate_normalize", "public_render", "plain_text_projection", "determinism"]
+        },
+        {
+          "name": "normalized_ordered_start_one_rejected",
+          "polarity": "negative",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": { "schema": "klenwriter.document", "schema_version": 1, "profile": "prose", "content": [{ "type": "ordered_list", "attrs": { "start": 1 }, "content": [{ "type": "list_item", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "First" }] }] }] }] },
+          "edit": null,
+          "expected": { "outcome": "rejected", "diagnostic_codes": ["kwdj.non_normalized_ordered_start_default"], "normalized_kwdj": null, "public_html": null, "full_text": null, "search_index_text": null, "public_snippet_text": null, "media_manifest": [], "reference_manifest": [], "notes": ["A normalized ordered_list omits start=1; only an explicit start of 2 or greater is canonical."] },
+          "pipeline_stages": ["validate_normalize", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-009",
+      "purpose": "Code containing HTML and directive text stays literal and cannot execute.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "literal_code",
+          "polarity": "positive",
+          "input": { "kind": "legacy_markdown", "profile": "prose", "value": "```html\n<script>alert(1)</script>\n<!-- kw:block type=spoiler -->\n```" },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "code_block", "attrs": { "language": "html" }, "content": [{ "type": "text", "text": "<script>alert(1)</script>\n<!-- kw:block type=spoiler -->" }] }
+            ]
+          },
+          "edit": { "operation": "append_text", "path": "/content/0/content/0/text", "value": "\nend" },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<pre><code class=\"language-html\">&lt;script&gt;alert(1)&lt;/script&gt;\n&lt;!-- kw:block type=spoiler --&gt;</code></pre>", "full_text": "<script>alert(1)</script>\n<!-- kw:block type=spoiler -->", "search_index_text": "<script>alert(1)</script>\n<!-- kw:block type=spoiler -->", "public_snippet_text": "<script>alert(1)</script>\n<!-- kw:block type=spoiler -->", "media_manifest": [], "reference_manifest": [], "notes": ["Code text is escaped exactly once and is never directive input."] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-010",
+      "purpose": "A rectangular table preserves header/body structure and cell blocks.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "rectangular_table",
+          "polarity": "positive",
+          "input": { "kind": "legacy_markdown", "profile": "prose", "value": "| A | B |\n|---|---|\n| 1 | 2 |" },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "table", "content": [
+                { "type": "table_row", "content": [
+                  { "type": "table_header", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "A" }] }] },
+                  { "type": "table_header", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "B" }] }] }
+                ] },
+                { "type": "table_row", "content": [
+                  { "type": "table_cell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "1" }] }] },
+                  { "type": "table_cell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "2" }] }] }
+                ] }
+              ] }
+            ]
+          },
+          "edit": { "operation": "replace_text", "path": "/content/0/content/1/content/1/content/0/content/0/text", "value": "3" },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<table><thead><tr><th><p>A</p></th><th><p>B</p></th></tr></thead><tbody><tr><td><p>1</p></td><td><p>2</p></td></tr></tbody></table>", "full_text": "A\tB\n1\t2", "search_index_text": "A\tB\n1\t2", "public_snippet_text": "A\tB\n1\t2", "media_manifest": [], "reference_manifest": [], "notes": [] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-011",
+      "purpose": "Table spans and alignment preserve the rectangular effective grid.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "table_spans_alignment",
+          "polarity": "positive",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "table", "content": [
+                { "type": "table_row", "content": [
+                  { "type": "table_header", "attrs": { "colspan": 2, "align": "center" }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "AB" }] }] }
+                ] },
+                { "type": "table_row", "content": [
+                  { "type": "table_cell", "attrs": { "rowspan": 2, "align": "right" }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "A" }] }] },
+                  { "type": "table_cell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "B1" }] }] }
+                ] },
+                { "type": "table_row", "content": [
+                  { "type": "table_cell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "B2" }] }] }
+                ] }
+              ] }
+            ]
+          },
+          "edit": { "operation": "replace_text", "path": "/content/0/content/2/content/0/content/0/content/0/text", "value": "B3" },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<table><thead><tr><th colspan=\"2\" class=\"kw-align-center\"><p>AB</p></th></tr></thead><tbody><tr><td rowspan=\"2\" class=\"kw-align-right\"><p>A</p></td><td><p>B1</p></td></tr><tr><td><p>B2</p></td></tr></tbody></table>", "full_text": "AB\nA\tB1\nB2", "search_index_text": "AB\nA\tB1\nB2", "public_snippet_text": "AB\nA\tB1\nB2", "media_manifest": [], "reference_manifest": [], "notes": ["The semantic validator, not JSON Schema alone, proves the effective grid."] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "determinism"]
+        },
+        {
+          "name": "pre_normalized_unit_spans_removed",
+          "polarity": "positive",
+          "input": { "kind": "kwdj", "value": { "schema": "klenwriter.document", "schema_version": 1, "profile": "prose", "content": [{ "type": "table", "content": [{ "type": "table_row", "content": [{ "type": "table_header", "attrs": { "rowspan": 1, "colspan": 1 }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "H" }] }] }] }, { "type": "table_row", "content": [{ "type": "table_cell", "attrs": { "rowspan": 1, "colspan": 1 }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "C" }] }] }] }] }] } },
+          "kwdj": { "schema": "klenwriter.document", "schema_version": 1, "profile": "prose", "content": [{ "type": "table", "content": [{ "type": "table_row", "content": [{ "type": "table_header", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "H" }] }] }] }, { "type": "table_row", "content": [{ "type": "table_cell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "C" }] }] }] }] }] },
+          "edit": null,
+          "expected": { "outcome": "accepted", "diagnostic_codes": ["kwdj.normalized_unit_spans_removed"], "normalized_kwdj": "$case.kwdj", "public_html": "<table><thead><tr><th><p>H</p></th></tr></thead><tbody><tr><td><p>C</p></td></tr></tbody></table>", "full_text": "H\nC", "search_index_text": "H\nC", "public_snippet_text": "H\nC", "media_manifest": [], "reference_manifest": [], "notes": ["Unit rowspan/colspan values are adapter defaults and disappear from canonical output."] },
+          "pipeline_stages": ["validate_normalize", "public_render", "plain_text_projection", "determinism"]
+        },
+        {
+          "name": "normalized_unit_spans_rejected",
+          "polarity": "negative",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": { "schema": "klenwriter.document", "schema_version": 1, "profile": "prose", "content": [{ "type": "table", "content": [{ "type": "table_row", "content": [{ "type": "table_cell", "attrs": { "rowspan": 1, "colspan": 1 }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "C" }] }] }] }] }] },
+          "edit": null,
+          "expected": { "outcome": "rejected", "diagnostic_codes": ["kwdj.non_normalized_unit_span"], "normalized_kwdj": null, "public_html": null, "full_text": null, "search_index_text": null, "public_snippet_text": null, "media_manifest": [], "reference_manifest": [], "notes": ["A normalized cell/header omits unit spans; present spans begin at 2."] },
+          "pipeline_stages": ["validate_normalize", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-013",
+      "purpose": "Media identity, accessibility choice, caption, and alignment round-trip without persisted delivery URLs.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "resolved_media_image",
+          "polarity": "positive",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj", "identity_state": { "existing_media_ids": ["550e8400-e29b-41d4-a716-446655440013"], "media_public_paths": { "550e8400-e29b-41d4-a716-446655440013": "/media/derived/image-13.webp" } } },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "media_image", "attrs": { "media_asset_id": "550e8400-e29b-41d4-a716-446655440013", "alt": "Описание", "align": "center" }, "content": [
+                { "type": "paragraph", "content": [{ "type": "text", "text": "Подпись" }] }
+              ] }
+            ]
+          },
+          "edit": { "operation": "append_text", "path": "/content/0/content/0/content/0/text", "value": "." },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<figure class=\"kw-media kw-media--center\"><img src=\"/media/derived/image-13.webp\" alt=\"Описание\"><figcaption><p>Подпись</p></figcaption></figure>", "full_text": "Описание\nПодпись", "search_index_text": "Описание\nПодпись", "public_snippet_text": "Описание\nПодпись", "media_manifest": [{ "media_asset_id": "550e8400-e29b-41d4-a716-446655440013", "locator": "/content/0" }], "reference_manifest": [], "notes": ["The src is resolved from identity_state and is absent from KWDJ."] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "identity_manifest_extraction", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-015",
+      "purpose": "Every v1 literary kind preserves exact kind and supported child blocks.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "all_literary_kinds",
+          "polarity": "positive",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "literary_block", "attrs": { "kind": "author_note" }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Author" }] }] },
+              { "type": "literary_block", "attrs": { "kind": "letter" }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Letter" }] }] },
+              { "type": "literary_block", "attrs": { "kind": "epigraph" }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Epigraph" }] }] },
+              { "type": "literary_block", "attrs": { "kind": "world_note" }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "World" }] }] },
+              { "type": "literary_block", "attrs": { "kind": "chronicle_quote" }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Chronicle" }] }] },
+              { "type": "literary_block", "attrs": { "kind": "archive_fragment" }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Archive" }] }] }
+            ]
+          },
+          "edit": { "operation": "append_text", "path": "/content/0/content/0/content/0/text", "value": "." },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<aside class=\"kw-literary kw-literary--author-note\"><div class=\"kw-literary__label\">Заметка автора</div><p>Author</p></aside><aside class=\"kw-literary kw-literary--letter\"><div class=\"kw-literary__label\">Письмо</div><p>Letter</p></aside><aside class=\"kw-literary kw-literary--epigraph\"><div class=\"kw-literary__label\">Эпиграф</div><p>Epigraph</p></aside><aside class=\"kw-literary kw-literary--world-note\"><div class=\"kw-literary__label\">Заметка мира</div><p>World</p></aside><aside class=\"kw-literary kw-literary--chronicle-quote\"><div class=\"kw-literary__label\">Цитата хроники</div><p>Chronicle</p></aside><aside class=\"kw-literary kw-literary--archive-fragment\"><div class=\"kw-literary__label\">Архивный фрагмент</div><p>Archive</p></aside>", "full_text": "Заметка автора\nAuthor\nПисьмо\nLetter\nЭпиграф\nEpigraph\nЗаметка мира\nWorld\nЦитата хроники\nChronicle\nАрхивный фрагмент\nArchive", "search_index_text": "Заметка автора\nAuthor\nПисьмо\nLetter\nЭпиграф\nEpigraph\nЗаметка мира\nWorld\nЦитата хроники\nChronicle\nАрхивный фрагмент\nArchive", "public_snippet_text": "Заметка автора\nAuthor\nПисьмо\nLetter\nЭпиграф\nEpigraph\nЗаметка мира\nWorld\nЦитата хроники\nChronicle\nАрхивный фрагмент\nArchive", "media_manifest": [], "reference_manifest": [], "notes": ["Labels are server-owned, projected once, and are not duplicated in canonical text."] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "identity_manifest_extraction", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-016",
+      "purpose": "One warning node distinguishes general and content kinds without schema duplication.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "warning_kinds",
+          "polarity": "positive",
+          "input": { "kind": "legacy_markdown", "profile": "prose", "value": "<!-- kw:block type=warning_note -->\nОбщее\n<!-- /kw:block -->\n<!-- kw:block type=content_warning -->\nКонтент\n<!-- /kw:block -->" },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "warning", "attrs": { "kind": "general" }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Общее" }] }] },
+              { "type": "warning", "attrs": { "kind": "content", "label": "Темы" }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Контент" }] }] }
+            ]
+          },
+          "edit": { "operation": "append_text", "path": "/content/1/content/0/content/0/text", "value": "." },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<aside class=\"kw-warning kw-warning--general\"><div class=\"kw-warning__label\">Предупреждение</div><p>Общее</p></aside><aside class=\"kw-warning kw-warning--content\"><div class=\"kw-warning__label\">Темы</div><p>Контент</p></aside>", "full_text": "Предупреждение\nОбщее\nТемы\nКонтент", "search_index_text": "Предупреждение\nОбщее\nТемы\nКонтент", "public_snippet_text": "Предупреждение\nОбщее\nТемы\nКонтент", "media_manifest": [], "reference_manifest": [], "notes": [] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "identity_manifest_extraction", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-017",
+      "purpose": "Spoiler and ordinary disclosure keep required labels and distinct semantics.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "spoiler_and_disclosure",
+          "polarity": "positive",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "spoiler", "attrs": { "label": "Финал" }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Тайна" }] }] },
+              { "type": "disclosure", "attrs": { "label": "Подробнее" }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Справка" }] }] }
+            ]
+          },
+          "edit": { "operation": "append_text", "path": "/content/0/content/0/content/0/text", "value": "." },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<details class=\"kw-spoiler\"><summary>Финал</summary><p>Тайна</p></details><details class=\"kw-disclosure\"><summary>Подробнее</summary><p>Справка</p></details>", "full_text": "Финал\nТайна\nПодробнее\nСправка", "search_index_text": "Финал\nТайна\nПодробнее\nСправка", "public_snippet_text": "Финал\nПодробнее\nСправка", "media_manifest": [], "reference_manifest": [], "notes": ["The search index includes the spoiler body; the public snippet retains only its label while ordinary disclosure text remains visible."] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "identity_manifest_extraction", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-019",
+      "purpose": "Poetry line and multiple-blank-line stanza semantics survive edit, reopen, and render.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "poetry_stanzas",
+          "polarity": "positive",
+          "input": { "kind": "legacy_markdown", "profile": "poetry", "value": "Строка 1\nСтрока 2\n\n\nСтрока 3" },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "poetry",
+            "content": [
+              { "type": "verse", "content": [
+                { "type": "verse_line", "content": [{ "type": "text", "text": "Строка 1" }] },
+                { "type": "verse_line", "content": [{ "type": "text", "text": "Строка 2" }] },
+                { "type": "stanza_break", "attrs": { "blank_lines": 2 } },
+                { "type": "verse_line", "content": [{ "type": "text", "text": "Строка 3" }] }
+              ] }
+            ]
+          },
+          "edit": { "operation": "append_text", "path": "/content/0/content/3/content/0/text", "value": "." },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<div class=\"kw-verse\"><div class=\"kw-verse-line\">Строка 1</div><div class=\"kw-verse-line\">Строка 2</div><div class=\"kw-stanza-break\" data-blank-lines=\"2\"></div><div class=\"kw-verse-line\">Строка 3</div></div>", "full_text": "Строка 1\nСтрока 2\n\n\nСтрока 3", "search_index_text": "Строка 1\nСтрока 2\n\n\nСтрока 3", "public_snippet_text": "Строка 1\nСтрока 2\n\n\nСтрока 3", "media_manifest": [], "reference_manifest": [], "notes": [] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-020",
+      "purpose": "Explicitly classified poetry marks remain canonical and render safely.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "poetry_marks",
+          "polarity": "positive",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj" },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "poetry",
+            "content": [
+              { "type": "verse", "content": [
+                { "type": "verse_line", "content": [{ "type": "text", "text": "Сильная строка", "marks": [{ "type": "strong" }] }] },
+                { "type": "verse_line", "content": [{ "type": "text", "text": "Ссылка", "marks": [{ "type": "link", "attrs": { "href": "/works/example" } }] }] }
+              ] }
+            ]
+          },
+          "edit": { "operation": "toggle_mark", "path": "/content/0/content/0/content/0/marks", "value": "emphasis" },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<div class=\"kw-verse\"><div class=\"kw-verse-line\"><strong>Сильная строка</strong></div><div class=\"kw-verse-line\"><a href=\"/works/example\">Ссылка</a></div></div>", "full_text": "Сильная строка\nСсылка", "search_index_text": "Сильная строка\nСсылка", "public_snippet_text": "Сильная строка\nСсылка", "media_manifest": [], "reference_manifest": [], "notes": ["This is already-disambiguated KWDJ, not automatic interpretation of Markdown-looking poem source."] },
+          "pipeline_stages": ["legacy_import_parse", "validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-025",
+      "purpose": "Normalization, HTML, plain text, and manifests are deterministic across repeated runs.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "projection_determinism",
+          "polarity": "positive",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj", "repeat_count": 2 },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "paragraph", "content": [{ "type": "text", "text": "Stable", "marks": [{ "type": "strong" }] }] }
+            ]
+          },
+          "edit": null,
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<p><strong>Stable</strong></p>", "full_text": "Stable", "search_index_text": "Stable", "public_snippet_text": "Stable", "media_manifest": [], "reference_manifest": [], "notes": ["Both runs must produce byte-identical normalized JSON and exact identical projections."] },
+          "pipeline_stages": ["validate_normalize", "editor_round_trip_unchanged", "public_render", "plain_text_projection", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-027",
+      "purpose": "A mixed poetry document preserves verse, media, author-note, warning, and exact root order.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "mixed_poetry_blocks",
+          "polarity": "positive",
+          "input": { "kind": "kwdj", "value_ref": "$case.kwdj", "identity_state": { "existing_media_ids": ["550e8400-e29b-41d4-a716-446655440027"], "media_public_paths": { "550e8400-e29b-41d4-a716-446655440027": "/media/derived/poem-27.webp" } } },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "poetry",
+            "content": [
+              { "type": "verse", "content": [{ "type": "verse_line", "content": [{ "type": "text", "text": "Первая" }] }] },
+              { "type": "media_image", "attrs": { "media_asset_id": "550e8400-e29b-41d4-a716-446655440027", "alt": "Ночной лес", "align": "wide" } },
+              { "type": "verse", "content": [
+                { "type": "verse_line", "content": [{ "type": "text", "text": "Вторая" }] },
+                { "type": "stanza_break", "attrs": { "blank_lines": 1 } },
+                { "type": "verse_line", "content": [{ "type": "text", "text": "Третья" }] }
+              ] },
+              { "type": "literary_block", "attrs": { "kind": "author_note" }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Примечание" }] }] },
+              { "type": "warning", "attrs": { "kind": "content", "label": "Темы" }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Предупреждение" }] }] },
+              { "type": "verse", "content": [{ "type": "verse_line", "content": [{ "type": "text", "text": "Финал" }] }] }
+            ]
+          },
+          "edit": { "operation": "append_text", "path": "/content/5/content/0/content/0/text", "value": "." },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<div class=\"kw-verse\"><div class=\"kw-verse-line\">Первая</div></div><figure class=\"kw-media kw-media--wide\"><img src=\"/media/derived/poem-27.webp\" alt=\"Ночной лес\"></figure><div class=\"kw-verse\"><div class=\"kw-verse-line\">Вторая</div><div class=\"kw-stanza-break\" data-blank-lines=\"1\"></div><div class=\"kw-verse-line\">Третья</div></div><aside class=\"kw-literary kw-literary--author-note\"><div class=\"kw-literary__label\">Заметка автора</div><p>Примечание</p></aside><aside class=\"kw-warning kw-warning--content\"><div class=\"kw-warning__label\">Темы</div><p>Предупреждение</p></aside><div class=\"kw-verse\"><div class=\"kw-verse-line\">Финал</div></div>", "full_text": "Первая\nНочной лес\nВторая\n\nТретья\nЗаметка автора\nПримечание\nТемы\nПредупреждение\nФинал", "search_index_text": "Первая\nНочной лес\nВторая\n\nТретья\nЗаметка автора\nПримечание\nТемы\nПредупреждение\nФинал", "public_snippet_text": "Первая\nНочной лес\nВторая\n\nТретья\nЗаметка автора\nПримечание\nТемы\nПредупреждение\nФинал", "media_manifest": [{ "media_asset_id": "550e8400-e29b-41d4-a716-446655440027", "locator": "/content/1" }], "reference_manifest": [], "notes": ["The exact media manifest is mandatory for DOC-027."] },
+          "pipeline_stages": ["validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "identity_manifest_extraction", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-028",
+      "purpose": "Plain prose clipboard conversion keeps literal punctuation, single breaks, and paragraph boundaries.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "plain_prose_paragraphs",
+          "polarity": "positive",
+          "input": { "kind": "clipboard_plain", "profile": "prose", "insertion_context": "root", "value": "# Literal **text**\nsingle break\n\n\n\nSecond <p>", "clipboard_items": ["text/plain"] },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "paragraph", "content": [
+                { "type": "text", "text": "# Literal **text**" },
+                { "type": "hard_break" },
+                { "type": "text", "text": "single break" }
+              ] },
+              { "type": "paragraph", "content": [{ "type": "text", "text": "Second <p>" }] }
+            ]
+          },
+          "edit": { "operation": "append_text", "path": "/content/1/content/0/text", "value": "." },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<p># Literal **text**<br>single break</p><p>Second &lt;p&gt;</p>", "full_text": "# Literal **text**\nsingle break\nSecond <p>", "search_index_text": "# Literal **text**\nsingle break\nSecond <p>", "public_snippet_text": "# Literal **text**\nsingle break\nSecond <p>", "media_manifest": [], "reference_manifest": [], "notes": ["Three empty lines collapse to one paragraph boundary and do not create empty paragraphs."] },
+          "pipeline_stages": ["clipboard_plain_to_kwdj", "validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-029",
+      "purpose": "Plain poetry clipboard conversion maps lines and blank-line runs without changing profile.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "plain_poetry_clipboard",
+          "polarity": "positive",
+          "input": { "kind": "clipboard_plain", "profile": "poetry", "insertion_context": "verse", "value": "# Не заголовок\n**Не strong**\n\n\nФинал", "clipboard_items": ["text/plain"] },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "poetry",
+            "content": [
+              { "type": "verse", "content": [
+                { "type": "verse_line", "content": [{ "type": "text", "text": "# Не заголовок" }] },
+                { "type": "verse_line", "content": [{ "type": "text", "text": "**Не strong**" }] },
+                { "type": "stanza_break", "attrs": { "blank_lines": 2 } },
+                { "type": "verse_line", "content": [{ "type": "text", "text": "Финал" }] }
+              ] }
+            ]
+          },
+          "edit": { "operation": "append_text", "path": "/content/0/content/3/content/0/text", "value": "." },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<div class=\"kw-verse\"><div class=\"kw-verse-line\"># Не заголовок</div><div class=\"kw-verse-line\">**Не strong**</div><div class=\"kw-stanza-break\" data-blank-lines=\"2\"></div><div class=\"kw-verse-line\">Финал</div></div>", "full_text": "# Не заголовок\n**Не strong**\n\n\nФинал", "search_index_text": "# Не заголовок\n**Не strong**\n\n\nФинал", "public_snippet_text": "# Не заголовок\n**Не strong**\n\n\nФинал", "media_manifest": [], "reference_manifest": [], "notes": ["Markdown-looking punctuation is literal clipboard text."] },
+          "pipeline_stages": ["clipboard_plain_to_kwdj", "validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "determinism"]
+        }
+      ]
+    },
+    {
+      "id": "DOC-030",
+      "purpose": "Supported inert rich text maps headings, marks, links, quotes, lists, and tables exactly.",
+      "classification": "positive",
+      "cases": [
+        {
+          "name": "supported_rich_clipboard",
+          "polarity": "positive",
+          "input": { "kind": "clipboard_html", "profile": "prose", "insertion_context": "root", "value": "<h2>Title</h2><p><strong>Bold</strong> <a href=\"https://example.test\">link</a></p><blockquote><p>Quote</p></blockquote><ul><li>Item</li></ul><table><tr><th>A</th></tr><tr><td>1</td></tr></table>", "plain_fallback": "Title\nBold link\nQuote\nItem\nA\n1", "clipboard_items": ["text/plain", "text/html"] },
+          "kwdj": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              { "type": "heading", "attrs": { "level": 2 }, "content": [{ "type": "text", "text": "Title" }] },
+              { "type": "paragraph", "content": [
+                { "type": "text", "text": "Bold", "marks": [{ "type": "strong" }] },
+                { "type": "text", "text": " " },
+                { "type": "text", "text": "link", "marks": [{ "type": "link", "attrs": { "href": "https://example.test" } }] }
+              ] },
+              { "type": "blockquote", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Quote" }] }] },
+              { "type": "bullet_list", "content": [{ "type": "list_item", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Item" }] }] }] },
+              { "type": "table", "content": [
+                { "type": "table_row", "content": [{ "type": "table_header", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "A" }] }] }] },
+                { "type": "table_row", "content": [{ "type": "table_cell", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "1" }] }] }] }
+              ] }
+            ]
+          },
+          "edit": { "operation": "append_text", "path": "/content/1/content/2/text", "value": "." },
+          "expected": { "outcome": "accepted", "diagnostic_codes": [], "normalized_kwdj": "$case.kwdj", "public_html": "<h2>Title</h2><p><strong>Bold</strong> <a href=\"https://example.test\" rel=\"noopener noreferrer\">link</a></p><blockquote><p>Quote</p></blockquote><ul><li><p>Item</p></li></ul><table><thead><tr><th><p>A</p></th></tr></thead><tbody><tr><td><p>1</p></td></tr></tbody></table>", "full_text": "Title\nBold link\nQuote\nItem\nA\n1", "search_index_text": "Title\nBold link\nQuote\nItem\nA\n1", "public_snippet_text": "Title\nBold link\nQuote\nItem\nA\n1", "media_manifest": [], "reference_manifest": [], "notes": ["The HTML is parsed inertly; its DOM, classes, and source bytes are not canonical."] },
+          "pipeline_stages": ["clipboard_rich_to_kwdj", "validate_normalize", "editor_round_trip_unchanged", "editor_edit_save_reopen", "public_render", "plain_text_projection", "determinism"]
+        }
+      ]
+    }
+  ]
+}

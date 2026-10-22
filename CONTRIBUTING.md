@@ -14,8 +14,14 @@ pointer handle поверх того же native Move и клавиатурно�
 проверяет mounted geometry, pointer и lifecycle во всех трёх движках.
 [Clipboard47](docs/clipboard.md) добавляет optional profile decode, raw recovery и
 atomic insert; `npm run test:clipboard` включает focused Node и три browser engines.
-Installed Chrome/Safari сохраняют отдельную обязательную приёмку. Полная a11y66
-и vanilla alpha сохраняют отдельные задачи и acceptance gates.
+Installed Chrome/Safari сохраняют отдельную обязательную приёмку.
+`npm run test:ui:browser` включает [accessibility66](docs/accessibility.md):
+семантику, AX/axe, presentation и связный keyboard/host-save сценарий.
+`npm run test:accessibility:unit` проверяет запись исходных observations и
+контролируемые ответы Safari readiness; он включён в `npm run check`.
+Installed Chrome/Safari, фактический browser zoom и ручная keyboard/focus
+проверка остаются отдельными gates; эти проверки не заявляют поддержку AT
+или полное соответствие WCAG. Vanilla alpha сохраняет отдельную задачу.
 `npm run test:mounted-corpus` добавляет [mounted corpus45](docs/mounted-corpus.md):
 независимые source literals, три browser engines, original public receipts,
 save/destroy/fresh reopen и отдельные integrity/requirement результаты. Lane
