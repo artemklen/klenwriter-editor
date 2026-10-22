@@ -267,17 +267,15 @@ impl CommandProvider for InputFixture {
         e
     }
 }
-fn fixture(
-    text: Option<&str>,
-    join: bool,
-    access: AccessMode,
-) -> (
+type InputFixtureState = (
     Session<InputFixture>,
     NodeId,
     Option<NodeId>,
     Rc<Cell<usize>>,
     Rc<Cell<usize>>,
-) {
+);
+
+fn fixture(text: Option<&str>, join: bool, access: AccessMode) -> InputFixtureState {
     let p = InputFixture::new(text, join);
     let r = p.rules.clone();
     let l = p.literal.clone();
