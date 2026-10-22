@@ -3,9 +3,9 @@ import type { DeepReadonly, EventDto, InputFinalRegionV2, NodeViewDto, PositionD
 import type { DomDiagnostic, DomRefusal, MountedMutationV2, RecoveryRegion, RendererCatalog } from './types.js';
 import { prepareNode, type PreparedNode } from './catalog.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
-import { createCompositionCorrespondence, type CompositionWindow, type CompositionObservation } from './composition-view.js';
+import { createCompositionCorrespondence, type CompositionWindow, type CompositionObservation, type CompositionTerminalTicket } from './composition-view.js';
 import {literalCompositionBytes,sameLiteralNode,verifyLiteralComposition,type LiteralCompositionSource} from './composition-literal.js';
-export type { CompositionWindow, CompositionObservation } from './composition-view.js';
+export type { CompositionWindow, CompositionObservation, CompositionTerminalTicket } from './composition-view.js';
 
 export const domRegionLimits = Object.freeze({ blocks: 8, nodes: 131072, depth: 128, utf16: 2097152, mutations: 4096 });
 export interface DomPoint { readonly node: Node; readonly offset: number }
@@ -47,6 +47,13 @@ export interface DomView {
   beginProvisional(stamp: DeepReadonly<StampDto>, blockIds?: readonly string[]): DomRefusal | null;
   beginComposition(stamp: DeepReadonly<StampDto>, selection: DeepReadonly<SelectionDto>): CompositionWindow | DomRefusal;
   observeComposition(window: CompositionWindow): CompositionObservation | DomRefusal;
+  /** Private composing-only terminal correspondence; default observers stay unchanged. */
+  captureTerminalDeletion(window:CompositionWindow,event:InputEvent):CompositionTerminalTicket|DomRefusal|null;
+  observeTerminalDeletion(ticket:CompositionTerminalTicket,event:InputEvent):DomRefusal|null;
+  captureTerminalInsertion(ticket:CompositionTerminalTicket,event:InputEvent):DomRefusal|null;
+  observeTerminalInsertion(ticket:CompositionTerminalTicket,event:InputEvent):CompositionObservation|DomRefusal;
+  releaseTerminal(ticket:CompositionTerminalTicket):void;
+  terminalRetainedBytes(ticket:CompositionTerminalTicket):number;
   /** Recovery diagnostics only; this never admits a replacement command. */
   captureComposition(window: CompositionWindow): RecoveryRegion | DomRefusal;
   restoreComposition(window: CompositionWindow): DomRefusal | null;
@@ -498,6 +505,24 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     if (destroyed) return refusal('dom.disposed');
     return correspondence.observe(window);
   }
+  function terminalCurrent(window:CompositionWindow):DomRefusal|null {
+    return destroyed||!currentStamp||!stampSame(currentStamp,window.stamp)||!correspondence.owns(window)
+      ?compositionRefusal('dom.composition_stale',window):null;
+  }
+  function captureTerminalDeletion(window:CompositionWindow,event:InputEvent):CompositionTerminalTicket|DomRefusal|null {
+    return terminalCurrent(window)??correspondence.captureTerminalDeletion(window,event);
+  }
+  function observeTerminalDeletion(ticket:CompositionTerminalTicket,event:InputEvent):DomRefusal|null {
+    return terminalCurrent(ticket.window)??correspondence.observeTerminalDeletion(ticket,event);
+  }
+  function captureTerminalInsertion(ticket:CompositionTerminalTicket,event:InputEvent):DomRefusal|null {
+    return terminalCurrent(ticket.window)??correspondence.captureTerminalInsertion(ticket,event);
+  }
+  function observeTerminalInsertion(ticket:CompositionTerminalTicket,event:InputEvent):CompositionObservation|DomRefusal {
+    return terminalCurrent(ticket.window)??correspondence.observeTerminalInsertion(ticket,event);
+  }
+  function releaseTerminal(ticket:CompositionTerminalTicket):void {correspondence.releaseTerminal(ticket);}
+  function terminalRetainedBytes(ticket:CompositionTerminalTicket):number {return correspondence.terminalRetainedBytes(ticket);}
   function captureLiteralComposition(window:CompositionWindow,text:string,marks:DeepReadonly<StateDto>['stored_marks']):LiteralCompositionSource|DomRefusal|null {
     if(destroyed||!currentStamp||!stampSame(currentStamp,window.stamp)||rootId===null)return compositionRefusal('dom.composition_stale',window);
     const cached=correspondence.literalSource(window,text,marks,rootId);
@@ -840,7 +865,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     },
     patch, readSelection, restoreSelection, rememberSelection, ownedBlockAt, textPosition: positionAt, domPoint, geometryRow, geometryOwner,checkInputRegion,checkInputResult,captureLiteralComposition,checkLiteralComposition,checkLiteralCompositionWindow,
     geometryStamp: () => destroyed ? null : currentStamp,
-    beginProvisional, beginComposition, observeComposition, captureComposition, restoreComposition, endProvisional() { provisional = null; },
+    beginProvisional, beginComposition, observeComposition, captureTerminalDeletion, observeTerminalDeletion, captureTerminalInsertion, observeTerminalInsertion, releaseTerminal, terminalRetainedBytes, captureComposition, restoreComposition, endProvisional() { provisional = null; },
     setComposing(active) { if (provisional) provisional.composing = active; },
     hasProvisional: () => provisional !== null,
     protectedIds: () => Object.freeze([...(provisional?.protected ?? [])]),

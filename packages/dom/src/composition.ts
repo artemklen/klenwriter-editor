@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import type { DeepReadonly, InputCommandRequestV2, InputSubmissionV2, ResponseV2, SelectionDto, SessionContextV2, StampDto, StateDto } from '@klenwriter/editor-sdk';
-import type { CompositionObservation, CompositionWindow } from './composition-view.js';
+import type { CompositionObservation, CompositionWindow, CompositionTerminalTicket } from './composition-view.js';
 import type { DomView } from './view.js';
 import type { SelectionOwner } from './selection.js';
 import type { CompositionRecovery, CompositionUnappliedInput, DomRefusal, InputCommandBindings, MountedMutation, MountedMutationV2, RecoveryRegion } from './types.js';
@@ -37,6 +37,8 @@ interface Generation {
   claimed:CompositionObservation|null; resultWindow:CompositionWindow|null; literalWindow:CompositionWindow|null;
   reads:number; priorRaf:string|null; priorRafMutations:number; stable:number; deadline:number|null;
   closingKey:string|null; foreignDuringClaim:boolean;
+  terminal:{readonly ticket:CompositionTerminalTicket;readonly code:string|null;phase:'deleting'|'empty'|'inserting'}|null;
+  terminalUsed:boolean; terminalEcho:{readonly code:string|null;readonly fingerprint:string;readonly node:Node;readonly offset:number;ended:boolean}|null;
   submission:InputSubmissionV2|null; response:ResponseV2|null; outcome:CompositionRecovery['nativeOutcome'];
   accepted:Accepted|null;
 }
@@ -134,6 +136,106 @@ export class CompositionOwner {
     return !!c&&!!st&&c.selection.intentAvailable()&&g.serial===c.selection.intent()&&!g.foreignDuringClaim
       &&same(c.capture(),frame?.base??g.base)&&same(st.stamp,frame?.base??g.base)&&same(st.selection,frame?.selection??g.selection)&&same(c.context(),frame?.context??g.context);
   }
+  #releaseTerminal(g:Generation):void {
+    if(g.terminal)this.#configuration?.view.releaseTerminal(g.terminal.ticket);
+    g.terminal=null;g.terminalEcho=null;
+  }
+  #terminalFresh(g:Generation,event:InputEvent):boolean {
+    const c=this.#configuration;
+    try{return !this.#destroyed&&!this.#blocked&&this.#generation===g&&!!c&&!!c.typed?.enabled()&&g.phase==='composing'&&g.submission===null&&g.outcome==='not_submitted'
+      &&c.canEdit()&&!c.busy()&&c.element.contains(event.target as Node)&&c.element.ownerDocument.hasFocus()&&c.selection.ownsFocus()&&this.#coherent(g);}
+    catch{return false;}
+  }
+  #terminalRecords(g:Generation):DomRefusal|null {
+    const c=this.#configuration;if(!c)return this.#failure('stale');
+    if(g.captureExhausted)return this.#failure('capture_limit');
+    const count=c.consumeRecords();
+    if(!Number.isSafeInteger(count)||count<0||count>4096-g.mutations){g.captureExhausted=true;return this.#failure('capture_limit');}
+    g.mutations+=count;return null;
+  }
+  #terminalRefusal(failure:DomRefusal,event:InputEvent):void {
+    const code=failure.diagnostic.code;
+    this.#recover(code==='dom.composition_stale'?'stale':code==='dom.composition_limit'?'capture_limit':'ambiguous_tail',event,this.#recoveryRegion());
+    if(event.cancelable)event.preventDefault();
+  }
+  #terminalAbort(g:Generation,event:InputEvent):void {
+    if(!this.#destroyed&&!this.#blocked&&this.#generation===g)this.#recover('stale',event,this.#recoveryRegion());
+    if(event.cancelable)event.preventDefault();
+  }
+  #terminalBefore(g:Generation,event:InputEvent):boolean {
+    const c=this.#configuration;if(!c)return false;
+    if(!g.terminal&&event.inputType!=='deleteCompositionText'&&!(g.terminalUsed&&event.inputType==='insertFromComposition'))return false;
+    if(!c.typed?.enabled())return false;
+    if(!this.#terminalFresh(g,event)){this.#recover('stale',event,this.#recoveryRegion());if(event.cancelable)event.preventDefault();return true;}
+    const serial=g.serial,records=this.#terminalRecords(g);
+    if(!this.#terminalFresh(g,event)||g.serial!==serial){this.#terminalAbort(g,event);return true;}
+    if(records){this.#terminalRefusal(records,event);return true;}
+    if(g.terminal){
+      if(g.terminal.phase!=='empty'){this.#recover('ambiguous_tail',event,this.#recoveryRegion());if(event.cancelable)event.preventDefault();return true;}
+      const terminal=g.terminal,failure=c.view.captureTerminalInsertion(terminal.ticket,event);
+      if(this.#configuration!==c||!this.#terminalFresh(g,event)||g.serial!==serial||g.terminal!==terminal||terminal.phase!=='empty'){this.#terminalAbort(g,event);return true;}
+      if(failure){this.#terminalRefusal(failure,event);return true;}
+      terminal.phase='inserting';
+    }else{
+      if(g.terminalUsed){this.#recover('ambiguous_tail',event,this.#recoveryRegion());if(event.cancelable)event.preventDefault();return true;}
+      const ticket=c.view.captureTerminalDeletion(g.window,event);
+      if(this.#configuration!==c||!this.#terminalFresh(g,event)||g.serial!==serial||g.terminal!==null||g.terminalUsed){
+        if(ticket&&!isDomRefusal(ticket))c.view.releaseTerminal(ticket);
+        this.#terminalAbort(g,event);return true;
+      }
+      if(!ticket)return false;
+      if(isDomRefusal(ticket)){this.#terminalRefusal(ticket,event);return true;}
+      g.terminal={ticket,code:g.closingKey,phase:'deleting'};g.terminalUsed=true;
+    }
+    this.#ownedEvents.add(event);c.selection.invalidate(false,event);this.#emit();return true;
+  }
+  #terminalInput(g:Generation,event:InputEvent):boolean {
+    const c=this.#configuration,terminal=g.terminal;if(!c||!terminal)return false;
+    if(!this.#terminalFresh(g,event)){this.#recover('stale',event,this.#recoveryRegion());return true;}
+    const serial=g.serial,phase=terminal.phase,records=this.#terminalRecords(g);
+    if(!this.#terminalFresh(g,event)||g.serial!==serial||g.terminal!==terminal||terminal.phase!==phase){this.#terminalAbort(g,event);return true;}
+    if(records){this.#terminalRefusal(records,event);return true;}
+    if(terminal.phase==='deleting'){
+      const failure=c.view.observeTerminalDeletion(terminal.ticket,event);
+      if(this.#configuration!==c||!this.#terminalFresh(g,event)||g.serial!==serial||g.terminal!==terminal||terminal.phase!=='deleting'){this.#terminalAbort(g,event);return true;}
+      if(failure){this.#terminalRefusal(failure,event);return true;}
+      terminal.phase='empty';this.#emit();return true;
+    }
+    if(terminal.phase!=='inserting'){this.#recover('ambiguous_tail',event,this.#recoveryRegion());return true;}
+    const observation=c.view.observeTerminalInsertion(terminal.ticket,event);
+    if(this.#configuration!==c||!this.#terminalFresh(g,event)||g.serial!==serial||g.terminal!==terminal||terminal.phase!=='inserting'){this.#terminalAbort(g,event);return true;}
+    if(isDomRefusal(observation)){this.#terminalRefusal(observation,event);return true;}
+    // Keep only the actual caret already proved by the registered payload read.
+    const browser=c.element.ownerDocument.getSelection();
+    if(!browser?.isCollapsed||!browser.anchorNode||browser.anchorNode!==browser.focusNode||browser.anchorOffset!==browser.focusOffset
+      ||!Number.isSafeInteger(browser.anchorOffset)||browser.anchorOffset<0||browser.anchorOffset>TEXT_LIMIT||!c.element.contains(browser.anchorNode)){
+      this.#recover('stale',event,observation.region);return true;
+    }
+    // The successful normal observation, not event.data, owns this payload.
+    c.view.releaseTerminal(terminal.ticket);g.terminal=null;g.latest=observation;
+    g.terminalEcho={code:terminal.code,fingerprint:observation.fingerprint,node:browser.anchorNode,offset:browser.anchorOffset,ended:false};this.#emit();return true;
+  }
+  #terminalClosingEcho(g:Generation,event:KeyboardEvent,previous:boolean):boolean {
+    // Legacy 229 may accompany the already-delivered composition's closing key.
+    // Only this completed private ticket owns bookkeeping; no ordinary input permit.
+    const c=this.#configuration,echo=g.terminalEcho;
+    if(!c||!echo||!echo.ended||g.phase!=='settling'||g.reads!==0||g.deadline===null||this.#now()>=g.deadline
+      ||!echo.code||event.code!==echo.code||previous||event.repeat||event.isComposing
+      ||event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return false;
+    try{
+      if(!c.typed?.enabled()||!c.canEdit()||c.busy()||!c.element.contains(event.target as Node)||!c.element.ownerDocument.hasFocus()||!c.selection.ownsFocus()||!this.#coherent(g))return false;
+      const browser=c.element.ownerDocument.getSelection();
+      if(!browser?.isCollapsed||browser.anchorNode!==echo.node||browser.focusNode!==echo.node||browser.anchorOffset!==echo.offset||browser.focusOffset!==echo.offset||!c.element.contains(echo.node))return false;
+      const observation=this.#observe();
+      if(!observation||isDomRefusal(observation)||observation.fingerprint!==echo.fingerprint||this.#destroyed||this.#blocked
+        ||this.#configuration!==c||this.#generation!==g||g.terminalEcho!==echo||g.phase!=='settling'||g.reads!==0||this.#now()>=g.deadline||!this.#coherent(g))return false;
+      const current=c.element.ownerDocument.getSelection();
+      if(!c.canEdit()||c.busy()||!c.element.ownerDocument.hasFocus()||!c.selection.ownsFocus()||!current?.isCollapsed
+        ||current.anchorNode!==echo.node||current.focusNode!==echo.node||current.anchorOffset!==echo.offset||current.focusOffset!==echo.offset||!c.element.contains(echo.node))return false;
+      // An owned closing echo is bookkeeping only. It creates no ordinary permit.
+      g.terminalEcho=null;this.#ownedEvents.add(event);c.selection.invalidate(false,event);this.#emit();return true;
+    }catch{return false;}
+  }
   #stop():void {
     const win=this.#configuration?.element.ownerDocument.defaultView;
     if(this.#raf!==null){win?.cancelAnimationFrame(this.#raf);this.#raf=null;}
@@ -154,6 +256,7 @@ export class CompositionOwner {
     const g=this.#generation;
     if(this.#blocked)return;this.#blocked=true;
     this.#configuration.typed?.retire();
+    if(g)this.#releaseTerminal(g);
     this.#stop();this.#clearKeys();
     // The safe copy/actual DOM capability is owned BEFORE any restoration/callback.
     const preserveClaim=reason==='native_fatal'||reason==='native_unknown';
@@ -197,7 +300,7 @@ export class CompositionOwner {
     const g=this.#generation;if(this.#destroyed||!g||g.phase!=='settling')return;
     if(g.deadline===null||this.#now()>=g.deadline){this.#recover('settle_limit');return;}
     if(g.reads>=8){this.#recover('settle_limit');return;}
-    g.reads++;
+    g.reads++;g.terminalEcho=null;
     const observation=this.#observe();
     if(!observation||isDomRefusal(observation)){this.#recover(observation&&isDomRefusal(observation)&&observation.diagnostic.code==='dom.composition_stale'?'stale':'capture_limit',undefined,this.#recoveryRegion());return;}
     if(this.#now()>=g.deadline){this.#recover('settle_limit');return;}
@@ -309,8 +412,9 @@ export class CompositionOwner {
     if(!c.selection.intentAvailable()){this.#recover('generation_limit',event,this.#transfer());return;}
     const window=c.view.beginComposition(base,state.selection);
     if(isDomRefusal(window)){this.#recover('capture_limit',event,this.#transfer());return;}
+    if(this.#generation)this.#releaseTerminal(this.#generation);
     this.#clearKeys();
-    this.#next++;this.#generation={id:this.#next,window,base,context,selection:state.selection,phase:'composing',serial:c.selection.intent(),latest:null,claimed:null,resultWindow:null,literalWindow:null,mutations:0,captureExhausted:false,reads:0,priorRaf:null,priorRafMutations:0,stable:0,deadline:null,closingKey:null,foreignDuringClaim:false,submission:null,response:null,outcome:'not_submitted',accepted:null};
+    this.#next++;this.#generation={id:this.#next,window,base,context,selection:state.selection,phase:'composing',serial:c.selection.intent(),latest:null,claimed:null,resultWindow:null,literalWindow:null,mutations:0,captureExhausted:false,reads:0,priorRaf:null,priorRafMutations:0,stable:0,deadline:null,closingKey:null,foreignDuringClaim:false,terminal:null,terminalUsed:false,terminalEcho:null,submission:null,response:null,outcome:'not_submitted',accepted:null};
     this.#packet=null;this.#ordinaryFrame=null;this.#permit=null;this.#enterReleased=false;
     c.selection.cancel();c.view.setComposing(true);c.composing(true);this.#observe();this.#emit();
   }
@@ -318,6 +422,7 @@ export class CompositionOwner {
     if(this.#destroyed)return;this.#retainEvent(event);if(this.#blocked)return;
     if(!this.#generation){this.#recover('ambiguous_tail',event,this.#transfer());return;}
     if(this.#generation.phase==='composing'){
+      if(this.#generation.terminal){this.#recover('ambiguous_tail',event,this.#recoveryRegion());return;}
       const observation=this.#observe();if(!observation||isDomRefusal(observation))this.#recover(observation&&isDomRefusal(observation)&&observation.diagnostic.code==='dom.composition_stale'?'stale':'capture_limit',event,this.#recoveryRegion());
     }
   }
@@ -328,8 +433,17 @@ export class CompositionOwner {
     if(g.phase==='committed'||g.phase==='cancelled'){this.#tail(event);return;}
     if(g.phase!=='composing')return;
     const deadline=this.#now()+250;
+    const pendingTerminal=g.terminal!==null;
+    if(g.terminal){c.view.releaseTerminal(g.terminal.ticket);g.terminal=null;}
     this.#retainEvent(event);const observation=this.#observe();
     if(!observation||isDomRefusal(observation)){this.#recover(observation&&isDomRefusal(observation)&&observation.diagnostic.code==='dom.composition_stale'?'stale':'capture_limit',event,this.#recoveryRegion());return;}
+    if(pendingTerminal){this.#recover('ambiguous_tail',event,observation.region);return;}
+    if(g.terminalEcho){
+      const echo=g.terminalEcho,browser=c.element.ownerDocument.getSelection();
+      if(!this.#coherent(g)||observation.fingerprint!==echo.fingerprint||!browser?.isCollapsed||browser.anchorNode!==echo.node||browser.focusNode!==echo.node
+        ||browser.anchorOffset!==echo.offset||browser.focusOffset!==echo.offset||!c.element.contains(echo.node)){this.#recover('stale',event,observation.region);return;}
+      echo.ended=true;
+    }
     g.phase='settling';g.deadline=deadline;g.reads=0;g.priorRaf=null;g.priorRafMutations=g.mutations;g.stable=0;
     c.view.setComposing(false);c.composing(false);this.#watch(g.deadline);this.#schedule();
   }
@@ -351,6 +465,7 @@ export class CompositionOwner {
     if(!g){if(compositionType(event.inputType)||event.isComposing){this.#recover('ambiguous_tail',event,this.#transfer());if(event.cancelable)event.preventDefault();return true;}return false;}
     if(g.phase==='recovery'){if(event.cancelable)event.preventDefault();return true;}
     if(g.phase==='composing'&&(event.isComposing||compositionType(event.inputType))){
+      if(this.#terminalBefore(g,event))return true;
       this.#ownedEvents.add(event);c.selection.invalidate(false,event);return true;
     }
     if(g.phase==='settling'&&(event.isComposing||compositionType(event.inputType)))return true;
@@ -389,6 +504,7 @@ export class CompositionOwner {
     if(!g){if(compositionType(event.inputType)||event.isComposing){this.#recover('ambiguous_tail',event,this.#transfer());return true;}return false;}
     if(g.phase==='committed'||g.phase==='cancelled'){this.#tail(event);return true;}
     if(g.phase==='recovery')return true;
+    if(g.phase==='composing'&&this.#terminalInput(g,event))return true;
     if(g.phase==='committing'){
       const previous=g.latest,observation=this.#observe();
       if(observation&&!isDomRefusal(observation)&&previous&&observation.replacement!==previous.replacement)this.#recover('busy',event,observation.region);
@@ -479,6 +595,8 @@ export class CompositionOwner {
       g.closingKey=id;this.#ownedEvents.add(event);c.selection.invalidate(false,event);this.#emit();return;
     }
     this.#emit();
+    if(this.#terminalClosingEcho(g,event,previous))return;
+    if(g.terminalUsed&&g.phase==='settling'){this.#recover('busy',event);if(event.cancelable)event.preventDefault();return;}
     const ordinary=!event.isComposing&&event.keyCode!==229&&!['Dead','Process','Escape','Shift','Control','Alt','Meta'].includes(event.key)
       &&!event.altKey&&!event.ctrlKey&&!event.metaKey&&(scalarKey(event.key)||['Backspace','Delete','Enter'].includes(event.key));
     if(!ordinary)return;
@@ -501,7 +619,7 @@ export class CompositionOwner {
     const state=c.readState();if(!state?.selection||!same(state.stamp,c.capture())||!same(c.context(),g.context)||!c.selection.intentAvailable())return;
     const window=c.view.beginComposition(state.stamp,state.selection);
     try{if(isDomRefusal(window))return;const observation=c.view.observeComposition(window);if(isDomRefusal(observation)||!observation.unchanged)return;
-      this.#clearKeys();this.#generation=null;this.#unapplied=null;this.#packet=null;this.#ordinaryFrame=null;
+      this.#releaseTerminal(g);this.#clearKeys();this.#generation=null;this.#unapplied=null;this.#packet=null;this.#ordinaryFrame=null;
     }finally{c.view.endProvisional();this.#emit();}
   }
   isProtected():boolean {return this.#blocked||!!this.#generation&&['composing','settling','committing','recovery'].includes(this.#generation.phase);}
@@ -521,6 +639,8 @@ export class CompositionOwner {
       const g=this.#generation;
       if(g.latest)retainedInputBytes+=2*(g.latest.fingerprint.length+g.latest.replacement.length);
       if(g.accepted&&g.accepted.fingerprint!==g.latest?.fingerprint)retainedInputBytes+=2*g.accepted.fingerprint.length;
+      if(g.terminal)retainedInputBytes+=this.#configuration?.view.terminalRetainedBytes(g.terminal.ticket)??0;
+      if(g.terminalEcho){retainedInputBytes+=16+2*(g.terminalEcho.code?.length??0);if(g.terminalEcho.fingerprint!==g.latest?.fingerprint)retainedInputBytes+=2*g.terminalEcho.fingerprint.length;}
     }
     if(!this.#destroyed&&this.#unapplied?.kind==='bounded')retainedInputBytes+=2*((this.#unapplied.data?.length??0)+(this.#unapplied.key?.length??0)+(this.#unapplied.code?.length??0)+(this.#unapplied.inputType?.length??0));
     if(!this.#destroyed)retainedInputBytes+=2*this.#keyUnits();
@@ -529,7 +649,7 @@ export class CompositionOwner {
   #emit():void {try{this.#sink?.(this.resources());}catch{/* Internal numeric accounting must not replace semantic outcome. */}}
   destroy():void {
     if(this.#destroyed)return;
-    this.retained('destroyed');this.#stop();this.#destroyed=true;this.#unsubscribe?.();this.#unsubscribe=null;
+    this.retained('destroyed');if(this.#generation)this.#releaseTerminal(this.#generation);this.#stop();this.#destroyed=true;this.#unsubscribe?.();this.#unsubscribe=null;
     this.#clearKeys();this.#generation=null;this.#ordinaryFrame=null;this.#unapplied=null;
     this.#configuration=null;this.#packet=null;this.#emit();if(this.#pending===0&&this.#dispatching===0)this.#sink=undefined;
   }

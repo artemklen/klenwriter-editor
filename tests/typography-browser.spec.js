@@ -363,3 +363,102 @@ for(const row of [
     await call(page,'history',id,step.direction);const actual=await checkpoint(page,id,`immediate Backspace history: ${step.direction} revision${step.revision} ${step.phase}`);check(actual,step);const last=mutations(actual).at(-1);expect(last.request).toMatchObject({kind:'history',direction:step.direction});expect(last.response.status).toBe('ok');expect(last.response.value.kind).toBe('mutation');expect(last.response.value.effect).toBe('changed');expect(last.response.value.state).toEqual(actual.state);
   }
 });
+
+// SOURCE03: the platform schedule is measured separately; these are explicitly
+// controlled, untrusted events over the real registered DOM and sealed native SDK.
+const transientOriginal=String.raw`{"content":[{"content":[{"text":"old","type":"text"}],"type":"paragraph"},{"content":[{"text":"tail","type":"text"}],"type":"paragraph"}],"profile":"prose","schema":"klenwriter.document","schema_version":1}`;
+const transientComposed=String.raw`{"content":[{"content":[{"text":"é","type":"text"}],"type":"paragraph"},{"content":[{"text":"tail","type":"text"}],"type":"paragraph"}],"profile":"prose","schema":"klenwriter.document","schema_version":1}`;
+const transientSelection={anchor:{kind:'text',path:[0,0],offset:0,affinity:'after'},focus:{kind:'text',path:[0,0],offset:3,affinity:'after'}};
+async function mountTransient(page,extra={}){
+  observations.get(page).additionalAuthority={kind:'SOURCE03 private composing-only transient terminal',source:'transient-empty-regressions-source-freeze-03',primaryPlatformReportSha256:'c02929690e3422b4bac1b26e4e35b52694f0fa0a152ab4ba04c8ca93507463f3',nativeOracle:'scripts/typography-installed/oracles.json#en-real-deadkey-composition',canonicalBefore:transientOriginal,canonicalAfter:transientComposed,qualification:'Synthetic event identities; actual DOM, native IDs/history and resource disposal. No installed/OS claim.'};
+  return call(page,'mount',{source:transientOriginal,locale:'en',rules:null,selection:transientSelection,...extra});
+}
+function unchangedTransient(actual,before){
+  expect(actual.canonical).toBe(transientOriginal);expect(actual.state).toEqual(before.state);expect(actual.rows).toEqual(before.rows);expect(actual.lifecycle).toBe('recoveryRequired');expect(actual.context).toBeNull();expect(actual.recovery).not.toBeNull();expect(actual.recovery.composition.context).toEqual(before.context);expect(actual.recovery.composition.base).toEqual(before.state.stamp);expect(actual.recovery.composition.selection).toEqual(before.state.selection);expect(actual.events).toEqual(before.events);expect(mutations(actual)).toHaveLength(0);expect(typed(actual)).toHaveLength(0);expect(actual.rangeObservationOverflow).toBe(false);
+}
+test('B48-controlled-transient-terminal: direct Text payload before end joins one fresh null-result frame and exact Undo/Redo identities',async({page})=>{
+  const {id,before}=await mountTransient(page),originalIds=before.rows.map(row=>row.node.id),tail=before.rows.filter(row=>row.path[0]===1),point=(node,offset)=>({kind:'text',node,offset,affinity:'after'}),original={anchor:point(before.roles.text,0),focus:point(before.roles.text,3)};
+  const delivery=await call(page,'transientTerminal',id,'complete');observations.get(page).transientDelivery=delivery;
+  expect(delivery.nativeBefore).toEqual(before.state);expect(delivery.oldSpanDetached).toBe(true);expect(delivery.directPayloadBeforeEnd).toBe(true);
+  expect(delivery.events.map(event=>[event.type,event.inputType])).toEqual([['beforeinput','insertCompositionText'],['input','insertCompositionText'],['beforeinput','deleteCompositionText'],['input','deleteCompositionText'],['beforeinput','insertFromComposition'],['input','insertFromComposition']]);
+  expect(delivery.events.every(event=>event.isTrusted===false)).toBe(true);expect(delivery.keys.map(key=>[key.type,key.key,key.code])).toEqual([['keydown','é','KeyE'],['keyup','e','KeyE']]);
+  const empty=delivery.stages[1],payload=delivery.stages[2];
+  expect(empty.dom.children).toEqual([{nodeType:1,tag:'br',attributes:{},children:[]}]);expect(empty.raw.anchor).toEqual({path:[0],nodeType:1,text:null,offset:0});expect(empty.raw.focus).toEqual(empty.raw.anchor);
+  expect(payload.dom.children).toEqual([{nodeType:3,text:'é'}]);expect(payload.oldSpanConnected).toBe(false);expect(payload.raw.anchor).toEqual({path:[0,0],nodeType:3,text:'é',offset:1});expect(payload.raw.focus).toEqual(payload.raw.anchor);
+  for(const stage of delivery.stages){expect(stage.state).toEqual(before.state);expect(stage.sameBlock).toBe(true);expect(stage.sameTail).toBe(true);}
+  // No end.data authority: only the actual direct Text and native source frame.
+  const pre=await checkpoint(page,id,'transient source03: actual direct Text before first RAF/native publication');
+  // A protocol round trip may allow RAFs. The synchronous delivery stages above,
+  // rather than this later checkpoint, prove prepublication DOM/native state.
+  expect(pre.failures).toEqual([]);expect(pre.recovery).toBeNull();await call(page,'frames',6);
+  const after=await checkpoint(page,id,'transient source03: literal null result, actual native new leaf and rendered fresh SPAN');
+  const fresh=after.rows.find(row=>JSON.stringify(row.path)==='[0,0]')?.node.id;expect(fresh).toEqual(expect.any(String));expect(originalIds).not.toContain(fresh);
+  function check(actual,{restored=false,revision,undo,redo}){
+    const text=restored?'old':'é',textId=restored?before.roles.text:fresh,selection=restored?original:{anchor:point(textId,1),focus:point(textId,1)};
+    expect(actual.canonical).toBe(restored?transientOriginal:transientComposed);expect(actual.state.stamp).toEqual({...before.state.stamp,revision:String(BigInt(before.state.stamp.revision)+BigInt(revision)),selection_epoch:String(BigInt(before.state.stamp.selection_epoch)+BigInt(revision)),history_epoch:String(BigInt(before.state.stamp.history_epoch)+BigInt(revision))});
+    expect(actual.state.selection).toEqual(selection);expect(actual.state.root).toBe(before.roles.root);expect(actual.state.stored_marks).toBeNull();expect(actual.state.saved_revision).toBe(before.state.saved_revision);expect(actual.state.dirty).toBe(revision!==0);expect(actual.state.history.undo_entries).toBe(String(undo));expect(actual.state.history.redo_entries).toBe(String(redo));expect(actual.state.history.retained_bytes).toMatch(/^(0|[1-9][0-9]*)$/);
+    expect(actual.rows.map(row=>row.node.id)).toEqual(originalIds.map(value=>value===before.roles.text?textId:value));expect(actual.rows.find(row=>JSON.stringify(row.path)==='[0,0]').node).toMatchObject({id:textId,parent:before.roles.block,primitive:'text',type_id:'org.klenwriter.kwdj/text',attributes:{},marks:[],children:[],text});
+    for(const initial of tail){const now=actual.rows.find(row=>row.node.id===initial.node.id);expect(now.path).toEqual(initial.path);for(const key of ['id','parent','primitive','type_id','attributes','marks','text','children'])expect(now.node[key],`source03 unchanged tail ${key}`).toEqual(initial.node[key]);}
+    expect(actual.dom[1]).toEqual(before.dom[1]);expect(actual.dom[0].children[0].tag).toBe('span');expect(actual.domText).toBe(text+'tail');for(const edge of ['anchor','focus'])expect(actual.rawDom[edge]).toEqual({path:[0,0,0],nodeType:3,text,offset:selection[edge].offset});
+    expect(actual.context).toEqual(before.context);expect(actual.lifecycle).toBe('ready');expect(actual.failures).toEqual([]);expect(actual.recovery).toBeNull();expect(actual.activeElementId).toBe(id);expect(documentEvents(actual).length-documentEvents(before).length).toBe(revision);expect(actual.events.length-before.events.length).toBe(revision);expect(actual.rangeObservationOverflow).toBe(false);
+    expect(actual.resources.typing).toEqual({armedSlots:0,backspaceCandidates:0,pendingDispatches:0,retainedBytes:0});expect(actual.resources.selection.bookmarks).toBe(0);expect(actual.resources.selection.restoreTickets).toBe(0);expect(actual.native).toEqual({sessions:1,snapshot_handles:0,snapshot_bytes:'0',protected_cursors:1});
+  }
+  check(after,{revision:1,undo:1,redo:0});expect(mutations(after)).toHaveLength(1);expect(typed(after)).toHaveLength(1);
+  const command=typed(after)[0];expect(command.request.stamp).toEqual(before.state.stamp);expect(command.request.command.id).toBe('org.klenwriter.kwdj/command/insert-typed-text');expect(JSON.parse(command.request.command.payload_json)).toEqual({kind:'insert_typed_text',text:'é',origin:'composition_commit'});expect(command.response.status).toBe('ok');expect(command.response.value.kind).toBe('input_mutation');expect(command.response.value.effect).toBe('changed');expect(command.response.value.result).toBeNull();expect(command.response.value.state).toEqual(after.state);
+  await call(page,'history',id,'undo');const undone=await checkpoint(page,id,'transient source03: Undo original ID/full directed range');check(undone,{restored:true,revision:2,undo:0,redo:1});expect(undone.rows.some(row=>row.node.id===fresh)).toBe(false);expect(typed(undone)).toHaveLength(1);expect(mutations(undone).at(-1).request).toMatchObject({kind:'history',direction:'undo'});
+  await call(page,'history',id,'redo');const redone=await checkpoint(page,id,'transient source03: Redo same composed ID/caret');check(redone,{revision:3,undo:1,redo:0});expect(redone.rows.some(row=>row.node.id===before.roles.text)).toBe(false);expect(typed(redone)).toHaveLength(1);expect(mutations(redone)).toHaveLength(3);expect(mutations(redone).at(-1).request).toMatchObject({kind:'history',direction:'redo'});
+});
+for(const variant of ['pending-at-end','missing-delete-before','attributed-br','foreign-tail','wrong-insert-range','repeat-echo','wrong-code-echo','ordinary-after-echo'])test(`B48-controlled-transient-terminal refusal: ${variant} never deletes the original native source`,async({page})=>{
+  const {id,before}=await mountTransient(page);observations.get(page).transientDelivery=await call(page,'transientTerminal',id,variant);await call(page,'frames',8);const after=await checkpoint(page,id,'source03 original native frame retained on '+variant);unchangedTransient(after,before);expect(after.recovery).not.toBeNull();expect(after.recovery.composition.nativeOutcome).toBe('not_submitted');
+});
+test('B48-controlled-transient-terminal basic off: same actual fresh BR remains refused by the unchanged default observer',async({page})=>{
+  const {id,before}=await mountTransient(page,{typing:null});observations.get(page).transientDelivery=await call(page,'transientTerminal',id,'pending-at-end');await call(page,'frames',3);const after=await checkpoint(page,id,'same-DOM default observer fresh BR negative');unchangedTransient(after,before);expect(after.recovery).not.toBeNull();expect(after.recovery.composition.reason).toBe('capture_limit');expect(after.resources.typing).toBeUndefined();
+});
+
+// Additive SOURCE03 closing229 controls. Existing54 cases above are unchanged.
+// Explicit synthetic deprecated keyboard fields are not physical/OS provenance.
+function checkTransient229State(actual,before,fresh,{restored=false,revision,undo,redo}){
+  const text=restored?'old':'é',id=restored?before.roles.text:fresh,point=(node,offset)=>({kind:'text',node,offset,affinity:'after'});
+  const selection=restored?{anchor:point(id,0),focus:point(id,3)}:{anchor:point(id,1),focus:point(id,1)};
+  expect(actual.canonical).toBe(restored?transientOriginal:transientComposed);
+  expect(actual.state.stamp).toEqual({...before.state.stamp,revision:String(BigInt(before.state.stamp.revision)+BigInt(revision)),selection_epoch:String(BigInt(before.state.stamp.selection_epoch)+BigInt(revision)),history_epoch:String(BigInt(before.state.stamp.history_epoch)+BigInt(revision))});
+  expect(actual.state.selection).toEqual(selection);expect(actual.state.root).toBe(before.roles.root);expect(actual.state.stored_marks).toBeNull();expect(actual.state.saved_revision).toBe(before.state.saved_revision);expect(actual.state.dirty).toBe(true);
+  expect(actual.state.history.undo_entries).toBe(String(undo));expect(actual.state.history.redo_entries).toBe(String(redo));expect(actual.state.history.retained_bytes).toMatch(/^(0|[1-9][0-9]*)$/);
+  expect(actual.rows.map(row=>row.node.id)).toEqual(before.rows.map(row=>row.node.id===before.roles.text?id:row.node.id));
+  expect(actual.rows.find(row=>JSON.stringify(row.path)==='[0,0]').node).toMatchObject({id,parent:before.roles.block,primitive:'text',type_id:'org.klenwriter.kwdj/text',attributes:{},marks:[],children:[],text});
+  for(const initial of before.rows.filter(row=>row.path[0]===1)){
+    const now=actual.rows.find(row=>row.node.id===initial.node.id);expect(now.path).toEqual(initial.path);
+    for(const key of ['id','parent','primitive','type_id','attributes','marks','text','children'])expect(now.node[key],`closing229 unchanged tail ${key}`).toEqual(initial.node[key]);
+  }
+  expect(actual.dom[1]).toEqual(before.dom[1]);expect(actual.domText).toBe(text+'tail');expect(actual.dom[0].children[0].tag).toBe('span');
+  for(const edge of ['anchor','focus'])expect(actual.rawDom[edge]).toEqual({path:[0,0,0],nodeType:3,text,offset:selection[edge].offset});
+  expect(actual.lifecycle).toBe('ready');expect(actual.context).toEqual(before.context);expect(actual.recovery).toBeNull();expect(actual.failures).toEqual([]);expect(actual.rangeObservationOverflow).toBe(false);
+  expect(actual.events.length-before.events.length).toBe(revision);expect(documentEvents(actual).length-documentEvents(before).length).toBe(revision);
+  expect(actual.resources.typing).toEqual({armedSlots:0,backspaceCandidates:0,pendingDispatches:0,retainedBytes:0});expect(actual.resources.dom.continuations).toBe(0);expect(actual.resources.selection.bookmarks).toBe(0);expect(actual.resources.selection.restoreTickets).toBe(0);
+  expect(actual.native).toEqual({sessions:1,snapshot_handles:0,snapshot_bytes:'0',protected_cursors:1});
+}
+const expectedClosing229Keys=[
+  {type:'keydown',key:'é',code:'KeyE',keyCode:229,which:229,isComposing:false,repeat:false,altKey:false,ctrlKey:false,metaKey:false,shiftKey:false,isTrusted:false,cancelable:true,defaultPrevented:false},
+  {type:'keyup',key:'e',code:'KeyE',keyCode:69,which:69,isComposing:false,repeat:false,altKey:false,ctrlKey:false,metaKey:false,shiftKey:false,isTrusted:false,cancelable:false,defaultPrevented:false},
+];
+test('B48-controlled-transient-terminal closing229: completed paired payload claims once with null result and exact Undo/Redo',async({page})=>{
+  const {id,before}=await mountTransient(page),originalIds=before.rows.map(row=>row.node.id);
+  const delivery=await call(page,'transientTerminal229',id,'complete');observations.get(page).closing229Delivery=delivery;
+  expect(delivery.nativeBefore).toEqual(before.state);expect(delivery.oldSpanDetached).toBe(true);expect(delivery.directPayloadBeforeEnd).toBe(true);expect(delivery.keys).toEqual(expectedClosing229Keys);
+  expect(delivery.events.map(e=>[e.type,e.inputType])).toEqual([['beforeinput','insertCompositionText'],['input','insertCompositionText'],['beforeinput','deleteCompositionText'],['input','deleteCompositionText'],['beforeinput','insertFromComposition'],['input','insertFromComposition']]);expect(delivery.events.every(e=>e.isTrusted===false)).toBe(true);
+  expect(delivery.stages[1].dom.children).toEqual([{nodeType:1,tag:'br',attributes:{},children:[]}]);expect(delivery.stages[2].dom.children).toEqual([{nodeType:3,text:'é'}]);
+  for(const stage of delivery.stages){expect(stage.state).toEqual(before.state);expect(stage.sameBlock).toBe(true);expect(stage.sameTail).toBe(true);}
+  await call(page,'frames',6);const after=await checkpoint(page,id,'closing229: original completed payload, one null-result publication');
+  const fresh=after.rows.find(row=>JSON.stringify(row.path)==='[0,0]')?.node.id;expect(fresh).toEqual(expect.any(String));expect(originalIds).not.toContain(fresh);checkTransient229State(after,before,fresh,{revision:1,undo:1,redo:0});
+  expect(mutations(after)).toHaveLength(1);expect(typed(after)).toHaveLength(1);const command=typed(after)[0];
+  expect(command.request).toMatchObject({kind:'input_command',stamp:before.state.stamp,command:{id:'org.klenwriter.kwdj/command/insert-typed-text'}});expect(JSON.parse(command.request.command.payload_json)).toEqual({kind:'insert_typed_text',text:'é',origin:'composition_commit'});
+  expect(command.response.status).toBe('ok');expect(command.response.value.kind).toBe('input_mutation');expect(command.response.value.effect).toBe('changed');expect(command.response.value.result).toBeNull();expect(command.response.value.state).toEqual(after.state);
+  await call(page,'history',id,'undo');const undone=await checkpoint(page,id,'closing229: Undo restores old ID/full directed selection');checkTransient229State(undone,before,fresh,{restored:true,revision:2,undo:0,redo:1});expect(undone.rows.some(row=>row.node.id===fresh)).toBe(false);expect(mutations(undone)).toHaveLength(2);expect(typed(undone)).toHaveLength(1);expect(mutations(undone).at(-1).request).toMatchObject({kind:'history',direction:'undo'});
+  await call(page,'history',id,'redo');const redone=await checkpoint(page,id,'closing229: Redo reuses composed ID/caret');checkTransient229State(redone,before,fresh,{revision:3,undo:1,redo:0});expect(redone.rows.some(row=>row.node.id===before.roles.text)).toBe(false);expect(mutations(redone)).toHaveLength(3);expect(typed(redone)).toHaveLength(1);expect(mutations(redone).at(-1).request).toMatchObject({kind:'history',direction:'redo'});
+});
+test('B48-controlled-transient-terminal closing229: subsequent ordinary beforeinput remains busy with original native frame',async({page})=>{
+  const {id,before}=await mountTransient(page),delivery=await call(page,'transientTerminal229',id,'ordinary-after');observations.get(page).closing229Delivery=delivery;
+  expect(delivery.keys).toEqual(expectedClosing229Keys);expect(delivery.events.at(-1)).toEqual({type:'beforeinput',inputType:'insertText',data:'é',isComposing:false,isTrusted:false,cancelable:true,defaultPrevented:true});
+  await call(page,'frames',6);const after=await checkpoint(page,id,'closing229: no prospective ordinary permit or native replay');unchangedTransient(after,before);
+  expect(after.recovery.composition.reason).toBe('busy');expect(after.recovery.composition.nativeOutcome).toBe('not_submitted');expect(after.recovery.composition.response).toBeNull();expect(after.domText).toBe('étail');expect(after.dom[1]).toEqual(before.dom[1]);expect(after.resources.typing).toEqual({armedSlots:0,backspaceCandidates:0,pendingDispatches:0,retainedBytes:0});
+});

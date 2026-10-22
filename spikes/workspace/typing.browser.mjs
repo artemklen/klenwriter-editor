@@ -143,7 +143,78 @@ export async function dispose(id){const r=rec(id);if(r.disposed)return clone(r.d
 export async function allDisposed(){const readbacks=[];for(const id of records.keys())readbacks.push(await dispose(id));return {readbacks,native:JSON.parse(module.resourceCounts())};}
 export function keyResultCounts(id){const r=rec(id),commands=r.nativeCalls.filter(row=>['input_command','command','history'].includes(row.request.kind));return {state:clone(nativeState(r)),domText:r.element.textContent,resources:clone(r.editor.resources()),documentPublications:r.events.filter(event=>event.change.kind==='document').length,commands:commands.map(row=>({request:clone(row.request),response:clone(row.response)})),inputTrace:clone(r.inputTrace),rangeObservationOverflow:r.rangeObservationOverflow};}
 export function prepareInstalled(nonce){check(typeof nonce==='string'&&/^[a-f0-9]{32}$/.test(nonce),'Closed installed fixture nonce');check(location.href==='http://127.0.0.1:4174/typing','Exact installed fixture route');document.title='KlenWriter Typography native '+nonce;return {title:document.title,url:location.href,metadata:metadata(),qualification:'Installed foreground fixture prepared only; no input or acceptance inferred'};}
-window.typingHost={metadata,mount,select,focus,reacquireRetiredQuote,inspect,ordinary,backspace,history,literal,paste,compositionStart,preedit,compositionEnd,echo,frames,invalidate,dispose,allDisposed,keyResultCounts,prepareInstalled};
+
+// SOURCE03 controlled UA schedule. This helper belongs only to typingHost;
+// installed typographyHost exposes no synthetic event or DOM mutation driver.
+export function transientTerminal(id,variant='complete'){
+  const r=rec(id),allowed=['complete','pending-at-end','missing-delete-before','attributed-br','foreign-tail','wrong-insert-range','repeat-echo','wrong-code-echo','ordinary-after-echo','payload-end-no-echo','closing-echo'];
+  check(allowed.includes(variant),'Closed transient-terminal controlled variant');
+  const key=(type,key,code,extra={})=>{const e=new KeyboardEvent(type,{bubbles:true,cancelable:type==='keydown',key,code,...extra});r.element.dispatchEvent(e);return {type,key,code,isTrusted:e.isTrusted,defaultPrevented:e.defaultPrevented};};
+  if(variant==='closing-echo')return {qualification:'Controlled synthetic late echo only; no input event',keys:[key('keydown','é','KeyE'),key('keyup','e','KeyE')]};
+  const p=at(r,[0]),oldSpan=at(r,[0,0]),oldText=at(r,[0,0,0]),tail=at(r,[1]);
+  check(p.tagName==='P'&&oldSpan.tagName==='SPAN'&&oldText.nodeType===3&&oldText.data==='old','Exact source-first sole-Text fixture');
+  const nativeBefore=clone(nativeState(r)),initialRaw=raw(r);check(initialRaw.anchor.offset===0&&initialRaw.focus.offset===3,'Exact full forward original source selection');
+  const stages=[],record=name=>stages.push({name,dom:tree(p),raw:raw(r),state:clone(nativeState(r)),sameBlock:at(r,[0])===p,sameTail:at(r,[1])===tail,oldSpanConnected:r.element.contains(oldSpan)});
+  const input=(type,inputType,data,cancelable,isComposing,range=null)=>{
+    const e=new InputEvent(type,{bubbles:true,cancelable,inputType,data,isComposing});
+    // Closed synthetic carrier: engines may sanitize constructor inputType.
+    // This immutable own value is controlled test data; isTrusted stays false.
+    Object.defineProperty(e,'inputType',{value:inputType,writable:false,configurable:false});
+    if(range){const value=new StaticRange({startContainer:range.node,startOffset:range.start,endContainer:range.node,endOffset:range.end});Object.defineProperty(e,'getTargetRanges',{value:()=>[value]});}
+    r.element.dispatchEvent(e);return {type:e.type,inputType:e.inputType,isTrusted:e.isTrusted,defaultPrevented:e.defaultPrevented};
+  };
+  const events=[];key('keydown','Alt','AltLeft',{altKey:true});
+  r.element.dispatchEvent(new CompositionEvent('compositionstart',{bubbles:true,data:'old'}));
+  r.element.dispatchEvent(new CompositionEvent('compositionupdate',{bubbles:true,data:'´'}));
+  events.push(input('beforeinput','insertCompositionText','´',false,true,{node:oldText,start:0,end:3}));
+  oldText.data='´';getSelection().setBaseAndExtent(oldText,0,oldText,1);
+  events.push(input('input','insertCompositionText','´',false,true));
+  key('keydown','Dead','KeyE',{altKey:true,isComposing:true});key('keyup','´','KeyE',{altKey:true,isComposing:true});key('keyup','Alt','AltLeft',{isComposing:true});
+  record('provisional acute in original SPAN before owned deletion');
+  if(variant!=='missing-delete-before')events.push(input('beforeinput','deleteCompositionText',null,false,true,{node:oldText,start:0,end:1}));
+  const br=document.createElement('br');if(variant==='attributed-br')br.setAttribute('data-foreign','x');p.replaceChildren(br);getSelection().setBaseAndExtent(p,0,p,0);
+  events.push(input('input','deleteCompositionText',null,false,true));record('actual one fresh BR and original block child0');
+  if(variant==='pending-at-end'){r.element.dispatchEvent(new CompositionEvent('compositionend',{bubbles:true,data:'é'}));return {qualification:'Controlled pending BR at end; old immediate refusal required',nativeBefore,stages,events};}
+  if(variant==='foreign-tail')tail.setAttribute('data-foreign','x');
+  const range=variant==='wrong-insert-range'?{node:p,start:0,end:1}:{node:p,start:0,end:0};
+  events.push(input('beforeinput','insertFromComposition','é',true,true,range));
+  const payload=document.createTextNode('é');p.replaceChildren(payload);getSelection().setBaseAndExtent(payload,1,payload,1);
+  events.push(input('input','insertFromComposition','é',false,true));record('actual direct Text payload BEFORE compositionend');
+  r.element.dispatchEvent(new CompositionEvent('compositionend',{bubbles:true,data:'é'}));
+  const keys=[];if(variant!=='payload-end-no-echo'){
+    keys.push(key('keydown','é',variant==='wrong-code-echo'?'KeyQ':'KeyE'));
+    if(variant==='repeat-echo')keys.push(key('keydown','é','KeyE',{repeat:true}));
+    keys.push(key('keyup','e',variant==='wrong-code-echo'?'KeyQ':'KeyE'));
+    if(variant==='ordinary-after-echo')events.push(input('beforeinput','insertText','é',true,false,{node:payload,start:1,end:1}));
+  }
+  record('after terminal and controlled echo, before settlement RAF');
+  return {qualification:'Controlled synthetic source-observed Safari event schedule with actual DOM mutations; no trusted or OS provenance',nativeBefore,initialRaw,stages,events,keys,oldSpanDetached:!r.element.contains(oldSpan),directPayloadBeforeEnd:stages.find(s=>s.name==='actual direct Text payload BEFORE compositionend').dom.children.length===1&&stages.find(s=>s.name==='actual direct Text payload BEFORE compositionend').dom.children[0].nodeType===3};
+}
+
+window.typingHost={transientTerminal,metadata,mount,select,focus,reacquireRetiredQuote,inspect,ordinary,backspace,history,literal,paste,compositionStart,preedit,compositionEnd,echo,frames,invalidate,dispose,allDisposed,keyResultCounts,prepareInstalled};
 // Installed driver receives observations/setup only, with no arbitrary command
 // submit, synthetic event driver or programmatic text-insertion method.
 window.typographyHost={metadata,mount,select,focus,inspect,dispose,allDisposed,keyResultCounts,prepareInstalled};window.typingHostReady=true;window.typographyHostReady=true;
+
+// Additive controlled carrier only. The original transientTerminal variants and
+// installed typographyHost facade above are unchanged. No trust field is changed.
+export function transientTerminal229(id,variant='complete'){
+  check(variant==='complete'||variant==='ordinary-after','Closed controlled229 variant');
+  const delivery=transientTerminal(id,'payload-end-no-echo'),r=rec(id),keys=[],events=[...delivery.events];
+  for(const [type,key,keyCode]of [['keydown','é',229],['keyup','e',69]]){
+    const e=new KeyboardEvent(type,{bubbles:true,cancelable:type==='keydown',key,code:'KeyE',keyCode,which:keyCode,isComposing:false,repeat:false,altKey:false,ctrlKey:false,metaKey:false,shiftKey:false});
+    // Deprecated constructor fields are an explicit immutable synthetic carrier,
+    // just as the existing closed inputType carrier is controlled fixture data.
+    Object.defineProperties(e,{keyCode:{value:keyCode,writable:false,configurable:false},which:{value:keyCode,writable:false,configurable:false}});
+    r.element.dispatchEvent(e);keys.push({type:e.type,key:e.key,code:e.code,keyCode:e.keyCode,which:e.which,isComposing:e.isComposing,repeat:e.repeat,altKey:e.altKey,ctrlKey:e.ctrlKey,metaKey:e.metaKey,shiftKey:e.shiftKey,isTrusted:e.isTrusted,cancelable:e.cancelable,defaultPrevented:e.defaultPrevented});
+  }
+  if(variant==='ordinary-after'){
+    const payload=at(r,[0]).firstChild;check(payload?.nodeType===3&&payload.data==='é','Actual direct payload before the unpermitted ordinary input');
+    const e=new InputEvent('beforeinput',{bubbles:true,cancelable:true,inputType:'insertText',data:'é',isComposing:false});
+    Object.defineProperty(e,'inputType',{value:'insertText',writable:false,configurable:false});
+    const range=new StaticRange({startContainer:payload,startOffset:1,endContainer:payload,endOffset:1});Object.defineProperty(e,'getTargetRanges',{value:()=>[range]});
+    r.element.dispatchEvent(e);events.push({type:e.type,inputType:e.inputType,data:e.data,isComposing:e.isComposing,isTrusted:e.isTrusted,cancelable:e.cancelable,defaultPrevented:e.defaultPrevented});
+  }
+  return {...delivery,qualification:'Controlled synthetic completed terminal + explicit keyCode/which229. No trusted input, physical causality, OS timing or new native oracle claim.',keys,events};
+}
+window.typingHost.transientTerminal229=transientTerminal229;
