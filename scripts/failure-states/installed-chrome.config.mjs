@@ -14,6 +14,7 @@ export default defineConfig({
   projects:[{name:'installed-chrome',metadata:{failureStatesInstalled:{browser:'chrome',executablePath:installedChromeExecutable,
     method:'Playwright-controlled installed binary; exact request interception and pre-navigation observation; selected fixture strings only',
     physicalInput:false,osClipboard:false}},use:{browserName:'chromium',headless:false,
-      launchOptions:{executablePath:installedChromeExecutable}}}],
+      // CDP exposes the actual launched command line only with this flag.
+      launchOptions:{executablePath:installedChromeExecutable,args:['--enable-automation']}}}],
   webServer:{command:'node scripts/workspace-server.mjs',cwd:root,url:'http://127.0.0.1:4174/clipboard',reuseExistingServer:false},
 });
