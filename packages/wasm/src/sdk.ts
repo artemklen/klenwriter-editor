@@ -168,6 +168,53 @@ let publisherFault: SdkLoadError | undefined;
 let runtimeFault: SdkLoadError | undefined;
 const packagedConstructors = new WeakSet<Function>();
 const runtimeWaiters = new Set<(failure: SdkLoadError) => void>();
+
+// Generated Native finalizers may invoke WASM. A wrapper-target holding keeps
+// the actual Native alive until this guarded cleanup, even if the wrapper was
+// collected before retirement. Holdings must never reference the wrapper.
+type DetachableNative = RawSdkSessionV1 & { __destroy_into_raw?: () => unknown };
+type NativeRegistration = {
+  native: WeakRef<RawSdkSessionV1>; token: object; detach: (this: RawSdkSessionV1) => unknown;
+};
+type NativeHolding = { native: RawSdkSessionV1; registration: NativeRegistration };
+const nativeRegistrations = new Set<NativeRegistration>();
+// Defensive failed-detachment retention belongs only to a failed capability;
+// it prevents generated GC cleanup calling that capability later. No zero claim.
+const retiredNativeQuarantine = new Set<RawSdkSessionV1>();
+const nativeFinalization = typeof FinalizationRegistry === 'function' && typeof WeakRef === 'function'
+  ? new FinalizationRegistry<NativeHolding>(holding => finalizeNative(holding)) : undefined;
+function forgetNative(registration: NativeRegistration | undefined): void {
+  if (!registration) return;
+  nativeFinalization?.unregister(registration.token);
+  nativeRegistrations.delete(registration);
+}
+function detachNative(native: RawSdkSessionV1, registration: NativeRegistration): void {
+  // The actual source-bound generated method only zeros its JS pointer and
+  // unregisters its generated finalizer. It does not free or repair WASM.
+  try { Reflect.apply(registration.detach, native, []); }
+  catch { retiredNativeQuarantine.add(native); }
+}
+function finalizeNative({ native, registration }: NativeHolding): void {
+  if (!nativeRegistrations.has(registration)) return;
+  try {
+    if (runtimeFault || publisherFault) detachNative(native, registration);
+    else invokeRuntime(() => native.free());
+  } catch {
+    // A finalization callback cannot return a low-level failure to its owner.
+    // RuntimeError already retired the shared capability through invokeRuntime.
+    if (nativeRegistrations.has(registration)) detachNative(native, registration);
+  } finally { forgetNative(registration); }
+}
+function trackNative(owner: object, native: RawSdkSessionV1): NativeRegistration | undefined {
+  const detach = (native as DetachableNative).__destroy_into_raw;
+  // Injected/custom glue without the generated detacher retains its established
+  // behavior. No generated-finalizer protection is claimed for those objects.
+  if (typeof detach !== 'function' || !nativeFinalization) return undefined;
+  const registration: NativeRegistration = { native: new WeakRef(native), token: {}, detach };
+  nativeRegistrations.add(registration);
+  nativeFinalization.register(owner, { native, registration }, registration.token);
+  return registration;
+}
 // A digest-pending reader must not lose shared initialization before it can
 // establish whether its owned bytes name that entry. Reservations open no Session.
 const ownershipWaiters = new Set<(entry: ModuleLoad) => void>();
@@ -179,6 +226,13 @@ function assertRuntime(): void {
 }
 function retireRuntime(cause: unknown, notify = true): void {
   runtimeFault ??= new SdkLoadError('sdk.runtime_retired', 'runtime', cause);
+  for (const registration of [...nativeRegistrations]) {
+    // Dereference BEFORE unregistering our holding. A collected wrapper may
+    // already have a queued own finalizer; its separate token remains usable.
+    const native = registration.native.deref();
+    if (native) detachNative(native, registration);
+    forgetNative(registration);
+  }
   if (notify) for (const fail of [...runtimeWaiters]) fail(runtimeFault);
 }
 function invokeRuntime<T>(call: () => T): T {
@@ -196,8 +250,17 @@ function guardedSession<T extends RawSdkSessionV1>(Native: new (input: Uint8Arra
   v2: boolean): new (input: Uint8Array, optionsJson: string) => T {
   class Session implements RawSdkSessionV1 {
     #raw: T;
+    #registration: NativeRegistration | undefined;
     constructor(input: Uint8Array, optionsJson: string) {
+      assertRuntime();
+      // Standard ES2022 targets provide both facilities. If a host supplies a
+      // generated finalizer but no WeakRef, refuse before opening a Native.
+      if (typeof FinalizationRegistry === 'function' && typeof WeakRef !== 'function'
+        && typeof (Native.prototype as DetachableNative | undefined)?.__destroy_into_raw === 'function') {
+        throw new SdkLoadError('sdk.module_invalid', 'finalization');
+      }
       this.#raw = invokeRuntime(() => new Native(input, optionsJson));
+      this.#registration = trackNative(this, this.#raw);
       if (v2) Object.defineProperty(this, 'context', {
         value: () => invokeRuntime(() => (this.#raw as unknown as RawSdkSessionV2).context()),
       });
@@ -206,7 +269,13 @@ function guardedSession<T extends RawSdkSessionV1>(Native: new (input: Uint8Arra
     initialization(): string { return invokeRuntime(() => this.#raw.initialization()); }
     call(requestJson: string): string { return invokeRuntime(() => this.#raw.call(requestJson)); }
     destroy(): void { invokeRuntime(() => this.#raw.destroy()); }
-    free(): void { invokeRuntime(() => this.#raw.free()); }
+    free(): void {
+      invokeRuntime(() => {
+        // Actual generated free detaches before its native call. A native trap
+        // still retires peers, while this already-detached entry is forgotten.
+        try { this.#raw.free(); } finally { forgetNative(this.#registration); }
+      });
+    }
   }
   packagedConstructors.add(Session);
   return Session as unknown as new (input: Uint8Array, optionsJson: string) => T;

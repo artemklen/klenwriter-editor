@@ -8,6 +8,18 @@ const check = (value, message) => { if (!value) throw Error(message); };
 const encoder = new TextEncoder(), storageKey = 'editor-failure-recovery/1';
 const realm = crypto.randomUUID(), instances = new Set();
 const runtimeErrors = [], rawCall = RawFixtureSession.prototype.call;
+const nativeDetaches = [], nativeDetachIds = new WeakMap();
+let nextNativeDetachId = 0, nativeDetachOverflow = false;
+const rawDetach = RawFixtureSession.prototype.__destroy_into_raw;
+check(typeof rawDetach === 'function', 'Actual generated pure-JS detacher required');
+RawFixtureSession.prototype.__destroy_into_raw = function (...args) {
+  const pointerBefore = this.__wbg_ptr;
+  const returnedPointer = Reflect.apply(rawDetach, this, args);
+  if (!nativeDetachIds.has(this)) nativeDetachIds.set(this, ++nextNativeDetachId);
+  const observation = { nativeId: nativeDetachIds.get(this), pointerBefore, returnedPointer, pointerAfter: this.__wbg_ptr };
+  if (nativeDetaches.length < 32) nativeDetaches.push(observation); else nativeDetachOverflow = true;
+  return returnedPointer;
+};
 RawFixtureSession.prototype.call = function (...args) {
   try { return Reflect.apply(rawCall, this, args); }
   catch (error) {
@@ -98,6 +110,7 @@ const hostView = () => ({ realm, timeOrigin: performance.timeOrigin, recoveredFr
   lifecycle: editor.lifecycle, contenteditable: element.getAttribute('contenteditable'), domText: element.textContent,
   callbacks: clone(callbacks), refusals: clone(refusals), recoveryNotifications: recoveries.length,
   runtimeErrors: clone(runtimeErrors),
+  nativeDetaches: clone(nativeDetaches), nativeDetachOverflow,
   nativeResources: clone(editor.nativeResources()),
   resources: clone(editor.resources()), peerResources: clone(peer.resources()) });
 async function insert(text) {

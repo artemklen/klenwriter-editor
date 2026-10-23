@@ -76,6 +76,16 @@ function fatal(response, code, mayHaveCommitted) {
   expect(response.diagnostic.category).toBe('transport'); expect(response.diagnostic.path).toBe('');
   expect(response.diagnostic.details).toEqual({});
 }
+function detachedNativePointers(host, expectedCount) {
+  expect(host.nativeDetachOverflow).toBe(false); expect(host.nativeDetaches).toHaveLength(expectedCount);
+  expect(new Set(host.nativeDetaches.map(item => item.nativeId)).size).toBe(expectedCount);
+  expect(new Set(host.nativeDetaches.map(item => item.pointerBefore)).size).toBe(expectedCount);
+  for (const item of host.nativeDetaches) {
+    expect(Number.isSafeInteger(item.nativeId)).toBe(true); expect(item.nativeId).toBeGreaterThan(0);
+    expect(Number.isSafeInteger(item.pointerBefore)).toBe(true); expect(item.pointerBefore).toBeGreaterThan(0);
+    expect(item.returnedPointer).toBe(item.pointerBefore); expect(item.pointerAfter).toBe(0);
+  }
+}
 function live(point, buildId, expectedCanonical) {
   expect(point.canonical).toBe(expectedCanonical); expect(point.host.coherent).toBe(expectedCanonical);
   expect(point.host.lifecycle).toBe('ready'); expect(point.host.contenteditable).toBe('true');
@@ -83,6 +93,7 @@ function live(point, buildId, expectedCanonical) {
   expect(point.host.nativeBaseline).toEqual(nativeZero);
   expect(point.native).toEqual({ sessions: 2, snapshot_handles: 0, snapshot_bytes: '0', protected_cursors: 2 });
   expect(point.host.runtimeErrors).toEqual([]); expect(point.host.refusals).toEqual([]);
+  detachedNativePointers(point.host, literals.generatedFinalizerDetachment.healthyBeforeCleanup);
   expect(point.host.resources.sdk.sessions).toBe(1); expect(point.host.peerResources.sessions).toBe(1);
 }
 
@@ -175,6 +186,8 @@ for (const phase of literals.trapPhases) test(`finite compiled runtime trap ${ph
     } else { expect(witness.completed_response).toBeNull(); expect(witness.events.value.events).toEqual([]); }
     expect(report.trap.host.runtimeErrors).toHaveLength(1);
     expect(report.trap.host.runtimeErrors[0].actualRuntimeError).toBe(true); expect(report.trap.host.runtimeErrors[0].name).toBe('RuntimeError');
+    detachedNativePointers(report.trap.host, literals.generatedFinalizerDetachment.retirementDetaches);
+    expect(report.trap.host.nativeResources).toBeNull();
     const stack = report.trap.host.runtimeErrors[0].stack; expect(stack === null || typeof stack === 'string' && stack.length <= 65536).toBe(true);
     expect(report.trap.host.lifecycle).toBe('fatal'); expect(report.trap.host.contenteditable).toBe('false');
     expect(report.trap.host.callbacks.filter(event => event.after.revision === '2')).toEqual([]);
@@ -191,6 +204,8 @@ for (const phase of literals.trapPhases) test(`finite compiled runtime trap ${ph
     expect(report.retiredLoad).toEqual({ loaded: false, code: loading.outcomes.retiredRuntime });
     report.retiredHost = await invoke(page, 'inspect');
     expect(report.retiredHost.nativeResources).toBeNull();
+    expect(report.retiredHost.nativeDetaches).toEqual(report.trap.host.nativeDetaches);
+    expect(report.retiredHost.nativeDetachOverflow).toBe(false);
     expect(report.retiredHost.actualInstances).toBe(1); expect(report.retiredHost.runtimeErrors).toEqual(report.trap.host.runtimeErrors);
     report.retiredBrowser = await page.evaluate(() => globalThis.__failureBrowserErrors());
     expect(report.retiredBrowser).toEqual({ errors: [], overflow: false });
@@ -266,6 +281,7 @@ for (const phase of literals.trapPhases) test(`finite compiled runtime trap ${ph
     report.cleanup = await invoke(page, 'dispose'); disposed = true;
     ownZero(report.cleanup.host.resources); ownZero(report.cleanup.host.peerResources);
     expect(report.cleanup.native).toEqual(fresh.host.nativeBaseline); expect(report.cleanup.host.lifecycle).toBe('destroyed');
+    detachedNativePointers(report.cleanup.host, literals.generatedFinalizerDetachment.healthyExplicitCleanupDetaches);
     report.freshBrowser = await page.evaluate(() => globalThis.__failureBrowserErrors());
     expect(report.freshBrowser).toEqual({ errors: [], overflow: false });
     report.networkWindows.push({ label: 'cleanup complete', ...await fixedObservationWindow(page) });

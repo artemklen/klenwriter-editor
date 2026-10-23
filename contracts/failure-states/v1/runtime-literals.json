@@ -36,6 +36,19 @@
     "reloadChecks": ["before_resolution", "after_resolution_before_acknowledged_save"]
   },
   "freshSave": "only after explicit resolution and actual matching receipt acknowledgement",
+  "generatedFinalizerDetachment": {
+    "scope": "actual generated V2 fixture objects; no forced GC scheduling or native reclamation claim",
+    "observerInstalledBeforeAnySession": true,
+    "retirementDetaches": 2,
+    "healthyBeforeCleanup": 0,
+    "healthyExplicitCleanupDetaches": 2,
+    "relationalPointerOracle": "two distinct positive safe-integer Native pointer values; returned pointer equals before; pointer after zero",
+    "afterRetirementProbes": "exact same two observations; counters unavailable/null, never zero",
+    "observationMaxRecords": 32,
+    "overflow": "FAIL; original detacher behavior preserved",
+    "unsupportedHost": "generated finalizer with absent WeakRef refuses Session construction as sdk.module_invalid/finalization before opening Native",
+    "customGlueWithoutDetacher": "unchanged previous behavior; generated-finalizer protection unclaimed"
+  },
   "afterPublicationLiteral": {
     "bytes": 162,
     "sha256": "56227c436a1989f978f78b0d55b025f3fcd3abfdecc3e1fd6209ce1845529b65"

@@ -40,6 +40,15 @@ Subsequent calls through old Sessions, projections or low-level loads refuse
 Native resource counters from the retired instance are unavailable. JavaScript
 ownership cleanup is observable separately.
 
+The guarded wrapper also owns finalizer cleanup for the pinned generated glue.
+It keeps the native JS object alive until wrapper cleanup; retirement detaches
+that object's generated finalizer using its pure JavaScript detacher. Queued
+wrapper cleanup checks retirement before native free. This does not reclaim or
+prove zero native ownership in the trapped instance. The finite fixture records
+actual detachment separately from healthy explicit cleanup; it does not force GC
+or claim a finalizer scheduling result. Custom glue without that generated
+detacher retains its existing lifetime behavior.
+
 Abandoning the last reader after generated singleton initialization has started
 also retires the realm: a late instance must not become a new accepted cache.
 Ordinary failures before singleton initialization remain retryable. Existing
