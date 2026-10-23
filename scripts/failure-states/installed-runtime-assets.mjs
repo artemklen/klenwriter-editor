@@ -7,7 +7,8 @@ import {execFileSync} from 'node:child_process';
 import {existsSync,lstatSync,readFileSync,writeFileSync} from 'node:fs';
 import {dirname,relative,resolve} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
-import ts from 'typescript';
+import {buildSync} from 'esbuild';
+import {createScanner,LanguageVariant,SyntaxKind as K} from 'typescript/unstable/ast';
 import {computeSdkBuildIdentity} from '../generate-sdk-types.mjs';
 import {computeFailureRuntimeIdentity} from '../build-failure-runtime.mjs';
 
@@ -42,24 +43,82 @@ export const runtimeAssetRecipe={format:'osr67-ac3-runtime-static-recipe/1',orig
 const mapPages=['sdk-host.html','dom-host.html','selection.html','clipboard.html','composition.html','ui.html',
   'accessibility-host.html','accessibility-human.html','mounted-corpus.html','typing-host.html'];
 
+// TS7's root export is version-only. Its scanner is pure JS; esbuild supplies
+// the actual JS syntax parse and static dependency metadata without importing
+// the inspected module, resolving dependencies, or writing emitted files.
+function moduleTokens(text,path){
+  const scanner=createScanner(true,LanguageVariant.Standard,text),tokens=[],braces=[];
+  const regexPrefixes=new Set([K.OpenBraceToken,K.OpenParenToken,K.OpenBracketToken,K.SemicolonToken,K.CommaToken,
+    K.ColonToken,K.QuestionToken,K.ExclamationToken,K.TildeToken,K.EqualsGreaterThanToken,K.TemplateHead,K.TemplateMiddle,
+    K.ReturnKeyword,K.ThrowKeyword,K.CaseKeyword,K.DeleteKeyword,K.VoidKeyword,K.TypeOfKeyword,K.YieldKeyword,
+    K.AwaitKeyword,K.InKeyword,K.InstanceOfKeyword,K.OfKeyword,K.ExtendsKeyword,K.ElseKeyword,K.DoKeyword,K.DefaultKeyword]);
+  const expressionEnds=new Set([K.Identifier,K.PrivateIdentifier,K.NumericLiteral,K.BigIntLiteral,K.StringLiteral,
+    K.RegularExpressionLiteral,K.NoSubstitutionTemplateLiteral,K.TemplateTail,K.CloseBracketToken,
+    K.TrueKeyword,K.FalseKeyword,K.NullKeyword,K.ThisKeyword,K.SuperKeyword,K.UndefinedKeyword]);
+  for(;;){
+    let kind=scanner.scan();if(kind===K.EndOfFile)break;
+    if(kind===K.GreaterThanToken)kind=scanner.reScanGreaterToken();
+    if(kind===K.SlashToken||kind===K.SlashEqualsToken){
+      const previous=tokens.at(-1),before=tokens.at(-2),member=before?.kind===K.DotToken||before?.kind===K.QuestionDotToken;
+      const binary=previous&&previous.kind>=K.FirstBinaryOperator&&previous.kind<=K.LastBinaryOperator
+        &&previous.kind!==K.PlusPlusToken&&previous.kind!==K.MinusMinusToken;
+      if(!previous||!member&&(regexPrefixes.has(previous.kind)||binary))kind=scanner.reScanSlashToken();
+      else assert(previous&&(member||expressionEnds.has(previous.kind)),
+        `Review ambiguous slash context before scanning ${path}:${scanner.getTokenStart()}`);
+    }
+    if(kind===K.CloseBraceToken){
+      assert(braces.length,`Balanced lexical braces: ${path}`);
+      if(braces.at(-1)==='template'){
+        kind=scanner.reScanTemplateToken(false);
+        assert(kind===K.TemplateMiddle||kind===K.TemplateTail,`Template continuation: ${path}`);
+        if(kind===K.TemplateTail)braces.pop();
+      }else braces.pop();
+    }else if(kind===K.OpenBraceToken)braces.push('brace');
+    else if(kind===K.TemplateHead)braces.push('template');
+    assert(kind!==K.Unknown&&!scanner.isUnterminated(),`Complete lexical token: ${path}:${scanner.getTokenStart()}`);
+    tokens.push({kind,value:scanner.getTokenValue(),start:scanner.getTokenStart(),end:scanner.getTokenEnd()});
+  }
+  assert.deepEqual(braces,[],`Complete lexical braces/templates: ${path}`);
+  return tokens;
+}
 function moduleFacts(path,closedHost=false){
-  const text=read(path).toString('utf8'),file=ts.createSourceFile(path,text,ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);
-  assert.deepEqual(file.parseDiagnostics,[],`Parse reviewed module: ${path}`);
-  const imports=[],dynamic=[],urls=[],fetches=[];
-  const walk=node=>{
-    if((ts.isImportDeclaration(node)||ts.isExportDeclaration(node))&&node.moduleSpecifier){
-      assert(ts.isStringLiteral(node.moduleSpecifier));imports.push(node.moduleSpecifier.text);
+  const text=read(path).toString('utf8');
+  const parsed=buildSync({stdin:{contents:text,sourcefile:path,loader:'js'},write:false,bundle:false,
+    metafile:true,format:'esm',platform:'browser',treeShaking:false,ignoreAnnotations:true,logLevel:'silent'});
+  assert.deepEqual(parsed.warnings,[],`Unambiguous parsed module: ${path}`);
+  const input=Object.values(parsed.metafile.inputs);assert.equal(input.length,1,`Only inspected source is parsed: ${path}`);
+  const output=Object.values(parsed.metafile.outputs);assert.equal(output.length,1,`One in-memory parsed module: ${path}`);
+  // With bundle:false dependencies remain external in the output metadata;
+  // input metadata need not list their unresolved source edges.
+  for(const item of output[0].imports)assert(['import-statement','dynamic-import'].includes(item.kind),`Closed module dependency kind: ${path}`);
+  const imports=output[0].imports.filter(item=>item.kind==='import-statement').map(item=>item.path);
+  const dynamic=[],urls=[],fetches=[],tokens=moduleTokens(text,path),parentheses=[],closes=new Map();
+  for(let index=0;index<tokens.length;index++){
+    if(tokens[index].kind===K.OpenParenToken)parentheses.push(index);
+    else if(tokens[index].kind===K.CloseParenToken){assert(parentheses.length,`Balanced lexical parentheses: ${path}`);closes.set(parentheses.pop(),index);}
+  }
+  assert.equal(parentheses.length,0,`Complete lexical parentheses: ${path}`);
+  const is=(index,kind,value)=>tokens[index]?.kind===kind&&(value===undefined||tokens[index].value===value);
+  for(let index=0;index<tokens.length;index++){
+    const member=is(index-1,K.DotToken)||is(index-1,K.QuestionDotToken);
+    if(!member&&is(index,K.ImportKeyword)&&is(index+1,K.OpenParenToken)){
+      const close=closes.get(index+1);assert.notEqual(close,undefined,`Complete dynamic import: ${path}`);
+      dynamic.push(text.slice(tokens[index].start,tokens[close].end));
     }
-    if(ts.isCallExpression(node)&&node.expression.kind===ts.SyntaxKind.ImportKeyword)dynamic.push(node.getText(file));
-    if(ts.isNewExpression(node)&&ts.isIdentifier(node.expression)&&node.expression.text==='URL'&&node.arguments?.length===2
-      &&ts.isStringLiteral(node.arguments[0])&&node.arguments[1].getText(file)==='import.meta.url')urls.push(node.arguments[0].text);
-    if(closedHost&&ts.isCallExpression(node)&&ts.isIdentifier(node.expression)&&node.expression.text==='fetch'){
-      assert.equal(node.arguments.length,1,`Closed fixture fetch signature: ${path}`);
-      assert(ts.isStringLiteral(node.arguments[0]),`Closed fixture literal fetch: ${path}`);fetches.push(node.arguments[0].text);
+    if(is(index,K.NewKeyword)&&is(index+1,K.Identifier,'URL')&&is(index+2,K.OpenParenToken)
+      &&is(index+3,K.StringLiteral)&&is(index+4,K.CommaToken)&&is(index+5,K.ImportKeyword)
+      &&is(index+6,K.DotToken)&&is(index+7,K.Identifier,'meta')&&is(index+8,K.DotToken)
+      &&is(index+9,K.Identifier,'url')&&(is(index+10,K.CloseParenToken)
+        ||is(index+10,K.CommaToken)&&is(index+11,K.CloseParenToken)))urls.push(tokens[index+3].value);
+    if(closedHost&&!member&&is(index,K.Identifier,'fetch')&&(is(index+1,K.OpenParenToken)
+      ||is(index+1,K.QuestionDotToken)&&is(index+2,K.OpenParenToken))){
+      const open=is(index+1,K.OpenParenToken)?index+1:index+2,close=closes.get(open);
+      assert(is(open+1,K.StringLiteral)&&(close===open+2||close===open+3&&is(open+2,K.CommaToken)),
+        `Closed fixture one-literal fetch signature: ${path}`);
+      fetches.push(tokens[open+1].value);
     }
-    ts.forEachChild(node,walk);
-  };
-  walk(file);return{path,imports,dynamic,urls,fetches};
+  }
+  return{path,imports,dynamic,urls,fetches};
 }
 
 export function computeRuntimeAssetBinding(){
