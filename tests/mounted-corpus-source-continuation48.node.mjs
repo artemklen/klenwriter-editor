@@ -8,6 +8,7 @@ import test from 'node:test';
 import { loadMountedSourceContinuation47 } from '../scripts/mounted-corpus/source-continuation47.mjs';
 import { loadMountedSourceContinuation48, SOURCE_CONTINUATION48_PATH } from '../scripts/mounted-corpus/source-continuation48.mjs';
 import { loadMountedSourceContinuation66 } from '../scripts/mounted-corpus/source-continuation66.mjs';
+import { loadMountedSourceContinuation67 } from '../scripts/mounted-corpus/source-continuation67.mjs';
 
 const ROOT = new URL('../', import.meta.url);
 const LEGACY_PATH = 'contracts/mounted-e2e/v1.1/source-continuation47.json';
@@ -31,9 +32,11 @@ function ordinaryReaderWith(overrides = new Map(), calls = []) {
   };
 }
 // Unchanged48 controls use an explicitly retained48 source namespace. The66
-// layer validates fresh actual66 first; original48 corruption overrides remain
+// and67 layers validate fresh actual67 first; original48 corruption overrides remain
 // overrides of their original namespace, never current runtime evidence.
-const actual66Reader = ordinaryReaderWith();
+const actual67Reader = ordinaryReaderWith();
+const current67Layer = await loadMountedSourceContinuation67({ readArtifact: actual67Reader });
+const actual66Reader = current67Layer.retained66SourceReader(actual67Reader);
 const current66Layer = await loadMountedSourceContinuation66({ readArtifact: actual66Reader });
 const accepted48SourceReader = current66Layer.retained48SourceReader(actual66Reader);
 function readerWith(overrides = new Map(), calls = []) {

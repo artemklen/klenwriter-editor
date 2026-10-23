@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { loadContract, collect } from '../scripts/mounted-corpus/collect.mjs';
-import { loadMountedSourceContinuation66 } from '../scripts/mounted-corpus/source-continuation66.mjs';
+import { loadMountedSourceContinuation67 } from '../scripts/mounted-corpus/source-continuation67.mjs';
 import { ENGINES, RESOURCE_KEYS, REQUIRED_SCENARIO_PATHS, PROTOCOL_VERSION, ACCEPTED_SOURCE, BUDGETS } from '../scripts/mounted-corpus/protocol.mjs';
 
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -18,8 +18,8 @@ const currentSourceReader = async (path, limit) => {
   const value = await readFile(new URL(path, root)); assert(value.length <= limit); return value;
 };
 // Controlled oracle fixtures retain original45 authority bytes. The explicit
-// continuation independently verifies all current66 bytes and retained48/47 authority before every alias.
-const continuation = await loadMountedSourceContinuation66({ readArtifact: currentSourceReader });
+// continuation independently verifies all current67 bytes and retained48/47 authority before every alias.
+const continuation = await loadMountedSourceContinuation67({ readArtifact: currentSourceReader });
 const sourceReader = continuation.historicalAuthorityReader(currentSourceReader);
 const contract = await loadContract({ readArtifact: sourceReader });
 const fixtures = new Map();

@@ -9,21 +9,24 @@ import {
 } from '../scripts/mounted-corpus/source-continuation47.mjs';
 import { loadMountedSourceContinuation48 } from '../scripts/mounted-corpus/source-continuation48.mjs';
 import { loadMountedSourceContinuation66 } from '../scripts/mounted-corpus/source-continuation66.mjs';
+import { loadMountedSourceContinuation67 } from '../scripts/mounted-corpus/source-continuation67.mjs';
 
 // Source-authored finite integrity controls. These do not execute an editor,
 // native/WASM candidate, browser, mounted scenario, or semantic oracle.
 const ROOT = new URL('../', import.meta.url);
 const MAXIMUM = 4 * 1024 * 1024;
 // These unchanged assertion bodies control the accepted47 source namespace.
-// Actual66 is guarded first; unchanged48 then supplies exact retained47 input.
-// New66 controls independently inspect the original unaliased runtime reader.
+// Actual67 is guarded first; unchanged66/48 supply exact accepted47 input.
+// New67 controls independently inspect the original unaliased runtime reader.
 const actualSourceReader = async (path, maximum) => {
   const bytes = await readFile(new URL(path, ROOT));
   assert.ok(bytes.byteLength <= maximum, 'Actual48 source read remains bounded');
   return new Uint8Array(bytes);
 };
-const current66Layer = await loadMountedSourceContinuation66({ readArtifact: actualSourceReader });
-const accepted48SourceReader = current66Layer.retained48SourceReader(actualSourceReader);
+const current67Layer = await loadMountedSourceContinuation67({ readArtifact: actualSourceReader });
+const accepted66SourceReader = current67Layer.retained66SourceReader(actualSourceReader);
+const current66Layer = await loadMountedSourceContinuation66({ readArtifact: accepted66SourceReader });
+const accepted48SourceReader = current66Layer.retained48SourceReader(accepted66SourceReader);
 const accepted47Layer = await loadMountedSourceContinuation48({ readArtifact: accepted48SourceReader });
 const accepted47SourceReader = accepted47Layer.retained47SourceReader(accepted48SourceReader);
 const HISTORICAL_SOURCE = '441bd3b2d7f9b0a40be26877ba74575b8e1882cd';
