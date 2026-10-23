@@ -6,7 +6,7 @@ import test from 'node:test';
 import {createHash} from 'node:crypto';
 import {lstat,readFile} from 'node:fs/promises';
 import Ajv2020 from 'ajv/dist/2020.js';
-import {RESOURCE_KEYS} from '../scripts/mounted-corpus/protocol.mjs';
+import {BUDGETS,RESOURCE_KEYS,ownBoundedData} from '../scripts/mounted-corpus/protocol.mjs';
 import {interactionValidators,assessInteraction} from '../scripts/mounted-corpus/collect-interactions.mjs';
 import {RESOURCE_PROFILE67_ID,RESOURCE_PROFILE67_PATH,resourceSchema67,resourceKeys67,assertResourceProfile67,assertResourceProfileBinding67,assertSettledResources67,loadMountedResourceProfile67} from '../scripts/mounted-corpus/resource-profile67.mjs';
 const ROOT=new URL('../',import.meta.url),MODULE='scripts/mounted-corpus/resource-profile67.mjs',CONTROL='tests/mounted-corpus-resource-profile67.node.mjs';
@@ -82,4 +82,29 @@ test('pure bundle memoization preserves all46 fresh reads per alias, independent
  c.calls.length=0;const second=await alias(target.path,target.bytes);assert.deepEqual(c.calls.map(p=>p.path).sort(),expected);assert.equal(hash(second),target.sha256,'Encoded aliases cannot mutate the private parsed source');
  const original=await c.raw(BUNDLE,descriptor.source.bundle.bytes);c.overrides.set(BUNDLE,corrupt(original));try{c.calls.length=0;await assert.rejects(alias(target.path,target.bytes),refusal);assert.deepEqual(c.calls.map(p=>p.path).sort(),expected,'Actual bundle SHA is checked even after pure data was memoized');}finally{c.overrides.delete(BUNDLE);}
  c.calls.length=0;assert.equal(hash(await alias(target.path,target.bytes)),target.sha256);assert.deepEqual(c.calls.map(p=>p.path).sort(),expected);
+});
+
+
+test('actual bounded null-record normalization preserves complete profile joins and rejects non-JSON representations',async()=>{
+ const c=await context(),inventory=await c.layer.captureRuntimeInventory('e'.repeat(40)),runId='mounted45-00000000-0000-4000-8000-000000000068';
+ const sidecar=`artifacts/mounted-corpus/runs/${runId}/source-continuation67-runtime-before.json`,sidecarBytes=encode(inventory),profile=inventory.resourceProfile;
+ const binding={runId,sourceSHA:inventory.sourceSHA,scenarioPins:[profile.descriptor,profile.policyModule,profile.control,profile.baseSchema,pin(sidecar,sidecarBytes)]};
+ const normalized=()=>ownBoundedData(binding,BUDGETS.runBindingBytes).value;
+ c.overrides.set(sidecar,sidecarBytes);
+ try{
+  const bounded=normalized();assert.equal(Object.getPrototypeOf(bounded),null);assert.equal(Object.getPrototypeOf(bounded.scenarioPins[0]),null);assert.equal(inventory.pins.length,192);
+  assert.deepEqual(await assertResourceProfileBinding67({resourceProfile:ID,runBinding:bounded,readArtifact:c.raw}),profile);
+  const reordered=normalized(),p=reordered.scenarioPins[0];reordered.scenarioPins[0]=Object.assign(Object.create(null),{sha256:p.sha256,bytes:p.bytes,path:p.path});
+  assert.deepEqual(await assertResourceProfileBinding67({resourceProfile:ID,runBinding:reordered,readArtifact:c.raw}),profile,'Record insertion order and allowed record prototype are representation details');
+  const wrongPins=[p=>{p.bytes++;},p=>{p.sha256='0'.repeat(64);},p=>{p.bytes=String(p.bytes);},p=>{p.bytes=-0;},p=>{delete p.sha256;},p=>{p.extra=0;},p=>{p[Symbol('extra')]=0;},p=>{Object.defineProperty(p,'hidden',{value:0});},p=>{Object.setPrototypeOf(p,{custom:true});},p=>{Object.setPrototypeOf(p,(class Pin{}).prototype);}];
+  for(const mutate of wrongPins){const wrong=normalized();mutate(wrong.scenarioPins[0]);await assert.rejects(assertResourceProfileBinding67({resourceProfile:ID,runBinding:wrong,readArtifact:c.raw}),refusal);}
+  for(const key of ['bytes','sha256']){let invoked=0;const wrong=normalized();Object.defineProperty(wrong.scenarioPins[0],key,{enumerable:true,get(){invoked++;throw new Error('Descriptor getter must never run');}});await assert.rejects(assertResourceProfileBinding67({resourceProfile:ID,runBinding:wrong,readArtifact:c.raw}),refusal);assert.equal(invoked,0);}
+  const wrongSource=normalized();wrongSource.sourceSHA='f'.repeat(40);await assert.rejects(assertResourceProfileBinding67({resourceProfile:ID,runBinding:wrongSource,readArtifact:c.raw}),refusal);
+  await assert.rejects(assertResourceProfileBinding67({resourceProfile:undefined,runBinding:normalized(),readArtifact:c.raw}),refusal);
+  await assert.rejects(assertResourceProfileBinding67({resourceProfile:'unknown',runBinding:normalized(),readArtifact:c.raw}),refusal);
+ }finally{c.overrides.delete(sidecar);}
+ const malformedArrays=[a=>{delete a[0];},a=>{a.extra=0;},a=>{a[Symbol('extra')]=0;},a=>{Object.defineProperty(a,'hidden',{value:0});},a=>{Object.setPrototypeOf(a,null);},a=>{Object.setPrototypeOf(a,(class Keys extends Array{}).prototype);},a=>{a[0]=0;}];
+ for(const mutate of malformedArrays){const sdk=[...RESOURCE_KEYS.sdk];mutate(sdk);assert.throws(()=>resourceKeys67(ID,{sdk}),refusal);}
+ let invoked=0;const sdk=[...RESOURCE_KEYS.sdk];Object.defineProperty(sdk,'0',{enumerable:true,get(){invoked++;throw new Error('Array getter must never run');}});assert.throws(()=>resourceKeys67(ID,{sdk}),refusal);assert.equal(invoked,0);
+ const proxy=new Proxy([...RESOURCE_KEYS.sdk],{get(){invoked++;throw new Error('Proxy trap must never run');},getPrototypeOf(){invoked++;throw new Error('Proxy trap must never run');},ownKeys(){invoked++;throw new Error('Proxy trap must never run');},getOwnPropertyDescriptor(){invoked++;throw new Error('Proxy trap must never run');}});assert.throws(()=>resourceKeys67(ID,{sdk:proxy}),refusal);assert.equal(invoked,0);
 });

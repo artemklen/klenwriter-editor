@@ -2,6 +2,7 @@
 // Explicit strict resource policy and source-snapshot guard; no I/O at import.
 import {createHash} from 'node:crypto';
 import {isDeepStrictEqual} from 'node:util';
+import {isProxy} from 'node:util/types';
 import {loadMountedSourceContinuation67} from './source-continuation67.mjs';
 export const RESOURCE_PROFILE67_ID='mounted-corpus-resources/67-v1';
 export const RESOURCE_PROFILE67_PATH='contracts/mounted-e2e/v1.5/resource-profile67.json';
@@ -22,7 +23,35 @@ const copy=v=>JSON.parse(JSON.stringify(v));
 const freeze=v=>{if(v&&typeof v==='object'){for(const x of Object.values(v))freeze(x);Object.freeze(v);}return v;};
 const hex=(v,n)=>typeof v==='string'&&v.length===n&&/^[0-9a-f]+$/.test(v);
 function need(ok,code,message){if(ok)return;const e=new Error(`mounted-corpus.resource_profile67.${code}: ${message}`);e.code=`mounted-corpus.resource_profile67.${code}`;throw e;}
-function equal(a,b,code,message){need(isDeepStrictEqual(a,b),code,message);}
+// Compare only known expected JSON structure. Object/null record prototypes are
+// representation variants; every own key and data value remains exact.
+function sameJsonData(actual,expected){
+ const pending=[[actual,expected]];
+ while(pending.length){
+  const [a,b]=pending.pop(),type=typeof b;
+  if(b===null||type!=='object'){
+   if(!(b===null||type==='string'||type==='boolean'||type==='number'&&Number.isFinite(b))||!Object.is(a,b))return false;
+   continue;
+  }
+  if(a===null||typeof a!=='object'||isProxy(a)||isProxy(b))return false;
+  const array=Array.isArray(b),ap=Object.getPrototypeOf(a),bp=Object.getPrototypeOf(b);
+  if(Array.isArray(a)!==array)return false;
+  if(array?ap!==Array.prototype||bp!==Array.prototype:(ap!==Object.prototype&&ap!==null)||(bp!==Object.prototype&&bp!==null))return false;
+  const keys=Reflect.ownKeys(b),actualKeys=Reflect.ownKeys(a);
+  if(keys.length!==actualKeys.length||keys.some(k=>typeof k!=='string')||actualKeys.some(k=>typeof k!=='string'))return false;
+  const length=array?Object.getOwnPropertyDescriptor(b,'length'):null;
+  if(array&&(!length||!Object.hasOwn(length,'value')||!Number.isSafeInteger(length.value)||length.value<0||keys.length!==length.value+1))return false;
+  for(const key of keys){
+   const x=Object.getOwnPropertyDescriptor(a,key),y=Object.getOwnPropertyDescriptor(b,key);
+   if(!x||!y||!Object.hasOwn(x,'value')||!Object.hasOwn(y,'value'))return false;
+   if(array&&key==='length'){if(x.enumerable||y.enumerable||!Object.is(x.value,y.value))return false;continue;}
+   if(!x.enumerable||!y.enumerable||array&&(!/^(0|[1-9][0-9]*)$/.test(key)||Number(key)>=length.value))return false;
+   pending.push([x.value,y.value]);
+  }
+ }
+ return true;
+}
+function equal(a,b,code,message){need(sameJsonData(a,b),code,message);}
 function closed(v,keys,label){need(v!==null&&typeof v==='object'&&!Array.isArray(v)&&isDeepStrictEqual(Object.keys(v).sort(),[...keys].sort()),'shape',label);}
 function path(p){need(typeof p==='string'&&p.length>0&&p.length<=4096&&!p.startsWith('/')&&!p.includes('\\')&&!p.includes('\0')&&!p.split('/').some(x=>!x||x==='.'||x==='..'),'path','Canonical repository-relative path');}
 function pin(p,max){closed(p,['path','bytes','sha256'],'Closed pin');path(p.path);need(Number.isSafeInteger(p.bytes)&&p.bytes>0&&p.bytes<=max&&hex(p.sha256,64),'pin','Finite exact source pin');}
