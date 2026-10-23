@@ -1,0 +1,54 @@
+{
+  "format": "editor-failure-states/browser-body-observer/1",
+  "state": "NOT_RUN",
+  "purpose": "Prospective actual delivered fetch-body observation on every selected engine, without Inspector/Juggler body storage or an HTTP replay",
+  "installBefore": "context.addInitScript before creating/navigating the first page and in every fresh document",
+  "limits": {
+    "maxBodyBytes": 16777216,
+    "maxDocumentBytes": 67108864,
+    "maxFetchRecords": 128,
+    "maxErrorRecords": 32,
+    "maxCheckpoints": 32,
+    "maxMetadataStringUnits": 2048
+  },
+  "fetch": {
+    "call": "Reflect.apply the captured native fetch with the original receiver and original arguments; return that exact original Promise and its original Response without substitution",
+    "observe": "Clone each actual fulfilled native Response once; read the complete clone stream within the literal byte budgets and SHA256 its exact decoded bytes with crypto.subtle",
+    "methodProvenance": "Do not reread Request/init properties or getters. The actual method, phase and documentEpoch are joined from the unique browser request-ledger row; raw browser records identify this provenance explicitly",
+    "metadata": [
+      "sequence",
+      "responseUrl",
+      "status",
+      "contentType",
+      "bytes",
+      "sha256",
+      "timeOrigin",
+      "started",
+      "finished",
+      "bodyStatus",
+      "methodProvenance"
+    ],
+    "ownership": "Retain only bounded metadata after digest; release clone reader/chunks. Cancel only the observation clone on budget/error, never the original Response",
+    "failures": "Rejected native fetch, clone/read/digest error, incomplete body, overflow, unmatched/ambiguous/duplicate record or request, document/timeOrigin mismatch all FAIL",
+    "rejectionQualification": "Attaching the observation rejection handler can mark a native fetch Promise handled. Every such rejection independently records an observer error and fails the row; no successful result relies on the host unhandled-rejection event for that fetch."
+  },
+  "join": {
+    "scope": "Every network fetch in the fixed DOM and four-document runtime graphs on every selected engine; never only the two large responses",
+    "identity": "Within one recorded documentEpoch/timeOrigin, a completed browser record must match exactly one allowed GET fetch request by actual response/request URL and status. Frozen graphs issue each fetch URL once per document; ambiguity fails rather than selecting by timing",
+    "phase": "Keep the request ledger phase measured before routing; include that phase and documentEpoch in the joined body observation",
+    "beforeDeparture": "Each runtime epoch must have a completed operation-phase settle/checkpoint before bootstrap advances to the next document; retain that epoch's full body join before navigation",
+    "settle": "Await active clone reads/digests after actual ready and each existing completion window; require zero pending observations and complete two-way joins, including the final cleanup window",
+    "oracles": "Actual status/MIME/response headers, full byte length and SHA256 equal the existing reviewed asset binding; original request allowlist/counts, failed-request, CSP/error/sentinel checks remain strict"
+  },
+  "otherResponses": "Document/script/stylesheet and other non-fetch responses retain actual Playwright response.body() observation",
+  "forbidden": [
+    "route.fetch/fulfill",
+    "second HTTP request",
+    "source-file fallback",
+    "response substitution",
+    "patched browser/package binaries",
+    "Inspector-limit changes",
+    "omitting a body hash"
+  ],
+  "qualification": "The byte budgets bound bytes read/retained by this observer per body and cumulatively per document, not native fetch tee buffering, all transient digest allocations, allocator peak, RSS or production memory"
+}

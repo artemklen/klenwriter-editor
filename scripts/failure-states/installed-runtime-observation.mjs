@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {performance} from 'node:perf_hooks';
 import {pipeline,assertBrowserClean} from './dom-observation.mjs';
+import {observeBrowserFetchBodies} from './browser-body-observer.mjs';
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 
 export async function observeRuntimeContext(context,binding){
@@ -14,6 +15,7 @@ export async function observeRuntimeContext(context,binding){
   const requests=new Map(),pending=new Set(),bodies=new Set(),frames=new Map();
   let overflow=false,sequence=0,phase='not_started',epoch=0;
   const fail=message=>{if(issues.length<limits.maxErrorRecords)issues.push(message);else overflow=true;};
+  const fetchBodies=await observeBrowserFetchBodies(context,{origin,files:binding.files,fail});
   const frameId=request=>{try{const frame=request.frame();if(!frames.has(frame))frames.set(frame,frames.size+1);return frames.get(frame);}catch{return'unavailable';}};
   const entry=request=>{
     if(requests.has(request))return requests.get(request);
@@ -37,10 +39,13 @@ export async function observeRuntimeContext(context,binding){
       }
       const expected=binding.files.find(file=>origin+file.url===item.url);
       if(expected){
-        const bytes=await response.body();observed.bytes=bytes.length;observed.sha256=sha(bytes);
+        if(item.resourceType!=='fetch'){
+          const bytes=await response.body();observed.bytes=bytes.length;observed.sha256=sha(bytes);
+          observed.bodyObservation='playwright-inspector-response-body';
+          if(bytes.length!==expected.bytes||observed.sha256!==expected.sha256)fail(`Delivered bytes differ from source-bound graph: ${item.url}`);
+        }
         if(response.status()!==expected.status)fail(`Unexpected status: ${item.url}`);
         if((headers['content-type']??'').split(';')[0].trim()!==expected.contentType)fail(`Unexpected MIME: ${item.url}`);
-        if(bytes.length!==expected.bytes||observed.sha256!==expected.sha256)fail(`Delivered bytes differ from source-bound graph: ${item.url}`);
       }else if(item.url===origin+binding.recipe.optionalResponse.url&&response.status()!==204)fail('Optional favicon must be declared204');
     })().catch(error=>fail(`Response observation failed: ${error.message}`));
     bodies.add(work);void work.finally(()=>bodies.delete(work));
@@ -86,6 +91,7 @@ export async function observeRuntimeContext(context,binding){
   const assertClean=()=>{
     assert.equal(overflow,false);assert.deepEqual(issues,[]);assert.deepEqual(errors,[]);assert.deepEqual(dialogs,[]);
     assert.equal(pages.length,1);assert.equal(pending.size,0);assert.equal(bodies.size,0);
+    fetchBodies.assertJoined(ledger);
     assert(ledger.every(item=>item.decision==='allow'&&item.responseStatusOrFailure?.status!==undefined),'Each attempt has actual allowed response evidence');
   };
   return{
@@ -93,11 +99,12 @@ export async function observeRuntimeContext(context,binding){
       assert(binding.recipe.phases.includes(name));
       if(name==='bootstrap'){
         assert(epoch<binding.recipe.documentEpochs.length,'Only frozen document epochs');
+        if(epoch>0)fetchBodies.beforeDeparture(epoch,ledger);
         epoch++;epochs.push({number:epoch,label:binding.recipe.documentEpochs[epoch-1],startedAt:performance.now()});
-      }else assert(epoch>0);
+      }else{assert(epoch>0);fetchBodies.assertJoined(ledger);}
       phase=name;
     },
-    async settle(){await Promise.all([...bodies]);},assertPhase,assertClean,
+    async settle(){await Promise.all([...bodies]);await fetchBodies.settle(pages[0],ledger,{documentEpoch:epoch,phase});},assertPhase,assertClean,
     async checkpoint(page,label){
       const value=await page.evaluate(()=>window.__failureRuntimeNetworkRead());
       browserCheckpoints.push({documentEpoch:epoch,phase,label,...value});assertBrowserClean(value);return value;
@@ -114,6 +121,6 @@ export async function observeRuntimeContext(context,binding){
     },
     snapshot(){return{timeOrigin:performance.timeOrigin,phase,epochs:epochs.map(value=>({...value})),ledger:ledger.map(value=>({...value})),
       issues:issues.slice(),errors:errors.slice(),dialogs:dialogs.slice(),browserCheckpoints:browserCheckpoints.slice(),
-      pages:pages.length,pendingRequests:pending.size,pendingResponseObservations:bodies.size,overflow};},
+      pages:pages.length,pendingRequests:pending.size,pendingResponseObservations:bodies.size,fetchBodyObserver:fetchBodies.snapshot(),overflow};},
   };
 }

@@ -110,6 +110,7 @@ export function computeRuntimeAssetBinding(){
   }
   const csp=`default-src 'none'; script-src 'self' 'wasm-unsafe-eval' ${hashes.join(' ')}; style-src 'self'; img-src http://127.0.0.1:4174/favicon.ico; connect-src 'self'; base-uri 'none'; object-src 'none'`;
   const sourcePaths=['scripts/failure-states/installed-runtime-assets.mjs','scripts/failure-states/installed-runtime-observation.mjs',
+    'scripts/failure-states/browser-body-observer.mjs','contracts/failure-states/v1/browser-body-observer.json',
     'scripts/failure-states/installed-metadata.mjs','scripts/failure-states/installed-chrome.config.mjs',
     'scripts/workspace-server.mjs','scripts/build-failure-runtime.mjs','tests/failure-runtime-browser.spec.js',
     'spikes/workspace/failure-host.js','spikes/workspace/failure-host.html','packages/wasm/src/sdk.ts',
