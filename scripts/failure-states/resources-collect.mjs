@@ -6,6 +6,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compiledAdmissionTitle, existingSourceFiles, localCaseIds, nodeResourceCases, rustResourceCases } from './existing-resource-cases.mjs';
+import { captureResourceBuildBinding } from './resource-reporter.mjs';
 
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const currentHash = path => sha(readFileSync(path));
@@ -23,9 +24,24 @@ export function collectResourceEvidence(inputs) {
   const bindings = [], gaps = [], observations = [];
   const bind = path => { const value = dataFile(path); bindings.push(value); return value; };
   const check = (condition, description) => { if (!condition) gaps.push(description); return condition; };
+  const closedFile = (seal, description, expectedPath = null) => {
+    const valid = check(seal !== null && typeof seal === 'object' && !Array.isArray(seal)
+      && typeof seal.path === 'string' && seal.path.length > 0 && Number.isSafeInteger(seal.bytes) && seal.bytes >= 0
+      && typeof seal.sha256 === 'string' && /^[a-f0-9]{64}$/.test(seal.sha256), `Closed file seal shape: ${description}`);
+    if (!valid) return null;
+    if (expectedPath !== null && !check(typeof expectedPath === 'string' && resolve(seal.path) === resolve(expectedPath), `Closed file seal path: ${description}`)) return null;
+    let bytes;
+    try { bytes = readFileSync(seal.path); }
+    catch (error) { check(false, `Closed file unavailable: ${description} (${error.code ?? error.message})`); return null; }
+    const binding = { path: resolve(seal.path), bytes: bytes.length, sha256: sha(bytes) };
+    bindings.push(binding);
+    const coherent = check(binding.bytes === seal.bytes && binding.sha256 === seal.sha256, `Closed file bytes/SHA256: ${description}`);
+    return coherent ? { binding, bytes } : null;
+  };
   const producer = readJson('artifacts/sdk-build-identity.json');
+  const currentBuildBinding = captureResourceBuildBinding();
   const wasmHash = currentHash('packages/wasm/dist/editor_wasm_bg.wasm');
-  const sourceHashes = Object.fromEntries(existingSourceFiles.map(path => [path, currentHash(path)]));
+  const sourceHashes = Object.fromEntries([...existingSourceFiles, 'scripts/failure-states/resource-reporter.mjs'].map(path => [path, currentHash(path)]));
   for (const [path, expected] of Object.entries(producer.sourceHashes)) check(currentHash(path) === expected, `Producer source changed: ${path}`);
   const local = readJson(inputs.localReport); bind(inputs.localReport);
   check(local.format === 'editor-failure-states/resource-originals/1', 'Local original report format');
@@ -50,7 +66,9 @@ export function collectResourceEvidence(inputs) {
     const closed = check(header?.type === 'header' && footer?.type === 'footer', `Closed Node event stream ${path}`);
     if (!closed) continue;
     const coherent = check(footer.failed === 0 && footer.sourceUnchanged === true && same(header.sourceBefore, sourceHashes) && same(footer.sourceAfter, sourceHashes), `Current unchanged passing Node sources ${path}`);
-    if (coherent) events.push(...records.filter(record => record.type === 'test:pass' && !record.skip && !record.todo));
+    const buildCoherent = check(footer.buildUnchanged === true && same(header.buildBefore, currentBuildBinding)
+      && same(footer.buildAfter, currentBuildBinding), `Current unchanged production build/artifacts for Node stream ${path}`);
+    if (coherent && buildCoherent) events.push(...records.filter(record => record.type === 'test:pass' && !record.skip && !record.todo));
   }
   for (const required of nodeResourceCases) {
     const match = events.find(event => event.file === required.file && (required.name ? event.name === required.name : event.name?.startsWith(required.prefix)));
@@ -71,8 +89,9 @@ export function collectResourceEvidence(inputs) {
     const sourceMap = receipt.sourceHashes ?? {};
     const sourcesMatch = Object.entries(sourceMap).every(([path, hash]) => currentHash(path) === hash);
     check(sourcesMatch, `Native command source hashes current ${receiptPath}`);
-    bind(receipt.stdout); bind(receipt.stderr);
-    if (coherent && sourcesMatch) nativeRuns.push({ receipt: receiptPath, text: readFileSync(receipt.stdout, 'utf8'), sourceMap });
+    const stdout = closedFile(receipt.stdout, `Native command stdout ${receiptPath}`);
+    const stderr = closedFile(receipt.stderr, `Native command stderr ${receiptPath}`);
+    if (coherent && sourcesMatch && stdout && stderr) nativeRuns.push({ receipt: receiptPath, text: stdout.bytes.toString('utf8'), sourceMap });
   }
   for (const required of rustResourceCases) {
     const pattern = new RegExp(`^test (?:[A-Za-z0-9_]+::)*${escapeRegex(required.name)} \\.\\.\\. ok\\s*$`, 'm');
@@ -99,15 +118,17 @@ export function collectResourceEvidence(inputs) {
   }
   check(points === 21, 'Exactly21 independent normative recipe points');
 
-  const browser = readJson(inputs.workspaceBrowserReport); bind(inputs.workspaceBrowserReport);
-  const specs = walkSpecs(browser.suites).filter(spec => spec.title === compiledAdmissionTitle);
+  const compiledBinding = inputs.compiledAdmissionBinding;
+  const browserPathValid = check(typeof inputs.workspaceBrowserReport === 'string' && inputs.workspaceBrowserReport.length > 0, 'Workspace browser original report path');
+  const browserOriginal = browserPathValid ? closedFile(compiledBinding?.report, 'Compiled workspace browser JSON', inputs.workspaceBrowserReport) : null;
+  const browser = browserOriginal ? JSON.parse(browserOriginal.bytes.toString('utf8')) : null;
+  const specs = walkSpecs(browser?.suites).filter(spec => spec.title === compiledAdmissionTitle);
   for (const project of ['chromium', 'firefox', 'webkit']) {
     const matches = specs.flatMap(spec => spec.tests ?? []).filter(value => value.projectName === project);
     const valid = matches.length === 1 && matches[0].status === 'expected' && matches[0].results?.length === 1 && matches[0].results[0].status === 'passed';
     check(valid, `Original compiled shared nine-case admission witness ${project}`);
     observations.push({ row: 'A4-02/A4-11', method: 'existing-compiled-shared-admission-nine', project, status: valid ? 'OBSERVED_PASS' : 'UNOBSERVED' });
   }
-  const compiledBinding = inputs.compiledAdmissionBinding;
   check(compiledBinding?.closed === true && compiledBinding?.exitCode === 0 && compiledBinding?.buildId === producer.buildId, 'Root actual closure/build binding for workspace compiled admission');
   for (const path of ['tests/workspace-browser.spec.js', 'crates/kwdj/tests/support/admission_budget_cases.rs', 'crates/wasm/examples/admission_budget_probe.rs']) {
     check(compiledBinding?.sourceHashes?.[path] === currentHash(path), `Compiled admission current source ${path}`);
@@ -117,7 +138,7 @@ export function collectResourceEvidence(inputs) {
   }
   return {
     format: 'editor-failure-states/resource-joined-report/1', status: gaps.length ? 'INCOMPLETE' : 'SELECTED_ASSERTIONS_PASSED',
-    buildId: producer.buildId, actualWasmSha256: wasmHash, bindings, currentSourceHashes: sourceHashes, observations, local, gaps,
+    buildId: producer.buildId, actualWasmSha256: wasmHash, currentBuildBinding, bindings, currentSourceHashes: sourceHashes, observations, local, gaps,
     qualifications: [
       'A join of closed original assertions and declared observations, not a new test run, formal review or blanket AC/project acceptance.',
       'Optional A4-05/A4-06, default million-value/depth128, global256 sessions and aggregate snapshot32MiB are not claimed dynamically observed.',
@@ -133,7 +154,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   assert.equal(args.length, 2, 'Usage: node scripts/failure-states/resources-collect.mjs INPUTS.json OUTPUT.json');
   const report = collectResourceEvidence(readJson(args[0]));
   report.inputs = dataFile(args[0]);
-  report.collectorSources = ['scripts/failure-states/resources-collect.mjs', 'scripts/failure-states/existing-resource-cases.mjs'].map(dataFile);
+  report.collectorSources = ['scripts/failure-states/resources-collect.mjs', 'scripts/failure-states/resource-reporter.mjs', 'scripts/failure-states/existing-resource-cases.mjs'].map(dataFile);
   mkdirSync(dirname(resolve(args[1])), { recursive: true });
   writeFileSync(args[1], JSON.stringify(report, null, 2) + '\n');
   console.log(`Resource closed-data join: ${report.status}; unresolved=${report.gaps.length}`);
