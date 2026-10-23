@@ -26,6 +26,11 @@ const routes = new Map([
   ['/selection-native-host.js', ['spikes/workspace/selection-native-host.js', 'text/javascript']],
   ['/selection.css', ['spikes/workspace/selection.css', 'text/css']],
   ['/clipboard', ['spikes/workspace/clipboard.html', 'text/html']],
+  ['/failure', ['spikes/workspace/failure-host.html', 'text/html']],
+  ['/failure-host.js', ['spikes/workspace/failure-host.js', 'text/javascript']],
+  ['/failure-contract/options.json', ['contracts/failure-states/v1/admission/options.template.json', 'application/json']],
+  ['/failure-contract/healthy.json', ['contracts/failure-states/v1/admission/healthy.canonical.json', 'application/json']],
+  ['/failure-runtime/editor_wasm_bg.wasm', ['artifacts/failure-states/runtime/editor_wasm_bg.wasm', 'application/wasm']],
   ['/typing', ['spikes/workspace/typing-host.html', 'text/html']],
   ['/typing.browser.mjs', ['spikes/workspace/typing.browser.mjs', 'text/javascript']],
   ['/typing-contract/dom-oracles.json', ['contracts/typography/v1/dom-oracles.json', 'application/json']],
@@ -81,6 +86,7 @@ async function allowSnippets(directory, prefix) {
   }
 }
 await allowSnippets(new URL('packages/wasm/dist/snippets/', root), '/snippets/');
+await allowSnippets(new URL('artifacts/failure-states/runtime/', root), '/failure-runtime/');
 for (const name of ['wasm', 'sdk', 'kwdj', 'dom', 'ui']) {
   await allowSnippets(new URL(`packages/${name}/dist/`, root), `/packages/${name}/`);
 }

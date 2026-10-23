@@ -51,6 +51,11 @@ instance may be unavailable; do not fabricate zero. Host original/coherent
 snapshot and bounded provisional text live outside the failed instance. Recovery
 is explicit, never an empty replacement or a false Saved. Old host callbacks
 are fenced by the host lifecycle identity, independently of native serials.
+An initial native baseline in a fresh Session does not acknowledge durable host
+storage. A recovered unsaved snapshot therefore keeps an explicit host-unsaved
+state until its own successful save. Ambiguous attempted input remains separate
+recovery data until an explicit host resolution; it is never silently discarded
+or automatically replayed after a possibly committed operation.
 
 The genuine trap lane uses an isolated test-only Rust/bridge composition with
 its own source-derived build identity, seal and matching fixture-local SDK

@@ -29,10 +29,17 @@ export interface LoadedSdkV2 {
 }
 export type LazyWasmLoaderV2 = () => Promise<LoadedSdkV2>;
 export type SdkWasmInput = Uint8Array | ArrayBuffer | Response | Request | URL | string;
-export interface SdkLoadOptions { readonly wasm?: SdkWasmInput }
+export interface SdkLoadOptions {
+  readonly wasm?: SdkWasmInput;
+  /** Asynchronous waiting ceiling; synchronous JS/WASM work is not preempted. */
+  readonly loadTimeoutMs?: number;
+  /** Cancels this reader only; another live reader retains shared work. */
+  readonly signal?: AbortSignal;
+}
 export type SdkLoadErrorCode = 'sdk.module_invalid' | 'sdk.manifest_invalid' | 'sdk.abi_mismatch'
   | 'sdk.build_mismatch' | 'sdk.load_failed' | 'sdk.compile_failed' | 'sdk.instantiate_failed'
-  | 'sdk.module_input_mismatch' | 'sdk.publisher_mismatch';
+  | 'sdk.module_input_mismatch' | 'sdk.publisher_mismatch' | 'sdk.load_timeout'
+  | 'sdk.load_cancelled' | 'sdk.runtime_retired';
 
 /** Structured loading failure; callers inspect code/phase without parsing a message. */
 export class SdkLoadError extends Error {
@@ -91,6 +98,7 @@ export function verifyLoadedSdk(value: unknown): LoadedSdkV1 {
   if (!/^sha256:[0-9a-f]{64}$/.test(sdkBuildId) || manifest.build_id !== sdkBuildId) {
     throw new SdkLoadError('sdk.build_mismatch', 'manifest');
   }
+  if (packagedConstructors.has(value.Session)) assertRuntime();
   return Object.freeze({ manifest, Session: value.Session, resourceCounts: value.resourceCounts }) as LoadedSdkV1;
 }
 
@@ -130,6 +138,7 @@ export function verifyLoadedSdkV2(value: unknown): LoadedSdkV2 {
   if (!/^sha256:[0-9a-f]{64}$/.test(sdkBuildId) || manifest.build_id !== sdkBuildId) {
     throw new SdkLoadError('sdk.build_mismatch', 'manifest_v2');
   }
+  if (packagedConstructors.has(value.Session)) assertRuntime();
   return Object.freeze({ manifest, Session: value.Session, resourceCounts: value.resourceCounts }) as LoadedSdkV2;
 }
 
@@ -146,11 +155,77 @@ type OwnedInput = { key: string | Response; source: Exclude<SdkWasmInput, Uint8A
 type Abi = typeof sdkAbiV1 | typeof sdkAbiV2;
 type VerifiedModule = { bytes: Uint8Array<ArrayBuffer>; abi: Abi };
 type ModuleBundle = { abi: Abi; glue: Glue; v1?: LoadedSdkV1; v2?: LoadedSdkV2 };
-type ModuleLoad = { key: OwnedInput['key']; verified?: Promise<VerifiedModule>; initialized?: Promise<ModuleBundle>; readers: number };
+type ModuleLoad = {
+  key: OwnedInput['key']; verified?: Promise<VerifiedModule>; initialized?: Promise<ModuleBundle>;
+  readers: number; abort: AbortController; bodyReader?: ReadableStreamDefaultReader<Uint8Array>;
+  abandoned: boolean; singletonStarted: boolean; complete: boolean; accepted: boolean; failed: boolean;
+};
 const MAX_MODULE_BYTES = 64 * 1024 * 1024;
+const MAX_LOAD_TIMEOUT_MS = 30_000;
 // One immutable verified module initialization, never shared Session state.
 let cached: ModuleLoad | undefined;
 let publisherFault: SdkLoadError | undefined;
+let runtimeFault: SdkLoadError | undefined;
+const packagedConstructors = new WeakSet<Function>();
+const runtimeWaiters = new Set<(failure: SdkLoadError) => void>();
+// A digest-pending reader must not lose shared initialization before it can
+// establish whether its owned bytes name that entry. Reservations open no Session.
+const ownershipWaiters = new Set<(entry: ModuleLoad) => void>();
+const now = () => performance.now();
+
+function assertRuntime(): void {
+  if (publisherFault) throw publisherFault;
+  if (runtimeFault) throw runtimeFault;
+}
+function retireRuntime(cause: unknown, notify = true): void {
+  runtimeFault ??= new SdkLoadError('sdk.runtime_retired', 'runtime', cause);
+  if (notify) for (const fail of [...runtimeWaiters]) fail(runtimeFault);
+}
+function invokeRuntime<T>(call: () => T): T {
+  assertRuntime();
+  try { return call(); }
+  catch (cause) {
+    // Only calls through the verified packaged glue have this capability.
+    // Controlled injected JS transports retain their separate failure semantics.
+    if (cause instanceof WebAssembly.RuntimeError) retireRuntime(cause);
+    throw cause;
+  }
+}
+
+function guardedSession<T extends RawSdkSessionV1>(Native: new (input: Uint8Array, optionsJson: string) => T,
+  v2: boolean): new (input: Uint8Array, optionsJson: string) => T {
+  class Session implements RawSdkSessionV1 {
+    #raw: T;
+    constructor(input: Uint8Array, optionsJson: string) {
+      this.#raw = invokeRuntime(() => new Native(input, optionsJson));
+      if (v2) Object.defineProperty(this, 'context', {
+        value: () => invokeRuntime(() => (this.#raw as unknown as RawSdkSessionV2).context()),
+      });
+      Object.freeze(this);
+    }
+    initialization(): string { return invokeRuntime(() => this.#raw.initialization()); }
+    call(requestJson: string): string { return invokeRuntime(() => this.#raw.call(requestJson)); }
+    destroy(): void { invokeRuntime(() => this.#raw.destroy()); }
+    free(): void { invokeRuntime(() => this.#raw.free()); }
+  }
+  packagedConstructors.add(Session);
+  return Session as unknown as new (input: Uint8Array, optionsJson: string) => T;
+}
+
+function assertWork(entry: ModuleLoad): void {
+  assertRuntime();
+  if (entry.abandoned || cached !== entry) throw new SdkLoadError('sdk.load_cancelled', 'load');
+}
+function abandon(entry: ModuleLoad): void {
+  if (entry.abandoned || entry.failed || entry.complete && entry.accepted) return;
+  entry.abandoned = true;
+  if (cached === entry) cached = undefined;
+  entry.abort.abort();
+  if (entry.bodyReader) void entry.bodyReader.cancel().catch(() => { /* Cancellation is best effort. */ });
+  // The fixed generated glue cannot safely be initialized a second time while
+  // an abandoned first initialization may still complete in this realm.
+  if (entry.singletonStarted) retireRuntime(new SdkLoadError('sdk.load_cancelled', 'initialization'));
+}
 
 async function ownInput(input: SdkWasmInput | undefined): Promise<OwnedInput> {
   if (input === undefined) return { key: 'packaged', source: new URL('./editor_wasm_bg.wasm', import.meta.url) };
@@ -175,13 +250,23 @@ async function ownInput(input: SdkWasmInput | undefined): Promise<OwnedInput> {
   throw new SdkLoadError('sdk.module_invalid', 'input');
 }
 
-async function moduleBytes(input: OwnedInput['source']): Promise<Uint8Array<ArrayBuffer>> {
+async function moduleBytes(input: OwnedInput['source'], entry: ModuleLoad): Promise<Uint8Array<ArrayBuffer>> {
+  assertWork(entry);
   let bytes: Uint8Array | ArrayBuffer;
   if (input instanceof Uint8Array || input instanceof ArrayBuffer) bytes = input;
   else {
-    let response: Response;
+    let response: Response | undefined;
+    const sourceSignal = input instanceof Request ? input.signal : undefined;
+    const cancelSource = () => entry.abort.abort();
+    sourceSignal?.addEventListener('abort', cancelSource, { once: true });
+    if (sourceSignal?.aborted) cancelSource();
     try {
-      response = input instanceof Response ? input : await fetch(input);
+      response = input instanceof Response ? input : await fetch(input, { signal: entry.abort.signal });
+      if (entry.abandoned) {
+        if (response.body) void response.body.cancel().catch(() => { /* Late owned body is not admitted. */ });
+        assertWork(entry);
+      }
+      assertWork(entry);
       if (!response.ok) throw new SdkLoadError('sdk.load_failed', 'http', { status: response.status });
       const length = Number(response.headers.get('content-length'));
       if (Number.isFinite(length) && length > MAX_MODULE_BYTES) throw new SdkLoadError('sdk.module_invalid', 'bytes');
@@ -189,27 +274,34 @@ async function moduleBytes(input: OwnedInput['source']): Promise<Uint8Array<Arra
       const chunks: Uint8Array[] = [];
       let total = 0;
       if (reader) {
+        entry.bodyReader = reader;
         try {
           for (;;) {
             const next = await reader.read();
+            assertWork(entry);
             if (next.done) break;
             if (next.value.byteLength > MAX_MODULE_BYTES - total) {
-              await reader.cancel();
+              void reader.cancel().catch(() => { /* Preserve the bounded refusal. */ });
               throw new SdkLoadError('sdk.module_invalid', 'bytes');
             }
             total += next.value.byteLength; chunks.push(next.value);
           }
-        } finally { reader.releaseLock(); }
+        } finally { entry.bodyReader = undefined; reader.releaseLock(); }
       }
       const joined = new Uint8Array(total);
       let offset = 0;
       for (const chunk of chunks) { joined.set(chunk, offset); offset += chunk.byteLength; }
       bytes = joined;
     } catch (cause) {
+      entry.abort.abort();
+      if (response?.body && !response.body.locked) {
+        void response.body.cancel().catch(() => { /* Do not retain a failed owned body. */ });
+      }
       if (cause instanceof SdkLoadError) throw cause;
       throw new SdkLoadError('sdk.load_failed', 'fetch', cause);
-    }
+    } finally { sourceSignal?.removeEventListener('abort', cancelSource); }
   }
+  assertWork(entry);
   if (!bytes.byteLength || bytes.byteLength > MAX_MODULE_BYTES) throw new SdkLoadError('sdk.module_invalid', 'bytes');
   return bytes instanceof Uint8Array ? new Uint8Array(bytes) : new Uint8Array(bytes);
 }
@@ -283,42 +375,50 @@ function nativeManifest(read: () => string, phase: string): unknown {
   return JSON.parse(json);
 }
 function publisherMismatch(phase: string, cause: unknown): never {
+  if (runtimeFault) throw runtimeFault;
   publisherFault = new SdkLoadError('sdk.publisher_mismatch', phase, cause);
   throw publisherFault;
 }
 function projectionV1(bundle: ModuleBundle): LoadedSdkV1 {
-  if (publisherFault) throw publisherFault;
+  assertRuntime();
   if (bundle.abi !== sdkAbiV1) throw new SdkLoadError('sdk.abi_mismatch', 'seal');
   if (bundle.v1) return bundle.v1;
   if (!hasV1(bundle.glue)) throw new SdkLoadError('sdk.module_invalid', 'glue_exports');
   try {
-    bundle.v1 = verifyLoadedSdk({ manifest: nativeManifest(bundle.glue.sdkManifestV1!, 'manifest_json'),
+    const actual = verifyLoadedSdk({ manifest: invokeRuntime(() => nativeManifest(bundle.glue.sdkManifestV1!, 'manifest_json')),
       Session: bundle.glue.SdkSessionV1, resourceCounts: bundle.glue.sdkResourceCountsV1 });
+    bundle.v1 = Object.freeze({ manifest: actual.manifest, Session: guardedSession(actual.Session, false),
+      resourceCounts: () => invokeRuntime(actual.resourceCounts) });
     return bundle.v1;
   } catch (cause) { return publisherMismatch('native_manifest', cause); }
 }
 function projectionV2(bundle: ModuleBundle): LoadedSdkV2 {
-  if (publisherFault) throw publisherFault;
+  assertRuntime();
   if (bundle.v2) return bundle.v2;
   // An ABI1-only publisher need not implement this separately negotiated API.
   if (!hasV2(bundle.glue)) throw new SdkLoadError('sdk.abi_mismatch', 'glue_exports_v2');
   try {
-    bundle.v2 = verifyLoadedSdkV2({ manifest: nativeManifest(bundle.glue.sdkManifestV2!, 'manifest_json_v2'),
+    const actual = verifyLoadedSdkV2({ manifest: invokeRuntime(() => nativeManifest(bundle.glue.sdkManifestV2!, 'manifest_json_v2')),
       Session: bundle.glue.SdkSessionV2, resourceCounts: bundle.glue.sdkResourceCountsV2 });
+    bundle.v2 = Object.freeze({ manifest: actual.manifest, Session: guardedSession(actual.Session, true),
+      resourceCounts: () => invokeRuntime(actual.resourceCounts) });
     return bundle.v2;
   } catch (cause) { return publisherMismatch('native_manifest_v2', cause); }
 }
 
-async function initialize(verified: VerifiedModule): Promise<ModuleBundle> {
+async function initialize(verified: VerifiedModule, entry: ModuleLoad): Promise<ModuleBundle> {
+  assertWork(entry);
   const { bytes, abi } = verified;
   let compiled: WebAssembly.Module;
   try { compiled = await WebAssembly.compile(bytes); }
   catch (cause) { throw new SdkLoadError('sdk.compile_failed', 'compile', cause); }
+  assertWork(entry);
   let glue: Glue;
   try {
     // Native ES-module loading: no eval, Function, dynamic source or blob URL.
     const url = new URL('./editor_wasm.js', import.meta.url);
     const module: unknown = await import(url.href);
+    assertWork(entry);
     if (!plain(module) && (module === null || typeof module !== 'object')) throw new SdkLoadError('sdk.module_invalid', 'glue');
     glue = module as Glue;
     if (typeof glue.default !== 'function' || !(abi === sdkAbiV1 ? hasV1(glue) : hasV2(glue))) {
@@ -328,58 +428,142 @@ async function initialize(verified: VerifiedModule): Promise<ModuleBundle> {
     if (cause instanceof SdkLoadError) throw cause;
     throw new SdkLoadError('sdk.load_failed', 'glue', cause);
   }
+  assertWork(entry);
+  entry.singletonStarted = true;
   try { await glue.default({ module_or_path: compiled }); }
-  catch (cause) { throw new SdkLoadError('sdk.instantiate_failed', 'instantiate', cause); }
+  catch (cause) {
+    // Generated finalize_init stores its singleton before __wbindgen_start.
+    // A start trap can therefore leave it populated despite a rejected init.
+    // Preserve this attempt's established instantiate_failed diagnostic.
+    if (cause instanceof WebAssembly.RuntimeError) retireRuntime(cause, false);
+    throw new SdkLoadError('sdk.instantiate_failed', 'instantiate', cause);
+  }
+  assertWork(entry);
   const bundle: ModuleBundle = { abi, glue };
   // The seal guarantees its named API; optional APIs receive their own exact
   // native identity check when requested, sharing this one initialization.
   if (abi === sdkAbiV1) projectionV1(bundle); else projectionV2(bundle);
+  entry.complete = true;
   return bundle;
 }
 
 async function loadBundle(options: SdkLoadOptions, abi: Abi): Promise<ModuleBundle> {
-  if (publisherFault) throw publisherFault;
-  let input: OwnedInput;
-  try { input = await ownInput(options.wasm); }
-  catch (cause) {
-    if (cause instanceof SdkLoadError) throw cause;
-    throw new SdkLoadError('sdk.module_invalid', 'input', cause);
+  const entered = now();
+  assertRuntime();
+  if (!plain(options)) throw new SdkLoadError('sdk.module_invalid', 'input');
+  const fields = Object.getOwnPropertyDescriptors(options);
+  if (Reflect.ownKeys(fields).some(key => typeof key !== 'string'
+    || !['wasm', 'loadTimeoutMs', 'signal'].includes(key) || !('value' in fields[key]))) {
+    throw new SdkLoadError('sdk.module_invalid', 'input');
   }
-  if (publisherFault) throw publisherFault;
-  let entry = cached;
-  if (entry && entry.key !== input.key) throw new SdkLoadError('sdk.module_input_mismatch', 'initialization');
-  if (!entry) {
-    const verified = moduleBytes(input.source).then(async bytes => ({ bytes, abi: await verifySeal(bytes) }));
-    entry = { key: input.key, verified, readers: 0 };
-    cached = entry;
+  const timeout: unknown = fields.loadTimeoutMs?.value === undefined ? MAX_LOAD_TIMEOUT_MS : fields.loadTimeoutMs.value;
+  if (typeof timeout !== 'number' || !Number.isSafeInteger(timeout) || timeout < 1 || timeout > MAX_LOAD_TIMEOUT_MS) {
+    throw new SdkLoadError('sdk.module_invalid', 'deadline');
   }
-  const current = entry;
-  current.readers += 1;
-  try {
-    if (!current.initialized) {
-      const verified = await current.verified!;
-      // A V1 call cannot initialize even a valid ABI2-only sealed distribution.
-      if (abi === sdkAbiV1 && verified.abi !== sdkAbiV1) throw new SdkLoadError('sdk.abi_mismatch', 'seal');
-      if (!current.initialized) {
-        const promise = initialize(verified);
-        current.initialized = promise;
-        // After initialization the cache retains module/glue/projections, not
-        // a resolved verification promise holding the complete raw byte copy.
-        current.verified = undefined;
-        promise.catch(() => {
-          if (cached === current && !publisherFault) cached = undefined;
+  const signal: unknown = fields.signal?.value;
+  if (signal !== undefined && !(signal instanceof AbortSignal)) throw new SdkLoadError('sdk.module_invalid', 'input');
+  const cancellation = signal as AbortSignal | undefined;
+  const deadline = entered + timeout;
+  return new Promise<ModuleBundle>((resolve, reject) => {
+    let settled = false;
+    let current: ModuleLoad | undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeoutFailure = () => new SdkLoadError('sdk.load_timeout', 'load');
+    const release = () => {
+      if (!current) return;
+      const previous = current; current = undefined;
+      previous.readers -= 1;
+      if (previous.readers === 0) abandon(previous);
+    };
+    const reserve = (entry: ModuleLoad) => {
+      if (settled || current === entry) return;
+      release();
+      if (!settled) { current = entry; current.readers += 1; }
+    };
+    const leave = () => {
+      if (timer !== undefined) { clearTimeout(timer); timer = undefined; }
+      cancellation?.removeEventListener('abort', abortReader);
+      runtimeWaiters.delete(fail);
+      ownershipWaiters.delete(reserve);
+      release();
+    };
+    const fail = (cause: unknown) => {
+      if (settled) return;
+      settled = true; leave(); reject(cause);
+    };
+    const abortReader = () => fail(new SdkLoadError('sdk.load_cancelled', 'load'));
+    const expire = () => {
+      if (settled) return;
+      const remaining = deadline - now();
+      if (remaining <= 0) fail(timeoutFailure());
+      else timer = setTimeout(expire, Math.ceil(remaining));
+    };
+    const active = () => {
+      if (settled) throw new SdkLoadError('sdk.load_cancelled', 'load');
+      assertRuntime();
+      if (now() >= deadline) { const failure = timeoutFailure(); fail(failure); throw failure; }
+    };
+    cancellation?.addEventListener('abort', abortReader, { once: true });
+    runtimeWaiters.add(fail);
+    ownershipWaiters.add(reserve);
+    if (cached) reserve(cached);
+    timer = setTimeout(expire, Math.max(0, Math.ceil(deadline - now())));
+    if (cancellation?.aborted) { abortReader(); return; }
+    void (async () => {
+      active();
+      let input: OwnedInput;
+      try { input = await ownInput(fields.wasm?.value); }
+      catch (cause) {
+        if (cause instanceof SdkLoadError) throw cause;
+        throw new SdkLoadError('sdk.module_invalid', 'input', cause);
+      }
+      active();
+      let entry = cached;
+      if (current && current !== entry) release();
+      if (entry && entry.key !== input.key) throw new SdkLoadError('sdk.module_input_mismatch', 'initialization');
+      if (!entry) {
+        entry = { key: input.key, readers: 0, abort: new AbortController(), abandoned: false,
+          singletonStarted: false, complete: false, accepted: false, failed: false };
+        cached = entry;
+        for (const waiting of ownershipWaiters) waiting(entry);
+        const pending = entry;
+        entry.verified = (async () => {
+          const bytes = await moduleBytes(input.source, pending);
+          assertWork(pending);
+          const verifiedAbi = await verifySeal(bytes);
+          assertWork(pending);
+          return { bytes, abi: verifiedAbi };
+        })().catch(cause => {
+          pending.failed = true;
+          if (cached === pending && !publisherFault) cached = undefined;
+          throw cause;
         });
       }
-    }
-    const bundle = await current.initialized;
-    if (abi === sdkAbiV1 && bundle.abi !== sdkAbiV1) throw new SdkLoadError('sdk.abi_mismatch', 'seal');
-    return bundle;
-  } finally {
-    current.readers -= 1;
-    // Failed verification/unsupported negotiation is retryable without losing
-    // another concurrent accepted caller's shared initialization.
-    if (cached === current && current.readers === 0 && !current.initialized && !publisherFault) cached = undefined;
-  }
+      reserve(entry); ownershipWaiters.delete(reserve);
+      const joined = entry;
+      if (!joined.initialized) {
+        const verified = await joined.verified!;
+        active(); assertWork(joined);
+        // A V1 reader cannot initialize an ABI2-only publisher or cancel a live V2 reader.
+        if (abi === sdkAbiV1 && verified.abi !== sdkAbiV1) throw new SdkLoadError('sdk.abi_mismatch', 'seal');
+        if (!joined.initialized) {
+          const pending = joined;
+          joined.initialized = initialize(verified, joined).catch(cause => {
+            pending.failed = true;
+            if (cached === pending && !publisherFault) cached = undefined;
+            throw cause;
+          });
+          // Keep no resolved verification promise holding the complete input.
+          joined.verified = undefined;
+        }
+      }
+      const bundle = await joined.initialized!;
+      active();
+      if (abi === sdkAbiV1 && bundle.abi !== sdkAbiV1) throw new SdkLoadError('sdk.abi_mismatch', 'seal');
+      joined.accepted = true;
+      settled = true; leave(); resolve(bundle);
+    })().catch(fail);
+  });
 }
 
 /** Default browser URL or owned Node bytes. Both APIs share one immutable module. */

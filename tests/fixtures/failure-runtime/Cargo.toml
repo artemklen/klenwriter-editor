@@ -1,0 +1,35 @@
+[package]
+name = "editor-failure-runtime"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.97.1"
+license = "MIT OR Apache-2.0"
+publish = false
+description = "Isolated compiled failure fixture; never a production editor artifact"
+
+[workspace]
+resolver = "3"
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+
+[[bin]]
+name = "failure-runtime-manifest"
+path = "src/main.rs"
+
+[dependencies]
+editor_bridge = { package = "klenwriter-editor-bridge", path = "../../../crates/bridge", version = "=0.0.0" }
+editor_protocol = { package = "klenwriter-editor-protocol", path = "../../../crates/protocol", version = "=0.0.0" }
+editor_kwdj_sdk = { package = "klenwriter-editor-kwdj-sdk", path = "../../../crates/kwdj-sdk", version = "=0.0.0" }
+serde_json = "=1.0.150"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "=0.2.129"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = "s"

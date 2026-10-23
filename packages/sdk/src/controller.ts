@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-import { loadSdk, loadSdkV2, verifyLoadedSdk, verifyLoadedSdkV2 } from '@klenwriter/editor-wasm';
+import { loadSdk, loadSdkV2, verifyLoadedSdk, verifyLoadedSdkV2, SdkLoadError } from '@klenwriter/editor-wasm';
 import type { BridgeRequestV2, EventDto, InputCommandRequestV2, QueryInputCommandRequestV2, LazyWasmLoader, LazyWasmLoaderV2, LoadedSdkV1, LoadedSdkV2, OpenOptions, OpenOptionsV2, ProfileDto, RawSdkSessionV1, RawSdkSessionV2, SdkRequest, SdkResponse, SdkResponseV2, SelectionTextRequestV2, TextWindowRequestV2, ClipboardContextRequestV2, SelectionFragmentRequestV2, SessionContextV2, StampDto, StateDto } from '@klenwriter/editor-wasm';
 import { copyInput, DataError, freezeData, HARD_REQUEST_BYTES, ownData, plainFields } from './data.js';
 import type { OwnedData } from './data.js';
@@ -27,6 +27,8 @@ export interface ControllerLimits { readonly pending?: number; readonly requestB
 export interface CallbackError { readonly code: 'sdk.listener_error'; readonly listener: string }
 interface ControllerConfiguration {
   readonly input: Uint8Array;
+  /** Only tightens the 30 second asynchronous loading ceiling. */
+  readonly loadTimeoutMs?: number;
   readonly limits?: ControllerLimits;
   readonly onCallbackError?: (error: CallbackError) => void;
 }
@@ -74,19 +76,25 @@ export class EditorController {
   #destroyRequested = false;
   #destroyTicket: Submission | null = null;
   #continuation: ReturnType<typeof setTimeout> | null = null;
+  #loadingTimer: ReturnType<typeof setTimeout> | null = null;
+  #loadingDeadline: number | null = null;
+  #loadingAbort: AbortController | null = null;
   #callbackErrors: CallbackError[] = [];
   #onCallbackError: ((error: CallbackError) => void) | undefined;
   #terminalFailure: FatalResponse | null = null;
   #limits = { pending: 128, requestBytes: HARD_REQUEST_BYTES, queuedBytes: 32 * 1024 * 1024, listeners: 64 };
 
   constructor(configuration: AnyCreateEditorOptions) {
+    const entered = performance.now();
     this.ready = new Promise(resolve => { this.#resolveReady = resolve; });
     try {
       const fields = plainFields(configuration);
-      if (Object.keys(fields).some(key => !['input', 'options', 'loader', 'limits', 'onCallbackError'].includes(key)) || !fields.input || !fields.options) throw new DataError('sdk.invalid_input');
+      if (Object.keys(fields).some(key => !['input', 'options', 'loader', 'limits', 'onCallbackError', 'loadTimeoutMs'].includes(key)) || !fields.input || !fields.options) throw new DataError('sdk.invalid_input');
       this.#original = copyInput(fields.input.value);
       const options = ownData(fields.options.value as OpenOptions | OpenOptionsV2);
       this.#abi = options.value.abi === 'editor-sdk/2' ? 'editor-sdk/2' : 'editor-sdk/1';
+      const timeout: unknown = fields.loadTimeoutMs?.value === undefined ? 30_000 : fields.loadTimeoutMs.value;
+      if (typeof timeout !== 'number' || !Number.isSafeInteger(timeout) || timeout < 1 || timeout > 30_000) throw new DataError('sdk.invalid_limit');
       if (fields.limits) {
         for (const [key, descriptor] of Object.entries(plainFields(fields.limits.value))) {
           if (!Object.hasOwn(this.#limits, key) || !Number.isSafeInteger(descriptor.value) || descriptor.value < 0) throw new DataError('sdk.invalid_limit');
@@ -98,9 +106,13 @@ export class EditorController {
         if (typeof fields.onCallbackError.value !== 'function') throw new DataError('sdk.invalid_input');
         this.#onCallbackError = fields.onCallbackError.value;
       }
+      if (!fields.loader) this.#loadingAbort = new AbortController();
+      const loadOptions = { loadTimeoutMs: timeout, signal: this.#loadingAbort?.signal };
       const loader: LazyWasmLoader | LazyWasmLoaderV2 = fields.loader ? fields.loader.value
-        : this.#abi === 'editor-sdk/2' ? () => loadSdkV2() : () => loadSdk();
+        : this.#abi === 'editor-sdk/2' ? () => loadSdkV2(loadOptions) : () => loadSdk(loadOptions);
       if (typeof loader !== 'function') throw new DataError('sdk.invalid_input');
+      this.#loadingDeadline = entered + timeout;
+      this.#armLoading();
       void this.#initialize(loader, options.json, options.value.profile);
     } catch (error) {
       this.#onCallbackError = undefined;
@@ -226,6 +238,7 @@ export class EditorController {
     return Object.freeze({ lifecycle: this.#lifecycle, sessions: this.#raw ? 1 : 0, listeners: this.#listeners.size,
       queued_mutations: this.#pending.length, queued_bytes: this.#queuedBytes, pending_tickets: this.#pending.length + this.#inFlightTickets,
       host_requests: this.#hostRequests.size, task_continuations: this.#continuation === null ? 0 : 1,
+      loading_deadlines: this.#loadingDeadline === null ? 0 : 1,
       original_input_bytes: this.#original?.byteLength ?? 0, callback_errors: this.#callbackErrors.length,
       callback_error_handlers: this.#onCallbackError === undefined ? 0 : 1 });
   }
@@ -238,9 +251,13 @@ export class EditorController {
   async #initialize(loader: LazyWasmLoader | LazyWasmLoaderV2, optionsJson: string, profile: ProfileDto): Promise<void> {
     let opening = false;
     try {
+      if (this.#expireLoading()) return;
       const loaded = await loader();
+      if (this.#lifecycle !== 'loading' || this.#destroyRequested || this.#expireLoading()) return;
       const module = this.#abi === 'editor-sdk/2' ? verifyLoadedSdkV2(loaded) : verifyLoadedSdk(loaded);
-      if (this.#lifecycle !== 'loading' || this.#destroyRequested) return;
+      if (this.#lifecycle !== 'loading' || this.#destroyRequested || this.#expireLoading()) return;
+      // Loading has ended; synchronous Session admission cannot be preempted.
+      this.#clearLoading();
       this.#module = module; opening = true;
       const raw = new module.Session(this.#original!, optionsJson);
       if (this.#lifecycle !== 'loading' || this.#destroyRequested) { this.#freeRaw(raw); return; }
@@ -256,6 +273,7 @@ export class EditorController {
       this.#settleReady(result);
     } catch (error) {
       if (this.#lifecycle !== 'loading') return;
+      if (this.#expireLoading()) return;
       if (opening) { this.#settleReady(this.#fatal('sdk.initialization_failure', false, true)); return; }
       const code = error instanceof DataError ? error.code : this.#loadCode(error);
       this.#dispose('destroyed', true); this.#settleReady(this.#refusal(code));
@@ -270,7 +288,29 @@ export class EditorController {
     } catch { /* Never inspect arbitrary thrown-value getters. */ }
     return 'sdk.load_failed';
   }
-  #settleReady(result: Response) { if (!this.#readySettled) { this.#readySettled = true; this.#resolveReady(result); } }
+  #armLoading(): void {
+    if (this.#loadingDeadline === null) return;
+    this.#loadingTimer = setTimeout(() => {
+      this.#loadingTimer = null;
+      if (!this.#expireLoading()) this.#armLoading();
+    }, Math.max(0, Math.ceil(this.#loadingDeadline - performance.now())));
+  }
+  #clearLoading(): void {
+    if (this.#loadingTimer !== null) { clearTimeout(this.#loadingTimer); this.#loadingTimer = null; }
+    this.#loadingDeadline = null;
+    const abort = this.#loadingAbort; this.#loadingAbort = null;
+    abort?.abort();
+  }
+  #expireLoading(): boolean {
+    if (this.#lifecycle !== 'loading') return true;
+    if (this.#loadingDeadline === null || performance.now() < this.#loadingDeadline) return false;
+    this.#dispose('destroyed', true);
+    this.#settleReady(this.#refusal('sdk.load_timeout'));
+    return true;
+  }
+  #settleReady(result: Response) {
+    if (!this.#readySettled) { this.#readySettled = true; this.#clearLoading(); this.#resolveReady(result); }
+  }
   #completed(response: Response): Submission;
   #completed(response: ResponseV2): InputSubmissionV2;
   #completed(response: ResponseV2): InputSubmissionV2 { return Object.freeze({ status: 'completed', response }); }
@@ -282,6 +322,10 @@ export class EditorController {
     const response = freezeData({ status: 'fatal' as const, diagnostic: { code, path: '', category: 'transport', details: {}, stamp: this.#state?.stamp ?? null, may_have_committed: mayHaveCommitted } });
     this.#terminalFailure = response;
     this.#dispose('fatal', preserveOriginal); return response;
+  }
+  #transportFailure(error: unknown, mutation: boolean): Response {
+    return error instanceof SdkLoadError && error.code === 'sdk.runtime_retired'
+      ? this.#fatal('sdk.runtime_retired', false) : this.#fatal('sdk.transport_failure', mutation);
   }
   #deliveryFatal(failure: FatalResponse): Response {
     return freezeData({ status: 'fatal', diagnostic: { ...failure.diagnostic, may_have_committed: true } });
@@ -325,14 +369,14 @@ export class EditorController {
       if (response.status === 'ok' && response.value.kind === 'selection_fragment'
         && new TextEncoder().encode(response.value.fragment_json).byteLength > maximumFragment) return this.#fatal('sdk.invalid_response', false);
       return response;
-    } catch { return this.#fatal('sdk.transport_failure', false); }
+    } catch (error) { return this.#transportFailure(error, false); }
   }
   #wire(json: string, mutation: boolean): SdkResponse {
     try {
       const response = decodeResponse(this.#raw!.call(json));
       if (response.status === 'fatal') { this.#terminalFailure = response; this.#dispose('fatal'); }
       return response;
-    } catch { return this.#fatal('sdk.transport_failure', mutation) as SdkResponse; }
+    } catch (error) { return this.#transportFailure(error, mutation) as SdkResponse; }
   }
   #enqueue(owned: OwnedData<MutationRequest>, disposing?: boolean): Submission;
   #enqueue(owned: OwnedData<OwnedMutation>, disposing?: boolean): InputSubmissionV2;
@@ -355,7 +399,7 @@ export class EditorController {
           || response.value.result !== null && (!stampEqual(response.value.result.before_stamp, owned.value.stamp)
             || !before || !stampEqual(before, owned.value.stamp)))) return this.#fatal('sdk.invalid_response', true);
         if (response.status === 'fatal') { this.#terminalFailure = response; this.#dispose('fatal'); }
-      } catch { return this.#fatal('sdk.transport_failure', true); }
+      } catch (error) { return this.#transportFailure(error, true); }
     } else response = this.#wire(owned.json, true);
     if (response.status === 'ok' && (response.value.kind === 'state' || response.value.kind === 'mutation' || response.value.kind === 'input_mutation')) {
       this.#state = response.value.state;
@@ -427,6 +471,7 @@ export class EditorController {
     try { raw.free(); } catch { /* Each wrapper is released at most once. */ }
   }
   #dispose(lifecycle: 'destroyed' | 'fatal', preserveOriginal = false) {
+    this.#clearLoading();
     this.#lifecycle = 'disposing'; this.#listeners.clear(); this.#hostRequests.clear(); this.#onCallbackError = undefined;
     this.#context = null;
     this.#callbackErrors = [];

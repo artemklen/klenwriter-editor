@@ -1,0 +1,74 @@
+{
+  "format": "editor-failure-states/resource-recipes/1",
+  "status": "NOT_RUN",
+  "contract": "resources.md",
+  "selectedRows": ["A4-01", "A4-02", "A4-03", "A4-04", "A4-07", "A4-08", "A4-09", "A4-10", "A4-11"],
+  "omittedRows": ["A4-05", "A4-06"],
+  "healthyCanonical": {
+    "path": "contracts/failure-states/v1/admission/healthy.canonical.json",
+    "bytes": 160,
+    "sha256": "06f0414aa29da02062ad54bb8674188d4d4918dd80d84fa18d688034c7b0c7aa"
+  },
+  "publicInput": {
+    "ids": ["A4-01/public-input-exact", "A4-01/public-input-over"],
+    "recipe": "Allocate exactly the declared byte length, fill with ASCII space 0x20, then copy the complete pinned healthy canonical bytes at offset zero. Remaining bytes are JSON whitespace, not authored text.",
+    "byteLengths": [16777216, 16777217],
+    "expectedExact": {"status": "ok", "canonical": "healthyCanonical", "originalInput": null},
+    "expectedOver": {"status": "refused", "code": "sdk.request_too_large", "loaderCalls": 0, "originalInput": null, "wasmObservation": "NOT_APPLICABLE"},
+    "scope": "The over-limit public-controller observation proves its JS input-copy guard, not the native raw-input default boundary. Existing tiny host-tightened admission controls remain separate."
+  },
+  "borrowedPreflight": {
+    "reuse": "crates/kwdj/tests/support/admission_budget_cases.rs::generic_counts_each_payload",
+    "base": {"type_id": "x/text", "primitive": "text", "text": "Я😀", "attributes": {"k": "ё"}, "marks": [{"type_id": "x/tag", "attributes": {"t": "x"}}], "children": []},
+    "baseUsage": {"payload_bytes": 22, "values": 4, "depth": 3},
+    "count": {
+      "ids": ["A4-02/values-exact", "A4-02/values-over"],
+      "budget": {"payload_bytes": 64, "values": 4, "depth": 8},
+      "overMutation": "Add the node attribute z with Attribute::Null; no other field changes.",
+      "overUsage": {"payload_bytes": 27, "values": 5, "depth": 3},
+      "expectedOver": {"name": "preflight_values", "maximum": 4, "observed": 5}
+    },
+    "depth": {
+      "ids": ["A4-02/depth-exact", "A4-02/depth-over"],
+      "budget": {"payload_bytes": 64, "values": 8, "depth": 3},
+      "overMutation": "Replace the mark attribute t string x with Attribute::List containing exactly that original string; no other field changes.",
+      "overUsage": {"payload_bytes": 22, "values": 5, "depth": 4},
+      "expectedOver": {"name": "preflight_depth", "maximum": 3, "observed": 4}
+    },
+    "scope": "Small host-tightened controls, not observations of the default million-value or depth128 boundary. Existing 22/23 payload-byte cases and assertions remain."
+  },
+  "controlledBytes": {
+    "requestJson": "{\"kind\":\"command\",\"stamp\":{\"session\":\"session-1\",\"generation\":\"1\",\"revision\":\"1\",\"selection_epoch\":\"0\",\"history_epoch\":\"0\"},\"command\":{\"id\":\"fixture.insert\",\"payload_json\":\"{}\"},\"history_hint\":{\"kind\":\"isolated\"}}",
+    "requestUtf8Bytes": 213,
+    "oneByteLargerRequestJson": "{\"kind\":\"command\",\"stamp\":{\"session\":\"session-1\",\"generation\":\"1\",\"revision\":\"1\",\"selection_epoch\":\"0\",\"history_epoch\":\"0\"},\"command\":{\"id\":\"fixture.insert\",\"payload_json\":\"{} \"},\"history_hint\":{\"kind\":\"isolated\"}}",
+    "oneByteLargerUtf8Bytes": 214,
+    "hostMaximum": 213,
+    "ids": ["A4-07/request-exact", "A4-07/request-over", "A4-07/queue-exact", "A4-07/queue-over"],
+    "expectedRequestOver": "sdk.request_too_large",
+    "expectedQueueOver": "sdk.queue_limit",
+    "expectedExactDownstream": "session.stale_revision",
+    "scope": "Reuse the JS-only sdk-fake fixture. The frozen stamp is intentionally stale. At213 bytes the relevant guard passes and the downstream fake transport refuses stale_revision;214 bytes is refused before bridge or enqueue respectively. This is not native semantics or a default32MiB queue observation."
+  },
+  "snapshotMaximum": {
+    "id": "A4-08/caller-max-exact-and-over",
+    "maximumBytes": [160, 159],
+    "expectedExact": "Complete pinned healthy canonical bytes and a real receipt, released before resource comparison.",
+    "expectedOver": {"status": "refused", "code": "sdk.snapshot_limit", "publication": "none", "stateHistoryContextUnchanged": true},
+    "scope": "Caller max control, not a dynamic observation of the aggregate32MiB snapshot cap. Existing32/33 real handle tests remain separate."
+  },
+  "eventPayload": {
+    "ids": ["A4-10/event-payload-exact", "A4-10/event-payload-over"],
+    "utf16Units": [2097152, 2097153],
+    "recipe": "Create a controlled KeyboardEvent-like keydown with key empty and code consisting only of ASCII x repeated the declared UTF16 length; no data or inputType property. Enter a real CompositionOwner composing generation with bounded original abcd and provisional aQd. The held-plus-closing identity guard refuses before storing the key; its original event then crosses the separate unapplied-input retention boundary.",
+    "expectedBoth": {"code": "dom.composition_limit", "reason": "capture_limit", "nativeSubmissions": 0, "publication": "none", "provisionalText": "aQd"},
+    "expectedExactInputKind": "bounded",
+    "expectedOverInputKind": "retained_event",
+    "expectedOverOwnership": "transferred_to_host",
+    "scope": "Exact/+1 applies to the unapplied-event UTF16 payload sum, not normal key admission, actual browser input, aggregate held-key cap, native semantics or the memory size of a host-owned Event. The existing exact held-identity and larger overflow assertions remain separate."
+  },
+  "measurements": {
+    "actualWasm": "One actual production SDK2 instantiation, using scripts/reliability/perf-memory.mjs; before, declared completion samples, observed sample maximum, after. No allocator-live or within-call peak claim.",
+    "logical": "Native, JS, history and controlled DOM ownership are distinct. Actual baseline restoration after owned cleanup; unavailable native observation after Fatal is UNOBSERVED, not zero.",
+    "elapsed": "Observational milliseconds only; no performance threshold."
+  }
+}

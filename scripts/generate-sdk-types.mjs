@@ -31,7 +31,7 @@ export function computeSdkBuildIdentity() {
   };
   for (const path of ['Cargo.toml', 'Cargo.lock', 'rust-toolchain.toml', 'package.json', 'package-lock.json',
     'package-map.json', 'tsconfig.base.json', 'tsconfig.json', 'scripts/generate-sdk-types.mjs',
-    'scripts/build-workspace.mjs', 'scripts/build-clipboard-parser.mjs', 'scripts/generate-dom-inventory.mjs', 'scripts/build-extensions-consumers.mjs', 'scripts/dependency-notices.mjs', 'scripts/package-identity.mjs', 'scripts/seal-sdk-wasm.mjs', 'scripts/sdk-distribution.mjs',
+    'scripts/build-workspace.mjs', 'scripts/build-failure-runtime.mjs', 'scripts/build-clipboard-parser.mjs', 'scripts/generate-dom-inventory.mjs', 'scripts/build-extensions-consumers.mjs', 'scripts/dependency-notices.mjs', 'scripts/package-identity.mjs', 'scripts/seal-sdk-wasm.mjs', 'scripts/sdk-distribution.mjs',
     'provenance/licenses/ts-rs-12.0.1-MIT.txt', 'provenance/licenses/sdk-generator-license-sources.json']) add(path);
   // Every workspace library contributes, including original extension modules
   // and semantic JSON registrations. A new crate cannot escape build identity

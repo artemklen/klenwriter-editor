@@ -1,0 +1,24 @@
+{
+  "format": "editor-failure-states/runtime-literals/1",
+  "status": "NOT_RUN",
+  "healthy": "admission/healthy.canonical.json",
+  "afterExplicitXEdit": "admission/xprefix.canonical.json",
+  "beforeTrapDispatch": "admission/xprefix.canonical.json",
+  "afterTrapPublication": "admission/after-trap.canonical.json",
+  "trapPhases": [
+    "before_dispatch",
+    "after_publication"
+  ],
+  "attemptedInput": "Y",
+  "coherentRecoveryInput": "admission/xprefix.canonical.json",
+  "initialEdit": "X",
+  "freshRecoveryHostUnsaved": true,
+  "nativeBaselineIsNotDurableSave": true,
+  "provisionalResolution": "explicit retain_separately, preserve attempted Y outside active document",
+  "oldHostCallback": "reject old realm before native dispatch",
+  "freshSave": "only after explicit resolution and actual matching receipt acknowledgement",
+  "afterPublicationLiteral": {
+    "bytes": 162,
+    "sha256": "56227c436a1989f978f78b0d55b025f3fcd3abfdecc3e1fd6209ce1845529b65"
+  }
+}
