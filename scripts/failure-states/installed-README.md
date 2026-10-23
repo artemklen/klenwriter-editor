@@ -48,3 +48,20 @@ hashes and fixture JSON are the evidence. The Safari capability module is an
 explicit `NOT_RUN`/`BLOCKED` source disposition for the currently exposed MCP and
 Apple Events interfaces; it does not create an installed observation, relax the
 frozen method or infer an owner decision. Root owns any next Safari decision.
+
+For the available functional subset, start the existing workspace server and
+use a fresh absolute evidence directory outside the checkout:
+
+```sh
+node scripts/failure-states/safari-functional.mjs --out /absolute/fresh/evidence
+```
+
+This entry uses ordinary owned Safari windows and the existing Apple Events
+grants in the real user environment. It runs the eleven DOM and two runtime
+cases, retaining exact producer bindings, functional outcomes and window
+cleanup. It does not provide pre-navigation network interception, complete
+delivered-body hashes, bootstrap listeners, an independent console/dialog/popup
+stream or context-level service-worker blocking. Even when every functional
+case passes, its overall status remains `REQUIRED_NETWORK_METHOD_UNOBSERVED`.
+Exit zero reports completion of that functional subset only. Any acceptance
+disposition for the missing mandatory method remains a separate owner decision.

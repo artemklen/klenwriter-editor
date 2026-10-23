@@ -113,7 +113,8 @@ export async function createSafariFunctional({ kind, directory, deadline, record
     const raw = result.stdout ?? '', receipt = { command, args, elapsedMs: performance.now() - start, timeoutMs: remaining,
       exitCode: result.status, signal: result.signal, error: result.error?.message ?? null,
       stdoutBytes: Buffer.byteLength(raw), stdoutSha256: sha(raw), stderr: result.stderr ?? '' };
-    if (args[0] === sourcePaths.create || args[0] === sourcePaths.close) receipt.stdout = raw;
+    if (args[0] === sourcePaths.create || args[0] === sourcePaths.close
+      || result.status !== 0 || result.signal !== null || result.error !== undefined) receipt.stdout = raw;
     assert(commands.length < 4096, 'Bounded completed Apple Events receipts'); commands.push(receipt); record(receipt);
     assert.equal(result.status, 0, receipt.stderr); assert.equal(result.signal, null); assert.equal(result.error, undefined);
     return raw.trim();
@@ -122,10 +123,12 @@ export async function createSafariFunctional({ kind, directory, deadline, record
   assert.match(created, /^[1-9][0-9]{0,9}$/); const windowId = Number(created); assert(Number.isSafeInteger(windowId));
   const lifecycle = { kind: 'ordinary-owned-window', windowId, url, title, nonce, webDriver: false,
     sourcePins: Object.values(sourcePaths).map(pin), documents: [], created: true, closed: false };
-  const evaluate = code => {
+  const evaluate = (code, completionDeadline = deadline) => {
     assert(!closed && ++serial <= 4096); assert(Buffer.byteLength(code) <= 262144, 'Bounded fixed page facade');
     const path = resolve(directory, `page-${String(serial).padStart(4, '0')}.js`); writeFileSync(path, code, { flag: 'wx', mode: 0o444 });
-    const raw = execute('/usr/bin/osascript', [sourcePaths.evaluate, path, String(windowId), url, title, prepared ? title : '']);
+    const remaining = Math.floor(Math.min(5000, completionDeadline - performance.now()));
+    assert(remaining > 0, 'Original evaluation completion deadline expired');
+    const raw = execute('/usr/bin/osascript', [sourcePaths.evaluate, path, String(windowId), url, title, prepared ? title : ''], remaining);
     try { return JSON.parse(raw); }
     catch (error) { record({ kind: 'page-json-decode-failure', script: pin(path), raw }); throw error; }
   };
@@ -134,7 +137,8 @@ export async function createSafariFunctional({ kind, directory, deadline, record
     const readyDeadline = Math.min(deadline, performance.now() + 15000);
     const readyName = kind === 'dom' ? 'clipboardHostReady' : 'failureRuntimeReady';
     for (;;) {
-      const value = evaluate(`JSON.stringify({ready:globalThis[${JSON.stringify(readyName)}]===true,timeOrigin:performance.timeOrigin,url:location.href})`);
+      const value = evaluate(`JSON.stringify({ready:globalThis[${JSON.stringify(readyName)}]===true,timeOrigin:performance.timeOrigin,url:location.href})`, readyDeadline);
+      assert(performance.now() < readyDeadline, 'Actual new document ready deadline after read');
       if (value.ready && (previous === null || value.timeOrigin !== previous)) break;
       assert(performance.now() < readyDeadline, 'Actual new document ready deadline'); await wait(100);
     }
@@ -170,11 +174,13 @@ export async function createSafariFunctional({ kind, directory, deadline, record
         globalThis.__osr67FunctionalResult={id:${JSON.stringify(id)},done:false};
         Promise.resolve().then(()=>{${body}}).then(value=>{globalThis.__osr67FunctionalResult={id:${JSON.stringify(id)},done:true,ok:true,value};},error=>{
           globalThis.__osr67FunctionalResult={id:${JSON.stringify(id)},done:true,ok:false,error:{name:error.name,message:error.message,stack:error.stack??null}};
-        });return JSON.stringify({accepted:${JSON.stringify(id)}});})()`);
+        });return JSON.stringify({accepted:${JSON.stringify(id)}});})()`, callDeadline);
+      assert(performance.now() < callDeadline, 'Original facade completion deadline after acceptance read; do not replay');
       assert.equal(accepted.accepted, id);
       for (;;) {
         assert(performance.now() < callDeadline, 'Original facade completion deadline; do not replay');
-        const value = evaluate(`(()=>{${guard()}const s=globalThis.__osr67FunctionalResult;if(s?.id!==${JSON.stringify(id)})throw Error('Original completion slot changed');return JSON.stringify(s);})()`);
+        const value = evaluate(`(()=>{${guard()}const s=globalThis.__osr67FunctionalResult;if(s?.id!==${JSON.stringify(id)})throw Error('Original completion slot changed');return JSON.stringify(s);})()`, callDeadline);
+        assert(performance.now() < callDeadline, 'Original facade completion deadline after result read; do not replay');
         if (value.done) {
           record({ kind: 'completed-functional-call', id, label, elapsedMs: performance.now() - started, result: value });
           assert.equal(value.ok, true, JSON.stringify(value.error)); return value.value;
