@@ -150,15 +150,19 @@ function failureTree(element){
   return {tree:[...element.childNodes].map((node,index)=>visit(node,[index])),identities,attributes:hostAttributes(element),rawHTML:element.innerHTML};
 }
 function failureRecovery(packet){return packet?{originalInput:packet.originalInput?Array.from(packet.originalInput):null,region:packet.region?.kind??null}:null;}
-export async function failureMount(input){
+export async function failureMount(input,configuration){
   check(typeof input==='string'&&input.length<=2097152,'Finite failure mount input');
+  const controlled=configuration!==undefined;
+  if(controlled)check(configuration?.controlledLoad===true&&configuration.loadTimeoutMs===30
+    &&Object.keys(configuration).length===2,'Frozen mounted loading configuration');
   const id=`failure-mount-${++serial}`,element=document.createElement('div');
   element.id=id;element.className='clipboard-example';element.setAttribute('aria-label','Failure-state editor');
   document.querySelector('#clipboard-mounts').append(element);
-  const r={id,element,initialAttributes:hostAttributes(element),events:[],failures:[],recoveries:[],sources:[],audit:{queries:0,commands:0,calls:0},paste:null,disposed:false,receipt:null};
+  const r={id,element,initialAttributes:hostAttributes(element),events:[],failures:[],recoveries:[],sources:[],audit:{queries:0,commands:0,calls:0,constructors:0,loaders:0},paste:null,disposed:false,receipt:null,heldLoader:null,loadCompletion:null,readySettlements:0};
   // A transparent public-loader wrapper records actual native calls. Replies,
   // request bytes, receiver and exceptions pass through without substitution.
   const ObservedSession=class extends module.Session{
+    constructor(input,optionsJson){check(++r.audit.constructors<=4,'Finite failure Session-constructor observation');super(input,optionsJson);}
     call(json){
       check(++r.audit.calls<=4096,'Finite failure native-call observation');
       const request=JSON.parse(json);
@@ -168,11 +172,19 @@ export async function failureMount(input){
     }
   };
   const observed=Object.freeze({manifest:module.manifest,Session:ObservedSession,resourceCounts:module.resourceCounts});
-  r.editor=mountEditor({element,editor:{input:encoder.encode(input),options:options(),loader:async()=>observed},renderers:kwdjBasicRenderers,
+  const loader=()=>{
+    check(++r.audit.loaders===1,'One finite mounted loading attempt');
+    return controlled?new Promise((resolve,reject)=>{r.heldLoader={resolve,reject,observed};}):Promise.resolve(observed);
+  };
+  r.editor=mountEditor({element,editor:{input:encoder.encode(input),options:options(),loader,
+    ...(controlled?{loadTimeoutMs:configuration.loadTimeoutMs}:{})},renderers:kwdjBasicRenderers,
     onRefusal:value=>{check(r.failures.length<32,'Finite refusal observation');r.failures.push(clone(value));},
     onRecovery:packet=>{check(r.recoveries.length<2,'Finite recovery notification');r.recoveries.push(failureRecovery(packet));if(packet.originalInput?.length)packet.originalInput[0]^=255;},
     clipboard:{codec:kwdjClipboardCodec(policy)}});
-  failureRecords.set(id,r);r.ready=await r.editor.ready;
+  failureRecords.set(id,r);
+  const initial=controlled?{lifecycle:r.editor.lifecycle,contenteditable:element.getAttribute('contenteditable'),resources:clone(r.editor.resources())}:null;
+  void r.editor.ready.then(()=>{r.readySettlements++;});
+  r.ready=await r.editor.ready;
   if(r.ready.status==='ready'){
     const subscription=r.editor.subscribe(event=>{check(r.events.length<32,'Finite publication observation');r.events.push(clone(event));});
     check(typeof subscription==='function','Actual failure-state subscription');
@@ -180,7 +192,8 @@ export async function failureMount(input){
   const original=r.editor.originalInput(),originalBytes=original?Array.from(original):null;
   if(original?.length)original[0]^=255;
   const originalCopyIndependent=original?JSON.stringify(Array.from(r.editor.originalInput()))===JSON.stringify(originalBytes):null;
-  return {id,ready:{status:r.ready.status,response:clone(r.ready.response),recovery:failureRecovery(r.ready.recovery)},originalInput:originalBytes,originalCopyIndependent};
+  return {id,ready:{status:r.ready.status,response:clone(r.ready.response),recovery:failureRecovery(r.ready.recovery)},originalInput:originalBytes,originalCopyIndependent,
+    ...(controlled?{initial,readySettlements:r.readySettlements,audit:clone(r.audit)}:{})};
 }
 export async function failureInspect(id){
   const r=failureRecord(id),dom=failureTree(r.element),nodes=[r.element,...r.element.querySelectorAll('*')];
@@ -196,7 +209,14 @@ export async function failureInspect(id){
     check(released.response?.status==='ok','Actual failure-state snapshot release');
     native={...value,canonical:snapshot.canonical_json,context:clone(r.editor.context())};
   }
-  return {id,lifecycle:r.editor.lifecycle,contenteditable:r.element.getAttribute('contenteditable'),native:clone(native),dom,identityIntact,events:clone(r.events),failures:clone(r.failures),audit:clone(r.audit),resources:clone(r.editor.resources()),nativeResources:clone(r.editor.nativeResources()),sourceReads:r.sources.map(s=>({types:s.types,calls:s.calls.slice()})),originalInput:r.editor.originalInput()?Array.from(r.editor.originalInput()):null};
+  return {id,lifecycle:r.editor.lifecycle,contenteditable:r.element.getAttribute('contenteditable'),native:clone(native),dom,identityIntact,events:clone(r.events),failures:clone(r.failures),audit:clone(r.audit),readySettlements:r.readySettlements,loadCompletion:clone(r.loadCompletion),resources:clone(r.editor.resources()),nativeResources:clone(r.editor.nativeResources()),sourceReads:r.sources.map(s=>({types:s.types,calls:s.calls.slice()})),originalInput:r.editor.originalInput()?Array.from(r.editor.originalInput()):null};
+}
+export async function failureReleaseHeldLoader(id,completion){
+  const r=failureRecord(id);check(!r.disposed&&r.heldLoader&&['resolve','reject'].includes(completion),'One frozen late loader completion');
+  const held=r.heldLoader;r.heldLoader=null;r.loadCompletion={completion,released:true};
+  if(completion==='resolve')held.resolve(held.observed);else held.reject(Error('Controlled late mounted loader rejection'));
+  await Promise.resolve();await Promise.resolve();
+  return failureInspect(id);
 }
 export async function failureSelect(id,selection){
   const r=failureRecord(id);check(r.ready.status==='ready','Ready failure-state editor');
@@ -220,18 +240,19 @@ export function failureTakeRecovery(id){return clone(failureRecord(id).editor.cl
 export async function failureDispose(id){
   const r=failureRecord(id);if(r.disposed)return r.cleanup;
   const receipt=r.editor.destroy();r.receipt=receipt;
+  if(r.heldLoader){const held=r.heldLoader;r.heldLoader=null;held.reject(Error('Controlled mounted loader disposed'));}
   const completion=receipt.sdk.status==='queued'?await receipt.sdk.completion:receipt.sdk.response;
   const transfer=receipt.clipboardRecovery;
   const clipboardRecovery=transfer?.status==='pending'?await transfer.completion:transfer?.recovery??null;
   const repeated=r.editor.destroy();
-  r.cleanup={id,receipt:{status:receipt.status,sdk:{status:receipt.sdk.status,response:clone(completion)},recovery:failureRecovery(receipt.recovery),callbackFailure:clone(receipt.callbackFailure),clipboardRecovery:clone(clipboardRecovery)},sameReceipt:repeated===receipt,recoveries:clone(r.recoveries),resources:clone(r.editor.resources()),native:JSON.parse(module.resourceCounts()),initialAttributes:r.initialAttributes,restoredAttributes:hostAttributes(r.element)};
+  r.cleanup={id,receipt:{status:receipt.status,sdk:{status:receipt.sdk.status,response:clone(completion)},recovery:failureRecovery(receipt.recovery),callbackFailure:clone(receipt.callbackFailure),clipboardRecovery:clone(clipboardRecovery)},sameReceipt:repeated===receipt,recoveries:clone(r.recoveries),audit:clone(r.audit),readySettlements:r.readySettlements,resources:clone(r.editor.resources()),native:JSON.parse(module.resourceCounts()),initialAttributes:r.initialAttributes,restoredAttributes:hostAttributes(r.element)};
   r.disposed=true;r.element.remove();
   // Keep only the data receipt. Live DOM/editor/source references are released;
   // retained evidence/recovery copies belong to the observing host.
   r.previousDomNodes=null;r.element=null;r.editor=null;r.ready=null;r.receipt=null;r.paste=null;
   r.sources.length=0;r.events.length=0;r.failures.length=0;r.recoveries.length=0;r.initialAttributes=null;
-  r.cleanup.fixtureResources={editorReferences:Number(r.editor!==null),elementReferences:Number(r.element!==null),domIdentityReferences:r.previousDomNodes?.length??0,sourceSlots:r.sources.length,readyReferences:Number(r.ready!==null),receiptReferences:Number(r.receipt!==null)};
+  r.cleanup.fixtureResources={editorReferences:Number(r.editor!==null),elementReferences:Number(r.element!==null),domIdentityReferences:r.previousDomNodes?.length??0,sourceSlots:r.sources.length,readyReferences:Number(r.ready!==null),receiptReferences:Number(r.receipt!==null),heldLoaders:Number(r.heldLoader!==null)};
   return clone(r.cleanup);
 }
 export async function failureAllDisposed(){const readbacks=[];for(const id of failureRecords.keys())readbacks.push(await failureDispose(id));return {readbacks,native:JSON.parse(module.resourceCounts())};}
-Object.assign(window.clipboardHost,{failureMount,failureInspect,failureSelect,failurePaste,failureTakeRecovery,failureDispose,failureAllDisposed});
+Object.assign(window.clipboardHost,{failureMount,failureInspect,failureSelect,failurePaste,failureTakeRecovery,failureDispose,failureAllDisposed,failureReleaseHeldLoader});

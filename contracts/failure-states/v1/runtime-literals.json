@@ -15,7 +15,26 @@
   "freshRecoveryHostUnsaved": true,
   "nativeBaselineIsNotDurableSave": true,
   "provisionalResolution": "explicit retain_separately, preserve attempted Y outside active document",
-  "oldHostCallback": "reject old realm before native dispatch",
+  "oldHostCallback": "complete the actual retained pre-trap controlled Save job; reject its originating realm before native dispatch, never report stale completion as Saved",
+  "delayedControlledSave": {
+    "capture": "after coherent X edit and before arming the compiled trap; actual snapshot receipt remains retained",
+    "canonical": "admission/xprefix.canonical.json",
+    "receipt": "full actual snapshot DTO including canonical_json, stamp and handle; exact acknowledge_snapshot request with its captured stamp and handle",
+    "origin": "actual originating host realm; carry unchanged through the external recovery packet",
+    "completion": "controlled host callback, not a durable persistence service; the fresh host checks the job origin before any submit",
+    "nativeResourcesBeforeTrap": {
+      "sessions": 1,
+      "snapshot_handles": 1,
+      "snapshot_bytes": "161",
+      "protected_cursors": 1
+    }
+  },
+  "recoveryRetention": {
+    "beforeResolution": "external packet persists across repeated document reloads with coherent X, provisional Y, durable original, hostUnsaved true and actual pending Save job",
+    "afterExplicitResolution": "persist the archived Y disposition and retained actual pending Save job; do not drop packet",
+    "removeOnlyAfter": "successful matching current fresh Save acknowledgement and snapshot release",
+    "reloadChecks": ["before_resolution", "after_resolution_before_acknowledged_save"]
+  },
   "freshSave": "only after explicit resolution and actual matching receipt acknowledgement",
   "afterPublicationLiteral": {
     "bytes": 162,

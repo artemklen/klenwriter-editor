@@ -9,6 +9,10 @@ import { execFileSync } from 'node:child_process';
 import { computeSdkBuildIdentity } from '../scripts/generate-sdk-types.mjs';
 import { computeFailureRuntimeIdentity } from '../scripts/build-failure-runtime.mjs';
 import { wasmSections, sdkWasmSectionName } from '../scripts/seal-sdk-wasm.mjs';
+import { failureBrowserMetadata } from '../scripts/failure-states/installed-metadata.mjs';
+import { currentRuntimeAssetBinding } from '../scripts/failure-states/installed-runtime-assets.mjs';
+import { observeRuntimeContext } from '../scripts/failure-states/installed-runtime-observation.mjs';
+import { fixedObservationWindow } from '../scripts/failure-states/dom-observation.mjs';
 
 const root = 'contracts/failure-states/v1';
 const read = path => readFileSync(path);
@@ -18,7 +22,7 @@ const pin = path => { const bytes = read(path); return { path, bytes: bytes.leng
 const literals = json(`${root}/runtime-literals.json`), loading = json(`${root}/loading-recovery.json`);
 const nativeZero = { sessions: 0, snapshot_handles: 0, snapshot_bytes: '0', protected_cursors: 0 };
 const invoke = (page, method, ...args) => page.evaluate(({ method, args }) => globalThis.failureRuntimeFixture[method](...args), { method, args });
-const scope = 'Actual bundled browser, public mounted SDK and source-bound test-only Rust/WASM composition with explicit compiled traps. Distinct fixture build identity; no production-WASM, installed browser, physical input or arbitrary in-commit fault claim.';
+const scope = 'Actual selected browser, public mounted SDK and source-bound test-only Rust/WASM composition with explicit compiled traps. Distinct fixture build identity; actual browser identity recorded separately; no production-WASM trap, physical input or arbitrary in-commit fault claim.';
 
 function producerBinding() {
   const production = json('artifacts/sdk-build-identity.json'), current = computeSdkBuildIdentity();
@@ -83,16 +87,30 @@ function live(point, buildId, expectedCanonical) {
 }
 
 for (const phase of literals.trapPhases) test(`finite compiled runtime trap ${phase} and explicit fresh-realm recovery`, async ({ browser }, info) => {
-  const report = { format: 'osr67-ac3-runtime-browser-observation/1', phase, engine: info.project.name, installed: false,
-    scope, status: 'RUNNING', browserErrors: [], checkpoints: [] };
-  let context, page, failure, disposed = false, binding;
+  const report = { format: 'osr67-ac3-runtime-browser-observation/1', phase, engine: info.project.name, installed: null,
+    scope, status: 'RUNNING', browserErrors: [], checkpoints: [], networkWindows: [] };
+  let context, page, failure, disposed = false, binding, observer;
   const browserIssue = value => {
     if (report.browserErrors.length < 32) report.browserErrors.push(value);
     else report.errorOverflow = true;
   };
+  const readyNetwork = async label => {
+    await observer.settle(); observer.assertPhase('bootstrap');
+    await observer.checkpoint(page, label); observer.assertClean(); observer.setPhase('operation');
+  };
+  const completeOperationNetwork = async label => {
+    report.networkWindows.push({ label, ...await fixedObservationWindow(page) });
+    await observer.settle(); observer.assertPhase('operation');
+    await observer.checkpoint(page, label); observer.assertClean();
+  };
   try {
     binding = producerBinding(); report.producer = binding;
+    report.browserIdentity = await failureBrowserMetadata(browser, info); report.installed = report.browserIdentity.installed;
+    report.networkBinding = currentRuntimeAssetBinding();
+    expect(report.networkBinding.fixtureBuildId).toBe(binding.build.buildId);
     context = await browser.newContext({ serviceWorkers: 'block', viewport: { width: 1024, height: 768 } });
+    observer = await observeRuntimeContext(context, report.networkBinding);
+    observer.setPhase('bootstrap');
     await context.addInitScript(() => {
       const errors = []; let overflow = false;
       const put = value => { if (errors.length < 32) errors.push(value); else overflow = true; };
@@ -113,6 +131,7 @@ for (const phase of literals.trapPhases) test(`finite compiled runtime trap ${ph
     expect(report.csp).toContain("default-src 'none'"); expect(report.csp).toContain("'wasm-unsafe-eval'");
     expect(report.csp).not.toMatch(/'unsafe-inline'|'unsafe-eval'/);
     await page.waitForFunction(() => globalThis.failureRuntimeReady === true);
+    await readyNetwork('initial ready');
     report.initial = await invoke(page, 'checkpoint');
     live(report.initial, binding.build.buildId, canonical(literals.healthy));
     expect(report.initial.host.recoveredFrom).toBeNull(); expect(report.initial.host.hostUnsaved).toBe(false);
@@ -123,6 +142,14 @@ for (const phase of literals.trapPhases) test(`finite compiled runtime trap ${ph
     expect(report.coherent.state.stamp.revision).toBe('1'); expect(report.coherent.state.dirty).toBe(true);
     expect(report.coherent.state.saved_revision).toBe('0'); expect(report.coherent.state.history.undo_entries).toBe('1');
     expect(report.coherent.host.hostUnsaved).toBe(true); expect(report.coherent.host.durable).toBe(canonical(literals.healthy));
+    report.delayedSave = await invoke(page, 'holdDelayedSave');
+    const oldSaveJob = report.delayedSave.job;
+    expect(oldSaveJob.format).toBe('editor-failure-delayed-save/1'); expect(oldSaveJob.originRealm).toBe(report.coherent.host.realm);
+    expect(oldSaveJob.receipt.kind).toBe('snapshot'); expect(typeof oldSaveJob.receipt.handle).toBe('string');
+    expect(oldSaveJob.receipt.canonical_json).toBe(canonical(literals.delayedControlledSave.canonical));
+    expect(oldSaveJob.receipt.stamp).toEqual(report.coherent.state.stamp);
+    expect(oldSaveJob.acknowledgeRequest).toEqual({ kind: 'acknowledge_snapshot', stamp: oldSaveJob.receipt.stamp, handle: oldSaveJob.receipt.handle });
+    expect(report.delayedSave.native).toEqual({ ...literals.delayedControlledSave.nativeResourcesBeforeTrap, sessions: 2, protected_cursors: 2 });
     report.trap = await invoke(page, 'trap', phase, literals.attemptedInput);
     fatal(report.trap.response, 'sdk.transport_failure', true);
     const witness = report.trap.witness, afterPublication = phase === 'after_publication';
@@ -135,7 +162,7 @@ for (const phase of literals.trapPhases) test(`finite compiled runtime trap ${ph
     expect(witness.snapshot.status).toBe('ok'); expect(witness.snapshot.value.kind).toBe('snapshot');
     expect(witness.snapshot.value.canonical_json).toBe(canonical(afterPublication ? literals.afterTrapPublication : literals.beforeTrapDispatch));
     expect(witness.snapshot.value.stamp).toEqual(state.stamp);
-    expect(witness.native_resources_before_trap).toEqual({ sessions: 1, snapshot_handles: 0, snapshot_bytes: '0', protected_cursors: 1 });
+    expect(witness.native_resources_before_trap).toEqual(literals.delayedControlledSave.nativeResourcesBeforeTrap);
     expect(witness.events.status).toBe('ok'); expect(witness.events.value.kind).toBe('events'); expect(witness.events.value.gap).toBe(false);
     if (afterPublication) {
       expect(typeof witness.completed_response).toBe('string');
@@ -154,6 +181,7 @@ for (const phase of literals.trapPhases) test(`finite compiled runtime trap ${ph
     expect(report.trap.host.coherent).toBe(canonical(literals.coherentRecoveryInput));
     expect(report.trap.host.durable).toBe(canonical(literals.healthy)); expect(report.trap.host.hostUnsaved).toBe(true);
     expect(report.trap.host.unresolved).toBe(true);
+    expect(report.trap.host.pendingSaveJob).toEqual(oldSaveJob);
     expect(report.trap.host.provisional).toEqual({ attemptedText: literals.attemptedInput, nativeOutcome: 'unknown', ownership: 'host', source: 'controlled_command_input' });
     report.peer = await invoke(page, 'peerAfterRetirement'); fatal(report.peer.response, loading.outcomes.retiredRuntime, false);
     expect(report.peer.resources.lifecycle).toBe('fatal'); expect(report.peer.resources.sessions).toBe(0);
@@ -162,14 +190,17 @@ for (const phase of literals.trapPhases) test(`finite compiled runtime trap ${ph
     report.retiredLoad = await invoke(page, 'loadAfterRetirement');
     expect(report.retiredLoad).toEqual({ loaded: false, code: loading.outcomes.retiredRuntime });
     report.retiredHost = await invoke(page, 'inspect');
+    expect(report.retiredHost.nativeResources).toBeNull();
     expect(report.retiredHost.actualInstances).toBe(1); expect(report.retiredHost.runtimeErrors).toEqual(report.trap.host.runtimeErrors);
     report.retiredBrowser = await page.evaluate(() => globalThis.__failureBrowserErrors());
     expect(report.retiredBrowser).toEqual({ errors: [], overflow: false });
     const oldRealm = report.coherent.host.realm;
+    await completeOperationNetwork('retired realm terminal'); observer.setPhase('bootstrap');
     await Promise.all([page.waitForNavigation({ waitUntil: 'load' }), page.locator('#failure-recover').click()]);
     await page.waitForFunction(() => globalThis.failureRuntimeReady === true);
+    await readyNetwork('explicit recovery ready');
     report.recovered = await invoke(page, 'checkpoint'); live(report.recovered, binding.build.buildId, canonical(literals.coherentRecoveryInput));
-    const fresh = report.recovered;
+    let fresh = report.recovered;
     expect(fresh.host.realm).not.toBe(oldRealm); expect(fresh.host.timeOrigin).not.toBe(report.coherent.host.timeOrigin);
     expect(fresh.host.recoveredFrom).toBe(oldRealm); expect(fresh.host.actualInstances).toBe(1);
     expect(fresh.state.stamp.revision).toBe('0'); expect(fresh.state.dirty).toBe(false); expect(fresh.state.saved_revision).toBe('0');
@@ -177,10 +208,29 @@ for (const phase of literals.trapPhases) test(`finite compiled runtime trap ${ph
     expect(fresh.host.hostUnsaved).toBe(literals.freshRecoveryHostUnsaved); expect(fresh.host.unresolved).toBe(true);
     expect(fresh.host.provisional).toEqual(report.trap.host.provisional); expect(fresh.host.archivedProvisional).toBeNull();
     expect(fresh.host.durable).toBe(canonical(literals.healthy)); expect(fresh.host.saveAcks).toBe(0);
-    report.oldCallback = await invoke(page, 'dropOldCallback', oldRealm);
+    expect(fresh.host.pendingSaveJob).toEqual(oldSaveJob); expect(fresh.host.recoveryPacketRetained).toBe(true);
+    report.recoveredBrowser = await page.evaluate(() => globalThis.__failureBrowserErrors());
+    expect(report.recoveredBrowser).toEqual({ errors: [], overflow: false });
+    report.reloadBeforeResolution = { before: fresh };
+    await completeOperationNetwork('before disposition reload terminal'); observer.setPhase('bootstrap');
+    await page.reload({ waitUntil: 'load' }); await page.waitForFunction(() => globalThis.failureRuntimeReady === true);
+    await readyNetwork('reload before disposition ready');
+    fresh = await invoke(page, 'checkpoint'); report.reloadBeforeResolution.after = fresh;
+    live(fresh, binding.build.buildId, canonical(literals.coherentRecoveryInput));
+    expect(fresh.host.realm).not.toBe(report.reloadBeforeResolution.before.host.realm);
+    expect(fresh.host.timeOrigin).not.toBe(report.reloadBeforeResolution.before.host.timeOrigin);
+    expect(fresh.host.recoveredFrom).toBe(oldRealm); expect(fresh.host.provisional).toEqual(report.trap.host.provisional);
+    expect(fresh.host.pendingSaveJob).toEqual(oldSaveJob); expect(fresh.host.archivedProvisional).toBeNull();
+    expect(fresh.host.unresolved).toBe(true); expect(fresh.host.hostUnsaved).toBe(true);
+    expect(fresh.host.recoveryPacketRetained).toBe(true); expect(fresh.host.durable).toBe(canonical(literals.healthy));
+    expect(fresh.state.dirty).toBe(false); expect(fresh.state.stamp.revision).toBe('0'); expect(fresh.state.saved_revision).toBe('0');
+    report.oldCallback = await invoke(page, 'completeDelayedSave');
     expect(report.oldCallback.status).toBe('stale_host_context'); expect(report.oldCallback.dispatched).toBe(false);
+    expect(report.oldCallback.job).toEqual(oldSaveJob); expect(report.oldCallback.job.acknowledgeRequest).toEqual(oldSaveJob.acknowledgeRequest);
     expect(report.oldCallback.host.nativeSubmissions).toBe(fresh.host.nativeSubmissions);
     expect(report.oldCallback.host.oldCallbacksDropped).toBe(fresh.host.oldCallbacksDropped + 1);
+    expect(report.oldCallback.host.saveAcks).toBe(0); expect(report.oldCallback.host.hostUnsaved).toBe(true);
+    expect(report.oldCallback.host.recoveryPacketRetained).toBe(true); expect(report.oldCallback.host.durable).toBe(canonical(literals.healthy));
     report.unresolvedSave = await invoke(page, 'save');
     expect(report.unresolvedSave.status).toBe('host_refused'); expect(report.unresolvedSave.code).toBe('host.unresolved_recovery');
     expect(report.unresolvedSave.host.nativeSubmissions).toBe(report.oldCallback.host.nativeSubmissions);
@@ -189,20 +239,40 @@ for (const phase of literals.trapPhases) test(`finite compiled runtime trap ${ph
     expect(report.resolution.archivedProvisional).toEqual(report.trap.host.provisional); expect(report.resolution.provisional).toBeNull();
     expect(report.resolution.unresolved).toBe(false); expect(report.resolution.hostUnsaved).toBe(true);
     expect(report.resolution.nativeSubmissions).toBe(report.unresolvedSave.host.nativeSubmissions);
+    expect(report.resolution.recoveryPacketRetained).toBe(true);
+    report.beforeResolutionReloadBrowser = await page.evaluate(() => globalThis.__failureBrowserErrors());
+    expect(report.beforeResolutionReloadBrowser).toEqual({ errors: [], overflow: false });
+    report.reloadAfterResolution = { before: report.resolution };
+    const priorRealm = fresh.host.realm;
+    await completeOperationNetwork('after disposition terminal'); observer.setPhase('bootstrap');
+    await page.reload({ waitUntil: 'load' }); await page.waitForFunction(() => globalThis.failureRuntimeReady === true);
+    await readyNetwork('reload after disposition ready');
+    fresh = await invoke(page, 'checkpoint'); report.reloadAfterResolution.after = fresh;
+    live(fresh, binding.build.buildId, canonical(literals.coherentRecoveryInput));
+    expect(fresh.host.realm).not.toBe(priorRealm); expect(fresh.host.recoveredFrom).toBe(oldRealm);
+    expect(fresh.host.archivedProvisional).toEqual(report.trap.host.provisional); expect(fresh.host.provisional).toBeNull();
+    expect(fresh.host.unresolved).toBe(false); expect(fresh.host.hostUnsaved).toBe(true); expect(fresh.host.recoveryPacketRetained).toBe(true);
+    expect(fresh.host.pendingSaveJob).toEqual(oldSaveJob); expect(fresh.host.oldSaveCompletion).toEqual({ status: 'stale_host_context', dispatched: false, job: oldSaveJob });
+    expect(fresh.host.durable).toBe(canonical(literals.healthy)); expect(fresh.host.saveAcks).toBe(0);
     report.freshSave = await invoke(page, 'save'); expect(report.freshSave.status).toBe('saved');
-    expect(report.freshSave.host.saveAcks).toBe(1); expect(report.freshSave.host.snapshotReleaseCount).toBe(report.resolution.snapshotReleaseCount + 1);
-    expect(report.freshSave.host.nativeSubmissions).toBe(report.resolution.nativeSubmissions + 3);
+    expect(report.freshSave.host.saveAcks).toBe(1); expect(report.freshSave.host.snapshotReleaseCount).toBe(fresh.host.snapshotReleaseCount + 1);
+    expect(report.freshSave.host.nativeSubmissions).toBe(fresh.host.nativeSubmissions + 3);
     expect(report.freshSave.host.hostUnsaved).toBe(false); expect(report.freshSave.host.unresolved).toBe(false);
+    expect(report.freshSave.host.recoveryPacketRetained).toBe(false);
     expect(report.freshSave.host.archivedProvisional).toEqual(report.trap.host.provisional);
     expect(report.freshSave.host.durable).toBe(canonical(literals.coherentRecoveryInput)); expect(report.freshSave.state.dirty).toBe(false);
     expect(report.freshSave.state.stamp).toEqual(fresh.state.stamp); expect(report.freshSave.state.saved_revision).toBe(fresh.state.stamp.revision);
+    await completeOperationNetwork('fresh Save terminal'); observer.setPhase('cleanup');
     report.cleanup = await invoke(page, 'dispose'); disposed = true;
     ownZero(report.cleanup.host.resources); ownZero(report.cleanup.host.peerResources);
     expect(report.cleanup.native).toEqual(fresh.host.nativeBaseline); expect(report.cleanup.host.lifecycle).toBe('destroyed');
     report.freshBrowser = await page.evaluate(() => globalThis.__failureBrowserErrors());
     expect(report.freshBrowser).toEqual({ errors: [], overflow: false });
+    report.networkWindows.push({ label: 'cleanup complete', ...await fixedObservationWindow(page) });
+    await observer.settle(); observer.assertPhase('cleanup'); await observer.checkpoint(page, 'cleanup complete'); observer.assertComplete();
     expect(report.browserErrors).toEqual([]); expect(report.errorOverflow ?? false).toBe(false);
     for (const item of [...binding.sourcePins, ...binding.artifactPins, ...binding.build.artifacts]) expect(pin(item.path)).toEqual(item);
+    expect(currentRuntimeAssetBinding()).toEqual(report.networkBinding);
     report.status = 'PASSED';
   } catch (error) { failure = error; report.status = 'FAILED'; report.originalFailure = { name: error.name, message: error.message, stack: error.stack }; }
   finally {
@@ -210,6 +280,10 @@ for (const phase of literals.trapPhases) test(`finite compiled runtime trap ${ph
     catch (error) { report.emergencyCleanupFailure = { name: error.name, message: error.message }; }
     if (context) try { await context.close(); }
     catch (error) { report.contextCloseFailure = { name: error.name, message: error.message }; failure ??= error; report.status = 'FAILED'; }
+    if (observer) try {
+      await observer.settle(); report.networkObservation = observer.snapshot();
+      if (!failure) observer.assertComplete();
+    } catch (error) { report.networkObservationFailure = { name: error.name, message: error.message }; failure ??= error; report.status = 'FAILED'; }
     if (!failure && (report.browserErrors.length || report.errorOverflow)) {
       failure = new Error('Browser error observed through context closure'); report.status = 'FAILED';
       report.originalFailure = { name: failure.name, message: failure.message, stack: failure.stack };

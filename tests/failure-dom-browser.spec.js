@@ -3,6 +3,7 @@ import {test,expect} from '@playwright/test';
 import {mkdirSync,readFileSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {pipeline,assets,contractPins,currentAssetBinding,observeDomContext,fixedObservationWindow,assertBrowserClean,assertNumericOwnersZero} from '../scripts/failure-states/dom-observation.mjs';
+import {failureBrowserMetadata} from '../scripts/failure-states/installed-metadata.mjs';
 const call=(page,method,...args)=>page.evaluate(({method,args})=>window.clipboardHost[method](...args),{method,args});
 const nativeZero={sessions:0,snapshot_handles:0,snapshot_bytes:'0',protected_cursors:0};
 function sameNativeAndDom(after,before){
@@ -19,10 +20,11 @@ function treeCheck(point,row){
 async function cleanCheckpoint(page,observer,report,label){const value=await observer.browser(page);report.browser.push({label,...value});assertBrowserClean(value);}
 for(const row of pipeline.rows)test(`${row.id} finite ${row.pipeline}`,async({browser},info)=>{
   test.setTimeout(pipeline.shared.completion.wholeRowDeadlineMs);
-  const binding=currentAssetBinding(),report={format:'osr67-ac1-browser-observation/1',rowId:row.id,engine:info.project.name,installed:false,qualification:'Actual bundled browser/public mounted SDK and packaged WASM; controlled selected strings, no OS clipboard/installed/HTML conformance claim',sourceCommit:binding.sourceCommit,contractPins,binding,row,browser:[],checkpoints:[],status:'RUNNING'};
+  const binding=currentAssetBinding(),report={format:'osr67-ac1-browser-observation/1',rowId:row.id,engine:info.project.name,installed:null,qualification:'Actual selected browser/public mounted SDK and packaged WASM; controlled selected strings, no physical input, OS clipboard or HTML conformance claim; actual browser identity recorded separately',sourceCommit:binding.sourceCommit,contractPins,binding,row,browser:[],checkpoints:[],status:'RUNNING'};
   const context=await browser.newContext({serviceWorkers:'block',viewport:{width:1024,height:768}}),observer=await observeDomContext(context,binding);
   let page,id,cleaned=false,failure;
   try{
+    report.browserIdentity=await failureBrowserMetadata(browser,info);report.installed=report.browserIdentity.installed;
     page=await context.newPage();
     const readyStarted=performance.now();
     const response=await page.goto(assets.origin+'/clipboard',{timeout:pipeline.shared.completion.initialReadyDeadlineMs});

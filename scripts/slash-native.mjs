@@ -16,7 +16,7 @@ const json=path=>JSON.parse(readFileSync(path,'utf8'));
 const write=(name,value)=>writeFileSync(`${directory}/${name}`,JSON.stringify(value,null,2)+'\n');
 const zero={sessions:0,snapshot_handles:0,snapshot_bytes:'0',protected_cursors:0};
 const controllerZero={lifecycle:'destroyed',sessions:0,listeners:0,queued_mutations:0,queued_bytes:0,
-  pending_tickets:0,host_requests:0,task_continuations:0,original_input_bytes:0,callback_errors:0,callback_error_handlers:0};
+  pending_tickets:0,host_requests:0,task_continuations:0,loading_deadlines:0,original_input_bytes:0,callback_errors:0,callback_error_handlers:0};
 mkdirSync(directory,{recursive:true});
 const source=computeSdkBuildIdentity(),inventory=loadSlashCases(),cases=inventory.cases;
 const commands=[],job={cases:cases.map(c=>c.job)};

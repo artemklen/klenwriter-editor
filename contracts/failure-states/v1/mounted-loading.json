@@ -1,0 +1,49 @@
+{
+  "format": "editor-failure-states/mounted-loading/1",
+  "status": "NOT_RUN",
+  "task": "OSR-67",
+  "family": "F67-H02",
+  "authority": "Prospective finite mounted-loading literals frozen before helper/spec implementation and execution. Existing loading-recovery cases and assertions remain unchanged.",
+  "loadTimeoutMs": 30,
+  "unit": "milliseconds",
+  "deadlineQualification": "Tightened asynchronous controller lifetime, not synchronous preemption or a latency SLA.",
+  "input": {
+    "path": "contracts/failure-states/v1/admission/healthy.canonical.json",
+    "bytes": 160,
+    "sha256": "06f0414aa29da02062ad54bb8674188d4d4918dd80d84fa18d688034c7b0c7aa"
+  },
+  "cases": [
+    { "id": "F67-H02-L01", "lateCompletion": "resolve" },
+    { "id": "F67-H02-L02", "lateCompletion": "reject" }
+  ],
+  "helperConfiguration": { "controlledLoad": true, "loadTimeoutMs": 30 },
+  "expected": {
+    "initial": { "lifecycle": "loading", "contenteditable": "false", "loading_deadlines": 1 },
+    "ready": {
+      "status": "sdk_failure",
+      "response": {
+        "status": "refused",
+        "diagnostic": {
+          "code": "sdk.load_timeout", "path": "", "category": "sdk", "details": {},
+          "stamp": null, "may_have_committed": false
+        }
+      }
+    },
+    "terminal": {
+      "lifecycle": "recoveryRequired", "contenteditable": "false", "readySettlements": 1,
+      "audit": { "constructors": 0, "loaders": 1, "queries": 0, "commands": 0, "calls": 0 },
+      "events": [], "native": null, "nativeResources": null, "domTree": [],
+      "retainedOriginal": "Exact independent UTF-8 copies match the input length, bytes and SHA before and after releasing the late loader.",
+      "sdk": { "lifecycle": "destroyed", "original_input_bytes": 160, "otherOwnedCounts": 0 }
+    },
+    "cleanup": {
+      "lifecycle": "destroyed", "sameDestroyReceipt": true, "callbackFailure": null,
+      "native": { "sessions": 0, "snapshot_handles": 0, "snapshot_bytes": "0", "protected_cursors": 0 },
+      "numericOwnedResources": 0, "recoveryNotifications": 1,
+      "recoveryOriginal": "Exact input bytes are transferred in the public destroy receipt despite mutation of the callback copy.",
+      "restoredAttributes": "Equal the initial host attributes."
+    }
+  },
+  "observation": "Use the existing fixed two-frame plus 250ms observation window after each terminal and through cleanup; no unexpected execution, request attempts, CSP violation, page error or unhandled rejection. Existing static asset URL/count policy remains unchanged.",
+  "qualification": "Actual mounted public DOM/SDK with a held injected loader that later resolves to the already verified real packaged WASM module or rejects. No fake WASM bytes, network timeout, installed browser, OS input or independent-review claim. No Session constructor or native call may run after timeout."
+}

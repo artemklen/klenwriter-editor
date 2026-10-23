@@ -69,7 +69,7 @@
     "test:typography": "npm run test:typography:native && npm run test:typography:unit && npm run test:typography:browser",
     "test:accessibility:unit": "node --test tests/accessibility-human-receipt.node.mjs tests/accessibility-presentation-readiness.node.mjs",
     "test:failure:unit": "node --test tests/failure-admission.node.mjs tests/failure-resources.node.mjs",
-    "test:failure:browser": "node scripts/failure-states/bind-assets.mjs && playwright test --config playwright.failure.config.js",
+    "test:failure:browser": "node scripts/failure-states/bind-assets.mjs && node scripts/failure-states/installed-runtime-assets.mjs && playwright test --config playwright.failure.config.js",
     "test:failure": "npm run test:failure:unit && npm run test:failure:browser"
   },
   "engines": {

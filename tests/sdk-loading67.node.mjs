@@ -152,7 +152,12 @@ async function loaderProbe(kind) {
 if (process.argv[2] === '--probe') {
   await loaderProbe(process.argv[3]);
 } else {
-  test('F67-L01 controlled controller: default/min/max accepted; invalid deadlines refuse before loader entry', async () => {
+  test('F67-L01 controlled controller: default/min/max accepted; invalid deadlines refuse before loader entry', async t => {
+    // This control checks configuration boundaries, including the valid 1ms
+    // minimum. Freeze only its clock so cold constructor work cannot consume
+    // that minimum before the immediate ownership/cancel assertions. The
+    // separate timeout/cancellation/late-completion cases use the real clock.
+    t.mock.method(performance, 'now', () => 0);
     for (const loadTimeoutMs of [1, 30000, undefined]) {
       const editor = createEditor({ input: new Uint8Array([7, 8, 9]), options: options(), loadTimeoutMs,
         loader: () => new Promise(() => {}) });
