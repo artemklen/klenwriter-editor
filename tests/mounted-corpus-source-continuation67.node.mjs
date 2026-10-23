@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // Prospective source/data controls only. No editor/native/browser observation.
+import { lstatSync, readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {lstat,readFile} from 'node:fs/promises';
@@ -12,7 +13,10 @@ const CONTROLLER='packages/sdk/src/controller.ts',HELPER='scripts/mounted-corpus
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const corrupt=b=>{const c=Uint8Array.from(b);assert(c.length);c[c.length-1]^=1;return c;};
 const refused=e=>{assert.match(e?.code??'',/^mounted-corpus\.source_continuation(?:48|66|67)?\./);return true;};
-function ordinaryReaderWith(overrides=new Map(),calls=[]){return async(path,maximum)=>{calls.push({path,maximum});assert(typeof path==='string'&&!path.startsWith('/')&&!path.includes('\\')&&!path.includes('\0')&&!path.split('/').some(p=>!p||p==='.'||p==='..'));assert(Number.isSafeInteger(maximum)&&maximum>=0&&maximum<=268435456);let b;if(overrides.has(path))b=Uint8Array.from(overrides.get(path));else{const url=new URL(path,ROOT),s=await lstat(url);assert(s.isFile()&&!s.isSymbolicLink()&&s.size<=maximum);b=await readFile(url);}assert(b.byteLength<=maximum);return b;};}
+// Actual filesystem reads remain fresh; only the underlying I/O primitive is synchronous.
+const readSourceFile = async (...args) => readFileSync(...args);
+const lstatSource = async (...args) => lstatSync(...args);
+function ordinaryReaderWith(overrides=new Map(),calls=[]){return async(path,maximum)=>{calls.push({path,maximum});assert(typeof path==='string'&&!path.startsWith('/')&&!path.includes('\\')&&!path.includes('\0')&&!path.split('/').some(p=>!p||p==='.'||p==='..'));assert(Number.isSafeInteger(maximum)&&maximum>=0&&maximum<=268435456);let b;if(overrides.has(path))b=Uint8Array.from(overrides.get(path));else{const url=new URL(path,ROOT),s=await lstatSource(url);assert(s.isFile()&&!s.isSymbolicLink()&&s.size<=maximum);b=await readSourceFile(url);}assert(b.byteLength<=maximum);return b;};}
 // These unchanged controls inspect the retained c82 SOURCE namespace only.
 // Fresh actual-current checks belong to the new independent resource-profile controls.
 const actualResourceReader=ordinaryReaderWith();

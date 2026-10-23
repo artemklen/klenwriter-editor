@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // CONTROLLED SYNTHETIC DATA ONLY. These receipts never came from a product,
 // browser, native module or human. Passing controls are not execution evidence.
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -15,8 +16,10 @@ const encode = value => Buffer.from(typeof value === 'string' ? value : JSON.str
 const pin = (path, bytes) => ({ path, bytes: bytes.length, sha256: hash(bytes) });
 const clone = value => structuredClone(value);
 const root = new URL('../', import.meta.url);
+// Actual filesystem reads remain fresh; only the underlying I/O primitive is synchronous.
+const readSourceFile = async (...args) => readFileSync(...args);
 const currentSourceReader = async (path, limit) => {
-  const value = await readFile(new URL(path, root)); assert(value.length <= limit); return value;
+  const value = await readSourceFile(new URL(path, root)); assert(value.length <= limit); return value;
 };
 // Controlled oracle fixtures retain original45 authority bytes. The explicit
 // continuation independently verifies all current67 bytes and retained48/47 authority before every alias.

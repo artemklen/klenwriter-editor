@@ -2,7 +2,7 @@
 // Current build -> all-engine preflight -> immutable binding -> observations -> collector.
 import { spawn, execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { createReadStream } from 'node:fs';
+import { createReadStream, lstatSync, openSync, fstatSync, readSync, closeSync } from 'node:fs';
 import { mkdir, readdir, writeFile, lstat, realpath, open } from 'node:fs/promises';
 import { resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,6 +23,13 @@ const require = createRequire(import.meta.url);
 const sourceSHA = () => execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
 const sourceStatus = () => execFileSync('git', ['status', '--porcelain=v1'], { cwd: root, encoding: 'utf8' });
 
+// Preserve the awaited reader API while each filesystem operation reads current bytes.
+const lstatSource = async (...args) => lstatSync(...args);
+const openSource = async (...args) => openSync(...args);
+const statSource = async fd => fstatSync(fd);
+const readSource = async (...args) => readSync(...args);
+const closeSource = async fd => closeSync(fd);
+
 function cleanRelative(path) {
   if (typeof path !== 'string' || path.length > 1024 || !path || path.includes('\\')
     || path.split('/').some(part => !part || part === '.' || part === '..') || path.startsWith('/')) {
@@ -36,24 +43,24 @@ async function boundedFile(base, path, maximum) {
   let current = base;
   for (const part of path.split('/')) {
     current = resolve(current, part);
-    if ((await lstat(current)).isSymbolicLink()) throw new Error(`Artifact symlink: ${path}`);
+    if ((await lstatSource(current)).isSymbolicLink()) throw new Error(`Artifact symlink: ${path}`);
   }
-  const file = await open(current, 'r');
+  const file = await openSource(current, 'r');
   try {
-    const before = await file.stat();
+    const before = await statSource(file);
     if (!before.isFile() || before.size > maximum) throw new Error(`Artifact exceeds bound: ${path}`);
     // Read one extra byte: a growing file cannot turn a bounded read into a prefix.
     const bytes = Buffer.alloc(before.size + 1);
     let length = 0;
     while (length < bytes.length) {
-      const result = await file.read(bytes, length, bytes.length - length, length);
-      if (!result.bytesRead) break;
-      length += result.bytesRead;
+      const result = await readSource(file, bytes, length, bytes.length - length, length);
+      if (!result) break;
+      length += result;
     }
-    const after = await file.stat();
+    const after = await statSource(file);
     if (length !== before.size || after.size !== before.size || after.mtimeMs !== before.mtimeMs) throw new Error(`Artifact changed while reading: ${path}`);
     return bytes.subarray(0, length);
-  } finally { await file.close(); }
+  } finally { await closeSource(file); }
 }
 async function pin(path, base = root, maximum = 268435456) {
   const bytes = await boundedFile(base, path, maximum);

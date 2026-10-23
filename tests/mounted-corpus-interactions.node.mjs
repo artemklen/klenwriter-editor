@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // Data-only source and collector controls; none is product/browser acceptance.
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -13,8 +14,10 @@ import { loadMountedSourceContinuation67 } from '../scripts/mounted-corpus/sourc
 import { loadMountedResourceProfile67 } from '../scripts/mounted-corpus/resource-profile67.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
+// Actual filesystem reads remain fresh; only the underlying I/O primitive is synchronous.
+const readSourceFile = async (...args) => readFileSync(...args);
 const currentSourceReader = async (path, maximum) => {
-  const value = await readFile(join(root, path));
+  const value = await readSourceFile(join(root, path));
   assert.ok(value.length <= maximum, 'Current source reader respects exact continuation bound'); return value;
 };
 const currentSourceLayer = await loadMountedResourceProfile67({ readArtifact: currentSourceReader });

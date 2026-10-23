@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
@@ -19,8 +20,10 @@ const MAXIMUM = 4 * 1024 * 1024;
 // These unchanged assertion bodies control the accepted47 source namespace.
 // Actual67 is guarded first; unchanged66/48 supply exact accepted47 input.
 // New67 controls independently inspect the original unaliased runtime reader.
+// Actual filesystem reads remain fresh; only the underlying I/O primitive is synchronous.
+const readSourceFile = async (...args) => readFileSync(...args);
 const actualSourceReader = async (path, maximum) => {
-  const bytes = await readFile(new URL(path, ROOT));
+  const bytes = await readSourceFile(new URL(path, ROOT));
   assert.ok(bytes.byteLength <= maximum, 'Actual48 source read remains bounded');
   return new Uint8Array(bytes);
 };

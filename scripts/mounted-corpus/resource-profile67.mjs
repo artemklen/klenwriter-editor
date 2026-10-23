@@ -7,7 +7,7 @@ export const RESOURCE_PROFILE67_ID='mounted-corpus-resources/67-v1';
 export const RESOURCE_PROFILE67_PATH='contracts/mounted-e2e/v1.5/resource-profile67.json';
 const MODULE='scripts/mounted-corpus/resource-profile67.mjs',CONTROL='tests/mounted-corpus-resource-profile67.node.mjs';
 const BUNDLE='contracts/mounted-e2e/v1.5/source-snapshot-c82-bundle.json';
-const PROFILE_PIN=Object.freeze({"path":"contracts/mounted-e2e/v1.5/resource-profile67.json","bytes":67302,"sha256":"9b714e58eda273f39a5b8ff509d19f2f5cb35f0d2696a94ebdd8000a3f968a8b"});
+const PROFILE_PIN=Object.freeze({"path":"contracts/mounted-e2e/v1.5/resource-profile67.json","bytes":67556,"sha256":"87475e836cc985c710a0ed52b287f711c1a57db249e4e4349b783c4c6a3e7646"});
 const BASE_SCHEMA_PIN=Object.freeze({"path":"contracts/mounted-e2e/v1/observation.schema.json","bytes":67131,"sha256":"511e7c974bae1d91cb759a497fc272bccf3dba3e63d170320be634599be9d2e7"});
 const BASE_SCHEMA_JSON_SHA='efe9b2344f6cda11156ae921048f91f12736a28cdd62fe609851c20e35a6ae49';
 const SNAPSHOT='c82f3c8641e9a27aed5edca6f890e533024f579b';

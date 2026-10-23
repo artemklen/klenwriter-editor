@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // Source-authored data integrity controls only. No editor/native/browser runs.
 // Execution awaits finalized quiet-source pins; the pending scaffold refuses.
+import { lstatSync, readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { lstat, readFile } from 'node:fs/promises';
@@ -16,6 +17,9 @@ const LEGACY_PATH = 'contracts/mounted-e2e/v1.1/source-continuation47.json';
 const NAMED_CHANGE = 'packages/dom/src/input.ts';
 const hash = b => createHash('sha256').update(b).digest('hex');
 const corrupt = b => { const v = Uint8Array.from(b); assert.ok(v.length); v[v.length - 1] ^= 1; return v; };
+// Actual filesystem reads remain fresh; only the underlying I/O primitive is synchronous.
+const readSourceFile = async (...args) => readFileSync(...args);
+const lstatSource = async (...args) => lstatSync(...args);
 function ordinaryReaderWith(overrides = new Map(), calls = []) {
   return async (path, maximum) => {
     calls.push({ path, maximum });
@@ -25,9 +29,9 @@ function ordinaryReaderWith(overrides = new Map(), calls = []) {
     else {
       assert.ok(typeof path === 'string' && !path.startsWith('/') && !path.includes('\\')
         && !path.split('/').some(p => !p || p === '.' || p === '..'));
-      const url = new URL(path, ROOT), stat = await lstat(url);
+      const url = new URL(path, ROOT), stat = await lstatSource(url);
       assert.ok(stat.isFile() && !stat.isSymbolicLink() && stat.size <= maximum, `Bounded ordinary source read: ${path}`);
-      bytes = await readFile(url);
+      bytes = await readSourceFile(url);
     }
     assert.ok(bytes.byteLength <= maximum, `Exact requested bound: ${path}`); return bytes;
   };

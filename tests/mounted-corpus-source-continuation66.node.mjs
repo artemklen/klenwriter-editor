@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // Independent source/data controls, authored before execution. No product/native
 // or browser run, and no inherited runtime/semantic acceptance claim.
+import { lstatSync, readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { lstat, readFile } from 'node:fs/promises';
@@ -18,12 +19,15 @@ const HARNESS=['scripts/mounted-corpus/run.mjs','tests/mounted-corpus-source-con
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const corrupt=b=>{const out=Uint8Array.from(b);assert(out.length);out[out.length-1]^=1;return out;};
 const refusal=error=>{assert.match(error?.code??'',/^mounted-corpus\.source_continuation(?:48|66)?\./);return true;};
+// Actual filesystem reads remain fresh; only the underlying I/O primitive is synchronous.
+const readSourceFile = async (...args) => readFileSync(...args);
+const lstatSource = async (...args) => lstatSync(...args);
 function ordinaryReaderWith(overrides=new Map(),calls=[]){
   return async(path,maximum)=>{
     calls.push({path,maximum});assert.ok(typeof path==='string'&&!path.startsWith('/')&&!path.includes('\\')&&!path.includes('\0')&&!path.split('/').some(p=>!p||p==='.'||p==='..'));
     assert.ok(Number.isSafeInteger(maximum)&&maximum>=0&&maximum<=268435456);let bytes;
     if(overrides.has(path))bytes=Uint8Array.from(overrides.get(path));
-    else{const url=new URL(path,ROOT),stat=await lstat(url);assert.ok(stat.isFile()&&!stat.isSymbolicLink()&&stat.size<=maximum,`Actual bounded regular source ${path}`);bytes=await readFile(url);}
+    else{const url=new URL(path,ROOT),stat=await lstatSource(url);assert.ok(stat.isFile()&&!stat.isSymbolicLink()&&stat.size<=maximum,`Actual bounded regular source ${path}`);bytes=await readSourceFile(url);}
     assert.ok(bytes.byteLength<=maximum);return bytes;
   };
 }
