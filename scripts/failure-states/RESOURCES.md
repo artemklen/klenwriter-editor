@@ -14,7 +14,8 @@ events and source hashes; it does not start or repeat tests. Each new stream's
 header `buildBefore` and footer `buildAfter` must contain the verified current
 source `buildId`, the complete `producerSourceHashes`, and `artifactHashes` for
 the actual runtime JS/WASM/CSS closure under `packages/wasm/dist`,
-`packages/sdk/dist`, and `packages/dom/dist`, including nested WASM snippets.
+`packages/sdk/dist`, `packages/dom/dist`, and `packages/kwdj/dist`, including
+nested WASM snippets.
 The build-identity and WASM-seal JSON files are also pinned. The reporter
 recomputes production identity, checks the built identity and actual sealed
 WASM, and records the same complete binding before and after the command;
