@@ -69,3 +69,13 @@ test('profile/source binding is explicit in both directions and rejects absent/f
   for(const mutate of [v=>{v.sourceSHA='d'.repeat(40);},v=>{v.resourceProfile.selectedProfile=null;},v=>{v.pins[0].sha256='e'.repeat(64);},v=>{v.pins[1]=copy(v.pins[0]);}]){const wrong=copy(inventory);mutate(wrong);const b=encode(wrong),bound=copy(binding);bound.scenarioPins[4]=pin(sidecar,b);c.overrides.set(sidecar,b);await assert.rejects(assertResourceProfileBinding67({resourceProfile:ID,runBinding:bound,readArtifact:c.raw}),refusal);}c.overrides.set(sidecar,sidecarBytes);
  }finally{c.overrides.delete(sidecar);}
 });
+
+
+test('pure bundle memoization preserves all46 fresh reads per alias, independent bytes and later bundle refusal',async()=>{
+ const c=await context(),target=descriptor.source.snapshotPins.find(p=>p.path==='scripts/mounted-corpus/run.mjs'),alias=c.layer.retainedC82SourceReader(c.raw);
+ const expected=[RESOURCE_PROFILE67_PATH,descriptor.source.previousManifest.path,descriptor.source.previousHelper.path,...descriptor.source.currentPins.map(p=>p.path),BUNDLE].sort();assert.equal(expected.length,46);
+ c.calls.length=0;const first=await alias(target.path,target.bytes);assert.deepEqual(c.calls.map(p=>p.path).sort(),expected);assert.equal(hash(first),target.sha256);first[0]^=1;
+ c.calls.length=0;const second=await alias(target.path,target.bytes);assert.deepEqual(c.calls.map(p=>p.path).sort(),expected);assert.equal(hash(second),target.sha256,'Encoded aliases cannot mutate the private parsed source');
+ const original=await c.raw(BUNDLE,descriptor.source.bundle.bytes);c.overrides.set(BUNDLE,corrupt(original));try{c.calls.length=0;await assert.rejects(alias(target.path,target.bytes),refusal);assert.deepEqual(c.calls.map(p=>p.path).sort(),expected,'Actual bundle SHA is checked even after pure data was memoized');}finally{c.overrides.delete(BUNDLE);}
+ c.calls.length=0;assert.equal(hash(await alias(target.path,target.bytes)),target.sha256);assert.deepEqual(c.calls.map(p=>p.path).sort(),expected);
+});
