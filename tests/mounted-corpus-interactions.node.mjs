@@ -10,14 +10,17 @@ import { collectInteractions, interactionValidators, assessInteraction } from '.
 import { ownBoundedData, RESOURCE_KEYS } from '../scripts/mounted-corpus/protocol.mjs';
 import { observeNativeModule } from '../scripts/mounted-corpus/native-observer.mjs';
 import { loadMountedSourceContinuation67 } from '../scripts/mounted-corpus/source-continuation67.mjs';
+import { loadMountedResourceProfile67 } from '../scripts/mounted-corpus/resource-profile67.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const currentSourceReader = async (path, maximum) => {
   const value = await readFile(join(root, path));
   assert.ok(value.length <= maximum, 'Current source reader respects exact continuation bound'); return value;
 };
-const continuation = await loadMountedSourceContinuation67({ readArtifact: currentSourceReader });
-const historicalSourceReader = continuation.historicalAuthorityReader(currentSourceReader);
+const currentSourceLayer = await loadMountedResourceProfile67({ readArtifact: currentSourceReader });
+const c82SourceReader = currentSourceLayer.retainedC82SourceReader(currentSourceReader);
+const continuation = await loadMountedSourceContinuation67({ readArtifact: c82SourceReader });
+const historicalSourceReader = continuation.historicalAuthorityReader(c82SourceReader);
 const literalPath = 'contracts/mounted-e2e/v1/interaction-literals.json';
 const schemaPath = 'contracts/mounted-e2e/v1/observation.schema.json';
 const bytes = await readFile(join(root, literalPath)), schemaBytes = await readFile(join(root, schemaPath));

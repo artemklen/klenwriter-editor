@@ -6,12 +6,19 @@ import {lstat,readFile} from 'node:fs/promises';
 import test from 'node:test';
 import {loadMountedSourceContinuation66} from '../scripts/mounted-corpus/source-continuation66.mjs';
 import {loadMountedSourceContinuation67,SOURCE_CONTINUATION67_PATH} from '../scripts/mounted-corpus/source-continuation67.mjs';
+import {loadMountedResourceProfile67} from '../scripts/mounted-corpus/resource-profile67.mjs';
 const ROOT=new URL('../',import.meta.url),BUNDLE='contracts/mounted-e2e/v1.4/accepted66-bundle.json';
 const CONTROLLER='packages/sdk/src/controller.ts',HELPER='scripts/mounted-corpus/source-continuation67.mjs',CONTROL='tests/mounted-corpus-source-continuation67.node.mjs';
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const corrupt=b=>{const c=Uint8Array.from(b);assert(c.length);c[c.length-1]^=1;return c;};
 const refused=e=>{assert.match(e?.code??'',/^mounted-corpus\.source_continuation(?:48|66|67)?\./);return true;};
-function readerWith(overrides=new Map(),calls=[]){return async(path,maximum)=>{calls.push({path,maximum});assert(typeof path==='string'&&!path.startsWith('/')&&!path.includes('\\')&&!path.includes('\0')&&!path.split('/').some(p=>!p||p==='.'||p==='..'));assert(Number.isSafeInteger(maximum)&&maximum>=0&&maximum<=268435456);let b;if(overrides.has(path))b=Uint8Array.from(overrides.get(path));else{const url=new URL(path,ROOT),s=await lstat(url);assert(s.isFile()&&!s.isSymbolicLink()&&s.size<=maximum);b=await readFile(url);}assert(b.byteLength<=maximum);return b;};}
+function ordinaryReaderWith(overrides=new Map(),calls=[]){return async(path,maximum)=>{calls.push({path,maximum});assert(typeof path==='string'&&!path.startsWith('/')&&!path.includes('\\')&&!path.includes('\0')&&!path.split('/').some(p=>!p||p==='.'||p==='..'));assert(Number.isSafeInteger(maximum)&&maximum>=0&&maximum<=268435456);let b;if(overrides.has(path))b=Uint8Array.from(overrides.get(path));else{const url=new URL(path,ROOT),s=await lstat(url);assert(s.isFile()&&!s.isSymbolicLink()&&s.size<=maximum);b=await readFile(url);}assert(b.byteLength<=maximum);return b;};}
+// These unchanged controls inspect the retained c82 SOURCE namespace only.
+// Fresh actual-current checks belong to the new independent resource-profile controls.
+const actualResourceReader=ordinaryReaderWith();
+const currentSourceLayer=await loadMountedResourceProfile67({readArtifact:actualResourceReader});
+const c82SourceReader=currentSourceLayer.retainedC82SourceReader(actualResourceReader);
+function readerWith(overrides=new Map(),calls=[]){const overridden=ordinaryReaderWith(overrides,calls);return async(path,maximum)=>{if(overrides.has(path))return overridden(path,maximum);calls.push({path,maximum});return c82SourceReader(path,maximum);};}
 const entries=m=>[...m.authorities,...m.harness,...m.controls];
 const retained=c=>c.path===BUNDLE||c.path==='contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/sdk/src/controller.ts';
 async function manifest(){return JSON.parse(Buffer.from(await readerWith()(SOURCE_CONTINUATION67_PATH,262144)).toString('utf8'));}

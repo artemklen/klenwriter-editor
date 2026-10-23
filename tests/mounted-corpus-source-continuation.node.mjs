@@ -10,6 +10,7 @@ import {
 import { loadMountedSourceContinuation48 } from '../scripts/mounted-corpus/source-continuation48.mjs';
 import { loadMountedSourceContinuation66 } from '../scripts/mounted-corpus/source-continuation66.mjs';
 import { loadMountedSourceContinuation67 } from '../scripts/mounted-corpus/source-continuation67.mjs';
+import { loadMountedResourceProfile67 } from '../scripts/mounted-corpus/resource-profile67.mjs';
 
 // Source-authored finite integrity controls. These do not execute an editor,
 // native/WASM candidate, browser, mounted scenario, or semantic oracle.
@@ -23,8 +24,10 @@ const actualSourceReader = async (path, maximum) => {
   assert.ok(bytes.byteLength <= maximum, 'Actual48 source read remains bounded');
   return new Uint8Array(bytes);
 };
-const current67Layer = await loadMountedSourceContinuation67({ readArtifact: actualSourceReader });
-const accepted66SourceReader = current67Layer.retained66SourceReader(actualSourceReader);
+const currentSourceLayer = await loadMountedResourceProfile67({ readArtifact: actualSourceReader });
+const c82SourceReader = currentSourceLayer.retainedC82SourceReader(actualSourceReader);
+const current67Layer = await loadMountedSourceContinuation67({ readArtifact: c82SourceReader });
+const accepted66SourceReader = current67Layer.retained66SourceReader(c82SourceReader);
 const current66Layer = await loadMountedSourceContinuation66({ readArtifact: accepted66SourceReader });
 const accepted48SourceReader = current66Layer.retained48SourceReader(accepted66SourceReader);
 const accepted47Layer = await loadMountedSourceContinuation48({ readArtifact: accepted48SourceReader });

@@ -8,6 +8,7 @@ import test from 'node:test';
 import { loadMountedSourceContinuation48 } from '../scripts/mounted-corpus/source-continuation48.mjs';
 import { loadMountedSourceContinuation66, SOURCE_CONTINUATION66_PATH } from '../scripts/mounted-corpus/source-continuation66.mjs';
 import { loadMountedSourceContinuation67 } from '../scripts/mounted-corpus/source-continuation67.mjs';
+import { loadMountedResourceProfile67 } from '../scripts/mounted-corpus/resource-profile67.mjs';
 
 const ROOT=new URL('../',import.meta.url),SELECTED='packages/dom/src/selection.ts';
 const LEGACY48='contracts/mounted-e2e/v1.2/source-continuation48.json';
@@ -29,8 +30,10 @@ function ordinaryReaderWith(overrides=new Map(),calls=[]){
 // The unchanged66 controls retain accepted66 source authority. Fresh actual67
 // is guarded independently; corruption overrides still target their old namespace.
 const actual67Reader=ordinaryReaderWith();
-const current67Layer=await loadMountedSourceContinuation67({readArtifact:actual67Reader});
-const accepted66SourceReader=current67Layer.retained66SourceReader(actual67Reader);
+const currentSourceLayer=await loadMountedResourceProfile67({readArtifact:actual67Reader});
+const c82SourceReader=currentSourceLayer.retainedC82SourceReader(actual67Reader);
+const current67Layer=await loadMountedSourceContinuation67({readArtifact:c82SourceReader});
+const accepted66SourceReader=current67Layer.retained66SourceReader(c82SourceReader);
 function readerWith(overrides=new Map(),calls=[]){
   const overridden=ordinaryReaderWith(overrides,calls);
   return async(path,maximum)=>{

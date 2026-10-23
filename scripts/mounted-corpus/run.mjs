@@ -13,7 +13,7 @@ import Ajv2020 from 'ajv/dist/2020.js';
 import { PROTOCOL_VERSION, ACCEPTED_SOURCE, ENGINES, BUDGETS, REQUIRED_SCENARIO_PATHS, ownBoundedData } from './protocol.mjs';
 import { loadContract, collect } from './collect.mjs';
 import { collectInteractions, interactionValidators } from './collect-interactions.mjs';
-import { loadMountedSourceContinuation67, SOURCE_CONTINUATION67_PATH } from './source-continuation67.mjs';
+import { loadMountedResourceProfile67, RESOURCE_PROFILE67_ID, RESOURCE_PROFILE67_PATH, assertResourceProfileBinding67 } from './resource-profile67.mjs';
 import { computeSdkBuildIdentity } from '../generate-sdk-types.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -208,21 +208,22 @@ export async function run() {
   try {
     // Explicit67 continuation: historical contract authority and actual runtime
     // bytes remain separate. No frozen45 literal or expected value is rewritten.
-    const continuation = await loadMountedSourceContinuation67({
+    const resourceProfile = RESOURCE_PROFILE67_ID;
+    const continuation = await loadMountedResourceProfile67({ resourceProfile,
       readArtifact: (path, maximum) => boundedFile(root, path, maximum),
     });
     const continuationBefore = await continuation.verifyAll();
     await writeJson(resolve(runRoot, 'source-continuation67-before.json'), continuationBefore);
     const continuationRuntimeBefore = await continuation.captureRuntimeInventory(receipt.sourceSHA);
     await writeJson(resolve(runRoot, 'source-continuation67-runtime-before.json'), continuationRuntimeBefore);
-    receipt.sourceContinuation = { scope: 'Historical45/accepted47/accepted48 source proof plus exact current67 authority pins; runtime inventories and scenario/build pins always name actual current67 bytes.',
+    receipt.sourceContinuation = { scope: 'Explicit strict resource profile67 and whole192 current raw source pins; retained c82 snapshot and legacy45/47/48/66 source authority inherit no runtime acceptance.',
       before: await pin('source-continuation67-before.json', runRoot), after: null,
       runtimeBefore: await pin('source-continuation67-runtime-before.json', runRoot), runtimeAfter: null };
     const sourcePins = json(await boundedFile(root, 'contracts/mounted-e2e/v1/source-pins.json', BUDGETS.observationBytes));
     const manifest = json(await boundedFile(root, 'contracts/mounted-e2e/v1/manifest.json', BUDGETS.observationBytes));
     // Reject source/transport incompatibility before launching a browser owner.
     ownBoundedData(json(await boundedFile(root, 'contracts/mounted-e2e/v1/interaction-literals.json', 65536)), 65536);
-    interactionValidators(json(await boundedFile(root, 'contracts/mounted-e2e/v1/observation.schema.json', BUDGETS.observationBytes)));
+    interactionValidators(json(await boundedFile(root, 'contracts/mounted-e2e/v1/observation.schema.json', BUDGETS.observationBytes)), { resourceProfile });
     const nativeManifest = json(await boundedFile(root, 'artifacts/sdk-native-manifest-v2.json', BUDGETS.observationBytes));
     const build = { buildId: nativeManifest.build_id,
       wasm: await pin('packages/wasm/dist/editor_wasm_bg.wasm'),
@@ -239,8 +240,8 @@ export async function run() {
     const paths = [...new Set([...sourcePins.files.map(item => item.path), ...REQUIRED_SCENARIO_PATHS, ...extraPaths,
       // Frozen v1 RunBinding permits64 pins. The complete current67 continuation
       // inventory is separately pinned above; retain that schema without widening.
-      ...continuationSidecarPaths, SOURCE_CONTINUATION67_PATH, 'scripts/mounted-corpus/source-continuation67.mjs',
-      'tests/mounted-corpus-source-continuation67.node.mjs'])].sort();
+      ...continuationSidecarPaths, RESOURCE_PROFILE67_PATH, 'scripts/mounted-corpus/resource-profile67.mjs',
+      'tests/mounted-corpus-resource-profile67.node.mjs'])].sort();
     const scenarioPins = await Promise.all(paths.map(path => pin(path)));
     const previousEnv = { CFFIXED_USER_HOME: process.env.CFFIXED_USER_HOME, TMPDIR: process.env.TMPDIR, PLAYWRIGHT_SKIP_BROWSER_GC: process.env.PLAYWRIGHT_SKIP_BROWSER_GC };
     let pre;
@@ -256,6 +257,7 @@ export async function run() {
       scenarioPins, build, environment: { nodeVersion: process.version, playwrightVersion: require('@playwright/test/package.json').version,
         os: { platform: os.platform(), release: os.release(), arch: os.arch() }, engines: pre.engines }, nativeBaselines: pre.nativeBaselines };
     await writeJson(resolve(runRoot, 'run-binding.json'), binding, BUDGETS.runBindingBytes);
+    await assertResourceProfileBinding67({ resourceProfile, runBinding: binding, readArtifact: (path, maximum) => boundedFile(root, path, maximum) });
     receipt.phase = 'browser';
     const browserLog = await open(resolve(runRoot, 'browser.log'), 'wx');
     try {
@@ -265,12 +267,12 @@ export async function run() {
     receipt.browserLog = await pin('browser.log', runRoot);
     receipt.phase = 'collector';
     const readArtifact = (path, maximum) => boundedFile(path.startsWith('observations/') || path.startsWith('interactions/') ? runRoot : root, path, maximum);
-    const contract = await loadContract({ readArtifact: continuation.historicalAuthorityReader(readArtifact) });
+    const contract = await loadContract({ readArtifact: continuation.historicalAuthorityReader(readArtifact), resourceProfile });
     const observations = await observationInventory(runRoot);
-    const baseReport = await collect({ contract, runBinding: binding, observations, readArtifact, sourceSHA: sourceSHA() });
+    const baseReport = await collect({ contract, runBinding: binding, observations, readArtifact, sourceSHA: sourceSHA(), resourceProfile });
     await writeJson(resolve(runRoot, 'corpus-report.json'), baseReport);
     receipt.interactionPaths = await interactionInventory(runRoot);
-    const interactions = await collectInteractions({ runBinding: binding,
+    const interactions = await collectInteractions({ runBinding: binding, resourceProfile, readRuntimeArtifact: readArtifact,
       readArtifact: continuation.historicalAuthorityReader(readArtifact) });
     await writeJson(resolve(runRoot, 'interactions-report.json'), interactions);
     const report = combineReport(baseReport, interactions);

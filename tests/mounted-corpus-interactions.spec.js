@@ -1,15 +1,37 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // Four genuine browser-protocol routes; installed/native and human lanes are separate.
 import { test, expect } from '@playwright/test';
-import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { readFileSync, mkdirSync, writeFileSync, lstatSync, openSync, fstatSync, readSync, closeSync } from 'node:fs';
 import { resolve as resolvePath, join } from 'node:path';
 import { createHash } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 import { ENGINES } from '../scripts/mounted-corpus/protocol.mjs';
 import { assessInteraction, interactionValidators } from '../scripts/mounted-corpus/collect-interactions.mjs';
+import { RESOURCE_PROFILE67_ID, assertResourceProfileBinding67 } from '../scripts/mounted-corpus/resource-profile67.mjs';
 
 const literalPath = 'contracts/mounted-e2e/v1/interaction-literals.json';
 const literalBytes = readFileSync(literalPath), contract = JSON.parse(literalBytes);
-const validators = interactionValidators(JSON.parse(readFileSync('contracts/mounted-e2e/v1/observation.schema.json')));
+const resourceProfile = RESOURCE_PROFILE67_ID;
+const schemaPath = 'contracts/mounted-e2e/v1/observation.schema.json';
+const repository = fileURLToPath(new URL('../', import.meta.url));
+// This is the original current-source reader, not a historical authority alias.
+const readResourceProfileArtifact = async (path, maximum) => {
+  if (typeof path !== 'string' || !path || path.length > 4096 || path.startsWith('/')
+    || path.includes('\\') || path.includes('\0') || path.split('/').some(part => !part || part === '.' || part === '..')
+    || !Number.isSafeInteger(maximum) || maximum < 0 || maximum > 268435456) throw new Error('Invalid bounded resource-profile source read');
+  let current = repository;
+  for (const part of path.split('/')) { current = join(current, part); if (lstatSync(current).isSymbolicLink()) throw new Error(`Resource-profile source symlink: ${path}`); }
+  const file = openSync(current, 'r');
+  try {
+    const before = fstatSync(file);
+    if (!before.isFile() || before.size > maximum) throw new Error(`Resource-profile source exceeds bound: ${path}`);
+    const bytes = Buffer.alloc(before.size + 1); let length = 0;
+    while (length < bytes.length) { const read = readSync(file, bytes, length, bytes.length - length, length); if (!read) break; length += read; }
+    const after = fstatSync(file);
+    if (length !== before.size || after.size !== before.size || after.mtimeMs !== before.mtimeMs) throw new Error(`Resource-profile source changed during read: ${path}`);
+    return bytes.subarray(0, length);
+  } finally { closeSync(file); }
+};
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const pin = { path: literalPath, bytes: literalBytes.length, sha256: hash(literalBytes) };
 const invoke = (page, method, ...args) => page.evaluate(({ method, args }) => window.mountedInteractions45[method](...args), { method, args });
@@ -20,6 +42,10 @@ for (const route of contract.routes) test(`mounted interaction ${route.routeId}`
   if (!runRoot || resolvePath(runRoot) !== runRoot) throw new Error('Absolute immutable mounted run root required');
   const binding = JSON.parse(readFileSync(join(runRoot, 'run-binding.json'), 'utf8'));
   if (!ENGINES.includes(info.project.name) || binding.environment.engines.find(value => value.engine === info.project.name)?.browserVersion !== browser.version()) throw new Error('Actual browser version differs from frozen binding');
+  await assertResourceProfileBinding67({ resourceProfile, runBinding: binding, readArtifact: readResourceProfileArtifact });
+  const schemaBytes = await readResourceProfileArtifact(schemaPath, 262144), schemaPins = binding.scenarioPins.filter(value => value.path === schemaPath);
+  if (schemaPins.length !== 1 || schemaPins[0].bytes !== schemaBytes.length || schemaPins[0].sha256 !== hash(schemaBytes)) throw new Error('Actual base observation schema differs from its bound source');
+  const validators = interactionValidators(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(schemaBytes)), { resourceProfile });
   let observation = null, harnessError = null, opened = false;
   const pageErrors = [], externalRequests = [];
   page.on('pageerror', error => pageErrors.push(error.message));
@@ -75,7 +101,7 @@ for (const route of contract.routes) test(`mounted interaction ${route.routeId}`
       try { observation = await invoke(page, 'finish'); } catch (error) { harnessError ??= { name: error.name, message: error.message }; }
     }
   }
-  const assessment = assessInteraction({ observation, route, binding, harnessError, contract, pin, validators });
+  const assessment = assessInteraction({ observation, route, binding, harnessError, contract, pin, validators, resourceProfile });
   if (pageErrors.length || externalRequests.length) { assessment.integrity = 'FAIL'; assessment.requirement = 'OBSERVATION'; assessment.blocking = true; }
   const artifact = { format: 'mounted-corpus-interaction-receipt/1', runId: binding.runId, engine: info.project.name, routeId: route.routeId,
     observation, assessment, harnessError, pageErrors, externalRequests };
