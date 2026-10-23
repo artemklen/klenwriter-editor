@@ -4,6 +4,8 @@ import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import Ajv2020 from 'ajv/dist/2020.js';
 import { RESOURCE_KEYS, ENGINES, ownBoundedData, nativeResourceCounts } from './protocol.mjs';
+import { assertResourceProfile67, resourceSchema67, resourceKeys67, assertResourceProfileBinding67, assertSettledResources67 } from './resource-profile67.mjs';
+const validatorResourceProfiles = new WeakMap();
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const mapRoles = (checkpoint, paths) => Object.fromEntries(Object.entries(paths).map(([role, path]) => [role,
   checkpoint.nodes.find(value => isDeepStrictEqual(value.path, path))?.node.id]));
@@ -13,7 +15,25 @@ const resolveRoles = (value, roles) => Array.isArray(value) ? value.map(item => 
 const terminal = result => result?.status === 'completed' ? result.response : result?.status === 'queued' ? result.completion : result;
 
 /** Independent finite comparisons. An authentic Firefox behavior GAP stays visible. */
-export function assessInteraction({ observation, route, binding, harnessError, contract, pin, validators }) {
+export function assessInteraction({ observation, route, binding, harnessError, contract, pin, validators, resourceProfile }) {
+  let resourceKeys;
+  try {
+    assertResourceProfile67(resourceProfile);
+    // Historical controlled fixtures may supply their original legacy validators.
+    // A modern validator must be the privately tagged result for the same mode.
+    if ((resourceProfile !== undefined || validatorResourceProfiles.has(validators))
+      && (!validatorResourceProfiles.has(validators) || validatorResourceProfiles.get(validators) !== resourceProfile)) {
+      const error = new Error('Interaction mode must match its privately configured resource validator');
+      error.code = 'mounted-corpus.resource_profile67.validator_mode'; throw error;
+    }
+    resourceKeys = resourceKeys67(resourceProfile, RESOURCE_KEYS);
+  } catch (error) {
+    // Assessment runs after owner cleanup. Keep the partial original writable
+    // even when configuration cannot qualify it as current-profile evidence.
+    return { checks: [{ domain: 'integrity', name: 'explicit resource profile configuration', status: 'FAIL',
+      actual: { code: error.code ?? null, message: error.message }, expected: 'Known explicitly selected mode and matching privately configured validators' }],
+      integrity: 'FAIL', requirement: 'OBSERVATION', cleanup: 'UNKNOWN', blocking: true };
+  }
   const checks = [];
   let cleanupUnknown = false;
   const equal = (domain, name, actual, expected) => checks.push({ domain, name,
@@ -41,6 +61,7 @@ export function assessInteraction({ observation, route, binding, harnessError, c
     closeKeys(observation, ['protocol', 'runId', 'engine', 'routeId', 'binding', 'literalPin', 'scope', 'stop', 'original', 'fresh', 'checkpoints', 'nativeTrace', 'nativeTraceBytes', 'nativeTraceOverflow', 'ordinaryInputs', 'uiReady', 'uiResults', 'commands', 'browserEvents', 'focusSetup', 'errors', 'cspViolations'], 'observation');
     for (const owner of [observation.original, observation.fresh]) {
       equal('integrity', `${owner?.elementToken ?? 'missing'}: closed public owner`, validators.owner(owner), true);
+      if (resourceProfile !== undefined) assertSettledResources67({ resourceProfile, owner });
       for (const call of owner.calls) {
         const reply = terminal(call.result);
         equal('integrity', `${owner.elementToken}: method/request correlation`, call.method,
@@ -56,6 +77,11 @@ export function assessInteraction({ observation, route, binding, harnessError, c
     for (const point of observation.checkpoints) {
       closeKeys(point, ['label', 'state', 'nodes', 'snapshot', 'eventCount', 'nativeTraceEnd', 'ordinaryInputCount', 'uiResultCount', 'focus', 'resources'], 'checkpoint');
       equal('integrity', `${point.label}: closed state DTO`, validators.state(point.state), true);
+      if (resourceProfile !== undefined) {
+        equal('integrity', `${point.label}: closed complete resource DTO`, validators.resources(point.resources), true);
+        equal('integrity', `${point.label}: settled SDK loading deadline`, point.resources?.mounted?.sdk?.loading_deadlines, 0);
+        equal('integrity', `${point.label}: ready SDK resource lifecycle`, point.resources?.mounted?.sdk?.lifecycle, 'ready');
+      }
       for (const row of point.nodes) {
         closeKeys(row, ['path', 'node'], 'node row'); equal('integrity', `${point.label}: closed node DTO`, validators.node(row.node), true);
         equal('integrity', `${point.label}: node whole stamp`, row.node.stamp, point.state.stamp);
@@ -118,7 +144,7 @@ export function assessInteraction({ observation, route, binding, harnessError, c
       equal('integrity', `${owner.elementToken}: full native count map`, nativeKnown, true);
       equal('cleanup', `${owner.elementToken}: native baseline restored`, owner.nativeAfter.value, baseline.value);
       equal('cleanup', `${owner.elementToken}: original input released`, owner.originalInputAfterDestroy, null);
-      for (const [group, keys] of Object.entries(RESOURCE_KEYS)) {
+      for (const [group, keys] of Object.entries(resourceKeys)) {
         if (group === 'native') continue;
         const actual = group === 'ui' ? owner.resourcesAfter.ui : owner.resourcesAfter.mounted[group];
         const expected = Object.fromEntries(keys.map(key => [key, group === 'sdk' && key === 'lifecycle' ? 'destroyed' : 0]));
@@ -236,15 +262,19 @@ function parseUnique(text) {
   }
   return value;
 }
-export function interactionValidators(observationSchema) {
-  const defs = JSON.parse(JSON.stringify(observationSchema.$defs));
+export function interactionValidators(observationSchema, { resourceProfile } = {}) {
+  assertResourceProfile67(resourceProfile);
+  const selectedSchema = resourceSchema67(observationSchema, resourceProfile);
+  const defs = JSON.parse(JSON.stringify(selectedSchema.$defs));
   const labels = ['initial-state', 'initial-node', 'setup-selection', 'setup-marks', 'query-undo', 'undo', 'query-redo', 'redo'];
   for (const label of ['prepared', 'before', 'after', 'undo', 'redo', 'reopen']) labels.push(`${label}-state`, `${label}-node`, `snapshot-${label}`, `release-${label}`);
   defs.call.properties.label.enum = [...new Set(labels)];
   // This additive route schema does not alter or weaken initial25 schema authority.
   defs.command.properties.id.enum = ['insert-text', 'accept-slash', 'move'].map(id => `org.klenwriter.kwdj/command/${id}`);
   const ajv = new Ajv2020({ strict: true, allErrors: false });
-  return Object.fromEntries(['owner', 'state', 'node', 'request', 'response'].map(name => [name, ajv.compile({ $schema: observationSchema.$schema, $defs: defs, $ref: `#/$defs/${name}` })]));
+  const names = ['owner', 'state', 'node', 'request', 'response', ...(resourceProfile === undefined ? [] : ['resources'])];
+  const validators = Object.fromEntries(names.map(name => [name, ajv.compile({ $schema: selectedSchema.$schema, $defs: defs, $ref: `#/$defs/${name}` })]));
+  validatorResourceProfiles.set(validators, resourceProfile); return validators;
 }
 function closeKeys(value, keys, label) {
   if (!value || typeof value !== 'object' || Array.isArray(value) || !isDeepStrictEqual(Object.keys(value).sort(), [...keys].sort())) throw new Error(`Invalid closed interaction ${label}`);
@@ -266,12 +296,20 @@ function equalPin(pin, binding) {
   if (actual.length !== 1 || !isDeepStrictEqual(actual[0], pin)) throw new Error(`Interaction frozen source pin mismatch: ${pin.path}`);
 }
 /** Complete immutable inventory of four genuine routes across three engines. */
-export async function collectInteractions({ runBinding, readArtifact }) {
+export async function collectInteractions({ runBinding, readArtifact, readRuntimeArtifact, resourceProfile }) {
+  assertResourceProfile67(resourceProfile);
+  // Historical source aliases remain separate from actual runtime provenance.
+  if (resourceProfile !== undefined && typeof readRuntimeArtifact !== 'function') {
+    const error = new Error('Explicit resource profile requires the original unaliased runtime reader');
+    error.code = 'mounted-corpus.resource_profile67.runtime_reader'; throw error;
+  }
+  await assertResourceProfileBinding67({ resourceProfile, runBinding,
+    readArtifact: resourceProfile === undefined ? readArtifact : readRuntimeArtifact });
   const source = await readBounded(readArtifact, literalPath, 65536);
   equalPin(source.pin, runBinding);
   const contract = source.value;
   const schema = await readBounded(readArtifact, 'contracts/mounted-e2e/v1/observation.schema.json', 262144);
-  equalPin(schema.pin, runBinding); const validators = interactionValidators(schema.value);
+  equalPin(schema.pin, runBinding); const validators = interactionValidators(schema.value, { resourceProfile });
   const expectedIds = ['selection-keyboard-replace', 'slash-keyboard-accept', 'drag-pointer-move', 'drag-keyboard-move'];
   if (contract.protocol !== 'mounted-corpus-interactions/1' || contract.acceptedSource !== runBinding.acceptedSource
     || !isDeepStrictEqual(contract.routes.map(value => value.routeId), expectedIds)) throw new Error('Interaction source contract inventory');
@@ -286,7 +324,7 @@ export async function collectInteractions({ runBinding, readArtifact }) {
       const artifact = await readBounded(readArtifact, path, contract.budgets.artifactBytes), receipt = artifact.value;
       pins.push(artifact.pin); closeKeys(receipt, receiptKeys, 'receipt');
       if (receipt.format !== 'mounted-corpus-interaction-receipt/1' || receipt.engine !== engine || receipt.routeId !== route.routeId || receipt.runId !== runBinding.runId) throw new Error('Interaction artifact inventory binding');
-      const assessment = assessInteraction({ observation: receipt.observation, route, binding: runBinding, harnessError: receipt.harnessError, contract, pin: source.pin, validators });
+      const assessment = assessInteraction({ observation: receipt.observation, route, binding: runBinding, harnessError: receipt.harnessError, contract, pin: source.pin, validators, resourceProfile });
       if (!Array.isArray(receipt.pageErrors) || !Array.isArray(receipt.externalRequests)) throw new Error('Interaction page error inventory');
       if (receipt.pageErrors.length || receipt.externalRequests.length) { assessment.integrity = 'FAIL'; assessment.requirement = 'OBSERVATION'; assessment.blocking = true; }
       if (!isDeepStrictEqual(receipt.assessment, assessment)) throw new Error('Saved interaction assessment differs from independent recomputation');

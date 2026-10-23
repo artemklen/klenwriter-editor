@@ -10,6 +10,7 @@ import { generateDomInventory } from './generate-dom-inventory.mjs';
 import { defaultSdkDistribution, defaultSdkCargoFeatures } from './sdk-distribution.mjs';
 import { buildExtensionConsumers } from './build-extensions-consumers.mjs';
 import { buildClipboardParser } from './build-clipboard-parser.mjs';
+import { buildFailureRuntime } from './build-failure-runtime.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 process.chdir(root);
@@ -90,6 +91,7 @@ run(bindgen, ['target/wasm32-unknown-unknown/release/examples/typography_probe.w
 // Independent external consumers compile only the chosen public profile module.
 // Their explicit module choices and complete fixture bytes have separate IDs.
 await buildExtensionConsumers({ baseBuildId: sdkIdentity.buildId, baseSourceHashes: sdkIdentity.sourceHashes });
+await buildFailureRuntime({ baseBuildId: sdkIdentity.buildId, baseSourceHashes: sdkIdentity.sourceHashes });
 writeDependencyNotices();
 // Clean all emitted package files so stale declarations/assets cannot mask omissions.
 const packages = ['wasm', 'sdk', 'dom', 'kwdj', 'vanilla', 'angular', 'ui'];

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // Source-authored data integrity controls only. No editor/native/browser runs.
 // Execution awaits finalized quiet-source pins; the pending scaffold refuses.
+import { lstatSync, readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { lstat, readFile } from 'node:fs/promises';
@@ -8,12 +9,17 @@ import test from 'node:test';
 import { loadMountedSourceContinuation47 } from '../scripts/mounted-corpus/source-continuation47.mjs';
 import { loadMountedSourceContinuation48, SOURCE_CONTINUATION48_PATH } from '../scripts/mounted-corpus/source-continuation48.mjs';
 import { loadMountedSourceContinuation66 } from '../scripts/mounted-corpus/source-continuation66.mjs';
+import { loadMountedSourceContinuation67 } from '../scripts/mounted-corpus/source-continuation67.mjs';
+import { loadMountedResourceProfile67 } from '../scripts/mounted-corpus/resource-profile67.mjs';
 
 const ROOT = new URL('../', import.meta.url);
 const LEGACY_PATH = 'contracts/mounted-e2e/v1.1/source-continuation47.json';
 const NAMED_CHANGE = 'packages/dom/src/input.ts';
 const hash = b => createHash('sha256').update(b).digest('hex');
 const corrupt = b => { const v = Uint8Array.from(b); assert.ok(v.length); v[v.length - 1] ^= 1; return v; };
+// Actual filesystem reads remain fresh; only the underlying I/O primitive is synchronous.
+const readSourceFile = async (...args) => readFileSync(...args);
+const lstatSource = async (...args) => lstatSync(...args);
 function ordinaryReaderWith(overrides = new Map(), calls = []) {
   return async (path, maximum) => {
     calls.push({ path, maximum });
@@ -23,17 +29,21 @@ function ordinaryReaderWith(overrides = new Map(), calls = []) {
     else {
       assert.ok(typeof path === 'string' && !path.startsWith('/') && !path.includes('\\')
         && !path.split('/').some(p => !p || p === '.' || p === '..'));
-      const url = new URL(path, ROOT), stat = await lstat(url);
+      const url = new URL(path, ROOT), stat = await lstatSource(url);
       assert.ok(stat.isFile() && !stat.isSymbolicLink() && stat.size <= maximum, `Bounded ordinary source read: ${path}`);
-      bytes = await readFile(url);
+      bytes = await readSourceFile(url);
     }
     assert.ok(bytes.byteLength <= maximum, `Exact requested bound: ${path}`); return bytes;
   };
 }
 // Unchanged48 controls use an explicitly retained48 source namespace. The66
-// layer validates fresh actual66 first; original48 corruption overrides remain
+// and67 layers validate fresh actual67 first; original48 corruption overrides remain
 // overrides of their original namespace, never current runtime evidence.
-const actual66Reader = ordinaryReaderWith();
+const actual67Reader = ordinaryReaderWith();
+const currentSourceLayer=await loadMountedResourceProfile67({readArtifact:actual67Reader});
+const c82SourceReader=currentSourceLayer.retainedC82SourceReader(actual67Reader);
+const current67Layer=await loadMountedSourceContinuation67({readArtifact:c82SourceReader});
+const actual66Reader = current67Layer.retained66SourceReader(c82SourceReader);
 const current66Layer = await loadMountedSourceContinuation66({ readArtifact: actual66Reader });
 const accepted48SourceReader = current66Layer.retained48SourceReader(actual66Reader);
 function readerWith(overrides = new Map(), calls = []) {

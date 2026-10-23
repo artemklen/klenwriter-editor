@@ -139,7 +139,7 @@ class MountedOwner implements MountedEditor {
       if (!element?.ownerDocument?.defaultView || !(element instanceof element.ownerDocument.defaultView.HTMLElement) || element.childNodes.length !== 0 || mountedHosts.has(element)) throw new TypeError();
       if (!isRendererCatalog(options.renderers)) throw new TypeError();
       const editor = fields(options.editor);
-      if (Object.keys(editor).some(key => !['input','options','loader','limits','onCallbackError'].includes(key))) throw new TypeError();
+      if (Object.keys(editor).some(key => !['input','options','loader','limits','onCallbackError','loadTimeoutMs'].includes(key))) throw new TypeError();
       this.#original = ownInput(editor.input as Uint8Array);
       const nativeOptions = ownConfiguration(editor.options as CreateEditorOptionsV2['options']);
       if (nativeOptions.abi !== 'editor-sdk/2') throw new TypeError();
@@ -160,6 +160,7 @@ class MountedOwner implements MountedEditor {
       this.#onRecovery = options.onRecovery as MountEditorOptions['onRecovery'];
       this.#onRefusal = options.onRefusal as MountEditorOptions['onRefusal'];
       this.#configuration = { input: this.#original, options: nativeOptions,
+        ...(editor.loadTimeoutMs !== undefined ? { loadTimeoutMs: editor.loadTimeoutMs as number } : {}),
         ...(editor.loader ? { loader: editor.loader as CreateEditorOptionsV2['loader'] } : {}),
         ...(editor.limits ? { limits: ownConfiguration(editor.limits as CreateEditorOptionsV2['limits']) } : {}),
         ...(editor.onCallbackError ? { onCallbackError: editor.onCallbackError as CreateEditorOptionsV2['onCallbackError'] } : {}) };
@@ -585,7 +586,7 @@ class MountedOwner implements MountedEditor {
     return this.#receipt;
   }
   resources(): MountedResourceCounts {
-    const sdk = this.#controller?.resources() ?? {lifecycle:'destroyed' as const,sessions:0,listeners:0,queued_mutations:0,queued_bytes:0,pending_tickets:0,host_requests:0,task_continuations:0,original_input_bytes:0,callback_errors:0,callback_error_handlers:0};
+    const sdk = this.#controller?.resources() ?? {lifecycle:'destroyed' as const,sessions:0,listeners:0,queued_mutations:0,queued_bytes:0,pending_tickets:0,host_requests:0,task_continuations:0,loading_deadlines:0,original_input_bytes:0,callback_errors:0,callback_error_handlers:0};
     return Object.freeze({sdk,dom:Object.freeze({listeners:(this.#input?.listeners() ?? 0)+this.#selectionOwner.listeners()+(this.#clipboardOwner?.listeners() ?? 0),observers:this.#observer ? 1 : 0,continuations:(this.#replacement ? 1 : 0)+this.#selectionOwner.resources().restoreTickets+this.#selectionOwner.resources().animationFrames+(this.#clipboardOwner?.resources().continuations ?? 0)+this.#inputResources.continuations+this.#hostOwner.resources().focusContinuations,retainedInputBytes:(this.#original?.byteLength ?? 0)+(this.#replacementInput?.byteLength ?? 0)+this.#inputResources.retainedInputBytes+(this.#typedRecovery?.retainedBytes??0),retainedRecoveryRegions:Math.max(this.#recovery || this.#typedRecovery || this.#view?.hasProvisional() ? 1 : 0,this.#inputResources.retainedRecoveryRegions)}),selection:this.#selectionOwner.resources(),clipboard:this.#clipboardOwner?.resources() ?? Object.freeze({pending:0,continuations:0,retainedTextBytes:0}),hostRequests:this.#hostOwner.resources(),inputObservations:this.#inputObservations.resources(),popupPresentation:this.#popupPresentation.resources(),...(this.#inputResources.typing?{typing:this.#inputResources.typing}:{})});
   }
   nativeResources() { return this.#controller?.nativeResources() ?? null; }

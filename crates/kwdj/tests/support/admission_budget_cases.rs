@@ -296,6 +296,51 @@ pub fn generic_counts_each_payload() {
         .nodes,
         0
     );
+    // OSR-67 independently frozen tiny exact/+1 count and depth constructions.
+    // Keep the original payload/host-tightening assertions above unchanged.
+    let count_budget = PreflightBudget {
+        payload_bytes: 64,
+        values: 4,
+        depth: 8,
+    };
+    assert_eq!(
+        preflight_snapshot(&generic(), count_budget)
+            .unwrap()
+            .usage
+            .values,
+        4
+    );
+    let mut count_over = generic();
+    count_over.children[0]
+        .attributes
+        .insert("z".into(), Attribute::Null);
+    let error = preflight_snapshot(&count_over, count_budget).unwrap_err();
+    assert_eq!(
+        (error.name, error.maximum, error.observed),
+        ("preflight_values", 4, 5)
+    );
+    let depth_budget = PreflightBudget {
+        payload_bytes: 64,
+        values: 8,
+        depth: 3,
+    };
+    assert_eq!(
+        preflight_snapshot(&generic(), depth_budget)
+            .unwrap()
+            .usage
+            .depth,
+        3
+    );
+    let mut depth_over = generic();
+    depth_over.children[0].marks[0].attributes.insert(
+        "t".into(),
+        Attribute::List(vec![Attribute::String("x".into())]),
+    );
+    let error = preflight_snapshot(&depth_over, depth_budget).unwrap_err();
+    assert_eq!(
+        (error.name, error.maximum, error.observed),
+        ("preflight_depth", 3, 4)
+    );
 }
 
 pub fn nested_metadata_and_numbers_are_bounded() {

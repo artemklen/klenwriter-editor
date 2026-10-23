@@ -2,7 +2,7 @@
 // Current build -> all-engine preflight -> immutable binding -> observations -> collector.
 import { spawn, execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { createReadStream } from 'node:fs';
+import { createReadStream, lstatSync, openSync, fstatSync, readSync, closeSync } from 'node:fs';
 import { mkdir, readdir, writeFile, lstat, realpath, open } from 'node:fs/promises';
 import { resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,7 +13,7 @@ import Ajv2020 from 'ajv/dist/2020.js';
 import { PROTOCOL_VERSION, ACCEPTED_SOURCE, ENGINES, BUDGETS, REQUIRED_SCENARIO_PATHS, ownBoundedData } from './protocol.mjs';
 import { loadContract, collect } from './collect.mjs';
 import { collectInteractions, interactionValidators } from './collect-interactions.mjs';
-import { loadMountedSourceContinuation66, SOURCE_CONTINUATION66_PATH } from './source-continuation66.mjs';
+import { loadMountedResourceProfile67, RESOURCE_PROFILE67_ID, RESOURCE_PROFILE67_PATH, assertResourceProfileBinding67 } from './resource-profile67.mjs';
 import { computeSdkBuildIdentity } from '../generate-sdk-types.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -22,6 +22,13 @@ const json = bytes => JSON.parse(new TextDecoder('utf-8', { fatal: true }).decod
 const require = createRequire(import.meta.url);
 const sourceSHA = () => execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
 const sourceStatus = () => execFileSync('git', ['status', '--porcelain=v1'], { cwd: root, encoding: 'utf8' });
+
+// Preserve the awaited reader API while each filesystem operation reads current bytes.
+const lstatSource = async (...args) => lstatSync(...args);
+const openSource = async (...args) => openSync(...args);
+const statSource = async fd => fstatSync(fd);
+const readSource = async (...args) => readSync(...args);
+const closeSource = async fd => closeSync(fd);
 
 function cleanRelative(path) {
   if (typeof path !== 'string' || path.length > 1024 || !path || path.includes('\\')
@@ -36,24 +43,24 @@ async function boundedFile(base, path, maximum) {
   let current = base;
   for (const part of path.split('/')) {
     current = resolve(current, part);
-    if ((await lstat(current)).isSymbolicLink()) throw new Error(`Artifact symlink: ${path}`);
+    if ((await lstatSource(current)).isSymbolicLink()) throw new Error(`Artifact symlink: ${path}`);
   }
-  const file = await open(current, 'r');
+  const file = await openSource(current, 'r');
   try {
-    const before = await file.stat();
+    const before = await statSource(file);
     if (!before.isFile() || before.size > maximum) throw new Error(`Artifact exceeds bound: ${path}`);
     // Read one extra byte: a growing file cannot turn a bounded read into a prefix.
     const bytes = Buffer.alloc(before.size + 1);
     let length = 0;
     while (length < bytes.length) {
-      const result = await file.read(bytes, length, bytes.length - length, length);
-      if (!result.bytesRead) break;
-      length += result.bytesRead;
+      const result = await readSource(file, bytes, length, bytes.length - length, length);
+      if (!result) break;
+      length += result;
     }
-    const after = await file.stat();
+    const after = await statSource(file);
     if (length !== before.size || after.size !== before.size || after.mtimeMs !== before.mtimeMs) throw new Error(`Artifact changed while reading: ${path}`);
     return bytes.subarray(0, length);
-  } finally { await file.close(); }
+  } finally { await closeSource(file); }
 }
 async function pin(path, base = root, maximum = 268435456) {
   const bytes = await boundedFile(base, path, maximum);
@@ -206,23 +213,24 @@ export async function run() {
   const browserEnv = { ...process.env, PLAYWRIGHT_SKIP_BROWSER_GC: '1', CFFIXED_USER_HOME: appData, TMPDIR: temporary };
   const receipt = { protocol: PROTOCOL_VERSION, runId, started: new Date().toISOString(), sourceSHA: sourceSHA(), sourceStatusAtStart: sourceStatus(), phase: 'binding' };
   try {
-    // Explicit66 continuation: historical contract authority and actual runtime
+    // Explicit67 continuation: historical contract authority and actual runtime
     // bytes remain separate. No frozen45 literal or expected value is rewritten.
-    const continuation = await loadMountedSourceContinuation66({
+    const resourceProfile = RESOURCE_PROFILE67_ID;
+    const continuation = await loadMountedResourceProfile67({ resourceProfile,
       readArtifact: (path, maximum) => boundedFile(root, path, maximum),
     });
     const continuationBefore = await continuation.verifyAll();
-    await writeJson(resolve(runRoot, 'source-continuation66-before.json'), continuationBefore);
+    await writeJson(resolve(runRoot, 'source-continuation67-before.json'), continuationBefore);
     const continuationRuntimeBefore = await continuation.captureRuntimeInventory(receipt.sourceSHA);
-    await writeJson(resolve(runRoot, 'source-continuation66-runtime-before.json'), continuationRuntimeBefore);
-    receipt.sourceContinuation = { scope: 'Historical45/accepted47/accepted48 source proof plus exact current66 authority pins; runtime inventories and scenario/build pins always name actual current66 bytes.',
-      before: await pin('source-continuation66-before.json', runRoot), after: null,
-      runtimeBefore: await pin('source-continuation66-runtime-before.json', runRoot), runtimeAfter: null };
+    await writeJson(resolve(runRoot, 'source-continuation67-runtime-before.json'), continuationRuntimeBefore);
+    receipt.sourceContinuation = { scope: 'Explicit strict resource profile67 and whole192 current raw source pins; retained c82 snapshot and legacy45/47/48/66 source authority inherit no runtime acceptance.',
+      before: await pin('source-continuation67-before.json', runRoot), after: null,
+      runtimeBefore: await pin('source-continuation67-runtime-before.json', runRoot), runtimeAfter: null };
     const sourcePins = json(await boundedFile(root, 'contracts/mounted-e2e/v1/source-pins.json', BUDGETS.observationBytes));
     const manifest = json(await boundedFile(root, 'contracts/mounted-e2e/v1/manifest.json', BUDGETS.observationBytes));
     // Reject source/transport incompatibility before launching a browser owner.
     ownBoundedData(json(await boundedFile(root, 'contracts/mounted-e2e/v1/interaction-literals.json', 65536)), 65536);
-    interactionValidators(json(await boundedFile(root, 'contracts/mounted-e2e/v1/observation.schema.json', BUDGETS.observationBytes)));
+    interactionValidators(json(await boundedFile(root, 'contracts/mounted-e2e/v1/observation.schema.json', BUDGETS.observationBytes)), { resourceProfile });
     const nativeManifest = json(await boundedFile(root, 'artifacts/sdk-native-manifest-v2.json', BUDGETS.observationBytes));
     const build = { buildId: nativeManifest.build_id,
       wasm: await pin('packages/wasm/dist/editor_wasm_bg.wasm'),
@@ -234,13 +242,13 @@ export async function run() {
       throw new Error('Current source, compiled manifest and sealed WASM do not agree');
     }
     const extraPaths = ['contracts/mounted-e2e/v1/interaction-literals.json', 'scripts/mounted-corpus/interactions.mjs', 'scripts/mounted-corpus/native-observer.mjs', 'scripts/mounted-corpus/interactions.css', 'scripts/mounted-corpus/collect-interactions.mjs', 'tests/mounted-corpus-interactions.spec.js', 'tests/mounted-corpus-interactions.node.mjs'];
-    const continuationSidecarPaths = ['source-continuation66-before.json', 'source-continuation66-runtime-before.json']
+    const continuationSidecarPaths = ['source-continuation67-before.json', 'source-continuation67-runtime-before.json']
       .map(name => relative(root, resolve(runRoot, name)));
     const paths = [...new Set([...sourcePins.files.map(item => item.path), ...REQUIRED_SCENARIO_PATHS, ...extraPaths,
-      // Frozen v1 RunBinding permits64 pins. The complete current66 continuation
+      // Frozen v1 RunBinding permits64 pins. The complete current67 continuation
       // inventory is separately pinned above; retain that schema without widening.
-      ...continuationSidecarPaths, SOURCE_CONTINUATION66_PATH, 'scripts/mounted-corpus/source-continuation66.mjs',
-      'tests/mounted-corpus-source-continuation66.node.mjs'])].sort();
+      ...continuationSidecarPaths, RESOURCE_PROFILE67_PATH, 'scripts/mounted-corpus/resource-profile67.mjs',
+      'tests/mounted-corpus-resource-profile67.node.mjs'])].sort();
     const scenarioPins = await Promise.all(paths.map(path => pin(path)));
     const previousEnv = { CFFIXED_USER_HOME: process.env.CFFIXED_USER_HOME, TMPDIR: process.env.TMPDIR, PLAYWRIGHT_SKIP_BROWSER_GC: process.env.PLAYWRIGHT_SKIP_BROWSER_GC };
     let pre;
@@ -256,6 +264,7 @@ export async function run() {
       scenarioPins, build, environment: { nodeVersion: process.version, playwrightVersion: require('@playwright/test/package.json').version,
         os: { platform: os.platform(), release: os.release(), arch: os.arch() }, engines: pre.engines }, nativeBaselines: pre.nativeBaselines };
     await writeJson(resolve(runRoot, 'run-binding.json'), binding, BUDGETS.runBindingBytes);
+    await assertResourceProfileBinding67({ resourceProfile, runBinding: binding, readArtifact: (path, maximum) => boundedFile(root, path, maximum) });
     receipt.phase = 'browser';
     const browserLog = await open(resolve(runRoot, 'browser.log'), 'wx');
     try {
@@ -265,12 +274,12 @@ export async function run() {
     receipt.browserLog = await pin('browser.log', runRoot);
     receipt.phase = 'collector';
     const readArtifact = (path, maximum) => boundedFile(path.startsWith('observations/') || path.startsWith('interactions/') ? runRoot : root, path, maximum);
-    const contract = await loadContract({ readArtifact: continuation.historicalAuthorityReader(readArtifact) });
+    const contract = await loadContract({ readArtifact: continuation.historicalAuthorityReader(readArtifact), resourceProfile });
     const observations = await observationInventory(runRoot);
-    const baseReport = await collect({ contract, runBinding: binding, observations, readArtifact, sourceSHA: sourceSHA() });
+    const baseReport = await collect({ contract, runBinding: binding, observations, readArtifact, sourceSHA: sourceSHA(), resourceProfile });
     await writeJson(resolve(runRoot, 'corpus-report.json'), baseReport);
     receipt.interactionPaths = await interactionInventory(runRoot);
-    const interactions = await collectInteractions({ runBinding: binding,
+    const interactions = await collectInteractions({ runBinding: binding, resourceProfile, readRuntimeArtifact: readArtifact,
       readArtifact: continuation.historicalAuthorityReader(readArtifact) });
     await writeJson(resolve(runRoot, 'interactions-report.json'), interactions);
     const report = combineReport(baseReport, interactions);
@@ -285,12 +294,12 @@ export async function run() {
     }
     const continuationRuntimeAfter = await continuation.captureRuntimeInventory(sourceSHA());
     if (JSON.stringify(continuationRuntimeAfter) !== JSON.stringify(continuationRuntimeBefore)) throw new Error('Actual continuation runtime source inventory changed during run');
-    await writeJson(resolve(runRoot, 'source-continuation66-runtime-after.json'), continuationRuntimeAfter);
-    receipt.sourceContinuation.runtimeAfter = await pin('source-continuation66-runtime-after.json', runRoot);
+    await writeJson(resolve(runRoot, 'source-continuation67-runtime-after.json'), continuationRuntimeAfter);
+    receipt.sourceContinuation.runtimeAfter = await pin('source-continuation67-runtime-after.json', runRoot);
     const continuationAfter = await continuation.verifyAll();
     if (JSON.stringify(continuationAfter) !== JSON.stringify(continuationBefore)) throw new Error('Historical/current source continuation changed during run');
-    await writeJson(resolve(runRoot, 'source-continuation66-after.json'), continuationAfter);
-    receipt.sourceContinuation.after = await pin('source-continuation66-after.json', runRoot);
+    await writeJson(resolve(runRoot, 'source-continuation67-after.json'), continuationAfter);
+    receipt.sourceContinuation.after = await pin('source-continuation67-after.json', runRoot);
     if (receipt.sourceSHA !== sourceSHA()) throw new Error('Source HEAD changed during run');
     receipt.phase = 'completed';
     receipt.integrity = report.integrity.status;

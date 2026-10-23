@@ -3,13 +3,14 @@
 // No Swift helper, Accessibility, NSPasteboard, CG events, browser or OS clipboard access.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,writeFileSync,readFileSync,rmSync} from 'node:fs';
+import {mkdtempSync,writeFileSync,readFileSync,rmSync,symlinkSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createClipboardPlatform,ClipboardPlatformError} from '../scripts/clipboard-installed/native-platform.mjs';
 const repo=fileURLToPath(new URL('../',import.meta.url));
 const pinnedNode=resolve(repo,'.tools/node/node_modules/node/bin/node');
+const pinnedLauncher=resolve(repo,'tests/fixtures/clipboard-platform-launcher.sh');
 const nonce='1234567890abcdef1234567890abcdef',title=`KlenWriter Clipboard native ${nonce}`;
 const rootFrame={x:80,y:60,width:1024,height:820},pid=4242;
 // Independent source-authored literal programs. Never imported/generated from adapter internals.
@@ -27,10 +28,10 @@ const safariProgramIds={copy:'osr47/copy/safari-release-first/1',cut:'osr47/cut/
 const safariReleaseIds={copy:'osr47/release-copy/safari-release-first/1',cut:'osr47/release-cut/safari-release-first/1',paste:'osr47/release-paste/safari-release-first/1',undo:'osr47/release-undo/safari-release-first/1',redo:'osr47/release-redo/1'};
 const releases={copy:[{keyCode:55,down:false,flags:'none'},{keyCode:8,down:false,flags:'none'}],cut:[{keyCode:55,down:false,flags:'none'},{keyCode:7,down:false,flags:'none'}],paste:[{keyCode:55,down:false,flags:'none'},{keyCode:9,down:false,flags:'none'}],undo:[{keyCode:55,down:false,flags:'none'},{keyCode:6,down:false,flags:'none'}],redo:[{keyCode:55,down:false,flags:'none'},{keyCode:56,down:false,flags:'none'},{keyCode:6,down:false,flags:'none'}]};
 function fixture(t,{browser='chrome',scenario={},onRecord=()=>{}}={}){
-  const dir=mkdtempSync(join(tmpdir(),'osr47-clipboard-platform-test-')),helper=join(dir,'closed-node-mock'),config=join(dir,'scenario.json'),log=join(dir,'requests.jsonl');
+  const dir=mkdtempSync(join(tmpdir(),'osr47-clipboard-platform-test-')),helper=join(dir,'closed-node-mock.sh'),config=join(dir,'scenario.json'),log=join(dir,'requests.jsonl');
   t.after(()=>rmSync(dir,{recursive:true,force:true}));
   const constants={pid,rootFrame,programs:{copy,cut,paste,undo,redo},safariCopy,safariPrograms,safariProgramIds,safariReleaseIds,releases};
-  const body=`import {readFileSync,appendFileSync} from 'node:fs';
+  const body=`const {readFileSync,appendFileSync}=require('node:fs');
 const config=${JSON.stringify(config)},log=${JSON.stringify(log)},fixed=${JSON.stringify(constants)};
 const scenario=JSON.parse(readFileSync(config,'utf8')),request=JSON.parse(readFileSync(0,'utf8'));
 appendFileSync(log,JSON.stringify(request)+'\\n');
@@ -64,8 +65,10 @@ else if(request.operation==='key'){
 }
 process.stdout.write(JSON.stringify(value)+'\\n');process.exit(exit);
 `;
-  // Explicit pinned Node executable; never rely on env/node or execute a production native helper.
-  writeFileSync(helper,'#!'+pinnedNode+'\n'+body,{mode:0o755});writeFileSync(config,JSON.stringify(scenario));
+  // The checked-in launcher selects this fixture's pinned Node link and non-executable CJS sidecar.
+  writeFileSync(join(dir,'closed-node-mock.cjs'),body,{mode:0o600});
+  symlinkSync(pinnedNode,join(dir,'node'));symlinkSync(pinnedLauncher,helper);
+  writeFileSync(config,JSON.stringify(scenario));
   const platform=createClipboardPlatform({helperPath:helper,browser,nonce,title,onRecord});
   return{platform,requests:()=>{try{return readFileSync(log,'utf8').trim().split('\n').filter(Boolean).map(v=>JSON.parse(v));}catch(error){if(error.code==='ENOENT')return[];throw error;}},configure:v=>writeFileSync(config,JSON.stringify(v))};
 }

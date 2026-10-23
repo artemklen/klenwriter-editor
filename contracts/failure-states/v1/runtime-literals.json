@@ -1,0 +1,56 @@
+{
+  "format": "editor-failure-states/runtime-literals/1",
+  "status": "NOT_RUN",
+  "healthy": "admission/healthy.canonical.json",
+  "afterExplicitXEdit": "admission/xprefix.canonical.json",
+  "beforeTrapDispatch": "admission/xprefix.canonical.json",
+  "afterTrapPublication": "admission/after-trap.canonical.json",
+  "trapPhases": [
+    "before_dispatch",
+    "after_publication"
+  ],
+  "attemptedInput": "Y",
+  "coherentRecoveryInput": "admission/xprefix.canonical.json",
+  "initialEdit": "X",
+  "freshRecoveryHostUnsaved": true,
+  "nativeBaselineIsNotDurableSave": true,
+  "provisionalResolution": "explicit retain_separately, preserve attempted Y outside active document",
+  "oldHostCallback": "complete the actual retained pre-trap controlled Save job; reject its originating realm before native dispatch, never report stale completion as Saved",
+  "delayedControlledSave": {
+    "capture": "after coherent X edit and before arming the compiled trap; actual snapshot receipt remains retained",
+    "canonical": "admission/xprefix.canonical.json",
+    "receipt": "full actual snapshot DTO including canonical_json, stamp and handle; exact acknowledge_snapshot request with its captured stamp and handle",
+    "origin": "actual originating host realm; carry unchanged through the external recovery packet",
+    "completion": "controlled host callback, not a durable persistence service; the fresh host checks the job origin before any submit",
+    "nativeResourcesBeforeTrap": {
+      "sessions": 1,
+      "snapshot_handles": 1,
+      "snapshot_bytes": "161",
+      "protected_cursors": 1
+    }
+  },
+  "recoveryRetention": {
+    "beforeResolution": "external packet persists across repeated document reloads with coherent X, provisional Y, durable original, hostUnsaved true and actual pending Save job",
+    "afterExplicitResolution": "persist the archived Y disposition and retained actual pending Save job; do not drop packet",
+    "removeOnlyAfter": "successful matching current fresh Save acknowledgement and snapshot release",
+    "reloadChecks": ["before_resolution", "after_resolution_before_acknowledged_save"]
+  },
+  "freshSave": "only after explicit resolution and actual matching receipt acknowledgement",
+  "generatedFinalizerDetachment": {
+    "scope": "actual generated V2 fixture objects; no forced GC scheduling or native reclamation claim",
+    "observerInstalledBeforeAnySession": true,
+    "retirementDetaches": 2,
+    "healthyBeforeCleanup": 0,
+    "healthyExplicitCleanupDetaches": 2,
+    "relationalPointerOracle": "two distinct positive safe-integer Native pointer values; returned pointer equals before; pointer after zero",
+    "afterRetirementProbes": "exact same two observations; counters unavailable/null, never zero",
+    "observationMaxRecords": 32,
+    "overflow": "FAIL; original detacher behavior preserved",
+    "unsupportedHost": "generated finalizer with absent WeakRef refuses Session construction as sdk.module_invalid/finalization before opening Native",
+    "customGlueWithoutDetacher": "unchanged previous behavior; generated-finalizer protection unclaimed"
+  },
+  "afterPublicationLiteral": {
+    "bytes": 162,
+    "sha256": "56227c436a1989f978f78b0d55b025f3fcd3abfdecc3e1fd6209ce1845529b65"
+  }
+}

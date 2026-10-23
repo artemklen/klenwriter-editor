@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // CONTROLLED SYNTHETIC DATA ONLY. These receipts never came from a product,
 // browser, native module or human. Passing controls are not execution evidence.
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { loadContract, collect } from '../scripts/mounted-corpus/collect.mjs';
-import { loadMountedSourceContinuation66 } from '../scripts/mounted-corpus/source-continuation66.mjs';
+import { loadMountedSourceContinuation67 } from '../scripts/mounted-corpus/source-continuation67.mjs';
+import { loadMountedResourceProfile67 } from '../scripts/mounted-corpus/resource-profile67.mjs';
 import { ENGINES, RESOURCE_KEYS, REQUIRED_SCENARIO_PATHS, PROTOCOL_VERSION, ACCEPTED_SOURCE, BUDGETS } from '../scripts/mounted-corpus/protocol.mjs';
 
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -14,13 +16,17 @@ const encode = value => Buffer.from(typeof value === 'string' ? value : JSON.str
 const pin = (path, bytes) => ({ path, bytes: bytes.length, sha256: hash(bytes) });
 const clone = value => structuredClone(value);
 const root = new URL('../', import.meta.url);
+// Actual filesystem reads remain fresh; only the underlying I/O primitive is synchronous.
+const readSourceFile = async (...args) => readFileSync(...args);
 const currentSourceReader = async (path, limit) => {
-  const value = await readFile(new URL(path, root)); assert(value.length <= limit); return value;
+  const value = await readSourceFile(new URL(path, root)); assert(value.length <= limit); return value;
 };
 // Controlled oracle fixtures retain original45 authority bytes. The explicit
-// continuation independently verifies all current66 bytes and retained48/47 authority before every alias.
-const continuation = await loadMountedSourceContinuation66({ readArtifact: currentSourceReader });
-const sourceReader = continuation.historicalAuthorityReader(currentSourceReader);
+// continuation independently verifies all current67 bytes and retained48/47 authority before every alias.
+const currentSourceLayer = await loadMountedResourceProfile67({ readArtifact: currentSourceReader });
+const c82SourceReader = currentSourceLayer.retainedC82SourceReader(currentSourceReader);
+const continuation = await loadMountedSourceContinuation67({ readArtifact: c82SourceReader });
+const sourceReader = continuation.historicalAuthorityReader(c82SourceReader);
 const contract = await loadContract({ readArtifact: sourceReader });
 const fixtures = new Map();
 for (const p of [...contract.sourcePins.files, ...contract.sourcePins.acceptedSourceFiles]) fixtures.set(p.path, await sourceReader(p.path, 4 * 1024 * 1024));

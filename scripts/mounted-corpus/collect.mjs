@@ -7,6 +7,7 @@ import {
   PROTOCOL_VERSION, ACCEPTED_SOURCE, LITERAL_AUTHORING_SOURCE, ENGINES, ENGINE_TIERS, BUDGETS,
   REQUIRED_CALL_LABELS, REQUIRED_SCENARIO_PATHS, ownBoundedData, isU64, nativeResourceCounts,
 } from './protocol.mjs';
+import { assertResourceProfile67, resourceSchema67, assertResourceProfileBinding67, assertSettledResources67 } from './resource-profile67.mjs';
 
 const BASE = 'contracts/mounted-e2e/v1/';
 // run-binding.schema.json#/$defs/pin/properties/bytes/maximum. This
@@ -94,7 +95,8 @@ function uniquePins(pins) {
 
 /** readArtifact is the only I/O capability. The caller owns its path allowlist,
  * regular-file/symlink policy and preallocation bounds. Returned bytes are checked again. */
-export async function loadContract({ readArtifact }) {
+export async function loadContract({ readArtifact, resourceProfile }) {
+  assertResourceProfile67(resourceProfile);
   requireData(typeof readArtifact === 'function', 'reader', 'Bounded artifact reader required');
   const pins = dataJson(await readPin(readArtifact, SOURCE_PINS, BUDGETS.runBindingBytes), BUDGETS.runBindingBytes);
   requireData(pins.acceptedSource === ACCEPTED_SOURCE, 'contract_anchor', 'Frozen runtime capability anchor mismatch');
@@ -135,9 +137,12 @@ export async function loadContract({ readArtifact }) {
       && equal(pointer(fixture, c.source.expectedPointer).diagnostic_codes, c.fixtureDiagnosticCodes), 'source_negative', 'Frozen refusal expectation mismatch');
   }
   const ajv = new Ajv2020({ strict: true, allErrors: false });
-  const validators = Object.fromEntries(['observation', 'run-binding', 'report'].map(name => [name, ajv.compile(json(`${name}.schema.json`))]));
+  const validators = Object.fromEntries(['observation', 'run-binding', 'report'].map(name => {
+    const schema = json(`${name}.schema.json`);
+    return [name, ajv.compile(name === 'observation' ? resourceSchema67(schema, resourceProfile) : schema)];
+  }));
   const contract = freeze({ manifest, literals, sourcePins: pins });
-  contracts.set(contract, { files, validators, initial, positives: new Map(literals.positiveCases.map(c => [c.caseId, c])),
+  contracts.set(contract, { files, validators, initial, resourceProfile, positives: new Map(literals.positiveCases.map(c => [c.caseId, c])),
     negatives: new Map(literals.negativeCases.map(c => [c.caseId, c])) });
   return contract;
 }
@@ -176,7 +181,7 @@ const zeroCounts = value => Object.entries(value).every(([k, v]) => k === 'lifec
 const stopStatus = response => response.status === 'refused' ? 'native_refused'
   : response.status === 'fatal' ? 'native_fatal' : response.status === 'dom_refused' ? 'dom_refused' : null;
 
-function rowChecks(observation, row, literal, binding, baselines, profile, runContext) {
+function rowChecks(observation, row, literal, binding, baselines, profile, runContext, resourceProfile) {
   const issues = [], gaps = [], cleanup = [];
   const gap = (code, message) => { if (gaps.length < 16) gaps.push(failure(code, message)); };
   const cleanGap = (code, message) => { if (cleanup.length < 8) cleanup.push(failure(code, message)); };
@@ -188,6 +193,7 @@ function rowChecks(observation, row, literal, binding, baselines, profile, runCo
     else requireData(equal(value, runContext.value), 'context_binding', 'Registry/capability context differs within this run');
   };
   const checkOwner = (owner, expectedInput) => {
+    attempt(() => assertSettledResources67({ resourceProfile, owner }));
     attempt(() => requireData(owner.mountOrdinal < owner.destroyOrdinal, 'owner_order', 'Owner was not destroyed after its actual construction'));
     attempt(() => byteRecord(owner.input, expectedInput));
     if (owner.originalInputBeforeDestroy !== null) attempt(() => byteRecord(owner.originalInputBeforeDestroy, owner.input));
@@ -487,12 +493,16 @@ function checkTreesAndStates(owner, literal, stage, gap) {
 
 /** Deterministic full-ledger report. observations are bounded artifact pins,
  * never parsed runtime objects or expected values. Product execution is external. */
-export async function collect({ contract, runBinding, observations, readArtifact, sourceSHA }) {
+export async function collect({ contract, runBinding, observations, readArtifact, sourceSHA, resourceProfile }) {
+  assertResourceProfile67(resourceProfile);
   const internal = contracts.get(contract);
   requireData(internal && typeof readArtifact === 'function', 'contract', 'loadContract result and bounded artifact reader required');
+  requireData(internal.resourceProfile === resourceProfile, 'resource_profile67.contract_mode', 'Collector mode must match its privately configured contract validator');
   const binding = ownBoundedData(runBinding, BUDGETS.runBindingBytes).value;
   observations = ownBoundedData(observations, BUDGETS.runBindingBytes).value;
   requireData(internal.validators['run-binding'](binding), 'run_binding_shape', 'RunBinding fails its closed source schema'); checkU64(binding);
+  // Configuration is explicit; a modern sidecar never silently selects a mode.
+  await assertResourceProfileBinding67({ resourceProfile, runBinding: binding, readArtifact });
   const globals = [], globalBlockers = [], baselines = new Map(), runContext = { value: null };
   const global = (code, message) => globals.push(failure(code, message));
   const guarded = async fn => { try { return await fn(); } catch (e) { global(e.code?.replace(/^mounted-corpus\./, '') ?? 'data', e.message); return null; } };
@@ -563,7 +573,7 @@ export async function collect({ contract, runBinding, observations, readArtifact
         report.disposition = 'executed'; report.measurementStatus = 'EXECUTED'; report.evidence = [record.pin];
         if (!record.schema || record.duplicate) result = { issues: [failure(record.duplicate ? 'duplicate_observation' : 'observation_shape', 'Measurement fails closed shape/unique cardinality')], gaps: [], cleanup: [], cleanupUnavailable: true };
         else {
-          try { checkU64(record.value); result = rowChecks(record.value, row, internal.positives.get(row.caseId) ?? internal.negatives.get(row.caseId), binding, baselines, profile, runContext); }
+          try { checkU64(record.value); result = rowChecks(record.value, row, internal.positives.get(row.caseId) ?? internal.negatives.get(row.caseId), binding, baselines, profile, runContext, resourceProfile); }
           catch (e) { result = { issues: [failure(e.code?.replace(/^mounted-corpus\./, '') ?? 'data', e.message)], gaps: [], cleanup: [], cleanupUnavailable: true }; }
         }
       }

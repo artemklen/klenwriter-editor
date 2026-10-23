@@ -36,6 +36,12 @@ save/destroy/fresh reopen и отдельные integrity/requirement резул
 и контракту задачи Linear. Реализуйте общую семантику на Rust; KWDJ остаётся отдельным
 профилем. CMS, DB, Angular и browser runtime не входят в native core/profile closure.
 
+[Failure states67](docs/failure-states.md) добавляет bounded loading/cancellation,
+retirement после настоящего WASM trap и явное host recovery в новом document.
+`npm run test:failure` входит в локальный `npm run check`; его finite DOM,
+admission и resource observations сохраняют отдельные source/artifact joins.
+Тестовая trap composition имеет собственную identity и не публикуется в пакеты.
+
 ## Чистая сборка
 
 Нужны Git, публичный доступ к crates.io/npm/Rust toolchain downloads и системные

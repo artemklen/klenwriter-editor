@@ -1,0 +1,1261 @@
+{
+  "format": "osr67-ac1-finite-matrix/1",
+  "state": "NOT_RUN",
+  "sourceBaseCommit": "369f58c2125c902be1308df451afa88482a4f9b3",
+  "sourceTreeEquivalentTo": "ba67499c35b52048f4e81da17a0fc4c8e321597a",
+  "purpose": "Finite existing-literal AC1 full-pipeline composition and lossless stage-stop evidence; no exhaustive security/HTML conformance",
+  "rowCount": 11,
+  "engines": {
+    "bundled": [
+      "chromium",
+      "webkit",
+      "firefox"
+    ],
+    "installed": [
+      "chrome",
+      "safari"
+    ],
+    "fixedRowsPerEngine": 11,
+    "installedScope": "Controlled selected-string paste/mount via actual installed browser. No physical OS clipboard/input claim. Each method must retain its actual observer capabilities and limits; unavailable mandatory observation is a blocker."
+  },
+  "oracleDerivation": "Existing fixture/test literals only, never candidate readback. Canonical strings for clipboard expected KWDJ authored from existing literal expected values using existing canonical-v1 sorted-key/UTF8 rules; exact T06 canonical file retained unchanged. Root freezes these literals before implementation.",
+  "shared": {
+    "isolation": {
+      "freshContextAndDocumentPerRow": true,
+      "serviceWorkers": "blocked by proposed harness config; no SW acceptance claim",
+      "nativeSetup": "one ready KWDJ basic provider; explicit whole-root child range0..2 for paste rows; no OS clipboard claim"
+    },
+    "observation": {
+      "installBefore": "context/page creation navigation and every mount/input",
+      "ledgerFields": [
+        "monotonicSequence",
+        "phase",
+        "time",
+        "url",
+        "method",
+        "resourceType",
+        "frameIdentity",
+        "decision",
+        "responseStatusOrFailure"
+      ],
+      "recordBeforeDecision": true,
+      "unexpectedAttemptOutcome": "record then abort, and row fails even if blocked/no bytes transferred",
+      "cspViolations": 0,
+      "pageErrors": 0,
+      "unhandledRejections": 0,
+      "dialogs": 0,
+      "popupPages": 0,
+      "sentinels": {
+        "__clipboardUnexpectedExecution": 0,
+        "__osr39": 0
+      },
+      "checkSentinelsAt": [
+        "ready",
+        "operation terminal",
+        "window complete",
+        "cleanup complete"
+      ],
+      "maxRequestRecords": 128,
+      "maxCspRecords": 32,
+      "maxErrorRecords": 32,
+      "overflow": "FAIL, never truncate-success"
+    },
+    "completion": {
+      "wholeRowDeadlineMs": 45000,
+      "initialReadyDeadlineMs": 15000,
+      "operation": "await actual ready/clipboard outcome/native Submission completion, no guessed settlement",
+      "afterOperation": "two animation frames then fixed250ms; check full ledger/native/DOM/source invariants",
+      "cleanup": "explicitly transfer any raw recovery, destroy once, await real SDK destroy and any pending clipboard transfer, then two animation frames plus fixed250ms; read final counters/ledger",
+      "animationFrameBoundMs": 2000,
+      "quietWindowReset": false,
+      "pendingRequestsAtFinal": 0,
+      "teardown": "close only own context after retaining original receipt; late activity through final window remains a failure",
+      "claimLimit": "Only this finite sequence and observation lifetime; no exhaustive sanitizer/HTML conformance, no infinite-time no-network guarantee"
+    },
+    "nativePasteAccepted": {
+      "canonical": "exact independent canonicalUtf8 below",
+      "stampDelta": {
+        "session": "same",
+        "generation": "same",
+        "revision": "+1",
+        "selection_epoch": "+1",
+        "history_epoch": "+1"
+      },
+      "documentEventsDelta": 1,
+      "undoEntriesDelta": 1,
+      "redoEntries": 0,
+      "rawClipboardRecovery": null
+    },
+    "unchangedNativeAndDom": [
+      "canonical bytes",
+      "all five stamp fields",
+      "full state incl selection/stored marks/dirty/saved revision/history",
+      "all native IDs/marks/attributes/role order",
+      "published events",
+      "owned DOM tree/text/attrs/identity"
+    ],
+    "domComparison": {
+      "expectedTree": "exact tag/text/allowed attrs/classes below; no authored attrs beyond it",
+      "generatedAttributes": "only each actual owned row unique id + data-editor-node; root separately owned host aria state; require uniqueness/role cardinality, do not learn expected semantic content from native result",
+      "forbiddenDescendants": [
+        "script",
+        "img",
+        "iframe",
+        "object",
+        "embed",
+        "style",
+        "link",
+        "base",
+        "meta",
+        "template",
+        "svg",
+        "math"
+      ],
+      "noClickNavigation": true
+    },
+    "cleanup": {
+      "native": "sessions0/snapshot_handles0/snapshot_bytes string0/protected_cursors0 on normal/non-trap cases",
+      "jsNumericOwners": "all DOM/selection/clipboard/hostRequest/inputObservation/popup/SDK owner counters0 after actual completion",
+      "hostAttributes": "restore original host attrs",
+      "recovery": "once transferred to host no library retention; second takeRecovery isnull"
+    }
+  },
+  "rows": [
+    {
+      "id": "AC1-01",
+      "source": "tests/clipboard-decode.node.mjs:CDEC21 first lowercase utf-8/no html wrapper, lines109–116",
+      "pipeline": "captured controlled strings → actual lazy parser → allowlist decoder → native query+mutation → current basic renderer",
+      "input": {
+        "action": "public mounted clipboard.paste",
+        "representations": {
+          "text/html": "<meta charset=\"utf-8\"><p><strong>A</strong><br><a href=\"https://example.test/owned?q=1#x\" title=\"literal\">B</a></p><p>Tail</p>",
+          "text/plain": "independent fallback must not replace rich"
+        },
+        "metadata": {
+          "types": [
+            "text/plain",
+            "text/html"
+          ],
+          "items": "one string item per declared selected MIME",
+          "files": 0
+        },
+        "seedCanonicalUtf8": "{\"content\":[{\"content\":[{\"text\":\"abc\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"def\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "child",
+            "path": [],
+            "index": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "path": [],
+            "index": 2,
+            "affinity": "after"
+          }
+        },
+        "captureReadOrder": [
+          "text/plain",
+          "text/html"
+        ],
+        "selectedUtf16Units": 168
+      },
+      "oracle": {
+        "outcome": "inserted",
+        "clipboardDiagnostics": [
+          "clipboard.editor_metadata_ignored"
+        ],
+        "native": {
+          "publication": "changed once",
+          "canonicalUtf8": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"A\",\"type\":\"text\"},{\"type\":\"hard_break\"},{\"marks\":[{\"attrs\":{\"href\":\"https://example.test/owned?q=1#x\",\"title\":\"literal\"},\"type\":\"link\"}],\"text\":\"B\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"Tail\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "canonicalValue": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "A",
+                    "marks": [
+                      {
+                        "type": "strong"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "hard_break"
+                  },
+                  {
+                    "type": "text",
+                    "text": "B",
+                    "marks": [
+                      {
+                        "type": "link",
+                        "attrs": {
+                          "href": "https://example.test/owned?q=1#x",
+                          "title": "literal"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Tail"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "dom": {
+          "expectedTree": [
+            {
+              "tag": "p",
+              "attributes": {},
+              "classes": [],
+              "children": [
+                {
+                  "tag": "span",
+                  "attributes": {},
+                  "classes": [],
+                  "children": [
+                    {
+                      "tag": "strong",
+                      "attributes": {},
+                      "classes": [],
+                      "children": [
+                        {
+                          "text": "A"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "tag": "br",
+                  "attributes": {},
+                  "classes": [],
+                  "children": []
+                },
+                {
+                  "tag": "span",
+                  "attributes": {},
+                  "classes": [],
+                  "children": [
+                    {
+                      "tag": "a",
+                      "attributes": {
+                        "href": "https://example.test/owned?q=1#x",
+                        "title": "literal"
+                      },
+                      "classes": [],
+                      "children": [
+                        {
+                          "text": "B"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "p",
+              "attributes": {},
+              "classes": [],
+              "children": [
+                {
+                  "tag": "span",
+                  "attributes": {},
+                  "classes": [],
+                  "children": [
+                    {
+                      "text": "Tail"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "state": "ready editable; no untrusted markup installed"
+        },
+        "failure": null,
+        "recovery": null
+      },
+      "assets": {
+        "policy": "exact-base-static-assets",
+        "initialParserRequests": 0,
+        "inputPhaseParserRequests": 1,
+        "allOtherInputOrCleanupRequests": 0
+      },
+      "commonContract": "shared"
+    },
+    {
+      "id": "AC1-02",
+      "source": {
+        "literalId": "DOC-032",
+        "path": "contracts/kwdj/v1/fixtures/negative.json",
+        "caseIndex": 0,
+        "oracle": "case.expected diagnostic_codes and case.kwdj"
+      },
+      "pipeline": "captured controlled strings → actual lazy parser → allowlist decoder → native query+mutation → current basic renderer",
+      "input": {
+        "action": "public mounted clipboard.paste",
+        "representations": {
+          "text/html": "<script>alert(1)</script><a href=\"javascript:alert(2)\" onclick=\"alert(3)\">Visible</a><iframe src=\"https://example.test\"></iframe>",
+          "text/plain": "Visible"
+        },
+        "metadata": {
+          "types": [
+            "text/plain",
+            "text/html"
+          ],
+          "items": "one string item per declared selected MIME",
+          "files": 0
+        },
+        "seedCanonicalUtf8": "{\"content\":[{\"content\":[{\"text\":\"abc\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"def\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "child",
+            "path": [],
+            "index": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "path": [],
+            "index": 2,
+            "affinity": "after"
+          }
+        },
+        "captureReadOrder": [
+          "text/plain",
+          "text/html"
+        ],
+        "selectedUtf16Units": 136
+      },
+      "oracle": {
+        "outcome": "inserted",
+        "clipboardDiagnostics": [
+          "clipboard.rich_branch_rejected",
+          "clipboard.plain_fallback_used",
+          "clipboard.unsafe_url_rejected"
+        ],
+        "native": {
+          "publication": "changed once",
+          "canonicalUtf8": "{\"content\":[{\"content\":[{\"text\":\"Visible\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "canonicalValue": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Visible"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "dom": {
+          "expectedTree": [
+            {
+              "tag": "p",
+              "attributes": {},
+              "classes": [],
+              "children": [
+                {
+                  "tag": "span",
+                  "attributes": {},
+                  "classes": [],
+                  "children": [
+                    {
+                      "text": "Visible"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "state": "ready editable; no untrusted markup installed"
+        },
+        "failure": null,
+        "recovery": null
+      },
+      "assets": {
+        "policy": "exact-base-static-assets",
+        "initialParserRequests": 0,
+        "inputPhaseParserRequests": 1,
+        "allOtherInputOrCleanupRequests": 0
+      },
+      "commonContract": "shared"
+    },
+    {
+      "id": "AC1-03",
+      "source": {
+        "literalId": "DOC-033",
+        "path": "contracts/kwdj/v1/fixtures/negative.json",
+        "caseIndex": 0,
+        "oracle": "case.expected diagnostic_codes and case.kwdj"
+      },
+      "pipeline": "captured controlled strings → actual lazy parser → allowlist decoder → decoder typed refusal; native command and renderer publication NOT_REACHED",
+      "input": {
+        "action": "public mounted clipboard.paste",
+        "representations": {
+          "text/html": "<img src=\"data:image/png;base64,AAAA\" alt=\"x\"><img src=\"https://example.test/x.png\" alt=\"y\">"
+        },
+        "metadata": {
+          "types": [
+            "text/html"
+          ],
+          "items": "one string item per declared selected MIME",
+          "files": 0
+        },
+        "seedCanonicalUtf8": "{\"content\":[{\"content\":[{\"text\":\"abc\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"def\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "child",
+            "path": [],
+            "index": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "path": [],
+            "index": 2,
+            "affinity": "after"
+          }
+        },
+        "captureReadOrder": [
+          "text/html"
+        ],
+        "selectedUtf16Units": 92
+      },
+      "oracle": {
+        "outcome": "refused",
+        "clipboardDiagnostics": [
+          "clipboard.media_item_forbidden",
+          "clipboard.remote_image_forbidden"
+        ],
+        "native": {
+          "queryDispatches": 0,
+          "mutationDispatches": 0,
+          "beforeAfter": "UNCHANGED_NATIVE_AND_DOM"
+        },
+        "dom": {
+          "expectedTree": [
+            {
+              "tag": "p",
+              "attributes": {},
+              "classes": [],
+              "children": [
+                {
+                  "tag": "span",
+                  "attributes": {},
+                  "classes": [],
+                  "children": [
+                    {
+                      "text": "abc"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "p",
+              "attributes": {},
+              "classes": [],
+              "children": [
+                {
+                  "tag": "span",
+                  "attributes": {},
+                  "classes": [],
+                  "children": [
+                    {
+                      "text": "def"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "state": "ready editable; no untrusted markup installed"
+        },
+        "failure": {
+          "code": "dom.clipboard_decode_failed",
+          "publication": "none"
+        },
+        "recovery": {
+          "status": "retained",
+          "reason": "decode_refused",
+          "representations": "byte/code-unit exact selected strings above, retainedUtf16Units exact sum; transfer once thennull",
+          "retainedUtf16Units": 92
+        }
+      },
+      "assets": {
+        "policy": "exact-base-static-assets",
+        "initialParserRequests": 0,
+        "inputPhaseParserRequests": 1,
+        "allOtherInputOrCleanupRequests": 0
+      },
+      "commonContract": "shared",
+      "sourceQualification": "Exact existing HTML literal; controlled selected-string metadata has no actual image/file/blob transport. No OS clipboard/file/blob-delivery claim; media is independently discovered in HTML."
+    },
+    {
+      "id": "AC1-04",
+      "source": {
+        "literalId": "DOC-034",
+        "path": "contracts/kwdj/v1/fixtures/negative.json",
+        "caseIndex": 0,
+        "oracle": "case.expected diagnostic_codes and case.kwdj"
+      },
+      "pipeline": "captured controlled strings → actual lazy parser → allowlist decoder → native query+mutation → current basic renderer",
+      "input": {
+        "action": "public mounted clipboard.paste",
+        "representations": {
+          "text/html": "<p data-pm-slice=\"1 1 []\" data-node-view-content=\"true\" class=\"ProseMirror-selectednode\" style=\"color:red\">Visible</p>",
+          "text/plain": "Visible"
+        },
+        "metadata": {
+          "types": [
+            "text/plain",
+            "text/html"
+          ],
+          "items": "one string item per declared selected MIME",
+          "files": 0
+        },
+        "seedCanonicalUtf8": "{\"content\":[{\"content\":[{\"text\":\"abc\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"def\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "child",
+            "path": [],
+            "index": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "path": [],
+            "index": 2,
+            "affinity": "after"
+          }
+        },
+        "captureReadOrder": [
+          "text/plain",
+          "text/html"
+        ],
+        "selectedUtf16Units": 125
+      },
+      "oracle": {
+        "outcome": "inserted",
+        "clipboardDiagnostics": [
+          "clipboard.editor_metadata_ignored"
+        ],
+        "native": {
+          "publication": "changed once",
+          "canonicalUtf8": "{\"content\":[{\"content\":[{\"text\":\"Visible\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "canonicalValue": {
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Visible"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "dom": {
+          "expectedTree": [
+            {
+              "tag": "p",
+              "attributes": {},
+              "classes": [],
+              "children": [
+                {
+                  "tag": "span",
+                  "attributes": {},
+                  "classes": [],
+                  "children": [
+                    {
+                      "text": "Visible"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "state": "ready editable; no untrusted markup installed"
+        },
+        "failure": null,
+        "recovery": null
+      },
+      "assets": {
+        "policy": "exact-base-static-assets",
+        "initialParserRequests": 0,
+        "inputPhaseParserRequests": 1,
+        "allOtherInputOrCleanupRequests": 0
+      },
+      "commonContract": "shared"
+    },
+    {
+      "id": "AC1-05",
+      "source": {
+        "literalId": "T06-safe-data",
+        "input": "contracts/dom/v1/inputs/T06-safe-data.json",
+        "expected": "contracts/dom/v1/expected/T06-safe-data.canonical.json"
+      },
+      "pipeline": "native document admission → fixed renderer; clipboard/parser NOT_REACHED",
+      "input": {
+        "action": "public mountEditor",
+        "rawUtf8": "{\n  \"schema\": \"klenwriter.document\",\n  \"schema_version\": 1,\n  \"profile\": \"prose\",\n  \"content\": [\n    {\n      \"type\": \"paragraph\",\n      \"content\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"<script>globalThis.__osr39=1</script><img src=x onerror=alert(1)>&\\\"' é 😀\",\n          \"marks\": [\n            {\n              \"type\": \"strong\"\n            }\n          ]\n        }\n      ]\n    },\n    {\n      \"type\": \"heading\",\n      \"attrs\": {\n        \"level\": 2,\n        \"align\": \"right\",\n        \"first_line_indent\": true\n      },\n      \"content\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"Title\"\n        }\n      ]\n    },\n    {\n      \"type\": \"paragraph\",\n      \"content\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"Link\",\n          \"marks\": [\n            {\n              \"type\": \"link\",\n              \"attrs\": {\n                \"href\": \"https://example.org/a?q=%22%3E\",\n                \"title\": \"<b>Title & \\\"quote\\\"</b>\"\n              }\n            }\n          ]\n        }\n      ]\n    }\n  ]\n}\n"
+      },
+      "oracle": {
+        "outcome": "ready",
+        "native": {
+          "canonicalUtf8": "{\"content\":[{\"content\":[{\"marks\":[{\"type\":\"strong\"}],\"text\":\"<script>globalThis.__osr39=1</script><img src=x onerror=alert(1)>&\\\"' é 😀\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"attrs\":{\"align\":\"right\",\"first_line_indent\":true,\"level\":2},\"content\":[{\"text\":\"Title\",\"type\":\"text\"}],\"type\":\"heading\"},{\"content\":[{\"marks\":[{\"attrs\":{\"href\":\"https://example.org/a?q=%22%3E\",\"title\":\"<b>Title & \\\"quote\\\"</b>\"},\"type\":\"link\"}],\"text\":\"Link\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+          "revision": "0",
+          "selection_epoch": "0",
+          "history_epoch": "0",
+          "documentEvents": 0,
+          "undoEntries": 0
+        },
+        "dom": {
+          "expectedTree": [
+            {
+              "tag": "p",
+              "attributes": {},
+              "classes": [],
+              "children": [
+                {
+                  "tag": "span",
+                  "attributes": {},
+                  "classes": [],
+                  "children": [
+                    {
+                      "tag": "strong",
+                      "attributes": {},
+                      "classes": [],
+                      "children": [
+                        {
+                          "text": "<script>globalThis.__osr39=1</script><img src=x onerror=alert(1)>&\"' é 😀"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "h2",
+              "attributes": {},
+              "classes": [
+                "editor-align-right",
+                "editor-first-line-indent"
+              ],
+              "children": [
+                {
+                  "tag": "span",
+                  "attributes": {},
+                  "classes": [],
+                  "children": [
+                    {
+                      "text": "Title"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "p",
+              "attributes": {},
+              "classes": [],
+              "children": [
+                {
+                  "tag": "span",
+                  "attributes": {},
+                  "classes": [],
+                  "children": [
+                    {
+                      "tag": "a",
+                      "attributes": {
+                        "href": "https://example.org/a?q=%22%3E",
+                        "title": "<b>Title & \"quote\"</b>"
+                      },
+                      "classes": [],
+                      "children": [
+                        {
+                          "text": "Link"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "textMustRemainLiteral": "<script>globalThis.__osr39=1</script><img src=x onerror=alert(1)>&\"' é 😀"
+        },
+        "recovery": null,
+        "originalInputAfterReady": null
+      },
+      "assets": {
+        "policy": "exact-base-static-assets",
+        "initialParserRequests": 0,
+        "inputPhaseParserRequests": 0,
+        "allOtherInputOrCleanupRequests": 0
+      },
+      "commonContract": "shared"
+    },
+    {
+      "id": "AC1-06",
+      "source": {
+        "literalId": "unsafe-javascript-href",
+        "input": "contracts/dom/v1/negative/unsafe-javascript-href.json",
+        "expected": "contracts/dom/v1/acceptance-oracles.v3.json negative fixture exactdiagnostic"
+      },
+      "pipeline": "native document admission typed refusal; renderer/clipboard/parser NOT_REACHED",
+      "input": {
+        "action": "public mountEditor on its own empty host",
+        "rawUtf8": "{\n  \"schema\": \"klenwriter.document\",\n  \"schema_version\": 1,\n  \"profile\": \"prose\",\n  \"content\": [\n    {\n      \"type\": \"paragraph\",\n      \"content\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"Link\",\n          \"marks\": [\n            {\n              \"type\": \"link\",\n              \"attrs\": {\n                \"href\": \"javascript:alert(1)\"\n              }\n            }\n          ]\n        }\n      ]\n    }\n  ]\n}\n"
+      },
+      "oracle": {
+        "outcome": "sdk_failure",
+        "native": {
+          "status": "refused",
+          "code": "kwdj.unsafe_url",
+          "path": "/content/0/content/0/marks/0/attrs/href",
+          "may_have_committed": false,
+          "canonical": "NOT_OPENED, never synthetic empty canonical",
+          "documentEvents": 0
+        },
+        "dom": {
+          "children": 0,
+          "contenteditable": "false",
+          "lifecycle": "recoveryRequired",
+          "editableEmptyFallback": false
+        },
+        "recovery": {
+          "readyOriginalInput": "exact original input bytes",
+          "originalInputMethod": "exact separate copy",
+          "destroyReceiptOriginalInput": "exact independent copy; callback may not change it"
+        }
+      },
+      "assets": {
+        "policy": "exact-base-static-assets",
+        "initialParserRequests": 0,
+        "inputPhaseParserRequests": 0,
+        "allOtherInputOrCleanupRequests": 0
+      },
+      "commonContract": "shared"
+    },
+    {
+      "id": "AC1-07",
+      "source": {
+        "literalId": "scene-break-unknown-onerror",
+        "input": "contracts/dom/v1/negative/scene-break-unknown-onerror.json",
+        "expected": "contracts/dom/v1/acceptance-oracles.v3.json negative fixture exactdiagnostic"
+      },
+      "pipeline": "native document admission typed refusal; renderer/clipboard/parser NOT_REACHED",
+      "input": {
+        "action": "public mountEditor on its own empty host",
+        "rawUtf8": "{\n  \"schema\": \"klenwriter.document\",\n  \"schema_version\": 1,\n  \"profile\": \"prose\",\n  \"content\": [\n    {\n      \"type\": \"scene_break\",\n      \"onerror\": \"alert(1)\"\n    }\n  ]\n}\n"
+      },
+      "oracle": {
+        "outcome": "sdk_failure",
+        "native": {
+          "status": "refused",
+          "code": "kwdj.unknown_attribute",
+          "path": "/content/0/onerror",
+          "may_have_committed": false,
+          "canonical": "NOT_OPENED, never synthetic empty canonical",
+          "documentEvents": 0
+        },
+        "dom": {
+          "children": 0,
+          "contenteditable": "false",
+          "lifecycle": "recoveryRequired",
+          "editableEmptyFallback": false
+        },
+        "recovery": {
+          "readyOriginalInput": "exact original input bytes",
+          "originalInputMethod": "exact separate copy",
+          "destroyReceiptOriginalInput": "exact independent copy; callback may not change it"
+        }
+      },
+      "assets": {
+        "policy": "exact-base-static-assets",
+        "initialParserRequests": 0,
+        "inputPhaseParserRequests": 0,
+        "allOtherInputOrCleanupRequests": 0
+      },
+      "commonContract": "shared"
+    },
+    {
+      "id": "AC1-08",
+      "source": {
+        "literalId": "CB14 sources[1]",
+        "path": "tests/clipboard.browser.mjs",
+        "lines": [
+          149,
+          149
+        ],
+        "qualification": "Existing parser-only literal; this draft proposes its single mounted no-plain strict-refusal use, not a run or conformance claim"
+      },
+      "pipeline": "captured controlled strings → actual lazy parser → allowlist decoder → decoder typed refusal; native command and renderer publication NOT_REACHED",
+      "input": {
+        "action": "public mounted clipboard.paste",
+        "representations": {
+          "text/html": "<script>window.__clipboardUnexpectedExecution=1</script><img src=\"https://example.test/parser-image\" srcset=\"https://example.test/parser-2 2x\">"
+        },
+        "metadata": {
+          "types": [
+            "text/html"
+          ],
+          "items": "one string item per declared selected MIME",
+          "files": 0
+        },
+        "seedCanonicalUtf8": "{\"content\":[{\"content\":[{\"text\":\"abc\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"def\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "child",
+            "path": [],
+            "index": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "path": [],
+            "index": 2,
+            "affinity": "after"
+          }
+        },
+        "captureReadOrder": [
+          "text/html"
+        ],
+        "selectedUtf16Units": 143
+      },
+      "oracle": {
+        "outcome": "refused",
+        "clipboardDiagnostics": [
+          "clipboard.media_item_forbidden",
+          "clipboard.remote_image_forbidden"
+        ],
+        "native": {
+          "queryDispatches": 0,
+          "mutationDispatches": 0,
+          "beforeAfter": "UNCHANGED_NATIVE_AND_DOM"
+        },
+        "dom": {
+          "expectedTree": [
+            {
+              "tag": "p",
+              "attributes": {},
+              "classes": [],
+              "children": [
+                {
+                  "tag": "span",
+                  "attributes": {},
+                  "classes": [],
+                  "children": [
+                    {
+                      "text": "abc"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "p",
+              "attributes": {},
+              "classes": [],
+              "children": [
+                {
+                  "tag": "span",
+                  "attributes": {},
+                  "classes": [],
+                  "children": [
+                    {
+                      "text": "def"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "state": "ready editable; no untrusted markup installed"
+        },
+        "failure": {
+          "code": "dom.clipboard_decode_failed",
+          "publication": "none"
+        },
+        "recovery": {
+          "status": "retained",
+          "reason": "decode_refused",
+          "representations": "byte/code-unit exact selected strings above, retainedUtf16Units exact sum; transfer once thennull",
+          "retainedUtf16Units": 143
+        }
+      },
+      "assets": {
+        "policy": "exact-base-static-assets",
+        "initialParserRequests": 0,
+        "inputPhaseParserRequests": 1,
+        "allOtherInputOrCleanupRequests": 0
+      },
+      "commonContract": "shared"
+    },
+    {
+      "id": "AC1-09",
+      "source": {
+        "literalId": "CB14 sources[2]",
+        "path": "tests/clipboard.browser.mjs",
+        "lines": [
+          150,
+          150
+        ],
+        "qualification": "Existing parser-only literal; this draft proposes its single mounted no-plain strict-refusal use, not a run or conformance claim"
+      },
+      "pipeline": "captured controlled strings → actual lazy parser → allowlist decoder → decoder typed refusal; native command and renderer publication NOT_REACHED",
+      "input": {
+        "action": "public mounted clipboard.paste",
+        "representations": {
+          "text/html": "<iframe src=\"/clipboard-unexpected/frame\"></iframe><object data=\"/clipboard-unexpected/object\"></object><link rel=\"stylesheet\" href=\"/clipboard-unexpected/style\">"
+        },
+        "metadata": {
+          "types": [
+            "text/html"
+          ],
+          "items": "one string item per declared selected MIME",
+          "files": 0
+        },
+        "seedCanonicalUtf8": "{\"content\":[{\"content\":[{\"text\":\"abc\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"def\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "child",
+            "path": [],
+            "index": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "path": [],
+            "index": 2,
+            "affinity": "after"
+          }
+        },
+        "captureReadOrder": [
+          "text/html"
+        ],
+        "selectedUtf16Units": 162
+      },
+      "oracle": {
+        "outcome": "refused",
+        "clipboardDiagnostics": [
+          "clipboard.unsupported_semantics"
+        ],
+        "native": {
+          "queryDispatches": 0,
+          "mutationDispatches": 0,
+          "beforeAfter": "UNCHANGED_NATIVE_AND_DOM"
+        },
+        "dom": {
+          "expectedTree": [
+            {
+              "tag": "p",
+              "attributes": {},
+              "classes": [],
+              "children": [
+                {
+                  "tag": "span",
+                  "attributes": {},
+                  "classes": [],
+                  "children": [
+                    {
+                      "text": "abc"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "p",
+              "attributes": {},
+              "classes": [],
+              "children": [
+                {
+                  "tag": "span",
+                  "attributes": {},
+                  "classes": [],
+                  "children": [
+                    {
+                      "text": "def"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "state": "ready editable; no untrusted markup installed"
+        },
+        "failure": {
+          "code": "dom.clipboard_decode_failed",
+          "publication": "none"
+        },
+        "recovery": {
+          "status": "retained",
+          "reason": "decode_refused",
+          "representations": "byte/code-unit exact selected strings above, retainedUtf16Units exact sum; transfer once thennull",
+          "retainedUtf16Units": 162
+        }
+      },
+      "assets": {
+        "policy": "exact-base-static-assets",
+        "initialParserRequests": 0,
+        "inputPhaseParserRequests": 1,
+        "allOtherInputOrCleanupRequests": 0
+      },
+      "commonContract": "shared"
+    },
+    {
+      "id": "AC1-10",
+      "source": {
+        "literalId": "CB14 sources[3]",
+        "path": "tests/clipboard.browser.mjs",
+        "lines": [
+          151,
+          151
+        ],
+        "qualification": "Existing parser-only literal; this draft proposes its single mounted no-plain strict-refusal use, not a run or conformance claim"
+      },
+      "pipeline": "captured controlled strings → actual lazy parser → allowlist decoder → decoder typed refusal; native command and renderer publication NOT_REACHED",
+      "input": {
+        "action": "public mounted clipboard.paste",
+        "representations": {
+          "text/html": "<style>@import url(/clipboard-unexpected/css);p{background:url(/clipboard-unexpected/background)}</style><template><img src=\"/clipboard-unexpected/template\"></template>"
+        },
+        "metadata": {
+          "types": [
+            "text/html"
+          ],
+          "items": "one string item per declared selected MIME",
+          "files": 0
+        },
+        "seedCanonicalUtf8": "{\"content\":[{\"content\":[{\"text\":\"abc\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"def\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "child",
+            "path": [],
+            "index": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "path": [],
+            "index": 2,
+            "affinity": "after"
+          }
+        },
+        "captureReadOrder": [
+          "text/html"
+        ],
+        "selectedUtf16Units": 168
+      },
+      "oracle": {
+        "outcome": "refused",
+        "clipboardDiagnostics": [
+          "clipboard.media_item_forbidden"
+        ],
+        "native": {
+          "queryDispatches": 0,
+          "mutationDispatches": 0,
+          "beforeAfter": "UNCHANGED_NATIVE_AND_DOM"
+        },
+        "dom": {
+          "expectedTree": [
+            {
+              "tag": "p",
+              "attributes": {},
+              "classes": [],
+              "children": [
+                {
+                  "tag": "span",
+                  "attributes": {},
+                  "classes": [],
+                  "children": [
+                    {
+                      "text": "abc"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "p",
+              "attributes": {},
+              "classes": [],
+              "children": [
+                {
+                  "tag": "span",
+                  "attributes": {},
+                  "classes": [],
+                  "children": [
+                    {
+                      "text": "def"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "state": "ready editable; no untrusted markup installed"
+        },
+        "failure": {
+          "code": "dom.clipboard_decode_failed",
+          "publication": "none"
+        },
+        "recovery": {
+          "status": "retained",
+          "reason": "decode_refused",
+          "representations": "byte/code-unit exact selected strings above, retainedUtf16Units exact sum; transfer once thennull",
+          "retainedUtf16Units": 168
+        }
+      },
+      "assets": {
+        "policy": "exact-base-static-assets",
+        "initialParserRequests": 0,
+        "inputPhaseParserRequests": 1,
+        "allOtherInputOrCleanupRequests": 0
+      },
+      "commonContract": "shared"
+    },
+    {
+      "id": "AC1-11",
+      "source": {
+        "literalId": "CB14 sources[4]",
+        "path": "tests/clipboard.browser.mjs",
+        "lines": [
+          152,
+          152
+        ],
+        "qualification": "Existing parser-only literal; this draft proposes its single mounted no-plain strict-refusal use, not a run or conformance claim"
+      },
+      "pipeline": "captured controlled strings → actual lazy parser → allowlist decoder → decoder typed refusal; native command and renderer publication NOT_REACHED",
+      "input": {
+        "action": "public mounted clipboard.paste",
+        "representations": {
+          "text/html": "<svg xmlns=\"http://www.w3.org/2000/svg\"><image href=\"/clipboard-unexpected/svg\"></image></svg><math><mi>x</mi></math>"
+        },
+        "metadata": {
+          "types": [
+            "text/html"
+          ],
+          "items": "one string item per declared selected MIME",
+          "files": 0
+        },
+        "seedCanonicalUtf8": "{\"content\":[{\"content\":[{\"text\":\"abc\",\"type\":\"text\"}],\"type\":\"paragraph\"},{\"content\":[{\"text\":\"def\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+        "selection": {
+          "anchor": {
+            "kind": "child",
+            "path": [],
+            "index": 0,
+            "affinity": "after"
+          },
+          "focus": {
+            "kind": "child",
+            "path": [],
+            "index": 2,
+            "affinity": "after"
+          }
+        },
+        "captureReadOrder": [
+          "text/html"
+        ],
+        "selectedUtf16Units": 117
+      },
+      "oracle": {
+        "outcome": "refused",
+        "clipboardDiagnostics": [
+          "clipboard.unsupported_semantics"
+        ],
+        "native": {
+          "queryDispatches": 0,
+          "mutationDispatches": 0,
+          "beforeAfter": "UNCHANGED_NATIVE_AND_DOM"
+        },
+        "dom": {
+          "expectedTree": [
+            {
+              "tag": "p",
+              "attributes": {},
+              "classes": [],
+              "children": [
+                {
+                  "tag": "span",
+                  "attributes": {},
+                  "classes": [],
+                  "children": [
+                    {
+                      "text": "abc"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "p",
+              "attributes": {},
+              "classes": [],
+              "children": [
+                {
+                  "tag": "span",
+                  "attributes": {},
+                  "classes": [],
+                  "children": [
+                    {
+                      "text": "def"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "state": "ready editable; no untrusted markup installed"
+        },
+        "failure": {
+          "code": "dom.clipboard_decode_failed",
+          "publication": "none"
+        },
+        "recovery": {
+          "status": "retained",
+          "reason": "decode_refused",
+          "representations": "byte/code-unit exact selected strings above, retainedUtf16Units exact sum; transfer once thennull",
+          "retainedUtf16Units": 117
+        }
+      },
+      "assets": {
+        "policy": "exact-base-static-assets",
+        "initialParserRequests": 0,
+        "inputPhaseParserRequests": 1,
+        "allOtherInputOrCleanupRequests": 0
+      },
+      "commonContract": "shared"
+    }
+  ]
+}

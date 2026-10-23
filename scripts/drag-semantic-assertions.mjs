@@ -6,7 +6,7 @@ const equal=(a,b,message)=>assert.deepEqual(copy(a),copy(b),message);
 const u64=value=>typeof value==='string'&&/^(?:0|[1-9][0-9]*)$/.test(value)&&BigInt(value)<=18446744073709551615n;
 export const nativeModuleZero=Object.freeze({sessions:0,snapshot_handles:0,snapshot_bytes:'0',protected_cursors:0});
 export const sdkControllerZero=Object.freeze({lifecycle:'destroyed',sessions:0,listeners:0,queued_mutations:0,queued_bytes:0,
-  pending_tickets:0,host_requests:0,task_continuations:0,original_input_bytes:0,callback_errors:0,callback_error_handlers:0});
+  pending_tickets:0,host_requests:0,task_continuations:0,loading_deadlines:0,original_input_bytes:0,callback_errors:0,callback_error_handlers:0});
 
 function resolve(value,roles,key=''){
   if(['node','parent'].includes(key)&&typeof value==='string'&&Object.hasOwn(roles,value))return roles[value];

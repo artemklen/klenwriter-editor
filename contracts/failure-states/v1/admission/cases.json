@@ -1,0 +1,237 @@
+{
+  "format": "osr67-ac2-joined-public-controller-admission-contract/1",
+  "status": "NOT_RUN",
+  "case_count": 8,
+  "source_context_from_root": {
+    "branch": "osr-67",
+    "accepted_base": "369f58c2125c902be1308df451afa88482a4f9b3"
+  },
+  "identity_binding": "The single options.build_id parameter $CURRENT_SOURCE_BUILD_ID is resolved from the exact current producer identity before each execution and verified against actual JS, WASM seal and native manifests. Record that binding with source/artifact hashes; never reuse the old source ID or derive any semantic oracle from runtime output. All other option/input/outcome literals are frozen here.",
+  "runtime_route": "public createEditor -> public loadSdkV2 with actual matching sealed packaged WASM -> real Rust Distribution/KWDJ factory/Bridge -> public ready/read/submit/resources. A loader closure returning the actual verified module is permitted; fakeModule/glue is not. No automatic mounted/native browser claim.",
+  "inputs": [
+    {
+      "path": "valid-original.utf8",
+      "bytes": 167,
+      "sha256": "322502734ff3937d68ee320a4b820b538000ca6a2817f01c24178cbbf4988f97",
+      "encoding": "UTF-8 exact; retain whitespace/newline and U+0301, no normalization"
+    },
+    {
+      "path": "malformed-original.utf8",
+      "bytes": 65,
+      "sha256": "51690d47c326d4fe37f9d36fd79a7c266dbcf28a8f1bc6178b5b0994bebcf4af",
+      "encoding": "UTF-8 exact; retain whitespace/newline and U+0301, no normalization"
+    }
+  ],
+  "cases": [
+    {
+      "id": "AC2-00",
+      "name": "healthy-literal-control",
+      "entry": "createEditor",
+      "input": "valid-original.utf8",
+      "options": "options.template.json",
+      "expected": {
+        "status": "ok",
+        "value_kind": "state",
+        "lifecycle": "ready",
+        "capture": "non-null; exact stamp equals returned complete StateDto.stamp",
+        "context": "non-null, exact frozen KWDJ base profile; current build ID; registry/capability digest from actual native module",
+        "originalInput": null,
+        "state": {
+          "selection": null,
+          "stored_marks": null,
+          "dirty": false,
+          "saved_revision": "0",
+          "history.undo_entries": "0",
+          "history.redo_entries": "0",
+          "stamp.revision": "0"
+        },
+        "document": "complete literal schema/schema_version/profile/content; text exactly AC2 keep Я 😀 é; never empty",
+        "native_resources": "baseline + one admitted session and one protected cursor; temporary snapshot released before comparison"
+      },
+      "reuse": "tests/selection-sdk.node.mjs:65-72; tests/support/extension-fixtures.mjs:13-17; contracts/sdk/v1/vectors.json fixtures/plain semantics"
+    },
+    {
+      "id": "AC2-01",
+      "name": "unknown-profile",
+      "entry": "createEditor",
+      "input": "valid-original.utf8",
+      "options": "options.template.json",
+      "single_literal_option_override": {
+        "field": "profile.profile_id",
+        "value": "org.example/other"
+      },
+      "expected": {
+        "status": "refused",
+        "diagnostic": {
+          "code": "profile.unsupported_profile",
+          "path": "/profile/profile_id",
+          "category": "sdk",
+          "details": {},
+          "stamp": null,
+          "may_have_committed": false
+        },
+        "oracles": "INITIAL_REFUSAL"
+      },
+      "reuse": "contracts/sdk/v1/vectors.json opening_refusals matching field; contracts/sdk-v2/v1/factory-vectors.json F004/F005/F007 for distribution dispatch where applicable"
+    },
+    {
+      "id": "AC2-02",
+      "name": "unknown-extension",
+      "entry": "createEditor",
+      "input": "valid-original.utf8",
+      "options": "options.template.json",
+      "single_literal_option_override": {
+        "field": "profile.extensions",
+        "value": [
+          {
+            "id": "org.klenwriter.kwdj/base",
+            "version": "1.0.0"
+          },
+          {
+            "id": "org.example/unsupported",
+            "version": "1.0.0"
+          }
+        ]
+      },
+      "expected": {
+        "status": "refused",
+        "diagnostic": {
+          "code": "profile.unknown_extension",
+          "path": "profile",
+          "category": "sdk",
+          "details": {},
+          "stamp": null,
+          "may_have_committed": false
+        },
+        "oracles": "INITIAL_REFUSAL"
+      },
+      "reuse": "contracts/sdk/v1/vectors.json opening_refusals matching field; contracts/sdk-v2/v1/factory-vectors.json F004/F005/F007 for distribution dispatch where applicable"
+    },
+    {
+      "id": "AC2-03",
+      "name": "unsupported-profile-version",
+      "entry": "createEditor",
+      "input": "valid-original.utf8",
+      "options": "options.template.json",
+      "single_literal_option_override": {
+        "field": "profile.profile_version",
+        "value": "2.0.0"
+      },
+      "expected": {
+        "status": "refused",
+        "diagnostic": {
+          "code": "profile.unsupported_profile_version",
+          "path": "/profile/profile_version",
+          "category": "sdk",
+          "details": {},
+          "stamp": null,
+          "may_have_committed": false
+        },
+        "oracles": "INITIAL_REFUSAL"
+      },
+      "reuse": "contracts/sdk/v1/vectors.json opening_refusals matching field; contracts/sdk-v2/v1/factory-vectors.json F004/F005/F007 for distribution dispatch where applicable"
+    },
+    {
+      "id": "AC2-04",
+      "name": "unsupported-extension-version",
+      "entry": "createEditor",
+      "input": "valid-original.utf8",
+      "options": "options.template.json",
+      "single_literal_option_override": {
+        "field": "profile.extensions.0.version",
+        "value": "2.0.0"
+      },
+      "expected": {
+        "status": "refused",
+        "diagnostic": {
+          "code": "profile.unsupported_extension_version",
+          "path": "profile",
+          "category": "sdk",
+          "details": {},
+          "stamp": null,
+          "may_have_committed": false
+        },
+        "oracles": "INITIAL_REFUSAL"
+      },
+      "reuse": "contracts/sdk/v1/vectors.json opening_refusals matching field; contracts/sdk-v2/v1/factory-vectors.json F004/F005/F007 for distribution dispatch where applicable"
+    },
+    {
+      "id": "AC2-05",
+      "name": "unsupported-wire-version",
+      "entry": "createEditor",
+      "input": "valid-original.utf8",
+      "options": "options.template.json",
+      "single_literal_option_override": {
+        "field": "profile.wire_version",
+        "value": 2
+      },
+      "expected": {
+        "status": "refused",
+        "diagnostic": {
+          "code": "profile.unsupported_wire_version",
+          "path": "/profile/wire_version",
+          "category": "sdk",
+          "details": {},
+          "stamp": null,
+          "may_have_committed": false
+        },
+        "oracles": "INITIAL_REFUSAL"
+      },
+      "reuse": "contracts/sdk/v1/vectors.json opening_refusals matching field; contracts/sdk-v2/v1/factory-vectors.json F004/F005/F007 for distribution dispatch where applicable"
+    },
+    {
+      "id": "AC2-06",
+      "name": "malformed-original-initial-open",
+      "entry": "createEditor",
+      "input": "malformed-original.utf8",
+      "options": "options.template.json",
+      "expected": {
+        "status": "refused",
+        "diagnostic": {
+          "code": "kwdj.invalid_json",
+          "path": "",
+          "category": "profile",
+          "details": {},
+          "stamp": null,
+          "may_have_committed": false
+        },
+        "oracles": "INITIAL_REFUSAL"
+      },
+      "reuse": "crates/kwdj/src/admission.rs:38-45; crates/kwdj-sdk/src/convert.rs:129-141; tests/codec.node.mjs:91 is only an existing codec proof, not joined controller proof"
+    },
+    {
+      "id": "AC2-07",
+      "name": "malformed-remount-retains-live-dirty-session",
+      "entry": "EditorController.submit",
+      "precondition": "Healthy AC2-00 opened independently; set directed text selection at offset 0 in the sole leaf, isolated insert_text X; capture complete nontrivial state/tree/canonical/context/resources after releasing observation snapshots. Subscribe after setup. Assert dirty=true, saved_revision=0, undo_entries=1, redo_entries=0, selection non-null, nonempty literal text XAC2 keep Я 😀 é.",
+      "request": {
+        "kind": "remount",
+        "stamp": "EXACT_CAPTURED_PRE_STATE_STAMP",
+        "input_json": "{ \"schema\":\"klenwriter.document\", \"draft\":\"AC2 keep Я 😀 é\",",
+        "admission": "validate"
+      },
+      "expected": {
+        "submission_status": "completed",
+        "response": {
+          "status": "refused",
+          "diagnostic": {
+            "code": "kwdj.invalid_json",
+            "path": "",
+            "category": "profile",
+            "details": {},
+            "stamp": "EXACT_CAPTURED_PRE_STATE_STAMP",
+            "may_have_committed": false
+          }
+        },
+        "oracles": "LIVE_REFUSAL",
+        "originalInput": null,
+        "host_ownership": "host retains separate exact malformed candidate bytes, original valid bytes and coherent pre-remount snapshot; remount accepts string, does not promise controller.originalInput() retains its candidate"
+      },
+      "reuse": "tests/sdk-integration.node.mjs:203-205 (already actual public V1, partial state/canonical assertions); crates/wasm/examples/support/sdk_observer.rs:481-489 (Rust/compiled-WASM DTO only, no joined scheduler); crates/engine/src/session.rs:734-779"
+    }
+  ],
+  "canonical_literals": {
+    "healthy": "healthy.canonical.json",
+    "after_isolated_X_insert": "xprefix.canonical.json"
+  }
+}

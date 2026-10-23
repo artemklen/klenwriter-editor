@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // Data-only source and collector controls; none is product/browser acceptance.
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -9,15 +10,20 @@ import { join } from 'node:path';
 import { collectInteractions, interactionValidators, assessInteraction } from '../scripts/mounted-corpus/collect-interactions.mjs';
 import { ownBoundedData, RESOURCE_KEYS } from '../scripts/mounted-corpus/protocol.mjs';
 import { observeNativeModule } from '../scripts/mounted-corpus/native-observer.mjs';
-import { loadMountedSourceContinuation66 } from '../scripts/mounted-corpus/source-continuation66.mjs';
+import { loadMountedSourceContinuation67 } from '../scripts/mounted-corpus/source-continuation67.mjs';
+import { loadMountedResourceProfile67 } from '../scripts/mounted-corpus/resource-profile67.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
+// Actual filesystem reads remain fresh; only the underlying I/O primitive is synchronous.
+const readSourceFile = async (...args) => readFileSync(...args);
 const currentSourceReader = async (path, maximum) => {
-  const value = await readFile(join(root, path));
+  const value = await readSourceFile(join(root, path));
   assert.ok(value.length <= maximum, 'Current source reader respects exact continuation bound'); return value;
 };
-const continuation = await loadMountedSourceContinuation66({ readArtifact: currentSourceReader });
-const historicalSourceReader = continuation.historicalAuthorityReader(currentSourceReader);
+const currentSourceLayer = await loadMountedResourceProfile67({ readArtifact: currentSourceReader });
+const c82SourceReader = currentSourceLayer.retainedC82SourceReader(currentSourceReader);
+const continuation = await loadMountedSourceContinuation67({ readArtifact: c82SourceReader });
+const historicalSourceReader = continuation.historicalAuthorityReader(c82SourceReader);
 const literalPath = 'contracts/mounted-e2e/v1/interaction-literals.json';
 const schemaPath = 'contracts/mounted-e2e/v1/observation.schema.json';
 const bytes = await readFile(join(root, literalPath)), schemaBytes = await readFile(join(root, schemaPath));
