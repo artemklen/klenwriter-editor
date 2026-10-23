@@ -1,0 +1,27 @@
+{
+  "format": "editor-failure-states/loading-recovery/1",
+  "status": "NOT_RUN",
+  "task": "OSR-67",
+  "base": "369f58c2125c902be1308df451afa88482a4f9b3",
+  "loadTimeoutMs": { "default": 30000, "minimum": 1, "maximum": 30000, "unit": "milliseconds", "hostMayOnlyTighten": true, "synchronousPreemption": false },
+  "outcomes": { "timeout": "sdk.load_timeout", "retiredRuntime": "sdk.runtime_retired", "invalidControllerTimeout": "sdk.invalid_limit", "invalidLoaderTimeout": { "code": "sdk.module_invalid", "phase": "deadline" } },
+  "recovery": "explicit_host_action_in_fresh_realm_with_verified_pair_and_external_coherent_input",
+  "cases": [
+    { "id": "F67-L01", "method": "default ceiling plus exact valid minimum/maximum and invalid zero/fraction/over-maximum controls", "expected": "default 30000; only safe integer 1..30000 accepted; invalid values typed; no Session on invalid configuration" },
+    { "id": "F67-L02", "method": "never-resolving injected loader, then late success and late rejection after tightened deadline", "expected": "ready Refused sdk.load_timeout exactly once; original bytes retained; lifecycle terminal; late work opens no Session and emits no callback" },
+    { "id": "F67-L03", "method": "actual packaged pre-init network/compile/instantiate/ordinary incompatible-seal failure then correct retry", "expected": "existing exact diagnostic and same-realm retry assertions retained; publisher contradiction remains a separate sticky fault" },
+    { "id": "F67-L04", "method": "owned fetch/body remains pending beyond last-reader deadline, then completes late", "expected": "bounded typed timeout; owned cancellation attempted; late bytes cannot initialize or replace current cache; explicit fresh retry before glue initialization remains safe" },
+    { "id": "F67-L05", "method": "same-input concurrent ABI readers, one tightened reader expires while another remains live", "expected": "expired reader fails once without cancelling the accepted reader or changing ABI identity; no shared Session state; different-input mismatch remains unchanged" },
+    { "id": "F67-L06", "method": "destroy races expiry and delayed loader completion", "expected": "one ready terminal outcome; no resurrection, Session construction, retained callbacks, owned loading deadline or queued ticket after disposal" },
+    { "id": "F67-L07", "method": "delay genuine instantiation result after singleton initialization started and last reader expires", "expected": "timeout preserved; realm capability retired; eventual instance is never admitted; same-realm loads and stale projections refuse sdk.runtime_retired" },
+    { "id": "F67-L08", "method": "delay owned-input digest or compile promise, expire, then release delayed work", "expected": "entry deadline covers async ownership/verification; stale continuation cannot publish into a new cache; byte ownership and seal checks remain intact" },
+    { "id": "F67-T01", "method": "isolated source-bound Rust/WASM bridge fixture executes its explicit compiled trap before dispatch", "expected": "real engine trap separately proved; controller operation Fatal, never atomic Refused; handle stops; queued never-executed tickets refuse once; no production-WASM identity claim" },
+    { "id": "F67-T02", "method": "same fixture completes a real native mutation then executes the explicit compiled trap", "expected": "externally captured completed-publication witness precedes trap; mutation outcome Fatal may_have_committed true; no retry-as-refusal or false Saved" },
+    { "id": "F67-T03", "method": "retain peer controller and previously loaded projections across retirement", "expected": "no further native invocation through retired capability; peers become terminal when observed; own JS cleanup and unavailable native observations recorded honestly" },
+    { "id": "F67-T04", "method": "explicit host recovery after trap into a fresh document/realm", "expected": "new actual verified WASM instantiation and distinct realm/generation; external coherent bytes and bounded provisional recovery retained; no automatic empty replacement" },
+    { "id": "F67-H01", "method": "old host Save acknowledgement/callback released after explicit recovery, followed by fresh acknowledged Save", "expected": "host lifecycle fence blocks old work before native dispatch; fresh state remains dirty until its own exact receipt acknowledgement; no cross-realm serial-identity assumption" },
+    { "id": "F67-H02", "method": "load refusal and runtime Fatal through mounted public surfaces", "expected": "ready/result/completion reports actual failure; editing stops; original/provisional recovery exposed by declared public surface; no claim that existing onRecovery fires for every Fatal" },
+    { "id": "F67-H03", "method": "failed replacement on an already edited coherent Session", "expected": "complete canonical/selection/history/revision/saved and publication state unchanged; host original/replacement bytes remain available; no empty success" }
+  ],
+  "qualification": "Finite planned families, not results. Existing controlled JS transport tests remain distinct. All new executable literal inputs and fixture build bindings are frozen before their corresponding implementation/run; no existing assertion is weakened."
+}

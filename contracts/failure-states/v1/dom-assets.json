@@ -1,0 +1,916 @@
+{
+  "format": "osr67-ac1-exact-base-static-assets/1",
+  "state": "NOT_RUN_SOURCE_POLICY_FROZEN_ARTIFACT_BINDING_REQUIRED_BEFORE_RUN",
+  "origin": "http://127.0.0.1:4174",
+  "urlComparison": "exact request URL origin+path; no query variants, prefix allowlist or content-derived exception; fragments are not network URL bytes",
+  "baseCommit": "369f58c2125c902be1308df451afa88482a4f9b3",
+  "files": [
+    {
+      "url": "/clipboard",
+      "path": "spikes/workspace/clipboard.html",
+      "bytes": 890,
+      "sha256": "adab6714c867a6b26affd191de9aa91f532f0ba43a0cd1b6bc583717c9359118",
+      "method": "GET",
+      "resourceType": "document",
+      "status": 200,
+      "contentType": "text/html",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/clipboard-host.js",
+      "path": "spikes/workspace/clipboard-host.js",
+      "bytes": 21757,
+      "sha256": "22b20bbdffbfa7bfa4bd118190332371f38c17148f2f61d16169b88c168579db",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/clipboard.css",
+      "path": "spikes/workspace/clipboard.css",
+      "bytes": 130,
+      "sha256": "682d8a0536546deef9c33507c4490e39b13f95bbf4b5602219083f88f6c2747e",
+      "method": "GET",
+      "resourceType": "stylesheet",
+      "status": 200,
+      "contentType": "text/css",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/style.css",
+      "path": "packages/dom/dist/style.css",
+      "bytes": 1943,
+      "sha256": "6dc6e5603fc4cfec65d2f96cdb3d1bdea87771c3b6aa4b86718655bbc1821810",
+      "method": "GET",
+      "resourceType": "stylesheet",
+      "status": 200,
+      "contentType": "text/css",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/extensions-packet.json",
+      "path": "artifacts/extensions/packet.json",
+      "bytes": 13061941,
+      "sha256": "853c09f299158be7ffd1d9ecf82baa43c6d51acffe217e64caf477ca57458c70",
+      "method": "GET",
+      "resourceType": "fetch",
+      "status": 200,
+      "contentType": "application/json",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/clipboard-contract/positive.json",
+      "path": "contracts/kwdj/v1/fixtures/positive.json",
+      "bytes": 50871,
+      "sha256": "da7fca7fe9d38407b664b704775ac75ed5635c29eb0fcb40d8e9ca9a2394171b",
+      "method": "GET",
+      "resourceType": "fetch",
+      "status": 200,
+      "contentType": "application/json",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/clipboard-contract/negative.json",
+      "path": "contracts/kwdj/v1/fixtures/negative.json",
+      "bytes": 12378,
+      "sha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f",
+      "method": "GET",
+      "resourceType": "fetch",
+      "status": 200,
+      "contentType": "application/json",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/wasm/editor_wasm_bg.wasm",
+      "path": "packages/wasm/dist/editor_wasm_bg.wasm",
+      "bytes": 7611882,
+      "sha256": "cd9eea94164d9a59691879aab4801be644317ff21c0f166ea3ebebf7818437b2",
+      "method": "GET",
+      "resourceType": "fetch",
+      "status": 200,
+      "contentType": "application/wasm",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/wasm/index.js",
+      "path": "packages/wasm/dist/index.js",
+      "bytes": 300,
+      "sha256": "7d4d6345faab56c9bf047ada377ae64f88b19ee4a36dab593208d4a0deb73bd2",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/sdk/index.js",
+      "path": "packages/sdk/dist/index.js",
+      "bytes": 515,
+      "sha256": "2a6dca4d4d207c9e750b5b0633a5ce797252bb344721b45d2a0eafcd7a88c89b",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/index.js",
+      "path": "packages/dom/dist/index.js",
+      "bytes": 233,
+      "sha256": "d4e2b7fe900d9f7f36c9e927a5f705df200763b39d645f80aeb8348f55cb7d85",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/kwdj/index.js",
+      "path": "packages/kwdj/dist/index.js",
+      "bytes": 1873,
+      "sha256": "83f8a865230fb307a3ede4048e05ecc1b56621a791e7b1ec59e3987d3b99b9a6",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/kwdj/dom.js",
+      "path": "packages/kwdj/dist/dom.js",
+      "bytes": 17441,
+      "sha256": "de1e9e0078b4cf2cbc52fb1d824e73b65e0d2a033e179a20dc9401190a86dc92",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/kwdj/clipboard.js",
+      "path": "packages/kwdj/dist/clipboard.js",
+      "bytes": 6279,
+      "sha256": "641a6ad18fe697d8ee03f26841c13bdd7ca12311eefa65ee10bc704cdfd6ff3d",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/kwdj/clipboard-parser.js",
+      "path": "packages/kwdj/dist/clipboard-parser.js",
+      "bytes": 280685,
+      "sha256": "7b2b2c855980f39f96d2548a82db8516d7342d740d52587ef63f51238c2853f8",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 0,
+        "operation": 1,
+        "cleanup": 0
+      },
+      "lazyCondition": "only rows with HTML clipboard representation",
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/wasm/codec.js",
+      "path": "packages/wasm/dist/codec.js",
+      "bytes": 150,
+      "sha256": "68c229b028b436872aeae5f2142e8836667b267a7466935092f7dd96a5b37551",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/wasm/sdk-types.js",
+      "path": "packages/wasm/dist/sdk-types.js",
+      "bytes": 192,
+      "sha256": "dd610d0336c71396f50c37faff434269d31bdb9173468657812ceb8fb57c7c24",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/wasm/sdk-types-v2.js",
+      "path": "packages/wasm/dist/sdk-types-v2.js",
+      "bytes": 51,
+      "sha256": "90114c42fd4497c4d5e68242404768670c9bee87c4f8f49269e94ef9ed8236e8",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/wasm/sdk.js",
+      "path": "packages/wasm/dist/sdk.js",
+      "bytes": 19347,
+      "sha256": "f7641f1d602d0e80dfbe1b9f944154f43547e6c201a62c80c6cb82dad712bb8a",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/sdk/data.js",
+      "path": "packages/sdk/dist/data.js",
+      "bytes": 6464,
+      "sha256": "b1ccd64875078a4ccafd01635cfb64ebd57c272272acde817d60f7b7d6c83db6",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/sdk/controller.js",
+      "path": "packages/sdk/dist/controller.js",
+      "bytes": 25732,
+      "sha256": "ce02bf36efe6fd9784016ca7996e7a07dac62c8440efd3bdda974427ea87616a",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/catalog.js",
+      "path": "packages/dom/dist/catalog.js",
+      "bytes": 10409,
+      "sha256": "8d726a5200ae2b068b989fedb37f0c5fe98ddf786e43a89fcfc055822eba906f",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/mounted.js",
+      "path": "packages/dom/dist/mounted.js",
+      "bytes": 46792,
+      "sha256": "3913df17977edf27d4529e176c71a719c2721729e32951ca7199b89b8a9fddfc",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/kwdj/slash-candidates.generated.js",
+      "path": "packages/kwdj/dist/slash-candidates.generated.js",
+      "bytes": 1323,
+      "sha256": "bf00b9e386c3ebcec0abefb96f4d87c7d7701dde4cbcb47e5d26219ba16979b7",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/kwdj/dom-inventory.js",
+      "path": "packages/kwdj/dist/dom-inventory.js",
+      "bytes": 53437,
+      "sha256": "a46bdbbe661b72587dac52f8fe41bc36065d2ca231f16d0e84bf6be6d8c86344",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/kwdj/typing-dom-inventory.js",
+      "path": "packages/kwdj/dist/typing-dom-inventory.js",
+      "bytes": 54389,
+      "sha256": "f0362a8b0e2161cb9253ed12d1ae4915a5920e3bcd007aefcd03d36b559f8d9d",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/kwdj/clipboard-decode.js",
+      "path": "packages/kwdj/dist/clipboard-decode.js",
+      "bytes": 25318,
+      "sha256": "a58846bc854965399070705ff7ee1ebe936d572cb1edbbb0060d4bc4760b5066",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/kwdj/clipboard-html.js",
+      "path": "packages/kwdj/dist/clipboard-html.js",
+      "bytes": 11778,
+      "sha256": "7aa7749fb7669db436be69a65f0c36e760918958ff0f124cf00e68cd3906698c",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/wasm/sdk-build-id.js",
+      "path": "packages/wasm/dist/sdk-build-id.js",
+      "bytes": 204,
+      "sha256": "a0f2129621628d44c4160cde37b2c15ff6350727ff0a592e39a396493a1f7ec5",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/sdk/response.js",
+      "path": "packages/sdk/dist/response.js",
+      "bytes": 17143,
+      "sha256": "d4000c8267b6715f354c00d898afd6217e27f4beeaa007bce93e01ca522e650f",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/sdk/context.js",
+      "path": "packages/sdk/dist/context.js",
+      "bytes": 2336,
+      "sha256": "78dd335436ec4c1b1d94f79315d71d2a4ca0710bd78229895e6eb39a1aed94dc",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/refusal.js",
+      "path": "packages/dom/dist/refusal.js",
+      "bytes": 494,
+      "sha256": "e1cfd0c13d1f56b24f01377f76e44191d75c3db2101c7f6f2755fe3ad4bdf922",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/ownership.js",
+      "path": "packages/dom/dist/ownership.js",
+      "bytes": 3955,
+      "sha256": "edbd9fbf3bc6943dcb8fbe7fe95f7dd7e62d384413f703725d4ee91787f7a330",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/view.js",
+      "path": "packages/dom/dist/view.js",
+      "bytes": 65891,
+      "sha256": "fe55d326e011bbc2abdec9091245351c3d9bbe30447bf137a98fdb97e6f010bf",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/selection.js",
+      "path": "packages/dom/dist/selection.js",
+      "bytes": 34301,
+      "sha256": "53ec19285a3488f5b481e80dbc7c767744d291cb5c751f184fc7a021d50f27ae",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/host-request.js",
+      "path": "packages/dom/dist/host-request.js",
+      "bytes": 13558,
+      "sha256": "5325a44b1ebe3ee92a56afdcd0cb29dc55e9444e074f45dfe5989dc0b8ca9c59",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/geometry.js",
+      "path": "packages/dom/dist/geometry.js",
+      "bytes": 21594,
+      "sha256": "348cfe68ed361edddecaec919126a86ecac890a7d9154812b4b9bcc9ac828ef0",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/clipboard.js",
+      "path": "packages/dom/dist/clipboard.js",
+      "bytes": 16534,
+      "sha256": "364e2e6b398a98a193107a4a5abd263b7877b7efc84de14392ffebe8751ccf03",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/input.js",
+      "path": "packages/dom/dist/input.js",
+      "bytes": 24750,
+      "sha256": "8eed17ee46e1f3d9133370f3a690f69bfb3551093d23ffb4cb879848a0ea6112",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/input-observations.js",
+      "path": "packages/dom/dist/input-observations.js",
+      "bytes": 5266,
+      "sha256": "2f930d86ce8e6a39cbfad58fe01a38c4983dc5f035f86b47557259198b65866d",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/popup-presentation.js",
+      "path": "packages/dom/dist/popup-presentation.js",
+      "bytes": 9772,
+      "sha256": "7709a9a0ea1548a3885b210060e463ea56d9036d80cd036dfe70bead144ae2ef",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/kwdj/clipboard-types.js",
+      "path": "packages/kwdj/dist/clipboard-types.js",
+      "bytes": 624,
+      "sha256": "8179fd3511e2bc1113daca5954c8b18e0a9665bcbf03246d3107dc1fb04eda93",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/composition-view.js",
+      "path": "packages/dom/dist/composition-view.js",
+      "bytes": 43155,
+      "sha256": "8827a23506ba9bbed6dd7f94afd7fcfe3e18c9f7ddca51d1e8b7f182f2020cfe",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/composition-literal.js",
+      "path": "packages/dom/dist/composition-literal.js",
+      "bytes": 7785,
+      "sha256": "83e820dbd2705b63f46d2bf91ebe3669524ff8b2af5c00ae96563d6f198b8333",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/selection-geometry.js",
+      "path": "packages/dom/dist/selection-geometry.js",
+      "bytes": 5446,
+      "sha256": "1ba3623a1e4db5ae0b20ee8ff12f162859190d6e5d308a16a0ea0e8d61feddd4",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/drag-geometry.js",
+      "path": "packages/dom/dist/drag-geometry.js",
+      "bytes": 25767,
+      "sha256": "fffe1abdb2d1ebcdbfba33fb261cc7e5bc6941ce30aaf17eb24fbbb44bd15034",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/clipboard-paste.js",
+      "path": "packages/dom/dist/clipboard-paste.js",
+      "bytes": 10890,
+      "sha256": "3a655d964b8cf5ca27dd219dd5c46f176e96f458b4395526db7d8052fec0f81a",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/composition.js",
+      "path": "packages/dom/dist/composition.js",
+      "bytes": 59961,
+      "sha256": "a524de47a4bb8f431bdbca81bf3ebcd02edec1c426d1c63a09ca2132c5518f01",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/input-result.js",
+      "path": "packages/dom/dist/input-result.js",
+      "bytes": 21158,
+      "sha256": "245df68991f3b352f19114b2b69c1ac6281616445615fa60f259816b4bd83e5c",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/dom/clipboard-capture.js",
+      "path": "packages/dom/dist/clipboard-capture.js",
+      "bytes": 7891,
+      "sha256": "965cee83b3c1977e5ece5f38451a73eec1bd42aec53a644d555f5d5b27738311",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/wasm/editor_wasm.js",
+      "path": "packages/wasm/dist/editor_wasm.js",
+      "bytes": 17789,
+      "sha256": "4c05801f9eb64fd595c8868c2a9adf5bedd49d0d338bdd7269647c2aebec87bf",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    },
+    {
+      "url": "/packages/wasm/snippets/klenwriter-editor-wasm-cc46fd2b90cd8788/inline0.js",
+      "path": "packages/wasm/dist/snippets/klenwriter-editor-wasm-cc46fd2b90cd8788/inline0.js",
+      "bytes": 1393,
+      "sha256": "690d99673f62b34cecea44c9fa1e74a0c00879fcd25214446a15af13f349fb10",
+      "method": "GET",
+      "resourceType": "script",
+      "status": 200,
+      "contentType": "text/javascript",
+      "counts": {
+        "bootstrap": 1,
+        "operation": 0,
+        "cleanup": 0
+      },
+      "lazyCondition": null,
+      "baseArtifactQualification": "Historical base build only. Bind current producer file bytes/hash before execution; URLs/counts never learned from traffic."
+    }
+  ],
+  "optionalResponses": [
+    {
+      "url": "/favicon.ico",
+      "method": "GET",
+      "resourceType": "other/image browser-specific record retained",
+      "status": 204,
+      "bootstrapCountMin": 0,
+      "bootstrapCountMax": 1,
+      "operationCount": 0,
+      "cleanupCount": 0,
+      "qualification": "implicit browser resource only; an attempt during operation/cleanup is not exempt"
+    }
+  ],
+  "expectedCounts": {
+    "bootstrapMandatory": 51,
+    "bootstrapOptionalMax": 1,
+    "htmlOperation": 1,
+    "noHtmlOperation": 0,
+    "cleanup": 0
+  },
+  "phaseBoundary": "bootstrap ends only after exact mandatory assets+clipboardHostReady; reset only phase marker, never ledger. Lazy parser initiallyabsent; input phase starts before action; cleanup after fixed post-operation observation.",
+  "freshBuildRule": "Current base-generated URL/file pins are independent static draft data. If67 changes module graph/build IDs/fixture URL, root must review/refreeze the producer-derived manifest before any browser run; never copy an observed network set into an allowlist. Count rules are not relaxed to match runtime.",
+  "coverageQualification": "Source literal closure plus explicit fixed computed glue URL; no source evaluated. Candidate set includes imports; exact counts proposed and require rootfreeze. MIME checks permit only server-declared Content-Type syntax with optional charset parameter, not a different type."
+}

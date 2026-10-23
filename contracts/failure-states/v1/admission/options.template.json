@@ -1,0 +1,20 @@
+{
+  "abi": "editor-sdk/2",
+  "build_id": "$CURRENT_SOURCE_BUILD_ID",
+  "profile": {
+    "profile_id": "org.klenwriter.kwdj",
+    "profile_version": "1.0.0",
+    "codec_id": "org.klenwriter.kwdj/json",
+    "wire_version": 1,
+    "extensions": [
+      {
+        "id": "org.klenwriter.kwdj/base",
+        "version": "1.0.0"
+      }
+    ]
+  },
+  "admission": "validate",
+  "access": "editable",
+  "registry_json": "{\"format\":\"editor-registry/1\",\"profile\":{\"id\":\"org.klenwriter.kwdj\",\"version\":\"1.0.0\",\"codec_id\":\"org.klenwriter.kwdj/json\",\"wire_version\":1},\"selected_extensions\":[{\"id\":\"org.klenwriter.kwdj/base\",\"version\":\"1.0.0\"}],\"root\":{\"op\":\"repeat\",\"item\":{\"op\":\"choice\",\"items\":[{\"op\":\"type\",\"id\":\"org.klenwriter.kwdj/paragraph\"},{\"op\":\"type\",\"id\":\"org.klenwriter.kwdj/heading\"},{\"op\":\"type\",\"id\":\"org.klenwriter.kwdj/blockquote\"},{\"op\":\"type\",\"id\":\"org.klenwriter.kwdj/bullet_list\"},{\"op\":\"type\",\"id\":\"org.klenwriter.kwdj/ordered_list\"},{\"op\":\"type\",\"id\":\"org.klenwriter.kwdj/task_list\"},{\"op\":\"type\",\"id\":\"org.klenwriter.kwdj/code_block\"},{\"op\":\"type\",\"id\":\"org.klenwriter.kwdj/scene_break\"},{\"op\":\"type\",\"id\":\"org.klenwriter.kwdj/table\"},{\"op\":\"type\",\"id\":\"org.klenwriter.kwdj/media_image\"},{\"op\":\"type\",\"id\":\"org.klenwriter.kwdj/literary_block\"},{\"op\":\"type\",\"id\":\"org.klenwriter.kwdj/warning\"},{\"op\":\"type\",\"id\":\"org.klenwriter.kwdj/spoiler\"},{\"op\":\"type\",\"id\":\"org.klenwriter.kwdj/disclosure\"},{\"op\":\"type\",\"id\":\"org.klenwriter.kwdj/verse\"}]},\"min\":1,\"max\":50000},\"mark_policy\":{},\"extensions\":[]}",
+  "profile_options_json": "{\"identities\":{\"media\":[],\"references\":[]},\"limits\":null}"
+}
