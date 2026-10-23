@@ -1,0 +1,1476 @@
+{
+  "format": "mounted-corpus-resource-profile-source/1",
+  "status": "FINALIZED_SOURCE_CONTRACT",
+  "id": "mounted-corpus-resources/67-v1",
+  "license": "MIT OR Apache-2.0",
+  "sourceSnapshot": {
+    "commit": "c82f3c8641e9a27aed5edca6f890e533024f579b",
+    "qualification": "Retained c82 source snapshot only; no accepted/reviewed implementation or inherited runtime result."
+  },
+  "baseSchema": {
+    "pin": {
+      "path": "contracts/mounted-e2e/v1/observation.schema.json",
+      "bytes": 67131,
+      "sha256": "511e7c974bae1d91cb759a497fc272bccf3dba3e63d170320be634599be9d2e7"
+    },
+    "parsedSha256": "efe9b2344f6cda11156ae921048f91f12736a28cdd62fe609851c20e35a6ae49"
+  },
+  "policy": {
+    "legacySdkKeys": [
+      "lifecycle",
+      "sessions",
+      "listeners",
+      "queued_mutations",
+      "queued_bytes",
+      "pending_tickets",
+      "host_requests",
+      "task_continuations",
+      "original_input_bytes",
+      "callback_errors",
+      "callback_error_handlers"
+    ],
+    "additionalRequired": "loading_deadlines",
+    "newCounter": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "zeroOutsideLifecycle": "loading",
+    "settledDeadlineZero": true,
+    "completeCheckpointResources": true
+  },
+  "source": {
+    "previousManifest": {
+      "path": "contracts/mounted-e2e/v1.4/source-continuation67.json",
+      "bytes": 21439,
+      "sha256": "33480751aa712c0d576d3db304d0e4064e47164dfe4dee95134d9047be161366"
+    },
+    "previousHelper": {
+      "path": "scripts/mounted-corpus/source-continuation67.mjs",
+      "bytes": 15136,
+      "sha256": "c06b7433bcfee0e73cdb668f140b61cfa6c7d90d7b93fba77f6ea601b48511ea"
+    },
+    "currentPins": [
+      {
+        "path": "contracts/kwdj/v1/README.md",
+        "bytes": 22516,
+        "sha256": "acd0ab722f91e4fd769e939f59eecccf09b130c54a982e3229171ab8efb150f5"
+      },
+      {
+        "path": "contracts/kwdj/v1/corpus-package.json",
+        "bytes": 2555,
+        "sha256": "8c890e1f80b905a66418d45a60fe5ef4196a3232f6c3261dcf1f96aafd1280b5"
+      },
+      {
+        "path": "contracts/kwdj/v1/fixture.schema.json",
+        "bytes": 14265,
+        "sha256": "0de202b483e108f9f85cfa5fc7782d9725d55646a1cdded2c916824177ab143f"
+      },
+      {
+        "path": "contracts/kwdj/v1/fixtures/deferred.json",
+        "bytes": 4409,
+        "sha256": "4499b474515516fd7aff7222a910f2115121eb483790e66a63d84b03dc87bf69"
+      },
+      {
+        "path": "contracts/kwdj/v1/fixtures/mixed.json",
+        "bytes": 40777,
+        "sha256": "f9e472176da723dedf812bff8a5a046946d554c5125e05977cab6a392b19f4a5"
+      },
+      {
+        "path": "contracts/kwdj/v1/fixtures/negative.json",
+        "bytes": 12378,
+        "sha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f"
+      },
+      {
+        "path": "contracts/kwdj/v1/fixtures/positive.json",
+        "bytes": 50871,
+        "sha256": "da7fca7fe9d38407b664b704775ac75ed5635c29eb0fcb40d8e9ca9a2394171b"
+      },
+      {
+        "path": "contracts/kwdj/v1/manifest.json",
+        "bytes": 4647,
+        "sha256": "987f6b0f12922d406a1e514c41ecd31c5c5187a762058d14d0eaf6472d892d5a"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1/initial-literals.json",
+        "bytes": 112284,
+        "sha256": "e4a8a7f009983d973784f8bd849500ce5952c203579f2ed7131c62aa15f1dcdc"
+      },
+      {
+        "path": "contracts/slash/v1/lexical-key-oracles.json",
+        "bytes": 17681,
+        "sha256": "920f8a7190717cd66d93dcf610c00ed6c098d1363b187288ea5c2456167e4333"
+      },
+      {
+        "path": "contracts/slash/v1/strings.json",
+        "bytes": 1750,
+        "sha256": "f174669a5a717529480c2652d500ba43a4feacf8ec06713b180f2c8d08f3c5d2"
+      },
+      {
+        "path": "crates/engine/src/dispatch.rs",
+        "bytes": 42347,
+        "sha256": "8d80c3ad01c152d945933c7b9fd215b434be7ffd51cdd5bf148ee2bcd945de7e"
+      },
+      {
+        "path": "crates/engine/src/mapping.rs",
+        "bytes": 46845,
+        "sha256": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54"
+      },
+      {
+        "path": "crates/engine/src/tree.rs",
+        "bytes": 201809,
+        "sha256": "8cf2281a1c6bf0a84e7b00e22312d2e9f94cf480bbf34ff69be1b34d4378d0ef"
+      },
+      {
+        "path": "crates/kwdj/src/commands/inline.rs",
+        "bytes": 58048,
+        "sha256": "d11c251bc92bef5d7302f36622f99bfa7dcf13cbea0eee7d72674421858f5913"
+      },
+      {
+        "path": "crates/kwdj/src/edit_normalize.rs",
+        "bytes": 41095,
+        "sha256": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a"
+      },
+      {
+        "path": "docs/adr/004-canonical-json-v1.md",
+        "bytes": 10290,
+        "sha256": "5d2a975d5c558e981cb2bb42e8d42b225663e4b7a5873951f22b8ad116110a5c"
+      },
+      {
+        "path": "docs/history.md",
+        "bytes": 9823,
+        "sha256": "0763ef034a1b71d1417d7bcabc1d6604f1039bd624e2b92a8297a4b94eed8a07"
+      },
+      {
+        "path": "packages/dom/src/input.ts",
+        "bytes": 24956,
+        "sha256": "356226cf6635794447d783458ea16c4bda62ecca368e7f5f589799e1cf370eea"
+      },
+      {
+        "path": "packages/dom/src/selection.ts",
+        "bytes": 30777,
+        "sha256": "c4e5bdee5ea3b7a0c0092eb33ade9929eb042eeba4ca67a391dea3e228630046"
+      },
+      {
+        "path": "packages/dom/src/types.ts",
+        "bytes": 20428,
+        "sha256": "f5d262a0b6b44a66ef5fac42cee222166090d8497496b7db5e23f182f4bae32f"
+      },
+      {
+        "path": "packages/kwdj/src/dom.ts",
+        "bytes": 17490,
+        "sha256": "c2a3e1ba076acc159d3a36711cbf471e929ac69471b0eebaa1db8da9f48f5a9b"
+      },
+      {
+        "path": "packages/kwdj/src/index.ts",
+        "bytes": 2202,
+        "sha256": "33860e6fa5cbcbf861866387755b553d1bacccbf78438d31b2fb03554e3fa112"
+      },
+      {
+        "path": "packages/sdk/src/context.ts",
+        "bytes": 2539,
+        "sha256": "9d2e121ad03d13d4075e13505f3bde202222b31e5f3ea39ee44e28d897bb380b"
+      },
+      {
+        "path": "packages/sdk/src/controller.ts",
+        "bytes": 31821,
+        "sha256": "0f62c46239a9f3ea928e19bf2c747ca627ea1121918fbb349417c95a31e547b7"
+      },
+      {
+        "path": "packages/sdk/src/data.ts",
+        "bytes": 5981,
+        "sha256": "0a58772a4fb0d4101e8a719e12406f939cedc42ad496ce16bb3d581edd04f2c7"
+      },
+      {
+        "path": "packages/sdk/src/response.ts",
+        "bytes": 17860,
+        "sha256": "1ec433af48b44701e57fca92b4cba0bbabcf3aad33209f07aa7d1b7b67a999a3"
+      },
+      {
+        "path": "packages/ui/src/drag-owner.ts",
+        "bytes": 30944,
+        "sha256": "318b1613ea1a01857e209c9d5170ab1ca8185ef6fac82979568f93d521276e44"
+      },
+      {
+        "path": "packages/ui/src/slash-window.ts",
+        "bytes": 5321,
+        "sha256": "583b6945bfd08ba97f865bd494ad889e81bb26c986f431a8197d2d6daabd23cf"
+      },
+      {
+        "path": "packages/ui/src/types.ts",
+        "bytes": 3807,
+        "sha256": "feb348e85256409547168305f5fb20482f51e5409e8841e1159026f49ffe8dee"
+      },
+      {
+        "path": "packages/wasm/src/sdk-types-v2.ts",
+        "bytes": 6946,
+        "sha256": "87d50c660794ad04779603af2f6b5ed4c3c28fbe473ad938392eb18ae6658ef1"
+      },
+      {
+        "path": "packages/wasm/src/sdk-types.ts",
+        "bytes": 7914,
+        "sha256": "309b33ca672d5037f0325f13fe886626e27b164094cfe20b79919d44778b5d66"
+      },
+      {
+        "path": "scripts/mounted-corpus/collect-interactions.mjs",
+        "bytes": 31403,
+        "sha256": "86780ccf79089d4981c265ff3742ca358817f29195850bb735401d651135256c"
+      },
+      {
+        "path": "scripts/mounted-corpus/collect.mjs",
+        "bytes": 49610,
+        "sha256": "79c7b6263f3ae700e62627791358b94e4b1b9e4d11dece54484b12575dafbeb8"
+      },
+      {
+        "path": "scripts/mounted-corpus/run.mjs",
+        "bytes": 21391,
+        "sha256": "c28f09f788c86f116ad18dc9514af1c1b4af6df2d75e051a1f420eb85ee9851a"
+      },
+      {
+        "path": "tests/mounted-corpus-collector.node.mjs",
+        "bytes": 36767,
+        "sha256": "6bd8e2ae90e57f0d32856e670bc1b0fcd6df89972bafb74602ef11f12d64ae00"
+      },
+      {
+        "path": "tests/mounted-corpus-interactions.node.mjs",
+        "bytes": 16226,
+        "sha256": "613d27465cbc9d1d5b570e4cd4e15a13bcee4c923aaa228674db8ad1d052a87a"
+      },
+      {
+        "path": "tests/mounted-corpus-interactions.spec.js",
+        "bytes": 10126,
+        "sha256": "5d7c270e39ddc2063e8627dc63d4d13434c117eaf2023fdbb093053c8c7486b4"
+      },
+      {
+        "path": "tests/mounted-corpus-source-continuation.node.mjs",
+        "bytes": 22247,
+        "sha256": "e0f51e5008d906cdd8343db492790a3701c32ce08bcc9362f9d307fe1eb690ea"
+      },
+      {
+        "path": "tests/mounted-corpus-source-continuation48.node.mjs",
+        "bytes": 11586,
+        "sha256": "fb6c4aafe4fa64713d28cd691e4e7d1643dd7ca45b371223c1b56eba7d19c026"
+      },
+      {
+        "path": "tests/mounted-corpus-source-continuation66.node.mjs",
+        "bytes": 13557,
+        "sha256": "f7b259540c581300f71f95a0cb8c2e0abcd7981deb864d4ed195ba1f9ba503b7"
+      },
+      {
+        "path": "tests/mounted-corpus-source-continuation67.node.mjs",
+        "bytes": 11106,
+        "sha256": "986bfca32548fa4a455d6523b3acf68c4d4efa9ed2f3b47092315eccc5d66a4b"
+      }
+    ],
+    "snapshotPins": [
+      {
+        "path": "scripts/mounted-corpus/run.mjs",
+        "bytes": 21031,
+        "sha256": "a3ed1f9a5e17c681237c020249deab26664a573a1f4fad7bb1c9fc9d5c36a294"
+      },
+      {
+        "path": "tests/mounted-corpus-collector.node.mjs",
+        "bytes": 36487,
+        "sha256": "af1aaec64d7c371ec126fdf411239317d9e20538cea3913bdecc7b813ae131fb"
+      },
+      {
+        "path": "tests/mounted-corpus-interactions.node.mjs",
+        "bytes": 15946,
+        "sha256": "058680f0ceba9bcbef0d9d9e58524331b6868a2edd8012a6ffed3b47b02b39c9"
+      },
+      {
+        "path": "tests/mounted-corpus-source-continuation.node.mjs",
+        "bytes": 21967,
+        "sha256": "43b228504af814d264f925828a89abd994e04b4e8e8e13a8e5032933e3732722"
+      },
+      {
+        "path": "tests/mounted-corpus-source-continuation48.node.mjs",
+        "bytes": 11318,
+        "sha256": "a39f101b50d0b5965d6a790e4f8efc8c6a30224e44c8a9acac83d290ffe9bf6b"
+      },
+      {
+        "path": "tests/mounted-corpus-source-continuation66.node.mjs",
+        "bytes": 13284,
+        "sha256": "1dafe1c97510232f0e403a00a70bb8da54916620306ac282c69212e4becf77c2"
+      },
+      {
+        "path": "tests/mounted-corpus-source-continuation67.node.mjs",
+        "bytes": 10349,
+        "sha256": "2740f9e2bc3ed16f9bb5dab3c157ba020a82a02905c97f45b96b60242e1913b2"
+      }
+    ],
+    "integrationBefore": [
+      {
+        "path": "scripts/mounted-corpus/collect-interactions.mjs",
+        "bytes": 28456,
+        "sha256": "37525dd751b464dcd62c17cca94173c00819f0d586dbce2feb1a3c849f6eb76b"
+      },
+      {
+        "path": "scripts/mounted-corpus/collect.mjs",
+        "bytes": 48760,
+        "sha256": "efd4874160224f6d254720e0b9e8bfb847c56a61d1e2bb289517b9ccb55b04ef"
+      },
+      {
+        "path": "tests/mounted-corpus-interactions.spec.js",
+        "bytes": 7813,
+        "sha256": "c1b124d075a789a2550bd27c15ea3490eb3c2b48552080d2ffd1a23c94e2853c"
+      }
+    ],
+    "rawKnownPins": [
+      {
+        "path": "contracts/kwdj/v1/README.md",
+        "bytes": 22516,
+        "sha256": "acd0ab722f91e4fd769e939f59eecccf09b130c54a982e3229171ab8efb150f5"
+      },
+      {
+        "path": "contracts/kwdj/v1/corpus-package.json",
+        "bytes": 2555,
+        "sha256": "8c890e1f80b905a66418d45a60fe5ef4196a3232f6c3261dcf1f96aafd1280b5"
+      },
+      {
+        "path": "contracts/kwdj/v1/fixture.schema.json",
+        "bytes": 14265,
+        "sha256": "0de202b483e108f9f85cfa5fc7782d9725d55646a1cdded2c916824177ab143f"
+      },
+      {
+        "path": "contracts/kwdj/v1/fixtures/deferred.json",
+        "bytes": 4409,
+        "sha256": "4499b474515516fd7aff7222a910f2115121eb483790e66a63d84b03dc87bf69"
+      },
+      {
+        "path": "contracts/kwdj/v1/fixtures/mixed.json",
+        "bytes": 40777,
+        "sha256": "f9e472176da723dedf812bff8a5a046946d554c5125e05977cab6a392b19f4a5"
+      },
+      {
+        "path": "contracts/kwdj/v1/fixtures/negative.json",
+        "bytes": 12378,
+        "sha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f"
+      },
+      {
+        "path": "contracts/kwdj/v1/fixtures/positive.json",
+        "bytes": 50871,
+        "sha256": "da7fca7fe9d38407b664b704775ac75ed5635c29eb0fcb40d8e9ca9a2394171b"
+      },
+      {
+        "path": "contracts/kwdj/v1/manifest.json",
+        "bytes": 4647,
+        "sha256": "987f6b0f12922d406a1e514c41ecd31c5c5187a762058d14d0eaf6472d892d5a"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/README.md",
+        "bytes": 22516,
+        "sha256": "acd0ab722f91e4fd769e939f59eecccf09b130c54a982e3229171ab8efb150f5"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/corpus-package.json",
+        "bytes": 2555,
+        "sha256": "8c890e1f80b905a66418d45a60fe5ef4196a3232f6c3261dcf1f96aafd1280b5"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/fixture.schema.json",
+        "bytes": 14265,
+        "sha256": "0de202b483e108f9f85cfa5fc7782d9725d55646a1cdded2c916824177ab143f"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/fixtures/deferred.json",
+        "bytes": 4409,
+        "sha256": "4499b474515516fd7aff7222a910f2115121eb483790e66a63d84b03dc87bf69"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/fixtures/mixed.json",
+        "bytes": 40777,
+        "sha256": "f9e472176da723dedf812bff8a5a046946d554c5125e05977cab6a392b19f4a5"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/fixtures/negative.json",
+        "bytes": 12378,
+        "sha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/fixtures/positive.json",
+        "bytes": 50871,
+        "sha256": "da7fca7fe9d38407b664b704775ac75ed5635c29eb0fcb40d8e9ca9a2394171b"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/manifest.json",
+        "bytes": 4647,
+        "sha256": "987f6b0f12922d406a1e514c41ecd31c5c5187a762058d14d0eaf6472d892d5a"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/mounted-e2e/v1/initial-literals.json",
+        "bytes": 112284,
+        "sha256": "e4a8a7f009983d973784f8bd849500ce5952c203579f2ed7131c62aa15f1dcdc"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/slash/v1/lexical-key-oracles.json",
+        "bytes": 17681,
+        "sha256": "920f8a7190717cd66d93dcf610c00ed6c098d1363b187288ea5c2456167e4333"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/slash/v1/strings.json",
+        "bytes": 1750,
+        "sha256": "f174669a5a717529480c2652d500ba43a4feacf8ec06713b180f2c8d08f3c5d2"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/crates/engine/src/dispatch.rs",
+        "bytes": 37299,
+        "sha256": "b85613e1f86b5ae0221834b2557656fde63233ae2399f0fe0cacc2f393b799a3"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/crates/engine/src/mapping.rs",
+        "bytes": 46845,
+        "sha256": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/crates/engine/src/tree.rs",
+        "bytes": 197736,
+        "sha256": "d1bc2205af12063d4b3b6386f0198830d321ba35b8f2a1d4ae4962d075caedda"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/crates/kwdj/src/commands/inline.rs",
+        "bytes": 58026,
+        "sha256": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/crates/kwdj/src/edit_normalize.rs",
+        "bytes": 41095,
+        "sha256": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/docs/adr/004-canonical-json-v1.md",
+        "bytes": 10290,
+        "sha256": "5d2a975d5c558e981cb2bb42e8d42b225663e4b7a5873951f22b8ad116110a5c"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/docs/history.md",
+        "bytes": 9823,
+        "sha256": "0763ef034a1b71d1417d7bcabc1d6604f1039bd624e2b92a8297a4b94eed8a07"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/dom/src/input.ts",
+        "bytes": 21002,
+        "sha256": "41150002c416feba4d842b49cedf40e6b19f4cfe45a250a42a280ac0551e5e94"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/dom/src/selection.ts",
+        "bytes": 30055,
+        "sha256": "d1dc4950acb5455999bd353cc2454f017dac65a77560a1794fa1d080069be2df"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/dom/src/types.ts",
+        "bytes": 16719,
+        "sha256": "acf7cadb69c9ff6428a904b2d84ad37e2a4e5c396e44631446e3c9141071db3f"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/kwdj/src/dom.ts",
+        "bytes": 12425,
+        "sha256": "6399c1e91a7952bf468cc11246b20282d796425043b4b93e5fc467aad9304a51"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/kwdj/src/index.ts",
+        "bytes": 1633,
+        "sha256": "59c49a2088554f53c1c2cd9b73dd0dd2fa7de6a8495e15debfef6bcf716a31af"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/sdk/src/context.ts",
+        "bytes": 2539,
+        "sha256": "9d2e121ad03d13d4075e13505f3bde202222b31e5f3ea39ee44e28d897bb380b"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/sdk/src/controller.ts",
+        "bytes": 25825,
+        "sha256": "94dad151ff80934160453fa8b346fcb9b519b8eb609398b03bad3a94f15cd9d2"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/sdk/src/data.ts",
+        "bytes": 5981,
+        "sha256": "0a58772a4fb0d4101e8a719e12406f939cedc42ad496ce16bb3d581edd04f2c7"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/sdk/src/response.ts",
+        "bytes": 12255,
+        "sha256": "bcb132d86dca9d338dd03e20bfdb4bc243f3b752601162a2c3b0abf854d5ee3a"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/ui/src/drag-owner.ts",
+        "bytes": 30944,
+        "sha256": "318b1613ea1a01857e209c9d5170ab1ca8185ef6fac82979568f93d521276e44"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/ui/src/slash-window.ts",
+        "bytes": 5321,
+        "sha256": "583b6945bfd08ba97f865bd494ad889e81bb26c986f431a8197d2d6daabd23cf"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/ui/src/types.ts",
+        "bytes": 3807,
+        "sha256": "feb348e85256409547168305f5fb20482f51e5409e8841e1159026f49ffe8dee"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/wasm/src/sdk-types-v2.ts",
+        "bytes": 3474,
+        "sha256": "8eb2b2a26a56c37b0302e5afcc681ee4cf7c96800ef94b4ec244219b96dcfa7b"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/wasm/src/sdk-types.ts",
+        "bytes": 7914,
+        "sha256": "309b33ca672d5037f0325f13fe886626e27b164094cfe20b79919d44778b5d66"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-continuation47.json",
+        "bytes": 32454,
+        "sha256": "d6986b1010d0e8d9d4e1594410d0c92cc695ad27df2d65e77cbcac04a5ba4621"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-deltas/osr47/01.patch",
+        "bytes": 2518,
+        "sha256": "d9595b96cf11ed41f94868dcd6f6d5a18769bc1a9a3dc2f6dfafb01fb795fc25"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-deltas/osr47/02.patch",
+        "bytes": 7583,
+        "sha256": "4d0c6334a0911b36cc99833be631b79153a248ec4ca203378f8ff076c8e8133a"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-deltas/osr47/03.patch",
+        "bytes": 794,
+        "sha256": "f31c2c99bb9766e471e2ad76e78a4d835296040acb9625d9c5682b9ca87a1e16"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-deltas/osr47/04.patch",
+        "bytes": 7457,
+        "sha256": "2ae005f9819b45fd2ecdef167d8c286dc25b3b13112cf4c87093e558daecc300"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-deltas/osr47/05.patch",
+        "bytes": 4100,
+        "sha256": "90dbcd6cfb5839856df5d8246e3202489454b648debc14a3b439b2b6f1581303"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-deltas/osr47/06.patch",
+        "bytes": 5530,
+        "sha256": "278d9b6b452fe357dc4021f9c6cd21eabdf57b6559f0b5ddfc0dec30da15bda0"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-deltas/osr47/07.patch",
+        "bytes": 2450,
+        "sha256": "a736c5fe4791c0520d6b22d342c0aa9813f52f73f7d7cce080f1ec4c26867726"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.1/source-deltas/osr47/08.patch",
+        "bytes": 3908,
+        "sha256": "4af4749c733b2f1a2eefc52b86677dd3bc0c279a6bdb8038226ba44ebfb74ac6"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/kwdj/v1/README.md",
+        "bytes": 22516,
+        "sha256": "acd0ab722f91e4fd769e939f59eecccf09b130c54a982e3229171ab8efb150f5"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/kwdj/v1/corpus-package.json",
+        "bytes": 2555,
+        "sha256": "8c890e1f80b905a66418d45a60fe5ef4196a3232f6c3261dcf1f96aafd1280b5"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/kwdj/v1/fixture.schema.json",
+        "bytes": 14265,
+        "sha256": "0de202b483e108f9f85cfa5fc7782d9725d55646a1cdded2c916824177ab143f"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/kwdj/v1/fixtures/deferred.json",
+        "bytes": 4409,
+        "sha256": "4499b474515516fd7aff7222a910f2115121eb483790e66a63d84b03dc87bf69"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/kwdj/v1/fixtures/mixed.json",
+        "bytes": 40777,
+        "sha256": "f9e472176da723dedf812bff8a5a046946d554c5125e05977cab6a392b19f4a5"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/kwdj/v1/fixtures/negative.json",
+        "bytes": 12378,
+        "sha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/kwdj/v1/fixtures/positive.json",
+        "bytes": 50871,
+        "sha256": "da7fca7fe9d38407b664b704775ac75ed5635c29eb0fcb40d8e9ca9a2394171b"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/kwdj/v1/manifest.json",
+        "bytes": 4647,
+        "sha256": "987f6b0f12922d406a1e514c41ecd31c5c5187a762058d14d0eaf6472d892d5a"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/mounted-e2e/v1/initial-literals.json",
+        "bytes": 112284,
+        "sha256": "e4a8a7f009983d973784f8bd849500ce5952c203579f2ed7131c62aa15f1dcdc"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/slash/v1/lexical-key-oracles.json",
+        "bytes": 17681,
+        "sha256": "920f8a7190717cd66d93dcf610c00ed6c098d1363b187288ea5c2456167e4333"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/slash/v1/strings.json",
+        "bytes": 1750,
+        "sha256": "f174669a5a717529480c2652d500ba43a4feacf8ec06713b180f2c8d08f3c5d2"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/crates/engine/src/dispatch.rs",
+        "bytes": 38680,
+        "sha256": "5017e79529653e0d8ba36847918550e58cd7c7a70c00f69ef367aab234fcba21"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/crates/engine/src/mapping.rs",
+        "bytes": 46845,
+        "sha256": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/crates/engine/src/tree.rs",
+        "bytes": 201395,
+        "sha256": "4233b804998db59c7e161ac5617b4ac94ad15149eb43ef824c873a8d967459a4"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/crates/kwdj/src/commands/inline.rs",
+        "bytes": 58026,
+        "sha256": "eb1fe676535cf136f5fb7cdb059a06f03c2c128c5b8d3078da869401487b4394"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/crates/kwdj/src/edit_normalize.rs",
+        "bytes": 41095,
+        "sha256": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/docs/adr/004-canonical-json-v1.md",
+        "bytes": 10290,
+        "sha256": "5d2a975d5c558e981cb2bb42e8d42b225663e4b7a5873951f22b8ad116110a5c"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/docs/history.md",
+        "bytes": 9823,
+        "sha256": "0763ef034a1b71d1417d7bcabc1d6604f1039bd624e2b92a8297a4b94eed8a07"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/dom/src/input.ts",
+        "bytes": 21249,
+        "sha256": "3a31571a82dc2ce99b0d5eee5c0ffda2f4db339db10d072c0b1d0183f6c5c974"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/dom/src/selection.ts",
+        "bytes": 30055,
+        "sha256": "d1dc4950acb5455999bd353cc2454f017dac65a77560a1794fa1d080069be2df"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/dom/src/types.ts",
+        "bytes": 19087,
+        "sha256": "4c47d67819e998fa59cd4513be01dca59a377f51b2b803f12167b276dc928c62"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/kwdj/src/dom.ts",
+        "bytes": 15258,
+        "sha256": "f6e401845c3430a719221d71885bd3b6a565f35d6439826ebe3ef9450e60865e"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/kwdj/src/index.ts",
+        "bytes": 1633,
+        "sha256": "59c49a2088554f53c1c2cd9b73dd0dd2fa7de6a8495e15debfef6bcf716a31af"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/sdk/src/context.ts",
+        "bytes": 2539,
+        "sha256": "9d2e121ad03d13d4075e13505f3bde202222b31e5f3ea39ee44e28d897bb380b"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/sdk/src/controller.ts",
+        "bytes": 26516,
+        "sha256": "f78888a60a0e31fac553244c2ae1a6014567bae6898ef44a625f7ff62522fc23"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/sdk/src/data.ts",
+        "bytes": 5981,
+        "sha256": "0a58772a4fb0d4101e8a719e12406f939cedc42ad496ce16bb3d581edd04f2c7"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/sdk/src/response.ts",
+        "bytes": 12976,
+        "sha256": "ff71774e478f2786d31dcf19282d3fc358276b046d5bf7ba9faa3cfb5f9ce2da"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/ui/src/drag-owner.ts",
+        "bytes": 30944,
+        "sha256": "318b1613ea1a01857e209c9d5170ab1ca8185ef6fac82979568f93d521276e44"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/ui/src/slash-window.ts",
+        "bytes": 5321,
+        "sha256": "583b6945bfd08ba97f865bd494ad889e81bb26c986f431a8197d2d6daabd23cf"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/ui/src/types.ts",
+        "bytes": 3807,
+        "sha256": "feb348e85256409547168305f5fb20482f51e5409e8841e1159026f49ffe8dee"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/wasm/src/sdk-types-v2.ts",
+        "bytes": 4230,
+        "sha256": "9f1e9afcce2210f80538b0b6aab90a53c8927224ff517a1e1e25583268e366ab"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/wasm/src/sdk-types.ts",
+        "bytes": 7914,
+        "sha256": "309b33ca672d5037f0325f13fe886626e27b164094cfe20b79919d44778b5d66"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/scripts/mounted-corpus/run.mjs",
+        "bytes": 21005,
+        "sha256": "0fbbf17e2dbfa6ab259c6470462052323e99d5b975b61772d237a67f226990fe"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/tests/mounted-corpus-collector.node.mjs",
+        "bytes": 36459,
+        "sha256": "ccea900f0badbc0f566d3cd718c85517bca7d6f30f7c8cd4ad1c9cd6d71aa4e0"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/tests/mounted-corpus-interactions.node.mjs",
+        "bytes": 15946,
+        "sha256": "9714c2b0cd6da3386f747708b99ad115a863f2f318db0991d377b871b8c0b07f"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-authority/accepted47/tests/mounted-corpus-source-continuation.node.mjs",
+        "bytes": 20606,
+        "sha256": "dd3d5ac1d8c3d2084fedca2aefb20d4b8a0e60f013aba0740e466bb63dc7c20d"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-continuation48.json",
+        "bytes": 34648,
+        "sha256": "87f7c7b4059b662bcee05f0e90301eb44dcff329a15cc68e22e0bc335ac02ca7"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/01.patch",
+        "bytes": 5768,
+        "sha256": "e534acda50b6517ddfde34cb59629225ffccf65bed065a3e3ca5dc23de12ea3b"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/02.patch",
+        "bytes": 618,
+        "sha256": "267e22da4fe5edc1f1fea383893dbc82769abcd9dcd23d05275e096f060b084e"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/03.patch",
+        "bytes": 609,
+        "sha256": "3b36b81e8cdda4d420dbafe58e01930c3c65c1464aa3126ab1a2f1b75b059f72"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/04.patch",
+        "bytes": 17684,
+        "sha256": "03c2f0800793624e83afbc5ceca77cc2ab710d380b4921274b2226c93d63c2b3"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/05.patch",
+        "bytes": 3326,
+        "sha256": "a7b8d5f51287091791756fbcddf43c3ce5c9e878e5fc56c07f64fe3b3d7a26d2"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/06.patch",
+        "bytes": 8876,
+        "sha256": "eb5a10368914cdfdac2adda3b52498a4bccfcab31caa29073b016b5c62b3c8b8"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/07.patch",
+        "bytes": 4810,
+        "sha256": "88beaac1e87c9a928d9dc2f23171ff5245a0399bd68daaba174bcf5a4c63a7ba"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/08.patch",
+        "bytes": 1301,
+        "sha256": "d0d43456c6c418fe6b285b6f1461e25e058b88401b841205a08ca98c2602eace"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/09.patch",
+        "bytes": 13866,
+        "sha256": "e7f2d02a09f7fadcc081a67997d502494e939334743d03998488253c796cdec8"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/10.patch",
+        "bytes": 6976,
+        "sha256": "fb6707efcf0071a687167f1ea4b3793c60dc2a7cda655d5620650e8de8652d0f"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/11.patch",
+        "bytes": 4839,
+        "sha256": "e422af4b02d4091c307e1c7913a225c7a91a77c0e46b0312f6a38434b170c9c6"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/12.patch",
+        "bytes": 6510,
+        "sha256": "aa530cc0476e7b47a54dc00d4c6fcc74019fd956b004bbc1e94dc239aaca8ede"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/13.patch",
+        "bytes": 1478,
+        "sha256": "b9bbe3c1064d33e652438a8cb913caa789f5f4994ed47071e2b6b2101a44caae"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/14.patch",
+        "bytes": 1359,
+        "sha256": "fa6fcc83ea457fef39f29a512e3a1866ac0e9a6325544e04b1e2ac0da2c84a24"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.2/source-deltas/osr48/15.patch",
+        "bytes": 1932,
+        "sha256": "3a31a53f185eea9a1b440d09a908653ddea1b48c7508018e06a37a499d2bb740"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/kwdj/v1/README.md",
+        "bytes": 22516,
+        "sha256": "acd0ab722f91e4fd769e939f59eecccf09b130c54a982e3229171ab8efb150f5"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/kwdj/v1/corpus-package.json",
+        "bytes": 2555,
+        "sha256": "8c890e1f80b905a66418d45a60fe5ef4196a3232f6c3261dcf1f96aafd1280b5"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/kwdj/v1/fixture.schema.json",
+        "bytes": 14265,
+        "sha256": "0de202b483e108f9f85cfa5fc7782d9725d55646a1cdded2c916824177ab143f"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/kwdj/v1/fixtures/deferred.json",
+        "bytes": 4409,
+        "sha256": "4499b474515516fd7aff7222a910f2115121eb483790e66a63d84b03dc87bf69"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/kwdj/v1/fixtures/mixed.json",
+        "bytes": 40777,
+        "sha256": "f9e472176da723dedf812bff8a5a046946d554c5125e05977cab6a392b19f4a5"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/kwdj/v1/fixtures/negative.json",
+        "bytes": 12378,
+        "sha256": "23f16edca2bc1fb15cdc082b7cf95e4f5db91473fd66bc32823c73933d5a564f"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/kwdj/v1/fixtures/positive.json",
+        "bytes": 50871,
+        "sha256": "da7fca7fe9d38407b664b704775ac75ed5635c29eb0fcb40d8e9ca9a2394171b"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/kwdj/v1/manifest.json",
+        "bytes": 4647,
+        "sha256": "987f6b0f12922d406a1e514c41ecd31c5c5187a762058d14d0eaf6472d892d5a"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/mounted-e2e/v1/initial-literals.json",
+        "bytes": 112284,
+        "sha256": "e4a8a7f009983d973784f8bd849500ce5952c203579f2ed7131c62aa15f1dcdc"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/slash/v1/lexical-key-oracles.json",
+        "bytes": 17681,
+        "sha256": "920f8a7190717cd66d93dcf610c00ed6c098d1363b187288ea5c2456167e4333"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/slash/v1/strings.json",
+        "bytes": 1750,
+        "sha256": "f174669a5a717529480c2652d500ba43a4feacf8ec06713b180f2c8d08f3c5d2"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/crates/engine/src/dispatch.rs",
+        "bytes": 42347,
+        "sha256": "8d80c3ad01c152d945933c7b9fd215b434be7ffd51cdd5bf148ee2bcd945de7e"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/crates/engine/src/mapping.rs",
+        "bytes": 46845,
+        "sha256": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/crates/engine/src/tree.rs",
+        "bytes": 201809,
+        "sha256": "8cf2281a1c6bf0a84e7b00e22312d2e9f94cf480bbf34ff69be1b34d4378d0ef"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/crates/kwdj/src/commands/inline.rs",
+        "bytes": 58048,
+        "sha256": "d11c251bc92bef5d7302f36622f99bfa7dcf13cbea0eee7d72674421858f5913"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/crates/kwdj/src/edit_normalize.rs",
+        "bytes": 41095,
+        "sha256": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/docs/adr/004-canonical-json-v1.md",
+        "bytes": 10290,
+        "sha256": "5d2a975d5c558e981cb2bb42e8d42b225663e4b7a5873951f22b8ad116110a5c"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/docs/history.md",
+        "bytes": 9823,
+        "sha256": "0763ef034a1b71d1417d7bcabc1d6604f1039bd624e2b92a8297a4b94eed8a07"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/dom/src/input.ts",
+        "bytes": 24956,
+        "sha256": "356226cf6635794447d783458ea16c4bda62ecca368e7f5f589799e1cf370eea"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/dom/src/selection.ts",
+        "bytes": 30109,
+        "sha256": "bcc20bd5d144e4c3568d999ee56406590ff9e1f736bd648f492df21ca345e742"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/dom/src/types.ts",
+        "bytes": 20428,
+        "sha256": "f5d262a0b6b44a66ef5fac42cee222166090d8497496b7db5e23f182f4bae32f"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/kwdj/src/dom.ts",
+        "bytes": 17490,
+        "sha256": "c2a3e1ba076acc159d3a36711cbf471e929ac69471b0eebaa1db8da9f48f5a9b"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/kwdj/src/index.ts",
+        "bytes": 2202,
+        "sha256": "33860e6fa5cbcbf861866387755b553d1bacccbf78438d31b2fb03554e3fa112"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/sdk/src/context.ts",
+        "bytes": 2539,
+        "sha256": "9d2e121ad03d13d4075e13505f3bde202222b31e5f3ea39ee44e28d897bb380b"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/sdk/src/controller.ts",
+        "bytes": 29459,
+        "sha256": "76cc9f9899db61d59224e91601177b2bddc00103916ba9e422ff56eace0fc10d"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/sdk/src/data.ts",
+        "bytes": 5981,
+        "sha256": "0a58772a4fb0d4101e8a719e12406f939cedc42ad496ce16bb3d581edd04f2c7"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/sdk/src/response.ts",
+        "bytes": 17860,
+        "sha256": "1ec433af48b44701e57fca92b4cba0bbabcf3aad33209f07aa7d1b7b67a999a3"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/ui/src/drag-owner.ts",
+        "bytes": 30944,
+        "sha256": "318b1613ea1a01857e209c9d5170ab1ca8185ef6fac82979568f93d521276e44"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/ui/src/slash-window.ts",
+        "bytes": 5321,
+        "sha256": "583b6945bfd08ba97f865bd494ad889e81bb26c986f431a8197d2d6daabd23cf"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/ui/src/types.ts",
+        "bytes": 3807,
+        "sha256": "feb348e85256409547168305f5fb20482f51e5409e8841e1159026f49ffe8dee"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/wasm/src/sdk-types-v2.ts",
+        "bytes": 6946,
+        "sha256": "87d50c660794ad04779603af2f6b5ed4c3c28fbe473ad938392eb18ae6658ef1"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/wasm/src/sdk-types.ts",
+        "bytes": 7914,
+        "sha256": "309b33ca672d5037f0325f13fe886626e27b164094cfe20b79919d44778b5d66"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/scripts/mounted-corpus/run.mjs",
+        "bytes": 21020,
+        "sha256": "79d70c47253e4228e1f7f1a63c06d9e72f98f4d151570049e4cbf029693fc03f"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/tests/mounted-corpus-collector.node.mjs",
+        "bytes": 36484,
+        "sha256": "00115778c59b9f0a1c57159b337faea50289e7494d6aebb05a098ac9a481a330"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/tests/mounted-corpus-interactions.node.mjs",
+        "bytes": 15946,
+        "sha256": "172af16a331afde4d4b73f5b4688cd0cee85e8e6eb0b59792cc4968180cc8257"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/tests/mounted-corpus-source-continuation.node.mjs",
+        "bytes": 21368,
+        "sha256": "ae0d2faaeb3c85a3fb4d13279245ccb1b883de075cb6b8ca081c2955277b3d9a"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-authority/accepted48/tests/mounted-corpus-source-continuation48.node.mjs",
+        "bytes": 10159,
+        "sha256": "b6786abbdbb0b40109c5dba43c1d8a9b3cb3f605c04e6b599d504ea1442c0396"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-continuation66.json",
+        "bytes": 30443,
+        "sha256": "159047260aa4526987de519f68306da42373c431d800f4a463e73f896aa54104"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-deltas/osr66/01.patch",
+        "bytes": 1411,
+        "sha256": "5902a885dabcfd0bf554202ef95d851360f6d6a44abbc641e2d66e99ca2447d6"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-deltas/osr66/02.patch",
+        "bytes": 6536,
+        "sha256": "cd1fd523c329dc0b8f021ff52abae2b46ba936faf474d27cee46089df3e09681"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-deltas/osr66/03.patch",
+        "bytes": 1506,
+        "sha256": "eb081267e7f866c60c8146e63c2bc568dda0d21d3d950343a1fe1e92363eed04"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-deltas/osr66/04.patch",
+        "bytes": 1359,
+        "sha256": "5c75074c08d028110b691f3a0835a47ea05c635405a99023a9d3229b8c02b934"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-deltas/osr66/05.patch",
+        "bytes": 2181,
+        "sha256": "23161d4595ecb42b6a11cac82ef02d4ff10d7f23585c5f61993db16c9d9cfe20"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.3/source-deltas/osr66/06.patch",
+        "bytes": 2115,
+        "sha256": "68e476cb64080636c4da942ab388be37afc94c96a9e8c4b42bf8d2379461b595"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.4/accepted66-bundle.json",
+        "bytes": 152828,
+        "sha256": "3532960f0831af5cf033e7b3c2b5eb07b095cbefa47def3824f6f11e8765480e"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.4/source-continuation67.json",
+        "bytes": 21439,
+        "sha256": "33480751aa712c0d576d3db304d0e4064e47164dfe4dee95134d9047be161366"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1.5/source-snapshot-c82-bundle.json",
+        "bytes": 180154,
+        "sha256": "2dc30367a4f78c42f119dc774867daa089351e2af5ff58043aa870dd26db562d"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1/initial-literals.json",
+        "bytes": 112284,
+        "sha256": "e4a8a7f009983d973784f8bd849500ce5952c203579f2ed7131c62aa15f1dcdc"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1/interaction-literals.json",
+        "bytes": 23307,
+        "sha256": "89c459197d4070008c12c16918bbb994e1ff3fdb78b06a5c71a11a22cc67213f"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1/manifest.json",
+        "bytes": 480097,
+        "sha256": "16e1088e27ed1f8664540d3aa0cf607b6810394f3632798a78115718ebd763fa"
+      },
+      {
+        "path": "contracts/mounted-e2e/v1/source-pins.json",
+        "bytes": 11465,
+        "sha256": "3d3002372f5948862347c3304aacaddf96b1e8c1119741cf7e3741e4567a07a0"
+      },
+      {
+        "path": "contracts/slash/v1/lexical-key-oracles.json",
+        "bytes": 17681,
+        "sha256": "920f8a7190717cd66d93dcf610c00ed6c098d1363b187288ea5c2456167e4333"
+      },
+      {
+        "path": "contracts/slash/v1/strings.json",
+        "bytes": 1750,
+        "sha256": "f174669a5a717529480c2652d500ba43a4feacf8ec06713b180f2c8d08f3c5d2"
+      },
+      {
+        "path": "crates/engine/src/dispatch.rs",
+        "bytes": 42347,
+        "sha256": "8d80c3ad01c152d945933c7b9fd215b434be7ffd51cdd5bf148ee2bcd945de7e"
+      },
+      {
+        "path": "crates/engine/src/mapping.rs",
+        "bytes": 46845,
+        "sha256": "1a4fa095075d31407d6f042d1374320b2e30102d7b89a67652daf55b32924e54"
+      },
+      {
+        "path": "crates/engine/src/tree.rs",
+        "bytes": 201809,
+        "sha256": "8cf2281a1c6bf0a84e7b00e22312d2e9f94cf480bbf34ff69be1b34d4378d0ef"
+      },
+      {
+        "path": "crates/kwdj/src/commands/inline.rs",
+        "bytes": 58048,
+        "sha256": "d11c251bc92bef5d7302f36622f99bfa7dcf13cbea0eee7d72674421858f5913"
+      },
+      {
+        "path": "crates/kwdj/src/edit_normalize.rs",
+        "bytes": 41095,
+        "sha256": "4b8b4e2e26e74312e24d832a845a40fcbef1daf12f50e6b5a613cdded0e88b0a"
+      },
+      {
+        "path": "docs/adr/004-canonical-json-v1.md",
+        "bytes": 10290,
+        "sha256": "5d2a975d5c558e981cb2bb42e8d42b225663e4b7a5873951f22b8ad116110a5c"
+      },
+      {
+        "path": "docs/history.md",
+        "bytes": 9823,
+        "sha256": "0763ef034a1b71d1417d7bcabc1d6604f1039bd624e2b92a8297a4b94eed8a07"
+      },
+      {
+        "path": "packages/dom/src/input.ts",
+        "bytes": 24956,
+        "sha256": "356226cf6635794447d783458ea16c4bda62ecca368e7f5f589799e1cf370eea"
+      },
+      {
+        "path": "packages/dom/src/selection.ts",
+        "bytes": 30777,
+        "sha256": "c4e5bdee5ea3b7a0c0092eb33ade9929eb042eeba4ca67a391dea3e228630046"
+      },
+      {
+        "path": "packages/dom/src/types.ts",
+        "bytes": 20428,
+        "sha256": "f5d262a0b6b44a66ef5fac42cee222166090d8497496b7db5e23f182f4bae32f"
+      },
+      {
+        "path": "packages/kwdj/src/dom.ts",
+        "bytes": 17490,
+        "sha256": "c2a3e1ba076acc159d3a36711cbf471e929ac69471b0eebaa1db8da9f48f5a9b"
+      },
+      {
+        "path": "packages/kwdj/src/index.ts",
+        "bytes": 2202,
+        "sha256": "33860e6fa5cbcbf861866387755b553d1bacccbf78438d31b2fb03554e3fa112"
+      },
+      {
+        "path": "packages/sdk/src/context.ts",
+        "bytes": 2539,
+        "sha256": "9d2e121ad03d13d4075e13505f3bde202222b31e5f3ea39ee44e28d897bb380b"
+      },
+      {
+        "path": "packages/sdk/src/controller.ts",
+        "bytes": 31821,
+        "sha256": "0f62c46239a9f3ea928e19bf2c747ca627ea1121918fbb349417c95a31e547b7"
+      },
+      {
+        "path": "packages/sdk/src/data.ts",
+        "bytes": 5981,
+        "sha256": "0a58772a4fb0d4101e8a719e12406f939cedc42ad496ce16bb3d581edd04f2c7"
+      },
+      {
+        "path": "packages/sdk/src/response.ts",
+        "bytes": 17860,
+        "sha256": "1ec433af48b44701e57fca92b4cba0bbabcf3aad33209f07aa7d1b7b67a999a3"
+      },
+      {
+        "path": "packages/ui/src/drag-owner.ts",
+        "bytes": 30944,
+        "sha256": "318b1613ea1a01857e209c9d5170ab1ca8185ef6fac82979568f93d521276e44"
+      },
+      {
+        "path": "packages/ui/src/slash-window.ts",
+        "bytes": 5321,
+        "sha256": "583b6945bfd08ba97f865bd494ad889e81bb26c986f431a8197d2d6daabd23cf"
+      },
+      {
+        "path": "packages/ui/src/types.ts",
+        "bytes": 3807,
+        "sha256": "feb348e85256409547168305f5fb20482f51e5409e8841e1159026f49ffe8dee"
+      },
+      {
+        "path": "packages/wasm/src/sdk-types-v2.ts",
+        "bytes": 6946,
+        "sha256": "87d50c660794ad04779603af2f6b5ed4c3c28fbe473ad938392eb18ae6658ef1"
+      },
+      {
+        "path": "packages/wasm/src/sdk-types.ts",
+        "bytes": 7914,
+        "sha256": "309b33ca672d5037f0325f13fe886626e27b164094cfe20b79919d44778b5d66"
+      },
+      {
+        "path": "scripts/mounted-corpus/collect-interactions.mjs",
+        "bytes": 31403,
+        "sha256": "86780ccf79089d4981c265ff3742ca358817f29195850bb735401d651135256c"
+      },
+      {
+        "path": "scripts/mounted-corpus/collect.mjs",
+        "bytes": 49610,
+        "sha256": "79c7b6263f3ae700e62627791358b94e4b1b9e4d11dece54484b12575dafbeb8"
+      },
+      {
+        "path": "scripts/mounted-corpus/run.mjs",
+        "bytes": 21391,
+        "sha256": "c28f09f788c86f116ad18dc9514af1c1b4af6df2d75e051a1f420eb85ee9851a"
+      },
+      {
+        "path": "scripts/mounted-corpus/source-continuation47.mjs",
+        "bytes": 15787,
+        "sha256": "34d7aaf0b385894d0a53419362b06902d0d5a3a5a2150c549f9f9c9ebd0963ee"
+      },
+      {
+        "path": "scripts/mounted-corpus/source-continuation48.mjs",
+        "bytes": 14095,
+        "sha256": "dd3f5cff02db9abcd22bbcdf4fe67dfc89e0d33d2eaec972ba98d97a2c7bce9b"
+      },
+      {
+        "path": "scripts/mounted-corpus/source-continuation66.mjs",
+        "bytes": 15716,
+        "sha256": "c164da4b46c5750e1a83f03b316a4df2adbdcdb775bcb17b1fdea871b788c74b"
+      },
+      {
+        "path": "scripts/mounted-corpus/source-continuation67.mjs",
+        "bytes": 15136,
+        "sha256": "c06b7433bcfee0e73cdb668f140b61cfa6c7d90d7b93fba77f6ea601b48511ea"
+      },
+      {
+        "path": "tests/mounted-corpus-collector.node.mjs",
+        "bytes": 36767,
+        "sha256": "6bd8e2ae90e57f0d32856e670bc1b0fcd6df89972bafb74602ef11f12d64ae00"
+      },
+      {
+        "path": "tests/mounted-corpus-interactions.node.mjs",
+        "bytes": 16226,
+        "sha256": "613d27465cbc9d1d5b570e4cd4e15a13bcee4c923aaa228674db8ad1d052a87a"
+      },
+      {
+        "path": "tests/mounted-corpus-interactions.spec.js",
+        "bytes": 10126,
+        "sha256": "5d7c270e39ddc2063e8627dc63d4d13434c117eaf2023fdbb093053c8c7486b4"
+      },
+      {
+        "path": "tests/mounted-corpus-source-continuation.node.mjs",
+        "bytes": 22247,
+        "sha256": "e0f51e5008d906cdd8343db492790a3701c32ce08bcc9362f9d307fe1eb690ea"
+      },
+      {
+        "path": "tests/mounted-corpus-source-continuation48.node.mjs",
+        "bytes": 11586,
+        "sha256": "fb6c4aafe4fa64713d28cd691e4e7d1643dd7ca45b371223c1b56eba7d19c026"
+      },
+      {
+        "path": "tests/mounted-corpus-source-continuation66.node.mjs",
+        "bytes": 13557,
+        "sha256": "f7b259540c581300f71f95a0cb8c2e0abcd7981deb864d4ed195ba1f9ba503b7"
+      },
+      {
+        "path": "tests/mounted-corpus-source-continuation67.node.mjs",
+        "bytes": 11106,
+        "sha256": "986bfca32548fa4a455d6523b3acf68c4d4efa9ed2f3b47092315eccc5d66a4b"
+      }
+    ],
+    "rawPaths": [
+      "contracts/kwdj/v1/README.md",
+      "contracts/kwdj/v1/corpus-package.json",
+      "contracts/kwdj/v1/fixture.schema.json",
+      "contracts/kwdj/v1/fixtures/deferred.json",
+      "contracts/kwdj/v1/fixtures/mixed.json",
+      "contracts/kwdj/v1/fixtures/negative.json",
+      "contracts/kwdj/v1/fixtures/positive.json",
+      "contracts/kwdj/v1/manifest.json",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/README.md",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/corpus-package.json",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/fixture.schema.json",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/fixtures/deferred.json",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/fixtures/mixed.json",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/fixtures/negative.json",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/fixtures/positive.json",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/kwdj/v1/manifest.json",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/mounted-e2e/v1/initial-literals.json",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/slash/v1/lexical-key-oracles.json",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/contracts/slash/v1/strings.json",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/crates/engine/src/dispatch.rs",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/crates/engine/src/mapping.rs",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/crates/engine/src/tree.rs",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/crates/kwdj/src/commands/inline.rs",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/crates/kwdj/src/edit_normalize.rs",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/docs/adr/004-canonical-json-v1.md",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/docs/history.md",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/dom/src/input.ts",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/dom/src/selection.ts",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/dom/src/types.ts",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/kwdj/src/dom.ts",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/kwdj/src/index.ts",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/sdk/src/context.ts",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/sdk/src/controller.ts",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/sdk/src/data.ts",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/sdk/src/response.ts",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/ui/src/drag-owner.ts",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/ui/src/slash-window.ts",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/ui/src/types.ts",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/wasm/src/sdk-types-v2.ts",
+      "contracts/mounted-e2e/v1.1/source-authority/accepted45/packages/wasm/src/sdk-types.ts",
+      "contracts/mounted-e2e/v1.1/source-continuation47.json",
+      "contracts/mounted-e2e/v1.1/source-deltas/osr47/01.patch",
+      "contracts/mounted-e2e/v1.1/source-deltas/osr47/02.patch",
+      "contracts/mounted-e2e/v1.1/source-deltas/osr47/03.patch",
+      "contracts/mounted-e2e/v1.1/source-deltas/osr47/04.patch",
+      "contracts/mounted-e2e/v1.1/source-deltas/osr47/05.patch",
+      "contracts/mounted-e2e/v1.1/source-deltas/osr47/06.patch",
+      "contracts/mounted-e2e/v1.1/source-deltas/osr47/07.patch",
+      "contracts/mounted-e2e/v1.1/source-deltas/osr47/08.patch",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/kwdj/v1/README.md",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/kwdj/v1/corpus-package.json",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/kwdj/v1/fixture.schema.json",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/kwdj/v1/fixtures/deferred.json",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/kwdj/v1/fixtures/mixed.json",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/kwdj/v1/fixtures/negative.json",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/kwdj/v1/fixtures/positive.json",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/kwdj/v1/manifest.json",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/mounted-e2e/v1/initial-literals.json",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/slash/v1/lexical-key-oracles.json",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/contracts/slash/v1/strings.json",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/crates/engine/src/dispatch.rs",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/crates/engine/src/mapping.rs",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/crates/engine/src/tree.rs",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/crates/kwdj/src/commands/inline.rs",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/crates/kwdj/src/edit_normalize.rs",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/docs/adr/004-canonical-json-v1.md",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/docs/history.md",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/dom/src/input.ts",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/dom/src/selection.ts",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/dom/src/types.ts",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/kwdj/src/dom.ts",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/kwdj/src/index.ts",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/sdk/src/context.ts",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/sdk/src/controller.ts",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/sdk/src/data.ts",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/sdk/src/response.ts",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/ui/src/drag-owner.ts",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/ui/src/slash-window.ts",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/ui/src/types.ts",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/wasm/src/sdk-types-v2.ts",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/packages/wasm/src/sdk-types.ts",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/scripts/mounted-corpus/run.mjs",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/tests/mounted-corpus-collector.node.mjs",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/tests/mounted-corpus-interactions.node.mjs",
+      "contracts/mounted-e2e/v1.2/source-authority/accepted47/tests/mounted-corpus-source-continuation.node.mjs",
+      "contracts/mounted-e2e/v1.2/source-continuation48.json",
+      "contracts/mounted-e2e/v1.2/source-deltas/osr48/01.patch",
+      "contracts/mounted-e2e/v1.2/source-deltas/osr48/02.patch",
+      "contracts/mounted-e2e/v1.2/source-deltas/osr48/03.patch",
+      "contracts/mounted-e2e/v1.2/source-deltas/osr48/04.patch",
+      "contracts/mounted-e2e/v1.2/source-deltas/osr48/05.patch",
+      "contracts/mounted-e2e/v1.2/source-deltas/osr48/06.patch",
+      "contracts/mounted-e2e/v1.2/source-deltas/osr48/07.patch",
+      "contracts/mounted-e2e/v1.2/source-deltas/osr48/08.patch",
+      "contracts/mounted-e2e/v1.2/source-deltas/osr48/09.patch",
+      "contracts/mounted-e2e/v1.2/source-deltas/osr48/10.patch",
+      "contracts/mounted-e2e/v1.2/source-deltas/osr48/11.patch",
+      "contracts/mounted-e2e/v1.2/source-deltas/osr48/12.patch",
+      "contracts/mounted-e2e/v1.2/source-deltas/osr48/13.patch",
+      "contracts/mounted-e2e/v1.2/source-deltas/osr48/14.patch",
+      "contracts/mounted-e2e/v1.2/source-deltas/osr48/15.patch",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/kwdj/v1/README.md",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/kwdj/v1/corpus-package.json",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/kwdj/v1/fixture.schema.json",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/kwdj/v1/fixtures/deferred.json",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/kwdj/v1/fixtures/mixed.json",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/kwdj/v1/fixtures/negative.json",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/kwdj/v1/fixtures/positive.json",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/kwdj/v1/manifest.json",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/mounted-e2e/v1/initial-literals.json",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/slash/v1/lexical-key-oracles.json",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/contracts/slash/v1/strings.json",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/crates/engine/src/dispatch.rs",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/crates/engine/src/mapping.rs",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/crates/engine/src/tree.rs",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/crates/kwdj/src/commands/inline.rs",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/crates/kwdj/src/edit_normalize.rs",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/docs/adr/004-canonical-json-v1.md",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/docs/history.md",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/dom/src/input.ts",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/dom/src/selection.ts",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/dom/src/types.ts",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/kwdj/src/dom.ts",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/kwdj/src/index.ts",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/sdk/src/context.ts",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/sdk/src/controller.ts",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/sdk/src/data.ts",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/sdk/src/response.ts",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/ui/src/drag-owner.ts",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/ui/src/slash-window.ts",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/ui/src/types.ts",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/wasm/src/sdk-types-v2.ts",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/packages/wasm/src/sdk-types.ts",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/scripts/mounted-corpus/run.mjs",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/tests/mounted-corpus-collector.node.mjs",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/tests/mounted-corpus-interactions.node.mjs",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/tests/mounted-corpus-source-continuation.node.mjs",
+      "contracts/mounted-e2e/v1.3/source-authority/accepted48/tests/mounted-corpus-source-continuation48.node.mjs",
+      "contracts/mounted-e2e/v1.3/source-continuation66.json",
+      "contracts/mounted-e2e/v1.3/source-deltas/osr66/01.patch",
+      "contracts/mounted-e2e/v1.3/source-deltas/osr66/02.patch",
+      "contracts/mounted-e2e/v1.3/source-deltas/osr66/03.patch",
+      "contracts/mounted-e2e/v1.3/source-deltas/osr66/04.patch",
+      "contracts/mounted-e2e/v1.3/source-deltas/osr66/05.patch",
+      "contracts/mounted-e2e/v1.3/source-deltas/osr66/06.patch",
+      "contracts/mounted-e2e/v1.4/accepted66-bundle.json",
+      "contracts/mounted-e2e/v1.4/source-continuation67.json",
+      "contracts/mounted-e2e/v1.5/resource-profile67.json",
+      "contracts/mounted-e2e/v1.5/source-snapshot-c82-bundle.json",
+      "contracts/mounted-e2e/v1/initial-literals.json",
+      "contracts/mounted-e2e/v1/interaction-literals.json",
+      "contracts/mounted-e2e/v1/manifest.json",
+      "contracts/mounted-e2e/v1/source-pins.json",
+      "contracts/slash/v1/lexical-key-oracles.json",
+      "contracts/slash/v1/strings.json",
+      "crates/engine/src/dispatch.rs",
+      "crates/engine/src/mapping.rs",
+      "crates/engine/src/tree.rs",
+      "crates/kwdj/src/commands/inline.rs",
+      "crates/kwdj/src/edit_normalize.rs",
+      "docs/adr/004-canonical-json-v1.md",
+      "docs/history.md",
+      "packages/dom/src/input.ts",
+      "packages/dom/src/selection.ts",
+      "packages/dom/src/types.ts",
+      "packages/kwdj/src/dom.ts",
+      "packages/kwdj/src/index.ts",
+      "packages/sdk/src/context.ts",
+      "packages/sdk/src/controller.ts",
+      "packages/sdk/src/data.ts",
+      "packages/sdk/src/response.ts",
+      "packages/ui/src/drag-owner.ts",
+      "packages/ui/src/slash-window.ts",
+      "packages/ui/src/types.ts",
+      "packages/wasm/src/sdk-types-v2.ts",
+      "packages/wasm/src/sdk-types.ts",
+      "scripts/mounted-corpus/collect-interactions.mjs",
+      "scripts/mounted-corpus/collect.mjs",
+      "scripts/mounted-corpus/resource-profile67.mjs",
+      "scripts/mounted-corpus/run.mjs",
+      "scripts/mounted-corpus/source-continuation47.mjs",
+      "scripts/mounted-corpus/source-continuation48.mjs",
+      "scripts/mounted-corpus/source-continuation66.mjs",
+      "scripts/mounted-corpus/source-continuation67.mjs",
+      "tests/mounted-corpus-collector.node.mjs",
+      "tests/mounted-corpus-interactions.node.mjs",
+      "tests/mounted-corpus-interactions.spec.js",
+      "tests/mounted-corpus-resource-profile67.node.mjs",
+      "tests/mounted-corpus-source-continuation.node.mjs",
+      "tests/mounted-corpus-source-continuation48.node.mjs",
+      "tests/mounted-corpus-source-continuation66.node.mjs",
+      "tests/mounted-corpus-source-continuation67.node.mjs"
+    ],
+    "bundle": {
+      "path": "contracts/mounted-e2e/v1.5/source-snapshot-c82-bundle.json",
+      "bytes": 180154,
+      "sha256": "2dc30367a4f78c42f119dc774867daa089351e2af5ff58043aa870dd26db562d"
+    }
+  },
+  "budgets": {
+    "manifestBytes": 262144,
+    "sourceBytes": 262144,
+    "deltaBytes": 65536,
+    "retainedBytes": 2097152,
+    "runtimePaths": 192,
+    "runtimeArtifactBytes": 1048576,
+    "runtimeAggregateBytes": 8388608
+  },
+  "qualification": "Prospective strict additive resource policy and current-source guard, authored after the verified c82 schema mismatch and before this module/control execution. Frozen v1/v1.4/66/48/47/45 files and all old assertions remain unchanged. Explicit modern selection retains full12 raw maps; legacy defaults retain the old11 schema. c82 is source-snapshot lineage only, never accepted/reviewed implementation or inherited runtime evidence."
+}
