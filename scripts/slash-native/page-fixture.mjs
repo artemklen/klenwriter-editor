@@ -42,15 +42,26 @@ function current(){check(active,'One active43 installed mount');return active;}
 function element(){return document.getElementById(`${current().id}-editor`);}
 function root(){return document.getElementById(current().id);}
 function picker(){
-  const list=root().querySelector('.kw-ui-slash');check(list instanceof HTMLElement&&list.isConnected,'One actual outside slash list');
+  // The role-bearing list is a child of the visibility/scroll/status owner.
+  // Read both real nodes; never synthesize a role, option, placeholder or busy state.
+  const containers=root().querySelectorAll('.kw-ui-slash');check(containers.length===1,'One actual outside slash container');
+  const container=containers[0];check(container instanceof HTMLElement&&container.isConnected&&!element().contains(container),'Outside owned popup container');
+  check(container.getAttribute('role')===null&&container.id!==''&&document.getElementById(container.id)===container,'Actual non-listbox popup owner');
+  const lists=container.querySelectorAll('.kw-ui-slash-list');check(lists.length===1,'One actual inner slash list');
+  const list=lists[0];check(list instanceof HTMLElement&&list.isConnected,'One actual outside slash list');
   check(!element().contains(list)&&list.getAttribute('role')==='listbox','Outside owned picker');
+  check(list.parentElement===container&&list.id!==''&&document.getElementById(list.id)===list&&container.querySelectorAll('[role="listbox"]').length===1,'Genuine unique inner listbox identity and ownership');
   const options=[...list.querySelectorAll('[role="option"]')];check(options.length<=32,'Bounded picker options');
+  check(options.length===list.children.length&&options.every(node=>node.parentElement===list),'Only actual listbox-owned option children');
+  check(new Set(options.map(node=>node.id)).size===options.length&&options.every(node=>node.id!==''&&document.getElementById(node.id)===node),'Genuine unique owned option identities');
   const items=options.map(node=>{const label=node.firstElementChild?.textContent??'',matches=strings.choices.filter(c=>c.label[current().locale]===label);check(matches.length===1,'One frozen label identifies option');
     const rect=node.getBoundingClientRect();return {id:'org.klenwriter.kwdj/slash/'+matches[0].id,elementId:node.id,object:token(node),label,selected:node.getAttribute('aria-selected')==='true',disabled:node.getAttribute('aria-disabled'),
       description:node.lastElementChild?.textContent??'',rect:{x:rect.x,y:rect.y,width:rect.width,height:rect.height},node};});
-  const rect=list.getBoundingClientRect(),style=getComputedStyle(list);
-  return {list,hidden:list.hidden,visible:!list.hidden&&rect.width>0&&rect.height>0&&style.visibility!=='hidden',elementId:list.id,object:token(list),items,status:list.querySelector('[role="status"]')?.textContent??null,
-    rect:{x:rect.x,y:rect.y,width:rect.width,height:rect.height},scrollTop:list.scrollTop,clientTop:list.clientTop,clientHeight:list.clientHeight};
+  const statuses=container.querySelectorAll('[role="status"]');check(statuses.length<=1&&[...statuses].every(node=>node.parentElement===container&&!list.contains(node)),'Optional genuine popup status sibling');
+  const rect=container.getBoundingClientRect(),style=getComputedStyle(container);
+  return {list,hidden:container.hidden,visible:!container.hidden&&rect.width>0&&rect.height>0&&style.visibility!=='hidden',elementId:list.id,object:token(list),items,status:statuses[0]?.textContent??null,
+    containerElementId:container.id,containerObject:token(container),geometryOwner:'outside-popup-container',
+    rect:{x:rect.x,y:rect.y,width:rect.width,height:rect.height},scrollTop:container.scrollTop,clientTop:container.clientTop,clientHeight:container.clientHeight};
 }
 function pickerData(){const {list,items,...data}=picker();return {...data,items:items.map(({node,...item})=>item),active:items.find(x=>x.selected)?.id??null,
   aria:Object.fromEntries(['role','aria-haspopup','aria-controls','aria-activedescendant','aria-expanded'].map(name=>[name,element().getAttribute(name)]))};}

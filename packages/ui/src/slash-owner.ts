@@ -40,7 +40,7 @@ export class SlashOwner {
     this.#options=options;this.#profile=profile;this.#locale=locale;
     if(typeof options.editor.inputObservations?.subscribe!=='function'||!options.editor.popupPresentation)throw new TypeError('ui.unavailable');
     const doc=options.element.ownerDocument;
-    this.#list=new SlashList(doc,`${options.prefix}-slash`);options.entry.append(this.#list.element);
+    this.#list=new SlashList(doc,`${options.prefix}-slash`);options.entry.append(this.#list.container);
     const subscription=options.editor.inputObservations.subscribe(event=>{
       this.#observe(event);
     });
@@ -49,9 +49,9 @@ export class SlashOwner {
     this.#listen(options.element,'keydown',event=>this.#key(event as KeyboardEvent),true);
     this.#listen(options.element,'keyup',event=>{if((event as KeyboardEvent).key==='Enter')this.#enterHeld=false;});
     this.#listen(options.element,'compositionstart',()=>this.retire(),true);
-    this.#listen(this.#list.element,'keydown',event=>this.#key(event as KeyboardEvent),true);
-    this.#listen(this.#list.element,'pointerdown',event=>this.#down(event as PointerEvent));
-    this.#listen(this.#list.element,'click',event=>this.#click(event as MouseEvent));
+    this.#listen(this.#list.container,'keydown',event=>this.#key(event as KeyboardEvent),true);
+    this.#listen(this.#list.container,'pointerdown',event=>this.#down(event as PointerEvent));
+    this.#listen(this.#list.container,'click',event=>this.#click(event as MouseEvent));
     const win=doc.defaultView!;
     this.#listen(win,'pointerup',event=>{
       const e=event as PointerEvent,g=this.#gesture;
@@ -158,7 +158,7 @@ export class SlashOwner {
       }
       if(this.#lastActive)this.#lastActive.tabIndex=-1;
       this.#list.update(rows,frame.active,label('picker',this.#locale),label('empty',this.#locale),this.#locale);
-      this.#list.element.hidden=false;o.add.setAttribute('aria-expanded','true');o.add.setAttribute('aria-controls',this.#list.element.id);
+      this.#list.container.hidden=false;o.add.setAttribute('aria-expanded','true');o.add.setAttribute('aria-controls',this.#list.element.id);
       this.#lastActive=this.#list.activeOption;
       if(frame.kind==='add'){if(this.#lastActive)this.#lastActive.tabIndex=0;this.#list.scrollActive();return;}
       if(!this.#presentation){
@@ -175,16 +175,18 @@ export class SlashOwner {
   }
   #position(frame:Frame):void {
     if(this.#gesture)return;
-    const list=this.#list.element,o=this.#options!;
+    const list=this.#list.container,o=this.#options!;
     list.classList.remove('kw-ui-floating');list.style.removeProperty('left');list.style.removeProperty('top');
     const geometry=o.editor.geometry.read({kind:'selection',stamp:frame.context.state.stamp});
     if(geometry.status!=='measured'||!geometry.visible)return;
     const point=geometry.focus??geometry.rects.at(-1);if(!point)return;
+    // Floating CSS changes the available height and width. Place the final box,
+    // rather than validating a differently sized absolute-positioned popup.
+    list.classList.add('kw-ui-floating');
     const box=list.getBoundingClientRect(),v=geometry.viewport;
     const maxX=v.x+v.width-box.width-8,maxY=v.y+v.height-box.height-8;
     if(![point.x,point.y,point.height,box.width,box.height,maxX,maxY].every(Number.isFinite)
-      ||box.width<=0||box.height<=0||maxX<v.x+8||maxY<v.y+8)return;
-    list.classList.add('kw-ui-floating');
+      ||box.width<=0||box.height<=0||maxX<v.x+8||maxY<v.y+8){list.classList.remove('kw-ui-floating');return;}
     list.style.left=`${Math.round(Math.max(v.x+8,Math.min(point.x,maxX))*2)/2}px`;
     list.style.top=`${Math.round(Math.max(v.y+8,Math.min(point.y+point.height+8,maxY))*2)/2}px`;
     const placed=list.getBoundingClientRect();
@@ -347,8 +349,8 @@ export class SlashOwner {
     if(gesture&&gesture.request!==frame?.request)o?.editor.hostRequests.release(gesture.request);
     if(frame?.request)o?.editor.hostRequests.release(frame.request);
     this.#presentation?.dispose();this.#presentation=null;
-    this.#list.element.hidden=true;this.#list.element.classList.remove('kw-ui-floating');
-    this.#list.element.style.removeProperty('left');this.#list.element.style.removeProperty('top');
+    this.#list.container.hidden=true;this.#list.container.classList.remove('kw-ui-floating');
+    this.#list.container.style.removeProperty('left');this.#list.container.style.removeProperty('top');
     if(o){o.add.setAttribute('aria-expanded','false');o.add.removeAttribute('aria-controls');}
     this.#lastActive=null;
   }

@@ -1,0 +1,39 @@
+--- a/tests/mounted-corpus-source-continuation48.node.mjs
++++ b/tests/mounted-corpus-source-continuation48.node.mjs
+@@ -7,13 +7,14 @@
+ import test from 'node:test';
+ import { loadMountedSourceContinuation47 } from '../scripts/mounted-corpus/source-continuation47.mjs';
+ import { loadMountedSourceContinuation48, SOURCE_CONTINUATION48_PATH } from '../scripts/mounted-corpus/source-continuation48.mjs';
++import { loadMountedSourceContinuation66 } from '../scripts/mounted-corpus/source-continuation66.mjs';
+ 
+ const ROOT = new URL('../', import.meta.url);
+ const LEGACY_PATH = 'contracts/mounted-e2e/v1.1/source-continuation47.json';
+ const NAMED_CHANGE = 'packages/dom/src/input.ts';
+ const hash = b => createHash('sha256').update(b).digest('hex');
+ const corrupt = b => { const v = Uint8Array.from(b); assert.ok(v.length); v[v.length - 1] ^= 1; return v; };
+-function readerWith(overrides = new Map(), calls = []) {
++function ordinaryReaderWith(overrides = new Map(), calls = []) {
+   return async (path, maximum) => {
+     calls.push({ path, maximum });
+     assert.ok(Number.isSafeInteger(maximum) && maximum >= 0 && maximum <= 268435456);
+@@ -27,6 +28,20 @@
+       bytes = await readFile(url);
+     }
+     assert.ok(bytes.byteLength <= maximum, `Exact requested bound: ${path}`); return bytes;
++  };
++}
++// Unchanged48 controls use an explicitly retained48 source namespace. The66
++// layer validates fresh actual66 first; original48 corruption overrides remain
++// overrides of their original namespace, never current runtime evidence.
++const actual66Reader = ordinaryReaderWith();
++const current66Layer = await loadMountedSourceContinuation66({ readArtifact: actual66Reader });
++const accepted48SourceReader = current66Layer.retained48SourceReader(actual66Reader);
++function readerWith(overrides = new Map(), calls = []) {
++  const overridden = ordinaryReaderWith(overrides, calls);
++  return async (path, maximum) => {
++    if (overrides.has(path)) return overridden(path, maximum);
++    calls.push({ path, maximum });
++    return accepted48SourceReader(path, maximum);
+   };
+ }
+ async function manifests() {

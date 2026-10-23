@@ -1,0 +1,6 @@
+/* SPDX-License-Identifier: MIT OR Apache-2.0 */
+/* Finite installed presentation stress. No semantic or arbitrary layout input. */
+.a66-installed-scroll{height:420px;overflow:auto;position:relative}
+.a66-installed-scroll>.a66-host-controls{margin-top:320px}
+.a66-installed-scroll .kw-ui-popup{max-height:64px}
+.a66-installed-scroll>.a66-dialog{max-height:128px}

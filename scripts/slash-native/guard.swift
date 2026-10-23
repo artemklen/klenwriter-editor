@@ -8,6 +8,8 @@ import Carbon
 let began = DispatchTime.now().uptimeNanoseconds
 var posted = false
 var safariScrollRecheckProofs: [[String: Any]] = []
+// Failure-only Safari scan facts; never read AX again to explain a refusal.
+var safariViewportFailure: [String: Any]? = nil
 func elapsed() -> Double { Double(DispatchTime.now().uptimeNanoseconds - began) / 1_000_000 }
 func emit(_ value: [String: Any], _ code: Int32) -> Never {
     var output = value
@@ -18,8 +20,10 @@ func emit(_ value: [String: Any], _ code: Int32) -> Never {
     let bytes = try! JSONSerialization.data(withJSONObject: output, options: [.sortedKeys])
     FileHandle.standardOutput.write(bytes); FileHandle.standardOutput.write(Data([10])); exit(code)
 }
-func refuse(_ reason: String) -> Never {
-    emit(["status": "refused", "reason": reason, "delivery": posted ? "unknown/may_have_sent" : "not_sent", "elapsedMs": elapsed()], 2)
+func refuse(_ reason: String, viewportDiagnostic: [String: Any]? = nil) -> Never {
+    var output: [String: Any] = ["status": "refused", "reason": reason, "delivery": posted ? "unknown/may_have_sent" : "not_sent", "elapsedMs": elapsed()]
+    if let viewportDiagnostic = viewportDiagnostic ?? safariViewportFailure { output["viewportDiagnostic"] = viewportDiagnostic }
+    emit(output, 2)
 }
 func closed(_ value: [String: Any], _ keys: Set<String>) -> Bool { Set(value.keys) == keys }
 func number(_ value: Any?) -> Double? {
@@ -106,6 +110,13 @@ func safariScrollViewportPoint(viewport: CGRect, visible: CGRect, cssWidth: Doub
 }
 // END SAFARI_SCROLL_VIEWPORT_GEOMETRY
 
+// BEGIN OWNED_VIEWPORT_CONTAINMENT
+private func viewportContainedByWindow(_ view: CGRect, _ frame: CGRect) -> Bool {
+        view.minX >= frame.minX - 0.5 && view.maxX <= frame.maxX + 0.5 &&
+        view.minY >= frame.minY - 0.5 && view.maxY <= frame.maxY + 0.5
+}
+// END OWNED_VIEWPORT_CONTAINMENT
+
 struct SafariScrollViewport {
     let contentElement: AXUIElement
     let scrollElement: AXUIElement
@@ -117,12 +128,13 @@ struct SafariScrollViewport {
     let visible: CGRect
     let expectedWidth: Double
     let expectedHeight: Double
+    let oldExactWebAreaMatches: Int
     var proof: [String: Any] {
         var scrollbar: Any = NSNull()
         if let bar = bar { scrollbar = ["role": "AXScrollBar", "orientation": orientation as Any? ?? NSNull(), "frame": encodedRectangle(bar)] as [String: Any] }
         return ["basis": "safari-scroll-viewport", "content": encodedRectangle(content), "scrollArea": encodedRectangle(scroll),
                 "visibleContent": encodedRectangle(visible), "scrollBar": scrollbar,
-                "totalWebAreas": 1, "oldExactWebAreaMatches": 0, "genuineDirectParent": true]
+                "totalWebAreas": 1, "oldExactWebAreaMatches": oldExactWebAreaMatches, "genuineDirectParent": true]
     }
 }
 struct SafariViewportScan {
@@ -132,15 +144,46 @@ struct SafariViewportScan {
     let fallback: SafariScrollViewport?
 }
 // Same complete CFEqual-bounded walk; fallback never follows an incomplete scan.
-func safariViewport(_ window: AXUIElement, _ rootFrame: CGRect, _ expectedWidth: Double, _ expectedHeight: Double) -> SafariViewportScan? {
+func safariViewport(_ window: AXUIElement, _ rootFrame: CGRect, _ expectedWidth: Double, _ expectedHeight: Double, requireScrollViewport: Bool = false) -> SafariViewportScan? {
+    safariViewportFailure = nil
     var todo: [(AXUIElement, Int, AXUIElement?)] = [(window, 0, nil)], seen: [AXUIElement] = [], exact: [CGRect] = []
     var webAreas: [(AXUIElement, AXUIElement?)] = [], maximumDepth = 0, complete = true
+    var missingRoles = 0, childFailures = 0
+    var firstIncomplete: (kind: String, ordinal: Int, depth: Int, status: Int32?)?
+    var contentFrame: CGRect?, scrollFrame: CGRect?, barFrame: CGRect?
+    var parentChildCount: Int?, contentChildMatches: Int?, scrollbarMatches: Int?
+    func failed(_ stage: String, attemptedDepth: Int? = nil, childCount: Int? = nil) -> SafariViewportScan? {
+        var facts: [String: Any] = ["stage": stage, "requireScrollViewport": requireScrollViewport,
+            "expectedWidth": expectedWidth, "expectedHeight": expectedHeight, "rootFrame": encodedRectangle(rootFrame),
+            "visitedNodes": seen.count, "queuedNodes": todo.count, "maximumDepth": maximumDepth,
+            "scanComplete": complete, "missingRoleCount": missingRoles, "childrenFailureCount": childFailures,
+            "exactDimensionMatches": exact.count, "webAreaCount": webAreas.count]
+        if let depth = attemptedDepth { facts["attemptedDepth"] = depth }
+        if let count = childCount { facts["pendingChildrenCount"] = count }
+        if let first = firstIncomplete {
+            var firstFacts: [String: Any] = ["kind": first.kind, "visitedOrdinal": first.ordinal, "depth": first.depth]
+            if let status = first.status { firstFacts["axStatus"] = status }
+            facts["firstIncomplete"] = firstFacts
+        }
+        if exact.count == 1 { facts["exactWebAreaFrame"] = encodedRectangle(exact[0]) }
+        if let frame = contentFrame { facts["contentFrame"] = encodedRectangle(frame) }
+        if let frame = scrollFrame { facts["scrollFrame"] = encodedRectangle(frame) }
+        if let frame = barFrame { facts["scrollbarFrame"] = encodedRectangle(frame) }
+        if let count = parentChildCount { facts["parentChildCount"] = count }
+        if let count = contentChildMatches { facts["contentChildMatches"] = count }
+        if let count = scrollbarMatches { facts["scrollbarMatches"] = count }
+        safariViewportFailure = facts
+        return nil
+    }
     while let (element, depth, parent) = todo.popLast() {
         if seen.contains(where: { CFEqual($0, element) }) { continue }
-        guard seen.count < 512, depth <= 32 else { return nil }
+        guard seen.count < 512, depth <= 32 else { return failed("scan.node-or-depth-bound", attemptedDepth: depth) }
         seen.append(element); maximumDepth = max(maximumDepth, depth)
         let role = attribute(element, kAXRoleAttribute as CFString) as? String
-        if role == nil { complete = false }
+        if role == nil {
+            complete = false; missingRoles += 1
+            if case nil = firstIncomplete { firstIncomplete = ("missing-role", seen.count, depth, nil) }
+        }
         if role == "AXWebArea" {
             webAreas.append((element, parent))
             if let r = rectangle(element), abs(r.width - expectedWidth) <= 2, abs(r.height - expectedHeight) <= 2 { exact.append(r) }
@@ -148,30 +191,43 @@ func safariViewport(_ window: AXUIElement, _ rootFrame: CGRect, _ expectedWidth:
         var rawChildren: CFTypeRef?
         let status = AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &rawChildren)
         if status == .success, let children = rawChildren as? [AXUIElement] {
-            guard children.count <= 512 - seen.count - todo.count else { return nil }
+            guard children.count <= 512 - seen.count - todo.count else { return failed("scan.queued-children-bound", childCount: children.count) }
             for child in children.reversed() { todo.append((child, depth + 1, element)) }
-        } else if status != .attributeUnsupported && status != .noValue { complete = false }
+        } else if status != .attributeUnsupported && status != .noValue {
+            complete = false; childFailures += 1
+            if case nil = firstIncomplete { firstIncomplete = (status == .success ? "children-type" : "children-status", seen.count, depth, status.rawValue) }
+        }
     }
-    if exact.count == 1 { return SafariViewportScan(view: exact[0], visited: seen.count, depth: maximumDepth, fallback: nil) }
-    guard exact.isEmpty, complete, webAreas.count == 1, let parent = webAreas[0].1,
-          attribute(parent, kAXRoleAttribute as CFString) as? String == "AXScrollArea",
-          let actualParent = attribute(webAreas[0].0, kAXParentAttribute as CFString), CFGetTypeID(actualParent) == AXUIElementGetTypeID(), CFEqual(actualParent, parent),
-          let children = attribute(parent, kAXChildrenAttribute as CFString) as? [AXUIElement], children.count <= 512,
-          children.filter({ CFEqual($0, webAreas[0].0) }).count == 1,
-          let content = rectangle(webAreas[0].0), let scroll = rectangle(parent) else { return nil }
+    // A dimension match alone is not coordinate authority; keep the original0.5 containment.
+    // A saved scroll route is rechecked through that same route, even if content becomes exact-sized.
+    if !requireScrollViewport, exact.count == 1, viewportContainedByWindow(exact[0], rootFrame) {
+        return SafariViewportScan(view: exact[0], visited: seen.count, depth: maximumDepth, fallback: nil)
+    }
+    guard exact.count <= 1, complete, webAreas.count == 1, let parent = webAreas[0].1 else { return failed("fallback.scan-metadata-or-parent-missing") }
+    guard attribute(parent, kAXRoleAttribute as CFString) as? String == "AXScrollArea" else { return failed("fallback.direct-parent-role") }
+    guard let actualParent = attribute(webAreas[0].0, kAXParentAttribute as CFString), CFGetTypeID(actualParent) == AXUIElementGetTypeID(), CFEqual(actualParent, parent) else { return failed("fallback.direct-parent-identity") }
+    guard let children = attribute(parent, kAXChildrenAttribute as CFString) as? [AXUIElement] else { return failed("fallback.parent-children-unavailable") }
+    parentChildCount = children.count
+    guard children.count <= 512 else { return failed("fallback.parent-children-bound") }
+    contentChildMatches = children.filter({ CFEqual($0, webAreas[0].0) }).count
+    guard contentChildMatches == 1 else { return failed("fallback.content-child-membership") }
+    guard let content = rectangle(webAreas[0].0) else { return failed("fallback.content-rectangle") }; contentFrame = content
+    guard let scroll = rectangle(parent) else { return failed("fallback.scroll-rectangle") }; scrollFrame = scroll
     let bars = children.filter { attribute($0, kAXRoleAttribute as CFString) as? String == "AXScrollBar" }
-    guard bars.count <= 1 else { return nil }
+    scrollbarMatches = bars.count
+    guard bars.count <= 1 else { return failed("fallback.scrollbar-count") }
     var bar: CGRect?, orientation: String?
     if let element = bars.first {
-        guard let actualParent = attribute(element, kAXParentAttribute as CFString), CFGetTypeID(actualParent) == AXUIElementGetTypeID(), CFEqual(actualParent, parent),
-              let rect = rectangle(element), let direction = attribute(element, kAXOrientationAttribute as CFString) as? String,
-              direction == "AXVerticalOrientation" else { return nil }
+        guard let actualParent = attribute(element, kAXParentAttribute as CFString), CFGetTypeID(actualParent) == AXUIElementGetTypeID(), CFEqual(actualParent, parent) else { return failed("fallback.scrollbar-parent") }
+        guard let rect = rectangle(element) else { return failed("fallback.scrollbar-rectangle") }; barFrame = rect
+        guard let direction = attribute(element, kAXOrientationAttribute as CFString) as? String, direction == "AXVerticalOrientation" else { return failed("fallback.scrollbar-orientation") }
         bar = rect; orientation = direction
     }
     guard let visible = safariScrollViewportGeometry(root: rootFrame, scroll: scroll, content: content, verticalScrollbar: bar,
-        scrollbarOrientation: orientation, expectedWidth: expectedWidth, expectedHeight: expectedHeight) else { return nil }
+        scrollbarOrientation: orientation, expectedWidth: expectedWidth, expectedHeight: expectedHeight) else { return failed("fallback.geometry") }
     let fallback = SafariScrollViewport(contentElement: webAreas[0].0, scrollElement: parent, barElement: bars.first,
-        content: content, scroll: scroll, bar: bar, orientation: orientation, visible: visible, expectedWidth: expectedWidth, expectedHeight: expectedHeight)
+        content: content, scroll: scroll, bar: bar, orientation: orientation, visible: visible, expectedWidth: expectedWidth, expectedHeight: expectedHeight,
+        oldExactWebAreaMatches: exact.count)
     return SafariViewportScan(view: scroll, visited: seen.count, depth: maximumDepth, fallback: fallback)
 }
 struct WindowMeasurement {
@@ -186,10 +242,7 @@ struct WindowMeasurement {
     let visited: Int
     let depth: Int
     let safariScroll: SafariScrollViewport?
-    var contained: Bool {
-        view.minX >= frame.minX - 0.5 && view.maxX <= frame.maxX + 0.5 &&
-        view.minY >= frame.minY - 0.5 && view.maxY <= frame.maxY + 0.5
-    }
+    var contained: Bool { viewportContainedByWindow(view, frame) }
 }
 func measureWindow(_ browser: String, _ pageTitle: String, _ expectedWidth: Double = 1024, _ expectedHeight: Double = 768) -> WindowMeasurement {
     guard AXIsProcessTrusted() else { refuse("Existing Accessibility permission is unavailable") }
@@ -202,7 +255,8 @@ func measureWindow(_ browser: String, _ pageTitle: String, _ expectedWidth: Doub
     guard matching.count == 1, let focused = attribute(application, kAXFocusedWindowAttribute as CFString),
           CFGetTypeID(focused) == AXUIElementGetTypeID(), CFEqual(focused, matching[0]) else { refuse("Exact unique fixture title is not focused") }
     if browser == "safari" {
-        guard let frame = rectangle(matching[0]), let scan = safariViewport(matching[0], frame, expectedWidth, expectedHeight) else { refuse("Unique measured AXWebArea viewport unavailable") }
+        guard let frame = rectangle(matching[0]) else { refuse("Unique measured AXWebArea viewport unavailable", viewportDiagnostic: ["stage": "window.rectangle", "expectedWidth": expectedWidth, "expectedHeight": expectedHeight]) }
+        guard let scan = safariViewport(matching[0], frame, expectedWidth, expectedHeight) else { refuse("Unique measured AXWebArea viewport unavailable") }
         return WindowMeasurement(front: front, application: application, window: matching[0], view: scan.view, frame: frame,
             expectedBundle: bundle, expectedTitle: expectedTitle, windowCount: windows.count, visited: scan.visited, depth: scan.depth, safariScroll: scan.fallback)
     }
@@ -222,7 +276,7 @@ func recheckWindow(_ measurement: WindowMeasurement, _ deadline: Double) -> Stri
         let matching = windows.filter { title($0) == measurement.expectedTitle }
         guard matching.count == 1, CFEqual(matching[0], measurement.window),
               let frame = rectangle(measurement.window), frame == measurement.frame,
-              let scan = safariViewport(measurement.window, frame, saved.expectedWidth, saved.expectedHeight), let current = scan.fallback,
+              let scan = safariViewport(measurement.window, frame, saved.expectedWidth, saved.expectedHeight, requireScrollViewport: true), let current = scan.fallback,
               CFEqual(saved.contentElement, current.contentElement), CFEqual(saved.scrollElement, current.scrollElement),
               saved.scroll == current.scroll, saved.bar == current.bar,
               saved.orientation == current.orientation, saved.visible == current.visible else { refuse("Original Safari scroll viewport changed before post") }
@@ -413,7 +467,8 @@ if argv.count == 3 && argv[1] == "--inspect-window" {
 let baseInputKeys: Set<String> = ["format", "browser", "nonce", "title", "fixtureUrl", "mountedId", "requestId", "serial", "caseId", "action", "target", "point", "viewport", "pointerDown", "cleanupOnly", "deadlineMs"]
 guard argv.count == 3, ["--request", "--guard-key"].contains(argv[1]), let data = argv[2].data(using: .utf8), data.count <= 4096,
  let request = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
- (closed(request, baseInputKeys) || closed(request, baseInputKeys.union(["pid"]))),
+ (closed(request, baseInputKeys) || closed(request, baseInputKeys.union(["pid"])) ||
+  (request["browser"] as? String == "safari" && ["click-quote", "click-add", "click-recovery"].contains(request["action"] as? String ?? "") && closed(request, baseInputKeys.union(["mouseEventNumber"])))),
  request["format"] as? String == "osr43-native-input/1",
  let browser = request["browser"] as? String, ["chrome", "safari"].contains(browser),
  let nonce = request["nonce"] as? String, nonce.range(of: "^[a-f0-9]{32}$", options: .regularExpression) != nil,
@@ -427,7 +482,7 @@ guard argv.count == 3, ["--request", "--guard-key"].contains(argv[1]), let data 
  ["I43-N01-en","I43-N02-en","I43-N03-en","I43-N04-en","I43-N05-en","I43-N06-en","I43-N07-en","I43-N08-en","I43-N09-en","I43-N10-en","I43-N01-ru","I43-N02-ru","I43-N03-ru","I43-N04-ru","I43-N05-ru","I43-N06-ru","I43-N07-ru","I43-N08-ru","I43-N09-ru","I43-N10-ru"].contains(caseId),
  let target = request["target"] as? String,
  let held = boolean(request["pointerDown"]), let cleanup = boolean(request["cleanupOnly"]),
- let deadline = number(request["deadlineMs"]), deadline >= 1, deadline <= 1000,
+ let deadline = number(request["deadlineMs"]), deadline >= 1, deadline <= (browser == "safari" && argv[1] == "--guard-key" ? 1500 : 1000),
  let viewport = request["viewport"] as? [String: Any], closed(viewport, ["width", "height", "scale", "offsetLeft", "offsetTop", "pageZoom"]),
  let width = number(viewport["width"]), let height = number(viewport["height"]), let zoom = number(viewport["pageZoom"]),
  width >= 1, width <= 1024, height >= 1, height <= 768, zoom >= 1, zoom <= 2,
@@ -441,17 +496,30 @@ let pointer = pointerTargets[action] != nil
 let guardingKey = argv[1] == "--guard-key"
 guard pointer ? !guardingKey && target == pointerTargets[action] : guardingKey && keys.contains(action) && target == "focused",
  cleanup ? (pointer ? held : !held) : !held else { refuse("Closed action/target transition differs") }
+var mouseEventNumber: Int64 = 0
+if browser == "safari" && pointer {
+ guard let value = number(request["mouseEventNumber"]), value >= 1, value <= 2048, value.rounded() == value,
+       cleanup ? value <= serial : value == serial else { refuse("Original Safari pointer event number differs") }
+ mouseEventNumber = Int64(value)
+}
 let postingPid: pid_t?
 if browser == "chrome" && pointer {
  guard closed(request, baseInputKeys.union(["pid"])), let pid = number(request["pid"]),
        pid >= 1, pid <= 2147483647, pid.rounded() == pid else { refuse("Original Chrome pointer PID required") }
  postingPid = pid_t(pid)
 } else {
- guard closed(request, baseInputKeys) else { refuse("PID is only admitted for Chrome pointers") }
+ guard closed(request, browser == "safari" && pointer ? baseInputKeys.union(["mouseEventNumber"]) : baseInputKeys) else { refuse("PID is only admitted for Chrome pointers") }
  postingPid = nil
 }
 let measurement = measureWindow(browser, expectedTitle, width * zoom, height * zoom)
-guard measurement.contained else { refuse("Owned AX viewport must be contained") }
+guard measurement.contained else {
+    refuse("Owned AX viewport must be contained", viewportDiagnostic: [
+        "axWindow": encodedRectangle(measurement.frame), "axViewport": encodedRectangle(measurement.view),
+        "viewportSource": measurement.safariScroll == nil ? "exact-web-area" : "safari-scroll-viewport",
+        "expectedWidth": width * zoom, "expectedHeight": height * zoom,
+        "visitedNodes": measurement.visited, "maximumDepth": measurement.depth
+    ])
+}
 let observed = recheckWindow(measurement, deadline)
 var result: [String: Any] = ["action":action, "nonce":nonce, "requestId":requestId, "mountedId":mount, "caseId":caseId, "target":target,
  "cleanupOnly":cleanup, "frontBundle":measurement.expectedBundle, "frontPid":measurement.front.processIdentifier,
@@ -484,6 +552,8 @@ let transitions: [CGEventType] = cleanup ? [.leftMouseUp] : chromePrelude ? [.mo
 var events: [CGEvent] = []
 for type in transitions {
  guard let event=CGEvent(mouseEventSource:nil,mouseType:type,mouseCursorPosition:actual,mouseButton:.left) else { refuse("Cannot allocate scoped pointer event") }
+ // Safari paired metadata only; preserve source, timestamp, flags and click state.
+ if browser == "safari" { event.setIntegerValueField(.mouseEventNumber,value:mouseEventNumber) }
  event.setIntegerValueField(.mouseEventClickState,value:type == .mouseMoved ? 0 : 1)
  events.append(event)
 }
@@ -497,6 +567,22 @@ if chromePrelude {
  let upNumber = events[2].getIntegerValueField(.mouseEventNumber)
  guard downNumber == upNumber else { refuse("Allocated Chrome mouse pair number differs") }
  pairTiming = ["timestampPolicy":"constructor-default", "downEventNumber":String(downNumber), "upEventNumber":String(upNumber), "requestedPauseMs":25]
+}
+var constructedMouseEventNumbers: [Int64] = []
+// Safari-only finite program, using the existing initial original-owner recheck.
+// Both fixed pauses consume the SAME pointer deadline; no AX proof count increase.
+let safariPrelude = browser == "safari" && !cleanup
+var prepMove: [String: Any]? = nil
+var pairPause: [String: Any]? = nil
+if safariPrelude {
+ guard elapsed() < deadline else { refuse("Safari movement authority expired before post") }
+ guard let move=CGEvent(mouseEventSource:nil,mouseType:.mouseMoved,mouseCursorPosition:actual,mouseButton:.left) else { refuse("Cannot allocate scoped Safari movement event") }
+ move.setIntegerValueField(.mouseEventClickState,value:0)
+ posted=true;move.post(tap:.cghidEventTap)
+ let pauseBegan = DispatchTime.now().uptimeNanoseconds
+ Thread.sleep(forTimeInterval:0.025)
+ let pauseElapsed = Double(DispatchTime.now().uptimeNanoseconds - pauseBegan) / 1_000_000
+ prepMove = ["event":"mouseMoved", "program":["move","down","up"], "screenPoint":["x":actual.x,"y":actual.y], "postedCount":1, "requestedPauseMs":25, "elapsedMs":pauseElapsed]
 }
 for (index, type) in transitions.enumerated() {
  _=recheckWindow(measurement,deadline)
@@ -512,7 +598,14 @@ for (index, type) in transitions.enumerated() {
   previousPostUptime = postUptime
   pairTiming?[["movePostUptimeNs","downPostUptimeNs","upPostUptimeNs"][index]] = String(postUptime)
  }
+ if browser == "safari" { constructedMouseEventNumbers.append(events[index].getIntegerValueField(.mouseEventNumber)) } // Getter immediately before post.
  posted=true;events[index].post(tap:.cghidEventTap)
+ if safariPrelude && type == .leftMouseDown {
+  let pauseBegan = DispatchTime.now().uptimeNanoseconds
+  Thread.sleep(forTimeInterval:0.025)
+  pairPause = ["after":"down", "count":1, "requestedPauseMs":25, "elapsedMs":Double(DispatchTime.now().uptimeNanoseconds - pauseBegan) / 1_000_000]
+  // The unchanged next-iteration recheck is the full after-pause UP guard.
+ }
  if type == .mouseMoved {
   let pauseBegan = DispatchTime.now().uptimeNanoseconds
   Thread.sleep(forTimeInterval:0.025)
@@ -528,7 +621,10 @@ for (index, type) in transitions.enumerated() {
  }
 }
 guard elapsed() <= deadline else { refuse("Pointer completion exceeded authority deadline") }
+if browser == "safari" { result["mouseEventNumber"]=mouseEventNumber;result["constructedMouseEventNumbers"]=constructedMouseEventNumbers }
 result["status"]="sent";result["delivery"]="sent";result["screenPoint"]=["x":actual.x,"y":actual.y];result["transitions"]=cleanup ? ["up"] : chromePrelude ? ["move","down","up"] : ["down","up"];result["elapsedMs"]=elapsed()
+if let move = prepMove { result["prepMove"] = move }
+if let pause = pairPause { result["pairPause"] = pause }
 if let prelude = pointerPrelude { result["prelude"] = prelude }
 if let timing = pairTiming { result["pairTiming"] = timing }
 result["method"]="exact fixture control point via CGEvent; platform input, not hardware-device provenance";emit(result,0)

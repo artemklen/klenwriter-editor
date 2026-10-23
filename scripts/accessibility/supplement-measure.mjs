@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+// Test-only observations. No editor geometry/normalizer or authored DOM writes.
+export function observeNonColorCue(element){
+  const s=getComputedStyle(element),pseudo=which=>{const p=getComputedStyle(element,which);return {content:['none','normal','""',"''"].includes(p.content)?null:p.content,display:p.display,width:p.width,height:p.height,borderStyle:[p.borderTopStyle,p.borderRightStyle,p.borderBottomStyle,p.borderLeftStyle],borderWidth:[p.borderTopWidth,p.borderRightWidth,p.borderBottomWidth,p.borderLeftWidth]};};
+  return {decoration:s.textDecorationLine==='none'?null:{line:s.textDecorationLine,style:s.textDecorationStyle,thickness:s.textDecorationThickness},borderStyle:[s.borderTopStyle,s.borderRightStyle,s.borderBottomStyle,s.borderLeftStyle],borderWidth:[s.borderTopWidth,s.borderRightWidth,s.borderBottomWidth,s.borderLeftWidth],fontWeight:s.fontWeight,fontStyle:s.fontStyle,before:pseudo('::before'),after:pseudo('::after')};
+}
+export function observeFocusedVisibility(element){
+  const raw=element.getBoundingClientRect(),s=getComputedStyle(element),rect={x:raw.x,y:raw.y,width:raw.width,height:raw.height,left:raw.left,right:raw.right,top:raw.top,bottom:raw.bottom};
+  let clip={left:0,top:0,right:innerWidth,bottom:innerHeight};const ancestors=[];
+  for(let node=element.parentElement;node;node=node.parentElement){if(ancestors.length===32)throw Error('Focus ancestor observation cap');const css=getComputedStyle(node),r=node.getBoundingClientRect(),x=/(auto|scroll|hidden|clip)/.test(css.overflowX),y=/(auto|scroll|hidden|clip)/.test(css.overflowY);ancestors.push({tag:node.tagName,overflowX:css.overflowX,overflowY:css.overflowY,x:r.x,y:r.y,width:r.width,height:r.height});if(x){clip.left=Math.max(clip.left,r.left+node.clientLeft);clip.right=Math.min(clip.right,r.left+node.clientLeft+node.clientWidth);}if(y){clip.top=Math.max(clip.top,r.top+node.clientTop);clip.bottom=Math.min(clip.bottom,r.top+node.clientTop+node.clientHeight);}}
+  const visible={left:Math.max(rect.left,clip.left),right:Math.min(rect.right,clip.right),top:Math.max(rect.top,clip.top),bottom:Math.min(rect.bottom,clip.bottom)};visible.width=Math.max(0,visible.right-visible.left);visible.height=Math.max(0,visible.bottom-visible.top);
+  const hits=visible.width>0&&visible.height>0?[[.5,.5],[.25,.25],[.75,.25],[.25,.75],[.75,.75]].map(([x,y])=>{const px=visible.left+visible.width*x,py=visible.top+visible.height*y,hit=document.elementFromPoint(px,py);return {x:px,y:py,inside:!!hit&&(hit===element||element.contains(hit))};}):[];
+  return {focused:document.activeElement===element,tag:element.tagName,role:element.getAttribute('role'),text:element.textContent,rect,clip,visible,hits,ancestors,outline:{style:s.outlineStyle,width:parseFloat(s.outlineWidth),offset:parseFloat(s.outlineOffset)},display:s.display,visibility:s.visibility};
+}
+export function observeProseAndSelection(element){
+  const clipOf=node=>{let clip={left:0,top:0,right:innerWidth,bottom:innerHeight};let count=0;for(let current=node;current;current=current.parentElement){if(++count>32)throw Error('Text clip ancestor cap');const s=getComputedStyle(current),r=current.getBoundingClientRect();if(/(auto|scroll|hidden|clip)/.test(s.overflowX)){clip.left=Math.max(clip.left,r.left+current.clientLeft);clip.right=Math.min(clip.right,r.left+current.clientLeft+current.clientWidth);}if(/(auto|scroll|hidden|clip)/.test(s.overflowY)){clip.top=Math.max(clip.top,r.top+current.clientTop);clip.bottom=Math.min(clip.bottom,r.top+current.clientTop+current.clientHeight);}}return clip;};
+  const rect=r=>({left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height});
+  const texts=[],walker=document.createTreeWalker(element,NodeFilter.SHOW_TEXT);let current,units=0,rects=0;
+  while((current=walker.nextNode())){if(texts.length===128)throw Error('Prose text node cap');units+=current.length;if(units>32768)throw Error('Prose text unit cap');if(!current.length)continue;const range=document.createRange();range.selectNodeContents(current);const boxes=[...range.getClientRects()].map(rect);rects+=boxes.length;if(rects>256)throw Error('Prose rect cap');texts.push({text:current.data,clip:clipOf(current.parentElement),boxes});}
+  const selection=document.getSelection(),point=node=>node===element?{kind:'root',tag:element.tagName,text:element.textContent}:node?.nodeType===Node.TEXT_NODE?{kind:'text',tag:node.parentElement?.tagName,text:node.data}:node?{kind:'element',tag:node.tagName,text:node.textContent}:null;
+  let selected=null;
+  if(selection&&selection.rangeCount===1&&element.contains(selection.anchorNode)&&element.contains(selection.focusNode)){
+    const endpoint=(node,offset)=>{const r=document.createRange();r.setStart(node,offset);r.collapse(true);const boxes=[...r.getClientRects()].map(rect);if(boxes.length>8)throw Error('Endpoint rect cap');return {node:point(node),offset,clip:clipOf(node.nodeType===Node.TEXT_NODE?node.parentElement:node),boxes};};
+    const owner=selection.anchorNode.nodeType===Node.TEXT_NODE?selection.anchorNode.parentElement:element,css=getComputedStyle(owner,'::selection');
+    selected={collapsed:selection.isCollapsed,text:selection.toString(),anchor:endpoint(selection.anchorNode,selection.anchorOffset),focus:endpoint(selection.focusNode,selection.focusOffset),paint:{color:css.color,backgroundColor:css.backgroundColor,textDecorationLine:css.textDecorationLine,forced:matchMedia('(forced-colors: active)').matches}};
+  }
+  return {textUnits:units,rectCount:rects,texts,selected,viewport:{width:innerWidth,height:innerHeight},media:{forced:matchMedia('(forced-colors: active)').matches,reduced:matchMedia('(prefers-reduced-motion: reduce)').matches}};
+}
+export function observeTextSurfaces(element){
+  const walker=document.createTreeWalker(element,NodeFilter.SHOW_TEXT),out=[];let text,units=0,rects=0;
+  while((text=walker.nextNode())){if(!text.length)continue;if(out.length===128||(units+=text.length)>32768)throw Error('Text contrast observation cap');const parent=text.parentElement,s=getComputedStyle(parent),backgrounds=[];for(let node=parent;node;node=node.parentElement){if(backgrounds.length===32)throw Error('Text contrast ancestor cap');const css=getComputedStyle(node);backgrounds.push({color:css.backgroundColor,opacity:Number(css.opacity)});}const range=document.createRange();range.selectNodeContents(text);const boxes=[...range.getClientRects()].map(r=>({x:r.x,y:r.y,width:r.width,height:r.height}));if((rects+=boxes.length)>256)throw Error('Text contrast aggregate rect cap');out.push({text:text.data,tag:parent.tagName,color:s.color,borderColor:s.borderTopColor,outlineColor:s.outlineColor,backgrounds,boxes});}
+  return out;
+}

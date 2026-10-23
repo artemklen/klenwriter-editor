@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OSR-66 · ручная проверка клавиатуры Safari</title>
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/ui-style.css">
+<link rel="stylesheet" href="/accessibility-fixture.css">
+<link rel="stylesheet" href="/accessibility-human.css">
+<script type="importmap">{"imports":{"@klenwriter/editor-wasm":"/packages/wasm/index.js","@klenwriter/editor-sdk":"/packages/sdk/index.js","@klenwriter/editor-dom":"/packages/dom/index.js","@klenwriter/editor-ui":"/packages/ui/index.js","@klenwriter/editor-kwdj":"/packages/kwdj/index.js","@klenwriter/editor-kwdj/dom":"/packages/kwdj/dom.js"}}</script>
+<script type="module" src="/accessibility-human.mjs"></script>
+<body>
+<header>
+  <h1>OSR-66 · одна ручная проверка Safari</h1>
+  <p>Исполнитель — владелец. Имя вводить не нужно. Здесь нет записи экрана или звука.</p>
+  <p>Сначала прочитай шаги. После «Начать» есть <strong>5 минут</strong>; до начала страница ждёт 20 минут. Работай клавиатурой. Лишний Tab сам по себе не считается ошибкой. После каждого изменения дождись отметки шага справа. Если возникнет проблема, можно остановиться.</p>
+  <button id="a66-human-start" disabled>Начать</button>
+  <button id="a66-human-stop" disabled>Остановить и сохранить неполный результат</button>
+  <p id="a66-human-status" role="status" aria-live="polite">Подготовка…</p>
+  <p id="a66-human-clock" aria-live="off"></p>
+</header>
+<div class="a66-human-layout">
+  <section aria-labelledby="a66-human-editor-heading">
+    <h2 id="a66-human-editor-heading">Проверяемый редактор</h2>
+    <button id="a66-before">Перед редактором</button>
+    <main id="a66-mounts" aria-label="Ручная проверка клавиатуры редактора"></main>
+    <button id="a66-after">После редактора</button>
+  </section>
+  <aside aria-labelledby="a66-human-instructions-heading">
+    <h2 id="a66-human-instructions-heading">Последовательность</h2>
+    <ol id="a66-human-instructions"></ol>
+    <p>⌘← — начало строки. ⇧⌘→ — выделить до конца строки. ⌘→ — конец строки. Option = ⌥. После «Открыть сохранённую копию» дождись сообщения о новой копии; затем Tab войди в новый «Документ».</p>
+  </aside>
+</div>
+<form id="a66-human-observations" hidden aria-labelledby="a66-human-observations-heading">
+  <h2 id="a66-human-observations-heading">Что ты фактически увидел</h2>
+  <p>Машинные проверки уже сохранены отдельно. Отметь только то, что удалось наблюдать лично. Любое «нет» оставит явную проблему, а не успешную приёмку.</p>
+  <div id="a66-human-checks"></div>
+  <label for="a66-human-note">Наблюдения или проблема, своими словами</label>
+  <textarea id="a66-human-note" maxlength="2000" rows="3" required></textarea>
+  <button type="submit">Завершить и сохранить наблюдения</button>
+</form>
+<p id="a66-human-final" hidden></p>
+</body></html>

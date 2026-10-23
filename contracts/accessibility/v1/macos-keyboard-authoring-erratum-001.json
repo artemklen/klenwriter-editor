@@ -1,0 +1,35 @@
+{
+  "format": "editor-accessibility-keyboard-authoring-erratum/1",
+  "id": "A66-MACKEY-001",
+  "status": "SOURCE_AUTHORED_BEFORE_CORRECTED_RUN",
+  "platform": "darwin",
+  "acceptedChecklist": {
+    "path": "contracts/accessibility/v1/checklist.json",
+    "bytes": 70109,
+    "sha256": "1c969827f988a7cf464fb028590640edc02f7f1feff355af948fe9330b0af82b"
+  },
+  "basis": {
+    "primarySource": "https://support.apple.com/en-us/102650",
+    "retrievedAtUTC": "2026-10-22T11:09:58.683447+00:00",
+    "sourceSection": "Text-editing shortcuts, lines336–356 onretrieval",
+    "fact": "macOS Home/End scroll the document; Command+Left/Right move the caret to current line boundaries; Shift+Command+Right extends selection to line end.",
+    "actualOriginalReport": "webkit-firefox-original-ten-failures-02/index.json",
+    "observed": "Home left original caret atT2; Shift+End selectedonlyb ratherthan authoredT0..T3. No native editor refusal or changed expected material."
+  },
+  "originalEditingKeys": {
+    "lineStart": "Home",
+    "selectLineEnd": "Shift+End",
+    "lineEnd": "End"
+  },
+  "resolvedDarwinEditingKeys": {
+    "lineStart": "Meta+ArrowLeft",
+    "selectLineEnd": "Shift+Meta+ArrowRight",
+    "lineEnd": "Meta+ArrowRight"
+  },
+  "affectedSteps": [
+    "C66-02",
+    "C66-05"
+  ],
+  "preserved": "Every authored canonical literal, directed native selection, live ID/mark relation, original command-before accounting, semantic R/H/S delta, event/Save/reopen outcome and assertion. Original FAIL retained.",
+  "excluded": "No change to toolbar/menu Home/End handling, originallegacy18, core/DOM selection semantics, OS settings, timeouts or expected outcomes."
+}

@@ -80,7 +80,7 @@ const ownedTitleExists = `on run argv
   end tell
 end run`;
 
-export async function createSafariAdapter({config,report,run,outputPath,inputHelper,keyScriptPath}) {
+export async function createSafariAdapter({config,report,run,outputPath,inputHelper,keyScriptPath,safariKeyGuardAgeMs=1000}) {
   if (config.format !== 'osr43-slash-http-broker/1' || !/^[a-f0-9]{32}$/.test(config.nonce)
     || config.origin !== 'http://127.0.0.1:4174' || config.fixtureUrl !== config.origin+'/ui'
     || config.base !== '/slash-native-broker-'+config.nonce || config.title !== 'KlenWriter Slash native '+config.nonce) throw new Error('Invalid closed broker configuration');
@@ -131,7 +131,7 @@ export async function createSafariAdapter({config,report,run,outputPath,inputHel
       throw error;
     } finally { inflight = false; }
   }
-  const inputOwner=createInputOwner({browser:'safari',config,inputHelper,keyScriptPath,run,record,guard:action=>rpc('guard',[action]),cleanupGuard:action=>rpc('cleanupGuard',[action]),mountedId:()=>mountedId});
+  const inputOwner=createInputOwner({browser:'safari',safariKeyGuardAgeMs,config,inputHelper,keyScriptPath,run,record,guard:action=>rpc('guard',[action]),cleanupGuard:action=>rpc('cleanupGuard',[action]),mountedId:()=>mountedId});
   try {
     const status = await exchange('host/status',undefined,now(),limits.commandBytes);
     if (status.stopped || status.ready || status.commands!==0 || status.pending) throw new Error('Broker is expired or already used');
@@ -167,6 +167,7 @@ export async function createSafariAdapter({config,report,run,outputPath,inputHel
         await wait(100);
       }
       const viewportAttempts=[];
+      report.control.bootstrapViewportAttempts=viewportAttempts;
       for(let attempt=0;attempt<=3;attempt++){
         const value=evaluateBootstrap('JSON.stringify({width:innerWidth,height:innerHeight,scale:visualViewport?.scale,offsetLeft:visualViewport?.offsetLeft,offsetTop:visualViewport?.offsetTop})',deadline);
         viewportAttempts.push(value);
@@ -175,7 +176,6 @@ export async function createSafariAdapter({config,report,run,outputPath,inputHel
         run('/usr/bin/osascript',['-e',resizeBootstrap,String(windowId),String(1024-value.width),String(768-value.height)],{timeout:Math.max(1,deadline-Date.now())});
         await wait(100);
       }
-      report.control.bootstrapViewportAttempts=viewportAttempts;
       const modulePath = config.base+'/page-client.mjs';
       const accepted = evaluateBootstrap('(()=>{document.title='+JSON.stringify(config.title)+';document.getElementById("ui-before").focus();import('+JSON.stringify(modulePath)+');return JSON.stringify({accepted:true});})()',deadline);
       if (accepted.accepted !== true) throw new Error('Fixture module bootstrap acknowledgement differs');

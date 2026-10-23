@@ -99,6 +99,7 @@ class Ui implements EditorUi {
   #statusOwner: 'loading' | 'availability' | 'feedback' = 'loading';
   #status: HTMLElement; #blockLabel: HTMLElement; #add: Control; #move: Control;
   #controls = new WeakMap<Element, Control>(); #toolbarControls = new Map<string, Control>(); #blockControls = new Map<string, Control>();
+  #reasonHoverControl: Control | null = null; #reasonFocusControl: Control | null = null;
   #pending: Pending | null = null; #popup: Popup | null = null; #tasks = new Set<Task>();
   #slash: SlashOwner | null = null;
   #drag: DragOwner | null = null;
@@ -161,6 +162,10 @@ class Ui implements EditorUi {
   #wire(): void {
     const configuration = this.#options!;
     for (const slot of Object.values(configuration.slots)) {
+      this.#listen(slot, 'pointerover', e => {
+        const event = e as PointerEvent, control = this.#find(event.target);
+        if (control && !control.button.contains(event.relatedTarget as Node)) this.#enterReason(true, control);
+      });
       this.#listen(slot, 'pointerdown', e => this.#pointerDown(e as PointerEvent));
       this.#listen(slot, 'click', e => this.#click(e as MouseEvent));
       this.#listen(slot, 'keydown', e => this.#key(e as KeyboardEvent));
@@ -181,12 +186,24 @@ class Ui implements EditorUi {
     this.#listen(configuration.editorElement, 'keyup', () => { if (!this.#pending) { this.#hover = null; this.#pointer = null; } this.refresh(); });
     this.#listen(this.#document, 'selectionchange', () => this.refresh());
     this.#listen(this.#document, 'focusin', () => {
+      const control = this.#controls.get(this.#document.activeElement!) ?? null;
+      if (control !== this.#reasonFocusControl) this.#enterReason(false, control);
       this.#slash?.focusChanged();
       const current = this.#document.activeElement;
       if (this.#pending && !this.#pending.abort && current && !this.#insideUi(current)) {
         this.#releasePending('invalidated'); this.#hidePopup();
       }
     });
+    this.#listen(this.#document, 'focusout', e => {
+      if (this.#reasonFocusControl && this.#controls.get((e as FocusEvent).relatedTarget as Element) !== this.#reasonFocusControl) this.#leaveReason(false);
+    });
+    this.#listen(this.#document, 'pointermove', e => this.#reasonPointerMove(e as PointerEvent));
+    this.#listen(this.#document, 'pointerout', e => { if ((e as PointerEvent).relatedTarget === null) this.#leaveReason(true); });
+    this.#listen(this.#document, 'pointerdown', e => {
+      const control = this.#reasonHoverControl;
+      if (control && !control.button.contains(e.target as Node)) this.#leaveReason(true);
+    });
+    this.#listen(this.#document, 'keydown', e => this.#dismissReasons(e as KeyboardEvent));
     this.#listen(this.#window, 'resize', () => this.refresh());
     this.#listen(this.#window, 'scroll', () => this.refresh(), true);
     if (this.#document.fonts) this.#listen(this.#document.fonts, 'loadingdone', () => this.refresh());
@@ -222,6 +239,56 @@ class Ui implements EditorUi {
       node = node.parentNode;
     }
     return null;
+  }
+  #reasonLive(control: Control): boolean {
+    const parent = control.button.parentElement;
+    return !this.#destroyed && control.scope !== 'popup' && control.button.isConnected && control.reason.isConnected
+      && !control.button.hidden && !!parent && !parent.hidden && [this.#toolbar, this.#gutter, this.#entry].includes(parent)
+      && control.button.nextSibling === control.reason && control.reason.textContent !== '';
+  }
+  #resetReason(control: Control): void {
+    control.reason.removeAttribute('data-open'); control.reason.removeAttribute('data-dismissed');
+  }
+  #forgetReason(control: Control): void {
+    if (this.#reasonHoverControl === control) this.#reasonHoverControl = null;
+    if (this.#reasonFocusControl === control) this.#reasonFocusControl = null;
+    this.#resetReason(control);
+  }
+  #leaveReason(hover: boolean): void {
+    const control = hover ? this.#reasonHoverControl : this.#reasonFocusControl;
+    if (hover) this.#reasonHoverControl = null; else this.#reasonFocusControl = null;
+    if (control && control !== this.#reasonHoverControl && control !== this.#reasonFocusControl) this.#resetReason(control);
+  }
+  #enterReason(hover: boolean, control: Control | null, entry = true): void {
+    if ((hover ? this.#reasonHoverControl : this.#reasonFocusControl) !== control) this.#leaveReason(hover);
+    if (!control || !this.#reasonLive(control)) return;
+    if (hover) this.#reasonHoverControl = control; else this.#reasonFocusControl = control;
+    // A stable reason's dismissal resets only on genuine button/focus entry.
+    if (entry) control.reason.removeAttribute('data-dismissed');
+    if (!control.reason.hasAttribute('data-dismissed')) control.reason.setAttribute('data-open', '');
+  }
+  #reasonPointerMove(event: PointerEvent): void {
+    const control = this.#reasonHoverControl; if (!control) return;
+    if (!this.#reasonLive(control)) { this.#forgetReason(control); return; }
+    // Reasons remain pointer-transparent. Read only the original button/reason
+    // rectangles, including their gap; never move paint or capture a pointer.
+    const button = control.button.getBoundingClientRect(), reason = control.reason.getBoundingClientRect();
+    const rectangles = [button, reason];
+    if (!Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)
+      || rectangles.some(rect => ![rect.x, rect.y, rect.width, rect.height, rect.x + rect.width, rect.y + rect.height].every(Number.isFinite) || rect.width <= 0 || rect.height <= 0)
+      || event.clientX < Math.min(button.x, reason.x) || event.clientX > Math.max(button.x + button.width, reason.x + reason.width)
+      || event.clientY < Math.min(button.y, reason.y) || event.clientY > Math.max(button.y + button.height, reason.y + reason.height)) this.#leaveReason(true);
+    // In particular, movement inside the union never clears data-dismissed.
+  }
+  #dismissReasons(event: KeyboardEvent): void {
+    if (this.#destroyed || event.key !== 'Escape' || event.defaultPrevented || event.isComposing
+      || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    // Bubble after the existing popup handlers. This is visual dismissal only:
+    // no prevention, propagation, focus, SDK request, result or native action.
+    for (const control of [this.#reasonFocusControl, this.#reasonHoverControl]) if (control) {
+      if (!this.#reasonLive(control)) { this.#forgetReason(control); continue; }
+      control.reason.removeAttribute('data-open'); control.reason.setAttribute('data-dismissed', '');
+    }
   }
   #scope(control: Control): HTMLElement {
     if (control.action?.kind === 'host') return host(control.action)!.scope;
@@ -272,7 +339,7 @@ class Ui implements EditorUi {
         : (Math.max(0, at) + (event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 1) + controls.length) % controls.length;
       this.#rove(controls, controls[next]); controls[next]!.button.focus(); return;
     }
-    if (control && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); if (!event.repeat) this.#activate(control); }
+    if (control && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); if (!event.repeat) this.#activate(control, true); }
   }
   #rove(controls: readonly Control[], active?: Control): void {
     const selected = active ?? controls.find(c => c.button.tabIndex === 0) ?? controls[0];
@@ -333,15 +400,16 @@ class Ui implements EditorUi {
   #sameCapture(pending: Pending, context: UiActionContext): boolean {
     return same(pending.context.context, context.context) && same(pending.context.state.stamp, context.state.stamp) && same(pending.context.state.selection, context.state.selection);
   }
-  #capture(scope: HTMLElement): Pending | null {
+  #capture(scope: HTMLElement, preferSelection = false): Pending | null {
     if (this.#destroyed || !this.#initialized || this.#tasks.size) return null;
     const editor = this.#options!.editor, status = editor.hostRequests.status();
     if (status.status !== 'available') { this.#show(status); return null; }
-    const context = this.#snapshot(); if ('status' in context) { this.#show(context); return null; }
+    const context = this.#snapshot(preferSelection); if ('status' in context) { this.#show(context); return null; }
+    if (preferSelection) { this.#hover = context.block?.node.id ?? null; this.#pointer = null; }
     if (this.#pending) {
       const old = this.#pending;
       if (old.abort || old.claimed || !this.#sameCapture(old, context)) { this.#releasePending('invalidated'); this.#showStale(); return null; }
-      if (old.scope === scope) return old;
+      if (old.scope === scope && (!preferSelection || old.context.block?.node.id === context.block?.node.id)) return old;
       this.#pending = null;
       if (!editor.hostRequests.release(old.request)) { this.#showStale(); return null; }
       if (this.#popup?.pending === old) this.#hidePopup();
@@ -396,7 +464,19 @@ class Ui implements EditorUi {
     this.#drawAvailability(control);
   }
   #drawAvailability(control: Control): void {
-    control.button.setAttribute('aria-disabled', String(!control.availability.available)); control.reason.textContent = control.availability.reason;
+    control.button.setAttribute('aria-disabled', String(!control.availability.available));
+    if (control.reason.textContent !== control.availability.reason) {
+      this.#resetReason(control); control.reason.textContent = control.availability.reason;
+    }
+    if (!control.availability.reason) this.#forgetReason(control);
+    else if (this.#reasonLive(control)) {
+      // A previously available, already focused/hovered button can gain a
+      // reason without a new DOM entry event. Bind the actual current trigger
+      // so Escape can dismiss it; unchanged text never resets dismissal.
+      if (this.#document.activeElement === control.button && this.#reasonFocusControl !== control) this.#enterReason(false, control, false);
+      if (control.button.matches(':hover') && this.#reasonHoverControl !== control) this.#enterReason(true, control, false);
+      if ((control === this.#reasonHoverControl || control === this.#reasonFocusControl) && !control.reason.hasAttribute('data-dismissed')) control.reason.setAttribute('data-open', '');
+    }
     if (control.action?.kind === 'toggle' && ['on', 'off', 'mixed'].includes(control.availability.active ?? '')) {
       control.button.setAttribute('aria-pressed', control.availability.active === 'on' ? 'true' : control.availability.active === 'off' ? 'false' : 'mixed');
     } else control.button.removeAttribute('aria-pressed');
@@ -414,7 +494,7 @@ class Ui implements EditorUi {
       if (control.reason !== next) parent.insertBefore(control.reason, next);
       next = control.reason.nextSibling;
     }
-    for (const [key, control] of map) if (!live.has(key)) { control.button.remove(); control.reason.remove(); map.delete(key); }
+    for (const [key, control] of map) if (!live.has(key)) { this.#forgetReason(control); control.button.remove(); control.reason.remove(); map.delete(key); }
     if (scope === 'toolbar') { this.#toolbar.hidden = map.size === 0; this.#rove([...map.values()]); this.#toolbar.tabIndex = -1; }
   }
   #labels(): void {
@@ -486,6 +566,7 @@ class Ui implements EditorUi {
     } catch (error) {
       const result = this.#error(error); this.#releasePending('invalidated'); this.#hidePopup(); this.#disable(result); return result;
     } finally {
+      for (const control of [this.#reasonHoverControl, this.#reasonFocusControl]) if (control && !this.#reasonLive(control)) this.#forgetReason(control);
       this.#rendering = false;
       if (this.#refreshAgain) { this.#refreshAgain = false; this.refresh(); }
     }
@@ -499,7 +580,15 @@ class Ui implements EditorUi {
     this.#positionToolbar(context);
     const clear = () => { this.#gutter.classList.remove('kw-ui-floating'); this.#gutter.style.removeProperty('left'); this.#gutter.style.removeProperty('top'); };
     if (!context.block) { clear(); return; }
-    // Fit the intended presentation before measuring either source or gutter:
+    // Reject an already known fallback without temporarily removing the
+    // in-flow gutter and shrinking an ancestor scroll range under host focus.
+    const preliminary = this.#options!.editor.geometry.read({ kind: 'block', stamp: context.state.stamp, node: context.block.node.id });
+    if (preliminary.status !== 'measured' || !preliminary.visible || !preliminary.rects.length) { clear(); return; }
+    const preliminaryBox = this.#gutter.getBoundingClientRect();
+    const preliminaryX = preliminary.rects[0]!.x - preliminaryBox.width - 8;
+    if (![preliminaryX, preliminaryBox.width, preliminary.viewport.x].every(Number.isFinite)
+      || preliminaryBox.width <= 0 || preliminaryX < preliminary.viewport.x + 8) { clear(); return; }
+    // For a viable float, fit the intended presentation before the FINAL read:
     // an earlier host slot leaving flow can also move the source block.
     this.#gutter.classList.add('kw-ui-floating');
     const result = this.#options!.editor.geometry.read({ kind: 'block', stamp: context.state.stamp, node: context.block.node.id });
@@ -606,12 +695,12 @@ class Ui implements EditorUi {
     this.#callbackDepth++;
     try { return callback(); } finally { this.#callbackDepth--; }
   }
-  #activate(control: Control): void {
+  #activate(control: Control, keyboard = false): void {
     if (!this.#destroyed && !this.#pending && !this.#tasks.size && !this.#rendering && !this.#callbackDepth) this.#update();
     if (!this.#options || this.#destroyed || this.#tasks.size || this.#callbackDepth || this.#rendering || !control.availability.available) { this.#showControl(control); return; }
     try {
       if (control.scope === 'add') { this.#openPopup('add'); return; }
-      if (control.scope === 'move') { this.#openPopup('move'); return; }
+      if (control.scope === 'move') { this.#openPopup('move', undefined, keyboard); return; }
       const pending = this.#popup && control.scope === 'popup' ? this.#popup.pending : this.#capture(this.#scope(control));
       if (!pending) return;
       if (control.action?.kind === 'host') { this.#openHost(control.action, pending); return; }
@@ -626,7 +715,7 @@ class Ui implements EditorUi {
       this.#complete(pending, control.action?.id ?? control.choice!.id, owned, control.choice !== null);
     } catch (error) { const result = this.#error(error, control.action?.id ?? null); this.#show(result); this.#emit(result); this.#releasePending('refused'); this.#hidePopup(); }
   }
-  #openPopup(kind: 'add' | 'move', initiating?: HTMLButtonElement): void {
+  #openPopup(kind: 'add' | 'move', initiating?: HTMLButtonElement, preferSelection = false): void {
     this.#drag?.cancel();
     if (this.#popup) { this.#cancelPopup(true); return; }
     if (kind === 'add' && this.#profile?.slash) {
@@ -637,7 +726,10 @@ class Ui implements EditorUi {
     }
     this.#slash?.retire();
     const trigger = initiating ?? (kind === 'add' ? this.#add.button : this.#move.button);
-    const pending = this.#capture(kind === 'add' ? this.#options!.slots.entry : this.#options!.slots.gutter); if (!pending) return;
+    const pending = this.#capture(kind === 'add' ? this.#options!.slots.entry : this.#options!.slots.gutter, preferSelection); if (!pending) return;
+    // Normal keyboard Move names and positions the captured caret block. The
+    // explicitly hovered Drag handle keeps its own source and existing request.
+    if (preferSelection && (this.#update() || this.#pending !== pending)) return;
     const popup = kind === 'add' ? this.#addPopup : this.#movePopup;
     const choices = kind === 'move' && pending.context.block ? moves(this.#callback(() => this.#profile!.moves(pending.context as UiActionContext & { block: UiBlockContext }))) : null;
     if (choices && 'status' in choices) { this.#setStatus(choices.message[this.#locale]); this.#releasePending('refused'); return; }
@@ -659,7 +751,7 @@ class Ui implements EditorUi {
   }
   #shortcut(direction: UiMoveChoice['direction']): void {
     try {
-      if (!this.#popup) this.#openPopup('move');
+      if (!this.#popup) this.#openPopup('move', undefined, true);
       const popup = this.#popup; if (!popup || popup.kind !== 'move') return;
       const candidates = popup.controls.filter(control => control.choice?.direction === direction);
       if (candidates.length === 1) this.#activate(candidates[0]!);
@@ -811,6 +903,7 @@ class Ui implements EditorUi {
       for (const task of this.#tasks) { task.done = null; task.dispose?.(); task.dispose = null; }
       this.#subscription?.(); this.#subscription = null; this.#observer?.disconnect(); this.#observer = null;
       for (const remove of this.#removals.splice(0)) remove();
+      this.#leaveReason(true); this.#leaveReason(false);
       this.#toolbar.remove(); this.#gutter.remove(); this.#entry.remove();
       this.#toolbarControls.clear(); this.#blockControls.clear(); this.#profile = null; this.#profileContext = null; this.#context = null;
       this.#options = null; this.#pointer = null; this.#hover = null;
