@@ -29,9 +29,24 @@ async function loaderProbe(kind) {
     }
     assertNoSession(await loadSdk({ wasm: bytes }));
   } else if (kind === 'last-fetch-reader') {
-    const pending = deferred(); let ownedSignal, fetches = 0;
-    globalThis.fetch = (_input, init) => { fetches++; ownedSignal = init.signal; return pending.promise; };
-    await assert.rejects(loadSdk({ wasm: 'http://127.0.0.1:9/f67-owned.wasm', loadTimeoutMs: 30 }), failure('sdk.load_timeout'));
+    const pending = deferred(), entered = deferred(); let ownedSignal, fetches = 0;
+    globalThis.fetch = (_input, init) => {
+      fetches++; ownedSignal = init.signal; entered.resolve(); return pending.promise;
+    };
+    const url = 'http://127.0.0.1:9/f67-owned.wasm', bootstrap = new AbortController();
+    // Establish the pending-fetch phase before testing its last reader. A cold
+    // entry may validly expire before fetch; that does not observe cancellation
+    // of an owned request. Both readers retain real entry-based deadlines.
+    const bootstrapCancelled = assert.rejects(loadSdk({ wasm: url, loadTimeoutMs: 10000, signal: bootstrap.signal }),
+      failure('sdk.load_cancelled'));
+    await entered.promise;
+    const expired = assert.rejects(loadSdk({ wasm: url, loadTimeoutMs: 30 }), failure('sdk.load_timeout'));
+    // loadSdk synchronously reserves the existing cache before async input
+    // ownership. Cancelling bootstrap now leaves only the timed reader.
+    bootstrap.abort();
+    assert.equal(ownedSignal.aborted, false, 'The timed reader owns the pending fetch after bootstrap cancellation');
+    await bootstrapCancelled;
+    await expired;
     assert.equal(fetches, 1); assert.equal(ownedSignal.aborted, true);
     pending.resolve(new Response(bytes)); await tick();
     assertNoSession(await loadSdk({ wasm: bytes }));
