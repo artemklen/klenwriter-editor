@@ -18,6 +18,11 @@ The loading ceiling is **30,000 milliseconds**, measured over asynchronous
 loading from the caller's entry. The optional `loadTimeoutMs` must be a safe
 integer from 1 through 30,000; callers can only tighten it. Both the public loader
 and controller enforce their own admission lifetime, including injected loaders.
+The loader also accepts standard `signal?: AbortSignal` as cancellation of only
+that reader. Low-level cancellation is `sdk.load_cancelled` in phase `load`.
+The default controller owns its AbortController and cancels its loader reader on
+disposal; its existing destroy-before-ready result remains `sdk.cancelled`.
+An injected loader cannot be forcibly cancelled; late completion is fenced.
 Expiration is `sdk.load_timeout`; controller ready settles once as Refused,
 retains original bytes, and never opens a Session after expiration. The deadline
 is an operational ceiling, not a latency SLA or synchronous interruption of JS,
