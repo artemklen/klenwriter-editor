@@ -223,18 +223,18 @@
       },
       {
         "path": "scripts/mounted-corpus/run.mjs",
-        "bytes": 21391,
-        "sha256": "c28f09f788c86f116ad18dc9514af1c1b4af6df2d75e051a1f420eb85ee9851a"
+        "bytes": 21813,
+        "sha256": "e52de2f54806988d7398323be523bc51d471df0a5819b06344e3fc3393520e40"
       },
       {
         "path": "tests/mounted-corpus-collector.node.mjs",
-        "bytes": 36767,
-        "sha256": "6bd8e2ae90e57f0d32856e670bc1b0fcd6df89972bafb74602ef11f12d64ae00"
+        "bytes": 36969,
+        "sha256": "55ce71eece506d3e8ea856952b31f4e14041141f3b028b98368f62b4b7756e93"
       },
       {
         "path": "tests/mounted-corpus-interactions.node.mjs",
-        "bytes": 16226,
-        "sha256": "613d27465cbc9d1d5b570e4cd4e15a13bcee4c923aaa228674db8ad1d052a87a"
+        "bytes": 16428,
+        "sha256": "48c8fd5f2e9b2d74e75388c139265649b9bc1d3e952c81b58454724fe8fd5cd3"
       },
       {
         "path": "tests/mounted-corpus-interactions.spec.js",
@@ -243,23 +243,23 @@
       },
       {
         "path": "tests/mounted-corpus-source-continuation.node.mjs",
-        "bytes": 22247,
-        "sha256": "e0f51e5008d906cdd8343db492790a3701c32ce08bcc9362f9d307fe1eb690ea"
+        "bytes": 22449,
+        "sha256": "34b2ef92b3004d59552855c0916e38604f27acc41bfe79dd806a21c0055c674e"
       },
       {
         "path": "tests/mounted-corpus-source-continuation48.node.mjs",
-        "bytes": 11586,
-        "sha256": "fb6c4aafe4fa64713d28cd691e4e7d1643dd7ca45b371223c1b56eba7d19c026"
+        "bytes": 11864,
+        "sha256": "1a78394152fb3885586b262f1c8ee8891422d031f3297d2fe1a8c6b5a63d28db"
       },
       {
         "path": "tests/mounted-corpus-source-continuation66.node.mjs",
-        "bytes": 13557,
-        "sha256": "f7b259540c581300f71f95a0cb8c2e0abcd7981deb864d4ed195ba1f9ba503b7"
+        "bytes": 13835,
+        "sha256": "8c508589af8cfd8f83a18e08db5e2945d4100b1885491befc74a21b4c13dbcd5"
       },
       {
         "path": "tests/mounted-corpus-source-continuation67.node.mjs",
-        "bytes": 11106,
-        "sha256": "986bfca32548fa4a455d6523b3acf68c4d4efa9ed2f3b47092315eccc5d66a4b"
+        "bytes": 11384,
+        "sha256": "316c873b644dde6d2401bfe09834dafa418bff3ef0e6309099c754716fe772e2"
       }
     ],
     "snapshotPins": [
@@ -1054,8 +1054,8 @@
       },
       {
         "path": "contracts/mounted-e2e/v1.5/source-snapshot-c82-bundle.json",
-        "bytes": 180154,
-        "sha256": "2dc30367a4f78c42f119dc774867daa089351e2af5ff58043aa870dd26db562d"
+        "bytes": 189839,
+        "sha256": "edb6516645224ab32b58b4608e03654066ce6d7b1bdd19f44fa70117e70f738c"
       },
       {
         "path": "contracts/mounted-e2e/v1/initial-literals.json",
@@ -1204,8 +1204,8 @@
       },
       {
         "path": "scripts/mounted-corpus/run.mjs",
-        "bytes": 21391,
-        "sha256": "c28f09f788c86f116ad18dc9514af1c1b4af6df2d75e051a1f420eb85ee9851a"
+        "bytes": 21813,
+        "sha256": "e52de2f54806988d7398323be523bc51d471df0a5819b06344e3fc3393520e40"
       },
       {
         "path": "scripts/mounted-corpus/source-continuation47.mjs",
@@ -1229,13 +1229,13 @@
       },
       {
         "path": "tests/mounted-corpus-collector.node.mjs",
-        "bytes": 36767,
-        "sha256": "6bd8e2ae90e57f0d32856e670bc1b0fcd6df89972bafb74602ef11f12d64ae00"
+        "bytes": 36969,
+        "sha256": "55ce71eece506d3e8ea856952b31f4e14041141f3b028b98368f62b4b7756e93"
       },
       {
         "path": "tests/mounted-corpus-interactions.node.mjs",
-        "bytes": 16226,
-        "sha256": "613d27465cbc9d1d5b570e4cd4e15a13bcee4c923aaa228674db8ad1d052a87a"
+        "bytes": 16428,
+        "sha256": "48c8fd5f2e9b2d74e75388c139265649b9bc1d3e952c81b58454724fe8fd5cd3"
       },
       {
         "path": "tests/mounted-corpus-interactions.spec.js",
@@ -1244,23 +1244,23 @@
       },
       {
         "path": "tests/mounted-corpus-source-continuation.node.mjs",
-        "bytes": 22247,
-        "sha256": "e0f51e5008d906cdd8343db492790a3701c32ce08bcc9362f9d307fe1eb690ea"
+        "bytes": 22449,
+        "sha256": "34b2ef92b3004d59552855c0916e38604f27acc41bfe79dd806a21c0055c674e"
       },
       {
         "path": "tests/mounted-corpus-source-continuation48.node.mjs",
-        "bytes": 11586,
-        "sha256": "fb6c4aafe4fa64713d28cd691e4e7d1643dd7ca45b371223c1b56eba7d19c026"
+        "bytes": 11864,
+        "sha256": "1a78394152fb3885586b262f1c8ee8891422d031f3297d2fe1a8c6b5a63d28db"
       },
       {
         "path": "tests/mounted-corpus-source-continuation66.node.mjs",
-        "bytes": 13557,
-        "sha256": "f7b259540c581300f71f95a0cb8c2e0abcd7981deb864d4ed195ba1f9ba503b7"
+        "bytes": 13835,
+        "sha256": "8c508589af8cfd8f83a18e08db5e2945d4100b1885491befc74a21b4c13dbcd5"
       },
       {
         "path": "tests/mounted-corpus-source-continuation67.node.mjs",
-        "bytes": 11106,
-        "sha256": "986bfca32548fa4a455d6523b3acf68c4d4efa9ed2f3b47092315eccc5d66a4b"
+        "bytes": 11384,
+        "sha256": "316c873b644dde6d2401bfe09834dafa418bff3ef0e6309099c754716fe772e2"
       }
     ],
     "rawPaths": [
@@ -1459,8 +1459,8 @@
     ],
     "bundle": {
       "path": "contracts/mounted-e2e/v1.5/source-snapshot-c82-bundle.json",
-      "bytes": 180154,
-      "sha256": "2dc30367a4f78c42f119dc774867daa089351e2af5ff58043aa870dd26db562d"
+      "bytes": 189839,
+      "sha256": "edb6516645224ab32b58b4608e03654066ce6d7b1bdd19f44fa70117e70f738c"
     }
   },
   "budgets": {
@@ -1472,5 +1472,5 @@
     "runtimeArtifactBytes": 1048576,
     "runtimeAggregateBytes": 8388608
   },
-  "qualification": "Prospective strict additive resource policy and current-source guard, authored after the verified c82 schema mismatch and before this module/control execution. Frozen v1/v1.4/66/48/47/45 files and all old assertions remain unchanged. Explicit modern selection retains full12 raw maps; legacy defaults retain the old11 schema. c82 is source-snapshot lineage only, never accepted/reviewed implementation or inherited runtime evidence."
+  "qualification": "Prospective synchronous source-I/O refresh prepared after d1abfd5 execution started and before execution of this new revision. Every actual read, all42 guards, full192 raw source paths, all inherited Node test bodies, the three integration deltas and every budget/assertion remain unchanged in scope. Frozen v1/v1.4/66/48/47/45 files stay byte-exact. Explicit modern selection retains full12 raw maps; legacy defaults retain old11. Retained c82 bytes are source-snapshot lineage only, never accepted/reviewed implementation or inherited runtime evidence. Earlier d1/fb outcomes belong only to their recorded original source SHA; no elapsed threshold or measured acceleration is claimed."
 }
