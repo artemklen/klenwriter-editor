@@ -3,7 +3,7 @@
 import { spawn, execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { createReadStream, lstatSync, openSync, fstatSync, readSync, closeSync } from 'node:fs';
-import { mkdir, readdir, writeFile, lstat, realpath, open } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, rm, writeFile, lstat, realpath, open } from 'node:fs/promises';
 import { resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
@@ -209,11 +209,17 @@ export async function run() {
   const runRoot = resolve(root, 'artifacts/mounted-corpus/runs', runId);
   await mkdir(runRoot, { recursive: true });
   // Isolate browser application data only in this task's child environment.
-  const appData = resolve(runRoot, 'browser-appdata'), temporary = resolve(runRoot, 'browser-tmp');
-  await mkdir(appData); await mkdir(temporary);
-  const browserEnv = { ...process.env, PLAYWRIGHT_SKIP_BROWSER_GC: '1', CFFIXED_USER_HOME: appData, TMPDIR: temporary };
+  const appData = resolve(runRoot, 'browser-appdata'), runTemporary = resolve(runRoot, 'browser-tmp');
+  const linux = process.platform === 'linux';
+  await mkdir(appData);
+  if (!linux) await mkdir(runTemporary);
   const receipt = { protocol: PROTOCOL_VERSION, runId, started: new Date().toISOString(), sourceSHA: sourceSHA(), sourceStatusAtStart: sourceStatus(), phase: 'binding' };
+  let linuxTemporary;
   try {
+    // Chromium's Linux singleton socket needs a short TMPDIR. mkdtemp creates a private directory (0700).
+    if (linux) linuxTemporary = await mkdtemp('/tmp/kw-mounted-');
+    const temporary = linuxTemporary ?? runTemporary;
+    const browserEnv = { ...process.env, PLAYWRIGHT_SKIP_BROWSER_GC: '1', CFFIXED_USER_HOME: appData, TMPDIR: temporary };
     // Explicit67 continuation: historical contract authority and actual runtime
     // bytes remain separate. No frozen45 literal or expected value is rewritten.
     const resourceProfile = RESOURCE_PROFILE67_ID;
@@ -313,9 +319,17 @@ export async function run() {
     receipt.success = false; receipt.failure = { name: error.name, message: error.message };
     throw error;
   } finally {
-    receipt.finished = new Date().toISOString();
-    await writeJson(resolve(runRoot, 'receipt.json'), receipt);
-    console.log(JSON.stringify({ runRoot, phase: receipt.phase, success: receipt.success }));
+    try {
+      if (linuxTemporary) await rm(linuxTemporary, { recursive: true, force: true });
+    } catch (error) {
+      receipt.success = false;
+      receipt.browserTemporaryCleanupFailure = { name: error.name, message: error.message };
+      if (!receipt.failure) throw error;
+    } finally {
+      receipt.finished = new Date().toISOString();
+      await writeJson(resolve(runRoot, 'receipt.json'), receipt);
+      console.log(JSON.stringify({ runRoot, phase: receipt.phase, success: receipt.success }));
+    }
   }
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
