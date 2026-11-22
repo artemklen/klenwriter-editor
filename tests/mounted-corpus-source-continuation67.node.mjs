@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // Prospective source/data controls only. No editor/native/browser observation.
-import { lstatSync, readFileSync } from 'node:fs';
+import { lstatSync, readFileSync } from '../scripts/mounted-corpus/retained-source-fixture.mjs';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {lstat,readFile} from 'node:fs/promises';

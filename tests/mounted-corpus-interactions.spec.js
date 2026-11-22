@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { ENGINES } from '../scripts/mounted-corpus/protocol.mjs';
 import { assessInteraction, interactionValidators } from '../scripts/mounted-corpus/collect-interactions.mjs';
-import { RESOURCE_PROFILE67_ID, assertResourceProfileBinding67 } from '../scripts/mounted-corpus/resource-profile67.mjs';
+import { RESOURCE_PROFILE67_ID, assertResourceProfileBinding67 } from '../scripts/mounted-corpus/renderer-source.mjs';
 
 const literalPath = 'contracts/mounted-e2e/v1/interaction-literals.json';
 const literalBytes = readFileSync(literalPath), contract = JSON.parse(literalBytes);

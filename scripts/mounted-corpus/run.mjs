@@ -13,7 +13,7 @@ import Ajv2020 from 'ajv/dist/2020.js';
 import { PROTOCOL_VERSION, ACCEPTED_SOURCE, ENGINES, BUDGETS, REQUIRED_SCENARIO_PATHS, ownBoundedData } from './protocol.mjs';
 import { loadContract, collect } from './collect.mjs';
 import { collectInteractions, interactionValidators } from './collect-interactions.mjs';
-import { loadMountedResourceProfile67, RESOURCE_PROFILE67_ID, RESOURCE_PROFILE67_PATH, assertResourceProfileBinding67 } from './resource-profile67.mjs';
+import { loadMountedResourceProfile67, RESOURCE_PROFILE67_ID, RESOURCE_PROFILE67_PATH, assertResourceProfileBinding67 } from './renderer-source.mjs';
 import { computeSdkBuildIdentity } from '../generate-sdk-types.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -222,10 +222,10 @@ export async function run() {
     const continuationBefore = await continuation.verifyAll();
     await writeJson(resolve(runRoot, 'source-continuation67-before.json'), continuationBefore);
     const continuationRuntimeBefore = await continuation.captureRuntimeInventory(receipt.sourceSHA);
-    await writeJson(resolve(runRoot, 'source-continuation67-runtime-before.json'), continuationRuntimeBefore);
-    receipt.sourceContinuation = { scope: 'Explicit strict resource profile67 and whole192 current raw source pins; retained c82 snapshot and legacy45/47/48/66 source authority inherit no runtime acceptance.',
+    await writeJson(resolve(runRoot, 'renderer-source-runtime-before.json'), continuationRuntimeBefore);
+    receipt.sourceContinuation = { scope: 'Strict resource profile67 with separate base authority and current renderer source inventory.',
       before: await pin('source-continuation67-before.json', runRoot), after: null,
-      runtimeBefore: await pin('source-continuation67-runtime-before.json', runRoot), runtimeAfter: null };
+      runtimeBefore: await pin('renderer-source-runtime-before.json', runRoot), runtimeAfter: null };
     const sourcePins = json(await boundedFile(root, 'contracts/mounted-e2e/v1/source-pins.json', BUDGETS.observationBytes));
     const manifest = json(await boundedFile(root, 'contracts/mounted-e2e/v1/manifest.json', BUDGETS.observationBytes));
     // Reject source/transport incompatibility before launching a browser owner.
@@ -242,7 +242,7 @@ export async function run() {
       throw new Error('Current source, compiled manifest and sealed WASM do not agree');
     }
     const extraPaths = ['contracts/mounted-e2e/v1/interaction-literals.json', 'scripts/mounted-corpus/interactions.mjs', 'scripts/mounted-corpus/native-observer.mjs', 'scripts/mounted-corpus/interactions.css', 'scripts/mounted-corpus/collect-interactions.mjs', 'tests/mounted-corpus-interactions.spec.js', 'tests/mounted-corpus-interactions.node.mjs'];
-    const continuationSidecarPaths = ['source-continuation67-before.json', 'source-continuation67-runtime-before.json']
+    const continuationSidecarPaths = ['source-continuation67-before.json', 'renderer-source-runtime-before.json']
       .map(name => relative(root, resolve(runRoot, name)));
     const paths = [...new Set([...sourcePins.files.map(item => item.path), ...REQUIRED_SCENARIO_PATHS, ...extraPaths,
       // Frozen v1 RunBinding permits64 pins. The complete current67 continuation
@@ -294,8 +294,8 @@ export async function run() {
     }
     const continuationRuntimeAfter = await continuation.captureRuntimeInventory(sourceSHA());
     if (JSON.stringify(continuationRuntimeAfter) !== JSON.stringify(continuationRuntimeBefore)) throw new Error('Actual continuation runtime source inventory changed during run');
-    await writeJson(resolve(runRoot, 'source-continuation67-runtime-after.json'), continuationRuntimeAfter);
-    receipt.sourceContinuation.runtimeAfter = await pin('source-continuation67-runtime-after.json', runRoot);
+    await writeJson(resolve(runRoot, 'renderer-source-runtime-after.json'), continuationRuntimeAfter);
+    receipt.sourceContinuation.runtimeAfter = await pin('renderer-source-runtime-after.json', runRoot);
     const continuationAfter = await continuation.verifyAll();
     if (JSON.stringify(continuationAfter) !== JSON.stringify(continuationBefore)) throw new Error('Historical/current source continuation changed during run');
     await writeJson(resolve(runRoot, 'source-continuation67-after.json'), continuationAfter);
