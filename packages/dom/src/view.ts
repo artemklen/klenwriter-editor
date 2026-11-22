@@ -33,7 +33,7 @@ export interface DomView {
   patch(event: DeepReadonly<EventDto>, restore?: boolean): DomRefusal | null;
   readSelection(): DeepReadonly<SelectionDto> | DomRefusal | null;
   restoreSelection(selection: DeepReadonly<SelectionDto> | null): DomRefusal | null;
-  prepareLayoutSelection?(): DomRefusal | null;
+  prepareLayoutSelection?(prospective?: DeepReadonly<SelectionDto> | null): DomRefusal | null;
   retireLayout?(): DomRefusal | null;
   discardLayout?(): void;
   layoutListeners?(): number;
@@ -143,7 +143,14 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     if (failure?.diagnostic.publication === 'unknown') options.onLayoutFailure?.(failure);
     return failure ?? null;
   }
-  function prepareLayoutSelection(): DomRefusal | null {
+  function prepareLayoutSelection(prospective?: DeepReadonly<SelectionDto> | null): DomRefusal | null {
+    if (prospective === null) return reportUnknownLayout(layout?.check());
+    if (prospective !== undefined) {
+      // Native validation retains responsibility for malformed selection requests.
+      if (!prospective.anchor || !prospective.focus) return null;
+      const anchor = domPoint(prospective.anchor), focus = domPoint(prospective.focus);
+      return isDomRefusal(anchor) || isDomRefusal(focus) ? null : reportUnknownLayout(layout?.pin(anchor,focus));
+    }
     const selection = doc.getSelection();
     if (!selection?.anchorNode || !selection.focusNode || !host.contains(selection.anchorNode) || !host.contains(selection.focusNode)) {
       return reportUnknownLayout(layout?.check());

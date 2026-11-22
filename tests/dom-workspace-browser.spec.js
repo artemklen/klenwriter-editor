@@ -804,3 +804,32 @@ test('auto-block teardown leaves styles on a paragraph already adopted by anothe
   if (browserName === 'chromium') expect(result.before).toContain('content-visibility: auto');
   expect(result).toMatchObject({after:result.before,parent:true,listeners:0});
 });
+
+test('a covered auto-block selection refuses before publication and can retry when visible', async ({page,browserName}) => {
+  const {source} = solidLongParagraphs();
+  const {id,ready} = await call(page,'mount',{source,scrollable:true,renderOptions:{layoutPolicy:'auto-blocks'}});
+  expect(ready).toBe('ready');
+  await call(page,'select',id,'/0/0',5);
+  const active = await page.locator(`#${id}`).evaluate(element => element.children[1].style.contentVisibility === 'auto');
+  if (browserName === 'chromium') expect(active).toBe(true);
+  const before = await call(page,'inspect',id), destination = stateRow(before,'/1/0').id;
+  const point = {kind:'text',node:destination,offset:5,affinity:'after'};
+  const selection = {anchor:point,focus:point};
+  await page.evaluate(() => {
+    const cover = document.createElement('div');
+    cover.id = 'geometry-test-cover';
+    cover.textContent = 'Geometry test cover';
+    Object.assign(cover.style,{position:'fixed',inset:'0',zIndex:'1000',backgroundColor:'white'});
+    document.body.appendChild(cover);
+  });
+  const result = await call(page,'submit',id,{kind:'set_selection',selection});
+  const after = await call(page,'inspect',id);
+  expect(after.lifecycle).toBe('ready');
+  if (active) {
+    expect(result).toMatchObject({status:'dom_refused',diagnostic:{code:'dom.selection_geometry_unsupported',publication:'none'}});
+    expect(after.state).toEqual(before.state);
+  } else expect(after.state.selection).toEqual(selection);
+  await page.locator('#geometry-test-cover').evaluate(element => element.remove());
+  expect((await call(page,'submit',id,{kind:'set_selection',selection})).response.status).toBe('ok');
+  expect((await call(page,'inspect',id)).state.selection).toEqual(selection);
+});
