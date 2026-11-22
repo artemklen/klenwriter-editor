@@ -13,9 +13,14 @@ export const domRegionLimits = Object.freeze({ blocks: 8, nodes: 131072, depth: 
 export interface DomPoint { readonly node: Node; readonly offset: number }
 export interface DeletionScroll {
   readonly scroller: HTMLElement;
-  readonly left: number;
-  readonly top: number;
   readonly active: Element;
+  readonly revealsCaret: () => boolean;
+}
+interface DeletionViewport {
+  readonly leaf: string;
+  readonly scroller: HTMLElement;
+  readonly active: Element;
+  readonly top: number;
 }
 export interface CapturedBlock {
   readonly id: string;
@@ -882,7 +887,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
   function deletionScroll(
     event: DeepReadonly<EventDto>,
     candidates: ReadonlyMap<string, { view: DeepReadonly<NodeViewDto>; prepared: PreparedNode }>,
-  ): DeletionScroll | null {
+  ): DeletionViewport | null {
     const before = event.selection_before, after = event.selection_after;
     if (!options.scheduleDeletionScroll || provisional || event.change.kind !== 'document'
         || event.change.impact.root_order_changed || event.change.impact.removed.length
@@ -892,8 +897,9 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         || !equal(after.anchor, after.focus) || !equal(lastSelection, before)
         || !currentStamp || !stampSame(currentStamp, event.before) || options.layoutBlocked?.()) return null;
     const win = doc.defaultView, active = doc.activeElement;
+    const browser = doc.getSelection();
     if (!win || !doc.hasFocus() || !active || !host.isConnected || !host.contains(active)
-        || doc.getSelection()?.rangeCount !== 1 || !equal(readSelection(), before)) return null;
+        || browser?.rangeCount !== 1 || !equal(readSelection(), before)) return null;
 
     const id = before.anchor.node, previous = rows.get(id), next = candidates.get(id);
     if (!previous || !next || previous.view.primitive !== 'text' || next.view.primitive !== 'text'
@@ -932,18 +938,50 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     for (let depth = 0; scroller && depth < 32; depth++, scroller = scroller.parentElement) {
       const css = win.getComputedStyle(scroller);
       if (css.writingMode !== 'horizontal-tb' || css.transform !== 'none' || css.perspective !== 'none'
-          || css.scrollBehavior === 'smooth') return null;
+          || css.scrollBehavior === 'smooth' || css.scrollSnapType !== 'none') return null;
       if (css.overflowY !== 'auto' && css.overflowY !== 'scroll') continue;
-      const left = scroller.scrollLeft, top = scroller.scrollTop;
-      return Number.isFinite(left) && Number.isFinite(top) ? { scroller, left, top, active } : null;
+      const clipTop = scroller.getBoundingClientRect().top + scroller.clientTop;
+      const bounds = browser.getRangeAt(0).getBoundingClientRect();
+      if (bounds.height <= 0 || bounds.top < clipTop || bounds.bottom > clipTop + scroller.clientHeight) return null;
+      const top = scroller.scrollTop;
+      return Number.isFinite(top) ? { leaf: id, scroller, top, active } : null;
     }
     return null;
+  }
+  function preserveDeletionViewport({leaf, scroller, top, active}: DeletionViewport): DeletionScroll | null {
+    const tail = rows.get(leaf)?.texts.at(-1);
+    if (!tail || !tail.length) return null;
+    // A child-gap Range has no caret rectangle. Its native reveal targets the
+    // last physical line of the retained leaf.
+    const measureCaret = () => {
+      const range = doc.createRange();
+      range.setStart(tail, tail.length);
+      range.collapse(true);
+      return range.getBoundingClientRect();
+    };
+    const rect = measureCaret(), box = scroller.getBoundingClientRect();
+    const clipTop = box.top + scroller.clientTop;
+    const height = scroller.clientHeight, width = scroller.clientWidth;
+    const limit = scroller.scrollHeight - height;
+    const caretCenter = (rect.top + rect.bottom) / 2 - clipTop + scroller.scrollTop;
+    const expectedTop = Math.max(0, Math.min(limit, caretCenter - height / 2));
+    if (rect.height <= 0 || height <= 0 || expectedTop - top < height) return null;
+    const revealsCaret = () => {
+      if (!host.contains(tail) || scroller.clientHeight !== height || scroller.clientWidth !== width
+          || scroller.scrollHeight - height !== limit || Math.abs(scroller.scrollTop - expectedTop) > 1) return false;
+      const currentClip = scroller.getBoundingClientRect().top + scroller.clientTop;
+      const current = measureCaret();
+      return current.height > 0 && current.top >= currentClip && current.bottom <= currentClip + height
+        && Math.abs((current.top + current.bottom) / 2 - currentClip + scroller.scrollTop - caretCenter) <= 1;
+    };
+    if (revealsCaret()) scroller.scrollTop = top;
+    return { scroller, active, revealsCaret };
   }
   function patch(event: DeepReadonly<EventDto>, restore = true): DomRefusal | null {
     if (destroyed) return refusal('dom.disposed');
     const publication = 'alreadyPublished' as const, candidates = new Map<string, { view: DeepReadonly<NodeViewDto>; prepared: PreparedNode }>();
     let associated: AssociatedRange | null = null;
-    let retainedScroll: DeletionScroll | null = null;
+    let retainedScroll: DeletionViewport | null = null;
     if (event.change.kind === 'document') {
       const layoutFailure = layout?.retire(); if (layoutFailure) return layoutFailure;
       const ids = new Set([...event.change.impact.upserted, ...event.change.impact.ancestors_after]);
@@ -1094,18 +1132,14 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     const failure = provisional?.composing ? null : restore ? restoreSelection(event.selection_after) : rememberSelection(event.selection_after);
     if (failure) return failure;
 
-    // A browser can reveal the child-gap caret now or in its next frame.
-    // Restore only the original viewport and keep the published caret intact.
     if (retainedScroll && event.selection_after && !destroyed && stampSame(currentStamp, event.after)
         && equal(lastSelection, event.selection_after) && equal(readSelection(), event.selection_after)
         && !options.layoutBlocked?.() && host.isConnected && retainedScroll.scroller.isConnected
         && retainedScroll.scroller.ownerDocument === doc && retainedScroll.scroller.contains(host)
         && host.contains(retainedScroll.active) && doc.hasFocus() && doc.activeElement === retainedScroll.active) {
       try {
-        const { scroller, left, top } = retainedScroll;
-        if (scroller.scrollLeft !== left) scroller.scrollLeft = left;
-        if (scroller.scrollTop !== top) scroller.scrollTop = top;
-        options.scheduleDeletionScroll?.(retainedScroll, event.after, event.selection_after);
+        const correction = preserveDeletionViewport(retainedScroll);
+        if (correction) options.scheduleDeletionScroll?.(correction, event.after, event.selection_after);
       } catch { return refusal('dom.presentation_unsupported', null, publication); }
     }
     return null;

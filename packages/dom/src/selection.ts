@@ -29,7 +29,7 @@ export class SelectionOwner {
   #serial=0n;#focusSerial=0n;#exhausted=false;#destroyed=false;#attached=false;
   #publishing=0;#ownPermit=0;#restoreTickets=0;#frames:SubmissionFrame[]=[];#removals:(()=>void)[]=[];
   #pointer:PointerOwner|null=null;#raf:number|null=null;#tabEntry=false;#rangeWriting=0;
-  #deletionScroll: { readonly win: Window; readonly id: number; readonly onWheel: EventListener } | null = null;
+  #deletionScroll: { readonly win: Window; readonly id: number; readonly detach: () => void } | null = null;
   #heldMouse:number|null=null;#retiredViewImport=false;
   #inputIntentObserver:InputIntentObserver|null=null;
   #knownInvalidation:SubmissionFrame|null=null;
@@ -44,7 +44,7 @@ export class SelectionOwner {
     this.#inputIntentObserver=observer;
     return ()=>{if(this.#inputIntentObserver===observer)this.#inputIntentObserver=null;};
   }
-  listeners():number { return this.#removals.length + Number(this.#deletionScroll !== null); }
+  listeners():number { return this.#removals.length + (this.#deletionScroll ? 2 : 0); }
   resources():SelectionResourceCounts { return Object.freeze({bookmarks:this.#live.size,restoreTickets:this.#restoreTickets,activePointers:this.#pointer?1:0,animationFrames:Number(this.#raf!==null)+Number(this.#deletionScroll!==null)}); }
   isPublishing():boolean { return this.#publishing>0; }
   ownsFocus():boolean { const host=this.configuration.element();return !!host && (host.ownerDocument.activeElement===host || !!host.ownerDocument.activeElement && host.contains(host.ownerDocument.activeElement)); }
@@ -71,7 +71,7 @@ export class SelectionOwner {
     const pending = this.#deletionScroll;
     this.#deletionScroll = null;
     if (pending) {
-      pending.win.removeEventListener('wheel', pending.onWheel, true);
+      pending.detach();
       pending.win.cancelAnimationFrame(pending.id);
     }
   }
@@ -94,7 +94,7 @@ export class SelectionOwner {
         || !host.contains(anchor) || !host.contains(focus)) return;
     const anchorOffset = browser.anchorOffset, focusOffset = browser.focusOffset;
     const serial = this.#serial, focusSerial = this.#focusSerial;
-    const { scroller, left, top, active } = scroll;
+    const { scroller, active, revealsCaret } = scroll;
     const valid = () => {
       const current = doc.getSelection();
       return this.intentAvailable() && this.#attached && this.#serial === serial && this.#focusSerial === focusSerial
@@ -114,20 +114,38 @@ export class SelectionOwner {
     // This synchronous call is made inside native publication. Apply the
     // selection owner's busy check once that publication has left the stack.
     if (!valid() || !matchesState() || !valid()) return;
+    let top = scroller.scrollTop;
+    const checkpoint = () => {
+      if (this.#deletionScroll === frame) top = scroller.scrollTop;
+    };
+    // Application subscribers and later input listeners can move the viewport
+    // before the browser reveals the new gap. Keep their latest observed offset.
+    const onInput: EventListener = event => {
+      if (event.isTrusted && event.defaultPrevented && event.composedPath().includes(host)) {
+        checkpoint();
+        win.queueMicrotask(checkpoint);
+      }
+    };
     const onWheel: EventListener = event => { if (event.isTrusted) this.#cancelDeletionScroll(); };
-    const frame = { win, onWheel, id: win.requestAnimationFrame(() => {
+    const detach = () => {
+      win.removeEventListener('wheel', onWheel, true);
+      win.removeEventListener('beforeinput', onInput);
+    };
+    const frame = { win, detach, id: win.requestAnimationFrame(() => {
       if (this.#deletionScroll !== frame) return;
       this.#deletionScroll = null;
-      win.removeEventListener('wheel', onWheel, true);
+      detach();
       if (this.#guard() || !valid() || !matchesState() || !valid()) return;
       try {
-        if (scroller.scrollLeft !== left) scroller.scrollLeft = left;
-        if (scroller.scrollTop !== top) scroller.scrollTop = top;
+        if (scroller.scrollTop !== top && revealsCaret()) scroller.scrollTop = top;
       } catch { this.configuration.report(this.#failure('dom.presentation_unsupported', 'alreadyPublished')); }
     }) };
     this.#deletionScroll = frame;
-    try { win.addEventListener('wheel', onWheel, { capture: true, passive: true }); }
-    catch (error) {
+    try {
+      win.addEventListener('wheel', onWheel, { capture: true, passive: true });
+      win.addEventListener('beforeinput', onInput);
+      win.queueMicrotask(checkpoint);
+    } catch (error) {
       this.#cancelDeletionScroll();
       throw error;
     }
