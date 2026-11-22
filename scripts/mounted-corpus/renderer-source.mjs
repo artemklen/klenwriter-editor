@@ -31,8 +31,16 @@ async function inventory(read,d,sourceSHA){
     total+=bytes.length;requireSource(total<=maxTotal,'inventory byte limit');
     pins.push(pin(path,bytes));
   }
+  const emitted = [];
+  let emittedBytes = 0;
+  for (const expected of d.emitted) {
+    const bytes = await readExact(read,expected);
+    emittedBytes += bytes.length;
+    requireSource(bytes.length <= maxFile && emittedBytes <= maxTotal,'emitted byte limit');
+    emitted.push(pin(expected.path,bytes));
+  }
   const lookup=path=>pins.find(p=>p.path===path);
-  return {format:'mounted-corpus-renderer-source-inventory/1',sourceSHA,base:d.base,pins,
+  return {format:'mounted-corpus-renderer-source-inventory/2',sourceSHA,base:d.base,pins,emitted,
     resourceProfile:{id:RESOURCE_PROFILE67_ID,selectedProfile:RESOURCE_PROFILE67_ID,descriptor:d.profile,
       policyModule:lookup('scripts/mounted-corpus/resource-profile67.mjs'),control:lookup('tests/mounted-corpus-resource-profile67.node.mjs'),baseSchema:prior.baseSchema.pin}};
 }
@@ -56,7 +64,7 @@ export async function loadMountedResourceProfile67({readArtifact,resourceProfile
   return {
     async verifyAll() {
       await verifyCurrent();
-      return {format:'mounted-corpus-renderer-source-proof/1',base:d.base,descriptor:descriptorPin,previous:await prior.verifyAll()};
+      return {format:'mounted-corpus-renderer-source-proof/1',base:d.base,descriptor:Object.freeze({...descriptorPin}),previous:await prior.verifyAll()};
     },
     captureRuntimeInventory:sourceSHA=>captureRendererInventory(readArtifact,sourceSHA),
     historicalAuthorityReader(fallback) {
@@ -82,12 +90,23 @@ function samePin(value,pin){
   });
 }
 export async function assertResourceProfileBinding67({resourceProfile,runBinding,readArtifact}){
-  const markers=runBinding?.scenarioPins?.filter(p=>p.path.endsWith('/'+sidecar))??[];
+  const scenarioPins = runBinding?.scenarioPins ?? [];
+  const markers = scenarioPins.filter(item => {
+    requireSource(item && typeof item === 'object' && !isProxy(item),'scenario pin');
+    const field = Object.getOwnPropertyDescriptor(item,'path');
+    requireSource(field?.enumerable && typeof field.value === 'string','scenario pin path');
+    return field.value.endsWith('/'+sidecar);
+  });
   if(!markers.length)return checkPrevious({resourceProfile,runBinding,readArtifact});
   requireSource(markers.length===1&&resourceProfile===RESOURCE_PROFILE67_ID&&typeof readArtifact==='function','renderer binding');
   requireSource(!runBinding.scenarioPins.some(p=>p.path.endsWith('/source-continuation67-runtime-before.json')),'ambiguous runtime source');
   requireSource(typeof runBinding.runId==='string'&&runBinding.runId.length===46&&/^mounted45-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(runBinding.runId),'run id');
-  const marker=markers[0];requireSource(marker.path==='artifacts/mounted-corpus/runs/'+runBinding.runId+'/'+sidecar&&Number.isSafeInteger(marker.bytes)&&marker.bytes>0&&marker.bytes<=4194304,'sidecar');
+  const marker = markers[0];
+  const markerBytes = Object.getOwnPropertyDescriptor(marker,'bytes')?.value;
+  const markerHash = Object.getOwnPropertyDescriptor(marker,'sha256')?.value;
+  requireSource(typeof markerHash === 'string' && /^[0-9a-f]{64}$/.test(markerHash) && markerHash.length === 64
+    && Number.isSafeInteger(markerBytes) && samePin(marker,{path:marker.path,bytes:markerBytes,sha256:markerHash}),'sidecar pin');
+  requireSource(marker.path==='artifacts/mounted-corpus/runs/'+runBinding.runId+'/'+sidecar&&Number.isSafeInteger(marker.bytes)&&marker.bytes>0&&marker.bytes<=4194304,'sidecar');
   const expected=await inventory(readArtifact,await descriptor(readArtifact),runBinding.sourceSHA);
   const payload=Buffer.from(await readExact(readArtifact,marker));
   requireSource(payload.equals(Buffer.from(JSON.stringify(expected,null,2)+'\n')),'runtime inventory disagrees with current bytes');

@@ -3,7 +3,7 @@ import {lstatSync, readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {captureRendererInventory,assertResourceProfileBinding67,RESOURCE_PROFILE67_ID} from '../scripts/mounted-corpus/renderer-source.mjs';
+import {captureRendererInventory,loadMountedResourceProfile67,assertResourceProfileBinding67,RESOURCE_PROFILE67_ID} from '../scripts/mounted-corpus/renderer-source.mjs';
 import {descriptorPin,decodeDescriptor,previousBytes} from '../scripts/mounted-corpus/renderer-source-data.mjs';
 const root=new URL('../',import.meta.url);
 function raw(path,maximum){
@@ -39,6 +39,34 @@ test('renderer inventory binds actual files and keeps independently checked hist
     const scenarioPins=[invalid,...runBinding.scenarioPins.slice(1)];
     await assert.rejects(assertResourceProfileBinding67({runBinding:{...runBinding,scenarioPins},resourceProfile,readArtifact}));
   }
+  for (const invalidMarker of [{...marker,extra:true},Object.assign(Object.create({inherited:true}),marker)]) {
+    await assert.rejects(assertResourceProfileBinding67({runBinding:{...runBinding,scenarioPins:[...runBinding.scenarioPins.slice(0,-1),invalidMarker]},resourceProfile,readArtifact}));
+  }
+  let getterCalls=0;
+  const accessor={...marker};
+  Object.defineProperty(accessor,'bytes',{enumerable:true,get(){getterCalls++;throw Error('unexpected getter');}});
+  await assert.rejects(assertResourceProfileBinding67({runBinding:{...runBinding,scenarioPins:[...runBinding.scenarioPins.slice(0,-1),accessor]},resourceProfile,readArtifact}));
+  assert.equal(getterCalls,0);
+  assert.deepEqual(inventory.emitted,descriptor.emitted);
+  for (const path of ['packages/dom/dist/view.js','packages/kwdj/dist/clipboard-parser.js','packages/ui/dist/style.css','packages/sdk/dist/index.js']) {
+    assert(inventory.emitted.some(p=>p.path===path));
+    for (const altered of [Buffer.alloc(0),Buffer.from('stale renderer')]) {
+      const changed=(p,max)=>p===path?altered:readArtifact(p,max);
+      await assert.rejects(captureRendererInventory(changed,sourceSHA));
+      await assert.rejects(assertResourceProfileBinding67({runBinding,resourceProfile,readArtifact:changed}));
+    }
+  }
   const legacy={...marker,path:marker.path.replace('renderer-source-runtime','source-continuation67-runtime')};
   await assert.rejects(assertResourceProfileBinding67({runBinding:{...runBinding,scenarioPins:[...runBinding.scenarioPins,legacy]},resourceProfile,readArtifact}));
+});
+
+test('mutating a source receipt cannot change descriptor authority',async()=>{
+  assert(Object.isFrozen(descriptorPin));
+  assert.throws(()=>{descriptorPin.sha256='0'.repeat(64);},TypeError);
+  const layer=await loadMountedResourceProfile67({readArtifact:raw,resourceProfile});
+  const receipt=await layer.verifyAll();
+  assert.notStrictEqual(receipt.descriptor,descriptorPin);
+  assert.deepEqual(receipt.descriptor,descriptorPin);
+  assert.throws(()=>{receipt.descriptor.bytes++;},TypeError);
+  assert.deepEqual((await layer.verifyAll()).descriptor,descriptorPin);
 });

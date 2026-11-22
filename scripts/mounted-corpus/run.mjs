@@ -14,6 +14,7 @@ import { PROTOCOL_VERSION, ACCEPTED_SOURCE, ENGINES, BUDGETS, REQUIRED_SCENARIO_
 import { loadContract, collect } from './collect.mjs';
 import { collectInteractions, interactionValidators } from './collect-interactions.mjs';
 import { loadMountedResourceProfile67, RESOURCE_PROFILE67_ID, RESOURCE_PROFILE67_PATH, assertResourceProfileBinding67 } from './renderer-source.mjs';
+import { rebuildRenderer } from './renderer-build.mjs';
 import { computeSdkBuildIdentity } from '../generate-sdk-types.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -221,6 +222,7 @@ export async function run() {
     });
     const continuationBefore = await continuation.verifyAll();
     await writeJson(resolve(runRoot, 'source-continuation67-before.json'), continuationBefore);
+    await rebuildRenderer({root,runRoot,child});
     const continuationRuntimeBefore = await continuation.captureRuntimeInventory(receipt.sourceSHA);
     await writeJson(resolve(runRoot, 'renderer-source-runtime-before.json'), continuationRuntimeBefore);
     receipt.sourceContinuation = { scope: 'Strict resource profile67 with separate base authority and current renderer source inventory.',
