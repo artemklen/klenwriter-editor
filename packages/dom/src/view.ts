@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import type { DeepReadonly, EventDto, InputFinalRegionV2, NodeViewDto, PositionDto, Response, SelectionDto, StampDto, StateDto, TextReplacementResultV2 } from '@klenwriter/editor-sdk';
-import type { DomDiagnostic, DomRefusal, MountedMutationV2, RecoveryRegion, RendererCatalog } from './types.js';
+import type { DomDiagnostic, DomLayoutPolicy, DomPatchPolicy, DomRefusal, DomTextRepresentation, MountedMutationV2, RecoveryRegion, RendererCatalog } from './types.js';
 import { prepareNode, type PreparedNode } from './catalog.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
+import { createLayoutPolicyOwner } from './layout-policy.js';
 import { createCompositionCorrespondence, type CompositionWindow, type CompositionObservation, type CompositionTerminalTicket } from './composition-view.js';
 import {literalCompositionBytes,sameLiteralNode,verifyLiteralComposition,type LiteralCompositionSource} from './composition-literal.js';
 import {fragmentOffset, fragmentPoint, matchesTextFragments, planTextFragments, scalarBoundary} from './text-fragments.js';
@@ -32,6 +33,10 @@ export interface DomView {
   patch(event: DeepReadonly<EventDto>, restore?: boolean): DomRefusal | null;
   readSelection(): DeepReadonly<SelectionDto> | DomRefusal | null;
   restoreSelection(selection: DeepReadonly<SelectionDto> | null): DomRefusal | null;
+  prepareLayoutSelection?(): DomRefusal | null;
+  retireLayout?(): DomRefusal | null;
+  discardLayout?(): void;
+  layoutListeners?(): number;
   rememberSelection(selection: DeepReadonly<SelectionDto> | null): DomRefusal | null;
   ownedBlockAt(node: Node | null): string | null;
   textPosition(node: Node, offset: number): DeepReadonly<PositionDto> | DomRefusal | null;
@@ -70,6 +75,7 @@ export interface DomView {
   destroy(options?: { readonly retainRegion?: boolean }): void;
 }
 interface Row { view: DeepReadonly<NodeViewDto>; prepared: PreparedNode; outer: HTMLElement; content: HTMLElement; wrappers: readonly HTMLElement[]; texts: readonly Text[]; signature: string; placeholder: HTMLBRElement | null }
+interface AssociatedRange { readonly selection: Selection; readonly range: Range; readonly parkingPoint: HTMLElement }
 const noText: readonly Text[] = Object.freeze([]);
 interface Provisional { stamp: DeepReadonly<StampDto>; ids: readonly string[]; originals: ReadonlyMap<string, string>; retained: HTMLElement; composing: boolean; protected: ReadonlySet<string>; window: { parent: HTMLElement; before: ChildNode | null; after: ChildNode | null } | null; composition?: CompositionWindow; forceTransfer?: boolean }
 const equal = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
@@ -82,10 +88,14 @@ let mountSerial = 0;
 
 /** A read-only correspondence between native rows and actual owned DOM objects. */
 export function createDomView(options: { readonly element: HTMLElement; readonly catalog: RendererCatalog;
-  readonly textRepresentation?: 'auto' | 'full';
+  readonly textRepresentation?: DomTextRepresentation; readonly patchPolicy?: DomPatchPolicy; readonly layoutPolicy?: DomLayoutPolicy;
+  readonly layoutBlocked?: () => boolean;
+  readonly writeLayout?: (change: () => DomRefusal | null) => DomRefusal | null;
+  readonly onLayoutFailure?: (failure: DomRefusal) => void;
   readonly readNode: (stamp: DeepReadonly<StampDto>, id: string) => Response }): DomView {
   const host = options.element, doc = host.ownerDocument;
   const fragments = options.textRepresentation === 'auto';
+  const patchPolicy = options.patchPolicy ?? 'full';
   const namespace = `kwe-${++mountSerial}-`;
   let nextDomId = 0, rows = new Map<string, Row>(), authority = new WeakMap<Node, string>();
   let rootId: string | null = null, currentStamp: DeepReadonly<StampDto> | null = null;
@@ -95,6 +105,52 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
   let compositionGeneration: object = {};
   const unrestorableCompositions = new WeakSet<CompositionWindow>();
   const literalSources=new WeakMap<LiteralCompositionSource,CompositionWindow>();
+  function layoutPosition(position: DeepReadonly<PositionDto>, source = rows, root = rootId): readonly [number, number] | null {
+    const top = root === null ? undefined : source.get(root);
+    if (!top) return null;
+    if (position.kind === 'child' && position.parent === root) {
+      const index = position.index, count = top.view.children.length;
+      return Number.isSafeInteger(index) && index >= 0 && index <= count && count > 0
+        ? [Math.max(0, index - 1), Math.min(count - 1, index)] : null;
+    }
+    let id = position.kind === 'child' ? position.parent : position.node;
+    for (let depth = 0; depth <= domRegionLimits.depth; depth++) {
+      const row = source.get(id);
+      if (!row || row.view.parent === null) return null;
+      if (row.view.parent === root) {
+        const index = top.view.children.indexOf(id);
+        return index < 0 ? null : [index, index];
+      }
+      id = row.view.parent;
+    }
+    return null;
+  }
+  const layout = options.layoutPolicy === 'auto-blocks' ? createLayoutPolicyOwner({
+    host, rows: () => rows, root: () => rootId,
+    supports: row => options.catalog.definition.nodes[row.view.type_id]?.layout === 'plain-text-block',
+    owns: (node, id) => authority.get(node) === id,
+    interval: point => {
+      const position = positionAt(point.node, point.offset);
+      return position && !isDomRefusal(position) ? layoutPosition(position) : null;
+    },
+    blocked: () => destroyed || provisional !== null || !!options.layoutBlocked?.(),
+    write: change => options.writeLayout ? options.writeLayout(change) : change(),
+    failure: publication => domRefusal(publication === 'unknown' ? 'dom.recovery_required' : 'dom.selection_geometry_unsupported',
+      publication === 'unknown' ? 'render' : 'selection', currentStamp, null, null, publication),
+    report: failure => options.onLayoutFailure?.(failure),
+  }) : null;
+  function reportUnknownLayout(failure: DomRefusal | null | undefined): DomRefusal | null {
+    if (failure?.diagnostic.publication === 'unknown') options.onLayoutFailure?.(failure);
+    return failure ?? null;
+  }
+  function prepareLayoutSelection(): DomRefusal | null {
+    const selection = doc.getSelection();
+    if (!selection?.anchorNode || !selection.focusNode || !host.contains(selection.anchorNode) || !host.contains(selection.focusNode)) {
+      return reportUnknownLayout(layout?.check());
+    }
+    return reportUnknownLayout(layout?.pin({node:selection.anchorNode,offset:selection.anchorOffset},
+      {node:selection.focusNode,offset:selection.focusOffset}));
+  }
   const correspondence = createCompositionCorrespondence({host,limits:domRegionLimits,row:id=>rows.get(id),ownedId:node=>authority.get(node),
     placeholder:node=>placeholders.has(node),point:domPoint,selection:readSelection,generation:()=>compositionGeneration});
   const refusal = (code: 'dom.renderer_missing' | 'dom.presentation_unsupported' | 'dom.composition_conflict' | 'dom.reconcile_limit' | 'dom.disposed',
@@ -204,20 +260,76 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     }
     return parent === row.content && ownedTexts(row);
   }
-  function writeRowText(row: Row, source: string): void {
-    if (row.texts.length === 0) return;
-    if (source === row.view.text && ownedTexts(row)) return;
+  function replaceTextData(node: Text, next: string): void {
+    const previous = node.data;
+    let start = 0, end = 0;
+    const size = Math.min(previous.length,next.length);
+    while (start < size && previous.charCodeAt(start) === next.charCodeAt(start)) start++;
+    if (!scalarBoundary(previous,start) || !scalarBoundary(next,start)) start--;
+    while (end < size-start && previous.charCodeAt(previous.length-end-1) === next.charCodeAt(next.length-end-1)) end++;
+    if (!scalarBoundary(previous,previous.length-end) || !scalarBoundary(next,next.length-end)) end--;
+    node.replaceData(start,previous.length-start-end,next.slice(start,next.length-end));
+  }
+  function parked(range: AssociatedRange): boolean {
+    const {selection,range: live,parkingPoint} = range;
+    return doc.activeElement === host && selection.rangeCount === 1 && selection.getRangeAt(0) === live
+      && live.collapsed && live.startContainer === parkingPoint && live.startOffset === 0;
+  }
+  function patchAssociatedFragments(row: Row, source: string, parts: readonly string[], event: DeepReadonly<EventDto>): AssociatedRange | null {
+    const before = event.selection_before, after = event.selection_after, browser = doc.getSelection();
+    if (options.layoutPolicy === 'auto-blocks' || !before || !after || !equal(after.anchor,after.focus)
+        || after.focus.kind !== 'text' || after.focus.node !== row.view.id
+        || !browser || browser.rangeCount !== 1 || doc.activeElement !== host || !doc.hasFocus()
+        || !equal(readSelection(),before)) return null;
+    const range = browser.getRangeAt(0), previous = row.texts;
+    if (range.startContainer !== browser.anchorNode || range.endContainer !== browser.focusNode
+        || range.startOffset !== browser.anchorOffset || range.endOffset !== browser.focusOffset
+        || !previous.includes(range.startContainer as Text) || !previous.includes(range.endContainer as Text)) return null;
+    const next = previous.map((node,index) => node.data === parts[index] ? node : doc.createTextNode(parts[index]));
+    if (destroyed || provisional || !ownedTextChain(row) || !equal(readSelection(),before)
+        || browser.rangeCount !== 1 || browser.getRangeAt(0) !== range) throw Error('dom.presentation_unsupported');
+
+    // Keep the browser's existing forward range associated while replacing Text.
+    // The authoritative post-edit position is resolved after the row is published.
+    const lease = {selection:browser,range,parkingPoint:row.content};
+    range.setStart(row.content,0);
+    range.collapse(true);
+    for (let index = 0; index < next.length; index++) {
+      const old = previous[index], node = next[index];
+      if (node === old) continue;
+      if (destroyed || provisional || !parked(lease) || row.content.childNodes[index] !== old
+          || node.parentNode !== null || node.ownerDocument !== doc || node.data !== parts[index] || authority.has(node)) {
+        throw Error('dom.presentation_unsupported');
+      }
+      row.content.replaceChild(node,old);
+      authority.delete(old);
+      authority.set(node,row.view.id);
+    }
+    row.texts = Object.freeze(next);
+    if (!parked(lease) || !ownedTexts(row,source)) throw Error('dom.presentation_unsupported');
+    return lease;
+  }
+  function writeRowText(row: Row, source: string, stable?: { readonly event: DeepReadonly<EventDto>; readonly restore: boolean }): AssociatedRange | null {
+    if (row.texts.length === 0 || source === row.view.text && ownedTexts(row)) return null;
     const parts = fragments ? planTextFragments(source) : [source];
     const previous = row.texts;
+    if (stable?.restore && patchPolicy === 'stable-fragments' && previous.length > 1 && parts.length === previous.length) {
+      const associated = patchAssociatedFragments(row,source,parts,stable.event);
+      if (associated) return associated;
+    }
     const next = parts.length === previous.length ? previous
       : Object.freeze(parts.map((part, index) => previous[index] ?? doc.createTextNode(part)));
     for (let index = 0; index < parts.length; index++) {
       const node = next[index];
       if (index >= previous.length) authority.set(node, row.view.id);
-      if (node.data !== parts[index]) node.data = parts[index];
+      if (node.data !== parts[index]) {
+        if (stable) replaceTextData(node,parts[index]);
+        else node.data = parts[index];
+      }
     }
     for (let index = next.length; index < previous.length; index++) authority.delete(previous[index]);
     row.texts = next;
+    return null;
   }
   function prepare(view: DeepReadonly<NodeViewDto>, publication: DomDiagnostic['publication']): PreparedNode | DomRefusal {
     if ((view.primitive === 'text' && (view.text === null || view.children.length))
@@ -362,6 +474,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     if (destroyed) return refusal('dom.disposed');
     if (provisional?.composing) return null;
     if (selection === null) {
+      const layoutFailure = layout?.check(); if (layoutFailure) return layoutFailure;
       lastSelection = null; lastAnchor = lastFocus = null;
       const browser = doc.getSelection();
       try {
@@ -377,6 +490,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     }
     const anchor = domPoint(selection.anchor), focus = domPoint(selection.focus);
     if (isDomRefusal(anchor)) return anchor; if (isDomRefusal(focus)) return focus;
+    const layoutFailure = layout?.pin(anchor, focus); if (layoutFailure) return layoutFailure;
     const browser = doc.getSelection(); if (!browser) return refusal('dom.presentation_unsupported');
     try {
       // Preserve the UA's in-progress drag when correspondence is already exact.
@@ -514,6 +628,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
   function beginComposition(stamp: DeepReadonly<StampDto>, selection: DeepReadonly<SelectionDto>): CompositionWindow | DomRefusal {
     if (destroyed) return refusal('dom.disposed');
     if (provisional || !currentStamp || !stampSame(stamp,currentStamp)) return compositionRefusal('dom.composition_stale');
+    const layoutFailure = reportUnknownLayout(layout?.retire()); if (layoutFailure) return layoutFailure;
     const window = correspondence.begin(stamp,selection); if (isDomRefusal(window)) return window;
     const protectedSet = new Set<string>(), pending = window.entries.map(entry=>entry.id);
     while (pending.length) {
@@ -753,7 +868,9 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
   function patch(event: DeepReadonly<EventDto>, restore = true): DomRefusal | null {
     if (destroyed) return refusal('dom.disposed');
     const publication = 'alreadyPublished' as const, candidates = new Map<string, { view: DeepReadonly<NodeViewDto>; prepared: PreparedNode }>();
+    let associated: AssociatedRange | null = null;
     if (event.change.kind === 'document') {
+      const layoutFailure = layout?.retire(); if (layoutFailure) return layoutFailure;
       const ids = new Set([...event.change.impact.upserted, ...event.change.impact.ancestors_after]);
       if (event.change.impact.root_order_changed && rootId) ids.add(rootId);
       const pending = [...ids];
@@ -859,6 +976,10 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
           }
         }
       }
+      const impact = event.change.impact;
+      const localTextId = patchPolicy !== 'full' && !provisional && currentStamp && stampSame(currentStamp,event.before)
+        && event.before.session === event.after.session && event.before.generation === event.after.generation
+        && !impact.root_order_changed && impact.removed.length === 0 && impact.upserted.length === 1 ? impact.upserted[0] : null;
       try {
         for (const [id, candidate] of candidates) {
           const previous = rows.get(id);
@@ -869,13 +990,27 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
             if (previous.outer !== host) previous.outer.replaceWith(replacement.outer);
             rows.set(id, replacement);
           } else {
-            writeRowText(previous,candidate.view.text ?? '');
+            const stable = id === localTextId && candidate.view.text !== null && previous.view.text !== null
+              && candidate.view.parent === previous.view.parent && candidate.view.type_id === previous.view.type_id
+              && equal(candidate.view.attributes,previous.view.attributes) && equal(candidate.view.marks,previous.view.marks)
+              && ownedTextChain(previous) ? {event,restore} : undefined;
+            associated = writeRowText(previous,candidate.view.text ?? '',stable) ?? associated;
             previous.view = candidate.view; previous.prepared = candidate.prepared;
           }
         }
         for (const id of candidates.keys()) if (!provisional?.protected.has(id)) reconcileChildren(rows.get(id)!, rows);
         for (const id of event.change.impact.removed) {
           const row = rows.get(id); if (row && row.outer !== host) row.outer.remove(); rows.delete(id);
+        }
+        if (associated) {
+          const point = domPoint(event.selection_after!.focus);
+          if (isDomRefusal(point) || !parked(associated)) return refusal('dom.presentation_unsupported',null,publication);
+          associated.range.setStart(point.node,point.offset);
+          associated.range.collapse(true);
+          if (associated.selection.rangeCount !== 1 || associated.selection.getRangeAt(0) !== associated.range
+              || associated.selection.focusNode !== point.node || associated.selection.focusOffset !== point.offset) {
+            return refusal('dom.presentation_unsupported',null,publication);
+          }
         }
       } catch { return refusal('dom.presentation_unsupported', null, publication); }
     }
@@ -894,11 +1029,24 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         const rootRow: Row = { view: root.view, prepared: root.prepared, outer: host, content: host, wrappers:Object.freeze([]), texts: noText, signature: signature(root.prepared), placeholder: null };
         fresh.set(state.root, rootRow);
         for (const [id, row] of fresh) if (id !== state.root) reconcileChildren(row, fresh, freshPlaceholders);
+        if (layout) {
+          const selection = state.selection;
+          const anchor = selection && layoutPosition(selection.anchor, fresh, state.root);
+          const focus = selection && layoutPosition(selection.focus, fresh, state.root);
+          const selected = selection === null ? undefined : anchor && focus
+            ? [Math.min(anchor[0], focus[0]), Math.max(anchor[1], focus[1])] as const : null;
+          layout.initialize(fresh, state.root, selected, (node, id) => freshAuthority.get(node) === id);
+        }
         reconcileChildren(rootRow, fresh, freshPlaceholders);
         freshAuthority.set(host,state.root); rows = fresh; authority = freshAuthority; placeholders = freshPlaceholders; rootId = state.root; currentStamp = state.stamp; provisional = null; compositionGeneration = {};
-        return restoreSelection(state.selection);
+        const selectionFailure = restoreSelection(state.selection);
+        return selectionFailure ?? layout?.activate() ?? null;
       } catch { return refusal('dom.presentation_unsupported'); }
     },
+    ...(layout ? {
+      prepareLayoutSelection, retireLayout: () => reportUnknownLayout(layout.retire()),
+      discardLayout: layout.destroy, layoutListeners: layout.listeners,
+    } : {}),
     patch, readSelection, restoreSelection, rememberSelection, ownedBlockAt, textPosition: positionAt, domPoint, geometryRow, geometryOwner,checkInputRegion,checkInputResult,captureLiteralComposition,checkLiteralComposition,checkLiteralCompositionWindow,
     geometryStamp: () => destroyed ? null : currentStamp,
     beginProvisional, beginComposition, observeComposition, captureTerminalDeletion, observeTerminalDeletion, captureTerminalInsertion, observeTerminalInsertion, releaseTerminal, terminalRetainedBytes, captureComposition, restoreComposition, endProvisional() { provisional = null; },
@@ -920,6 +1068,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     captureBlocks, captureRegion, boundedText,
     destroy(destroyOptions = {}) {
       if (destroyed) return; destroyed = true;
+      layout?.destroy();
       if (!destroyOptions.retainRegion) {
         // Never inspect or clear an unbounded retained provisional subtree.
         for (const row of rows.values()) if (row.view.parent === rootId && row.outer.parentNode === host) row.outer.remove();

@@ -49,6 +49,26 @@ if (ready.status === 'ready') {
 не создаёт профиль и не меняет frozen registry. Финальный устанавливаемый vanilla
 alpha API остаётся OSR-65. Bootstrap-пакеты приватны и не предназначены для publish.
 
+## Режимы renderer
+
+По умолчанию `mountEditor` использует `textRepresentation: 'auto'`,
+`patchPolicy: 'stable-fragments'` и `layoutPolicy: 'full'`. Длинный лист может
+содержать несколько соседних `Text` внутри тех же обёрток. Renderer ищет границу
+после пробела в пределах 512 единиц UTF-16 и оставляет хвост целым, если безопасной
+границы нет. Копирование, выделение и экспорт используют исходный текст и позиции
+нативного листа.
+
+Передайте одну опцию `textRepresentation: 'full'`, чтобы получить один `Text`
+на лист и обычные reconciliation и layout. Явные `patchPolicy` и `layoutPolicy`
+имеют приоритет. `stable-text` меняет затронутый диапазон `Text`, когда renderer
+может подтвердить локальность правки. `stable-fragments` также может заменить
+изменившиеся фрагменты, сохранив соседние узлы и текущий браузерный range.
+`auto-blocks` включает containment для подходящих абзацев в совместимом scroll
+container. При отсутствии поддержки сохраняется полный layout.
+
+Режимы фиксируются при вызове `mountEditor`. Для переключения сохраните canonical
+snapshot, вызовите `destroy()` и смонтируйте сохранённые байты с новыми опциями.
+
 ## Покрытие и безопасное представление
 
 KWDJ binding поддерживает точные12 типов: text/hard_break, paragraph/heading/

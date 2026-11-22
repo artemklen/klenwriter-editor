@@ -156,7 +156,10 @@ export class SelectionOwner {
         const point=view.domPoint(position);if(isDomRefusal(point))return point;
         if(!point.node.isConnected || !host.contains(point.node))return this.#failure('dom.stale_selection',entry.publication);
       }
-      const failure=view.restoreSelection(entry.selection);if(failure)return failure;
+      const failure=view.restoreSelection(entry.selection);if(failure){
+        if(failure.diagnostic.publication==='unknown')this.configuration.recover(failure);
+        return failure;
+      }
       if(!valid() || focusSerial!==this.#focusSerial || !this.ownsFocus())return this.#failure('dom.stale_selection',entry.publication);
       return null;
     }catch{return this.#failure('dom.presentation_unsupported',entry.publication);}
@@ -215,7 +218,7 @@ export class SelectionOwner {
       }
       if(options.focus){const host=this.configuration.element();host?.focus({preventScroll:true});if(dispatchSerial!==this.#serial || focusSerial!==this.#focusSerial || !same(context,this.configuration.context()) || !same(this.configuration.capture(),latest.stamp)){this.configuration.report(this.#failure('dom.stale_selection',publication));return;}}
       if(this.ownsFocus()){
-        this.#rangeWriting++;try{const failure=view.restoreSelection(selection);if(failure)this.configuration.recover({...failure,diagnostic:{...failure.diagnostic,phase:'selection',publication}});}finally{this.#rangeWriting--;}
+        this.#rangeWriting++;try{const failure=view.restoreSelection(selection);if(failure)this.configuration.recover({...failure,diagnostic:{...failure.diagnostic,phase:'selection',publication:failure.diagnostic.publication==='unknown'?'unknown':publication}});}finally{this.#rangeWriting--;}
       }
     };
     if(result.status==='completed')follow(result.response);
@@ -228,7 +231,9 @@ export class SelectionOwner {
   }
   syncFromDom(freshInput=false):DeepReadonly<SelectionDto>|DomRefusal|null {
     if(this.#rangeWriting || this.#guard())return null;
-    const view=this.configuration.view(),selection=view?.readSelection();if(!selection || isDomRefusal(selection))return isDomRefusal(selection)?this.#fromView(selection):null;
+    const view=this.configuration.view(),layoutFailure=view?.prepareLayoutSelection?.();
+    if(layoutFailure)return layoutFailure.diagnostic.publication==='unknown'?layoutFailure:this.#fromView(layoutFailure);
+    const selection=view?.readSelection();if(!selection || isDomRefusal(selection))return isDomRefusal(selection)?this.#fromView(selection):null;
     const state=this.#state();if('status' in state)return this.#refuse('dom.not_ready');
     if(!same(selection,state.selection)){
       this.invalidate();
@@ -322,7 +327,10 @@ export class SelectionOwner {
       const returning=this.#tabEntry;this.#tabEntry=false;
       if(!owned(event.target)){this.#focusChanged();this.cancel();return;}
       if(returning && event.target===host && !this.#rangeWriting && !this.#guard()){
-        const state=this.#state();if(!('status' in state))this.configuration.view()?.restoreSelection(state.selection);
+        const state=this.#state();if(!('status' in state)){
+          const failure=this.configuration.view()?.restoreSelection(state.selection);
+          if(failure?.diagnostic.publication==='unknown')this.configuration.recover(failure);
+        }
       }
     });
     listen(doc,'selectionchange',()=>{

@@ -54,7 +54,7 @@ const node = (primitive: string, attributes: readonly string[], present: NodeRen
 const nodes: Record<string, NodeRendererDefinition> = {
   [`${prefix}text`]: node('text', [], () => ({ tag: 'span' })),
   [`${prefix}hard_break`]: node('hard_break', [], () => ({ tag: 'br' })),
-  [`${prefix}paragraph`]: node('text_block', ['align', 'first_line_indent'], n => textBlock(n, 'p')),
+  [`${prefix}paragraph`]: { ...node('text_block', ['align', 'first_line_indent'], n => textBlock(n, 'p')), layout: 'plain-text-block' },
   [`${prefix}heading`]: node('text_block', ['align', 'first_line_indent', 'level'], n => {
     const level = n.attributes.level;
     return level?.kind === 'number' && /^[1-6]$/.test(level.value)

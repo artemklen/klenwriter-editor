@@ -55,6 +55,7 @@ function controlledFaultModule(module,kind,observations) {
 export async function mount(config = {}) {
   const module = await modulePromise, id = `mount-${++serial}`, element = document.createElement('div');
   element.id = id; element.setAttribute('aria-label',`KlenWriter editor example ${serial}`);
+  if (config.scrollable) Object.assign(element.style,{width:'500px',height:'300px',overflowY:'auto'});
   document.querySelector('#mounts').appendChild(element);
   const profile = config.profile ?? 'kwdj', source = config.source ?? await fixture(config.fixture ?? (profile === 'notes' ? 'Notes-D0' : 'D0'));
   const failures = [], recoveries = [], events = [], faults=[];
@@ -62,7 +63,7 @@ export async function mount(config = {}) {
   let resolveLoader,resolveTemporary,loaderCalls=0;
   const temporaryDelay=config.delayReplacement?new Promise(resolve=>{resolveTemporary=resolve;}):null;
   const delayed = config.delayed ? new Promise(resolve => {resolveLoader=resolve;}) : null;
-  const editor = mountEditor({element,editor:{input:encode(source),options:await options(profile,config.access ?? 'editable',config.registry ?? 'D0',config.admission ?? 'validate'),loader:() => {loaderCalls++;return config.failLoad ? Promise.reject(new Error('controlled loader rejection')) : config.delayReplacement&&loaderCalls===2 ? temporaryDelay : delayed ?? Promise.resolve(loaded);}},
+  const editor = mountEditor({element,...config.renderOptions,editor:{input:encode(source),options:await options(profile,config.access ?? 'editable',config.registry ?? 'D0',config.admission ?? 'validate'),loader:() => {loaderCalls++;return config.failLoad ? Promise.reject(new Error('controlled loader rejection')) : config.delayReplacement&&loaderCalls===2 ? temporaryDelay : delayed ?? Promise.resolve(loaded);}},
     renderers:config.badBinding ? defineRendererCatalog({...kwdjBasicRenderers.definition,binding:{...kwdjBasicRenderers.definition.binding,registryDigest:'0'.repeat(64)}}) : profile === 'notes' ? notesD0Renderers : kwdjBasicRenderers,
     ...(config.mode ? {mode:config.mode} : {}),onRefusal:failure => failures.push(copy(failure)),onRecovery:packet => {
       recoveries.push({originalInput:packet.originalInput ? Array.from(packet.originalInput) : null,region:regionSummary(packet.region)});

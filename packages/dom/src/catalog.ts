@@ -56,7 +56,8 @@ function validDefinition(d: RendererCatalogDefinition): boolean {
   }
   for (const [id, n] of Object.entries(d.nodes)) {
     const witness = d.inventory.nodes.find(w => w.id === id);
-    if (!witness || !plain(n) || !closed(n, ['primitive', 'attributes', 'present']) || n.primitive !== witness.primitive
+    if (!witness || !plain(n) || !closed(n, ['primitive', 'attributes', 'present', 'layout']) || n.primitive !== witness.primitive
+      || n.layout !== undefined && (n.layout !== 'plain-text-block' || n.primitive !== 'text_block')
       || !stringList(n.attributes, 256) || n.attributes.some(a => !witness.attributes.includes(a)) || typeof n.present !== 'function') return false;
   }
   for (const [id, m] of Object.entries(d.marks)) {

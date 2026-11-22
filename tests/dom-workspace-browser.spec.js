@@ -506,8 +506,9 @@ test('long leaves keep their canonical bytes and map physical Text seams to nati
     'c98e383b2d654d64a52b6bdd1d5dc6c55cc3757def5159702c9251a323a7bb11',
   ]);
   const result = await page.evaluate(async corpora => {
-    const [{createEditor, sdkBuildId}, {createDomView}, {kwdjBasicRenderers}, packet] = await Promise.all([
+    const [{createEditor, sdkBuildId}, {createDomView}, {kwdjBasicRenderers}, {kwdjCommand}, packet] = await Promise.all([
       import('@klenwriter/editor-sdk'), import('/packages/dom/view.js'), import('@klenwriter/editor-kwdj/dom'),
+      import('@klenwriter/editor-kwdj'),
       fetch('/extensions-packet.json').then(response => response.json()),
     ]);
     const text = '  Русский e\u0301 👩‍💻 latin 👋🏽 '.repeat(36);
@@ -524,7 +525,7 @@ test('long leaves keep their canonical bytes and map physical Text seams to nati
         abi: 'editor-sdk/2', build_id: sdkBuildId, profile: packet.kwdjProfile, registry_json: packet.kwdjRegistryJson,
         profile_options_json: '{"identities":{"media":[],"references":[]},"limits":null}', access: 'editable', admission: 'validate',
       }});
-      const view = createDomView({element, catalog: kwdjBasicRenderers, textRepresentation: 'auto',
+      const view = createDomView({element, catalog: kwdjBasicRenderers, textRepresentation: 'auto', patchPolicy: 'stable-fragments',
         readNode: (stamp, node) => editor.read({kind: 'node', stamp, node})});
       try {
         const ready = await editor.ready;
@@ -545,7 +546,7 @@ test('long leaves keep their canonical bytes and map physical Text seams to nati
         const snapshot = editor.submit({kind: 'snapshot', stamp: state.stamp, max_bytes: 16777216}).response.value;
         editor.submit({kind: 'release_snapshot', handle: snapshot.handle});
         const highSurrogate = text.search(/[\uD800-\uDBFF]/);
-        observations.push({id, allText: fragments.every(node => node.nodeType === Node.TEXT_NODE), count: fragments.length,
+        const observation = {id, allText: fragments.every(node => node.nodeType === Node.TEXT_NODE), count: fragments.length,
           safeSeam: text[seam - 1] === ' ' && seam <= 640,
           seamAliases: fragments.length > 1 && [view.textPosition(fragments[0], seam),
             view.textPosition(fragments[1], 0), view.textPosition(element.firstChild.firstChild, 1)]
@@ -554,7 +555,29 @@ test('long leaves keep their canonical bytes and map physical Text seams to nati
           splitsSurrogate: view.textPosition(fragments[0], highSurrogate + 1)?.kind === 'text',
           exactDom: element.textContent === leaves.join('') && range.toString() === leaf.text && leaf.text === text,
           canonical: snapshot.canonical_json === canonical,
-          fallback: id !== edgeCase.id || element.lastChild.firstChild.childNodes.length === 1});
+          fallback: id !== edgeCase.id || element.lastChild.firstChild.childNodes.length === 1};
+        if (id === 'R1') {
+          element.contentEditable = 'true';
+          element.focus();
+          let patchFailure = null;
+          const unsubscribe = editor.subscribe(event => { patchFailure = view.patch(event); });
+          const point = offset => ({...modelPoint, offset});
+          const selected = editor.submit({kind:'set_selection', stamp:editor.capture(), selection:{anchor:point(8),focus:point(16)}});
+          if (selected.response.status !== 'ok' || patchFailure) throw new Error(JSON.stringify(patchFailure ?? selected));
+          const browser = document.getSelection(), liveRange = browser.getRangeAt(0);
+          const edit = editor.submit({kind:'command', stamp:editor.capture(), command:kwdjCommand({kind:'insert_text',text:'ABCDEFGH'}), history_hint:{kind:'isolated'}});
+          unsubscribe();
+          const next = [...element.firstChild.firstChild.childNodes];
+          observation.localPatch = {
+            published: edit.response.status === 'ok' && patchFailure === null,
+            changedPhysicalText: next[0] !== fragments[0] && !fragments[0].isConnected,
+            otherFragmentsRetained: next.length === fragments.length && next.slice(1).every((node,index) => node === fragments[index+1]),
+            exactText: element.textContent === text.replace('abcdefgh','ABCDEFGH'),
+            exactCaret: browser.isCollapsed && browser.focusNode === next[0] && browser.focusOffset === 16,
+            associatedRange: browser.rangeCount === 1 && browser.getRangeAt(0) === liveRange,
+          };
+        }
+        observations.push(observation);
       } finally {
         view.destroy();
         editor.destroy();
@@ -567,5 +590,177 @@ test('long leaves keep their canonical bytes and map physical Text seams to nati
     expect(value.count, value.id).toBeGreaterThan(1);
     expect(value).toMatchObject({allText: true, safeSeam: true, seamAliases: true, afterSeam: true,
       splitsSurrogate: false, exactDom: true, canonical: true, fallback: true});
+    if (value.id === 'R1') expect(value.localPatch).toEqual({published:true,changedPhysicalText:true,otherFragmentsRetained:true,
+      exactText:true,exactCaret:true,associatedRange:true});
   }
+});
+async function observeMountRenderingOptions(page, cases) {
+  return page.evaluate(async cases => {
+    const [{mountEditor}, {loadSdkV2, sdkBuildId}, {kwdjBasicRenderers}, packet] = await Promise.all([
+      import('@klenwriter/editor-dom'), import('@klenwriter/editor-sdk'), import('@klenwriter/editor-kwdj/dom'),
+      fetch('/extensions-packet.json').then(response => response.json()),
+    ]);
+    const module = await loadSdkV2();
+    const text = 'Русский English e\u0301 👍🏽 '.repeat(44);
+    const source = JSON.stringify({content: [{content: [{text, type: 'text'}], type: 'paragraph'}],
+      profile: 'prose', schema: 'klenwriter.document', schema_version: 1});
+    const observations = [];
+    for (const {options, accessor, mutate} of cases) {
+      const element = document.createElement('div');
+      element.setAttribute('aria-label', 'Render policy fixture');
+      document.body.appendChild(element);
+      const before = element.outerHTML;
+      let loaderCalls = 0, getterCalls = 0, releaseLoad;
+      const delay = new Promise(resolve => { releaseLoad = resolve; });
+      const config = {element, renderers: kwdjBasicRenderers, ...options,
+        editor: {input: new TextEncoder().encode(source), options: {
+          abi: 'editor-sdk/2', build_id: sdkBuildId, profile: packet.kwdjProfile, registry_json: packet.kwdjRegistryJson,
+          profile_options_json: '{"identities":{"media":[],"references":[]},"limits":null}', access: 'editable', admission: 'validate',
+        }, loader: () => { loaderCalls++; return delay; }}};
+      if (accessor) Object.defineProperty(config, accessor, {enumerable: true, get() { getterCalls++; return 'full'; }});
+      let domWrites = 0;
+      const observer = new MutationObserver(records => { domWrites += records.length; });
+      observer.observe(element, {attributes: true, subtree: true, childList: true, characterData: true});
+      const mounted = mountEditor(config);
+      try {
+        const loading = mounted.lifecycle;
+        if (mutate) Object.assign(config, mutate);
+        releaseLoad(module);
+        const ready = await mounted.ready;
+        domWrites += observer.takeRecords().length;
+        const block = element.firstElementChild;
+        const fragments = [...(block?.firstElementChild?.childNodes ?? [])];
+        observations.push({status: ready.status, code: ready.diagnostic?.code ?? null, loading, loaderCalls, getterCalls,
+          textExact: element.textContent === text, allText: fragments.every(node => node.nodeType === Node.TEXT_NODE),
+          fragments: fragments.length, blockVisibility: block && getComputedStyle(block).contentVisibility,
+          domWrites, hostUnchanged: element.outerHTML === before, sessions: mounted.resources().sdk.sessions});
+      } finally {
+        observer.disconnect();
+        mounted.destroy();
+        element.remove();
+      }
+    }
+    return observations;
+  }, cases);
+}
+
+test('mounted rendering options default to auto text and keep full text available', async ({page}) => {
+  const cases = [
+    {name: 'omitted', fragments: true},
+    {name: 'undefined', options: {textRepresentation: undefined, patchPolicy: undefined, layoutPolicy: undefined}, fragments: true},
+    {name: 'explicit auto', options: {textRepresentation: 'auto'}, fragments: true},
+    {name: 'full alone', options: {textRepresentation: 'full'}, fragments: false},
+    {name: 'full text with stable fragments', options: {textRepresentation: 'full', patchPolicy: 'stable-fragments', layoutPolicy: 'full'}, fragments: false},
+    {name: 'auto text with full patch', options: {textRepresentation: 'auto', patchPolicy: 'full', layoutPolicy: 'full'}, fragments: true},
+  ];
+  const observations = await observeMountRenderingOptions(page, cases);
+  for (const [index, result] of observations.entries()) {
+    const {name, fragments} = cases[index];
+    expect(result, name).toMatchObject({status: 'ready', loading: 'loading', loaderCalls: 1, textExact: true, allText: true,
+      blockVisibility: 'visible', sessions: 1});
+    if (fragments) expect(result.fragments, name).toBeGreaterThan(1);
+    else expect(result.fragments, name).toBe(1);
+  }
+});
+
+test('mount captures rendering options before a delayed loader resolves', async ({page}) => {
+  const [result] = await observeMountRenderingOptions(page, [
+    {options: {textRepresentation: 'full', patchPolicy: 'stable-text', layoutPolicy: 'full'},
+      mutate: {textRepresentation: 'auto', patchPolicy: 'unrecognized', layoutPolicy: 'auto-blocks'}},
+  ]);
+  expect(result).toMatchObject({status: 'ready', loading: 'loading', loaderCalls: 1, textExact: true, allText: true,
+    fragments: 1, blockVisibility: 'visible', sessions: 1});
+});
+
+test('mount refuses malformed rendering options and accessors before starting a session or touching the host', async ({page}) => {
+  const cases = [
+    {options: {textRepresentation: 'fragments'}},
+    {options: {patchPolicy: 'auto'}},
+    {options: {layoutPolicy: null}},
+    ...['textRepresentation', 'patchPolicy', 'layoutPolicy'].map(accessor => ({accessor})),
+  ];
+  const observations = await observeMountRenderingOptions(page, cases);
+  for (const result of observations) {
+    expect(result).toMatchObject({status: 'dom_refused', code: 'dom.invalid_options', loaderCalls: 0, getterCalls: 0,
+      domWrites: 0, hostUnchanged: true, sessions: 0});
+  }
+});
+
+test('R1 and R5 public default and full opt-out edit and reopen the same canonical document', async ({page}, testInfo) => {
+  const observations = [];
+  for (const {id: corpus, canonical, leaves} of longDocumentFixtures()) {
+    const directTextCount = id => page.evaluate(id => {
+      const leaf = window.domHost.domAt(id,'/0/0');
+      return [...leaf.childNodes].every(node => node.nodeType === Node.TEXT_NODE) ? leaf.childNodes.length : 0;
+    },id);
+    const defaultMount = await call(page,'mount',{source:canonical});
+    const fullMount = await call(page,'mount',{source:canonical,renderOptions:{textRepresentation:'full'}});
+    expect([defaultMount.ready,fullMount.ready],corpus).toEqual(['ready','ready']);
+    const defaultDirectTextNodes = await directTextCount(defaultMount.id), fullDirectTextNodes = await directTextCount(fullMount.id);
+    expect(defaultDirectTextNodes).toBeGreaterThan(1);
+    expect(fullDirectTextNodes).toBe(1);
+    for (const {id} of [defaultMount,fullMount]) {
+      const mountedText = await page.locator(`#${id}`).textContent();
+      expect(mountedText === leaves.join('')).toBe(true);
+    }
+    const exported = await Promise.all([defaultMount,fullMount].map(({id}) => call(page,'snapshot',id)));
+    expect(exported.map(value => createHash('sha256').update(value).digest('hex'))).toEqual(
+      Array(2).fill(createHash('sha256').update(canonical).digest('hex')));
+    observations.push({corpus, targetLeafPath:[0,0], defaultDirectTextNodes, fullDirectTextNodes,
+      defaultCanonicalSha256:createHash('sha256').update(exported[0]).digest('hex'),
+      fullCanonicalSha256:createHash('sha256').update(exported[1]).digest('hex')});
+    const edited = [];
+    for (const {id} of [defaultMount,fullMount]) {
+      await call(page,'select',id,'/0/0',0,'/0/0',1);
+      expect((await call(page,'command',id,{kind:'insert_text',text:'A'})).response.status).toBe('ok');
+      edited.push(await call(page,'snapshot',id));
+      const result = await page.evaluate(async id => {
+        const children = [...window.domHost.domAt(id,'/0/0').childNodes];
+        const disposed = await window.domHost.dispose(id);
+        return {disconnected: children.every(node => !node.isConnected), resources:disposed.resources};
+      },id);
+      expect(result.disconnected).toBe(true);
+      expect(result.resources.dom).toMatchObject({listeners:0,observers:0,continuations:0});
+      expect(result.resources.sdk.sessions).toBe(0);
+    }
+    const expected = canonical.replace(`${corpus}_BEGIN`,`A${corpus.slice(1)}_BEGIN`);
+    expect(edited.map(value => createHash('sha256').update(value).digest('hex'))).toEqual(
+      Array(2).fill(createHash('sha256').update(expected).digest('hex')));
+    const reopened = await call(page,'mount',{source:edited[0],renderOptions:{textRepresentation:'full'}});
+    expect(reopened.ready).toBe('ready');
+    expect(await directTextCount(reopened.id)).toBe(1);
+    expect(await call(page,'snapshot',reopened.id) === edited[0]).toBe(true);
+    await call(page,'dispose',reopened.id);
+  }
+  await testInfo.attach('render-configuration-observations',{contentType:'application/json',body:JSON.stringify({
+    buildId:(await call(page,'metadata')).buildId,
+    default:{options:{},effectiveProfile:{textRepresentation:'auto',patchPolicy:'stable-fragments',layoutPolicy:'full'}},
+    fullOptOut:{options:{textRepresentation:'full'}},observations,
+  })});
+});
+
+test('explicit auto-blocks can retain the full-text representation and retires before editing', async ({page,browserName}) => {
+  const text = 'alpha beta gamma delta epsilon '.repeat(400);
+  const source = JSON.stringify({content:Array.from({length:3},() => ({content:[{text,type:'text'}],type:'paragraph'})),
+    profile:'prose',schema:'klenwriter.document',schema_version:1});
+  const {id,ready} = await call(page,'mount',{source,scrollable:true,renderOptions:{textRepresentation:'full',layoutPolicy:'auto-blocks'}});
+  expect(ready).toBe('ready');
+  const host = page.locator(`#${id}`);
+  const before = await host.evaluate(element => {
+    const nodes = [...element.children];
+    element.testLayoutNodes = nodes;
+    return {visibility:nodes.map(node => node.style.contentVisibility),
+      textNodes:nodes.map(node => node.firstChild.childNodes.length)};
+  });
+  expect(before.textNodes).toEqual([1,1,1]);
+  if (browserName === 'chromium') expect(before.visibility).toEqual(['','auto','auto']);
+  expect(await host.textContent() === text.repeat(3)).toBe(true);
+  await call(page,'select',id,'/0/0',5);
+  expect((await call(page,'command',id,{kind:'insert_text',text:'Z'})).response.status).toBe('ok');
+  const after = await host.evaluate(element => ({visible:[...element.children].every(node => !node.style.contentVisibility),
+    unchangedNodes:[...element.children].every((node,index) => node === element.testLayoutNodes[index]),
+    caret:document.getSelection().focusOffset, exactLeaf:element.firstChild.textContent.startsWith('alphaZ ')}));
+  expect(after).toEqual({visible:true,unchangedNodes:true,caret:6,exactLeaf:true});
+  const disposed = await call(page,'dispose',id);
+  expect(disposed.resources.dom).toMatchObject({listeners:0,observers:0,continuations:0});
 });

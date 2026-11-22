@@ -238,6 +238,15 @@ export function attachInput(options: InputConfiguration): InputOwner {
     if (input.isComposing) return null;
     if (view.hasProvisional()) { if (input.cancelable) input.preventDefault(); return refused('dom.composition_conflict'); }
     if (options.busy()) { if (input.cancelable) input.preventDefault(); return refused('dom.busy'); }
+    const layoutFailure = input.cancelable ? view.prepareLayoutSelection?.() : view.retireLayout?.();
+    if (layoutFailure) {
+      if (input.cancelable) input.preventDefault();
+      if (layoutFailure.diagnostic.publication === 'none') {
+        if (input.cancelable) options.report(layoutFailure);
+        else options.recover(layoutFailure);
+      }
+      return layoutFailure;
+    }
     const selection = ownedPermit?view.readSelection():syncSelection();
     if (!selection || isDomRefusal(selection)) { if (input.cancelable) input.preventDefault(); return isDomRefusal(selection)?selection:null; }
     if (ownedPermit && !equal(selection,options.readState()?.selection)) { if(input.cancelable)input.preventDefault();return refused('dom.stale_selection'); }
