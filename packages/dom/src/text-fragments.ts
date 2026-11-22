@@ -16,7 +16,8 @@ export function planTextFragments(text: string): string[] {
   while (text.length - from > fragmentUnits) {
     let seam = text.lastIndexOf(' ', from + fragmentUnits - 1) + 1;
     while (seam > from && graphemeContinuation.test(text.slice(seam, seam + 2))) {
-      seam = text.lastIndexOf(' ', seam - 2) + 1;
+      const previous = seam - 2;
+      seam = previous < from ? from : text.lastIndexOf(' ', previous) + 1;
     }
     // A word or joined grapheme without a usable seam keeps an unsplit tail.
     if (seam <= from) break;

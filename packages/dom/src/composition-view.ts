@@ -90,8 +90,6 @@ interface WindowState {
   readonly suffix: readonly Chunk[];
   readonly prefixUnits: number;
   readonly suffixUnits: number;
-  readonly left: CompositionPoint;
-  readonly right: CompositionPoint;
   readonly originalSelected: string;
   readonly mutableText: ReadonlySet<Node>;
   readonly boundaryTexts: ReadonlySet<Node>;
@@ -320,8 +318,16 @@ export function createCompositionCorrespondence(access: CompositionAccess) {
       const boundaryNodes=new Set([left.node,right.node]);
       for (const point of [left,right]) {
         const id = access.ownedId(point.node), row = id ? access.row(id) : undefined;
-        if (row?.view.primitive === 'text' && originals.has(point.node)) {
-          for (const text of row.texts) if (originals.has(text)) boundaryNodes.add(text);
+        if (row?.view.primitive !== 'text' || row.texts.length < 2 || !originals.has(point.node)) continue;
+        const index = row.texts.indexOf(point.node as Text);
+        if (point.node === row.content) {
+          const before = row.texts[point.offset-1], after = row.texts[point.offset];
+          if (before) boundaryNodes.add(before);
+          if (after) boundaryNodes.add(after);
+        } else if (index >= 0) {
+          const before = row.texts[index-1], after = row.texts[index+1];
+          if (before && point.offset === 0) boundaryNodes.add(before);
+          if (after && point.offset === row.texts[index].length) boundaryNodes.add(after);
         }
       }
       const mutableText=new Set<Node>();
@@ -358,7 +364,7 @@ export function createCompositionCorrespondence(access: CompositionAccess) {
       const region:RecoveryRegion=Object.freeze({kind:'bounded',stamp,originalText,provisionalText:originalText,affectedNodeIds:affected});
       const window:CompositionWindow=Object.freeze({stamp,selection,entries:Object.freeze(entries),parent:parent.content,before,after,anchor,focus,selectedAtomIds:Object.freeze(atoms),affectedNodeIds:affected,originalRegion:region});
       const selected=l===r?scans[0].text.slice(start,end):scans[0].text.slice(start)+'\n'+scans.slice(1,-1).map(value=>value.text).join('\n')+scans[scans.length-1].text.slice(0,end);
-      windows.set(window,{generation:access.generation(),scans:Object.freeze(scans),originals,outside:Object.freeze(outside),ancestors:Object.freeze(ancestors),prefix,suffix,prefixUnits:start,suffixUnits:scans[scans.length-1].units-end,left,right,originalSelected:selected,mutableText,boundaryTexts:boundaryNodes,untouchedEmpty:Object.freeze(untouchedEmpty),selectedAtoms:Object.freeze([...selectedAtoms])});
+      windows.set(window,{generation:access.generation(),scans:Object.freeze(scans),originals,outside:Object.freeze(outside),ancestors:Object.freeze(ancestors),prefix,suffix,prefixUnits:start,suffixUnits:scans[scans.length-1].units-end,originalSelected:selected,mutableText,boundaryTexts:boundaryNodes,untouchedEmpty:Object.freeze(untouchedEmpty),selectedAtoms:Object.freeze([...selectedAtoms])});
       return window;
     } catch {return failure('dom.composition_limit',stamp);}
   }
@@ -412,7 +418,8 @@ export function createCompositionCorrespondence(access: CompositionAccess) {
       ||!((selection.anchor.offset===0&&selection.focus.offset===leaf.view.text.length)||(selection.focus.offset===0&&selection.anchor.offset===leaf.view.text.length)))return null;
     for(const key in leaf.view.attributes)if(Object.hasOwn(leaf.view.attributes,key))return null;
     const original=source.originals.get(leaf.outer);
-    if(!original?.transparentTextRow||source.scans[0].segments.length!==1||source.scans[0].segments[0].kind!=='text')return null;
+    const segments=source.scans[0].segments;
+    if(!original?.transparentTextRow||segments.length===0||segments.some(segment=>segment.kind!=='text'||!segment.chain.includes(leaf.outer)))return null;
     const block=access.row(entry.id),blockRecord=source.originals.get(entry.element);
     if(!blockRecord||!attrsEqual(entry.element,blockRecord.attributes))return failure('dom.composition_ambiguous',window.stamp);
     if(!block||block.view!==entry.view||block.outer!==entry.element||entry.element.parentNode!==window.parent
