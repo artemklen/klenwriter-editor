@@ -28,14 +28,12 @@ interface Entry {
   pinned: boolean;
   style: string;
 }
-interface Anchor {
-  readonly point: Point;
-  readonly rect: readonly number[];
+type Anchor = {
   readonly scroller: HTMLElement;
   readonly left: number;
   readonly top: number;
   readonly selection: readonly unknown[];
-}
+} & ({readonly point: Point; readonly rect: readonly number[]} | {readonly point: null; readonly rect: null});
 interface Options {
   readonly host: HTMLElement;
   readonly supports: (row: LayoutRow) => boolean;
@@ -141,10 +139,18 @@ export function createLayoutPolicyOwner(options: Options) {
       : null;
   }
 
-  function captureAnchor(scroller: HTMLElement): Anchor | null {
+  function outsideViewport(box: DOMRect): boolean {
+    const viewport = doc.documentElement;
+    return box.width === 0 || box.height === 0 || box.right <= 0 || box.bottom <= 0
+      || box.left >= viewport.clientWidth || box.top >= viewport.clientHeight;
+  }
+
+  function captureAnchor(scroller: HTMLElement, retiring: boolean): Anchor | null {
     const box = scroller.getBoundingClientRect();
     const selection = selectionState();
-    if (!selection || ![box.left, box.top, box.width, box.height].every(Number.isFinite) || box.width <= 0 || box.height <= 0) return null;
+    if (!selection || ![box.left,box.top,box.right,box.bottom,box.width,box.height].every(Number.isFinite)) return null;
+    const scroll = {scroller,left:scroller.scrollLeft,top:scroller.scrollTop,selection};
+    if (outsideViewport(box)) return retiring ? {...scroll,point:null,rect:null} : null;
     const x = box.left + scroller.clientLeft + Math.min(32, scroller.clientWidth / 2), top = box.top + scroller.clientTop;
     const hitDoc = doc as Document & {
       caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node; offset: number } | null;
@@ -159,7 +165,7 @@ export function createLayoutPolicyOwner(options: Options) {
       if (!point || !host.contains(point.node) || !options.interval(point)) continue;
       const rect = pointRect(point);
       if (rect && rect[1] >= top && rect[1] + rect[3] <= top + scroller.clientHeight) {
-        return { point, rect, scroller, left: scroller.scrollLeft, top: scroller.scrollTop, selection };
+        return {...scroll,point,rect};
       }
     }
     return null;
@@ -168,10 +174,12 @@ export function createLayoutPolicyOwner(options: Options) {
   function verifyAnchor(anchor: Anchor): boolean {
     const { point, scroller } = anchor;
     const selection = selectionState();
-    if (!selection || !point.node.isConnected || !host.contains(point.node) || !options.interval(point) || !scroller.isConnected) return false;
+    if (!selection || !equal(selection,anchor.selection) || !scroller.isConnected
+        || scroller.scrollLeft !== anchor.left || scroller.scrollTop !== anchor.top) return false;
+    if (!point) return outsideViewport(scroller.getBoundingClientRect());
+    if (!point.node.isConnected || !host.contains(point.node) || !options.interval(point)) return false;
     const rect = pointRect(point);
-    return !!rect && equal(rect, anchor.rect) && equal(selection, anchor.selection)
-      && scroller.scrollLeft === anchor.left && scroller.scrollTop === anchor.top;
+    return !!rect && equal(rect,anchor.rect);
   }
 
   function stop(): void {
@@ -198,7 +206,7 @@ export function createLayoutPolicyOwner(options: Options) {
         const verify = () => root !== null && source === options.rows() && root === options.root()
           && entries.every(entry => proof(entry, source, root, options.owns));
         if (!verify()) return firstActivation ? null : options.failure('none');
-        anchor = captureAnchor(scroller);
+        anchor = captureAnchor(scroller,pinned);
         if (!anchor) return firstActivation ? null : options.failure('none');
         for (const entry of changed) {
           previous.push({ entry, pinned: entry.pinned, style: entry.style });
@@ -307,7 +315,9 @@ export function createLayoutPolicyOwner(options: Options) {
     destroy(): void {
       closed = true;
       for (const entry of entries) {
-        if (!entry.pinned && entry.row.outer.style.cssText === entry.style) setPinned(entry,true);
+        const element = entry.row.outer;
+        if (!entry.pinned && element.parentNode === host && options.owns(element,entry.row.view.id)
+            && element.style.cssText === entry.style) setPinned(entry,true);
       }
       stop();
     },

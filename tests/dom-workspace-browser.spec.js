@@ -739,10 +739,15 @@ test('R1 and R5 public default and full opt-out edit and reopen the same canonic
   })});
 });
 
-test('explicit auto-blocks can retain the full-text representation and retires before editing', async ({page,browserName}) => {
+const solidLongParagraphs = () => {
   const text = 'alpha beta gamma delta epsilon '.repeat(400);
   const source = JSON.stringify({content:Array.from({length:3},() => ({content:[{text,type:'text'}],type:'paragraph'})),
     profile:'prose',schema:'klenwriter.document',schema_version:1});
+  return {text,source};
+};
+
+test('explicit auto-blocks can retain the full-text representation and retires before editing', async ({page,browserName}) => {
+  const {text,source} = solidLongParagraphs();
   const {id,ready} = await call(page,'mount',{source,scrollable:true,renderOptions:{textRepresentation:'full',layoutPolicy:'auto-blocks'}});
   expect(ready).toBe('ready');
   const host = page.locator(`#${id}`);
@@ -763,4 +768,39 @@ test('explicit auto-blocks can retain the full-text representation and retires b
   expect(after).toEqual({visible:true,unchangedNodes:true,caret:6,exactLeaf:true});
   const disposed = await call(page,'dispose',id);
   expect(disposed.resources.dom).toMatchObject({listeners:0,observers:0,continuations:0});
+});
+
+test('offscreen programmatic edits retire active auto-blocks before rendering the native change', async ({page,browserName}) => {
+  const {source} = solidLongParagraphs();
+  const {id,ready} = await call(page,'mount',{source,scrollable:true,renderOptions:{layoutPolicy:'auto-blocks'}});
+  expect(ready).toBe('ready');
+  const host = page.locator(`#${id}`);
+  if (browserName === 'chromium') expect(await host.evaluate(element => element.children[1].style.contentVisibility)).toBe('auto');
+  await call(page,'select',id,'/0/0',5);
+  await page.locator('#host-recovery-control').focus();
+  await page.locator('#mounts').evaluate(element => Object.assign(element.style,{position:'fixed',top:'1500px'}));
+  expect((await host.boundingBox()).y).toBeGreaterThan(page.viewportSize().height);
+  expect((await call(page,'command',id,{kind:'insert_text',text:'Z'})).response.status).toBe('ok');
+  const after = await call(page,'inspect',id);
+  expect(after.lifecycle).toBe('ready');
+  expect(after.domText.startsWith('alphaZ ')).toBe(true);
+  expect(await host.evaluate(element => element.children[1].style.contentVisibility)).toBe('');
+});
+
+test('auto-block teardown leaves styles on a paragraph already adopted by another host', async ({page,browserName}) => {
+  const {source} = solidLongParagraphs();
+  const {id,ready} = await call(page,'mount',{source,scrollable:true,renderOptions:{layoutPolicy:'auto-blocks'}});
+  expect(ready).toBe('ready');
+  const result = await page.locator(`#${id}`).evaluate(async element => {
+    const adopter = document.createElement('div'), paragraph = element.children[1];
+    document.body.appendChild(adopter);
+    const before = paragraph.getAttribute('style');
+    adopter.appendChild(paragraph);
+    const teardown = await window.domHost.dispose(element.id);
+    const value = {before,after:paragraph.getAttribute('style'),parent:paragraph.parentNode===adopter,listeners:teardown.resources.dom.listeners};
+    adopter.remove();
+    return value;
+  });
+  if (browserName === 'chromium') expect(result.before).toContain('content-visibility: auto');
+  expect(result).toMatchObject({after:result.before,parent:true,listeners:0});
 });

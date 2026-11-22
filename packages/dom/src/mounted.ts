@@ -481,6 +481,10 @@ class MountedOwner implements MountedEditor {
     try { capability = this.#catalog!.definition.commandGate(request); }
     catch { capability = this.#failure('dom.command_unsupported'); }
     if (capability) return this.#report(capability);
+    if (kind === 'command' || kind === 'input_command' || kind === 'history') {
+      const layoutFailure = this.#view?.retireLayout?.();
+      if (layoutFailure) return layoutFailure.diagnostic.publication === 'unknown' ? layoutFailure : this.#report(layoutFailure);
+    }
     const final=validate?.();if(final)return isFailure(final)?this.#report(final):final;
     const selectionFrame=this.#selectionOwner.beginSubmission(request,input);
     this.#forwarding++;
