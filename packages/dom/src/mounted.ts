@@ -332,7 +332,6 @@ class MountedOwner implements MountedEditor {
     let failure = context ? admitCatalog(this.#catalog!,context) : this.#failure('dom.renderer_binding_mismatch','mount');
     if (!failure) {
       const layout = this.#renderOptions.layoutPolicy === 'auto-blocks' ? {
-        layoutBlocked: () => this.#layoutBlocked(),
         writeLayout: (change: () => DomRefusal | null) => this.#layoutWrite(change),
         onLayoutFailure: (failure: DomRefusal) => {
           if (this.#lifecycle !== 'ready') return;
@@ -340,8 +339,13 @@ class MountedOwner implements MountedEditor {
           else this.#report(failure);
         },
       } : undefined;
-      this.#view = createDomView({ element:this.#element!, catalog:this.#catalog!, ...this.#renderOptions, ...layout,
+      const mountedView = createDomView({ element:this.#element!, catalog:this.#catalog!, ...this.#renderOptions, ...layout,
+        layoutBlocked: () => this.#layoutBlocked(),
+        scheduleDeletionScroll: (scroll, stamp, selection) => {
+          if (this.#view === mountedView) this.#selectionOwner.scheduleDeletionScroll(scroll, stamp, selection);
+        },
         readNode:(stamp,node) => this.#nativeRead({ kind:'node',stamp:stamp as StampDto,node }) });
+      this.#view = mountedView;
       const state = this.#state();
       failure = state ? this.#view.initialize(state) : this.#failure('dom.not_ready','mount');
     }

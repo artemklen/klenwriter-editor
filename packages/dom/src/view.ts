@@ -11,6 +11,12 @@ export type { CompositionWindow, CompositionObservation, CompositionTerminalTick
 
 export const domRegionLimits = Object.freeze({ blocks: 8, nodes: 131072, depth: 128, utf16: 2097152, mutations: 4096 });
 export interface DomPoint { readonly node: Node; readonly offset: number }
+export interface DeletionScroll {
+  readonly scroller: HTMLElement;
+  readonly left: number;
+  readonly top: number;
+  readonly active: Element;
+}
 export interface CapturedBlock {
   readonly id: string;
   readonly view: DeepReadonly<NodeViewDto>;
@@ -90,6 +96,7 @@ let mountSerial = 0;
 export function createDomView(options: { readonly element: HTMLElement; readonly catalog: RendererCatalog;
   readonly textRepresentation?: DomTextRepresentation; readonly patchPolicy?: DomPatchPolicy; readonly layoutPolicy?: DomLayoutPolicy;
   readonly layoutBlocked?: () => boolean;
+  readonly scheduleDeletionScroll?: (scroll: DeletionScroll, stamp: DeepReadonly<StampDto>, selection: DeepReadonly<SelectionDto>) => void;
   readonly writeLayout?: (change: () => DomRefusal | null) => DomRefusal | null;
   readonly onLayoutFailure?: (failure: DomRefusal) => void;
   readonly readNode: (stamp: DeepReadonly<StampDto>, id: string) => Response }): DomView {
@@ -872,10 +879,71 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
   function captureRegion(): RecoveryRegion | null {
     return provisional ? provisionalRegion() : null;
   }
+  function deletionScroll(
+    event: DeepReadonly<EventDto>,
+    candidates: ReadonlyMap<string, { view: DeepReadonly<NodeViewDto>; prepared: PreparedNode }>,
+  ): DeletionScroll | null {
+    const before = event.selection_before, after = event.selection_after;
+    if (!options.scheduleDeletionScroll || provisional || event.change.kind !== 'document'
+        || event.change.impact.root_order_changed || event.change.impact.removed.length
+        || before?.anchor.kind !== 'text' || before.focus.kind !== 'text'
+        || before.anchor.node !== before.focus.node || before.anchor.offset === before.focus.offset
+        || after?.anchor.kind !== 'child' || after.anchor.index !== 1 || after.anchor.affinity !== 'after'
+        || !equal(after.anchor, after.focus) || !equal(lastSelection, before)
+        || !currentStamp || !stampSame(currentStamp, event.before) || options.layoutBlocked?.()) return null;
+    const win = doc.defaultView, active = doc.activeElement;
+    if (!win || !doc.hasFocus() || !active || !host.isConnected || !host.contains(active)
+        || doc.getSelection()?.rangeCount !== 1 || !equal(readSelection(), before)) return null;
+
+    const id = before.anchor.node, previous = rows.get(id), next = candidates.get(id);
+    if (!previous || !next || previous.view.primitive !== 'text' || next.view.primitive !== 'text'
+        || previous.view.text === null || next.view.text === null || previous.view.parent === null
+        || next.view.parent !== previous.view.parent || after.anchor.parent !== previous.view.parent) return null;
+    const parent = rows.get(previous.view.parent);
+    if (parent?.view.primitive !== 'text_block' || parent.view.children.length !== 1 || parent.view.children[0] !== id) return null;
+    const from = Math.min(before.anchor.offset, before.focus.offset), to = Math.max(before.anchor.offset, before.focus.offset);
+    if (from <= 0 || !scalarBoundary(previous.view.text, from) || !scalarBoundary(previous.view.text, to)
+        || next.view.text !== previous.view.text.slice(0, from) + previous.view.text.slice(to)) return null;
+
+    // The retained leaf's selection is the only content being removed. Prepared
+    // ancestors still describe the same owned DOM chain and sibling order.
+    for (const [candidateId, candidate] of candidates) {
+      const row = rows.get(candidateId), view = candidate.view;
+      if (!row || row.view.parent !== view.parent || row.view.type_id !== view.type_id
+          || row.view.primitive !== view.primitive || row.signature !== signature(candidate.prepared)
+          || !equal(row.view.children, view.children) || !equal(row.view.attributes, view.attributes)
+          || !equal(row.view.marks, view.marks) || candidateId !== id && row.view.text !== view.text
+          || authority.get(row.outer) !== candidateId || authority.get(row.content) !== candidateId
+          || row.outer.ownerDocument !== doc || !host.contains(row.outer)) return null;
+      if (candidateId !== rootId) {
+        const owner = view.parent === null ? undefined : rows.get(view.parent);
+        const index = owner?.view.children.indexOf(candidateId) ?? -1;
+        if (!owner || index < 0 || owner.content.childNodes[index] !== row.outer
+            || !matchesPresentation(row.outer, row.prepared.presentation, true)) return null;
+      }
+      if (view.primitive === 'text') {
+        if (!ownedTextChain(row)) return null;
+      } else if (row.content !== row.outer || row.wrappers.length || row.placeholder
+          || row.content.childNodes.length !== view.children.length
+          || view.children.some((child, index) => row.content.childNodes[index] !== rows.get(child)?.outer)) return null;
+    }
+
+    let scroller: HTMLElement | null = host;
+    for (let depth = 0; scroller && depth < 32; depth++, scroller = scroller.parentElement) {
+      const css = win.getComputedStyle(scroller);
+      if (css.writingMode !== 'horizontal-tb' || css.transform !== 'none' || css.perspective !== 'none'
+          || css.scrollBehavior === 'smooth') return null;
+      if (css.overflowY !== 'auto' && css.overflowY !== 'scroll') continue;
+      const left = scroller.scrollLeft, top = scroller.scrollTop;
+      return Number.isFinite(left) && Number.isFinite(top) ? { scroller, left, top, active } : null;
+    }
+    return null;
+  }
   function patch(event: DeepReadonly<EventDto>, restore = true): DomRefusal | null {
     if (destroyed) return refusal('dom.disposed');
     const publication = 'alreadyPublished' as const, candidates = new Map<string, { view: DeepReadonly<NodeViewDto>; prepared: PreparedNode }>();
     let associated: AssociatedRange | null = null;
+    let retainedScroll: DeletionScroll | null = null;
     if (event.change.kind === 'document') {
       const layoutFailure = layout?.retire(); if (layoutFailure) return layoutFailure;
       const ids = new Set([...event.change.impact.upserted, ...event.change.impact.ancestors_after]);
@@ -983,6 +1051,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
           }
         }
       }
+      if (restore) retainedScroll = deletionScroll(event, candidates);
       const impact = event.change.impact;
       const localTextId = patchPolicy !== 'full' && !provisional && currentStamp && stampSame(currentStamp,event.before)
         && event.before.session === event.after.session && event.before.generation === event.after.generation
@@ -1022,7 +1091,24 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
       } catch { return refusal('dom.presentation_unsupported', null, publication); }
     }
     currentStamp = event.after;
-    return provisional?.composing ? null : restore ? restoreSelection(event.selection_after) : rememberSelection(event.selection_after);
+    const failure = provisional?.composing ? null : restore ? restoreSelection(event.selection_after) : rememberSelection(event.selection_after);
+    if (failure) return failure;
+
+    // A browser can reveal the child-gap caret now or in its next frame.
+    // Restore only the original viewport and keep the published caret intact.
+    if (retainedScroll && event.selection_after && !destroyed && stampSame(currentStamp, event.after)
+        && equal(lastSelection, event.selection_after) && equal(readSelection(), event.selection_after)
+        && !options.layoutBlocked?.() && host.isConnected && retainedScroll.scroller.isConnected
+        && retainedScroll.scroller.ownerDocument === doc && retainedScroll.scroller.contains(host)
+        && host.contains(retainedScroll.active) && doc.hasFocus() && doc.activeElement === retainedScroll.active) {
+      try {
+        const { scroller, left, top } = retainedScroll;
+        if (scroller.scrollLeft !== left) scroller.scrollLeft = left;
+        if (scroller.scrollTop !== top) scroller.scrollTop = top;
+        options.scheduleDeletionScroll?.(retainedScroll, event.after, event.selection_after);
+      } catch { return refusal('dom.presentation_unsupported', null, publication); }
+    }
+    return null;
   }
   return {
     initialize(state) {

@@ -833,3 +833,406 @@ test('a covered auto-block selection refuses before publication and can retry wh
   expect((await call(page,'submit',id,{kind:'set_selection',selection})).response.status).toBe('ok');
   expect((await call(page,'inspect',id)).state.selection).toEqual(selection);
 });
+
+const viewportTolerance = 24;
+const osr131Modes = [['default (omitted)', {}], ['full opt-out', {renderOptions:{textRepresentation:'full'}}]];
+const canonicalWithLeaves = (fixture, leaves) => {
+  const wire = JSON.parse(fixture.canonical);
+  wire.content = leaves.map(text => ({content:[{text,type:'text'}],type:'paragraph'}));
+  return JSON.stringify(wire);
+};
+const sha256 = text => createHash('sha256').update(text).digest('hex');
+const position = (node, offset) => ({kind:'text',node,offset,affinity:'after'});
+
+async function mountLargeDocument(page, fixture, mode, {scrollable = true,viewportSized = false} = {}) {
+  test.slow(fixture.id === 'R5' && Boolean(mode.renderOptions) && test.info().project.name === 'chromium',
+    'Chromium lays out eight near-limit leaves as single Text nodes in the full opt-out');
+  const {id,ready} = await call(page,'mount',{source:fixture.canonical,scrollable,viewportSized,observeClipboard:true,...mode});
+  expect(ready).toBe('ready');
+  const host = page.locator(`#${id}`);
+  const parts = await host.evaluate(element => [...element.children].map(block => {
+    const nodes = [...block.firstElementChild.childNodes];
+    return {textOnly:nodes.every(node => node.nodeType === Node.TEXT_NODE), lengths:nodes.map(node => node.length)};
+  }));
+  for (const [index,{textOnly,lengths}] of parts.entries()) {
+    expect(textOnly).toBe(true);
+    expect(lengths.reduce((sum,value) => sum+value,0)).toBe(fixture.leaves[index].length);
+    if (mode.renderOptions) expect(lengths).toHaveLength(1);
+    else expect(lengths.length).toBeGreaterThan(4);
+  }
+  // Pin the fourth physical seam and exercise its logical offset in full mode.
+  const seam = fixture.id === 'R1' ? 2039 : 2041;
+  expect(fixture.leaves[0][seam-1]).toBe(' ');
+  if (!mode.renderOptions) expect(parts[0].lengths.slice(0,4).reduce((sum,value) => sum+value,0)).toBe(seam);
+  const record = {corpus:fixture.id,options:mode.renderOptions ?? {},browserVersion:page.context().browser().version(),parts:parts.map(part => part.lengths.length),seam,
+    canonicalSha256:sha256(fixture.canonical),scenarios:{}};
+  observations.get(page).largeDocument = record;
+  return {id,host,seam,record};
+}
+
+// Set a real browser Selection through its physical Text endpoints. The seam
+// aliases use opposite sides of the same UTF-16 boundary when there are fragments.
+async function browserTextSelection(host, anchor, focus = anchor) {
+  return host.evaluate((element,{anchor,focus}) => {
+    function resolve({block = 0,offset,side = 'right'}) {
+      const nodes = [...element.children[block].firstElementChild.childNodes];
+      let start = 0;
+      for (const [index,node] of nodes.entries()) {
+        const end = start+node.length;
+        if (offset < end || (offset === end && (side === 'left' || index === nodes.length-1))) {
+          return {node,offset:offset-start,index};
+        }
+        start = end;
+      }
+      throw new RangeError('Browser selection point is outside fixture text');
+    }
+    if (document.activeElement !== element) element.focus({preventScroll:true});
+    const a = resolve(anchor), f = resolve(focus);
+    const selection = getSelection();
+    selection.setBaseAndExtent(a.node,a.offset,f.node,f.offset);
+    return {anchor:{index:a.index,offset:a.offset},focus:{index:f.index,offset:f.offset},selected:selection.toString()};
+  },{anchor,focus});
+}
+
+async function readLargeDocument(page,id,fixture,leaves=fixture.leaves) {
+  const {state,rows} = await call(page,'nativeRows',id);
+  expect(rows.map(row => row.path)).toEqual(['',...leaves.flatMap((_,index) => [`/${index}`,`/${index}/0`])]);
+  expect(rows.map(row => row.node.primitive)).toEqual(['root',...leaves.flatMap(() => ['text_block','text'])]);
+  expect(rows.filter(row => row.node.primitive === 'text').map(row => sha256(row.node.text)),'exact native text').toEqual(leaves.map(sha256));
+  expect(sha256(await call(page,'snapshot',id)),'exact canonical bytes').toBe(sha256(canonicalWithLeaves(fixture,leaves)));
+  expect(sha256(await page.locator(`#${id}`).textContent()),'complete mounted text').toBe(sha256(leaves.join('')));
+  return {state,rows};
+}
+
+async function assertLargeSelection(page,id,selection) {
+  await expect.poll(async () => (await call(page,'read',id,{kind:'state'})).value.state.selection).toEqual(selection);
+}
+
+async function traceLargeInput(host) {
+  await host.evaluate(element => {
+    element.largeEvents = [];
+    for (const type of ['beforeinput','keydown','copy']) element.addEventListener(type,event => {
+      if (type === 'keydown' && event.code !== 'KeyZ') return;
+      element.largeEvents.push({type,inputType:event.inputType ?? null,data:event.data ?? null,
+        trusted:event.isTrusted,prevented:event.defaultPrevented});
+    });
+  });
+}
+
+async function editingViewport(host) {
+  return host.evaluate(async element => {
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const selection = getSelection(), rect = element.getBoundingClientRect();
+    const bounds = selection.getRangeAt(0).getBoundingClientRect();
+    const leaves = [...element.children].map(block => block.firstElementChild);
+    function readPoint(node,offset) {
+      const leaf = node.parentElement;
+      if (node.nodeType !== Node.TEXT_NODE) return {kind:'child',block:[...element.children].indexOf(node),offset};
+      let total = offset;
+      for (let previous = node.previousSibling; previous; previous = previous.previousSibling) total += previous.length;
+      return {kind:'text',block:leaves.indexOf(leaf),offset:total};
+    }
+    return {scrollTop:element.scrollTop, width:element.clientWidth,height:element.clientHeight,
+      active:document.activeElement === element, rangeCount:selection.rangeCount, collapsed:selection.isCollapsed,
+      anchor:readPoint(selection.anchorNode,selection.anchorOffset),focus:readPoint(selection.focusNode,selection.focusOffset),
+      fullyVisible:bounds.height > 0 && bounds.top >= rect.top+element.clientTop &&
+        bounds.bottom <= rect.top+element.clientTop+element.clientHeight};
+  });
+}
+
+async function placeInViewport(host, block, offset) {
+  await host.evaluate((element,{block,offset}) => {
+    let local = offset;
+    const point = [...element.children[block].firstElementChild.childNodes].find(node => {
+      if (local < node.length) return true;
+      local -= node.length;
+      return false;
+    });
+    const range = document.createRange();
+    range.setStart(point,local);
+    range.collapse(true);
+    element.scrollTop += range.getBoundingClientRect().top-element.getBoundingClientRect().top-90;
+  },{block,offset});
+}
+
+async function largeDocumentContrast(host, incomplete) {
+  const targets = [];
+  for (const rule of incomplete) {
+    expect(rule.id).toBe('color-contrast');
+    for (const node of rule.nodes) {
+      expect(node.any.map(check => check.data.messageKey)).toEqual(['elmPartiallyObscuring']);
+      expect(node.target).toHaveLength(1);
+      targets.push(node.target[0]);
+    }
+  }
+  return host.evaluate((element,targets) => {
+    if (!targets.length) return [];
+    const sample = document.createElement('div');
+    sample.style.color = 'Canvas';
+    document.body.append(sample);
+    const canvasColor = getComputedStyle(sample).color;
+    sample.remove();
+    const transparent = 'rgba(0, 0, 0, 0)';
+    function luminance(color) {
+      const components = /^rgb\((\d+), (\d+), (\d+)\)$/.exec(color);
+      if (!components) throw new Error(`Expected an opaque RGB color, received ${color}`);
+      const [r,g,b] = components.slice(1).map(Number).map(value => {
+        const channel = value/255;
+        return channel <= 0.04045 ? channel/12.92 : ((channel+0.055)/1.055)**2.4;
+      });
+      return r*0.2126+g*0.7152+b*0.0722;
+    }
+    return targets.map(target => {
+      const leaf = element.querySelector(target);
+      if (!leaf || !leaf.matches('p > [data-editor-node]')) throw new Error(`Unexpected axe contrast target ${target}`);
+      const foreground = getComputedStyle(leaf).color;
+      let background = canvasColor;
+      for (let ancestor = leaf; ancestor; ancestor = ancestor.parentElement) {
+        const style = getComputedStyle(ancestor);
+        if (style.opacity !== '1' || style.backgroundImage !== 'none') throw new Error('Unexpected contrast layer');
+        if (style.backgroundColor === transparent) continue;
+        background = style.backgroundColor;
+        break;
+      }
+      const levels = [luminance(foreground),luminance(background)];
+      return {target,foreground,background,ratio:(Math.max(...levels)+0.05)/(Math.min(...levels)+0.05)};
+    });
+  },targets);
+}
+
+async function disposeLargeDocument(page,id,host) {
+  const disposed = await call(page,'dispose',id);
+  expect(disposed.sameReceipt).toBe(true);
+  expect(disposed.recoveries).toEqual([]);
+  expect(disposed.resources.dom).toEqual({listeners:0,observers:0,continuations:0,retainedInputBytes:0,retainedRecoveryRegions:0});
+  expect(disposed.resources.clipboard).toEqual({pending:0,continuations:0,retainedTextBytes:0});
+  expect(disposed.native).toEqual({sessions:0,snapshot_handles:0,snapshot_bytes:'0',protected_cursors:0});
+  await expect(host).toBeEmpty();
+  await expect(host).not.toHaveAttribute('contenteditable');
+  observations.get(page).largeDocument.disposed = {dom:disposed.resources.dom,clipboard:disposed.resources.clipboard,native:disposed.native};
+}
+
+for (const fixture of longDocumentFixtures()) {
+  for (const [modeName,mode] of osr131Modes) {
+    const scenario = `OSR-131 ${fixture.id} ${modeName}`;
+
+    test(`${scenario} trusted seam input and keyboard Undo/Redo`, async ({page}) => {
+      const {id,host,seam,record} = await mountLargeDocument(page,fixture,mode);
+      const base = await readLargeDocument(page,id,fixture), leaf = stateRow(base,'/0/0').id;
+      await traceLargeInput(host);
+      for (const side of mode.renderOptions ? ['right'] : ['left','right']) {
+        const physical = await browserTextSelection(host,{offset:seam,side});
+        expect(physical.anchor).toEqual(mode.renderOptions ? {index:0,offset:seam} :
+          side === 'left' ? {index:3,offset:510} : {index:4,offset:0});
+        await assertLargeSelection(page,id,{anchor:position(leaf,seam),focus:position(leaf,seam)});
+      }
+      const collapsedInput = await call(page,'queryCommand',id,{kind:'insert_text',text:'x'});
+      // R1 already uses every byte of the per-leaf limit. Replace the seam
+      // space with one byte at its reverse endpoint. R5 can grow at its caret.
+      const start = fixture.id === 'R1' ? seam-1 : seam;
+      const inputSelection = {anchor:position(leaf,seam),focus:position(leaf,start)};
+      if (fixture.id === 'R1') {
+        expect(collapsedInput).toMatchObject({status:'ok',value:{available:false,diagnostic:{
+          code:'kwdj.resource_limit_exceeded',details:{limit:'text_length',maximum:'262144',observed:'262145'},
+        }}});
+        await browserTextSelection(host,{offset:seam},{offset:start});
+      } else {
+        expect(collapsedInput).toMatchObject({status:'ok',value:{available:true}});
+      }
+      await assertLargeSelection(page,id,inputSelection);
+      await page.keyboard.press('KeyX');
+      record.scenarios.inputAndHistory = {collapsedInput,inputSelection};
+      const edited = [fixture.leaves[0].slice(0,start)+'x'+fixture.leaves[0].slice(seam),...fixture.leaves.slice(1)];
+      const caretAfterInput = start+1;
+      const inserted = await readLargeDocument(page,id,fixture,edited);
+      const nextLeaf = stateRow(inserted,'/0/0').id;
+      caret(inserted,nextLeaf,caretAfterInput);
+      history(inserted,1,0);
+      const nativeCaret = await editingViewport(host);
+      expect(nativeCaret.anchor).toEqual({kind:'text',block:0,offset:caretAfterInput});
+      expect(nativeCaret.focus).toEqual(nativeCaret.anchor);
+      await page.keyboard.press('ControlOrMeta+KeyZ');
+      const undone = await readLargeDocument(page,id,fixture);
+      expect(undone.state.selection).toEqual(inputSelection);
+      history(undone,0,1);
+      await page.keyboard.press('Shift+ControlOrMeta+KeyZ');
+      const redone = await readLargeDocument(page,id,fixture,edited);
+      caret(redone,nextLeaf,caretAfterInput);
+      history(redone,1,0);
+      expect([inserted,undone,redone].map(row => row.state.stamp.revision)).toEqual(['1','2','3']);
+      const events = await host.evaluate(element => element.largeEvents);
+      expect(events).toEqual([
+        {type:'beforeinput',inputType:'insertText',data:'x',trusted:true,prevented:true},
+        ...Array.from({length:2},() => ({type:'keydown',inputType:null,data:null,trusted:true,prevented:true})),
+      ]);
+      Object.assign(record.scenarios.inputAndHistory,{events,editedCanonicalSha256:sha256(canonicalWithLeaves(fixture,edited)),nativeCaret});
+      await disposeLargeDocument(page,id,host);
+    });
+
+    test(`${scenario} trusted seam range deletion keeps canonical history and viewport`, async ({page}) => {
+      const {id,host,seam,record} = await mountLargeDocument(page,fixture,mode);
+      const base = await readLargeDocument(page,id,fixture), leaf = stateRow(base,'/0/0').id, block = stateRow(base,'/0').id;
+      const start = seam-1, end = seam;
+      const beforeSelection = {anchor:position(leaf,end),focus:position(leaf,start)};
+      const physical = await browserTextSelection(host,{offset:end},{offset:start});
+      expect(physical.selected).toBe(' ');
+      expect(physical.anchor.index).toBe(mode.renderOptions ? 0 : 4);
+      expect(physical.focus.index).toBe(mode.renderOptions ? 0 : 3);
+      await assertLargeSelection(page,id,beforeSelection);
+      await placeInViewport(host,0,start);
+      const before = await editingViewport(host);
+      expect(before.active).toBe(true);
+      expect(before.fullyVisible).toBe(true);
+      await traceLargeInput(host);
+      await page.keyboard.press('Backspace');
+      const edited = [fixture.leaves[0].slice(0,start)+fixture.leaves[0].slice(end),...fixture.leaves.slice(1)];
+      const deleted = await readLargeDocument(page,id,fixture,edited);
+      expect(stateRow(deleted,'/0/0').id).toBe(leaf);
+      caret(deleted,block,1,'child');
+      history(deleted,1,0);
+      const after = await editingViewport(host);
+      expect(after).toMatchObject({active:true,collapsed:true,rangeCount:1,
+        anchor:{kind:'child',block:0,offset:1},focus:{kind:'child',block:0,offset:1}});
+      await page.keyboard.press('ControlOrMeta+KeyZ');
+      const undone = await readLargeDocument(page,id,fixture);
+      expect(undone.state.selection).toEqual(beforeSelection);
+      history(undone,0,1);
+      await page.keyboard.press('Shift+ControlOrMeta+KeyZ');
+      const redone = await readLargeDocument(page,id,fixture,edited);
+      caret(redone,block,1,'child');
+      history(redone,1,0);
+      const events = await host.evaluate(element => element.largeEvents);
+      expect(events[0]).toEqual({type:'beforeinput',inputType:'deleteContentBackward',data:null,trusted:true,prevented:true});
+      record.scenarios.deletion = {before,after,scrollDelta:Math.abs(after.scrollTop-before.scrollTop),events,
+        editedCanonicalSha256:sha256(canonicalWithLeaves(fixture,edited))};
+      await disposeLargeDocument(page,id,host);
+      expect(record.scenarios.deletion.scrollDelta,'scroll displacement after trusted deletion').toBeLessThanOrEqual(viewportTolerance);
+    });
+
+    test(`${scenario} forward and reverse selection across the viewport copies through the host`, async ({page}) => {
+      const {id,host,seam,record} = await mountLargeDocument(page,fixture,mode);
+      const base = await readLargeDocument(page,id,fixture), leaf = stateRow(base,'/0/0').id;
+      const start = seam-1, end = seam+4096;
+      const selected = fixture.leaves[0].slice(start,end);
+      await traceLargeInput(host);
+      await placeInViewport(host,0,start);
+      const geometry = await host.evaluate((element,{start,end}) => {
+        const range = document.createRange(), leaf = element.firstElementChild.firstElementChild;
+        function rectAt(offset) {
+          for (const part of leaf.childNodes) {
+            if (offset < part.length) {
+              range.setStart(part,offset); range.collapse(true);
+              return range.getBoundingClientRect().top;
+            }
+            offset -= part.length;
+          }
+          throw new RangeError('Missing viewport range endpoint');
+        }
+        const rect = element.getBoundingClientRect(), top = rectAt(start), bottom = rectAt(end);
+        return {startVisible:top >= rect.top && top < rect.bottom,endBelow:bottom >= rect.bottom};
+      },{start,end});
+      expect(geometry).toEqual({startVisible:true,endBelow:true});
+      const directions = [[start,end],[end,start]];
+      for (const [index,[anchor,focus]] of directions.entries()) {
+        const physical = await browserTextSelection(host,{offset:anchor},{offset:focus});
+        expect(physical.selected === selected).toBe(true);
+        if (!mode.renderOptions) expect(physical.anchor.index).not.toBe(physical.focus.index);
+        await assertLargeSelection(page,id,{anchor:position(leaf,anchor),focus:position(leaf,focus)});
+        const beforeCopy = await call(page,'read',id,{kind:'state'});
+        await page.keyboard.press('ControlOrMeta+KeyC');
+        await expect.poll(async () => (await call(page,'clipboardObservations',id)).results.length).toBe(index+1);
+        expect(await call(page,'read',id,{kind:'state'})).toEqual(beforeCopy);
+      }
+      const clipboard = await call(page,'clipboardObservations',id);
+      expect(clipboard.writes.map(sha256)).toEqual([sha256(selected),sha256(selected)]);
+      expect(clipboard.results).toEqual(Array.from({length:2},() => ({action:'copy',status:'copied',clipboard:'confirmed',failure:null,submission:null})));
+      const events = await host.evaluate(element => element.largeEvents);
+      expect(events).toEqual(Array.from({length:2},() => ({type:'copy',inputType:null,data:null,trusted:true,prevented:true})));
+      const after = await readLargeDocument(page,id,fixture);
+      expect(after.state.stamp.revision).toBe(base.state.stamp.revision);
+      history(after,0,0);
+      record.scenarios.viewportCopy = {geometry,directions,events,results:clipboard.results,sha256:sha256(selected),utf16:selected.length};
+      await disposeLargeDocument(page,id,host);
+    });
+
+    test(`${scenario} accessible full text, keyboard focus and semantic paragraphs`, async ({page}) => {
+      const {id,host,seam,record} = await mountLargeDocument(page,fixture,mode,{scrollable:false});
+      const initial = await readLargeDocument(page,id,fixture);
+      const target = position(stateRow(initial,'/0/0').id,seam);
+      await browserTextSelection(host,{offset:seam});
+      await assertLargeSelection(page,id,{anchor:target,focus:target});
+      const beforeTab = await call(page,'read',id,{kind:'state'});
+      await expect(page.getByRole('textbox',{name:'KlenWriter editor example 1'})).toBeVisible();
+      await expect(host).toHaveAttribute('aria-multiline','true');
+      await expect(host).toHaveAttribute('contenteditable','true');
+      const semantics = await host.evaluate(element => ({
+        tags:[...element.children].map(node => node.tagName),
+        hidden:element.querySelectorAll('[aria-hidden="true"],[hidden],[inert]').length,
+        complete:[...element.children].every(block => getComputedStyle(block).contentVisibility === 'visible'),
+      }));
+      expect(semantics).toEqual({tags:fixture.leaves.map(() => 'P'),hidden:0,complete:true});
+      const recovery = page.getByRole('button',{name:'Host recovery control'});
+      await page.keyboard.press('Shift+Tab');
+      await expect(recovery).toBeFocused();
+      await page.keyboard.press('Tab');
+      await expect(host).toBeFocused();
+      await assertLargeSelection(page,id,{anchor:target,focus:target});
+      const restored = await editingViewport(host);
+      expect(restored).toMatchObject({active:true,collapsed:true,rangeCount:1,
+        anchor:{kind:'text',block:0,offset:seam},focus:{kind:'text',block:0,offset:seam}});
+      const outline = await host.evaluate(element => {
+        const style = getComputedStyle(element);
+        return {focusVisible:element.matches(':focus-visible'),outlineStyle:style.outlineStyle,outlineWidth:style.outlineWidth};
+      });
+      expect(outline).toEqual({focusVisible:true,outlineStyle:'solid',outlineWidth:'2px'});
+      const result = await new AxeBuilder({page}).include(`#${id}`).analyze();
+      record.scenarios.accessibility = {semantics,restored,outline,axe:{engine:result.testEngine,
+        violations:result.violations,incomplete:result.incomplete,passedRules:result.passes.map(rule => rule.id)}};
+      expect(result.violations).toEqual([]);
+      expect(result.passes.length).toBeGreaterThan(0);
+      // Axe can report overlap on a huge inline box. Retain its result and
+      // independently measure actual text/background colors for each such box.
+      const contrast = await largeDocumentContrast(host,result.incomplete);
+      for (const measurement of contrast) expect(measurement.ratio,measurement.target).toBeGreaterThanOrEqual(4.5);
+      record.scenarios.accessibility.contrast = contrast;
+      const after = await readLargeDocument(page,id,fixture);
+      expect(after.state).toEqual(beforeTab.value.state);
+      history(after,0,0);
+      await disposeLargeDocument(page,id,host);
+    });
+
+    if (fixture.id === 'R5') test(`${scenario} move and resize retain visible caret and scroll position`, async ({page}) => {
+      const {id,host,seam,record} = await mountLargeDocument(page,fixture,mode,{viewportSized:true});
+      const initial = await readLargeDocument(page,id,fixture);
+      const leaf = stateRow(initial,'/0/0').id, source = stateRow(initial,'/3').id;
+      await browserTextSelection(host,{offset:seam});
+      await assertLargeSelection(page,id,{anchor:position(leaf,seam),focus:position(leaf,seam)});
+      await placeInViewport(host,0,seam);
+      const before = await editingViewport(host);
+      expect(before.scrollTop).toBeGreaterThan(0);
+      expect(before).toMatchObject({active:true,collapsed:true,fullyVisible:true,
+        anchor:{kind:'text',block:0,offset:seam},focus:{kind:'text',block:0,offset:seam}});
+      const move = await call(page,'command',id,{kind:'move',node:source,parent:initial.state.root,before_index:8});
+      expect(move.response.status).toBe('ok');
+      const leaves = fixture.leaves.filter((_,index) => index !== 3).concat(fixture.leaves[3]);
+      const moved = await readLargeDocument(page,id,fixture,leaves);
+      expect(stateRow(moved,'/7').id).toBe(source);
+      caret(moved,leaf,seam);
+      history(moved,1,0);
+      const afterMove = await editingViewport(host);
+      await page.setViewportSize({width:512,height:340});
+      const resized = await editingViewport(host);
+      const afterResize = await readLargeDocument(page,id,fixture,leaves);
+      expect(afterResize.state).toEqual(moved.state);
+      expect(afterResize.rows).toEqual(moved.rows);
+      expect(resized.width).not.toBe(before.width);
+      expect(resized.height).not.toBe(before.height);
+      record.scenarios.moveAndResize = {before,afterMove,resized,canonicalSha256:sha256(canonicalWithLeaves(fixture,leaves))};
+      for (const actual of [afterMove,resized]) {
+        expect(actual).toMatchObject({active:true,collapsed:true,fullyVisible:true,anchor:before.anchor,focus:before.focus});
+        expect(Math.abs(actual.scrollTop-before.scrollTop)).toBeLessThanOrEqual(viewportTolerance);
+      }
+      await disposeLargeDocument(page,id,host);
+    });
+  }
+}

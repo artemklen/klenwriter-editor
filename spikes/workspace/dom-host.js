@@ -56,21 +56,27 @@ export async function mount(config = {}) {
   const module = await modulePromise, id = `mount-${++serial}`, element = document.createElement('div');
   element.id = id; element.setAttribute('aria-label',`KlenWriter editor example ${serial}`);
   if (config.scrollable) Object.assign(element.style,{width:'500px',height:'300px',overflowY:'auto'});
+  if (config.viewportSized) Object.assign(element.style,{width:'min(500px, calc(100vw - 32px))',
+    height:'min(300px, calc(100vh - 64px))'});
   document.querySelector('#mounts').appendChild(element);
   const profile = config.profile ?? 'kwdj', source = config.source ?? await fixture(config.fixture ?? (profile === 'notes' ? 'Notes-D0' : 'D0'));
-  const failures = [], recoveries = [], events = [], faults=[];
+  const failures = [], recoveries = [], events = [], faults=[], clipboardWrites = [], clipboardResults = [];
   const loaded=config.faultKind?controlledFaultModule(module,config.faultKind,faults):module;
   let resolveLoader,resolveTemporary,loaderCalls=0;
   const temporaryDelay=config.delayReplacement?new Promise(resolve=>{resolveTemporary=resolve;}):null;
   const delayed = config.delayed ? new Promise(resolve => {resolveLoader=resolve;}) : null;
   const editor = mountEditor({element,...config.renderOptions,editor:{input:encode(source),options:await options(profile,config.access ?? 'editable',config.registry ?? 'D0',config.admission ?? 'validate'),loader:() => {loaderCalls++;return config.failLoad ? Promise.reject(new Error('controlled loader rejection')) : config.delayReplacement&&loaderCalls===2 ? temporaryDelay : delayed ?? Promise.resolve(loaded);}},
     renderers:config.badBinding ? defineRendererCatalog({...kwdjBasicRenderers.definition,binding:{...kwdjBasicRenderers.definition.binding,registryDigest:'0'.repeat(64)}}) : profile === 'notes' ? notesD0Renderers : kwdjBasicRenderers,
+    ...(config.observeClipboard ? {clipboard:{
+      writeText:async text => { clipboardWrites.push(text); },
+      onResult:result => { clipboardResults.push(copy(result)); },
+    }} : {}),
     ...(config.mode ? {mode:config.mode} : {}),onRefusal:failure => failures.push(copy(failure)),onRecovery:packet => {
       recoveries.push({originalInput:packet.originalInput ? Array.from(packet.originalInput) : null,region:regionSummary(packet.region)});
       if (config.mutateRecovery && packet.originalInput) packet.originalInput.fill(0);
       if (config.throwRecovery) throw new Error('intentional recovery callback failure');
     }});
-  const record = {id,editor,element,source,failures,recoveries,events,faults,marks:new Map(),resolveLoader,resolveTemporary,loaderCalls:()=>loaderCalls,ready:null}; records.set(id,record);
+  const record = {id,editor,element,source,failures,recoveries,events,faults,clipboardWrites,clipboardResults,marks:new Map(),resolveLoader,resolveTemporary,loaderCalls:()=>loaderCalls,ready:null}; records.set(id,record);
   if (config.delayed) return {id,lifecycle:editor.lifecycle,contenteditable:element.getAttribute('contenteditable'),originalInput:Array.from(editor.originalInput() ?? [])};
   const ready = await editor.ready; record.ready = ready;
   if (ready.status === 'ready') editor.subscribe(event => events.push(copy(event)));
@@ -81,6 +87,10 @@ export async function releaseLoader(id) {
   const ready=await r.editor.ready;r.ready=ready;
   if(ready.status==='ready')r.editor.subscribe(event=>r.events.push(copy(event)));
   return {status:ready.status,lifecycle:r.editor.lifecycle};
+}
+export function clipboardObservations(id) {
+  const {clipboardWrites,clipboardResults} = rec(id);
+  return {writes:[...clipboardWrites],results:copy(clipboardResults)};
 }
 export function nativeRows(id) {
   const r=rec(id), state=r.editor.read({kind:'state'});assert(state.status==='ok' && state.value.kind==='state','Mounted state unavailable');
@@ -180,7 +190,7 @@ export function reentrant(id) {
 }
 export async function reentrantResult(id) {const r=rec(id);await Promise.all(r.reentrant.queued.map(ticket=>ticket.status==='queued'?ticket.completion:null));return {observations:copy(r.reentrant.observations),ticketKinds:r.reentrant.queued.map(ticket=>ticket.status)};}
 export async function metadata() {const module=await modulePromise;return {buildId:sdkBuildId,manifest:module.manifest,native:JSON.parse(module.resourceCounts()),scope:'Actual public mounted DOM+SDK2+compiled WASM. Automated engine; installed native Chrome/Safari are separate evidence.'};}
-window.domHost={mount,releaseLoader,fixture,nativeRows,row,domAt,leaf,select,command,submit,history,snapshot,inspect,mark,sameIdentity,nativeSelectionMatches,mode,replace,dispose,allDisposed,beforeInput,input,noncancelable,beginComposition,compositionObjectsIntact,replaceCompositionText,original,callbackCounts,forceDomMutation,brandCheck,headlessNotesAdmission,reentrant,reentrantResult,metadata};
+window.domHost={mount,releaseLoader,fixture,clipboardObservations,nativeRows,row,domAt,leaf,select,command,submit,history,snapshot,inspect,mark,sameIdentity,nativeSelectionMatches,mode,replace,dispose,allDisposed,beforeInput,input,noncancelable,beginComposition,compositionObjectsIntact,replaceCompositionText,original,callbackCounts,forceDomMutation,brandCheck,headlessNotesAdmission,reentrant,reentrantResult,metadata};
 window.domHostReady=true;
 export async function rawSelection(id,anchor,focus=anchor) {const r=rec(id);return outcome(r.editor.submit({kind:'set_selection',stamp:r.editor.capture(),selection:{anchor,focus}}));}
 export function queryCommand(id,intent) {const r=rec(id);return r.editor.query({kind:'query_command',stamp:r.editor.capture(),command:kwdjCommand(intent)});}

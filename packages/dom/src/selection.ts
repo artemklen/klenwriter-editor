@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import type { DeepReadonly, EventDto, InputSubmissionV2, PositionDto, ReadRequest, Response, SelectionDto, SessionContextV2, StampDto, StateDto, Submission } from '@klenwriter/editor-sdk';
 import type { BookmarkCapture, BookmarkRestore, DomRefusal, MountedMutation, MountedMutationV2, MountedSelectionController, SelectionBookmark, SelectionResourceCounts } from './types.js';
-import type { DomPoint, DomView } from './view.js';
+import type { DeletionScroll, DomPoint, DomView } from './view.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
 import { fields } from './ownership.js';
 import { edgeGeometry, ownedCaretHit, visibleEdgeHit } from './selection-geometry.js';
@@ -29,6 +29,7 @@ export class SelectionOwner {
   #serial=0n;#focusSerial=0n;#exhausted=false;#destroyed=false;#attached=false;
   #publishing=0;#ownPermit=0;#restoreTickets=0;#frames:SubmissionFrame[]=[];#removals:(()=>void)[]=[];
   #pointer:PointerOwner|null=null;#raf:number|null=null;#tabEntry=false;#rangeWriting=0;
+  #deletionScroll: { readonly win: Window; readonly id: number; readonly onWheel: EventListener } | null = null;
   #heldMouse:number|null=null;#retiredViewImport=false;
   #inputIntentObserver:InputIntentObserver|null=null;
   #knownInvalidation:SubmissionFrame|null=null;
@@ -43,8 +44,8 @@ export class SelectionOwner {
     this.#inputIntentObserver=observer;
     return ()=>{if(this.#inputIntentObserver===observer)this.#inputIntentObserver=null;};
   }
-  listeners():number { return this.#removals.length; }
-  resources():SelectionResourceCounts { return Object.freeze({bookmarks:this.#live.size,restoreTickets:this.#restoreTickets,activePointers:this.#pointer?1:0,animationFrames:this.#raf===null?0:1}); }
+  listeners():number { return this.#removals.length + Number(this.#deletionScroll !== null); }
+  resources():SelectionResourceCounts { return Object.freeze({bookmarks:this.#live.size,restoreTickets:this.#restoreTickets,activePointers:this.#pointer?1:0,animationFrames:Number(this.#raf!==null)+Number(this.#deletionScroll!==null)}); }
   isPublishing():boolean { return this.#publishing>0; }
   ownsFocus():boolean { const host=this.configuration.element();return !!host && (host.ownerDocument.activeElement===host || !!host.ownerDocument.activeElement && host.contains(host.ownerDocument.activeElement)); }
   #failure(code:DomRefusal['diagnostic']['code'],publication:DomRefusal['diagnostic']['publication']='none'):DomRefusal { return domRefusal(code,'selection',this.configuration.capture(),null,null,publication); }
@@ -52,6 +53,7 @@ export class SelectionOwner {
   #refuse(code:DomRefusal['diagnostic']['code']):DomRefusal { const failure=this.#failure(code);this.configuration.report(failure);return failure; }
   #guard():DomRefusal|null { if(this.#destroyed)return this.#failure('dom.disposed');if(this.#exhausted)return this.#failure('dom.selection_limit');return this.configuration.guard() ?? (this.#restoreTickets || this.configuration.busy()?this.#failure('dom.busy'):null); }
   invalidate(clear=false,event:Event|null=null):void {
+    this.#cancelDeletionScroll();
     for(const frame of this.#frames)if(frame!==this.#knownInvalidation)frame.foreign=true;
     const before=this.#serial;
     if(this.#serial===MAX_SERIAL)this.#exhausted=true;else this.#serial++;
@@ -64,14 +66,72 @@ export class SelectionOwner {
     const previous=this.#knownInvalidation;this.#knownInvalidation=frame;
     try{this.invalidate();}finally{this.#knownInvalidation=previous;}
   }
-  #focusChanged():void {if(this.#focusSerial===MAX_SERIAL)this.#exhausted=true;else this.#focusSerial++;}
+  #focusChanged():void {this.#cancelDeletionScroll();if(this.#focusSerial===MAX_SERIAL)this.#exhausted=true;else this.#focusSerial++;}
+  #cancelDeletionScroll(): void {
+    const pending = this.#deletionScroll;
+    this.#deletionScroll = null;
+    if (pending) {
+      pending.win.removeEventListener('wheel', pending.onWheel, true);
+      pending.win.cancelAnimationFrame(pending.id);
+    }
+  }
   cancel():void {
+    this.#cancelDeletionScroll();
     const host=this.configuration.element(),pointer=this.#pointer;this.#pointer=null;
     if(this.#raf!==null){host?.ownerDocument.defaultView?.cancelAnimationFrame(this.#raf);this.#raf=null;}
     if(pointer && host)try{if(host.hasPointerCapture(pointer.id))host.releasePointerCapture(pointer.id);}catch{/* Only this owned pointer. */}
   }
   /** Actual remount only: the old held gesture cannot supply a fresh-view caret. */
-  viewReplaced():void { if(!this.#destroyed && this.#heldMouse!==null)this.#retiredViewImport=true; }
+  viewReplaced():void { this.#cancelDeletionScroll(); if(!this.#destroyed && this.#heldMouse!==null)this.#retiredViewImport=true; }
+  /** Own one frame after the user agent's deferred caret reveal. */
+  scheduleDeletionScroll(scroll: DeletionScroll, stamp: DeepReadonly<StampDto>, selection: DeepReadonly<SelectionDto>): void {
+    this.#cancelDeletionScroll();
+    const { element, view: currentView, context: currentContext, capture } = this.configuration;
+    const host = element(), view = currentView(), context = currentContext();
+    const doc = host?.ownerDocument, win = doc?.defaultView, browser = doc?.getSelection();
+    const anchor = browser?.anchorNode, focus = browser?.focusNode;
+    if (!host || !view || !context || !doc || !win || !anchor || !focus || browser.rangeCount !== 1
+        || !host.contains(anchor) || !host.contains(focus)) return;
+    const anchorOffset = browser.anchorOffset, focusOffset = browser.focusOffset;
+    const serial = this.#serial, focusSerial = this.#focusSerial;
+    const { scroller, left, top, active } = scroll;
+    const valid = () => {
+      const current = doc.getSelection();
+      return this.intentAvailable() && this.#attached && this.#serial === serial && this.#focusSerial === focusSerial
+        && this.#deletionScroll === null && this.#raf === null && !this.#pointer && this.#heldMouse === null
+        && element() === host && currentView() === view && same(context, currentContext())
+        && same(stamp, capture()) && same(stamp, view.geometryStamp()) && same(view.readSelection(), selection)
+        && host.isConnected && scroller.isConnected && scroller.ownerDocument === doc && scroller.contains(host)
+        && host.contains(active) && doc.hasFocus() && doc.activeElement === active
+        && current?.rangeCount === 1 && current.anchorNode === anchor && current.anchorOffset === anchorOffset
+        && current.focusNode === focus && current.focusOffset === focusOffset;
+    };
+    const matchesState = () => {
+      const state = this.#state();
+      return !('status' in state) && same(state.stamp, stamp) && same(state.selection, selection);
+    };
+
+    // This synchronous call is made inside native publication. Apply the
+    // selection owner's busy check once that publication has left the stack.
+    if (!valid() || !matchesState() || !valid()) return;
+    const onWheel: EventListener = event => { if (event.isTrusted) this.#cancelDeletionScroll(); };
+    const frame = { win, onWheel, id: win.requestAnimationFrame(() => {
+      if (this.#deletionScroll !== frame) return;
+      this.#deletionScroll = null;
+      win.removeEventListener('wheel', onWheel, true);
+      if (this.#guard() || !valid() || !matchesState() || !valid()) return;
+      try {
+        if (scroller.scrollLeft !== left) scroller.scrollLeft = left;
+        if (scroller.scrollTop !== top) scroller.scrollTop = top;
+      } catch { this.configuration.report(this.#failure('dom.presentation_unsupported', 'alreadyPublished')); }
+    }) };
+    this.#deletionScroll = frame;
+    try { win.addEventListener('wheel', onWheel, { capture: true, passive: true }); }
+    catch (error) {
+      this.#cancelDeletionScroll();
+      throw error;
+    }
+  }
   beginSubmission(request:MountedMutationV2,input:boolean):SubmissionFrame {
     const own=this.#ownPermit>0;if(own)this.#ownPermit--;
     for(const frame of this.#frames)frame.reentrant=true;
@@ -93,6 +153,7 @@ export class SelectionOwner {
     frame.ended=true;
   }
   publication(event:DeepReadonly<EventDto>):void {
+    this.#cancelDeletionScroll();
     const frame=this.#frames.at(-1);
     if(frame){frame.publications++;if(frame.publications===1)frame.publication=event;else frame.foreign=true;}
     if(frame?.own && frame.events===0 && same(frame.before,event.before)){frame.events++;return;}
@@ -254,6 +315,7 @@ export class SelectionOwner {
     // Bookmark/host-request capture itself remains pure and rejects mismatch.
     listen(win,'keydown',event=>{
       const key=event as KeyboardEvent;
+      if(key.isTrusted)this.#cancelDeletionScroll();
       if(owned(key.target) && key.isTrusted && key.key==='Tab' && !key.altKey && !key.ctrlKey && !key.metaKey
         && !key.isComposing && !key.defaultPrevented && !this.#retiredViewImport && doc.hasFocus() && this.ownsFocus() && !this.#guard())this.syncFromDom();
     },true);
@@ -261,6 +323,7 @@ export class SelectionOwner {
     // Retain only physical identity, not an event, target or selection capability.
     listen(win,'pointerdown',event=>{
       const p=event as PointerEvent;
+      if(p.isTrusted)this.#cancelDeletionScroll();
       if(!p.isTrusted || !p.isPrimary || p.pointerType!=='mouse' || p.button!==0)return;
       this.#heldMouse=null;
       if((p.buttons&1) && Number.isSafeInteger(p.pointerId) && p.pointerId>=0 && doc.hasFocus() && this.ownsFocus())this.#heldMouse=p.pointerId;
