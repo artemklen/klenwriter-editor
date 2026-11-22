@@ -5,6 +5,7 @@ import { prepareNode, type PreparedNode } from './catalog.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
 import { createCompositionCorrespondence, type CompositionWindow, type CompositionObservation, type CompositionTerminalTicket } from './composition-view.js';
 import {literalCompositionBytes,sameLiteralNode,verifyLiteralComposition,type LiteralCompositionSource} from './composition-literal.js';
+import {fragmentOffset, fragmentPoint, matchesTextFragments, planTextFragments, scalarBoundary} from './text-fragments.js';
 export type { CompositionWindow, CompositionObservation, CompositionTerminalTicket } from './composition-view.js';
 
 export const domRegionLimits = Object.freeze({ blocks: 8, nodes: 131072, depth: 128, utf16: 2097152, mutations: 4096 });
@@ -23,7 +24,7 @@ export interface GeometryRow {
   readonly outer: HTMLElement;
   readonly content: HTMLElement;
   readonly wrappers: readonly HTMLElement[];
-  readonly text: Text | null;
+  readonly texts: readonly Text[];
   readonly placeholder: HTMLBRElement | null;
 }
 export interface DomView {
@@ -68,15 +69,10 @@ export interface DomView {
   boundedText(element: Node): string | DomRefusal;
   destroy(options?: { readonly retainRegion?: boolean }): void;
 }
-interface Row { view: DeepReadonly<NodeViewDto>; prepared: PreparedNode; outer: HTMLElement; content: HTMLElement; wrappers: readonly HTMLElement[]; text: Text | null; signature: string; placeholder: HTMLBRElement | null }
+interface Row { view: DeepReadonly<NodeViewDto>; prepared: PreparedNode; outer: HTMLElement; content: HTMLElement; wrappers: readonly HTMLElement[]; texts: readonly Text[]; signature: string; placeholder: HTMLBRElement | null }
+const noText: readonly Text[] = Object.freeze([]);
 interface Provisional { stamp: DeepReadonly<StampDto>; ids: readonly string[]; originals: ReadonlyMap<string, string>; retained: HTMLElement; composing: boolean; protected: ReadonlySet<string>; window: { parent: HTMLElement; before: ChildNode | null; after: ChildNode | null } | null; composition?: CompositionWindow; forceTransfer?: boolean }
 const equal = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
-function scalarBoundary(text: string, offset: number): boolean {
-  if (!Number.isSafeInteger(offset) || offset < 0 || offset > text.length) return false;
-  if (offset === 0 || offset === text.length) return true;
-  const left = text.charCodeAt(offset - 1), right = text.charCodeAt(offset);
-  return !(left >= 0xd800 && left <= 0xdbff && right >= 0xdc00 && right <= 0xdfff);
-}
 function signature(prepared: PreparedNode): string { return JSON.stringify(prepared); }
 function stampSame(a: DeepReadonly<StampDto>, b: DeepReadonly<StampDto>): boolean {
   return a.session === b.session && a.generation === b.generation && a.revision === b.revision
@@ -86,8 +82,10 @@ let mountSerial = 0;
 
 /** A read-only correspondence between native rows and actual owned DOM objects. */
 export function createDomView(options: { readonly element: HTMLElement; readonly catalog: RendererCatalog;
+  readonly textRepresentation?: 'auto' | 'full';
   readonly readNode: (stamp: DeepReadonly<StampDto>, id: string) => Response }): DomView {
   const host = options.element, doc = host.ownerDocument;
+  const fragments = options.textRepresentation === 'auto';
   const namespace = `kwe-${++mountSerial}-`;
   let nextDomId = 0, rows = new Map<string, Row>(), authority = new WeakMap<Node, string>();
   let rootId: string | null = null, currentStamp: DeepReadonly<StampDto> | null = null;
@@ -131,10 +129,10 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
       const row=rows.get(span.node),native=read(stamp,span.node,'alreadyPublished');
       bytes+=new TextEncoder().encode(span.text).byteLength;
       if(bytes>12||seen.has(span.node)||!row||isDomRefusal(native)||native.primitive!=='text'||native.parent!==region.block
-        ||native.text===null||!row.text||!host.contains(row.outer)||row.outer.parentNode!==block.content
+        ||native.text===null||!host.contains(row.outer)||row.outer.parentNode!==block.content
         ||!scalarBoundary(native.text,span.from_utf16)||!scalarBoundary(native.text,span.to_utf16)
         ||span.from_utf16>=span.to_utf16||native.text.slice(span.from_utf16,span.to_utf16)!==span.text
-        ||row.text.data!==native.text||native.type_id!==span.type_id||!equal(native.attributes,span.attributes)||!equal(native.marks,span.marks)
+        ||native.type_id!==span.type_id||!equal(native.attributes,span.attributes)||!equal(native.marks,span.marks)
         ||row.view.type_id!==native.type_id||!equal(row.view.attributes,native.attributes)||!equal(row.view.marks,native.marks))return fail();
       const index=block.view.children.indexOf(span.node);
       if(index<0||previous>=0&&index!==previous+1||block.content.childNodes[index]!==row.outer)return fail();
@@ -147,14 +145,14 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         if(parent.childNodes.length!==1||parent.firstChild!==wrapper||!matchesPresentation(wrapper,prepared.marks[i],false))return fail();
         parent=wrapper;
       }
-      if(parent.childNodes.length!==1||parent.firstChild!==row.text)return fail();
+      if(parent!==row.content||!ownedTexts(row,native.text))return fail();
     }
     const first=region.spans[0],last=region.spans.at(-1)!;
     if(region.range.anchor.kind!=='text'||region.range.focus.kind!=='text'||region.range.anchor.node!==first.node
       ||region.range.anchor.offset!==first.from_utf16||region.range.focus.node!==last.node||region.range.focus.offset!==last.to_utf16)return fail();
     for(let i=1;i<region.spans.length;i++){
       const left=region.spans[i-1],right=region.spans[i],l=rows.get(left.node),r=rows.get(right.node);
-      if(!l?.text||!r?.text||left.to_utf16!==l.text.length||right.from_utf16!==0)return fail();
+      if(!l?.texts.length||!r?.texts.length||left.to_utf16!==l.view.text?.length||right.from_utf16!==0)return fail();
     }
     return stampSame(currentStamp,stamp)?null:fail();
   }
@@ -179,8 +177,12 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
       const wrapper = doc.createElement(mark.tag); applyPresentation(wrapper, mark); content.appendChild(wrapper);
       bindings.set(wrapper, view.id); wrappers.push(wrapper); content = wrapper;
     }
-    let text: Text | null = null;
-    if (view.primitive === 'text') { text = doc.createTextNode(view.text ?? ''); content.appendChild(text); bindings.set(text, view.id); }
+    let texts = noText;
+    if (view.primitive === 'text') {
+      const source = view.text ?? '';
+      texts = Object.freeze((fragments ? planTextFragments(source) : [source]).map(part => doc.createTextNode(part)));
+      for (const text of texts) { content.appendChild(text); bindings.set(text, view.id); }
+    }
     else if (view.primitive === 'block_atom' || view.primitive === 'inline_atom') {
       outer.contentEditable = 'false';
       if (prepared.presentation.label !== undefined) content.appendChild(doc.createTextNode(prepared.presentation.label));
@@ -188,7 +190,34 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
       // A static prefix belongs only to a noneditable atom; editable data cannot gain text.
       throw new Error('dom.presentation_unsupported');
     }
-    return { view, prepared, outer, content, wrappers:Object.freeze(wrappers), text, signature: signature(prepared), placeholder: null };
+    return { view, prepared, outer, content, wrappers:Object.freeze(wrappers), texts, signature: signature(prepared), placeholder: null };
+  }
+  function ownedTexts(row: Row, expected: string | null = row.view.text): boolean {
+    return expected !== null && matchesTextFragments(row.content,row.texts,expected)
+      && row.texts.every(text => authority.get(text) === row.view.id);
+  }
+  function ownedTextChain(row: Row): boolean {
+    let parent = row.outer;
+    for (const wrapper of row.wrappers) {
+      if (parent.childNodes.length !== 1 || parent.firstChild !== wrapper || authority.get(wrapper) !== row.view.id) return false;
+      parent = wrapper;
+    }
+    return parent === row.content && ownedTexts(row);
+  }
+  function writeRowText(row: Row, source: string): void {
+    if (row.texts.length === 0) return;
+    if (source === row.view.text && ownedTexts(row)) return;
+    const parts = fragments ? planTextFragments(source) : [source];
+    const previous = row.texts;
+    const next = parts.length === previous.length ? previous
+      : Object.freeze(parts.map((part, index) => previous[index] ?? doc.createTextNode(part)));
+    for (let index = 0; index < parts.length; index++) {
+      const node = next[index];
+      if (index >= previous.length) authority.set(node, row.view.id);
+      if (node.data !== parts[index]) node.data = parts[index];
+    }
+    for (let index = next.length; index < previous.length; index++) authority.delete(previous[index]);
+    row.texts = next;
   }
   function prepare(view: DeepReadonly<NodeViewDto>, publication: DomDiagnostic['publication']): PreparedNode | DomRefusal {
     if ((view.primitive === 'text' && (view.text === null || view.children.length))
@@ -215,7 +244,14 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         if (content.childNodes.length !== 1 || content.firstChild !== wrapper) content.replaceChildren(wrapper);
         content = wrapper;
       }
-      if (row.text && (content.childNodes.length !== 1 || content.firstChild !== row.text)) content.replaceChildren(row.text);
+      if (content.childNodes.length !== row.texts.length || row.texts.some((node,index) => content.childNodes[index] !== node)) {
+        let cursor: ChildNode | null = content.firstChild;
+        for (const node of row.texts) {
+          if (cursor === node) cursor = cursor.nextSibling;
+          else content.insertBefore(node,cursor);
+        }
+        while (cursor) { const next: ChildNode | null = cursor.nextSibling; content.removeChild(cursor); cursor = next; }
+      }
       return;
     }
     if (row.view.primitive === 'hard_break' || row.view.primitive.endsWith('_atom')) return;
@@ -268,33 +304,30 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
   }
   function geometryRow(id: string): GeometryRow | null {
     const row = destroyed ? undefined : rows.get(id);
-    return row ? Object.freeze({view:row.view,outer:row.outer,content:row.content,wrappers:row.wrappers,text:row.text,placeholder:row.placeholder}) : null;
+    return row ? Object.freeze({view:row.view,outer:row.outer,content:row.content,wrappers:row.wrappers,texts:row.texts,placeholder:row.placeholder}) : null;
   }
   function geometryOwner(node: Node): GeometryRow | null {
     if (destroyed) return null;
     let id = authority.get(node);
     if (!id && placeholders.has(node) && node.parentNode) id = authority.get(node.parentNode);
     const row = id ? rows.get(id) : undefined;
-    return row && (node === row.outer || node === row.content || node === row.text || node === row.placeholder || row.wrappers.includes(node as HTMLElement))
+    return row && (node === row.outer || node === row.content || row.texts.includes(node as Text) || node === row.placeholder || row.wrappers.includes(node as HTMLElement))
       ? geometryRow(row.view.id) : null;
   }
   function positionAt(node: Node, offset: number): DeepReadonly<PositionDto> | DomRefusal | null {
     const id = authority.get(node), row = id ? rows.get(id) : undefined;
     if (!row || !host.contains(node) && node !== host) return null;
-    if (row.text === node) {
-      if (!scalarBoundary(row.text.data, offset)) return refusal('dom.presentation_unsupported', id!);
-      return Object.freeze({ kind: 'text', node: id!, offset, affinity: 'after' });
+    if (row.view.primitive === 'text') {
+      if (!Number.isSafeInteger(offset) || offset < 0 || !ownedTextChain(row)) return refusal('dom.presentation_unsupported', id!);
+      let nativeOffset = fragmentOffset(row.texts,row.content,node,offset);
+      if (nativeOffset === null && (node === row.outer || row.wrappers.includes(node as HTMLElement))
+          && node !== row.content && offset <= 1) {
+        nativeOffset = offset === 0 ? 0 : row.view.text!.length;
+      }
+      if (nativeOffset === null) return refusal('dom.presentation_unsupported', id!);
+      return Object.freeze({ kind: 'text', node: id!, offset: nativeOffset, affinity: 'after' });
     }
     if (!Number.isSafeInteger(offset) || offset < 0 || offset > node.childNodes.length) return refusal('dom.presentation_unsupported', id!);
-    if (row.view.primitive === 'text') {
-      let chain: Node | null = node, remaining = domRegionLimits.depth + 1;
-      while (chain !== row.text && remaining--) {
-        if (chain.childNodes.length !== 1 || !chain.firstChild || authority.get(chain.firstChild) !== id) return null;
-        chain = chain.firstChild;
-      }
-      if (chain !== row.text || !row.outer.contains(node)) return null;
-      return Object.freeze({ kind: 'text', node: id!, offset: offset === 0 ? 0 : row.text!.data.length, affinity: 'after' });
-    }
     if (row.view.primitive === 'hard_break' || row.view.primitive.endsWith('_atom')) {
       if (node !== row.outer) return null;
       return Object.freeze({ kind: 'edge', node: id!, side: offset === 0 ? 'before' : 'after' });
@@ -309,8 +342,10 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
   function domPoint(position: DeepReadonly<PositionDto>): DomPoint | DomRefusal {
     if (position.kind === 'text') {
       const row = rows.get(position.node);
-      if (!row?.text || !scalarBoundary(row.text.data, position.offset)) return refusal('dom.presentation_unsupported', position.node);
-      return { node: row.text, offset: position.offset };
+      if (!row || row.view.text === null || !scalarBoundary(row.view.text,position.offset) || !ownedTextChain(row)) {
+        return refusal('dom.presentation_unsupported',position.node);
+      }
+      return fragmentPoint(row.texts,position.offset,position.affinity) ?? refusal('dom.presentation_unsupported',position.node);
     }
     if (position.kind === 'child') {
       const row = rows.get(position.parent);
@@ -555,12 +590,12 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     // of the compact typography receipt's12UTF8 byte presentation limit.
     const fail=()=>compositionRefusal('dom.composition_stale',window);
     const blockRow=rows.get(block.id),leafRow=rows.get(leaf.id);
-    if(!blockRow||!leafRow||!leafRow.text||source.text.length>domRegionLimits.utf16
+    if(!blockRow||!leafRow||source.text.length>domRegionLimits.utf16
       ||!sameLiteralNode(blockRow.view,block)||!sameLiteralNode(leafRow.view,leaf)
       ||blockRow.outer!==window.entries[0].element||blockRow.outer.parentNode!==window.parent
       ||blockRow.outer.previousSibling!==window.before||blockRow.outer.nextSibling!==window.after
       ||leafRow.outer.parentNode!==blockRow.content||blockRow.content.childNodes.length!==1
-      ||blockRow.content.firstChild!==leafRow.outer||leafRow.text.data!==source.text)return fail();
+      ||blockRow.content.firstChild!==leafRow.outer||!ownedTexts(leafRow,source.text))return fail();
     let nodes=0,metadata=0;
     const presentation=(row:Row,native:DeepReadonly<NodeViewDto>):boolean=>{
       const prepared=prepare(native,'alreadyPublished');
@@ -580,7 +615,9 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         if(content.childNodes.length!==1||content.firstChild!==wrapper||!matches(wrapper,prepared.marks[i],false))return false;
         content=wrapper;
       }
-      return content===row.content&&(!row.text||content.childNodes.length===1&&content.firstChild===row.text);
+      if (row.texts.length > domRegionLimits.nodes-nodes) return false;
+      nodes+=row.texts.length;
+      return content===row.content&&(!row.texts.length||ownedTexts(row));
     };
     if(!presentation(blockRow,block)||!presentation(leafRow,leaf))return fail();
     for(const native of ancestors){
@@ -603,12 +640,12 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     const block=read(state.stamp,expected.id,'alreadyPublished'),leaf=read(state.stamp,selection.focus.node,'alreadyPublished');
     if(isDomRefusal(block))return block;if(isDomRefusal(leaf))return leaf;
     const blockRow=rows.get(block.id),leafRow=rows.get(leaf.id);
-    if(!blockRow||!leafRow||!leafRow.text||!sameLiteralNode(expected,block)||!sameLiteralNode(blockRow.view,block)||!sameLiteralNode(leafRow.view,leaf)
+    if(!blockRow||!leafRow||!sameLiteralNode(expected,block)||!sameLiteralNode(blockRow.view,block)||!sameLiteralNode(leafRow.view,leaf)
       ||leaf.primitive!=='text'||leaf.parent!==block.id||leaf.children.length!==0||leaf.text!==region.originalText
       ||blockRow.outer!==window.entries[0].element||blockRow.outer.parentNode!==window.parent
       ||blockRow.outer.previousSibling!==window.before||blockRow.outer.nextSibling!==window.after
       ||leafRow.outer.parentNode!==blockRow.content||blockRow.content.childNodes.length!==1||blockRow.content.firstChild!==leafRow.outer
-      ||leafRow.text.data!==leaf.text)return fail();
+      ||!ownedTexts(leafRow,leaf.text))return fail();
     const outsideFailure=correspondence.literalOutside(window);if(outsideFailure)return outsideFailure;
     const observed=correspondence.observe(window);
     if(isDomRefusal(observed))return observed;
@@ -666,8 +703,9 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         restored.set(id,row);
       }
       for (const [id,row] of restored) {
-        const candidate = candidates.get(id)!; row.view = candidate.view; row.prepared = candidate.prepared;
-        if (row.text && row.text.data !== candidate.view.text) row.text.data = candidate.view.text ?? '';
+        const candidate = candidates.get(id)!;
+        writeRowText(row,candidate.view.text ?? '');
+        row.view = candidate.view; row.prepared = candidate.prepared;
       }
       for (const row of restored.values()) reconcileChildren(row,restored);
       const wanted = window.entries.map(entry=>restored.get(entry.id)!.outer);
@@ -790,10 +828,8 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
           const stableTextPoint = (position: DeepReadonly<PositionDto>): boolean => {
             if (position.kind !== 'text') return false;
             const point = domPoint(position), target = rows.get(position.node);
-            if (isDomRefusal(point) || !target?.text || point.node !== target.text
-              || target.text.data !== target.view.text || target.text.parentNode !== target.content
-              || !target.outer.contains(target.text) || target.content.childNodes.length !== 1
-              || target.content.firstChild !== target.text || point.node.ownerDocument !== doc
+            if (isDomRefusal(point) || !target || !target.texts.includes(point.node as Text)
+              || !target.outer.contains(point.node) || point.node.ownerDocument !== doc
               || !point.node.isConnected || !host.contains(point.node)) return false;
             const visited = new Set<string>();
             let id: string | null = position.node;
@@ -833,8 +869,8 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
             if (previous.outer !== host) previous.outer.replaceWith(replacement.outer);
             rows.set(id, replacement);
           } else {
+            writeRowText(previous,candidate.view.text ?? '');
             previous.view = candidate.view; previous.prepared = candidate.prepared;
-            if (previous.text && previous.text.data !== candidate.view.text) previous.text.data = candidate.view.text ?? '';
           }
         }
         for (const id of candidates.keys()) if (!provisional?.protected.has(id)) reconcileChildren(rows.get(id)!, rows);
@@ -855,7 +891,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         // Build all authored DOM detached. Host is replaced only after all declarations passed.
         for (const [id, value] of admitted) if (id !== state.root) fresh.set(id, createRow(value.view, value.prepared, false, freshAuthority));
         const root = admitted.get(state.root)!;
-        const rootRow: Row = { view: root.view, prepared: root.prepared, outer: host, content: host, wrappers:Object.freeze([]), text: null, signature: signature(root.prepared), placeholder: null };
+        const rootRow: Row = { view: root.view, prepared: root.prepared, outer: host, content: host, wrappers:Object.freeze([]), texts: noText, signature: signature(root.prepared), placeholder: null };
         fresh.set(state.root, rootRow);
         for (const [id, row] of fresh) if (id !== state.root) reconcileChildren(row, fresh, freshPlaceholders);
         reconcileChildren(rootRow, fresh, freshPlaceholders);

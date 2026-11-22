@@ -78,12 +78,13 @@ function geometry({partial=false,marks=[],leafAttributes={},extraLeaf=false,mult
     getAttribute(name){return this.attributes.find(a=>a.name===name)?.value??null;}
     contains(node){return this===node||this.childNodes.some(child=>child.contains(node));}
     get firstChild(){return this.childNodes[0]??null;}
+    get length(){return this.data?.length??0;}
     get nextSibling(){if(!this.parentNode)return null;return this.parentNode.childNodes[this.parentNode.childNodes.indexOf(this)+1]??null;}
     get previousSibling(){if(!this.parentNode)return null;return this.parentNode.childNodes[this.parentNode.childNodes.indexOf(this)-1]??null;}
     get isConnected(){return this===host||host.contains(this);}
   }
   const host=new N(1,'DIV'),p=new N(1,'P'),span=new N(1,'SPAN'),text=new N(3,null,'old'),tail=new N(1,'P'),tailSpan=new N(1,'SPAN'),tailText=new N(3,null,'tail');host.append(p,tail);p.append(span);span.append(text);tail.append(tailSpan);tailSpan.append(tailText);
-  const rows=new Map(),owned=new WeakMap(),make=(id,parent,primitive,type_id,outer,content,leafText,children,value)=>{const view={stamp:clone(base),id,parent,primitive,type_id,attributes:{},marks:[],text:value,children,changed_revision:'0',stats:{authored_nodes:'0',text_utf8:'0',text_utf16:'0',height:'0'}};const row={view,outer,content,text:leafText,placeholder:null};rows.set(id,row);owned.set(outer,id);if(leafText)owned.set(leafText,id);outer.setAttribute('data-editor-node',id);return row;};
+  const rows=new Map(),owned=new WeakMap(),make=(id,parent,primitive,type_id,outer,content,leafText,children,value)=>{const view={stamp:clone(base),id,parent,primitive,type_id,attributes:{},marks:[],text:value,children,changed_revision:'0',stats:{authored_nodes:'0',text_utf8:'0',text_utf16:'0',height:'0'}};const row={view,outer,content,text:leafText,texts:leafText?[leafText]:[],placeholder:null};rows.set(id,row);owned.set(outer,id);if(leafText)owned.set(leafText,id);outer.setAttribute('data-editor-node',id);return row;};
   make('root',null,'root','root',host,host,null,['block','tail'],null);make('block','root','text_block','paragraph',p,p,null,['original-text'],null);const leaf=make('original-text','block','text','text',span,span,text,[],'old');leaf.view.marks=clone(marks);leaf.view.attributes=clone(leafAttributes);make('tail','root','text_block','paragraph',tail,tail,null,['tail-text'],null);make('tail-text','tail','text','text',tailSpan,tailSpan,tailText,[],'tail');
   if(extraLeaf){const extraSpan=new N(1,'SPAN'),extraText=new N(3,null,'x');p.append(extraSpan);extraSpan.append(extraText);make('extra-text','block','text','text',extraSpan,extraSpan,extraText,[],'x');rows.get('block').view.children.push('extra-text');}
   if(originalBreak){const br=new N(1,'BR');p.append(br);make('native-break','block','inline_atom','hard_break',br,br,null,[],null);rows.get('block').view.children.push('native-break');}

@@ -2,6 +2,7 @@ import {test,expect} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
+import {longDocumentFixtures} from './support/large-document-fixtures.mjs';
 const literal=name=>readFileSync(`contracts/dom/v1/expected/${name}.canonical.json`,'utf8');
 const wire=name=>readFileSync(`contracts/dom/v1/inputs/${name}.json`,'utf8');
 const call=(page,method,...args)=>page.evaluate(({method,args})=>window.domHost[method](...args),{method,args});
@@ -496,4 +497,75 @@ test('asynchronous temporary replacement destroyed during loading never resurrec
   const {id}=await call(page,'mount',{fixture:'D0',delayReplacement:true});const started=await call(page,'startReplacement',id,'T10-replacement');expect(started.loaderCalls).toBe(2);
   const destroyed=await call(page,'dispose',id);expect(destroyed.receipt.status).toBe('destroy_requested');expect(new TextDecoder().decode(Uint8Array.from(destroyed.receipt.recovery.originalInput))).toBe(wire('T10-replacement'));expect(destroyed.resources.dom).toMatchObject({listeners:0,observers:0,continuations:0,retainedInputBytes:0,retainedRecoveryRegions:0});
   const finished=await call(page,'finishReplacement',id);observations.get(page).replacementDestroyedRace={started,destroyed,finished};expect(finished.result.status).toBe('dom_refused');expect(finished.result.diagnostic.code).toBe('dom.disposed');expect(finished.native.sessions).toBe(0);expect(finished.resources.sdk.sessions).toBe(0);expect(finished.resources.sdk.host_requests).toBe(0);expect(finished.resources.dom.continuations).toBe(0);expect(finished.domText).toBe('');expect(finished.capture).toBeNull();
+});
+
+test('long leaves keep their canonical bytes and map physical Text seams to native UTF-16 positions', async ({page}) => {
+  const corpora = longDocumentFixtures();
+  expect(corpora.map(({canonical}) => createHash('sha256').update(canonical).digest('hex'))).toEqual([
+    '83c74cf00eee8dc890dbc495d078f430aab553be47f9d406e53aabe423116296',
+    'c98e383b2d654d64a52b6bdd1d5dc6c55cc3757def5159702c9251a323a7bb11',
+  ]);
+  const result = await page.evaluate(async corpora => {
+    const [{createEditor, sdkBuildId}, {createDomView}, {kwdjBasicRenderers}, packet] = await Promise.all([
+      import('@klenwriter/editor-sdk'), import('/packages/dom/view.js'), import('@klenwriter/editor-kwdj/dom'),
+      fetch('/extensions-packet.json').then(response => response.json()),
+    ]);
+    const text = '  Русский e\u0301 👩‍💻 latin 👋🏽 '.repeat(36);
+    const unbroken = 'x'.repeat(text.length);
+    const observations = [];
+    const edgeCase = {id: 'Unicode and leading spaces', leaves: [text, unbroken],
+      canonical: JSON.stringify({content: [text, unbroken].map(value => ({content: [{text: value, type: 'text'}], type: 'paragraph'})),
+        profile: 'prose', schema: 'klenwriter.document', schema_version: 1})};
+    for (const {id, leaves, canonical} of [...corpora, edgeCase]) {
+      const text = leaves[0];
+      const element = document.createElement('div');
+      document.body.appendChild(element);
+      const editor = createEditor({input: new TextEncoder().encode(canonical), options: {
+        abi: 'editor-sdk/2', build_id: sdkBuildId, profile: packet.kwdjProfile, registry_json: packet.kwdjRegistryJson,
+        profile_options_json: '{"identities":{"media":[],"references":[]},"limits":null}', access: 'editable', admission: 'validate',
+      }});
+      const view = createDomView({element, catalog: kwdjBasicRenderers, textRepresentation: 'auto',
+        readNode: (stamp, node) => editor.read({kind: 'node', stamp, node})});
+      try {
+        const ready = await editor.ready;
+        if (ready.status !== 'ok' || ready.value.kind !== 'state') throw new Error(JSON.stringify(ready));
+        const state = ready.value.state;
+        const refusal = view.initialize(state);
+        if (refusal) throw new Error(JSON.stringify(refusal));
+        const read = node => editor.read({kind: 'node', stamp: state.stamp, node}).value.node;
+        const block = read(read(state.root).children[0]);
+        const leaf = read(block.children[0]);
+        const fragments = [...element.firstChild.firstChild.childNodes];
+        const seam = fragments[0].length;
+        const modelPoint = {kind: 'text', node: leaf.id, offset: seam, affinity: 'after'};
+        const back = view.domPoint(modelPoint);
+        const range = document.createRange();
+        range.setStart(fragments[0], 0);
+        range.setEnd(fragments.at(-1), fragments.at(-1).length);
+        const snapshot = editor.submit({kind: 'snapshot', stamp: state.stamp, max_bytes: 16777216}).response.value;
+        editor.submit({kind: 'release_snapshot', handle: snapshot.handle});
+        const highSurrogate = text.search(/[\uD800-\uDBFF]/);
+        observations.push({id, allText: fragments.every(node => node.nodeType === Node.TEXT_NODE), count: fragments.length,
+          safeSeam: text[seam - 1] === ' ' && seam <= 640,
+          seamAliases: fragments.length > 1 && [view.textPosition(fragments[0], seam),
+            view.textPosition(fragments[1], 0), view.textPosition(element.firstChild.firstChild, 1)]
+            .every(value => JSON.stringify(value) === JSON.stringify(modelPoint)),
+          afterSeam: back.node === fragments[1] && back.offset === 0,
+          splitsSurrogate: view.textPosition(fragments[0], highSurrogate + 1)?.kind === 'text',
+          exactDom: element.textContent === leaves.join('') && range.toString() === leaf.text && leaf.text === text,
+          canonical: snapshot.canonical_json === canonical,
+          fallback: id !== edgeCase.id || element.lastChild.firstChild.childNodes.length === 1});
+      } finally {
+        view.destroy();
+        editor.destroy();
+        element.remove();
+      }
+    }
+    return observations;
+  }, corpora);
+  for (const value of result) {
+    expect(value.count, value.id).toBeGreaterThan(1);
+    expect(value).toMatchObject({allText: true, safeSeam: true, seamAliases: true, afterSeam: true,
+      splitsSurrogate: false, exactDom: true, canonical: true, fallback: true});
+  }
 });
