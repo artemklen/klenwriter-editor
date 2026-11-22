@@ -58,7 +58,15 @@ export async function mount(config = {}) {
   if (config.scrollable) Object.assign(element.style,{width:'500px',height:'300px',overflowY:'auto'});
   if (config.viewportSized) Object.assign(element.style,{width:'min(500px, calc(100vw - 32px))',
     height:'min(300px, calc(100vh - 64px))'});
-  document.querySelector('#mounts').appendChild(element);
+  const mounts = document.querySelector('#mounts');
+  if (config.scrollParent) {
+    const viewport = document.createElement('div');
+    Object.assign(viewport.style,{width:'500px',height:'300px',overflow:'auto',overflowAnchor:'none'});
+    // Keep both scroll extents after disposing the editor's rendered children.
+    Object.assign(element.style,{width:'680px',minHeight:'1800px'});
+    viewport.appendChild(element);
+    mounts.appendChild(viewport);
+  } else mounts.appendChild(element);
   const profile = config.profile ?? 'kwdj', source = config.source ?? await fixture(config.fixture ?? (profile === 'notes' ? 'Notes-D0' : 'D0'));
   const failures = [], recoveries = [], events = [], faults=[], clipboardWrites = [], clipboardResults = [];
   const loaded=config.faultKind?controlledFaultModule(module,config.faultKind,faults):module;
@@ -137,6 +145,7 @@ export function sameIdentity(id,name,path) {return rec(id).marks.get(name)?.elem
 export function nativeSelectionMatches(id,path,offset) {const r=rec(id),selection=document.getSelection(),node=leaf(id,path);return selection.anchorNode===node&&selection.focusNode===node&&selection.anchorOffset===offset&&selection.focusOffset===offset;}
 export function mode(id,value) {return rec(id).editor.setInteractionMode(value);}
 export async function replace(id,nameOrRaw,raw=false) {const r=rec(id);return outcome(await r.editor.replace(encode(raw?nameOrRaw:await fixture(nameOrRaw))));}
+export function resources(id) {return rec(id).editor.resources();}
 export async function dispose(id) {
   const r=rec(id),receipt=r.editor.destroy(),again=r.editor.destroy();if(receipt.sdk.status==='queued')await receipt.sdk.completion;
   return {receipt:receiptSummary(receipt),sameReceipt:receipt===again,resources:copy(r.editor.resources()),recoveries:copy(r.recoveries),native:copy(r.editor.nativeResources())};
@@ -190,7 +199,7 @@ export function reentrant(id) {
 }
 export async function reentrantResult(id) {const r=rec(id);await Promise.all(r.reentrant.queued.map(ticket=>ticket.status==='queued'?ticket.completion:null));return {observations:copy(r.reentrant.observations),ticketKinds:r.reentrant.queued.map(ticket=>ticket.status)};}
 export async function metadata() {const module=await modulePromise;return {buildId:sdkBuildId,manifest:module.manifest,native:JSON.parse(module.resourceCounts()),scope:'Actual public mounted DOM+SDK2+compiled WASM. Automated engine; installed native Chrome/Safari are separate evidence.'};}
-window.domHost={mount,releaseLoader,fixture,clipboardObservations,nativeRows,row,domAt,leaf,select,command,submit,history,snapshot,inspect,mark,sameIdentity,nativeSelectionMatches,mode,replace,dispose,allDisposed,beforeInput,input,noncancelable,beginComposition,compositionObjectsIntact,replaceCompositionText,original,callbackCounts,forceDomMutation,brandCheck,headlessNotesAdmission,reentrant,reentrantResult,metadata};
+window.domHost={mount,releaseLoader,fixture,clipboardObservations,nativeRows,row,domAt,leaf,select,command,submit,history,snapshot,inspect,mark,sameIdentity,nativeSelectionMatches,mode,replace,resources,dispose,allDisposed,beforeInput,input,noncancelable,beginComposition,compositionObjectsIntact,replaceCompositionText,original,callbackCounts,forceDomMutation,brandCheck,headlessNotesAdmission,reentrant,reentrantResult,metadata};
 window.domHostReady=true;
 export async function rawSelection(id,anchor,focus=anchor) {const r=rec(id);return outcome(r.editor.submit({kind:'set_selection',stamp:r.editor.capture(),selection:{anchor,focus}}));}
 export function queryCommand(id,intent) {const r=rec(id);return r.editor.query({kind:'query_command',stamp:r.editor.capture(),command:kwdjCommand(intent)});}

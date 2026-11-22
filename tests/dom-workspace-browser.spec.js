@@ -844,10 +844,10 @@ const canonicalWithLeaves = (fixture, leaves) => {
 const sha256 = text => createHash('sha256').update(text).digest('hex');
 const position = (node, offset) => ({kind:'text',node,offset,affinity:'after'});
 
-async function mountLargeDocument(page, fixture, mode, {scrollable = true,viewportSized = false} = {}) {
+async function mountLargeDocument(page, fixture, mode, {scrollable = true,viewportSized = false,scrollParent = false} = {}) {
   test.slow(fixture.id === 'R5' && Boolean(mode.renderOptions) && test.info().project.name === 'chromium',
     'Chromium lays out eight near-limit leaves as single Text nodes in the full opt-out');
-  const {id,ready} = await call(page,'mount',{source:fixture.canonical,scrollable,viewportSized,observeClipboard:true,...mode});
+  const {id,ready} = await call(page,'mount',{source:fixture.canonical,scrollable,viewportSized,scrollParent,observeClipboard:true,...mode});
   expect(ready).toBe('ready');
   const host = page.locator(`#${id}`);
   const parts = await host.evaluate(element => [...element.children].map(block => {
@@ -1236,3 +1236,159 @@ for (const fixture of longDocumentFixtures()) {
     });
   }
 }
+
+async function prepareDeletionScrollReview(page) {
+  const [fixture] = longDocumentFixtures();
+  const mounted = await mountLargeDocument(page,fixture,{}, {scrollable:false,scrollParent:true});
+  const {id,host,seam} = mounted;
+  const base = await readLargeDocument(page,id,fixture);
+  const leaf = stateRow(base,'/0/0').id;
+  const selection = {anchor:position(leaf,seam),focus:position(leaf,seam-1)};
+  expect(await browserTextSelection(host,{offset:seam},{offset:seam-1})).toEqual({
+    anchor:{index:4,offset:0},focus:{index:3,offset:509},selected:' ',
+  });
+  await assertLargeSelection(page,id,selection);
+  await host.evaluate(async element => {
+    const scroller = element.parentElement;
+    const range = getSelection().getRangeAt(0).getBoundingClientRect();
+    scroller.scrollTo(0,scroller.scrollTop+range.top-scroller.getBoundingClientRect().top-90);
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  });
+  return {...mounted,fixture,leaf,block:stateRow(base,'/0').id};
+}
+
+async function armDeletionScrollReview(host,id,destroy) {
+  await host.evaluate((element,{id,destroy}) => {
+    const scroller = element.parentElement;
+    const win = element.ownerDocument.defaultView;
+    const offsets = () => ({left:scroller.scrollLeft,top:scroller.scrollTop});
+    const baseline = offsets();
+    const baselineListeners = window.domHost.resources(id).dom.listeners;
+    const frames = new Map();
+    const listeners = [];
+    const requestFrame = win.requestAnimationFrame;
+    const cancelFrame = win.cancelAnimationFrame;
+    const addListener = EventTarget.prototype.addEventListener;
+    const removeListener = EventTarget.prototype.removeEventListener;
+    const capture = options => typeof options === 'boolean' ? options : !!options?.capture;
+    const watched = target => target === win || target === scroller || target === element ||
+      target === element.ownerDocument;
+    const scrolling = type => type === 'scroll' || type === 'wheel' || type === 'beforeinput';
+    const report = {};
+
+    win.requestAnimationFrame = callback => {
+      const frame = {ran:false,cancelled:false};
+      const handle = requestFrame.call(win,time => {frame.ran = true; callback(time);});
+      frames.set(handle,frame);
+      return handle;
+    };
+    win.cancelAnimationFrame = handle => {
+      const frame = frames.get(handle);
+      if (frame) frame.cancelled = true;
+      cancelFrame.call(win,handle);
+    };
+    EventTarget.prototype.addEventListener = function(type,listener,options) {
+      if (watched(this) && scrolling(type)) listeners.push({target:this,type,listener,capture:capture(options),removed:false});
+      return addListener.call(this,type,listener,options);
+    };
+    EventTarget.prototype.removeEventListener = function(type,listener,options) {
+      for (const row of listeners) {
+        if (row.target === this && row.type === type && row.listener === listener && row.capture === capture(options)) row.removed = true;
+      }
+      return removeListener.call(this,type,listener,options);
+    };
+    function restoreObservers() {
+      win.requestAnimationFrame = requestFrame;
+      win.cancelAnimationFrame = cancelFrame;
+      EventTarget.prototype.addEventListener = addListener;
+      EventTarget.prototype.removeEventListener = removeListener;
+    }
+
+    // This listener is attached after mount. The editor's trusted beforeinput
+    // listener publishes the deletion and schedules its frame before we run.
+    addListener.call(element,'beforeinput',event => {
+      report.input = {inputType:event.inputType,trusted:event.isTrusted,prevented:event.defaultPrevented};
+      report.baseline = baseline;
+      report.beforeHostScroll = offsets();
+      report.pending = window.domHost.resources(id);
+      report.pendingFrames = [...frames.values()].filter(frame => !frame.ran && !frame.cancelled).length;
+      report.pendingListeners = listeners.filter(listener => !listener.removed).map(listener => listener.type);
+      report.additionalDomListeners = report.pending.dom.listeners-baselineListeners;
+      const requested = {left:baseline.left+73,top:baseline.top+137};
+      scroller.scrollTo(requested.left,requested.top);
+      report.requested = requested;
+      report.applied = offsets();
+      if (destroy) {
+        report.disposed = window.domHost.dispose(id);
+        report.afterDestroy = offsets();
+        report.extentsAfterDestroy = {width:scroller.scrollWidth,height:scroller.scrollHeight,
+          clientWidth:scroller.clientWidth,clientHeight:scroller.clientHeight};
+      }
+    },{once:true});
+
+    element.deletionScrollReview = async () => {
+      try {
+        const nextPaint = () => new Promise(resolve => requestFrame.call(win,() => requestFrame.call(win,resolve)));
+        await nextPaint();
+        if (destroy) {
+          // WebKit can reset the scroller when its focused editable subtree is
+          // destroyed. Keep that native result and test a fresh host scroll
+          // after teardown, alongside the actual pending-frame cancellation.
+          report.nativeAfterDestroy = offsets();
+          scroller.scrollTo(report.requested.left,report.requested.top);
+          report.postDestroyScroll = offsets();
+          await nextPaint();
+        }
+        return {...report,disposed:await report.disposed,final:offsets(),frames:[...frames.values()],
+          listeners:listeners.map(({type,removed}) => ({type,removed}))};
+      } finally {
+        restoreObservers();
+      }
+    };
+  },{id,destroy});
+}
+
+async function finishDeletionScrollReview(page,host,record) {
+  await page.keyboard.press('Backspace');
+  const review = await host.evaluate(element => element.deletionScrollReview());
+  record.scenarios.deletionScrollReview = review;
+  expect(review.input).toEqual({inputType:'deleteContentBackward',trusted:true,prevented:true});
+  expect(review.pending.selection.animationFrames).toBe(1);
+  expect(review.pendingFrames).toBe(1);
+  expect(review.pendingListeners.filter(type => type === 'wheel')).toEqual(['wheel']);
+  expect(review.additionalDomListeners).toBe(review.pendingListeners.length);
+  expect(review.baseline.top).toBeGreaterThan(0);
+  expect(review.applied).toEqual(review.requested);
+  return review;
+}
+
+test('OSR-131 trusted deletion preserves later host scroll on both axes in the same frame', async ({page}) => {
+  const {id,host,fixture,seam,leaf,block,record} = await prepareDeletionScrollReview(page);
+  await armDeletionScrollReview(host,id,false);
+  const review = await finishDeletionScrollReview(page,host,record);
+  const edited = [fixture.leaves[0].slice(0,seam-1)+fixture.leaves[0].slice(seam)];
+  const point = await readLargeDocument(page,id,fixture,edited);
+  expect(stateRow(point,'/0/0').id).toBe(leaf);
+  caret(point,block,1,'child');
+  history(point,1,0);
+  expect((await call(page,'resources',id)).selection.animationFrames).toBe(0);
+  await disposeLargeDocument(page,id,host);
+  expect(review.final).toEqual(review.applied);
+});
+
+test('OSR-131 destroy in the trusted deletion handler cancels the pending correction', async ({page}) => {
+  const {id,host,record} = await prepareDeletionScrollReview(page);
+  await armDeletionScrollReview(host,id,true);
+  const review = await finishDeletionScrollReview(page,host,record);
+  expect(review.frames).toEqual([{ran:false,cancelled:true}]);
+  expect(review.listeners.filter(listener => !listener.removed)).toEqual([]);
+  expect(review.disposed.sameReceipt).toBe(true);
+  expect(review.disposed.recoveries).toEqual([]);
+  expect(review.disposed.resources.selection.animationFrames).toBe(0);
+  expect(review.disposed.resources.dom).toEqual({listeners:0,observers:0,continuations:0,retainedInputBytes:0,retainedRecoveryRegions:0});
+  expect(review.disposed.native).toEqual({sessions:0,snapshot_handles:0,snapshot_bytes:'0',protected_cursors:0});
+  await expect(host).toBeEmpty();
+  await expect(host).not.toHaveAttribute('contenteditable');
+  expect(review.postDestroyScroll).toEqual(review.requested);
+  expect(review.final).toEqual(review.postDestroyScroll);
+});
