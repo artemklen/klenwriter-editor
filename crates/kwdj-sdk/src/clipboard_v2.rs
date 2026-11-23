@@ -2,14 +2,16 @@
 use crate::{
     KwdjAdapter,
     convert::{diagnostic, profile_error},
-    wire_v2::KwdjClipboardIntentV2,
+    wire_v2::{KwdjClipboardIntentV2, KwdjLiteraryIntentV2},
 };
 use editor_bridge::{BridgeAdapter, ClipboardContextData, SelectionFragmentData};
 use editor_core::{candidate::CandidateRead, positions::Selection, transaction::WorkMeter};
 use editor_engine::{NodeId, SessionKey};
 use editor_kwdj::{
     KwdjProfile, KwdjProfileError, Profile,
-    commands::{CLIPBOARD_COMMAND_ID, KwdjIntent, clipboard},
+    commands::{
+        CLIPBOARD_COMMAND_ID, KWDJ_COMMANDS, KwdjIntent, SET_LITERARY_KIND_COMMAND_ID, clipboard,
+    },
 };
 use editor_protocol::{CommandDto, DiagnosticDto};
 
@@ -76,8 +78,28 @@ impl BridgeAdapter<KwdjProfile<'static>> for ClipboardAdapterV2 {
             Ok(KwdjIntent::InsertFragment {
                 fragment: clipboard::decode_fragment(&fragment_json).map_err(native)?,
             })
+        } else if command.id == SET_LITERARY_KIND_COMMAND_ID {
+            let KwdjLiteraryIntentV2::SetLiteraryKind { node, .. } =
+                editor_bridge::decode(&command.payload_json)?
+            else {
+                return Err(diagnostic("sdk.invalid_dto", "command"));
+            };
+            let node = key
+                .parse_node_token(&node)
+                .map_err(|error| diagnostic(error.as_str(), "command.node"))?;
+            Ok(KwdjIntent::SetLiteraryKind { node })
         } else {
-            self.0.decode_command(key, command)
+            match self.0.decode_command(key, command) {
+                Err(legacy) if command.id == KWDJ_COMMANDS[9].id => {
+                    match editor_bridge::decode(&command.payload_json) {
+                        Ok(KwdjLiteraryIntentV2::InsertBlock { .. }) => {
+                            Ok(KwdjIntent::InsertAuthorNote)
+                        }
+                        _ => Err(legacy),
+                    }
+                }
+                result => result,
+            }
         }
     }
     fn profile_error(error: &KwdjProfileError) -> DiagnosticDto {

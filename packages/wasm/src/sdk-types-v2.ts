@@ -11,6 +11,12 @@ export type SessionContextV2 = { build_id: string, profile: ProfileDto, registry
 
 export type KwdjClipboardIntentV2 = { "kind": "insert_fragment", fragment_json: string, };
 
+export type LiteraryAuthoringKindV2 = "author_note";
+
+export type LiteraryBlockTargetV2 = { "kind": "literary_block", literary_kind: LiteraryAuthoringKindV2, };
+
+export type KwdjLiteraryIntentV2 = { "kind": "insert_block", target: LiteraryBlockTargetV2, } | { "kind": "set_literary_kind", node: string, literary_kind: LiteraryAuthoringKindV2, };
+
 export type KwdjTypingIntentV2 = { "kind": "insert_typed_text", text: string, origin: InputOriginV2, } | { "kind": "restore_typed_text", restore: RawInputRestoreV2, };
 
 export type KwdjTypingLocaleV2 = "ru" | "en";

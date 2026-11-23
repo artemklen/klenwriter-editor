@@ -60,9 +60,14 @@ container and its authored children.
 
 | Kind | Read and render | Authoring parity |
 | --- | --- | --- |
-| `author_note` | Supported | The CMS slash callout creates this kind. |
+| `author_note` | Supported | CMS slash callout and SDK2 creation. |
 | `letter` | Supported | Preserve and read. |
 | `epigraph` | Supported | Preserve and read. |
 | `world_note` | Supported | Preserve and read. |
 | `chronicle_quote` | Supported | Preserve and read. |
 | `archive_fragment` | Supported | Preserve and read. |
+
+SDK2 `insert_block` takes the literary target `literary_block` with
+`literary_kind` set to `author_note`. The new container begins with an empty
+paragraph. `set_literary_kind` takes the existing literary node ID and changes
+its kind to `author_note`, preserving the container and its children.

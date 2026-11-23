@@ -116,6 +116,14 @@ export const kwdjTypingDomInventory = {
     },
     {
       "descriptor": {
+        "id": "org.klenwriter.kwdj/command/set-literary-kind",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/set-literary-kind",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
         "id": "org.klenwriter.kwdj/command/shift-enter",
         "kind": "compiled"
       },
@@ -189,6 +197,7 @@ export const kwdjTypingDomInventory = {
       "org.klenwriter.kwdj/command/remove",
       "org.klenwriter.kwdj/command/restore-typed-text",
       "org.klenwriter.kwdj/command/set-link",
+      "org.klenwriter.kwdj/command/set-literary-kind",
       "org.klenwriter.kwdj/command/shift-enter",
       "org.klenwriter.kwdj/command/toggle-list",
       "org.klenwriter.kwdj/command/toggle-mark",
@@ -1454,5 +1463,5 @@ export const kwdjTypingDomInventory = {
     "profile_version": "1.0.0",
     "wire_version": 1
   },
-  "registryDigest": "c20eaf32f2982c3e07da6cbdc440dc2d0aeae6ae8e0780821df6ed32c9c2271b"
+  "registryDigest": "31066752925b7f1dd4b4439fe142595c33688ebe656a328b6176d9bdf314defb"
 } as const;

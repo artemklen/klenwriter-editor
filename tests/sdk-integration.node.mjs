@@ -327,6 +327,140 @@ test('OSR-182 DOC-015 packaged WASM exposes and reopens all literary kinds byte 
   assert.equal(await readAndExport(saved), fixture.canonical);
 });
 
+// These are raw SDK2 calls over the packaged sealed WASM. Exercise native
+// dispatch first so a missing JS command mapping cannot mask the baseline.
+const osr183Insert = 'org.klenwriter.kwdj/command/insert-block';
+const osr183SetKind = 'org.klenwriter.kwdj/command/set-literary-kind';
+const osr183Doc = content => canonicalizeRaw(JSON.stringify({
+  schema: 'klenwriter.document', schema_version: 1, profile: 'prose', content,
+}));
+
+async function withLiteraryCommandSession(input, run) {
+  const packet = JSON.parse(readFileSync(new URL('../artifacts/extensions/packet.json', import.meta.url)));
+  const wasm = readFileSync(new URL('../packages/wasm/dist/editor_wasm_bg.wasm', import.meta.url));
+  const module = await loadSdkV2({ wasm: new Uint8Array(wasm) });
+  const baseline = counts(module);
+  const options = {
+    abi: 'editor-sdk/2', build_id: module.manifest.build_id, profile: packet.kwdjProfile,
+    admission: 'validate', access: 'editable', registry_json: packet.kwdjRegistryJson,
+    profile_options_json: JSON.stringify({ identities: { media: [], references: [] }, limits: null }),
+  };
+  const editor = createEditor({ input: new TextEncoder().encode(input), options, loader: async () => module });
+  try {
+    accepted(await editor.ready);
+    assert.equal(canonical(editor), input);
+    await run(editor);
+  } finally {
+    accepted(await settled(editor.destroy()));
+    assert.deepEqual(counts(module), baseline);
+  }
+}
+
+const osr183Wire = (editor, command) => completed(editor.submit({
+  kind: 'command', stamp: editor.capture(), command, history_hint: { kind: 'isolated' },
+}));
+function osr183History(editor, direction, expected) {
+  assert.equal(accepted(completed(editor.submit({
+    kind: 'history', stamp: editor.capture(), direction,
+  }))).effect, 'changed');
+  assert.equal(canonical(editor), expected);
+}
+function osr183Denied(editor, id, payload, expected, code) {
+  const before = state(editor);
+  const failure = refused(osr183Wire(editor, createCommand(id, payload)));
+  assert.equal(failure.code, code);
+  assert.deepEqual(state(editor), before);
+  assert.equal(canonical(editor), expected);
+}
+
+test('OSR-183 packaged SDK2 creates only an author note at the root gap', async () => {
+  const [left, right] = ['Before', 'After'].map(text => ({ type: 'paragraph', content: [{ type: 'text', text }] }));
+  const seed = { type: 'paragraph', content: [] };
+  const authorNote = { type: 'literary_block', attrs: { kind: 'author_note' }, content: [seed] };
+  const input = osr183Doc([left, right]);
+  const expected = osr183Doc([left, authorNote, right]);
+  await withLiteraryCommandSession(input, editor => {
+    const rootId = state(editor).root;
+    const originalIds = root(editor).children;
+    const gap = { kind: 'child', parent: rootId, index: 1, affinity: 'after' };
+    accepted(completed(editor.submit({ kind: 'set_selection', stamp: editor.capture(), selection: { anchor: gap, focus: gap } })));
+    const before = state(editor);
+    const intent = { kind: 'insert_block', target: { kind: 'literary_block', literary_kind: 'author_note' } };
+    const dto = createCommand(osr183Insert, intent);
+    const availability = accepted(editor.query({ kind: 'query_command', stamp: editor.capture(), command: dto }));
+    assert.equal(availability.available, true, JSON.stringify(availability));
+    assert.equal(availability.effect, 'changed');
+    assert.deepEqual(state(editor), before);
+    assert.equal(canonical(editor), input);
+    osr183Denied(editor, osr183Insert, {
+      kind: 'insert_block', target: { kind: 'literary_block', literary_kind: 'letter' },
+    }, input, 'sdk.invalid_dto');
+    assert.equal(accepted(osr183Wire(editor, dto)).effect, 'changed');
+    assert.deepEqual(kwdjCommand(intent), dto);
+    assert.equal(canonical(editor), expected);
+    const ids = root(editor).children;
+    assert.deepEqual([ids[0], ids[2]], originalIds);
+    const newBlock = node(editor, ids[1]);
+    assert.equal(newBlock.type_id, 'org.klenwriter.kwdj/literary_block');
+    assert.deepEqual({ ...newBlock.attributes.kind }, { kind: 'string', value: 'author_note' });
+    assert.equal(newBlock.children.length, 1);
+    const child = node(editor, newBlock.children[0]);
+    assert.equal(child.type_id, 'org.klenwriter.kwdj/paragraph');
+    assert.deepEqual(child.children, []);
+    const caret = { kind: 'child', parent: child.id, index: 0, affinity: 'after' };
+    assert.deepEqual(structuredClone(state(editor).selection), { anchor: caret, focus: caret });
+    assert.equal(state(editor).history.undo_entries, '1');
+    osr183History(editor, 'undo', input);
+    osr183History(editor, 'redo', expected);
+    assert.deepEqual(root(editor).children, ids);
+  });
+});
+
+test('OSR-183 packaged SDK2 retargets a preserved letter with exact children and history', async () => {
+  const acceptedDoc = JSON.parse(literaryFixture().canonical);
+  const letter = acceptedDoc.content.find(block => block.attrs.kind === 'letter');
+  const extra = { type: 'paragraph', attrs: { align: 'right' }, content: [
+    { type: 'text', text: 'Extra 😀', marks: [{ type: 'strong' }] },
+    { type: 'hard_break' },
+    { type: 'text', text: 'Continuation' },
+  ] };
+  const input = osr183Doc([{ type: 'paragraph', content: [] }, { ...letter, content: [...letter.content, extra] }]);
+  const expected = input.replace('"kind":"letter"', '"kind":"author_note"');
+  await withLiteraryCommandSession(input, editor => {
+    const roots = root(editor).children;
+    const noteId = roots[1];
+    const children = node(editor, noteId).children;
+    const inline = node(editor, children[1]).children;
+    const intent = { kind: 'set_literary_kind', node: noteId, literary_kind: 'author_note' };
+    const dto = createCommand(osr183SetKind, intent);
+    const before = state(editor);
+    const availability = accepted(editor.query({ kind: 'query_command', stamp: editor.capture(), command: dto }));
+    assert.equal(availability.available, true, JSON.stringify(availability));
+    assert.equal(availability.effect, 'changed');
+    assert.deepEqual(state(editor), before);
+    assert.equal(canonical(editor), input);
+    assert.equal(accepted(osr183Wire(editor, dto)).effect, 'changed');
+    assert.deepEqual(kwdjCommand(intent), dto);
+    assert.equal(canonical(editor), expected);
+    assert.deepEqual(root(editor).children, roots);
+    assert.deepEqual(node(editor, noteId).children, children);
+    assert.deepEqual(node(editor, children[1]).children, inline);
+    assert.equal(state(editor).stamp.revision, '1');
+    assert.equal(state(editor).history.undo_entries, '1');
+
+    osr183History(editor, 'undo', input);
+    osr183History(editor, 'redo', expected);
+    assert.deepEqual(root(editor).children, roots);
+    assert.deepEqual(node(editor, noteId).children, children);
+    const settledState = state(editor);
+    assert.equal(accepted(osr183Wire(editor, dto)).effect, 'unchanged');
+    assert.deepEqual(state(editor), settledState);
+    assert.equal(canonical(editor), expected);
+    osr183Denied(editor, osr183SetKind, { ...intent, literary_kind: 'letter' }, expected, 'sdk.invalid_dto');
+    osr183Denied(editor, osr183SetKind, { ...intent, node: roots[0] }, expected, 'kwdj.command_invalid_target');
+  });
+});
+
 test('packaged SDK: two listeners read revision r before queued command; second same capture refuses stale', async () => {
   const context = await open(); const { editor } = context;
   try {

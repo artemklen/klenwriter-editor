@@ -2,11 +2,11 @@
 /** Profile-specific command construction; all semantic checks remain in Rust. */
 export { artifactStage } from '@klenwriter/editor-sdk';
 import { createCommand } from '@klenwriter/editor-sdk';
-import type { CommandDto, DeepReadonly, KwdjIntentDto, RawInputRestoreV2 } from '@klenwriter/editor-sdk';
+import type { CommandDto, DeepReadonly, KwdjIntentDto, KwdjLiteraryIntentV2, RawInputRestoreV2 } from '@klenwriter/editor-sdk';
 
-export type { KwdjIntentDto, BlockTargetDto, ListKindDto, MarkDto } from '@klenwriter/editor-sdk';
+export type { KwdjIntentDto, KwdjLiteraryIntentV2, BlockTargetDto, ListKindDto, MarkDto } from '@klenwriter/editor-sdk';
 
-const commandNames: Record<KwdjIntentDto['kind'], string> = {
+const commandNames: Record<(KwdjIntentDto | KwdjLiteraryIntentV2)['kind'], string> = {
   enter: 'enter', shift_enter: 'shift-enter', toggle_mark: 'toggle-mark',
   set_link: 'set-link', unset_link: 'unset-link', insert_text: 'insert-text',
   transform_block: 'transform-block', toggle_quote: 'toggle-quote', toggle_list: 'toggle-list',
@@ -14,15 +14,16 @@ const commandNames: Record<KwdjIntentDto['kind'], string> = {
   accept_slash: 'accept-slash', dismiss_slash: 'dismiss-slash',
   delete_backward: 'delete-backward',
   delete_selection: 'delete-selection',
+  set_literary_kind: 'set-literary-kind',
 };
 
 /** Numeric metadata, revision/group tokens and ordered-list starts remain strings. */
-export function kwdjCommand(intent: KwdjIntentDto): CommandDto {
+export function kwdjCommand(intent: KwdjIntentDto | KwdjLiteraryIntentV2): CommandDto {
   const kind = intent && typeof intent === 'object' ? Object.getOwnPropertyDescriptor(intent, 'kind') : undefined;
   if (!kind || !('value' in kind) || typeof kind.value !== 'string' || !Object.hasOwn(commandNames, kind.value)) {
     throw new TypeError('sdk.invalid_command_kind');
   }
-  const name = commandNames[kind.value as KwdjIntentDto['kind']];
+  const name = commandNames[kind.value as keyof typeof commandNames];
   return createCommand(`org.klenwriter.kwdj/command/${name}`, intent);
 }
 

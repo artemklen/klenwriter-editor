@@ -259,6 +259,7 @@ const kwdjMandatoryCommands = Object.freeze([
   'org.klenwriter.kwdj/command/dismiss-slash',
   'org.klenwriter.kwdj/command/delete-backward',
   'org.klenwriter.kwdj/command/delete-selection',
+  'org.klenwriter.kwdj/command/set-literary-kind',
 ].sort());
 
 export async function exerciseKwdj(port, packet) {
@@ -286,7 +287,7 @@ export async function exerciseKwdj(port, packet) {
         if (c.expectedCanonical !== undefined && c.expectedCanonical !== null) equal(actual, c.expectedCanonical, `${c.id}: KWDJ literal canonical`);
         else equal(JSON.parse(actual), JSON.parse(c.input), `${c.id}: independently constructed resource semantics`);
         check((await handle.context()).build_id === port.manifest.build_id, 'KWDJ build context');
-        equal(ok(await handle.call({ kind: 'catalog' })).commands, kwdjMandatoryCommands, 'KWDJ exact mandatory18 catalog');
+        equal(ok(await handle.call({ kind: 'catalog' })).commands, kwdjMandatoryCommands, 'KWDJ exact mandatory catalog');
         if (!checkedDeleteBackward) {
           const before = await state(handle), beforeIds = await identities(handle), beforeEvents = await events(handle);
           equal(before.selection, null, 'KWDJ initial selection for strict command admission');

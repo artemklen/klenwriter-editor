@@ -28,14 +28,16 @@ pub fn base_registration() -> ExtensionDescriptor {
     registration
 }
 
-/// The ABI2 clipboard command is absent from the legacy static catalog.
+/// Additional ABI2 commands are absent from the legacy static catalog.
 pub fn base_registration_v2() -> ExtensionDescriptor {
     let mut registration = base_registration();
-    registration
-        .commands
-        .push(editor_registry::CommandDescriptor::Compiled {
-            id: crate::commands::CLIPBOARD_COMMAND_ID.into(),
-        });
+    registration.commands.extend(
+        [
+            crate::commands::CLIPBOARD_COMMAND_ID,
+            crate::commands::SET_LITERARY_KIND_COMMAND_ID,
+        ]
+        .map(|id| editor_registry::CommandDescriptor::Compiled { id: id.into() }),
+    );
     registration
 }
 

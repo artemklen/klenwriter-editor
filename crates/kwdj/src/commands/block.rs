@@ -16,6 +16,7 @@ use super::{BlockTarget, KWDJ_SLASH_CANDIDATES, KwdjIntent, ListKind, inline, re
 use crate::{KwdjError, KwdjErrorCode, Profile};
 
 const PREFIX: &str = "org.klenwriter.kwdj/";
+const AUTHOR_NOTE: &str = "author_note";
 fn invalid() -> KwdjError {
     refusal(KwdjErrorCode::CommandInvalidTarget)
 }
@@ -1629,6 +1630,16 @@ fn insert_block<V: CandidateRead>(
     }
     // Reject missing future providers before producing a partial plan.
     let node = target_node(target, plan)?;
+    insert_block_node(view, state, node, query, plan)
+}
+
+fn insert_block_node<V: CandidateRead>(
+    view: &V,
+    state: CommandState<'_, V::Id>,
+    node: Node,
+    query: Option<(Selection<V::Id>, &str)>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
     let selected = if let Some((range, literal)) = query {
         verify_query(view, state, range, literal, plan)?;
         range
@@ -1639,12 +1650,10 @@ fn insert_block<V: CandidateRead>(
         && inline::ordered_range(view, selected, plan.work())?.is_empty
         && let Some((parent, index)) = outside_gap(view, selected.focus, plan)?
     {
-        let is_atom = matches!(target, BlockTarget::SceneBreak);
-        let caret_path = match target {
-            BlockTarget::Blockquote => &[0usize, 0][..],
-            BlockTarget::BulletList | BlockTarget::OrderedList { .. } | BlockTarget::TaskList => {
-                &[0usize, 0, 0][..]
-            }
+        let is_atom = node.primitive == Primitive::BlockAtom;
+        let caret_path = match kind(&node.type_id) {
+            "blockquote" | "literary_block" => &[0usize, 0][..],
+            "bullet_list" | "ordered_list" | "task_list" => &[0usize, 0, 0][..],
             _ => &[0usize][..],
         };
         let operation = fragment(plan, parent.into(), index, node)?;
@@ -1686,6 +1695,39 @@ fn insert_block<V: CandidateRead>(
     finish_inline_cut(&mut cut, plan)?;
     plan.set_stored_marks(StoredMarksUpdate::Inherit)
         .map_err(KwdjError::operational)?;
+    Ok(CommandPresentation::default())
+}
+
+fn insert_author_note<V: CandidateRead>(
+    view: &V,
+    state: CommandState<'_, V::Id>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let attributes = Attributes::from([(
+        key("kind", plan)?,
+        Attribute::String(key(AUTHOR_NOTE, plan)?),
+    )]);
+    let mut note = empty_node("literary_block", Primitive::Container, attributes, plan)?;
+    let paragraph = empty_node("paragraph", Primitive::TextBlock, Attributes::new(), plan)?;
+    bytes(plan, size_of::<Node>())?;
+    note.children.push(paragraph);
+    insert_block_node(view, state, note, None, plan)
+}
+
+fn set_literary_kind<V: CandidateRead>(
+    view: &V,
+    id: V::Id,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let node = get(view, id, plan)?;
+    if kind(node.type_id) != "literary_block" {
+        return Err(invalid());
+    }
+    if !matches!(node.attributes.get("kind"), Some(Attribute::String(current)) if current == AUTHOR_NOTE)
+    {
+        let value = Attribute::String(key(AUTHOR_NOTE, plan)?);
+        attr(plan, id.into(), "kind", Some(value))?;
+    }
     Ok(CommandPresentation::default())
 }
 
@@ -1872,6 +1914,8 @@ pub(super) fn prepare<V: CandidateRead>(
         KwdjIntent::ToggleQuote => toggle_quote(view, state, plan),
         KwdjIntent::ToggleList { kind } => toggle_list(view, state, *kind, plan),
         KwdjIntent::InsertBlock { target } => insert_block(view, state, target, None, plan),
+        KwdjIntent::InsertAuthorNote => insert_author_note(view, state, plan),
+        KwdjIntent::SetLiteraryKind { node } => set_literary_kind(view, *node, plan),
         KwdjIntent::AcceptSlash {
             target,
             range,

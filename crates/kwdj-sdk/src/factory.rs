@@ -348,7 +348,7 @@ mod tests {
         assert!(matches!(session.initialization(), SdkResponse::Ok { .. }));
         assert!(session.context().is_some());
         let catalog = call(&mut session, json!({"kind":"catalog"}));
-        assert_eq!(catalog["value"]["commands"].as_array().unwrap().len(), 19);
+        assert_eq!(catalog["value"]["commands"].as_array().unwrap().len(), 20);
         assert!(
             catalog["value"]["commands"]
                 .as_array()
@@ -564,6 +564,7 @@ mod tests {
                                     .collect();
                                 let mut sorted = expected.clone();
                                 sorted.push(editor_kwdj::commands::CLIPBOARD_COMMAND_ID);
+                                sorted.push(editor_kwdj::commands::SET_LITERARY_KIND_COMMAND_ID);
                                 sorted.sort_unstable();
                                 assert_eq!(actual, sorted, "{id}: frozenV2catalog IDs");
                                 // ABI1 catalog order remains the original compiled order.
@@ -863,5 +864,204 @@ mod tests {
         }
         endpoint.destroy();
         endpoint.destroy();
+    }
+
+    const OSR183_INSERT: &str = "org.klenwriter.kwdj/command/insert-block";
+    const OSR183_SET_KIND: &str = "org.klenwriter.kwdj/command/set-literary-kind";
+
+    fn osr183_open(input: &str) -> DistributionSession {
+        let distribution = Distribution::new(BUILD, vec![Box::new(KwdjFactory)]).unwrap();
+        let session = distribution.open(input.as_bytes(), &options(false).to_string());
+        assert!(matches!(session.initialization(), SdkResponse::Ok { .. }));
+        session
+    }
+
+    fn osr183_literal(contents: Value) -> String {
+        json!({
+            "content": contents, "profile": "prose",
+            "schema": "klenwriter.document", "schema_version": 1
+        })
+        .to_string()
+    }
+
+    fn osr183_node(session: &mut DistributionSession, id: &Value) -> Value {
+        let stamp = state(session)["stamp"].clone();
+        let response = call(session, json!({"kind":"node","stamp":stamp,"node":id}));
+        assert_eq!(response["status"], "ok", "{response}");
+        response["value"]["node"].clone()
+    }
+
+    fn osr183_command(
+        session: &mut DistributionSession,
+        id: &str,
+        payload: &Value,
+        query: bool,
+    ) -> Value {
+        let stamp = state(session)["stamp"].clone();
+        let command = json!({"id":id,"payload_json":payload.to_string()});
+        let request = if query {
+            json!({"kind":"query_command","stamp":stamp,"command":command})
+        } else {
+            json!({"kind":"command","stamp":stamp,"command":command,"history_hint":{"kind":"isolated"}})
+        };
+        call(session, request)
+    }
+
+    fn osr183_history(session: &mut DistributionSession, direction: &str, expected: &str) {
+        let stamp = state(session)["stamp"].clone();
+        let reply = call(
+            session,
+            json!({"kind":"history","stamp":stamp,"direction":direction}),
+        );
+        assert_eq!(reply["value"]["effect"], "changed", "{reply}");
+        assert_eq!(snapshot(session), expected);
+    }
+
+    fn osr183_denied(
+        session: &mut DistributionSession,
+        command_id: &str,
+        payload: Value,
+        canonical: &str,
+        code: &str,
+    ) {
+        let before = state(session);
+        let reply = osr183_command(session, command_id, &payload, false);
+        assert_eq!(reply["status"], "refused", "{reply}");
+        assert_eq!(reply["diagnostic"]["code"], code, "{reply}");
+        assert_eq!(state(session), before);
+        assert_eq!(snapshot(session), canonical);
+    }
+
+    #[test]
+    fn osr183_create_author_note_at_root_gap_seeds_one_empty_paragraph() {
+        let left = json!({"type":"paragraph","content":[{"type":"text","text":"Before"}]});
+        let right = json!({"type":"paragraph","content":[{"type":"text","text":"After"}]});
+        let input = osr183_literal(json!([left, right]));
+        let expected = osr183_literal(json!([
+            left,
+            {"type":"literary_block","attrs":{"kind":"author_note"},"content":[{"type":"paragraph","content":[]}]},
+            right
+        ]));
+        let mut session = osr183_open(&input);
+        let root = state(&mut session)["root"].clone();
+        let sides = osr183_node(&mut session, &root)["children"].clone();
+        let gap = json!({"kind":"child","parent":root,"index":1,"affinity":"after"});
+        let stamp = state(&mut session)["stamp"].clone();
+        let set_selection = call(
+            &mut session,
+            json!({"kind":"set_selection","stamp":stamp,"selection":{"anchor":gap,"focus":gap}}),
+        );
+        assert_eq!(set_selection["status"], "ok", "{set_selection}");
+        let before = state(&mut session);
+        let request = json!({"kind":"insert_block","target":{"kind":"literary_block","literary_kind":"author_note"}});
+        let query = osr183_command(&mut session, OSR183_INSERT, &request, true);
+        assert_eq!(query["value"]["available"], true, "{query}");
+        assert_eq!(query["value"]["effect"], "changed", "{query}");
+        assert_eq!(state(&mut session), before);
+        assert_eq!(snapshot(&mut session), input);
+        osr183_denied(
+            &mut session,
+            OSR183_INSERT,
+            json!({"kind":"insert_block","target":{"kind":"literary_block","literary_kind":"letter"}}),
+            &input,
+            "sdk.invalid_dto",
+        );
+
+        let reply = osr183_command(&mut session, OSR183_INSERT, &request, false);
+        assert_eq!(reply["value"]["effect"], "changed", "{reply}");
+        assert_eq!(snapshot(&mut session), expected);
+        let roots = osr183_node(&mut session, &root)["children"].clone();
+        assert_eq!(roots[0], sides[0]);
+        assert_eq!(roots[2], sides[1]);
+        let note = osr183_node(&mut session, &roots[1]);
+        assert_eq!(note["type_id"], "org.klenwriter.kwdj/literary_block");
+        assert_eq!(
+            note["attributes"]["kind"],
+            json!({"kind":"string","value":"author_note"})
+        );
+        assert_eq!(note["children"].as_array().unwrap().len(), 1);
+        let paragraph = osr183_node(&mut session, &note["children"][0]);
+        assert_eq!(paragraph["type_id"], "org.klenwriter.kwdj/paragraph");
+        assert_eq!(paragraph["children"], json!([]));
+        let caret = json!({"kind":"child","parent":paragraph["id"],"index":0,"affinity":"after"});
+        let after = state(&mut session);
+        assert_eq!(after["selection"], json!({"anchor":caret,"focus":caret}));
+        assert_eq!(after["stamp"]["revision"], "1");
+        assert_eq!(after["history"]["undo_entries"], "1");
+        osr183_history(&mut session, "undo", &input);
+        osr183_history(&mut session, "redo", &expected);
+        assert_eq!(osr183_node(&mut session, &root)["children"], roots);
+    }
+
+    #[test]
+    fn osr183_set_author_note_changes_only_kind_and_preserves_exact_history() {
+        // DOC-015 preserves letter. A fresh rich child payload detects any
+        // copying, flattening or normalization of the existing children.
+        let input = osr183_literal(json!([
+            {"type":"paragraph","content":[]},
+            {"type":"literary_block","attrs":{"kind":"letter"},"content":[
+                {"type":"paragraph","attrs":{"align":"right"},"content":[
+                    {"type":"text","text":"Letter 😀","marks":[{"type":"strong"}]},
+                    {"type":"hard_break"},
+                    {"type":"text","text":"Continuation"}
+                ]},
+                {"type":"paragraph","content":[{"type":"text","text":"Tail"}]}
+            ]}
+        ]));
+        let expected = input.replacen("\"kind\":\"letter\"", "\"kind\":\"author_note\"", 1);
+        let mut session = osr183_open(&input);
+        let root = state(&mut session)["root"].clone();
+        let roots = osr183_node(&mut session, &root)["children"].clone();
+        let note_id = roots[1].clone();
+        let before_children = osr183_node(&mut session, &note_id)["children"].clone();
+        let before_inline = osr183_node(&mut session, &before_children[0])["children"].clone();
+        let request =
+            json!({"kind":"set_literary_kind","node":note_id,"literary_kind":"author_note"});
+        let before = state(&mut session);
+        let query = osr183_command(&mut session, OSR183_SET_KIND, &request, true);
+        assert_eq!(query["value"]["available"], true, "{query}");
+        assert_eq!(query["value"]["effect"], "changed", "{query}");
+        assert_eq!(state(&mut session), before);
+        assert_eq!(snapshot(&mut session), input);
+        let reply = osr183_command(&mut session, OSR183_SET_KIND, &request, false);
+        assert_eq!(reply["value"]["effect"], "changed", "{reply}");
+        assert_eq!(snapshot(&mut session), expected);
+        assert_eq!(osr183_node(&mut session, &root)["children"], roots);
+        assert_eq!(
+            osr183_node(&mut session, &note_id)["children"],
+            before_children
+        );
+        assert_eq!(
+            osr183_node(&mut session, &before_children[0])["children"],
+            before_inline
+        );
+        let after = state(&mut session);
+        assert_eq!(after["stamp"]["revision"], "1");
+        assert_eq!(after["history"]["undo_entries"], "1");
+        osr183_history(&mut session, "undo", &input);
+        osr183_history(&mut session, "redo", &expected);
+        assert_eq!(osr183_node(&mut session, &root)["children"], roots);
+        assert_eq!(
+            osr183_node(&mut session, &note_id)["children"],
+            before_children
+        );
+
+        let settled = state(&mut session);
+        let same = osr183_command(&mut session, OSR183_SET_KIND, &request, false);
+        assert_eq!(same["value"]["effect"], "unchanged", "{same}");
+        assert_eq!(state(&mut session), settled);
+        assert_eq!(snapshot(&mut session), expected);
+        for (payload, code) in [
+            (
+                json!({"kind":"set_literary_kind","node":note_id,"literary_kind":"letter"}),
+                "sdk.invalid_dto",
+            ),
+            (
+                json!({"kind":"set_literary_kind","node":roots[0],"literary_kind":"author_note"}),
+                "kwdj.command_invalid_target",
+            ),
+        ] {
+            osr183_denied(&mut session, OSR183_SET_KIND, payload, &expected, code);
+        }
     }
 }

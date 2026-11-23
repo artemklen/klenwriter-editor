@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-//! Additive ABI2 profile command; legacy KwdjIntentDto stays closed.
+//! Additive ABI2 profile commands. The legacy KwdjIntentDto stays closed.
 use serde::{Deserialize, Serialize};
 #[cfg_attr(
     all(feature = "sdk-types", not(target_arch = "wasm32")),
@@ -9,6 +9,44 @@ use serde::{Deserialize, Serialize};
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub enum KwdjClipboardIntentV2 {
     InsertFragment { fragment_json: String },
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum LiteraryAuthoringKindV2 {
+    AuthorNote,
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum LiteraryBlockTargetV2 {
+    LiteraryBlock {
+        literary_kind: LiteraryAuthoringKindV2,
+    },
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum KwdjLiteraryIntentV2 {
+    InsertBlock {
+        target: LiteraryBlockTargetV2,
+    },
+    SetLiteraryKind {
+        node: String,
+        literary_kind: LiteraryAuthoringKindV2,
+    },
 }
 
 #[cfg_attr(
