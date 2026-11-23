@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, readFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, webkit } from 'playwright';
@@ -10,9 +10,48 @@ import { buildConsumerModule, installAlphaConsumer } from '../../scripts/vanilla
 
 const example = fileURLToPath(new URL('./', import.meta.url));
 const workspace = resolve(example, '../..');
+const notesSource = join(workspace, 'examples', 'notes-extension');
+const notesDocumentPath = join(workspace, 'contracts', 'dom', 'v1', 'expected', 'Notes-D0.canonical.json');
+const notesCanonical = readFileSync(notesDocumentPath, 'utf8');
+const notesDescriptor = readFileSync(join(notesSource, 'd0.json'), 'utf8');
+const kwdjDescriptor = JSON.stringify(JSON.parse(readFileSync(join(example, 'kwdj-registry.json'), 'utf8')));
 const [bundle, mode = '--check', ...extras] = process.argv.slice(2);
 assert(bundle && ['--check', '--serve'].includes(mode) && extras.length === 0,
   'Usage: node examples/vanilla-alpha/run.mjs <tarball-directory> [--check|--serve]');
+
+async function validateExport(page, canonical, descriptor, profileOptions) {
+  const result = await page.evaluate(async ({ canonical, descriptor, profileOptions }) => {
+    const { createEditor, loadSdkV2, sdkAbiV2, sdkBuildId } = await import('@klenwriter/editor-sdk');
+    const sdk = await loadSdkV2();
+    const resources = () => JSON.parse(sdk.resourceCounts());
+    const before = resources();
+    const registry = JSON.parse(descriptor);
+    const profile = registry.profile;
+    const validator = createEditor({
+      input: new TextEncoder().encode(canonical),
+      loader: async () => sdk,
+      options: {
+        abi: sdkAbiV2, build_id: sdkBuildId, admission: 'validate', access: 'read_only',
+        profile: {
+          profile_id: profile.id, profile_version: profile.version, codec_id: profile.codec_id,
+          wire_version: profile.wire_version, extensions: registry.selected_extensions,
+        },
+        registry_json: descriptor, profile_options_json: JSON.stringify(profileOptions),
+      },
+    });
+    const admitted = await validator.ready;
+    const context = validator.context();
+    const ticket = validator.destroy();
+    const closed = ticket.status === 'queued' ? await ticket.completion : ticket.response;
+    return { admitted, context, closed, before, after: resources() };
+  }, { canonical, descriptor, profileOptions });
+  assert.equal(result.admitted.status, 'ok', JSON.stringify(result.admitted));
+  assert.equal(result.context.profile.profile_id, JSON.parse(descriptor).profile.id);
+  assert.equal(result.closed.status, 'ok');
+  assert.equal(result.closed.value.kind, 'destroyed');
+  assert.equal(result.before.sessions, 1, 'Only the active editor is retained');
+  assert.deepEqual(result.after, result.before, 'Validation releases its native resources');
+}
 
 const manifest = JSON.parse(readFileSync(join(example, 'package.json'), 'utf8'));
 assert.deepEqual(Object.keys(manifest).sort(), ['dependencies', 'name', 'private', 'type']);
@@ -22,6 +61,12 @@ try {
   for (const file of ['app.mjs', 'profile.mjs', 'kwdj-registry.json', 'index.html', 'example.css']) {
     copyFileSync(join(example, file), join(consumer.directory, file));
   }
+  const notesDirectory = join(consumer.directory, 'notes-extension');
+  mkdirSync(notesDirectory);
+  copyFileSync(notesDocumentPath, join(consumer.directory, 'notes-document.json'));
+  for (const member of ['dom.mjs', 'dom-inventory.mjs', 'd0.json']) {
+    copyFileSync(join(notesSource, member), join(notesDirectory, member));
+  }
   const entry = join(consumer.directory, 'app.mjs');
   const emitted = join(consumer.directory, 'dist', 'app.mjs');
   const build = buildConsumerModule(consumer, entry, emitted);
@@ -29,12 +74,18 @@ try {
   const resources = new Map([
     ['/app.mjs', { type: 'text/javascript', file: emitted }],
     ['/example.css', { type: 'text/css', file: join(consumer.directory, 'example.css') }],
+    ['/notes-extension/dom.mjs', { type: 'text/javascript', file: join(notesDirectory, 'dom.mjs') }],
+    ['/notes-extension/dom-inventory.mjs', { type: 'text/javascript', file: join(notesDirectory, 'dom-inventory.mjs') }],
+    ['/notes-extension/d0.json', { type: 'application/json', file: join(notesDirectory, 'd0.json') }],
   ]);
   server = await serveAlphaConsumer(consumer,
     ({ importMap, imports }) => template
       .replace('%%IMPORT_MAP%%', () => importMap)
       .replace('%%EDITOR_CSS%%', imports['@klenwriter/editor/style.css']),
-    resources);
+    resources, {
+      '@example/notes-extension/dom': '/notes-extension/dom.mjs',
+      '@example/notes-extension/d0.json': '/notes-extension/d0.json',
+    });
 
   if (mode === '--serve') {
     console.log(server.url);
@@ -48,6 +99,7 @@ try {
       const browser = await driver.launch();
       try {
         const page = await browser.newPage();
+        page.setDefaultTimeout(8_000);
         const errors = [];
         page.on('pageerror', error => errors.push(error.message));
         const canonical = async () => {
@@ -91,8 +143,32 @@ try {
         await waitForStatus('Reopened saved document');
         assert.equal(await canonical(), after);
         assert.equal(await page.locator('#editor').textContent(), JSON.parse(after).content[0].content[0].text);
+
+        const profile = page.getByLabel('Profile', { exact: true });
+        await profile.selectOption('notes');
+        await waitForStatus('Opened Generic Notes');
+        assert.equal(await canonical(), notesCanonical);
+        assert.equal(await page.locator('#editor [title]').getAttribute('title'), 'Notes D0');
+        const notesOptions = { root_blocks: ['org.example.notes/paragraph'], limits: null };
+        await validateExport(page, await canonical(), notesDescriptor, notesOptions);
+
+        await profile.selectOption('kwdj');
+        await waitForStatus('Opened KWDJ');
+        assert.equal(await canonical(), before);
+        assert.equal(await page.locator('#editor').textContent(), 'Vanilla alpha');
+        const kwdjOptions = { identities: { media: [], references: [] }, limits: null };
+        await validateExport(page, await canonical(), kwdjDescriptor, kwdjOptions);
+
+        await profile.selectOption('notes');
+        await waitForStatus('Opened Generic Notes');
+        assert.equal(await canonical(), notesCanonical);
+        await validateExport(page, await canonical(), notesDescriptor, notesOptions);
+
         assert.deepEqual(errors, []);
-        results.push({ engine, version: browser.version(), editUndoRedoSaveReloadReopen: 'pass' });
+        results.push({
+          engine, version: browser.version(),
+          editUndoRedoSaveReloadReopen: 'pass', profileSwitchAndValidation: 'pass',
+        });
       } finally {
         await browser.close();
       }

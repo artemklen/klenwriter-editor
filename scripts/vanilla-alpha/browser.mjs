@@ -25,10 +25,14 @@ const publicSpecifiers = [
   '@klenwriter/editor-ui/style.css',
 ];
 
-export async function serveAlphaConsumer(consumer, html, resources, extraSpecifiers = []) {
-  const paths = publicAssets(consumer, [...publicSpecifiers, ...extraSpecifiers]);
+export async function serveAlphaConsumer(consumer, html, resources, fixtureImports = {}) {
+  const paths = publicAssets(consumer, publicSpecifiers);
   const urlOf = path => '/' + relative(consumer.directory, path).split(sep).join('/');
   const imports = Object.fromEntries(Object.entries(paths).map(([name, path]) => [name, urlOf(path)]));
+  for (const [name, route] of Object.entries(fixtureImports)) {
+    assert(!Object.hasOwn(imports, name) && resources.has(route), name);
+    imports[name] = route;
+  }
   const importMap = JSON.stringify({ imports });
   const hash = createHash('sha256').update(importMap).digest('base64');
   const policy = "default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-" + hash +

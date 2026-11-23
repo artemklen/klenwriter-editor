@@ -1,16 +1,21 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import { destroy, export as exportDocument, mount, subscribe, update } from '@klenwriter/editor';
 import { loadSdkV2 } from '@klenwriter/editor-sdk';
-import { initialDocument, options, renderers } from './profile.mjs';
+import { profiles } from './profile.mjs';
 
 const editorElement = document.querySelector('#editor');
 const controls = document.querySelector('#controls');
 const status = document.querySelector('#status');
 const canonical = document.querySelector('#canonical');
-const storageKey = 'klenwriter-vanilla-alpha/kwdj';
+const profileSelect = document.querySelector('#profile');
 const encoder = new TextEncoder();
 const sdk = loadSdkV2();
 let editor;
+let currentProfile = profileSelect.value;
+
+function storageKey() {
+  return 'klenwriter-vanilla-alpha/' + currentProfile;
+}
 
 async function accepted(ticket, kind) {
   const result = ticket.status === 'queued' ? await ticket.completion : ticket.response;
@@ -34,7 +39,8 @@ function showError(error) {
   console.error(error);
 }
 
-async function open(input) {
+async function open(profile, input = profiles[profile].initialDocument) {
+  const { options, renderers } = profiles[profile];
   if (editor) {
     const previous = editor;
     editor = undefined;
@@ -48,6 +54,7 @@ async function open(input) {
   editor = mounted;
   const ready = await mounted.ready;
   if (ready.status !== 'ready') throw new Error(JSON.stringify(ready));
+  currentProfile = profile;
 
   let pending = false;
   subscribe(mounted, event => {
@@ -61,8 +68,8 @@ async function open(input) {
   await snapshot(mounted);
 }
 
-function action(button, perform) {
-  document.querySelector(button).addEventListener('click', async () => {
+function action(selector, perform, event = 'click') {
+  document.querySelector(selector).addEventListener(event, async () => {
     controls.disabled = true;
     try {
       status.textContent = await perform();
@@ -82,19 +89,24 @@ async function history(direction) {
 
 action('#undo', () => history('undo'));
 action('#redo', () => history('redo'));
+action('#profile', async () => {
+  const profile = profileSelect.value;
+  await open(profile);
+  return 'Opened ' + profiles[profile].label;
+}, 'change');
 action('#save', async () => {
-  localStorage.setItem(storageKey, await snapshot());
+  localStorage.setItem(storageKey(), await snapshot());
   return 'Saved in this browser';
 });
 action('#reopen', async () => {
-  const saved = localStorage.getItem(storageKey);
+  const saved = localStorage.getItem(storageKey());
   if (saved === null) return 'No saved document';
-  await open(saved);
+  await open(currentProfile, saved);
   return 'Reopened saved document';
 });
 
 try {
-  await open(initialDocument);
+  await open(currentProfile);
   status.textContent = 'Editor ready';
   controls.disabled = false;
 } catch (error) {

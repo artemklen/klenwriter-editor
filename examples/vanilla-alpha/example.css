@@ -12,6 +12,7 @@ main {
 
 #controls {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: .5rem;
   border: 0;
@@ -19,7 +20,7 @@ main {
   margin: 0;
 }
 
-button {
+button, select {
   font: inherit;
   padding: .375rem .75rem;
 }
