@@ -19,10 +19,12 @@ const policyReadback=()=>({policyViolations:policy.slice(),policyOverflow:policy
 const check=(ok,message)=>{if(!ok)throw Error(message);};
 function current(){check(active,'No owned installed composition mount');return active;}
 function viewport(){const v=visualViewport;return {width:innerWidth,height:innerHeight,scale:v?.scale??1,offsetLeft:v?.offsetLeft??0,offsetTop:v?.offsetTop??0};}
-export async function prepare(locale,caseId){check(!active&&['en','ru'].includes(locale)&&cases.includes(caseId),'Closed prepare');
+export async function prepare(locale,caseId,variant){
+  check(!active&&['en','ru'].includes(locale)&&cases.includes(caseId),'Closed prepare');
+  check(variant===undefined||variant==='verse'&&(caseId==='ordinary-layout'||locale==='en'&&caseId==='plain-deadkey'),'Closed installed verse prepare');
   const family=caseId==='ordinary-layout'?(locale==='en'?'P01':'P02'):({'plain-deadkey':'P15','marked-deadkey':'P17','scene-deadkey':'P16','escape-preedit':'P18','blur-refocus':'P19'})[caseId];
   const domCase=caseId==='marked-deadkey'?'D04-marks-BR-sentinels-forward':caseId==='scene-deadkey'||caseId==='blur-refocus'?'D08-selected-scene-forward':'D01-plain-event-data-mismatch';
-  preparing={caseId,locale};let prepared;try{prepared=await host.mount({caseId:domCase,nativeCase:family+'-forward',locale});}finally{preparing=null;}
+  preparing={caseId,locale};let prepared;try{prepared=await host.mount({caseId:domCase,nativeCase:family+'-forward',locale,variant});}finally{preparing=null;}
   const baselinePolicy=policyReadback(),before={...prepared.before,...baselinePolicy};active={id:prepared.id,caseId,locale,family,before};
   if(caseId==='blur-refocus'){
     // An explicit tabindex admits this nontext button to WebKit Tab navigation
@@ -32,7 +34,7 @@ export async function prepare(locale,caseId){check(!active&&['en','ru'].includes
     const tabIndex=control.getAttribute('tabindex');
     control.setAttribute('tabindex','0');active.focusControlTabIndex={control,tabIndex};
   }
-  return {...prepared,before,...baselinePolicy,caseId,locale,family,viewport:viewport(),scope:'Prepared actual SDK2 fixture only; no physical input yet'};
+  return {...prepared,before,...baselinePolicy,caseId,locale,family,...(variant==='verse'?{fixture:variant}:{}),viewport:viewport(),scope:'Prepared actual SDK2 fixture only; no physical input yet'};
 }
 export function guard(action){check(actions.includes(action),'Closed key action');const r=current(),element=host.element(r.id),focus=document.activeElement,target=focus===element||element.contains(focus)?'editor':focus===document.getElementById('composition-host-control')?'host-control':'blocked';const v=viewport();
   return {id:r.id,caseId:r.caseId,action,target,editorConnected:element.isConnected&&!!element.closest('#composition-mounts'),documentFocused:document.hasFocus(),allowed:!policyOverflow&&element.isConnected&&document.hasFocus()&&target===(action==='tab'?'host-control':'editor')&&v.width===1024&&v.height===768&&v.scale===1&&v.offsetLeft===0&&v.offsetTop===0,viewport:v,point:null,pointerDown:false};

@@ -39,10 +39,21 @@ for(const name of ['remove','replaceChildren','replaceWith']){const original=Ele
 export function metadata(){return {buildId:sdkBuildId,manifest:clone(module.manifest),native:JSON.parse(module.resourceCounts()),counts:{dom:dom.cases.length,native:native.cases.length,event:events.rows.length},errata:clone(dom.appliedErrata??dom.errata??null),scope:'Actual packaged SDK2/sealed WASM. Controlled DOM mutations and synthetic events are not installed physical input.'};}
 export function definition(caseId){const c=caseAt(caseId);return {dom:c,fixture:dom.fixtures[c.seed],native:c.nativeCase?nativeAt(c.nativeCase):null};}
 export function nativeDefinition(id){return clone(nativeAt(id));}
-export async function mount({caseId='D01-plain-event-data-mismatch',nativeCase=null,locale='en',presentation='basic'}={}){
-  const c=caseAt(caseId),nc=nativeAt(nativeCase??c.nativeCase??(c.seed==='G'?'P14-forward':c.seed==='C'?'P10-forward':'P02-forward'));
+export async function mount({caseId='D01-plain-event-data-mismatch',nativeCase=null,locale='en',presentation='basic',variant}={}){
+  const c=caseAt(caseId);
+  let nc=nativeAt(nativeCase??c.nativeCase??(c.seed==='G'?'P14-forward':c.seed==='C'?'P10-forward':'P02-forward'));
   check(['basic','strong-span-control'].includes(presentation),'Closed fixture presentation');
   let renderers=kwdjBasicRenderers,fixture=dom.fixtures[c.seed];
+  if(variant!==undefined){
+    check(variant==='verse'&&presentation==='basic'&&c.id==='D01-plain-event-data-mismatch'
+      &&['P01-forward','P02-forward','P15-forward'].includes(nc.id),'Closed installed verse fixture');
+    const response=await fetch('/composition-contract/verse-installed.json');
+    check(response.ok,'Installed verse fixture is unavailable');
+    const verse=await response.json();
+    check(verse.format==='kwdj-installed-verse-composition/1','Installed verse fixture format differs');
+    nc={...nc,input:{...nc.input,...verse.input}};
+    fixture=verse.fixture;
+  }
   if(presentation==='strong-span-control'){
     check(c.id==='D04-marks-BR-sentinels-forward'&&nc.id==='P17-forward','Custom presentation control requires the independent P17 seed');
     const definition=kwdjBasicRenderers.definition,strong='org.klenwriter.kwdj/strong';
@@ -64,7 +75,7 @@ export async function mount({caseId='D01-plain-event-data-mismatch',nativeCase=n
   const observe=e=>{if(e.target!==document.getElementById('composition-host-control')&&e.target!==element&&!element.contains(e.target))return;if(e.type==='compositionstart'){r.phase='composing';r.uaComposition.starts++;r.uaComposition.open=true;}if(e.type==='compositionend'){r.phase='ended';r.uaComposition.ends++;r.uaComposition.open=false;}record(r,'browser',{event:e.type,isTrusted:e.isTrusted,data:e.data??null,inputType:e.inputType??null,isComposing:e.isComposing??null,key:e.key??null,code:e.code??null,alt:e.altKey??false,shift:e.shiftKey??false,meta:e.metaKey??false,defaultPrevented:e.defaultPrevented,rawDom:raw(r)});};
   for(const type of ['compositionstart','compositionupdate','compositionend','beforeinput','input','keydown','keyup','focusin','focusout']){document.addEventListener(type,observe,true);r.removals.push(()=>document.removeEventListener(type,observe,true));}
   r.editor.subscribe(event=>{r.events.push(clone(event));record(r,'publication',{event:clone(event)});});
-  element.focus({preventScroll:true});const s=clone(c.originalDomSelection??r.fixture.initialForward);if(nc.id.endsWith('-reverse')&&c.direction!=='reverse') [s.anchor,s.focus]=[s.focus,s.anchor];
+  element.focus({preventScroll:true});const s=clone(variant==='verse'?r.fixture.initialForward:c.originalDomSelection??r.fixture.initialForward);if(nc.id.endsWith('-reverse')&&c.direction!=='reverse') [s.anchor,s.focus]=[s.focus,s.anchor];
   const expected=nativeSelection(r,nc.input.selection),submitted=r.editor.submit({kind:'set_selection',stamp:r.editor.capture(),selection:expected});r.setupSubmission=submitted;
   record(r,'setup-native-selection',{expected:clone(expected),submission:clone(submitted)});
   check(submitted.status==='completed'&&submitted.response.status==='ok'&&submitted.response.value.kind==='mutation','Actual authored native selection setup failed: '+JSON.stringify(clone(submitted)));

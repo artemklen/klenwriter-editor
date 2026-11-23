@@ -6,15 +6,24 @@ const clock=()=>process.hrtime.bigint(),age=start=>Number(clock()-start)/1e6;
 export const keySpecs=Object.freeze({'ordinary-en':{code:6,modifier:'shift'},'ordinary-ru':{code:6,modifier:'none'},'deadkey-acute':{code:14,modifier:'option'},'complete-e':{code:14,modifier:'none'},escape:{code:53,modifier:'none'},'shift-tab':{code:48,modifier:'shift'},tab:{code:48,modifier:'none'}});
 const requireFixture=`on requireFixture(expectedPID, expectedName, expectedBundle, expectedTitle)
  tell application "System Events"
-  set ownedProcesses to (application processes whose unix id is expectedPID)
-  if (count of ownedProcesses) is not 1 then error "Exact fixture PID unavailable"
-  tell item 1 of ownedProcesses
-   if name is not expectedName or bundle identifier is not expectedBundle then error "Fixture identity changed"
+  -- A filtered process reference can resolve to the first process with the same name.
+  set ids to the unix id of every application process
+  set ownedIndex to 0
+  repeat with processIndex from 1 to count of ids
+   if item processIndex of ids is expectedPID then
+    if ownedIndex is not 0 then error "Exact fixture PID ambiguous"
+    set ownedIndex to processIndex
+   end if
+  end repeat
+  if ownedIndex is 0 then error "Exact fixture PID unavailable"
+  tell application process ownedIndex
+   if unix id is not expectedPID or name is not expectedName or bundle identifier is not expectedBundle then error "Fixture identity changed"
    if frontmost is not true then error "Fixture is not frontmost"
    if (count of windows) is greater than 32 then error "Fixture window bound"
    if (count of (windows whose name is expectedTitle)) is not 1 then error "Fixture title not unique"
    if (name of front window) is not expectedTitle then error "Fixture title not frontmost"
    if (value of attribute "AXTitle" of (value of attribute "AXFocusedWindow")) is not expectedTitle then error "Fixture title not focused"
+   if unix id is not expectedPID or frontmost is not true then error "Fixture identity or focus changed"
   end tell
  end tell
 end requireFixture
