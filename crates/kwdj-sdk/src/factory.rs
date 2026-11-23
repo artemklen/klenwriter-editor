@@ -2593,4 +2593,92 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn osr283_verse_transform_matches_literal_grammar_and_undo() {
+        const TRANSFORM: &str = "org.klenwriter.kwdj/command/transform-block";
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-283-verse-transform.json"
+        ))
+        .unwrap();
+        for case in fixture["cases"].as_array().unwrap() {
+            let id = case["id"].as_str().unwrap();
+            let document = |key| fixture["documents"][case[key].as_str().unwrap()].to_string();
+            let original = document("input");
+            let mut session = osr183_open(&original);
+            assert_eq!(snapshot(&mut session), original, "{id}");
+            let node_at = |session: &mut DistributionSession, path: &Value| {
+                let mut block = state(session)["root"].clone();
+                for index in path.as_array().unwrap() {
+                    block = osr183_node(session, &block)["children"]
+                        [index.as_u64().unwrap() as usize]
+                        .clone();
+                }
+                block
+            };
+            let focus = node_at(&mut session, &case["path"]);
+            let focus = if let Some(side) = case.get("edge") {
+                json!({"kind":"edge","node":focus,"side":side})
+            } else {
+                let index = case["gap_index"].as_u64().unwrap_or(0);
+                json!({"kind":"child","parent":focus,"index":index,"affinity":"after"})
+            };
+            let anchor = case.get("anchor_path").map_or_else(
+                || focus.clone(),
+                |path| json!({"kind":"child","parent":node_at(&mut session,path),"index":0,"affinity":"after"}),
+            );
+            let stamp = state(&mut session)["stamp"].clone();
+            let selected = call(
+                &mut session,
+                json!({"kind":"set_selection","stamp":stamp,"selection":{"anchor":anchor,"focus":focus}}),
+            );
+            assert_eq!(selected["status"], "ok", "{id}: {selected}");
+            let before = state(&mut session);
+            let payload = json!({"kind":"transform_block","target":case["target"]});
+            let query = osr183_command(&mut session, TRANSFORM, &payload, true);
+            assert_eq!(query["status"], "ok", "{id}: {query}");
+            assert_eq!(state(&mut session), before, "{id}");
+            assert_eq!(snapshot(&mut session), original, "{id}");
+
+            let reply = osr183_command(&mut session, TRANSFORM, &payload, false);
+            if let Some(expected) = case.get("diagnostic") {
+                assert_eq!(query["value"]["available"], false, "{id}: {query}");
+                assert_eq!(reply["status"], "refused", "{id}: {reply}");
+                for key in ["code", "path"] {
+                    assert_eq!(query["value"]["diagnostic"][key], expected[key], "{id}");
+                    assert_eq!(reply["diagnostic"][key], expected[key], "{id}");
+                }
+                assert_eq!(reply["diagnostic"]["may_have_committed"], false, "{id}");
+                assert_eq!(state(&mut session), before, "{id}");
+                assert_eq!(snapshot(&mut session), original, "{id}");
+                continue;
+            }
+            let expected = document("expected");
+            let effect = &case["effect"];
+            assert_eq!(query["value"]["available"], true, "{id}: {query}");
+            assert_eq!(&query["value"]["effect"], effect, "{id}: {query}");
+            assert_eq!(&reply["value"]["effect"], effect, "{id}: {reply}");
+            assert_eq!(snapshot(&mut session), expected, "{id}");
+            assert_eq!(
+                snapshot(&mut osr183_open(&expected)),
+                expected,
+                "{id}: reopen"
+            );
+
+            let after = state(&mut session);
+            if effect == "changed" {
+                assert_eq!(after["stamp"]["revision"], "1", "{id}");
+                assert_eq!(after["history"]["undo_entries"], "1", "{id}");
+                osr183_history(&mut session, "undo", &original);
+                assert_eq!(
+                    state(&mut session)["selection"],
+                    before["selection"],
+                    "{id}"
+                );
+                osr183_history(&mut session, "redo", &expected);
+            } else {
+                assert_eq!(after, before, "{id}");
+            }
+        }
+    }
 }

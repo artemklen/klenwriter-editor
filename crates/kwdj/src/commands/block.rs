@@ -1174,12 +1174,250 @@ fn selected_blocks<V: CandidateRead>(
     Ok(range.blocks)
 }
 
+fn root_owner<V: CandidateRead>(
+    view: &V,
+    position: Position<V::Id>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<(V::Id, Option<usize>), KwdjError> {
+    let at_gap = |index| {
+        let roots = view.roots();
+        let id = roots
+            .get(index)
+            .or_else(|| roots.last())
+            .copied()
+            .ok_or_else(invalid)?;
+        Ok((id, Some(index)))
+    };
+    let (mut id, edge) = match position {
+        Position::Text { leaf, .. } => (leaf, None),
+        Position::Edge { node, side } => (node, Some(side)),
+        Position::Child { parent, index, .. } if parent == view.root() => {
+            unit(plan, 1)?;
+            return at_gap(index);
+        }
+        Position::Child { parent, .. } => (parent, None),
+    };
+    for depth in 0..=crate::MAX_TREE_DEPTH {
+        let node = get(view, id, plan)?;
+        if node.parent == view.root() {
+            // Text-block edges are inline positions. A structural root edge
+            // coincides with the corresponding gap in the document.
+            if let Some(side) = edge
+                && depth == 0
+                && node.primitive != Primitive::TextBlock
+            {
+                let index = index(view, view.root(), id, plan)?;
+                return at_gap(index + usize::from(side == Edge::After));
+            }
+            return Ok((id, None));
+        }
+        id = node.parent;
+    }
+    Err(invalid())
+}
+
+fn move_verse_inline<I: Copy>(
+    children: &[I],
+    parent: LocalRef<I>,
+    before_index: usize,
+    plan: &mut PlanBuilder<'_, I>,
+) -> Result<(), KwdjError> {
+    if !children.is_empty() {
+        unit(plan, children.len())?;
+        bytes(
+            plan,
+            children.len().saturating_mul(size_of::<LocalRef<I>>()),
+        )?;
+        push(
+            plan,
+            Operation::MoveInlineGroup {
+                nodes: children.iter().copied().map(LocalRef::Existing).collect(),
+                parent,
+                before_index,
+            },
+        )?;
+    }
+    Ok(())
+}
+
+fn verse_from_paragraph<V: CandidateRead>(
+    view: &V,
+    source: BorrowedNode<'_, V::Id>,
+    at: usize,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<(), KwdjError> {
+    if !source.attributes.is_empty() {
+        return Err(lossy());
+    }
+    let mut lines = Vec::new();
+    let mut start = 0;
+    for (index, child) in source.children.iter().enumerate() {
+        if get(view, *child, plan)?.primitive == Primitive::HardBreak {
+            bytes(plan, size_of::<&[V::Id]>() * 2)?;
+            lines.push(&source.children[start..index]);
+            start = index + 1;
+        }
+    }
+    bytes(plan, size_of::<&[V::Id]>() * 2)?;
+    lines.push(&source.children[start..]);
+
+    let mut verse = empty_node("verse", Primitive::Container, Attributes::new(), plan)?;
+    bytes(plan, lines.len().saturating_mul(size_of::<Node>()))?;
+    verse.children.reserve_exact(lines.len());
+    for _ in &lines {
+        verse.children.push(empty_node(
+            "verse_line",
+            Primitive::TextBlock,
+            Attributes::new(),
+            plan,
+        )?);
+    }
+    let operation = fragment(plan, view.root().into(), at, verse)?;
+    for (index, children) in lines.iter().enumerate() {
+        let line = created(operation, &[0, index], plan)?;
+        move_verse_inline(children, line, 0, plan)?;
+    }
+    let line = created(operation, &[0, 0], plan)?;
+    let first = lines[0].first().copied().map(LocalRef::Existing);
+    caret_start(view, line, first.as_slice(), plan)
+}
+
+fn paragraphs_from_verse<V: CandidateRead>(
+    view: &V,
+    source: BorrowedNode<'_, V::Id>,
+    at: usize,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<(), KwdjError> {
+    bytes(plan, size_of::<Vec<&[V::Id]>>() * 2)?;
+    let mut stanzas = vec![Vec::new()];
+    for child in source.children {
+        let node = get(view, *child, plan)?;
+        let stanza = stanzas.last_mut().expect("initial stanza");
+        match kind(node.type_id) {
+            "verse_line" => {
+                bytes(plan, size_of::<&[V::Id]>() * 2)?;
+                stanza.push(node.children);
+            }
+            "stanza_break" => {
+                if stanza.is_empty()
+                    || !matches!(node.attributes.get("blank_lines"),
+                        Some(Attribute::Number(value)) if value.as_u64() == Some(1))
+                {
+                    return Err(lossy());
+                }
+                bytes(plan, size_of::<Vec<&[V::Id]>>() * 2)?;
+                stanzas.push(Vec::new());
+            }
+            _ => return Err(unsupported()),
+        }
+    }
+    if stanzas.last().is_none_or(Vec::is_empty) {
+        return Err(lossy());
+    }
+    for (index, stanza) in stanzas.iter().enumerate() {
+        let mut paragraph = empty_node("paragraph", Primitive::TextBlock, Attributes::new(), plan)?;
+        let separator_count = stanza.len() - 1;
+        bytes(plan, separator_count.saturating_mul(size_of::<Node>()))?;
+        paragraph.children.reserve_exact(separator_count);
+        for _ in 0..separator_count {
+            paragraph.children.push(empty_node(
+                "hard_break",
+                Primitive::HardBreak,
+                Attributes::new(),
+                plan,
+            )?);
+        }
+        let operation = fragment(plan, view.root().into(), at + index, paragraph)?;
+        // Each preinserted hard break remains between the original line groups.
+        // Inserting from the end keeps each separator's earlier index stable.
+        for (line, children) in stanza.iter().enumerate().rev() {
+            let parent = created(operation, &[0], plan)?;
+            move_verse_inline(children, parent, line, plan)?;
+        }
+        if index == 0 {
+            let parent = created(operation, &[0], plan)?;
+            let first = stanza[0].first().copied().map(LocalRef::Existing);
+            caret_start(view, parent, first.as_slice(), plan)?;
+        }
+    }
+    Ok(())
+}
+
+fn transform_verse<V: CandidateRead>(
+    view: &V,
+    id: V::Id,
+    source: BorrowedNode<'_, V::Id>,
+    target: &BlockTarget,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let source_kind = kind(source.type_id);
+    if source_kind == "verse" && matches!(target, BlockTarget::Poetry) {
+        return Ok(CommandPresentation {
+            active: Some(ActiveState::On),
+        });
+    }
+    let at = index(view, view.root(), id, plan)?;
+    match (source_kind, target) {
+        ("paragraph", BlockTarget::Poetry) => verse_from_paragraph(view, source, at, plan)?,
+        ("verse", BlockTarget::Paragraph) => paragraphs_from_verse(view, source, at, plan)?,
+        _ => return Err(unsupported()),
+    }
+    push(plan, Operation::Remove { node: id.into() })?;
+    plan.set_stored_marks(StoredMarksUpdate::Inherit)
+        .map_err(KwdjError::operational)?;
+    Ok(CommandPresentation {
+        active: Some(ActiveState::Off),
+    })
+}
+
 fn transform<V: CandidateRead>(
+    context: Profile,
     view: &V,
     state: CommandState<'_, V::Id>,
     target: &BlockTarget,
     plan: &mut PlanBuilder<'_, V::Id>,
 ) -> Result<CommandPresentation, KwdjError> {
+    if matches!(target, BlockTarget::Table | BlockTarget::Media) {
+        target_node(target, plan)?;
+        unreachable!();
+    }
+    let poetry_target = matches!(target, BlockTarget::Poetry);
+    if poetry_target && context != Profile::Poetry {
+        return Err(refusal(KwdjErrorCode::CommandPoetryUnavailable));
+    }
+    if context == Profile::Poetry && (poetry_target || state.selection.is_some()) {
+        let selection = selection(state)?;
+        let (anchor, anchor_gap) = root_owner(view, selection.anchor, plan)?;
+        let (focus, focus_gap) = if selection.anchor == selection.focus {
+            (anchor, anchor_gap)
+        } else {
+            root_owner(view, selection.focus, plan)?
+        };
+        let active = if anchor == focus {
+            anchor
+        } else {
+            // The CMS uses the earlier endpoint's root owner for a selection.
+            unit(plan, view.roots().len())?;
+            view.roots()
+                .iter()
+                .copied()
+                .find(|id| *id == anchor || *id == focus)
+                .ok_or_else(invalid)?
+        };
+        let source = get(view, active, plan)?;
+        if poetry_target || kind(source.type_id) == "verse" {
+            return transform_verse(view, active, source, target, plan);
+        }
+        if anchor_gap.is_some()
+            && anchor_gap == focus_gap
+            && kind(source.type_id) == "paragraph"
+            && matches!(target, BlockTarget::Paragraph)
+        {
+            return Ok(CommandPresentation {
+                active: Some(ActiveState::On),
+            });
+        }
+    }
     if matches!(target, BlockTarget::Blockquote) {
         return toggle_quote(view, state, plan);
     }
@@ -1191,13 +1429,6 @@ fn transform<V: CandidateRead>(
     };
     if let Some(kind) = list {
         return toggle_list(view, state, kind, plan);
-    }
-    if matches!(
-        target,
-        BlockTarget::Table | BlockTarget::Poetry | BlockTarget::Media
-    ) {
-        target_node(target, plan)?;
-        unreachable!();
     }
     let blocks = selected_blocks(view, state, plan)?;
     let mut matching = 0;
@@ -2101,7 +2332,7 @@ pub(super) fn remove<V: CandidateRead>(
 }
 
 pub(super) fn prepare<V: CandidateRead>(
-    _context: Profile,
+    context: Profile,
     view: &V,
     state: CommandState<'_, V::Id>,
     intent: &KwdjIntent<V::Id>,
@@ -2143,7 +2374,7 @@ pub(super) fn prepare<V: CandidateRead>(
             )?;
             Ok(CommandPresentation::default())
         }
-        KwdjIntent::TransformBlock { target } => transform(view, state, target, plan),
+        KwdjIntent::TransformBlock { target } => transform(context, view, state, target, plan),
         KwdjIntent::ToggleQuote => toggle_quote(view, state, plan),
         KwdjIntent::ToggleList { kind } => toggle_list(view, state, *kind, plan),
         KwdjIntent::InsertBlock { target } => insert_block(view, state, target, None, plan),

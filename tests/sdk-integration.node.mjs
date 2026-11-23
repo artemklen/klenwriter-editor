@@ -1906,3 +1906,48 @@ test('OSR-280 packaged SDK2 trims edited stanza edges and the codec refuses impo
     });
   }
 });
+
+test('OSR-283 packaged SDK2 transforms root verse and paragraphs with exact Undo', async t => {
+  const fixture = JSON.parse(readFileSync(new URL('./fixtures/osr-283-verse-transform.json', import.meta.url)));
+  for (const row of fixture.cases) {
+    await t.test(row.id, () => withLiteraryCommandSession(osr185Bytes(fixture.documents[row.input]), editor => {
+      const original = canonical(editor);
+      const nodeAt = path => path.reduce((id, index) => node(editor, id).children[index], state(editor).root);
+      const focus = row.edge
+        ? { kind: 'edge', node: nodeAt(row.path), side: row.edge }
+        : osr185Gap(nodeAt(row.path), row.gap_index ?? 0);
+      const anchor = row.anchor_path ? osr185Gap(nodeAt(row.anchor_path), 0) : focus;
+      osr185Select(editor, anchor, focus);
+      const before = state(editor);
+      const id = 'org.klenwriter.kwdj/command/transform-block';
+      const intent = { kind: 'transform_block', target: row.target };
+      const command = kwdjCommand(intent);
+      assert.deepEqual(command, createCommand(id, intent));
+      const query = accepted(editor.query({ kind: 'query_command', stamp: editor.capture(), command }));
+      assert.deepEqual(state(editor), before);
+      assert.equal(canonical(editor), original);
+
+      if (row.diagnostic) {
+        assert.equal(query.available, false);
+        assert.equal(query.diagnostic.code, row.diagnostic.code);
+        assert.equal(query.diagnostic.path, row.diagnostic.path);
+        osr183Denied(editor, id, intent, original, row.diagnostic.code, row.diagnostic.path);
+        return;
+      }
+      const expected = osr185Bytes(fixture.documents[row.expected]);
+      assert.equal(query.available, true);
+      assert.equal(query.effect, row.effect);
+      assert.equal(accepted(osr183Wire(editor, command)).effect, row.effect);
+      assert.equal(canonical(editor), expected);
+      if (row.effect === 'changed') {
+        assert.equal(state(editor).stamp.revision, '1');
+        assert.equal(state(editor).history.undo_entries, '1');
+        osr183History(editor, 'undo', original);
+        assert.deepEqual(state(editor).selection, before.selection);
+        osr183History(editor, 'redo', expected);
+      } else {
+        assert.deepEqual(state(editor), before);
+      }
+    }));
+  }
+});
