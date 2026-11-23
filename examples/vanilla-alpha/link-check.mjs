@@ -50,14 +50,23 @@ export async function checkLinkDialog(page) {
     editorFocused: true, anchorMatches: true, anchorOffset: 7,
     focusMatches: true, focusOffset: 0, text: 'Vanilla',
   });
-  await trigger.click();
-  await dialog.waitFor();
-  assert.equal(await field.evaluate(input => document.activeElement === input), true);
-  await field.fill('https://example.test/discarded');
-  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
-  await dialog.waitFor({ state: 'hidden' });
-  await editor.evaluate(element => new Promise(done => requestAnimationFrame(() => done(element.id))));
-  assert.deepEqual(await selection(editor), beforeSelection, 'Cancel restores exact directed selection and focus');
+  for (const cancelWithEscape of [false, true]) {
+    await trigger.click();
+    await dialog.waitFor();
+    assert.equal(await field.evaluate(input => document.activeElement === input), true);
+    await field.fill('https://example.test/discarded');
+    if (cancelWithEscape) {
+      await page.mouse.click(8, 8);
+      assert.equal(await field.evaluate(input => document.activeElement === input), true,
+        'A backdrop click keeps keyboard focus inside the host dialog');
+      await page.keyboard.press('Escape');
+    } else {
+      await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+    }
+    await dialog.waitFor({ state: 'hidden' });
+    await editor.evaluate(() => new Promise(done => requestAnimationFrame(done)));
+    assert.deepEqual(await selection(editor), beforeSelection, 'Cancel restores exact directed selection and focus');
+  }
 
   // The existing host Save refreshes the native export even without a document event.
   await page.getByRole('button', { name: 'Save', exact: true }).click();

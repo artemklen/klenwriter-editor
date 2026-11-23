@@ -19,6 +19,9 @@ export function createLinkAction(scope) {
         accept({ href: input.value });
       }, { signal });
       cancelButton.addEventListener('click', () => cancel(), { signal });
+      scope.addEventListener('pointerdown', event => {
+        if (event.target === scope) event.preventDefault();
+      }, { signal });
       scope.addEventListener('keydown', event => {
         if (event.key === 'Escape') {
           event.preventDefault();
