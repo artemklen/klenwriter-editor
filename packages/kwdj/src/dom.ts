@@ -8,6 +8,9 @@ import { kwdjCommand, kwdjTypedTextCommand, kwdjRestoreTypedTextCommand } from '
 import { kwdjDomInventory } from './dom-inventory.js';
 import { kwdjTypingDomInventory } from './typing-dom-inventory.js';
 
+export { bindKwdjContainerLabel } from './container-label.js';
+export type { KwdjContainerLabelOptions } from './container-label.js';
+
 const prefix = 'org.klenwriter.kwdj/';
 const colorTokens = ['muted', 'accent', 'manuscript', 'warning', 'success', 'danger'];
 const highlightTokens = ['accent', 'manuscript', 'warning'];
@@ -206,6 +209,7 @@ function coveredCommand(id: string, payload: Record<string, unknown>): boolean {
     case 'wrap-literary-block': return closed(payload, ['kind', 'literary_kind']) && payload.literary_kind === 'author_note';
     case 'wrap-warning': return closed(payload, ['kind', 'warning_kind']) && warningKind(payload.warning_kind);
     case 'unwrap-literary-block': case 'unwrap-warning': return closed(payload, ['kind', 'node']) && typeof payload.node === 'string';
+    case 'set-container-label': return closed(payload, ['kind', 'node', 'label']) && typeof payload.node === 'string' && smallString(payload.label);
     case 'toggle-mark': return closed(payload, ['kind', 'mark']) && coveredMark(payload.mark);
     case 'set-link': return closed(payload, ['kind', 'href', 'title']) && safeHref(payload.href) && (payload.title === null || smallString(payload.title));
     case 'transform-block': return closed(payload, ['kind', 'target']) && coveredTarget(payload.target);

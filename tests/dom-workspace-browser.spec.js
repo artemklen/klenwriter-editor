@@ -516,6 +516,655 @@ test('OSR-190 trusted first-warning-child Backspace preserves the OSR-189 native
   expect(await call(page, 'nativeSelectionMatches', id, path, 0)).toBe(true);
 });
 
+const osr193Routes = [
+  { type: 'spoiler', index: 0, control: 'Spoiler label', body: '/0/0/0', bodyEnd: 5, next: '/1/0/0' },
+  { type: 'disclosure', index: 1, control: 'Disclosure label', body: '/1/0/0', bodyEnd: 7, next: '/2/0' },
+];
+
+const osr193Source = () => readFileSync(new URL('./fixtures/osr-192-label-entry.input.json', import.meta.url), 'utf8');
+const osr193Expected = () => readFileSync(new URL('./fixtures/osr-192-label-entry.canonical.json', import.meta.url), 'utf8');
+
+async function osr193Mount(page, bodyPath, source = osr193Source(), routes = osr193Routes, bindInitially = true) {
+  await page.evaluate(async ({ source, routes, bodyPath, bindInitially }) => {
+    const { loadSdkV2, sdkBuildId } = await import('/packages/sdk/index.js');
+    const { mountEditor } = await import('/packages/dom/index.js');
+    const { kwdjBasicRenderers, bindKwdjContainerLabel } = await import('/packages/kwdj/dom.js');
+    const { kwdjCommand } = await import('/packages/kwdj/index.js');
+    const packet = await fetch('/extensions-packet.json').then(response => response.json());
+    const module = await loadSdkV2();
+    const scope = document.createElement('section');
+    scope.id = 'osr193-mount';
+    const root = document.createElement('div');
+    root.id = 'osr193-editor';
+    root.setAttribute('aria-label', 'KlenWriter label editing example');
+    const fields = routes.map(route => {
+      const field = document.createElement('input');
+      field.type = 'text';
+      field.setAttribute('aria-label', route.control);
+      scope.append(field);
+      return field;
+    });
+    scope.append(root);
+    document.getElementById('mounts').append(scope);
+
+    const editor = mountEditor({
+      element: root, renderers: kwdjBasicRenderers,
+      editor: {
+        input: new TextEncoder().encode(source), loader: async () => module,
+        options: {
+          abi: 'editor-sdk/2', build_id: sdkBuildId, profile: packet.kwdjProfile,
+          admission: 'validate', access: 'editable', registry_json: packet.kwdjRegistryJson,
+          profile_options_json: '{"identities":{"media":[],"references":[]},"limits":null}',
+        },
+      },
+    });
+    const disposers = [];
+    const disposeLabels = () => {
+      for (const dispose of disposers.splice(0).reverse()) dispose();
+    };
+    const cleanup = async () => {
+      disposeLabels();
+      const receipt = editor.destroy();
+      scope.remove();
+      const response = receipt.sdk.status === 'queued' ? await receipt.sdk.completion : receipt.sdk.response;
+      return { status: response.status, native: JSON.parse(module.resourceCounts()) };
+    };
+    window.osr193Mounted = { cleanup };
+    const ready = await editor.ready;
+    if (ready.status !== 'ready') throw new Error(JSON.stringify(ready));
+    const accepted = reply => {
+      if (reply.status !== 'ok') throw new Error(JSON.stringify(reply));
+      return reply.value;
+    };
+    const result = async request => {
+      const submission = editor.submit(request);
+      if (submission.status === 'completed') return accepted(submission.response);
+      if (submission.status === 'queued') return accepted(await submission.completion);
+      throw new Error(JSON.stringify(submission));
+    };
+    const state = () => accepted(editor.read({ kind: 'state' })).state;
+    const node = id => accepted(editor.read({ kind: 'node', stamp: editor.capture(), node: id })).node;
+    const path = key => key.split('/').filter(Boolean).map(Number);
+    const modelAt = key => path(key).reduce((parent, i) => node(parent.children[i]), node(state().root));
+    const domAt = key => path(key).reduce((parent, i) => [...parent.children]
+      .filter(child => child.hasAttribute('data-editor-node'))[i], root);
+    const bindAt = index => {
+      const route = routes[index];
+      const binding = bindKwdjContainerLabel({
+        editor, editorElement: root, input: fields[index], node: modelAt('/' + route.index).id,
+      });
+      if (typeof binding !== 'function') throw new Error('Expected the label binding disposer');
+      disposers.push(binding);
+    };
+    if (bindInitially) routes.forEach((_, index) => bindAt(index));
+
+    const trace = [];
+    const events = [];
+    editor.subscribe(event => { if (event.change.kind === 'document') events.push(event); });
+    for (const [index, field] of fields.entries()) {
+      field.addEventListener('input', event => trace.push({
+        type: routes[index].type, inputType: event.inputType, data: event.data, trusted: event.isTrusted,
+      }));
+    }
+    window.osr193Mounted = {
+      cleanup, disposeLabels, mode: mode => editor.setInteractionMode(mode),
+      hostRequests: () => editor.resources().hostRequests,
+      bind(index) {
+        try { bindAt(index); return { status: 'bound' }; }
+        catch (error) { return { status: 'refused', name: error.name, message: error.message }; }
+      },
+      replace: source => editor.replace(new TextEncoder().encode(source)),
+      setLabel(index, label) {
+        return result({
+          kind: 'command', stamp: editor.capture(), history_hint: { kind: 'isolated' },
+          command: kwdjCommand({ kind: 'set_container_label', node: modelAt('/' + routes[index].index).id, label }),
+        });
+      },
+      at(key, offset) {
+        const leaf = modelAt(key);
+        const actual = document.getSelection();
+        const expected = { kind: 'text', node: leaf.id, offset, affinity: 'after' };
+        const native = state().selection;
+        const text = document.createTreeWalker(domAt(key), NodeFilter.SHOW_TEXT).nextNode();
+        return document.activeElement === root && native?.anchor.kind === expected.kind
+          && native.anchor.node === leaf.id && native.focus.node === leaf.id
+          && native.anchor.offset === offset && native.focus.offset === offset
+          && actual?.anchorNode === text && actual.focusNode === text
+          && actual.anchorOffset === offset && actual.focusOffset === offset;
+      },
+      atAtomEdge(key, side, allowGap) {
+        const atom = modelAt(key);
+        const atomElement = domAt(key);
+        const parent = atomElement.parentNode;
+        const offset = [...parent.childNodes].indexOf(atomElement) + Number(side === 'after');
+        const actual = document.getSelection();
+        const native = state().selection;
+        return atom.primitive === 'block_atom' && document.activeElement === root
+          && [native?.anchor, native?.focus].every(point =>
+            (point?.kind === 'edge' && point.node === atom.id && point.side === side)
+            || (allowGap && point?.kind === 'child' && point.parent === atom.parent && point.index === offset))
+          && actual?.anchorNode === parent && actual.focusNode === parent
+          && actual.anchorOffset === offset && actual.focusOffset === offset;
+      },
+      atChildGap(key, index) {
+        const block = modelAt(key);
+        const element = domAt(key);
+        const actual = document.getSelection();
+        const native = state().selection;
+        return document.activeElement === root
+          && [native?.anchor, native?.focus].every(point => point?.kind === 'child' && point.parent === block.id && point.index === index)
+          && actual?.anchorNode === element && actual.focusNode === element
+          && actual.anchorOffset === index && actual.focusOffset === index;
+      },
+      async inspect(ownedPaths = ['/0', '/0/0', '/0/0/0', '/1', '/1/0', '/1/0/0', '/2', '/2/0']) {
+        const saved = await result({ kind: 'snapshot', stamp: editor.capture(), max_bytes: 16384 });
+        await result({ kind: 'release_snapshot', handle: saved.handle });
+        return { canonical: saved.canonical_json, state: state(), events, trace,
+          stableIds: ownedPaths.map(key => modelAt(key).id) };
+      },
+    };
+
+    // Only initial fixture setup writes focus or a model selection.
+    const leaf = modelAt(bodyPath);
+    const point = leaf.primitive === 'block_atom'
+      ? { kind: 'child', parent: leaf.parent, index: node(leaf.parent).children.indexOf(leaf.id) + 1, affinity: 'after' }
+      : { kind: 'text', node: leaf.id, offset: 0, affinity: 'after' };
+    root.focus();
+    await result({ kind: 'set_selection', stamp: editor.capture(), selection: { anchor: point, focus: point } });
+  }, { source, routes, bodyPath, bindInitially });
+}
+
+const osr193At = (page, path, offset) => expect.poll(() => page.evaluate(
+  ({ path, offset }) => window.osr193Mounted.at(path, offset), { path, offset },
+)).toBe(true);
+const osr193Inspect = (page, paths) => page.evaluate(paths => window.osr193Mounted.inspect(paths), paths);
+async function osr193Cleanup(page) {
+  const receipt = await page.evaluate(() => {
+    const mounted = window.osr193Mounted;
+    delete window.osr193Mounted;
+    return mounted?.cleanup();
+  });
+  if (!receipt) return;
+  observations.get(page).labelCleanup = receipt;
+  expect(receipt).toEqual({
+    status: 'ok', native: { sessions: 0, snapshot_handles: 0, snapshot_bytes: '0', protected_cursors: 0 },
+  });
+}
+async function osr193Field(page, route) {
+  const field = page.getByRole('textbox', { name: route.control, exact: true });
+  await expect(field).toBeFocused();
+  expect(await field.evaluate(element => {
+    const root = document.getElementById('osr193-editor');
+    return !root.contains(element) && element.selectionStart === element.value.length
+      && element.selectionEnd === element.value.length;
+  })).toBe(true);
+}
+
+test('OSR-193 trusted Tab and arrows traverse label, body and next body in both directions', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  for (const route of osr193Routes) {
+    try {
+      await osr193Mount(page, route.body);
+      await osr193At(page, route.body, 0);
+      const before = await osr193Inspect(page);
+      await page.keyboard.press('Shift+Tab');
+      await osr193Field(page, route);
+      await page.keyboard.press('Tab');
+      await osr193At(page, route.body, 0);
+      await page.keyboard.press('Tab');
+      await osr193At(page, route.next, 0);
+      await page.keyboard.press('Shift+Tab');
+      await osr193At(page, route.body, 0);
+      await page.keyboard.press('Shift+Tab');
+      await osr193Field(page, route);
+
+      await page.keyboard.press('ArrowRight');
+      await osr193At(page, route.body, 0);
+      for (let offset = 1; offset <= route.bodyEnd; offset++) {
+        await page.keyboard.press('ArrowRight');
+        await osr193At(page, route.body, offset);
+      }
+      await page.keyboard.press('ArrowRight');
+      await osr193At(page, route.next, 0);
+      await page.keyboard.press('ArrowLeft');
+      await osr193At(page, route.body, route.bodyEnd);
+      for (let offset = route.bodyEnd - 1; offset >= 0; offset--) {
+        await page.keyboard.press('ArrowLeft');
+        await osr193At(page, route.body, offset);
+      }
+      await page.keyboard.press('ArrowLeft');
+      await osr193Field(page, route);
+      const after = await osr193Inspect(page);
+      expect(after.canonical).toBe(before.canonical);
+      expect(after.state.stamp.revision).toBe(before.state.stamp.revision);
+      expect(after.state.history).toEqual(before.state.history);
+      expect(after.stableIds).toEqual(before.stableIds);
+      expect(after.events).toEqual([]);
+      observations.get(page).checkpoints.push({ label: route.type + ' keyboard navigation complete', ...after });
+      if (route.type === 'spoiler') {
+        await page.locator('#osr193-mount').evaluate(scope => {
+          const previous = document.createElement('input');
+          previous.type = 'text';
+          previous.setAttribute('aria-label', 'Previous host field');
+          scope.prepend(previous);
+        });
+        await page.keyboard.press('Shift+Tab');
+        await expect(page.getByRole('textbox', { name: 'Previous host field' })).toBeFocused();
+      }
+    } finally {
+      await osr193Cleanup(page);
+    }
+  }
+});
+
+test('OSR-193 trusted edits produce the OSR-192 label fixture and keep named accessibility roles', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const [spoiler, disclosure] = osr193Routes;
+  try {
+    await osr193Mount(page, spoiler.body);
+    const before = await osr193Inspect(page);
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, spoiler);
+    await page.keyboard.press('!');
+    await expect(page.getByRole('textbox', { name: spoiler.control })).toHaveValue('Финал!');
+    await page.keyboard.press('Tab');
+    await osr193At(page, spoiler.body, 0);
+    await page.keyboard.press('Tab');
+    await osr193At(page, disclosure.body, 0);
+    // Ordinary movement within the disclosure retires the previous group's
+    // reverse route before returning to its own label.
+    await page.keyboard.press('ArrowRight');
+    await osr193At(page, disclosure.body, 1);
+    await page.keyboard.press('ArrowLeft');
+    await osr193At(page, disclosure.body, 0);
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, disclosure);
+    await page.keyboard.press('?');
+    await expect(page.getByRole('textbox', { name: disclosure.control })).toHaveValue('Подробнее?');
+    await expect.poll(async () => (await osr193Inspect(page)).canonical).toBe(osr193Expected());
+    const after = await osr193Inspect(page);
+    expect(after.stableIds).toEqual(before.stableIds);
+    expect(after.events).toHaveLength(2);
+    history(after, 2, 0);
+    expect(after.trace).toEqual([
+      { type: 'spoiler', inputType: 'insertText', data: '!', trusted: true },
+      { type: 'disclosure', inputType: 'insertText', data: '?', trusted: true },
+    ]);
+    const scope = page.locator('#osr193-mount');
+    await expect(scope.getByRole('textbox', { name: 'KlenWriter label editing example' })).toHaveAttribute('aria-multiline', 'true');
+    await expect(scope.getByRole('group', { name: 'Финал!', exact: true })).toBeVisible();
+    await expect(scope.getByRole('group', { name: 'Подробнее?', exact: true })).toBeVisible();
+    const axe = await new AxeBuilder({ page }).include('#osr193-mount').analyze();
+    observations.get(page).axe = {
+      engine: axe.testEngine, violations: axe.violations, incomplete: axe.incomplete, passedRules: axe.passes.map(rule => rule.id),
+      ariaSnapshot: await scope.ariaSnapshot(),
+    };
+    expect(axe.violations).toEqual([]);
+    expect(axe.passes.length).toBeGreaterThan(0);
+    observations.get(page).checkpoints.push({ label: 'trusted label mutations match OSR-192', ...after });
+  } finally {
+    await osr193Cleanup(page);
+  }
+});
+
+test('label IME terminal preserves a newer edit and restores ordinary typing', async ({ page, browser, browserName }) => {
+  test.skip(browserName !== 'chromium', 'Uses the Chromium input protocol for a real composing field');
+  const record = observations.get(page);
+  record.browserVersion = browser.version();
+  const route = osr193Routes[0];
+  const doc = JSON.parse(osr193Source());
+  const cdp = await page.context().newCDPSession(page);
+  try {
+    await osr193Mount(page, route.body);
+    const before = await osr193Inspect(page);
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, route);
+    const field = page.getByRole('textbox', { name: route.control, exact: true });
+    await field.evaluate(input => {
+      input.compositionTrace = [];
+      for (const type of ['compositionstart', 'input', 'compositionend']) {
+        input.addEventListener(type, event => input.compositionTrace.push({
+          type, trusted: event.isTrusted, data: event.data,
+          inputType: event.inputType ?? null, isComposing: event.isComposing ?? null,
+        }));
+      }
+    });
+
+    await cdp.send('Input.imeSetComposition', { text: 'Ж', selectionStart: 1, selectionEnd: 1 });
+    await expect(field).toHaveValue('ФиналЖ');
+    expect(await page.evaluate(() => window.osr193Mounted.hostRequests())).toEqual({ pending: 1, focusContinuations: 0 });
+    const composing = await osr193Inspect(page);
+    expect(composing.canonical).toBe(before.canonical);
+    expect(composing.events).toEqual([]);
+
+    const updated = await page.evaluate(label => window.osr193Mounted.setLabel(0, label), 'Новая метка');
+    expect(updated.effect).toBe('changed');
+    doc.content[0].attrs.label = 'Новая метка';
+    const accepted = canonicalizeRaw(JSON.stringify(doc));
+    const competing = await osr193Inspect(page);
+    expect(competing.canonical).toBe(accepted);
+    expect(competing.events).toHaveLength(1);
+    await expect(field).toHaveValue('ФиналЖ');
+
+    await cdp.send('Input.insertText', { text: 'Ю' });
+    await expect(field).toHaveValue('Новая метка');
+    const settled = await osr193Inspect(page);
+    expect(settled.canonical).toBe(accepted);
+    expect(settled.state).toEqual(competing.state);
+    expect(settled.events).toEqual(competing.events);
+    expect(await page.evaluate(() => window.osr193Mounted.hostRequests())).toEqual({ pending: 0, focusContinuations: 0 });
+
+    await page.keyboard.press('!');
+    await expect(field).toHaveValue('Новая метка!');
+    doc.content[0].attrs.label = 'Новая метка!';
+    const after = await osr193Inspect(page);
+    expect(after.canonical).toBe(canonicalizeRaw(JSON.stringify(doc)));
+    expect(after.stableIds).toEqual(before.stableIds);
+    expect(after.events).toHaveLength(2);
+    history(after, 2, 0);
+    const trace = await field.evaluate(input => input.compositionTrace);
+    expect(trace).toEqual([
+      { type: 'compositionstart', trusted: true, data: '', inputType: null, isComposing: null },
+      { type: 'input', trusted: true, data: 'Ж', inputType: 'insertCompositionText', isComposing: true },
+      { type: 'input', trusted: true, data: 'Ю', inputType: 'insertCompositionText', isComposing: true },
+      { type: 'compositionend', trusted: expect.any(Boolean), data: 'Ю', inputType: null, isComposing: null },
+      { type: 'input', trusted: true, data: '!', inputType: 'insertText', isComposing: false },
+    ]);
+    record.checkpoints.push({ label: 'stale composition discarded and ordinary typing restored', ...after });
+    await field.evaluate(input => { input.compositionTrace = []; });
+    await cdp.send('Input.imeSetComposition', { text: 'Р', selectionStart: 1, selectionEnd: 1 });
+    await expect(field).toHaveValue('Новая метка!Р');
+    expect((await osr193Inspect(page)).state).toEqual(after.state);
+    await cdp.send('Input.insertText', { text: 'Я' });
+    const fresh = await osr193Inspect(page);
+    doc.content[0].attrs.label = 'Новая метка!Я';
+    expect(fresh.canonical).toBe(canonicalizeRaw(JSON.stringify(doc)));
+    expect(fresh.stableIds).toEqual(before.stableIds);
+    expect(fresh.events).toHaveLength(3);
+    history(fresh, 3, 0);
+    expect(await page.evaluate(() => window.osr193Mounted.hostRequests())).toEqual({ pending: 0, focusContinuations: 0 });
+    const freshTrace = await field.evaluate(input => input.compositionTrace);
+    expect(freshTrace.at(-1)).toMatchObject({ type: 'compositionend', data: 'Я' });
+    record.labelComposition = { stale: trace, fresh: freshTrace };
+    record.checkpoints.push({ label: 'current composition published once', ...fresh });
+
+    await cdp.send('Input.imeSetComposition', { text: 'Ц', selectionStart: 1, selectionEnd: 1 });
+    await expect(field).toHaveValue('Новая метка!ЯЦ');
+    expect((await page.evaluate(() => window.osr193Mounted.mode('readOnly'))).status).toBe('updated');
+    await expect(field).not.toBeEditable();
+    await expect(field).toHaveValue('Новая метка!Я');
+    await cdp.send('Input.insertText', { text: 'Щ' });
+    expect((await osr193Inspect(page)).state).toEqual(fresh.state);
+    expect(await page.evaluate(() => window.osr193Mounted.hostRequests())).toEqual({ pending: 0, focusContinuations: 0 });
+    expect((await page.evaluate(() => window.osr193Mounted.mode('editable'))).status).toBe('updated');
+    await expect(field).toBeEditable();
+    await page.keyboard.press('?');
+    await expect(field).toHaveValue('Новая метка!Я?');
+    const resumed = await osr193Inspect(page);
+    doc.content[0].attrs.label = 'Новая метка!Я?';
+    expect(resumed.canonical).toBe(canonicalizeRaw(JSON.stringify(doc)));
+    expect(resumed.events).toHaveLength(4);
+    history(resumed, 4, 0);
+    record.checkpoints.push({ label: 'read-only mode canceled composition and the field resumed ordinary typing', ...resumed });
+  } finally {
+    await cdp.detach();
+    await osr193Cleanup(page);
+  }
+});
+
+test('OSR-193 trusted keyboard navigation enters and crosses an atom-only body', async ({ page, browser }) => {
+  const record = observations.get(page);
+  record.browserVersion = browser.version();
+  const [spoiler, disclosure] = osr193Routes;
+  const fixture = JSON.parse(osr193Source());
+  fixture.content[0].content = [{ type: 'scene_break' }];
+  const source = canonicalizeRaw(JSON.stringify(fixture));
+  const paths = ['/0', '/0/0', '/1', '/1/0', '/1/0/0', '/2', '/2/0'];
+  try {
+    await osr193Mount(page, disclosure.body, source);
+    const before = await osr193Inspect(page, paths);
+    const field = page.getByRole('textbox', { name: spoiler.control, exact: true });
+    await field.evaluate(input => {
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    });
+    await osr193Field(page, spoiler);
+    const edge = side => expect.poll(() => page.evaluate(
+      side => window.osr193Mounted.atAtomEdge('/0/0', side), side,
+    )).toBe(true);
+
+    await page.keyboard.press('ArrowRight');
+    await edge('before');
+    await page.keyboard.press('ArrowRight');
+    await edge('after');
+    await page.keyboard.press('ArrowRight');
+    await osr193At(page, disclosure.body, 0);
+    await page.keyboard.press('ArrowLeft');
+    await edge('after');
+    await page.keyboard.press('ArrowLeft');
+    await edge('before');
+    await page.keyboard.press('ArrowLeft');
+    await osr193Field(page, spoiler);
+
+    await page.keyboard.press('Tab');
+    await edge('before');
+    await page.keyboard.press('Tab');
+    await osr193At(page, disclosure.body, 0);
+    await page.keyboard.press('Shift+Tab');
+    await edge('before');
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, spoiler);
+
+    const after = await osr193Inspect(page, paths);
+    expect(after.canonical).toBe(source);
+    expect(after.stableIds).toEqual(before.stableIds);
+    expect(after.state.stamp.revision).toBe('0');
+    expect(after.events).toEqual([]);
+    history(after, 0, 0);
+    record.checkpoints.push({ label: 'atom-only body keyboard navigation complete', ...after });
+  } finally {
+    await osr193Cleanup(page);
+  }
+});
+
+test('OSR-193 arrows recognize a browser gap beside the final atom in a mixed body', async ({ page, browser }) => {
+  const record = observations.get(page);
+  record.browserVersion = browser.version();
+  const [, disclosure] = osr193Routes;
+  const fixture = JSON.parse(osr193Source());
+  fixture.content[0].content.push({ type: 'scene_break' });
+  const source = canonicalizeRaw(JSON.stringify(fixture));
+  try {
+    await osr193Mount(page, '/0/1', source);
+    const before = await osr193Inspect(page);
+    expect(before.state.selection.anchor.kind).toBe('child');
+    await expect.poll(() => page.evaluate(() => window.osr193Mounted.atAtomEdge('/0/1', 'after', true))).toBe(true);
+    await page.keyboard.press('ArrowRight');
+    await osr193At(page, disclosure.body, 0);
+    await page.keyboard.press('ArrowLeft');
+    await expect.poll(() => page.evaluate(() => window.osr193Mounted.atAtomEdge('/0/1', 'after'))).toBe(true);
+    const after = await osr193Inspect(page);
+    expect(after.canonical).toBe(source);
+    expect(after.stableIds).toEqual(before.stableIds);
+    expect(after.state.stamp.revision).toBe('0');
+    expect(after.events).toEqual([]);
+    history(after, 0, 0);
+    record.checkpoints.push({ label: 'mixed body recognizes an equivalent atom gap', ...after });
+  } finally {
+    await osr193Cleanup(page);
+  }
+});
+
+test('OSR-193 arrows visit both sides of a hard break before leaving the body', async ({ page, browser }) => {
+  const record = observations.get(page);
+  record.browserVersion = browser.version();
+  const [spoiler, disclosure] = osr193Routes;
+  for (const prefix of [[], [{ type: 'text', text: 'Тайна' }]]) {
+    const fixture = JSON.parse(osr193Source());
+    fixture.content[0].content[0].content = [...prefix, { type: 'hard_break' }];
+    const source = canonicalizeRaw(JSON.stringify(fixture));
+    try {
+      await osr193Mount(page, disclosure.body, source);
+      const before = await osr193Inspect(page);
+      const field = page.getByRole('textbox', { name: spoiler.control, exact: true });
+      await field.evaluate(input => {
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+      });
+      await osr193Field(page, spoiler);
+      const gap = index => expect.poll(() => page.evaluate(
+        index => window.osr193Mounted.atChildGap('/0/0', index), index,
+      )).toBe(true);
+      await page.keyboard.press('ArrowRight');
+      if (prefix.length) {
+        await osr193At(page, spoiler.body, 0);
+        for (let offset = 1; offset <= spoiler.bodyEnd; offset++) {
+          await page.keyboard.press('ArrowRight');
+          await osr193At(page, spoiler.body, offset);
+        }
+      } else {
+        await gap(0);
+      }
+      await page.keyboard.press('ArrowRight');
+      await gap(prefix.length + 1);
+      await page.keyboard.press('ArrowRight');
+      await osr193At(page, disclosure.body, 0);
+      await page.keyboard.press('ArrowLeft');
+      await gap(prefix.length + 1);
+      await page.keyboard.press('ArrowLeft');
+      await gap(prefix.length);
+      await page.keyboard.press(prefix.length ? 'Shift+Tab' : 'ArrowLeft');
+      await osr193Field(page, spoiler);
+
+      const after = await osr193Inspect(page);
+      expect(after.canonical).toBe(source);
+      expect(after.stableIds).toEqual(before.stableIds);
+      expect(after.state.stamp.revision).toBe('0');
+      expect(after.events).toEqual([]);
+      history(after, 0, 0);
+      record.checkpoints.push({ label: 'hard break keyboard navigation complete', ...after });
+    } finally {
+      await osr193Cleanup(page);
+    }
+  }
+});
+
+test('OSR-193 nested label follows model siblings and retires its owned input', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const initial = JSON.parse(osr193Source());
+  initial.content[0] = { type: 'blockquote', content: [initial.content[0]] };
+  const source = canonicalizeRaw(JSON.stringify(initial));
+  const route = { ...osr193Routes[0], index: '0/0', body: '/0/0/0/0' };
+  try {
+    await osr193Mount(page, route.body, source, [route]);
+    await osr193At(page, route.body, 0);
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, route);
+    await page.keyboard.press('Tab');
+    await osr193At(page, route.body, 0);
+    await page.keyboard.press('Tab');
+    await osr193At(page, route.next, 0);
+    await page.keyboard.press('Shift+Tab');
+    await osr193At(page, route.body, 0);
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, route);
+
+    const field = page.getByRole('textbox', { name: route.control, exact: true });
+    const mode = value => page.evaluate(value => window.osr193Mounted.mode(value), value);
+    expect((await mode('readOnly')).status).toBe('updated');
+    await expect(field).not.toBeEditable();
+    await page.keyboard.press('!');
+    await expect(field).toHaveValue('Финал');
+    expect((await mode('editable')).status).toBe('updated');
+    await expect(field).toBeEditable();
+    await page.evaluate(() => window.osr193Mounted.disposeLabels());
+    await page.keyboard.press('!');
+    await expect(field).toHaveValue('Финал!');
+    const after = await osr193Inspect(page);
+    expect(after.canonical).toBe(source);
+    expect(after.events).toEqual([]);
+    expect(after.state.stamp.revision).toBe('0');
+    observations.get(page).checkpoints.push({ label: 'nested navigation and detached label owner', ...after });
+  } finally {
+    await osr193Cleanup(page);
+  }
+});
+
+test('OSR-193 single-line field preserves admitted CR and LF labels', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const original = JSON.parse(osr193Source());
+  const labels = ['Фи\rнал', 'Под\nробнее'];
+  original.content[0].attrs.label = labels[0];
+  original.content[1].attrs.label = labels[1];
+  const literal = canonicalizeRaw(JSON.stringify(original));
+  try {
+    await osr193Mount(page, osr193Routes[0].body, literal, osr193Routes, false);
+    const wrappers = page.locator('#osr193-editor > section[data-editor-node]');
+    for (const [index, route] of osr193Routes.entries()) {
+      await expect(wrappers.nth(index)).toHaveAttribute('aria-label', labels[index]);
+      const binding = await page.evaluate(index => window.osr193Mounted.bind(index), index);
+      expect(binding).toMatchObject({ status: 'refused', name: 'TypeError' });
+      const field = page.getByRole('textbox', { name: route.control, exact: true });
+      await expect(field).toHaveValue('');
+      await field.focus();
+      await page.keyboard.press('!');
+      await expect(field).toHaveValue('!');
+    }
+    const after = await osr193Inspect(page);
+    expect(after.canonical).toBe(literal);
+    expect(after.events).toEqual([]);
+    expect(after.state.stamp.revision).toBe('0');
+    observations.get(page).checkpoints.push({ label: 'admitted CR/LF and no published write', ...after });
+  } finally {
+    await osr193Cleanup(page);
+  }
+
+  try {
+    const spoiler = osr193Routes[0];
+    await osr193Mount(page, spoiler.body);
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, spoiler);
+    const field = page.getByRole('textbox', { name: spoiler.control, exact: true });
+    const changed = await page.evaluate(label => window.osr193Mounted.setLabel(0, label), labels[0]);
+    expect(changed.effect).toBe('changed');
+    await expect(page.locator('#osr193-editor > section[data-editor-node]').first()).toHaveAttribute('aria-label', labels[0]);
+    await expect(field).toHaveValue('Финал');
+    await page.keyboard.press('!');
+    await expect(field).toHaveValue('Финал!');
+    const expected = JSON.parse(osr193Source());
+    expected.content[0].attrs.label = labels[0];
+    const after = await osr193Inspect(page);
+    expect(after.canonical).toBe(canonicalizeRaw(JSON.stringify(expected)));
+    expect(after.events).toHaveLength(1);
+    expect(after.state.stamp.revision).toBe('1');
+    observations.get(page).checkpoints.push({ label: 'multiline label preserved through external field retirement', ...after });
+  } finally {
+    await osr193Cleanup(page);
+  }
+});
+
+test('OSR-193 replacement retires label inputs before the next interaction', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const source = osr193Source();
+  try {
+    await osr193Mount(page, osr193Routes[0].body);
+    const before = await osr193Inspect(page);
+    const replaced = await page.evaluate(source => window.osr193Mounted.replace(source), source);
+    expect(replaced).toMatchObject({ status: 'completed', response: { status: 'ok', value: { effect: 'remounted' } } });
+    const after = await osr193Inspect(page);
+    expect(after.canonical).toBe(before.canonical);
+    expect(after.events).toEqual([]);
+    expect(after.state.stamp.generation).not.toBe(before.state.stamp.generation);
+    expect(after.stableIds).not.toEqual(before.stableIds);
+    for (const index of osr193Routes.keys()) {
+      expect(await page.evaluate(index => window.osr193Mounted.bind(index), index)).toEqual({ status: 'bound' });
+    }
+    observations.get(page).checkpoints.push({ label: 'old generation fields can be rebound without a key', ...after });
+  } finally {
+    await osr193Cleanup(page);
+  }
+});
+
 test('T09 keyboard Tab return preserves current native caret and every committed facet before and after deletion',async({page})=>{
   const mounted=await call(page,'mount',{fixture:'D0'});expect(mounted.ready).toBe('ready');
   const id=mounted.id;await call(page,'select',id,'/0/2',2);
