@@ -40,6 +40,7 @@ pub fn base_registration_v2() -> ExtensionDescriptor {
             crate::commands::SET_WARNING_KIND_COMMAND_ID,
             crate::commands::WRAP_WARNING_COMMAND_ID,
             crate::commands::UNWRAP_WARNING_COMMAND_ID,
+            crate::commands::SET_CONTAINER_LABEL_COMMAND_ID,
         ]
         .map(|id| editor_registry::CommandDescriptor::Compiled { id: id.into() }),
     );

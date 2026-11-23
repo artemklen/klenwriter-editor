@@ -23,6 +23,8 @@ export type WarningBlockTargetV2 = { "kind": "warning", warning_kind: WarningKin
 
 export type KwdjWarningIntentV2 = { "kind": "insert_block", target: WarningBlockTargetV2, } | { "kind": "set_warning_kind", node: string, warning_kind: WarningKindV2, } | { "kind": "wrap_warning", warning_kind: WarningKindV2, } | { "kind": "unwrap_warning", node: string, };
 
+export type KwdjLabeledContainerIntentV2 = { "kind": "set_container_label", node: string, label: string, };
+
 export type KwdjTypingIntentV2 = { "kind": "insert_typed_text", text: string, origin: InputOriginV2, } | { "kind": "restore_typed_text", restore: RawInputRestoreV2, };
 
 export type KwdjTypingLocaleV2 = "ru" | "en";

@@ -87,3 +87,10 @@ SDK2 `wrap_warning` takes a `warning_kind` and wraps selected contiguous
 siblings in that kind of warning. `unwrap_warning` takes the warning node ID and
 moves its children into its parent in their original order. Undo restores the
 warning, its original attributes, and its children.
+
+## Spoiler and disclosure parity
+
+SDK2 `set_container_label` takes an existing `spoiler` or `disclosure` node ID
+and the new `label`. The command preserves child IDs and content. An empty
+label is refused by the document grammar. Undo restores the previous label
+and exact canonical bytes.

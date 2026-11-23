@@ -348,7 +348,7 @@ mod tests {
         assert!(matches!(session.initialization(), SdkResponse::Ok { .. }));
         assert!(session.context().is_some());
         let catalog = call(&mut session, json!({"kind":"catalog"}));
-        assert_eq!(catalog["value"]["commands"].as_array().unwrap().len(), 25);
+        assert_eq!(catalog["value"]["commands"].as_array().unwrap().len(), 26);
         assert!(
             catalog["value"]["commands"]
                 .as_array()
@@ -568,6 +568,7 @@ mod tests {
                                 sorted.push(editor_kwdj::commands::WRAP_LITERARY_BLOCK_COMMAND_ID);
                                 sorted
                                     .push(editor_kwdj::commands::UNWRAP_LITERARY_BLOCK_COMMAND_ID);
+                                sorted.push(editor_kwdj::commands::SET_CONTAINER_LABEL_COMMAND_ID);
                                 sorted.push(editor_kwdj::commands::SET_WARNING_KIND_COMMAND_ID);
                                 sorted.push(editor_kwdj::commands::WRAP_WARNING_COMMAND_ID);
                                 sorted.push(editor_kwdj::commands::UNWRAP_WARNING_COMMAND_ID);
@@ -870,6 +871,128 @@ mod tests {
         }
         endpoint.destroy();
         endpoint.destroy();
+    }
+
+    const OSR192_SET_LABEL: &str = "org.klenwriter.kwdj/command/set-container-label";
+    const OSR192_LABEL_INPUT: &str =
+        include_str!("../../../tests/fixtures/osr-192-label-entry.input.json");
+    const OSR192_LABEL_ENTRY: &str =
+        include_str!("../../../tests/fixtures/osr-192-label-entry.canonical.json");
+    const OSR192_EDITS: [(&str, &str); 2] = [("Финал!", "Фина!"), ("Подробнее?", "Подробне?")];
+
+    #[test]
+    fn osr192_label_insert_delete_empty_refusal_and_undo() {
+        let mut expected: Value = serde_json::from_str(OSR192_LABEL_INPUT).unwrap();
+        let mut session = osr183_open(OSR192_LABEL_INPUT);
+        let root = state(&mut session)["root"].clone();
+        let blocks = osr183_node(&mut session, &root)["children"].clone();
+        for (index, (inserted, deleted)) in OSR192_EDITS.into_iter().enumerate() {
+            let block = &blocks[index];
+            let initial = osr183_node(&mut session, block);
+            let prior = expected.to_string();
+            for label in [inserted, deleted] {
+                let before = state(&mut session);
+                let result = osr183_command(
+                    &mut session,
+                    OSR192_SET_LABEL,
+                    &json!({"kind":"set_container_label","node":block,"label":label}),
+                    false,
+                );
+                assert_eq!(result["value"]["effect"], "changed", "{result}");
+                let after = state(&mut session);
+                for (old, new) in [
+                    (&before["stamp"]["revision"], &after["stamp"]["revision"]),
+                    (
+                        &before["history"]["undo_entries"],
+                        &after["history"]["undo_entries"],
+                    ),
+                ] {
+                    assert_eq!(
+                        new,
+                        &(old.as_str().unwrap().parse::<u64>().unwrap() + 1).to_string()
+                    );
+                }
+                let updated = osr183_node(&mut session, block);
+                assert_eq!(updated["attributes"]["label"]["value"], label);
+                assert_eq!(updated["children"], initial["children"]);
+                assert_eq!(osr183_node(&mut session, &root)["children"], blocks);
+                expected["content"][index]["attrs"]["label"] = json!(label);
+                assert_eq!(snapshot(&mut session), expected.to_string());
+            }
+            let before_empty = state(&mut session);
+            let refusal = osr183_command(
+                &mut session,
+                OSR192_SET_LABEL,
+                &json!({"kind":"set_container_label","node":block,"label":""}),
+                false,
+            );
+            assert_eq!(refusal["status"], "refused", "{refusal}");
+            assert_eq!(
+                refusal["diagnostic"]["code"], "kwdj.invalid_structure",
+                "{refusal}"
+            );
+            assert_eq!(
+                refusal["diagnostic"]["path"],
+                format!("/content/{index}/attrs/label")
+            );
+            assert_eq!(refusal["diagnostic"]["may_have_committed"], false);
+            assert_eq!(state(&mut session), before_empty);
+            assert_eq!(snapshot(&mut session), expected.to_string());
+
+            expected["content"][index]["attrs"]["label"] = json!(inserted);
+            osr183_history(&mut session, "undo", &expected.to_string());
+            osr183_history(&mut session, "undo", &prior);
+            let restored = osr183_node(&mut session, block);
+            assert_eq!(restored["attributes"], initial["attributes"]);
+            assert_eq!(restored["children"], initial["children"]);
+            osr183_history(&mut session, "redo", &expected.to_string());
+        }
+        assert_eq!(snapshot(&mut session), OSR192_LABEL_ENTRY);
+        assert_eq!(state(&mut session)["history"]["undo_entries"], "2");
+        for id in [&blocks[2], &root] {
+            osr183_denied(
+                &mut session,
+                OSR192_SET_LABEL,
+                json!({"kind":"set_container_label","node":id,"label":"Метка"}),
+                OSR192_LABEL_ENTRY,
+                "kwdj.command_invalid_target",
+            );
+        }
+    }
+
+    #[test]
+    fn osr192_body_edit_preserves_authored_labels() {
+        let mut session = osr183_open(OSR192_LABEL_ENTRY);
+        let root = state(&mut session)["root"].clone();
+        let blocks = osr183_node(&mut session, &root)["children"].clone();
+        for index in 0..OSR192_EDITS.len() {
+            let before = osr183_node(&mut session, &blocks[index]);
+            let paragraph = osr183_node(&mut session, &before["children"][0]);
+            let leaf = &paragraph["children"][0];
+            let mut expected: Value = serde_json::from_str(OSR192_LABEL_ENTRY).unwrap();
+            let text = &mut expected["content"][index]["content"][0]["content"][0]["text"];
+            let body = text.as_str().unwrap();
+            let point = json!({"kind":"text","node":leaf,"offset":body.encode_utf16().count(),"affinity":"after"});
+            let stamp = state(&mut session)["stamp"].clone();
+            let selection = call(
+                &mut session,
+                json!({"kind":"set_selection","stamp":stamp,"selection":{"anchor":point,"focus":point}}),
+            );
+            assert_eq!(selection["status"], "ok", "{selection}");
+            *text = json!(format!("{body}."));
+            let result = osr183_command(
+                &mut session,
+                "org.klenwriter.kwdj/command/insert-text",
+                &json!({"kind":"insert_text","text":"."}),
+                false,
+            );
+            assert_eq!(result["value"]["effect"], "changed", "{result}");
+            assert_eq!(snapshot(&mut session), expected.to_string());
+            let after = osr183_node(&mut session, &blocks[index]);
+            assert_eq!(after["attributes"], before["attributes"]);
+            assert_eq!(after["children"], before["children"]);
+            osr183_history(&mut session, "undo", OSR192_LABEL_ENTRY);
+        }
     }
 
     const OSR183_INSERT: &str = "org.klenwriter.kwdj/command/insert-block";

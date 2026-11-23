@@ -1849,6 +1849,24 @@ fn set_warning_kind<V: CandidateRead>(
     Ok(CommandPresentation::default())
 }
 
+fn set_container_label<V: CandidateRead>(
+    view: &V,
+    id: V::Id,
+    label: &str,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let node = get(view, id, plan)?;
+    if !matches!(kind(node.type_id), "spoiler" | "disclosure") {
+        return Err(invalid());
+    }
+    if !matches!(node.attributes.get("label"), Some(Attribute::String(current)) if current == label)
+    {
+        let value = Attribute::String(key(label, plan)?);
+        attr(plan, id.into(), "label", Some(value))?;
+    }
+    Ok(CommandPresentation::default())
+}
+
 fn structural<'a, V: CandidateRead>(
     view: &'a V,
     id: V::Id,
@@ -2051,6 +2069,9 @@ pub(super) fn prepare<V: CandidateRead>(
             }
             unwrap_container(view, *node, plan)?;
             Ok(CommandPresentation::default())
+        }
+        KwdjIntent::SetContainerLabel { node, label } => {
+            set_container_label(view, *node, label, plan)
         }
         KwdjIntent::AcceptSlash {
             target,

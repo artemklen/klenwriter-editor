@@ -28,6 +28,7 @@ fn main() {
         WarningKindV2,
         WarningBlockTargetV2,
         KwdjWarningIntentV2,
+        KwdjLabeledContainerIntentV2,
         KwdjTypingIntentV2,
         KwdjTypingLocaleV2,
         KwdjTypingFeatureV2,

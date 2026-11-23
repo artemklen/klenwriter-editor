@@ -88,6 +88,10 @@ pub enum KwdjIntent<I> {
     UnwrapWarning {
         node: I,
     },
+    SetContainerLabel {
+        node: I,
+        label: String,
+    },
     Move {
         node: I,
         parent: I,
@@ -130,6 +134,7 @@ pub const TYPED_INPUT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-typ
 pub const SET_WARNING_KIND_COMMAND_ID: &str = "org.klenwriter.kwdj/command/set-warning-kind";
 pub const WRAP_WARNING_COMMAND_ID: &str = "org.klenwriter.kwdj/command/wrap-warning";
 pub const UNWRAP_WARNING_COMMAND_ID: &str = "org.klenwriter.kwdj/command/unwrap-warning";
+pub const SET_CONTAINER_LABEL_COMMAND_ID: &str = "org.klenwriter.kwdj/command/set-container-label";
 pub const RESTORE_INPUT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/restore-typed-text";
 
 pub const KWDJ_COMMANDS: &[CommandDescriptor] = &[
@@ -278,6 +283,7 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::SetWarningKind { .. } => SET_WARNING_KIND_COMMAND_ID,
             KwdjIntent::WrapWarning { .. } => WRAP_WARNING_COMMAND_ID,
             KwdjIntent::UnwrapWarning { .. } => UNWRAP_WARNING_COMMAND_ID,
+            KwdjIntent::SetContainerLabel { .. } => SET_CONTAINER_LABEL_COMMAND_ID,
             KwdjIntent::Move { .. } => KWDJ_COMMANDS[10].id,
             KwdjIntent::Duplicate { .. } => KWDJ_COMMANDS[11].id,
             KwdjIntent::Remove { .. } => KWDJ_COMMANDS[12].id,
@@ -308,6 +314,7 @@ impl CommandProvider for KwdjProfile<'_> {
             | KwdjIntent::SetWarningKind { .. }
             | KwdjIntent::WrapWarning { .. }
             | KwdjIntent::UnwrapWarning { .. }
+            | KwdjIntent::SetContainerLabel { .. }
                 if !self.clipboard_v2() =>
             {
                 return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());

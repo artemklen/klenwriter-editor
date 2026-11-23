@@ -377,6 +377,79 @@ function osr183Denied(editor, id, payload, expected, code, path) {
 
 const osr185Fixture = () => JSON.parse(readFileSync(new URL('./fixtures/osr-185-literary.json', import.meta.url)));
 const osr185Bytes = value => canonicalizeRaw(JSON.stringify(value));
+const osr192Input = () => readFileSync(new URL('../tests/fixtures/osr-192-label-entry.input.json', import.meta.url), 'utf8');
+const osr192Entry = () => readFileSync(new URL('../tests/fixtures/osr-192-label-entry.canonical.json', import.meta.url), 'utf8');
+const osr192SetLabel = 'org.klenwriter.kwdj/command/set-container-label';
+const osr192Label = (node, label) => ({ kind: 'set_container_label', node, label });
+
+test('OSR-192 packaged SDK2 inserts and deletes each label, refuses empty and restores exact Undo', async () => {
+  const initial = osr192Input();
+  const expected = JSON.parse(initial);
+  await withLiteraryCommandSession(initial, editor => {
+    const ids = root(editor).children;
+    for (const [index, [inserted, deleted]] of [['Финал!', 'Фина!'], ['Подробнее?', 'Подробне?']].entries()) {
+      const id = ids[index];
+      const original = node(editor, id);
+      const prior = osr185Bytes(expected);
+      for (const label of [inserted, deleted]) {
+        const before = state(editor);
+        const result = osr183Wire(editor, createCommand(osr192SetLabel, osr192Label(id, label)));
+        assert.equal(accepted(result).effect, 'changed');
+        const after = state(editor);
+        assert.equal(after.stamp.revision, (BigInt(before.stamp.revision) + 1n).toString());
+        assert.equal(after.history.undo_entries, (BigInt(before.history.undo_entries) + 1n).toString());
+        expected.content[index].attrs.label = label;
+        assert.equal(canonical(editor), osr185Bytes(expected));
+        const changed = node(editor, id);
+        assert.equal(changed.attributes.label.value, label);
+        assert.deepEqual(changed.children, original.children);
+        assert.deepEqual(root(editor).children, ids);
+      }
+
+      const before = state(editor);
+      const diagnostic = refused(osr183Wire(editor, createCommand(osr192SetLabel, osr192Label(id, ''))));
+      assert.equal(diagnostic.code, 'kwdj.invalid_structure');
+      assert.equal(diagnostic.path, `/content/${index}/attrs/label`);
+      assert.equal(diagnostic.may_have_committed, false);
+      assert.deepEqual(state(editor), before);
+      assert.equal(canonical(editor), osr185Bytes(expected));
+
+      expected.content[index].attrs.label = inserted;
+      osr183History(editor, 'undo', osr185Bytes(expected));
+      osr183History(editor, 'undo', prior);
+      const restored = node(editor, id);
+      assert.deepEqual(restored.attributes, original.attributes);
+      assert.deepEqual(restored.children, original.children);
+      osr183History(editor, 'redo', osr185Bytes(expected));
+    }
+    assert.equal(canonical(editor), osr192Entry());
+    assert.equal(state(editor).history.undo_entries, '2');
+    for (const id of [ids[2], state(editor).root]) {
+      osr183Denied(editor, osr192SetLabel, osr192Label(id, 'Метка'), osr192Entry(), 'kwdj.command_invalid_target');
+    }
+  });
+});
+
+test('OSR-192 packaged SDK2 edits both bodies while preserving the authored labels', async () => {
+  const entry = osr192Entry();
+  await withLiteraryCommandSession(entry, editor => {
+    for (const [index, id] of root(editor).children.slice(0, 2).entries()) {
+      const before = node(editor, id);
+      const leaf = node(editor, before.children[0]).children[0];
+      const expected = JSON.parse(entry);
+      const text = expected.content[index].content[0].content[0];
+      osr185Select(editor, position(leaf, text.text.length));
+      assert.equal(accepted(osr183Wire(editor, kwdjCommand({ kind: 'insert_text', text: '.' }))).effect, 'changed');
+      text.text += '.';
+      assert.equal(canonical(editor), osr185Bytes(expected));
+      const after = node(editor, id);
+      assert.deepEqual(after.attributes, before.attributes);
+      assert.deepEqual(after.children, before.children);
+      osr183History(editor, 'undo', entry);
+    }
+  });
+});
+
 const osr185Insert = { kind: 'insert_block', target: { kind: 'literary_block', literary_kind: 'author_note' } };
 const osr185Gap = (parent, index) => ({ kind: 'child', parent, index, affinity: 'after' });
 function osr185Select(editor, anchor, focus = anchor) {

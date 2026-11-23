@@ -260,6 +260,7 @@ const kwdjMandatoryCommands = Object.freeze([
   'org.klenwriter.kwdj/command/set-literary-kind',
   'org.klenwriter.kwdj/command/wrap-literary-block',
   'org.klenwriter.kwdj/command/unwrap-literary-block',
+  'org.klenwriter.kwdj/command/set-container-label',
   'org.klenwriter.kwdj/command/set-warning-kind',
   'org.klenwriter.kwdj/command/wrap-warning',
   'org.klenwriter.kwdj/command/unwrap-warning',

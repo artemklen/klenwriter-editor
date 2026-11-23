@@ -3,8 +3,8 @@ use crate::{
     KwdjAdapter,
     convert::{diagnostic, profile_error},
     wire_v2::{
-        KwdjClipboardIntentV2, KwdjLiteraryIntentV2, KwdjWarningIntentV2, LiteraryBlockTargetV2,
-        WarningBlockTargetV2, WarningKindV2,
+        KwdjClipboardIntentV2, KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2,
+        KwdjWarningIntentV2, LiteraryBlockTargetV2, WarningBlockTargetV2, WarningKindV2,
     },
 };
 use editor_bridge::{BridgeAdapter, ClipboardContextData, SelectionFragmentData};
@@ -13,8 +13,9 @@ use editor_engine::{NodeId, SessionKey};
 use editor_kwdj::{
     KwdjProfile, KwdjProfileError, Profile,
     commands::{
-        CLIPBOARD_COMMAND_ID, KWDJ_COMMANDS, KwdjIntent, SET_LITERARY_KIND_COMMAND_ID,
-        SET_WARNING_KIND_COMMAND_ID, UNWRAP_LITERARY_BLOCK_COMMAND_ID, UNWRAP_WARNING_COMMAND_ID,
+        CLIPBOARD_COMMAND_ID, KWDJ_COMMANDS, KwdjIntent, SET_CONTAINER_LABEL_COMMAND_ID,
+        SET_LITERARY_KIND_COMMAND_ID, SET_WARNING_KIND_COMMAND_ID,
+        UNWRAP_LITERARY_BLOCK_COMMAND_ID, UNWRAP_WARNING_COMMAND_ID,
         WRAP_LITERARY_BLOCK_COMMAND_ID, WRAP_WARNING_COMMAND_ID, clipboard,
     },
     model::WarningKind,
@@ -161,6 +162,13 @@ impl BridgeAdapter<KwdjProfile<'static>> for ClipboardAdapterV2 {
                 }
                 _ => Err(diagnostic("sdk.invalid_dto", "command")),
             }
+        } else if command.id == SET_CONTAINER_LABEL_COMMAND_ID {
+            let KwdjLabeledContainerIntentV2::SetContainerLabel { node, label } =
+                editor_bridge::decode(&command.payload_json)?;
+            Ok(KwdjIntent::SetContainerLabel {
+                node: parse_node(&node)?,
+                label,
+            })
         } else {
             match self.0.decode_command(key, command) {
                 Err(legacy) if command.id == KWDJ_COMMANDS[9].id => {
