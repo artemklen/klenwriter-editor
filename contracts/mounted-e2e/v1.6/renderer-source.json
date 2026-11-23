@@ -127,13 +127,13 @@
     },
     {
       "path": "packages/kwdj/dist/clipboard-decode.js",
-      "bytes": 25318,
-      "sha256": "a58846bc854965399070705ff7ee1ebe936d572cb1edbbb0060d4bc4760b5066"
+      "bytes": 25395,
+      "sha256": "f930ff341c8b69b86443435ec6c58eda8ec30e81a977bd436148712a037eef51"
     },
     {
       "path": "packages/kwdj/dist/clipboard-html.js",
-      "bytes": 11778,
-      "sha256": "7aa7749fb7669db436be69a65f0c36e760918958ff0f124cf00e68cd3906698c"
+      "bytes": 12015,
+      "sha256": "3e33fc45d7d113b1b033d0e9f0bf696f7034c92779d9bb637ba332e2a3a6748f"
     },
     {
       "path": "packages/kwdj/dist/clipboard-parser.js",
@@ -570,6 +570,16 @@
       "path": "packages/dom/tsconfig.json",
       "bytes": 211,
       "sha256": "61862cc74eb571aab118a25a68b821378eb4407eb57fa7bad1b976499695e21f"
+    },
+    {
+      "path": "packages/kwdj/src/clipboard-decode.ts",
+      "bytes": 20520,
+      "sha256": "3ae6ddeb4af92a4f8ae075e15c3f25363ba91bf1eb25873043ba06a9d9d93011"
+    },
+    {
+      "path": "packages/kwdj/src/clipboard-html.ts",
+      "bytes": 8971,
+      "sha256": "a058d1accc7b034d755cbc74fb34daf7ec02ebd4bb946c6828ba1e13b2470a5d"
     },
     {
       "path": "packages/kwdj/tsconfig.json",

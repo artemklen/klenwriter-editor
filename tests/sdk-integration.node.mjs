@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { createCommand, createEditor, loadSdk } from '../packages/sdk/dist/index.js';
+import { createCommand, createEditor, loadSdk, loadSdkV2 } from '../packages/sdk/dist/index.js';
 import { kwdjCommand } from '../packages/kwdj/dist/index.js';
 
 let modulePromise;
@@ -118,6 +118,92 @@ test('packaged SDK: real catalog, text command, revisioned reads, snapshot and e
     assert.deepEqual(events.map(e => e.after.revision), ['1', '2', '3']);
     assert.equal(context.callbackErrors.length, 0);
   } finally { context.close(); }
+});
+
+test('packaged SDK2 preserves the scene break through insert, remove, clipboard and reopen', async () => {
+  const fixture = JSON.parse(readFileSync(new URL('../artifacts/extensions/packet.json', import.meta.url)));
+  const wasm = readFileSync(new URL('../packages/wasm/dist/editor_wasm_bg.wasm', import.meta.url));
+  const module = await loadSdkV2({ wasm: new Uint8Array(wasm) });
+  const baseline = counts(module);
+  const options = {
+    abi: 'editor-sdk/2', build_id: module.manifest.build_id, profile: fixture.kwdjProfile,
+    admission: 'validate', access: 'editable', registry_json: fixture.kwdjRegistryJson,
+    profile_options_json: JSON.stringify({ identities: { media: [], references: [] }, limits: null }),
+  };
+  const left = { content: [{ text: 'До сцены', type: 'text' }], type: 'paragraph' };
+  const right = { content: [{ text: 'После сцены', type: 'text' }], type: 'paragraph' };
+  const scene = { type: 'scene_break' };
+  const expected = content => JSON.stringify({ content, profile: 'prose', schema: 'klenwriter.document', schema_version: 1 });
+  const original = expected([left, right]);
+  const withScene = expected([left, scene, right]);
+  const make = input => createEditor({ input: new TextEncoder().encode(input), options, loader: async () => module });
+  const editor = make(original);
+  const choose = (anchor, focus = anchor) => accepted(completed(editor.submit({
+    kind: 'set_selection', stamp: editor.capture(), selection: { anchor, focus },
+  })));
+  const history = direction => accepted(completed(editor.submit({ kind: 'history', stamp: editor.capture(), direction })));
+  const change = intent => assert.equal(accepted(completed(command(editor, intent))).effect, 'changed');
+  const undoRedo = (before, after) => {
+    history('undo');
+    assert.equal(canonical(editor), before);
+    history('redo');
+    assert.equal(canonical(editor), after);
+  };
+  try {
+    accepted(await editor.ready);
+    assert.equal(canonical(editor), original);
+    const parent = state(editor).root;
+    const originalIds = root(editor).children.slice();
+    const gap = { kind: 'child', parent, index: 1, affinity: 'after' };
+    choose(gap);
+    change({ kind: 'insert_block', target: { kind: 'scene_break' } });
+    assert.equal(canonical(editor), withScene);
+    const [first, atom, last] = root(editor).children;
+    assert.deepEqual([first, last], originalIds);
+    const projected = node(editor, atom);
+    assert.equal(projected.type_id, 'org.klenwriter.kwdj/scene_break');
+    assert.equal(projected.primitive, 'block_atom');
+    assert.deepEqual(projected.children, []);
+    assert.equal(Object.keys(projected.attributes).length, 0);
+    undoRedo(original, withScene);
+
+    choose({ kind: 'edge', node: atom, side: 'before' }, { kind: 'edge', node: atom, side: 'after' });
+    const stamp = editor.capture();
+    const copied = accepted(editor.read({ kind: 'selection_fragment', stamp, max_bytes: 2048 }));
+    assert.equal(copied.kind, 'selection_fragment');
+    assert.equal(copied.empty, false);
+    const fragment = JSON.parse(copied.fragment_json);
+    assert.deepEqual([fragment.kind, fragment.content, fragment.open_start, fragment.open_end],
+      ['blocks', [scene], false, false]);
+    assert.deepEqual(editor.capture(), stamp);
+    change({ kind: 'remove', node: atom });
+    assert.equal(canonical(editor), original);
+    undoRedo(withScene, original);
+
+    choose(gap);
+    const paste = createCommand('org.klenwriter.kwdj/command/insert-fragment', {
+      kind: 'insert_fragment', fragment_json: copied.fragment_json,
+    });
+    assert.equal(accepted(completed(editor.submit({
+      kind: 'command', stamp: editor.capture(), command: paste, history_hint: { kind: 'isolated' },
+    }))).effect, 'changed');
+    undoRedo(original, withScene);
+    const [retainedLeft, pasted, retainedRight] = root(editor).children;
+    assert.deepEqual([retainedLeft, retainedRight], originalIds);
+    assert.notEqual(pasted, atom);
+
+    const reopened = make(canonical(editor));
+    try {
+      accepted(await reopened.ready);
+      assert.equal(canonical(reopened), withScene);
+      assert.equal(node(reopened, root(reopened).children[1]).primitive, 'block_atom');
+    } finally {
+      accepted(await settled(reopened.destroy()));
+    }
+  } finally {
+    accepted(await settled(editor.destroy()));
+    assert.deepEqual(counts(module), baseline);
+  }
 });
 
 test('packaged SDK: two listeners read revision r before queued command; second same capture refuses stale', async () => {

@@ -74,6 +74,36 @@ test('CB02 rich copy over the selected range preserves marks, link, hard break a
   expect(response(await call(page,'history',id,'undo')).status).toBe('ok');expect(canonical(await checkpoint(page,id,'rich Undo'))).toEqual(richSource);
 });
 
+test('a selected scene break survives a confirmed rich copy and paste', async ({ page }) => {
+  const original = doc([p('До сцены'), { type: 'scene_break' }, p('После сцены')]);
+  const { id: from } = await call(page, 'mount', { source: original });
+  const before = { kind: 'child', path: [], index: 1 };
+  const after = { kind: 'child', path: [], index: 2 };
+  await call(page, 'select', from, { anchor: before, focus: after }, { anchor: dom([], 1), focus: dom([], 2) });
+  const copy = await call(page, 'copy', from);
+  expect(copy).toMatchObject({ status: 'copied', clipboard: 'confirmed' });
+  const copied = await checkpoint(page, from, 'selected atom written as bare HTML');
+  expect(canonical(copied)).toEqual(original);
+  expect(copied.dom).toContain('class="editor-scene-break"');
+  expect(copied.state.history.undo_entries).toBe('0');
+  const payload = copied.writes.at(-1).payload;
+  expect(payload).toEqual({ text: '', html: '<hr>' });
+
+  const without = doc([p('До сцены'), p('После сцены')]);
+  const { id: to } = await call(page, 'mount', { source: without });
+  const at = dom([], 1);
+  await call(page, 'select', to, { anchor: before, focus: before }, { anchor: at, focus: at });
+  const pasted = await call(page, 'paste', to, { 'text/plain': payload.text, 'text/html': payload.html });
+  expect(pasted.status).toBe('inserted');
+  const saved = await checkpoint(page, to, 'native fragment inserts one bare scene break');
+  expect(saved.canonical).toBe(copied.canonical);
+  expect(saved.state.history.undo_entries).toBe('1');
+  expect(response(await call(page, 'history', to, 'undo')).status).toBe('ok');
+  expect(canonical(await checkpoint(page, to, 'Undo removes only the pasted atom'))).toEqual(without);
+  expect(response(await call(page, 'history', to, 'redo')).status).toBe('ok');
+  expect((await checkpoint(page, to, 'Redo restores the exact atom')).canonical).toBe(saved.canonical);
+});
+
 test('CB03 cut waits for explicit controlled write ACK; paste reconstructs open block structure',async({page})=>{
   const {id}=await call(page,'mount',{source:richSource,writer:'pending'});await call(page,'select',id,richSelection,richDom);const before=await checkpoint(page,id,'before controlled pending cut');
   expect((await call(page,'startCopy',id,'cut')).writers).toBe(1);const pending=await checkpoint(page,id,'no deletion before writer settles');expect(pending.canonical).toBe(before.canonical);expect(pending.state.history.undo_entries).toBe('0');expect(published(pending)).toEqual(published(before));

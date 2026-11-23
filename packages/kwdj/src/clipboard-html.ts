@@ -60,6 +60,10 @@ export function serializeClipboardHtml(json:string,binding:ClipboardProfileBindi
       if(type==='text'){if(parent!=='inline'||!closed(v,['type','text'],['marks'])||!scalar(v.text)||v.text.length===0)throw Error('clipboard.invalid_input');marked(v.text,v.marks);return;}
       if(type==='hard_break'){if(parent!=='inline'||!closed(v,['type']))throw Error('clipboard.invalid_input');append('<br>');return;}
       if(parent==='inline')throw Error('clipboard.unsupported_semantics');
+      if(type==='scene_break'){
+        if(parent!=='blocks'||!closed(v,['type']))throw Error('clipboard.invalid_input');
+        append('<hr>');return;
+      }
       if(type==='paragraph'||type==='heading'){
         if(parent!=='blocks'||!closed(v,['type','content'],['attrs']))throw Error('clipboard.invalid_input');let tag='p';
         if(type==='heading'){if(!closed(v.attrs,['level'])||!integer(v.attrs.level)||v.attrs.level>6)throw Error('clipboard.unsupported_semantics');tag='h'+v.attrs.level;}

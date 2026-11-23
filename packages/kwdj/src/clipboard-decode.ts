@@ -7,7 +7,7 @@ import type {ClipboardCandidateMark as Mark, ClipboardCandidateNode as Node, Cli
 export type * from './clipboard-types.js';
 export const clipboardDecodeLimits = Object.freeze({sourceUtf16:524288,aggregateUtf16:1048576,nodes:8192,depth:128,attributes:16384});
 const HTML_NS='http://www.w3.org/1999/xhtml';
-const blocks=new Set(['h1','h2','h3','h4','h5','h6','p','blockquote','ul','ol','table']);
+const blocks=new Set(['h1','h2','h3','h4','h5','h6','p','hr','blockquote','ul','ol','table']);
 const wrappers=new Set(['div','section','article']);
 const inlineWrappers=new Set(['span','font','u','abbr','time']);
 const active=new Set(['script','iframe','object','embed','applet','form','input','button','textarea','select','base','link','meta','template']);
@@ -161,6 +161,7 @@ function richBlocks(nodes:readonly Html[],policy:Policy,work:Work):Rich {
   function convert(n:Extract<Html,{kind:'element'}>,depth:number):Node|null {
     work.visit(depth);const tag=n.tagName,a=attrs(n);
     if(tag==='p'||/^h[1-6]$/.test(tag))return work.node(tag==='p'?'paragraph':'heading',{...(tag==='p'?{}:{attrs:{level:Number(tag[1])}}),content:inline(n.children,[],depth+1)});
+    if(tag==='hr')return work.node('scene_break');
     if(tag==='blockquote')return work.node('blockquote',{content:mixed(n,depth+1)});
     if(tag==='ul'||tag==='ol'){const content:Node[]=[];for(const c of n.children){if(!nonempty(c))continue;if(c.kind!=='element'||c.tagName!=='li'){reject();break;}content.push(work.node('list_item',{content:mixed(c,depth+1)}));}
       const start=tag==='ol'?integer(a.get('start')):undefined;return work.node(tag==='ul'?'bullet_list':'ordered_list',{...(start!==undefined&&start!==1?{attrs:{start}}:{}),content});}

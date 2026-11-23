@@ -19,9 +19,12 @@ fn open(source: &Value) -> DistributionSession {
     open_with_limits(source, Value::Null)
 }
 fn open_with_limits(source: &Value, limits: Value) -> DistributionSession {
+    open_bytes(source.to_string().as_bytes(), limits)
+}
+fn open_bytes(source: &[u8], limits: Value) -> DistributionSession {
     let options = json!({"abi":"editor-sdk/2","build_id":BUILD,"profile":editor_kwdj_sdk::manifest().profiles[0],"admission":"validate","access":"editable","registry_json":serde_json::to_string(&editor_kwdj::registry::registry_descriptor()).unwrap(),"profile_options_json":json!({"identities":{"media":[],"references":[]},"limits":limits}).to_string()});
     let distribution = Distribution::new(BUILD, vec![Box::new(KwdjFactory)]).unwrap();
-    let session = distribution.open(source.to_string().as_bytes(), &options.to_string());
+    let session = distribution.open(source, &options.to_string());
     assert!(matches!(
         session.initialization(),
         editor_protocol::SdkResponse::Ok { .. }
@@ -60,20 +63,30 @@ fn select(s: &mut DistributionSession, a: Value, b: Value) {
     assert_eq!(response["status"], "ok", "{response}");
 }
 fn paste(s: &mut DistributionSession, f: &Value) -> Value {
+    command(
+        s,
+        COMMAND,
+        json!({"kind":"insert_fragment","fragment_json":f.to_string()}),
+    )
+}
+fn command(s: &mut DistributionSession, id: &str, payload: Value) -> Value {
     let stamp = state(s)["stamp"].clone();
     call(
         s,
-        json!({"kind":"command","stamp":stamp,"command":{"id":COMMAND,"payload_json":json!({"kind":"insert_fragment","fragment_json":f.to_string()}).to_string()},"history_hint":{"kind":"isolated"}}),
+        json!({"kind":"command","stamp":stamp,"command":{"id":id,"payload_json":payload.to_string()},"history_hint":{"kind":"isolated"}}),
     )
 }
 fn snapshot(s: &mut DistributionSession) -> Value {
+    serde_json::from_str(&canonical_snapshot(s)).unwrap()
+}
+fn canonical_snapshot(s: &mut DistributionSession) -> String {
     let stamp = state(s)["stamp"].clone();
     let r = call(
         s,
         json!({"kind":"snapshot","stamp":stamp,"max_bytes":2097152}),
     );
     assert_eq!(r["status"], "ok", "{r}");
-    let value = serde_json::from_str(r["value"]["canonical_json"].as_str().unwrap()).unwrap();
+    let canonical = r["value"]["canonical_json"].as_str().unwrap().to_owned();
     assert_eq!(
         call(
             s,
@@ -81,13 +94,16 @@ fn snapshot(s: &mut DistributionSession) -> Value {
         )["status"],
         "ok"
     );
-    value
+    canonical
 }
 fn undo(s: &mut DistributionSession) {
+    history(s, "undo");
+}
+fn history(s: &mut DistributionSession, direction: &str) {
     let stamp = state(s)["stamp"].clone();
     let r = call(
         s,
-        json!({"kind":"history","stamp":stamp,"direction":"undo"}),
+        json!({"kind":"history","stamp":stamp,"direction":direction}),
     );
     assert_eq!(r["status"], "ok", "{r}");
 }
@@ -271,6 +287,87 @@ fn fragment_extraction_preserves_native_directed_selection_and_open_edges() {
     );
     assert_eq!(limited["status"], "refused");
     assert_eq!(state(&mut s), before);
+}
+
+#[test]
+fn prose_scene_break_survives_commands_clipboard_history_and_reopen() {
+    const SOURCE: &str = r#"{"content":[{"content":[{"text":"До сцены","type":"text"}],"type":"paragraph"},{"content":[{"text":"После сцены","type":"text"}],"type":"paragraph"}],"profile":"prose","schema":"klenwriter.document","schema_version":1}"#;
+    const WITH_SCENE: &str = r#"{"content":[{"content":[{"text":"До сцены","type":"text"}],"type":"paragraph"},{"type":"scene_break"},{"content":[{"text":"После сцены","type":"text"}],"type":"paragraph"}],"profile":"prose","schema":"klenwriter.document","schema_version":1}"#;
+
+    let assert_history_round_trip = |session: &mut DistributionSession, before, after| {
+        assert_eq!(canonical_snapshot(session), after);
+        undo(session);
+        assert_eq!(canonical_snapshot(session), before);
+        history(session, "redo");
+        assert_eq!(canonical_snapshot(session), after);
+    };
+
+    let mut s = open_bytes(SOURCE.as_bytes(), Value::Null);
+    let root = state(&mut s)["root"].clone();
+    let insertion_gap = gap(root, 1);
+    select(&mut s, insertion_gap.clone(), insertion_gap.clone());
+    let inserted = command(
+        &mut s,
+        "org.klenwriter.kwdj/command/insert-block",
+        json!({"kind":"insert_block","target":{"kind":"scene_break"}}),
+    );
+    assert_eq!(inserted["status"], "ok", "{inserted}");
+    assert_history_round_trip(&mut s, SOURCE, WITH_SCENE);
+
+    let scene = role(&mut s, &[1]);
+    let view = node(&mut s, &scene);
+    assert_eq!(view["type_id"], "org.klenwriter.kwdj/scene_break");
+    assert_eq!(view["primitive"], "block_atom");
+    assert_eq!(view["attributes"], json!({}));
+    assert_eq!(view["children"], json!([]));
+    assert_eq!(view["text"], Value::Null);
+
+    select(
+        &mut s,
+        json!({"kind":"edge","node":scene,"side":"before"}),
+        json!({"kind":"edge","node":scene,"side":"after"}),
+    );
+    let selected = state(&mut s);
+    let extracted = call(
+        &mut s,
+        json!({"kind":"selection_fragment","stamp":selected["stamp"],"max_bytes":2097152}),
+    );
+    assert_eq!(extracted["status"], "ok", "{extracted}");
+    let clipboard = extracted["value"]["fragment_json"].as_str().unwrap();
+    assert_eq!(
+        serde_json::from_str::<Value>(clipboard).unwrap(),
+        fragment(
+            "prose",
+            "blocks",
+            json!([{"type":"scene_break"}]),
+            false,
+            false
+        )
+    );
+    assert_eq!(state(&mut s), selected);
+
+    let removed = command(
+        &mut s,
+        "org.klenwriter.kwdj/command/remove",
+        json!({"kind":"remove","node":scene}),
+    );
+    assert_eq!(removed["status"], "ok", "{removed}");
+    assert_history_round_trip(&mut s, WITH_SCENE, SOURCE);
+
+    select(&mut s, insertion_gap.clone(), insertion_gap);
+    let pasted = command(
+        &mut s,
+        COMMAND,
+        json!({"kind":"insert_fragment","fragment_json":clipboard}),
+    );
+    assert_eq!(pasted["status"], "ok", "{pasted}");
+    assert_history_round_trip(&mut s, SOURCE, WITH_SCENE);
+
+    let saved = canonical_snapshot(&mut s);
+    s.destroy();
+    let mut reopened = open_bytes(saved.as_bytes(), Value::Null);
+    assert_eq!(canonical_snapshot(&mut reopened), WITH_SCENE);
+    assert_eq!(state(&mut reopened)["history"]["undo_entries"], "0");
 }
 
 #[test]
