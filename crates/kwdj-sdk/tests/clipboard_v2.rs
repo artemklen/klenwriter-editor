@@ -1035,6 +1035,82 @@ fn osr186_paste_and_undo(
 }
 
 #[test]
+fn osr278_warning_clipboard_keeps_whole_blocks_and_selected_children() {
+    let corpus: Value = serde_json::from_str(include_str!(
+        "../../../contracts/kwdj/v1/fixtures/positive.json"
+    ))
+    .unwrap();
+    let cases = &corpus["fixtures"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|item| item["id"] == "DOC-016")
+        .unwrap()["cases"];
+    let original = &cases
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|item| item["name"] == "warning_kinds")
+        .unwrap()["kwdj"];
+    let blocks = original["content"].as_array().unwrap();
+    assert_eq!(blocks.len(), 2);
+    assert_eq!(blocks[0]["attrs"]["kind"], "general");
+    assert_eq!(blocks[1]["attrs"]["kind"], "content");
+    let original_bytes = original.to_string();
+
+    let mut session = open(original);
+    let root = role(&mut session, &[]);
+    for (index, block) in blocks.iter().enumerate() {
+        let target_index = 1 - index;
+        let target = role(&mut session, &[target_index]);
+        select(
+            &mut session,
+            gap(root.clone(), index),
+            gap(root.clone(), index + 1),
+        );
+        let whole = osr186_capture(
+            &mut session,
+            fragment("prose", "blocks", json!([block]), false, false),
+        );
+
+        let target_gap = gap(target.clone(), 1);
+        select(&mut session, target_gap.clone(), target_gap);
+        osr185_refusal(
+            &mut session,
+            COMMAND,
+            json!({"kind":"insert_fragment","fragment_json":whole.to_string()}),
+            &original_bytes,
+            &json!({"code":"kwdj.recursive_warning","path":format!("/content/{target_index}/content/1")}),
+        );
+
+        let root_end = gap(root.clone(), blocks.len());
+        select(&mut session, root_end.clone(), root_end);
+        let mut expected = original.clone();
+        expected["content"]
+            .as_array_mut()
+            .unwrap()
+            .push(block.clone());
+        osr186_paste_and_undo(&mut session, &whole, expected, &original_bytes);
+
+        let source = role(&mut session, &[index]);
+        select(&mut session, gap(source.clone(), 0), gap(source, 1));
+        let child = &block["content"][0];
+        let children = osr186_capture(
+            &mut session,
+            fragment("prose", "blocks", json!([child]), false, false),
+        );
+        let target_gap = gap(target, 1);
+        select(&mut session, target_gap.clone(), target_gap);
+        let mut expected = original.clone();
+        expected["content"][target_index]["content"]
+            .as_array_mut()
+            .unwrap()
+            .push(child.clone());
+        osr186_paste_and_undo(&mut session, &children, expected, &original_bytes);
+    }
+}
+
+#[test]
 fn osr186_closed_literary_fragments_retain_all_kinds_and_nested_children() {
     let fixtures: Value = serde_json::from_str(include_str!(
         "../../../contracts/kwdj/v1/fixtures/positive.json"

@@ -568,6 +568,38 @@ function osr186PasteAndUndo(editor, captured, expected, original) {
   osr183History(editor, 'undo', original);
 }
 
+test('OSR-278 packaged SDK2 preserves warning blocks and selected children through clipboard Undo', async () => {
+  const { fixtures } = JSON.parse(readFileSync(new URL('../contracts/kwdj/v1/fixtures/positive.json', import.meta.url), 'utf8'));
+  const { kwdj: document } = fixtures.find(item => item.id === 'DOC-016').cases.find(item => item.name === 'warning_kinds');
+  assert.deepEqual(document.content.map(block => block.attrs.kind), ['general', 'content']);
+  const original = osr185Bytes(document);
+
+  await withLiteraryCommandSession(original, editor => {
+    const rootId = state(editor).root;
+    for (const [index, block] of document.content.entries()) {
+      const targetIndex = 1 - index;
+      const [source, target] = [root(editor).children[index], root(editor).children[targetIndex]];
+      osr185Select(editor, osr185Gap(rootId, index), osr185Gap(rootId, index + 1));
+      const whole = osr186Capture(editor, 'blocks', [block]);
+
+      osr185Select(editor, osr185Gap(target, 1));
+      osr183Denied(editor, osr186InsertFragment, osr186Payload(whole), original,
+        'kwdj.recursive_warning', `/content/${targetIndex}/content/1`);
+
+      osr185Select(editor, osr185Gap(rootId, document.content.length));
+      osr186PasteAndUndo(editor, whole, { ...document, content: [...document.content, block] }, original);
+
+      const child = block.content[0];
+      osr185Select(editor, osr185Gap(source, 0), osr185Gap(source, 1));
+      const children = osr186Capture(editor, 'blocks', [child]);
+      osr185Select(editor, osr185Gap(target, 1));
+      const expected = structuredClone(document);
+      expected.content[targetIndex].content.push(child);
+      osr186PasteAndUndo(editor, children, expected, original);
+    }
+  });
+});
+
 test('OSR-186 packaged SDK2 copies closed literary fragments for all kinds and nested children', async () => {
   const { canonical: original } = literaryFixture();
   const document = JSON.parse(original);
