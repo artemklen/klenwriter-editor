@@ -187,6 +187,155 @@ test('OSR-182 DOC-015 renders and reopens all literary kinds in a read-only edit
   expect(await renderAndExport(saved)).toBe(fixture.canonical);
 });
 
+const osr187Bytes = content => canonicalizeRaw(JSON.stringify({
+  schema: 'klenwriter.document', schema_version: 1, profile: 'prose', content,
+}));
+
+// The OSR-184 native and packaged SDK2 wrap/unwrap fixture, with unchanged payload bytes.
+const osr184MountedBlocks = [
+  { type: 'paragraph', content: [{ type: 'text', text: 'Before' }] },
+  { type: 'paragraph', attrs: { align: 'right' }, content: [
+    { type: 'text', text: 'Note 😀', marks: [{ type: 'strong' }] },
+    { type: 'hard_break' },
+    { type: 'text', text: 'Continuation' },
+  ] },
+  { type: 'scene_break' },
+  { type: 'blockquote', content: [{ type: 'paragraph', content: [
+    { type: 'text', text: 'Quotation', marks: [{ type: 'emphasis' }] },
+  ] }] },
+  { type: 'literary_block', attrs: { kind: 'letter' }, content: [
+    { type: 'paragraph', content: [{ type: 'text', text: 'Preserved' }] },
+  ] },
+];
+const osr184MountedInitial = osr187Bytes(osr184MountedBlocks);
+const osr184MountedWrapped = osr187Bytes([
+  osr184MountedBlocks[0],
+  { type: 'literary_block', attrs: { kind: 'author_note' }, content: osr184MountedBlocks.slice(1, 4) },
+  osr184MountedBlocks[4],
+]);
+
+async function osr187StructuralCommand(page, id, name, payload) {
+  const result = await call(page, 'submit', id, {
+    kind: 'command',
+    command: { id: 'org.klenwriter.kwdj/command/' + name, payload_json: JSON.stringify(payload) },
+    history_hint: { kind: 'isolated' },
+  });
+  expect(result, JSON.stringify(result)).toMatchObject({ response: { status: 'ok', value: { effect: 'changed' } } });
+}
+
+test('OSR-187 mounted wrap preserves the OSR-184 children', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const { id, ready, diagnostic } = await call(page, 'mount', { source: osr184MountedInitial });
+  expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+  await call(page, 'select', id, '', 1, '', 4);
+  const before = await checkpoint(page, id, 'OSR-184 native wrap input with root gaps 1 through 4');
+  expect(before.canonical).toBe(osr184MountedInitial);
+  expect(before.actualSelection).toMatchObject({ anchorOffset: 1, focusOffset: 4, inside: true });
+  const gap = index => ({ kind: 'child', parent: before.state.root, index, affinity: 'after' });
+  expect(before.state.selection).toEqual({ anchor: gap(1), focus: gap(4) });
+  const children = stateRow(before, '').children;
+
+  await osr187StructuralCommand(page, id, 'wrap-literary-block', {
+    kind: 'wrap_literary_block', literary_kind: 'author_note',
+  });
+  const after = await checkpoint(page, id, 'Mounted wrap produces the OSR-184 native result');
+  expect(after.canonical).toBe(osr184MountedWrapped);
+  const wrapper = stateRow(after, '/1');
+  expect(wrapper).toMatchObject({
+    type_id: 'org.klenwriter.kwdj/literary_block',
+    attributes: { kind: { kind: 'string', value: 'author_note' } },
+    children: children.slice(1, 4),
+  });
+  expect(stateRow(after, '').children).toEqual([children[0], wrapper.id, children[4]]);
+  expect(after.failures).toEqual([]);
+  history(after, 1, 0);
+  expect(docEvents(after)).toHaveLength(1);
+
+  const host = page.locator('#' + id);
+  const note = host.getByRole('group', { name: 'Заметка автора', exact: true });
+  await expect(note).toBeVisible();
+  expect(await note.locator(':scope > [data-editor-node]').evaluateAll(elements => elements.map(el => el.tagName)))
+    .toEqual(['P', 'HR', 'BLOCKQUOTE']);
+});
+
+test('OSR-187 mounted unwrap restores the OSR-184 children and its input passes axe', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const { id, ready, diagnostic } = await call(page, 'mount', { source: osr184MountedWrapped });
+  expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+  const before = await checkpoint(page, id, 'OSR-184 native unwrap input');
+  expect(before.canonical).toBe(osr184MountedWrapped);
+  const [left, wrapperId, right] = stateRow(before, '').children;
+  const children = stateRow(before, '/1').children;
+  const host = page.locator('#' + id);
+  await expect(host.getByRole('group', { name: 'Заметка автора', exact: true })).toBeVisible();
+  const result = await new AxeBuilder({ page }).include('#' + id).analyze();
+  observations.get(page).axe = {
+    engine: result.testEngine, scope: 'OSR-187 mounted literary document',
+    violations: result.violations, incomplete: result.incomplete, passedRules: result.passes.map(rule => rule.id),
+  };
+  expect(result.violations).toEqual([]);
+  expect(result.passes.length).toBeGreaterThan(0);
+
+  await osr187StructuralCommand(page, id, 'unwrap-literary-block', {
+    kind: 'unwrap_literary_block', node: wrapperId,
+  });
+  const after = await checkpoint(page, id, 'Mounted explicit unwrap produces the OSR-184 native result');
+  expect(after.canonical).toBe(osr184MountedInitial);
+  expect(stateRow(after, '').children).toEqual([left, ...children, right]);
+  expect(after.failures).toEqual([]);
+  history(after, 1, 0);
+  expect(docEvents(after)).toHaveLength(1);
+  await expect(host.getByRole('group', { name: 'Заметка автора', exact: true })).toHaveCount(0);
+  expect(await host.locator(':scope > [data-editor-node]').evaluateAll(elements => elements.map(el => el.tagName)))
+    .toEqual(['P', 'P', 'HR', 'BLOCKQUOTE', 'SECTION']);
+});
+
+test('OSR-187 trusted first-literary-child Backspace preserves the OSR-185 native bytes', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const fixture = JSON.parse(readFileSync(new URL('./fixtures/osr-185-literary.json', import.meta.url), 'utf8'));
+  const source = canonicalizeRaw(JSON.stringify(fixture.initial));
+  const expected = fixture.refusals.first_child_backspace;
+  const { id, ready, diagnostic } = await call(page, 'mount', { source });
+  expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+  const path = '/1/0/0';
+  await call(page, 'select', id, path, 0);
+  const before = await checkpoint(page, id, 'OSR-185 native first literary child at UTF-16 offset zero');
+  expect(before.canonical).toBe(source);
+  caret(before, stateRow(before, path).id, 0);
+  expect(await call(page, 'nativeSelectionMatches', id, path, 0)).toBe(true);
+  const availability = await call(page, 'queryCommand', id, { kind: 'delete_backward' });
+  expect(availability, JSON.stringify(availability)).toMatchObject({
+    status: 'ok', value: { available: false, diagnostic: expected },
+  });
+
+  const host = page.locator('#' + id);
+  await expect(host).toBeFocused();
+  await host.evaluate(element => {
+    element.addEventListener('beforeinput', event => {
+      element.literaryBackspace = {
+        inputType: event.inputType, trusted: event.isTrusted, prevented: event.defaultPrevented,
+      };
+    }, { once: true });
+  });
+  await page.keyboard.press('Backspace');
+  const input = await host.evaluate(element => element.literaryBackspace);
+  expect(input).toEqual({ inputType: 'deleteContentBackward', trusted: true, prevented: true });
+  observations.get(page).literaryBackspace = { input, nativeAvailability: availability };
+
+  const after = await checkpoint(page, id, 'Trusted Backspace leaves the OSR-185 native result unchanged');
+  expect(after.canonical).toBe(source);
+  expect(after.state).toEqual(before.state);
+  expect(after.rows).toEqual(before.rows);
+  expect(after.events).toEqual(before.events);
+  expect(after.actualSelection).toEqual(before.actualSelection);
+  expect(after.lifecycle).toBe('ready');
+  expect(after.failures).toHaveLength(before.failures.length + 1);
+  expect(after.failures.at(-1)).toMatchObject({
+    status: 'dom_refused', diagnostic: { code: 'dom.command_unsupported', phase: 'command', publication: 'none' },
+  });
+  expect(await call(page, 'nativeSelectionMatches', id, path, 0)).toBe(true);
+});
+
 test('T09 keyboard Tab return preserves current native caret and every committed facet before and after deletion',async({page})=>{
   const mounted=await call(page,'mount',{fixture:'D0'});expect(mounted.ready).toBe('ready');
   const id=mounted.id;await call(page,'select',id,'/0/2',2);

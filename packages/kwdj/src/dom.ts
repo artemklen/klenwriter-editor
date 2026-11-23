@@ -185,6 +185,8 @@ function coveredCommand(id: string, payload: Record<string, unknown>): boolean {
       try { return coveredClipboard(JSON.parse(payload.fragment_json)); } catch { return false; }
     }
     case 'insert-text': return closed(payload, ['kind', 'text']) && typeof payload.text === 'string';
+    case 'wrap-literary-block': return closed(payload, ['kind', 'literary_kind']) && payload.literary_kind === 'author_note';
+    case 'unwrap-literary-block': return closed(payload, ['kind', 'node']) && typeof payload.node === 'string';
     case 'toggle-mark': return closed(payload, ['kind', 'mark']) && coveredMark(payload.mark);
     case 'set-link': return closed(payload, ['kind', 'href', 'title']) && safeHref(payload.href) && (payload.title === null || smallString(payload.title));
     case 'transform-block': case 'insert-block': return closed(payload, ['kind', 'target']) && coveredTarget(payload.target);
