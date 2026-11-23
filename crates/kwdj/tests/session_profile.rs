@@ -2,6 +2,7 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use editor_core::admission::PreflightBudget;
+use editor_core::document::{Attribute, Primitive};
 use editor_core::profile::{
     AdmissionMode, BindingError, ExtensionBinding, FrozenProfile, ProfileBinding,
 };
@@ -211,6 +212,57 @@ fn admitted_root_context_and_all_semantic_payload_survive_snapshot_roundtrip() {
         assert_eq!(keys, ["content", "profile", "schema", "schema_version"]);
         assert_eq!(wire["profile"], name);
     }
+}
+
+#[test]
+fn doc015_native_all_literary_kinds_read_project_and_reopen() {
+    let fixtures: Value = serde_json::from_str(include_str!(
+        "../../../contracts/kwdj/v1/fixtures/positive.json"
+    ))
+    .unwrap();
+    let fixture = fixtures["fixtures"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|fixture| fixture["id"] == "DOC-015")
+        .unwrap();
+    let case = fixture["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|case| case["name"] == "all_literary_kinds")
+        .unwrap();
+    let canonical = serde_json::to_vec(&case["kwdj"]).unwrap();
+    let identities = Identities::default();
+    let profile = KwdjProfile::new(&identities, Limits::default(), AdmissionBudget::default());
+    let admitted = profile
+        .admit_bytes(profile.binding(), &canonical, AdmissionMode::Strict)
+        .unwrap();
+    let document = profile.to_document(&admitted);
+    assert_eq!(document.children.len(), 6);
+    for (actual, expected) in document
+        .children
+        .iter()
+        .zip(case["kwdj"]["content"].as_array().unwrap())
+    {
+        assert_eq!(actual.type_id, "org.klenwriter.kwdj/literary_block");
+        assert_eq!(actual.primitive, Primitive::Container);
+        assert_eq!(
+            actual.attributes["kind"],
+            Attribute::String(expected["attrs"]["kind"].as_str().unwrap().to_owned())
+        );
+        assert_eq!(
+            actual.children[0].children[0].text.as_deref(),
+            expected["content"][0]["content"][0]["text"].as_str()
+        );
+    }
+    assert_eq!(
+        admitted.project_text().unwrap().full_text,
+        case["expected"]["full_text"].as_str().unwrap()
+    );
+    assert_eq!(profile.canonical(&admitted), canonical);
+    let reopened = profile.admit_snapshot(&Profile::Prose, &document).unwrap();
+    assert_eq!(profile.canonical(&reopened), canonical);
 }
 
 #[test]

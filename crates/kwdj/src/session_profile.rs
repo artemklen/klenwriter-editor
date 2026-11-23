@@ -102,7 +102,6 @@ impl<'a> KwdjProfile<'a> {
     }
 
     /// Optional compiled registration and effective rules are frozen together.
-    /// The ordinary ABI2 base registration stays at exactly eighteen commands.
     pub fn with_typing_registry_json(
         self,
         rules: crate::typing::TypingRules,

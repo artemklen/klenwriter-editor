@@ -23,6 +23,18 @@
 .editor-surface .editor-task-item::before { content: '\2610'; position: absolute; inset-inline-start: -1.25em; }
 .editor-surface .editor-task-item.editor-checked::before { content: '\2611'; }
 .editor-surface .editor-scene-break { margin-block: 1.5em; border: 0; border-top: 1px solid currentColor; }
+.editor-surface .editor-media-placeholder::before {
+  content: '';
+  display: block;
+  box-sizing: border-box;
+  inline-size: min(100%, 18rem);
+  block-size: 4rem;
+  margin-block: 0.5em;
+  border: 1px dashed currentColor;
+  border-radius: 0.25em;
+}
+.editor-surface .editor-media-center::before { margin-inline: auto; }
+.editor-surface .editor-media-wide::before { inline-size: 100%; }
 .editor-surface .editor-color-muted { color: #595959; }
 .editor-surface .editor-color-accent { color: #275dad; }
 .editor-surface .editor-color-manuscript { color: #72472d; }

@@ -108,10 +108,34 @@ export const kwdjTypingDomInventory = {
     },
     {
       "descriptor": {
+        "id": "org.klenwriter.kwdj/command/set-container-label",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/set-container-label",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
         "id": "org.klenwriter.kwdj/command/set-link",
         "kind": "compiled"
       },
       "id": "org.klenwriter.kwdj/command/set-link",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/set-literary-kind",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/set-literary-kind",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/set-warning-kind",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/set-warning-kind",
       "owner": "org.klenwriter.kwdj/base"
     },
     {
@@ -161,6 +185,54 @@ export const kwdjTypingDomInventory = {
       },
       "id": "org.klenwriter.kwdj/command/unset-link",
       "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/unwrap-labeled-container",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/unwrap-labeled-container",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/unwrap-literary-block",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/unwrap-literary-block",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/unwrap-warning",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/unwrap-warning",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/wrap-labeled-container",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/wrap-labeled-container",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/wrap-literary-block",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/wrap-literary-block",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/wrap-warning",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/wrap-warning",
+      "owner": "org.klenwriter.kwdj/base"
     }
   ],
   "extensions": [
@@ -188,13 +260,22 @@ export const kwdjTypingDomInventory = {
       "org.klenwriter.kwdj/command/move",
       "org.klenwriter.kwdj/command/remove",
       "org.klenwriter.kwdj/command/restore-typed-text",
+      "org.klenwriter.kwdj/command/set-container-label",
       "org.klenwriter.kwdj/command/set-link",
+      "org.klenwriter.kwdj/command/set-literary-kind",
+      "org.klenwriter.kwdj/command/set-warning-kind",
       "org.klenwriter.kwdj/command/shift-enter",
       "org.klenwriter.kwdj/command/toggle-list",
       "org.klenwriter.kwdj/command/toggle-mark",
       "org.klenwriter.kwdj/command/toggle-quote",
       "org.klenwriter.kwdj/command/transform-block",
-      "org.klenwriter.kwdj/command/unset-link"
+      "org.klenwriter.kwdj/command/unset-link",
+      "org.klenwriter.kwdj/command/unwrap-labeled-container",
+      "org.klenwriter.kwdj/command/unwrap-literary-block",
+      "org.klenwriter.kwdj/command/unwrap-warning",
+      "org.klenwriter.kwdj/command/wrap-labeled-container",
+      "org.klenwriter.kwdj/command/wrap-literary-block",
+      "org.klenwriter.kwdj/command/wrap-warning"
     ],
     "marks": [
       {
@@ -1454,5 +1535,5 @@ export const kwdjTypingDomInventory = {
     "profile_version": "1.0.0",
     "wire_version": 1
   },
-  "registryDigest": "c20eaf32f2982c3e07da6cbdc440dc2d0aeae6ae8e0780821df6ed32c9c2271b"
+  "registryDigest": "05c304f4541c87c364b77377da04f9a10e045643ced7e43fc28724d2f95b95c2"
 } as const;

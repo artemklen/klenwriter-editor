@@ -63,7 +63,8 @@ Native acceptance of a table/verse does not install a table/poetry provider.
 Unsupported mounted presentation preserves the raw capture for host recovery.
 Safe copy serialization emits escaped allowlisted HTML. Open heading edges
 refuse because external HTML cannot preserve partial heading openness; closed
-headings remain supported. Semantics which cannot
+headings remain supported. A complete prose scene break uses a bare `<hr>` and
+round-trips as a closed `scene_break` block. Semantics which cannot
 roundtrip through that serializer refuse rather than being flattened.
 
 ## Ownership and platform completion

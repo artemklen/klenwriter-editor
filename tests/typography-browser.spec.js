@@ -102,7 +102,7 @@ test.beforeEach(async({page},info)=>{
   await page.addInitScript(()=>{window.typingStartup=[];window.typingPolicy=[];window.addEventListener('error',event=>window.typingStartup.push(event.message));window.addEventListener('unhandledrejection',event=>window.typingStartup.push(String(event.reason?.message??event.reason)));document.addEventListener('securitypolicyviolation',event=>window.typingPolicy.push({directive:event.violatedDirective,blocked:event.blockedURI}));});
   const response=await page.goto('/typing');record.csp=response.headers()['content-security-policy'];expect(record.csp).toContain("default-src 'none'");expect(record.csp).toContain("'wasm-unsafe-eval'");expect(record.csp).not.toMatch(/'unsafe-inline'|'unsafe-eval'/);
   await page.waitForFunction(()=>window.typingHostReady||window.typingStartup.length,null,{timeout:15000});expect(await page.evaluate(()=>window.typingStartup)).toEqual([]);
-  record.metadata=await call(page,'metadata');expect(record.metadata.typingCommands).toHaveLength(20);expect(record.metadata.baseCommands).toHaveLength(18);
+  record.metadata=await call(page,'metadata');expect(record.metadata.typingCommands).toHaveLength(29);expect(record.metadata.baseCommands).toHaveLength(27);
 });
 test.afterEach(async({page},info)=>{
   const record=observations.get(page);if(!record)return;
@@ -202,7 +202,7 @@ test('B48-CMS-T15-owned-final: original Cyrillic content transforms only through
   await call(page,'compositionEnd',id,'not authority');await call(page,'frames',6);const after=await checkpoint(page,id,'T15 content, actual admitted original41 final claim');
   const expected=structuredClone(authority.states.quote_cooked);expected.canonical_json=cooked;checkState(after,expected,before);expect(typed(after)).toHaveLength(1);checkResult(typed(after)[0].response.value.result,'quote',before,'composition_commit');
 });
-for(const [name,config]of [['empty-subset',{version:1,locale:'ru',rules:[],limits:null}],['lookbehind-zero',{version:1,locale:'ru',rules:null,limits:{lookbehind_scalars:0}}]])test(`B48-config-${name}: explicit typing20 session remains literal without a receipt`,async({page})=>{
+for(const [name,config]of [['empty-subset',{version:1,locale:'ru',rules:[],limits:null}],['lookbehind-zero',{version:1,locale:'ru',rules:null,limits:{lookbehind_scalars:0}}]])test(`B48-config-${name}: explicit typography session remains literal without a receipt`,async({page})=>{
   const {id,before}=await call(page,'mount',{typing:config});await page.keyboard.type('"');const after=await checkpoint(page,id,'literal configured typed input');checkState(after,authority.states.quote_literal,before);expect(typed(after)).toHaveLength(1);expect(typed(after)[0].response.value.result).toBeNull();
 });
 for(const [name,mark]of [['code',{type:'code'}],['link',{type:'link',attrs:{href:'https://example.test/typography',title:'Protected'}}]])test(`B48-protected-${name}: literal input preserves the original protected mark`,async({page})=>{

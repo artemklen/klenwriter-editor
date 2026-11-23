@@ -8,13 +8,25 @@ import { kwdjCommand, kwdjTypedTextCommand, kwdjRestoreTypedTextCommand } from '
 import { kwdjDomInventory } from './dom-inventory.js';
 import { kwdjTypingDomInventory } from './typing-dom-inventory.js';
 
+export { bindKwdjContainerLabel } from './container-label.js';
+export type { KwdjContainerLabelOptions } from './container-label.js';
+
 const prefix = 'org.klenwriter.kwdj/';
 const colorTokens = ['muted', 'accent', 'manuscript', 'warning', 'success', 'danger'];
 const highlightTokens = ['accent', 'manuscript', 'warning'];
+const literaryLabels = new Map([
+  ['author_note', 'Заметка автора'],
+  ['letter', 'Письмо'],
+  ['epigraph', 'Эпиграф'],
+  ['world_note', 'Заметка мира'],
+  ['chronicle_quote', 'Цитата хроники'],
+  ['archive_fragment', 'Архивный фрагмент'],
+]);
 const object = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object' && !Array.isArray(v);
 const closed = (v: unknown, keys: readonly string[]): v is Record<string, unknown> => object(v)
   && Object.keys(v).length === keys.length && keys.every(k => Object.hasOwn(v, k));
 const smallString = (v: unknown, maximum = 8192): v is string => typeof v === 'string' && v.length <= maximum;
+const warningKind = (v: unknown): v is 'general' | 'content' => v === 'general' || v === 'content';
 function refused(typeId: string | null = null, node: DeepReadonly<NodeViewDto> | null = null): DomRefusal {
   return { status: 'dom_refused', diagnostic: { code: 'dom.presentation_unsupported', phase: 'render',
     stamp: node?.stamp ?? null, node: node?.id ?? null, typeId, publication: 'none' } };
@@ -51,6 +63,13 @@ function textBlock(node: DeepReadonly<NodeViewDto>, tag: DomPresentation['tag'])
   return { tag, classes };
 }
 const node = (primitive: string, attributes: readonly string[], present: NodeRendererDefinition['present']): NodeRendererDefinition => ({ primitive, attributes, present });
+function labeledContainer(fallback: string): NodeRendererDefinition {
+  return node('container', ['label'], n => {
+    const label = attrString(n.attributes.label);
+    if (!label) return refused(n.type_id, n);
+    return { tag: 'section', attributes: { role: 'group', 'aria-label': label.trim() ? label : fallback } };
+  });
+}
 const nodes: Record<string, NodeRendererDefinition> = {
   [`${prefix}text`]: node('text', [], () => ({ tag: 'span' })),
   [`${prefix}hard_break`]: node('hard_break', [], () => ({ tag: 'br' })),
@@ -80,6 +99,31 @@ const nodes: Record<string, NodeRendererDefinition> = {
       attributes: { title: checked.value ? 'Completed task' : 'Incomplete task' } } : refused(n.type_id, n);
   }),
   [`${prefix}scene_break`]: node('block_atom', [], () => ({ tag: 'hr', classes: ['editor-scene-break'], attributes: { role: 'separator', 'aria-label': 'Scene break' } })),
+  [`${prefix}media_image`]: node('container', ['align', 'alt', 'decorative', 'media_asset_id'], n => {
+    const { align, alt, decorative, media_asset_id } = n.attributes;
+    const alignment = attrString(align);
+    if (!attrString(media_asset_id) || !['none', 'center', 'wide'].includes(alignment ?? '')) return refused(n.type_id, n);
+    const classes = ['editor-media-placeholder'];
+    if (alignment === 'center' || alignment === 'wide') classes.push(`editor-media-${alignment}`);
+    if (alt === undefined && decorative?.kind === 'boolean' && decorative.value) return { tag: 'div', classes };
+    const name = attrString(alt);
+    if (!name || decorative !== undefined) return refused(n.type_id, n);
+    return { tag: 'div', classes, attributes: { role: 'group', 'aria-label': name.trim() ? name : 'Media placeholder' } };
+  }),
+  [`${prefix}literary_block`]: node('container', ['kind'], n => {
+    const kind = attrString(n.attributes.kind);
+    const label = kind === undefined ? undefined : literaryLabels.get(kind);
+    return label === undefined ? refused(n.type_id, n) : { tag: 'section', attributes: { role: 'group', 'aria-label': label } };
+  }),
+  [`${prefix}warning`]: node('container', ['kind', 'label'], n => {
+    const kind = attrString(n.attributes.kind);
+    const label = attrString(n.attributes.label);
+    if (!warningKind(kind) || (Object.hasOwn(n.attributes, 'label') && !label)) return refused(n.type_id, n);
+    const fallback = kind === 'general' ? 'Предупреждение' : 'Контент';
+    return { tag: 'section', attributes: { role: 'group', 'aria-label': label?.trim() ? label : fallback } };
+  }),
+  [`${prefix}spoiler`]: labeledContainer('Спойлер'),
+  [`${prefix}disclosure`]: labeledContainer('Подробнее'),
 };
 const marks: Record<string, MarkRendererDefinition> = {};
 for (const [name, tag] of [['strong', 'strong'], ['emphasis', 'em'], ['strike', 's'], ['code', 'code'], ['subscript', 'sub'], ['superscript', 'sup']] as const) {
@@ -125,6 +169,9 @@ function coveredClipboard(value: unknown): boolean {
   const visit = (node: unknown, depth: number): boolean => {
     if (++count > 8192 || depth > 64 || !object(node) || typeof node.type !== 'string'
       || Object.keys(node).some(k => !['type','attrs','text','marks','content'].includes(k))) return false;
+    // These renderers cover document readback. The mounted clipboard subset is separate.
+    if (node.type === 'media_image' || node.type === 'literary_block' || node.type === 'warning'
+      || node.type === 'spoiler' || node.type === 'disclosure') return false;
     const renderer = Object.hasOwn(nodes, prefix + node.type) ? nodes[prefix + node.type] : null;
     if (!renderer) return false;
     const attrs = node.attrs === undefined ? {} : node.attrs;
@@ -152,16 +199,24 @@ function coveredCommand(id: string, payload: Record<string, unknown>): boolean {
   const name = id.slice(`${prefix}command/`.length);
   if (!id.startsWith(`${prefix}command/`) || payload.kind !== name.replaceAll('-', '_')) return false;
   switch (name) {
-    case 'enter': case 'shift-enter': case 'delete-backward': case 'delete-selection': case 'unset-link': case 'toggle-quote': case 'dismiss-slash':
+    case 'enter': case 'shift-enter': case 'delete-backward': case 'unset-link': case 'toggle-quote': case 'dismiss-slash':
       return closed(payload, ['kind']);
+    case 'delete-selection':
+      return payload.scope === 'profile_body' ? closed(payload, ['kind', 'scope']) : closed(payload, ['kind']);
     case 'insert-fragment': {
       if (!closed(payload, ['kind','fragment_json']) || payload.kind !== 'insert_fragment' || typeof payload.fragment_json !== 'string' || payload.fragment_json.length > 2_097_152) return false;
       try { return coveredClipboard(JSON.parse(payload.fragment_json)); } catch { return false; }
     }
     case 'insert-text': return closed(payload, ['kind', 'text']) && typeof payload.text === 'string';
+    case 'wrap-literary-block': return closed(payload, ['kind', 'literary_kind']) && payload.literary_kind === 'author_note';
+    case 'wrap-warning': return closed(payload, ['kind', 'warning_kind']) && warningKind(payload.warning_kind);
+    case 'unwrap-literary-block': case 'unwrap-warning': return closed(payload, ['kind', 'node']) && typeof payload.node === 'string';
+    case 'set-container-label': return closed(payload, ['kind', 'node', 'label']) && typeof payload.node === 'string' && smallString(payload.label);
     case 'toggle-mark': return closed(payload, ['kind', 'mark']) && coveredMark(payload.mark);
     case 'set-link': return closed(payload, ['kind', 'href', 'title']) && safeHref(payload.href) && (payload.title === null || smallString(payload.title));
-    case 'transform-block': case 'insert-block': return closed(payload, ['kind', 'target']) && coveredTarget(payload.target);
+    case 'transform-block': return closed(payload, ['kind', 'target']) && coveredTarget(payload.target);
+    case 'insert-block': return closed(payload, ['kind', 'target']) && (coveredTarget(payload.target)
+      || closed(payload.target, ['kind', 'warning_kind']) && payload.target.kind === 'warning' && warningKind(payload.target.warning_kind));
     case 'toggle-list': return closed(payload, ['kind', 'list']) && coveredList(payload.list);
     case 'move': return closed(payload, ['kind', 'node', 'parent', 'before_index']);
     case 'duplicate': return closed(payload, ['kind', 'node', 'parent', 'index']);
@@ -209,7 +264,7 @@ const result = defineRendererCatalog({
   },
   nodes, marks, commandGate,
   input: {
-    deleteSelection: () => kwdjCommand({ kind: 'delete_selection' }),
+    deleteSelection: () => kwdjCommand({ kind: 'delete_selection', scope: 'profile_body' }),
     insertText: text => kwdjCommand({ kind: 'insert_text', text }),
     enter: () => kwdjCommand({ kind: 'enter' }),
     lineBreak: () => kwdjCommand({ kind: 'shift_enter' }),

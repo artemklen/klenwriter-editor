@@ -22,6 +22,10 @@ pub struct SelectionText<I> {
     pub empty: bool,
     pub selected_atoms: Vec<I>,
 }
+enum SelectionPurpose {
+    Read,
+    Delete { profile_containers: bool },
+}
 #[derive(Clone, Copy)]
 struct Row<I> {
     id: I,
@@ -247,16 +251,36 @@ impl<I: Copy + Eq + Ord> Range<I> {
         &self,
         v: &V,
         w: &mut WorkMeter,
-        editing: bool,
+        purpose: SelectionPurpose,
     ) -> Result<(), SelectionTextError> {
+        let editing = matches!(purpose, SelectionPurpose::Delete { .. });
+        let profile_containers = matches!(
+            purpose,
+            SelectionPurpose::Delete {
+                profile_containers: true
+            }
+        );
         let mut code = None;
+        let mut needs_text_block = false;
+        let mut inside_text_block = false;
         for r in &self.rows {
             unit(w, 1)?;
             if !self.overlaps(r) {
                 continue;
             }
             let n = v.node(r.id).ok_or(SelectionTextError::Invalid)?;
-            if !basic(n.type_id) {
+            let inside_content = r.content_start <= self.lo && self.hi <= r.content_end;
+            let name = local(n.type_id);
+            let media_edit = editing && name == "media_image" && (self.whole(r) || inside_content);
+            let profile_body = profile_containers
+                && inside_content
+                && matches!(
+                    name,
+                    "literary_block" | "warning" | "spoiler" | "disclosure"
+                );
+            needs_text_block |= profile_body;
+            inside_text_block |= inside_content && n.primitive == Primitive::TextBlock;
+            if !basic(n.type_id) && !media_edit && !profile_body {
                 return Err(SelectionTextError::Limit(
                     "selection_text.unsupported_context",
                 ));
@@ -281,9 +305,16 @@ impl<I: Copy + Eq + Ord> Range<I> {
                     "selection_text.unsupported_context",
                 ));
             }
-            if editing && local(n.type_id) == "code_block" {
+            if editing && name == "code_block" {
                 code = Some(r.id);
             }
+        }
+        // An edit through a profile container may erase text inside one block.
+        // Structural selections still follow the closed guard above.
+        if needs_text_block && !inside_text_block {
+            return Err(SelectionTextError::Limit(
+                "selection_text.unsupported_context",
+            ));
         }
         if let Some(id) = code {
             let a =
@@ -421,7 +452,7 @@ pub fn selected_text<V: CandidateRead>(
             selected_atoms: Vec::new(),
         });
     }
-    r.guard(v, w, false)?;
+    r.guard(v, w, SelectionPurpose::Read)?;
     let mut atoms = Vec::new();
     let text =
         project_children(v, &r, v.roots(), max_bytes as usize, &mut atoms, w)?.unwrap_or_default();
@@ -499,6 +530,7 @@ fn empty<I>(
 pub(super) fn prepare<V: CandidateRead>(
     v: &V,
     state: CommandState<'_, V::Id>,
+    profile_containers: bool,
     plan: &mut PlanBuilder<'_, V::Id>,
 ) -> Result<CommandPresentation, KwdjError> {
     let selection = state
@@ -509,7 +541,12 @@ pub(super) fn prepare<V: CandidateRead>(
     if r.lo == r.hi {
         return Ok(CommandPresentation::default());
     }
-    r.guard(v, plan.work(), true).map_err(command_error)?;
+    r.guard(
+        v,
+        plan.work(),
+        SelectionPurpose::Delete { profile_containers },
+    )
+    .map_err(command_error)?;
     let a = inline::text_point(v, r.start, plan.work()).ok();
     let b = inline::text_point(v, r.end, plan.work()).ok();
     if let (Some(a), Some(b)) = (&a, &b) {

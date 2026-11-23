@@ -1,8 +1,10 @@
 import {test,expect} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { literaryFixture, spoilerDisclosureFixture, warningFixture } from './support/codec-fixtures.mjs';
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {longDocumentFixtures} from './support/large-document-fixtures.mjs';
+import {canonicalizeRaw} from '../scripts/canonical-reference/reference.mjs';
 const literal=name=>readFileSync(`contracts/dom/v1/expected/${name}.canonical.json`,'utf8');
 const wire=name=>readFileSync(`contracts/dom/v1/inputs/${name}.json`,'utf8');
 const call=(page,method,...args)=>page.evaluate(({method,args})=>window.domHost[method](...args),{method,args});
@@ -158,6 +160,1215 @@ test('T06 complete basic catalog has named host and valid static accessibility s
   expect(result.violations).toEqual([]);expect(result.incomplete).toEqual([]);expect(result.passes.length).toBeGreaterThan(0);
 });
 
+test('OSR-191 mounted DOC-017 exposes the stored labels and retains both body paragraphs', async ({ page }) => {
+  const fixture = spoilerDisclosureFixture();
+  const whitespace = structuredClone(fixture.document);
+  for (const block of whitespace.content) block.attrs.label = '  ';
+  for (const [source, names] of [
+    [fixture.canonical, fixture.document.content.map(block => block.attrs.label)],
+    [canonicalizeRaw(JSON.stringify(whitespace)), ['Спойлер', 'Подробнее']],
+  ]) {
+    const { id, ready, diagnostic } = await call(page, 'mount', { source, access: 'read_only' });
+    expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+    const host = page.locator(`#${id}`);
+    await expect(host).toHaveAttribute('contenteditable', 'false');
+    const containers = host.getByRole('group');
+    await expect(containers).toHaveCount(2);
+    for (const [index, block] of fixture.document.content.entries()) {
+      const container = containers.nth(index);
+      await expect(container).toHaveAccessibleName(names[index]);
+      await expect(container.locator('p')).toHaveText(block.content[0].content[0].text);
+    }
+    expect((await checkpoint(page, id, 'read-only labels and canonical export')).canonical).toBe(source);
+    await call(page, 'dispose', id);
+  }
+});
+
+test('OSR-182 DOC-015 renders and reopens all literary kinds in a read-only editor', async ({ page }) => {
+  const fixture = literaryFixture();
+  const labels = ['Заметка автора', 'Письмо', 'Эпиграф', 'Заметка мира', 'Цитата хроники', 'Архивный фрагмент'];
+  async function renderAndExport(source) {
+    const { id, ready, diagnostic } = await call(page, 'mount', { source, access: 'read_only' });
+    expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+    const host = page.locator(`#${id}`);
+    await expect(host).toHaveAttribute('contenteditable', 'false');
+    const blocks = host.getByRole('group');
+    await expect(blocks).toHaveCount(6);
+    for (const [index, label] of labels.entries()) await expect(blocks.nth(index)).toHaveAccessibleName(label);
+    await expect(blocks.locator(':scope > p')).toHaveText(fixture.rows.map(([, child]) => child));
+    const point = await checkpoint(page, id, 'DOC-015 read and rendered literary kinds');
+    const rows = labels.map((_, index) => {
+      const block = stateRow(point, `/${index}`);
+      expect(block).toMatchObject({ type_id: 'org.klenwriter.kwdj/literary_block', primitive: 'container' });
+      return [block.attributes.kind.value, stateRow(point, `/${index}/0/0`).text];
+    });
+    expect(rows).toEqual(fixture.rows);
+    await call(page, 'dispose', id);
+    return point.canonical;
+  }
+  const saved = await renderAndExport(fixture.canonical);
+  expect(saved).toBe(fixture.canonical);
+  expect(await renderAndExport(saved)).toBe(fixture.canonical);
+});
+
+const osr187Bytes = content => canonicalizeRaw(JSON.stringify({
+  schema: 'klenwriter.document', schema_version: 1, profile: 'prose', content,
+}));
+
+// The OSR-184 native and packaged SDK2 wrap/unwrap fixture, with unchanged payload bytes.
+const osr184MountedBlocks = [
+  { type: 'paragraph', content: [{ type: 'text', text: 'Before' }] },
+  { type: 'paragraph', attrs: { align: 'right' }, content: [
+    { type: 'text', text: 'Note 😀', marks: [{ type: 'strong' }] },
+    { type: 'hard_break' },
+    { type: 'text', text: 'Continuation' },
+  ] },
+  { type: 'scene_break' },
+  { type: 'blockquote', content: [{ type: 'paragraph', content: [
+    { type: 'text', text: 'Quotation', marks: [{ type: 'emphasis' }] },
+  ] }] },
+  { type: 'literary_block', attrs: { kind: 'letter' }, content: [
+    { type: 'paragraph', content: [{ type: 'text', text: 'Preserved' }] },
+  ] },
+];
+const osr184MountedInitial = osr187Bytes(osr184MountedBlocks);
+const osr184MountedWrapped = osr187Bytes([
+  osr184MountedBlocks[0],
+  { type: 'literary_block', attrs: { kind: 'author_note' }, content: osr184MountedBlocks.slice(1, 4) },
+  osr184MountedBlocks[4],
+]);
+
+async function osr187StructuralCommand(page, id, name, payload) {
+  const result = await call(page, 'submit', id, {
+    kind: 'command',
+    command: { id: 'org.klenwriter.kwdj/command/' + name, payload_json: JSON.stringify(payload) },
+    history_hint: { kind: 'isolated' },
+  });
+  expect(result, JSON.stringify(result)).toMatchObject({ response: { status: 'ok', value: { effect: 'changed' } } });
+}
+
+test('OSR-187 mounted wrap preserves the OSR-184 children', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const { id, ready, diagnostic } = await call(page, 'mount', { source: osr184MountedInitial });
+  expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+  await call(page, 'select', id, '', 1, '', 4);
+  const before = await checkpoint(page, id, 'OSR-184 native wrap input with root gaps 1 through 4');
+  expect(before.canonical).toBe(osr184MountedInitial);
+  expect(before.actualSelection).toMatchObject({ anchorOffset: 1, focusOffset: 4, inside: true });
+  const gap = index => ({ kind: 'child', parent: before.state.root, index, affinity: 'after' });
+  expect(before.state.selection).toEqual({ anchor: gap(1), focus: gap(4) });
+  const children = stateRow(before, '').children;
+
+  await osr187StructuralCommand(page, id, 'wrap-literary-block', {
+    kind: 'wrap_literary_block', literary_kind: 'author_note',
+  });
+  const after = await checkpoint(page, id, 'Mounted wrap produces the OSR-184 native result');
+  expect(after.canonical).toBe(osr184MountedWrapped);
+  const wrapper = stateRow(after, '/1');
+  expect(wrapper).toMatchObject({
+    type_id: 'org.klenwriter.kwdj/literary_block',
+    attributes: { kind: { kind: 'string', value: 'author_note' } },
+    children: children.slice(1, 4),
+  });
+  expect(stateRow(after, '').children).toEqual([children[0], wrapper.id, children[4]]);
+  expect(after.failures).toEqual([]);
+  history(after, 1, 0);
+  expect(docEvents(after)).toHaveLength(1);
+
+  const host = page.locator('#' + id);
+  const note = host.getByRole('group', { name: 'Заметка автора', exact: true });
+  await expect(note).toBeVisible();
+  expect(await note.locator(':scope > [data-editor-node]').evaluateAll(elements => elements.map(el => el.tagName)))
+    .toEqual(['P', 'HR', 'BLOCKQUOTE']);
+});
+
+test('OSR-187 mounted unwrap restores the OSR-184 children and its input passes axe', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const { id, ready, diagnostic } = await call(page, 'mount', { source: osr184MountedWrapped });
+  expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+  const before = await checkpoint(page, id, 'OSR-184 native unwrap input');
+  expect(before.canonical).toBe(osr184MountedWrapped);
+  const [left, wrapperId, right] = stateRow(before, '').children;
+  const children = stateRow(before, '/1').children;
+  const host = page.locator('#' + id);
+  await expect(host.getByRole('group', { name: 'Заметка автора', exact: true })).toBeVisible();
+  const result = await new AxeBuilder({ page }).include('#' + id).analyze();
+  observations.get(page).axe = {
+    engine: result.testEngine, scope: 'OSR-187 mounted literary document',
+    violations: result.violations, incomplete: result.incomplete, passedRules: result.passes.map(rule => rule.id),
+  };
+  expect(result.violations).toEqual([]);
+  expect(result.passes.length).toBeGreaterThan(0);
+
+  await osr187StructuralCommand(page, id, 'unwrap-literary-block', {
+    kind: 'unwrap_literary_block', node: wrapperId,
+  });
+  const after = await checkpoint(page, id, 'Mounted explicit unwrap produces the OSR-184 native result');
+  expect(after.canonical).toBe(osr184MountedInitial);
+  expect(stateRow(after, '').children).toEqual([left, ...children, right]);
+  expect(after.failures).toEqual([]);
+  history(after, 1, 0);
+  expect(docEvents(after)).toHaveLength(1);
+  await expect(host.getByRole('group', { name: 'Заметка автора', exact: true })).toHaveCount(0);
+  expect(await host.locator(':scope > [data-editor-node]').evaluateAll(elements => elements.map(el => el.tagName)))
+    .toEqual(['P', 'P', 'HR', 'BLOCKQUOTE', 'SECTION']);
+});
+
+test('OSR-187 trusted first-literary-child Backspace preserves the OSR-185 native bytes', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const fixture = JSON.parse(readFileSync(new URL('./fixtures/osr-185-literary.json', import.meta.url), 'utf8'));
+  const source = canonicalizeRaw(JSON.stringify(fixture.initial));
+  const expected = fixture.refusals.first_child_backspace;
+  const { id, ready, diagnostic } = await call(page, 'mount', { source });
+  expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+  const path = '/1/0/0';
+  await call(page, 'select', id, path, 0);
+  const before = await checkpoint(page, id, 'OSR-185 native first literary child at UTF-16 offset zero');
+  expect(before.canonical).toBe(source);
+  caret(before, stateRow(before, path).id, 0);
+  expect(await call(page, 'nativeSelectionMatches', id, path, 0)).toBe(true);
+  const availability = await call(page, 'queryCommand', id, { kind: 'delete_backward' });
+  expect(availability, JSON.stringify(availability)).toMatchObject({
+    status: 'ok', value: { available: false, diagnostic: expected },
+  });
+
+  const host = page.locator('#' + id);
+  await expect(host).toBeFocused();
+  await host.evaluate(element => {
+    element.addEventListener('beforeinput', event => {
+      element.literaryBackspace = {
+        inputType: event.inputType, trusted: event.isTrusted, prevented: event.defaultPrevented,
+      };
+    }, { once: true });
+  });
+  await page.keyboard.press('Backspace');
+  const input = await host.evaluate(element => element.literaryBackspace);
+  expect(input).toEqual({ inputType: 'deleteContentBackward', trusted: true, prevented: true });
+  observations.get(page).literaryBackspace = { input, nativeAvailability: availability };
+
+  const after = await checkpoint(page, id, 'Trusted Backspace leaves the OSR-185 native result unchanged');
+  expect(after.canonical).toBe(source);
+  expect(after.state).toEqual(before.state);
+  expect(after.rows).toEqual(before.rows);
+  expect(after.events).toEqual(before.events);
+  expect(after.actualSelection).toEqual(before.actualSelection);
+  expect(after.lifecycle).toBe('ready');
+  expect(after.failures).toHaveLength(before.failures.length + 1);
+  expect(after.failures.at(-1)).toMatchObject({
+    status: 'dom_refused', diagnostic: { code: 'dom.command_unsupported', phase: 'command', publication: 'none' },
+  });
+  expect(await call(page, 'nativeSelectionMatches', id, path, 0)).toBe(true);
+});
+
+test('OSR-188 mounted DOC-016 warning labels and body are readable without editing', async ({ page }) => {
+  const fixture = warningFixture();
+  const { id, ready, diagnostic } = await call(page, 'mount', { source: fixture.canonical, access: 'read_only' });
+  expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+  const host = page.locator(`#${id}`);
+  await expect(host).toHaveAttribute('contenteditable', 'false');
+  const general = host.getByRole('group', { name: 'Предупреждение', exact: true });
+  const content = host.getByRole('group', { name: 'Темы', exact: true });
+  await expect(general.locator('p')).toHaveText('Общее');
+  await expect(content.locator('p')).toHaveText('Контент');
+  expect((await checkpoint(page, id, 'read-only warnings and exact export')).canonical).toBe(fixture.canonical);
+});
+
+const osr189WarningFixture = () => JSON.parse(readFileSync(new URL('./fixtures/osr-189-warning.json', import.meta.url), 'utf8'));
+
+test('OSR-190 mounted root-gap create matches both OSR-188 warning defaults', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const [left, right] = ['Before', 'After'].map(text => ({ type: 'paragraph', content: [{ type: 'text', text }] }));
+  const source = osr187Bytes([left, right]);
+  for (const [kind, name] of [['general', 'Предупреждение'], ['content', 'Контент']]) {
+    const warning = { type: 'warning', attrs: { kind }, content: [{ type: 'paragraph', content: [] }] };
+    const expected = osr187Bytes([left, warning, right]);
+    const { id, ready, diagnostic } = await call(page, 'mount', { source });
+    expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+    await call(page, 'select', id, '', 1);
+    const before = await checkpoint(page, id, 'OSR-188 ' + kind + ' before root-gap create');
+    expect(before.canonical).toBe(source);
+    caret(before, before.state.root, 1, 'child');
+
+    await osr187StructuralCommand(page, id, 'insert-block', {
+      kind: 'insert_block', target: { kind: 'warning', warning_kind: kind },
+    });
+    const after = await checkpoint(page, id, 'OSR-188 ' + kind + ' after root-gap create');
+    expect(after.canonical).toBe(expected);
+    const [first, , last] = stateRow(after, '').children;
+    expect([first, last]).toEqual(stateRow(before, '').children);
+    expect(stateRow(after, '/1').attributes).toEqual({ kind: { kind: 'string', value: kind } });
+    const seed = stateRow(after, '/1/0');
+    expect(seed.children).toEqual([]);
+    caret(after, seed.id, 0, 'child');
+    history(after, 1, 0);
+    expect(after.failures).toEqual([]);
+    const group = page.locator('#' + id).getByRole('group', { name, exact: true });
+    await expect(group).toBeVisible();
+    const paragraph = group.locator(':scope > p');
+    await expect(paragraph).toHaveCount(1);
+    expect(await paragraph.evaluate(element => element.isContentEditable)).toBe(true);
+    await call(page, 'dispose', id);
+  }
+});
+
+test('OSR-190 mounted warning wrap and unwrap retain OSR-189 children, bytes and history', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const fixture = osr189WarningFixture();
+  const source = osr187Bytes(fixture.initial);
+  const wrapped = osr187Bytes(fixture.wrapped);
+  const { id, ready, diagnostic } = await call(page, 'mount', { source });
+  expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+  await call(page, 'select', id, '', 4, '', 1);
+  const before = await checkpoint(page, id, 'OSR-189 initial warning wrap range');
+  expect(before.canonical).toBe(source);
+  const gap = index => ({ kind: 'child', parent: before.state.root, index, affinity: 'after' });
+  expect(before.state.selection).toEqual({ anchor: gap(4), focus: gap(1) });
+  expect(before.actualSelection).toMatchObject({ anchorOffset: 4, focusOffset: 1, inside: true });
+  const original = stateRow(before, '').children;
+  const body = original.slice(1, 4);
+
+  await osr187StructuralCommand(page, id, 'wrap-warning', { kind: 'wrap_warning', warning_kind: 'general' });
+  const afterWrap = await checkpoint(page, id, 'OSR-189 wrapped warning');
+  expect(afterWrap.canonical).toBe(wrapped);
+  const warning = stateRow(afterWrap, '/1');
+  expect(warning.children).toEqual(body);
+  const wrappedIds = [original[0], warning.id, original[4]];
+  expect(stateRow(afterWrap, '').children).toEqual(wrappedIds);
+  expect(stateRow(afterWrap, '/1/0').children).toEqual(stateRow(before, '/1').children);
+  history(afterWrap, 1, 0);
+  expect(afterWrap.failures).toEqual([]);
+  const group = page.locator('#' + id).getByRole('group', { name: 'Предупреждение', exact: true });
+  await expect(group).toBeVisible();
+  expect(await group.locator(':scope > [data-editor-node]').evaluateAll(elements => elements.map(el => el.tagName)))
+    .toEqual(['P', 'HR', 'BLOCKQUOTE']);
+  const axe = await new AxeBuilder({ page }).include('#' + id).analyze();
+  observations.get(page).axe = {
+    engine: axe.testEngine, scope: 'OSR-190 mounted wrapped warning',
+    violations: axe.violations, incomplete: axe.incomplete, passedRules: axe.passes.map(rule => rule.id),
+  };
+  expect(axe.violations).toEqual([]);
+  expect(axe.passes.length).toBeGreaterThan(0);
+
+  await osr187StructuralCommand(page, id, 'unwrap-warning', { kind: 'unwrap_warning', node: warning.id });
+  const afterUnwrap = await checkpoint(page, id, 'OSR-189 unwrapped warning');
+  expect(afterUnwrap.canonical).toBe(source);
+  expect(stateRow(afterUnwrap, '').children).toEqual(original);
+  expect(stateRow(afterUnwrap, '/1').children).toEqual(stateRow(before, '/1').children);
+  history(afterUnwrap, 2, 0);
+  expect(afterUnwrap.failures).toEqual([]);
+  await expect(group).toHaveCount(0);
+
+  for (const [direction, canonical, ids, undo, redo] of [
+    ['undo', wrapped, wrappedIds, 1, 1],
+    ['undo', source, original, 0, 2],
+    ['redo', wrapped, wrappedIds, 1, 1],
+    ['redo', source, original, 2, 0],
+  ]) {
+    expect((await call(page, 'history', id, direction)).response.status).toBe('ok');
+    const point = await checkpoint(page, id, direction + ' warning structure');
+    expect(point.canonical).toBe(canonical);
+    expect(stateRow(point, '').children).toEqual(ids);
+    if (canonical === wrapped) expect(stateRow(point, '/1').children).toEqual(body);
+    history(point, undo, redo);
+  }
+});
+
+test('OSR-190 trusted first-warning-child Backspace preserves the OSR-189 native result', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const fixture = osr189WarningFixture();
+  const source = osr187Bytes(fixture.labeled);
+  const { id, ready, diagnostic } = await call(page, 'mount', { source });
+  expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+  const path = '/1/0/0';
+  await call(page, 'select', id, path, 0);
+  const before = await checkpoint(page, id, 'OSR-189 warning first child at UTF-16 offset zero');
+  expect(before.canonical).toBe(source);
+  caret(before, stateRow(before, path).id, 0);
+  expect(await call(page, 'nativeSelectionMatches', id, path, 0)).toBe(true);
+  const availability = await call(page, 'queryCommand', id, { kind: 'delete_backward' });
+  expect(availability, JSON.stringify(availability)).toMatchObject({
+    status: 'ok', value: { available: false, diagnostic: fixture.refusals.first_child_backspace },
+  });
+
+  const host = page.locator('#' + id);
+  await expect(host).toBeFocused();
+  await host.evaluate(element => {
+    element.addEventListener('beforeinput', event => {
+      element.warningBackspace = { inputType: event.inputType, trusted: event.isTrusted, prevented: event.defaultPrevented };
+    }, { once: true });
+  });
+  await page.keyboard.press('Backspace');
+  const input = await host.evaluate(element => element.warningBackspace);
+  expect(input).toEqual({ inputType: 'deleteContentBackward', trusted: true, prevented: true });
+  observations.get(page).warningBackspace = { input, nativeAvailability: availability };
+
+  const after = await checkpoint(page, id, 'Trusted Backspace preserves all OSR-189 warning bytes');
+  expect(after.canonical).toBe(source);
+  expect(after.state).toEqual(before.state);
+  expect(after.rows).toEqual(before.rows);
+  expect(after.events).toEqual(before.events);
+  expect(after.actualSelection).toEqual(before.actualSelection);
+  expect(after.lifecycle).toBe('ready');
+  expect(after.failures).toHaveLength(before.failures.length + 1);
+  expect(after.failures.at(-1)).toMatchObject({
+    status: 'dom_refused', diagnostic: { code: 'dom.command_unsupported', phase: 'command', publication: 'none' },
+  });
+  expect(await call(page, 'nativeSelectionMatches', id, path, 0)).toBe(true);
+});
+
+const osr193Routes = [
+  { type: 'spoiler', index: 0, control: 'Spoiler label', body: '/0/0/0', bodyEnd: 5, next: '/1/0/0' },
+  { type: 'disclosure', index: 1, control: 'Disclosure label', body: '/1/0/0', bodyEnd: 7, next: '/2/0' },
+];
+
+const osr193Source = () => readFileSync(new URL('./fixtures/osr-192-label-entry.input.json', import.meta.url), 'utf8');
+const osr193Expected = () => readFileSync(new URL('./fixtures/osr-192-label-entry.canonical.json', import.meta.url), 'utf8');
+
+async function osr193Mount(page, bodyPath, source = osr193Source(), routes = osr193Routes, bindInitially = true, mediaIds = []) {
+  await page.evaluate(async ({ source, routes, bodyPath, bindInitially, mediaIds }) => {
+    const { loadSdkV2, sdkBuildId } = await import('/packages/sdk/index.js');
+    const { mountEditor } = await import('/packages/dom/index.js');
+    const { kwdjBasicRenderers, bindKwdjContainerLabel } = await import('/packages/kwdj/dom.js');
+    const { kwdjCommand } = await import('/packages/kwdj/index.js');
+    const packet = await fetch('/extensions-packet.json').then(response => response.json());
+    const module = await loadSdkV2();
+    const scope = document.createElement('section');
+    scope.id = 'osr193-mount';
+    const root = document.createElement('div');
+    root.id = 'osr193-editor';
+    root.setAttribute('aria-label', 'KlenWriter label editing example');
+    const fields = routes.map(route => {
+      const field = document.createElement('input');
+      field.type = 'text';
+      field.setAttribute('aria-label', route.control);
+      scope.append(field);
+      return field;
+    });
+    scope.append(root);
+    document.getElementById('mounts').append(scope);
+
+    const editor = mountEditor({
+      element: root, renderers: kwdjBasicRenderers,
+      editor: {
+        input: new TextEncoder().encode(source), loader: async () => module,
+        options: {
+          abi: 'editor-sdk/2', build_id: sdkBuildId, profile: packet.kwdjProfile,
+          admission: 'validate', access: 'editable', registry_json: packet.kwdjRegistryJson,
+          profile_options_json: JSON.stringify({
+            identities: { media: mediaIds.map(id => ({ id, status: 'exists' })), references: [] },
+            limits: null,
+          }),
+        },
+      },
+    });
+    const disposers = [];
+    const disposeLabels = () => {
+      for (const dispose of disposers.splice(0).reverse()) dispose();
+    };
+    const cleanup = async () => {
+      disposeLabels();
+      const receipt = editor.destroy();
+      scope.remove();
+      const response = receipt.sdk.status === 'queued' ? await receipt.sdk.completion : receipt.sdk.response;
+      return { status: response.status, native: JSON.parse(module.resourceCounts()) };
+    };
+    window.osr193Mounted = { cleanup };
+    const ready = await editor.ready;
+    if (ready.status !== 'ready') throw new Error(JSON.stringify(ready));
+    const accepted = reply => {
+      if (reply.status !== 'ok') throw new Error(JSON.stringify(reply));
+      return reply.value;
+    };
+    const result = async request => {
+      const submission = editor.submit(request);
+      if (submission.status === 'completed') return accepted(submission.response);
+      if (submission.status === 'queued') return accepted(await submission.completion);
+      throw new Error(JSON.stringify(submission));
+    };
+    const state = () => accepted(editor.read({ kind: 'state' })).state;
+    const node = id => accepted(editor.read({ kind: 'node', stamp: editor.capture(), node: id })).node;
+    const path = key => key.split('/').filter(Boolean).map(Number);
+    const modelAt = key => path(key).reduce((parent, i) => node(parent.children[i]), node(state().root));
+    const domAt = key => path(key).reduce((parent, i) => [...parent.children]
+      .filter(child => child.hasAttribute('data-editor-node'))[i], root);
+    const bindAt = index => {
+      const route = routes[index];
+      const binding = bindKwdjContainerLabel({
+        editor, editorElement: root, input: fields[index], node: modelAt('/' + route.index).id,
+      });
+      if (typeof binding !== 'function') throw new Error('Expected the label binding disposer');
+      disposers.push(binding);
+    };
+    if (bindInitially) routes.forEach((_, index) => bindAt(index));
+
+    const trace = [];
+    const events = [];
+    editor.subscribe(event => { if (event.change.kind === 'document') events.push(event); });
+    for (const [index, field] of fields.entries()) {
+      field.addEventListener('input', event => trace.push({
+        type: routes[index].type, inputType: event.inputType, data: event.data, trusted: event.isTrusted,
+      }));
+    }
+    window.osr193Mounted = {
+      cleanup, disposeLabels, mode: mode => editor.setInteractionMode(mode),
+      hostRequests: () => editor.resources().hostRequests,
+      bind(index) {
+        try { bindAt(index); return { status: 'bound' }; }
+        catch (error) { return { status: 'refused', name: error.name, message: error.message }; }
+      },
+      replace: source => editor.replace(new TextEncoder().encode(source)),
+      setLabel(index, label) {
+        return result({
+          kind: 'command', stamp: editor.capture(), history_hint: { kind: 'isolated' },
+          command: kwdjCommand({ kind: 'set_container_label', node: modelAt('/' + routes[index].index).id, label }),
+        });
+      },
+      at(key, offset) {
+        const leaf = modelAt(key);
+        const actual = document.getSelection();
+        const expected = { kind: 'text', node: leaf.id, offset, affinity: 'after' };
+        const native = state().selection;
+        const text = document.createTreeWalker(domAt(key), NodeFilter.SHOW_TEXT).nextNode();
+        return document.activeElement === root && native?.anchor.kind === expected.kind
+          && native.anchor.node === leaf.id && native.focus.node === leaf.id
+          && native.anchor.offset === offset && native.focus.offset === offset
+          && actual?.anchorNode === text && actual.focusNode === text
+          && actual.anchorOffset === offset && actual.focusOffset === offset;
+      },
+      atAtomEdge(key, side, allowGap) {
+        const atom = modelAt(key);
+        const atomElement = domAt(key);
+        const parent = atomElement.parentNode;
+        const offset = [...parent.childNodes].indexOf(atomElement) + Number(side === 'after');
+        const actual = document.getSelection();
+        const native = state().selection;
+        return atom.primitive === 'block_atom' && document.activeElement === root
+          && [native?.anchor, native?.focus].every(point =>
+            (point?.kind === 'edge' && point.node === atom.id && point.side === side)
+            || (allowGap && point?.kind === 'child' && point.parent === atom.parent && point.index === offset))
+          && actual?.anchorNode === parent && actual.focusNode === parent
+          && actual.anchorOffset === offset && actual.focusOffset === offset;
+      },
+      atChildGap(key, index) {
+        const block = modelAt(key);
+        const element = domAt(key);
+        const actual = document.getSelection();
+        const native = state().selection;
+        return document.activeElement === root
+          && [native?.anchor, native?.focus].every(point => point?.kind === 'child' && point.parent === block.id && point.index === index)
+          && actual?.anchorNode === element && actual.focusNode === element
+          && actual.anchorOffset === index && actual.focusOffset === index;
+      },
+      async inspect(ownedPaths = ['/0', '/0/0', '/0/0/0', '/1', '/1/0', '/1/0/0', '/2', '/2/0']) {
+        const saved = await result({ kind: 'snapshot', stamp: editor.capture(), max_bytes: 16384 });
+        await result({ kind: 'release_snapshot', handle: saved.handle });
+        return { canonical: saved.canonical_json, state: state(), events, trace,
+          stableIds: ownedPaths.map(key => modelAt(key).id) };
+      },
+    };
+
+    // Only initial fixture setup writes focus or a model selection.
+    const leaf = modelAt(bodyPath);
+    const point = leaf.primitive === 'block_atom'
+      ? { kind: 'child', parent: leaf.parent, index: node(leaf.parent).children.indexOf(leaf.id) + 1, affinity: 'after' }
+      : { kind: 'text', node: leaf.id, offset: 0, affinity: 'after' };
+    root.focus();
+    await result({ kind: 'set_selection', stamp: editor.capture(), selection: { anchor: point, focus: point } });
+  }, { source, routes, bodyPath, bindInitially, mediaIds });
+}
+
+const osr193At = (page, path, offset) => expect.poll(() => page.evaluate(
+  ({ path, offset }) => window.osr193Mounted.at(path, offset), { path, offset },
+)).toBe(true);
+const osr193Inspect = (page, paths) => page.evaluate(paths => window.osr193Mounted.inspect(paths), paths);
+async function osr193Cleanup(page) {
+  const receipt = await page.evaluate(() => {
+    const mounted = window.osr193Mounted;
+    delete window.osr193Mounted;
+    return mounted?.cleanup();
+  });
+  if (!receipt) return;
+  observations.get(page).labelCleanup = receipt;
+  expect(receipt).toEqual({
+    status: 'ok', native: { sessions: 0, snapshot_handles: 0, snapshot_bytes: '0', protected_cursors: 0 },
+  });
+}
+async function osr193Field(page, route) {
+  const field = page.getByRole('textbox', { name: route.control, exact: true });
+  await expect(field).toBeFocused();
+  expect(await field.evaluate(element => {
+    const root = document.getElementById('osr193-editor');
+    return !root.contains(element) && element.selectionStart === element.value.length
+      && element.selectionEnd === element.value.length;
+  })).toBe(true);
+}
+
+test('OSR-193 trusted Tab and arrows traverse label, body and next body in both directions', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  for (const route of osr193Routes) {
+    try {
+      await osr193Mount(page, route.body);
+      await osr193At(page, route.body, 0);
+      const before = await osr193Inspect(page);
+      await page.keyboard.press('Shift+Tab');
+      await osr193Field(page, route);
+      await page.keyboard.press('Tab');
+      await osr193At(page, route.body, 0);
+      await page.keyboard.press('Tab');
+      await osr193At(page, route.next, 0);
+      await page.keyboard.press('Shift+Tab');
+      await osr193At(page, route.body, 0);
+      await page.keyboard.press('Shift+Tab');
+      await osr193Field(page, route);
+
+      await page.keyboard.press('ArrowRight');
+      await osr193At(page, route.body, 0);
+      for (let offset = 1; offset <= route.bodyEnd; offset++) {
+        await page.keyboard.press('ArrowRight');
+        await osr193At(page, route.body, offset);
+      }
+      await page.keyboard.press('ArrowRight');
+      await osr193At(page, route.next, 0);
+      await page.keyboard.press('ArrowLeft');
+      await osr193At(page, route.body, route.bodyEnd);
+      for (let offset = route.bodyEnd - 1; offset >= 0; offset--) {
+        await page.keyboard.press('ArrowLeft');
+        await osr193At(page, route.body, offset);
+      }
+      await page.keyboard.press('ArrowLeft');
+      await osr193Field(page, route);
+      const after = await osr193Inspect(page);
+      expect(after.canonical).toBe(before.canonical);
+      expect(after.state.stamp.revision).toBe(before.state.stamp.revision);
+      expect(after.state.history).toEqual(before.state.history);
+      expect(after.stableIds).toEqual(before.stableIds);
+      expect(after.events).toEqual([]);
+      observations.get(page).checkpoints.push({ label: route.type + ' keyboard navigation complete', ...after });
+      if (route.type === 'spoiler') {
+        await page.locator('#osr193-mount').evaluate(scope => {
+          const previous = document.createElement('input');
+          previous.type = 'text';
+          previous.setAttribute('aria-label', 'Previous host field');
+          scope.prepend(previous);
+        });
+        await page.keyboard.press('Shift+Tab');
+        await expect(page.getByRole('textbox', { name: 'Previous host field' })).toBeFocused();
+      }
+    } finally {
+      await osr193Cleanup(page);
+    }
+  }
+});
+
+test('OSR-193 trusted edits produce the OSR-192 label fixture and keep named accessibility roles', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const [spoiler, disclosure] = osr193Routes;
+  try {
+    await osr193Mount(page, spoiler.body);
+    const before = await osr193Inspect(page);
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, spoiler);
+    await page.keyboard.press('!');
+    await expect(page.getByRole('textbox', { name: spoiler.control })).toHaveValue('Финал!');
+    await page.keyboard.press('Tab');
+    await osr193At(page, spoiler.body, 0);
+    await page.keyboard.press('Tab');
+    await osr193At(page, disclosure.body, 0);
+    // Ordinary movement within the disclosure retires the previous group's
+    // reverse route before returning to its own label.
+    await page.keyboard.press('ArrowRight');
+    await osr193At(page, disclosure.body, 1);
+    await page.keyboard.press('ArrowLeft');
+    await osr193At(page, disclosure.body, 0);
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, disclosure);
+    await page.keyboard.press('?');
+    await expect(page.getByRole('textbox', { name: disclosure.control })).toHaveValue('Подробнее?');
+    await expect.poll(async () => (await osr193Inspect(page)).canonical).toBe(osr193Expected());
+    const after = await osr193Inspect(page);
+    expect(after.stableIds).toEqual(before.stableIds);
+    expect(after.events).toHaveLength(2);
+    history(after, 2, 0);
+    expect(after.trace).toEqual([
+      { type: 'spoiler', inputType: 'insertText', data: '!', trusted: true },
+      { type: 'disclosure', inputType: 'insertText', data: '?', trusted: true },
+    ]);
+    const scope = page.locator('#osr193-mount');
+    await expect(scope.getByRole('textbox', { name: 'KlenWriter label editing example' })).toHaveAttribute('aria-multiline', 'true');
+    await expect(scope.getByRole('group', { name: 'Финал!', exact: true })).toBeVisible();
+    await expect(scope.getByRole('group', { name: 'Подробнее?', exact: true })).toBeVisible();
+    const axe = await new AxeBuilder({ page }).include('#osr193-mount').analyze();
+    observations.get(page).axe = {
+      engine: axe.testEngine, violations: axe.violations, incomplete: axe.incomplete, passedRules: axe.passes.map(rule => rule.id),
+      ariaSnapshot: await scope.ariaSnapshot(),
+    };
+    expect(axe.violations).toEqual([]);
+    expect(axe.passes.length).toBeGreaterThan(0);
+    observations.get(page).checkpoints.push({ label: 'trusted label mutations match OSR-192', ...after });
+  } finally {
+    await osr193Cleanup(page);
+  }
+});
+
+test('label IME terminal preserves a newer edit and restores ordinary typing', async ({ page, browser, browserName }) => {
+  test.skip(browserName !== 'chromium', 'Uses the Chromium input protocol for a real composing field');
+  const record = observations.get(page);
+  record.browserVersion = browser.version();
+  const route = osr193Routes[0];
+  const doc = JSON.parse(osr193Source());
+  const cdp = await page.context().newCDPSession(page);
+  try {
+    await osr193Mount(page, route.body);
+    const before = await osr193Inspect(page);
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, route);
+    const field = page.getByRole('textbox', { name: route.control, exact: true });
+    await field.evaluate(input => {
+      input.compositionTrace = [];
+      for (const type of ['compositionstart', 'input', 'compositionend']) {
+        input.addEventListener(type, event => input.compositionTrace.push({
+          type, trusted: event.isTrusted, data: event.data,
+          inputType: event.inputType ?? null, isComposing: event.isComposing ?? null,
+        }));
+      }
+    });
+
+    await cdp.send('Input.imeSetComposition', { text: 'Ж', selectionStart: 1, selectionEnd: 1 });
+    await expect(field).toHaveValue('ФиналЖ');
+    expect(await page.evaluate(() => window.osr193Mounted.hostRequests())).toEqual({ pending: 1, focusContinuations: 0 });
+    const composing = await osr193Inspect(page);
+    expect(composing.canonical).toBe(before.canonical);
+    expect(composing.events).toEqual([]);
+
+    const updated = await page.evaluate(label => window.osr193Mounted.setLabel(0, label), 'Новая метка');
+    expect(updated.effect).toBe('changed');
+    doc.content[0].attrs.label = 'Новая метка';
+    const accepted = canonicalizeRaw(JSON.stringify(doc));
+    const competing = await osr193Inspect(page);
+    expect(competing.canonical).toBe(accepted);
+    expect(competing.events).toHaveLength(1);
+    await expect(field).toHaveValue('ФиналЖ');
+
+    await cdp.send('Input.insertText', { text: 'Ю' });
+    await expect(field).toHaveValue('Новая метка');
+    const settled = await osr193Inspect(page);
+    expect(settled.canonical).toBe(accepted);
+    expect(settled.state).toEqual(competing.state);
+    expect(settled.events).toEqual(competing.events);
+    expect(await page.evaluate(() => window.osr193Mounted.hostRequests())).toEqual({ pending: 0, focusContinuations: 0 });
+
+    await page.keyboard.press('!');
+    await expect(field).toHaveValue('Новая метка!');
+    doc.content[0].attrs.label = 'Новая метка!';
+    const after = await osr193Inspect(page);
+    expect(after.canonical).toBe(canonicalizeRaw(JSON.stringify(doc)));
+    expect(after.stableIds).toEqual(before.stableIds);
+    expect(after.events).toHaveLength(2);
+    history(after, 2, 0);
+    const trace = await field.evaluate(input => input.compositionTrace);
+    expect(trace).toEqual([
+      { type: 'compositionstart', trusted: true, data: '', inputType: null, isComposing: null },
+      { type: 'input', trusted: true, data: 'Ж', inputType: 'insertCompositionText', isComposing: true },
+      { type: 'input', trusted: true, data: 'Ю', inputType: 'insertCompositionText', isComposing: true },
+      { type: 'compositionend', trusted: expect.any(Boolean), data: 'Ю', inputType: null, isComposing: null },
+      { type: 'input', trusted: true, data: '!', inputType: 'insertText', isComposing: false },
+    ]);
+    record.checkpoints.push({ label: 'stale composition discarded and ordinary typing restored', ...after });
+    await field.evaluate(input => { input.compositionTrace = []; });
+    await cdp.send('Input.imeSetComposition', { text: 'Р', selectionStart: 1, selectionEnd: 1 });
+    await expect(field).toHaveValue('Новая метка!Р');
+    expect((await osr193Inspect(page)).state).toEqual(after.state);
+    await cdp.send('Input.insertText', { text: 'Я' });
+    const fresh = await osr193Inspect(page);
+    doc.content[0].attrs.label = 'Новая метка!Я';
+    expect(fresh.canonical).toBe(canonicalizeRaw(JSON.stringify(doc)));
+    expect(fresh.stableIds).toEqual(before.stableIds);
+    expect(fresh.events).toHaveLength(3);
+    history(fresh, 3, 0);
+    expect(await page.evaluate(() => window.osr193Mounted.hostRequests())).toEqual({ pending: 0, focusContinuations: 0 });
+    const freshTrace = await field.evaluate(input => input.compositionTrace);
+    expect(freshTrace.at(-1)).toMatchObject({ type: 'compositionend', data: 'Я' });
+    record.labelComposition = { stale: trace, fresh: freshTrace };
+    record.checkpoints.push({ label: 'current composition published once', ...fresh });
+
+    await cdp.send('Input.imeSetComposition', { text: 'Ц', selectionStart: 1, selectionEnd: 1 });
+    await expect(field).toHaveValue('Новая метка!ЯЦ');
+    expect((await page.evaluate(() => window.osr193Mounted.mode('readOnly'))).status).toBe('updated');
+    await expect(field).not.toBeEditable();
+    await expect(field).toHaveValue('Новая метка!Я');
+    await cdp.send('Input.insertText', { text: 'Щ' });
+    expect((await osr193Inspect(page)).state).toEqual(fresh.state);
+    expect(await page.evaluate(() => window.osr193Mounted.hostRequests())).toEqual({ pending: 0, focusContinuations: 0 });
+    expect((await page.evaluate(() => window.osr193Mounted.mode('editable'))).status).toBe('updated');
+    await expect(field).toBeEditable();
+    await page.keyboard.press('?');
+    await expect(field).toHaveValue('Новая метка!Я?');
+    const resumed = await osr193Inspect(page);
+    doc.content[0].attrs.label = 'Новая метка!Я?';
+    expect(resumed.canonical).toBe(canonicalizeRaw(JSON.stringify(doc)));
+    expect(resumed.events).toHaveLength(4);
+    history(resumed, 4, 0);
+    record.checkpoints.push({ label: 'read-only mode canceled composition and the field resumed ordinary typing', ...resumed });
+    await field.evaluate(input => {
+      input.addEventListener('input', event => {
+        if (event.isTrusted && event.isComposing) {
+          input.dispatchEvent(new CompositionEvent('compositionend', {
+            data: event.data, bubbles: true, cancelable: true, composed: true,
+          }));
+        }
+      }, { once: true });
+    });
+    await cdp.send('Input.imeSetComposition', { text: 'Х', selectionStart: 1, selectionEnd: 1 });
+    await expect(field).toHaveValue('Новая метка!Я?Х');
+    expect((await osr193Inspect(page)).state).toEqual(resumed.state);
+    expect(await page.evaluate(() => window.osr193Mounted.hostRequests())).toEqual({ pending: 1, focusContinuations: 0 });
+
+    await field.evaluate(async input => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+      input.dispatchEvent(new CompositionEvent('compositionend', {
+        data: 'Х', bubbles: true, cancelable: true, composed: true,
+      }));
+    });
+    expect((await osr193Inspect(page)).state).toEqual(resumed.state);
+    expect(await page.evaluate(() => window.osr193Mounted.hostRequests())).toEqual({ pending: 1, focusContinuations: 0 });
+
+    await cdp.send('Input.insertText', { text: 'Х' });
+    const sameValue = await osr193Inspect(page);
+    doc.content[0].attrs.label = 'Новая метка!Я?Х';
+    expect(sameValue.canonical).toBe(canonicalizeRaw(JSON.stringify(doc)));
+    expect(sameValue.events).toHaveLength(5);
+    history(sameValue, 5, 0);
+    expect(await page.evaluate(() => window.osr193Mounted.hostRequests())).toEqual({ pending: 0, focusContinuations: 0 });
+    record.checkpoints.push({ label: 'native terminal accepted after unrelated synthetic endings', ...sameValue });
+  } finally {
+    await cdp.detach();
+    await osr193Cleanup(page);
+  }
+});
+
+test('OSR-193 trusted keyboard navigation enters and crosses an atom-only body', async ({ page, browser }) => {
+  const record = observations.get(page);
+  record.browserVersion = browser.version();
+  const [spoiler, disclosure] = osr193Routes;
+  const fixture = JSON.parse(osr193Source());
+  fixture.content[0].content = [{ type: 'scene_break' }];
+  const source = canonicalizeRaw(JSON.stringify(fixture));
+  const paths = ['/0', '/0/0', '/1', '/1/0', '/1/0/0', '/2', '/2/0'];
+  try {
+    await osr193Mount(page, disclosure.body, source);
+    const before = await osr193Inspect(page, paths);
+    const field = page.getByRole('textbox', { name: spoiler.control, exact: true });
+    await field.evaluate(input => {
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    });
+    await osr193Field(page, spoiler);
+    const edge = side => expect.poll(() => page.evaluate(
+      side => window.osr193Mounted.atAtomEdge('/0/0', side), side,
+    )).toBe(true);
+
+    await page.keyboard.press('ArrowRight');
+    await edge('before');
+    await page.keyboard.press('ArrowRight');
+    await edge('after');
+    await page.keyboard.press('ArrowRight');
+    await osr193At(page, disclosure.body, 0);
+    await page.keyboard.press('ArrowLeft');
+    await edge('after');
+    await page.keyboard.press('ArrowLeft');
+    await edge('before');
+    await page.keyboard.press('ArrowLeft');
+    await osr193Field(page, spoiler);
+
+    await page.keyboard.press('Tab');
+    await edge('before');
+    await page.keyboard.press('Tab');
+    await osr193At(page, disclosure.body, 0);
+    await page.keyboard.press('Shift+Tab');
+    await edge('before');
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, spoiler);
+
+    const after = await osr193Inspect(page, paths);
+    expect(after.canonical).toBe(source);
+    expect(after.stableIds).toEqual(before.stableIds);
+    expect(after.state.stamp.revision).toBe('0');
+    expect(after.events).toEqual([]);
+    history(after, 0, 0);
+    record.checkpoints.push({ label: 'atom-only body keyboard navigation complete', ...after });
+  } finally {
+    await osr193Cleanup(page);
+  }
+});
+
+test('OSR-193 arrows recognize a browser gap beside the final atom in a mixed body', async ({ page, browser }) => {
+  const record = observations.get(page);
+  record.browserVersion = browser.version();
+  const [, disclosure] = osr193Routes;
+  const fixture = JSON.parse(osr193Source());
+  fixture.content[0].content.push({ type: 'scene_break' });
+  const source = canonicalizeRaw(JSON.stringify(fixture));
+  try {
+    await osr193Mount(page, '/0/1', source);
+    const before = await osr193Inspect(page);
+    expect(before.state.selection.anchor.kind).toBe('child');
+    await expect.poll(() => page.evaluate(() => window.osr193Mounted.atAtomEdge('/0/1', 'after', true))).toBe(true);
+    await page.keyboard.press('ArrowRight');
+    await osr193At(page, disclosure.body, 0);
+    await page.keyboard.press('ArrowLeft');
+    await expect.poll(() => page.evaluate(() => window.osr193Mounted.atAtomEdge('/0/1', 'after'))).toBe(true);
+    const after = await osr193Inspect(page);
+    expect(after.canonical).toBe(source);
+    expect(after.stableIds).toEqual(before.stableIds);
+    expect(after.state.stamp.revision).toBe('0');
+    expect(after.events).toEqual([]);
+    history(after, 0, 0);
+    record.checkpoints.push({ label: 'mixed body recognizes an equivalent atom gap', ...after });
+  } finally {
+    await osr193Cleanup(page);
+  }
+});
+
+test('OSR-193 arrows visit both sides of a hard break before leaving the body', async ({ page, browser }) => {
+  const record = observations.get(page);
+  record.browserVersion = browser.version();
+  const [spoiler, disclosure] = osr193Routes;
+  for (const prefix of [[], [{ type: 'text', text: 'Тайна' }]]) {
+    const fixture = JSON.parse(osr193Source());
+    fixture.content[0].content[0].content = [...prefix, { type: 'hard_break' }];
+    const source = canonicalizeRaw(JSON.stringify(fixture));
+    try {
+      await osr193Mount(page, disclosure.body, source);
+      const before = await osr193Inspect(page);
+      const field = page.getByRole('textbox', { name: spoiler.control, exact: true });
+      await field.evaluate(input => {
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+      });
+      await osr193Field(page, spoiler);
+      const gap = index => expect.poll(() => page.evaluate(
+        index => window.osr193Mounted.atChildGap('/0/0', index), index,
+      )).toBe(true);
+      await page.keyboard.press('ArrowRight');
+      if (prefix.length) {
+        await osr193At(page, spoiler.body, 0);
+        for (let offset = 1; offset <= spoiler.bodyEnd; offset++) {
+          await page.keyboard.press('ArrowRight');
+          await osr193At(page, spoiler.body, offset);
+        }
+      } else {
+        await gap(0);
+      }
+      await page.keyboard.press('ArrowRight');
+      await gap(prefix.length + 1);
+      await page.keyboard.press('ArrowRight');
+      await osr193At(page, disclosure.body, 0);
+      await page.keyboard.press('ArrowLeft');
+      await gap(prefix.length + 1);
+      await page.keyboard.press('ArrowLeft');
+      await gap(prefix.length);
+      await page.keyboard.press(prefix.length ? 'Shift+Tab' : 'ArrowLeft');
+      await osr193Field(page, spoiler);
+
+      const after = await osr193Inspect(page);
+      expect(after.canonical).toBe(source);
+      expect(after.stableIds).toEqual(before.stableIds);
+      expect(after.state.stamp.revision).toBe('0');
+      expect(after.events).toEqual([]);
+      history(after, 0, 0);
+      record.checkpoints.push({ label: 'hard break keyboard navigation complete', ...after });
+    } finally {
+      await osr193Cleanup(page);
+    }
+  }
+});
+
+test('OSR-193 nested label follows model siblings and retires its owned input', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const initial = JSON.parse(osr193Source());
+  initial.content[0] = { type: 'blockquote', content: [initial.content[0]] };
+  const source = canonicalizeRaw(JSON.stringify(initial));
+  const route = { ...osr193Routes[0], index: '0/0', body: '/0/0/0/0' };
+  try {
+    await osr193Mount(page, route.body, source, [route]);
+    await osr193At(page, route.body, 0);
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, route);
+    await page.keyboard.press('Tab');
+    await osr193At(page, route.body, 0);
+    await page.keyboard.press('Tab');
+    await osr193At(page, route.next, 0);
+    await page.keyboard.press('Shift+Tab');
+    await osr193At(page, route.body, 0);
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, route);
+
+    const field = page.getByRole('textbox', { name: route.control, exact: true });
+    const mode = value => page.evaluate(value => window.osr193Mounted.mode(value), value);
+    expect((await mode('readOnly')).status).toBe('updated');
+    await expect(field).not.toBeEditable();
+    await page.keyboard.press('!');
+    await expect(field).toHaveValue('Финал');
+    expect((await mode('editable')).status).toBe('updated');
+    await expect(field).toBeEditable();
+    await page.evaluate(() => window.osr193Mounted.disposeLabels());
+    await page.keyboard.press('!');
+    await expect(field).toHaveValue('Финал!');
+    const after = await osr193Inspect(page);
+    expect(after.canonical).toBe(source);
+    expect(after.events).toEqual([]);
+    expect(after.state.stamp.revision).toBe('0');
+    observations.get(page).checkpoints.push({ label: 'nested navigation and detached label owner', ...after });
+  } finally {
+    await osr193Cleanup(page);
+  }
+});
+
+test('OSR-193 nested bound labels return to the field that entered their shared body', async ({ page, browser }) => {
+  const record = observations.get(page);
+  record.browserVersion = browser.version();
+  const initial = JSON.parse(osr193Source());
+  initial.content[0].content = initial.content.splice(1, 1);
+  const source = canonicalizeRaw(JSON.stringify(initial));
+  const body = '/0/0/0/0';
+  const next = '/1/0';
+  const [spoiler, disclosure] = osr193Routes;
+  const outer = { ...spoiler, body, next };
+  const inner = { ...disclosure, index: '0/0', body, next };
+  const paths = ['/0', '/0/0', '/0/0/0', body, '/1', next];
+
+  try {
+    await osr193Mount(page, body, source, [outer, inner]);
+    const before = await osr193Inspect(page, paths);
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, inner);
+    await page.keyboard.press('Shift+Tab');
+    await expect(page.getByRole('textbox', { name: outer.control, exact: true })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await osr193At(page, body, 0);
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, outer);
+    await page.keyboard.press('Tab');
+    await osr193At(page, body, 0);
+    await page.keyboard.press('Tab');
+    await osr193At(page, next, 0);
+    await page.keyboard.press('Shift+Tab');
+    await osr193At(page, body, 0);
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, outer);
+
+    await page.keyboard.press('ArrowRight');
+    await osr193At(page, body, 0);
+    await page.keyboard.press('ArrowLeft');
+    await osr193Field(page, outer);
+    await page.keyboard.press('ArrowRight');
+    for (let offset = 0; offset <= inner.bodyEnd; offset++) {
+      await osr193At(page, body, offset);
+      await page.keyboard.press('ArrowRight');
+    }
+    await osr193At(page, next, 0);
+    await page.keyboard.press('ArrowLeft');
+    for (let offset = inner.bodyEnd; offset >= 0; offset--) {
+      await osr193At(page, body, offset);
+      await page.keyboard.press('ArrowLeft');
+    }
+    await osr193Field(page, outer);
+
+    const after = await osr193Inspect(page, paths);
+    expect(after.canonical).toBe(source);
+    expect(after.stableIds).toEqual(before.stableIds);
+    expect(after.state.stamp.revision).toBe('0');
+    expect(after.events).toEqual([]);
+    history(after, 0, 0);
+    record.checkpoints.push({ label: 'both nested fields keep independent keyboard routes', ...after });
+  } finally {
+    await osr193Cleanup(page);
+  }
+});
+
+test('OSR-193 Tab reaches the immediate sibling in a wide manuscript', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const initial = JSON.parse(osr193Source());
+  initial.content.splice(1, 1);
+  initial.content.push(...Array.from({ length: 4095 }, () => ({ type: 'paragraph', content: [] })));
+  const route = { ...osr193Routes[0], next: '/1/0' };
+  try {
+    await osr193Mount(page, route.body, canonicalizeRaw(JSON.stringify(initial)), [route]);
+    expect(await page.locator('#osr193-editor > [data-editor-node]').count()).toBe(4097);
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, route);
+    await page.keyboard.press('Tab');
+    await osr193At(page, route.body, 0);
+    await page.keyboard.press('Tab');
+    await osr193At(page, route.next, 0);
+    await page.keyboard.press('Shift+Tab');
+    await osr193At(page, route.body, 0);
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, route);
+  } finally {
+    await osr193Cleanup(page);
+  }
+});
+
+test('OSR-193 routes through a captionless media body', async ({ page, browser }) => {
+  const record = observations.get(page);
+  record.browserVersion = browser.version();
+  const [spoiler, disclosure] = osr193Routes;
+  const initial = JSON.parse(osr193Source());
+  const media = approvedMedia('DOC-027');
+  initial.content[0].content = [media];
+  const source = canonicalizeRaw(JSON.stringify(initial));
+  const body = '/0/0';
+  const paths = ['/0', body, '/1', '/1/0', disclosure.body];
+  try {
+    await osr193Mount(page, disclosure.body, source, osr193Routes, true, [media.attrs.media_asset_id]);
+    const before = await osr193Inspect(page, paths);
+    const field = page.getByRole('textbox', { name: spoiler.control, exact: true });
+    await field.evaluate(input => {
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    });
+    const atBody = () => expect.poll(() => page.evaluate(path => window.osr193Mounted.atChildGap(path, 0), body)).toBe(true);
+
+    for (const [forward, backward] of [['Tab', 'Shift+Tab'], ['ArrowRight', 'ArrowLeft']]) {
+      await page.keyboard.press(forward);
+      await atBody();
+      await page.keyboard.press(forward);
+      await osr193At(page, disclosure.body, 0);
+      await page.keyboard.press(backward);
+      await atBody();
+      await page.keyboard.press(backward);
+      await osr193Field(page, spoiler);
+    }
+
+    const after = await osr193Inspect(page, paths);
+    expect(after.canonical).toBe(source);
+    expect(after.stableIds).toEqual(before.stableIds);
+    expect(after.state.stamp.revision).toBe('0');
+    expect(after.events).toEqual([]);
+    history(after, 0, 0);
+    record.checkpoints.push({ label: 'captionless media body and following text remain intact', ...after });
+  } finally {
+    await osr193Cleanup(page);
+  }
+});
+
+test('OSR-193 single-line field preserves admitted CR and LF labels', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const original = JSON.parse(osr193Source());
+  const labels = ['Фи\rнал', 'Под\nробнее'];
+  original.content[0].attrs.label = labels[0];
+  original.content[1].attrs.label = labels[1];
+  const literal = canonicalizeRaw(JSON.stringify(original));
+  try {
+    await osr193Mount(page, osr193Routes[0].body, literal, osr193Routes, false);
+    const wrappers = page.locator('#osr193-editor > section[data-editor-node]');
+    for (const [index, route] of osr193Routes.entries()) {
+      await expect(wrappers.nth(index)).toHaveAttribute('aria-label', labels[index]);
+      const binding = await page.evaluate(index => window.osr193Mounted.bind(index), index);
+      expect(binding).toMatchObject({ status: 'refused', name: 'TypeError' });
+      const field = page.getByRole('textbox', { name: route.control, exact: true });
+      await expect(field).toHaveValue('');
+      await field.focus();
+      await page.keyboard.press('!');
+      await expect(field).toHaveValue('!');
+    }
+    const after = await osr193Inspect(page);
+    expect(after.canonical).toBe(literal);
+    expect(after.events).toEqual([]);
+    expect(after.state.stamp.revision).toBe('0');
+    observations.get(page).checkpoints.push({ label: 'admitted CR/LF and no published write', ...after });
+  } finally {
+    await osr193Cleanup(page);
+  }
+
+  try {
+    const spoiler = osr193Routes[0];
+    await osr193Mount(page, spoiler.body);
+    await page.keyboard.press('Shift+Tab');
+    await osr193Field(page, spoiler);
+    const field = page.getByRole('textbox', { name: spoiler.control, exact: true });
+    const changed = await page.evaluate(label => window.osr193Mounted.setLabel(0, label), labels[0]);
+    expect(changed.effect).toBe('changed');
+    await expect(page.locator('#osr193-editor > section[data-editor-node]').first()).toHaveAttribute('aria-label', labels[0]);
+    await expect(field).toHaveValue('Финал');
+    await page.keyboard.press('!');
+    await expect(field).toHaveValue('Финал!');
+    const expected = JSON.parse(osr193Source());
+    expected.content[0].attrs.label = labels[0];
+    const after = await osr193Inspect(page);
+    expect(after.canonical).toBe(canonicalizeRaw(JSON.stringify(expected)));
+    expect(after.events).toHaveLength(1);
+    expect(after.state.stamp.revision).toBe('1');
+    observations.get(page).checkpoints.push({ label: 'multiline label preserved through external field retirement', ...after });
+  } finally {
+    await osr193Cleanup(page);
+  }
+});
+
+test('OSR-193 replacement retires label inputs before the next interaction', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const source = osr193Source();
+  try {
+    await osr193Mount(page, osr193Routes[0].body);
+    const before = await osr193Inspect(page);
+    const replaced = await page.evaluate(source => window.osr193Mounted.replace(source), source);
+    expect(replaced).toMatchObject({ status: 'completed', response: { status: 'ok', value: { effect: 'remounted' } } });
+    const after = await osr193Inspect(page);
+    expect(after.canonical).toBe(before.canonical);
+    expect(after.events).toEqual([]);
+    expect(after.state.stamp.generation).not.toBe(before.state.stamp.generation);
+    expect(after.stableIds).not.toEqual(before.stableIds);
+    for (const index of osr193Routes.keys()) {
+      expect(await page.evaluate(index => window.osr193Mounted.bind(index), index)).toEqual({ status: 'bound' });
+    }
+    observations.get(page).checkpoints.push({ label: 'old generation fields can be rebound without a key', ...after });
+  } finally {
+    await osr193Cleanup(page);
+  }
+});
+
+test('trusted delete keys remove selected text inside a profile container body', async ({ page }) => {
+  for (const [key, type, attrs] of [
+    ['Backspace', 'warning', { kind: 'content', label: 'Темы' }],
+    ['Delete', 'spoiler', { label: 'Финал' }],
+  ]) {
+    const documentWithText = text => osr187Bytes([
+      { type, attrs, content: [{ type: 'paragraph', content: [{ type: 'text', text }] }] },
+    ]);
+    const source = documentWithText('abc');
+    const { id, ready, diagnostic } = await call(page, 'mount', { source });
+    expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+    try {
+      await call(page, 'select', id, '/0/0/0', 2, '/0/0/0', 1);
+      const before = await checkpoint(page, id, key + ' selected text within ' + type);
+      const wrapper = stateRow(before, '/0');
+      const host = page.locator(`#${id}`);
+      await host.evaluate(element => {
+        element.addEventListener('beforeinput', event => {
+          element.bodyDeleteTrace = { trusted: event.isTrusted, prevented: event.defaultPrevented };
+        }, { once: true });
+      });
+      await page.keyboard.press(key);
+      expect(await host.evaluate(element => element.bodyDeleteTrace)).toEqual({ trusted: true, prevented: true });
+      const after = await checkpoint(page, id, key + ' removed selected text');
+      expect(after.canonical).toBe(documentWithText('ac'));
+      expect(stateRow(after, '/0')).toMatchObject({
+        id: wrapper.id, attributes: wrapper.attributes, children: wrapper.children,
+      });
+      history(after, 1, 0);
+      expect(after.failures).toEqual([]);
+      expect((await call(page, 'history', id, 'undo')).response.status).toBe('ok');
+      const undone = await checkpoint(page, id, key + ' Undo restores the profile body');
+      expect(undone.canonical).toBe(source);
+      expect(stateRow(undone, '/0').id).toBe(wrapper.id);
+      expect(undone.state.selection).toEqual(before.state.selection);
+    } finally {
+      await call(page, 'dispose', id);
+    }
+  }
+});
+
 test('T09 keyboard Tab return preserves current native caret and every committed facet before and after deletion',async({page})=>{
   const mounted=await call(page,'mount',{fixture:'D0'});expect(mounted.ready).toBe('ready');
   const id=mounted.id;await call(page,'select',id,'/0/2',2);
@@ -196,6 +1407,182 @@ test('T02 actual keyboard end split/join and six literal history/identity checkp
   const points=[split,joined];for(const [direction,document,undo,redo] of expected){expect((await call(page,'history',id,direction)).response.status).toBe('ok');const p=await checkpoint(page,id,`T02 ${direction} ${points.length}`);expect(p.canonical).toBe(literal(document));history(p,undo,redo);if(document==='D1-after-end-split')expect(stateRow(p,'/1').id).toBe(empty.id);points.push(p);}
   for(let i=0;i<points.length;i++){expect(points[i].state.stamp.revision).toBe(String(i+1));expect(docEvents(points[i])).toHaveLength(i+1);expect(points[i].state.dirty).toBe(true);unique(points[i]);}
   expect(await call(page,'sameIdentity',id,'P2','/1')).toBe(true);expect(await call(page,'nativeSelectionMatches',id,'/0/2',2)).toBe(true);
+});
+
+test('OSR-277 mounted scene break insert and keyboard deletion preserve a neighboring caret', async ({ page }) => {
+  const left = { content: [{ text: 'До сцены', type: 'text' }], type: 'paragraph' };
+  const right = { content: [{ text: 'После сцены', type: 'text' }], type: 'paragraph' };
+  const documentBytes = content => JSON.stringify({ content, profile: 'prose', schema: 'klenwriter.document', schema_version: 1 });
+  const original = documentBytes([left, right]);
+  const inserted = documentBytes([left, { type: 'scene_break' }, right]);
+  const { id, ready } = await call(page, 'mount', { source: original });
+  expect(ready).toBe('ready');
+  await call(page, 'select', id, '', 1);
+  const before = await checkpoint(page, id, 'OSR-139 original document and root gap');
+  const leftLeaf = stateRow(before, '/0/0').id;
+  const rightLeaf = stateRow(before, '/1/0').id;
+  expect(before.canonical).toBe(original);
+  caret(before, before.state.root, 1, 'child');
+
+  const command = await call(page, 'command', id, { kind: 'insert_block', target: { kind: 'scene_break' } });
+  expect(command.response.status).toBe('ok');
+  const afterInsert = await checkpoint(page, id, 'OSR-139 exact inserted bytes and atom after edge');
+  expect(afterInsert.canonical).toBe(inserted);
+  const atom = stateRow(afterInsert, '/1').id;
+  const edge = { kind: 'edge', node: atom, side: 'after' };
+  expect(afterInsert.state.selection).toEqual({ anchor: edge, focus: edge });
+  const host = page.locator(`#${id}`);
+  await expect(host).toBeFocused();
+  await expect(host.locator('hr.editor-scene-break')).toHaveCount(1);
+  await host.evaluate(element => {
+    element.sceneBreakInput = null;
+    element.addEventListener('beforeinput', event => {
+      element.sceneBreakInput = {
+        inputType: event.inputType, trusted: event.isTrusted, prevented: event.defaultPrevented,
+      };
+    }, { once: true });
+  });
+
+  await page.keyboard.press('Backspace');
+  const input = await host.evaluate(element => element.sceneBreakInput);
+  expect(input).toEqual({ inputType: 'deleteContentBackward', trusted: true, prevented: true });
+  observations.get(page).sceneBreakInput = input;
+  const afterDelete = await checkpoint(page, id, 'keyboard deletion and caret at preceding text end');
+  expect(afterDelete.canonical).toBe(original);
+  expect(stateRow(afterDelete, '/0/0').id).toBe(leftLeaf);
+  expect(stateRow(afterDelete, '/1/0').id).toBe(rightLeaf);
+  caret(afterDelete, leftLeaf, 8);
+  expect(await call(page, 'nativeSelectionMatches', id, '/0/0', 8)).toBe(true);
+  expect(afterDelete.state.stamp.revision).toBe('2');
+  expect(docEvents(afterDelete)).toHaveLength(2);
+  expect(afterDelete.failures).toEqual([]);
+  await expect(host.locator('hr.editor-scene-break')).toHaveCount(0);
+});
+
+function approvedMedia(caseId) {
+  const family = caseId === 'DOC-022' ? 'mixed' : 'positive';
+  const corpus = JSON.parse(readFileSync(`contracts/kwdj/v1/fixtures/${family}.json`, 'utf8'));
+  const fixture = corpus.fixtures.find(item => item.id === caseId).cases[0];
+  const media = fixture.kwdj.content.find(node => node.type === 'media_image');
+  expect(fixture.input.identity_state.existing_media_ids).toContain(media.attrs.media_asset_id);
+  return media;
+}
+
+test('OSR-141 mounted media retains its accessible name and caption during keyboard delete and Undo', async ({ page }) => {
+  // DOC-013 supplies authored alt and a caption, DOC-022 supplies escaping-sensitive alt.
+  const media = approvedMedia('DOC-013');
+  const escapedMedia = approvedMedia('DOC-022');
+  const decorative = approvedMedia('DOC-027');
+  delete decorative.attrs.alt;
+  decorative.attrs.decorative = true;
+  const paragraph = text => ({ type: 'paragraph', content: [{ type: 'text', text }] });
+  const doc = content => canonicalizeRaw(JSON.stringify({ schema: 'klenwriter.document', schema_version: 1, profile: 'prose', content }));
+  const left = paragraph('Before');
+  const right = paragraph('After');
+  const source = doc([left, media, right, escapedMedia, decorative]);
+  const removed = doc([left, right, escapedMedia, decorative]);
+  const mediaIds = [...new Set([media, escapedMedia, decorative].map(block => block.attrs.media_asset_id))];
+  const contentRequests = [];
+  page.on('request', request => {
+    if (['fetch', 'xhr', 'image'].includes(request.resourceType())
+      && new URL(request.url()).pathname !== '/favicon.ico') contentRequests.push(request.url());
+  });
+  const { id, ready, diagnostic, nativeResponse } = await call(page, 'mount', { source, mediaIds });
+  expect(ready, JSON.stringify({ diagnostic, nativeResponse })).toBe('ready');
+
+  const host = page.locator(`#${id}`);
+  const roots = host.locator(':scope > [data-editor-node]');
+  const placeholders = host.locator('.editor-media-placeholder');
+  const namedPlaceholder = host.getByRole('group');
+  await expect(placeholders).toHaveCount(3);
+  await expect(namedPlaceholder).toHaveCount(2);
+  await expect(namedPlaceholder.nth(0)).toHaveAccessibleName(media.attrs.alt);
+  await expect(namedPlaceholder.nth(1)).toHaveAccessibleName(escapedMedia.attrs.alt);
+  expect(await placeholders.nth(2).getAttribute('aria-label')).toBeNull();
+  expect(await placeholders.evaluateAll(elements => elements.map(element => {
+    const style = getComputedStyle(element, '::before');
+    return [style.display, style.borderTopStyle];
+  }))).toEqual([['block', 'dashed'], ['block', 'dashed'], ['block', 'dashed']]);
+  const caption = media.content[0].content.map(leaf => leaf.text).join('');
+  await expect(roots.nth(1).locator('p')).toHaveText(caption);
+  expect(await roots.nth(1).locator('p').evaluate(element => element.isContentEditable)).toBe(true);
+  await expect(host.locator('img[src], picture, [srcset], [onerror]')).toHaveCount(0);
+
+  await call(page, 'select', id, '', 1, '', 2);
+  const selected = await checkpoint(page, id, 'whole media root offsets before trusted deletion');
+  expect(selected.canonical).toBe(source);
+  expect(selected.actualSelection).toMatchObject({ anchorOffset: 1, focusOffset: 2, inside: true });
+  const gap = index => ({ kind: 'child', parent: selected.state.root, index, affinity: 'after' });
+  expect(selected.state.selection).toEqual({ anchor: gap(1), focus: gap(2) });
+  const originalBlock = stateRow(selected, '/1');
+  const leftId = stateRow(selected, '/0').id;
+  const rightId = stateRow(selected, '/2').id;
+  expect(originalBlock.type_id).toBe('org.klenwriter.kwdj/media_image');
+  expect(originalBlock.attributes.media_asset_id.value).toBe(media.attrs.media_asset_id);
+  const deleteWithKeyboard = async () => {
+    await expect(host).toBeFocused();
+    await host.evaluate(element => {
+      element.mediaDeleteInput = null;
+      element.addEventListener('beforeinput', event => {
+        element.mediaDeleteInput = {
+          inputType: event.inputType, trusted: event.isTrusted, prevented: event.defaultPrevented,
+        };
+      }, { once: true });
+    });
+    await page.keyboard.press('Delete');
+    const input = await host.evaluate(element => element.mediaDeleteInput);
+    expect(input).toMatchObject({ trusted: true, prevented: true });
+    expect(['deleteContentForward', 'deleteContentBackward']).toContain(input.inputType);
+    return input;
+  };
+
+  observations.get(page).mediaDeleteInput = await deleteWithKeyboard();
+  const after = await checkpoint(page, id, 'trusted Delete published exactly one whole-media removal');
+  expect(after.canonical).toBe(removed);
+  expect(stateRow(after, '/0').id).toBe(leftId);
+  expect(stateRow(after, '/1').id).toBe(rightId);
+  history(after, 1, 0);
+  expect(docEvents(after)).toHaveLength(1);
+  expect(after.failures).toEqual([]);
+  await expect(namedPlaceholder).toHaveCount(1);
+
+  await recordHistoryKeys(page, id);
+  await page.keyboard.press('Meta+KeyZ');
+  const undone = await checkpoint(page, id, 'trusted Undo revived the original media and caption');
+  expect(undone.canonical).toBe(source);
+  expect(stateRow(undone, '/1').id).toBe(originalBlock.id);
+  expect(stateRow(undone, '/1').attributes).toEqual(originalBlock.attributes);
+  expect(await historyKeys(page, id)).toEqual([{
+    code: 'KeyZ', isTrusted: true, metaKey: true, ctrlKey: false, shiftKey: false, defaultPrevented: true,
+  }]);
+  history(undone, 0, 1);
+  expect(docEvents(undone)).toHaveLength(2);
+  expect(undone.failures).toEqual([]);
+  await expect(namedPlaceholder.nth(0)).toHaveAccessibleName(media.attrs.alt);
+  await expect(roots.nth(1).locator('p')).toHaveText(caption);
+
+  const editedMedia = structuredClone(media);
+  editedMedia.content[0].content[0].text = 'Ппись';
+  await call(page, 'select', id, '/1/0/0', 1, '/1/0/0', 3);
+  observations.get(page).captionDeleteInput = await deleteWithKeyboard();
+  const edited = await checkpoint(page, id, 'trusted Delete removed only the selected caption text');
+  expect(edited.canonical).toBe(doc([left, editedMedia, right, escapedMedia, decorative]));
+  expect(stateRow(edited, '/1').id).toBe(originalBlock.id);
+  expect(stateRow(edited, '/1').attributes).toEqual(originalBlock.attributes);
+  expect(edited.failures).toEqual([]);
+  history(edited, 1, 0);
+  expect(docEvents(edited)).toHaveLength(3);
+  await expect(roots.nth(1).locator('p')).toHaveText('Ппись');
+
+  await page.keyboard.press('Meta+KeyZ');
+  const captionUndone = await checkpoint(page, id, 'trusted Undo restored the selected caption text');
+  expect(captionUndone.canonical).toBe(source);
+  expect(captionUndone.failures).toEqual([]);
+  history(captionUndone, 0, 1);
+  expect(docEvents(captionUndone)).toHaveLength(4);
+  await expect(roots.nth(1).locator('p')).toHaveText(caption);
+  await expect(host.locator('img[src], picture, [srcset], [onerror]')).toHaveCount(0);
+  expect(contentRequests).toEqual([]);
 });
 
 test('T02 selected-empty join restores surviving DOM caret before the first structural mutation',async({page})=>{
@@ -466,8 +1853,23 @@ test('closed payload coverage refuses unsupported targets, marks, recipes and ra
   const {id}=await call(page,'mount',{fixture:'D0'});await call(page,'select',id,'/0/2',2);await call(page,'command',id,{kind:'insert_text',text:'X'});await call(page,'mark',id,'P1','/0');const before=await checkpoint(page,id,'closed payload before');
   const command=(name,payload)=>({kind:'command',command:{id:`org.klenwriter.kwdj/command/${name}`,payload_json:JSON.stringify(payload)},history_hint:{kind:'isolated'}});
   const unknownMark={type_id:'org.example/unrendered_mark',attributes:{}};
+  const media = approvedMedia('DOC-013');
+  media.attrs.align = 'center';
+  const fragment = content => JSON.stringify({
+    format_id: 'org.klenwriter.kwdj/clipboard-fragment/1', mode: 'prose',
+    source_profile: { profile_id: 'org.klenwriter.kwdj', profile_version: '1.0.0', codec_id: 'org.klenwriter.kwdj/json', wire_version: 1 },
+    kind: 'blocks', content, open_start: false, open_end: false,
+  });
+  const literary = JSON.parse(literaryFixture().canonical).content[0];
+  const warning = JSON.parse(warningFixture().canonical).content[0];
+  const [spoiler, disclosure] = spoilerDisclosureFixture().document.content;
   const requests=[
     ['unsupported-target',command('insert-block',{kind:'insert_block',target:{kind:'media'}}),'dom.command_unsupported'],
+    ['native-only-media-fragment',command('insert-fragment',{kind:'insert_fragment',fragment_json:fragment([media])}),'dom.command_unsupported'],
+    ['unavailable-mounted-literary-fragment',command('insert-fragment',{kind:'insert_fragment',fragment_json:fragment([literary])}),'dom.command_unsupported'],
+    ['unavailable-mounted-warning-fragment',command('insert-fragment',{kind:'insert_fragment',fragment_json:fragment([warning])}),'dom.command_unsupported'],
+    ['unavailable-mounted-spoiler-fragment',command('insert-fragment',{kind:'insert_fragment',fragment_json:fragment([spoiler])}),'dom.command_unsupported'],
+    ['unavailable-mounted-disclosure-fragment',command('insert-fragment',{kind:'insert_fragment',fragment_json:fragment([disclosure])}),'dom.command_unsupported'],
     ['unsupported-mark',command('toggle-mark',{kind:'toggle_mark',mark:unknownMark}),'dom.command_unsupported'],
     ['closed-mark-attrs',command('toggle-mark',{kind:'toggle_mark',mark:{type_id:'org.klenwriter.kwdj/strong',attributes:{extra:{kind:'boolean',value:true}}}}),'dom.command_unsupported'],
     ['stored-marks',{kind:'set_stored_marks',marks:[unknownMark]},'dom.command_unsupported'],

@@ -11,6 +11,28 @@ export type SessionContextV2 = { build_id: string, profile: ProfileDto, registry
 
 export type KwdjClipboardIntentV2 = { "kind": "insert_fragment", fragment_json: string, };
 
+export type LiteraryAuthoringKindV2 = "author_note";
+
+export type LiteraryBlockTargetV2 = { "kind": "literary_block", literary_kind: LiteraryAuthoringKindV2, };
+
+export type KwdjLiteraryIntentV2 = { "kind": "insert_block", target: LiteraryBlockTargetV2, } | { "kind": "set_literary_kind", node: string, literary_kind: LiteraryAuthoringKindV2, } | { "kind": "wrap_literary_block", literary_kind: LiteraryAuthoringKindV2, } | { "kind": "unwrap_literary_block", node: string, };
+
+export type WarningKindV2 = "general" | "content";
+
+export type WarningBlockTargetV2 = { "kind": "warning", warning_kind: WarningKindV2, };
+
+export type KwdjWarningIntentV2 = { "kind": "insert_block", target: WarningBlockTargetV2, } | { "kind": "set_warning_kind", node: string, warning_kind: WarningKindV2, } | { "kind": "wrap_warning", warning_kind: WarningKindV2, } | { "kind": "unwrap_warning", node: string, };
+
+export type LabeledContainerBlockTargetV2 = { "kind": "spoiler", } | { "kind": "disclosure", };
+
+export type LabeledContainerKindV2 = "spoiler" | "disclosure";
+
+export type KwdjLabeledContainerIntentV2 = { "kind": "insert_block", target: LabeledContainerBlockTargetV2, } | { "kind": "set_container_label", node: string, label: string, } | { "kind": "wrap_labeled_container", container_kind: LabeledContainerKindV2, label: string, } | { "kind": "unwrap_labeled_container", node: string, };
+
+export type KwdjDeleteSelectionScopeV2 = "profile_body";
+
+export type KwdjScopedSelectionIntentV2 = { "kind": "delete_selection", scope: KwdjDeleteSelectionScopeV2, };
+
 export type KwdjTypingIntentV2 = { "kind": "insert_typed_text", text: string, origin: InputOriginV2, } | { "kind": "restore_typed_text", restore: RawInputRestoreV2, };
 
 export type KwdjTypingLocaleV2 = "ru" | "en";

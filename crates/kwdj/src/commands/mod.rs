@@ -17,7 +17,7 @@ use editor_core::document::Mark;
 use editor_core::positions::Selection;
 use editor_core::transaction::WorkMeter;
 
-use crate::{KwdjError, KwdjErrorCode, KwdjProfile, KwdjProfileError};
+use crate::{KwdjError, KwdjErrorCode, KwdjProfile, KwdjProfileError, model::WarningKind};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BlockTarget {
@@ -39,6 +39,12 @@ pub enum ListKind {
     Bullet,
     Ordered { start: u64 },
     Task,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LabeledContainerKind {
+    Spoiler,
+    Disclosure,
 }
 
 /// Native bootstrap intents; public transport/descriptor compatibility is63/64.
@@ -67,6 +73,41 @@ pub enum KwdjIntent<I> {
     InsertBlock {
         target: BlockTarget,
     },
+    InsertAuthorNote,
+    SetLiteraryKind {
+        node: I,
+    },
+    WrapLiteraryBlock,
+    UnwrapLiteraryBlock {
+        node: I,
+    },
+    InsertWarning {
+        warning_kind: WarningKind,
+    },
+    SetWarningKind {
+        node: I,
+        warning_kind: WarningKind,
+    },
+    WrapWarning {
+        warning_kind: WarningKind,
+    },
+    UnwrapWarning {
+        node: I,
+    },
+    InsertLabeledContainer {
+        container_kind: LabeledContainerKind,
+    },
+    WrapLabeledContainer {
+        container_kind: LabeledContainerKind,
+        label: String,
+    },
+    UnwrapLabeledContainer {
+        node: I,
+    },
+    SetContainerLabel {
+        node: I,
+        label: String,
+    },
     Move {
         node: I,
         parent: I,
@@ -88,6 +129,7 @@ pub enum KwdjIntent<I> {
     DismissSlash,
     DeleteBackward,
     DeleteSelection,
+    DeleteSelectionInProfileBody,
     InsertFragment {
         fragment: clipboard::Fragment,
     },
@@ -101,7 +143,19 @@ pub enum KwdjIntent<I> {
 }
 
 pub const CLIPBOARD_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-fragment";
+pub const SET_LITERARY_KIND_COMMAND_ID: &str = "org.klenwriter.kwdj/command/set-literary-kind";
+pub const WRAP_LITERARY_BLOCK_COMMAND_ID: &str = "org.klenwriter.kwdj/command/wrap-literary-block";
+pub const UNWRAP_LITERARY_BLOCK_COMMAND_ID: &str =
+    "org.klenwriter.kwdj/command/unwrap-literary-block";
 pub const TYPED_INPUT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-typed-text";
+pub const SET_WARNING_KIND_COMMAND_ID: &str = "org.klenwriter.kwdj/command/set-warning-kind";
+pub const WRAP_WARNING_COMMAND_ID: &str = "org.klenwriter.kwdj/command/wrap-warning";
+pub const UNWRAP_WARNING_COMMAND_ID: &str = "org.klenwriter.kwdj/command/unwrap-warning";
+pub const SET_CONTAINER_LABEL_COMMAND_ID: &str = "org.klenwriter.kwdj/command/set-container-label";
+pub const WRAP_LABELED_CONTAINER_COMMAND_ID: &str =
+    "org.klenwriter.kwdj/command/wrap-labeled-container";
+pub const UNWRAP_LABELED_CONTAINER_COMMAND_ID: &str =
+    "org.klenwriter.kwdj/command/unwrap-labeled-container";
 pub const RESTORE_INPUT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/restore-typed-text";
 
 pub const KWDJ_COMMANDS: &[CommandDescriptor] = &[
@@ -241,14 +295,28 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::TransformBlock { .. } => KWDJ_COMMANDS[6].id,
             KwdjIntent::ToggleQuote => KWDJ_COMMANDS[7].id,
             KwdjIntent::ToggleList { .. } => KWDJ_COMMANDS[8].id,
-            KwdjIntent::InsertBlock { .. } => KWDJ_COMMANDS[9].id,
+            KwdjIntent::InsertBlock { .. }
+            | KwdjIntent::InsertAuthorNote
+            | KwdjIntent::InsertWarning { .. }
+            | KwdjIntent::InsertLabeledContainer { .. } => KWDJ_COMMANDS[9].id,
+            KwdjIntent::SetLiteraryKind { .. } => SET_LITERARY_KIND_COMMAND_ID,
+            KwdjIntent::WrapLiteraryBlock => WRAP_LITERARY_BLOCK_COMMAND_ID,
+            KwdjIntent::UnwrapLiteraryBlock { .. } => UNWRAP_LITERARY_BLOCK_COMMAND_ID,
+            KwdjIntent::SetWarningKind { .. } => SET_WARNING_KIND_COMMAND_ID,
+            KwdjIntent::WrapWarning { .. } => WRAP_WARNING_COMMAND_ID,
+            KwdjIntent::UnwrapWarning { .. } => UNWRAP_WARNING_COMMAND_ID,
+            KwdjIntent::SetContainerLabel { .. } => SET_CONTAINER_LABEL_COMMAND_ID,
+            KwdjIntent::WrapLabeledContainer { .. } => WRAP_LABELED_CONTAINER_COMMAND_ID,
+            KwdjIntent::UnwrapLabeledContainer { .. } => UNWRAP_LABELED_CONTAINER_COMMAND_ID,
             KwdjIntent::Move { .. } => KWDJ_COMMANDS[10].id,
             KwdjIntent::Duplicate { .. } => KWDJ_COMMANDS[11].id,
             KwdjIntent::Remove { .. } => KWDJ_COMMANDS[12].id,
             KwdjIntent::AcceptSlash { .. } => KWDJ_COMMANDS[13].id,
             KwdjIntent::DismissSlash => KWDJ_COMMANDS[14].id,
             KwdjIntent::DeleteBackward => KWDJ_COMMANDS[15].id,
-            KwdjIntent::DeleteSelection => KWDJ_COMMANDS[16].id,
+            KwdjIntent::DeleteSelection | KwdjIntent::DeleteSelectionInProfileBody => {
+                KWDJ_COMMANDS[16].id
+            }
             KwdjIntent::InsertFragment { .. } => CLIPBOARD_COMMAND_ID,
             KwdjIntent::InsertTypedText { .. } => TYPED_INPUT_COMMAND_ID,
             KwdjIntent::RestoreTypedText { .. } => RESTORE_INPUT_COMMAND_ID,
@@ -264,6 +332,23 @@ impl CommandProvider for KwdjProfile<'_> {
         plan: &mut PlanBuilder<'_, V::Id>,
     ) -> Result<CommandPresentation, Self::Error> {
         Ok(match intent {
+            KwdjIntent::InsertAuthorNote
+            | KwdjIntent::SetLiteraryKind { .. }
+            | KwdjIntent::WrapLiteraryBlock
+            | KwdjIntent::UnwrapLiteraryBlock { .. }
+            | KwdjIntent::InsertWarning { .. }
+            | KwdjIntent::SetWarningKind { .. }
+            | KwdjIntent::WrapWarning { .. }
+            | KwdjIntent::UnwrapWarning { .. }
+            | KwdjIntent::SetContainerLabel { .. }
+            | KwdjIntent::InsertLabeledContainer { .. }
+            | KwdjIntent::WrapLabeledContainer { .. }
+            | KwdjIntent::UnwrapLabeledContainer { .. }
+            | KwdjIntent::DeleteSelectionInProfileBody
+                if !self.clipboard_v2() =>
+            {
+                return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());
+            }
             KwdjIntent::InsertTypedText { .. } | KwdjIntent::RestoreTypedText { .. } => {
                 return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());
             }
@@ -274,7 +359,14 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::UnsetLink => inline::unset_link(view, state, plan)?,
             KwdjIntent::InsertText { text } => inline::insert_text(view, state, text, plan)?,
             KwdjIntent::DeleteBackward => delete::prepare(view, state, plan)?,
-            KwdjIntent::DeleteSelection => selection::prepare(view, state, plan)?,
+            KwdjIntent::DeleteSelection | KwdjIntent::DeleteSelectionInProfileBody => {
+                selection::prepare(
+                    view,
+                    state,
+                    matches!(intent, KwdjIntent::DeleteSelectionInProfileBody),
+                    plan,
+                )?
+            }
             KwdjIntent::InsertFragment { fragment } => {
                 clipboard::prepare(self, *context, view, state, fragment, plan)?
             }

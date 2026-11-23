@@ -1,0 +1,46 @@
+{
+  "initial": {
+    "schema": "klenwriter.document", "schema_version": 1, "profile": "prose",
+    "content": [
+      { "type": "paragraph", "content": [{ "type": "text", "text": "Before" }] },
+      { "type": "literary_block", "attrs": { "kind": "author_note" }, "content": [
+        { "type": "paragraph", "attrs": { "align": "right" }, "content": [{ "type": "text", "text": "Author 😀", "marks": [{ "type": "emphasis" }] }] }
+      ] },
+      { "type": "paragraph", "content": [{ "type": "text", "text": "After" }] }
+    ]
+  },
+  "nested": {
+    "schema": "klenwriter.document", "schema_version": 1, "profile": "prose",
+    "content": [
+      { "type": "paragraph", "content": [{ "type": "text", "text": "Before" }] },
+      { "type": "literary_block", "attrs": { "kind": "author_note" }, "content": [
+        { "type": "paragraph", "attrs": { "align": "right" }, "content": [{ "type": "text", "text": "Author 😀", "marks": [{ "type": "emphasis" }] }] },
+        { "type": "literary_block", "attrs": { "kind": "author_note" }, "content": [{ "type": "paragraph", "content": [] }] }
+      ] },
+      { "type": "paragraph", "content": [{ "type": "text", "text": "After" }] }
+    ]
+  },
+  "empty": {
+    "schema": "klenwriter.document", "schema_version": 1, "profile": "prose",
+    "content": [
+      { "type": "paragraph", "content": [{ "type": "text", "text": "Before" }] },
+      { "type": "literary_block", "attrs": { "kind": "author_note" }, "content": [{ "type": "paragraph", "content": [] }] },
+      { "type": "paragraph", "content": [{ "type": "text", "text": "After" }] }
+    ]
+  },
+  "restricted": {
+    "schema": "klenwriter.document", "schema_version": 1, "profile": "poetry",
+    "content": [
+      { "type": "verse", "content": [{ "type": "verse_line", "content": [{ "type": "text", "text": "Verse" }] }] },
+      { "type": "media_image", "attrs": { "media_asset_id": "550e8400-e29b-41d4-a716-446655440013", "alt": "Description", "align": "center" }, "content": [
+        { "type": "paragraph", "content": [{ "type": "text", "text": "Caption" }] }
+      ] }
+    ]
+  },
+  "refusals": {
+    "first_child_backspace": { "code": "kwdj.command_unsupported_context", "path": "/command" },
+    "crossing_delete": { "code": "kwdj.command_unsupported_context", "path": "/command" },
+    "verse_target": { "code": "kwdj.invalid_profile_content", "path": "/content/0/content/1" },
+    "media_target": { "code": "kwdj.invalid_profile_content", "path": "/content/1/content/1" }
+  }
+}

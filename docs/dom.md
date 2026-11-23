@@ -71,12 +71,21 @@ snapshot, вызовите `destroy()` и смонтируйте сохранё�
 
 ## Покрытие и безопасное представление
 
-KWDJ binding поддерживает точные12 типов: text/hard_break, paragraph/heading/
-code_block, blockquote, bullet_list/ordered_list/list_item, task_list/task_item,
-scene_break. Девять marks: strong/emphasis/strike/code/subscript/superscript,
-text_color/highlight/link. SceneBreak — BlockAtom. MediaImage — неподдержанный
-Container; table/verse/domain/reference_link также требуют других renderers.
-Неизвестные composition/type/mark/attrs дают явный отказ, без flatten/delete.
+KWDJ binding поддерживает `text`, `hard_break`, `paragraph`, `heading`,
+`code_block`, `blockquote`, `bullet_list`, `ordered_list`, `list_item`,
+`task_list`, `task_item`, `scene_break`, `media_image`, `literary_block`, `warning`,
+`spoiler` и `disclosure`.
+Девять marks включают strong, emphasis, strike, code, subscript, superscript,
+text_color, highlight и link. Для `media_image` binding показывает локальный
+CSS-плейсхолдер с именем из `alt`, если изображение содержательное. Подпись
+остаётся обычным редактируемым абзацем. Литературный контейнер имеет доступное
+имя по виду блока и сохраняет дочерние узлы. Предупреждение использует `label`
+или стандартное имя своего вида. Спойлер и раскрываемый блок используют свой
+`label` как доступное имя группы и сохраняют дочернее содержимое. Для
+метки из одних пробелов используется стандартное доступное имя, а исходная
+метка сохраняется при экспорте. Для table, verse, остальных
+доменных блоков и reference_link требуются отдельные renderers. Неизвестные
+типы, marks и attrs дают явный отказ.
 
 Native build-time producer проверяет полный inventory из реальных публичных
 registrations/FrozenRegistry; digest не заменяет проверку покрытия. Generic DOM
@@ -154,6 +163,27 @@ SDK destroy Submission. Callback вызывается синхронно вне 
 данных. Повторный destroy возвращает тот же receipt. При retained_dom actual subtree
 не очищается. Владение этим reference передано host; его дальнейшие изменения
 принадлежат host. Recovery не заменяет явное сохранение committed dirty-документа.
+
+## Поля spoiler и disclosure
+
+KWDJ host может подключить отдельный однострочный input через
+`bindKwdjContainerLabel({ editor, editorElement, input, node })` из
+`@klenwriter/editor-kwdj/dom`. Передайте исходный mounted element после ready,
+текущий ID spoiler или disclosure и связанный с доступным именем `input[type=text]`
+в том же документе, вне editing root. Порядок полей и оформление относятся к host.
+Вызовите возвращённую функцию перед удалением поля или уничтожением editor.
+Для labels с CR/LF поле не подключается, и SDK сохраняет их как исходный текст.
+Если такой label появляется в текущем документе или replace создаёт новое поколение,
+старый binding отсоединяется. Для нового ID подключите поле заново.
+
+Поле получает принятое значение label из native. Обычный ввод отправляет один
+`set_container_label` через scoped host request. Композиция использует запрос,
+захваченный в её начале. Если документ изменился раньше завершения ввода,
+поле возвращается к принятому значению. Tab связывает label, тело и
+следующий блок с обратным переходом. При вложенных полях маршрут сохраняет
+метку, с которой он начался. Стрелки переводят каретку через границы,
+а внутри текста сохраняют браузерное поведение. После локального маршрута
+Tab продолжает обычный порядок фокуса. История документа остаётся в native.
 
 ## Modes и замена документа
 

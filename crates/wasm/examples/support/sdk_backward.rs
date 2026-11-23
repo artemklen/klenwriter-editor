@@ -9,9 +9,7 @@ const D0: &[u8] = include_bytes!("../../../../contracts/dom/v1/inputs/D0.json");
 const C0: &str = include_str!("../../../../contracts/dom/v1/expected/D0.canonical.json");
 const C1: &str =
     include_str!("../../../../contracts/dom/v1/expected/D1-after-end-split.canonical.json");
-// Independently source-authored ABI2 literal: the bare compiled registry has
-// the original17 commands plus its additive clipboard command, in lexical order.
-// ABI1 below retains its original exact count and excludes that new command.
+// Independent ABI2 oracle for the base command catalog in lexical order.
 const CATALOG_V2: &[&str] = &[
     "org.klenwriter.kwdj/command/accept-slash",
     "org.klenwriter.kwdj/command/delete-backward",
@@ -24,13 +22,22 @@ const CATALOG_V2: &[&str] = &[
     "org.klenwriter.kwdj/command/insert-text",
     "org.klenwriter.kwdj/command/move",
     "org.klenwriter.kwdj/command/remove",
+    "org.klenwriter.kwdj/command/set-container-label",
     "org.klenwriter.kwdj/command/set-link",
+    "org.klenwriter.kwdj/command/set-literary-kind",
+    "org.klenwriter.kwdj/command/set-warning-kind",
     "org.klenwriter.kwdj/command/shift-enter",
     "org.klenwriter.kwdj/command/toggle-list",
     "org.klenwriter.kwdj/command/toggle-mark",
     "org.klenwriter.kwdj/command/toggle-quote",
     "org.klenwriter.kwdj/command/transform-block",
     "org.klenwriter.kwdj/command/unset-link",
+    "org.klenwriter.kwdj/command/unwrap-labeled-container",
+    "org.klenwriter.kwdj/command/unwrap-literary-block",
+    "org.klenwriter.kwdj/command/unwrap-warning",
+    "org.klenwriter.kwdj/command/wrap-labeled-container",
+    "org.klenwriter.kwdj/command/wrap-literary-block",
+    "org.klenwriter.kwdj/command/wrap-warning",
 ];
 
 enum Api {
@@ -184,7 +191,7 @@ fn split_join(v2: bool) {
     s.drain();
     let catalog = s.call(json!({"kind":"catalog"}));
     if v2 {
-        assert_eq!(CATALOG_V2.len(), 18);
+        assert_eq!(CATALOG_V2.len(), 27);
         assert_eq!(catalog["commands"], json!(CATALOG_V2));
     } else {
         assert_eq!(catalog["commands"].as_array().unwrap().len(), 17);

@@ -77,3 +77,17 @@ test('CCOD09 open heading edges refuse instead of becoming closed blocks while a
     assert.deepEqual(encoded(codec(),fragment([heading],edges)),{status:'refused'});
   assert.deepEqual(encoded(codec(),fragment([heading])),{status:'encoded',html:'<h2>X</h2>'});
 });
+test('a complete scene break has a closed HTML clipboard representation', async () => {
+  const c = codec();
+  const value = fragment([{type:'scene_break'}]);
+  const written = encoded(c, value);
+  assert.deepEqual(written, {status:'encoded',html:'<hr>'});
+  for (const where of ['root', 'prose_block']) {
+    const decoded = await c.decode({capture:capture('', written.html), nativeContext:context(['blocks'],where), sessionContext});
+    assert.equal(decoded.status, 'candidate');
+    assert.deepEqual(decoded.diagnostics, []);
+    assert.deepEqual(JSON.parse(JSON.parse(decoded.command.payload_json).fragment_json), value);
+  }
+  assert.deepEqual(encoded(c, fragment([{type:'scene_break',attrs:{align:'center'}}])), {status:'refused'});
+  assert.deepEqual(encoded(c, fragment([{type:'scene_break'}], {kind:'inline'})), {status:'refused'});
+});

@@ -10,6 +10,7 @@ const attributes = new Set(['href', 'title', 'start', 'role', 'aria-label', 'ari
 // Classes select static editor CSS only. Authored CSS and arbitrary selectors are absent.
 const classes = new Set(['editor-align-left', 'editor-align-center', 'editor-align-right', 'editor-align-justify',
   'editor-first-line-indent', 'editor-task-list', 'editor-task-item', 'editor-checked', 'editor-scene-break',
+  'editor-media-placeholder', 'editor-media-center', 'editor-media-wide',
   'editor-color-muted', 'editor-color-accent', 'editor-color-manuscript', 'editor-color-success', 'editor-color-warning', 'editor-color-danger',
   'editor-highlight-accent', 'editor-highlight-manuscript', 'editor-highlight-warning']);
 const own = (value: object, name: string) => Object.prototype.hasOwnProperty.call(value, name);

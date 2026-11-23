@@ -8,10 +8,15 @@ use editor_core::commands::{
     CommandPresentation, CommandState, LocalRef, PlanBuilder, SelectionIntent,
 };
 use editor_core::document::Primitive;
-use editor_core::positions::{Affinity, Position, Selection, Utf16Offset, grapheme_boundaries};
+use editor_core::positions::{
+    Affinity, Edge, Position, Selection, Utf16Offset, grapheme_boundaries,
+};
 use editor_core::transaction::Operation;
 
-use super::inline::{self, TextPoint};
+use super::{
+    block::{self, RemovalCaret},
+    inline::{self, TextPoint},
+};
 use crate::{KwdjError, KwdjErrorCode};
 
 fn error(code: KwdjErrorCode) -> KwdjError {
@@ -144,6 +149,16 @@ pub(super) fn prepare<V: CandidateRead>(
         .selection
         .copied()
         .ok_or_else(|| error(KwdjErrorCode::CommandSelectionRequired))?;
+    if selection.anchor == selection.focus
+        && let Position::Edge {
+            node,
+            side: Edge::After,
+        } = selection.focus
+        && get(view, node, plan)?.type_id == "org.klenwriter.kwdj/scene_break"
+    {
+        block::remove(view, node, RemovalCaret::AdjacentText, plan)?;
+        return Ok(CommandPresentation::default());
+    }
     let focus = inline::text_point(view, selection.focus, plan.work())?;
     if selection.anchor != selection.focus {
         let anchor = inline::text_point(view, selection.anchor, plan.work())?;

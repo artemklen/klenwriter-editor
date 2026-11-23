@@ -10,6 +10,25 @@ export const options = extra => JSON.stringify({ abi: 'kwdj-codec/1', identities
 export const document = content => ({ schema: 'klenwriter.document', schema_version: 1, profile: 'prose', content });
 const paragraph = text => ({ type: 'paragraph', content: [{ type: 'text', text }] });
 const canonical = value => canonicalizeRaw(JSON.stringify(value));
+export function spoilerDisclosureFixture() {
+  const source = new URL('../../contracts/kwdj/v1/fixtures/positive.json', import.meta.url);
+  const { fixtures } = JSON.parse(readFileSync(source, 'utf8'));
+  const { kwdj } = fixtures.find(fixture => fixture.id === 'DOC-017').cases.find(item => item.name === 'spoiler_and_disclosure');
+  return { document: kwdj, canonical: canonical(kwdj) };
+}
+export function literaryFixture() {
+  const source = new URL('../../contracts/kwdj/v1/fixtures/positive.json', import.meta.url);
+  const { fixtures } = JSON.parse(readFileSync(source, 'utf8'));
+  const { kwdj } = fixtures.find(fixture => fixture.id === 'DOC-015').cases.find(item => item.name === 'all_literary_kinds');
+  const rows = kwdj.content.map(block => [block.attrs.kind, block.content[0].content[0].text]);
+  return { canonical: canonical(kwdj), rows };
+}
+export function warningFixture() {
+  const source = new URL('../../contracts/kwdj/v1/fixtures/positive.json', import.meta.url);
+  const { fixtures } = JSON.parse(readFileSync(source, 'utf8'));
+  const { kwdj } = fixtures.find(fixture => fixture.id === 'DOC-016').cases.find(item => item.name === 'warning_kinds');
+  return { document: kwdj, canonical: canonical(kwdj) };
+}
 const measuredLimits = { document_bytes: 2097152, tree_depth: 32, node_count: 50000, text_length: 262144, table_rows: 500, table_effective_columns: 50, attribute_length: 8192 };
 
 // Independent adapter from the snapshot's resource recipes. Exact metric checks

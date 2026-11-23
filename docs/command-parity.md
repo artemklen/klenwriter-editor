@@ -44,3 +44,66 @@ literal mismatch, future provider, invalid mark/URL/identity, stale tokens,
 read-only and resource/journal/counter limits. `query_command` executes the same
 full preparation as execution; a row's UI owner is not replaced by a static hint.
 New public providers/descriptors must preserve this architecture in OSR-64.
+
+## Media block parity
+
+| Surface | Available behavior |
+| --- | --- |
+| Native and WASM SDK | Move, remove, whole-block KWDJ clipboard, Undo/Redo, and export/reopen preserve the media identity, alignment, accessibility attributes, and caption. |
+| Mounted KWDJ DOM | An offline placeholder has the authored accessible name for meaningful media. The caption remains editable. Keyboard deletion of a selected whole block and Undo preserve its attributes. |
+| Create media block | Unavailable in the library. Media selection and upload belong to a host picker. |
+
+## Literary block parity
+
+Native and WASM preserve canonical bytes. The DOM renderer exposes a named
+container and its authored children.
+
+| Kind | Read and render | Authoring parity |
+| --- | --- | --- |
+| `author_note` | Supported | CMS slash callout and SDK2 creation. |
+| `letter` | Supported | Preserve and read. |
+| `epigraph` | Supported | Preserve and read. |
+| `world_note` | Supported | Preserve and read. |
+| `chronicle_quote` | Supported | Preserve and read. |
+| `archive_fragment` | Supported | Preserve and read. |
+
+SDK2 `insert_block` takes the literary target `literary_block` with
+`literary_kind` set to `author_note`. The new container begins with an empty
+paragraph. `set_literary_kind` takes the existing literary node ID and changes
+its kind to `author_note`, preserving the container and its children.
+SDK2 `wrap_literary_block` wraps selected contiguous siblings in an
+`author_note`. `unwrap_literary_block` takes an `author_note` node ID and moves
+its children into the parent in the same order.
+
+## Warning block parity
+
+Both `general` and `content` are readable and render with their authored label
+or a name for the kind. Legacy CMS insertion supports both kinds. SDK2
+`insert_block` takes the `warning` target and a `warning_kind`. The new block
+has one empty paragraph and starts with the label omitted. `set_warning_kind`
+changes the kind of an existing warning and preserves any label and children.
+
+SDK2 `wrap_warning` takes a `warning_kind` and wraps selected contiguous
+siblings in that kind of warning. `unwrap_warning` takes the warning node ID and
+moves its children into its parent in their original order. Undo restores the
+warning, its original attributes, and its children.
+
+## Spoiler and disclosure parity
+
+SDK2 `set_container_label` takes an existing `spoiler` or `disclosure` node ID
+and the new `label`. The command preserves child IDs and content. An empty
+label is refused by the document grammar. Undo restores the previous label
+and exact canonical bytes.
+
+SDK2 `insert_block` creates either kind with its default label and an empty
+paragraph. `wrap_labeled_container` takes a `container_kind` and an explicit
+label, and wraps contiguous siblings in that container. `unwrap_labeled_container`
+takes a container ID and keeps the child order and identities. KWDJ clipboard
+fragments preserve the label and body. The grammar refuses nesting either kind
+inside another of the same kind.
+
+SDK2 accepts `{ kind: 'delete_selection', scope: 'profile_body' }` for text
+selected inside one text block in a literary, warning, spoiler, or disclosure
+container. KWDJ mounted input uses this scope. Deletion preserves the enclosing
+container and its attributes. Selections crossing container boundaries return
+a typed refusal. The unscoped command retains its existing selection contract.

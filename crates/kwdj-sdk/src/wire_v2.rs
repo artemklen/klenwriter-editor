@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-//! Additive ABI2 profile command; legacy KwdjIntentDto stays closed.
+//! Additive ABI2 profile commands. The legacy KwdjIntentDto stays closed.
 use serde::{Deserialize, Serialize};
 #[cfg_attr(
     all(feature = "sdk-types", not(target_arch = "wasm32")),
@@ -9,6 +9,158 @@ use serde::{Deserialize, Serialize};
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub enum KwdjClipboardIntentV2 {
     InsertFragment { fragment_json: String },
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum LiteraryAuthoringKindV2 {
+    AuthorNote,
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum LiteraryBlockTargetV2 {
+    LiteraryBlock {
+        literary_kind: LiteraryAuthoringKindV2,
+    },
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum KwdjLiteraryIntentV2 {
+    InsertBlock {
+        target: LiteraryBlockTargetV2,
+    },
+    SetLiteraryKind {
+        node: String,
+        literary_kind: LiteraryAuthoringKindV2,
+    },
+    WrapLiteraryBlock {
+        literary_kind: LiteraryAuthoringKindV2,
+    },
+    UnwrapLiteraryBlock {
+        node: String,
+    },
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum WarningKindV2 {
+    General,
+    Content,
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum WarningBlockTargetV2 {
+    Warning { warning_kind: WarningKindV2 },
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum KwdjWarningIntentV2 {
+    InsertBlock {
+        target: WarningBlockTargetV2,
+    },
+    SetWarningKind {
+        node: String,
+        warning_kind: WarningKindV2,
+    },
+    WrapWarning {
+        warning_kind: WarningKindV2,
+    },
+    UnwrapWarning {
+        node: String,
+    },
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum LabeledContainerBlockTargetV2 {
+    Spoiler {},
+    Disclosure {},
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum LabeledContainerKindV2 {
+    Spoiler,
+    Disclosure,
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum KwdjLabeledContainerIntentV2 {
+    InsertBlock {
+        target: LabeledContainerBlockTargetV2,
+    },
+    SetContainerLabel {
+        node: String,
+        label: String,
+    },
+    WrapLabeledContainer {
+        container_kind: LabeledContainerKindV2,
+        label: String,
+    },
+    UnwrapLabeledContainer {
+        node: String,
+    },
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum KwdjDeleteSelectionScopeV2 {
+    ProfileBody,
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum KwdjScopedSelectionIntentV2 {
+    DeleteSelection { scope: KwdjDeleteSelectionScopeV2 },
 }
 
 #[cfg_attr(

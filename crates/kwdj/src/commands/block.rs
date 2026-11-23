@@ -12,10 +12,13 @@ use editor_core::document::{Attribute, Attributes, Document, Node, Primitive};
 use editor_core::positions::{Affinity, Edge, Position, Selection, Utf16Offset, utf16_to_utf8};
 use editor_core::transaction::Operation;
 
-use super::{BlockTarget, KWDJ_SLASH_CANDIDATES, KwdjIntent, ListKind, inline, refusal};
-use crate::{KwdjError, KwdjErrorCode, Profile};
+use super::{
+    BlockTarget, KWDJ_SLASH_CANDIDATES, KwdjIntent, LabeledContainerKind, ListKind, inline, refusal,
+};
+use crate::{KwdjError, KwdjErrorCode, Profile, model::WarningKind};
 
 const PREFIX: &str = "org.klenwriter.kwdj/";
+const AUTHOR_NOTE: &str = "author_note";
 fn invalid() -> KwdjError {
     refusal(KwdjErrorCode::CommandInvalidTarget)
 }
@@ -1308,6 +1311,29 @@ fn unwrap_container<V: CandidateRead>(
     )?;
     Ok(())
 }
+
+fn wrap_blocks<I: Copy + Eq + Ord>(
+    parent: I,
+    at: usize,
+    blocks: &[I],
+    wrapper: Node,
+    plan: &mut PlanBuilder<'_, I>,
+) -> Result<(), KwdjError> {
+    let operation = fragment(plan, parent.into(), at, wrapper)?;
+    for (offset, block) in blocks.iter().enumerate() {
+        let parent = created(operation, &[0], plan)?;
+        push(
+            plan,
+            Operation::Move {
+                node: (*block).into(),
+                parent,
+                before_index: offset,
+            },
+        )?;
+    }
+    Ok(())
+}
+
 fn toggle_quote<V: CandidateRead>(
     view: &V,
     state: CommandState<'_, V::Id>,
@@ -1325,18 +1351,7 @@ fn toggle_quote<V: CandidateRead>(
         });
     }
     let quote = empty_node("blockquote", Primitive::Container, Attributes::new(), plan)?;
-    let operation = fragment(plan, parent.into(), at, quote)?;
-    for (offset, block) in blocks.iter().enumerate() {
-        let parent = created(operation, &[0], plan)?;
-        push(
-            plan,
-            Operation::Move {
-                node: (*block).into(),
-                parent,
-                before_index: offset,
-            },
-        )?;
-    }
+    wrap_blocks(parent, at, &blocks, quote, plan)?;
     Ok(CommandPresentation {
         active: Some(ActiveState::Off),
     })
@@ -1629,6 +1644,16 @@ fn insert_block<V: CandidateRead>(
     }
     // Reject missing future providers before producing a partial plan.
     let node = target_node(target, plan)?;
+    insert_block_node(view, state, node, query, plan)
+}
+
+fn insert_block_node<V: CandidateRead>(
+    view: &V,
+    state: CommandState<'_, V::Id>,
+    node: Node,
+    query: Option<(Selection<V::Id>, &str)>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
     let selected = if let Some((range, literal)) = query {
         verify_query(view, state, range, literal, plan)?;
         range
@@ -1639,12 +1664,12 @@ fn insert_block<V: CandidateRead>(
         && inline::ordered_range(view, selected, plan.work())?.is_empty
         && let Some((parent, index)) = outside_gap(view, selected.focus, plan)?
     {
-        let is_atom = matches!(target, BlockTarget::SceneBreak);
-        let caret_path = match target {
-            BlockTarget::Blockquote => &[0usize, 0][..],
-            BlockTarget::BulletList | BlockTarget::OrderedList { .. } | BlockTarget::TaskList => {
-                &[0usize, 0, 0][..]
+        let is_atom = node.primitive == Primitive::BlockAtom;
+        let caret_path = match kind(&node.type_id) {
+            "blockquote" | "literary_block" | "warning" | "spoiler" | "disclosure" => {
+                &[0usize, 0][..]
             }
+            "bullet_list" | "ordered_list" | "task_list" => &[0usize, 0, 0][..],
             _ => &[0usize][..],
         };
         let operation = fragment(plan, parent.into(), index, node)?;
@@ -1689,6 +1714,194 @@ fn insert_block<V: CandidateRead>(
     Ok(CommandPresentation::default())
 }
 
+fn insert_author_note<V: CandidateRead>(
+    view: &V,
+    state: CommandState<'_, V::Id>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let mut note = author_note(plan)?;
+    let paragraph = empty_node("paragraph", Primitive::TextBlock, Attributes::new(), plan)?;
+    bytes(plan, size_of::<Node>())?;
+    note.children.push(paragraph);
+    insert_block_node(view, state, note, None, plan)
+}
+
+fn author_note<I>(plan: &mut PlanBuilder<'_, I>) -> Result<Node, KwdjError> {
+    let attributes = Attributes::from([(
+        key("kind", plan)?,
+        Attribute::String(key(AUTHOR_NOTE, plan)?),
+    )]);
+    empty_node("literary_block", Primitive::Container, attributes, plan)
+}
+
+fn set_literary_kind<V: CandidateRead>(
+    view: &V,
+    id: V::Id,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let node = get(view, id, plan)?;
+    if kind(node.type_id) != "literary_block" {
+        return Err(invalid());
+    }
+    if !matches!(node.attributes.get("kind"), Some(Attribute::String(current)) if current == AUTHOR_NOTE)
+    {
+        let value = Attribute::String(key(AUTHOR_NOTE, plan)?);
+        attr(plan, id.into(), "kind", Some(value))?;
+    }
+    Ok(CommandPresentation::default())
+}
+
+fn wrap_literary_block<V: CandidateRead>(
+    view: &V,
+    state: CommandState<'_, V::Id>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    wrap_selected_blocks(view, state, plan, author_note)
+}
+
+fn wrap_selected_blocks<V: CandidateRead>(
+    view: &V,
+    state: CommandState<'_, V::Id>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+    create_wrapper: impl FnOnce(&mut PlanBuilder<'_, V::Id>) -> Result<Node, KwdjError>,
+) -> Result<CommandPresentation, KwdjError> {
+    let selected = selection(state)?;
+    let anchor = outside_gap(view, selected.anchor, plan)?;
+    let focus = outside_gap(view, selected.focus, plan)?;
+    match (anchor, focus) {
+        (Some((parent, a)), Some((other, b))) if parent == other && a != b => {
+            let start = a.min(b);
+            let blocks = view
+                .children(parent)
+                .and_then(|children| children.get(start..a.max(b)))
+                .ok_or_else(invalid)?;
+            let wrapper = create_wrapper(plan)?;
+            wrap_blocks(parent, start, blocks, wrapper, plan)?;
+        }
+        (None, None) => {
+            let blocks = selected_blocks(view, state, plan)?;
+            let first = *blocks.first().ok_or_else(unsupported)?;
+            let parent = get(view, first, plan)?.parent;
+            let start = require_contiguous_blocks(view, &blocks, parent, plan)?;
+            let wrapper = create_wrapper(plan)?;
+            wrap_blocks(parent, start, &blocks, wrapper, plan)?;
+        }
+        _ => return Err(unsupported()),
+    }
+    Ok(CommandPresentation::default())
+}
+
+fn unwrap_literary_block<V: CandidateRead>(
+    view: &V,
+    id: V::Id,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let node = get(view, id, plan)?;
+    if kind(node.type_id) != "literary_block"
+        || !matches!(node.attributes.get("kind"), Some(Attribute::String(current)) if current == AUTHOR_NOTE)
+    {
+        return Err(invalid());
+    }
+    unwrap_container(view, id, plan)?;
+    Ok(CommandPresentation::default())
+}
+
+fn warning_kind_value(warning_kind: WarningKind) -> &'static str {
+    match warning_kind {
+        WarningKind::General => "general",
+        WarningKind::Content => "content",
+    }
+}
+
+fn warning<I>(warning_kind: WarningKind, plan: &mut PlanBuilder<'_, I>) -> Result<Node, KwdjError> {
+    let attributes = Attributes::from([(
+        key("kind", plan)?,
+        Attribute::String(key(warning_kind_value(warning_kind), plan)?),
+    )]);
+    empty_node("warning", Primitive::Container, attributes, plan)
+}
+
+fn insert_warning<V: CandidateRead>(
+    view: &V,
+    state: CommandState<'_, V::Id>,
+    warning_kind: WarningKind,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let mut container = warning(warning_kind, plan)?;
+    let paragraph = empty_node("paragraph", Primitive::TextBlock, Attributes::new(), plan)?;
+    bytes(plan, size_of::<Node>())?;
+    container.children.push(paragraph);
+    insert_block_node(view, state, container, None, plan)
+}
+
+fn set_warning_kind<V: CandidateRead>(
+    view: &V,
+    id: V::Id,
+    warning_kind: WarningKind,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let node = get(view, id, plan)?;
+    if kind(node.type_id) != "warning" {
+        return Err(invalid());
+    }
+    let target = warning_kind_value(warning_kind);
+    if !matches!(node.attributes.get("kind"), Some(Attribute::String(current)) if current == target)
+    {
+        let value = Attribute::String(key(target, plan)?);
+        attr(plan, id.into(), "kind", Some(value))?;
+    }
+    Ok(CommandPresentation::default())
+}
+
+fn labeled_container<I>(
+    container_kind: LabeledContainerKind,
+    label: &str,
+    plan: &mut PlanBuilder<'_, I>,
+) -> Result<Node, KwdjError> {
+    let type_name = match container_kind {
+        LabeledContainerKind::Spoiler => "spoiler",
+        LabeledContainerKind::Disclosure => "disclosure",
+    };
+    let attributes =
+        Attributes::from([(key("label", plan)?, Attribute::String(key(label, plan)?))]);
+    empty_node(type_name, Primitive::Container, attributes, plan)
+}
+
+fn insert_labeled_container<V: CandidateRead>(
+    view: &V,
+    state: CommandState<'_, V::Id>,
+    container_kind: LabeledContainerKind,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let label = match container_kind {
+        LabeledContainerKind::Spoiler => "Спойлер",
+        LabeledContainerKind::Disclosure => "Подробнее",
+    };
+    let mut container = labeled_container(container_kind, label, plan)?;
+    let paragraph = empty_node("paragraph", Primitive::TextBlock, Attributes::new(), plan)?;
+    bytes(plan, size_of::<Node>())?;
+    container.children.push(paragraph);
+    insert_block_node(view, state, container, None, plan)
+}
+
+fn set_container_label<V: CandidateRead>(
+    view: &V,
+    id: V::Id,
+    label: &str,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let node = get(view, id, plan)?;
+    if !matches!(kind(node.type_id), "spoiler" | "disclosure") {
+        return Err(invalid());
+    }
+    if !matches!(node.attributes.get("label"), Some(Attribute::String(current)) if current == label)
+    {
+        let value = Attribute::String(key(label, plan)?);
+        attr(plan, id.into(), "label", Some(value))?;
+    }
+    Ok(CommandPresentation::default())
+}
+
 fn structural<'a, V: CandidateRead>(
     view: &'a V,
     id: V::Id,
@@ -1717,9 +1930,59 @@ fn needs_child(name: &str) -> bool {
             | "disclosure"
     )
 }
-fn remove<V: CandidateRead>(
+pub(super) enum RemovalCaret {
+    Gap,
+    AdjacentText,
+}
+
+fn adjacent_text_caret<V: CandidateRead>(
+    view: &V,
+    siblings: &[V::Id],
+    removed: usize,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<Option<Position<LocalRef<V::Id>>>, KwdjError> {
+    for (index, at_end) in [(removed.checked_sub(1), true), (Some(removed + 1), false)] {
+        let Some(&block) = index.and_then(|i| siblings.get(i)) else {
+            continue;
+        };
+        let node = get(view, block, plan)?;
+        if node.primitive != Primitive::TextBlock {
+            continue;
+        }
+        let edge = if at_end {
+            node.children.last()
+        } else {
+            node.children.first()
+        };
+        if let Some(&leaf) = edge
+            && let Some(text) = get(view, leaf, plan)?.text
+        {
+            let offset = if at_end {
+                unit(plan, text.len())?;
+                bytes(plan, text.len())?;
+                text.encode_utf16().count()
+            } else {
+                0
+            };
+            return Ok(Some(Position::Text {
+                leaf: leaf.into(),
+                utf16: Utf16Offset::new(offset),
+                affinity: Affinity::After,
+            }));
+        }
+        return Ok(Some(Position::Child {
+            parent: block.into(),
+            index: if at_end { node.children.len() } else { 0 },
+            affinity: Affinity::After,
+        }));
+    }
+    Ok(None)
+}
+
+pub(super) fn remove<V: CandidateRead>(
     view: &V,
     id: V::Id,
+    caret: RemovalCaret,
     plan: &mut PlanBuilder<'_, V::Id>,
 ) -> Result<(), KwdjError> {
     let mut target = id;
@@ -1751,13 +2014,17 @@ fn remove<V: CandidateRead>(
             },
         )?;
     } else {
+        let adjacent = match caret {
+            RemovalCaret::Gap => None,
+            RemovalCaret::AdjacentText => adjacent_text_caret(view, siblings, at, plan)?,
+        };
         set_caret(
             plan,
-            Position::Child {
+            adjacent.unwrap_or(Position::Child {
                 parent: parent.into(),
                 index: at.min(siblings.len() - 1),
                 affinity: Affinity::After,
-            },
+            }),
         )?;
     }
     push(
@@ -1818,6 +2085,48 @@ pub(super) fn prepare<V: CandidateRead>(
         KwdjIntent::ToggleQuote => toggle_quote(view, state, plan),
         KwdjIntent::ToggleList { kind } => toggle_list(view, state, *kind, plan),
         KwdjIntent::InsertBlock { target } => insert_block(view, state, target, None, plan),
+        KwdjIntent::InsertAuthorNote => insert_author_note(view, state, plan),
+        KwdjIntent::SetLiteraryKind { node } => set_literary_kind(view, *node, plan),
+        KwdjIntent::WrapLiteraryBlock => wrap_literary_block(view, state, plan),
+        KwdjIntent::UnwrapLiteraryBlock { node } => unwrap_literary_block(view, *node, plan),
+        KwdjIntent::InsertWarning { warning_kind } => {
+            insert_warning(view, state, *warning_kind, plan)
+        }
+        KwdjIntent::SetWarningKind { node, warning_kind } => {
+            set_warning_kind(view, *node, *warning_kind, plan)
+        }
+        KwdjIntent::WrapWarning { warning_kind } => {
+            wrap_selected_blocks(view, state, plan, |plan| warning(*warning_kind, plan))
+        }
+        KwdjIntent::UnwrapWarning { node } => {
+            if kind(get(view, *node, plan)?.type_id) != "warning" {
+                return Err(invalid());
+            }
+            unwrap_container(view, *node, plan)?;
+            Ok(CommandPresentation::default())
+        }
+        KwdjIntent::InsertLabeledContainer { container_kind } => {
+            insert_labeled_container(view, state, *container_kind, plan)
+        }
+        KwdjIntent::WrapLabeledContainer {
+            container_kind,
+            label,
+        } => wrap_selected_blocks(view, state, plan, |plan| {
+            labeled_container(*container_kind, label, plan)
+        }),
+        KwdjIntent::UnwrapLabeledContainer { node } => {
+            if !matches!(
+                kind(get(view, *node, plan)?.type_id),
+                "spoiler" | "disclosure"
+            ) {
+                return Err(invalid());
+            }
+            unwrap_container(view, *node, plan)?;
+            Ok(CommandPresentation::default())
+        }
+        KwdjIntent::SetContainerLabel { node, label } => {
+            set_container_label(view, *node, label, plan)
+        }
         KwdjIntent::AcceptSlash {
             target,
             range,
@@ -1856,7 +2165,7 @@ pub(super) fn prepare<V: CandidateRead>(
             Ok(CommandPresentation::default())
         }
         KwdjIntent::Remove { node } => {
-            remove(view, *node, plan)?;
+            remove(view, *node, RemovalCaret::Gap, plan)?;
             Ok(CommandPresentation::default())
         }
         _ => Err(refusal(KwdjErrorCode::CommandUnknown)),

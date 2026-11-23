@@ -1,0 +1,59 @@
+{
+  "before": {
+    "type": "paragraph",
+    "content": [{ "type": "text", "text": "До" }]
+  },
+  "selected": [
+    {
+      "type": "paragraph",
+      "attrs": { "align": "center" },
+      "content": [{ "type": "text", "marks": [{ "type": "strong" }], "text": "Выбор" }]
+    },
+    { "type": "scene_break" }
+  ],
+  "after": {
+    "type": "literary_block",
+    "attrs": { "kind": "author_note" },
+    "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Примечание" }] }]
+  },
+  "containers": [
+    {
+      "created": {
+        "type": "spoiler",
+        "attrs": { "label": "Спойлер" },
+        "content": [{ "type": "paragraph", "content": [] }]
+      },
+      "wrap_label": "Финал сцены",
+      "copied": {
+        "type": "spoiler",
+        "attrs": { "label": "Финал" },
+        "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Тайна" }] }]
+      },
+      "empty_shell": {
+        "type": "spoiler",
+        "attrs": { "label": "Финал" },
+        "content": [{ "type": "paragraph", "content": [] }]
+      },
+      "recursion": "kwdj.recursive_spoiler"
+    },
+    {
+      "created": {
+        "type": "disclosure",
+        "attrs": { "label": "Подробнее" },
+        "content": [{ "type": "paragraph", "content": [] }]
+      },
+      "wrap_label": "Что осталось",
+      "copied": {
+        "type": "disclosure",
+        "attrs": { "label": "Подробнее" },
+        "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Справка" }] }]
+      },
+      "empty_shell": {
+        "type": "disclosure",
+        "attrs": { "label": "Подробнее" },
+        "content": [{ "type": "paragraph", "content": [] }]
+      },
+      "recursion": "kwdj.recursive_disclosure"
+    }
+  ]
+}

@@ -236,10 +236,8 @@ export async function exerciseNotes(port, packet) {
   return { module: 'present', codec: cases, commands, runtimeRecipe: 'passed', simultaneousFrozenD0D1: port.multiple };
 }
 
-// Mandatory SDK2 inventory: original15, OSR-39 appended16th, OSR-40 appended17th,
-// OSR-47 appended insert-fragment as the ABI2-only18th; ABI1 remains17.
-// SDK2 advertises ASCII-sorted registry IDs. This packet selects no KWDJ recipe;
-// the separate compiled/runtime recipe gates cover base18 plus one recipe19.
+// This packet checks the mandatory SDK2 command IDs in registry order.
+// KWDJ runtime recipes are covered by their own registry test.
 const kwdjMandatoryCommands = Object.freeze([
   'org.klenwriter.kwdj/command/enter',
   'org.klenwriter.kwdj/command/shift-enter',
@@ -259,6 +257,15 @@ const kwdjMandatoryCommands = Object.freeze([
   'org.klenwriter.kwdj/command/dismiss-slash',
   'org.klenwriter.kwdj/command/delete-backward',
   'org.klenwriter.kwdj/command/delete-selection',
+  'org.klenwriter.kwdj/command/set-literary-kind',
+  'org.klenwriter.kwdj/command/wrap-literary-block',
+  'org.klenwriter.kwdj/command/unwrap-literary-block',
+  'org.klenwriter.kwdj/command/set-container-label',
+  'org.klenwriter.kwdj/command/wrap-labeled-container',
+  'org.klenwriter.kwdj/command/unwrap-labeled-container',
+  'org.klenwriter.kwdj/command/set-warning-kind',
+  'org.klenwriter.kwdj/command/wrap-warning',
+  'org.klenwriter.kwdj/command/unwrap-warning',
 ].sort());
 
 export async function exerciseKwdj(port, packet) {
@@ -286,7 +293,7 @@ export async function exerciseKwdj(port, packet) {
         if (c.expectedCanonical !== undefined && c.expectedCanonical !== null) equal(actual, c.expectedCanonical, `${c.id}: KWDJ literal canonical`);
         else equal(JSON.parse(actual), JSON.parse(c.input), `${c.id}: independently constructed resource semantics`);
         check((await handle.context()).build_id === port.manifest.build_id, 'KWDJ build context');
-        equal(ok(await handle.call({ kind: 'catalog' })).commands, kwdjMandatoryCommands, 'KWDJ exact mandatory18 catalog');
+        equal(ok(await handle.call({ kind: 'catalog' })).commands, kwdjMandatoryCommands, 'KWDJ exact mandatory catalog');
         if (!checkedDeleteBackward) {
           const before = await state(handle), beforeIds = await identities(handle), beforeEvents = await events(handle);
           equal(before.selection, null, 'KWDJ initial selection for strict command admission');
