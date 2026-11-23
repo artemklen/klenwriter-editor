@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vanilla editor alpha</title>
+<link rel="stylesheet" href="%%EDITOR_CSS%%">
+<link rel="stylesheet" href="%%UI_CSS%%">
+<link rel="stylesheet" href="/example.css">
+<script type="importmap">%%IMPORT_MAP%%</script>
+<main>
+  <h1>Vanilla editor alpha</h1>
+  <fieldset id="controls" disabled aria-label="Document actions">
+    <label for="profile">Profile</label>
+    <select id="profile">
+      <option value="kwdj">KWDJ</option>
+      <option value="notes">Generic Notes</option>
+    </select>
+    <button type="button" id="undo">Undo</button>
+    <button type="button" id="redo">Redo</button>
+    <button type="button" id="save">Save</button>
+    <button type="button" id="reopen">Reopen saved</button>
+    <section id="notes-extension" hidden>
+      <h2>Notes extension</h2>
+      <p>Run the D1 callout recipe on a copy of this note.</p>
+      <button type="button" id="insert-callout">Insert callout</button>
+      <button type="button" id="undo-callout" disabled>Undo callout</button>
+      <details>
+        <summary>Extension copy JSON</summary>
+        <pre id="extension-canonical"></pre>
+      </details>
+    </section>
+  </fieldset>
+  <p role="status"><span id="status">Loading editor</span></p>
+  <div id="editor-toolbar"></div>
+  <div id="editor" role="textbox" aria-label="Document" aria-multiline="true"></div>
+  <div id="editor-gutter"></div>
+  <div id="editor-entry"></div>
+  <section id="link-dialog" role="dialog" aria-modal="true" aria-labelledby="link-heading" hidden>
+    <form>
+      <h2 id="link-heading">Insert link</h2>
+      <label>Link URL <input id="link-url" type="text" inputmode="url" autocomplete="off"></label>
+      <button type="submit" tabindex="0">Apply</button>
+      <button id="cancel-link" type="button" tabindex="0">Cancel</button>
+    </form>
+  </section>
+  <details>
+    <summary>Canonical JSON</summary>
+    <pre id="canonical"></pre>
+  </details>
+</main>
+<script type="module" src="/app.mjs"></script>
+</html>

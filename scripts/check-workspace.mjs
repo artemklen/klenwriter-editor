@@ -84,7 +84,7 @@ for (const pkg of metadata.packages) {
 }
 const lock = JSON.parse(readFileSync('package-lock.json', 'utf8'));
 // ADR-005/006: optional concrete-profile subpaths; parse5 belongs only to KWDJ.
-const packageGraph = { wasm: [], sdk: ['wasm'], dom: ['sdk'], kwdj: ['sdk', 'dom'], vanilla: ['dom'], angular: ['vanilla'], ui: ['dom','sdk'] };
+const packageGraph = { wasm: [], sdk: ['wasm'], dom: ['sdk'], kwdj: ['sdk', 'dom'], vanilla: ['dom','ui'], angular: ['vanilla'], ui: ['dom','sdk'] };
 for (const [name, allowed] of Object.entries(packageGraph)) {
   const manifest = JSON.parse(readFileSync(`packages/${name}/package.json`, 'utf8'));
   const runtime = [...allowed.map(name => identity.web[name].name), ...(name === 'kwdj' ? ['parse5'] : [])];

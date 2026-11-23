@@ -1,0 +1,70 @@
+/* SPDX-License-Identifier: MIT OR Apache-2.0 */
+:root {
+  color-scheme: light dark;
+  font: 100%/1.5 system-ui, sans-serif;
+}
+
+main {
+  max-width: 46rem;
+  margin: 3rem auto;
+  padding: 0 1.25rem;
+}
+
+#controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .5rem;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+button, select {
+  font: inherit;
+  padding: .375rem .75rem;
+}
+
+#notes-extension {
+  flex-basis: 100%;
+  min-width: 0;
+}
+
+#editor {
+  border: 1px solid GrayText;
+  min-height: 10rem;
+  padding: .75rem 1rem;
+}
+
+#link-dialog:not([hidden]) {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 50%);
+}
+
+#link-dialog form {
+  max-width: calc(100vw - 2rem);
+  padding: 1.25rem;
+  background: Canvas;
+  color: CanvasText;
+}
+
+#link-dialog h2 {
+  margin-top: 0;
+}
+
+#link-dialog label {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+details {
+  margin-top: 1rem;
+}
+
+pre {
+  overflow: auto;
+}

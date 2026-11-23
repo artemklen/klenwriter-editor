@@ -4,7 +4,7 @@ import type { CreateEditorOptionsV2, DeepReadonly, EditorControllerV2, EventDto,
 import { admitCatalog, isRendererCatalog } from './catalog.js';
 import { domRefusal } from './refusal.js';
 import { fields, ownConfiguration, ownInput } from './ownership.js';
-import { createDomView } from './view.js';
+import { createDomView, domRegionLimits } from './view.js';
 import type { DomView } from './view.js';
 import { SelectionOwner } from './selection.js';
 import type { ResultFocusPermit } from './selection.js';
@@ -21,6 +21,46 @@ const isFailure = (value: unknown): value is DomRefusal => !!value && (value as 
 const emptyDestroyed = (): Submission => Object.freeze({ status: 'completed', response: { status: 'ok' as const, value: { kind: 'destroyed' as const } } });
 const mountedHosts = new WeakSet<HTMLElement>();
 const MODES = new Set<InteractionMode>(['editable', 'readOnly', 'disabled']);
+
+type NodeAdmission = { readonly unsupportedTypes: readonly string[] } | { readonly failure: Response | DomRefusal };
+
+function inspectNodeTypes(
+  controller: EditorControllerV2, allowed: ReadonlySet<string>, phase: 'mount' | 'replace',
+): NodeAdmission {
+  const stateReply = controller.read({ kind: 'state' });
+  if (stateReply.status !== 'ok') return { failure: stateReply };
+  if (stateReply.value.kind !== 'state') return { failure: domRefusal('dom.presentation_unsupported', phase) };
+
+  const { root, stamp } = stateReply.value.state;
+  const pending: { id: string; parent: string | null; depth: number }[] = [{ id: root, parent: null, depth: 0 }];
+  const visited = new Set<string>();
+  const unsupported = new Set<string>();
+  while (pending.length) {
+    const item = pending.pop()!;
+    if (item.depth > domRegionLimits.depth || visited.size >= domRegionLimits.nodes || visited.has(item.id)) {
+      return { failure: domRefusal('dom.reconcile_limit', phase, null, item.id) };
+    }
+    const reply = controller.read({ kind: 'node', stamp, node: item.id });
+    if (reply.status !== 'ok') return { failure: reply };
+    if (reply.value.kind !== 'node') return { failure: domRefusal('dom.presentation_unsupported', phase) };
+    const node = reply.value.node;
+    const nodeStamp = node.stamp;
+    const matchesStamp = nodeStamp.session === stamp.session && nodeStamp.generation === stamp.generation
+      && nodeStamp.revision === stamp.revision && nodeStamp.selection_epoch === stamp.selection_epoch
+      && nodeStamp.history_epoch === stamp.history_epoch;
+    if (!matchesStamp || node.id !== item.id || node.parent !== item.parent
+        || item.parent === null && (node.primitive !== 'root' || node.type_id !== '')) {
+      return { failure: domRefusal('dom.presentation_unsupported', phase, null, item.id) };
+    }
+    visited.add(item.id);
+    if (item.parent !== null && !allowed.has(node.type_id)) unsupported.add(node.type_id);
+    if (node.children.length > domRegionLimits.nodes - visited.size - pending.length) {
+      return { failure: domRefusal('dom.reconcile_limit', phase, null, item.id) };
+    }
+    for (const child of node.children) pending.push({ id: child, parent: item.id, depth: item.depth + 1 });
+  }
+  return { unsupportedTypes: Object.freeze([...unsupported].sort()) };
+}
 
 interface RenderOptions {
   readonly textRepresentation: DomTextRepresentation;
@@ -46,6 +86,7 @@ class MountedOwner implements MountedEditor {
   #controller: EditorControllerV2 | null = null;
   #configuration: CreateEditorOptionsV2 | null = null;
   readonly #renderOptions!: RenderOptions;
+  readonly #allowedNodeTypes?: ReadonlySet<string>;
   #catalog: RendererCatalog | null = null;
   #context: DeepReadonly<SessionContextV2> | null = null;
   #view: DomView | null = null;
@@ -163,7 +204,7 @@ class MountedOwner implements MountedEditor {
       ?? (this.#composing || this.#view?.hasProvisional() || this.#input?.isProtected()?this.#failure('dom.composition_conflict','clipboard'):null)
       ?? (this.#busy()?this.#failure('dom.busy','clipboard'):null);
   }
-  constructor(configuration: MountEditorOptions) {
+  constructor(configuration: MountEditorOptions, allowedNodeTypes?: readonly string[]) {
     this.ready = new Promise(resolve => { this.#resolve = resolve; });
     try {
       const options = fields(configuration);
@@ -177,6 +218,10 @@ class MountedOwner implements MountedEditor {
       this.#original = ownInput(editor.input as Uint8Array);
       const nativeOptions = ownConfiguration(editor.options as CreateEditorOptionsV2['options']);
       if (nativeOptions.abi !== 'editor-sdk/2') throw new TypeError();
+      const allowed = allowedNodeTypes === undefined ? undefined : ownConfiguration(allowedNodeTypes);
+      if (allowed !== undefined && (!Array.isArray(allowed) || allowed.some(type => typeof type !== 'string' || type === ''))) {
+        throw new TypeError();
+      }
       if (editor.loader !== undefined && typeof editor.loader !== 'function' || editor.onCallbackError !== undefined && typeof editor.onCallbackError !== 'function') throw new TypeError();
       for (const callback of ['onRecovery','onRefusal']) if (options[callback] !== undefined && typeof options[callback] !== 'function') throw new TypeError();
       if(options.clipboard!==undefined){
@@ -209,8 +254,13 @@ class MountedOwner implements MountedEditor {
       element.setAttribute('role','textbox');
       element.setAttribute('aria-multiline','true');
       element.setAttribute('aria-busy','true');
-      this.#controller = createEditor(this.#configuration);
-      void this.#initialize();
+      if (allowed === undefined) {
+        this.#controller = createEditor(this.#configuration);
+        void this.#initialize();
+      } else {
+        this.#allowedNodeTypes = new Set(allowed);
+        void this.#initializeWithAdmission(this.#allowedNodeTypes);
+      }
     } catch {
       this.#lifecycle = 'recoveryRequired';
       this.#element?.setAttribute('aria-busy','false');
@@ -318,6 +368,47 @@ class MountedOwner implements MountedEditor {
   #state(): DeepReadonly<StateDto> | null {
     const result = this.#controller ? this.#nativeRead({ kind:'state' }) : null;
     return result?.status === 'ok' && result.value.kind === 'state' ? result.value.state : null;
+  }
+  async #initializeWithAdmission(allowed: ReadonlySet<string>): Promise<void> {
+    const configuration = this.#configuration!;
+    const loader = configuration.loader;
+    let loaded: ReturnType<NonNullable<CreateEditorOptionsV2['loader']>> | undefined;
+    // One custom loader result serves the preflight and the accepted editor.
+    const shared = loader ? { ...configuration, loader: () => loaded ??= loader() } : configuration;
+    const probe = createEditor({ ...shared, options: { ...shared.options, access: 'read_only' } });
+    this.#temporary = probe;
+    let admission: NodeAdmission;
+    try {
+      const ready = await probe.ready;
+      admission = ready.status === 'ok' ? inspectNodeTypes(probe, allowed, 'mount') : { failure: ready };
+    } catch {
+      admission = { failure: domRefusal('dom.presentation_unsupported', 'mount') };
+    } finally {
+      const disposal = probe.destroy();
+      if (disposal.status === 'queued') await disposal.completion;
+      if (this.#temporary === probe) this.#temporary = null;
+    }
+    if (this.#lifecycle !== 'loading') return;
+
+    const unsupportedTypes = 'unsupportedTypes' in admission ? admission.unsupportedTypes : undefined;
+    const failure = 'failure' in admission ? admission.failure
+      : unsupportedTypes?.length ? this.#failure('dom.renderer_missing', 'mount') : null;
+    if (failure) {
+      this.#lifecycle = failure.status === 'fatal' ? 'fatal' : 'recoveryRequired';
+      this.#element?.setAttribute('aria-busy', 'false');
+      const recovery = this.#packet();
+      if (isFailure(failure)) {
+        const refusal = unsupportedTypes ? Object.freeze({ ...failure, unsupportedTypes }) : failure;
+        this.#settle({ ...refusal, response: null, recovery });
+        this.#report(refusal);
+      } else {
+        this.#settle({ status: 'sdk_failure', response: failure, recovery });
+      }
+      return;
+    }
+
+    this.#controller = createEditor(shared);
+    await this.#initialize();
   }
   async #initialize() {
     const controller = this.#controller!;
@@ -548,7 +639,10 @@ class MountedOwner implements MountedEditor {
     this.#replacement = true; this.#replacementInput = owned; this.#request = captured.request;
     let temporary: EditorControllerV2 | null = null;
     try {
-      temporary = createEditor({ ...this.#configuration!, input:owned }); this.#temporary = temporary;
+      const configuration = this.#configuration!;
+      const allowed = this.#allowedNodeTypes;
+      const options = allowed ? { ...configuration.options, access: 'read_only' as const } : configuration.options;
+      temporary = createEditor({ ...configuration, input: owned, options }); this.#temporary = temporary;
       const response = await temporary.ready;
       if (this.#lifecycle !== 'ready') return this.#report(this.#failure('dom.disposed','replace'));
       if (response.status !== 'ok') return { status:'completed',response };
@@ -556,6 +650,17 @@ class MountedOwner implements MountedEditor {
       const binding = context ? admitCatalog(this.#catalog!,context) : this.#failure('dom.renderer_binding_mismatch','replace');
       if (binding) return this.#report(binding);
       if (!same(context,this.#context)) return this.#report(this.#failure('dom.renderer_binding_mismatch','replace'));
+      if (allowed) {
+        const admission = inspectNodeTypes(temporary, allowed, 'replace');
+        if ('failure' in admission) {
+          return isFailure(admission.failure) ? this.#report(admission.failure)
+            : { status: 'completed', response: admission.failure };
+        }
+        if (admission.unsupportedTypes.length) {
+          const failure = this.#failure('dom.renderer_missing', 'replace');
+          return this.#report(Object.freeze({ ...failure, unsupportedTypes: admission.unsupportedTypes }));
+        }
+      }
       const preflightElement = this.#element!.ownerDocument.createElement('div');
       let readFailure: Response | null = null;
       const preflight = createDomView({ element:preflightElement,catalog:this.#catalog!,...this.#renderOptions,
@@ -642,9 +747,12 @@ class MountedOwner implements MountedEditor {
     return this.#receipt;
   }
   resources(): MountedResourceCounts {
-    const sdk = this.#controller?.resources() ?? {lifecycle:'destroyed' as const,sessions:0,listeners:0,queued_mutations:0,queued_bytes:0,pending_tickets:0,host_requests:0,task_continuations:0,loading_deadlines:0,original_input_bytes:0,callback_errors:0,callback_error_handlers:0};
+    const sdk = (this.#controller ?? this.#temporary)?.resources() ?? {lifecycle:'destroyed' as const,sessions:0,listeners:0,queued_mutations:0,queued_bytes:0,pending_tickets:0,host_requests:0,task_continuations:0,loading_deadlines:0,original_input_bytes:0,callback_errors:0,callback_error_handlers:0};
     return Object.freeze({sdk,dom:Object.freeze({listeners:(this.#input?.listeners() ?? 0)+(this.#view?.layoutListeners?.() ?? 0)+this.#selectionOwner.listeners()+(this.#clipboardOwner?.listeners() ?? 0),observers:this.#observer ? 1 : 0,continuations:(this.#replacement ? 1 : 0)+this.#selectionOwner.resources().restoreTickets+this.#selectionOwner.resources().animationFrames+(this.#clipboardOwner?.resources().continuations ?? 0)+this.#inputResources.continuations+this.#hostOwner.resources().focusContinuations,retainedInputBytes:(this.#original?.byteLength ?? 0)+(this.#replacementInput?.byteLength ?? 0)+this.#inputResources.retainedInputBytes+(this.#typedRecovery?.retainedBytes??0),retainedRecoveryRegions:Math.max(this.#recovery || this.#typedRecovery || this.#view?.hasProvisional() ? 1 : 0,this.#inputResources.retainedRecoveryRegions)}),selection:this.#selectionOwner.resources(),clipboard:this.#clipboardOwner?.resources() ?? Object.freeze({pending:0,continuations:0,retainedTextBytes:0}),hostRequests:this.#hostOwner.resources(),inputObservations:this.#inputObservations.resources(),popupPresentation:this.#popupPresentation.resources(),...(this.#inputResources.typing?{typing:this.#inputResources.typing}:{})});
   }
-  nativeResources() { return this.#controller?.nativeResources() ?? null; }
+  nativeResources() { return (this.#controller ?? this.#temporary)?.nativeResources() ?? null; }
 }
-export function mountEditor(options: MountEditorOptions): MountedEditor { return new MountedOwner(options); }
+/** Optional authored node allowlist checked in a read-only session on mount and document replacement. */
+export function mountEditor(options: MountEditorOptions, allowedNodeTypes?: readonly string[]): MountedEditor {
+  return new MountedOwner(options, allowedNodeTypes);
+}
