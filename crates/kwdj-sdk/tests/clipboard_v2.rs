@@ -870,3 +870,129 @@ fn osr141_delete_selection_respects_media_and_caption_boundaries() {
     history(&mut session, "redo");
     assert_eq!(canonical_snapshot(&mut session), removed);
 }
+
+const OSR185_INSERT: &str = "org.klenwriter.kwdj/command/insert-block";
+const OSR185_BACKSPACE: &str = "org.klenwriter.kwdj/command/delete-backward";
+
+fn osr185_fixture() -> Value {
+    serde_json::from_str(include_str!(
+        "../../../tests/fixtures/osr-185-literary.json"
+    ))
+    .unwrap()
+}
+
+fn osr185_author_note_intent() -> Value {
+    json!({"kind":"insert_block","target":{"kind":"literary_block","literary_kind":"author_note"}})
+}
+
+#[test]
+fn osr185_nested_and_empty_literary_blocks_have_exact_history_and_reopen() {
+    let fixture = osr185_fixture();
+    let original = fixture["initial"].to_string();
+    for result in ["nested", "empty"] {
+        let expected = fixture[result].to_string();
+        let mut session = open(&fixture["initial"]);
+        let wrapper = role(&mut session, &[1]);
+        let original_child = role(&mut session, &[1, 0]);
+        assert_eq!(canonical_snapshot(&mut session), original);
+        let edit = if result == "nested" {
+            let point = gap(wrapper.clone(), 1);
+            select(&mut session, point.clone(), point);
+            command(&mut session, OSR185_INSERT, osr185_author_note_intent())
+        } else {
+            command(
+                &mut session,
+                "org.klenwriter.kwdj/command/remove",
+                json!({"kind":"remove","node":original_child}),
+            )
+        };
+        assert_eq!(edit["value"]["effect"], "changed", "{result}: {edit}");
+        assert_eq!(canonical_snapshot(&mut session), expected, "{result}");
+        assert_eq!(role(&mut session, &[1]), wrapper);
+        let empty_child = if result == "nested" {
+            assert_eq!(role(&mut session, &[1, 0]), original_child);
+            role(&mut session, &[1, 1, 0])
+        } else {
+            let replacement = role(&mut session, &[1, 0]);
+            assert_ne!(replacement, original_child);
+            replacement
+        };
+        let point = gap(empty_child, 0);
+        let changed = state(&mut session);
+        assert_eq!(changed["selection"], json!({"anchor":point,"focus":point}));
+        assert_eq!(changed["stamp"]["revision"], "1");
+        assert_eq!(changed["history"]["undo_entries"], "1");
+        undo(&mut session);
+        assert_eq!(canonical_snapshot(&mut session), original, "{result}");
+        assert_eq!(role(&mut session, &[1, 0]), original_child);
+        history(&mut session, "redo");
+        let saved = canonical_snapshot(&mut session);
+        assert_eq!(saved, expected, "{result}");
+        let mut reopened = open_bytes(saved.as_bytes(), Value::Null);
+        assert_eq!(canonical_snapshot(&mut reopened), expected, "{result}");
+        assert_eq!(state(&mut reopened)["history"]["undo_entries"], "0");
+    }
+}
+
+fn osr185_refusal(
+    session: &mut DistributionSession,
+    id: &str,
+    payload: Value,
+    original: &str,
+    expected: &Value,
+) {
+    let before = state(session);
+    let reply = command(session, id, payload);
+    assert_eq!(reply["status"], "refused", "{reply}");
+    assert_eq!(reply["diagnostic"]["code"], expected["code"], "{reply}");
+    assert_eq!(reply["diagnostic"]["path"], expected["path"], "{reply}");
+    assert_eq!(state(session), before);
+    assert_eq!(canonical_snapshot(session), original);
+}
+
+#[test]
+fn osr185_literary_boundaries_and_restricted_parents_refuse_atomically() {
+    let fixture = osr185_fixture();
+    let expected = &fixture["refusals"];
+    let original = fixture["initial"].to_string();
+    let mut session = open(&fixture["initial"]);
+    let first_child = role(&mut session, &[1, 0, 0]);
+    let point = text(first_child.clone(), 0);
+    select(&mut session, point.clone(), point);
+    osr185_refusal(
+        &mut session,
+        OSR185_BACKSPACE,
+        json!({"kind":"delete_backward"}),
+        &original,
+        &expected["first_child_backspace"],
+    );
+    let previous = role(&mut session, &[0, 0]);
+    select(&mut session, text(previous, 6), text(first_child, 1));
+    osr185_refusal(
+        &mut session,
+        "org.klenwriter.kwdj/command/delete-selection",
+        json!({"kind":"delete_selection"}),
+        &original,
+        &expected["crossing_delete"],
+    );
+
+    let restricted = fixture["restricted"].to_string();
+    let media_id = &fixture["restricted"]["content"][1]["attrs"]["media_asset_id"];
+    let mut session = open_bytes_with_media(
+        restricted.as_bytes(),
+        Value::Null,
+        json!([{"id":media_id,"status":"exists"}]),
+    );
+    for (index, test) in ["verse_target", "media_target"].into_iter().enumerate() {
+        let parent = role(&mut session, &[index]);
+        let point = gap(parent, 1);
+        select(&mut session, point.clone(), point);
+        osr185_refusal(
+            &mut session,
+            OSR185_INSERT,
+            osr185_author_note_intent(),
+            &restricted,
+            &expected[test],
+        );
+    }
+}
