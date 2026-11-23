@@ -1309,6 +1309,29 @@ fn unwrap_container<V: CandidateRead>(
     )?;
     Ok(())
 }
+
+fn wrap_blocks<I: Copy + Eq + Ord>(
+    parent: I,
+    at: usize,
+    blocks: &[I],
+    wrapper: Node,
+    plan: &mut PlanBuilder<'_, I>,
+) -> Result<(), KwdjError> {
+    let operation = fragment(plan, parent.into(), at, wrapper)?;
+    for (offset, block) in blocks.iter().enumerate() {
+        let parent = created(operation, &[0], plan)?;
+        push(
+            plan,
+            Operation::Move {
+                node: (*block).into(),
+                parent,
+                before_index: offset,
+            },
+        )?;
+    }
+    Ok(())
+}
+
 fn toggle_quote<V: CandidateRead>(
     view: &V,
     state: CommandState<'_, V::Id>,
@@ -1326,18 +1349,7 @@ fn toggle_quote<V: CandidateRead>(
         });
     }
     let quote = empty_node("blockquote", Primitive::Container, Attributes::new(), plan)?;
-    let operation = fragment(plan, parent.into(), at, quote)?;
-    for (offset, block) in blocks.iter().enumerate() {
-        let parent = created(operation, &[0], plan)?;
-        push(
-            plan,
-            Operation::Move {
-                node: (*block).into(),
-                parent,
-                before_index: offset,
-            },
-        )?;
-    }
+    wrap_blocks(parent, at, &blocks, quote, plan)?;
     Ok(CommandPresentation {
         active: Some(ActiveState::Off),
     })
@@ -1703,15 +1715,19 @@ fn insert_author_note<V: CandidateRead>(
     state: CommandState<'_, V::Id>,
     plan: &mut PlanBuilder<'_, V::Id>,
 ) -> Result<CommandPresentation, KwdjError> {
-    let attributes = Attributes::from([(
-        key("kind", plan)?,
-        Attribute::String(key(AUTHOR_NOTE, plan)?),
-    )]);
-    let mut note = empty_node("literary_block", Primitive::Container, attributes, plan)?;
+    let mut note = author_note(plan)?;
     let paragraph = empty_node("paragraph", Primitive::TextBlock, Attributes::new(), plan)?;
     bytes(plan, size_of::<Node>())?;
     note.children.push(paragraph);
     insert_block_node(view, state, note, None, plan)
+}
+
+fn author_note<I>(plan: &mut PlanBuilder<'_, I>) -> Result<Node, KwdjError> {
+    let attributes = Attributes::from([(
+        key("kind", plan)?,
+        Attribute::String(key(AUTHOR_NOTE, plan)?),
+    )]);
+    empty_node("literary_block", Primitive::Container, attributes, plan)
 }
 
 fn set_literary_kind<V: CandidateRead>(
@@ -1728,6 +1744,52 @@ fn set_literary_kind<V: CandidateRead>(
         let value = Attribute::String(key(AUTHOR_NOTE, plan)?);
         attr(plan, id.into(), "kind", Some(value))?;
     }
+    Ok(CommandPresentation::default())
+}
+
+fn wrap_literary_block<V: CandidateRead>(
+    view: &V,
+    state: CommandState<'_, V::Id>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let selected = selection(state)?;
+    let anchor = outside_gap(view, selected.anchor, plan)?;
+    let focus = outside_gap(view, selected.focus, plan)?;
+    match (anchor, focus) {
+        (Some((parent, a)), Some((other, b))) if parent == other && a != b => {
+            let start = a.min(b);
+            let blocks = view
+                .children(parent)
+                .and_then(|children| children.get(start..a.max(b)))
+                .ok_or_else(invalid)?;
+            let note = author_note(plan)?;
+            wrap_blocks(parent, start, blocks, note, plan)?;
+        }
+        (None, None) => {
+            let blocks = selected_blocks(view, state, plan)?;
+            let first = *blocks.first().ok_or_else(unsupported)?;
+            let parent = get(view, first, plan)?.parent;
+            let start = require_contiguous_blocks(view, &blocks, parent, plan)?;
+            let note = author_note(plan)?;
+            wrap_blocks(parent, start, &blocks, note, plan)?;
+        }
+        _ => return Err(unsupported()),
+    }
+    Ok(CommandPresentation::default())
+}
+
+fn unwrap_literary_block<V: CandidateRead>(
+    view: &V,
+    id: V::Id,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let node = get(view, id, plan)?;
+    if kind(node.type_id) != "literary_block"
+        || !matches!(node.attributes.get("kind"), Some(Attribute::String(current)) if current == AUTHOR_NOTE)
+    {
+        return Err(invalid());
+    }
+    unwrap_container(view, id, plan)?;
     Ok(CommandPresentation::default())
 }
 
@@ -1916,6 +1978,8 @@ pub(super) fn prepare<V: CandidateRead>(
         KwdjIntent::InsertBlock { target } => insert_block(view, state, target, None, plan),
         KwdjIntent::InsertAuthorNote => insert_author_note(view, state, plan),
         KwdjIntent::SetLiteraryKind { node } => set_literary_kind(view, *node, plan),
+        KwdjIntent::WrapLiteraryBlock => wrap_literary_block(view, state, plan),
+        KwdjIntent::UnwrapLiteraryBlock { node } => unwrap_literary_block(view, *node, plan),
         KwdjIntent::AcceptSlash {
             target,
             range,

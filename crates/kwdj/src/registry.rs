@@ -35,6 +35,8 @@ pub fn base_registration_v2() -> ExtensionDescriptor {
         [
             crate::commands::CLIPBOARD_COMMAND_ID,
             crate::commands::SET_LITERARY_KIND_COMMAND_ID,
+            crate::commands::WRAP_LITERARY_BLOCK_COMMAND_ID,
+            crate::commands::UNWRAP_LITERARY_BLOCK_COMMAND_ID,
         ]
         .map(|id| editor_registry::CommandDescriptor::Compiled { id: id.into() }),
     );

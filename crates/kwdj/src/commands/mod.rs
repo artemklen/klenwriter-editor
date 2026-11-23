@@ -71,6 +71,10 @@ pub enum KwdjIntent<I> {
     SetLiteraryKind {
         node: I,
     },
+    WrapLiteraryBlock,
+    UnwrapLiteraryBlock {
+        node: I,
+    },
     Move {
         node: I,
         parent: I,
@@ -106,6 +110,9 @@ pub enum KwdjIntent<I> {
 
 pub const CLIPBOARD_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-fragment";
 pub const SET_LITERARY_KIND_COMMAND_ID: &str = "org.klenwriter.kwdj/command/set-literary-kind";
+pub const WRAP_LITERARY_BLOCK_COMMAND_ID: &str = "org.klenwriter.kwdj/command/wrap-literary-block";
+pub const UNWRAP_LITERARY_BLOCK_COMMAND_ID: &str =
+    "org.klenwriter.kwdj/command/unwrap-literary-block";
 pub const TYPED_INPUT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-typed-text";
 pub const RESTORE_INPUT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/restore-typed-text";
 
@@ -248,6 +255,8 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::ToggleList { .. } => KWDJ_COMMANDS[8].id,
             KwdjIntent::InsertBlock { .. } | KwdjIntent::InsertAuthorNote => KWDJ_COMMANDS[9].id,
             KwdjIntent::SetLiteraryKind { .. } => SET_LITERARY_KIND_COMMAND_ID,
+            KwdjIntent::WrapLiteraryBlock => WRAP_LITERARY_BLOCK_COMMAND_ID,
+            KwdjIntent::UnwrapLiteraryBlock { .. } => UNWRAP_LITERARY_BLOCK_COMMAND_ID,
             KwdjIntent::Move { .. } => KWDJ_COMMANDS[10].id,
             KwdjIntent::Duplicate { .. } => KWDJ_COMMANDS[11].id,
             KwdjIntent::Remove { .. } => KWDJ_COMMANDS[12].id,
@@ -270,7 +279,10 @@ impl CommandProvider for KwdjProfile<'_> {
         plan: &mut PlanBuilder<'_, V::Id>,
     ) -> Result<CommandPresentation, Self::Error> {
         Ok(match intent {
-            KwdjIntent::InsertAuthorNote | KwdjIntent::SetLiteraryKind { .. }
+            KwdjIntent::InsertAuthorNote
+            | KwdjIntent::SetLiteraryKind { .. }
+            | KwdjIntent::WrapLiteraryBlock
+            | KwdjIntent::UnwrapLiteraryBlock { .. }
                 if !self.clipboard_v2() =>
             {
                 return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());

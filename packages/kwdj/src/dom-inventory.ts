@@ -153,6 +153,22 @@ export const kwdjDomInventory = {
       },
       "id": "org.klenwriter.kwdj/command/unset-link",
       "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/unwrap-literary-block",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/unwrap-literary-block",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/wrap-literary-block",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/wrap-literary-block",
+      "owner": "org.klenwriter.kwdj/base"
     }
   ],
   "extensions": [
@@ -181,7 +197,9 @@ export const kwdjDomInventory = {
       "org.klenwriter.kwdj/command/toggle-mark",
       "org.klenwriter.kwdj/command/toggle-quote",
       "org.klenwriter.kwdj/command/transform-block",
-      "org.klenwriter.kwdj/command/unset-link"
+      "org.klenwriter.kwdj/command/unset-link",
+      "org.klenwriter.kwdj/command/unwrap-literary-block",
+      "org.klenwriter.kwdj/command/wrap-literary-block"
     ],
     "marks": [
       {
@@ -1437,5 +1455,5 @@ export const kwdjDomInventory = {
     "profile_version": "1.0.0",
     "wire_version": 1
   },
-  "registryDigest": "54b4c6ed891e4e943d4931742ce28d11ac66ad6d8c244c8633481c8cec311f8f"
+  "registryDigest": "820f975066e4219fb29a0a3e3efdab4bfcef31436a697159eced02e08aa3cc66"
 } as const;

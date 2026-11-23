@@ -15,7 +15,7 @@ export type LiteraryAuthoringKindV2 = "author_note";
 
 export type LiteraryBlockTargetV2 = { "kind": "literary_block", literary_kind: LiteraryAuthoringKindV2, };
 
-export type KwdjLiteraryIntentV2 = { "kind": "insert_block", target: LiteraryBlockTargetV2, } | { "kind": "set_literary_kind", node: string, literary_kind: LiteraryAuthoringKindV2, };
+export type KwdjLiteraryIntentV2 = { "kind": "insert_block", target: LiteraryBlockTargetV2, } | { "kind": "set_literary_kind", node: string, literary_kind: LiteraryAuthoringKindV2, } | { "kind": "wrap_literary_block", literary_kind: LiteraryAuthoringKindV2, } | { "kind": "unwrap_literary_block", node: string, };
 
 export type KwdjTypingIntentV2 = { "kind": "insert_typed_text", text: string, origin: InputOriginV2, } | { "kind": "restore_typed_text", restore: RawInputRestoreV2, };
 

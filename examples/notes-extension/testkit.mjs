@@ -236,10 +236,8 @@ export async function exerciseNotes(port, packet) {
   return { module: 'present', codec: cases, commands, runtimeRecipe: 'passed', simultaneousFrozenD0D1: port.multiple };
 }
 
-// Mandatory SDK2 inventory: original15, OSR-39 appended16th, OSR-40 appended17th,
-// OSR-47 appended insert-fragment as the ABI2-only18th; ABI1 remains17.
-// SDK2 advertises ASCII-sorted registry IDs. This packet selects no KWDJ recipe;
-// the separate compiled/runtime recipe gates cover base18 plus one recipe19.
+// This packet checks the mandatory SDK2 command IDs in registry order.
+// KWDJ runtime recipes are covered by their own registry test.
 const kwdjMandatoryCommands = Object.freeze([
   'org.klenwriter.kwdj/command/enter',
   'org.klenwriter.kwdj/command/shift-enter',
@@ -260,6 +258,8 @@ const kwdjMandatoryCommands = Object.freeze([
   'org.klenwriter.kwdj/command/delete-backward',
   'org.klenwriter.kwdj/command/delete-selection',
   'org.klenwriter.kwdj/command/set-literary-kind',
+  'org.klenwriter.kwdj/command/wrap-literary-block',
+  'org.klenwriter.kwdj/command/unwrap-literary-block',
 ].sort());
 
 export async function exerciseKwdj(port, packet) {

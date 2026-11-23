@@ -461,6 +461,107 @@ test('OSR-183 packaged SDK2 retargets a preserved letter with exact children and
   });
 });
 
+const osr184Wrap = 'org.klenwriter.kwdj/command/wrap-literary-block';
+const osr184Unwrap = 'org.klenwriter.kwdj/command/unwrap-literary-block';
+const osr184WrapIntent = { kind: 'wrap_literary_block', literary_kind: 'author_note' };
+const osr184Blocks = [
+  { type: 'paragraph', content: [{ type: 'text', text: 'Before' }] },
+  { type: 'paragraph', attrs: { align: 'right' }, content: [
+    { type: 'text', text: 'Note 😀', marks: [{ type: 'strong' }] },
+    { type: 'hard_break' },
+    { type: 'text', text: 'Continuation' },
+  ] },
+  { type: 'scene_break' },
+  { type: 'blockquote', content: [{ type: 'paragraph', content: [
+    { type: 'text', text: 'Quotation', marks: [{ type: 'emphasis' }] },
+  ] }] },
+  { type: 'literary_block', attrs: { kind: 'letter' }, content: [
+    { type: 'paragraph', content: [{ type: 'text', text: 'Preserved' }] },
+  ] },
+];
+function osr184Select(editor, anchorParent, anchorIndex, focusParent, focusIndex) {
+  const gap = (parent, index) => ({ kind: 'child', parent, index, affinity: 'after' });
+  const selection = { anchor: gap(anchorParent, anchorIndex), focus: gap(focusParent, focusIndex) };
+  accepted(completed(editor.submit({ kind: 'set_selection', stamp: editor.capture(), selection })));
+  assert.deepEqual(structuredClone(state(editor).selection), selection);
+}
+function osr184Capability(editor, dto, expected) {
+  const before = state(editor);
+  const availability = accepted(editor.query({ kind: 'query_command', stamp: editor.capture(), command: dto }));
+  assert.equal(availability.available, true, JSON.stringify(availability));
+  assert.equal(availability.effect, 'changed');
+  assert.deepEqual(state(editor), before);
+  assert.equal(canonical(editor), expected);
+}
+
+test('OSR-184 packaged SDK2 wraps and unwraps heterogeneous siblings with exact history and IDs', async () => {
+  const input = osr183Doc(osr184Blocks);
+  const wrapped = osr183Doc([
+    osr184Blocks[0],
+    { type: 'literary_block', attrs: { kind: 'author_note' }, content: osr184Blocks.slice(1, 4) },
+    osr184Blocks[4],
+  ]);
+  await withLiteraryCommandSession(input, editor => {
+    const rootId = state(editor).root;
+    const originalIds = root(editor).children;
+    const children = originalIds.slice(1, 4);
+    const paragraphInline = node(editor, children[0]).children;
+    const quoteChildren = node(editor, children[2]).children;
+    osr184Select(editor, rootId, 1, rootId, 4);
+
+    const wrap = createCommand(osr184Wrap, osr184WrapIntent);
+    osr184Capability(editor, wrap, input);
+    assert.deepEqual(kwdjCommand(osr184WrapIntent), wrap);
+    assert.equal(accepted(osr183Wire(editor, wrap)).effect, 'changed');
+    assert.equal(canonical(editor), wrapped);
+    assert.equal(state(editor).history.undo_entries, '1');
+    const wrappedIds = root(editor).children;
+    const wrapper = wrappedIds[1];
+    assert.deepEqual(wrappedIds, [originalIds[0], wrapper, originalIds[4]]);
+    const note = node(editor, wrapper);
+    assert.equal(note.type_id, 'org.klenwriter.kwdj/literary_block');
+    assert.deepEqual(structuredClone(note.attributes.kind), { kind: 'string', value: 'author_note' });
+    assert.deepEqual(note.children, children);
+    assert.deepEqual(node(editor, children[0]).children, paragraphInline);
+    assert.deepEqual(node(editor, children[2]).children, quoteChildren);
+
+    osr183History(editor, 'undo', input);
+    assert.deepEqual(root(editor).children, originalIds);
+    osr183History(editor, 'redo', wrapped);
+    assert.deepEqual(root(editor).children, wrappedIds);
+    assert.deepEqual(node(editor, wrapper).children, children);
+
+    const intent = { kind: 'unwrap_literary_block', node: wrapper };
+    const unwrap = createCommand(osr184Unwrap, intent);
+    osr184Capability(editor, unwrap, wrapped);
+    assert.deepEqual(kwdjCommand(intent), unwrap);
+    assert.equal(accepted(osr183Wire(editor, unwrap)).effect, 'changed');
+    assert.equal(canonical(editor), input);
+    assert.equal(state(editor).history.undo_entries, '2');
+    assert.deepEqual(root(editor).children, originalIds);
+    assert.deepEqual(node(editor, children[0]).children, paragraphInline);
+    assert.deepEqual(node(editor, children[2]).children, quoteChildren);
+    osr183History(editor, 'undo', wrapped);
+    assert.deepEqual(root(editor).children, wrappedIds);
+    assert.deepEqual(node(editor, wrapper).children, children);
+    osr183History(editor, 'redo', input);
+    assert.deepEqual(root(editor).children, originalIds);
+  });
+});
+
+test('OSR-184 packaged SDK2 refuses mixed-parent wrap and non-author-note unwrap atomically', async () => {
+  const input = osr183Doc(osr184Blocks);
+  await withLiteraryCommandSession(input, editor => {
+    const ids = root(editor).children;
+    osr184Select(editor, state(editor).root, 1, ids[3], 1);
+    osr183Denied(editor, osr184Wrap, osr184WrapIntent, input, 'kwdj.command_unsupported_context');
+    for (const nodeId of [ids[3], ids[4]]) {
+      osr183Denied(editor, osr184Unwrap, { kind: 'unwrap_literary_block', node: nodeId }, input,
+        'kwdj.command_invalid_target');
+    }
+  });
+});
+
 test('packaged SDK: two listeners read revision r before queued command; second same capture refuses stale', async () => {
   const context = await open(); const { editor } = context;
   try {

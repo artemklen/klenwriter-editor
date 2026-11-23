@@ -47,6 +47,12 @@ pub enum KwdjLiteraryIntentV2 {
         node: String,
         literary_kind: LiteraryAuthoringKindV2,
     },
+    WrapLiteraryBlock {
+        literary_kind: LiteraryAuthoringKindV2,
+    },
+    UnwrapLiteraryBlock {
+        node: String,
+    },
 }
 
 #[cfg_attr(

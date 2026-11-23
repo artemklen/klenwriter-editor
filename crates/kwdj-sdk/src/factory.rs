@@ -348,7 +348,7 @@ mod tests {
         assert!(matches!(session.initialization(), SdkResponse::Ok { .. }));
         assert!(session.context().is_some());
         let catalog = call(&mut session, json!({"kind":"catalog"}));
-        assert_eq!(catalog["value"]["commands"].as_array().unwrap().len(), 20);
+        assert_eq!(catalog["value"]["commands"].as_array().unwrap().len(), 22);
         assert!(
             catalog["value"]["commands"]
                 .as_array()
@@ -565,6 +565,9 @@ mod tests {
                                 let mut sorted = expected.clone();
                                 sorted.push(editor_kwdj::commands::CLIPBOARD_COMMAND_ID);
                                 sorted.push(editor_kwdj::commands::SET_LITERARY_KIND_COMMAND_ID);
+                                sorted.push(editor_kwdj::commands::WRAP_LITERARY_BLOCK_COMMAND_ID);
+                                sorted
+                                    .push(editor_kwdj::commands::UNWRAP_LITERARY_BLOCK_COMMAND_ID);
                                 sorted.sort_unstable();
                                 assert_eq!(actual, sorted, "{id}: frozenV2catalog IDs");
                                 // ABI1 catalog order remains the original compiled order.
@@ -1062,6 +1065,157 @@ mod tests {
             ),
         ] {
             osr183_denied(&mut session, OSR183_SET_KIND, payload, &expected, code);
+        }
+    }
+
+    const OSR184_WRAP: &str = "org.klenwriter.kwdj/command/wrap-literary-block";
+    const OSR184_UNWRAP: &str = "org.klenwriter.kwdj/command/unwrap-literary-block";
+
+    fn osr184_blocks() -> Value {
+        json!([
+            {"type":"paragraph","content":[{"type":"text","text":"Before"}]},
+            {"type":"paragraph","attrs":{"align":"right"},"content":[
+                {"type":"text","text":"Note 😀","marks":[{"type":"strong"}]},
+                {"type":"hard_break"},
+                {"type":"text","text":"Continuation"}
+            ]},
+            {"type":"scene_break"},
+            {"type":"blockquote","content":[{"type":"paragraph","content":[
+                {"type":"text","text":"Quotation","marks":[{"type":"emphasis"}]}
+            ]}]},
+            {"type":"literary_block","attrs":{"kind":"letter"},"content":[
+                {"type":"paragraph","content":[{"type":"text","text":"Preserved"}]}
+            ]}
+        ])
+    }
+
+    fn osr184_select(
+        session: &mut DistributionSession,
+        anchor_parent: &Value,
+        anchor_index: usize,
+        focus_parent: &Value,
+        focus_index: usize,
+    ) {
+        let range = json!({
+            "anchor":{"kind":"child","parent":anchor_parent,"index":anchor_index,"affinity":"after"},
+            "focus":{"kind":"child","parent":focus_parent,"index":focus_index,"affinity":"after"}
+        });
+        let stamp = state(session)["stamp"].clone();
+        let reply = call(
+            session,
+            json!({"kind":"set_selection","stamp":stamp,"selection":range}),
+        );
+        assert_eq!(reply["status"], "ok", "{reply}");
+        assert_eq!(state(session)["selection"], range);
+    }
+
+    #[test]
+    fn osr184_structural_wrap_and_explicit_unwrap_preserve_subtrees_and_history() {
+        let blocks = osr184_blocks();
+        let input = osr183_literal(blocks.clone());
+        let wrapped = osr183_literal(json!([
+            blocks[0],
+            {"type":"literary_block","attrs":{"kind":"author_note"},"content":blocks.as_array().unwrap()[1..4]},
+            blocks[4]
+        ]));
+        let mut session = osr183_open(&input);
+        let root = state(&mut session)["root"].clone();
+        let original_ids = osr183_node(&mut session, &root)["children"].clone();
+        let body_ids = json!(original_ids.as_array().unwrap()[1..4]);
+        let paragraph_inline = osr183_node(&mut session, &body_ids[0])["children"].clone();
+        let quote_children = osr183_node(&mut session, &body_ids[2])["children"].clone();
+
+        osr184_select(&mut session, &root, 4, &root, 1);
+        let before = state(&mut session);
+        let wrap = json!({"kind":"wrap_literary_block","literary_kind":"author_note"});
+        let query = osr183_command(&mut session, OSR184_WRAP, &wrap, true);
+        assert_eq!(query["value"]["available"], true, "{query}");
+        assert_eq!(query["value"]["effect"], "changed");
+        assert_eq!(state(&mut session), before);
+        assert_eq!(snapshot(&mut session), input);
+
+        let reply = osr183_command(&mut session, OSR184_WRAP, &wrap, false);
+        assert_eq!(reply["value"]["effect"], "changed", "{reply}");
+        assert_eq!(snapshot(&mut session), wrapped);
+        assert_eq!(state(&mut session)["history"]["undo_entries"], "1");
+        let wrapped_ids = osr183_node(&mut session, &root)["children"].clone();
+        let wrapper = wrapped_ids[1].clone();
+        assert_eq!(
+            wrapped_ids,
+            json!([original_ids[0], wrapper, original_ids[4]])
+        );
+        let note = osr183_node(&mut session, &wrapper);
+        assert_eq!(note["type_id"], "org.klenwriter.kwdj/literary_block");
+        assert_eq!(
+            note["attributes"]["kind"],
+            json!({"kind":"string","value":"author_note"})
+        );
+        assert_eq!(note["children"], body_ids);
+        assert_eq!(
+            osr183_node(&mut session, &body_ids[0])["children"],
+            paragraph_inline
+        );
+        assert_eq!(
+            osr183_node(&mut session, &body_ids[2])["children"],
+            quote_children
+        );
+
+        osr183_history(&mut session, "undo", &input);
+        assert_eq!(osr183_node(&mut session, &root)["children"], original_ids);
+        osr183_history(&mut session, "redo", &wrapped);
+        assert_eq!(osr183_node(&mut session, &root)["children"], wrapped_ids);
+        assert_eq!(osr183_node(&mut session, &wrapper)["children"], body_ids);
+
+        let before = state(&mut session);
+        let unwrap = json!({"kind":"unwrap_literary_block","node":wrapper});
+        let query = osr183_command(&mut session, OSR184_UNWRAP, &unwrap, true);
+        assert_eq!(query["value"]["available"], true, "{query}");
+        assert_eq!(query["value"]["effect"], "changed");
+        assert_eq!(state(&mut session), before);
+        assert_eq!(snapshot(&mut session), wrapped);
+
+        let reply = osr183_command(&mut session, OSR184_UNWRAP, &unwrap, false);
+        assert_eq!(reply["value"]["effect"], "changed", "{reply}");
+        assert_eq!(snapshot(&mut session), input);
+        assert_eq!(state(&mut session)["history"]["undo_entries"], "2");
+        assert_eq!(osr183_node(&mut session, &root)["children"], original_ids);
+        assert_eq!(
+            osr183_node(&mut session, &body_ids[0])["children"],
+            paragraph_inline
+        );
+        assert_eq!(
+            osr183_node(&mut session, &body_ids[2])["children"],
+            quote_children
+        );
+        osr183_history(&mut session, "undo", &wrapped);
+        assert_eq!(osr183_node(&mut session, &root)["children"], wrapped_ids);
+        assert_eq!(osr183_node(&mut session, &wrapper)["children"], body_ids);
+        osr183_history(&mut session, "redo", &input);
+        assert_eq!(osr183_node(&mut session, &root)["children"], original_ids);
+    }
+
+    #[test]
+    fn osr184_refuses_mixed_parent_wrap_and_non_author_note_unwrap_atomically() {
+        let input = osr183_literal(osr184_blocks());
+        let mut session = osr183_open(&input);
+        let root = state(&mut session)["root"].clone();
+        let ids = osr183_node(&mut session, &root)["children"].clone();
+        osr184_select(&mut session, &root, 1, &ids[3], 1);
+        osr183_denied(
+            &mut session,
+            OSR184_WRAP,
+            json!({"kind":"wrap_literary_block","literary_kind":"author_note"}),
+            &input,
+            "kwdj.command_unsupported_context",
+        );
+        for target in [&ids[3], &ids[4]] {
+            osr183_denied(
+                &mut session,
+                OSR184_UNWRAP,
+                json!({"kind":"unwrap_literary_block","node":target}),
+                &input,
+                "kwdj.command_invalid_target",
+            );
         }
     }
 }

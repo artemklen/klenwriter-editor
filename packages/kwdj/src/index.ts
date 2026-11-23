@@ -15,6 +15,8 @@ const commandNames: Record<(KwdjIntentDto | KwdjLiteraryIntentV2)['kind'], strin
   delete_backward: 'delete-backward',
   delete_selection: 'delete-selection',
   set_literary_kind: 'set-literary-kind',
+  wrap_literary_block: 'wrap-literary-block',
+  unwrap_literary_block: 'unwrap-literary-block',
 };
 
 /** Numeric metadata, revision/group tokens and ordered-list starts remain strings. */

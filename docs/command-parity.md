@@ -71,3 +71,6 @@ SDK2 `insert_block` takes the literary target `literary_block` with
 `literary_kind` set to `author_note`. The new container begins with an empty
 paragraph. `set_literary_kind` takes the existing literary node ID and changes
 its kind to `author_note`, preserving the container and its children.
+SDK2 `wrap_literary_block` wraps selected contiguous siblings in an
+`author_note`. `unwrap_literary_block` takes an `author_note` node ID and moves
+its children into the parent in the same order.

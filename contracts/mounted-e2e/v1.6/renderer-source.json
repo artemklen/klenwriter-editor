@@ -152,8 +152,8 @@
     },
     {
       "path": "packages/kwdj/dist/dom-inventory.js",
-      "bytes": 53783,
-      "sha256": "5df24ca5ab442a09959c5ef435b5e162ab6777d647f44c5cb2f8ef70e93d73d1"
+      "bytes": 54493,
+      "sha256": "788fd047e383a5c0724227e1a4d72cf58a676be9de148f2000dd7a674baa1a74"
     },
     {
       "path": "packages/kwdj/dist/dom.js",
@@ -162,8 +162,8 @@
     },
     {
       "path": "packages/kwdj/dist/index.js",
-      "bytes": 1917,
-      "sha256": "a12868f3ace3a9d4aed1353c8a59dcef8872428364b09935339928dffedcef7d"
+      "bytes": 2017,
+      "sha256": "7fb6997ea2f937377d5dc3c1dd15bf6bd47309666ec94ce0cb70940317b27e15"
     },
     {
       "path": "packages/kwdj/dist/slash-candidates.generated.js",
@@ -172,8 +172,8 @@
     },
     {
       "path": "packages/kwdj/dist/typing-dom-inventory.js",
-      "bytes": 54735,
-      "sha256": "209bbf7e5cacb88160002be402ee70a40e47a8f60026e5ac6ecbf6a55c5e0908"
+      "bytes": 55445,
+      "sha256": "e5d722e04e1a55d8dfa756418d3d6ce6ac6b3d91399989457d1a00dad1a7e4b4"
     },
     {
       "path": "packages/sdk/dist/context.js",
@@ -527,8 +527,8 @@
     {
       "current": {
         "path": "packages/kwdj/src/index.ts",
-        "bytes": 2340,
-        "sha256": "5587b3f98bd90c45f573c5fce60c98f0755ad00e2e26ece6faa35a69b859042b"
+        "bytes": 2436,
+        "sha256": "276d32171181f5817ae5637f37b753e1755390aa885c1018d1581bf1c58984df"
       },
       "previous": {
         "path": "packages/kwdj/src/index.ts",
@@ -537,15 +537,15 @@
       },
       "reverse": [
         295,
-        1336,
+        1432,
         "UmF3SW5wdXRSZXN0b3JlVjIgfSBmcm9tICdAa2xlbndyaXRlci9lZGl0b3Itc2RrJzsKCmV4cG9ydCB0eXBlIHsgS3dkakludGVudER0bywgQmxvY2tUYXJnZXREdG8sIExpc3RLaW5kRHRvLCBNYXJrRHRvIH0gZnJvbSAnQGtsZW53cml0ZXIvZWRpdG9yLXNkayc7Cgpjb25zdCBjb21tYW5kTmFtZXM6IFJlY29yZDxLd2RqSW50ZW50RHRvWydraW5kJ10sIHN0cmluZz4gPSB7CiAgZW50ZXI6ICdlbnRlcicsIHNoaWZ0X2VudGVyOiAnc2hpZnQtZW50ZXInLCB0b2dnbGVfbWFyazogJ3RvZ2dsZS1tYXJrJywKICBzZXRfbGluazogJ3NldC1saW5rJywgdW5zZXRfbGluazogJ3Vuc2V0LWxpbmsnLCBpbnNlcnRfdGV4dDogJ2luc2VydC10ZXh0JywKICB0cmFuc2Zvcm1fYmxvY2s6ICd0cmFuc2Zvcm0tYmxvY2snLCB0b2dnbGVfcXVvdGU6ICd0b2dnbGUtcXVvdGUnLCB0b2dnbGVfbGlzdDogJ3RvZ2dsZS1saXN0JywKICBpbnNlcnRfYmxvY2s6ICdpbnNlcnQtYmxvY2snLCBtb3ZlOiAnbW92ZScsIGR1cGxpY2F0ZTogJ2R1cGxpY2F0ZScsIHJlbW92ZTogJ3JlbW92ZScsCiAgYWNjZXB0X3NsYXNoOiAnYWNjZXB0LXNsYXNoJywgZGlzbWlzc19zbGFzaDogJ2Rpc21pc3Mtc2xhc2gnLAogIGRlbGV0ZV9iYWNrd2FyZDogJ2RlbGV0ZS1iYWNrd2FyZCcsCiAgZGVsZXRlX3NlbGVjdGlvbjogJ2RlbGV0ZS1zZWxlY3Rpb24nLAp9OwoKLyoqIE51bWVyaWMgbWV0YWRhdGEsIHJldmlzaW9uL2dyb3VwIHRva2VucyBhbmQgb3JkZXJlZC1saXN0IHN0YXJ0cyByZW1haW4gc3RyaW5ncy4gKi8KZXhwb3J0IGZ1bmN0aW9uIGt3ZGpDb21tYW5kKGludGVudDogS3dkakludGVudER0byk6IENvbW1hbmREdG8gewogIGNvbnN0IGtpbmQgPSBpbnRlbnQgJiYgdHlwZW9mIGludGVudCA9PT0gJ29iamVjdCcgPyBPYmplY3QuZ2V0T3duUHJvcGVydHlEZXNjcmlwdG9yKGludGVudCwgJ2tpbmQnKSA6IHVuZGVmaW5lZDsKICBpZiAoIWtpbmQgfHwgISgndmFsdWUnIGluIGtpbmQpIHx8IHR5cGVvZiBraW5kLnZhbHVlICE9PSAnc3RyaW5nJyB8fCAhT2JqZWN0Lmhhc093bihjb21tYW5kTmFtZXMsIGtpbmQudmFsdWUpKSB7CiAgICB0aHJvdyBuZXcgVHlwZUVycm9yKCdzZGsuaW52YWxpZF9jb21tYW5kX2tpbmQnKTsKICB9CiAgY29uc3QgbmFtZSA9IGNvbW1hbmROYW1lc1traW5kLnZhbHVlIGFzIEt3ZGpJbnRlbnREdG9bJ2tpbmQnXQ=="
       ]
     },
     {
       "current": {
         "path": "packages/wasm/src/sdk-types-v2.ts",
-        "bytes": 7293,
-        "sha256": "29304ae9bdfcb818b6737aab077872a8842ff4eb2a9951343dc777b9e6b25236"
+        "bytes": 7423,
+        "sha256": "00a1852eef1ba64dcc5dd6f62dcb37faaa83caf14368d497e3d6b9013fde9b93"
       },
       "previous": {
         "path": "packages/wasm/src/sdk-types-v2.ts",
@@ -554,7 +554,7 @@
       },
       "reverse": [
         1060,
-        347,
+        477,
         ""
       ]
     }

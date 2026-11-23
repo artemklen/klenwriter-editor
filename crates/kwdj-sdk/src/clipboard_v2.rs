@@ -10,7 +10,8 @@ use editor_engine::{NodeId, SessionKey};
 use editor_kwdj::{
     KwdjProfile, KwdjProfileError, Profile,
     commands::{
-        CLIPBOARD_COMMAND_ID, KWDJ_COMMANDS, KwdjIntent, SET_LITERARY_KIND_COMMAND_ID, clipboard,
+        CLIPBOARD_COMMAND_ID, KWDJ_COMMANDS, KwdjIntent, SET_LITERARY_KIND_COMMAND_ID,
+        UNWRAP_LITERARY_BLOCK_COMMAND_ID, WRAP_LITERARY_BLOCK_COMMAND_ID, clipboard,
     },
 };
 use editor_protocol::{CommandDto, DiagnosticDto};
@@ -78,16 +79,36 @@ impl BridgeAdapter<KwdjProfile<'static>> for ClipboardAdapterV2 {
             Ok(KwdjIntent::InsertFragment {
                 fragment: clipboard::decode_fragment(&fragment_json).map_err(native)?,
             })
-        } else if command.id == SET_LITERARY_KIND_COMMAND_ID {
-            let KwdjLiteraryIntentV2::SetLiteraryKind { node, .. } =
-                editor_bridge::decode(&command.payload_json)?
-            else {
-                return Err(diagnostic("sdk.invalid_dto", "command"));
+        } else if matches!(
+            command.id.as_str(),
+            SET_LITERARY_KIND_COMMAND_ID
+                | WRAP_LITERARY_BLOCK_COMMAND_ID
+                | UNWRAP_LITERARY_BLOCK_COMMAND_ID
+        ) {
+            let parse_node = |node: &str| {
+                key.parse_node_token(node)
+                    .map_err(|error| diagnostic(error.as_str(), "command.node"))
             };
-            let node = key
-                .parse_node_token(&node)
-                .map_err(|error| diagnostic(error.as_str(), "command.node"))?;
-            Ok(KwdjIntent::SetLiteraryKind { node })
+            let intent = editor_bridge::decode(&command.payload_json)?;
+            match (command.id.as_str(), intent) {
+                (
+                    SET_LITERARY_KIND_COMMAND_ID,
+                    KwdjLiteraryIntentV2::SetLiteraryKind { node, .. },
+                ) => Ok(KwdjIntent::SetLiteraryKind {
+                    node: parse_node(&node)?,
+                }),
+                (
+                    WRAP_LITERARY_BLOCK_COMMAND_ID,
+                    KwdjLiteraryIntentV2::WrapLiteraryBlock { .. },
+                ) => Ok(KwdjIntent::WrapLiteraryBlock),
+                (
+                    UNWRAP_LITERARY_BLOCK_COMMAND_ID,
+                    KwdjLiteraryIntentV2::UnwrapLiteraryBlock { node },
+                ) => Ok(KwdjIntent::UnwrapLiteraryBlock {
+                    node: parse_node(&node)?,
+                }),
+                _ => Err(diagnostic("sdk.invalid_dto", "command")),
+            }
         } else {
             match self.0.decode_command(key, command) {
                 Err(legacy) if command.id == KWDJ_COMMANDS[9].id => {
