@@ -493,7 +493,9 @@ function checkTreesAndStates(owner, literal, stage, gap) {
 
 /** Deterministic full-ledger report. observations are bounded artifact pins,
  * never parsed runtime objects or expected values. Product execution is external. */
-export async function collect({ contract, runBinding, observations, readArtifact, sourceSHA, resourceProfile }) {
+export async function collect({
+  contract, runBinding, observations, readArtifact, readHistoricalArtifact = readArtifact, sourceSHA, resourceProfile,
+}) {
   assertResourceProfile67(resourceProfile);
   const internal = contracts.get(contract);
   requireData(internal && typeof readArtifact === 'function', 'contract', 'loadContract result and bounded artifact reader required');
@@ -516,7 +518,8 @@ export async function collect({ contract, runBinding, observations, readArtifact
     for (const path of REQUIRED_SCENARIO_PATHS) requireData(pins.has(path), 'scenario_pin', `Missing mandatory implementation/build input pin: ${path}`);
     requireData(equal(pins.get(SOURCE_PINS.path), SOURCE_PINS), 'scenario_pin', 'Source-pins authority is not bound to this freeze');
     await readPin(readArtifact, binding.build.wasm, WASM_PIN_MAX_BYTES);
-    for (const pin of [binding.corpusIndex, binding.build.seal, binding.build.dependencies]) {
+    await readPin(readHistoricalArtifact, binding.corpusIndex, BUDGETS.observationBytes);
+    for (const pin of [binding.build.seal, binding.build.dependencies]) {
       await readPin(readArtifact, pin, BUDGETS.observationBytes);
     }
     for (const pin of binding.scenarioPins) await readPin(readArtifact, pin,

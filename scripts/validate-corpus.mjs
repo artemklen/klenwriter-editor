@@ -11,6 +11,10 @@ import { canonicalizeRaw } from './canonical-reference/reference.mjs';
 // Changing this seal requires an explicit compatibility decision, not rebuilding
 // an integrity index after accidentally editing an existing golden expectation.
 export const baselineSeal = '0f63a67e8f6dae84d899316bd18e23788198445695702c5d33e961b77262054b';
+const sealedPackageDigests = Object.freeze({
+  '1.0.0': 'c3242ce26108229fbdf151af1e299d3cfe849c92738b0a2afbf733d12aef2b28',
+  '1.0.1': '273902cd6cb2c76df9bd1c79833d184f8538e7143ac3d7afa58fe567ecc40615',
+});
 export const stages = ['validate_normalize', 'determinism', 'editor_round_trip_unchanged', 'editor_edit_save_reopen',
   'clipboard_plain_to_kwdj', 'clipboard_rich_to_kwdj', 'plain_text_projection', 'identity_manifest_extraction',
   'public_render', 'legacy_import_parse', 'schema_upconversion'];
@@ -86,10 +90,12 @@ export function validateCorpus(root = corpusRoot) {
     assert.ok(current, 'Original case removed/renamed');
     assert.equal(caseHash(current.case), original.sha256, `Original expected/input changed: ${original.id}`);
   }
-  if (cases.length !== 59) assert.notEqual(pkg.packageVersion, '1.0.0', 'Additive cases require a version bump');
   assert.equal(cases.filter(c => c.case.expected.outcome === 'deferred').length, 1);
-  if (pkg.packageVersion === '1.0.0') assert.equal(pkg.contentSha256,
-    'c3242ce26108229fbdf151af1e299d3cfe849c92738b0a2afbf733d12aef2b28',
-    'Any change to the sealed 1.0.0 package requires a version bump');
+  const sealedDigest = sealedPackageDigests[pkg.packageVersion];
+  if (sealedDigest) {
+    assert.equal(cases.length, 59, 'Additive cases require a version bump');
+    assert.equal(pkg.contentSha256, sealedDigest,
+      `Any change to the sealed ${pkg.packageVersion} package requires a version bump`);
+  }
   return { pkg, fixtures, cases, validateDocument, stageCounts: Object.fromEntries(stages.map(stage => [stage, cases.filter(c => c.case.pipeline_stages.includes(stage)).length])) };
 }

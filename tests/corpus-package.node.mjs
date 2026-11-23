@@ -24,6 +24,19 @@ test('authoritative package schemas and all baseline manifest pointers validate 
   assert.equal(result.fixtures.length, 34); assert.equal(result.cases.length, 59);
   assert.equal(Object.values(result.stageCounts).reduce((a, b) => a + b, 0), 277);
 });
+test('public KWDJ schema admits normalized verse indents and rejects malformed attrs', () => {
+  const { validateDocument } = validateCorpus();
+  const fixture = JSON.parse(readFileSync(new URL('./fixtures/osr-144-verse-indent.json', import.meta.url)));
+  const poem = lines => ({
+    schema: 'klenwriter.document', schema_version: 1, profile: 'poetry',
+    content: [{ type: 'verse', content: lines }],
+  });
+  assert.equal(validateDocument(poem(fixture.indented_lines)), true, 'The normalized 1–8 verse indent range');
+  assert.equal(validateDocument(poem([fixture.plain_line])), true);
+  for (const attrs of [...fixture.invalid_attrs, {}, { indent: 0 }, { indent: 9 }, { indent: 1.5 }, { indent: '1' }]) {
+    assert.equal(validateDocument(poem([{ ...fixture.plain_line, attrs }])), false);
+  }
+});
 test('integrity rejects edits, omitted files and unindexed files', () => {
   temporary(root => { writeFileSync(join(root, 'fixtures/positive.json'), '{}\n'); assert.throws(() => verifyCorpus(root), /digest mismatch/); });
   temporary(root => { rmSync(join(root, 'kwdj.schema.json')); assert.throws(() => verifyCorpus(root), /inventory|digest mismatch/); });
@@ -51,8 +64,10 @@ test('new cases require a version bump while preserving every original expectati
     editJson(root, 'fixtures/positive.json', p => { p.fixtures[0].cases.push({ ...structuredClone(p.fixtures[0].cases[0]), name: 'additive_empty_prose' }); });
     editJson(root, 'manifest.json', p => { p.fixture_case_count = 60; });
     rebuildIndex(root); assert.throws(() => validateCorpus(root), /version bump/);
-    editJson(root, 'manifest.json', p => { p.package_version = '1.0.1'; });
-    editJson(root, indexFile, p => { p.packageVersion = '1.0.1'; });
+    const version = verifyCorpus(root).packageVersion.split('.');
+    version[2] = String(Number(version[2]) + 1);
+    editJson(root, 'manifest.json', p => { p.package_version = version.join('.'); });
+    editJson(root, indexFile, p => { p.packageVersion = version.join('.'); });
     rebuildIndex(root); assert.equal(validateCorpus(root).cases.length, 60);
   });
 });
@@ -65,7 +80,7 @@ test('unknown stages and unsafe number tokens fail closed instead of silently ro
   assert.deepEqual(parseFixture('{"x":9007199254740991}'), { x: 9007199254740991 });
 });
 
-test('rebuilding the index cannot silently reuse 1.0.0 for a non-case data change', () => {
+test('rebuilding the index cannot silently reuse the sealed package version for a non-case data change', () => {
   temporary(root => {
     writeFileSync(join(root, 'README.md'), readFileSync(join(root, 'README.md'), 'utf8') + '\nEdited metadata.\n');
     rebuildIndex(root); assert.throws(() => validateCorpus(root), /version bump/);

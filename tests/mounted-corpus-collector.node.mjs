@@ -175,7 +175,9 @@ function syntheticRun() {
   }
   const publish = () => data.map((value, i) => { const path = `synthetic-observations/${i}.json`, bytes = encode(value); files.set(path, bytes); return pin(path, bytes); });
   const reader = async (path, limit) => { const bytes = files.get(path); assert(bytes, `Synthetic artifact missing: ${path}`); assert(bytes.length <= limit); return bytes; };
-  const run = (observations = publish()) => collect({ contract, runBinding: binding, observations, readArtifact: reader, sourceSHA: 'f'.repeat(40) });
+  const run = (observations = publish(), readHistoricalArtifact) => collect({
+    contract, runBinding: binding, observations, readArtifact: reader, readHistoricalArtifact, sourceSHA: 'f'.repeat(40),
+  });
   return { data, binding, files, publish, run };
 }
 const rowFor = (report, observation) => report.rows.find(r => r.engine === observation.engine && r.rowId === observation.rowId);
@@ -188,6 +190,23 @@ test('controlled baseline checks all 75 observations and retains 831 distinct fu
   for (const e of r.engineSummaries) assert.deepEqual([e.executed, e.pending, e.deferred, e.notOwned, e.met], [25, 33, 7, 212, 25]);
   assert(r.rows.filter(row => row.measurementStatus === 'NOT_EXECUTED').every(row => row.requirement === null));
   assert.equal(r.separateLanes.humanManual, 'NOT_EXECUTED'); assert(r.crossCuttingRoutes.every(r => r.requirement === null));
+});
+test('historical corpus binding remains exact as the live package advances', async () => {
+  const s = syntheticRun();
+  const { path } = s.binding.corpusIndex;
+  const archived = s.files.get(path);
+  const current = await readFile(new URL(path, root));
+  assert.notDeepEqual(current, archived);
+  s.files.set(path, current);
+  assertIntegrityFailure(await s.run());
+
+  const result = await s.run(undefined, async (requestedPath, limit) => {
+    assert.equal(requestedPath, path);
+    assert(archived.length <= limit);
+    return archived;
+  });
+  assert.equal(result.integrity.status, 'PASS');
+  assert.equal(result.blockingReasons.length, 0);
 });
 test('missing and duplicate memberships cannot compensate for one another', async () => {
   const s = syntheticRun(); s.data[1] = clone(s.data[0]); const r = await s.run(); assertIntegrityFailure(r);

@@ -1,6 +1,6 @@
 {
   "package": "klenwriter-kwdj-contract",
-  "package_version": "1.0.0",
+  "package_version": "1.0.1",
   "kwdj_schema_version": 1,
   "status": "accepted",
   "normative_files": {

@@ -16,9 +16,11 @@
   ],
   "plain_line": {"content":[{"text":"  Leading without indent","type":"text"}],"type":"verse_line"},
   "invalid_indent_tokens": ["-1", "9", "1.5", "1.0", "\"3\"", "true", "null"],
+  "invalid_attrs": [null, [], false, "3"],
   "refusals": {
     "zero_validate": {"code":"kwdj.non_normalized","path":""},
     "invalid_indent": {"code":"kwdj.invalid_structure","path":"/content/0/content/0/attrs/indent"},
+    "invalid_attrs": {"code":"kwdj.invalid_structure","path":"/content/0/content/0/attrs"},
     "prose_grammar": {"code":"kwdj.invalid_profile_content","path":"/content/0"},
     "clipboard_poetry_mode": {"code":"kwdj.invalid_envelope","path":"/clipboard"}
   }

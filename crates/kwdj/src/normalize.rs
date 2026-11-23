@@ -79,6 +79,14 @@ fn normalize_object(
         .get("type")
         .and_then(Value::as_str)
         .map(str::to_owned);
+    if node_type.as_deref() == Some("verse_line")
+        && object.get("attrs").is_some_and(|attrs| !attrs.is_object())
+    {
+        return Err(KwdjError::new(
+            KwdjErrorCode::InvalidStructure,
+            key_path(path, "attrs"),
+        ));
+    }
     if let Some(Value::Array(content)) = object.get_mut("content") {
         for (index, node) in content.iter_mut().enumerate() {
             normalize_value(node, &index_path(&key_path(path, "content"), index), events)?;

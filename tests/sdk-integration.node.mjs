@@ -895,6 +895,12 @@ test('OSR-144 packaged SDK2 removes zero only on import and rejects non-integer 
     assert.deepEqual(state(editor), before);
     assert.equal(canonical(editor), expected);
     for (const mode of ['validate', 'normalize']) {
+      for (const attrs of fixture.invalid_attrs) {
+        const invalid = osr144Poem([{ ...fixture.plain_line, attrs }]);
+        osr144Refused(osr144Remount(editor, invalid, mode), fixture.refusals.invalid_attrs);
+        assert.deepEqual(state(editor), before);
+        assert.equal(canonical(editor), expected);
+      }
       for (const token of fixture.invalid_indent_tokens) {
         osr144Refused(osr144Remount(editor, insert(token), mode), fixture.refusals.invalid_indent);
         assert.deepEqual(state(editor), before);

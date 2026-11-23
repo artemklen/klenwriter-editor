@@ -2630,6 +2630,18 @@ mod tests {
         );
         for mode in ["validate", "normalize"] {
             opts["admission"] = mode.into();
+            for attrs in fixture["invalid_attrs"].as_array().unwrap() {
+                let mut line = fixture["plain_line"].clone();
+                line["attrs"] = attrs.clone();
+                let refused =
+                    distribution.open(osr144_poem(json!([line])).as_bytes(), &opts.to_string());
+                osr144_diagnostic(
+                    &serde_json::to_value(refused.initialization()).unwrap(),
+                    &fixture["refusals"]["invalid_attrs"],
+                );
+                assert!(refused.context().is_none());
+                assert_eq!(refused.own_resource_counts().sessions, 0);
+            }
             for token in fixture["invalid_indent_tokens"].as_array().unwrap() {
                 let refused = distribution.open(
                     insert(token.as_str().unwrap()).as_bytes(),
