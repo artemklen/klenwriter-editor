@@ -2,9 +2,11 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
 const vanillaEntry = fileURLToPath(new URL('../packages/vanilla/dist/index.js', import.meta.url));
+const initialCanonical = readFileSync(new URL('../contracts/dom/v1/expected/D0.canonical.json', import.meta.url), 'utf8');
 const expectedCanonical = readFileSync(new URL('../contracts/dom/v1/expected/T04-X.canonical.json', import.meta.url), 'utf8');
 const nativeEmpty = { sessions: 0, snapshot_handles: 0, snapshot_bytes: '0', protected_cursors: 0 };
 const importMap = JSON.stringify({ imports: {
@@ -17,7 +19,7 @@ const importMap = JSON.stringify({ imports: {
 } });
 const importMapHash = createHash('sha256').update(importMap).digest('base64');
 
-test('public vanilla lifecycle edits, exports and reopens on the same host after disposal', async ({ page, baseURL }) => {
+test.beforeEach(async ({ page, baseURL }) => {
   // Keep the existing source-bound fixture intact. Serve the vanilla entry
   // from its compiled file and all shared artifacts from the real workspace server.
   await page.route(`${baseURL}/packages/vanilla/index.js`, route => route.fulfill({
@@ -35,18 +37,13 @@ test('public vanilla lifecycle edits, exports and reopens on the same host after
 <title>Vanilla lifecycle</title>
 <link rel="stylesheet" href="/style.css">
 <script type="importmap">${importMap}</script>
-<div id="editor" aria-label="KlenWriter Editor"></div>`,
+<input id="before" aria-label="Before editor">
+<div id="editor" aria-label="KlenWriter Editor"></div>
+<input id="after" aria-label="After editor">`,
   }));
   await page.goto('/vanilla-lifecycle');
-  expect(await page.evaluate(async () => {
-    const api = await import('@klenwriter/editor');
-    return Object.fromEntries(['mount', 'update', 'subscribe', 'export', 'destroy'].map(name => [name, typeof api[name]]));
-  }), 'public vanilla lifecycle exports').toEqual({
-    mount: 'function', update: 'function', subscribe: 'function', export: 'function', destroy: 'function',
-  });
 
-  const actual = await page.evaluate(async () => {
-    const { mount, update, subscribe, export: exportDocument, destroy } = await import('@klenwriter/editor');
+  await page.evaluate(async () => {
     const { loadSdkV2, sdkBuildId } = await import('@klenwriter/editor-sdk');
     const { kwdjCommand } = await import('@klenwriter/editor-kwdj');
     const { kwdjBasicRenderers } = await import('@klenwriter/editor-kwdj/dom');
@@ -73,7 +70,22 @@ test('public vanilla lifecycle edits, exports and reopens on the same host after
       },
       renderers: kwdjBasicRenderers,
     };
+    window.vanillaFixture = { options, wasm, kwdjCommand };
+  });
+});
 
+test('public vanilla lifecycle edits, exports and reopens on the same host after disposal', async ({ page }) => {
+  expect(await page.evaluate(async () => {
+    const api = await import('@klenwriter/editor');
+    return Object.fromEntries(['mount', 'update', 'subscribe', 'export', 'destroy'].map(name => [name, typeof api[name]]));
+  }), 'public vanilla lifecycle exports').toEqual({
+    mount: 'function', update: 'function', subscribe: 'function', export: 'function', destroy: 'function',
+  });
+
+  const actual = await page.evaluate(async () => {
+    const { mount, update, subscribe, export: exportDocument, destroy } = await import('@klenwriter/editor');
+    const { options, wasm, kwdjCommand } = window.vanillaFixture;
+    const { element } = options;
     const settle = async submission => {
       if (submission.status === 'completed') return submission.response;
       if (submission.status === 'queued') return submission.completion;
@@ -189,4 +201,155 @@ test('public vanilla lifecycle edits, exports and reopens on the same host after
     status: 'exported', canonicalJson: expectedCanonical, stamp: actual.remount.stamp,
   });
   expect(actual.nativeFinal).toEqual(nativeEmpty);
+});
+
+async function mountMode(page, flags) {
+  const ready = await page.evaluate(async flags => {
+    const api = await import('@klenwriter/editor');
+    const { options } = window.vanillaFixture;
+    const writes = [];
+    const editor = api.mount({
+      ...options, ...flags, clipboard: { writeText: async text => { writes.push(text); } },
+    });
+    const ready = await editor.ready;
+    window.vanillaMode = { api, editor, element: options.element, root: options.element.firstElementChild, writes };
+    return ready;
+  }, flags);
+  expect(ready).toMatchObject({ status: 'ready' });
+}
+
+async function documentCheckpoint(page) {
+  return page.evaluate(async () => {
+    const { api, editor, element, root } = window.vanillaMode;
+    const exported = await api.export(editor);
+    const { session, generation } = editor.capture();
+    return {
+      exported: exported.status === 'exported'
+        ? { status: exported.status, canonicalJson: exported.canonicalJson, revision: exported.stamp.revision }
+        : exported,
+      session,
+      generation,
+      sameRoot: root !== null && element.firstElementChild === root,
+      text: element.textContent,
+    };
+  });
+}
+
+async function changeMode(page, flags, mode) {
+  expect(await page.evaluate(flags => {
+    const { api, editor } = window.vanillaMode;
+    return api.update(editor, flags);
+  }, flags)).toEqual({ status: 'updated', mode });
+}
+
+async function expectNoUserEdit(page, editor, before) {
+  await page.keyboard.type('mutation');
+  const events = await editor.evaluate(element => {
+    const transfer = new DataTransfer();
+    transfer.setData('text/plain', 'Mutation from clipboard or drag');
+    const paste = new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData: transfer });
+    const drop = new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: transfer });
+    element.dispatchEvent(paste);
+    element.dispatchEvent(drop);
+    return {
+      paste: { prevented: paste.defaultPrevented, text: paste.clipboardData.getData('text/plain') },
+      drop: { prevented: drop.defaultPrevented, text: drop.dataTransfer.getData('text/plain') },
+    };
+  });
+  expect(events).toEqual({
+    paste: { prevented: true, text: 'Mutation from clipboard or drag' },
+    drop: { prevented: true, text: 'Mutation from clipboard or drag' },
+  });
+  expect(await documentCheckpoint(page)).toEqual(before);
+}
+
+async function disposeMode(page) {
+  expect(await page.evaluate(async () => {
+    const { api, editor } = window.vanillaMode;
+    const receipt = api.destroy(editor);
+    if (receipt.sdk.status === 'queued') await receipt.sdk.completion;
+    return editor.nativeResources();
+  })).toEqual(nativeEmpty);
+  await expect(page.locator('#editor')).toBeEmpty();
+}
+
+test('public vanilla readOnly mode preserves the mounted document and allows selection and copy', async ({ page }) => {
+  await mountMode(page, { readOnly: true });
+  const editor = page.getByRole('textbox', { name: 'KlenWriter Editor' });
+  await expect(editor).toHaveAttribute('aria-readonly', 'true');
+  await expect(editor).toHaveAttribute('aria-disabled', 'false');
+  await expect(editor).toHaveAttribute('contenteditable', 'false');
+  await editor.focus();
+  await expect(editor).toBeFocused();
+  const before = await documentCheckpoint(page);
+  expect(before).toMatchObject({
+    exported: { status: 'exported', canonicalJson: initialCanonical, revision: '0' },
+    sameRoot: true,
+  });
+  await expectNoUserEdit(page, editor, before);
+
+  const selectedText = await editor.evaluate(element => {
+    const leaf = document.createTreeWalker(element.lastElementChild, NodeFilter.SHOW_TEXT).nextNode();
+    const selection = getSelection();
+    selection.setBaseAndExtent(leaf, 0, leaf, leaf.length);
+    return selection.toString();
+  });
+  expect(selectedText).toBe('Бета');
+  await expect.poll(() => page.evaluate(() => {
+    const { editor } = window.vanillaMode;
+    const result = editor.read({ kind: 'selection_text', stamp: editor.capture(), max_bytes: 64 });
+    return result.status === 'ok' && result.value.kind === 'selection_text' ? result.value.text : null;
+  })).toBe('Бета');
+  const clipboard = await page.evaluate(async () => {
+    const { editor, writes } = window.vanillaMode;
+    return { outcome: await editor.clipboard.copy(), writes };
+  });
+  expect(clipboard).toEqual({
+    outcome: { action: 'copy', status: 'copied', clipboard: 'confirmed', failure: null, submission: null },
+    writes: ['Бета'],
+  });
+  expect(await documentCheckpoint(page)).toEqual(before);
+  expect((await new AxeBuilder({ page }).include('#editor').analyze()).violations).toEqual([]);
+  await disposeMode(page);
+});
+
+test('public vanilla disabled mode skips Tab and mode updates reuse the root and session', async ({ page }) => {
+  await mountMode(page, { disabled: true });
+  const editor = page.getByRole('textbox', { name: 'KlenWriter Editor' });
+  const beforeField = page.getByRole('textbox', { name: 'Before editor' });
+  const afterField = page.getByRole('textbox', { name: 'After editor' });
+  await expect(editor).toHaveAttribute('aria-disabled', 'true');
+  await expect(editor).toHaveAttribute('contenteditable', 'false');
+  const before = await documentCheckpoint(page);
+  expect(before).toMatchObject({
+    exported: { status: 'exported', canonicalJson: initialCanonical, revision: '0' },
+    sameRoot: true,
+  });
+  await beforeField.focus();
+  await page.keyboard.press('Tab');
+  await expect(afterField).toBeFocused();
+  await expectNoUserEdit(page, editor, before);
+  await expect(afterField).toHaveValue('mutation');
+  expect((await new AxeBuilder({ page }).include('#editor').analyze()).violations).toEqual([]);
+
+  await changeMode(page, { readOnly: true }, 'disabled');
+  await changeMode(page, { disabled: false }, 'readOnly');
+  await expect(editor).toHaveAttribute('aria-disabled', 'false');
+  await expect(editor).toHaveAttribute('aria-readonly', 'true');
+  await expect(editor).toHaveAttribute('tabindex', '0');
+  await editor.focus();
+  await expect(editor).toBeFocused();
+  await expectNoUserEdit(page, editor, before);
+  await changeMode(page, { disabled: true }, 'disabled');
+  await expect(editor).toHaveAttribute('aria-disabled', 'true');
+  await beforeField.focus();
+  await page.keyboard.press('Tab');
+  await expect(afterField).toBeFocused();
+  await expectNoUserEdit(page, editor, before);
+  await changeMode(page, { disabled: false }, 'readOnly');
+  await changeMode(page, { readOnly: false }, 'editable');
+  await expect(editor).toHaveAttribute('aria-readonly', 'false');
+  await expect(editor).toHaveAttribute('contenteditable', 'true');
+  expect(await documentCheckpoint(page)).toEqual(before);
+  await disposeMode(page);
 });

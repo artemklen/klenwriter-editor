@@ -140,3 +140,43 @@ test('export preserves the original refusal at the failed step', async () => {
   };
   assert.deepEqual(vanilla.update(editor, { kind: 'release_snapshot', handle: releaseFailure.snapshotHandle }), completed(released));
 });
+
+test('mode updates keep the other flag and commit only an accepted change', () => {
+  const refused = {
+    status: 'dom_refused',
+    diagnostic: {
+      code: 'dom.busy', phase: 'mode', stamp, node: null, typeId: null, publication: 'none',
+    },
+  };
+  let blockDisabled = true;
+  const editor = {
+    submit() { assert.fail('Interaction options must not submit a document mutation'); },
+    setInteractionMode(mode) {
+      if (mode === 'disabled' && blockDisabled) return refused;
+      return { status: 'updated', mode };
+    },
+  };
+  assert.deepEqual(vanilla.update(editor, { readOnly: true }), { status: 'updated', mode: 'readOnly' });
+  assert.equal(vanilla.update(editor, { disabled: true }), refused);
+  assert.deepEqual(vanilla.update(editor, { readOnly: false }), { status: 'updated', mode: 'editable' });
+
+  blockDisabled = false;
+  assert.deepEqual(vanilla.update(editor, { readOnly: true, disabled: true }), { status: 'updated', mode: 'disabled' });
+  assert.deepEqual(vanilla.update(editor, { disabled: false }), { status: 'updated', mode: 'readOnly' });
+});
+
+test('a mode change from a focus callback keeps the latest accepted flags', () => {
+  let ranFocusCallback = false;
+  const editor = {
+    setInteractionMode(mode) {
+      if (mode === 'disabled' && !ranFocusCallback) {
+        // Blurring a disabled host can synchronously run an app callback.
+        ranFocusCallback = true;
+        assert.deepEqual(vanilla.update(editor, { readOnly: true }), { status: 'updated', mode: 'readOnly' });
+      }
+      return { status: 'updated', mode };
+    },
+  };
+  assert.deepEqual(vanilla.update(editor, { disabled: true }), { status: 'updated', mode: 'disabled' });
+  assert.deepEqual(vanilla.update(editor, { readOnly: false }), { status: 'updated', mode: 'editable' });
+});
