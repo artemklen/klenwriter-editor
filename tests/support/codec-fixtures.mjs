@@ -10,6 +10,12 @@ export const options = extra => JSON.stringify({ abi: 'kwdj-codec/1', identities
 export const document = content => ({ schema: 'klenwriter.document', schema_version: 1, profile: 'prose', content });
 const paragraph = text => ({ type: 'paragraph', content: [{ type: 'text', text }] });
 const canonical = value => canonicalizeRaw(JSON.stringify(value));
+export function spoilerDisclosureFixture() {
+  const source = new URL('../../contracts/kwdj/v1/fixtures/positive.json', import.meta.url);
+  const { fixtures } = JSON.parse(readFileSync(source, 'utf8'));
+  const { kwdj } = fixtures.find(fixture => fixture.id === 'DOC-017').cases.find(item => item.name === 'spoiler_and_disclosure');
+  return { document: kwdj, canonical: canonical(kwdj) };
+}
 export function literaryFixture() {
   const source = new URL('../../contracts/kwdj/v1/fixtures/positive.json', import.meta.url);
   const { fixtures } = JSON.parse(readFileSync(source, 'utf8'));

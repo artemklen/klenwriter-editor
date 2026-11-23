@@ -1,6 +1,6 @@
 import {test,expect} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { literaryFixture, warningFixture } from './support/codec-fixtures.mjs';
+import { literaryFixture, spoilerDisclosureFixture, warningFixture } from './support/codec-fixtures.mjs';
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {longDocumentFixtures} from './support/large-document-fixtures.mjs';
@@ -158,6 +158,30 @@ test('T06 complete basic catalog has named host and valid static accessibility s
   observations.get(page).axe={engine:result.testEngine,scope:'Actual mounted KWDJ basic catalog static semantics; OSR-39 smoke only',
     violations:result.violations,incomplete:result.incomplete,passedRules:result.passes.map(rule=>rule.id)};
   expect(result.violations).toEqual([]);expect(result.incomplete).toEqual([]);expect(result.passes.length).toBeGreaterThan(0);
+});
+
+test('OSR-191 mounted DOC-017 exposes the stored labels and retains both body paragraphs', async ({ page }) => {
+  const fixture = spoilerDisclosureFixture();
+  const whitespace = structuredClone(fixture.document);
+  for (const block of whitespace.content) block.attrs.label = '  ';
+  for (const [source, names] of [
+    [fixture.canonical, fixture.document.content.map(block => block.attrs.label)],
+    [canonicalizeRaw(JSON.stringify(whitespace)), ['Спойлер', 'Подробнее']],
+  ]) {
+    const { id, ready, diagnostic } = await call(page, 'mount', { source, access: 'read_only' });
+    expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+    const host = page.locator(`#${id}`);
+    await expect(host).toHaveAttribute('contenteditable', 'false');
+    const containers = host.getByRole('group');
+    await expect(containers).toHaveCount(2);
+    for (const [index, block] of fixture.document.content.entries()) {
+      const container = containers.nth(index);
+      await expect(container).toHaveAccessibleName(names[index]);
+      await expect(container.locator('p')).toHaveText(block.content[0].content[0].text);
+    }
+    expect((await checkpoint(page, id, 'read-only labels and canonical export')).canonical).toBe(source);
+    await call(page, 'dispose', id);
+  }
 });
 
 test('OSR-182 DOC-015 renders and reopens all literary kinds in a read-only editor', async ({ page }) => {
@@ -985,11 +1009,14 @@ test('closed payload coverage refuses unsupported targets, marks, recipes and ra
   });
   const literary = JSON.parse(literaryFixture().canonical).content[0];
   const warning = JSON.parse(warningFixture().canonical).content[0];
+  const [spoiler, disclosure] = spoilerDisclosureFixture().document.content;
   const requests=[
     ['unsupported-target',command('insert-block',{kind:'insert_block',target:{kind:'media'}}),'dom.command_unsupported'],
     ['native-only-media-fragment',command('insert-fragment',{kind:'insert_fragment',fragment_json:fragment([media])}),'dom.command_unsupported'],
     ['unavailable-mounted-literary-fragment',command('insert-fragment',{kind:'insert_fragment',fragment_json:fragment([literary])}),'dom.command_unsupported'],
     ['unavailable-mounted-warning-fragment',command('insert-fragment',{kind:'insert_fragment',fragment_json:fragment([warning])}),'dom.command_unsupported'],
+    ['unavailable-mounted-spoiler-fragment',command('insert-fragment',{kind:'insert_fragment',fragment_json:fragment([spoiler])}),'dom.command_unsupported'],
+    ['unavailable-mounted-disclosure-fragment',command('insert-fragment',{kind:'insert_fragment',fragment_json:fragment([disclosure])}),'dom.command_unsupported'],
     ['unsupported-mark',command('toggle-mark',{kind:'toggle_mark',mark:unknownMark}),'dom.command_unsupported'],
     ['closed-mark-attrs',command('toggle-mark',{kind:'toggle_mark',mark:{type_id:'org.klenwriter.kwdj/strong',attributes:{extra:{kind:'boolean',value:true}}}}),'dom.command_unsupported'],
     ['stored-marks',{kind:'set_stored_marks',marks:[unknownMark]},'dom.command_unsupported'],

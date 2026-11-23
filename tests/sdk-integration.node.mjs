@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import { createCommand, createEditor, loadSdk, loadSdkV2 } from '../packages/sdk/dist/index.js';
 import { kwdjCommand } from '../packages/kwdj/dist/index.js';
 import { canonicalizeRaw } from '../scripts/canonical-reference/reference.mjs';
+import { spoilerDisclosureFixture } from './support/codec-fixtures.mjs';
 
 let modulePromise;
 const productionModule = () => modulePromise ??= loadSdk({ wasm: new Uint8Array(readFileSync(new URL('../packages/wasm/dist/editor_wasm_bg.wasm', import.meta.url))) });
@@ -921,6 +922,46 @@ test('OSR-184 packaged SDK2 refuses mixed-parent wrap and non-author-note unwrap
     for (const nodeId of [ids[3], ids[4]]) {
       osr183Denied(editor, osr184Unwrap, { kind: 'unwrap_literary_block', node: nodeId }, input,
         'kwdj.command_invalid_target');
+    }
+  });
+});
+
+test('OSR-191 packaged SDK2 reads and reopens DOC-017 labels and body byte for byte', async () => {
+  const fixture = spoilerDisclosureFixture();
+  const spaces = structuredClone(fixture.document);
+  for (const block of spaces.content) block.attrs.label = '  ';
+  for (const document of [fixture.document, spaces]) {
+    const expected = osr185Bytes(document);
+    let saved;
+    await withLiteraryCommandSession(expected, editor => {
+      const actual = root(editor).children.map(id => {
+        const block = node(editor, id);
+        const paragraph = node(editor, block.children[0]);
+        return [block.type_id, block.primitive, block.attributes.label.value, node(editor, paragraph.children[0]).text];
+      });
+      assert.deepEqual(actual, document.content.map(block => [
+        `org.klenwriter.kwdj/${block.type}`, 'container', block.attrs.label, block.content[0].content[0].text,
+      ]));
+      saved = canonical(editor);
+    }, [], 'read_only');
+    assert.equal(saved, expected);
+    await withLiteraryCommandSession(saved, editor => assert.equal(canonical(editor), expected), [], 'read_only');
+  }
+});
+
+test('OSR-191 packaged SDK2 refuses replacing a document with either empty authored label', async () => {
+  const fixture = spoilerDisclosureFixture();
+  await withLiteraryCommandSession(fixture.canonical, editor => {
+    for (const block of fixture.document.content) {
+      const candidate = osr183Doc([{ ...block, attrs: { label: '' } }]);
+      const before = state(editor);
+      const response = completed(editor.submit({ kind: 'remount', stamp: editor.capture(), input_json: candidate, admission: 'validate' }));
+      const diagnostic = refused(response);
+      assert.equal(diagnostic.code, 'kwdj.invalid_structure', block.type);
+      assert.equal(diagnostic.path, '/content/0/attrs/label', block.type);
+      assert.equal(diagnostic.may_have_committed, false);
+      assert.deepEqual(state(editor), before);
+      assert.equal(canonical(editor), fixture.canonical);
     }
   });
 });

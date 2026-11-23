@@ -1133,6 +1133,98 @@ mod tests {
         assert_eq!(osr183_node(&mut session, &root)["children"], roots);
     }
 
+    fn osr191_case() -> Value {
+        let fixtures: Value = serde_json::from_str(include_str!(
+            "../../../contracts/kwdj/v1/fixtures/positive.json"
+        ))
+        .unwrap();
+        fixtures["fixtures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|fixture| fixture["id"] == "DOC-017")
+            .unwrap()["cases"][0]
+            .clone()
+    }
+
+    fn osr191_read_reopen(document: &Value) {
+        let canonical = document.to_string();
+        let mut session = osr183_open(&canonical);
+        let root = state(&mut session)["root"].clone();
+        let nodes = osr183_node(&mut session, &root)["children"].clone();
+        assert_eq!(nodes.as_array().unwrap().len(), 2);
+        for index in 0..2 {
+            let expected = &document["content"][index];
+            let actual = osr183_node(&mut session, &nodes[index]);
+            assert_eq!(
+                actual["type_id"],
+                format!("org.klenwriter.kwdj/{}", expected["type"].as_str().unwrap())
+            );
+            assert_eq!(actual["primitive"], "container");
+            assert_eq!(
+                actual["attributes"]["label"]["value"],
+                expected["attrs"]["label"]
+            );
+            let paragraph = osr183_node(&mut session, &actual["children"][0]);
+            let leaf = osr183_node(&mut session, &paragraph["children"][0]);
+            assert_eq!(leaf["text"], expected["content"][0]["content"][0]["text"]);
+        }
+        let saved = snapshot(&mut session);
+        assert_eq!(saved, canonical);
+        assert_eq!(snapshot(&mut osr183_open(&saved)), canonical);
+    }
+
+    #[test]
+    fn osr191_doc017_reads_projects_and_reopens_spoiler_and_disclosure() {
+        let case = osr191_case();
+        let document = &case["kwdj"];
+        osr191_read_reopen(document);
+        let facts = crate::FactStore(Default::default());
+        let admitted =
+            editor_kwdj::validate_normalized_json(document.to_string().as_bytes(), &facts).unwrap();
+        let projection = admitted.project_text().unwrap();
+        assert_eq!(
+            projection.full_text,
+            case["expected"]["full_text"].as_str().unwrap()
+        );
+        assert_eq!(
+            projection.search_index_text,
+            case["expected"]["search_index_text"].as_str().unwrap()
+        );
+        assert_eq!(
+            projection.public_snippet_text,
+            case["expected"]["public_snippet_text"].as_str().unwrap()
+        );
+    }
+
+    #[test]
+    fn osr191_empty_labels_refuse_and_authored_whitespace_round_trips() {
+        let document = &osr191_case()["kwdj"];
+        let distribution = Distribution::new(BUILD, vec![Box::new(KwdjFactory)]).unwrap();
+        for block in document["content"].as_array().unwrap() {
+            let mut empty = block.clone();
+            empty["attrs"]["label"] = json!("");
+            let input = osr183_literal(json!([empty]));
+            let session = distribution.open(input.as_bytes(), &options(false).to_string());
+            let response = serde_json::to_value(session.initialization()).unwrap();
+            assert_eq!(response["status"], "refused", "{response}");
+            assert_eq!(
+                response["diagnostic"]["code"], "kwdj.invalid_structure",
+                "{response}"
+            );
+            assert_eq!(
+                response["diagnostic"]["path"], "/content/0/attrs/label",
+                "{response}"
+            );
+            assert_eq!(response["diagnostic"]["may_have_committed"], false);
+        }
+        let mut spaces = document.clone();
+        for block in spaces["content"].as_array_mut().unwrap() {
+            block["attrs"]["label"] = json!("  ");
+        }
+        osr191_read_reopen(&spaces);
+    }
+
     #[test]
     fn osr183_set_author_note_changes_only_kind_and_preserves_exact_history() {
         // DOC-015 preserves letter. A fresh rich child payload detects any

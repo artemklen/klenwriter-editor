@@ -60,6 +60,13 @@ function textBlock(node: DeepReadonly<NodeViewDto>, tag: DomPresentation['tag'])
   return { tag, classes };
 }
 const node = (primitive: string, attributes: readonly string[], present: NodeRendererDefinition['present']): NodeRendererDefinition => ({ primitive, attributes, present });
+function labeledContainer(fallback: string): NodeRendererDefinition {
+  return node('container', ['label'], n => {
+    const label = attrString(n.attributes.label);
+    if (!label) return refused(n.type_id, n);
+    return { tag: 'section', attributes: { role: 'group', 'aria-label': label.trim() ? label : fallback } };
+  });
+}
 const nodes: Record<string, NodeRendererDefinition> = {
   [`${prefix}text`]: node('text', [], () => ({ tag: 'span' })),
   [`${prefix}hard_break`]: node('hard_break', [], () => ({ tag: 'br' })),
@@ -112,6 +119,8 @@ const nodes: Record<string, NodeRendererDefinition> = {
     const fallback = kind === 'general' ? 'Предупреждение' : 'Контент';
     return { tag: 'section', attributes: { role: 'group', 'aria-label': label?.trim() ? label : fallback } };
   }),
+  [`${prefix}spoiler`]: labeledContainer('Спойлер'),
+  [`${prefix}disclosure`]: labeledContainer('Подробнее'),
 };
 const marks: Record<string, MarkRendererDefinition> = {};
 for (const [name, tag] of [['strong', 'strong'], ['emphasis', 'em'], ['strike', 's'], ['code', 'code'], ['subscript', 'sub'], ['superscript', 'sup']] as const) {
@@ -158,7 +167,8 @@ function coveredClipboard(value: unknown): boolean {
     if (++count > 8192 || depth > 64 || !object(node) || typeof node.type !== 'string'
       || Object.keys(node).some(k => !['type','attrs','text','marks','content'].includes(k))) return false;
     // These renderers cover document readback. The mounted clipboard subset is separate.
-    if (node.type === 'media_image' || node.type === 'literary_block' || node.type === 'warning') return false;
+    if (node.type === 'media_image' || node.type === 'literary_block' || node.type === 'warning'
+      || node.type === 'spoiler' || node.type === 'disclosure') return false;
     const renderer = Object.hasOwn(nodes, prefix + node.type) ? nodes[prefix + node.type] : null;
     if (!renderer) return false;
     const attrs = node.attrs === undefined ? {} : node.attrs;
