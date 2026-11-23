@@ -549,8 +549,8 @@
     {
       "current": {
         "path": "packages/wasm/src/sdk-types-v2.ts",
-        "bytes": 8330,
-        "sha256": "a8f34d3e4ccd19cfbecd446292f537c5857373023a88190933930ae79acfe7fe"
+        "bytes": 8499,
+        "sha256": "f9ab70000b02ee778d406390ca776e6d9761925f0548df423a853189088d2ad3"
       },
       "previous": {
         "path": "packages/wasm/src/sdk-types-v2.ts",
@@ -559,7 +559,7 @@
       },
       "reverse": [
         1060,
-        1384,
+        1553,
         ""
       ]
     }
