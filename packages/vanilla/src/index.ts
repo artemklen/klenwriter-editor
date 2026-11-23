@@ -19,11 +19,11 @@ export function update(editor: MountedEditor, request: VanillaUpdate): MountedSu
   return editor.submit(request);
 }
 
-export function subscribe(editor: MountedEditor, listener: VanillaRevisionListener) {
+export function subscribe(editor: MountedEditor, listener: VanillaRevisionListener): ReturnType<MountedEditor['subscribe']> {
   return editor.subscribe(listener);
 }
 
-export function destroy(editor: MountedEditor) {
+export function destroy(editor: MountedEditor): ReturnType<MountedEditor['destroy']> {
   return editor.destroy();
 }
 

@@ -31,12 +31,15 @@ test('the installed entry exposes lifecycle functions with editor-dom as its run
     assert.equal(typeof vanilla[name], 'function', `Missing public lifecycle function ${name}`);
   }
   const entry = import.meta.resolve('@klenwriter/editor');
-  const manifest = JSON.parse(await readFile(new URL('../package.json', entry), 'utf8'));
+  const packageRoot = new URL('../', entry);
+  const manifest = JSON.parse(await readFile(new URL('package.json', packageRoot), 'utf8'));
   assert.deepEqual(Object.keys(manifest.dependencies), ['@klenwriter/editor-dom']);
-  const emitted = await readFile(new URL(entry), 'utf8');
-  const imports = emitted.matchAll(/(?:from\s+|import\s*(?:\(\s*)?)['"]([^'"]+)['"]/g);
-  const dependencies = new Set(Array.from(imports, ([, specifier]) => specifier));
-  assert.deepEqual([...dependencies], ['@klenwriter/editor-dom']);
+  for (const path of Object.values(manifest.exports['.'])) {
+    const emitted = await readFile(new URL(path, packageRoot), 'utf8');
+    const imports = emitted.matchAll(/(?:from\s+|import\s*(?:\(\s*)?)['"]([^'"]+)['"]/g);
+    const dependencies = new Set(Array.from(imports, ([, specifier]) => specifier));
+    assert.deepEqual([...dependencies], ['@klenwriter/editor-dom'], path);
+  }
 });
 
 test('export waits for a queued snapshot and release before returning canonical text', async () => {
