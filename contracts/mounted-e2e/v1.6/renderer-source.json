@@ -262,8 +262,8 @@
     },
     {
       "path": "packages/kwdj/dist/container-label.js",
-      "bytes": 21367,
-      "sha256": "3c848b48f9f98b45f1d8a45cf1490a694c1f3df374aa488d4a08f91fd0175bd1"
+      "bytes": 22824,
+      "sha256": "dbf6dcd4132f27c6f5f938c9123c5c049cd979620a0f8b9f23f775b401c3fbbe"
     }
   ],
   "format": "mounted-corpus-renderer-source/1",
@@ -672,8 +672,8 @@
     },
     {
       "path": "packages/kwdj/src/container-label.ts",
-      "bytes": 21037,
-      "sha256": "1bf250e0cea61ca31c78944113be110f0e3bb26992f9cf8f0eae8f5238def772"
+      "bytes": 22302,
+      "sha256": "95a0398b6dd30eab742bb5efa88e5707d7863e5763d86d3ec7aa0a7084e02e68"
     }
   ]
 }

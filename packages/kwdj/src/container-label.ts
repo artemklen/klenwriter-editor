@@ -18,7 +18,6 @@ type ModelStamp = DeepReadonly<StampDto>;
 type Side = 'before' | 'after';
 
 const MAX_NODE_READS = 128;
-const MAX_CHILDREN = 4096;
 const owners = new WeakMap<MountedEditor, LabelOwner>();
 const inputs = new WeakSet<HTMLInputElement>();
 const compositionInputs = new Set([
@@ -81,7 +80,7 @@ class LabelTree {
     const leaf = this.read(point.node);
     if (!leaf?.parent || leaf.text === null || point.offset !== (side === 'before' ? leaf.text.length : 0)) return null;
     const parent = this.read(leaf.parent);
-    if (!parent || parent.children.length > MAX_CHILDREN) return null;
+    if (!parent) return null;
     const index = parent.children.indexOf(leaf.id);
     if (index < 0) return null;
     const id = parent.children[index + (side === 'before' ? 1 : -1)];
@@ -95,7 +94,7 @@ class LabelTree {
     }
     if (child?.primitive === 'hard_break' && child.parent) {
       const parent = this.read(child.parent);
-      if (!parent || parent.children.length > MAX_CHILDREN) return null;
+      if (!parent) return null;
       const index = parent.children.indexOf(child.id);
       if (index >= 0) return { kind: 'child', parent: parent.id, index: index + Number(side === 'before'), affinity: 'after' };
     }
@@ -104,7 +103,7 @@ class LabelTree {
 
   caret(id: string, side: Side): PositionDto | null {
     const node = this.read(id);
-    if (!node || node.children.length > MAX_CHILDREN) return null;
+    if (!node) return null;
     if (node.primitive === 'block_atom') return { kind: 'edge', node: id, side };
     const first = side === 'before';
     if (node.primitive === 'text_block') {
@@ -120,6 +119,7 @@ class LabelTree {
       return { kind: 'child', parent: node.id, index, affinity: 'after' };
     }
     if (node.primitive !== 'container') return null;
+    if (node.children.length === 0) return { kind: 'child', parent: id, index: 0, affinity: 'after' };
     for (let step = 0; step < node.children.length && this.#nodes.size < MAX_NODE_READS; step++) {
       const child = node.children[first ? step : node.children.length - 1 - step];
       const point = child === undefined ? null : this.caret(child, side);
@@ -132,7 +132,7 @@ class LabelTree {
     let node = this.read(id);
     while (node?.parent) {
       const parent = this.read(node.parent);
-      if (!parent || parent.children.length > MAX_CHILDREN) return null;
+      if (!parent) return null;
       const offset = parent.children.indexOf(node.id);
       if (offset < 0) return null;
       const sibling = parent.children[offset + 1];
@@ -145,7 +145,12 @@ class LabelTree {
 
 interface LabelComposition {
   readonly request: MountedHostRequest | null;
-  latest: { readonly value: string; readonly data: string | null } | null;
+  latest: {
+    readonly value: string;
+    readonly data: string | null;
+    readonly inputEvent: Event;
+    terminalEcho: boolean;
+  } | null;
 }
 
 interface Binding {
@@ -183,6 +188,7 @@ class LabelOwner {
   readonly #observer: MutationObserver;
   readonly #unsubscribe: () => void;
   #continuation: Continuation | null = null;
+  #bodyBinding: Binding | null = null;
 
   constructor(readonly editor: MountedEditor, readonly root: HTMLElement) {
     const unsubscribe = editor.subscribe(event => {
@@ -190,6 +196,7 @@ class LabelOwner {
       if (!point || !this.#continuation || !samePoint(point, this.#continuation.next)
         || event.change.kind === 'document') this.#continuation = null;
       if (event.change.kind === 'document') {
+        this.#bodyBinding = null;
         for (const binding of this.#bindings.values()) this.#sync(binding);
       }
     });
@@ -206,7 +213,8 @@ class LabelOwner {
     });
     this.#observer.observe(root, { childList: true, attributes: true, attributeFilter: ['contenteditable', 'aria-disabled'] });
     root.addEventListener('keydown', this.#rootKey);
-    root.addEventListener('focusout', this.#rootExit);
+    root.addEventListener('focusout', this.#resetRoute);
+    root.addEventListener('pointerdown', this.#resetRoute);
   }
 
   bind(node: string, input: HTMLInputElement, stamp: ModelStamp): () => void {
@@ -220,7 +228,14 @@ class LabelOwner {
       const { inputType, isComposing, data } = event as InputEvent;
       const composingInput = isComposing || compositionInputs.has(inputType);
       if (binding.composition) {
-        if (composingInput) binding.composition.latest = { value: input.value, data };
+        if (composingInput) {
+          const latest = { value: input.value, data, inputEvent: event, terminalEcho: false };
+          binding.composition.latest = latest;
+          // Chromium can emit an untrusted end between the trusted input's
+          // microtask checkpoint and the next task.
+          queueMicrotask(() => { latest.terminalEcho = true; });
+          setTimeout(() => { latest.terminalEcho = false; }, 0);
+        }
         return;
       }
       if (composingInput || inputType === 'historyUndo' || inputType === 'historyRedo') {
@@ -239,6 +254,11 @@ class LabelOwner {
       const composition = binding.composition;
       if (!composition) return;
       const terminalData = event.data;
+      if (!event.isTrusted) {
+        const { latest } = composition;
+        if (!latest?.terminalEcho || latest.inputEvent.eventPhase !== Event.NONE
+          || latest.data !== terminalData || latest.value !== input.value) return;
+      }
       queueMicrotask(() => {
         if (this.#bindings.get(node) !== binding || binding.composition !== composition) return;
         binding.composition = null;
@@ -268,6 +288,7 @@ class LabelOwner {
         this.#bindings.delete(node);
         inputs.delete(input);
         if (this.#continuation?.binding === binding) this.#continuation = null;
+        if (this.#bodyBinding === binding) this.#bodyBinding = null;
         input.removeEventListener('input', onInput);
         input.removeEventListener('keydown', onKey);
         input.removeEventListener('compositionstart', onCompositionStart);
@@ -279,7 +300,8 @@ class LabelOwner {
           this.#observer.disconnect();
           this.#unsubscribe();
           this.root.removeEventListener('keydown', this.#rootKey);
-          this.root.removeEventListener('focusout', this.#rootExit);
+          this.root.removeEventListener('focusout', this.#resetRoute);
+          this.root.removeEventListener('pointerdown', this.#resetRoute);
           owners.delete(this.editor);
         }
       },
@@ -378,11 +400,15 @@ class LabelOwner {
     const point = stamp ? new LabelTree(this.editor, stamp).caret(binding.node, 'before') : null;
     if (stamp && point && this.#focusBody(point, input, stamp)) {
       this.#continuation = null;
+      this.#bodyBinding = binding;
       event.preventDefault();
     }
   }
 
-  #rootExit = (): void => { this.#continuation = null; };
+  #resetRoute = (): void => {
+    this.#continuation = null;
+    this.#bodyBinding = null;
+  };
 
   #currentRootPoint(point: ModelPoint, stamp: ModelStamp): boolean {
     const captured = this.editor.selection.captureBookmark();
@@ -410,6 +436,7 @@ class LabelOwner {
         const target = tree.caret(continuation.binding.node, tab ? 'before' : 'after');
         if (target && this.#currentRootPoint(point, state.stamp) && this.#focusBody(target, this.root, state.stamp)) {
           this.#continuation = null;
+          this.#bodyBinding = continuation.binding;
           event.preventDefault();
         }
       }
@@ -418,10 +445,17 @@ class LabelOwner {
 
     let current = tree.read(point.kind === 'child' ? point.parent : point.node);
     let binding: Binding | undefined;
-    while (current && !binding) {
-      binding = this.#bindings.get(current.id);
+    while (current) {
+      const candidate = this.#bindings.get(current.id);
+      if (candidate && candidate === this.#bodyBinding) {
+        binding = candidate;
+        break;
+      }
+      binding ??= candidate;
+      if (binding && !this.#bodyBinding) break;
       current = current.parent ? tree.read(current.parent) : null;
     }
+    if (binding !== this.#bodyBinding) this.#bodyBinding = null;
     if (!binding) return;
     const crossing = tab ? null : tree.cross(point, backwards ? 'after' : 'before');
     if (crossing) {
@@ -444,6 +478,7 @@ class LabelOwner {
     const next = tree.next(binding.node);
     if (next && this.#currentRootPoint(point, state.stamp) && this.#focusBody(next, this.root, state.stamp)) {
       this.#continuation = { binding, next };
+      this.#bodyBinding = null;
       event.preventDefault();
     }
   };
