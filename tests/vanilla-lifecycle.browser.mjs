@@ -413,3 +413,52 @@ test('public vanilla rejects a reentrant mode update from the disabled transitio
   expect(await documentCheckpoint(page)).toEqual(before);
   await disposeMode(page);
 });
+
+test('public vanilla stylesheet supports a host focus theme without remounting', async ({ page, baseURL }) => {
+  const asset = fileURLToPath(import.meta.resolve('@klenwriter/editor/style.css'));
+  const stylesheet = '/packages/vanilla/style.css';
+  const hostTheme = '/vanilla-host-theme.css';
+  await page.route(`${baseURL}${stylesheet}`, route => route.fulfill({ path: asset, contentType: 'text/css' }));
+  await page.route(`${baseURL}${hostTheme}`, route => route.fulfill({
+    contentType: 'text/css',
+    body: '#editor { --editor-focus-color: rgb(12, 34, 56) }',
+  }));
+  await page.locator('link[href="/style.css"]').evaluate(link => link.remove());
+  await page.addStyleTag({ url: stylesheet });
+
+  await mountMode(page, {});
+  const editor = page.getByRole('textbox', { name: 'KlenWriter Editor' });
+  const before = await documentCheckpoint(page);
+  expect(before).toMatchObject({
+    exported: { status: 'exported', canonicalJson: initialCanonical, revision: '0' },
+    sameRoot: true,
+  });
+  await page.getByRole('textbox', { name: 'Before editor' }).focus();
+  await page.evaluate(() => {
+    document.addEventListener('keydown', event => {
+      window.vanillaMode.tab = { key: event.key, trusted: event.isTrusted, target: event.target.id };
+    }, { capture: true, once: true });
+  });
+  await page.keyboard.press('Tab');
+  await expect(editor).toBeFocused();
+  expect(await page.evaluate(() => window.vanillaMode.tab)).toEqual({ key: 'Tab', trusted: true, target: 'before' });
+
+  const outline = () => editor.evaluate(element => {
+    const style = getComputedStyle(element);
+    return {
+      visible: element.matches(':focus-visible'),
+      style: style.outlineStyle,
+      width: style.outlineWidth,
+      offset: style.outlineOffset,
+      color: style.outlineColor,
+    };
+  });
+  const initial = await outline();
+  expect(initial).toMatchObject({ visible: true, style: 'solid', width: '2px', offset: '2px' });
+  expect(initial.color).not.toBe('rgb(12, 34, 56)');
+  await page.addStyleTag({ url: hostTheme });
+  expect(await outline()).toEqual({ ...initial, color: 'rgb(12, 34, 56)' });
+  await expect(editor).toBeFocused();
+  expect(await documentCheckpoint(page)).toEqual(before);
+  await disposeMode(page);
+});

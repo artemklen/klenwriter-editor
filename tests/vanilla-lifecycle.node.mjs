@@ -183,3 +183,21 @@ test('a mode change from a focus callback cannot interrupt disabling', () => {
   assert.deepEqual(vanilla.update(editor, { disabled: true }), { status: 'updated', mode: 'disabled' });
   assert.deepEqual(vanilla.update(editor, { disabled: false }), { status: 'updated', mode: 'editable' });
 });
+
+test('the package exports the shared surface CSS and documents all of its hooks', async () => {
+  const entry = import.meta.resolve('@klenwriter/editor');
+  const packageRoot = new URL('../', entry);
+  const manifest = JSON.parse(await readFile(new URL('package.json', packageRoot), 'utf8'));
+  assert.equal(typeof manifest.exports['./style.css'], 'string', 'Missing public CSS subpath');
+
+  const [stylesheet, sharedStylesheet, readme] = await Promise.all([
+    readFile(new URL(import.meta.resolve('@klenwriter/editor/style.css')), 'utf8'),
+    readFile(new URL('../packages/dom/src/style.css', import.meta.url), 'utf8'),
+    readFile(new URL('README.md', packageRoot), 'utf8'),
+  ]);
+  assert.equal(stylesheet, sharedStylesheet);
+  const declared = Array.from(stylesheet.matchAll(/^\s*(--[\w-]+):/gm), ([, property]) => property).sort();
+  const documented = Array.from(readme.matchAll(/^\|\s*`(--[\w-]+)`\s*\|/gm), ([, property]) => property).sort();
+  assert.deepEqual(declared, ['--editor-focus-color']);
+  assert.deepEqual(documented, declared);
+});
