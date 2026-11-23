@@ -5,25 +5,28 @@ import {readFileSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {resolve} from 'node:path';
 import {performance} from 'node:perf_hooks';
+import {fileURLToPath} from 'node:url';
+import {domAssetPolicy as assets,domAssetContractPins} from './bind-assets.mjs';
 import {browserBodyObserverPins,observeBrowserFetchBodies} from './browser-body-observer.mjs';
-const root=new URL('../../',import.meta.url);
-const read=path=>readFileSync(new URL(path,root));
+const root=fileURLToPath(new URL('../../',import.meta.url));
+const read=path=>readFileSync(resolve(root,path));
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 export const pipeline=JSON.parse(read('contracts/failure-states/v1/dom-pipeline.json'));
-export const assets=JSON.parse(read('contracts/failure-states/v1/dom-assets.json'));
-export const contractPins={pipeline:sha(read('contracts/failure-states/v1/dom-pipeline.json')),assets:sha(read('contracts/failure-states/v1/dom-assets.json')),browserBodyObserver:browserBodyObserverPins};
+export {assets};
+export const contractPins={pipeline:sha(read('contracts/failure-states/v1/dom-pipeline.json')),...domAssetContractPins,browserBodyObserver:browserBodyObserverPins};
 assert.equal(pipeline.rowCount,11);assert.equal(pipeline.rows.length,11);
 assert.deepEqual(pipeline.rows.map(row=>row.id),Array.from({length:11},(_,i)=>`AC1-${String(i+1).padStart(2,'0')}`));
 export function currentAssetBinding(){
   const binding=JSON.parse(read('artifacts/failure-states/dom-assets-current.json'));
-  assert.equal(binding.format,'osr67-ac1-current-assets/1');assert.equal(binding.contractSha256,contractPins.assets);
+  assert.equal(binding.format,'osr67-ac1-current-assets/2');assert.equal(binding.contractSha256,contractPins.assets);
+  assert.equal(binding.rendererContractSha256,contractPins.rendererAssets,'Current renderer asset descriptor must match the binding');
   const head=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();assert.equal(binding.sourceCommit,head,'Current producer binding must name this HEAD');
   assert.equal(binding.files.length,assets.files.length);
   assert.deepEqual(binding.files.map(f=>f.url).sort(),assets.files.map(f=>f.url).sort());
   for(const item of assets.files){
     const bound=binding.files.find(f=>f.url===item.url);assert.equal(bound.path,item.path);
-    const path=resolve(new URL('.',root).pathname,bound.path);assert(path.startsWith(new URL('.',root).pathname),'Binding path within repository');
-    const bytes=read(bound.path);assert.equal(bound.bytes,bytes.length,`Current producer bytes: ${item.url}`);assert.equal(bound.sha256,sha(bytes),`Current producer hash: ${item.url}`);
+    const path=resolve(root,bound.path);assert(path.startsWith(root),'Binding path within repository');
+    const bytes=readFileSync(path);assert.equal(bound.bytes,bytes.length,`Current producer bytes: ${item.url}`);assert.equal(bound.sha256,sha(bytes),`Current producer hash: ${item.url}`);
   }
   return binding;
 }

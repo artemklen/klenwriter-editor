@@ -67,7 +67,7 @@ test('TT15 nested start retires the original pending generation without an inter
 
 // A tiny DOM data model, not jsdom, native DOM or browser provenance. It provides
 // only the actual correspondence's structural API; no observation result is mocked.
-function geometry({partial=false,marks=[],leafAttributes={},extraLeaf=false,multiBlock=false,originalBreak=false,originalEmpty=false}={}){
+function geometry({partial=false,marks=[],leafAttributes={},extraLeaf=false,multiBlock=false,originalBreak=false,originalEmpty=false,fragmented=false,caret=null}={}){
   let browser,currentGeneration={},nativeSelection=clone(sourceSelection);
   const doc={getSelection:()=>browser,createRange(){return {startContainer:null,startOffset:0,endContainer:null,endOffset:0,setStart(node,offset){this.startContainer=node;this.startOffset=offset;},setEnd(node,offset){this.endContainer=node;this.endOffset=offset;},collapse(){this.endContainer=this.startContainer;this.endOffset=this.startOffset;},compareBoundaryPoints(_how,other){if(this.startContainer===other.startContainer)return this.startOffset-other.startOffset;const all=[];const visit=node=>{all.push(node);node.childNodes.forEach(visit);};visit(host);return all.indexOf(this.startContainer)-all.indexOf(other.startContainer);},detach(){},get collapsed(){return this.startContainer===this.endContainer&&this.startOffset===this.endOffset;}};}};
   class N {
@@ -78,24 +78,44 @@ function geometry({partial=false,marks=[],leafAttributes={},extraLeaf=false,mult
     getAttribute(name){return this.attributes.find(a=>a.name===name)?.value??null;}
     contains(node){return this===node||this.childNodes.some(child=>child.contains(node));}
     get firstChild(){return this.childNodes[0]??null;}
+    get length(){return this.data?.length??0;}
     get nextSibling(){if(!this.parentNode)return null;return this.parentNode.childNodes[this.parentNode.childNodes.indexOf(this)+1]??null;}
     get previousSibling(){if(!this.parentNode)return null;return this.parentNode.childNodes[this.parentNode.childNodes.indexOf(this)-1]??null;}
     get isConnected(){return this===host||host.contains(this);}
   }
   const host=new N(1,'DIV'),p=new N(1,'P'),span=new N(1,'SPAN'),text=new N(3,null,'old'),tail=new N(1,'P'),tailSpan=new N(1,'SPAN'),tailText=new N(3,null,'tail');host.append(p,tail);p.append(span);span.append(text);tail.append(tailSpan);tailSpan.append(tailText);
-  const rows=new Map(),owned=new WeakMap(),make=(id,parent,primitive,type_id,outer,content,leafText,children,value)=>{const view={stamp:clone(base),id,parent,primitive,type_id,attributes:{},marks:[],text:value,children,changed_revision:'0',stats:{authored_nodes:'0',text_utf8:'0',text_utf16:'0',height:'0'}};const row={view,outer,content,text:leafText,placeholder:null};rows.set(id,row);owned.set(outer,id);if(leafText)owned.set(leafText,id);outer.setAttribute('data-editor-node',id);return row;};
+  const rows=new Map(),owned=new WeakMap(),make=(id,parent,primitive,type_id,outer,content,leafText,children,value)=>{const view={stamp:clone(base),id,parent,primitive,type_id,attributes:{},marks:[],text:value,children,changed_revision:'0',stats:{authored_nodes:'0',text_utf8:'0',text_utf16:'0',height:'0'}};const row={view,outer,content,text:leafText,texts:leafText?[leafText]:[],placeholder:null};rows.set(id,row);owned.set(outer,id);if(leafText)owned.set(leafText,id);outer.setAttribute('data-editor-node',id);return row;};
   make('root',null,'root','root',host,host,null,['block','tail'],null);make('block','root','text_block','paragraph',p,p,null,['original-text'],null);const leaf=make('original-text','block','text','text',span,span,text,[],'old');leaf.view.marks=clone(marks);leaf.view.attributes=clone(leafAttributes);make('tail','root','text_block','paragraph',tail,tail,null,['tail-text'],null);make('tail-text','tail','text','text',tailSpan,tailSpan,tailText,[],'tail');
   if(extraLeaf){const extraSpan=new N(1,'SPAN'),extraText=new N(3,null,'x');p.append(extraSpan);extraSpan.append(extraText);make('extra-text','block','text','text',extraSpan,extraSpan,extraText,[],'x');rows.get('block').view.children.push('extra-text');}
   if(originalBreak){const br=new N(1,'BR');p.append(br);make('native-break','block','inline_atom','hard_break',br,br,null,[],null);rows.get('block').view.children.push('native-break');}
   if(originalEmpty){text.data='';leaf.view.text='';nativeSelection.focus.offset=0;}
   if(partial)nativeSelection.focus.offset=2;if(multiBlock)nativeSelection.focus=point('tail-text',4);
   browser={isCollapsed:originalEmpty,anchorNode:text,focusNode:multiBlock?tailText:text,anchorOffset:0,focusOffset:multiBlock?4:originalEmpty?0:partial?2:3};
+  if (fragmented) {
+    for (const part of [' second', ' third']) {
+      const node = new N(3,null,part);
+      span.append(node);
+      leaf.texts.push(node);
+      owned.set(node,leaf.view.id);
+      leaf.view.text += part;
+    }
+    if (caret === 'interior' || caret === 'seam') {
+      const offset = caret === 'interior' ? 1 : text.length;
+      nativeSelection.anchor = nativeSelection.focus = point(leaf.view.id,offset);
+      Object.assign(browser,caret === 'seam' ? {anchorNode:span,focusNode:span,anchorOffset:1,focusOffset:1,isCollapsed:true}
+        : {anchorOffset:offset,focusOffset:offset,isCollapsed:true});
+    } else {
+      browser.focusNode=leaf.texts.at(-1);
+      browser.focusOffset=browser.focusNode.length;
+      nativeSelection.focus.offset=leaf.view.text.length;
+    }
+  }
   const access={host,limits:{blocks:32,nodes:1024,depth:128,utf16:32768},row:id=>rows.get(id),ownedId:node=>owned.get(node),placeholder:()=>false,point:value=>({node:rows.get(value.node).text,offset:value.offset}),selection:()=>nativeSelection,generation:()=>currentGeneration};
   const api=createCompositionCorrespondence(access),window=api.begin(clone(base),nativeSelection);assert.notEqual(window?.status,'dom_refused','Valid independently authored baseline');
   const input=(type,inputType,{cancelable=false,range=null,isComposing=true,data=null}={})=>({type,inputType,cancelable,isComposing,data,getTargetRanges:()=>range??[]});
   const range=(node,start,end)=>({startContainer:node,startOffset:start,endContainer:node,endOffset:end});
   let br=null,payload=null;
-  return {api,window,access,host,p,span,text,tail,tailText,rows,N,input,range,preedit(){text.data='´';browser.anchorNode=browser.focusNode=text;browser.anchorOffset=0;browser.focusOffset=1;browser.isCollapsed=false;},
+  return {api,window,access,host,p,span,text,tail,tailText,rows,N,input,range,preedit(){if(fragmented)span.replaceChildren(text);text.data='´';browser.anchorNode=browser.focusNode=text;browser.anchorOffset=0;browser.focusOffset=1;browser.isCollapsed=false;},
     deleteEvent(extra={}){return input('beforeinput','deleteCompositionText',{range:[range(text,0,1)],...extra});},
     empty(){br=new N(1,'BR');p.replaceChildren(br);browser.anchorNode=browser.focusNode=p;browser.anchorOffset=browser.focusOffset=0;browser.isCollapsed=true;return br;},
     insertEvent(extra={}){return input('beforeinput','insertFromComposition',{cancelable:true,range:[range(p,0,0)],data:'é',...extra});},
@@ -114,6 +134,32 @@ test('TG06 an object copying the public window field is not a registered ticket'
 test('TG07 insertion range must be exactly the actual empty owned block child0',()=>{const g=geometry(),ticket=emptied(g);refused(g.api.captureTerminalInsertion(ticket,g.insertEvent({range:[g.range(g.p,0,1)]})));g.api.releaseTerminal(ticket);});
 test('TG08 event data alone with an empty BR or surviving SPAN cannot become payload',()=>{for(const shape of ['br','span']){const g=geometry(),ticket=emptied(g);assert.equal(g.api.captureTerminalInsertion(ticket,g.insertEvent()),null);if(shape==='span'){const span=new g.N(1,'SPAN');span.append(new g.N(3,null,'é'));g.p.replaceChildren(span);g.selection(span.firstChild,1);}refused(g.api.observeTerminalInsertion(ticket,g.input('input','insertFromComposition',{data:'é'})));g.api.releaseTerminal(ticket);}});
 test('TG09 released or completed ticket cannot be rebound to a later generation',()=>{const g=geometry(),ticket=emptied(g);g.api.releaseTerminal(ticket);refused(g.api.captureTerminalInsertion(ticket,g.insertEvent()));g.api.releaseTerminal(ticket);assert.equal(g.api.terminalRetainedBytes(ticket),0);});
+
+test('composition inside the first fragment refuses an identical clone of a distant sibling', () => {
+  const g = geometry({fragmented:true,caret:'interior'});
+  const [first,second,third] = g.span.childNodes;
+  g.span.replaceChildren(first,second,new g.N(3,null,third.data));
+  refused(g.api.observe(g.window));
+});
+
+test('composition at an owned fragment gap can extend the immediately adjacent text', () => {
+  const g = geometry({fragmented:true,caret:'seam'});
+  g.text.data += 'X';
+  const observed = g.api.observe(g.window);
+  assert.equal(observed.replacement,'X');
+  assert.equal(observed.region.provisionalText,'oldX second third');
+});
+
+test('a fully selected fragmented leaf retains the single preedit terminal path', () => {
+  const g = geometry({fragmented:true});
+  const ticket = emptied(g);
+  assert.equal(g.api.captureTerminalInsertion(ticket,g.insertEvent()),null);
+  g.payload();
+  const observed = g.api.observeTerminalInsertion(ticket,g.input('input','insertFromComposition'));
+  assert.equal(observed.replacement,'é');
+  assert.equal(observed.region.originalText,'old second third');
+  assert.equal(g.api.terminalRetainedBytes(ticket),0);
+});
 
 // SOURCE03 amendment02. A protected native selection cannot stand in for the
 // actual DOM point. These move only the controlled browser caret: native state,

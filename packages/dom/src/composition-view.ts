@@ -3,6 +3,7 @@
 import type { DeepReadonly, NodeViewDto, PositionDto, SelectionDto, StampDto } from '@klenwriter/editor-sdk';
 import type { DomRefusal, RecoveryRegion } from './types.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
+import { matchesTextFragments } from './text-fragments.js';
 import type { LiteralCompositionSource } from './composition-literal.js';
 import type { MarkDto } from '@klenwriter/editor-sdk';
 
@@ -39,7 +40,7 @@ export interface CompositionRow {
   readonly view: DeepReadonly<NodeViewDto>;
   readonly outer: HTMLElement;
   readonly content: HTMLElement;
-  readonly text: Text | null;
+  readonly texts: readonly Text[];
   readonly placeholder: HTMLBRElement | null;
 }
 export interface CompositionAccess {
@@ -89,10 +90,9 @@ interface WindowState {
   readonly suffix: readonly Chunk[];
   readonly prefixUnits: number;
   readonly suffixUnits: number;
-  readonly left: CompositionPoint;
-  readonly right: CompositionPoint;
   readonly originalSelected: string;
   readonly mutableText: ReadonlySet<Node>;
+  readonly boundaryTexts: ReadonlySet<Node>;
   readonly untouchedEmpty: readonly RecordNode[];
   readonly selectedAtoms: readonly Node[];
 }
@@ -141,6 +141,7 @@ export function createCompositionCorrespondence(access: CompositionAccess) {
   }
   function scan(root: Node,budget: Budget,originals?: ReadonlyMap<Node,RecordNode>,baseline=false): Scan | null {
     const records: RecordNode[]=[],segments: Segment[]=[],pieces:string[]=[];
+    const admittedTexts=new Map<Node,CompositionRow>();
     const stack:{node:Node;depth:number;chain:readonly Element[];opaque?:boolean;exit?:boolean;record?:RecordNode}[]=[{node:root,depth:0,chain:[]}];
     let units=0,pending=1;
     while(stack.length){
@@ -176,7 +177,18 @@ export function createCompositionCorrespondence(access: CompositionAccess) {
       if(data!==null){
         if(data.length>access.limits.utf16-budget.units)return null;
         if(item.opaque){if(!baseline&&(!original||original.data!==data))return null;}
-        else if(baseline&&(!row||row.text!==node||row.view.text!==data))return null;
+        else if (baseline) {
+          if (!row || row.view.primitive !== 'text' || row.view.text === null) return null;
+          if (!admittedTexts.has(node)) {
+            if (row.texts.length > access.limits.nodes || row.view.text.length > access.limits.utf16-budget.units
+                || !matchesTextFragments(row.content,row.texts,row.view.text)) return null;
+            for (const text of row.texts) {
+              if (access.ownedId(text) !== row.view.id || admittedTexts.has(text)) return null;
+              admittedTexts.set(text,row);
+            }
+          }
+          if (admittedTexts.get(node) !== row) return null;
+        }
         budget.units+=data.length;
         if(!item.opaque){units+=data.length;pieces.push(data);segments.push({kind:'text',node,data,start,end:units,chain:item.chain,style:style(item.chain,originals)});}
       } else if(tag==='BR'){
@@ -304,6 +316,20 @@ export function createCompositionCorrespondence(access: CompositionAccess) {
       for(const value of scans)for(const segment of value.segments)(segment as {style:string}).style=style(segment.chain,originals);
       const start=offset(scans[0],left),end=offset(scans[scans.length-1],right);if(start===null||end===null||l===r&&start>end)return failure('dom.composition_stale',stamp);
       const boundaryNodes=new Set([left.node,right.node]);
+      for (const point of [left,right]) {
+        const id = access.ownedId(point.node), row = id ? access.row(id) : undefined;
+        if (row?.view.primitive !== 'text' || row.texts.length < 2 || !originals.has(point.node)) continue;
+        const index = row.texts.indexOf(point.node as Text);
+        if (point.node === row.content) {
+          const before = row.texts[point.offset-1], after = row.texts[point.offset];
+          if (before) boundaryNodes.add(before);
+          if (after) boundaryNodes.add(after);
+        } else if (index >= 0) {
+          const before = row.texts[index-1], after = row.texts[index+1];
+          if (before && point.offset === 0) boundaryNodes.add(before);
+          if (after && point.offset === row.texts[index].length) boundaryNodes.add(after);
+        }
+      }
       const mutableText=new Set<Node>();
       for(let index=0;index<scans.length;index++)for(const segment of scans[index].segments){
         const from=index===0?start:0,to=index===scans.length-1?end:scans[index].units;
@@ -338,7 +364,7 @@ export function createCompositionCorrespondence(access: CompositionAccess) {
       const region:RecoveryRegion=Object.freeze({kind:'bounded',stamp,originalText,provisionalText:originalText,affectedNodeIds:affected});
       const window:CompositionWindow=Object.freeze({stamp,selection,entries:Object.freeze(entries),parent:parent.content,before,after,anchor,focus,selectedAtomIds:Object.freeze(atoms),affectedNodeIds:affected,originalRegion:region});
       const selected=l===r?scans[0].text.slice(start,end):scans[0].text.slice(start)+'\n'+scans.slice(1,-1).map(value=>value.text).join('\n')+scans[scans.length-1].text.slice(0,end);
-      windows.set(window,{generation:access.generation(),scans:Object.freeze(scans),originals,outside:Object.freeze(outside),ancestors:Object.freeze(ancestors),prefix,suffix,prefixUnits:start,suffixUnits:scans[scans.length-1].units-end,left,right,originalSelected:selected,mutableText,untouchedEmpty:Object.freeze(untouchedEmpty),selectedAtoms:Object.freeze([...selectedAtoms])});
+      windows.set(window,{generation:access.generation(),scans:Object.freeze(scans),originals,outside:Object.freeze(outside),ancestors:Object.freeze(ancestors),prefix,suffix,prefixUnits:start,suffixUnits:scans[scans.length-1].units-end,originalSelected:selected,mutableText,boundaryTexts:boundaryNodes,untouchedEmpty:Object.freeze(untouchedEmpty),selectedAtoms:Object.freeze([...selectedAtoms])});
       return window;
     } catch {return failure('dom.composition_limit',stamp);}
   }
@@ -365,7 +391,7 @@ export function createCompositionCorrespondence(access: CompositionAccess) {
       const current=scans[0];
       if(!unchanged&&!recoveryOnly){
         if(current.units<state.prefixUnits+state.suffixUnits)return failure('dom.composition_ambiguous',window.stamp);
-        const boundary=new Set([state.left.node,state.right.node]);
+        const boundary=state.boundaryTexts;
         const prefix=chunks(current,0,state.prefixUnits,boundary),suffix=chunks(current,current.units-state.suffixUnits,current.units,boundary);
         if(!matchesChunks(prefix,state.prefix,false)||!matchesChunks(suffix,state.suffix,window.entries.length>1))return failure('dom.composition_ambiguous',window.stamp);
         const replacement=chunks(current,state.prefixUnits,current.units-state.suffixUnits,boundary);
@@ -392,7 +418,8 @@ export function createCompositionCorrespondence(access: CompositionAccess) {
       ||!((selection.anchor.offset===0&&selection.focus.offset===leaf.view.text.length)||(selection.focus.offset===0&&selection.anchor.offset===leaf.view.text.length)))return null;
     for(const key in leaf.view.attributes)if(Object.hasOwn(leaf.view.attributes,key))return null;
     const original=source.originals.get(leaf.outer);
-    if(!original?.transparentTextRow||source.scans[0].segments.length!==1||source.scans[0].segments[0].kind!=='text')return null;
+    const segments=source.scans[0].segments;
+    if(!original?.transparentTextRow||segments.length===0||segments.some(segment=>segment.kind!=='text'||!segment.chain.includes(leaf.outer)))return null;
     const block=access.row(entry.id),blockRecord=source.originals.get(entry.element);
     if(!blockRecord||!attrsEqual(entry.element,blockRecord.attributes))return failure('dom.composition_ambiguous',window.stamp);
     if(!block||block.view!==entry.view||block.outer!==entry.element||entry.element.parentNode!==window.parent

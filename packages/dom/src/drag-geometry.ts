@@ -2,6 +2,7 @@
 import type { DeepReadonly, Response, SessionContextV2, StampDto } from '@klenwriter/editor-sdk';
 import type { CssRect, DomRefusal, DragBox, DragDestination, DragGeometryRead, DragGeometryRequest, DragNodeHeader } from './types.js';
 import type { DomView, GeometryRow } from './view.js';
+import { matchesTextFragments } from './text-fragments.js';
 import { fields } from './ownership.js';
 import { domRefusal } from './refusal.js';
 
@@ -172,8 +173,9 @@ class DragMeasurement {
           if(node.childNodes.length!==1||node.firstChild!==wrapper)throw unsupported;
           node=wrapper;
         }
-        if(!item.text||node!==item.content||node.childNodes.length!==1||node.firstChild!==item.text||item.text.data!==item.view.text)throw unsupported;
-        this.owned(item.text,item);
+        if(node!==item.content||item.view.text===null)throw unsupported;
+        for(const text of item.texts)this.owned(text,item);
+        if(!matchesTextFragments(item.content,item.texts,item.view.text))throw unsupported;
       } else if(item.placeholder) {
         this.owned(item.placeholder,item);
         if(item.view.children.length!==0||item.content.childNodes.length!==1||item.content.firstChild!==item.placeholder)throw unsupported;
@@ -287,7 +289,7 @@ class DragMeasurement {
     this.checked.clear();
     for(const row of this.rows.values()) {
       const current=this.view.geometryRow(row.view.id);
-      if(!current||current.outer!==row.outer||current.content!==row.content||current.view!==row.view||current.text!==row.text||current.placeholder!==row.placeholder)throw unsupported;
+      if(!current||current.outer!==row.outer||current.content!==row.content||current.view!==row.view||current.texts!==row.texts||current.placeholder!==row.placeholder)throw unsupported;
       this.validate(row);
     }
     for(const [node,parent] of this.parents)if(!node.isConnected||node.ownerDocument!==this.doc||node.parentNode!==parent)throw unsupported;

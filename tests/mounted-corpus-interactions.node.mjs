@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // Data-only source and collector controls; none is product/browser acceptance.
-import { readFileSync } from 'node:fs';
+import { readFileSync } from '../scripts/mounted-corpus/retained-source-fixture.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';

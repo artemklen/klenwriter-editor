@@ -47,7 +47,8 @@ const mapPages=['sdk-host.html','dom-host.html','selection.html','clipboard.html
 // the actual JS syntax parse and static dependency metadata without importing
 // the inspected module, resolving dependencies, or writing emitted files.
 function moduleTokens(text,path){
-  const scanner=createScanner(true,LanguageVariant.Standard,text),tokens=[],braces=[];
+  const scanner=createScanner(true,LanguageVariant.Standard,text),tokens=[],braces=[],parentheses=[],closes=new Map();
+  let endsGroupedExpression=false;
   const regexPrefixes=new Set([K.OpenBraceToken,K.OpenParenToken,K.OpenBracketToken,K.SemicolonToken,K.CommaToken,
     K.ColonToken,K.QuestionToken,K.ExclamationToken,K.TildeToken,K.EqualsGreaterThanToken,K.TemplateHead,K.TemplateMiddle,
     K.ReturnKeyword,K.ThrowKeyword,K.CaseKeyword,K.DeleteKeyword,K.VoidKeyword,K.TypeOfKeyword,K.YieldKeyword,
@@ -63,7 +64,7 @@ function moduleTokens(text,path){
       const binary=previous&&previous.kind>=K.FirstBinaryOperator&&previous.kind<=K.LastBinaryOperator
         &&previous.kind!==K.PlusPlusToken&&previous.kind!==K.MinusMinusToken;
       if(!previous||!member&&(regexPrefixes.has(previous.kind)||binary))kind=scanner.reScanSlashToken();
-      else assert(previous&&(member||expressionEnds.has(previous.kind)),
+      else assert(previous&&(member||expressionEnds.has(previous.kind)||endsGroupedExpression),
         `Review ambiguous slash context before scanning ${path}:${scanner.getTokenStart()}`);
     }
     if(kind===K.CloseBraceToken){
@@ -75,11 +76,22 @@ function moduleTokens(text,path){
       }else braces.pop();
     }else if(kind===K.OpenBraceToken)braces.push('brace');
     else if(kind===K.TemplateHead)braces.push('template');
+    endsGroupedExpression=false;
+    if(kind===K.OpenParenToken)parentheses.push(tokens.length);
+    else if(kind===K.CloseParenToken){
+      assert(parentheses.length,`Balanced lexical parentheses: ${path}`);
+      const open=parentheses.pop(),prefix=tokens[open-1]?.kind;
+      closes.set(open,tokens.length);
+      // These prefixes establish expression grouping. A slash after other
+      // closing parentheses can still start a statement's regex literal.
+      endsGroupedExpression=prefix===K.EqualsToken||prefix===K.OpenParenToken;
+    }
     assert(kind!==K.Unknown&&!scanner.isUnterminated(),`Complete lexical token: ${path}:${scanner.getTokenStart()}`);
     tokens.push({kind,value:scanner.getTokenValue(),start:scanner.getTokenStart(),end:scanner.getTokenEnd()});
   }
   assert.deepEqual(braces,[],`Complete lexical braces/templates: ${path}`);
-  return tokens;
+  assert.equal(parentheses.length,0,`Complete lexical parentheses: ${path}`);
+  return{tokens,closes};
 }
 function moduleFacts(path,closedHost=false){
   const text=read(path).toString('utf8');
@@ -92,12 +104,7 @@ function moduleFacts(path,closedHost=false){
   // input metadata need not list their unresolved source edges.
   for(const item of output[0].imports)assert(['import-statement','dynamic-import'].includes(item.kind),`Closed module dependency kind: ${path}`);
   const imports=output[0].imports.filter(item=>item.kind==='import-statement').map(item=>item.path);
-  const dynamic=[],urls=[],fetches=[],tokens=moduleTokens(text,path),parentheses=[],closes=new Map();
-  for(let index=0;index<tokens.length;index++){
-    if(tokens[index].kind===K.OpenParenToken)parentheses.push(index);
-    else if(tokens[index].kind===K.CloseParenToken){assert(parentheses.length,`Balanced lexical parentheses: ${path}`);closes.set(parentheses.pop(),index);}
-  }
-  assert.equal(parentheses.length,0,`Complete lexical parentheses: ${path}`);
+  const dynamic=[],urls=[],fetches=[],{tokens,closes}=moduleTokens(text,path);
   const is=(index,kind,value)=>tokens[index]?.kind===kind&&(value===undefined||tokens[index].value===value);
   for(let index=0;index<tokens.length;index++){
     const member=is(index-1,K.DotToken)||is(index-1,K.QuestionDotToken);

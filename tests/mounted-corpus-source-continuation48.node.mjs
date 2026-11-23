@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // Source-authored data integrity controls only. No editor/native/browser runs.
 // Execution awaits finalized quiet-source pins; the pending scaffold refuses.
-import { lstatSync, readFileSync } from 'node:fs';
+import { lstatSync, readFileSync } from '../scripts/mounted-corpus/retained-source-fixture.mjs';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { lstat, readFile } from 'node:fs/promises';

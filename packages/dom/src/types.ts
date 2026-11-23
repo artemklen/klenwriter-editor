@@ -54,7 +54,7 @@ export interface DomPresentation { readonly tag: DomTag; readonly attributes?: R
 export interface RegistryNodeWitness { readonly id: string; readonly owner: string; readonly primitive: string; readonly attributes: readonly string[] }
 export interface RegistryMarkWitness { readonly id: string; readonly owner: string; readonly attributes: readonly string[] }
 export interface TrustedRegistryInventory { readonly nodes: readonly RegistryNodeWitness[]; readonly marks: readonly RegistryMarkWitness[]; readonly commands: readonly string[] }
-export interface NodeRendererDefinition { readonly primitive: string; readonly attributes: readonly string[]; readonly present: (node: DeepReadonly<NodeViewDto>) => DomPresentation | DomRefusal }
+export interface NodeRendererDefinition { readonly layout?: 'plain-text-block'; readonly primitive: string; readonly attributes: readonly string[]; readonly present: (node: DeepReadonly<NodeViewDto>) => DomPresentation | DomRefusal }
 export interface MarkRendererDefinition { readonly attributes: readonly string[]; readonly present: (mark: DeepReadonly<MarkDto>) => DomPresentation | DomRefusal }
 /** Data-only command construction for browser gestures; semantics remain native. */
 export interface InputCommandBindings { readonly insertText?: (text: string) => CommandDto; readonly enter?: () => CommandDto; readonly lineBreak?: () => CommandDto; readonly deleteBackward?: () => CommandDto; readonly deleteSelection?: () => CommandDto;
@@ -70,7 +70,27 @@ export interface RendererCatalogDefinition {
 }
 /** Created only by defineRendererCatalog; opaque trusted capability witness. */
 export interface RendererCatalog { readonly definition: RendererCatalogDefinition; readonly __rendererCatalog: unique symbol }
-export interface MountEditorOptions { readonly element: HTMLElement; readonly editor: CreateEditorOptionsV2; readonly renderers: RendererCatalog; readonly mode?: InteractionMode; readonly onRecovery?: (packet: RecoveryPacket) => void; readonly onRefusal?: (failure: DomRefusal) => void; readonly clipboard?: ClipboardConfiguration }
+/** How the view represents an owned native text leaf in the DOM. */
+export type DomTextRepresentation = 'auto' | 'full';
+/** How the view updates owned text after a native document publication. */
+export type DomPatchPolicy = 'full' | 'stable-text' | 'stable-fragments';
+/** Whether the view opts eligible blocks into browser-managed layout skipping. */
+export type DomLayoutPolicy = 'full' | 'auto-blocks';
+export interface MountEditorOptions {
+  readonly element: HTMLElement;
+  readonly editor: CreateEditorOptionsV2;
+  readonly renderers: RendererCatalog;
+  readonly mode?: InteractionMode;
+  readonly onRecovery?: (packet: RecoveryPacket) => void;
+  readonly onRefusal?: (failure: DomRefusal) => void;
+  readonly clipboard?: ClipboardConfiguration;
+  /** Defaults to 'auto'. 'full' uses a single DOM Text per native leaf. */
+  readonly textRepresentation?: DomTextRepresentation | undefined;
+  /** Defaults to 'stable-fragments' with auto text and 'full' with full text. */
+  readonly patchPolicy?: DomPatchPolicy | undefined;
+  /** Defaults to 'full'. */
+  readonly layoutPolicy?: DomLayoutPolicy | undefined;
+}
 export interface MountedResourceCounts { readonly sdk: ReturnType<EditorControllerV2['resources']>; readonly dom: Readonly<{ listeners: number; observers: number; continuations: number; retainedInputBytes: number; retainedRecoveryRegions: number }>; readonly selection: SelectionResourceCounts; readonly clipboard: ClipboardResourceCounts; readonly hostRequests: Readonly<{pending:number;focusContinuations:number}>; readonly inputObservations: Readonly<{subscribers:number}>; readonly popupPresentation: Readonly<{handles:number}>; readonly typing?:Readonly<{armedSlots:number;backspaceCandidates:number;pendingDispatches:number;retainedBytes:number}> }
 export interface MountedEditor {
   readonly ready: Promise<MountedReady>;

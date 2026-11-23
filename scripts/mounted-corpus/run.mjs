@@ -3,7 +3,7 @@
 import { spawn, execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { createReadStream, lstatSync, openSync, fstatSync, readSync, closeSync } from 'node:fs';
-import { mkdir, readdir, writeFile, lstat, realpath, open } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, rm, writeFile, lstat, realpath, open } from 'node:fs/promises';
 import { resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
@@ -13,7 +13,8 @@ import Ajv2020 from 'ajv/dist/2020.js';
 import { PROTOCOL_VERSION, ACCEPTED_SOURCE, ENGINES, BUDGETS, REQUIRED_SCENARIO_PATHS, ownBoundedData } from './protocol.mjs';
 import { loadContract, collect } from './collect.mjs';
 import { collectInteractions, interactionValidators } from './collect-interactions.mjs';
-import { loadMountedResourceProfile67, RESOURCE_PROFILE67_ID, RESOURCE_PROFILE67_PATH, assertResourceProfileBinding67 } from './resource-profile67.mjs';
+import { loadMountedResourceProfile67, RESOURCE_PROFILE67_ID, RESOURCE_PROFILE67_PATH, assertResourceProfileBinding67 } from './renderer-source.mjs';
+import { rebuildRenderer } from './renderer-build.mjs';
 import { computeSdkBuildIdentity } from '../generate-sdk-types.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -208,11 +209,17 @@ export async function run() {
   const runRoot = resolve(root, 'artifacts/mounted-corpus/runs', runId);
   await mkdir(runRoot, { recursive: true });
   // Isolate browser application data only in this task's child environment.
-  const appData = resolve(runRoot, 'browser-appdata'), temporary = resolve(runRoot, 'browser-tmp');
-  await mkdir(appData); await mkdir(temporary);
-  const browserEnv = { ...process.env, PLAYWRIGHT_SKIP_BROWSER_GC: '1', CFFIXED_USER_HOME: appData, TMPDIR: temporary };
+  const appData = resolve(runRoot, 'browser-appdata'), runTemporary = resolve(runRoot, 'browser-tmp');
+  const linux = process.platform === 'linux';
+  await mkdir(appData);
+  if (!linux) await mkdir(runTemporary);
   const receipt = { protocol: PROTOCOL_VERSION, runId, started: new Date().toISOString(), sourceSHA: sourceSHA(), sourceStatusAtStart: sourceStatus(), phase: 'binding' };
+  let linuxTemporary;
   try {
+    // Chromium's Linux singleton socket needs a short TMPDIR. mkdtemp creates a private directory (0700).
+    if (linux) linuxTemporary = await mkdtemp('/tmp/kw-mounted-');
+    const temporary = linuxTemporary ?? runTemporary;
+    const browserEnv = { ...process.env, PLAYWRIGHT_SKIP_BROWSER_GC: '1', CFFIXED_USER_HOME: appData, TMPDIR: temporary };
     // Explicit67 continuation: historical contract authority and actual runtime
     // bytes remain separate. No frozen45 literal or expected value is rewritten.
     const resourceProfile = RESOURCE_PROFILE67_ID;
@@ -221,11 +228,12 @@ export async function run() {
     });
     const continuationBefore = await continuation.verifyAll();
     await writeJson(resolve(runRoot, 'source-continuation67-before.json'), continuationBefore);
+    await rebuildRenderer({root,runRoot,child});
     const continuationRuntimeBefore = await continuation.captureRuntimeInventory(receipt.sourceSHA);
-    await writeJson(resolve(runRoot, 'source-continuation67-runtime-before.json'), continuationRuntimeBefore);
-    receipt.sourceContinuation = { scope: 'Explicit strict resource profile67 and whole192 current raw source pins; retained c82 snapshot and legacy45/47/48/66 source authority inherit no runtime acceptance.',
+    await writeJson(resolve(runRoot, 'renderer-source-runtime-before.json'), continuationRuntimeBefore);
+    receipt.sourceContinuation = { scope: 'Strict resource profile67 with separate base authority and current renderer source inventory.',
       before: await pin('source-continuation67-before.json', runRoot), after: null,
-      runtimeBefore: await pin('source-continuation67-runtime-before.json', runRoot), runtimeAfter: null };
+      runtimeBefore: await pin('renderer-source-runtime-before.json', runRoot), runtimeAfter: null };
     const sourcePins = json(await boundedFile(root, 'contracts/mounted-e2e/v1/source-pins.json', BUDGETS.observationBytes));
     const manifest = json(await boundedFile(root, 'contracts/mounted-e2e/v1/manifest.json', BUDGETS.observationBytes));
     // Reject source/transport incompatibility before launching a browser owner.
@@ -242,7 +250,7 @@ export async function run() {
       throw new Error('Current source, compiled manifest and sealed WASM do not agree');
     }
     const extraPaths = ['contracts/mounted-e2e/v1/interaction-literals.json', 'scripts/mounted-corpus/interactions.mjs', 'scripts/mounted-corpus/native-observer.mjs', 'scripts/mounted-corpus/interactions.css', 'scripts/mounted-corpus/collect-interactions.mjs', 'tests/mounted-corpus-interactions.spec.js', 'tests/mounted-corpus-interactions.node.mjs'];
-    const continuationSidecarPaths = ['source-continuation67-before.json', 'source-continuation67-runtime-before.json']
+    const continuationSidecarPaths = ['source-continuation67-before.json', 'renderer-source-runtime-before.json']
       .map(name => relative(root, resolve(runRoot, name)));
     const paths = [...new Set([...sourcePins.files.map(item => item.path), ...REQUIRED_SCENARIO_PATHS, ...extraPaths,
       // Frozen v1 RunBinding permits64 pins. The complete current67 continuation
@@ -294,8 +302,8 @@ export async function run() {
     }
     const continuationRuntimeAfter = await continuation.captureRuntimeInventory(sourceSHA());
     if (JSON.stringify(continuationRuntimeAfter) !== JSON.stringify(continuationRuntimeBefore)) throw new Error('Actual continuation runtime source inventory changed during run');
-    await writeJson(resolve(runRoot, 'source-continuation67-runtime-after.json'), continuationRuntimeAfter);
-    receipt.sourceContinuation.runtimeAfter = await pin('source-continuation67-runtime-after.json', runRoot);
+    await writeJson(resolve(runRoot, 'renderer-source-runtime-after.json'), continuationRuntimeAfter);
+    receipt.sourceContinuation.runtimeAfter = await pin('renderer-source-runtime-after.json', runRoot);
     const continuationAfter = await continuation.verifyAll();
     if (JSON.stringify(continuationAfter) !== JSON.stringify(continuationBefore)) throw new Error('Historical/current source continuation changed during run');
     await writeJson(resolve(runRoot, 'source-continuation67-after.json'), continuationAfter);
@@ -311,9 +319,17 @@ export async function run() {
     receipt.success = false; receipt.failure = { name: error.name, message: error.message };
     throw error;
   } finally {
-    receipt.finished = new Date().toISOString();
-    await writeJson(resolve(runRoot, 'receipt.json'), receipt);
-    console.log(JSON.stringify({ runRoot, phase: receipt.phase, success: receipt.success }));
+    try {
+      if (linuxTemporary) await rm(linuxTemporary, { recursive: true, force: true });
+    } catch (error) {
+      receipt.success = false;
+      receipt.browserTemporaryCleanupFailure = { name: error.name, message: error.message };
+      if (!receipt.failure) throw error;
+    } finally {
+      receipt.finished = new Date().toISOString();
+      await writeJson(resolve(runRoot, 'receipt.json'), receipt);
+      console.log(JSON.stringify({ runRoot, phase: receipt.phase, success: receipt.success }));
+    }
   }
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

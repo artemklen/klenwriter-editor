@@ -7,7 +7,7 @@ import {
   PROTOCOL_VERSION, ACCEPTED_SOURCE, LITERAL_AUTHORING_SOURCE, ENGINES, ENGINE_TIERS, BUDGETS,
   REQUIRED_CALL_LABELS, REQUIRED_SCENARIO_PATHS, ownBoundedData, isU64, nativeResourceCounts,
 } from './protocol.mjs';
-import { assertResourceProfile67, resourceSchema67, assertResourceProfileBinding67, assertSettledResources67 } from './resource-profile67.mjs';
+import { assertResourceProfile67, resourceSchema67, assertResourceProfileBinding67, assertSettledResources67 } from './renderer-source.mjs';
 
 const BASE = 'contracts/mounted-e2e/v1/';
 // run-binding.schema.json#/$defs/pin/properties/bytes/maximum. This

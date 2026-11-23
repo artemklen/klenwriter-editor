@@ -5,6 +5,7 @@ import type { DomPoint, DomView, GeometryRow } from './view.js';
 import { fields } from './ownership.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
 import { readDragGeometry } from './drag-geometry.js';
+import { fragmentOffset, matchesTextFragments } from './text-fragments.js';
 
 interface Configuration {
   element(): HTMLElement | null;
@@ -97,7 +98,9 @@ class Measurement {
           if(node.childNodes.length!==1 || node.firstChild!==wrapper || this.view.geometryOwner(wrapper)?.outer!==item.outer)throw unsupported;
           node=wrapper;
         }
-        if(!item.text || node!==item.content || node.childNodes.length!==1 || node.firstChild!==item.text || item.text.data!==item.view.text || this.view.geometryOwner(item.text)?.outer!==item.outer)throw unsupported;
+        if(node!==item.content || item.view.text===null)throw unsupported;
+        for(const text of item.texts){this.visit(text);if(this.view.geometryOwner(text)?.outer!==item.outer)throw unsupported;}
+        if(!matchesTextFragments(item.content,item.texts,item.view.text))throw unsupported;
       } else if(item.placeholder && (item.view.children.length!==0 || item.content.childNodes.length!==1 || item.content.firstChild!==item.placeholder))throw unsupported;
       this.checked.add(item.view.id);
     }
@@ -110,10 +113,10 @@ class Measurement {
   point(point:DomPoint):void {
     const row=this.owned(point.node);
     if(point.node.nodeType===3) {
-      if(row.text!==point.node || point.offset<0 || point.offset>(point.node as Text).length)throw unsupported;
+      if(fragmentOffset(row.texts,row.content,point.node,point.offset)===null)throw unsupported;
     } else {
       if(!Number.isSafeInteger(point.offset) || point.offset<0 || point.offset>point.node.childNodes.length)throw unsupported;
-      if(point.node===row.content && !row.text && !row.view.primitive.endsWith('_atom') && row.view.primitive!=='hard_break') {
+      if(point.node===row.content && row.view.primitive!=='text' && !row.view.primitive.endsWith('_atom') && row.view.primitive!=='hard_break') {
         if(row.placeholder){if(point.offset!==0)throw unsupported;}
         else {
           if(point.node.childNodes.length!==row.view.children.length)throw unsupported;
@@ -263,7 +266,8 @@ class Measurement {
   revalidate():void {
     this.checked.clear();
     for(const row of this.rows.values()) {
-      if(this.view.geometryRow(row.view.id)?.outer!==row.outer)throw unsupported;
+      const current=this.view.geometryRow(row.view.id);
+      if(!current || current.outer!==row.outer || current.texts!==row.texts)throw unsupported;
       this.validate(row);
     }
     for(const node of this.visited)if(!node.isConnected || !this.host.contains(node) && node!==this.host || !this.view.geometryOwner(node))throw unsupported;

@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import Ajv2020 from 'ajv/dist/2020.js';
 import { RESOURCE_KEYS, ENGINES, ownBoundedData, nativeResourceCounts } from './protocol.mjs';
-import { assertResourceProfile67, resourceSchema67, resourceKeys67, assertResourceProfileBinding67, assertSettledResources67 } from './resource-profile67.mjs';
+import { assertResourceProfile67, resourceSchema67, resourceKeys67, assertResourceProfileBinding67, assertSettledResources67 } from './renderer-source.mjs';
 const validatorResourceProfiles = new WeakMap();
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const mapRoles = (checkpoint, paths) => Object.fromEntries(Object.entries(paths).map(([role, path]) => [role,

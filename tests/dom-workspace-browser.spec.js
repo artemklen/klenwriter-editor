@@ -2,6 +2,7 @@ import {test,expect} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
+import {longDocumentFixtures} from './support/large-document-fixtures.mjs';
 const literal=name=>readFileSync(`contracts/dom/v1/expected/${name}.canonical.json`,'utf8');
 const wire=name=>readFileSync(`contracts/dom/v1/inputs/${name}.json`,'utf8');
 const call=(page,method,...args)=>page.evaluate(({method,args})=>window.domHost[method](...args),{method,args});
@@ -496,4 +497,906 @@ test('asynchronous temporary replacement destroyed during loading never resurrec
   const {id}=await call(page,'mount',{fixture:'D0',delayReplacement:true});const started=await call(page,'startReplacement',id,'T10-replacement');expect(started.loaderCalls).toBe(2);
   const destroyed=await call(page,'dispose',id);expect(destroyed.receipt.status).toBe('destroy_requested');expect(new TextDecoder().decode(Uint8Array.from(destroyed.receipt.recovery.originalInput))).toBe(wire('T10-replacement'));expect(destroyed.resources.dom).toMatchObject({listeners:0,observers:0,continuations:0,retainedInputBytes:0,retainedRecoveryRegions:0});
   const finished=await call(page,'finishReplacement',id);observations.get(page).replacementDestroyedRace={started,destroyed,finished};expect(finished.result.status).toBe('dom_refused');expect(finished.result.diagnostic.code).toBe('dom.disposed');expect(finished.native.sessions).toBe(0);expect(finished.resources.sdk.sessions).toBe(0);expect(finished.resources.sdk.host_requests).toBe(0);expect(finished.resources.dom.continuations).toBe(0);expect(finished.domText).toBe('');expect(finished.capture).toBeNull();
+});
+
+test('long leaves keep their canonical bytes and map physical Text seams to native UTF-16 positions', async ({page}) => {
+  const corpora = longDocumentFixtures();
+  expect(corpora.map(({canonical}) => createHash('sha256').update(canonical).digest('hex'))).toEqual([
+    '83c74cf00eee8dc890dbc495d078f430aab553be47f9d406e53aabe423116296',
+    'c98e383b2d654d64a52b6bdd1d5dc6c55cc3757def5159702c9251a323a7bb11',
+  ]);
+  const result = await page.evaluate(async corpora => {
+    const [{createEditor, sdkBuildId}, {createDomView}, {kwdjBasicRenderers}, {kwdjCommand}, packet] = await Promise.all([
+      import('@klenwriter/editor-sdk'), import('/packages/dom/view.js'), import('@klenwriter/editor-kwdj/dom'),
+      import('@klenwriter/editor-kwdj'),
+      fetch('/extensions-packet.json').then(response => response.json()),
+    ]);
+    const text = '  Русский e\u0301 👩‍💻 latin 👋🏽 '.repeat(36);
+    const unbroken = 'x'.repeat(text.length);
+    const observations = [];
+    const edgeCase = {id: 'Unicode and leading spaces', leaves: [text, unbroken],
+      canonical: JSON.stringify({content: [text, unbroken].map(value => ({content: [{text: value, type: 'text'}], type: 'paragraph'})),
+        profile: 'prose', schema: 'klenwriter.document', schema_version: 1})};
+    for (const {id, leaves, canonical} of [...corpora, edgeCase]) {
+      const text = leaves[0];
+      const element = document.createElement('div');
+      document.body.appendChild(element);
+      const editor = createEditor({input: new TextEncoder().encode(canonical), options: {
+        abi: 'editor-sdk/2', build_id: sdkBuildId, profile: packet.kwdjProfile, registry_json: packet.kwdjRegistryJson,
+        profile_options_json: '{"identities":{"media":[],"references":[]},"limits":null}', access: 'editable', admission: 'validate',
+      }});
+      const view = createDomView({element, catalog: kwdjBasicRenderers, textRepresentation: 'auto', patchPolicy: 'stable-fragments',
+        readNode: (stamp, node) => editor.read({kind: 'node', stamp, node})});
+      try {
+        const ready = await editor.ready;
+        if (ready.status !== 'ok' || ready.value.kind !== 'state') throw new Error(JSON.stringify(ready));
+        const state = ready.value.state;
+        const refusal = view.initialize(state);
+        if (refusal) throw new Error(JSON.stringify(refusal));
+        const read = node => editor.read({kind: 'node', stamp: state.stamp, node}).value.node;
+        const block = read(read(state.root).children[0]);
+        const leaf = read(block.children[0]);
+        const fragments = [...element.firstChild.firstChild.childNodes];
+        const seam = fragments[0].length;
+        const modelPoint = {kind: 'text', node: leaf.id, offset: seam, affinity: 'after'};
+        const back = view.domPoint(modelPoint);
+        const range = document.createRange();
+        range.setStart(fragments[0], 0);
+        range.setEnd(fragments.at(-1), fragments.at(-1).length);
+        const snapshot = editor.submit({kind: 'snapshot', stamp: state.stamp, max_bytes: 16777216}).response.value;
+        editor.submit({kind: 'release_snapshot', handle: snapshot.handle});
+        const highSurrogate = text.search(/[\uD800-\uDBFF]/);
+        const observation = {id, allText: fragments.every(node => node.nodeType === Node.TEXT_NODE), count: fragments.length,
+          safeSeam: text[seam - 1] === ' ' && seam <= 640,
+          seamAliases: fragments.length > 1 && [view.textPosition(fragments[0], seam),
+            view.textPosition(fragments[1], 0), view.textPosition(element.firstChild.firstChild, 1)]
+            .every(value => JSON.stringify(value) === JSON.stringify(modelPoint)),
+          afterSeam: back.node === fragments[1] && back.offset === 0,
+          splitsSurrogate: view.textPosition(fragments[0], highSurrogate + 1)?.kind === 'text',
+          exactDom: element.textContent === leaves.join('') && range.toString() === leaf.text && leaf.text === text,
+          canonical: snapshot.canonical_json === canonical,
+          fallback: id !== edgeCase.id || element.lastChild.firstChild.childNodes.length === 1};
+        if (id === 'R1') {
+          element.contentEditable = 'true';
+          element.focus();
+          let patchFailure = null;
+          const unsubscribe = editor.subscribe(event => { patchFailure = view.patch(event); });
+          const point = offset => ({...modelPoint, offset});
+          const selected = editor.submit({kind:'set_selection', stamp:editor.capture(), selection:{anchor:point(8),focus:point(16)}});
+          if (selected.response.status !== 'ok' || patchFailure) throw new Error(JSON.stringify(patchFailure ?? selected));
+          const browser = document.getSelection(), liveRange = browser.getRangeAt(0);
+          const edit = editor.submit({kind:'command', stamp:editor.capture(), command:kwdjCommand({kind:'insert_text',text:'ABCDEFGH'}), history_hint:{kind:'isolated'}});
+          unsubscribe();
+          const next = [...element.firstChild.firstChild.childNodes];
+          observation.localPatch = {
+            published: edit.response.status === 'ok' && patchFailure === null,
+            changedPhysicalText: next[0] !== fragments[0] && !fragments[0].isConnected,
+            otherFragmentsRetained: next.length === fragments.length && next.slice(1).every((node,index) => node === fragments[index+1]),
+            exactText: element.textContent === text.replace('abcdefgh','ABCDEFGH'),
+            exactCaret: browser.isCollapsed && browser.focusNode === next[0] && browser.focusOffset === 16,
+            associatedRange: browser.rangeCount === 1 && browser.getRangeAt(0) === liveRange,
+          };
+        }
+        observations.push(observation);
+      } finally {
+        view.destroy();
+        editor.destroy();
+        element.remove();
+      }
+    }
+    return observations;
+  }, corpora);
+  for (const value of result) {
+    expect(value.count, value.id).toBeGreaterThan(1);
+    expect(value).toMatchObject({allText: true, safeSeam: true, seamAliases: true, afterSeam: true,
+      splitsSurrogate: false, exactDom: true, canonical: true, fallback: true});
+    if (value.id === 'R1') expect(value.localPatch).toEqual({published:true,changedPhysicalText:true,otherFragmentsRetained:true,
+      exactText:true,exactCaret:true,associatedRange:true});
+  }
+});
+async function observeMountRenderingOptions(page, cases) {
+  return page.evaluate(async cases => {
+    const [{mountEditor}, {loadSdkV2, sdkBuildId}, {kwdjBasicRenderers}, packet] = await Promise.all([
+      import('@klenwriter/editor-dom'), import('@klenwriter/editor-sdk'), import('@klenwriter/editor-kwdj/dom'),
+      fetch('/extensions-packet.json').then(response => response.json()),
+    ]);
+    const module = await loadSdkV2();
+    const text = 'Русский English e\u0301 👍🏽 '.repeat(44);
+    const source = JSON.stringify({content: [{content: [{text, type: 'text'}], type: 'paragraph'}],
+      profile: 'prose', schema: 'klenwriter.document', schema_version: 1});
+    const observations = [];
+    for (const {options, accessor, mutate} of cases) {
+      const element = document.createElement('div');
+      element.setAttribute('aria-label', 'Render policy fixture');
+      document.body.appendChild(element);
+      const before = element.outerHTML;
+      let loaderCalls = 0, getterCalls = 0, releaseLoad;
+      const delay = new Promise(resolve => { releaseLoad = resolve; });
+      const config = {element, renderers: kwdjBasicRenderers, ...options,
+        editor: {input: new TextEncoder().encode(source), options: {
+          abi: 'editor-sdk/2', build_id: sdkBuildId, profile: packet.kwdjProfile, registry_json: packet.kwdjRegistryJson,
+          profile_options_json: '{"identities":{"media":[],"references":[]},"limits":null}', access: 'editable', admission: 'validate',
+        }, loader: () => { loaderCalls++; return delay; }}};
+      if (accessor) Object.defineProperty(config, accessor, {enumerable: true, get() { getterCalls++; return 'full'; }});
+      let domWrites = 0;
+      const observer = new MutationObserver(records => { domWrites += records.length; });
+      observer.observe(element, {attributes: true, subtree: true, childList: true, characterData: true});
+      const mounted = mountEditor(config);
+      try {
+        const loading = mounted.lifecycle;
+        if (mutate) Object.assign(config, mutate);
+        releaseLoad(module);
+        const ready = await mounted.ready;
+        domWrites += observer.takeRecords().length;
+        const block = element.firstElementChild;
+        const fragments = [...(block?.firstElementChild?.childNodes ?? [])];
+        observations.push({status: ready.status, code: ready.diagnostic?.code ?? null, loading, loaderCalls, getterCalls,
+          textExact: element.textContent === text, allText: fragments.every(node => node.nodeType === Node.TEXT_NODE),
+          fragments: fragments.length, blockVisibility: block && getComputedStyle(block).contentVisibility,
+          domWrites, hostUnchanged: element.outerHTML === before, sessions: mounted.resources().sdk.sessions});
+      } finally {
+        observer.disconnect();
+        mounted.destroy();
+        element.remove();
+      }
+    }
+    return observations;
+  }, cases);
+}
+
+test('mounted rendering options default to auto text and keep full text available', async ({page}) => {
+  const cases = [
+    {name: 'omitted', fragments: true},
+    {name: 'undefined', options: {textRepresentation: undefined, patchPolicy: undefined, layoutPolicy: undefined}, fragments: true},
+    {name: 'explicit auto', options: {textRepresentation: 'auto'}, fragments: true},
+    {name: 'full alone', options: {textRepresentation: 'full'}, fragments: false},
+    {name: 'full text with stable fragments', options: {textRepresentation: 'full', patchPolicy: 'stable-fragments', layoutPolicy: 'full'}, fragments: false},
+    {name: 'auto text with full patch', options: {textRepresentation: 'auto', patchPolicy: 'full', layoutPolicy: 'full'}, fragments: true},
+  ];
+  const observations = await observeMountRenderingOptions(page, cases);
+  for (const [index, result] of observations.entries()) {
+    const {name, fragments} = cases[index];
+    expect(result, name).toMatchObject({status: 'ready', loading: 'loading', loaderCalls: 1, textExact: true, allText: true,
+      blockVisibility: 'visible', sessions: 1});
+    if (fragments) expect(result.fragments, name).toBeGreaterThan(1);
+    else expect(result.fragments, name).toBe(1);
+  }
+});
+
+test('mount captures rendering options before a delayed loader resolves', async ({page}) => {
+  const [result] = await observeMountRenderingOptions(page, [
+    {options: {textRepresentation: 'full', patchPolicy: 'stable-text', layoutPolicy: 'full'},
+      mutate: {textRepresentation: 'auto', patchPolicy: 'unrecognized', layoutPolicy: 'auto-blocks'}},
+  ]);
+  expect(result).toMatchObject({status: 'ready', loading: 'loading', loaderCalls: 1, textExact: true, allText: true,
+    fragments: 1, blockVisibility: 'visible', sessions: 1});
+});
+
+test('mount refuses malformed rendering options and accessors before starting a session or touching the host', async ({page}) => {
+  const cases = [
+    {options: {textRepresentation: 'fragments'}},
+    {options: {patchPolicy: 'auto'}},
+    {options: {layoutPolicy: null}},
+    ...['textRepresentation', 'patchPolicy', 'layoutPolicy'].map(accessor => ({accessor})),
+  ];
+  const observations = await observeMountRenderingOptions(page, cases);
+  for (const result of observations) {
+    expect(result).toMatchObject({status: 'dom_refused', code: 'dom.invalid_options', loaderCalls: 0, getterCalls: 0,
+      domWrites: 0, hostUnchanged: true, sessions: 0});
+  }
+});
+
+test('R1 and R5 public default and full opt-out edit and reopen the same canonical document', async ({page}, testInfo) => {
+  const observations = [];
+  for (const {id: corpus, canonical, leaves} of longDocumentFixtures()) {
+    const directTextCount = id => page.evaluate(id => {
+      const leaf = window.domHost.domAt(id,'/0/0');
+      return [...leaf.childNodes].every(node => node.nodeType === Node.TEXT_NODE) ? leaf.childNodes.length : 0;
+    },id);
+    const defaultMount = await call(page,'mount',{source:canonical});
+    const fullMount = await call(page,'mount',{source:canonical,renderOptions:{textRepresentation:'full'}});
+    expect([defaultMount.ready,fullMount.ready],corpus).toEqual(['ready','ready']);
+    const defaultDirectTextNodes = await directTextCount(defaultMount.id), fullDirectTextNodes = await directTextCount(fullMount.id);
+    expect(defaultDirectTextNodes).toBeGreaterThan(1);
+    expect(fullDirectTextNodes).toBe(1);
+    for (const {id} of [defaultMount,fullMount]) {
+      const mountedText = await page.locator(`#${id}`).textContent();
+      expect(mountedText === leaves.join('')).toBe(true);
+    }
+    const exported = await Promise.all([defaultMount,fullMount].map(({id}) => call(page,'snapshot',id)));
+    expect(exported.map(value => createHash('sha256').update(value).digest('hex'))).toEqual(
+      Array(2).fill(createHash('sha256').update(canonical).digest('hex')));
+    observations.push({corpus, targetLeafPath:[0,0], defaultDirectTextNodes, fullDirectTextNodes,
+      defaultCanonicalSha256:createHash('sha256').update(exported[0]).digest('hex'),
+      fullCanonicalSha256:createHash('sha256').update(exported[1]).digest('hex')});
+    const edited = [];
+    for (const {id} of [defaultMount,fullMount]) {
+      await call(page,'select',id,'/0/0',0,'/0/0',1);
+      expect((await call(page,'command',id,{kind:'insert_text',text:'A'})).response.status).toBe('ok');
+      edited.push(await call(page,'snapshot',id));
+      const result = await page.evaluate(async id => {
+        const children = [...window.domHost.domAt(id,'/0/0').childNodes];
+        const disposed = await window.domHost.dispose(id);
+        return {disconnected: children.every(node => !node.isConnected), resources:disposed.resources};
+      },id);
+      expect(result.disconnected).toBe(true);
+      expect(result.resources.dom).toMatchObject({listeners:0,observers:0,continuations:0});
+      expect(result.resources.sdk.sessions).toBe(0);
+    }
+    const expected = canonical.replace(`${corpus}_BEGIN`,`A${corpus.slice(1)}_BEGIN`);
+    expect(edited.map(value => createHash('sha256').update(value).digest('hex'))).toEqual(
+      Array(2).fill(createHash('sha256').update(expected).digest('hex')));
+    const reopened = await call(page,'mount',{source:edited[0],renderOptions:{textRepresentation:'full'}});
+    expect(reopened.ready).toBe('ready');
+    expect(await directTextCount(reopened.id)).toBe(1);
+    expect(await call(page,'snapshot',reopened.id) === edited[0]).toBe(true);
+    await call(page,'dispose',reopened.id);
+  }
+  await testInfo.attach('render-configuration-observations',{contentType:'application/json',body:JSON.stringify({
+    buildId:(await call(page,'metadata')).buildId,
+    default:{options:{},effectiveProfile:{textRepresentation:'auto',patchPolicy:'stable-fragments',layoutPolicy:'full'}},
+    fullOptOut:{options:{textRepresentation:'full'}},observations,
+  })});
+});
+
+const solidLongParagraphs = () => {
+  const text = 'alpha beta gamma delta epsilon '.repeat(400);
+  const source = JSON.stringify({content:Array.from({length:3},() => ({content:[{text,type:'text'}],type:'paragraph'})),
+    profile:'prose',schema:'klenwriter.document',schema_version:1});
+  return {text,source};
+};
+
+test('explicit auto-blocks can retain the full-text representation and retires before editing', async ({page,browserName}) => {
+  const {text,source} = solidLongParagraphs();
+  const {id,ready} = await call(page,'mount',{source,scrollable:true,renderOptions:{textRepresentation:'full',layoutPolicy:'auto-blocks'}});
+  expect(ready).toBe('ready');
+  const host = page.locator(`#${id}`);
+  const before = await host.evaluate(element => {
+    const nodes = [...element.children];
+    element.testLayoutNodes = nodes;
+    return {visibility:nodes.map(node => node.style.contentVisibility),
+      textNodes:nodes.map(node => node.firstChild.childNodes.length)};
+  });
+  expect(before.textNodes).toEqual([1,1,1]);
+  if (browserName === 'chromium') expect(before.visibility).toEqual(['','auto','auto']);
+  expect(await host.textContent() === text.repeat(3)).toBe(true);
+  await call(page,'select',id,'/0/0',5);
+  expect((await call(page,'command',id,{kind:'insert_text',text:'Z'})).response.status).toBe('ok');
+  const after = await host.evaluate(element => ({visible:[...element.children].every(node => !node.style.contentVisibility),
+    unchangedNodes:[...element.children].every((node,index) => node === element.testLayoutNodes[index]),
+    caret:document.getSelection().focusOffset, exactLeaf:element.firstChild.textContent.startsWith('alphaZ ')}));
+  expect(after).toEqual({visible:true,unchangedNodes:true,caret:6,exactLeaf:true});
+  const disposed = await call(page,'dispose',id);
+  expect(disposed.resources.dom).toMatchObject({listeners:0,observers:0,continuations:0});
+});
+
+test('offscreen programmatic edits retire active auto-blocks before rendering the native change', async ({page,browserName}) => {
+  const {source} = solidLongParagraphs();
+  const {id,ready} = await call(page,'mount',{source,scrollable:true,renderOptions:{layoutPolicy:'auto-blocks'}});
+  expect(ready).toBe('ready');
+  const host = page.locator(`#${id}`);
+  if (browserName === 'chromium') expect(await host.evaluate(element => element.children[1].style.contentVisibility)).toBe('auto');
+  await call(page,'select',id,'/0/0',5);
+  await page.locator('#host-recovery-control').focus();
+  await page.locator('#mounts').evaluate(element => Object.assign(element.style,{position:'fixed',top:'1500px'}));
+  expect((await host.boundingBox()).y).toBeGreaterThan(page.viewportSize().height);
+  expect((await call(page,'command',id,{kind:'insert_text',text:'Z'})).response.status).toBe('ok');
+  const after = await call(page,'inspect',id);
+  expect(after.lifecycle).toBe('ready');
+  expect(after.domText.startsWith('alphaZ ')).toBe(true);
+  expect(await host.evaluate(element => element.children[1].style.contentVisibility)).toBe('');
+});
+
+test('auto-block teardown leaves styles on a paragraph already adopted by another host', async ({page,browserName}) => {
+  const {source} = solidLongParagraphs();
+  const {id,ready} = await call(page,'mount',{source,scrollable:true,renderOptions:{layoutPolicy:'auto-blocks'}});
+  expect(ready).toBe('ready');
+  const result = await page.locator(`#${id}`).evaluate(async element => {
+    const adopter = document.createElement('div'), paragraph = element.children[1];
+    document.body.appendChild(adopter);
+    const before = paragraph.getAttribute('style');
+    adopter.appendChild(paragraph);
+    const teardown = await window.domHost.dispose(element.id);
+    const value = {before,after:paragraph.getAttribute('style'),parent:paragraph.parentNode===adopter,listeners:teardown.resources.dom.listeners};
+    adopter.remove();
+    return value;
+  });
+  if (browserName === 'chromium') expect(result.before).toContain('content-visibility: auto');
+  expect(result).toMatchObject({after:result.before,parent:true,listeners:0});
+});
+
+test('a covered auto-block selection refuses before publication and can retry when visible', async ({page,browserName}) => {
+  const {source} = solidLongParagraphs();
+  const {id,ready} = await call(page,'mount',{source,scrollable:true,renderOptions:{layoutPolicy:'auto-blocks'}});
+  expect(ready).toBe('ready');
+  await call(page,'select',id,'/0/0',5);
+  const active = await page.locator(`#${id}`).evaluate(element => element.children[1].style.contentVisibility === 'auto');
+  if (browserName === 'chromium') expect(active).toBe(true);
+  const before = await call(page,'inspect',id), destination = stateRow(before,'/1/0').id;
+  const point = {kind:'text',node:destination,offset:5,affinity:'after'};
+  const selection = {anchor:point,focus:point};
+  await page.evaluate(() => {
+    const cover = document.createElement('div');
+    cover.id = 'geometry-test-cover';
+    cover.textContent = 'Geometry test cover';
+    Object.assign(cover.style,{position:'fixed',inset:'0',zIndex:'1000',backgroundColor:'white'});
+    document.body.appendChild(cover);
+  });
+  const result = await call(page,'submit',id,{kind:'set_selection',selection});
+  const after = await call(page,'inspect',id);
+  expect(after.lifecycle).toBe('ready');
+  if (active) {
+    expect(result).toMatchObject({status:'dom_refused',diagnostic:{code:'dom.selection_geometry_unsupported',publication:'none'}});
+    expect(after.state).toEqual(before.state);
+  } else expect(after.state.selection).toEqual(selection);
+  await page.locator('#geometry-test-cover').evaluate(element => element.remove());
+  expect((await call(page,'submit',id,{kind:'set_selection',selection})).response.status).toBe('ok');
+  expect((await call(page,'inspect',id)).state.selection).toEqual(selection);
+});
+
+const viewportTolerance = 24;
+const osr131Modes = [['default (omitted)', {}], ['full opt-out', {renderOptions:{textRepresentation:'full'}}]];
+const canonicalWithLeaves = (fixture, leaves) => {
+  const wire = JSON.parse(fixture.canonical);
+  wire.content = leaves.map(text => ({content:[{text,type:'text'}],type:'paragraph'}));
+  return JSON.stringify(wire);
+};
+const sha256 = text => createHash('sha256').update(text).digest('hex');
+const position = (node, offset) => ({kind:'text',node,offset,affinity:'after'});
+
+async function mountLargeDocument(page, fixture, mode, {scrollable = true,viewportSized = false,scrollParent = false} = {}) {
+  test.slow(fixture.id === 'R5' && Boolean(mode.renderOptions) && test.info().project.name === 'chromium',
+    'Chromium lays out eight near-limit leaves as single Text nodes in the full opt-out');
+  const {id,ready} = await call(page,'mount',{source:fixture.canonical,scrollable,viewportSized,scrollParent,observeClipboard:true,...mode});
+  expect(ready).toBe('ready');
+  const host = page.locator(`#${id}`);
+  const parts = await host.evaluate(element => [...element.children].map(block => {
+    const nodes = [...block.firstElementChild.childNodes];
+    return {textOnly:nodes.every(node => node.nodeType === Node.TEXT_NODE), lengths:nodes.map(node => node.length)};
+  }));
+  for (const [index,{textOnly,lengths}] of parts.entries()) {
+    expect(textOnly).toBe(true);
+    expect(lengths.reduce((sum,value) => sum+value,0)).toBe(fixture.leaves[index].length);
+    if (mode.renderOptions) expect(lengths).toHaveLength(1);
+    else expect(lengths.length).toBeGreaterThan(4);
+  }
+  // Pin the fourth physical seam and exercise its logical offset in full mode.
+  const seam = fixture.id === 'R1' ? 2039 : 2041;
+  expect(fixture.leaves[0][seam-1]).toBe(' ');
+  if (!mode.renderOptions) expect(parts[0].lengths.slice(0,4).reduce((sum,value) => sum+value,0)).toBe(seam);
+  const record = {corpus:fixture.id,options:mode.renderOptions ?? {},browserVersion:page.context().browser().version(),parts:parts.map(part => part.lengths.length),seam,
+    canonicalSha256:sha256(fixture.canonical),scenarios:{}};
+  observations.get(page).largeDocument = record;
+  return {id,host,seam,record};
+}
+
+// Set a real browser Selection through its physical Text endpoints. The seam
+// aliases use opposite sides of the same UTF-16 boundary when there are fragments.
+async function browserTextSelection(host, anchor, focus = anchor) {
+  return host.evaluate((element,{anchor,focus}) => {
+    function resolve({block = 0,offset,side = 'right'}) {
+      const nodes = [...element.children[block].firstElementChild.childNodes];
+      let start = 0;
+      for (const [index,node] of nodes.entries()) {
+        const end = start+node.length;
+        if (offset < end || (offset === end && (side === 'left' || index === nodes.length-1))) {
+          return {node,offset:offset-start,index};
+        }
+        start = end;
+      }
+      throw new RangeError('Browser selection point is outside fixture text');
+    }
+    if (document.activeElement !== element) element.focus({preventScroll:true});
+    const a = resolve(anchor), f = resolve(focus);
+    const selection = getSelection();
+    selection.setBaseAndExtent(a.node,a.offset,f.node,f.offset);
+    return {anchor:{index:a.index,offset:a.offset},focus:{index:f.index,offset:f.offset},selected:selection.toString()};
+  },{anchor,focus});
+}
+
+async function readLargeDocument(page,id,fixture,leaves=fixture.leaves) {
+  const {state,rows} = await call(page,'nativeRows',id);
+  expect(rows.map(row => row.path)).toEqual(['',...leaves.flatMap((_,index) => [`/${index}`,`/${index}/0`])]);
+  expect(rows.map(row => row.node.primitive)).toEqual(['root',...leaves.flatMap(() => ['text_block','text'])]);
+  expect(rows.filter(row => row.node.primitive === 'text').map(row => sha256(row.node.text)),'exact native text').toEqual(leaves.map(sha256));
+  expect(sha256(await call(page,'snapshot',id)),'exact canonical bytes').toBe(sha256(canonicalWithLeaves(fixture,leaves)));
+  expect(sha256(await page.locator(`#${id}`).textContent()),'complete mounted text').toBe(sha256(leaves.join('')));
+  return {state,rows};
+}
+
+async function assertLargeSelection(page,id,selection) {
+  await expect.poll(async () => (await call(page,'read',id,{kind:'state'})).value.state.selection).toEqual(selection);
+}
+
+async function traceLargeInput(host) {
+  await host.evaluate(element => {
+    element.largeEvents = [];
+    for (const type of ['beforeinput','keydown','copy']) element.addEventListener(type,event => {
+      if (type === 'keydown' && event.code !== 'KeyZ') return;
+      element.largeEvents.push({type,inputType:event.inputType ?? null,data:event.data ?? null,
+        trusted:event.isTrusted,prevented:event.defaultPrevented});
+    });
+  });
+}
+
+async function editingViewport(host) {
+  return host.evaluate(async element => {
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const selection = getSelection(), rect = element.getBoundingClientRect();
+    const bounds = selection.getRangeAt(0).getBoundingClientRect();
+    const leaves = [...element.children].map(block => block.firstElementChild);
+    function readPoint(node,offset) {
+      const leaf = node.parentElement;
+      if (node.nodeType !== Node.TEXT_NODE) return {kind:'child',block:[...element.children].indexOf(node),offset};
+      let total = offset;
+      for (let previous = node.previousSibling; previous; previous = previous.previousSibling) total += previous.length;
+      return {kind:'text',block:leaves.indexOf(leaf),offset:total};
+    }
+    return {scrollTop:element.scrollTop, width:element.clientWidth,height:element.clientHeight,
+      active:document.activeElement === element, rangeCount:selection.rangeCount, collapsed:selection.isCollapsed,
+      anchor:readPoint(selection.anchorNode,selection.anchorOffset),focus:readPoint(selection.focusNode,selection.focusOffset),
+      fullyVisible:bounds.height > 0 && bounds.top >= rect.top+element.clientTop &&
+        bounds.bottom <= rect.top+element.clientTop+element.clientHeight};
+  });
+}
+
+async function placeInViewport(host, block, offset) {
+  await host.evaluate((element,{block,offset}) => {
+    let local = offset;
+    const point = [...element.children[block].firstElementChild.childNodes].find(node => {
+      if (local < node.length) return true;
+      local -= node.length;
+      return false;
+    });
+    const range = document.createRange();
+    range.setStart(point,local);
+    range.collapse(true);
+    element.scrollTop += range.getBoundingClientRect().top-element.getBoundingClientRect().top-90;
+  },{block,offset});
+}
+
+async function largeDocumentContrast(host, incomplete) {
+  const targets = [];
+  for (const rule of incomplete) {
+    expect(rule.id).toBe('color-contrast');
+    for (const node of rule.nodes) {
+      expect(node.any.map(check => check.data.messageKey)).toEqual(['elmPartiallyObscuring']);
+      expect(node.target).toHaveLength(1);
+      targets.push(node.target[0]);
+    }
+  }
+  return host.evaluate((element,targets) => {
+    if (!targets.length) return [];
+    const sample = document.createElement('div');
+    sample.style.color = 'Canvas';
+    document.body.append(sample);
+    const canvasColor = getComputedStyle(sample).color;
+    sample.remove();
+    const transparent = 'rgba(0, 0, 0, 0)';
+    function luminance(color) {
+      const components = /^rgb\((\d+), (\d+), (\d+)\)$/.exec(color);
+      if (!components) throw new Error(`Expected an opaque RGB color, received ${color}`);
+      const [r,g,b] = components.slice(1).map(Number).map(value => {
+        const channel = value/255;
+        return channel <= 0.04045 ? channel/12.92 : ((channel+0.055)/1.055)**2.4;
+      });
+      return r*0.2126+g*0.7152+b*0.0722;
+    }
+    return targets.map(target => {
+      const leaf = element.querySelector(target);
+      if (!leaf || !leaf.matches('p > [data-editor-node]')) throw new Error(`Unexpected axe contrast target ${target}`);
+      const foreground = getComputedStyle(leaf).color;
+      let background = canvasColor;
+      for (let ancestor = leaf; ancestor; ancestor = ancestor.parentElement) {
+        const style = getComputedStyle(ancestor);
+        if (style.opacity !== '1' || style.backgroundImage !== 'none') throw new Error('Unexpected contrast layer');
+        if (style.backgroundColor === transparent) continue;
+        background = style.backgroundColor;
+        break;
+      }
+      const levels = [luminance(foreground),luminance(background)];
+      return {target,foreground,background,ratio:(Math.max(...levels)+0.05)/(Math.min(...levels)+0.05)};
+    });
+  },targets);
+}
+
+async function disposeLargeDocument(page,id,host) {
+  const disposed = await call(page,'dispose',id);
+  expect(disposed.sameReceipt).toBe(true);
+  expect(disposed.recoveries).toEqual([]);
+  expect(disposed.resources.dom).toEqual({listeners:0,observers:0,continuations:0,retainedInputBytes:0,retainedRecoveryRegions:0});
+  expect(disposed.resources.clipboard).toEqual({pending:0,continuations:0,retainedTextBytes:0});
+  expect(disposed.native).toEqual({sessions:0,snapshot_handles:0,snapshot_bytes:'0',protected_cursors:0});
+  await expect(host).toBeEmpty();
+  await expect(host).not.toHaveAttribute('contenteditable');
+  observations.get(page).largeDocument.disposed = {dom:disposed.resources.dom,clipboard:disposed.resources.clipboard,native:disposed.native};
+}
+
+for (const fixture of longDocumentFixtures()) {
+  for (const [modeName,mode] of osr131Modes) {
+    const scenario = `OSR-131 ${fixture.id} ${modeName}`;
+
+    test(`${scenario} trusted seam input and keyboard Undo/Redo`, async ({page}) => {
+      const {id,host,seam,record} = await mountLargeDocument(page,fixture,mode);
+      const base = await readLargeDocument(page,id,fixture), leaf = stateRow(base,'/0/0').id;
+      await traceLargeInput(host);
+      for (const side of mode.renderOptions ? ['right'] : ['left','right']) {
+        const physical = await browserTextSelection(host,{offset:seam,side});
+        expect(physical.anchor).toEqual(mode.renderOptions ? {index:0,offset:seam} :
+          side === 'left' ? {index:3,offset:510} : {index:4,offset:0});
+        await assertLargeSelection(page,id,{anchor:position(leaf,seam),focus:position(leaf,seam)});
+      }
+      const collapsedInput = await call(page,'queryCommand',id,{kind:'insert_text',text:'x'});
+      // R1 already uses every byte of the per-leaf limit. Replace the seam
+      // space with one byte at its reverse endpoint. R5 can grow at its caret.
+      const start = fixture.id === 'R1' ? seam-1 : seam;
+      const inputSelection = {anchor:position(leaf,seam),focus:position(leaf,start)};
+      if (fixture.id === 'R1') {
+        expect(collapsedInput).toMatchObject({status:'ok',value:{available:false,diagnostic:{
+          code:'kwdj.resource_limit_exceeded',details:{limit:'text_length',maximum:'262144',observed:'262145'},
+        }}});
+        await browserTextSelection(host,{offset:seam},{offset:start});
+      } else {
+        expect(collapsedInput).toMatchObject({status:'ok',value:{available:true}});
+      }
+      await assertLargeSelection(page,id,inputSelection);
+      await page.keyboard.press('KeyX');
+      record.scenarios.inputAndHistory = {collapsedInput,inputSelection};
+      const edited = [fixture.leaves[0].slice(0,start)+'x'+fixture.leaves[0].slice(seam),...fixture.leaves.slice(1)];
+      const caretAfterInput = start+1;
+      const inserted = await readLargeDocument(page,id,fixture,edited);
+      const nextLeaf = stateRow(inserted,'/0/0').id;
+      caret(inserted,nextLeaf,caretAfterInput);
+      history(inserted,1,0);
+      const nativeCaret = await editingViewport(host);
+      expect(nativeCaret.anchor).toEqual({kind:'text',block:0,offset:caretAfterInput});
+      expect(nativeCaret.focus).toEqual(nativeCaret.anchor);
+      await page.keyboard.press('ControlOrMeta+KeyZ');
+      const undone = await readLargeDocument(page,id,fixture);
+      expect(undone.state.selection).toEqual(inputSelection);
+      history(undone,0,1);
+      await page.keyboard.press('Shift+ControlOrMeta+KeyZ');
+      const redone = await readLargeDocument(page,id,fixture,edited);
+      caret(redone,nextLeaf,caretAfterInput);
+      history(redone,1,0);
+      expect([inserted,undone,redone].map(row => row.state.stamp.revision)).toEqual(['1','2','3']);
+      const events = await host.evaluate(element => element.largeEvents);
+      expect(events).toEqual([
+        {type:'beforeinput',inputType:'insertText',data:'x',trusted:true,prevented:true},
+        ...Array.from({length:2},() => ({type:'keydown',inputType:null,data:null,trusted:true,prevented:true})),
+      ]);
+      Object.assign(record.scenarios.inputAndHistory,{events,editedCanonicalSha256:sha256(canonicalWithLeaves(fixture,edited)),nativeCaret});
+      await disposeLargeDocument(page,id,host);
+    });
+
+    test(`${scenario} trusted seam range deletion keeps canonical history and viewport`, async ({page}) => {
+      const {id,host,seam,record} = await mountLargeDocument(page,fixture,mode);
+      const base = await readLargeDocument(page,id,fixture), leaf = stateRow(base,'/0/0').id, block = stateRow(base,'/0').id;
+      const start = seam-1, end = seam;
+      const beforeSelection = {anchor:position(leaf,end),focus:position(leaf,start)};
+      const physical = await browserTextSelection(host,{offset:end},{offset:start});
+      expect(physical.selected).toBe(' ');
+      expect(physical.anchor.index).toBe(mode.renderOptions ? 0 : 4);
+      expect(physical.focus.index).toBe(mode.renderOptions ? 0 : 3);
+      await assertLargeSelection(page,id,beforeSelection);
+      await placeInViewport(host,0,start);
+      const before = await editingViewport(host);
+      expect(before.active).toBe(true);
+      expect(before.fullyVisible).toBe(true);
+      await traceLargeInput(host);
+      await page.keyboard.press('Backspace');
+      const edited = [fixture.leaves[0].slice(0,start)+fixture.leaves[0].slice(end),...fixture.leaves.slice(1)];
+      const deleted = await readLargeDocument(page,id,fixture,edited);
+      expect(stateRow(deleted,'/0/0').id).toBe(leaf);
+      caret(deleted,block,1,'child');
+      history(deleted,1,0);
+      const after = await editingViewport(host);
+      expect(after).toMatchObject({active:true,collapsed:true,rangeCount:1,
+        anchor:{kind:'child',block:0,offset:1},focus:{kind:'child',block:0,offset:1}});
+      await page.keyboard.press('ControlOrMeta+KeyZ');
+      const undone = await readLargeDocument(page,id,fixture);
+      expect(undone.state.selection).toEqual(beforeSelection);
+      history(undone,0,1);
+      await page.keyboard.press('Shift+ControlOrMeta+KeyZ');
+      const redone = await readLargeDocument(page,id,fixture,edited);
+      caret(redone,block,1,'child');
+      history(redone,1,0);
+      const events = await host.evaluate(element => element.largeEvents);
+      expect(events[0]).toEqual({type:'beforeinput',inputType:'deleteContentBackward',data:null,trusted:true,prevented:true});
+      record.scenarios.deletion = {before,after,scrollDelta:Math.abs(after.scrollTop-before.scrollTop),events,
+        editedCanonicalSha256:sha256(canonicalWithLeaves(fixture,edited))};
+      await disposeLargeDocument(page,id,host);
+      expect(record.scenarios.deletion.scrollDelta,'scroll displacement after trusted deletion').toBeLessThanOrEqual(viewportTolerance);
+    });
+
+    test(`${scenario} forward and reverse selection across the viewport copies through the host`, async ({page}) => {
+      const {id,host,seam,record} = await mountLargeDocument(page,fixture,mode);
+      const base = await readLargeDocument(page,id,fixture), leaf = stateRow(base,'/0/0').id;
+      const start = seam-1, end = seam+4096;
+      const selected = fixture.leaves[0].slice(start,end);
+      await traceLargeInput(host);
+      await placeInViewport(host,0,start);
+      const geometry = await host.evaluate((element,{start,end}) => {
+        const range = document.createRange(), leaf = element.firstElementChild.firstElementChild;
+        function rectAt(offset) {
+          for (const part of leaf.childNodes) {
+            if (offset < part.length) {
+              range.setStart(part,offset); range.collapse(true);
+              return range.getBoundingClientRect().top;
+            }
+            offset -= part.length;
+          }
+          throw new RangeError('Missing viewport range endpoint');
+        }
+        const rect = element.getBoundingClientRect(), top = rectAt(start), bottom = rectAt(end);
+        return {startVisible:top >= rect.top && top < rect.bottom,endBelow:bottom >= rect.bottom};
+      },{start,end});
+      expect(geometry).toEqual({startVisible:true,endBelow:true});
+      const directions = [[start,end],[end,start]];
+      for (const [index,[anchor,focus]] of directions.entries()) {
+        const physical = await browserTextSelection(host,{offset:anchor},{offset:focus});
+        expect(physical.selected === selected).toBe(true);
+        if (!mode.renderOptions) expect(physical.anchor.index).not.toBe(physical.focus.index);
+        await assertLargeSelection(page,id,{anchor:position(leaf,anchor),focus:position(leaf,focus)});
+        const beforeCopy = await call(page,'read',id,{kind:'state'});
+        await page.keyboard.press('ControlOrMeta+KeyC');
+        await expect.poll(async () => (await call(page,'clipboardObservations',id)).results.length).toBe(index+1);
+        expect(await call(page,'read',id,{kind:'state'})).toEqual(beforeCopy);
+      }
+      const clipboard = await call(page,'clipboardObservations',id);
+      expect(clipboard.writes.map(sha256)).toEqual([sha256(selected),sha256(selected)]);
+      expect(clipboard.results).toEqual(Array.from({length:2},() => ({action:'copy',status:'copied',clipboard:'confirmed',failure:null,submission:null})));
+      const events = await host.evaluate(element => element.largeEvents);
+      expect(events).toEqual(Array.from({length:2},() => ({type:'copy',inputType:null,data:null,trusted:true,prevented:true})));
+      const after = await readLargeDocument(page,id,fixture);
+      expect(after.state.stamp.revision).toBe(base.state.stamp.revision);
+      history(after,0,0);
+      record.scenarios.viewportCopy = {geometry,directions,events,results:clipboard.results,sha256:sha256(selected),utf16:selected.length};
+      await disposeLargeDocument(page,id,host);
+    });
+
+    test(`${scenario} accessible full text, keyboard focus and semantic paragraphs`, async ({page}) => {
+      const {id,host,seam,record} = await mountLargeDocument(page,fixture,mode,{scrollable:false});
+      // Text fields participate in keyboard navigation with the default macOS settings.
+      const fieldName = 'Document title';
+      await host.evaluate((element,name) => {
+        const field = document.createElement('input');
+        field.type = 'text';
+        field.setAttribute('aria-label',name);
+        element.before(field);
+      },fieldName);
+      const initial = await readLargeDocument(page,id,fixture);
+      const target = position(stateRow(initial,'/0/0').id,seam);
+      await browserTextSelection(host,{offset:seam});
+      await assertLargeSelection(page,id,{anchor:target,focus:target});
+      const beforeTab = await call(page,'read',id,{kind:'state'});
+      await expect(page.getByRole('textbox',{name:'KlenWriter editor example 1'})).toBeVisible();
+      await expect(host).toHaveAttribute('aria-multiline','true');
+      await expect(host).toHaveAttribute('contenteditable','true');
+      const semantics = await host.evaluate(element => ({
+        tags:[...element.children].map(node => node.tagName),
+        hidden:element.querySelectorAll('[aria-hidden="true"],[hidden],[inert]').length,
+        complete:[...element.children].every(block => getComputedStyle(block).contentVisibility === 'visible'),
+      }));
+      expect(semantics).toEqual({tags:fixture.leaves.map(() => 'P'),hidden:0,complete:true});
+      const title = page.getByRole('textbox',{name:fieldName,exact:true});
+      await page.keyboard.press('Shift+Tab');
+      await expect(title).toBeFocused();
+      await page.keyboard.press('Tab');
+      await expect(host).toBeFocused();
+      await assertLargeSelection(page,id,{anchor:target,focus:target});
+      const restored = await editingViewport(host);
+      expect(restored).toMatchObject({active:true,collapsed:true,rangeCount:1,
+        anchor:{kind:'text',block:0,offset:seam},focus:{kind:'text',block:0,offset:seam}});
+      const outline = await host.evaluate(element => {
+        const style = getComputedStyle(element);
+        return {focusVisible:element.matches(':focus-visible'),outlineStyle:style.outlineStyle,outlineWidth:style.outlineWidth};
+      });
+      expect(outline).toEqual({focusVisible:true,outlineStyle:'solid',outlineWidth:'2px'});
+      const result = await new AxeBuilder({page}).include(`#${id}`).analyze();
+      record.scenarios.accessibility = {semantics,restored,outline,axe:{engine:result.testEngine,
+        violations:result.violations,incomplete:result.incomplete,passedRules:result.passes.map(rule => rule.id)}};
+      expect(result.violations).toEqual([]);
+      expect(result.passes.length).toBeGreaterThan(0);
+      // Axe can report overlap on a huge inline box. Retain its result and
+      // independently measure actual text/background colors for each such box.
+      const contrast = await largeDocumentContrast(host,result.incomplete);
+      for (const measurement of contrast) expect(measurement.ratio,measurement.target).toBeGreaterThanOrEqual(4.5);
+      record.scenarios.accessibility.contrast = contrast;
+      const after = await readLargeDocument(page,id,fixture);
+      expect(after.state).toEqual(beforeTab.value.state);
+      history(after,0,0);
+      await disposeLargeDocument(page,id,host);
+    });
+
+    if (fixture.id === 'R5') test(`${scenario} move and resize retain visible caret and scroll position`, async ({page}) => {
+      const {id,host,seam,record} = await mountLargeDocument(page,fixture,mode,{viewportSized:true});
+      const initial = await readLargeDocument(page,id,fixture);
+      const leaf = stateRow(initial,'/0/0').id, source = stateRow(initial,'/3').id;
+      await browserTextSelection(host,{offset:seam});
+      await assertLargeSelection(page,id,{anchor:position(leaf,seam),focus:position(leaf,seam)});
+      await placeInViewport(host,0,seam);
+      const before = await editingViewport(host);
+      expect(before.scrollTop).toBeGreaterThan(0);
+      expect(before).toMatchObject({active:true,collapsed:true,fullyVisible:true,
+        anchor:{kind:'text',block:0,offset:seam},focus:{kind:'text',block:0,offset:seam}});
+      const move = await call(page,'command',id,{kind:'move',node:source,parent:initial.state.root,before_index:8});
+      expect(move.response.status).toBe('ok');
+      const leaves = fixture.leaves.filter((_,index) => index !== 3).concat(fixture.leaves[3]);
+      const moved = await readLargeDocument(page,id,fixture,leaves);
+      expect(stateRow(moved,'/7').id).toBe(source);
+      caret(moved,leaf,seam);
+      history(moved,1,0);
+      const afterMove = await editingViewport(host);
+      await page.setViewportSize({width:512,height:340});
+      const resized = await editingViewport(host);
+      const afterResize = await readLargeDocument(page,id,fixture,leaves);
+      expect(afterResize.state).toEqual(moved.state);
+      expect(afterResize.rows).toEqual(moved.rows);
+      expect(resized.width).not.toBe(before.width);
+      expect(resized.height).not.toBe(before.height);
+      record.scenarios.moveAndResize = {before,afterMove,resized,canonicalSha256:sha256(canonicalWithLeaves(fixture,leaves))};
+      for (const actual of [afterMove,resized]) {
+        expect(actual).toMatchObject({active:true,collapsed:true,fullyVisible:true,anchor:before.anchor,focus:before.focus});
+        expect(Math.abs(actual.scrollTop-before.scrollTop)).toBeLessThanOrEqual(viewportTolerance);
+      }
+      await disposeLargeDocument(page,id,host);
+    });
+  }
+}
+
+async function prepareDeletionScrollReview(page) {
+  const [fixture] = longDocumentFixtures();
+  const mounted = await mountLargeDocument(page,fixture,{}, {scrollable:false,scrollParent:true});
+  const {id,host,seam} = mounted;
+  const base = await readLargeDocument(page,id,fixture);
+  const leaf = stateRow(base,'/0/0').id;
+  const selection = {anchor:position(leaf,seam),focus:position(leaf,seam-1)};
+  expect(await browserTextSelection(host,{offset:seam},{offset:seam-1})).toEqual({
+    anchor:{index:4,offset:0},focus:{index:3,offset:509},selected:' ',
+  });
+  await assertLargeSelection(page,id,selection);
+  await host.evaluate(async element => {
+    const scroller = element.parentElement;
+    const range = getSelection().getRangeAt(0).getBoundingClientRect();
+    scroller.scrollTo(0,scroller.scrollTop+range.top-scroller.getBoundingClientRect().top-90);
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  });
+  return {...mounted,fixture,leaf,block:stateRow(base,'/0').id};
+}
+
+async function armDeletionScrollReview(host,id,destroy) {
+  await host.evaluate((element,{id,destroy}) => {
+    const scroller = element.parentElement;
+    const win = element.ownerDocument.defaultView;
+    const offsets = () => ({left:scroller.scrollLeft,top:scroller.scrollTop});
+    const baseline = offsets();
+    const baselineListeners = window.domHost.resources(id).dom.listeners;
+    const frames = new Map();
+    const listeners = [];
+    const requestFrame = win.requestAnimationFrame;
+    const cancelFrame = win.cancelAnimationFrame;
+    const addListener = EventTarget.prototype.addEventListener;
+    const removeListener = EventTarget.prototype.removeEventListener;
+    const capture = options => typeof options === 'boolean' ? options : !!options?.capture;
+    const watched = target => target === win || target === scroller || target === element ||
+      target === element.ownerDocument;
+    const scrolling = type => type === 'scroll' || type === 'wheel' || type === 'beforeinput';
+    const report = {};
+
+    win.requestAnimationFrame = callback => {
+      const frame = {ran:false,cancelled:false};
+      const handle = requestFrame.call(win,time => {frame.ran = true; callback(time);});
+      frames.set(handle,frame);
+      return handle;
+    };
+    win.cancelAnimationFrame = handle => {
+      const frame = frames.get(handle);
+      if (frame) frame.cancelled = true;
+      cancelFrame.call(win,handle);
+    };
+    EventTarget.prototype.addEventListener = function(type,listener,options) {
+      if (watched(this) && scrolling(type)) listeners.push({target:this,type,listener,capture:capture(options),removed:false});
+      return addListener.call(this,type,listener,options);
+    };
+    EventTarget.prototype.removeEventListener = function(type,listener,options) {
+      for (const row of listeners) {
+        if (row.target === this && row.type === type && row.listener === listener && row.capture === capture(options)) row.removed = true;
+      }
+      return removeListener.call(this,type,listener,options);
+    };
+    function restoreObservers() {
+      win.requestAnimationFrame = requestFrame;
+      win.cancelAnimationFrame = cancelFrame;
+      EventTarget.prototype.addEventListener = addListener;
+      EventTarget.prototype.removeEventListener = removeListener;
+    }
+
+    // This listener is attached after mount. The editor's trusted beforeinput
+    // listener publishes the deletion and schedules its frame before we run.
+    addListener.call(element,'beforeinput',event => {
+      report.input = {inputType:event.inputType,trusted:event.isTrusted,prevented:event.defaultPrevented};
+      report.baseline = baseline;
+      report.beforeHostScroll = offsets();
+      report.pending = window.domHost.resources(id);
+      report.pendingFrames = [...frames.values()].filter(frame => !frame.ran && !frame.cancelled).length;
+      report.pendingListeners = listeners.filter(listener => !listener.removed).map(listener => listener.type);
+      report.additionalDomListeners = report.pending.dom.listeners-baselineListeners;
+      const requested = {left:baseline.left+73,top:baseline.top+137};
+      scroller.scrollTo(requested.left,requested.top);
+      report.requested = requested;
+      report.applied = offsets();
+      if (destroy) {
+        report.disposed = window.domHost.dispose(id);
+        report.afterDestroy = offsets();
+        report.extentsAfterDestroy = {width:scroller.scrollWidth,height:scroller.scrollHeight,
+          clientWidth:scroller.clientWidth,clientHeight:scroller.clientHeight};
+      }
+    },{once:true});
+
+    element.deletionScrollReview = async () => {
+      try {
+        const nextPaint = () => new Promise(resolve => requestFrame.call(win,() => requestFrame.call(win,resolve)));
+        await nextPaint();
+        if (destroy) {
+          // WebKit can reset the scroller when its focused editable subtree is
+          // destroyed. Keep that native result and test a fresh host scroll
+          // after teardown, alongside the actual pending-frame cancellation.
+          report.nativeAfterDestroy = offsets();
+          scroller.scrollTo(report.requested.left,report.requested.top);
+          report.postDestroyScroll = offsets();
+          await nextPaint();
+        }
+        return {...report,disposed:await report.disposed,final:offsets(),frames:[...frames.values()],
+          listeners:listeners.map(({type,removed}) => ({type,removed}))};
+      } finally {
+        restoreObservers();
+      }
+    };
+  },{id,destroy});
+}
+
+async function finishDeletionScrollReview(page,host,record) {
+  await page.keyboard.press('Backspace');
+  const review = await host.evaluate(element => element.deletionScrollReview());
+  record.scenarios.deletionScrollReview = review;
+  expect(review.input).toEqual({inputType:'deleteContentBackward',trusted:true,prevented:true});
+  expect(review.pending.selection.animationFrames).toBe(1);
+  expect(review.pendingFrames).toBe(1);
+  expect(review.pendingListeners.filter(type => type === 'wheel')).toEqual(['wheel']);
+  expect(review.additionalDomListeners).toBe(review.pendingListeners.length);
+  expect(review.baseline.top).toBeGreaterThan(0);
+  expect(review.applied).toEqual(review.requested);
+  return review;
+}
+
+test('OSR-131 trusted deletion preserves later host scroll on both axes in the same frame', async ({page}) => {
+  const {id,host,fixture,seam,leaf,block,record} = await prepareDeletionScrollReview(page);
+  await armDeletionScrollReview(host,id,false);
+  const review = await finishDeletionScrollReview(page,host,record);
+  const edited = [fixture.leaves[0].slice(0,seam-1)+fixture.leaves[0].slice(seam)];
+  const point = await readLargeDocument(page,id,fixture,edited);
+  expect(stateRow(point,'/0/0').id).toBe(leaf);
+  caret(point,block,1,'child');
+  history(point,1,0);
+  expect((await call(page,'resources',id)).selection.animationFrames).toBe(0);
+  await disposeLargeDocument(page,id,host);
+  expect(review.final).toEqual(review.applied);
+});
+
+test('OSR-131 destroy in the trusted deletion handler cancels the pending correction', async ({page}) => {
+  const {id,host,record} = await prepareDeletionScrollReview(page);
+  await armDeletionScrollReview(host,id,true);
+  const review = await finishDeletionScrollReview(page,host,record);
+  expect(review.frames).toEqual([{ran:false,cancelled:true}]);
+  expect(review.listeners.filter(listener => !listener.removed)).toEqual([]);
+  expect(review.disposed.sameReceipt).toBe(true);
+  expect(review.disposed.recoveries).toEqual([]);
+  expect(review.disposed.resources.selection.animationFrames).toBe(0);
+  expect(review.disposed.resources.dom).toEqual({listeners:0,observers:0,continuations:0,retainedInputBytes:0,retainedRecoveryRegions:0});
+  expect(review.disposed.native).toEqual({sessions:0,snapshot_handles:0,snapshot_bytes:'0',protected_cursors:0});
+  await expect(host).toBeEmpty();
+  await expect(host).not.toHaveAttribute('contenteditable');
+  expect(review.postDestroyScroll).toEqual(review.requested);
+  expect(review.final).toEqual(review.postDestroyScroll);
 });

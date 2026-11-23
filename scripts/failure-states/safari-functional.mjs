@@ -52,9 +52,10 @@ function producerPins() {
   assert.equal(afterTrap.bytes, runtime.afterPublicationLiteral.bytes); assert.equal(afterTrap.sha256, runtime.afterPublicationLiteral.sha256);
   const localSources = ['scripts/failure-states/safari-functional.mjs', 'scripts/failure-states/safari-functional-transport.mjs',
     'scripts/failure-states/safari-functional-assertions.mjs', 'scripts/failure-states/installed-safari-capability.mjs',
-    'scripts/failure-states/dom-observation.mjs', 'scripts/failure-states/installed-runtime-assets.mjs',
+    'scripts/failure-states/dom-observation.mjs', 'scripts/failure-states/bind-assets.mjs', 'scripts/failure-states/installed-runtime-assets.mjs',
     'tests/failure-dom-browser.spec.js', 'tests/failure-runtime-browser.spec.js', 'spikes/workspace/clipboard-host.js',
     'spikes/workspace/failure-host.js', 'contracts/failure-states/v1/dom-pipeline.json', 'contracts/failure-states/v1/dom-assets.json',
+    'contracts/failure-states/v1/dom-assets-renderer-addition.json',
     'contracts/failure-states/v1/runtime-literals.json', 'contracts/failure-states/v1/loading-recovery.json',
     'contracts/failure-states/v1/admission/options.template.json', 'contracts/failure-states/v1/admission/healthy.canonical.json',
     'contracts/failure-states/v1/admission/xprefix.canonical.json', 'contracts/failure-states/v1/admission/after-trap.canonical.json'];

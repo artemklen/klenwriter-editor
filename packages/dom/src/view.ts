@@ -1,14 +1,28 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import type { DeepReadonly, EventDto, InputFinalRegionV2, NodeViewDto, PositionDto, Response, SelectionDto, StampDto, StateDto, TextReplacementResultV2 } from '@klenwriter/editor-sdk';
-import type { DomDiagnostic, DomRefusal, MountedMutationV2, RecoveryRegion, RendererCatalog } from './types.js';
+import type { DomDiagnostic, DomLayoutPolicy, DomPatchPolicy, DomRefusal, DomTextRepresentation, MountedMutationV2, RecoveryRegion, RendererCatalog } from './types.js';
 import { prepareNode, type PreparedNode } from './catalog.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
+import { createLayoutPolicyOwner } from './layout-policy.js';
 import { createCompositionCorrespondence, type CompositionWindow, type CompositionObservation, type CompositionTerminalTicket } from './composition-view.js';
 import {literalCompositionBytes,sameLiteralNode,verifyLiteralComposition,type LiteralCompositionSource} from './composition-literal.js';
+import {fragmentOffset, fragmentPoint, matchesTextFragments, planTextFragments, scalarBoundary} from './text-fragments.js';
 export type { CompositionWindow, CompositionObservation, CompositionTerminalTicket } from './composition-view.js';
 
 export const domRegionLimits = Object.freeze({ blocks: 8, nodes: 131072, depth: 128, utf16: 2097152, mutations: 4096 });
 export interface DomPoint { readonly node: Node; readonly offset: number }
+export interface DeletionScroll {
+  readonly scroller: HTMLElement;
+  readonly active: Element;
+  readonly restore: (top: number, left: number) => void;
+}
+interface DeletionViewport {
+  readonly leaf: string;
+  readonly scroller: HTMLElement;
+  readonly active: Element;
+  readonly top: number;
+  readonly left: number;
+}
 export interface CapturedBlock {
   readonly id: string;
   readonly view: DeepReadonly<NodeViewDto>;
@@ -23,7 +37,7 @@ export interface GeometryRow {
   readonly outer: HTMLElement;
   readonly content: HTMLElement;
   readonly wrappers: readonly HTMLElement[];
-  readonly text: Text | null;
+  readonly texts: readonly Text[];
   readonly placeholder: HTMLBRElement | null;
 }
 export interface DomView {
@@ -31,6 +45,10 @@ export interface DomView {
   patch(event: DeepReadonly<EventDto>, restore?: boolean): DomRefusal | null;
   readSelection(): DeepReadonly<SelectionDto> | DomRefusal | null;
   restoreSelection(selection: DeepReadonly<SelectionDto> | null): DomRefusal | null;
+  prepareLayoutSelection?(prospective?: DeepReadonly<SelectionDto> | null): DomRefusal | null;
+  retireLayout?(): DomRefusal | null;
+  discardLayout?(): void;
+  layoutListeners?(): number;
   rememberSelection(selection: DeepReadonly<SelectionDto> | null): DomRefusal | null;
   ownedBlockAt(node: Node | null): string | null;
   textPosition(node: Node, offset: number): DeepReadonly<PositionDto> | DomRefusal | null;
@@ -68,15 +86,11 @@ export interface DomView {
   boundedText(element: Node): string | DomRefusal;
   destroy(options?: { readonly retainRegion?: boolean }): void;
 }
-interface Row { view: DeepReadonly<NodeViewDto>; prepared: PreparedNode; outer: HTMLElement; content: HTMLElement; wrappers: readonly HTMLElement[]; text: Text | null; signature: string; placeholder: HTMLBRElement | null }
+interface Row { view: DeepReadonly<NodeViewDto>; prepared: PreparedNode; outer: HTMLElement; content: HTMLElement; wrappers: readonly HTMLElement[]; texts: readonly Text[]; signature: string; placeholder: HTMLBRElement | null }
+interface AssociatedRange { readonly selection: Selection; readonly range: Range; readonly parkingPoint: HTMLElement }
+const noText: readonly Text[] = Object.freeze([]);
 interface Provisional { stamp: DeepReadonly<StampDto>; ids: readonly string[]; originals: ReadonlyMap<string, string>; retained: HTMLElement; composing: boolean; protected: ReadonlySet<string>; window: { parent: HTMLElement; before: ChildNode | null; after: ChildNode | null } | null; composition?: CompositionWindow; forceTransfer?: boolean }
 const equal = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
-function scalarBoundary(text: string, offset: number): boolean {
-  if (!Number.isSafeInteger(offset) || offset < 0 || offset > text.length) return false;
-  if (offset === 0 || offset === text.length) return true;
-  const left = text.charCodeAt(offset - 1), right = text.charCodeAt(offset);
-  return !(left >= 0xd800 && left <= 0xdbff && right >= 0xdc00 && right <= 0xdfff);
-}
 function signature(prepared: PreparedNode): string { return JSON.stringify(prepared); }
 function stampSame(a: DeepReadonly<StampDto>, b: DeepReadonly<StampDto>): boolean {
   return a.session === b.session && a.generation === b.generation && a.revision === b.revision
@@ -86,8 +100,15 @@ let mountSerial = 0;
 
 /** A read-only correspondence between native rows and actual owned DOM objects. */
 export function createDomView(options: { readonly element: HTMLElement; readonly catalog: RendererCatalog;
+  readonly textRepresentation?: DomTextRepresentation; readonly patchPolicy?: DomPatchPolicy; readonly layoutPolicy?: DomLayoutPolicy;
+  readonly layoutBlocked?: () => boolean;
+  readonly scheduleDeletionScroll?: (scroll: DeletionScroll, stamp: DeepReadonly<StampDto>, selection: DeepReadonly<SelectionDto>) => void;
+  readonly writeLayout?: (change: () => DomRefusal | null) => DomRefusal | null;
+  readonly onLayoutFailure?: (failure: DomRefusal) => void;
   readonly readNode: (stamp: DeepReadonly<StampDto>, id: string) => Response }): DomView {
   const host = options.element, doc = host.ownerDocument;
+  const fragments = options.textRepresentation === 'auto';
+  const patchPolicy = options.patchPolicy ?? 'full';
   const namespace = `kwe-${++mountSerial}-`;
   let nextDomId = 0, rows = new Map<string, Row>(), authority = new WeakMap<Node, string>();
   let rootId: string | null = null, currentStamp: DeepReadonly<StampDto> | null = null;
@@ -97,6 +118,59 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
   let compositionGeneration: object = {};
   const unrestorableCompositions = new WeakSet<CompositionWindow>();
   const literalSources=new WeakMap<LiteralCompositionSource,CompositionWindow>();
+  function layoutPosition(position: DeepReadonly<PositionDto>, source = rows, root = rootId): readonly [number, number] | null {
+    const top = root === null ? undefined : source.get(root);
+    if (!top) return null;
+    if (position.kind === 'child' && position.parent === root) {
+      const index = position.index, count = top.view.children.length;
+      return Number.isSafeInteger(index) && index >= 0 && index <= count && count > 0
+        ? [Math.max(0, index - 1), Math.min(count - 1, index)] : null;
+    }
+    let id = position.kind === 'child' ? position.parent : position.node;
+    for (let depth = 0; depth <= domRegionLimits.depth; depth++) {
+      const row = source.get(id);
+      if (!row || row.view.parent === null) return null;
+      if (row.view.parent === root) {
+        const index = top.view.children.indexOf(id);
+        return index < 0 ? null : [index, index];
+      }
+      id = row.view.parent;
+    }
+    return null;
+  }
+  const layout = options.layoutPolicy === 'auto-blocks' ? createLayoutPolicyOwner({
+    host, rows: () => rows, root: () => rootId,
+    supports: row => options.catalog.definition.nodes[row.view.type_id]?.layout === 'plain-text-block',
+    owns: (node, id) => authority.get(node) === id,
+    interval: point => {
+      const position = positionAt(point.node, point.offset);
+      return position && !isDomRefusal(position) ? layoutPosition(position) : null;
+    },
+    blocked: () => destroyed || provisional !== null || !!options.layoutBlocked?.(),
+    write: change => options.writeLayout ? options.writeLayout(change) : change(),
+    failure: publication => domRefusal(publication === 'unknown' ? 'dom.recovery_required' : 'dom.selection_geometry_unsupported',
+      publication === 'unknown' ? 'render' : 'selection', currentStamp, null, null, publication),
+    report: failure => options.onLayoutFailure?.(failure),
+  }) : null;
+  function reportUnknownLayout(failure: DomRefusal | null | undefined): DomRefusal | null {
+    if (failure?.diagnostic.publication === 'unknown') options.onLayoutFailure?.(failure);
+    return failure ?? null;
+  }
+  function prepareLayoutSelection(prospective?: DeepReadonly<SelectionDto> | null): DomRefusal | null {
+    if (prospective === null) return reportUnknownLayout(layout?.check());
+    if (prospective !== undefined) {
+      // Native validation retains responsibility for malformed selection requests.
+      if (!prospective.anchor || !prospective.focus) return null;
+      const anchor = domPoint(prospective.anchor), focus = domPoint(prospective.focus);
+      return isDomRefusal(anchor) || isDomRefusal(focus) ? null : reportUnknownLayout(layout?.pin(anchor,focus));
+    }
+    const selection = doc.getSelection();
+    if (!selection?.anchorNode || !selection.focusNode || !host.contains(selection.anchorNode) || !host.contains(selection.focusNode)) {
+      return reportUnknownLayout(layout?.check());
+    }
+    return reportUnknownLayout(layout?.pin({node:selection.anchorNode,offset:selection.anchorOffset},
+      {node:selection.focusNode,offset:selection.focusOffset}));
+  }
   const correspondence = createCompositionCorrespondence({host,limits:domRegionLimits,row:id=>rows.get(id),ownedId:node=>authority.get(node),
     placeholder:node=>placeholders.has(node),point:domPoint,selection:readSelection,generation:()=>compositionGeneration});
   const refusal = (code: 'dom.renderer_missing' | 'dom.presentation_unsupported' | 'dom.composition_conflict' | 'dom.reconcile_limit' | 'dom.disposed',
@@ -131,10 +205,10 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
       const row=rows.get(span.node),native=read(stamp,span.node,'alreadyPublished');
       bytes+=new TextEncoder().encode(span.text).byteLength;
       if(bytes>12||seen.has(span.node)||!row||isDomRefusal(native)||native.primitive!=='text'||native.parent!==region.block
-        ||native.text===null||!row.text||!host.contains(row.outer)||row.outer.parentNode!==block.content
+        ||native.text===null||!host.contains(row.outer)||row.outer.parentNode!==block.content
         ||!scalarBoundary(native.text,span.from_utf16)||!scalarBoundary(native.text,span.to_utf16)
         ||span.from_utf16>=span.to_utf16||native.text.slice(span.from_utf16,span.to_utf16)!==span.text
-        ||row.text.data!==native.text||native.type_id!==span.type_id||!equal(native.attributes,span.attributes)||!equal(native.marks,span.marks)
+        ||native.type_id!==span.type_id||!equal(native.attributes,span.attributes)||!equal(native.marks,span.marks)
         ||row.view.type_id!==native.type_id||!equal(row.view.attributes,native.attributes)||!equal(row.view.marks,native.marks))return fail();
       const index=block.view.children.indexOf(span.node);
       if(index<0||previous>=0&&index!==previous+1||block.content.childNodes[index]!==row.outer)return fail();
@@ -147,14 +221,14 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         if(parent.childNodes.length!==1||parent.firstChild!==wrapper||!matchesPresentation(wrapper,prepared.marks[i],false))return fail();
         parent=wrapper;
       }
-      if(parent.childNodes.length!==1||parent.firstChild!==row.text)return fail();
+      if(parent!==row.content||!ownedTexts(row,native.text))return fail();
     }
     const first=region.spans[0],last=region.spans.at(-1)!;
     if(region.range.anchor.kind!=='text'||region.range.focus.kind!=='text'||region.range.anchor.node!==first.node
       ||region.range.anchor.offset!==first.from_utf16||region.range.focus.node!==last.node||region.range.focus.offset!==last.to_utf16)return fail();
     for(let i=1;i<region.spans.length;i++){
       const left=region.spans[i-1],right=region.spans[i],l=rows.get(left.node),r=rows.get(right.node);
-      if(!l?.text||!r?.text||left.to_utf16!==l.text.length||right.from_utf16!==0)return fail();
+      if(!l?.texts.length||!r?.texts.length||left.to_utf16!==l.view.text?.length||right.from_utf16!==0)return fail();
     }
     return stampSame(currentStamp,stamp)?null:fail();
   }
@@ -179,8 +253,12 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
       const wrapper = doc.createElement(mark.tag); applyPresentation(wrapper, mark); content.appendChild(wrapper);
       bindings.set(wrapper, view.id); wrappers.push(wrapper); content = wrapper;
     }
-    let text: Text | null = null;
-    if (view.primitive === 'text') { text = doc.createTextNode(view.text ?? ''); content.appendChild(text); bindings.set(text, view.id); }
+    let texts = noText;
+    if (view.primitive === 'text') {
+      const source = view.text ?? '';
+      texts = Object.freeze((fragments ? planTextFragments(source) : [source]).map(part => doc.createTextNode(part)));
+      for (const text of texts) { content.appendChild(text); bindings.set(text, view.id); }
+    }
     else if (view.primitive === 'block_atom' || view.primitive === 'inline_atom') {
       outer.contentEditable = 'false';
       if (prepared.presentation.label !== undefined) content.appendChild(doc.createTextNode(prepared.presentation.label));
@@ -188,7 +266,90 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
       // A static prefix belongs only to a noneditable atom; editable data cannot gain text.
       throw new Error('dom.presentation_unsupported');
     }
-    return { view, prepared, outer, content, wrappers:Object.freeze(wrappers), text, signature: signature(prepared), placeholder: null };
+    return { view, prepared, outer, content, wrappers:Object.freeze(wrappers), texts, signature: signature(prepared), placeholder: null };
+  }
+  function ownedTexts(row: Row, expected: string | null = row.view.text): boolean {
+    return expected !== null && matchesTextFragments(row.content,row.texts,expected)
+      && row.texts.every(text => authority.get(text) === row.view.id);
+  }
+  function ownedTextChain(row: Row): boolean {
+    let parent = row.outer;
+    for (const wrapper of row.wrappers) {
+      if (parent.childNodes.length !== 1 || parent.firstChild !== wrapper || authority.get(wrapper) !== row.view.id) return false;
+      parent = wrapper;
+    }
+    return parent === row.content && ownedTexts(row);
+  }
+  function replaceTextData(node: Text, next: string): void {
+    const previous = node.data;
+    let start = 0, end = 0;
+    const size = Math.min(previous.length,next.length);
+    while (start < size && previous.charCodeAt(start) === next.charCodeAt(start)) start++;
+    if (!scalarBoundary(previous,start) || !scalarBoundary(next,start)) start--;
+    while (end < size-start && previous.charCodeAt(previous.length-end-1) === next.charCodeAt(next.length-end-1)) end++;
+    if (!scalarBoundary(previous,previous.length-end) || !scalarBoundary(next,next.length-end)) end--;
+    node.replaceData(start,previous.length-start-end,next.slice(start,next.length-end));
+  }
+  function parked(range: AssociatedRange): boolean {
+    const {selection,range: live,parkingPoint} = range;
+    return doc.activeElement === host && selection.rangeCount === 1 && selection.getRangeAt(0) === live
+      && live.collapsed && live.startContainer === parkingPoint && live.startOffset === 0;
+  }
+  function patchAssociatedFragments(row: Row, source: string, parts: readonly string[], event: DeepReadonly<EventDto>): AssociatedRange | null {
+    const before = event.selection_before, after = event.selection_after, browser = doc.getSelection();
+    if (options.layoutPolicy === 'auto-blocks' || !before || !after || !equal(after.anchor,after.focus)
+        || after.focus.kind !== 'text' || after.focus.node !== row.view.id
+        || !browser || browser.rangeCount !== 1 || doc.activeElement !== host || !doc.hasFocus()
+        || !equal(readSelection(),before)) return null;
+    const range = browser.getRangeAt(0), previous = row.texts;
+    if (range.startContainer !== browser.anchorNode || range.endContainer !== browser.focusNode
+        || range.startOffset !== browser.anchorOffset || range.endOffset !== browser.focusOffset
+        || !previous.includes(range.startContainer as Text) || !previous.includes(range.endContainer as Text)) return null;
+    const next = previous.map((node,index) => node.data === parts[index] ? node : doc.createTextNode(parts[index]));
+    if (destroyed || provisional || !ownedTextChain(row) || !equal(readSelection(),before)
+        || browser.rangeCount !== 1 || browser.getRangeAt(0) !== range) throw Error('dom.presentation_unsupported');
+
+    // Keep the browser's existing forward range associated while replacing Text.
+    // The authoritative post-edit position is resolved after the row is published.
+    const lease = {selection:browser,range,parkingPoint:row.content};
+    range.setStart(row.content,0);
+    range.collapse(true);
+    for (let index = 0; index < next.length; index++) {
+      const old = previous[index], node = next[index];
+      if (node === old) continue;
+      if (destroyed || provisional || !parked(lease) || row.content.childNodes[index] !== old
+          || node.parentNode !== null || node.ownerDocument !== doc || node.data !== parts[index] || authority.has(node)) {
+        throw Error('dom.presentation_unsupported');
+      }
+      row.content.replaceChild(node,old);
+      authority.delete(old);
+      authority.set(node,row.view.id);
+    }
+    row.texts = Object.freeze(next);
+    if (!parked(lease) || !ownedTexts(row,source)) throw Error('dom.presentation_unsupported');
+    return lease;
+  }
+  function writeRowText(row: Row, source: string, stable?: { readonly event: DeepReadonly<EventDto>; readonly restore: boolean }): AssociatedRange | null {
+    if (row.texts.length === 0 || source === row.view.text && ownedTexts(row)) return null;
+    const parts = fragments ? planTextFragments(source) : [source];
+    const previous = row.texts;
+    if (stable?.restore && patchPolicy === 'stable-fragments' && previous.length > 1 && parts.length === previous.length) {
+      const associated = patchAssociatedFragments(row,source,parts,stable.event);
+      if (associated) return associated;
+    }
+    const next = parts.length === previous.length ? previous
+      : Object.freeze(parts.map((part, index) => previous[index] ?? doc.createTextNode(part)));
+    for (let index = 0; index < parts.length; index++) {
+      const node = next[index];
+      if (index >= previous.length) authority.set(node, row.view.id);
+      if (node.data !== parts[index]) {
+        if (stable) replaceTextData(node,parts[index]);
+        else node.data = parts[index];
+      }
+    }
+    for (let index = next.length; index < previous.length; index++) authority.delete(previous[index]);
+    row.texts = next;
+    return null;
   }
   function prepare(view: DeepReadonly<NodeViewDto>, publication: DomDiagnostic['publication']): PreparedNode | DomRefusal {
     if ((view.primitive === 'text' && (view.text === null || view.children.length))
@@ -215,7 +376,14 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         if (content.childNodes.length !== 1 || content.firstChild !== wrapper) content.replaceChildren(wrapper);
         content = wrapper;
       }
-      if (row.text && (content.childNodes.length !== 1 || content.firstChild !== row.text)) content.replaceChildren(row.text);
+      if (content.childNodes.length !== row.texts.length || row.texts.some((node,index) => content.childNodes[index] !== node)) {
+        let cursor: ChildNode | null = content.firstChild;
+        for (const node of row.texts) {
+          if (cursor === node) cursor = cursor.nextSibling;
+          else content.insertBefore(node,cursor);
+        }
+        while (cursor) { const next: ChildNode | null = cursor.nextSibling; content.removeChild(cursor); cursor = next; }
+      }
       return;
     }
     if (row.view.primitive === 'hard_break' || row.view.primitive.endsWith('_atom')) return;
@@ -268,33 +436,30 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
   }
   function geometryRow(id: string): GeometryRow | null {
     const row = destroyed ? undefined : rows.get(id);
-    return row ? Object.freeze({view:row.view,outer:row.outer,content:row.content,wrappers:row.wrappers,text:row.text,placeholder:row.placeholder}) : null;
+    return row ? Object.freeze({view:row.view,outer:row.outer,content:row.content,wrappers:row.wrappers,texts:row.texts,placeholder:row.placeholder}) : null;
   }
   function geometryOwner(node: Node): GeometryRow | null {
     if (destroyed) return null;
     let id = authority.get(node);
     if (!id && placeholders.has(node) && node.parentNode) id = authority.get(node.parentNode);
     const row = id ? rows.get(id) : undefined;
-    return row && (node === row.outer || node === row.content || node === row.text || node === row.placeholder || row.wrappers.includes(node as HTMLElement))
+    return row && (node === row.outer || node === row.content || row.texts.includes(node as Text) || node === row.placeholder || row.wrappers.includes(node as HTMLElement))
       ? geometryRow(row.view.id) : null;
   }
   function positionAt(node: Node, offset: number): DeepReadonly<PositionDto> | DomRefusal | null {
     const id = authority.get(node), row = id ? rows.get(id) : undefined;
     if (!row || !host.contains(node) && node !== host) return null;
-    if (row.text === node) {
-      if (!scalarBoundary(row.text.data, offset)) return refusal('dom.presentation_unsupported', id!);
-      return Object.freeze({ kind: 'text', node: id!, offset, affinity: 'after' });
+    if (row.view.primitive === 'text') {
+      if (!Number.isSafeInteger(offset) || offset < 0 || !ownedTextChain(row)) return refusal('dom.presentation_unsupported', id!);
+      let nativeOffset = fragmentOffset(row.texts,row.content,node,offset);
+      if (nativeOffset === null && (node === row.outer || row.wrappers.includes(node as HTMLElement))
+          && node !== row.content && offset <= 1) {
+        nativeOffset = offset === 0 ? 0 : row.view.text!.length;
+      }
+      if (nativeOffset === null) return refusal('dom.presentation_unsupported', id!);
+      return Object.freeze({ kind: 'text', node: id!, offset: nativeOffset, affinity: 'after' });
     }
     if (!Number.isSafeInteger(offset) || offset < 0 || offset > node.childNodes.length) return refusal('dom.presentation_unsupported', id!);
-    if (row.view.primitive === 'text') {
-      let chain: Node | null = node, remaining = domRegionLimits.depth + 1;
-      while (chain !== row.text && remaining--) {
-        if (chain.childNodes.length !== 1 || !chain.firstChild || authority.get(chain.firstChild) !== id) return null;
-        chain = chain.firstChild;
-      }
-      if (chain !== row.text || !row.outer.contains(node)) return null;
-      return Object.freeze({ kind: 'text', node: id!, offset: offset === 0 ? 0 : row.text!.data.length, affinity: 'after' });
-    }
     if (row.view.primitive === 'hard_break' || row.view.primitive.endsWith('_atom')) {
       if (node !== row.outer) return null;
       return Object.freeze({ kind: 'edge', node: id!, side: offset === 0 ? 'before' : 'after' });
@@ -309,8 +474,10 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
   function domPoint(position: DeepReadonly<PositionDto>): DomPoint | DomRefusal {
     if (position.kind === 'text') {
       const row = rows.get(position.node);
-      if (!row?.text || !scalarBoundary(row.text.data, position.offset)) return refusal('dom.presentation_unsupported', position.node);
-      return { node: row.text, offset: position.offset };
+      if (!row || row.view.text === null || !scalarBoundary(row.view.text,position.offset) || !ownedTextChain(row)) {
+        return refusal('dom.presentation_unsupported',position.node);
+      }
+      return fragmentPoint(row.texts,position.offset,position.affinity) ?? refusal('dom.presentation_unsupported',position.node);
     }
     if (position.kind === 'child') {
       const row = rows.get(position.parent);
@@ -327,6 +494,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     if (destroyed) return refusal('dom.disposed');
     if (provisional?.composing) return null;
     if (selection === null) {
+      const layoutFailure = layout?.check(); if (layoutFailure) return layoutFailure;
       lastSelection = null; lastAnchor = lastFocus = null;
       const browser = doc.getSelection();
       try {
@@ -342,6 +510,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     }
     const anchor = domPoint(selection.anchor), focus = domPoint(selection.focus);
     if (isDomRefusal(anchor)) return anchor; if (isDomRefusal(focus)) return focus;
+    const layoutFailure = layout?.pin(anchor, focus); if (layoutFailure) return layoutFailure;
     const browser = doc.getSelection(); if (!browser) return refusal('dom.presentation_unsupported');
     try {
       // Preserve the UA's in-progress drag when correspondence is already exact.
@@ -479,6 +648,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
   function beginComposition(stamp: DeepReadonly<StampDto>, selection: DeepReadonly<SelectionDto>): CompositionWindow | DomRefusal {
     if (destroyed) return refusal('dom.disposed');
     if (provisional || !currentStamp || !stampSame(stamp,currentStamp)) return compositionRefusal('dom.composition_stale');
+    const layoutFailure = reportUnknownLayout(layout?.retire()); if (layoutFailure) return layoutFailure;
     const window = correspondence.begin(stamp,selection); if (isDomRefusal(window)) return window;
     const protectedSet = new Set<string>(), pending = window.entries.map(entry=>entry.id);
     while (pending.length) {
@@ -555,12 +725,12 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     // of the compact typography receipt's12UTF8 byte presentation limit.
     const fail=()=>compositionRefusal('dom.composition_stale',window);
     const blockRow=rows.get(block.id),leafRow=rows.get(leaf.id);
-    if(!blockRow||!leafRow||!leafRow.text||source.text.length>domRegionLimits.utf16
+    if(!blockRow||!leafRow||source.text.length>domRegionLimits.utf16
       ||!sameLiteralNode(blockRow.view,block)||!sameLiteralNode(leafRow.view,leaf)
       ||blockRow.outer!==window.entries[0].element||blockRow.outer.parentNode!==window.parent
       ||blockRow.outer.previousSibling!==window.before||blockRow.outer.nextSibling!==window.after
       ||leafRow.outer.parentNode!==blockRow.content||blockRow.content.childNodes.length!==1
-      ||blockRow.content.firstChild!==leafRow.outer||leafRow.text.data!==source.text)return fail();
+      ||blockRow.content.firstChild!==leafRow.outer||!ownedTexts(leafRow,source.text))return fail();
     let nodes=0,metadata=0;
     const presentation=(row:Row,native:DeepReadonly<NodeViewDto>):boolean=>{
       const prepared=prepare(native,'alreadyPublished');
@@ -580,7 +750,9 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         if(content.childNodes.length!==1||content.firstChild!==wrapper||!matches(wrapper,prepared.marks[i],false))return false;
         content=wrapper;
       }
-      return content===row.content&&(!row.text||content.childNodes.length===1&&content.firstChild===row.text);
+      if (row.texts.length > domRegionLimits.nodes-nodes) return false;
+      nodes+=row.texts.length;
+      return content===row.content&&(!row.texts.length||ownedTexts(row));
     };
     if(!presentation(blockRow,block)||!presentation(leafRow,leaf))return fail();
     for(const native of ancestors){
@@ -603,12 +775,12 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     const block=read(state.stamp,expected.id,'alreadyPublished'),leaf=read(state.stamp,selection.focus.node,'alreadyPublished');
     if(isDomRefusal(block))return block;if(isDomRefusal(leaf))return leaf;
     const blockRow=rows.get(block.id),leafRow=rows.get(leaf.id);
-    if(!blockRow||!leafRow||!leafRow.text||!sameLiteralNode(expected,block)||!sameLiteralNode(blockRow.view,block)||!sameLiteralNode(leafRow.view,leaf)
+    if(!blockRow||!leafRow||!sameLiteralNode(expected,block)||!sameLiteralNode(blockRow.view,block)||!sameLiteralNode(leafRow.view,leaf)
       ||leaf.primitive!=='text'||leaf.parent!==block.id||leaf.children.length!==0||leaf.text!==region.originalText
       ||blockRow.outer!==window.entries[0].element||blockRow.outer.parentNode!==window.parent
       ||blockRow.outer.previousSibling!==window.before||blockRow.outer.nextSibling!==window.after
       ||leafRow.outer.parentNode!==blockRow.content||blockRow.content.childNodes.length!==1||blockRow.content.firstChild!==leafRow.outer
-      ||leafRow.text.data!==leaf.text)return fail();
+      ||!ownedTexts(leafRow,leaf.text))return fail();
     const outsideFailure=correspondence.literalOutside(window);if(outsideFailure)return outsideFailure;
     const observed=correspondence.observe(window);
     if(isDomRefusal(observed))return observed;
@@ -666,8 +838,9 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         restored.set(id,row);
       }
       for (const [id,row] of restored) {
-        const candidate = candidates.get(id)!; row.view = candidate.view; row.prepared = candidate.prepared;
-        if (row.text && row.text.data !== candidate.view.text) row.text.data = candidate.view.text ?? '';
+        const candidate = candidates.get(id)!;
+        writeRowText(row,candidate.view.text ?? '');
+        row.view = candidate.view; row.prepared = candidate.prepared;
       }
       for (const row of restored.values()) reconcileChildren(row,restored);
       const wanted = window.entries.map(entry=>restored.get(entry.id)!.outer);
@@ -712,10 +885,124 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
   function captureRegion(): RecoveryRegion | null {
     return provisional ? provisionalRegion() : null;
   }
+  function deletionScroll(
+    event: DeepReadonly<EventDto>,
+    candidates: ReadonlyMap<string, { view: DeepReadonly<NodeViewDto>; prepared: PreparedNode }>,
+  ): DeletionViewport | null {
+    const before = event.selection_before, after = event.selection_after;
+    if (!options.scheduleDeletionScroll || provisional || event.change.kind !== 'document'
+        || event.change.impact.root_order_changed || event.change.impact.removed.length
+        || before?.anchor.kind !== 'text' || before.focus.kind !== 'text'
+        || before.anchor.node !== before.focus.node || before.anchor.offset === before.focus.offset
+        || after?.anchor.kind !== 'child' || after.anchor.index !== 1 || after.anchor.affinity !== 'after'
+        || !equal(after.anchor, after.focus) || !equal(lastSelection, before)
+        || !currentStamp || !stampSame(currentStamp, event.before) || options.layoutBlocked?.()) return null;
+    const win = doc.defaultView, active = doc.activeElement;
+    const browser = doc.getSelection();
+    if (!win || !doc.hasFocus() || !active || !host.isConnected || !host.contains(active)
+        || browser?.rangeCount !== 1 || !equal(readSelection(), before)) return null;
+
+    const id = before.anchor.node, previous = rows.get(id), next = candidates.get(id);
+    if (!previous || !next || previous.view.primitive !== 'text' || next.view.primitive !== 'text'
+        || previous.view.text === null || next.view.text === null || previous.view.parent === null
+        || next.view.parent !== previous.view.parent || after.anchor.parent !== previous.view.parent) return null;
+    const parent = rows.get(previous.view.parent);
+    if (parent?.view.primitive !== 'text_block' || parent.view.children.length !== 1 || parent.view.children[0] !== id) return null;
+    const from = Math.min(before.anchor.offset, before.focus.offset), to = Math.max(before.anchor.offset, before.focus.offset);
+    if (from <= 0 || !scalarBoundary(previous.view.text, from) || !scalarBoundary(previous.view.text, to)
+        || next.view.text !== previous.view.text.slice(0, from) + previous.view.text.slice(to)) return null;
+
+    // The retained leaf's selection is the only content being removed. Prepared
+    // ancestors still describe the same owned DOM chain and sibling order.
+    for (const [candidateId, candidate] of candidates) {
+      const row = rows.get(candidateId), view = candidate.view;
+      if (!row || row.view.parent !== view.parent || row.view.type_id !== view.type_id
+          || row.view.primitive !== view.primitive || row.signature !== signature(candidate.prepared)
+          || !equal(row.view.children, view.children) || !equal(row.view.attributes, view.attributes)
+          || !equal(row.view.marks, view.marks) || candidateId !== id && row.view.text !== view.text
+          || authority.get(row.outer) !== candidateId || authority.get(row.content) !== candidateId
+          || row.outer.ownerDocument !== doc || !host.contains(row.outer)) return null;
+      if (candidateId !== rootId) {
+        const owner = view.parent === null ? undefined : rows.get(view.parent);
+        const index = owner?.view.children.indexOf(candidateId) ?? -1;
+        if (!owner || index < 0 || owner.content.childNodes[index] !== row.outer
+            || !matchesPresentation(row.outer, row.prepared.presentation, true)) return null;
+      }
+      if (view.primitive === 'text') {
+        if (!ownedTextChain(row)) return null;
+      } else if (row.content !== row.outer || row.wrappers.length || row.placeholder
+          || row.content.childNodes.length !== view.children.length
+          || view.children.some((child, index) => row.content.childNodes[index] !== rows.get(child)?.outer)) return null;
+    }
+
+    let scroller: HTMLElement | null = host;
+    for (let depth = 0; scroller && depth < 32; depth++, scroller = scroller.parentElement) {
+      const css = win.getComputedStyle(scroller);
+      if (css.writingMode !== 'horizontal-tb' || css.transform !== 'none' || css.perspective !== 'none'
+          || css.scrollBehavior === 'smooth' || css.scrollSnapType !== 'none') return null;
+      if (css.overflowY !== 'auto' && css.overflowY !== 'scroll') continue;
+      const clipTop = scroller.getBoundingClientRect().top + scroller.clientTop;
+      const bounds = browser.getRangeAt(0).getBoundingClientRect();
+      if (bounds.height <= 0 || bounds.top < clipTop || bounds.bottom > clipTop + scroller.clientHeight) return null;
+      const { scrollTop: top, scrollLeft: left } = scroller;
+      return Number.isFinite(top) && Number.isFinite(left) ? { leaf: id, scroller, top, left, active } : null;
+    }
+    return null;
+  }
+  function preserveDeletionViewport({leaf, scroller, top, left, active}: DeletionViewport): DeletionScroll | null {
+    const tail = rows.get(leaf)?.texts.at(-1);
+    if (!tail || !tail.length) return null;
+    // A child-gap Range has no caret rectangle. Its native reveal targets the
+    // last physical line of the retained leaf.
+    const measureCaret = () => {
+      const range = doc.createRange();
+      range.setStart(tail, tail.length);
+      range.collapse(true);
+      return range.getBoundingClientRect();
+    };
+    const rect = measureCaret(), box = scroller.getBoundingClientRect();
+    const clipTop = box.top + scroller.clientTop;
+    const clipLeft = box.left + scroller.clientLeft;
+    const height = scroller.clientHeight, width = scroller.clientWidth;
+    const limitY = scroller.scrollHeight - height, limitX = scroller.scrollWidth - width;
+    const caretCenter = (rect.top + rect.bottom) / 2 - clipTop + scroller.scrollTop;
+    const caretX = rect.left - clipLeft + scroller.scrollLeft;
+    const expectedTop = Math.max(0, Math.min(limitY, caretCenter - height / 2));
+    const expectedLeft = Math.max(0, Math.min(limitX, caretX - width / 2));
+    if (rect.height <= 0 || height <= 0 || width <= 0 || expectedTop - top < height) return null;
+    const restore = (savedTop: number, savedLeft: number) => {
+      // WebKit may center the line box rather than the Range's font bounds.
+      // Allow that difference in the reveal target, but require stable caret geometry.
+      if (!host.contains(tail) || scroller.clientHeight !== height || scroller.clientWidth !== width
+          || scroller.scrollHeight - height !== limitY || scroller.scrollWidth - width !== limitX
+          || expectedTop - savedTop < height || Math.abs(scroller.scrollTop - expectedTop) > 4) return;
+      const currentBox = scroller.getBoundingClientRect();
+      const currentClipTop = currentBox.top + scroller.clientTop;
+      const currentClipLeft = currentBox.left + scroller.clientLeft;
+      const current = measureCaret();
+      if (current.height <= 0 || current.top < currentClipTop || current.bottom > currentClipTop + height
+          || Math.abs((current.top + current.bottom) / 2 - currentClipTop + scroller.scrollTop - caretCenter) > 1) return;
+      // Restore the horizontal offset only when the same reveal also centered
+      // an offscreen caret horizontally. Preserve unrelated horizontal scroll.
+      if (limitX > 0 && (caretX < savedLeft || caretX > savedLeft + width)
+          && current.left >= currentClipLeft && current.left <= currentClipLeft + width
+          && Math.abs(scroller.scrollLeft - expectedLeft) <= 1
+          && Math.abs(current.left - currentClipLeft + scroller.scrollLeft - caretX) <= 1
+          && doc.defaultView?.getComputedStyle(scroller).direction === 'ltr') {
+        scroller.scrollLeft = savedLeft;
+      }
+      scroller.scrollTop = savedTop;
+    };
+    restore(top, left);
+    return { scroller, active, restore };
+  }
   function patch(event: DeepReadonly<EventDto>, restore = true): DomRefusal | null {
     if (destroyed) return refusal('dom.disposed');
     const publication = 'alreadyPublished' as const, candidates = new Map<string, { view: DeepReadonly<NodeViewDto>; prepared: PreparedNode }>();
+    let associated: AssociatedRange | null = null;
+    let retainedScroll: DeletionViewport | null = null;
     if (event.change.kind === 'document') {
+      const layoutFailure = layout?.retire(); if (layoutFailure) return layoutFailure;
       const ids = new Set([...event.change.impact.upserted, ...event.change.impact.ancestors_after]);
       if (event.change.impact.root_order_changed && rootId) ids.add(rootId);
       const pending = [...ids];
@@ -790,10 +1077,8 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
           const stableTextPoint = (position: DeepReadonly<PositionDto>): boolean => {
             if (position.kind !== 'text') return false;
             const point = domPoint(position), target = rows.get(position.node);
-            if (isDomRefusal(point) || !target?.text || point.node !== target.text
-              || target.text.data !== target.view.text || target.text.parentNode !== target.content
-              || !target.outer.contains(target.text) || target.content.childNodes.length !== 1
-              || target.content.firstChild !== target.text || point.node.ownerDocument !== doc
+            if (isDomRefusal(point) || !target || !target.texts.includes(point.node as Text)
+              || !target.outer.contains(point.node) || point.node.ownerDocument !== doc
               || !point.node.isConnected || !host.contains(point.node)) return false;
             const visited = new Set<string>();
             let id: string | null = position.node;
@@ -823,6 +1108,11 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
           }
         }
       }
+      if (restore) retainedScroll = deletionScroll(event, candidates);
+      const impact = event.change.impact;
+      const localTextId = patchPolicy !== 'full' && !provisional && currentStamp && stampSame(currentStamp,event.before)
+        && event.before.session === event.after.session && event.before.generation === event.after.generation
+        && !impact.root_order_changed && impact.removed.length === 0 && impact.upserted.length === 1 ? impact.upserted[0] : null;
       try {
         for (const [id, candidate] of candidates) {
           const previous = rows.get(id);
@@ -833,18 +1123,45 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
             if (previous.outer !== host) previous.outer.replaceWith(replacement.outer);
             rows.set(id, replacement);
           } else {
+            const stable = id === localTextId && candidate.view.text !== null && previous.view.text !== null
+              && candidate.view.parent === previous.view.parent && candidate.view.type_id === previous.view.type_id
+              && equal(candidate.view.attributes,previous.view.attributes) && equal(candidate.view.marks,previous.view.marks)
+              && ownedTextChain(previous) ? {event,restore} : undefined;
+            associated = writeRowText(previous,candidate.view.text ?? '',stable) ?? associated;
             previous.view = candidate.view; previous.prepared = candidate.prepared;
-            if (previous.text && previous.text.data !== candidate.view.text) previous.text.data = candidate.view.text ?? '';
           }
         }
         for (const id of candidates.keys()) if (!provisional?.protected.has(id)) reconcileChildren(rows.get(id)!, rows);
         for (const id of event.change.impact.removed) {
           const row = rows.get(id); if (row && row.outer !== host) row.outer.remove(); rows.delete(id);
         }
+        if (associated) {
+          const point = domPoint(event.selection_after!.focus);
+          if (isDomRefusal(point) || !parked(associated)) return refusal('dom.presentation_unsupported',null,publication);
+          associated.range.setStart(point.node,point.offset);
+          associated.range.collapse(true);
+          if (associated.selection.rangeCount !== 1 || associated.selection.getRangeAt(0) !== associated.range
+              || associated.selection.focusNode !== point.node || associated.selection.focusOffset !== point.offset) {
+            return refusal('dom.presentation_unsupported',null,publication);
+          }
+        }
       } catch { return refusal('dom.presentation_unsupported', null, publication); }
     }
     currentStamp = event.after;
-    return provisional?.composing ? null : restore ? restoreSelection(event.selection_after) : rememberSelection(event.selection_after);
+    const failure = provisional?.composing ? null : restore ? restoreSelection(event.selection_after) : rememberSelection(event.selection_after);
+    if (failure) return failure;
+
+    if (retainedScroll && event.selection_after && !destroyed && stampSame(currentStamp, event.after)
+        && equal(lastSelection, event.selection_after) && equal(readSelection(), event.selection_after)
+        && !options.layoutBlocked?.() && host.isConnected && retainedScroll.scroller.isConnected
+        && retainedScroll.scroller.ownerDocument === doc && retainedScroll.scroller.contains(host)
+        && host.contains(retainedScroll.active) && doc.hasFocus() && doc.activeElement === retainedScroll.active) {
+      try {
+        const correction = preserveDeletionViewport(retainedScroll);
+        if (correction) options.scheduleDeletionScroll?.(correction, event.after, event.selection_after);
+      } catch { return refusal('dom.presentation_unsupported', null, publication); }
+    }
+    return null;
   }
   return {
     initialize(state) {
@@ -855,14 +1172,27 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         // Build all authored DOM detached. Host is replaced only after all declarations passed.
         for (const [id, value] of admitted) if (id !== state.root) fresh.set(id, createRow(value.view, value.prepared, false, freshAuthority));
         const root = admitted.get(state.root)!;
-        const rootRow: Row = { view: root.view, prepared: root.prepared, outer: host, content: host, wrappers:Object.freeze([]), text: null, signature: signature(root.prepared), placeholder: null };
+        const rootRow: Row = { view: root.view, prepared: root.prepared, outer: host, content: host, wrappers:Object.freeze([]), texts: noText, signature: signature(root.prepared), placeholder: null };
         fresh.set(state.root, rootRow);
         for (const [id, row] of fresh) if (id !== state.root) reconcileChildren(row, fresh, freshPlaceholders);
+        if (layout) {
+          const selection = state.selection;
+          const anchor = selection && layoutPosition(selection.anchor, fresh, state.root);
+          const focus = selection && layoutPosition(selection.focus, fresh, state.root);
+          const selected = selection === null ? undefined : anchor && focus
+            ? [Math.min(anchor[0], focus[0]), Math.max(anchor[1], focus[1])] as const : null;
+          layout.initialize(fresh, state.root, selected, (node, id) => freshAuthority.get(node) === id);
+        }
         reconcileChildren(rootRow, fresh, freshPlaceholders);
         freshAuthority.set(host,state.root); rows = fresh; authority = freshAuthority; placeholders = freshPlaceholders; rootId = state.root; currentStamp = state.stamp; provisional = null; compositionGeneration = {};
-        return restoreSelection(state.selection);
+        const selectionFailure = restoreSelection(state.selection);
+        return selectionFailure ?? layout?.activate() ?? null;
       } catch { return refusal('dom.presentation_unsupported'); }
     },
+    ...(layout ? {
+      prepareLayoutSelection, retireLayout: () => reportUnknownLayout(layout.retire()),
+      discardLayout: layout.destroy, layoutListeners: layout.listeners,
+    } : {}),
     patch, readSelection, restoreSelection, rememberSelection, ownedBlockAt, textPosition: positionAt, domPoint, geometryRow, geometryOwner,checkInputRegion,checkInputResult,captureLiteralComposition,checkLiteralComposition,checkLiteralCompositionWindow,
     geometryStamp: () => destroyed ? null : currentStamp,
     beginProvisional, beginComposition, observeComposition, captureTerminalDeletion, observeTerminalDeletion, captureTerminalInsertion, observeTerminalInsertion, releaseTerminal, terminalRetainedBytes, captureComposition, restoreComposition, endProvisional() { provisional = null; },
@@ -884,6 +1214,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     captureBlocks, captureRegion, boundedText,
     destroy(destroyOptions = {}) {
       if (destroyed) return; destroyed = true;
+      layout?.destroy();
       if (!destroyOptions.retainRegion) {
         // Never inspect or clear an unbounded retained provisional subtree.
         for (const row of rows.values()) if (row.view.parent === rootId && row.outer.parentNode === host) row.outer.remove();
