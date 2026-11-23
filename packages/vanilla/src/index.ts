@@ -174,36 +174,43 @@ function createChrome(editor: MountedEditor, prepared: PreparedMount): EditorUi 
 }
 
 function attachChrome(editor: MountedEditor, state: InteractionState, prepared: PreparedMount): void {
-  const ui = createChrome(editor, prepared);
-  if (!('ready' in ui)) {
-    Object.defineProperty(editor, 'uiReady', { value: Promise.resolve(ui) });
-    return;
-  }
-
-  const attachment: AttachedUi = { ui, ready: false };
-  state.chrome = attachment;
-  Object.defineProperty(editor, 'uiReady', {
-    value: ui.ready.then(result => {
-      attachment.ready = result.status === 'ready';
-      return result;
-    }),
-  });
+  let retired = false;
   const destroyEditor = editor.destroy.bind(editor);
   Object.defineProperty(editor, 'destroy', {
     configurable: true,
     writable: true,
     value(): ReturnType<MountedEditor['destroy']> {
+      retired = true;
       const chrome = state.chrome;
       delete state.chrome;
       let receipt: ReturnType<MountedEditor['destroy']>;
       try {
-        chrome?.ui.destroy();
-      } finally {
         receipt = destroyEditor();
+      } finally {
+        // A host dialog closes after the mounted editor has stopped editing.
+        chrome?.ui.destroy();
       }
       return receipt;
     },
   });
+  const uiReady = editor.ready.then(async ready => {
+    if (retired) return uiRefusal('ui.disposed');
+    if (ready.status !== 'ready') return uiRefusal('ui.unavailable');
+    const ui = createChrome(editor, prepared);
+    if (!('ready' in ui)) return ui;
+    if (retired) {
+      ui.destroy();
+      return uiRefusal('ui.disposed');
+    }
+
+    const attachment: AttachedUi = { ui, ready: false };
+    state.chrome = attachment;
+    const result = await ui.ready;
+    if (retired) return uiRefusal('ui.disposed');
+    attachment.ready = result.status === 'ready';
+    return result;
+  });
+  Object.defineProperty(editor, 'uiReady', { value: uiReady });
 }
 
 export function mount(options: VanillaMountOptions): VanillaEditor {

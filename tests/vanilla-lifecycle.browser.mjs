@@ -464,55 +464,131 @@ test('public vanilla stylesheet supports a host focus theme without remounting',
   await disposeMode(page);
 });
 
+async function mountLocaleUi(page, locale, withDialog = false) {
+  await page.addStyleTag({ url: '/ui-style.css' });
+  const initial = await page.evaluate(async ({ locale, withDialog }) => {
+    const api = await import('@klenwriter/editor');
+    const { defineUiHostAction } = await import('@klenwriter/editor-ui');
+    const { options, kwdjCommand } = window.vanillaFixture;
+    const { element } = options;
+    const slots = Object.fromEntries(['toolbar', 'gutter', 'entry'].map(name => {
+      const slot = document.createElement('div');
+      slot.id = `vanilla-ui-${name}`;
+      element.after(slot);
+      return [name, slot];
+    }));
+    const slotListeners = [];
+    let listenerAdditions = 0;
+    const capture = options => typeof options === 'boolean' ? options : Boolean(options?.capture);
+    for (const slot of Object.values(slots)) {
+      // Observe native registrations on these test-owned slots without replacing the listeners.
+      const add = slot.addEventListener.bind(slot);
+      const remove = slot.removeEventListener.bind(slot);
+      const find = (event, callback, capturing) => slotListeners.findIndex(listener =>
+        listener.slot === slot && listener.event === event && listener.callback === callback && listener.capturing === capturing);
+      slot.addEventListener = (event, callback, options) => {
+        add(event, callback, options);
+        const capturing = capture(options);
+        if (find(event, callback, capturing) === -1) {
+          listenerAdditions++;
+          slotListeners.push({ slot, event, callback, capturing });
+        }
+      };
+      slot.removeEventListener = (event, callback, options) => {
+        remove(event, callback, options);
+        const index = find(event, callback, capture(options));
+        if (index !== -1) slotListeners.splice(index, 1);
+      };
+    }
+    const toolbar = [];
+    const dialogCloses = [];
+    if (withDialog) {
+      const scope = document.createElement('section');
+      scope.hidden = true;
+      scope.setAttribute('role', 'dialog');
+      scope.setAttribute('aria-label', 'Host dialog');
+      const field = document.createElement('input');
+      field.setAttribute('aria-label', 'Dialog field');
+      scope.append(field);
+      element.after(scope);
+      toolbar.push(defineUiHostAction({
+        id: 'host-dialog',
+        label: { ru: 'Открыть диалог', en: 'Open dialog' },
+        scope,
+        open(connection) {
+          const request = {
+            kind: 'command', stamp: connection.context.state.stamp,
+            command: kwdjCommand({ kind: 'insert_text', text: 'X' }), history_hint: { kind: 'isolated' },
+          };
+          scope.hidden = false;
+          field.focus();
+          return reason => {
+            dialogCloses.push({
+              reason, lifecycle: editor.lifecycle, capture: editor.capture(),
+              attemptedRevision: request.stamp.revision, result: api.update(editor, request),
+            });
+            scope.hidden = true;
+          };
+        },
+        command: () => kwdjCommand({ kind: 'insert_text', text: 'X' }),
+      }));
+    }
+    const mountOptions = {
+      ...options,
+      locale,
+      ui: { slots, profile: () => ({ toolbar, insertions: [], blockActions: [], moves: () => [] }) },
+    };
+    const editor = api.mount(mountOptions);
+    const ready = await editor.ready;
+    const uiReady = await editor.uiReady;
+    const add = slots.entry.querySelector('[data-editor-ui-control="add"]');
+    window.vanillaMode = {
+      api, editor, element, root: element.firstElementChild, slots, add, slotListeners, mountOptions,
+      listenerAdditions: () => listenerAdditions, dialogCloses,
+    };
+    return { ready, uiReady, slotListenerCount: slotListeners.length };
+  }, { locale, withDialog });
+  expect(initial.ready).toMatchObject({ status: 'ready' });
+  expect(initial.uiReady).toMatchObject({ status: 'ready' });
+  expect(initial.slotListenerCount).toBeGreaterThan(0);
+}
+
 const addLabels = { ru: 'Добавить блок', en: 'Add block' };
+
+async function disposeLocaleUi(page, destroyThrough) {
+  const cleanup = await page.evaluate(async destroyThrough => {
+    const { api, editor, element, slots, add, slotListeners } = window.vanillaMode;
+    const receipt = destroyThrough === 'mounted' ? editor.destroy() : api.destroy(editor);
+    const finished = receipt.sdk.status === 'queued' ? await receipt.sdk.completion : receipt.sdk.response;
+    const { sdk, dom } = editor.resources();
+    return {
+      finished,
+      lifecycle: editor.lifecycle,
+      emptyEditor: element.isConnected && element.childNodes.length === 0,
+      slots: Object.values(slots).map(slot => ({ connected: slot.isConnected, children: slot.childNodes.length })),
+      detachedAdd: !add.isConnected,
+      slotListenerCount: slotListeners.length,
+      sdkListeners: sdk.listeners,
+      domListeners: dom.listeners,
+      native: editor.nativeResources(),
+    };
+  }, destroyThrough);
+  expect(cleanup).toEqual({
+    finished: { status: 'ok', value: { kind: 'destroyed' } },
+    lifecycle: 'destroyed',
+    emptyEditor: true,
+    slots: Array.from({ length: 3 }, () => ({ connected: true, children: 0 })),
+    detachedAdd: true,
+    slotListenerCount: 0,
+    sdkListeners: 0,
+    domListeners: 0,
+    native: nativeEmpty,
+  });
+}
 
 for (const [locale, nextLocale, destroyThrough] of [['ru', 'en', 'mounted'], ['en', 'ru', 'vanilla']]) {
   test(`public vanilla locale ${locale} → ${nextLocale} preserves UI and tears it down via ${destroyThrough} destroy`, async ({ page }) => {
-    await page.addStyleTag({ url: '/ui-style.css' });
-    const initial = await page.evaluate(async locale => {
-      const api = await import('@klenwriter/editor');
-      const { options } = window.vanillaFixture;
-      const { element } = options;
-      const slots = Object.fromEntries(['toolbar', 'gutter', 'entry'].map(name => {
-        const slot = document.createElement('div');
-        slot.id = `vanilla-ui-${name}`;
-        element.after(slot);
-        return [name, slot];
-      }));
-      const slotListeners = [];
-      const capture = options => typeof options === 'boolean' ? options : Boolean(options?.capture);
-      for (const slot of Object.values(slots)) {
-        // Observe native registrations on these test-owned slots without replacing the listeners.
-        const add = slot.addEventListener.bind(slot);
-        const remove = slot.removeEventListener.bind(slot);
-        const find = (event, callback, capturing) => slotListeners.findIndex(listener =>
-          listener.slot === slot && listener.event === event && listener.callback === callback && listener.capturing === capturing);
-        slot.addEventListener = (event, callback, options) => {
-          add(event, callback, options);
-          const capturing = capture(options);
-          if (find(event, callback, capturing) === -1) slotListeners.push({ slot, event, callback, capturing });
-        };
-        slot.removeEventListener = (event, callback, options) => {
-          remove(event, callback, options);
-          const index = find(event, callback, capture(options));
-          if (index !== -1) slotListeners.splice(index, 1);
-        };
-      }
-      const editor = api.mount({
-        ...options,
-        locale,
-        ui: { slots, profile: () => ({ toolbar: [], insertions: [], blockActions: [], moves: () => [] }) },
-      });
-      const ready = await editor.ready;
-      const uiReady = await editor.uiReady;
-      const add = slots.entry.querySelector('[data-editor-ui-control="add"]');
-      window.vanillaMode = { api, editor, element, root: element.firstElementChild, slots, add, slotListeners };
-      return { ready, uiReady, slotListenerCount: slotListeners.length };
-    }, locale);
-    expect(initial.ready).toMatchObject({ status: 'ready' });
-    expect(initial.uiReady).toMatchObject({ status: 'ready' });
-    expect(initial.slotListenerCount).toBeGreaterThan(0);
-
+    await mountLocaleUi(page, locale);
     const entry = page.locator('#vanilla-ui-entry');
     const add = label => entry.getByRole('button', { name: label, exact: true });
     await expect(add(addLabels[locale])).toBeVisible();
@@ -532,33 +608,82 @@ for (const [locale, nextLocale, destroyThrough] of [['ru', 'en', 'mounted'], ['e
     expect(await add(addLabels[nextLocale]).evaluate(button => button === window.vanillaMode.add)).toBe(true);
     expect(await documentCheckpoint(page)).toEqual(before);
 
-    const cleanup = await page.evaluate(async destroyThrough => {
-      const { api, editor, element, slots, add, slotListeners } = window.vanillaMode;
-      const receipt = destroyThrough === 'mounted' ? editor.destroy() : api.destroy(editor);
-      const finished = receipt.sdk.status === 'queued' ? await receipt.sdk.completion : receipt.sdk.response;
-      const { sdk, dom } = editor.resources();
-      return {
-        finished,
-        lifecycle: editor.lifecycle,
-        emptyEditor: element.isConnected && element.childNodes.length === 0,
-        slots: Object.values(slots).map(slot => ({ connected: slot.isConnected, children: slot.childNodes.length })),
-        detachedAdd: !add.isConnected,
-        slotListenerCount: slotListeners.length,
-        sdkListeners: sdk.listeners,
-        domListeners: dom.listeners,
-        native: editor.nativeResources(),
-      };
-    }, destroyThrough);
-    expect(cleanup).toEqual({
-      finished: { status: 'ok', value: { kind: 'destroyed' } },
-      lifecycle: 'destroyed',
-      emptyEditor: true,
-      slots: Array.from({ length: 3 }, () => ({ connected: true, children: 0 })),
-      detachedAdd: true,
-      slotListenerCount: 0,
-      sdkListeners: 0,
-      domListeners: 0,
-      native: nativeEmpty,
-    });
+    await disposeLocaleUi(page, destroyThrough);
   });
 }
+
+test('public vanilla locale refused duplicate does not allocate shared slot UI', async ({ page }) => {
+  await mountLocaleUi(page, 'en');
+  const before = await documentCheckpoint(page);
+  const duplicate = await page.evaluate(async () => {
+    const { api, editor, slots, mountOptions, listenerAdditions, slotListeners } = window.vanillaMode;
+    const roots = Object.values(slots);
+    const controls = () => roots.flatMap(slot => [...slot.querySelectorAll('button')]);
+    const originalControls = controls();
+    const listenerBaseline = listenerAdditions();
+    const activeBaseline = slotListeners.length;
+    const mutations = [];
+    const observer = new MutationObserver(records => mutations.push(...records));
+    roots.forEach(slot => observer.observe(slot, { childList: true }));
+    try {
+      const duplicate = api.mount(mountOptions);
+      const ready = await duplicate.ready;
+      const uiReady = await duplicate.uiReady;
+      mutations.push(...observer.takeRecords());
+      const currentControls = controls();
+      return {
+        ready,
+        uiReady,
+        originalReady: editor.lifecycle,
+        appendedRoots: mutations.reduce((count, change) => count + change.addedNodes.length, 0),
+        addedListeners: listenerAdditions() - listenerBaseline,
+        activeListenerChange: slotListeners.length - activeBaseline,
+        sameControls: currentControls.length === originalControls.length
+          && currentControls.every((node, index) => node === originalControls[index]),
+      };
+    } finally {
+      observer.disconnect();
+    }
+  });
+  expect(duplicate.ready).toMatchObject({ status: 'dom_refused', diagnostic: { code: 'dom.invalid_options' } });
+  expect(duplicate.uiReady).toEqual({ status: 'ui_refused', code: 'ui.unavailable', action: null });
+  expect(duplicate).toMatchObject({
+    originalReady: 'ready', appendedRoots: 0, addedListeners: 0, activeListenerChange: 0, sameControls: true,
+  });
+  await expect(page.locator('#vanilla-ui-entry').getByRole('button', { name: addLabels.en, exact: true })).toBeVisible();
+  expect(await documentCheckpoint(page)).toEqual(before);
+  await disposeLocaleUi(page, 'vanilla');
+});
+
+test('public vanilla locale destroy retires native editing before closing the attached host dialog', async ({ page }) => {
+  await mountLocaleUi(page, 'en', true);
+  const initial = await documentCheckpoint(page);
+  expect(initial).toMatchObject({ exported: { status: 'exported', canonicalJson: initialCanonical, revision: '0' }, sameRoot: true });
+  const selected = await page.evaluate(async () => {
+    const { api, editor, element } = window.vanillaMode;
+    element.focus();
+    const stamp = editor.capture();
+    const root = editor.read({ kind: 'state' }).value.state.root;
+    const paragraph = editor.read({ kind: 'node', stamp, node: root }).value.node.children[0];
+    const leaf = editor.read({ kind: 'node', stamp, node: paragraph }).value.node.children[2];
+    const point = { kind: 'text', node: leaf, offset: 2, affinity: 'after' };
+    const ticket = api.update(editor, { kind: 'set_selection', stamp, selection: { anchor: point, focus: point } });
+    return ticket.status === 'queued' ? ticket.completion : ticket.response;
+  });
+  expect(selected).toMatchObject({ status: 'ok', value: { kind: 'mutation' } });
+  await page.getByRole('button', { name: 'Open dialog', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Host dialog', includeHidden: true });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('textbox', { name: 'Dialog field' })).toBeFocused();
+  expect(await documentCheckpoint(page)).toEqual(initial);
+
+  await disposeLocaleUi(page, 'vanilla');
+  await expect(dialog).toBeHidden();
+  expect(await page.evaluate(() => window.vanillaMode.dialogCloses)).toMatchObject([{
+    reason: 'destroyed',
+    lifecycle: expect.stringMatching(/^(disposing|destroyed)$/),
+    capture: null,
+    attemptedRevision: '0',
+    result: { status: 'dom_refused', diagnostic: { code: 'dom.disposed' } },
+  }]);
+});
