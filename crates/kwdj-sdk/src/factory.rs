@@ -1428,6 +1428,63 @@ mod tests {
     const OSR184_WRAP: &str = "org.klenwriter.kwdj/command/wrap-literary-block";
     const OSR184_UNWRAP: &str = "org.klenwriter.kwdj/command/unwrap-literary-block";
 
+    fn osr194_run_cases(key: &str, command: &str, intent: &str) {
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-194-verse-keys.json"
+        ))
+        .unwrap();
+        let input = fixture["input"].to_string();
+        let cases: Vec<_> = fixture["cases"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|case| case["key"] == key)
+            .collect();
+        assert_eq!(cases.len(), 3);
+        for case in cases {
+            let label = case["position"].as_str().unwrap();
+            let mut session = osr183_open(&input);
+            let root = state(&mut session)["root"].clone();
+            let verse = osr183_node(&mut session, &root)["children"][0].clone();
+            let line = osr183_node(&mut session, &verse)["children"][0].clone();
+            let text = osr183_node(&mut session, &line)["children"][0].clone();
+            let point =
+                json!({"kind":"text","node":text,"offset":case["offset"],"affinity":"after"});
+            let stamp = state(&mut session)["stamp"].clone();
+            let selected = call(
+                &mut session,
+                json!({"kind":"set_selection","stamp":stamp,"selection":{"anchor":point,"focus":point}}),
+            );
+            assert_eq!(selected["status"], "ok", "{key} {label}: {selected}");
+            let result = osr183_command(&mut session, command, &json!({"kind":intent}), false);
+            assert_eq!(
+                result["value"]["effect"], "changed",
+                "{key} {label}: {result}"
+            );
+            assert_eq!(
+                snapshot(&mut session),
+                case["expected"].to_string(),
+                "{key} {label}"
+            );
+            assert_eq!(state(&mut session)["history"]["undo_entries"], "1");
+            osr183_history(&mut session, "undo", &input);
+        }
+    }
+
+    #[test]
+    fn osr194_enter_uses_the_three_pinned_cms_verse_splits() {
+        osr194_run_cases("Enter", "org.klenwriter.kwdj/command/enter", "enter");
+    }
+
+    #[test]
+    fn osr194_shift_enter_uses_the_three_pinned_cms_hard_breaks() {
+        osr194_run_cases(
+            "Shift+Enter",
+            "org.klenwriter.kwdj/command/shift-enter",
+            "shift_enter",
+        );
+    }
+
     fn osr184_blocks() -> Value {
         json!([
             {"type":"paragraph","content":[{"type":"text","text":"Before"}]},

@@ -493,6 +493,26 @@ test('OSR-185 packaged SDK2 keeps nested and empty literary blocks through histo
   }
 });
 
+test('OSR-194 packaged SDK2 matches six pinned CMS verse keys with exact Undo', async t => {
+  const fixture = JSON.parse(readFileSync(new URL('./fixtures/osr-194-verse-keys.json', import.meta.url), 'utf8'));
+  const input = osr185Bytes(fixture.input);
+  assert.equal(fixture.cases.length, 6);
+  for (const { key, position: name, offset, expected } of fixture.cases) {
+    await t.test(`${key} × ${name}`, async () => {
+      await withLiteraryCommandSession(input, editor => {
+        const verse = node(editor, root(editor).children[0]);
+        const line = node(editor, verse.children[0]);
+        osr185Select(editor, position(line.children[0], offset));
+        const command = kwdjCommand({ kind: key === 'Enter' ? 'enter' : 'shift_enter' });
+        assert.equal(accepted(osr183Wire(editor, command)).effect, 'changed');
+        assert.equal(canonical(editor), osr185Bytes(expected));
+        assert.equal(state(editor).history.undo_entries, '1');
+        osr183History(editor, 'undo', input);
+      });
+    });
+  }
+});
+
 test('OSR-185 packaged SDK2 refuses literary boundaries and illegal parents without committing', async () => {
   const fixture = osr185Fixture();
   const original = osr185Bytes(fixture.initial);

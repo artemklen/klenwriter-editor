@@ -532,23 +532,24 @@ fn enter<V: CandidateRead>(
     let start = inline::text_point(view, ordered.start, plan.work())?;
     let end = inline::text_point(view, ordered.end, plan.work())?;
     let header = get(view, start.block, plan)?;
-    if kind(header.type_id) == "code_block" {
+    let block_kind = kind(header.type_id);
+    if block_kind == "code_block" {
         if start.block != end.block {
             return cross_break(view, ordered.start, ordered.end, true, plan);
         }
         return inline::insert_text(view, state, "\n", plan);
     }
-    if kind(header.type_id) == "verse_line" {
+    if block_kind == "verse_line" && (!ordered.is_empty || header.children.is_empty()) {
         return Err(refusal(KwdjErrorCode::CommandPoetryUnavailable));
     }
-    if !matches!(kind(header.type_id), "paragraph" | "heading") {
+    if !matches!(block_kind, "paragraph" | "heading" | "verse_line") {
         return Err(unsupported());
     }
     if start.block != end.block {
         return enter_cross_blocks(view, ordered.start, ordered.end, plan);
     }
     let mut cut = prepare_inline_cut(view, selected, plan)?;
-    if kind(header.type_id) == "heading" && cut.at_start && cut.at_end {
+    if block_kind == "heading" && cut.at_start && cut.at_end {
         finish_inline_cut(&mut cut, plan)?;
         to_paragraph(cut.block, header, plan)?;
         set_caret(
@@ -579,7 +580,7 @@ fn enter<V: CandidateRead>(
         } else {
             split_item(view, parent, item, block_index, header, cut, plan)?;
         }
-    } else if kind(header.type_id) == "heading" && cut.at_start {
+    } else if block_kind == "heading" && cut.at_start {
         finish_inline_cut(&mut cut, plan)?;
         let at = index(view, parent, cut.block, plan)?;
         let attributes = paragraph_attrs(header, plan)?;
@@ -588,11 +589,11 @@ fn enter<V: CandidateRead>(
         caret_start(view, cut.block.into(), &cut.tail, plan)?;
     } else {
         let at = index(view, parent, cut.block, plan)? + 1;
-        let target = copy_header(
-            header,
-            kind(header.type_id) == "heading" && cut.at_end,
-            plan,
-        )?;
+        let target = if block_kind == "verse_line" && cut.at_end {
+            empty_node("verse_line", Primitive::TextBlock, Attributes::new(), plan)?
+        } else {
+            copy_header(header, block_kind == "heading" && cut.at_end, plan)?
+        };
         let inserted = fragment(plan, parent.into(), at, target)?;
         let next = created(inserted, &[0], plan)?;
         caret_start(view, copy_ref(&next, plan)?, &cut.tail, plan)?;
