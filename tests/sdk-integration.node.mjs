@@ -537,6 +537,64 @@ test('OSR-185 packaged SDK2 refuses literary boundaries and illegal parents with
   }, media);
 });
 
+const osr195Fixture = () => JSON.parse(readFileSync(new URL('./fixtures/osr-195-empty-verse-and-stanzas.json', import.meta.url), 'utf8'));
+
+test('OSR-195 packaged WASM admits empty shells, normalizes adjacent breaks and reopens exact counts', async t => {
+  const codec = await import('../packages/wasm/dist/editor_wasm.js');
+  const { options } = await import('./support/codec-fixtures.mjs');
+  await codec.default({ module_or_path: readFileSync(new URL('../packages/wasm/dist/editor_wasm_bg.wasm', import.meta.url)) });
+  for (const row of osr195Fixture().candidates) {
+    await t.test(row.id, async () => {
+      const input = new TextEncoder().encode(osr185Bytes(row.input));
+      for (const [operation, expected] of [[codec.kwdjValidateV1, row.strict], [codec.kwdjNormalizeV1, row.normalize]]) {
+        const observed = JSON.parse(operation(input, options()));
+        assert.equal(observed.status, expected.status, JSON.stringify(observed));
+        if (expected.status === 'refused') {
+          assert.equal(observed.diagnostic.code, expected.code);
+          assert.equal(observed.diagnostic.path, expected.path);
+        } else {
+          const bytes = osr185Bytes(expected.exported);
+          assert.equal(observed.canonical_json, bytes);
+          await withLiteraryCommandSession(bytes, editor => assert.equal(canonical(editor), bytes));
+        }
+      }
+    });
+  }
+});
+
+test('OSR-195 packaged SDK2 matches empty verse and stanza transitions with exact Undo', async t => {
+  for (const row of osr195Fixture().keys) {
+    await t.test(row.id, async () => {
+      const input = osr185Bytes(row.input);
+      await withLiteraryCommandSession(input, editor => {
+        const nodeAt = path => path.reduce((id, index) => node(editor, id).children[index], state(editor).root);
+        const versePath = row.enter_at.slice(0, -1);
+        const verse = nodeAt(versePath);
+        osr185Select(editor, osr185Gap(nodeAt(row.enter_at), 0));
+        const before = state(editor);
+        const reply = accepted(osr183Wire(editor, kwdjCommand({ kind: 'enter' })));
+        assert.equal(reply.effect, row.changed ? 'changed' : 'unchanged');
+        assert.equal(canonical(editor), osr185Bytes(row.expected));
+        assert.equal(nodeAt(versePath), verse);
+        const block = nodeAt(row.caret.path);
+        const first = node(editor, block).children[0];
+        const point = first && node(editor, first).primitive === 'text'
+          ? position(first, row.caret.offset)
+          : osr185Gap(block, row.caret.offset);
+        const after = state(editor);
+        assert.deepEqual(structuredClone(after.selection), { anchor: point, focus: point });
+        if (row.changed) {
+          assert.equal(after.history.undo_entries, '1');
+          osr183History(editor, 'undo', input);
+          assert.deepEqual(state(editor).selection, before.selection);
+        } else {
+          assert.deepEqual(after, before);
+        }
+      });
+    });
+  }
+});
+
 const osr189Fixture = () => JSON.parse(readFileSync(new URL('./fixtures/osr-189-warning.json', import.meta.url)));
 const osr189Wrap = 'org.klenwriter.kwdj/command/wrap-warning';
 const osr189Unwrap = 'org.klenwriter.kwdj/command/unwrap-warning';

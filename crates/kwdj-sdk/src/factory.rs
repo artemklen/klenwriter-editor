@@ -1892,6 +1892,109 @@ mod tests {
     const OSR189_WRAP: &str = "org.klenwriter.kwdj/command/wrap-warning";
     const OSR189_UNWRAP: &str = "org.klenwriter.kwdj/command/unwrap-warning";
 
+    fn osr195_fixture() -> Value {
+        serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-195-empty-verse-and-stanzas.json"
+        ))
+        .unwrap()
+    }
+
+    #[test]
+    fn osr195_admission_and_reopen_preserve_empty_verse_and_stanza_counts() {
+        let fixture = osr195_fixture();
+        let distribution = Distribution::new(BUILD, vec![Box::new(KwdjFactory)]).unwrap();
+        for case in fixture["candidates"].as_array().unwrap() {
+            let input = case["input"].to_string();
+            for (mode, expectation) in [("validate", "strict"), ("normalize", "normalize")] {
+                let mut settings = options(false);
+                settings["admission"] = json!(mode);
+                let mut session = distribution.open(input.as_bytes(), &settings.to_string());
+                let reply = serde_json::to_value(session.initialization()).unwrap();
+                let expected = &case[expectation];
+                let id = case["id"].as_str().unwrap();
+                if expected["status"] == "refused" {
+                    assert_eq!(reply["status"], "refused", "{id}/{mode}: {reply}");
+                    assert_eq!(
+                        reply["diagnostic"]["code"], expected["code"],
+                        "{id}/{mode}: {reply}"
+                    );
+                    assert_eq!(
+                        reply["diagnostic"]["path"], expected["path"],
+                        "{id}/{mode}: {reply}"
+                    );
+                } else {
+                    assert_eq!(reply["status"], "ok", "{id}/{mode}: {reply}");
+                    let saved = snapshot(&mut session);
+                    assert_eq!(saved, expected["exported"].to_string(), "{id}/{mode}");
+                    assert_eq!(snapshot(&mut osr183_open(&saved)), saved, "{id}/{mode}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn osr195_empty_verse_key_transitions_match_canonical_and_undo() {
+        let fixture = osr195_fixture();
+        let node_at = |session: &mut DistributionSession, path: &[Value]| {
+            let mut node = state(session)["root"].clone();
+            for index in path {
+                node = osr183_node(session, &node)["children"][index.as_u64().unwrap() as usize]
+                    .clone();
+            }
+            node
+        };
+        for case in fixture["keys"].as_array().unwrap() {
+            let id = case["id"].as_str().unwrap();
+            let input = case["input"].to_string();
+            let mut session = osr183_open(&input);
+            let line_path = case["enter_at"].as_array().unwrap();
+            let verse_path = &line_path[..line_path.len() - 1];
+            let verse = node_at(&mut session, verse_path);
+            let line = node_at(&mut session, line_path);
+            osr184_select(&mut session, &line, 0, &line, 0);
+            let before = state(&mut session);
+            let reply = osr183_command(
+                &mut session,
+                "org.klenwriter.kwdj/command/enter",
+                &json!({"kind":"enter"}),
+                false,
+            );
+            let changed = case["changed"].as_bool().unwrap();
+            let effect = if changed { "changed" } else { "unchanged" };
+            assert_eq!(reply["value"]["effect"], effect, "{id}: {reply}");
+            assert_eq!(snapshot(&mut session), case["expected"].to_string(), "{id}");
+            assert_eq!(node_at(&mut session, verse_path), verse, "{id}");
+            let caret = &case["caret"];
+            let block = node_at(&mut session, caret["path"].as_array().unwrap());
+            let header = osr183_node(&mut session, &block);
+            let text = header["children"]
+                .get(0)
+                .filter(|child| osr183_node(&mut session, child)["primitive"] == "text");
+            let point = if let Some(node) = text {
+                json!({"kind":"text","node":node,"offset":caret["offset"],"affinity":"after"})
+            } else {
+                json!({"kind":"child","parent":block,"index":caret["offset"],"affinity":"after"})
+            };
+            let after = state(&mut session);
+            assert_eq!(
+                after["selection"],
+                json!({"anchor":point,"focus":point}),
+                "{id}"
+            );
+            if changed {
+                assert_eq!(after["history"]["undo_entries"], "1");
+                osr183_history(&mut session, "undo", &input);
+                assert_eq!(
+                    state(&mut session)["selection"],
+                    before["selection"],
+                    "{id}"
+                );
+            } else {
+                assert_eq!(after, before, "{id}");
+            }
+        }
+    }
+
     fn osr189_fixture() -> Value {
         serde_json::from_str(include_str!("../../../tests/fixtures/osr-189-warning.json")).unwrap()
     }

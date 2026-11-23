@@ -539,8 +539,13 @@ fn enter<V: CandidateRead>(
         }
         return inline::insert_text(view, state, "\n", plan);
     }
-    if block_kind == "verse_line" && (!ordered.is_empty || header.children.is_empty()) {
-        return Err(refusal(KwdjErrorCode::CommandPoetryUnavailable));
+    if block_kind == "verse_line" {
+        if !ordered.is_empty {
+            return Err(refusal(KwdjErrorCode::CommandPoetryUnavailable));
+        }
+        if header.children.is_empty() {
+            return enter_empty_verse_line(view, start.block, header.parent, plan);
+        }
     }
     if !matches!(block_kind, "paragraph" | "heading" | "verse_line") {
         return Err(unsupported());
@@ -600,6 +605,62 @@ fn enter<V: CandidateRead>(
         move_tail(plan, std::mem::take(&mut cut.tail), next)?;
         finish_inline_cut(&mut cut, plan)?;
     }
+    plan.set_stored_marks(StoredMarksUpdate::Inherit)
+        .map_err(KwdjError::operational)?;
+    Ok(CommandPresentation::default())
+}
+
+fn enter_empty_verse_line<V: CandidateRead>(
+    view: &V,
+    line: V::Id,
+    verse_id: V::Id,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let verse = get(view, verse_id, plan)?;
+    let line_index = index(view, verse_id, line, plan)?;
+    let next = verse.children.get(line_index + 1).copied();
+    let mut following_line = None;
+    let (insert_kind, parent, insert_at) = if line_index == 0 {
+        ("verse_line", verse_id, 1)
+    } else {
+        let previous = verse.children[line_index - 1];
+        if kind(get(view, previous, plan)?.type_id) == "stanza_break" {
+            if next.is_some() {
+                return Ok(CommandPresentation::default());
+            }
+            push(plan, Operation::Remove { node: line.into() })?;
+            push(
+                plan,
+                Operation::Remove {
+                    node: previous.into(),
+                },
+            )?;
+            let verse_index = index(view, verse.parent, verse_id, plan)?;
+            ("paragraph", verse.parent, verse_index + 1)
+        } else {
+            let mut attributes = Attributes::new();
+            attributes.insert(key("blank_lines", plan)?, Attribute::Number(1u64.into()));
+            let stanza = empty_node("stanza_break", Primitive::BlockAtom, attributes, plan)?;
+            push(plan, Operation::Remove { node: line.into() })?;
+            fragment(plan, verse_id.into(), line_index, stanza)?;
+            if let Some(id) = next {
+                let header = get(view, id, plan)?;
+                if kind(header.type_id) == "verse_line" {
+                    let first = header.children.first().copied().map(LocalRef::Existing);
+                    following_line = Some((id.into(), first));
+                }
+            }
+            ("verse_line", verse_id, line_index + 1)
+        }
+    };
+    let (target, first) = if let Some(existing) = following_line {
+        existing
+    } else {
+        let block = empty_node(insert_kind, Primitive::TextBlock, Attributes::new(), plan)?;
+        let operation = fragment(plan, parent.into(), insert_at, block)?;
+        (created(operation, &[0], plan)?, None)
+    };
+    caret_start(view, target, first.as_slice(), plan)?;
     plan.set_stored_marks(StoredMarksUpdate::Inherit)
         .map_err(KwdjError::operational)?;
     Ok(CommandPresentation::default())
