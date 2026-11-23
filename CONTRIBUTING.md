@@ -81,6 +81,16 @@ node scripts/summarize-evidence.mjs
 
 Linux дополнительно требует Playwright system dependencies (`npx playwright install --with-deps`).
 
+## Локальные vanilla alpha tarballs
+
+Из чистого checkout с установленными инструментами сборки выполните:
+
+```sh
+npm exec --yes --package=node@24.22.0 --package=npm@11.14.0 -- node scripts/vanilla-alpha/release.mjs
+```
+
+Команда собирает `0.1.0-alpha.1`, записывает имена, версии и SHA-256 tarballs в `artifacts/vanilla-alpha/` и проверяет их в отдельном npm-проекте без Rust в `PATH`. Chromium вводит символ через установленный `@klenwriter/editor` и проверяет канонический экспорт.
+
 ## Локальный pre-send gate (OPS-625)
 
 Агент обязан выполнить команды выше на точной отправляемой ревизии и записать
