@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vanilla editor alpha</title>
+<link rel="stylesheet" href="%%EDITOR_CSS%%">
+<link rel="stylesheet" href="/example.css">
+<script type="importmap">%%IMPORT_MAP%%</script>
+<main>
+  <h1>Vanilla editor alpha</h1>
+  <fieldset id="controls" disabled aria-label="Document actions">
+    <button type="button" id="undo">Undo</button>
+    <button type="button" id="redo">Redo</button>
+    <button type="button" id="save">Save</button>
+    <button type="button" id="reopen">Reopen saved</button>
+  </fieldset>
+  <p role="status"><span id="status">Loading editor</span></p>
+  <div id="editor" role="textbox" aria-label="Document" aria-multiline="true"></div>
+  <details>
+    <summary>Canonical JSON</summary>
+    <pre id="canonical"></pre>
+  </details>
+</main>
+<script type="module" src="/app.mjs"></script>
+</html>
