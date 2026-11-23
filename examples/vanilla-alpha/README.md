@@ -11,6 +11,9 @@ and the SDK to run its existing extension command on a copy of the open
 document. **Extension copy JSON** shows the result. **Undo callout** restores
 the copy's original bytes. The mounted note uses the D0 block set.
 
+In KWDJ, select text and choose **Link**. The local host dialog passes the
+URL to the editor. **Cancel** returns focus and the original selection.
+
 Use the `packages` directory printed by the local alpha build in `CONTRIBUTING.md`.
 It contains six `0.1.0-alpha.1` archives and their `pack-receipt.json`. The runner
 verifies the archive hashes and builds the example in a fresh npm project
@@ -26,7 +29,7 @@ Open the printed URL. Keep the server running while you reload so the origin
 stays the same. Run the following command with Playwright Chromium and WebKit
 installed to verify editing, save and reopen, and strict validation of exports
 after switching profiles. The run also checks the D1 command and byte-for-byte
-Undo in each browser.
+Undo and both outcomes of the KWDJ link dialog in each browser.
 
 ```sh
 node examples/vanilla-alpha/run.mjs /path/to/packages --check

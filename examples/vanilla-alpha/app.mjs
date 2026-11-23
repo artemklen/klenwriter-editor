@@ -2,6 +2,7 @@
 import { destroy, export as exportDocument, mount, subscribe, update } from '@klenwriter/editor';
 import { createCommand, loadSdkV2 } from '@klenwriter/editor-sdk';
 import { createCalloutEditor, profiles } from './profile.mjs';
+import { createLinkAction } from './link-action.mjs';
 
 const editorElement = document.querySelector('#editor');
 const controls = document.querySelector('#controls');
@@ -13,6 +14,15 @@ const calloutOutput = document.querySelector('#extension-canonical');
 const calloutDetails = calloutOutput.parentElement;
 const insertCallout = document.querySelector('#insert-callout');
 const undoCallout = document.querySelector('#undo-callout');
+const link = createLinkAction(document.querySelector('#link-dialog'));
+const kwdjUi = {
+  slots: {
+    toolbar: document.querySelector('#editor-toolbar'),
+    gutter: document.querySelector('#editor-gutter'),
+    entry: document.querySelector('#editor-entry'),
+  },
+  profile: () => ({ toolbar: [link], insertions: [], blockActions: [], moves: () => [] }),
+};
 const encoder = new TextEncoder();
 const sdk = loadSdkV2();
 let editor;
@@ -87,10 +97,15 @@ async function open(profile, input = profiles[profile].initialDocument) {
     element: editorElement,
     editor: { input: encoder.encode(input), loader: () => sdk, options },
     renderers,
+    ui: profile === 'kwdj' ? kwdjUi : undefined,
   });
   editor = mounted;
   const ready = await mounted.ready;
   if (ready.status !== 'ready') throw new Error(JSON.stringify(ready));
+  if (mounted.uiReady) {
+    const ui = await mounted.uiReady;
+    if (ui.status !== 'ready') throw new Error(JSON.stringify(ui));
+  }
   currentProfile = profile;
   extensionPanel.hidden = profile !== 'notes';
 

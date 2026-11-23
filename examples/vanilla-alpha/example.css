@@ -36,6 +36,31 @@ button, select {
   padding: .75rem 1rem;
 }
 
+#link-dialog:not([hidden]) {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 50%);
+}
+
+#link-dialog form {
+  max-width: calc(100vw - 2rem);
+  padding: 1.25rem;
+  background: Canvas;
+  color: CanvasText;
+}
+
+#link-dialog h2 {
+  margin-top: 0;
+}
+
+#link-dialog label {
+  display: block;
+  margin-bottom: 1rem;
+}
+
 details {
   margin-top: 1rem;
 }

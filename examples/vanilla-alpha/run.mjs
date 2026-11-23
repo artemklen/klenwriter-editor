@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium, webkit } from 'playwright';
 import { serveAlphaConsumer } from '../../scripts/vanilla-alpha/browser.mjs';
 import { buildConsumerModule, installAlphaConsumer } from '../../scripts/vanilla-alpha/consumer.mjs';
+import { checkLinkDialog } from './link-check.mjs';
 
 const example = fileURLToPath(new URL('./', import.meta.url));
 const workspace = resolve(example, '../..');
@@ -64,7 +65,7 @@ assert.doesNotMatch(profileSource, /\.\.\/notes-extension\//u);
 const consumer = installAlphaConsumer(workspace, resolve(bundle), manifest.dependencies);
 let server;
 try {
-  for (const file of ['app.mjs', 'profile.mjs', 'kwdj-registry.json', 'index.html', 'example.css']) {
+  for (const file of ['app.mjs', 'profile.mjs', 'link-action.mjs', 'kwdj-registry.json', 'index.html', 'example.css']) {
     copyFileSync(join(example, file), join(consumer.directory, file));
   }
   const notesDirectory = join(consumer.directory, 'notes-extension');
@@ -88,7 +89,8 @@ try {
   server = await serveAlphaConsumer(consumer,
     ({ importMap, imports }) => template
       .replace('%%IMPORT_MAP%%', () => importMap)
-      .replace('%%EDITOR_CSS%%', imports['@klenwriter/editor/style.css']),
+      .replace('%%EDITOR_CSS%%', imports['@klenwriter/editor/style.css'])
+      .replace('%%UI_CSS%%', imports['@klenwriter/editor-ui/style.css']),
     resources, {
       '@example/notes-extension/dom': '/notes-extension/dom.mjs',
       '@example/notes-extension/d0.json': '/notes-extension/d0.json',
@@ -196,10 +198,15 @@ try {
         assert.equal(await canonical(), notesCanonical);
         await validateExport(page, await canonical(), notesDescriptor, notesOptions);
 
+        await profile.selectOption('kwdj');
+        await waitForStatus('Opened KWDJ');
+        const link = await checkLinkDialog(page);
+
         assert.deepEqual(errors, []);
         results.push({
           engine, version: browser.version(),
           editUndoRedoSaveReloadReopen: 'pass', profileSwitchAndValidation: 'pass', extensionAndUndo: 'pass',
+          ...link,
         });
       } finally {
         await browser.close();

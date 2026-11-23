@@ -4,6 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Vanilla editor alpha</title>
 <link rel="stylesheet" href="%%EDITOR_CSS%%">
+<link rel="stylesheet" href="%%UI_CSS%%">
 <link rel="stylesheet" href="/example.css">
 <script type="importmap">%%IMPORT_MAP%%</script>
 <main>
@@ -30,7 +31,18 @@
     </section>
   </fieldset>
   <p role="status"><span id="status">Loading editor</span></p>
+  <div id="editor-toolbar"></div>
   <div id="editor" role="textbox" aria-label="Document" aria-multiline="true"></div>
+  <div id="editor-gutter"></div>
+  <div id="editor-entry"></div>
+  <section id="link-dialog" role="dialog" aria-modal="true" aria-labelledby="link-heading" hidden>
+    <form>
+      <h2 id="link-heading">Insert link</h2>
+      <label>Link URL <input id="link-url" type="text" inputmode="url" autocomplete="off"></label>
+      <button type="submit" tabindex="0">Apply</button>
+      <button id="cancel-link" type="button" tabindex="0">Cancel</button>
+    </form>
+  </section>
   <details>
     <summary>Canonical JSON</summary>
     <pre id="canonical"></pre>
