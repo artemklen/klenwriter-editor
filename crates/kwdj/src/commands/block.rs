@@ -1752,6 +1752,15 @@ fn wrap_literary_block<V: CandidateRead>(
     state: CommandState<'_, V::Id>,
     plan: &mut PlanBuilder<'_, V::Id>,
 ) -> Result<CommandPresentation, KwdjError> {
+    wrap_selected_blocks(view, state, plan, author_note)
+}
+
+fn wrap_selected_blocks<V: CandidateRead>(
+    view: &V,
+    state: CommandState<'_, V::Id>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+    create_wrapper: impl FnOnce(&mut PlanBuilder<'_, V::Id>) -> Result<Node, KwdjError>,
+) -> Result<CommandPresentation, KwdjError> {
     let selected = selection(state)?;
     let anchor = outside_gap(view, selected.anchor, plan)?;
     let focus = outside_gap(view, selected.focus, plan)?;
@@ -1762,16 +1771,16 @@ fn wrap_literary_block<V: CandidateRead>(
                 .children(parent)
                 .and_then(|children| children.get(start..a.max(b)))
                 .ok_or_else(invalid)?;
-            let note = author_note(plan)?;
-            wrap_blocks(parent, start, blocks, note, plan)?;
+            let wrapper = create_wrapper(plan)?;
+            wrap_blocks(parent, start, blocks, wrapper, plan)?;
         }
         (None, None) => {
             let blocks = selected_blocks(view, state, plan)?;
             let first = *blocks.first().ok_or_else(unsupported)?;
             let parent = get(view, first, plan)?.parent;
             let start = require_contiguous_blocks(view, &blocks, parent, plan)?;
-            let note = author_note(plan)?;
-            wrap_blocks(parent, start, &blocks, note, plan)?;
+            let wrapper = create_wrapper(plan)?;
+            wrap_blocks(parent, start, &blocks, wrapper, plan)?;
         }
         _ => return Err(unsupported()),
     }
