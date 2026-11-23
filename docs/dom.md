@@ -73,12 +73,14 @@ snapshot, вызовите `destroy()` и смонтируйте сохранё�
 
 KWDJ binding поддерживает `text`, `hard_break`, `paragraph`, `heading`,
 `code_block`, `blockquote`, `bullet_list`, `ordered_list`, `list_item`,
-`task_list`, `task_item`, `scene_break` и `media_image`.
+`task_list`, `task_item`, `scene_break`, `media_image` и `literary_block`.
 Девять marks включают strong, emphasis, strike, code, subscript, superscript,
 text_color, highlight и link. Для `media_image` binding показывает локальный
 CSS-плейсхолдер с именем из `alt`, если изображение содержательное. Подпись
-остаётся обычным редактируемым абзацем. Для table, verse, domain и reference_link
-требуются отдельные renderers. Неизвестные типы, marks и attrs дают явный отказ.
+остаётся обычным редактируемым абзацем. Литературный контейнер имеет доступное
+имя по виду блока и сохраняет дочерние узлы. Для table, verse, остальных
+доменных блоков и reference_link требуются отдельные renderers. Неизвестные
+типы, marks и attrs дают явный отказ.
 
 Native build-time producer проверяет полный inventory из реальных публичных
 registrations/FrozenRegistry; digest не заменяет проверку покрытия. Generic DOM

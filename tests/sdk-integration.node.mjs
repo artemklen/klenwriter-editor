@@ -2,6 +2,7 @@
 // Actual packaged release WASM + public controller; no controlled/fake bridge.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { literaryFixture } from './support/codec-fixtures.mjs';
 import { readFileSync } from 'node:fs';
 import { createCommand, createEditor, loadSdk, loadSdkV2 } from '../packages/sdk/dist/index.js';
 import { kwdjCommand } from '../packages/kwdj/dist/index.js';
@@ -287,6 +288,43 @@ test('OSR-141 packaged SDK2 preserves media identity and caption through move, c
     accepted(await settled(editor.destroy()));
     assert.deepEqual(counts(module), baseline);
   }
+});
+
+test('OSR-182 DOC-015 packaged WASM exposes and reopens all literary kinds byte for byte', async () => {
+  const fixture = literaryFixture();
+  const packet = JSON.parse(readFileSync(new URL('../artifacts/extensions/packet.json', import.meta.url)));
+  const wasm = readFileSync(new URL('../packages/wasm/dist/editor_wasm_bg.wasm', import.meta.url));
+  const module = await loadSdkV2({ wasm: new Uint8Array(wasm) });
+  const baseline = counts(module);
+  const options = {
+    abi: 'editor-sdk/2', build_id: module.manifest.build_id, profile: packet.kwdjProfile,
+    admission: 'validate', access: 'read_only', registry_json: packet.kwdjRegistryJson,
+    profile_options_json: JSON.stringify({ identities: { media: [], references: [] }, limits: null }),
+  };
+  async function readAndExport(input) {
+    const editor = createEditor({ input: new TextEncoder().encode(input), options, loader: async () => module });
+    try {
+      accepted(await editor.ready);
+      const blocks = root(editor).children;
+      assert.equal(blocks.length, 6);
+      const rows = blocks.map(id => {
+        const block = node(editor, id);
+        assert.equal(block.type_id, 'org.klenwriter.kwdj/literary_block');
+        assert.equal(block.primitive, 'container');
+        assert.equal(block.attributes.kind.kind, 'string');
+        const paragraph = node(editor, block.children[0]);
+        return [block.attributes.kind.value, node(editor, paragraph.children[0]).text];
+      });
+      assert.deepEqual(rows, fixture.rows);
+      return canonical(editor);
+    } finally {
+      accepted(await settled(editor.destroy()));
+      assert.deepEqual(counts(module), baseline);
+    }
+  }
+  const saved = await readAndExport(fixture.canonical);
+  assert.equal(saved, fixture.canonical);
+  assert.equal(await readAndExport(saved), fixture.canonical);
 });
 
 test('packaged SDK: two listeners read revision r before queued command; second same capture refuses stale', async () => {

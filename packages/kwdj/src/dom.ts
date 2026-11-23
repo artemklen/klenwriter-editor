@@ -11,6 +11,14 @@ import { kwdjTypingDomInventory } from './typing-dom-inventory.js';
 const prefix = 'org.klenwriter.kwdj/';
 const colorTokens = ['muted', 'accent', 'manuscript', 'warning', 'success', 'danger'];
 const highlightTokens = ['accent', 'manuscript', 'warning'];
+const literaryLabels = new Map([
+  ['author_note', 'Заметка автора'],
+  ['letter', 'Письмо'],
+  ['epigraph', 'Эпиграф'],
+  ['world_note', 'Заметка мира'],
+  ['chronicle_quote', 'Цитата хроники'],
+  ['archive_fragment', 'Архивный фрагмент'],
+]);
 const object = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object' && !Array.isArray(v);
 const closed = (v: unknown, keys: readonly string[]): v is Record<string, unknown> => object(v)
   && Object.keys(v).length === keys.length && keys.every(k => Object.hasOwn(v, k));
@@ -91,6 +99,11 @@ const nodes: Record<string, NodeRendererDefinition> = {
     if (!name || decorative !== undefined) return refused(n.type_id, n);
     return { tag: 'div', classes, attributes: { role: 'group', 'aria-label': name.trim() ? name : 'Media placeholder' } };
   }),
+  [`${prefix}literary_block`]: node('container', ['kind'], n => {
+    const kind = attrString(n.attributes.kind);
+    const label = kind === undefined ? undefined : literaryLabels.get(kind);
+    return label === undefined ? refused(n.type_id, n) : { tag: 'section', attributes: { role: 'group', 'aria-label': label } };
+  }),
 };
 const marks: Record<string, MarkRendererDefinition> = {};
 for (const [name, tag] of [['strong', 'strong'], ['emphasis', 'em'], ['strike', 's'], ['code', 'code'], ['subscript', 'sub'], ['superscript', 'sup']] as const) {
@@ -136,8 +149,8 @@ function coveredClipboard(value: unknown): boolean {
   const visit = (node: unknown, depth: number): boolean => {
     if (++count > 8192 || depth > 64 || !object(node) || typeof node.type !== 'string'
       || Object.keys(node).some(k => !['type','attrs','text','marks','content'].includes(k))) return false;
-    // Media fragments belong to native clipboard and require an editing identity context.
-    if (node.type === 'media_image') return false;
+    // These renderers cover document readback. The mounted clipboard subset is separate.
+    if (node.type === 'media_image' || node.type === 'literary_block') return false;
     const renderer = Object.hasOwn(nodes, prefix + node.type) ? nodes[prefix + node.type] : null;
     if (!renderer) return false;
     const attrs = node.attrs === undefined ? {} : node.attrs;

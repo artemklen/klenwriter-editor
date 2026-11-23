@@ -52,3 +52,17 @@ New public providers/descriptors must preserve this architecture in OSR-64.
 | Native and WASM SDK | Move, remove, whole-block KWDJ clipboard, Undo/Redo, and export/reopen preserve the media identity, alignment, accessibility attributes, and caption. |
 | Mounted KWDJ DOM | An offline placeholder has the authored accessible name for meaningful media. The caption remains editable. Keyboard deletion of a selected whole block and Undo preserve its attributes. |
 | Create media block | Unavailable in the library. Media selection and upload belong to a host picker. |
+
+## Literary block parity
+
+Native and WASM preserve canonical bytes. The DOM renderer exposes a named
+container and its authored children.
+
+| Kind | Read and render | Authoring parity |
+| --- | --- | --- |
+| `author_note` | Supported | The CMS slash callout creates this kind. |
+| `letter` | Supported | Preserve and read. |
+| `epigraph` | Supported | Preserve and read. |
+| `world_note` | Supported | Preserve and read. |
+| `chronicle_quote` | Supported | Preserve and read. |
+| `archive_fragment` | Supported | Preserve and read. |

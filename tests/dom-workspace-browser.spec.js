@@ -1,5 +1,6 @@
 import {test,expect} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { literaryFixture } from './support/codec-fixtures.mjs';
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {longDocumentFixtures} from './support/large-document-fixtures.mjs';
@@ -157,6 +158,33 @@ test('T06 complete basic catalog has named host and valid static accessibility s
   observations.get(page).axe={engine:result.testEngine,scope:'Actual mounted KWDJ basic catalog static semantics; OSR-39 smoke only',
     violations:result.violations,incomplete:result.incomplete,passedRules:result.passes.map(rule=>rule.id)};
   expect(result.violations).toEqual([]);expect(result.incomplete).toEqual([]);expect(result.passes.length).toBeGreaterThan(0);
+});
+
+test('OSR-182 DOC-015 renders and reopens all literary kinds in a read-only editor', async ({ page }) => {
+  const fixture = literaryFixture();
+  const labels = ['Заметка автора', 'Письмо', 'Эпиграф', 'Заметка мира', 'Цитата хроники', 'Архивный фрагмент'];
+  async function renderAndExport(source) {
+    const { id, ready, diagnostic } = await call(page, 'mount', { source, access: 'read_only' });
+    expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+    const host = page.locator(`#${id}`);
+    await expect(host).toHaveAttribute('contenteditable', 'false');
+    const blocks = host.getByRole('group');
+    await expect(blocks).toHaveCount(6);
+    for (const [index, label] of labels.entries()) await expect(blocks.nth(index)).toHaveAccessibleName(label);
+    await expect(blocks.locator(':scope > p')).toHaveText(fixture.rows.map(([, child]) => child));
+    const point = await checkpoint(page, id, 'DOC-015 read and rendered literary kinds');
+    const rows = labels.map((_, index) => {
+      const block = stateRow(point, `/${index}`);
+      expect(block).toMatchObject({ type_id: 'org.klenwriter.kwdj/literary_block', primitive: 'container' });
+      return [block.attributes.kind.value, stateRow(point, `/${index}/0/0`).text];
+    });
+    expect(rows).toEqual(fixture.rows);
+    await call(page, 'dispose', id);
+    return point.canonical;
+  }
+  const saved = await renderAndExport(fixture.canonical);
+  expect(saved).toBe(fixture.canonical);
+  expect(await renderAndExport(saved)).toBe(fixture.canonical);
 });
 
 test('T09 keyboard Tab return preserves current native caret and every committed facet before and after deletion',async({page})=>{
@@ -645,14 +673,16 @@ test('closed payload coverage refuses unsupported targets, marks, recipes and ra
   const unknownMark={type_id:'org.example/unrendered_mark',attributes:{}};
   const media = approvedMedia('DOC-013');
   media.attrs.align = 'center';
-  const mediaFragment = JSON.stringify({
+  const fragment = content => JSON.stringify({
     format_id: 'org.klenwriter.kwdj/clipboard-fragment/1', mode: 'prose',
     source_profile: { profile_id: 'org.klenwriter.kwdj', profile_version: '1.0.0', codec_id: 'org.klenwriter.kwdj/json', wire_version: 1 },
-    kind: 'blocks', content: [media], open_start: false, open_end: false,
+    kind: 'blocks', content, open_start: false, open_end: false,
   });
+  const literary = JSON.parse(literaryFixture().canonical).content[0];
   const requests=[
     ['unsupported-target',command('insert-block',{kind:'insert_block',target:{kind:'media'}}),'dom.command_unsupported'],
-    ['native-only-media-fragment',command('insert-fragment',{kind:'insert_fragment',fragment_json:mediaFragment}),'dom.command_unsupported'],
+    ['native-only-media-fragment',command('insert-fragment',{kind:'insert_fragment',fragment_json:fragment([media])}),'dom.command_unsupported'],
+    ['unavailable-mounted-literary-fragment',command('insert-fragment',{kind:'insert_fragment',fragment_json:fragment([literary])}),'dom.command_unsupported'],
     ['unsupported-mark',command('toggle-mark',{kind:'toggle_mark',mark:unknownMark}),'dom.command_unsupported'],
     ['closed-mark-attrs',command('toggle-mark',{kind:'toggle_mark',mark:{type_id:'org.klenwriter.kwdj/strong',attributes:{extra:{kind:'boolean',value:true}}}}),'dom.command_unsupported'],
     ['stored-marks',{kind:'set_stored_marks',marks:[unknownMark]},'dom.command_unsupported'],
