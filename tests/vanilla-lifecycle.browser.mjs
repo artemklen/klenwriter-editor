@@ -353,3 +353,63 @@ test('public vanilla disabled mode skips Tab and mode updates reuse the root and
   expect(await documentCheckpoint(page)).toEqual(before);
   await disposeMode(page);
 });
+
+test('public vanilla restores the public mounted read-only mode after disabling', async ({ page }) => {
+  await mountMode(page, {});
+  const editor = page.getByRole('textbox', { name: 'KlenWriter Editor' });
+  const before = await documentCheckpoint(page);
+  expect(before).toMatchObject({
+    exported: { status: 'exported', canonicalJson: initialCanonical, revision: '0' },
+    sameRoot: true,
+  });
+  expect(await page.evaluate(() => window.vanillaMode.editor.setInteractionMode('readOnly')))
+    .toEqual({ status: 'updated', mode: 'readOnly' });
+  await expect(editor).toHaveAttribute('aria-readonly', 'true');
+  await changeMode(page, { disabled: true }, 'disabled');
+  await expect(editor).toHaveAttribute('aria-disabled', 'true');
+  await changeMode(page, { disabled: false }, 'readOnly');
+  await expect(editor).toHaveAttribute('aria-disabled', 'false');
+  await expect(editor).toHaveAttribute('aria-readonly', 'true');
+  await expect(editor).toHaveAttribute('contenteditable', 'false');
+  expect(await documentCheckpoint(page)).toEqual(before);
+  await disposeMode(page);
+});
+
+test('public vanilla rejects a reentrant mode update from the disabled transition blur', async ({ page }) => {
+  await mountMode(page, {});
+  const editor = page.getByRole('textbox', { name: 'KlenWriter Editor' });
+  const before = await documentCheckpoint(page);
+  expect(before).toMatchObject({
+    exported: { status: 'exported', canonicalJson: initialCanonical, revision: '0' },
+    sameRoot: true,
+  });
+  await editor.focus();
+  await expect(editor).toBeFocused();
+  const transition = await page.evaluate(() => {
+    const { api, editor, element } = window.vanillaMode;
+    let returned = false;
+    const calls = [];
+    element.addEventListener('blur', () => {
+      calls.push({ synchronous: !returned, result: api.update(editor, { readOnly: true }) });
+    }, { once: true });
+    const outer = api.update(editor, { disabled: true });
+    returned = true;
+    return { outer, calls };
+  });
+  expect(transition).toMatchObject({
+    outer: { status: 'updated', mode: 'disabled' },
+    calls: [{ synchronous: true, result: { status: 'dom_refused', diagnostic: { code: 'dom.busy' } } }],
+  });
+  await expect(editor).toHaveAttribute('aria-disabled', 'true');
+  await expect(editor).toHaveAttribute('tabindex', '-1');
+  await page.getByRole('textbox', { name: 'Before editor' }).focus();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('textbox', { name: 'After editor' })).toBeFocused();
+
+  await changeMode(page, { readOnly: true }, 'disabled');
+  await changeMode(page, { disabled: false }, 'readOnly');
+  await expect(editor).toHaveAttribute('aria-disabled', 'false');
+  await expect(editor).toHaveAttribute('aria-readonly', 'true');
+  expect(await documentCheckpoint(page)).toEqual(before);
+  await disposeMode(page);
+});

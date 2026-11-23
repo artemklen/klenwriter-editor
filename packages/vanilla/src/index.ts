@@ -21,7 +21,12 @@ export interface VanillaExportOptions { readonly maxBytes?: number }
 
 type InteractionFlags = Readonly<{ readOnly: boolean; disabled: boolean }>;
 type InteractionResult = ReturnType<MountedEditor['setInteractionMode']>;
-const flagsByEditor = new WeakMap<MountedEditor, InteractionFlags>();
+interface InteractionState {
+  readonly setMode: MountedEditor['setInteractionMode'];
+  flags: InteractionFlags;
+  applying: boolean;
+}
+const interactionByEditor = new WeakMap<MountedEditor, InteractionState>();
 const editableFlags: InteractionFlags = { readOnly: false, disabled: false };
 
 type SdkResponse = Extract<MountedSubmission, { readonly status: 'completed' }>['response'];
@@ -48,6 +53,35 @@ function dataValue(input: unknown, key: string): unknown {
 function interactionMode(flags: InteractionFlags): InteractionMode {
   if (flags.disabled) return 'disabled';
   return flags.readOnly ? 'readOnly' : 'editable';
+}
+
+function interactionState(editor: MountedEditor, flags = editableFlags): InteractionState {
+  const existing = interactionByEditor.get(editor);
+  if (existing) return existing;
+  const state = { setMode: editor.setInteractionMode.bind(editor), flags, applying: false };
+  interactionByEditor.set(editor, state);
+  return state;
+}
+
+function applyMode(
+  editor: MountedEditor, state: InteractionState, mode: InteractionMode, flags?: InteractionFlags,
+): InteractionResult {
+  if (state.applying) {
+    return Object.freeze({
+      status: 'dom_refused',
+      diagnostic: Object.freeze({
+        code: 'dom.busy', phase: 'mode', stamp: editor.capture(), node: null, typeId: null, publication: 'none',
+      }),
+    });
+  }
+  state.applying = true;
+  try {
+    const result = state.setMode(mode);
+    if (result.status === 'updated' && flags) state.flags = flags;
+    return result;
+  } finally {
+    state.applying = false;
+  }
 }
 
 function prepareMount(options: VanillaMountOptions): { options: MountEditorOptions; flags: InteractionFlags } {
@@ -81,13 +115,23 @@ export function mount(options: VanillaMountOptions): MountedEditor {
     return mountEditor(options);
   }
   const editor = mountEditor(prepared.options);
-  flagsByEditor.set(editor, prepared.flags);
+  const state = interactionState(editor, prepared.flags);
+  // Keep direct mode changes on the mounted handle in the same flag state.
+  Object.defineProperty(editor, 'setInteractionMode', {
+    configurable: true,
+    writable: true,
+    value(mode: InteractionMode) {
+      return applyMode(editor, state, mode, {
+        readOnly: mode === 'readOnly' || mode === 'disabled' && state.flags.readOnly,
+        disabled: mode === 'disabled',
+      });
+    },
+  });
   return editor;
 }
 
 function updateInteraction(editor: MountedEditor, request: VanillaInteractionUpdate): InteractionResult {
-  const previous = flagsByEditor.get(editor);
-  const current = previous ?? editableFlags;
+  const state = interactionState(editor);
   let next: InteractionFlags;
   try {
     const options = Object.getOwnPropertyDescriptors(request);
@@ -97,15 +141,12 @@ function updateInteraction(editor: MountedEditor, request: VanillaInteractionUpd
     const readOnly = flag(options.readOnly);
     const disabled = flag(options.disabled);
     if (readOnly === undefined && disabled === undefined) throw new TypeError('Missing interaction option');
-    next = { readOnly: readOnly ?? current.readOnly, disabled: disabled ?? current.disabled };
+    next = { readOnly: readOnly ?? state.flags.readOnly, disabled: disabled ?? state.flags.disabled };
   } catch {
     // The mounted owner produces the usual typed refusal for invalid modes.
-    return editor.setInteractionMode(request as unknown as InteractionMode);
+    return applyMode(editor, state, request as unknown as InteractionMode);
   }
-  const result = editor.setInteractionMode(interactionMode(next));
-  // A focus callback can complete a newer update while this mode is applied.
-  if (result.status === 'updated' && flagsByEditor.get(editor) === previous) flagsByEditor.set(editor, next);
-  return result;
+  return applyMode(editor, state, interactionMode(next), next);
 }
 
 export function update(editor: MountedEditor, request: MountedMutation): MountedSubmission;

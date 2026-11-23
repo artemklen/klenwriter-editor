@@ -165,18 +165,21 @@ test('mode updates keep the other flag and commit only an accepted change', () =
   assert.deepEqual(vanilla.update(editor, { disabled: false }), { status: 'updated', mode: 'readOnly' });
 });
 
-test('a mode change from a focus callback keeps the latest accepted flags', () => {
+test('a mode change from a focus callback cannot interrupt disabling', () => {
   let ranFocusCallback = false;
   const editor = {
+    capture: () => stamp,
     setInteractionMode(mode) {
       if (mode === 'disabled' && !ranFocusCallback) {
         // Blurring a disabled host can synchronously run an app callback.
         ranFocusCallback = true;
-        assert.deepEqual(vanilla.update(editor, { readOnly: true }), { status: 'updated', mode: 'readOnly' });
+        const nested = vanilla.update(editor, { readOnly: true });
+        assert.equal(nested.status, 'dom_refused');
+        assert.equal(nested.diagnostic.code, 'dom.busy');
       }
       return { status: 'updated', mode };
     },
   };
   assert.deepEqual(vanilla.update(editor, { disabled: true }), { status: 'updated', mode: 'disabled' });
-  assert.deepEqual(vanilla.update(editor, { readOnly: false }), { status: 'updated', mode: 'editable' });
+  assert.deepEqual(vanilla.update(editor, { disabled: false }), { status: 'updated', mode: 'editable' });
 });
