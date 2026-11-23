@@ -906,6 +906,63 @@ test('OSR-144 packaged SDK2 refuses poetry-only admission and paste atomically i
 
 const osr186InsertFragment = 'org.klenwriter.kwdj/command/insert-fragment';
 const osr186Payload = fragment => ({ kind: 'insert_fragment', fragment_json: JSON.stringify(fragment) });
+test('OSR-197 packaged SDK2 preserves poetry clipboard structure and exact Undo', async t => {
+  const fixture = JSON.parse(readFileSync(new URL('./fixtures/osr-197-poetry-clipboard.json', import.meta.url), 'utf8'));
+  const { decodeClipboard } = await import('../packages/kwdj/dist/clipboard-decode.js');
+  const binding = { profile_id: 'org.klenwriter.kwdj', profile_version: '1.0.0', codec_id: 'org.klenwriter.kwdj/json', wire_version: 1 };
+  const point = (editor, location) => {
+    const id = location.path.reduce((parent, index) => node(editor, parent).children[index], state(editor).root);
+    return 'offset' in location ? position(id, location.offset) : osr185Gap(id, location.index);
+  };
+  for (const row of fixture.cases) {
+    await t.test(row.id, async () => {
+      const original = fixture.documents[row.target.document];
+      const source = row.capture ? fixture.documents[row.capture.document] : original;
+      const expected = { format_id: 'org.klenwriter.kwdj/clipboard-fragment/1', source_profile: binding, mode: source.profile, ...row.fragment };
+      let payload;
+      if (row.capture) {
+        await withLiteraryCommandSession(osr185Bytes(source), editor => {
+          osr185Select(editor, point(editor, row.capture.anchor), point(editor, row.capture.focus));
+          const before = state(editor);
+          const fragment = accepted(editor.read({ kind: 'selection_fragment', stamp: editor.capture(), max_bytes: 8192 }));
+          assert.equal(fragment.empty, false);
+          payload = JSON.parse(fragment.fragment_json);
+          assert.deepEqual(payload, expected);
+          assert.deepEqual(state(editor), before);
+        });
+      }
+
+      const bytes = osr185Bytes(original);
+      await withLiteraryCommandSession(bytes, async editor => {
+        osr185Select(editor, point(editor, row.target.point));
+        const before = state(editor);
+        const read = accepted(editor.read({ kind: 'clipboard_context', stamp: editor.capture() }));
+        const context = JSON.parse(read.context_json);
+        assert.equal(context.insertion_context, row.target.context);
+        assert.equal(context.mode, original.profile);
+        assert.deepEqual(state(editor), before);
+        if (row.plain !== undefined) {
+          const decoded = await decodeClipboard({
+            source_profile: binding, mode: context.mode, insertion_context: context.insertion_context,
+            media: 'not_observed', plain: { status: 'complete_local', text: row.plain },
+            html: { status: 'unavailable', text: null },
+            url_policy: { allow_origin_relative: true, allowed_schemes: ['http', 'https'] },
+          });
+          assert.equal(decoded.status, 'candidate');
+          assert.deepEqual(decoded.diagnostics, []);
+          payload = decoded.fragment;
+          assert.deepEqual(payload, expected);
+        }
+        if (row.refusal) {
+          osr183Denied(editor, osr186InsertFragment, osr186Payload(payload), bytes, row.refusal.code, row.refusal.path);
+        } else {
+          osr186PasteAndUndo(editor, payload, row.expected, bytes);
+        }
+      });
+    });
+  }
+});
+
 function osr186Capture(editor, kind, content) {
   const before = state(editor);
   const read = accepted(editor.read({ kind: 'selection_fragment', stamp: editor.capture(), max_bytes: 8192 }));
