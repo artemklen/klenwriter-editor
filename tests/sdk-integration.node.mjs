@@ -1739,3 +1739,75 @@ test('packaged SDK: repeated complete lifecycle releases actual native and JS ow
     assert.deepEqual(counts(module), baseline);
   }
 });
+
+test('OSR-280 packaged SDK2 trims edited stanza edges and the codec refuses imported edges', async t => {
+  const { input } = osr195Fixture().candidates.find(row => row.id === 'adjacent_breaks_merge');
+  const [first, stanza, , last] = input.content[0].content;
+  const poem = lines => ({ ...input, content: [{ type: 'verse', content: lines }] });
+  const original = osr185Bytes(poem([first, stanza, last]));
+  for (const [caseId, index, survivingLine] of [
+    ['cms_edit_trim_first', 0, last],
+    ['cms_edit_trim_last', 2, first],
+  ]) {
+    await t.test(caseId, () => withLiteraryCommandSession(original, editor => {
+      const verse = root(editor).children[0];
+      const originalIds = node(editor, verse).children;
+      const expected = osr185Bytes(poem([survivingLine]));
+      const reply = accepted(osr183Wire(editor, kwdjCommand({ kind: 'remove', node: originalIds[index] })));
+      assert.equal(reply.effect, 'changed');
+      assert.equal(canonical(editor), expected);
+      assert.deepEqual(node(editor, verse).children, [originalIds[2 - index]]);
+      assert.equal(state(editor).history.undo_entries, '1');
+      osr183History(editor, 'undo', original);
+      assert.deepEqual(node(editor, verse).children, originalIds);
+      osr183History(editor, 'redo', expected);
+    }));
+  }
+
+  const moveSource = osr185Bytes({ ...input, content: [
+    { type: 'verse', content: [first, stanza, last] },
+    { type: 'verse', content: [first, last] },
+  ] });
+  for (const [caseId, destination, beforeIndex] of [
+    ['same_leading', 0, 0],
+    ['same_trailing', 0, 3],
+    ['cross_leading', 1, 0],
+    ['cross_trailing', 1, 2],
+  ]) {
+    await t.test(caseId, () => withLiteraryCommandSession(moveSource, editor => {
+      const verses = root(editor).children;
+      const marker = node(editor, verses[0]).children[1];
+      const intent = { kind: 'move', node: marker, parent: verses[destination], before_index: beforeIndex };
+      const stamp = editor.capture();
+      const query = accepted(editor.query({ kind: 'query_command', stamp, command: kwdjCommand(intent) }));
+      const path = `/content/${destination}/content`;
+      assert.equal(query.available, false);
+      assert.equal(query.diagnostic.code, 'kwdj.invalid_verse');
+      assert.equal(query.diagnostic.path, path);
+      assert.deepEqual(editor.capture(), stamp);
+      osr183Denied(editor, 'org.klenwriter.kwdj/command/move', intent, moveSource, 'kwdj.invalid_verse', path);
+      assert.equal(node(editor, verses[0]).children[1], marker);
+    }));
+  }
+
+  const codec = await import('../packages/wasm/dist/editor_wasm.js');
+  const { options } = await import('./support/codec-fixtures.mjs');
+  await codec.default({ module_or_path: readFileSync(new URL('../packages/wasm/dist/editor_wasm_bg.wasm', import.meta.url)) });
+  const importLines = ['Строка 1', 'Строка 3'].map(text => ({
+    type: 'verse_line', content: [{ type: 'text', text }],
+  }));
+  for (const [caseId, lines] of [
+    ['leading_import_edge_refuses', [stanza, ...importLines]],
+    ['trailing_import_edge_refuses', [...importLines, stanza]],
+  ]) {
+    await t.test(caseId, () => {
+      const bytes = new TextEncoder().encode(osr185Bytes(poem(lines)));
+      for (const run of [codec.kwdjValidateV1, codec.kwdjNormalizeV1]) {
+        const result = JSON.parse(run(bytes, options()));
+        assert.equal(result.status, 'refused');
+        assert.equal(result.diagnostic.code, 'kwdj.invalid_verse');
+        assert.equal(result.diagnostic.path, '/content/0/content');
+      }
+    });
+  }
+});

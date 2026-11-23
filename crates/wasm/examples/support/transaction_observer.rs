@@ -8,8 +8,8 @@ use editor_core::transaction::Operation;
 use editor_engine::events::EventLimits;
 use editor_engine::mapping::MapResult;
 use editor_engine::{
-    AccessMode, CommitEvent, DispatchOutcome, NodeId, NodeRef, SelectionUpdate, Session,
-    Transaction, TransactionError,
+    AccessMode, CommitEvent, DispatchOutcome, HistoryDirection, HistoryOutcome, HistoryRequest,
+    NodeId, NodeRef, SelectionUpdate, Session, Transaction, TransactionError,
 };
 use editor_kwdj::{
     AdmissionBudget, IdentityResolver, IdentityResolverError, IdentityStatus, KwdjProfile,
@@ -694,11 +694,155 @@ fn atomic_refusals() -> Value {
     json!({"status":"passed","cases":rows})
 }
 
+fn verse_edge_trimming() -> Value {
+    let first = json!({"type":"verse_line","attrs":{"indent":3},"content":[{"type":"text","text":"  Строка 1"}]});
+    let last = json!({"type":"verse_line","attrs":{"indent":8},"content":[{"type":"text","text":"Строка 3"}]});
+    let stanza = |blank_lines| json!({"type":"stanza_break","attrs":{"blank_lines":blank_lines}});
+    let poem = |lines| {
+        json!({"schema":"klenwriter.document","schema_version":1,"profile":"poetry",
+            "content":[{"type":"verse","content":lines}]})
+    };
+    let source = poem(json!([first, stanza(2), last]));
+    let adjacent = poem(json!([
+        first, stanza(2), {"type":"verse_line","content":[]}, stanza(3), last
+    ]));
+    let cases = [
+        (
+            "cms_edit_trim_first",
+            &source,
+            &([0][..]),
+            poem(json!([last])),
+            1,
+        ),
+        (
+            "cms_edit_trim_last",
+            &source,
+            &([2][..]),
+            poem(json!([first])),
+            1,
+        ),
+        (
+            "cms_edit_trim_all",
+            &source,
+            &([0, 2][..]),
+            poem(json!([{"type":"verse_line","content":[]}])),
+            2,
+        ),
+        (
+            "adjacent_breaks_merge",
+            &adjacent,
+            &([2][..]),
+            poem(json!([first, stanza(5), last])),
+            2,
+        ),
+    ];
+    let mut rows = Vec::new();
+    for (case, input, remove, expected, repairs) in cases {
+        let mut s = open(input);
+        let verse = children(&s, root(&s))[0];
+        let original = children(&s, verse);
+        let operations = remove
+            .iter()
+            .map(|&index| Operation::Remove {
+                node: original[index].into(),
+            })
+            .collect();
+        let event = changed(s.dispatch(tx(&s, operations)));
+        assert_eq!(event.normalization_operations, repairs, "{case}");
+        assert_eq!(s.history_summary().undo_units, 1, "{case}");
+        assert_eq!(children(&s, root(&s)), [verse], "{case}");
+        let edited = children(&s, verse);
+        let export =
+            |s: &Session<KwdjProfile<'_>>| s.export_snapshot(s.key(), s.revision()).unwrap();
+        assert_eq!(export(&s), serde_json::to_vec(&expected).unwrap(), "{case}");
+        for (direction, document, ids) in [
+            (HistoryDirection::Undo, input, &original),
+            (HistoryDirection::Redo, &expected, &edited),
+        ] {
+            let request = HistoryRequest::new(
+                s.key(),
+                s.revision(),
+                s.selection_epoch(),
+                s.history_summary().epoch,
+                direction,
+            );
+            assert!(
+                matches!(s.execute_history(&request), HistoryOutcome::Completed(_)),
+                "{case}"
+            );
+            assert_eq!(export(&s), serde_json::to_vec(document).unwrap(), "{case}");
+            assert_eq!(children(&s, verse), *ids, "{case}");
+        }
+        rows.push(json!({"case":case,"canonical":expected,"repairs":repairs}));
+    }
+    let second = poem(json!([first, stanza(2), last]));
+    let mut input = source.clone();
+    input["content"]
+        .as_array_mut()
+        .unwrap()
+        .push(second["content"][0].clone());
+    let mut edge_refusals = Vec::new();
+    for (case, destination, remove_line, before_index, new_marker) in [
+        ("same_leading", 0, None, 0, false),
+        ("same_trailing", 0, None, 3, false),
+        ("cross_leading", 1, None, 0, false),
+        ("cross_trailing", 1, None, 3, false),
+        ("cross_leading_with_removal", 1, Some(0), 1, false),
+        ("cross_trailing_with_removal", 1, Some(2), 2, false),
+        ("insert_leading_with_removal", 1, Some(0), 1, true),
+        ("insert_trailing_with_removal", 1, Some(2), 2, true),
+    ] {
+        let mut s = open(&input);
+        let verses = children(&s, root(&s));
+        let stanza = children(&s, verses[0])[1];
+        let parent = verses[destination];
+        let mut operations = Vec::new();
+        if let Some(index) = remove_line {
+            operations.push(Operation::Remove {
+                node: children(&s, parent)[index].into(),
+            });
+        }
+        operations.push(if new_marker {
+            Operation::InsertFragment {
+                parent: parent.into(),
+                index: before_index,
+                fragment: Document {
+                    children: vec![Node {
+                        type_id: format!("{PREFIX}stanza_break"),
+                        primitive: Primitive::BlockAtom,
+                        attributes: Attributes::from([(
+                            "blank_lines".into(),
+                            Attribute::Number(3.into()),
+                        )]),
+                        marks: vec![],
+                        text: None,
+                        children: vec![],
+                    }],
+                },
+            }
+        } else {
+            Operation::Move {
+                node: stanza.into(),
+                parent: parent.into(),
+                before_index,
+            }
+        });
+        let operation = tx(&s, operations);
+        let history = s.history_summary();
+        let mut refusal = assert_refused(&mut s, operation, "kwdj.invalid_verse");
+        assert_eq!(s.history_summary(), history, "{case}");
+        assert_eq!(children(&s, verses[0])[1], stanza, "{case}");
+        refusal["case"] = json!(case);
+        edge_refusals.push(refusal);
+    }
+    json!({"status":"passed","cases":rows,"edge_refusals":edge_refusals})
+}
+
 pub fn observe() -> String {
     json!({"schema":1,"task":"OSR-34","production_profile":"org.klenwriter.kwdj",
         "scope":"Actual Rust dispatch; test-only transport; user Undo/Redo remains OSR-36",
         "groups":{"text_selection_journal":text_selection_journal(),"attributes_marks_spans":attributes_marks_spans(),
             "fragments_local_references":fragment_local_references(),"normalization_noops":normalization_and_noops(),
-            "atomic_refusals":atomic_refusals()},
+            "atomic_refusals":atomic_refusals(),"verse_edge_trimming":verse_edge_trimming()},
         "target_metrics":"Architecture-dependent logical byte costs are checked against bounds, not asserted equal across targets"}).to_string()
 }

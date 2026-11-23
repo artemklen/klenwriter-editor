@@ -12,8 +12,8 @@
 use std::collections::BTreeSet;
 use std::mem::size_of;
 
-use editor_core::candidate::{BorrowedNode, CandidateRead};
-use editor_core::document::{Attribute, Mark};
+use editor_core::candidate::{BorrowedNode, CandidateChanges, CandidateRead};
+use editor_core::document::{Attribute, Document, Mark, Node, Primitive};
 use editor_core::positions::Utf16Offset;
 use editor_core::transaction::{Operation, WorkMeter};
 
@@ -337,10 +337,115 @@ fn local_fixes<I: Copy>(
     Ok(operations)
 }
 
+type BeforeNode<'a, I> = dyn Fn(I) -> Option<BorrowedNode<'a, I>> + 'a;
+
+fn retained_in_order<I: Eq>(
+    original: &[I],
+    current: &[I],
+    work: &mut WorkMeter,
+) -> Result<bool, KwdjError> {
+    let mut original = original.iter();
+    for id in current {
+        loop {
+            let Some(previous) = original.next() else {
+                return Ok(false);
+            };
+            units(work, 1)?;
+            if previous == id {
+                break;
+            }
+        }
+    }
+    Ok(true)
+}
+
+fn trim_verse_edges<'a, V: CandidateRead>(
+    candidate: &V,
+    parent: V::Id,
+    children: &'a [V::Id],
+    path: &str,
+    operations: &mut Vec<Operation<V::Id>>,
+    before_node: &BeforeNode<'_, V::Id>,
+    work: &mut WorkMeter,
+) -> Result<&'a [V::Id], KwdjError> {
+    let mut stanza = |id| {
+        units(work, 1)?;
+        work.note_phase(editor_core::transaction::WorkPhase::Normalization, 1, 0);
+        let node = candidate
+            .node(id)
+            .ok_or_else(|| KwdjError::new(KwdjErrorCode::InvalidStructure, path))?;
+        bytes(work, node.type_id.len())?;
+        Ok::<_, KwdjError>(kind(node.type_id) == "stanza_break")
+    };
+    let mut start = 0;
+    let mut end = children.len();
+    while start < end && stanza(children[start])? {
+        start += 1;
+    }
+    while end > start && stanza(children[end - 1])? {
+        end -= 1;
+    }
+    if start == 0 && end == children.len() {
+        return Ok(children);
+    }
+    let invalid_edge = || KwdjError::new(KwdjErrorCode::InvalidVerse, key_path(path, "content"));
+    let Some(before) = before_node(parent) else {
+        return Err(invalid_edge());
+    };
+    bytes(work, before.type_id.len())?;
+    // A deletion can expose an existing marker without changing the relative
+    // order of the retained children. Refuse authored markers at the edge
+    // before an adjacent merge can erase the evidence that one was added.
+    if kind(before.type_id) != "verse"
+        || before.children.len() <= children.len()
+        || !retained_in_order(before.children, children, work)?
+    {
+        return Err(invalid_edge());
+    }
+    let edges = children[..start].iter().chain(&children[end..]);
+    for &id in edges.clone() {
+        units(work, 1)?;
+        let Some(original) = before_node(id) else {
+            return Err(invalid_edge());
+        };
+        bytes(work, original.type_id.len())?;
+        if kind(original.type_id) != "stanza_break" {
+            return Err(invalid_edge());
+        }
+    }
+    for &node in edges {
+        push(work, operations, Operation::Remove { node })?;
+    }
+    if start == end {
+        const VERSE_LINE: &str = "org.klenwriter.kwdj/verse_line";
+        bytes(work, size_of::<Node>().saturating_add(VERSE_LINE.len()))?;
+        push(
+            work,
+            operations,
+            Operation::InsertFragment {
+                parent,
+                index: 0,
+                fragment: Document {
+                    children: vec![Node {
+                        type_id: VERSE_LINE.into(),
+                        primitive: Primitive::TextBlock,
+                        attributes: Default::default(),
+                        marks: Vec::new(),
+                        text: None,
+                        children: Vec::new(),
+                    }],
+                },
+            },
+        )?;
+    }
+    Ok(&children[start..end])
+}
+
 fn sibling_fixes<V: CandidateRead>(
     candidate: &V,
     parent: V::Id,
     path: &str,
+    before_node: Option<&BeforeNode<'_, V::Id>>,
     work: &mut WorkMeter,
 ) -> Result<Vec<Operation<V::Id>>, KwdjError> {
     let Some(node) = candidate.node(parent) else {
@@ -358,8 +463,23 @@ fn sibling_fixes<V: CandidateRead>(
     units(work, node.children.len())?;
     bytes(work, node.children.len().saturating_mul(size_of::<V::Id>()))?;
     let mut operations = Vec::new();
+    let children = if parent_kind == "verse"
+        && let Some(before_node) = before_node
+    {
+        trim_verse_edges(
+            candidate,
+            parent,
+            node.children,
+            path,
+            &mut operations,
+            before_node,
+            work,
+        )?
+    } else {
+        node.children
+    };
     let mut previous: Option<(V::Id, BorrowedNode<'_, V::Id>, u64)> = None;
-    for id in node.children {
+    for id in children {
         work.note_phase(editor_core::transaction::WorkPhase::Normalization, 1, 0);
         let child = candidate
             .node(*id)
@@ -461,12 +581,27 @@ pub(crate) fn normalize_candidate<V: CandidateRead>(
     candidate: &V,
     work: &mut WorkMeter,
 ) -> Result<Vec<Operation<V::Id>>, KwdjError> {
+    normalize_full(candidate, None, work)
+}
+
+pub(crate) fn normalize_changed_candidate<V: CandidateChanges>(
+    candidate: &V,
+    work: &mut WorkMeter,
+) -> Result<Vec<Operation<V::Id>>, KwdjError> {
+    normalize_full(candidate, Some(&|id| candidate.before_node(id)), work)
+}
+
+fn normalize_full<V: CandidateRead>(
+    candidate: &V,
+    before_node: Option<&BeforeNode<'_, V::Id>>,
+    work: &mut WorkMeter,
+) -> Result<Vec<Operation<V::Id>>, KwdjError> {
     let mut stack = Vec::new();
     schedule(candidate.roots(), "", &mut stack, work)?;
     let mut seen = BTreeSet::new();
     while let Some(frame) = stack.pop() {
         if frame.exit {
-            let operations = sibling_fixes(candidate, frame.id, &frame.path, work)?;
+            let operations = sibling_fixes(candidate, frame.id, &frame.path, before_node, work)?;
             if !operations.is_empty() {
                 return Ok(operations);
             }
@@ -683,7 +818,13 @@ where
             }
         }
         if needs_siblings {
-            return sibling_fixes(view, id, &current_path, work);
+            return sibling_fixes(
+                view,
+                id,
+                &current_path,
+                Some(&|id| view.before_node(id)),
+                work,
+            );
         }
         charge_sort(work, windows.len())?;
         windows.sort_unstable();
@@ -706,7 +847,7 @@ where
                     .get(from..to)
                     .ok_or_else(|| KwdjError::new(KwdjErrorCode::InvalidStructure, ""))?,
             };
-            let ops = sibling_fixes(&window, id, &current_path, work)?;
+            let ops = sibling_fixes(&window, id, &current_path, None, work)?;
             if !ops.is_empty() {
                 return Ok(ops);
             }
@@ -1106,10 +1247,12 @@ mod tests {
         let candidate = view(
             &[1],
             vec![
-                (1, node("verse", Primitive::Container, &[2, 3, 4])),
+                (1, node("verse", Primitive::Container, &[5, 2, 3, 4, 6])),
                 (2, stanza(2)),
                 (3, stanza(3)),
                 (4, stanza(4)),
+                (5, node("verse_line", Primitive::TextBlock, &[])),
+                (6, node("verse_line", Primitive::TextBlock, &[])),
             ],
         );
         assert_eq!(

@@ -6,7 +6,23 @@ fn real_kwdj_dispatch_preserves_literal_outputs_and_refusal_state() {
     let report: serde_json::Value = serde_json::from_str(&transaction_observer::observe()).unwrap();
     assert_eq!(report["task"], "OSR-34");
     let groups = report["groups"].as_object().unwrap();
-    assert_eq!(groups.len(), 5);
+    assert_eq!(groups.len(), 6);
+    assert_eq!(
+        groups["verse_edge_trimming"]["cases"]
+            .as_array()
+            .unwrap()
+            .len(),
+        4
+    );
+    let edge_refusals = groups["verse_edge_trimming"]["edge_refusals"]
+        .as_array()
+        .unwrap();
+    assert_eq!(edge_refusals.len(), 8);
+    assert!(
+        edge_refusals
+            .iter()
+            .all(|row| row["code"] == "kwdj.invalid_verse")
+    );
     assert!(groups.values().all(|g| g["status"] == "passed"));
     assert_eq!(
         groups["atomic_refusals"]["cases"].as_array().unwrap().len(),

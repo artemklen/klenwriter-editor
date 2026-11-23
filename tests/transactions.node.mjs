@@ -11,12 +11,30 @@ test('real KWDJ transaction outputs and typed atomic refusals agree on native an
   assert.equal(run.status,0,run.stderr);
   const native=JSON.parse(run.stdout),wasm=JSON.parse(observeTransactions());
   assert.deepEqual(wasm,native);assert.deepEqual(JSON.parse(observeTransactions()),wasm);
-  assert.equal(wasm.task,'OSR-34');assert.equal(Object.keys(wasm.groups).length,5);
+  assert.equal(wasm.task,'OSR-34');assert.equal(Object.keys(wasm.groups).length,6);
   for(const group of Object.values(wasm.groups))assert.equal(group.status,'passed');
   assert.equal(wasm.groups.text_selection_journal.canonical.content[0].content[0].text,'aЖbf!');
   assert.equal(wasm.groups.text_selection_journal.old_bookmark,'stale');
   assert.equal(wasm.groups.normalization_noops.canonical.content[0].content[0].text,'a\nb');
   assert.equal(wasm.groups.normalization_noops.split_join,'net-noop');
+  const trimmed = Object.fromEntries(wasm.groups.verse_edge_trimming.cases.map(row => [row.case, row.canonical.content[0].content]));
+  assert.deepEqual(trimmed, {
+    cms_edit_trim_first: [{type:'verse_line', attrs:{indent:8}, content:[{type:'text', text:'Строка 3'}]}],
+    cms_edit_trim_last: [{type:'verse_line', attrs:{indent:3}, content:[{type:'text', text:'  Строка 1'}]}],
+    cms_edit_trim_all: [{type:'verse_line', content:[]}],
+    adjacent_breaks_merge: [
+      {type:'verse_line', attrs:{indent:3}, content:[{type:'text', text:'  Строка 1'}]},
+      {type:'stanza_break', attrs:{blank_lines:5}},
+      {type:'verse_line', attrs:{indent:8}, content:[{type:'text', text:'Строка 3'}]},
+    ],
+  });
+  const edgeRefusals = wasm.groups.verse_edge_trimming.edge_refusals;
+  assert.deepEqual(edgeRefusals.map(row => row.case), [
+    'same_leading', 'same_trailing', 'cross_leading', 'cross_trailing',
+    'cross_leading_with_removal', 'cross_trailing_with_removal',
+    'insert_leading_with_removal', 'insert_trailing_with_removal',
+  ]);
+  assert.ok(edgeRefusals.every(row => row.code === 'kwdj.invalid_verse' && row.canonical_and_state_preserved && row.identity_map));
   assert.deepEqual(wasm.groups.attributes_marks_spans.repeated_metadata, {
     commits:512,canonical_bytes:159,work_cap_bytes:32768,journal_entry_limit:1,
     history_action_limit:1,event_record_limit:1,allocation_warmup_commits:2,steady_commits:510,

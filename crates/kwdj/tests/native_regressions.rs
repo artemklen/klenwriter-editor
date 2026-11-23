@@ -316,6 +316,31 @@ fn stanza_breaks_merge_without_changing_lines() {
 }
 
 #[test]
+fn verse_import_refuses_edge_breaks_in_both_modes() {
+    let line = |text| json!({"type":"verse_line","content":[{"type":"text","text":text}]});
+    let first = line("Строка 1");
+    let last = line("Строка 3");
+    let stanza = json!({"type":"stanza_break","attrs":{"blank_lines":2}});
+    for children in [
+        json!([stanza, first, last]),
+        json!([first, last, stanza]),
+        json!([stanza]),
+    ] {
+        let source = encoded(json!({
+            "schema":"klenwriter.document","schema_version":1,"profile":"poetry",
+            "content":[{"type":"verse","content":children}],
+        }));
+        for error in [
+            validate_normalized_json(&source, &AllowIdentities).unwrap_err(),
+            decode_normalize_validate(&source, &AllowIdentities).unwrap_err(),
+        ] {
+            assert_eq!(error.code, KwdjErrorCode::InvalidVerse);
+            assert_eq!(error.path, "/content/0/content");
+        }
+    }
+}
+
+#[test]
 fn ancestry_and_mark_failures_are_typed() {
     let prose_verse = json!({
         "schema":"klenwriter.document","schema_version":1,"profile":"prose",
