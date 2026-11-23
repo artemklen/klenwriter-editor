@@ -807,6 +807,77 @@ const alphaDocuments = [
   },
 ];
 
+test('public vanilla alpha checks replacement before publishing to the live editor', async ({ page }) => {
+  const original = alphaDocuments[0].canonical;
+  const replacement = '{"content":[{"content":[{"text":"Replacement permitted","type":"text"}],"type":"paragraph"}],"profile":"prose","schema":"klenwriter.document","schema_version":1}';
+  const observed = await page.evaluate(async ({ original, table, replacement }) => {
+    const api = await import('@klenwriter/editor');
+    const { defineRendererCatalog } = await import('@klenwriter/editor-dom');
+    const { options, wasm } = window.vanillaFixture;
+    const { element } = options;
+    const constructors = [];
+    class ObservedSession extends wasm.Session {
+      constructor(bytes, configuration) {
+        const { access } = JSON.parse(configuration);
+        constructors.push(access);
+        super(bytes, configuration);
+      }
+    }
+    const { definition } = options.renderers;
+    const nodes = { ...definition.nodes };
+    for (const { id, primitive, attributes } of definition.inventory.nodes) {
+      if (id.startsWith('org.klenwriter.kwdj/table')) {
+        nodes[id] = { primitive, attributes, present: () => ({ tag: 'div' }) };
+      }
+    }
+    const renderers = defineRendererCatalog({ ...definition, nodes });
+    const encode = input => new TextEncoder().encode(input);
+    const editor = api.mount({
+      ...options,
+      editor: { ...options.editor, input: encode(original), loader: async () => ({
+        manifest: wasm.manifest, Session: ObservedSession, resourceCounts: wasm.resourceCounts,
+      }) },
+      renderers,
+    });
+    try {
+      const ready = await editor.ready;
+      const before = await api.export(editor);
+      const root = element.firstElementChild;
+      constructors.length = 0;
+      const refused = await editor.replace(encode(table));
+      const refusedConstructors = constructors.splice(0);
+      const after = await api.export(editor);
+      const sameRoot = element.firstElementChild === root;
+      const editable = element.isContentEditable;
+      const retained = editor.originalInput();
+      const retainedInput = retained === null ? null : new TextDecoder().decode(retained);
+      const accepted = await editor.replace(encode(replacement));
+      const allowedConstructors = constructors.splice(0);
+      const exported = await api.export(editor);
+      return { ready, before, refused, refusedConstructors, after, sameRoot, editable, retainedInput,
+        accepted, allowedConstructors, exported, liveSessions: editor.nativeResources().sessions };
+    } finally {
+      api.destroy(editor);
+      if (JSON.parse(wasm.resourceCounts()).sessions !== 0) throw new Error('Replacement left native sessions');
+    }
+  }, { original, table: tableCanonical, replacement });
+  expect(observed.ready.status).toBe('ready');
+  expect(observed.before).toMatchObject({ status: 'exported', canonicalJson: original });
+  expect(observed.refused).toMatchObject({
+    status: 'dom_refused', diagnostic: { code: 'dom.renderer_missing', phase: 'replace', publication: 'none' },
+    unsupportedTypes: ['table', 'table_cell', 'table_header', 'table_row'].map(type => 'org.klenwriter.kwdj/' + type),
+  });
+  expect(observed.refusedConstructors).toEqual(['read_only']);
+  expect(observed.after).toEqual(observed.before);
+  expect(observed.sameRoot).toBe(true);
+  expect(observed.editable).toBe(true);
+  expect(observed.retainedInput).toBe(tableCanonical);
+  expect(observed.accepted).toMatchObject({ status: 'completed', response: { status: 'ok', value: { kind: 'mutation' } } });
+  expect(observed.allowedConstructors).toEqual(['read_only']);
+  expect(observed.exported).toMatchObject({ status: 'exported', canonicalJson: replacement });
+  expect(observed.liveSessions).toBe(1);
+});
+
 test('public vanilla alpha refuses a duplicate DOC-002 child in the native probe', async ({ page }) => {
   const source = alphaDocuments.find(document => document.id === 'DOC-002');
   const observation = await observeAlphaInput(page, source.canonical, true);

@@ -28,7 +28,11 @@ export interface DomDiagnostic {
   readonly typeId: string | null;
   readonly publication: 'none' | 'alreadyPublished' | 'unknown';
 }
-export interface DomRefusal { readonly status: 'dom_refused'; readonly diagnostic: DomDiagnostic }
+export interface DomRefusal {
+  readonly status: 'dom_refused';
+  readonly diagnostic: DomDiagnostic;
+  readonly unsupportedTypes?: readonly string[];
+}
 export type MountedMutation = Exclude<MutationRequestV2, { kind: 'remount' | 'destroy' | 'input_command' }>;
 export type MountedMutationV2 = MountedMutation | InputCommandRequestV2;
 export type MountedSubmission = Submission | DomRefusal;
@@ -50,7 +54,6 @@ export type MountedReady = { readonly status: 'ready'; readonly response: Respon
   | (DomRefusal & {
     readonly response: Response | null;
     readonly recovery: RecoveryPacket | null;
-    readonly unsupportedTypes?: readonly string[];
   });
 export type DomTag = 'span' | 'br' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'pre' | 'code' | 'blockquote' | 'ul' | 'ol' | 'li' | 'div' | 'section' | 'hr' | 'strong' | 'em' | 's' | 'sub' | 'sup' | 'a';
 export type DomAttribute = 'href' | 'title' | 'start' | 'role' | 'aria-label' | 'aria-checked';

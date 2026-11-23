@@ -20,7 +20,7 @@ Load `@klenwriter/editor-ui/style.css` for the UI controls. Either `destroy(edit
 
 ## Alpha node types
 
-The public `alphaBlockTypes` map lists the authored node types accepted at mount. A document containing other types returns a `dom.renderer_missing` refusal when `editor.ready` resolves. The result includes `unsupportedTypes` and the original input bytes in `recovery.originalInput`.
+The public `alphaBlockTypes` map lists the authored node types accepted at mount and by `editor.replace()`. A document containing other types returns a `dom.renderer_missing` refusal with `unsupportedTypes`. On mount, `editor.ready` includes the original input bytes in `recovery.originalInput`. After a refused replacement, `editor.originalInput()` returns the attempted bytes. The live document and interaction mode stay intact.
 
 | Profile | Node type |
 | --- | --- |

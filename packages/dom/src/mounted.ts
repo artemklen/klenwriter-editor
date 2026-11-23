@@ -24,10 +24,12 @@ const MODES = new Set<InteractionMode>(['editable', 'readOnly', 'disabled']);
 
 type NodeAdmission = { readonly unsupportedTypes: readonly string[] } | { readonly failure: Response | DomRefusal };
 
-function inspectNodeTypes(controller: EditorControllerV2, allowed: ReadonlySet<string>): NodeAdmission {
+function inspectNodeTypes(
+  controller: EditorControllerV2, allowed: ReadonlySet<string>, phase: 'mount' | 'replace',
+): NodeAdmission {
   const stateReply = controller.read({ kind: 'state' });
   if (stateReply.status !== 'ok') return { failure: stateReply };
-  if (stateReply.value.kind !== 'state') return { failure: domRefusal('dom.presentation_unsupported', 'mount') };
+  if (stateReply.value.kind !== 'state') return { failure: domRefusal('dom.presentation_unsupported', phase) };
 
   const { root, stamp } = stateReply.value.state;
   const pending: { id: string; parent: string | null; depth: number }[] = [{ id: root, parent: null, depth: 0 }];
@@ -36,11 +38,11 @@ function inspectNodeTypes(controller: EditorControllerV2, allowed: ReadonlySet<s
   while (pending.length) {
     const item = pending.pop()!;
     if (item.depth > domRegionLimits.depth || visited.size >= domRegionLimits.nodes || visited.has(item.id)) {
-      return { failure: domRefusal('dom.reconcile_limit', 'mount', null, item.id) };
+      return { failure: domRefusal('dom.reconcile_limit', phase, null, item.id) };
     }
     const reply = controller.read({ kind: 'node', stamp, node: item.id });
     if (reply.status !== 'ok') return { failure: reply };
-    if (reply.value.kind !== 'node') return { failure: domRefusal('dom.presentation_unsupported', 'mount') };
+    if (reply.value.kind !== 'node') return { failure: domRefusal('dom.presentation_unsupported', phase) };
     const node = reply.value.node;
     const nodeStamp = node.stamp;
     const matchesStamp = nodeStamp.session === stamp.session && nodeStamp.generation === stamp.generation
@@ -48,12 +50,12 @@ function inspectNodeTypes(controller: EditorControllerV2, allowed: ReadonlySet<s
       && nodeStamp.history_epoch === stamp.history_epoch;
     if (!matchesStamp || node.id !== item.id || node.parent !== item.parent
         || item.parent === null && (node.primitive !== 'root' || node.type_id !== '')) {
-      return { failure: domRefusal('dom.presentation_unsupported', 'mount', null, item.id) };
+      return { failure: domRefusal('dom.presentation_unsupported', phase, null, item.id) };
     }
     visited.add(item.id);
     if (item.parent !== null && !allowed.has(node.type_id)) unsupported.add(node.type_id);
     if (node.children.length > domRegionLimits.nodes - visited.size - pending.length) {
-      return { failure: domRefusal('dom.reconcile_limit', 'mount', null, item.id) };
+      return { failure: domRefusal('dom.reconcile_limit', phase, null, item.id) };
     }
     for (const child of node.children) pending.push({ id: child, parent: item.id, depth: item.depth + 1 });
   }
@@ -84,6 +86,7 @@ class MountedOwner implements MountedEditor {
   #controller: EditorControllerV2 | null = null;
   #configuration: CreateEditorOptionsV2 | null = null;
   readonly #renderOptions!: RenderOptions;
+  readonly #allowedNodeTypes?: ReadonlySet<string>;
   #catalog: RendererCatalog | null = null;
   #context: DeepReadonly<SessionContextV2> | null = null;
   #view: DomView | null = null;
@@ -255,7 +258,8 @@ class MountedOwner implements MountedEditor {
         this.#controller = createEditor(this.#configuration);
         void this.#initialize();
       } else {
-        void this.#initializeWithAdmission(new Set(allowed));
+        this.#allowedNodeTypes = new Set(allowed);
+        void this.#initializeWithAdmission(this.#allowedNodeTypes);
       }
     } catch {
       this.#lifecycle = 'recoveryRequired';
@@ -376,7 +380,7 @@ class MountedOwner implements MountedEditor {
     let admission: NodeAdmission;
     try {
       const ready = await probe.ready;
-      admission = ready.status === 'ok' ? inspectNodeTypes(probe, allowed) : { failure: ready };
+      admission = ready.status === 'ok' ? inspectNodeTypes(probe, allowed, 'mount') : { failure: ready };
     } catch {
       admission = { failure: domRefusal('dom.presentation_unsupported', 'mount') };
     } finally {
@@ -635,7 +639,10 @@ class MountedOwner implements MountedEditor {
     this.#replacement = true; this.#replacementInput = owned; this.#request = captured.request;
     let temporary: EditorControllerV2 | null = null;
     try {
-      temporary = createEditor({ ...this.#configuration!, input:owned }); this.#temporary = temporary;
+      const configuration = this.#configuration!;
+      const allowed = this.#allowedNodeTypes;
+      const options = allowed ? { ...configuration.options, access: 'read_only' as const } : configuration.options;
+      temporary = createEditor({ ...configuration, input: owned, options }); this.#temporary = temporary;
       const response = await temporary.ready;
       if (this.#lifecycle !== 'ready') return this.#report(this.#failure('dom.disposed','replace'));
       if (response.status !== 'ok') return { status:'completed',response };
@@ -643,6 +650,17 @@ class MountedOwner implements MountedEditor {
       const binding = context ? admitCatalog(this.#catalog!,context) : this.#failure('dom.renderer_binding_mismatch','replace');
       if (binding) return this.#report(binding);
       if (!same(context,this.#context)) return this.#report(this.#failure('dom.renderer_binding_mismatch','replace'));
+      if (allowed) {
+        const admission = inspectNodeTypes(temporary, allowed, 'replace');
+        if ('failure' in admission) {
+          return isFailure(admission.failure) ? this.#report(admission.failure)
+            : { status: 'completed', response: admission.failure };
+        }
+        if (admission.unsupportedTypes.length) {
+          const failure = this.#failure('dom.renderer_missing', 'replace');
+          return this.#report(Object.freeze({ ...failure, unsupportedTypes: admission.unsupportedTypes }));
+        }
+      }
       const preflightElement = this.#element!.ownerDocument.createElement('div');
       let readFailure: Response | null = null;
       const preflight = createDomView({ element:preflightElement,catalog:this.#catalog!,...this.#renderOptions,
@@ -734,7 +752,7 @@ class MountedOwner implements MountedEditor {
   }
   nativeResources() { return (this.#controller ?? this.#temporary)?.nativeResources() ?? null; }
 }
-/** Optional authored node allowlist checked in a read-only session before editing begins. */
+/** Optional authored node allowlist checked in a read-only session on mount and document replacement. */
 export function mountEditor(options: MountEditorOptions, allowedNodeTypes?: readonly string[]): MountedEditor {
   return new MountedOwner(options, allowedNodeTypes);
 }
