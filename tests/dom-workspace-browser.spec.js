@@ -1748,6 +1748,106 @@ test.describe('OSR-199 mounted poetry', () => {
   });
 });
 
+test.describe('OSR-201 mounted poetry accessibility', () => {
+  test.skip(
+    ({ browserName }) => browserName === 'firefox' && process.env.KWE_OSR201_FIREFOX !== '1',
+    'Experimental Firefox observation runs separately with KWE_OSR201_FIREFOX=1',
+  );
+  const corpus = JSON.parse(readFileSync(
+    new URL('../contracts/kwdj/v1/fixtures/positive.json', import.meta.url), 'utf8',
+  )).fixtures;
+  for (const caseId of ['DOC-019', 'DOC-020', 'DOC-027']) test(`${caseId} has zero axe violations and a reachable verse caret`, async ({ page, browser, browserName }) => {
+    const evidence = { caseId, browserVersion: browser.version(), experimental: browserName === 'firefox', focus: [] };
+    observations.get(page).poetryAccessibility = evidence;
+    const fixture = corpus.find(row => row.id === caseId).cases[0];
+    const source = canonicalizeRaw(JSON.stringify(fixture.kwdj));
+    evidence.canonicalSha256 = createHash('sha256').update(source).digest('hex');
+    const mounted = await call(page, 'mount', {
+      source, mediaIds: fixture.input.identity_state?.existing_media_ids ?? [],
+    });
+    evidence.mount = { ready: mounted.ready, diagnostic: mounted.diagnostic };
+    expect(mounted.ready, JSON.stringify(mounted.diagnostic)).toBe('ready');
+    const { id } = mounted, host = page.locator('#' + id);
+    await expect(host).toHaveRole('textbox');
+    await expect(host).toHaveAccessibleName('KlenWriter editor example 1');
+    await expect(host).toHaveAttribute('contenteditable', 'true');
+    await expect(host).toHaveAttribute('aria-multiline', 'true');
+
+    const axe = await new AxeBuilder({ page }).include('#' + id).analyze();
+    evidence.axe = { engine: axe.testEngine, violations: axe.violations, incomplete: axe.incomplete,
+      passedRules: axe.passes.map(rule => rule.id) };
+    expect(axe.violations).toEqual([]);
+    expect(axe.passes.length).toBeGreaterThan(0);
+
+    const beforeLabel = 'Before the verse editor', afterLabel = 'After the verse editor';
+    await host.evaluate((element, { beforeLabel, afterLabel }) => {
+      for (const [label, side] of [[beforeLabel, 'before'], [afterLabel, 'after']]) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.setAttribute('aria-label', label);
+        element[side](input);
+      }
+    }, { beforeLabel, afterLabel });
+    const beforeField = page.getByRole('textbox', { name: beforeLabel, exact: true });
+    const afterField = page.getByRole('textbox', { name: afterLabel, exact: true });
+
+    // Only setup chooses focus and a caret. Keyboard input takes it from here.
+    const path = '/0/0/0', offset = 1;
+    await call(page, 'select', id, path, offset);
+    await expect(host).toBeFocused();
+    const initial = await checkpoint(page, id, 'OSR-201 initial verse caret');
+    expect(initial.canonical).toBe(source);
+    expect(stateRow(initial, '/0').type_id).toBe('org.klenwriter.kwdj/verse');
+    expect(stateRow(initial, '/0/0').type_id).toBe('org.klenwriter.kwdj/verse_line');
+    caret(initial, stateRow(initial, path).id, offset);
+    const keys = await page.evaluateHandle(() => {
+      const events = [];
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Tab') events.push({ key: event.key, trusted: event.isTrusted, shift: event.shiftKey });
+      }, true);
+      return events;
+    });
+    const press = async key => {
+      await page.keyboard.press(key);
+      const active = await page.evaluate(() => ({
+        id: document.activeElement?.id,
+        name: document.activeElement?.getAttribute('aria-label'),
+        href: document.activeElement?.getAttribute('href'),
+      }));
+      evidence.focus.push({ key, active });
+      evidence.keys = await keys.jsonValue();
+    };
+
+    await press('Shift+Tab');
+    await expect(beforeField).toBeFocused();
+    await press('Tab');
+    await expect(host).toBeFocused();
+    await expect.poll(() => call(page, 'nativeSelectionMatches', id, path, offset)).toBe(true);
+    const entered = await checkpoint(page, id, 'OSR-201 Tab restored the verse caret');
+    expect(entered.actualSelection).toMatchObject({ inside: true, anchorOffset: offset, focusOffset: offset });
+    expect(entered.state).toEqual(initial.state);
+
+    await press('Tab');
+    if (caseId === 'DOC-020' && evidence.focus.at(-1).active.href === '/works/example') {
+      // Browser keyboard settings can include the existing verse link in Tab order.
+      await expect(host.getByRole('link', { name: 'Ссылка' })).toBeFocused();
+      await press('Tab');
+    }
+    await expect(afterField).toBeFocused();
+    expect(evidence.keys).toEqual(evidence.focus.map(({ key }) => ({
+      key: 'Tab', trusted: true, shift: key === 'Shift+Tab',
+    })));
+    await keys.dispose();
+
+    const exited = await checkpoint(page, id, 'OSR-201 Tab reached the following host control');
+    expect(exited.canonical).toBe(source);
+    expect(exited.state).toEqual(initial.state);
+    expect(docEvents(exited)).toEqual([]);
+    expect(exited.failures).toEqual([]);
+    history(exited, 0, 0);
+  });
+});
+
 test('T02 selected-empty join restores surviving DOM caret before the first structural mutation',async({page})=>{
   const mounted=await call(page,'mount',{fixture:'D1-after-end-split'});expect(mounted.ready).toBe('ready');
   const id=mounted.id;await call(page,'select',id,'/1',0);
