@@ -1165,6 +1165,47 @@ test('OSR-193 replacement retires label inputs before the next interaction', asy
   }
 });
 
+test('trusted delete keys remove selected text inside a profile container body', async ({ page }) => {
+  for (const [key, type, attrs] of [
+    ['Backspace', 'warning', { kind: 'content', label: 'Темы' }],
+    ['Delete', 'spoiler', { label: 'Финал' }],
+  ]) {
+    const documentWithText = text => osr187Bytes([
+      { type, attrs, content: [{ type: 'paragraph', content: [{ type: 'text', text }] }] },
+    ]);
+    const source = documentWithText('abc');
+    const { id, ready, diagnostic } = await call(page, 'mount', { source });
+    expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+    try {
+      await call(page, 'select', id, '/0/0/0', 2, '/0/0/0', 1);
+      const before = await checkpoint(page, id, key + ' selected text within ' + type);
+      const wrapper = stateRow(before, '/0');
+      const host = page.locator(`#${id}`);
+      await host.evaluate(element => {
+        element.addEventListener('beforeinput', event => {
+          element.bodyDeleteTrace = { trusted: event.isTrusted, prevented: event.defaultPrevented };
+        }, { once: true });
+      });
+      await page.keyboard.press(key);
+      expect(await host.evaluate(element => element.bodyDeleteTrace)).toEqual({ trusted: true, prevented: true });
+      const after = await checkpoint(page, id, key + ' removed selected text');
+      expect(after.canonical).toBe(documentWithText('ac'));
+      expect(stateRow(after, '/0')).toMatchObject({
+        id: wrapper.id, attributes: wrapper.attributes, children: wrapper.children,
+      });
+      history(after, 1, 0);
+      expect(after.failures).toEqual([]);
+      expect((await call(page, 'history', id, 'undo')).response.status).toBe('ok');
+      const undone = await checkpoint(page, id, key + ' Undo restores the profile body');
+      expect(undone.canonical).toBe(source);
+      expect(stateRow(undone, '/0').id).toBe(wrapper.id);
+      expect(undone.state.selection).toEqual(before.state.selection);
+    } finally {
+      await call(page, 'dispose', id);
+    }
+  }
+});
+
 test('T09 keyboard Tab return preserves current native caret and every committed facet before and after deletion',async({page})=>{
   const mounted=await call(page,'mount',{fixture:'D0'});expect(mounted.ready).toBe('ready');
   const id=mounted.id;await call(page,'select',id,'/0/2',2);

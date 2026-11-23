@@ -355,7 +355,9 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::UnsetLink => inline::unset_link(view, state, plan)?,
             KwdjIntent::InsertText { text } => inline::insert_text(view, state, text, plan)?,
             KwdjIntent::DeleteBackward => delete::prepare(view, state, plan)?,
-            KwdjIntent::DeleteSelection => selection::prepare(view, state, plan)?,
+            KwdjIntent::DeleteSelection => {
+                selection::prepare(view, state, self.clipboard_v2(), plan)?
+            }
             KwdjIntent::InsertFragment { fragment } => {
                 clipboard::prepare(self, *context, view, state, fragment, plan)?
             }

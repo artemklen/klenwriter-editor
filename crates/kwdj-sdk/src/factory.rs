@@ -1556,6 +1556,68 @@ mod tests {
     }
 
     #[test]
+    fn sdk2_deletes_selected_text_wholly_inside_literary_warning_and_labeled_bodies() {
+        let paragraph =
+            |text: &str| json!({"type":"paragraph","content":[{"type":"text","text":text}]});
+        let cases = [
+            ("literary_block", json!({"kind":"author_note"})),
+            ("warning", json!({"kind":"general"})),
+            ("warning", json!({"kind":"content","label":"Темы"})),
+            ("spoiler", json!({"label":"Финал"})),
+            ("disclosure", json!({"label":"Подробнее"})),
+        ];
+        let command = "org.klenwriter.kwdj/command/delete-selection";
+        let intent = json!({"kind":"delete_selection"});
+        let refusal = json!({"code":"kwdj.command_unsupported_context","path":"/command"});
+        for (kind, attrs) in cases {
+            let blocks = |text: &str| {
+                json!([paragraph("Outside"), {
+                    "type":kind,
+                    "attrs":attrs,
+                    "content":[paragraph(text),paragraph("Second")],
+                }])
+            };
+            let initial = osr183_literal(blocks("A😀BC"));
+            let expected = osr183_literal(blocks("ABC"));
+            let mut session = osr183_open(&initial);
+            let root = state(&mut session)["root"].clone();
+            let roots = osr183_node(&mut session, &root)["children"].clone();
+            let wrapper = &roots[1];
+            let body = osr183_node(&mut session, wrapper)["children"].clone();
+            let outside = osr183_node(&mut session, &roots[0])["children"][0].clone();
+            let first = osr183_node(&mut session, &body[0])["children"][0].clone();
+            let second = osr183_node(&mut session, &body[1])["children"][0].clone();
+            let point = |node: &Value, offset| json!({"kind":"text","node":node,"offset":offset,"affinity":"after"});
+            let select = |session: &mut DistributionSession, anchor: Value, focus: Value| {
+                let stamp = state(session)["stamp"].clone();
+                let reply = call(
+                    session,
+                    json!({"kind":"set_selection","stamp":stamp,"selection":{"anchor":anchor,"focus":focus}}),
+                );
+                assert_eq!(reply["status"], "ok", "{reply}");
+            };
+
+            for anchor in [point(&outside, 7), point(&second, 1)] {
+                select(&mut session, anchor, point(&first, 1));
+                osr189_refused(&mut session, command, intent.clone(), &refusal, &initial);
+            }
+
+            select(&mut session, point(&first, 3), point(&first, 1));
+            let result = osr183_command(&mut session, command, &intent, false);
+            assert_eq!(
+                result["value"]["effect"], "changed",
+                "{kind} {attrs}: {result}"
+            );
+            assert_eq!(snapshot(&mut session), expected);
+            assert_eq!(osr183_node(&mut session, &root)["children"], roots);
+            assert_eq!(osr183_node(&mut session, wrapper)["children"], body);
+            assert_eq!(state(&mut session)["history"]["undo_entries"], "1");
+            osr183_history(&mut session, "undo", &initial);
+            assert_eq!(osr183_node(&mut session, wrapper)["children"], body);
+        }
+    }
+
+    #[test]
     fn osr279_labeled_boundaries_refuse_and_explicit_remove_preserves_the_shell() {
         let (fixture, _) = osr279_fixture();
         let refusals = &osr189_fixture()["refusals"];

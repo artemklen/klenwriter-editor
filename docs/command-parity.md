@@ -101,3 +101,8 @@ label, and wraps contiguous siblings in that container. `unwrap_labeled_containe
 takes a container ID and keeps the child order and identities. KWDJ clipboard
 fragments preserve the label and body. The grammar refuses nesting either kind
 inside another of the same kind.
+
+SDK2 deletes selected text inside one text block in literary, warning, spoiler,
+and disclosure containers. The deletion preserves the enclosing container and
+its attributes. Selections crossing these container boundaries return a typed
+refusal.

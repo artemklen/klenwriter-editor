@@ -772,6 +772,46 @@ test('OSR-279 packaged SDK2 wraps and unwraps both explicit labels with exact Un
   }
 });
 
+test('packaged SDK2 deletes selected text wholly inside literary, warning and labeled bodies', async () => {
+  const paragraph = text => ({ type: 'paragraph', content: [{ type: 'text', text }] });
+  const cases = [
+    ['literary_block', { kind: 'author_note' }],
+    ['warning', { kind: 'general' }],
+    ['warning', { kind: 'content', label: 'Темы' }],
+    ['spoiler', { label: 'Финал' }],
+    ['disclosure', { label: 'Подробнее' }],
+  ];
+  const intent = { kind: 'delete_selection' };
+  const command = kwdjCommand(intent);
+  for (const [type, attrs] of cases) {
+    const blocks = text => [paragraph('Outside'), {
+      type, attrs, content: [paragraph(text), paragraph('Second')],
+    }];
+    const initial = osr183Doc(blocks('A😀BC'));
+    const expected = osr183Doc(blocks('ABC'));
+    await withLiteraryCommandSession(initial, editor => {
+      const [outside, wrapper] = root(editor).children;
+      const [first, second] = node(editor, wrapper).children;
+      const [outsideLeaf, firstLeaf, secondLeaf] = [outside, first, second].map(id => node(editor, id).children[0]);
+
+      for (const anchor of [position(outsideLeaf, 7), position(secondLeaf, 1)]) {
+        osr185Select(editor, anchor, position(firstLeaf, 1));
+        osr183Denied(editor, command.id, intent, initial, 'kwdj.command_unsupported_context', '/command');
+      }
+
+      osr185Select(editor, position(firstLeaf, 3), position(firstLeaf, 1));
+      const result = osr183Wire(editor, command);
+      assert.equal(accepted(result).effect, 'changed', JSON.stringify({ type, attrs }));
+      assert.equal(canonical(editor), expected);
+      assert.deepEqual(root(editor).children, [outside, wrapper]);
+      assert.deepEqual(node(editor, wrapper).children, [first, second]);
+      assert.equal(state(editor).history.undo_entries, '1');
+      osr183History(editor, 'undo', initial);
+      assert.deepEqual(node(editor, wrapper).children, [first, second]);
+    });
+  }
+});
+
 test('OSR-279 packaged SDK2 refuses both labeled boundary edits and keeps a labeled empty shell', async () => {
   const { before, after, containers } = osr279Fixture();
   const { refusals } = osr189Fixture();
