@@ -104,8 +104,43 @@ pub enum KwdjWarningIntentV2 {
 )]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum LabeledContainerBlockTargetV2 {
+    Spoiler {},
+    Disclosure {},
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum LabeledContainerKindV2 {
+    Spoiler,
+    Disclosure,
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub enum KwdjLabeledContainerIntentV2 {
-    SetContainerLabel { node: String, label: String },
+    InsertBlock {
+        target: LabeledContainerBlockTargetV2,
+    },
+    SetContainerLabel {
+        node: String,
+        label: String,
+    },
+    WrapLabeledContainer {
+        container_kind: LabeledContainerKindV2,
+        label: String,
+    },
+    UnwrapLabeledContainer {
+        node: String,
+    },
 }
 
 #[cfg_attr(

@@ -12,7 +12,9 @@ use editor_core::document::{Attribute, Attributes, Document, Node, Primitive};
 use editor_core::positions::{Affinity, Edge, Position, Selection, Utf16Offset, utf16_to_utf8};
 use editor_core::transaction::Operation;
 
-use super::{BlockTarget, KWDJ_SLASH_CANDIDATES, KwdjIntent, ListKind, inline, refusal};
+use super::{
+    BlockTarget, KWDJ_SLASH_CANDIDATES, KwdjIntent, LabeledContainerKind, ListKind, inline, refusal,
+};
 use crate::{KwdjError, KwdjErrorCode, Profile, model::WarningKind};
 
 const PREFIX: &str = "org.klenwriter.kwdj/";
@@ -1664,7 +1666,9 @@ fn insert_block_node<V: CandidateRead>(
     {
         let is_atom = node.primitive == Primitive::BlockAtom;
         let caret_path = match kind(&node.type_id) {
-            "blockquote" | "literary_block" | "warning" => &[0usize, 0][..],
+            "blockquote" | "literary_block" | "warning" | "spoiler" | "disclosure" => {
+                &[0usize, 0][..]
+            }
             "bullet_list" | "ordered_list" | "task_list" => &[0usize, 0, 0][..],
             _ => &[0usize][..],
         };
@@ -1847,6 +1851,37 @@ fn set_warning_kind<V: CandidateRead>(
         attr(plan, id.into(), "kind", Some(value))?;
     }
     Ok(CommandPresentation::default())
+}
+
+fn labeled_container<I>(
+    container_kind: LabeledContainerKind,
+    label: &str,
+    plan: &mut PlanBuilder<'_, I>,
+) -> Result<Node, KwdjError> {
+    let type_name = match container_kind {
+        LabeledContainerKind::Spoiler => "spoiler",
+        LabeledContainerKind::Disclosure => "disclosure",
+    };
+    let attributes =
+        Attributes::from([(key("label", plan)?, Attribute::String(key(label, plan)?))]);
+    empty_node(type_name, Primitive::Container, attributes, plan)
+}
+
+fn insert_labeled_container<V: CandidateRead>(
+    view: &V,
+    state: CommandState<'_, V::Id>,
+    container_kind: LabeledContainerKind,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let label = match container_kind {
+        LabeledContainerKind::Spoiler => "Спойлер",
+        LabeledContainerKind::Disclosure => "Подробнее",
+    };
+    let mut container = labeled_container(container_kind, label, plan)?;
+    let paragraph = empty_node("paragraph", Primitive::TextBlock, Attributes::new(), plan)?;
+    bytes(plan, size_of::<Node>())?;
+    container.children.push(paragraph);
+    insert_block_node(view, state, container, None, plan)
 }
 
 fn set_container_label<V: CandidateRead>(
@@ -2065,6 +2100,25 @@ pub(super) fn prepare<V: CandidateRead>(
         }
         KwdjIntent::UnwrapWarning { node } => {
             if kind(get(view, *node, plan)?.type_id) != "warning" {
+                return Err(invalid());
+            }
+            unwrap_container(view, *node, plan)?;
+            Ok(CommandPresentation::default())
+        }
+        KwdjIntent::InsertLabeledContainer { container_kind } => {
+            insert_labeled_container(view, state, *container_kind, plan)
+        }
+        KwdjIntent::WrapLabeledContainer {
+            container_kind,
+            label,
+        } => wrap_selected_blocks(view, state, plan, |plan| {
+            labeled_container(*container_kind, label, plan)
+        }),
+        KwdjIntent::UnwrapLabeledContainer { node } => {
+            if !matches!(
+                kind(get(view, *node, plan)?.type_id),
+                "spoiler" | "disclosure"
+            ) {
                 return Err(invalid());
             }
             unwrap_container(view, *node, plan)?;

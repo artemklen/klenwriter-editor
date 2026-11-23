@@ -942,6 +942,60 @@ fn osr185_nested_and_empty_literary_blocks_have_exact_history_and_reopen() {
     }
 }
 
+#[test]
+fn osr279_closed_labeled_fragments_preserve_both_kinds_and_refuse_self_recursion() {
+    let fixture: Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/osr-279-spoiler-disclosure.json"
+    ))
+    .unwrap();
+    let cases = fixture["containers"].as_array().unwrap();
+    let blocks = json!([cases[0]["copied"], cases[1]["copied"]]);
+    let original = doc("prose", blocks);
+    let bytes = original.to_string();
+    let mut session = open(&original);
+    let root = role(&mut session, &[]);
+    for (index, case) in cases.iter().enumerate() {
+        let copied = &case["copied"];
+        select(
+            &mut session,
+            gap(root.clone(), index),
+            gap(root.clone(), index + 1),
+        );
+        let captured = osr186_capture(
+            &mut session,
+            fragment("prose", "blocks", json!([copied]), false, false),
+        );
+        let end = gap(root.clone(), 2);
+        select(&mut session, end.clone(), end);
+        let mut at_root = original.clone();
+        at_root["content"]
+            .as_array_mut()
+            .unwrap()
+            .push(copied.clone());
+        osr186_paste_and_undo(&mut session, &captured, at_root, &bytes);
+
+        let other = 1 - index;
+        let end = gap(role(&mut session, &[other]), 1);
+        select(&mut session, end.clone(), end);
+        let mut nested = original.clone();
+        nested["content"][other]["content"]
+            .as_array_mut()
+            .unwrap()
+            .push(copied.clone());
+        osr186_paste_and_undo(&mut session, &captured, nested, &bytes);
+
+        let end = gap(role(&mut session, &[index]), 1);
+        select(&mut session, end.clone(), end);
+        osr185_refusal(
+            &mut session,
+            COMMAND,
+            json!({"kind":"insert_fragment","fragment_json":captured.to_string()}),
+            &bytes,
+            &json!({"code":case["recursion"],"path":format!("/content/{index}/content/1")}),
+        );
+    }
+}
+
 fn osr185_refusal(
     session: &mut DistributionSession,
     id: &str,

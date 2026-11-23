@@ -41,6 +41,12 @@ pub enum ListKind {
     Task,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LabeledContainerKind {
+    Spoiler,
+    Disclosure,
+}
+
 /// Native bootstrap intents; public transport/descriptor compatibility is63/64.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum KwdjIntent<I> {
@@ -86,6 +92,16 @@ pub enum KwdjIntent<I> {
         warning_kind: WarningKind,
     },
     UnwrapWarning {
+        node: I,
+    },
+    InsertLabeledContainer {
+        container_kind: LabeledContainerKind,
+    },
+    WrapLabeledContainer {
+        container_kind: LabeledContainerKind,
+        label: String,
+    },
+    UnwrapLabeledContainer {
         node: I,
     },
     SetContainerLabel {
@@ -135,6 +151,10 @@ pub const SET_WARNING_KIND_COMMAND_ID: &str = "org.klenwriter.kwdj/command/set-w
 pub const WRAP_WARNING_COMMAND_ID: &str = "org.klenwriter.kwdj/command/wrap-warning";
 pub const UNWRAP_WARNING_COMMAND_ID: &str = "org.klenwriter.kwdj/command/unwrap-warning";
 pub const SET_CONTAINER_LABEL_COMMAND_ID: &str = "org.klenwriter.kwdj/command/set-container-label";
+pub const WRAP_LABELED_CONTAINER_COMMAND_ID: &str =
+    "org.klenwriter.kwdj/command/wrap-labeled-container";
+pub const UNWRAP_LABELED_CONTAINER_COMMAND_ID: &str =
+    "org.klenwriter.kwdj/command/unwrap-labeled-container";
 pub const RESTORE_INPUT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/restore-typed-text";
 
 pub const KWDJ_COMMANDS: &[CommandDescriptor] = &[
@@ -276,7 +296,8 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::ToggleList { .. } => KWDJ_COMMANDS[8].id,
             KwdjIntent::InsertBlock { .. }
             | KwdjIntent::InsertAuthorNote
-            | KwdjIntent::InsertWarning { .. } => KWDJ_COMMANDS[9].id,
+            | KwdjIntent::InsertWarning { .. }
+            | KwdjIntent::InsertLabeledContainer { .. } => KWDJ_COMMANDS[9].id,
             KwdjIntent::SetLiteraryKind { .. } => SET_LITERARY_KIND_COMMAND_ID,
             KwdjIntent::WrapLiteraryBlock => WRAP_LITERARY_BLOCK_COMMAND_ID,
             KwdjIntent::UnwrapLiteraryBlock { .. } => UNWRAP_LITERARY_BLOCK_COMMAND_ID,
@@ -284,6 +305,8 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::WrapWarning { .. } => WRAP_WARNING_COMMAND_ID,
             KwdjIntent::UnwrapWarning { .. } => UNWRAP_WARNING_COMMAND_ID,
             KwdjIntent::SetContainerLabel { .. } => SET_CONTAINER_LABEL_COMMAND_ID,
+            KwdjIntent::WrapLabeledContainer { .. } => WRAP_LABELED_CONTAINER_COMMAND_ID,
+            KwdjIntent::UnwrapLabeledContainer { .. } => UNWRAP_LABELED_CONTAINER_COMMAND_ID,
             KwdjIntent::Move { .. } => KWDJ_COMMANDS[10].id,
             KwdjIntent::Duplicate { .. } => KWDJ_COMMANDS[11].id,
             KwdjIntent::Remove { .. } => KWDJ_COMMANDS[12].id,
@@ -315,6 +338,9 @@ impl CommandProvider for KwdjProfile<'_> {
             | KwdjIntent::WrapWarning { .. }
             | KwdjIntent::UnwrapWarning { .. }
             | KwdjIntent::SetContainerLabel { .. }
+            | KwdjIntent::InsertLabeledContainer { .. }
+            | KwdjIntent::WrapLabeledContainer { .. }
+            | KwdjIntent::UnwrapLabeledContainer { .. }
                 if !self.clipboard_v2() =>
             {
                 return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());

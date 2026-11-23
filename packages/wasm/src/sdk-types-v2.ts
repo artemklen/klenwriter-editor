@@ -23,7 +23,11 @@ export type WarningBlockTargetV2 = { "kind": "warning", warning_kind: WarningKin
 
 export type KwdjWarningIntentV2 = { "kind": "insert_block", target: WarningBlockTargetV2, } | { "kind": "set_warning_kind", node: string, warning_kind: WarningKindV2, } | { "kind": "wrap_warning", warning_kind: WarningKindV2, } | { "kind": "unwrap_warning", node: string, };
 
-export type KwdjLabeledContainerIntentV2 = { "kind": "set_container_label", node: string, label: string, };
+export type LabeledContainerBlockTargetV2 = { "kind": "spoiler", } | { "kind": "disclosure", };
+
+export type LabeledContainerKindV2 = "spoiler" | "disclosure";
+
+export type KwdjLabeledContainerIntentV2 = { "kind": "insert_block", target: LabeledContainerBlockTargetV2, } | { "kind": "set_container_label", node: string, label: string, } | { "kind": "wrap_labeled_container", container_kind: LabeledContainerKindV2, label: string, } | { "kind": "unwrap_labeled_container", node: string, };
 
 export type KwdjTypingIntentV2 = { "kind": "insert_typed_text", text: string, origin: InputOriginV2, } | { "kind": "restore_typed_text", restore: RawInputRestoreV2, };
 

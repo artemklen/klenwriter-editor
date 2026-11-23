@@ -19,6 +19,8 @@ const commandNames: Record<KwdjCommandIntent['kind'], string> = {
   wrap_literary_block: 'wrap-literary-block',
   unwrap_literary_block: 'unwrap-literary-block',
   set_container_label: 'set-container-label',
+  wrap_labeled_container: 'wrap-labeled-container',
+  unwrap_labeled_container: 'unwrap-labeled-container',
   set_warning_kind: 'set-warning-kind',
   wrap_warning: 'wrap-warning',
   unwrap_warning: 'unwrap-warning',

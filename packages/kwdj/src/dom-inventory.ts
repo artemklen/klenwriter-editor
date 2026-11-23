@@ -172,6 +172,14 @@ export const kwdjDomInventory = {
     },
     {
       "descriptor": {
+        "id": "org.klenwriter.kwdj/command/unwrap-labeled-container",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/unwrap-labeled-container",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
         "id": "org.klenwriter.kwdj/command/unwrap-literary-block",
         "kind": "compiled"
       },
@@ -184,6 +192,14 @@ export const kwdjDomInventory = {
         "kind": "compiled"
       },
       "id": "org.klenwriter.kwdj/command/unwrap-warning",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/wrap-labeled-container",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/wrap-labeled-container",
       "owner": "org.klenwriter.kwdj/base"
     },
     {
@@ -232,8 +248,10 @@ export const kwdjDomInventory = {
       "org.klenwriter.kwdj/command/toggle-quote",
       "org.klenwriter.kwdj/command/transform-block",
       "org.klenwriter.kwdj/command/unset-link",
+      "org.klenwriter.kwdj/command/unwrap-labeled-container",
       "org.klenwriter.kwdj/command/unwrap-literary-block",
       "org.klenwriter.kwdj/command/unwrap-warning",
+      "org.klenwriter.kwdj/command/wrap-labeled-container",
       "org.klenwriter.kwdj/command/wrap-literary-block",
       "org.klenwriter.kwdj/command/wrap-warning"
     ],
@@ -1491,5 +1509,5 @@ export const kwdjDomInventory = {
     "profile_version": "1.0.0",
     "wire_version": 1
   },
-  "registryDigest": "a51bc3de192882536562c01bab689135b2364e369072b67564c997e4212a6b04"
+  "registryDigest": "d30c40a92ce59b08fdfaed77623057a01835f46de90e053f51ad45094d401c7b"
 } as const;

@@ -28,6 +28,8 @@ fn main() {
         WarningKindV2,
         WarningBlockTargetV2,
         KwdjWarningIntentV2,
+        LabeledContainerBlockTargetV2,
+        LabeledContainerKindV2,
         KwdjLabeledContainerIntentV2,
         KwdjTypingIntentV2,
         KwdjTypingLocaleV2,

@@ -94,3 +94,10 @@ SDK2 `set_container_label` takes an existing `spoiler` or `disclosure` node ID
 and the new `label`. The command preserves child IDs and content. An empty
 label is refused by the document grammar. Undo restores the previous label
 and exact canonical bytes.
+
+SDK2 `insert_block` creates either kind with its default label and an empty
+paragraph. `wrap_labeled_container` takes a `container_kind` and an explicit
+label, and wraps contiguous siblings in that container. `unwrap_labeled_container`
+takes a container ID and keeps the child order and identities. KWDJ clipboard
+fragments preserve the label and body. The grammar refuses nesting either kind
+inside another of the same kind.

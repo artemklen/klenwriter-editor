@@ -704,6 +704,135 @@ test('OSR-186 packaged SDK2 copies closed literary fragments for all kinds and n
   });
 });
 
+const osr279Fixture = () => JSON.parse(readFileSync(new URL('./fixtures/osr-279-spoiler-disclosure.json', import.meta.url)));
+const osr279Wrap = 'org.klenwriter.kwdj/command/wrap-labeled-container';
+const osr279Unwrap = 'org.klenwriter.kwdj/command/unwrap-labeled-container';
+
+test('OSR-279 packaged SDK2 creates both labeled kinds with their titles and supports exact Undo', async () => {
+  const { before, selected, after, containers } = osr279Fixture();
+  const input = osr183Doc([before, ...selected, after]);
+  for (const { created } of containers) {
+    await withLiteraryCommandSession(input, editor => {
+      const parent = state(editor).root;
+      const original = root(editor).children;
+      osr185Select(editor, osr185Gap(parent, 1));
+      const intent = { kind: 'insert_block', target: { kind: created.type } };
+      const dto = createCommand(osr183Insert, intent);
+      assert.equal(accepted(osr183Wire(editor, dto)).effect, 'changed');
+      assert.deepEqual(kwdjCommand(intent), dto);
+      assert.equal(canonical(editor), osr183Doc([before, created, ...selected, after]));
+      assert.equal(state(editor).history.undo_entries, '1');
+      const wrapper = node(editor, root(editor).children[1]);
+      const caret = osr185Gap(wrapper.children[0], 0);
+      assert.deepEqual(structuredClone(state(editor).selection), { anchor: caret, focus: caret });
+      osr183History(editor, 'undo', input);
+      assert.deepEqual(root(editor).children, original);
+    });
+  }
+});
+
+test('OSR-279 packaged SDK2 wraps and unwraps both explicit labels with exact Undo', async () => {
+  const { before, selected, after, containers } = osr279Fixture();
+  const input = osr183Doc([before, ...selected, after]);
+  for (const { created, wrap_label: label, recursion } of containers) {
+    const wrapped = osr183Doc([before, { type: created.type, attrs: { label }, content: selected }, after]);
+    await withLiteraryCommandSession(input, editor => {
+      const parent = state(editor).root;
+      const original = root(editor).children;
+      const children = original.slice(1, 3);
+      osr185Select(editor, osr185Gap(parent, 3), osr185Gap(parent, 1));
+      const wrap = { kind: 'wrap_labeled_container', container_kind: created.type, label };
+      const dto = createCommand(osr279Wrap, wrap);
+      assert.equal(accepted(osr183Wire(editor, dto)).effect, 'changed');
+      assert.deepEqual(kwdjCommand(wrap), dto);
+      assert.equal(canonical(editor), wrapped);
+      assert.equal(state(editor).history.undo_entries, '1');
+      const wrapper = root(editor).children[1];
+      assert.deepEqual(node(editor, wrapper).children, children);
+      osr183History(editor, 'undo', input);
+      assert.deepEqual(root(editor).children, original);
+      osr183History(editor, 'redo', wrapped);
+
+      const unwrap = node => ({ kind: 'unwrap_labeled_container', node });
+      for (const target of [original[0], original[3]]) {
+        osr183Denied(editor, osr279Unwrap, unwrap(target), wrapped, 'kwdj.command_invalid_target');
+      }
+      osr185Select(editor, osr185Gap(wrapper, 0), osr185Gap(wrapper, 2));
+      osr183Denied(editor, osr279Wrap, wrap, wrapped, recursion, '/content/1/content/0');
+
+      const command = createCommand(osr279Unwrap, unwrap(wrapper));
+      assert.equal(accepted(osr183Wire(editor, command)).effect, 'changed');
+      assert.deepEqual(kwdjCommand(unwrap(wrapper)), command);
+      assert.equal(canonical(editor), input);
+      assert.equal(state(editor).history.undo_entries, '2');
+      assert.deepEqual(root(editor).children, original);
+      osr183History(editor, 'undo', wrapped);
+      assert.deepEqual(node(editor, wrapper).children, children);
+    });
+  }
+});
+
+test('OSR-279 packaged SDK2 refuses both labeled boundary edits and keeps a labeled empty shell', async () => {
+  const { before, after, containers } = osr279Fixture();
+  const { refusals } = osr189Fixture();
+  for (const { copied, empty_shell: emptyShell } of containers) {
+    const input = osr183Doc([before, copied, after]);
+    const empty = osr183Doc([before, emptyShell, after]);
+    await withLiteraryCommandSession(input, editor => {
+      const roots = root(editor).children;
+      const outside = node(editor, roots[0]).children[0];
+      const wrapper = node(editor, roots[1]);
+      const [child] = wrapper.children;
+      const [first] = node(editor, child).children;
+      const backspace = refusals.first_child_backspace;
+      osr185Select(editor, position(first, 0));
+      osr183Denied(editor, 'org.klenwriter.kwdj/command/delete-backward', { kind: 'delete_backward' }, input, backspace.code, backspace.path);
+      const crossing = refusals.cross_boundary_delete;
+      osr185Select(editor, position(outside, 2), position(first, 1));
+      osr183Denied(editor, 'org.klenwriter.kwdj/command/delete-selection', { kind: 'delete_selection' }, input, crossing.code, crossing.path);
+
+      const remove = kwdjCommand({ kind: 'remove', node: child });
+      assert.equal(accepted(osr183Wire(editor, remove)).effect, 'changed');
+      assert.equal(canonical(editor), empty);
+      assert.equal(state(editor).history.undo_entries, '1');
+      assert.deepEqual(root(editor).children, roots);
+      const shell = node(editor, wrapper.id);
+      assert.deepEqual(shell.attributes, wrapper.attributes);
+      assert.equal(shell.children.length, 1);
+      assert.notEqual(shell.children[0], child);
+      assert.deepEqual(node(editor, shell.children[0]).children, []);
+      osr183History(editor, 'undo', input);
+      assert.deepEqual(node(editor, wrapper.id).children, wrapper.children);
+    });
+  }
+});
+
+test('OSR-279 packaged SDK2 copies both labels and permits other-family paste but refuses self-recursion', async () => {
+  const { containers } = osr279Fixture();
+  const original = osr183Doc(containers.map(item => item.copied));
+  await withLiteraryCommandSession(original, editor => {
+    const parent = state(editor).root;
+    const ids = root(editor).children;
+    for (const [index, { copied, recursion }] of containers.entries()) {
+      osr185Select(editor, osr185Gap(parent, index), osr185Gap(parent, index + 1));
+      const captured = osr186Capture(editor, 'blocks', [copied]);
+      osr185Select(editor, osr185Gap(parent, 2));
+      const atRoot = JSON.parse(original);
+      atRoot.content.push(copied);
+      osr186PasteAndUndo(editor, captured, atRoot, original);
+
+      const other = 1 - index;
+      osr185Select(editor, osr185Gap(ids[other], 1));
+      const nested = JSON.parse(original);
+      nested.content[other].content.push(copied);
+      osr186PasteAndUndo(editor, captured, nested, original);
+
+      osr185Select(editor, osr185Gap(ids[index], 1));
+      osr183Denied(editor, osr186InsertFragment, osr186Payload(captured), original, recursion, `/content/${index}/content/1`);
+    }
+  });
+});
+
 test('OSR-186 packaged SDK2 preserves partial children and refuses illegal or read-only paste', async () => {
   const document = osr185Fixture().nested;
   document.content.push({ type: 'bullet_list', content: [{ type: 'list_item', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'List' }] }] }] });

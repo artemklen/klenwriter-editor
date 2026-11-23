@@ -348,7 +348,7 @@ mod tests {
         assert!(matches!(session.initialization(), SdkResponse::Ok { .. }));
         assert!(session.context().is_some());
         let catalog = call(&mut session, json!({"kind":"catalog"}));
-        assert_eq!(catalog["value"]["commands"].as_array().unwrap().len(), 26);
+        assert_eq!(catalog["value"]["commands"].as_array().unwrap().len(), 28);
         assert!(
             catalog["value"]["commands"]
                 .as_array()
@@ -569,6 +569,11 @@ mod tests {
                                 sorted
                                     .push(editor_kwdj::commands::UNWRAP_LITERARY_BLOCK_COMMAND_ID);
                                 sorted.push(editor_kwdj::commands::SET_CONTAINER_LABEL_COMMAND_ID);
+                                sorted
+                                    .push(editor_kwdj::commands::WRAP_LABELED_CONTAINER_COMMAND_ID);
+                                sorted.push(
+                                    editor_kwdj::commands::UNWRAP_LABELED_CONTAINER_COMMAND_ID,
+                                );
                                 sorted.push(editor_kwdj::commands::SET_WARNING_KIND_COMMAND_ID);
                                 sorted.push(editor_kwdj::commands::WRAP_WARNING_COMMAND_ID);
                                 sorted.push(editor_kwdj::commands::UNWRAP_WARNING_COMMAND_ID);
@@ -1439,6 +1444,193 @@ mod tests {
                 {"type":"paragraph","content":[{"type":"text","text":"Preserved"}]}
             ]}
         ])
+    }
+
+    const OSR279_WRAP: &str = "org.klenwriter.kwdj/command/wrap-labeled-container";
+    const OSR279_UNWRAP: &str = "org.klenwriter.kwdj/command/unwrap-labeled-container";
+
+    fn osr279_fixture() -> (Value, Vec<Value>) {
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-279-spoiler-disclosure.json"
+        ))
+        .unwrap();
+        let mut roots = vec![fixture["before"].clone()];
+        roots.extend(fixture["selected"].as_array().unwrap().iter().cloned());
+        roots.push(fixture["after"].clone());
+        (fixture, roots)
+    }
+
+    #[test]
+    fn osr279_labeled_create_uses_legacy_titles_and_one_empty_paragraph() {
+        let (fixture, roots) = osr279_fixture();
+        let initial = osr183_literal(json!(roots));
+        for case in fixture["containers"].as_array().unwrap() {
+            let created = &case["created"];
+            let mut expected = roots.clone();
+            expected.insert(1, created.clone());
+            let expected = osr183_literal(json!(expected));
+            let mut session = osr183_open(&initial);
+            let root = state(&mut session)["root"].clone();
+            let original = osr183_node(&mut session, &root)["children"].clone();
+            osr184_select(&mut session, &root, 1, &root, 1);
+            let result = osr183_command(
+                &mut session,
+                OSR183_INSERT,
+                &json!({"kind":"insert_block","target":{"kind":created["type"]}}),
+                false,
+            );
+            assert_eq!(result["value"]["effect"], "changed", "{result}");
+            assert_eq!(snapshot(&mut session), expected);
+            assert_eq!(state(&mut session)["history"]["undo_entries"], "1");
+            let wrapper = osr183_node(&mut session, &root)["children"][1].clone();
+            let block = osr183_node(&mut session, &wrapper);
+            let caret =
+                json!({"kind":"child","parent":block["children"][0],"index":0,"affinity":"after"});
+            assert_eq!(
+                state(&mut session)["selection"],
+                json!({"anchor":caret,"focus":caret})
+            );
+            osr183_history(&mut session, "undo", &initial);
+            assert_eq!(osr183_node(&mut session, &root)["children"], original);
+        }
+    }
+
+    #[test]
+    fn osr279_labeled_wrap_and_unwrap_preserve_children_and_undo_exactly() {
+        let (fixture, roots) = osr279_fixture();
+        let initial = osr183_literal(json!(roots));
+        for case in fixture["containers"].as_array().unwrap() {
+            let kind = &case["created"]["type"];
+            let label = &case["wrap_label"];
+            let wrapped = osr183_literal(json!([
+                fixture["before"],
+                {"type":kind,"attrs":{"label":label},"content":fixture["selected"]},
+                fixture["after"],
+            ]));
+            let mut session = osr183_open(&initial);
+            let root = state(&mut session)["root"].clone();
+            let original = osr183_node(&mut session, &root)["children"].clone();
+            let children = json!(original.as_array().unwrap()[1..3]);
+            osr184_select(&mut session, &root, 3, &root, 1);
+            let wrap = json!({"kind":"wrap_labeled_container","container_kind":kind,"label":label});
+            let result = osr183_command(&mut session, OSR279_WRAP, &wrap, false);
+            assert_eq!(result["value"]["effect"], "changed", "{result}");
+            assert_eq!(snapshot(&mut session), wrapped);
+            assert_eq!(state(&mut session)["history"]["undo_entries"], "1");
+            let wrapper = osr183_node(&mut session, &root)["children"][1].clone();
+            assert_eq!(osr183_node(&mut session, &wrapper)["children"], children);
+            osr183_history(&mut session, "undo", &initial);
+            assert_eq!(osr183_node(&mut session, &root)["children"], original);
+            osr183_history(&mut session, "redo", &wrapped);
+
+            for target in [&original[0], &original[3]] {
+                osr183_denied(
+                    &mut session,
+                    OSR279_UNWRAP,
+                    json!({"kind":"unwrap_labeled_container","node":target}),
+                    &wrapped,
+                    "kwdj.command_invalid_target",
+                );
+            }
+            osr184_select(&mut session, &wrapper, 0, &wrapper, 2);
+            let before = state(&mut session);
+            let refusal = osr183_command(&mut session, OSR279_WRAP, &wrap, false);
+            assert_eq!(refusal["status"], "refused", "{refusal}");
+            assert_eq!(
+                refusal["diagnostic"]["code"], case["recursion"],
+                "{refusal}"
+            );
+            assert_eq!(refusal["diagnostic"]["path"], "/content/1/content/0");
+            assert_eq!(state(&mut session), before);
+            assert_eq!(snapshot(&mut session), wrapped);
+
+            let unwrap = json!({"kind":"unwrap_labeled_container","node":wrapper});
+            let result = osr183_command(&mut session, OSR279_UNWRAP, &unwrap, false);
+            assert_eq!(result["value"]["effect"], "changed", "{result}");
+            assert_eq!(snapshot(&mut session), initial);
+            assert_eq!(state(&mut session)["history"]["undo_entries"], "2");
+            assert_eq!(osr183_node(&mut session, &root)["children"], original);
+            osr183_history(&mut session, "undo", &wrapped);
+            assert_eq!(osr183_node(&mut session, &wrapper)["children"], children);
+        }
+    }
+
+    #[test]
+    fn osr279_labeled_boundaries_refuse_and_explicit_remove_preserves_the_shell() {
+        let (fixture, _) = osr279_fixture();
+        let refusals = &osr189_fixture()["refusals"];
+        for case in fixture["containers"].as_array().unwrap() {
+            let input =
+                osr183_literal(json!([fixture["before"], case["copied"], fixture["after"]]));
+            let empty = osr183_literal(json!([
+                fixture["before"],
+                case["empty_shell"],
+                fixture["after"]
+            ]));
+            let mut session = osr183_open(&input);
+            let root = state(&mut session)["root"].clone();
+            let roots = osr183_node(&mut session, &root)["children"].clone();
+            let outside = osr183_node(&mut session, &roots[0])["children"][0].clone();
+            let wrapper = &roots[1];
+            let before = osr183_node(&mut session, wrapper);
+            let child = &before["children"][0];
+            let first = osr183_node(&mut session, child)["children"][0].clone();
+            let point = |node: &Value, offset| json!({"kind":"text","node":node,"offset":offset,"affinity":"after"});
+            for (command, intent, anchor, focus, oracle) in [
+                (
+                    "delete-backward",
+                    "delete_backward",
+                    point(&first, 0),
+                    point(&first, 0),
+                    "first_child_backspace",
+                ),
+                (
+                    "delete-selection",
+                    "delete_selection",
+                    point(&outside, 2),
+                    point(&first, 1),
+                    "cross_boundary_delete",
+                ),
+            ] {
+                let stamp = state(&mut session)["stamp"].clone();
+                let reply = call(
+                    &mut session,
+                    json!({"kind":"set_selection","stamp":stamp,"selection":{"anchor":anchor,"focus":focus}}),
+                );
+                assert_eq!(reply["status"], "ok", "{reply}");
+                osr189_refused(
+                    &mut session,
+                    &format!("org.klenwriter.kwdj/command/{command}"),
+                    json!({"kind":intent}),
+                    &refusals[oracle],
+                    &input,
+                );
+            }
+
+            let reply = osr183_command(
+                &mut session,
+                "org.klenwriter.kwdj/command/remove",
+                &json!({"kind":"remove","node":child}),
+                false,
+            );
+            assert_eq!(reply["value"]["effect"], "changed", "{reply}");
+            assert_eq!(snapshot(&mut session), empty);
+            assert_eq!(state(&mut session)["history"]["undo_entries"], "1");
+            assert_eq!(osr183_node(&mut session, &root)["children"], roots);
+            let after = osr183_node(&mut session, wrapper);
+            assert_eq!(after["attributes"], before["attributes"]);
+            assert_eq!(after["children"].as_array().unwrap().len(), 1);
+            assert_ne!(&after["children"][0], child);
+            assert_eq!(
+                osr183_node(&mut session, &after["children"][0])["children"],
+                json!([])
+            );
+            osr183_history(&mut session, "undo", &input);
+            assert_eq!(
+                osr183_node(&mut session, wrapper)["children"],
+                before["children"]
+            );
+        }
     }
 
     fn osr184_select(

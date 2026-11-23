@@ -4,7 +4,8 @@ use crate::{
     convert::{diagnostic, profile_error},
     wire_v2::{
         KwdjClipboardIntentV2, KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2,
-        KwdjWarningIntentV2, LiteraryBlockTargetV2, WarningBlockTargetV2, WarningKindV2,
+        KwdjWarningIntentV2, LabeledContainerBlockTargetV2, LabeledContainerKindV2,
+        LiteraryBlockTargetV2, WarningBlockTargetV2, WarningKindV2,
     },
 };
 use editor_bridge::{BridgeAdapter, ClipboardContextData, SelectionFragmentData};
@@ -13,9 +14,10 @@ use editor_engine::{NodeId, SessionKey};
 use editor_kwdj::{
     KwdjProfile, KwdjProfileError, Profile,
     commands::{
-        CLIPBOARD_COMMAND_ID, KWDJ_COMMANDS, KwdjIntent, SET_CONTAINER_LABEL_COMMAND_ID,
-        SET_LITERARY_KIND_COMMAND_ID, SET_WARNING_KIND_COMMAND_ID,
-        UNWRAP_LITERARY_BLOCK_COMMAND_ID, UNWRAP_WARNING_COMMAND_ID,
+        CLIPBOARD_COMMAND_ID, KWDJ_COMMANDS, KwdjIntent, LabeledContainerKind,
+        SET_CONTAINER_LABEL_COMMAND_ID, SET_LITERARY_KIND_COMMAND_ID, SET_WARNING_KIND_COMMAND_ID,
+        UNWRAP_LABELED_CONTAINER_COMMAND_ID, UNWRAP_LITERARY_BLOCK_COMMAND_ID,
+        UNWRAP_WARNING_COMMAND_ID, WRAP_LABELED_CONTAINER_COMMAND_ID,
         WRAP_LITERARY_BLOCK_COMMAND_ID, WRAP_WARNING_COMMAND_ID, clipboard,
     },
     model::WarningKind,
@@ -27,6 +29,7 @@ use editor_protocol::{CommandDto, DiagnosticDto};
 enum AdditionalBlockTargetV2 {
     Literary(LiteraryBlockTargetV2),
     Warning(WarningBlockTargetV2),
+    LabeledContainer(LabeledContainerBlockTargetV2),
 }
 
 #[derive(serde::Deserialize)]
@@ -40,6 +43,15 @@ impl From<WarningKindV2> for WarningKind {
         match value {
             WarningKindV2::General => Self::General,
             WarningKindV2::Content => Self::Content,
+        }
+    }
+}
+
+impl From<LabeledContainerKindV2> for LabeledContainerKind {
+    fn from(value: LabeledContainerKindV2) -> Self {
+        match value {
+            LabeledContainerKindV2::Spoiler => Self::Spoiler,
+            LabeledContainerKindV2::Disclosure => Self::Disclosure,
         }
     }
 }
@@ -162,13 +174,39 @@ impl BridgeAdapter<KwdjProfile<'static>> for ClipboardAdapterV2 {
                 }
                 _ => Err(diagnostic("sdk.invalid_dto", "command")),
             }
-        } else if command.id == SET_CONTAINER_LABEL_COMMAND_ID {
-            let KwdjLabeledContainerIntentV2::SetContainerLabel { node, label } =
-                editor_bridge::decode(&command.payload_json)?;
-            Ok(KwdjIntent::SetContainerLabel {
-                node: parse_node(&node)?,
-                label,
-            })
+        } else if matches!(
+            command.id.as_str(),
+            SET_CONTAINER_LABEL_COMMAND_ID
+                | WRAP_LABELED_CONTAINER_COMMAND_ID
+                | UNWRAP_LABELED_CONTAINER_COMMAND_ID
+        ) {
+            let intent = editor_bridge::decode(&command.payload_json)?;
+            match (command.id.as_str(), intent) {
+                (
+                    SET_CONTAINER_LABEL_COMMAND_ID,
+                    KwdjLabeledContainerIntentV2::SetContainerLabel { node, label },
+                ) => Ok(KwdjIntent::SetContainerLabel {
+                    node: parse_node(&node)?,
+                    label,
+                }),
+                (
+                    WRAP_LABELED_CONTAINER_COMMAND_ID,
+                    KwdjLabeledContainerIntentV2::WrapLabeledContainer {
+                        container_kind,
+                        label,
+                    },
+                ) => Ok(KwdjIntent::WrapLabeledContainer {
+                    container_kind: container_kind.into(),
+                    label,
+                }),
+                (
+                    UNWRAP_LABELED_CONTAINER_COMMAND_ID,
+                    KwdjLabeledContainerIntentV2::UnwrapLabeledContainer { node },
+                ) => Ok(KwdjIntent::UnwrapLabeledContainer {
+                    node: parse_node(&node)?,
+                }),
+                _ => Err(diagnostic("sdk.invalid_dto", "command")),
+            }
         } else {
             match self.0.decode_command(key, command) {
                 Err(legacy) if command.id == KWDJ_COMMANDS[9].id => {
@@ -182,6 +220,18 @@ impl BridgeAdapter<KwdjProfile<'static>> for ClipboardAdapterV2 {
                             }) => KwdjIntent::InsertWarning {
                                 warning_kind: warning_kind.into(),
                             },
+                            AdditionalBlockTargetV2::LabeledContainer(target) => {
+                                KwdjIntent::InsertLabeledContainer {
+                                    container_kind: match target {
+                                        LabeledContainerBlockTargetV2::Spoiler {} => {
+                                            LabeledContainerKind::Spoiler
+                                        }
+                                        LabeledContainerBlockTargetV2::Disclosure {} => {
+                                            LabeledContainerKind::Disclosure
+                                        }
+                                    },
+                                }
+                            }
                         }),
                         Err(_) => Err(legacy),
                     }
