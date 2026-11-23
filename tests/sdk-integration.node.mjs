@@ -4,6 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { literaryFixture, warningFixture } from './support/codec-fixtures.mjs';
 import { readFileSync } from 'node:fs';
+import { isDeepStrictEqual } from 'node:util';
 import { createCommand, createEditor, loadSdk, loadSdkV2 } from '../packages/sdk/dist/index.js';
 import { kwdjCommand } from '../packages/kwdj/dist/index.js';
 import { canonicalizeRaw } from '../scripts/canonical-reference/reference.mjs';
@@ -591,6 +592,97 @@ test('OSR-195 packaged SDK2 matches empty verse and stanza transitions with exac
           assert.deepEqual(after, before);
         }
       });
+    });
+  }
+});
+
+function osr196Points(editor, point) {
+  const block = point.path.reduce((id, index) => node(editor, id).children[index], state(editor).root);
+  if (point.kind === 'child') return [osr185Gap(block, point.index)];
+
+  // Prefer a text point when setting selection, but accept the equivalent
+  // inline child gap at a text edge when checking the command's result.
+  const children = node(editor, block).children;
+  const points = [];
+  let offset = 0;
+  for (const [index, child] of children.entries()) {
+    const end = offset + node(editor, child).text.length;
+    if (point.offset >= offset && point.offset <= end) points.push(position(child, point.offset - offset));
+    if (point.offset === offset) points.push(osr185Gap(block, index));
+    offset = end;
+  }
+  if (point.offset === offset) points.push(osr185Gap(block, children.length));
+  return points;
+}
+
+test('OSR-196 packaged SDK2 matches CMS verse boundary bytes, selection and Undo', async t => {
+  const fixture = JSON.parse(readFileSync(new URL('./fixtures/osr-196-verse-boundary-deletion.json', import.meta.url), 'utf8'));
+  for (const row of [...fixture.cases, ...fixture.refusals]) {
+    await t.test(row.id, async () => {
+      const input = osr185Bytes(fixture.documents[row.input]);
+      let saved;
+      await withLiteraryCommandSession(input, editor => {
+        const [anchor] = osr196Points(editor, row.selection.anchor);
+        const [focus] = osr196Points(editor, row.selection.focus);
+        osr185Select(editor, anchor, focus);
+        const before = state(editor);
+        assert.deepEqual(structuredClone(before.selection), { anchor, focus });
+
+        let payload;
+        let id;
+        if (!isDeepStrictEqual(anchor, focus)) {
+          id = 'delete-selection';
+          payload = { kind: 'delete_selection', scope: 'poetry_boundary' };
+        } else if (row.key === 'Backspace') {
+          id = 'delete-backward';
+          payload = { kind: 'delete_backward' };
+        } else {
+          id = 'delete-forward';
+          payload = { kind: 'delete_forward' };
+        }
+        const command = kwdjCommand(payload);
+        assert.deepEqual(command, createCommand(`org.klenwriter.kwdj/command/${id}`, payload));
+        const response = osr183Wire(editor, command);
+        if (row.diagnostic) {
+          const diagnostic = refused(response);
+          assert.equal(diagnostic.code, row.diagnostic.code);
+          assert.equal(diagnostic.path, row.diagnostic.path);
+          assert.equal(diagnostic.may_have_committed, false);
+          assert.deepEqual(state(editor), before);
+          saved = canonical(editor);
+          assert.equal(saved, input);
+          return;
+        }
+        const reply = accepted(response);
+        assert.equal(reply.effect, row.effect);
+        saved = canonical(editor);
+        assert.equal(saved, osr185Bytes(fixture.documents[row.expected]));
+
+        const after = state(editor);
+        for (const side of ['anchor', 'focus']) {
+          const expected = osr196Points(editor, row.expected_selection[side]);
+          const actual = { ...after.selection[side], affinity: 'after' };
+          assert.ok(expected.some(point => isDeepStrictEqual(point, actual)),
+            `${side} ${JSON.stringify(actual)} outside ${JSON.stringify(expected)}`);
+        }
+        const changed = row.effect === 'changed';
+        assert.equal(after.stamp.revision, (BigInt(before.stamp.revision) + BigInt(changed)).toString());
+        assert.equal(after.history.undo_entries, changed ? '1' : '0');
+        assert.equal(after.history.redo_entries, '0');
+        if (changed) {
+          osr183History(editor, 'undo', input);
+          const undone = state(editor);
+          assert.deepEqual(undone.selection, before.selection);
+          assert.equal(undone.history.undo_entries, '0');
+          assert.equal(undone.history.redo_entries, '1');
+        } else if (row.effect === 'state_changed') {
+          assert.notEqual(after.stamp.selection_epoch, before.stamp.selection_epoch);
+          assert.equal(after.dirty, before.dirty);
+        } else {
+          assert.deepEqual(after, before);
+        }
+      });
+      await withLiteraryCommandSession(saved, editor => assert.equal(canonical(editor), saved));
     });
   }
 });

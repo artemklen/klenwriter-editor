@@ -147,10 +147,21 @@ pub enum KwdjLabeledContainerIntentV2 {
     all(feature = "sdk-types", not(target_arch = "wasm32")),
     derive(ts_rs::TS)
 )]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum KwdjForwardDeleteIntentV2 {
+    DeleteForward {},
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum KwdjDeleteSelectionScopeV2 {
     ProfileBody,
+    PoetryBoundary,
 }
 
 #[cfg_attr(

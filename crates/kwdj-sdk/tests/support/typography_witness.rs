@@ -6,6 +6,7 @@ use serde_json::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
 
 const BUILD: &str = "typography-source-oracles-v1";
+const DELETE_FORWARD: &str = "org.klenwriter.kwdj/command/delete-forward";
 const INSERT: &str = "org.klenwriter.kwdj/command/insert-typed-text";
 const RESTORE: &str = "org.klenwriter.kwdj/command/restore-typed-text";
 const NATIVE: &str = include_str!("../../../../contracts/typography/v1/native-oracles.json");
@@ -681,7 +682,8 @@ fn opt_in_and_literal_guards() -> Value {
             .as_array()
             .unwrap()
             .clone();
-        assert_eq!(catalog.len(), if typing.is_null() { 27 } else { 29 });
+        assert_eq!(catalog.len(), if typing.is_null() { 28 } else { 30 });
+        assert!(catalog.iter().any(|id| id == DELETE_FORWARD));
         assert_eq!(catalog.iter().any(|id| id == INSERT), !typing.is_null());
         let r = if typing.is_null() {
             literal(&mut s, "\"")
@@ -704,7 +706,7 @@ fn opt_in_and_literal_guards() -> Value {
     assert_eq!(state(&mut s), before);
     assert_eq!(all_text(&parse(&snapshot(&mut s))), "а ");
     clean(&mut s);
-    json!({"off_catalog":27,"configured_empty_catalog":29,"off_and_subset_literal":true,"old_entry_typed_id_refused":true})
+    json!({"off_catalog":28,"configured_empty_catalog":30,"off_and_subset_literal":true,"old_entry_typed_id_refused":true})
 }
 
 pub fn run() -> Value {

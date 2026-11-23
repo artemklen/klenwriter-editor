@@ -152,8 +152,8 @@
     },
     {
       "path": "packages/kwdj/dist/dom-inventory.js",
-      "bytes": 56931,
-      "sha256": "be4c1595a5de97501b77412771530148ddc09a33c4bad1202c88848dfe7db4c8"
+      "bytes": 57268,
+      "sha256": "671ee6fdecb09db4de3703c654c7d696b506b47da9aa1d3370e73cba3bbdb51c"
     },
     {
       "path": "packages/kwdj/dist/dom.js",
@@ -162,8 +162,8 @@
     },
     {
       "path": "packages/kwdj/dist/index.js",
-      "bytes": 2291,
-      "sha256": "237d1134288baa70fed3f6613d39bd697f9a10bc59a014d3594d4a835a08f88e"
+      "bytes": 2329,
+      "sha256": "d71bd94f11d798f095b0ede858d40c77b9310e81725548e080a9e44099a4728b"
     },
     {
       "path": "packages/kwdj/dist/slash-candidates.generated.js",
@@ -172,8 +172,8 @@
     },
     {
       "path": "packages/kwdj/dist/typing-dom-inventory.js",
-      "bytes": 57883,
-      "sha256": "d67ebab2a1fe1eca9786a6763815fd12242c6c57bf2cc96970359ae87b01a9b5"
+      "bytes": 58220,
+      "sha256": "08aadeeaadd5aa23a6ac7ca9a81c6bf17e35cd4984f91260682462df36305066"
     },
     {
       "path": "packages/sdk/dist/context.js",
@@ -532,8 +532,8 @@
     {
       "current": {
         "path": "packages/kwdj/src/index.ts",
-        "bytes": 2966,
-        "sha256": "8524402db86ca97a487905583060db80faaf10ae4572b1aab276809435b044eb"
+        "bytes": 3084,
+        "sha256": "8f82b5a5bdd296487725373629724751c5cba8d3d0691d8fc85b3493e178768f"
       },
       "previous": {
         "path": "packages/kwdj/src/index.ts",
@@ -541,16 +541,16 @@
         "sha256": "33860e6fa5cbcbf861866387755b553d1bacccbf78438d31b2fb03554e3fa112"
       },
       "reverse": [
-        295,
-        1962,
-        "UmF3SW5wdXRSZXN0b3JlVjIgfSBmcm9tICdAa2xlbndyaXRlci9lZGl0b3Itc2RrJzsKCmV4cG9ydCB0eXBlIHsgS3dkakludGVudER0bywgQmxvY2tUYXJnZXREdG8sIExpc3RLaW5kRHRvLCBNYXJrRHRvIH0gZnJvbSAnQGtsZW53cml0ZXIvZWRpdG9yLXNkayc7Cgpjb25zdCBjb21tYW5kTmFtZXM6IFJlY29yZDxLd2RqSW50ZW50RHRvWydraW5kJ10sIHN0cmluZz4gPSB7CiAgZW50ZXI6ICdlbnRlcicsIHNoaWZ0X2VudGVyOiAnc2hpZnQtZW50ZXInLCB0b2dnbGVfbWFyazogJ3RvZ2dsZS1tYXJrJywKICBzZXRfbGluazogJ3NldC1saW5rJywgdW5zZXRfbGluazogJ3Vuc2V0LWxpbmsnLCBpbnNlcnRfdGV4dDogJ2luc2VydC10ZXh0JywKICB0cmFuc2Zvcm1fYmxvY2s6ICd0cmFuc2Zvcm0tYmxvY2snLCB0b2dnbGVfcXVvdGU6ICd0b2dnbGUtcXVvdGUnLCB0b2dnbGVfbGlzdDogJ3RvZ2dsZS1saXN0JywKICBpbnNlcnRfYmxvY2s6ICdpbnNlcnQtYmxvY2snLCBtb3ZlOiAnbW92ZScsIGR1cGxpY2F0ZTogJ2R1cGxpY2F0ZScsIHJlbW92ZTogJ3JlbW92ZScsCiAgYWNjZXB0X3NsYXNoOiAnYWNjZXB0LXNsYXNoJywgZGlzbWlzc19zbGFzaDogJ2Rpc21pc3Mtc2xhc2gnLAogIGRlbGV0ZV9iYWNrd2FyZDogJ2RlbGV0ZS1iYWNrd2FyZCcsCiAgZGVsZXRlX3NlbGVjdGlvbjogJ2RlbGV0ZS1zZWxlY3Rpb24nLAp9OwoKLyoqIE51bWVyaWMgbWV0YWRhdGEsIHJldmlzaW9uL2dyb3VwIHRva2VucyBhbmQgb3JkZXJlZC1saXN0IHN0YXJ0cyByZW1haW4gc3RyaW5ncy4gKi8KZXhwb3J0IGZ1bmN0aW9uIGt3ZGpDb21tYW5kKGludGVudDogS3dkakludGVudER0byk6IENvbW1hbmREdG8gewogIGNvbnN0IGtpbmQgPSBpbnRlbnQgJiYgdHlwZW9mIGludGVudCA9PT0gJ29iamVjdCcgPyBPYmplY3QuZ2V0T3duUHJvcGVydHlEZXNjcmlwdG9yKGludGVudCwgJ2tpbmQnKSA6IHVuZGVmaW5lZDsKICBpZiAoIWtpbmQgfHwgISgndmFsdWUnIGluIGtpbmQpIHx8IHR5cGVvZiBraW5kLnZhbHVlICE9PSAnc3RyaW5nJyB8fCAhT2JqZWN0Lmhhc093bihjb21tYW5kTmFtZXMsIGtpbmQudmFsdWUpKSB7CiAgICB0aHJvdyBuZXcgVHlwZUVycm9yKCdzZGsuaW52YWxpZF9jb21tYW5kX2tpbmQnKTsKICB9CiAgY29uc3QgbmFtZSA9IGNvbW1hbmROYW1lc1traW5kLnZhbHVlIGFzIEt3ZGpJbnRlbnREdG9bJ2tpbmQnXQ=="
+        284,
+        2091,
+        "SW50ZW50RHRvLCBSYXdJbnB1dFJlc3RvcmVWMiB9IGZyb20gJ0BrbGVud3JpdGVyL2VkaXRvci1zZGsnOwoKZXhwb3J0IHR5cGUgeyBLd2RqSW50ZW50RHRvLCBCbG9ja1RhcmdldER0bywgTGlzdEtpbmREdG8sIE1hcmtEdG8gfSBmcm9tICdAa2xlbndyaXRlci9lZGl0b3Itc2RrJzsKCmNvbnN0IGNvbW1hbmROYW1lczogUmVjb3JkPEt3ZGpJbnRlbnREdG9bJ2tpbmQnXSwgc3RyaW5nPiA9IHsKICBlbnRlcjogJ2VudGVyJywgc2hpZnRfZW50ZXI6ICdzaGlmdC1lbnRlcicsIHRvZ2dsZV9tYXJrOiAndG9nZ2xlLW1hcmsnLAogIHNldF9saW5rOiAnc2V0LWxpbmsnLCB1bnNldF9saW5rOiAndW5zZXQtbGluaycsIGluc2VydF90ZXh0OiAnaW5zZXJ0LXRleHQnLAogIHRyYW5zZm9ybV9ibG9jazogJ3RyYW5zZm9ybS1ibG9jaycsIHRvZ2dsZV9xdW90ZTogJ3RvZ2dsZS1xdW90ZScsIHRvZ2dsZV9saXN0OiAndG9nZ2xlLWxpc3QnLAogIGluc2VydF9ibG9jazogJ2luc2VydC1ibG9jaycsIG1vdmU6ICdtb3ZlJywgZHVwbGljYXRlOiAnZHVwbGljYXRlJywgcmVtb3ZlOiAncmVtb3ZlJywKICBhY2NlcHRfc2xhc2g6ICdhY2NlcHQtc2xhc2gnLCBkaXNtaXNzX3NsYXNoOiAnZGlzbWlzcy1zbGFzaCcsCiAgZGVsZXRlX2JhY2t3YXJkOiAnZGVsZXRlLWJhY2t3YXJkJywKICBkZWxldGVfc2VsZWN0aW9uOiAnZGVsZXRlLXNlbGVjdGlvbicsCn07CgovKiogTnVtZXJpYyBtZXRhZGF0YSwgcmV2aXNpb24vZ3JvdXAgdG9rZW5zIGFuZCBvcmRlcmVkLWxpc3Qgc3RhcnRzIHJlbWFpbiBzdHJpbmdzLiAqLwpleHBvcnQgZnVuY3Rpb24ga3dkakNvbW1hbmQoaW50ZW50OiBLd2RqSW50ZW50RHRvKTogQ29tbWFuZER0byB7CiAgY29uc3Qga2luZCA9IGludGVudCAmJiB0eXBlb2YgaW50ZW50ID09PSAnb2JqZWN0JyA/IE9iamVjdC5nZXRPd25Qcm9wZXJ0eURlc2NyaXB0b3IoaW50ZW50LCAna2luZCcpIDogdW5kZWZpbmVkOwogIGlmICgha2luZCB8fCAhKCd2YWx1ZScgaW4ga2luZCkgfHwgdHlwZW9mIGtpbmQudmFsdWUgIT09ICdzdHJpbmcnIHx8ICFPYmplY3QuaGFzT3duKGNvbW1hbmROYW1lcywga2luZC52YWx1ZSkpIHsKICAgIHRocm93IG5ldyBUeXBlRXJyb3IoJ3Nkay5pbnZhbGlkX2NvbW1hbmRfa2luZCcpOwogIH0KICBjb25zdCBuYW1lID0gY29tbWFuZE5hbWVzW2tpbmQudmFsdWUgYXMgS3dkakludGVudER0b1sna2luZCdd"
       ]
     },
     {
       "current": {
         "path": "packages/wasm/src/sdk-types-v2.ts",
-        "bytes": 8499,
-        "sha256": "f9ab70000b02ee778d406390ca776e6d9761925f0548df423a853189088d2ad3"
+        "bytes": 8591,
+        "sha256": "e7e7785d0b270c8dae2a7b19d55e4ba48eaaa90ad48e2124d0bf2903a3267d15"
       },
       "previous": {
         "path": "packages/wasm/src/sdk-types-v2.ts",
@@ -559,7 +559,7 @@
       },
       "reverse": [
         1060,
-        1553,
+        1645,
         ""
       ]
     }

@@ -256,6 +256,7 @@ const kwdjMandatoryCommands = Object.freeze([
   'org.klenwriter.kwdj/command/accept-slash',
   'org.klenwriter.kwdj/command/dismiss-slash',
   'org.klenwriter.kwdj/command/delete-backward',
+  'org.klenwriter.kwdj/command/delete-forward',
   'org.klenwriter.kwdj/command/delete-selection',
   'org.klenwriter.kwdj/command/set-literary-kind',
   'org.klenwriter.kwdj/command/wrap-literary-block',

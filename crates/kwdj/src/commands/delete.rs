@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-//! Bounded KWDJ backward deletion. Core operations retain boundary authority.
+//! Bounded KWDJ deletion. Core operations retain boundary authority.
+
+mod poetry;
 
 use std::mem::size_of;
 
@@ -143,6 +145,7 @@ fn eligible(kind: &str) -> bool {
 pub(super) fn prepare<V: CandidateRead>(
     view: &V,
     state: CommandState<'_, V::Id>,
+    poetry: bool,
     plan: &mut PlanBuilder<'_, V::Id>,
 ) -> Result<CommandPresentation, KwdjError> {
     let selection = state
@@ -169,14 +172,60 @@ pub(super) fn prepare<V: CandidateRead>(
         }
     }
     let block = get(view, focus.block, plan)?;
-    if !eligible(block.type_id) {
+    let verse_line = poetry && block.type_id == poetry::VERSE_LINE;
+    if !verse_line && !eligible(block.type_id) {
         return Err(unsupported());
     }
     let at_start = point_key(view, &focus, plan)? == PointKey::Gap(0);
     if at_start {
-        return join(view, focus.block, plan);
+        if verse_line {
+            if poetry::collapsed(view, focus.block, block, poetry::Direction::Backward, plan)? {
+                return Ok(CommandPresentation::default());
+            }
+            return Err(unsupported());
+        }
+        return join(view, focus.block, poetry, plan);
     }
     delete_egc(view, focus, selection.focus, plan)?;
+    Ok(CommandPresentation::default())
+}
+
+pub(super) fn prepare_forward<V: CandidateRead>(
+    view: &V,
+    state: CommandState<'_, V::Id>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let selection = state
+        .selection
+        .copied()
+        .ok_or_else(|| error(KwdjErrorCode::CommandSelectionRequired))?;
+    let focus = inline::text_point(view, selection.focus, plan.work())?;
+    let end = point_key(view, &focus, plan)?;
+    if selection.anchor != selection.focus {
+        let anchor = inline::text_point(view, selection.anchor, plan.work())?;
+        if anchor.block != focus.block || point_key(view, &anchor, plan)? != end {
+            return Err(unsupported());
+        }
+    }
+    let block = get(view, focus.block, plan)?;
+    if end != PointKey::Gap(block.children.len())
+        || !poetry::collapsed(view, focus.block, block, poetry::Direction::Forward, plan)?
+    {
+        return Err(unsupported());
+    }
+    Ok(CommandPresentation::default())
+}
+
+pub(super) fn prepare_poetry_selection<V: CandidateRead>(
+    view: &V,
+    state: CommandState<'_, V::Id>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let selection = state
+        .selection
+        .copied()
+        .ok_or_else(|| error(KwdjErrorCode::CommandSelectionRequired))?;
+    poetry::selected(view, selection, plan)?;
     Ok(CommandPresentation::default())
 }
 
@@ -339,6 +388,7 @@ fn delete_egc<V: CandidateRead>(
 fn join<V: CandidateRead>(
     view: &V,
     right_id: V::Id,
+    poetry: bool,
     plan: &mut PlanBuilder<'_, V::Id>,
 ) -> Result<CommandPresentation, KwdjError> {
     let right = get(view, right_id, plan)?;
@@ -346,11 +396,26 @@ fn join<V: CandidateRead>(
         return Err(unsupported());
     }
     let top_level = right.parent == view.root();
-    if !top_level {
+    let ordinary_body = if top_level {
+        true
+    } else {
         let parent = get(view, right.parent, plan)?;
-        if parent.type_id != "org.klenwriter.kwdj/blockquote" || parent.parent != view.root() {
-            return Err(unsupported());
+        parent.type_id == "org.klenwriter.kwdj/blockquote" && parent.parent == view.root()
+    };
+    let poetry_prose = poetry && poetry::is_prose_block(right.type_id);
+    let previous = if poetry_prose {
+        let previous = previous_sibling(view, right.parent, right_id, plan)?;
+        if let Some(left) = previous
+            && poetry::join_after_verse(view, get(view, left, plan)?, right_id, right, plan)?
+        {
+            return Ok(CommandPresentation::default());
         }
+        previous
+    } else {
+        None
+    };
+    if !ordinary_body {
+        return Err(unsupported());
     }
     units(plan, right.children.len())?;
     for child in right.children {
@@ -358,20 +423,18 @@ fn join<V: CandidateRead>(
             return Err(unsupported());
         }
     }
-    let siblings = view.children(right.parent).ok_or_else(invalid)?;
-    units(plan, siblings.len())?;
-    let index = siblings
-        .iter()
-        .position(|id| *id == right_id)
-        .ok_or_else(invalid)?;
-    if index == 0 {
+    let previous = if poetry_prose {
+        previous
+    } else {
+        previous_sibling(view, right.parent, right_id, plan)?
+    };
+    let Some(left_id) = previous else {
         return if top_level {
             Ok(CommandPresentation::default())
         } else {
             Err(unsupported())
         };
-    }
-    let left_id = siblings[index - 1];
+    };
     let left = get(view, left_id, plan)?;
     if left.primitive != Primitive::TextBlock
         || !eligible(left.type_id)
@@ -436,4 +499,19 @@ fn join<V: CandidateRead>(
     .map_err(KwdjError::operational)?;
     caret(plan, position)?;
     Ok(CommandPresentation::default())
+}
+
+fn previous_sibling<V: CandidateRead>(
+    view: &V,
+    parent: V::Id,
+    id: V::Id,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<Option<V::Id>, KwdjError> {
+    let siblings = view.children(parent).ok_or_else(invalid)?;
+    units(plan, siblings.len())?;
+    let at = siblings
+        .iter()
+        .position(|node| *node == id)
+        .ok_or_else(invalid)?;
+    Ok(at.checked_sub(1).map(|index| siblings[index]))
 }

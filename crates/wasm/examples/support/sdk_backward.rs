@@ -13,6 +13,7 @@ const C1: &str =
 const CATALOG_V2: &[&str] = &[
     "org.klenwriter.kwdj/command/accept-slash",
     "org.klenwriter.kwdj/command/delete-backward",
+    "org.klenwriter.kwdj/command/delete-forward",
     "org.klenwriter.kwdj/command/delete-selection",
     "org.klenwriter.kwdj/command/dismiss-slash",
     "org.klenwriter.kwdj/command/duplicate",
@@ -191,7 +192,7 @@ fn split_join(v2: bool) {
     s.drain();
     let catalog = s.call(json!({"kind":"catalog"}));
     if v2 {
-        assert_eq!(CATALOG_V2.len(), 27);
+        assert_eq!(CATALOG_V2.len(), 28);
         assert_eq!(catalog["commands"], json!(CATALOG_V2));
     } else {
         assert_eq!(catalog["commands"].as_array().unwrap().len(), 17);
@@ -200,7 +201,8 @@ fn split_join(v2: bool) {
                 .as_array()
                 .unwrap()
                 .iter()
-                .any(|id| id == "org.klenwriter.kwdj/command/insert-fragment")
+                .any(|id| id == "org.klenwriter.kwdj/command/insert-fragment"
+                    || id == "org.klenwriter.kwdj/command/delete-forward")
         );
     }
     assert!(

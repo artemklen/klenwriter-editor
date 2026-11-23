@@ -3,9 +3,10 @@ use crate::{
     KwdjAdapter,
     convert::{diagnostic, profile_error},
     wire_v2::{
-        KwdjClipboardIntentV2, KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2,
-        KwdjScopedSelectionIntentV2, KwdjWarningIntentV2, LabeledContainerBlockTargetV2,
-        LabeledContainerKindV2, LiteraryBlockTargetV2, WarningBlockTargetV2, WarningKindV2,
+        KwdjClipboardIntentV2, KwdjDeleteSelectionScopeV2, KwdjForwardDeleteIntentV2,
+        KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2, KwdjScopedSelectionIntentV2,
+        KwdjWarningIntentV2, LabeledContainerBlockTargetV2, LabeledContainerKindV2,
+        LiteraryBlockTargetV2, WarningBlockTargetV2, WarningKindV2,
     },
 };
 use editor_bridge::{BridgeAdapter, ClipboardContextData, SelectionFragmentData};
@@ -14,11 +15,12 @@ use editor_engine::{NodeId, SessionKey};
 use editor_kwdj::{
     KwdjProfile, KwdjProfileError, Profile,
     commands::{
-        CLIPBOARD_COMMAND_ID, KWDJ_COMMANDS, KwdjIntent, LabeledContainerKind,
-        SET_CONTAINER_LABEL_COMMAND_ID, SET_LITERARY_KIND_COMMAND_ID, SET_WARNING_KIND_COMMAND_ID,
-        UNWRAP_LABELED_CONTAINER_COMMAND_ID, UNWRAP_LITERARY_BLOCK_COMMAND_ID,
-        UNWRAP_WARNING_COMMAND_ID, WRAP_LABELED_CONTAINER_COMMAND_ID,
-        WRAP_LITERARY_BLOCK_COMMAND_ID, WRAP_WARNING_COMMAND_ID, clipboard,
+        CLIPBOARD_COMMAND_ID, DELETE_FORWARD_COMMAND_ID, KWDJ_COMMANDS, KwdjIntent,
+        LabeledContainerKind, SET_CONTAINER_LABEL_COMMAND_ID, SET_LITERARY_KIND_COMMAND_ID,
+        SET_WARNING_KIND_COMMAND_ID, UNWRAP_LABELED_CONTAINER_COMMAND_ID,
+        UNWRAP_LITERARY_BLOCK_COMMAND_ID, UNWRAP_WARNING_COMMAND_ID,
+        WRAP_LABELED_CONTAINER_COMMAND_ID, WRAP_LITERARY_BLOCK_COMMAND_ID, WRAP_WARNING_COMMAND_ID,
+        clipboard,
     },
     model::WarningKind,
 };
@@ -207,12 +209,23 @@ impl BridgeAdapter<KwdjProfile<'static>> for ClipboardAdapterV2 {
                 }),
                 _ => Err(diagnostic("sdk.invalid_dto", "command")),
             }
+        } else if command.id == DELETE_FORWARD_COMMAND_ID {
+            let KwdjForwardDeleteIntentV2::DeleteForward {} =
+                editor_bridge::decode(&command.payload_json)?;
+            Ok(KwdjIntent::DeleteForward)
         } else {
             match self.0.decode_command(key, command) {
                 Err(legacy) if command.id == KWDJ_COMMANDS[16].id => {
-                    editor_bridge::decode::<KwdjScopedSelectionIntentV2>(&command.payload_json)
-                        .map(|_| KwdjIntent::DeleteSelectionInProfileBody)
-                        .map_err(|_| legacy)
+                    let KwdjScopedSelectionIntentV2::DeleteSelection { scope } =
+                        editor_bridge::decode(&command.payload_json).map_err(|_| legacy)?;
+                    Ok(match scope {
+                        KwdjDeleteSelectionScopeV2::ProfileBody => {
+                            KwdjIntent::DeleteSelectionInProfileBody
+                        }
+                        KwdjDeleteSelectionScopeV2::PoetryBoundary => {
+                            KwdjIntent::DeleteSelectionAtPoetryBoundary
+                        }
+                    })
                 }
                 Err(legacy) if command.id == KWDJ_COMMANDS[9].id => {
                     match editor_bridge::decode(&command.payload_json) {
