@@ -13,7 +13,9 @@ type ExportResponse = SdkResponse | DomRefusal;
 type SnapshotStamp = NonNullable<ReturnType<MountedEditor['capture']>>;
 export type VanillaExportResult =
   | { readonly status: 'exported'; readonly canonicalJson: string; readonly stamp: SnapshotStamp }
-  | { readonly status: 'export_failed'; readonly stage: 'capture' | 'snapshot' | 'release'; readonly response: ExportResponse };
+  | { readonly status: 'export_failed'; readonly stage: 'capture' | 'snapshot'; readonly response: ExportResponse }
+  // A host can retry the original release through update() or destroy the mount.
+  | { readonly status: 'export_failed'; readonly stage: 'release'; readonly response: ExportResponse; readonly snapshotHandle: string };
 
 export function update(editor: MountedEditor, request: VanillaUpdate): MountedSubmission {
   return editor.submit(request);
@@ -48,9 +50,10 @@ async function exportDocument(editor: MountedEditor, { maxBytes = 16_777_216 }: 
     return { status: 'export_failed', stage: 'snapshot', response: snapshot };
   }
 
-  const released = await settle(editor.submit({ kind: 'release_snapshot', handle: snapshot.value.handle }));
+  const handle = snapshot.value.handle;
+  const released = await settle(editor.submit({ kind: 'release_snapshot', handle }));
   if (released.status !== 'ok' || released.value.kind !== 'released') {
-    return { status: 'export_failed', stage: 'release', response: released };
+    return { status: 'export_failed', stage: 'release', response: released, snapshotHandle: handle };
   }
   return { status: 'exported', canonicalJson: snapshot.value.canonical_json, stamp: snapshot.value.stamp };
 }

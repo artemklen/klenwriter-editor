@@ -129,5 +129,14 @@ test('export preserves the original refusal at the failed step', async () => {
   assert.deepEqual(requests, ['snapshot']);
 
   editor.submit = request => request.kind === 'snapshot' ? completed(snapshot) : disposed;
-  assert.deepEqual(await exportDocument(editor), { status: 'export_failed', stage: 'release', response: disposed });
+  const releaseFailure = await exportDocument(editor);
+  assert.deepEqual(releaseFailure, {
+    status: 'export_failed', stage: 'release', response: disposed, snapshotHandle: 'vanilla-snapshot',
+  });
+
+  editor.submit = request => {
+    assert.deepEqual(request, { kind: 'release_snapshot', handle: 'vanilla-snapshot' });
+    return completed(released);
+  };
+  assert.deepEqual(vanilla.update(editor, { kind: 'release_snapshot', handle: releaseFailure.snapshotHandle }), completed(released));
 });
