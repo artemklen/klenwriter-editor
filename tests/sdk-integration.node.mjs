@@ -623,6 +623,117 @@ test('OSR-189 packaged SDK2 distinguishes legal literary nesting from warning re
   });
 });
 
+const osr144Fixture = () => JSON.parse(readFileSync(new URL('./fixtures/osr-144-verse-indent.json', import.meta.url)));
+const osr144Corpus = () => JSON.parse(readFileSync(new URL('../contracts/kwdj/v1/fixtures/positive.json', import.meta.url))).fixtures;
+const osr144Case = (corpus, id, name) => corpus.find(doc => doc.id === id).cases.find(item => item.name === name);
+const osr144Document = (profile, content) => canonicalizeRaw(JSON.stringify({
+  schema: 'klenwriter.document', schema_version: 1, profile, content,
+}));
+const osr144Poem = lines => osr144Document('poetry', [{ type: 'verse', content: lines }]);
+const osr144Remount = (editor, input_json, admission) => completed(editor.submit({
+  kind: 'remount', stamp: editor.capture(), input_json, admission,
+}));
+function osr144Refused(response, expected) {
+  const diagnostic = refused(response);
+  assert.equal(diagnostic.code, expected.code, JSON.stringify(response));
+  assert.equal(diagnostic.path, expected.path, JSON.stringify(response));
+  assert.equal(diagnostic.may_have_committed, false);
+}
+
+test('OSR-144 packaged SDK2 admits and reopens the unchanged poetry corpus', async () => {
+  const fixture = osr144Fixture();
+  const corpus = osr144Corpus();
+  for (const [id, name] of fixture.corpus) {
+    const row = osr144Case(corpus, id, name);
+    const expected = canonicalizeRaw(JSON.stringify(row.kwdj));
+    const facts = row.input.identity_state ?? {};
+    const media = (facts.existing_media_ids ?? []).map(id => ({ id, status: 'exists' }));
+    let saved;
+    await withLiteraryCommandSession(expected, editor => {
+      saved = canonical(editor);
+      assert.equal(saved, expected);
+    }, media);
+    await withLiteraryCommandSession(saved, editor => {
+      assert.equal(canonical(editor), expected);
+    }, media);
+  }
+});
+
+test('OSR-144 packaged SDK2 preserves all eight indent values and authored leading spaces', async () => {
+  const fixture = osr144Fixture();
+  const expected = osr144Poem(fixture.indented_lines);
+  await withLiteraryCommandSession(expected, editor => {
+    const verse = node(editor, root(editor).children[0]);
+    assert.equal(verse.children.length, 8);
+    for (const [index, line] of verse.children.entries()) {
+      assert.deepEqual(structuredClone(node(editor, line).attributes.indent),
+        { kind: 'number', value: String(index + 1) });
+    }
+    assert.equal(node(editor, node(editor, verse.children[0]).children[0]).text, '  Leading and indented');
+    accepted(osr144Remount(editor, expected, 'normalize'));
+    assert.equal(canonical(editor), expected);
+  });
+});
+
+test('OSR-144 packaged SDK2 removes zero only on import and rejects non-integer and out-of-range indent', async () => {
+  const fixture = osr144Fixture();
+  const expected = osr144Poem([fixture.plain_line]);
+  const raw = osr144Poem([{ ...fixture.plain_line, attrs: { indent: 'OSR144-indent' } }]);
+  const insert = token => raw.replace('"OSR144-indent"', token);
+  let saved;
+  await withLiteraryCommandSession(expected, editor => {
+    const before = state(editor);
+    osr144Refused(osr144Remount(editor, insert('0'), 'validate'), fixture.refusals.zero_validate);
+    assert.deepEqual(state(editor), before);
+    assert.equal(canonical(editor), expected);
+    for (const mode of ['validate', 'normalize']) {
+      for (const token of fixture.invalid_indent_tokens) {
+        osr144Refused(osr144Remount(editor, insert(token), mode), fixture.refusals.invalid_indent);
+        assert.deepEqual(state(editor), before);
+        assert.equal(canonical(editor), expected);
+      }
+    }
+    accepted(osr144Remount(editor, insert('0'), 'normalize'));
+    saved = canonical(editor);
+    assert.equal(saved, expected);
+  });
+  await withLiteraryCommandSession(saved, editor => {
+    assert.equal(canonical(editor), expected);
+  });
+});
+
+test('OSR-144 packaged SDK2 refuses poetry-only admission and paste atomically in prose', async () => {
+  const fixture = osr144Fixture();
+  const doc = osr144Case(osr144Corpus(), 'DOC-019', 'poetry_stanzas').kwdj;
+  const verse = doc.content[0];
+  const initial = osr183Doc([{ type: 'paragraph', content: [{ type: 'text', text: 'Prose' }] }]);
+  const packet = JSON.parse(readFileSync(new URL('../artifacts/extensions/packet.json', import.meta.url)));
+  const sourceProfile = { ...packet.kwdjProfile };
+  delete sourceProfile.extensions;
+  await withLiteraryCommandSession(initial, editor => {
+    osr185Select(editor, osr185Gap(state(editor).root, 1));
+    const before = state(editor);
+    for (const block of [verse, verse.content[0], verse.content[2]]) {
+      osr144Refused(osr144Remount(editor, osr144Document('prose', [block]), 'validate'), fixture.refusals.prose_grammar);
+      assert.deepEqual(state(editor), before);
+      assert.equal(canonical(editor), initial);
+      for (const [mode, oracle] of [['poetry', 'clipboard_poetry_mode'], ['prose', 'prose_grammar']]) {
+        const fragment = {
+          format_id: 'org.klenwriter.kwdj/clipboard-fragment/1',
+          source_profile: sourceProfile, mode, kind: 'blocks', open_start: false, open_end: false,
+          content: [block],
+        };
+        const command = createCommand('org.klenwriter.kwdj/command/insert-fragment', {
+          kind: 'insert_fragment', fragment_json: JSON.stringify(fragment),
+        });
+        osr144Refused(osr183Wire(editor, command), fixture.refusals[oracle]);
+        assert.deepEqual(state(editor), before);
+        assert.equal(canonical(editor), initial);
+      }
+    }
+  });
+});
+
 const osr186InsertFragment = 'org.klenwriter.kwdj/command/insert-fragment';
 const osr186Payload = fragment => ({ kind: 'insert_fragment', fragment_json: JSON.stringify(fragment) });
 function osr186Capture(editor, kind, content) {

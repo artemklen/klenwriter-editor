@@ -2,6 +2,7 @@
 // Derived from owner-controlled KlenWriter CMS source; see provenance/source-files.json.
 use serde_json::{Map, Value};
 
+use super::model::MAX_VERSE_LINE_INDENT;
 use super::{KwdjError, KwdjErrorCode, NormalizationEvent, index_path, key_path};
 
 pub(crate) fn normalize_value(
@@ -95,6 +96,23 @@ fn normalize_object(
                 attrs.remove("start");
                 push_event(events, NormalizationEvent::OrderedStartDefaultRemoved);
             }
+            Some("verse_line") => {
+                if let Some(value) = attrs.get("indent") {
+                    let step = value
+                        .as_u64()
+                        .filter(|step| *step <= u64::from(MAX_VERSE_LINE_INDENT))
+                        .ok_or_else(|| {
+                            KwdjError::new(
+                                KwdjErrorCode::InvalidStructure,
+                                key_path(&key_path(path, "attrs"), "indent"),
+                            )
+                        })?;
+                    if step == 0 {
+                        attrs.remove("indent");
+                        push_event(events, NormalizationEvent::VerseIndentDefaultRemoved);
+                    }
+                }
+            }
             Some("table_cell" | "table_header") => {
                 let mut removed = false;
                 for key in ["rowspan", "colspan"] {
@@ -113,7 +131,14 @@ fn normalize_object(
 
     let optional_attrs = matches!(
         node_type.as_deref(),
-        Some("paragraph" | "code_block" | "ordered_list" | "table_cell" | "table_header")
+        Some(
+            "paragraph"
+                | "code_block"
+                | "ordered_list"
+                | "table_cell"
+                | "table_header"
+                | "verse_line"
+        )
     );
     if optional_attrs
         && object

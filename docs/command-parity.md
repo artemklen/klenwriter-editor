@@ -107,3 +107,11 @@ selected inside one text block in a literary, warning, spoiler, or disclosure
 container. KWDJ mounted input uses this scope. Deletion preserves the enclosing
 container and its attributes. Selections crossing container boundaries return
 a typed refusal. The unscoped command retains its existing selection contract.
+
+## Poetry admission
+
+The poetry profile admits `verse`, `verse_line`, and `stanza_break`. A
+verse line can carry an integer `attrs.indent` from 1 through 8. Import
+normalization omits an integer zero indent. Leading spaces in authored text
+and the `blank_lines` value on stanza breaks survive export and reopening.
+The prose profile refuses these node types at admission and paste.

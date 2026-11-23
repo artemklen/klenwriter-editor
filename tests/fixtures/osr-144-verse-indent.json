@@ -1,0 +1,25 @@
+{
+  "corpus": [
+    ["DOC-019", "poetry_stanzas"],
+    ["DOC-020", "poetry_marks"],
+    ["DOC-027", "mixed_poetry_blocks"]
+  ],
+  "indented_lines": [
+    {"attrs":{"indent":1},"content":[{"text":"  Leading and indented","type":"text"}],"type":"verse_line"},
+    {"attrs":{"indent":2},"content":[{"text":"Two","type":"text"}],"type":"verse_line"},
+    {"attrs":{"indent":3},"content":[{"text":"Three","type":"text"}],"type":"verse_line"},
+    {"attrs":{"indent":4},"content":[{"text":"Four","type":"text"}],"type":"verse_line"},
+    {"attrs":{"indent":5},"content":[{"text":"Five","type":"text"}],"type":"verse_line"},
+    {"attrs":{"indent":6},"content":[{"text":"Six","type":"text"}],"type":"verse_line"},
+    {"attrs":{"indent":7},"content":[{"text":"Seven","type":"text"}],"type":"verse_line"},
+    {"attrs":{"indent":8},"content":[{"marks":[{"type":"strong"}],"text":"Восемь","type":"text"}],"type":"verse_line"}
+  ],
+  "plain_line": {"content":[{"text":"  Leading without indent","type":"text"}],"type":"verse_line"},
+  "invalid_indent_tokens": ["-1", "9", "1.5", "1.0", "\"3\"", "true", "null"],
+  "refusals": {
+    "zero_validate": {"code":"kwdj.non_normalized","path":""},
+    "invalid_indent": {"code":"kwdj.invalid_structure","path":"/content/0/content/0/attrs/indent"},
+    "prose_grammar": {"code":"kwdj.invalid_profile_content","path":"/content/0"},
+    "clipboard_poetry_mode": {"code":"kwdj.invalid_envelope","path":"/clipboard"}
+  }
+}

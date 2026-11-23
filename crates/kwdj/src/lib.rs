@@ -248,6 +248,7 @@ pub enum NormalizationEvent {
     EmptyMarksRemoved,
     OrderedStartDefaultRemoved,
     UnitSpanRemoved,
+    VerseIndentDefaultRemoved,
 }
 
 impl NormalizationEvent {
@@ -256,6 +257,7 @@ impl NormalizationEvent {
             Self::EmptyMarksRemoved => "kwdj.normalized_empty_marks_removed",
             Self::OrderedStartDefaultRemoved => "kwdj.normalized_ordered_start_default_removed",
             Self::UnitSpanRemoved => "kwdj.normalized_unit_spans_removed",
+            Self::VerseIndentDefaultRemoved => "kwdj.normalized_verse_indent_default_removed",
         }
     }
 }

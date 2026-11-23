@@ -166,6 +166,15 @@ pub struct StanzaBreakAttrs {
     pub blank_lines: u64,
 }
 
+pub(crate) const MAX_VERSE_LINE_INDENT: u8 = 8;
+
+/// The optional authored indent for a verse line.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct VerseLineAttrs {
+    pub indent: u8,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields, tag = "type", rename_all = "snake_case")]
 pub enum Node {
@@ -249,6 +258,8 @@ pub enum Node {
         content: Vec<Node>,
     },
     VerseLine {
+        #[serde(skip_serializing_if = "Option::is_none")]
+        attrs: Option<VerseLineAttrs>,
         content: Vec<Node>,
     },
     StanzaBreak {
@@ -403,7 +414,7 @@ impl editor_core::document::TreeNode for Node {
             | Self::Warning { content, .. }
             | Self::Spoiler { content, .. }
             | Self::Disclosure { content, .. }
-            | Self::VerseLine { content }
+            | Self::VerseLine { content, .. }
             | Self::Verse { content } => content,
         }
     }

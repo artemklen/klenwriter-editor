@@ -152,8 +152,8 @@
     },
     {
       "path": "packages/kwdj/dist/dom-inventory.js",
-      "bytes": 56584,
-      "sha256": "1d1e4deff87decb6ce29fd2b90d3d8c8c538dc5e047ec292526416f731f1fd7c"
+      "bytes": 56931,
+      "sha256": "be4c1595a5de97501b77412771530148ddc09a33c4bad1202c88848dfe7db4c8"
     },
     {
       "path": "packages/kwdj/dist/dom.js",
@@ -172,8 +172,8 @@
     },
     {
       "path": "packages/kwdj/dist/typing-dom-inventory.js",
-      "bytes": 57536,
-      "sha256": "790bd607d92b2e2de630de1c76fc4da6bcc42894c8239bedcb84b3f4551adf5a"
+      "bytes": 57883,
+      "sha256": "d67ebab2a1fe1eca9786a6763815fd12242c6c57bf2cc96970359ae87b01a9b5"
     },
     {
       "path": "packages/sdk/dist/context.js",

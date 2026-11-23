@@ -310,6 +310,23 @@ fn local_text_counts_match_full_codec_across_unicode_escapes_and_repeated_sparse
 }
 
 #[test]
+fn verse_indent_counts_toward_sparse_canonical_bytes_after_text_edit() {
+    let before = source(
+        Profile::Poetry,
+        json!([{"type":"verse","content":[{
+            "type":"verse_line","attrs":{"indent":8},
+            "content":[{"type":"text","text":"  a"}]
+        }]}]),
+    );
+    let cache = seed_view(Profile::Poetry, &before);
+    let leaf = before.first_text();
+    let mut after = before.clone();
+    after.nodes.get_mut(&leaf).unwrap().node.text = Some("  abc".into());
+    let changes = Changes::new(before, after);
+    check(Profile::Poetry, &changes, &cache, &Facts::default());
+}
+
+#[test]
 fn wide_roots_quote_and_verse_do_not_scan_unchanged_siblings() {
     for kind in ["roots", "quote", "verse"] {
         let mut baseline = None;

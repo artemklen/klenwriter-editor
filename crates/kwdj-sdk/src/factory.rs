@@ -2008,4 +2008,218 @@ mod tests {
         osr183_history(&mut session, "undo", &input);
         assert_eq!(osr183_node(&mut session, &root)["children"], roots);
     }
+
+    fn osr144_fixture() -> Value {
+        serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-144-verse-indent.json"
+        ))
+        .unwrap()
+    }
+
+    fn osr144_corpus() -> Value {
+        serde_json::from_str(include_str!(
+            "../../../contracts/kwdj/v1/fixtures/positive.json"
+        ))
+        .unwrap()
+    }
+
+    fn osr144_document(profile: &str, content: Value) -> String {
+        json!({
+            "schema":"klenwriter.document", "schema_version":1, "profile":profile, "content":content,
+        })
+        .to_string()
+    }
+
+    fn osr144_poem(lines: Value) -> String {
+        osr144_document("poetry", json!([{"type":"verse","content":lines}]))
+    }
+
+    fn osr144_diagnostic(reply: &Value, expected: &Value) {
+        assert_eq!(reply["status"], "refused", "{reply}");
+        assert_eq!(reply["diagnostic"]["code"], expected["code"], "{reply}");
+        assert_eq!(reply["diagnostic"]["path"], expected["path"], "{reply}");
+        assert_eq!(reply["diagnostic"]["may_have_committed"], false, "{reply}");
+    }
+
+    #[test]
+    fn osr144_poetry_corpus_admits_exports_and_reopens_unchanged() {
+        let fixture = osr144_fixture();
+        let corpus = osr144_corpus();
+        let distribution = Distribution::new(BUILD, vec![Box::new(KwdjFactory)]).unwrap();
+        for row in fixture["corpus"].as_array().unwrap() {
+            let document = corpus["fixtures"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|document| document["id"] == row[0])
+                .unwrap();
+            let case = document["cases"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|case| case["name"] == row[1])
+                .unwrap();
+            let media: Vec<_> = case["input"]["identity_state"]["existing_media_ids"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .map(|id| json!({"id":id,"status":"exists"}))
+                .collect();
+            let mut opts = options(false);
+            opts["profile_options_json"] = json!({
+                "identities":{"media":media,"references":[]},"limits":null,
+            })
+            .to_string()
+            .into();
+            let expected = case["kwdj"].to_string();
+            let mut session = distribution.open(expected.as_bytes(), &opts.to_string());
+            assert!(
+                matches!(session.initialization(), SdkResponse::Ok { .. }),
+                "{row}: {:?}",
+                session.initialization()
+            );
+            let saved = snapshot(&mut session);
+            assert_eq!(saved, expected, "{row}");
+            session.destroy();
+            let mut reopened = distribution.open(saved.as_bytes(), &opts.to_string());
+            assert!(
+                matches!(reopened.initialization(), SdkResponse::Ok { .. }),
+                "{row}: {:?}",
+                reopened.initialization()
+            );
+            assert_eq!(snapshot(&mut reopened), expected, "{row}");
+        }
+    }
+
+    #[test]
+    fn osr144_verse_indents_one_through_eight_and_leading_space_round_trip() {
+        let fixture = osr144_fixture();
+        let expected = osr144_poem(fixture["indented_lines"].clone());
+        let distribution = Distribution::new(BUILD, vec![Box::new(KwdjFactory)]).unwrap();
+        for mode in ["validate", "normalize"] {
+            let mut opts = options(false);
+            opts["admission"] = mode.into();
+            let mut session = distribution.open(expected.as_bytes(), &opts.to_string());
+            assert!(
+                matches!(session.initialization(), SdkResponse::Ok { .. }),
+                "{mode}: {:?}",
+                session.initialization()
+            );
+            assert_eq!(snapshot(&mut session), expected);
+            let root = state(&mut session)["root"].clone();
+            let verse = osr183_node(&mut session, &root)["children"][0].clone();
+            let lines = osr183_node(&mut session, &verse)["children"].clone();
+            for (index, line) in lines.as_array().unwrap().iter().enumerate() {
+                let line = osr183_node(&mut session, line);
+                assert_eq!(
+                    line["attributes"]["indent"],
+                    json!({"kind":"number","value":(index + 1).to_string()})
+                );
+            }
+            let leaf = osr183_node(&mut session, &lines[0])["children"][0].clone();
+            assert_eq!(
+                osr183_node(&mut session, &leaf)["text"],
+                "  Leading and indented"
+            );
+        }
+    }
+
+    #[test]
+    fn osr144_verse_indent_zero_normalizes_only_at_import_and_bad_tokens_refuse() {
+        let fixture = osr144_fixture();
+        let expected = osr144_poem(json!([fixture["plain_line"]]));
+        let mut raw_line = fixture["plain_line"].clone();
+        raw_line["attrs"] = json!({"indent":"OSR144-indent"});
+        let raw = osr144_poem(json!([raw_line]));
+        let insert = |token: &str| raw.replacen("\"OSR144-indent\"", token, 1);
+        let distribution = Distribution::new(BUILD, vec![Box::new(KwdjFactory)]).unwrap();
+        let mut opts = options(false);
+        let strict = distribution.open(insert("0").as_bytes(), &opts.to_string());
+        osr144_diagnostic(
+            &serde_json::to_value(strict.initialization()).unwrap(),
+            &fixture["refusals"]["zero_validate"],
+        );
+        for mode in ["validate", "normalize"] {
+            opts["admission"] = mode.into();
+            for token in fixture["invalid_indent_tokens"].as_array().unwrap() {
+                let refused = distribution.open(
+                    insert(token.as_str().unwrap()).as_bytes(),
+                    &opts.to_string(),
+                );
+                osr144_diagnostic(
+                    &serde_json::to_value(refused.initialization()).unwrap(),
+                    &fixture["refusals"]["invalid_indent"],
+                );
+                assert!(refused.context().is_none());
+                assert_eq!(refused.own_resource_counts().sessions, 0);
+            }
+        }
+        let mut imported = distribution.open(insert("0").as_bytes(), &opts.to_string());
+        assert!(
+            matches!(imported.initialization(), SdkResponse::Ok { .. }),
+            "{:?}",
+            imported.initialization()
+        );
+        let saved = snapshot(&mut imported);
+        assert_eq!(saved, expected);
+        imported.destroy();
+        opts["admission"] = "validate".into();
+        let mut reopened = distribution.open(saved.as_bytes(), &opts.to_string());
+        assert!(matches!(reopened.initialization(), SdkResponse::Ok { .. }));
+        assert_eq!(snapshot(&mut reopened), expected);
+    }
+
+    #[test]
+    fn osr144_poetry_only_admission_and_paste_leave_live_prose_atomic() {
+        let fixture = osr144_fixture();
+        let corpus = osr144_corpus();
+        let doc019 = corpus["fixtures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|document| document["id"] == "DOC-019")
+            .unwrap();
+        let verse = &doc019["cases"][0]["kwdj"]["content"][0];
+        let source = osr144_document(
+            "prose",
+            json!([{"type":"paragraph","content":[{"type":"text","text":"Prose"}]}]),
+        );
+        let mut session = osr183_open(&source);
+        let root = state(&mut session)["root"].clone();
+        osr184_select(&mut session, &root, 1, &root, 1);
+        let initial = state(&mut session);
+        let cfg = options(false);
+        let mut source_profile = cfg["profile"].clone();
+        source_profile.as_object_mut().unwrap().remove("extensions");
+        for node in [verse, &verse["content"][0], &verse["content"][2]] {
+            let raw = osr144_document("prose", json!([node]));
+            let reply = call(
+                &mut session,
+                json!({
+                    "kind":"remount","stamp":initial["stamp"],"input_json":raw,"admission":"validate",
+                }),
+            );
+            osr144_diagnostic(&reply, &fixture["refusals"]["prose_grammar"]);
+            assert_eq!(state(&mut session), initial);
+            assert_eq!(snapshot(&mut session), source);
+            for (mode, oracle) in [
+                ("poetry", "clipboard_poetry_mode"),
+                ("prose", "prose_grammar"),
+            ] {
+                let fragment = json!({
+                    "format_id":"org.klenwriter.kwdj/clipboard-fragment/1","source_profile":source_profile,
+                    "mode":mode,"kind":"blocks","open_start":false,"open_end":false,"content":[node],
+                });
+                let reply = osr183_command(
+                    &mut session,
+                    "org.klenwriter.kwdj/command/insert-fragment",
+                    &json!({"kind":"insert_fragment","fragment_json":fragment.to_string()}),
+                    false,
+                );
+                osr144_diagnostic(&reply, &fixture["refusals"][oracle]);
+                assert_eq!(state(&mut session), initial);
+                assert_eq!(snapshot(&mut session), source);
+            }
+        }
+    }
 }

@@ -1372,8 +1372,19 @@ export const kwdjDomInventory = {
       },
       {
         "allowedMarks": [],
-        "attributeSchemas": {},
-        "attributes": [],
+        "attributeSchemas": {
+          "indent": {
+            "required": false,
+            "value": {
+              "kind": "integer",
+              "max": "8",
+              "min": "1"
+            }
+          }
+        },
+        "attributes": [
+          "indent"
+        ],
         "children": {
           "item": {
             "items": [
@@ -1509,5 +1520,5 @@ export const kwdjDomInventory = {
     "profile_version": "1.0.0",
     "wire_version": 1
   },
-  "registryDigest": "d30c40a92ce59b08fdfaed77623057a01835f46de90e053f51ad45094d401c7b"
+  "registryDigest": "386d86cc0c559af5cdd2b03b67aff6fdcf6d1871855278ec0d391ae6e991a6cc"
 } as const;
