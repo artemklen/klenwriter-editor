@@ -687,6 +687,44 @@ test('OSR-196 packaged SDK2 matches CMS verse boundary bytes, selection and Undo
   }
 });
 
+test('OSR-198 packaged SDK2 moves verse and stanza without losing authored structure', async t => {
+  const fixture = JSON.parse(readFileSync(new URL('./fixtures/osr-198-poetry-move.json', import.meta.url), 'utf8'));
+  for (const row of fixture.cases) {
+    await t.test(row.id, async () => {
+      const input = osr185Bytes(fixture.documents[row.input]);
+      await withLiteraryCommandSession(input, editor => {
+        const at = path => path.reduce((id, index) => node(editor, id).children[index], state(editor).root);
+        const before = state(editor);
+        const moved = at(row.node);
+        const command = kwdjCommand({ kind: 'move', node: moved, parent: at(row.parent), before_index: row.before_index });
+        const result = osr183Wire(editor, command);
+        if (row.refusal) {
+          assert.equal(result.status, 'refused');
+          assert.equal(result.diagnostic.code, row.refusal.code);
+          assert.equal(result.diagnostic.path, row.refusal.path);
+          assert.equal(result.diagnostic.may_have_committed, false);
+          assert.deepEqual(state(editor), before);
+          assert.equal(canonical(editor), input);
+          return;
+        }
+        const effect = row.effect ?? 'changed';
+        assert.equal(accepted(result).effect, effect);
+        assert.equal(canonical(editor), osr185Bytes(fixture.documents[row.expected]));
+        assert.equal(at(row.result_node), moved);
+        if (effect === 'changed') {
+          assert.equal(state(editor).stamp.revision, '1');
+          assert.equal(state(editor).history.undo_entries, '1');
+          osr183History(editor, 'undo', input);
+          assert.equal(at(row.node), moved);
+          assert.equal(state(editor).history.undo_entries, '0');
+        } else {
+          assert.deepEqual(state(editor), before);
+        }
+      });
+    });
+  }
+});
+
 const osr189Fixture = () => JSON.parse(readFileSync(new URL('./fixtures/osr-189-warning.json', import.meta.url)));
 const osr189Wrap = 'org.klenwriter.kwdj/command/wrap-warning';
 const osr189Unwrap = 'org.klenwriter.kwdj/command/unwrap-warning';

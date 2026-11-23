@@ -2199,7 +2199,27 @@ pub(super) fn prepare<V: CandidateRead>(
             parent,
             before_index,
         } => {
-            structural(view, *node, plan)?;
+            let source = structural(view, *node, plan)?;
+            if kind(source.type_id) == "stanza_break" {
+                unit(plan, 1)?;
+                if let Some(target) = view.node(*parent) {
+                    bytes(plan, target.type_id.len())?;
+                    if kind(target.type_id) == "verse"
+                        && *before_index > 0
+                        && *before_index < target.children.len()
+                    {
+                        // A move preserves the authored marker. Adjacency would
+                        // normalize two independently authored counts into one.
+                        for &neighbor in &target.children[*before_index - 1..=*before_index] {
+                            if neighbor != *node
+                                && kind(get(view, neighbor, plan)?.type_id) == "stanza_break"
+                            {
+                                return Err(lossy());
+                            }
+                        }
+                    }
+                }
+            }
             push(
                 plan,
                 Operation::Move {

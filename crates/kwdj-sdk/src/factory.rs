@@ -2153,6 +2153,59 @@ mod tests {
         assert!(refusals.is_empty(), "{}", refusals.join("\n"));
     }
 
+    #[test]
+    fn osr198_moves_verse_and_stanza_without_losing_authored_structure() {
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-198-poetry-move.json"
+        ))
+        .unwrap();
+        for row in fixture["cases"].as_array().unwrap() {
+            let id = row["id"].as_str().unwrap();
+            let bytes = |key| fixture["documents"][row[key].as_str().unwrap()].to_string();
+            let input = bytes("input");
+            let mut session = osr183_open(&input);
+            assert_eq!(snapshot(&mut session), input, "{id}");
+            let at = |session: &mut DistributionSession, path: &Value| {
+                path.as_array()
+                    .unwrap()
+                    .iter()
+                    .fold(state(session)["root"].clone(), |id, index| {
+                        osr183_node(session, &id)["children"][index.as_u64().unwrap() as usize]
+                            .clone()
+                    })
+            };
+            let before = state(&mut session);
+            let moved = at(&mut session, &row["node"]);
+            let parent = at(&mut session, &row["parent"]);
+            let payload = json!({"kind":"move","node":moved,"parent":parent,"before_index":row["before_index"]});
+            let command = "org.klenwriter.kwdj/command/move";
+            let reply = osr183_command(&mut session, command, &payload, false);
+            if let Some(expected) = row.get("refusal") {
+                assert_eq!(reply["status"], "refused", "{id}: {reply}");
+                assert_eq!(reply["diagnostic"]["code"], expected["code"], "{id}");
+                assert_eq!(reply["diagnostic"]["path"], expected["path"], "{id}");
+                assert_eq!(reply["diagnostic"]["may_have_committed"], false, "{id}");
+                assert_eq!(state(&mut session), before, "{id}");
+                assert_eq!(snapshot(&mut session), input, "{id}");
+                continue;
+            }
+            let effect = row["effect"].as_str().unwrap_or("changed");
+            assert_eq!(reply["value"]["effect"], effect, "{id}: {reply}");
+            assert_eq!(snapshot(&mut session), bytes("expected"), "{id}");
+            assert_eq!(at(&mut session, &row["result_node"]), moved, "{id}");
+            if effect == "changed" {
+                let after = state(&mut session);
+                assert_eq!(after["stamp"]["revision"], "1", "{id}");
+                assert_eq!(after["history"]["undo_entries"], "1", "{id}");
+                osr183_history(&mut session, "undo", &input);
+                assert_eq!(at(&mut session, &row["node"]), moved, "{id}");
+                assert_eq!(state(&mut session)["history"]["undo_entries"], "0", "{id}");
+            } else {
+                assert_eq!(state(&mut session), before, "{id}");
+            }
+        }
+    }
+
     fn osr189_fixture() -> Value {
         serde_json::from_str(include_str!("../../../tests/fixtures/osr-189-warning.json")).unwrap()
     }

@@ -1,0 +1,529 @@
+{
+  "retained_case": "DOC-019/poetry_stanzas",
+  "documents": {
+    "initial": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "До"
+            }
+          ]
+        },
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "  Строка 1"
+                }
+              ]
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 1
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Строка 2"
+                }
+              ]
+            },
+            {
+              "type": "stanza_break",
+              "attrs": {
+                "blank_lines": 2
+              }
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Строка 3"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "После"
+            }
+          ]
+        }
+      ]
+    },
+    "verse_before": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "  Строка 1"
+                }
+              ]
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 1
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Строка 2"
+                }
+              ]
+            },
+            {
+              "type": "stanza_break",
+              "attrs": {
+                "blank_lines": 2
+              }
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Строка 3"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "До"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "После"
+            }
+          ]
+        }
+      ]
+    },
+    "verse_after": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "До"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "После"
+            }
+          ]
+        },
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "  Строка 1"
+                }
+              ]
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 1
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Строка 2"
+                }
+              ]
+            },
+            {
+              "type": "stanza_break",
+              "attrs": {
+                "blank_lines": 2
+              }
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Строка 3"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "stanza_before": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "До"
+            }
+          ]
+        },
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "  Строка 1"
+                }
+              ]
+            },
+            {
+              "type": "stanza_break",
+              "attrs": {
+                "blank_lines": 2
+              }
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 1
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Строка 2"
+                }
+              ]
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Строка 3"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "После"
+            }
+          ]
+        }
+      ]
+    },
+    "two_stanzas": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "До"
+            }
+          ]
+        },
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "  Строка 1"
+                }
+              ]
+            },
+            {
+              "type": "stanza_break",
+              "attrs": {
+                "blank_lines": 2
+              }
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 1
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Строка 2"
+                }
+              ]
+            },
+            {
+              "type": "stanza_break",
+              "attrs": {
+                "blank_lines": 3
+              }
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Строка 3"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "После"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "id": "verse_up",
+      "input": "initial",
+      "node": [
+        1
+      ],
+      "parent": [],
+      "before_index": 0,
+      "expected": "verse_before",
+      "result_node": [
+        0
+      ]
+    },
+    {
+      "id": "verse_down",
+      "input": "initial",
+      "node": [
+        1
+      ],
+      "parent": [],
+      "before_index": 3,
+      "expected": "verse_after",
+      "result_node": [
+        2
+      ]
+    },
+    {
+      "id": "stanza_up",
+      "input": "initial",
+      "node": [
+        1,
+        2
+      ],
+      "parent": [
+        1
+      ],
+      "before_index": 1,
+      "expected": "stanza_before",
+      "result_node": [
+        1,
+        1
+      ]
+    },
+    {
+      "id": "stanza_down",
+      "input": "stanza_before",
+      "node": [
+        1,
+        1
+      ],
+      "parent": [
+        1
+      ],
+      "before_index": 3,
+      "expected": "initial",
+      "result_node": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": "same_stanza_gap",
+      "input": "initial",
+      "node": [
+        1,
+        2
+      ],
+      "parent": [
+        1
+      ],
+      "before_index": 3,
+      "expected": "initial",
+      "result_node": [
+        1,
+        2
+      ],
+      "effect": "unchanged"
+    },
+    {
+      "id": "stanza_at_root",
+      "input": "initial",
+      "node": [
+        1,
+        2
+      ],
+      "parent": [],
+      "before_index": 0,
+      "refusal": {
+        "code": "kwdj.invalid_profile_content",
+        "path": "/content/0"
+      }
+    },
+    {
+      "id": "stanza_as_first",
+      "input": "initial",
+      "node": [
+        1,
+        2
+      ],
+      "parent": [
+        1
+      ],
+      "before_index": 0,
+      "refusal": {
+        "code": "kwdj.invalid_verse",
+        "path": "/content/1/content"
+      }
+    },
+    {
+      "id": "stanza_as_last",
+      "input": "initial",
+      "node": [
+        1,
+        2
+      ],
+      "parent": [
+        1
+      ],
+      "before_index": 4,
+      "refusal": {
+        "code": "kwdj.invalid_verse",
+        "path": "/content/1/content"
+      }
+    },
+    {
+      "id": "stanza_adjacent_after",
+      "input": "two_stanzas",
+      "node": [
+        1,
+        1
+      ],
+      "parent": [
+        1
+      ],
+      "before_index": 4,
+      "refusal": {
+        "code": "kwdj.command_lossy_transform",
+        "path": ""
+      }
+    },
+    {
+      "id": "stanza_adjacent_before",
+      "input": "two_stanzas",
+      "node": [
+        1,
+        3
+      ],
+      "parent": [
+        1
+      ],
+      "before_index": 1,
+      "refusal": {
+        "code": "kwdj.command_lossy_transform",
+        "path": ""
+      }
+    }
+  ]
+}
