@@ -17,3 +17,26 @@ To attach the editor UI, pass `ui: { slots, profile }` to `mount`. The three slo
 Pass `locale: 'ru'` or `locale: 'en'` to select the initial language. The default is English. Once `editor.uiReady` resolves successfully, call `update(editor, { locale: 'en' })` to change the language on the mounted UI.
 
 Load `@klenwriter/editor-ui/style.css` for the UI controls. Either `destroy(editor)` or `editor.destroy()` retires the attached UI together with the editor.
+
+## Alpha node types
+
+The public `alphaBlockTypes` map lists the authored node types accepted at mount. A document containing other types returns a `dom.renderer_missing` refusal when `editor.ready` resolves. The result includes `unsupportedTypes` and the original input bytes in `recovery.originalInput`.
+
+| Profile | Node type |
+| --- | --- |
+| `org.klenwriter.kwdj` | `org.klenwriter.kwdj/blockquote` |
+| `org.klenwriter.kwdj` | `org.klenwriter.kwdj/bullet_list` |
+| `org.klenwriter.kwdj` | `org.klenwriter.kwdj/code_block` |
+| `org.klenwriter.kwdj` | `org.klenwriter.kwdj/hard_break` |
+| `org.klenwriter.kwdj` | `org.klenwriter.kwdj/heading` |
+| `org.klenwriter.kwdj` | `org.klenwriter.kwdj/list_item` |
+| `org.klenwriter.kwdj` | `org.klenwriter.kwdj/ordered_list` |
+| `org.klenwriter.kwdj` | `org.klenwriter.kwdj/paragraph` |
+| `org.klenwriter.kwdj` | `org.klenwriter.kwdj/scene_break` |
+| `org.klenwriter.kwdj` | `org.klenwriter.kwdj/task_item` |
+| `org.klenwriter.kwdj` | `org.klenwriter.kwdj/task_list` |
+| `org.klenwriter.kwdj` | `org.klenwriter.kwdj/text` |
+| `org.example.notes` | `org.example.notes/document` |
+| `org.example.notes` | `org.example.notes/hard_break` |
+| `org.example.notes` | `org.example.notes/paragraph` |
+| `org.example.notes` | `org.example.notes/text` |

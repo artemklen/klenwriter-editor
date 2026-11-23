@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import { canonicalizeRaw } from '../scripts/canonical-reference/reference.mjs';
 
 const vanillaEntry = fileURLToPath(new URL('../packages/vanilla/dist/index.js', import.meta.url));
 const initialCanonical = readFileSync(new URL('../contracts/dom/v1/expected/D0.canonical.json', import.meta.url), 'utf8');
@@ -71,7 +72,7 @@ test.beforeEach(async ({ page, baseURL }) => {
       },
       renderers: kwdjBasicRenderers,
     };
-    window.vanillaFixture = { options, wasm, kwdjCommand };
+    window.vanillaFixture = { options, wasm, kwdjCommand, packet };
   });
 });
 
@@ -687,3 +688,169 @@ test('public vanilla locale destroy retires native editing before closing the at
     result: { status: 'dom_refused', diagnostic: { code: 'dom.disposed' } },
   }]);
 });
+
+const tableFixture = JSON.parse(readFileSync(new URL('../contracts/kwdj/v1/fixtures/positive.json', import.meta.url), 'utf8'))
+  .fixtures.find(fixture => fixture.id === 'DOC-010').cases.find(item => item.name === 'rectangular_table');
+const tableCanonical = canonicalizeRaw(JSON.stringify(tableFixture.kwdj));
+
+test('public vanilla alpha refuses DOC-010 before opening an editable session', async ({ page }) => {
+  const originalBytes = [...new TextEncoder().encode(tableCanonical)];
+  const actual = await page.evaluate(async originalBytes => {
+    const api = await import('@klenwriter/editor');
+    const { options, wasm } = window.vanillaFixture;
+    const { element } = options;
+    const constructors = [];
+    // Preserve the exact WASM module and its effects. Record the construction
+    // boundary and the original initialization response without replacing them.
+    class ObservedSession {
+      constructor(bytes, configuration) {
+        const { access, admission } = JSON.parse(configuration);
+        this.observation = { access, admission, initialization: null };
+        constructors.push(this.observation);
+        this.actual = new wasm.Session(bytes, configuration);
+      }
+      initialization() {
+        const wire = this.actual.initialization();
+        this.observation.initialization = JSON.parse(wire).status;
+        return wire;
+      }
+      context() { return this.actual.context(); }
+      call(wire) { return this.actual.call(wire); }
+      destroy() { this.actual.destroy(); }
+      free() { this.actual.free(); }
+    }
+    const loader = async () => ({ manifest: wasm.manifest, Session: ObservedSession, resourceCounts: () => wasm.resourceCounts() });
+    const input = new Uint8Array(originalBytes);
+    const mutations = [];
+    const observer = new MutationObserver(records => mutations.push(...records));
+    observer.observe(element, { attributes: true, attributeFilter: ['contenteditable'], attributeOldValue: true });
+    try {
+      const editor = api.mount({ ...options, editor: { ...options.editor, input, loader } });
+      const ready = await editor.ready;
+      const afterRefusal = JSON.parse(wasm.resourceCounts());
+      const emptyAtRefusal = element.childNodes.length === 0;
+      const readyBytes = ready.recovery?.originalInput;
+      const originalCopy = editor.originalInput();
+      const reportedBytes = Array.from(readyBytes ?? []);
+      const retainedBytes = Array.from(originalCopy ?? []);
+      originalCopy?.fill(0);
+      readyBytes?.fill(0);
+      const retainedAfterMutation = Array.from(editor.originalInput() ?? []);
+      const receipt = api.destroy(editor);
+      const destroyed = receipt.sdk.status === 'queued' ? await receipt.sdk.completion : receipt.sdk.response;
+      mutations.push(...observer.takeRecords());
+      return {
+        ready: { status: ready.status, diagnostic: ready.diagnostic, unsupportedTypes: ready.unsupportedTypes },
+        reportedBytes, retainedBytes, retainedAfterMutation, callerBytes: Array.from(input),
+        constructors, afterRefusal, emptyAtRefusal, destroyed, afterDestroy: JSON.parse(wasm.resourceCounts()),
+        editableObserved: element.isContentEditable || mutations.some(record => record.oldValue === 'true'),
+        emptyAfterDestroy: element.isConnected && element.childNodes.length === 0,
+      };
+    } finally {
+      observer.disconnect();
+    }
+  }, originalBytes);
+  expect(actual.constructors).toEqual([{ access: 'read_only', admission: 'validate', initialization: 'ok' }]);
+  expect(actual.ready).toMatchObject({
+    status: 'dom_refused',
+    diagnostic: { code: 'dom.renderer_missing' },
+    unsupportedTypes: [
+      'org.klenwriter.kwdj/table',
+      'org.klenwriter.kwdj/table_cell',
+      'org.klenwriter.kwdj/table_header',
+      'org.klenwriter.kwdj/table_row',
+    ],
+  });
+  for (const bytes of [actual.reportedBytes, actual.retainedBytes, actual.retainedAfterMutation, actual.callerBytes]) {
+    expect(bytes).toEqual(originalBytes);
+  }
+  expect(actual.emptyAtRefusal).toBe(true);
+  expect(actual.editableObserved).toBe(false);
+  expect(actual.afterRefusal).toEqual(nativeEmpty);
+  expect(actual.destroyed).toEqual({ status: 'ok', value: { kind: 'destroyed' } });
+  expect(actual.afterDestroy).toEqual(nativeEmpty);
+  expect(actual.emptyAfterDestroy).toBe(true);
+});
+
+const alphaDocuments = [
+  {
+    id: 'DOC-002',
+    profile: 'kwdj',
+    canonical: readFileSync(new URL('../contracts/mounted-e2e/v1/cases/DOC-002--unicode_whitespace_hard_break/approved-input.canonical.kwdj.json', import.meta.url), 'utf8'),
+  },
+  {
+    id: 'Notes-D0',
+    profile: 'notes',
+    canonical: readFileSync(new URL('../contracts/dom/v1/expected/Notes-D0.canonical.json', import.meta.url), 'utf8'),
+  },
+];
+
+for (const { id, profile, canonical } of alphaDocuments) {
+  test(`public vanilla alpha mounts, edits and re-exports ${id}`, async ({ page }) => {
+    const ready = await page.evaluate(async ({ profile, canonical }) => {
+      const api = await import('@klenwriter/editor');
+      const { options, packet } = window.vanillaFixture;
+      const { element } = options;
+      const editorOptions = { ...options.editor, input: new TextEncoder().encode(canonical) };
+      let renderers = options.renderers;
+      if (profile === 'notes') {
+        const { notesD0Renderers } = await import('/notes-dom.mjs');
+        renderers = notesD0Renderers;
+        editorOptions.options = {
+          ...editorOptions.options,
+          profile: {
+            profile_id: 'org.example.notes', profile_version: '1.0.0', codec_id: 'org.example.notes/json',
+            wire_version: 1, extensions: packet.registries.D0.selected_extensions,
+          },
+          registry_json: packet.registryJson.D0,
+          profile_options_json: JSON.stringify({ root_blocks: ['org.example.notes/paragraph'], limits: null }),
+        };
+      }
+      const editor = api.mount({ ...options, editor: editorOptions, renderers });
+      const ready = await editor.ready;
+      window.vanillaMode = { api, editor, element, root: element.firstElementChild };
+      return ready;
+    }, { profile, canonical });
+    expect(ready).toMatchObject({ status: 'ready' });
+    const editor = page.getByRole('textbox', { name: 'KlenWriter Editor' });
+    await expect(editor).toHaveAttribute('contenteditable', 'true');
+    const original = await documentCheckpoint(page);
+    expect(original).toMatchObject({ exported: { status: 'exported', canonicalJson: canonical, revision: '0' }, sameRoot: true });
+
+    const selected = await page.evaluate(async profile => {
+      const { api, editor, element } = window.vanillaMode;
+      element.focus();
+      const stamp = editor.capture();
+      const root = editor.read({ kind: 'state' }).value.state.root;
+      const firstChild = node => editor.read({ kind: 'node', stamp, node }).value.node.children[0];
+      const content = firstChild(root);
+      // Notes retains its wire document wrapper under the native root.
+      const leaf = firstChild(profile === 'notes' ? firstChild(content) : content);
+      const point = { kind: 'text', node: leaf, offset: 0, affinity: 'after' };
+      const ticket = api.update(editor, { kind: 'set_selection', stamp, selection: { anchor: point, focus: point } });
+      return ticket.status === 'queued' ? ticket.completion : ticket.response;
+    }, profile);
+    expect(selected).toMatchObject({ status: 'ok', value: { kind: 'mutation' } });
+    await expect(editor).toBeFocused();
+    await page.keyboard.type('X');
+    const edited = JSON.parse(canonical);
+    const leaf = profile === 'kwdj' ? edited.content[0].content[0] : edited.root.children[0].children[0];
+    leaf.text = `X${leaf.text}`;
+    expect(await documentCheckpoint(page)).toMatchObject({
+      exported: { status: 'exported', canonicalJson: canonicalizeRaw(JSON.stringify(edited)), revision: '1' },
+      session: original.session,
+      generation: original.generation,
+      sameRoot: true,
+    });
+    const undone = await page.evaluate(async () => {
+      const { api, editor } = window.vanillaMode;
+      const ticket = api.update(editor, { kind: 'history', stamp: editor.capture(), direction: 'undo' });
+      return ticket.status === 'queued' ? ticket.completion : ticket.response;
+    });
+    expect(undone).toMatchObject({ status: 'ok', value: { kind: 'mutation' } });
+    expect(await documentCheckpoint(page)).toEqual({
+      ...original, exported: { status: 'exported', canonicalJson: canonical, revision: '2' },
+    });
+    await disposeMode(page);
+  });
+}

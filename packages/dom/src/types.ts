@@ -47,7 +47,11 @@ export interface RecoveryPacket { readonly originalInput: Uint8Array | null; rea
 export interface DestroyReceipt { readonly status: 'destroy_requested'; readonly sdk: Submission; readonly recovery: RecoveryPacket | null; readonly callbackFailure: DomRefusal | null; readonly clipboardRecovery?: ClipboardRecoveryTransfer }
 export type MountedReady = { readonly status: 'ready'; readonly response: Response }
   | { readonly status: 'sdk_failure'; readonly response: Response; readonly recovery: RecoveryPacket | null }
-  | (DomRefusal & { readonly response: Response | null; readonly recovery: RecoveryPacket | null });
+  | (DomRefusal & {
+    readonly response: Response | null;
+    readonly recovery: RecoveryPacket | null;
+    readonly unsupportedTypes?: readonly string[];
+  });
 export type DomTag = 'span' | 'br' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'pre' | 'code' | 'blockquote' | 'ul' | 'ol' | 'li' | 'div' | 'section' | 'hr' | 'strong' | 'em' | 's' | 'sub' | 'sup' | 'a';
 export type DomAttribute = 'href' | 'title' | 'start' | 'role' | 'aria-label' | 'aria-checked';
 export interface DomPresentation { readonly tag: DomTag; readonly attributes?: Readonly<Partial<Record<DomAttribute, string>>>; readonly classes?: readonly string[]; readonly label?: string }

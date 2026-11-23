@@ -30,6 +30,30 @@ export type VanillaUpdate = MountedMutation | VanillaInteractionUpdate | Vanilla
 export type VanillaRevisionListener = Parameters<MountedEditor['subscribe']>[0];
 export interface VanillaExportOptions { readonly maxBytes?: number }
 
+export const alphaBlockTypes = Object.freeze({
+  'org.klenwriter.kwdj': Object.freeze([
+    'org.klenwriter.kwdj/blockquote',
+    'org.klenwriter.kwdj/bullet_list',
+    'org.klenwriter.kwdj/code_block',
+    'org.klenwriter.kwdj/hard_break',
+    'org.klenwriter.kwdj/heading',
+    'org.klenwriter.kwdj/list_item',
+    'org.klenwriter.kwdj/ordered_list',
+    'org.klenwriter.kwdj/paragraph',
+    'org.klenwriter.kwdj/scene_break',
+    'org.klenwriter.kwdj/task_item',
+    'org.klenwriter.kwdj/task_list',
+    'org.klenwriter.kwdj/text',
+  ] as const),
+  'org.example.notes': Object.freeze([
+    'org.example.notes/document',
+    'org.example.notes/hard_break',
+    'org.example.notes/paragraph',
+    'org.example.notes/text',
+  ] as const),
+});
+export type AlphaBlockType = (typeof alphaBlockTypes)[keyof typeof alphaBlockTypes][number];
+
 type InteractionFlags = Readonly<{ readOnly: boolean; disabled: boolean }>;
 type InteractionResult = ReturnType<MountedEditor['setInteractionMode']>;
 type UiRefusal = Extract<UiFailure, { readonly status: 'ui_refused' }>;
@@ -121,6 +145,7 @@ interface PreparedMount {
   readonly flags: InteractionFlags;
   readonly locale: UiLocale;
   readonly ui: unknown;
+  readonly allowedNodeTypes: readonly string[];
 }
 
 function prepareMount(options: VanillaMountOptions): PreparedMount {
@@ -133,12 +158,16 @@ function prepareMount(options: VanillaMountOptions): PreparedMount {
   const ui = optionValue(uiDescriptor);
   const mode = descriptors.mode?.value;
   const nativeOptions = dataValue(descriptors.editor?.value, 'options');
+  const profile = dataValue(dataValue(nativeOptions, 'profile'), 'profile_id');
+  const allowedNodeTypes = typeof profile === 'string' && Object.hasOwn(alphaBlockTypes, profile)
+    ? alphaBlockTypes[profile as keyof typeof alphaBlockTypes]
+    : [];
   const flags: InteractionFlags = {
     readOnly: readOnly ?? (mode === 'readOnly' || dataValue(nativeOptions, 'access') === 'read_only'),
     disabled: disabled ?? (mode === 'disabled'),
   };
   if (!readOnlyOption && !disabledOption && !localeDescriptor && !uiDescriptor) {
-    return { options, flags, locale, ui };
+    return { options, flags, locale, ui, allowedNodeTypes };
   }
 
   if (readOnly !== undefined || disabled !== undefined) {
@@ -149,7 +178,7 @@ function prepareMount(options: VanillaMountOptions): PreparedMount {
     descriptors.mode = { enumerable: true, value: interactionMode(flags) };
   }
   // Keep the original descriptors for the DOM owner's option validation.
-  return { options: Object.create(Object.getPrototypeOf(options), descriptors), flags, locale, ui };
+  return { options: Object.create(Object.getPrototypeOf(options), descriptors), flags, locale, ui, allowedNodeTypes };
 }
 
 function uiRefusal(code: UiRefusal['code']): UiRefusal {
@@ -218,9 +247,9 @@ export function mount(options: VanillaMountOptions): VanillaEditor {
   try {
     prepared = prepareMount(options);
   } catch {
-    return mountEditor(options);
+    return mountEditor(options, []);
   }
-  const editor = mountEditor(prepared.options);
+  const editor = mountEditor(prepared.options, prepared.allowedNodeTypes);
   const state = interactionState(editor, prepared.flags);
   // Keep direct mode changes on the mounted handle in the same flag state.
   Object.defineProperty(editor, 'setInteractionMode', {

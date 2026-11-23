@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import * as vanilla from '@klenwriter/editor';
+import { kwdjBasicRenderers } from '@klenwriter/editor-kwdj/dom';
+import { notesD0Renderers } from '../examples/notes-extension/dom.mjs';
 
 const stamp = Object.freeze({
   session: 'vanilla-test', generation: '1', revision: '1', selection_epoch: '0', history_epoch: '1',
@@ -217,4 +219,24 @@ test('locale options preserve a headless mount and refuse unsupported requests',
   assert.deepEqual(vanilla.update(editor, { locale: 'en', disabled: true }), {
     status: 'ui_refused', code: 'ui.invalid_options', action: null,
   });
+});
+
+test('public alpha node types match both renderer catalogs and the package guide', async () => {
+  assert.ok(vanilla.alphaBlockTypes, 'Missing public alpha block map');
+  const catalogs = [kwdjBasicRenderers, notesD0Renderers];
+  const rendered = Object.fromEntries(catalogs.map(({ definition }) => [
+    definition.binding.profile.profile_id,
+    Object.keys(definition.nodes).sort(),
+  ]));
+  assert.deepEqual(vanilla.alphaBlockTypes, rendered);
+  assert.equal(Object.isFrozen(vanilla.alphaBlockTypes), true);
+  assert.ok(Object.values(vanilla.alphaBlockTypes).every(Object.isFrozen));
+
+  const entry = import.meta.resolve('@klenwriter/editor');
+  const readme = await readFile(new URL('../README.md', entry), 'utf8');
+  const documented = {};
+  for (const [, profile, node] of readme.matchAll(/^\|\s*`([\w.-]+)`\s*\|\s*`([\w.-]+\/[\w-]+)`\s*\|/gm)) {
+    (documented[profile] ??= []).push(node);
+  }
+  assert.deepEqual(documented, rendered);
 });
