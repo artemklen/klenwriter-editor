@@ -1,0 +1,46 @@
+{
+  "initial": [
+    {"type":"paragraph","content":[{"type":"text","text":"Before"}]},
+    {"type":"paragraph","attrs":{"align":"right"},"content":[{"type":"text","text":"Note 😀","marks":[{"type":"strong"}]},{"type":"hard_break"},{"type":"text","text":"Continuation"}]},
+    {"type":"scene_break"},
+    {"type":"blockquote","content":[{"type":"paragraph","content":[{"type":"text","text":"Quotation","marks":[{"type":"emphasis"}]}]}]},
+    {"type":"paragraph","content":[{"type":"text","text":"After"}]}
+  ],
+  "wrapped": [
+    {"type":"paragraph","content":[{"type":"text","text":"Before"}]},
+    {"type":"warning","attrs":{"kind":"general"},"content":[
+      {"type":"paragraph","attrs":{"align":"right"},"content":[{"type":"text","text":"Note 😀","marks":[{"type":"strong"}]},{"type":"hard_break"},{"type":"text","text":"Continuation"}]},
+      {"type":"scene_break"},
+      {"type":"blockquote","content":[{"type":"paragraph","content":[{"type":"text","text":"Quotation","marks":[{"type":"emphasis"}]}]}]}
+    ]},
+    {"type":"paragraph","content":[{"type":"text","text":"After"}]}
+  ],
+  "labeled": [
+    {"type":"paragraph","content":[{"type":"text","text":"Before"}]},
+    {"type":"warning","attrs":{"kind":"content","label":"Темы"},"content":[{"type":"paragraph","content":[{"type":"text","text":"Контент"}]}]},
+    {"type":"paragraph","content":[{"type":"text","text":"After"}]}
+  ],
+  "labeled_empty": [
+    {"type":"paragraph","content":[{"type":"text","text":"Before"}]},
+    {"type":"warning","attrs":{"kind":"content","label":"Темы"},"content":[{"type":"paragraph","content":[]}]},
+    {"type":"paragraph","content":[{"type":"text","text":"After"}]}
+  ],
+  "nesting": [
+    {"type":"warning","attrs":{"kind":"content","label":"Темы"},"content":[{"type":"literary_block","attrs":{"kind":"author_note"},"content":[{"type":"paragraph","content":[{"type":"text","text":"Контент"}]}]}]},
+    {"type":"warning","attrs":{"kind":"general"},"content":[{"type":"paragraph","content":[{"type":"text","text":"Общее"}]}]},
+    {"type":"literary_block","attrs":{"kind":"author_note"},"content":[{"type":"paragraph","content":[{"type":"text","text":"Open"}]}]}
+  ],
+  "nested": [
+    {"type":"warning","attrs":{"kind":"content","label":"Темы"},"content":[{"type":"literary_block","attrs":{"kind":"author_note"},"content":[{"type":"paragraph","content":[{"type":"text","text":"Контент"}]}]}]},
+    {"type":"literary_block","attrs":{"kind":"author_note"},"content":[
+      {"type":"paragraph","content":[{"type":"text","text":"Open"}]},
+      {"type":"warning","attrs":{"kind":"general"},"content":[{"type":"paragraph","content":[{"type":"text","text":"Общее"}]}]}
+    ]}
+  ],
+  "refusals": {
+    "first_child_backspace": {"code":"kwdj.command_unsupported_context","path":"/command"},
+    "cross_boundary_delete": {"code":"kwdj.command_unsupported_context","path":"/command"},
+    "cross_kind_move": {"code":"kwdj.recursive_warning","path":"/content/0/content/0/content/1"},
+    "cross_kind_wrap": {"code":"kwdj.recursive_warning","path":"/content/1/content/0"}
+  }
+}

@@ -681,7 +681,7 @@ fn opt_in_and_literal_guards() -> Value {
             .as_array()
             .unwrap()
             .clone();
-        assert_eq!(catalog.len(), if typing.is_null() { 22 } else { 24 });
+        assert_eq!(catalog.len(), if typing.is_null() { 24 } else { 26 });
         assert_eq!(catalog.iter().any(|id| id == INSERT), !typing.is_null());
         let r = if typing.is_null() {
             literal(&mut s, "\"")
@@ -704,7 +704,7 @@ fn opt_in_and_literal_guards() -> Value {
     assert_eq!(state(&mut s), before);
     assert_eq!(all_text(&parse(&snapshot(&mut s))), "а ");
     clean(&mut s);
-    json!({"off_catalog":22,"configured_empty_catalog":24,"off_and_subset_literal":true,"old_entry_typed_id_refused":true})
+    json!({"off_catalog":24,"configured_empty_catalog":26,"off_and_subset_literal":true,"old_entry_typed_id_refused":true})
 }
 
 pub fn run() -> Value {

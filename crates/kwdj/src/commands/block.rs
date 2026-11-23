@@ -2042,6 +2042,16 @@ pub(super) fn prepare<V: CandidateRead>(
         KwdjIntent::SetWarningKind { node, warning_kind } => {
             set_warning_kind(view, *node, *warning_kind, plan)
         }
+        KwdjIntent::WrapWarning { warning_kind } => {
+            wrap_selected_blocks(view, state, plan, |plan| warning(*warning_kind, plan))
+        }
+        KwdjIntent::UnwrapWarning { node } => {
+            if kind(get(view, *node, plan)?.type_id) != "warning" {
+                return Err(invalid());
+            }
+            unwrap_container(view, *node, plan)?;
+            Ok(CommandPresentation::default())
+        }
         KwdjIntent::AcceptSlash {
             target,
             range,

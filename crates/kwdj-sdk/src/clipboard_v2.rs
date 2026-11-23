@@ -14,8 +14,8 @@ use editor_kwdj::{
     KwdjProfile, KwdjProfileError, Profile,
     commands::{
         CLIPBOARD_COMMAND_ID, KWDJ_COMMANDS, KwdjIntent, SET_LITERARY_KIND_COMMAND_ID,
-        SET_WARNING_KIND_COMMAND_ID, UNWRAP_LITERARY_BLOCK_COMMAND_ID,
-        WRAP_LITERARY_BLOCK_COMMAND_ID, clipboard,
+        SET_WARNING_KIND_COMMAND_ID, UNWRAP_LITERARY_BLOCK_COMMAND_ID, UNWRAP_WARNING_COMMAND_ID,
+        WRAP_LITERARY_BLOCK_COMMAND_ID, WRAP_WARNING_COMMAND_ID, clipboard,
     },
     model::WarningKind,
 };
@@ -136,16 +136,31 @@ impl BridgeAdapter<KwdjProfile<'static>> for ClipboardAdapterV2 {
                 }),
                 _ => Err(diagnostic("sdk.invalid_dto", "command")),
             }
-        } else if command.id == SET_WARNING_KIND_COMMAND_ID {
-            let KwdjWarningIntentV2::SetWarningKind { node, warning_kind } =
-                editor_bridge::decode(&command.payload_json)?
-            else {
-                return Err(diagnostic("sdk.invalid_dto", "command"));
-            };
-            Ok(KwdjIntent::SetWarningKind {
-                node: parse_node(&node)?,
-                warning_kind: warning_kind.into(),
-            })
+        } else if matches!(
+            command.id.as_str(),
+            SET_WARNING_KIND_COMMAND_ID | WRAP_WARNING_COMMAND_ID | UNWRAP_WARNING_COMMAND_ID
+        ) {
+            let intent = editor_bridge::decode(&command.payload_json)?;
+            match (command.id.as_str(), intent) {
+                (
+                    SET_WARNING_KIND_COMMAND_ID,
+                    KwdjWarningIntentV2::SetWarningKind { node, warning_kind },
+                ) => Ok(KwdjIntent::SetWarningKind {
+                    node: parse_node(&node)?,
+                    warning_kind: warning_kind.into(),
+                }),
+                (WRAP_WARNING_COMMAND_ID, KwdjWarningIntentV2::WrapWarning { warning_kind }) => {
+                    Ok(KwdjIntent::WrapWarning {
+                        warning_kind: warning_kind.into(),
+                    })
+                }
+                (UNWRAP_WARNING_COMMAND_ID, KwdjWarningIntentV2::UnwrapWarning { node }) => {
+                    Ok(KwdjIntent::UnwrapWarning {
+                        node: parse_node(&node)?,
+                    })
+                }
+                _ => Err(diagnostic("sdk.invalid_dto", "command")),
+            }
         } else {
             match self.0.decode_command(key, command) {
                 Err(legacy) if command.id == KWDJ_COMMANDS[9].id => {

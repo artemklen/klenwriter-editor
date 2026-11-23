@@ -82,6 +82,12 @@ pub enum KwdjIntent<I> {
         node: I,
         warning_kind: WarningKind,
     },
+    WrapWarning {
+        warning_kind: WarningKind,
+    },
+    UnwrapWarning {
+        node: I,
+    },
     Move {
         node: I,
         parent: I,
@@ -122,6 +128,8 @@ pub const UNWRAP_LITERARY_BLOCK_COMMAND_ID: &str =
     "org.klenwriter.kwdj/command/unwrap-literary-block";
 pub const TYPED_INPUT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-typed-text";
 pub const SET_WARNING_KIND_COMMAND_ID: &str = "org.klenwriter.kwdj/command/set-warning-kind";
+pub const WRAP_WARNING_COMMAND_ID: &str = "org.klenwriter.kwdj/command/wrap-warning";
+pub const UNWRAP_WARNING_COMMAND_ID: &str = "org.klenwriter.kwdj/command/unwrap-warning";
 pub const RESTORE_INPUT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/restore-typed-text";
 
 pub const KWDJ_COMMANDS: &[CommandDescriptor] = &[
@@ -268,6 +276,8 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::WrapLiteraryBlock => WRAP_LITERARY_BLOCK_COMMAND_ID,
             KwdjIntent::UnwrapLiteraryBlock { .. } => UNWRAP_LITERARY_BLOCK_COMMAND_ID,
             KwdjIntent::SetWarningKind { .. } => SET_WARNING_KIND_COMMAND_ID,
+            KwdjIntent::WrapWarning { .. } => WRAP_WARNING_COMMAND_ID,
+            KwdjIntent::UnwrapWarning { .. } => UNWRAP_WARNING_COMMAND_ID,
             KwdjIntent::Move { .. } => KWDJ_COMMANDS[10].id,
             KwdjIntent::Duplicate { .. } => KWDJ_COMMANDS[11].id,
             KwdjIntent::Remove { .. } => KWDJ_COMMANDS[12].id,
@@ -296,6 +306,8 @@ impl CommandProvider for KwdjProfile<'_> {
             | KwdjIntent::UnwrapLiteraryBlock { .. }
             | KwdjIntent::InsertWarning { .. }
             | KwdjIntent::SetWarningKind { .. }
+            | KwdjIntent::WrapWarning { .. }
+            | KwdjIntent::UnwrapWarning { .. }
                 if !self.clipboard_v2() =>
             {
                 return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());

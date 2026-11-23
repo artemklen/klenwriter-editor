@@ -21,7 +21,7 @@ export type WarningKindV2 = "general" | "content";
 
 export type WarningBlockTargetV2 = { "kind": "warning", warning_kind: WarningKindV2, };
 
-export type KwdjWarningIntentV2 = { "kind": "insert_block", target: WarningBlockTargetV2, } | { "kind": "set_warning_kind", node: string, warning_kind: WarningKindV2, };
+export type KwdjWarningIntentV2 = { "kind": "insert_block", target: WarningBlockTargetV2, } | { "kind": "set_warning_kind", node: string, warning_kind: WarningKindV2, } | { "kind": "wrap_warning", warning_kind: WarningKindV2, } | { "kind": "unwrap_warning", node: string, };
 
 export type KwdjTypingIntentV2 = { "kind": "insert_typed_text", text: string, origin: InputOriginV2, } | { "kind": "restore_typed_text", restore: RawInputRestoreV2, };
 

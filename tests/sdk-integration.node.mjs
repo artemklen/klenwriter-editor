@@ -443,6 +443,112 @@ test('OSR-185 packaged SDK2 refuses literary boundaries and illegal parents with
   }, media);
 });
 
+const osr189Fixture = () => JSON.parse(readFileSync(new URL('./fixtures/osr-189-warning.json', import.meta.url)));
+const osr189Wrap = 'org.klenwriter.kwdj/command/wrap-warning';
+const osr189Unwrap = 'org.klenwriter.kwdj/command/unwrap-warning';
+const osr189Move = 'org.klenwriter.kwdj/command/move';
+
+test('OSR-189 packaged SDK2 wraps and unwraps warning with exact children and history', async () => {
+  const fixture = osr189Fixture();
+  const input = osr183Doc(fixture.initial);
+  const wrapped = osr183Doc(fixture.wrapped);
+  const wrap = { kind: 'wrap_warning', warning_kind: 'general' };
+  await withLiteraryCommandSession(input, editor => {
+    const rootId = state(editor).root;
+    const original = root(editor).children;
+    const children = original.slice(1, 4);
+    const inline = node(editor, children[0]).children;
+    osr185Select(editor, osr185Gap(rootId, 4), osr185Gap(rootId, 1));
+    const dto = createCommand(osr189Wrap, wrap);
+    assert.equal(accepted(osr183Wire(editor, dto)).effect, 'changed');
+    assert.deepEqual(kwdjCommand(wrap), dto);
+    assert.equal(canonical(editor), wrapped);
+    const roots = root(editor).children;
+    const warning = roots[1];
+    assert.deepEqual(roots, [original[0], warning, original[4]]);
+    assert.deepEqual(node(editor, warning).children, children);
+    assert.deepEqual(node(editor, children[0]).children, inline);
+
+    osr183History(editor, 'undo', input);
+    assert.deepEqual(root(editor).children, original);
+    osr183History(editor, 'redo', wrapped);
+    assert.deepEqual(root(editor).children, roots);
+
+    const intent = { kind: 'unwrap_warning', node: warning };
+    const unwrap = createCommand(osr189Unwrap, intent);
+    assert.equal(accepted(osr183Wire(editor, unwrap)).effect, 'changed');
+    assert.deepEqual(kwdjCommand(intent), unwrap);
+    assert.equal(canonical(editor), input);
+    assert.deepEqual(root(editor).children, original);
+    assert.deepEqual(node(editor, children[0]).children, inline);
+    osr183History(editor, 'undo', wrapped);
+    assert.deepEqual(node(editor, warning).children, children);
+    osr183History(editor, 'redo', input);
+  });
+
+  const labeled = osr183Doc(fixture.labeled);
+  await withLiteraryCommandSession(labeled, editor => {
+    const warning = root(editor).children[1];
+    osr185Select(editor, osr185Gap(warning, 0), osr185Gap(warning, 1));
+    const denied = fixture.refusals.cross_kind_wrap;
+    osr183Denied(editor, osr189Wrap, wrap, labeled, denied.code, denied.path);
+    const [left, wrapper, right] = fixture.labeled;
+    const unwrap = createCommand(osr189Unwrap, { kind: 'unwrap_warning', node: warning });
+    assert.equal(accepted(osr183Wire(editor, unwrap)).effect, 'changed');
+    assert.equal(canonical(editor), osr183Doc([left, ...wrapper.content, right]));
+    osr183History(editor, 'undo', labeled);
+    assert.equal(root(editor).children[1], warning);
+  });
+});
+
+test('OSR-189 packaged SDK2 refuses warning boundary edits and preserves the labeled empty shell', async () => {
+  const fixture = osr189Fixture();
+  const input = osr183Doc(fixture.labeled);
+  const empty = osr183Doc(fixture.labeled_empty);
+  await withLiteraryCommandSession(input, editor => {
+    const roots = root(editor).children;
+    const outside = textLeaf(editor).id;
+    const child = node(editor, roots[1]).children[0];
+    const first = node(editor, child).children[0];
+    const backspace = fixture.refusals.first_child_backspace;
+    osr185Select(editor, position(first, 0));
+    osr183Denied(editor, 'org.klenwriter.kwdj/command/delete-backward', { kind: 'delete_backward' }, input, backspace.code, backspace.path);
+    const crossing = fixture.refusals.cross_boundary_delete;
+    osr185Select(editor, position(outside, 6), position(first, 1));
+    osr183Denied(editor, 'org.klenwriter.kwdj/command/delete-selection', { kind: 'delete_selection' }, input, crossing.code, crossing.path);
+
+    const remove = createCommand('org.klenwriter.kwdj/command/remove', { kind: 'remove', node: child });
+    assert.equal(accepted(osr183Wire(editor, remove)).effect, 'changed');
+    assert.equal(canonical(editor), empty);
+    assert.deepEqual(root(editor).children, roots);
+    const children = node(editor, roots[1]).children;
+    assert.equal(children.length, 1);
+    assert.notEqual(children[0], child);
+    assert.deepEqual(node(editor, children[0]).children, []);
+    osr183History(editor, 'undo', input);
+    assert.equal(node(editor, roots[1]).children[0], child);
+    osr183History(editor, 'redo', empty);
+  });
+});
+
+test('OSR-189 packaged SDK2 distinguishes legal literary nesting from warning recursion', async () => {
+  const fixture = osr189Fixture();
+  const input = osr183Doc(fixture.nesting);
+  const nested = osr183Doc(fixture.nested);
+  await withLiteraryCommandSession(input, editor => {
+    const roots = root(editor).children;
+    const insideWarning = node(editor, roots[0]).children[0];
+    const move = parent => ({ kind: 'move', node: roots[1], parent, before_index: 1 });
+    const denied = fixture.refusals.cross_kind_move;
+    osr183Denied(editor, osr189Move, move(insideWarning), input, denied.code, denied.path);
+    assert.equal(accepted(osr183Wire(editor, createCommand(osr189Move, move(roots[2])))).effect, 'changed');
+    assert.equal(canonical(editor), nested);
+    assert.equal(node(editor, roots[2]).children[1], roots[1]);
+    osr183History(editor, 'undo', input);
+    assert.deepEqual(root(editor).children, roots);
+  });
+});
+
 const osr186InsertFragment = 'org.klenwriter.kwdj/command/insert-fragment';
 const osr186Payload = fragment => ({ kind: 'insert_fragment', fragment_json: JSON.stringify(fragment) });
 function osr186Capture(editor, kind, content) {

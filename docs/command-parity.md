@@ -82,3 +82,8 @@ or a name for the kind. Legacy CMS insertion supports both kinds. SDK2
 `insert_block` takes the `warning` target and a `warning_kind`. The new block
 has one empty paragraph and starts with the label omitted. `set_warning_kind`
 changes the kind of an existing warning and preserves any label and children.
+
+SDK2 `wrap_warning` takes a `warning_kind` and wraps selected contiguous
+siblings in that kind of warning. `unwrap_warning` takes the warning node ID and
+moves its children into its parent in their original order. Undo restores the
+warning, its original attributes, and its children.

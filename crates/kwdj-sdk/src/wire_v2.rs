@@ -90,6 +90,12 @@ pub enum KwdjWarningIntentV2 {
         node: String,
         warning_kind: WarningKindV2,
     },
+    WrapWarning {
+        warning_kind: WarningKindV2,
+    },
+    UnwrapWarning {
+        node: String,
+    },
 }
 
 #[cfg_attr(
