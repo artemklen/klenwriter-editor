@@ -17,7 +17,8 @@ URL to the editor. **Cancel** returns focus and the original selection.
 Use the `packages` directory printed by the local alpha build in `CONTRIBUTING.md`.
 It contains six `0.1.0-alpha.1` archives and their `pack-receipt.json`. The runner
 verifies the archive hashes and builds the example in a fresh npm project
-outside the checkout. Use Node 24.22.0 and npm 11.14.0.
+outside the checkout. Use Node 24.22.0 and npm 11.14.0. Install the checkout's
+JavaScript tools once with `npm ci --ignore-scripts`.
 
 Run from the repository root with the path to that directory.
 
@@ -34,3 +35,6 @@ Undo and both outcomes of the KWDJ link dialog in each browser.
 ```sh
 node examples/vanilla-alpha/run.mjs /path/to/packages --check
 ```
+
+The command prints the checkout revision, the installed archive hashes, and
+the result of each scenario in both browsers.

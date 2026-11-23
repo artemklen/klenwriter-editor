@@ -206,17 +206,26 @@ try {
         results.push({
           engine, version: browser.version(),
           editUndoRedoSaveReloadReopen: 'pass', profileSwitchAndValidation: 'pass', extensionAndUndo: 'pass',
-          ...link,
+          linkDialog: link,
         });
       } finally {
         await browser.close();
       }
     }
+    const git = (...args) => execFileSync('git', args, { cwd: workspace, encoding: 'utf8' }).trim();
     console.log(JSON.stringify({
-      sourceSha: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: workspace, encoding: 'utf8' }).trim(),
+      format: 'klenwriter-editor-vanilla-alpha-example/1',
+      sourceSha: git('rev-parse', 'HEAD'),
+      sourceDirty: git('status', '--porcelain') !== '',
       packageSourceSha: consumer.receipt.sourceSha,
       sdkBuildId: consumer.receipt.sdkBuildId,
       packageVersion: consumer.receipt.version,
+      tarballs: consumer.receipt.tarballs.map(({ name, filename, version, sha256 }) => ({
+        name, filename, version, sha256,
+      })),
+      nodeVersion: process.versions.node,
+      npmVersion: consumer.npmVersion,
+      absentTools: consumer.absentTools,
       lockSha256: consumer.lockSha256,
       build,
       results,
