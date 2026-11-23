@@ -3,6 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {longDocumentFixtures} from './support/large-document-fixtures.mjs';
+import {canonicalizeRaw} from '../scripts/canonical-reference/reference.mjs';
 const literal=name=>readFileSync(`contracts/dom/v1/expected/${name}.canonical.json`,'utf8');
 const wire=name=>readFileSync(`contracts/dom/v1/inputs/${name}.json`,'utf8');
 const call=(page,method,...args)=>page.evaluate(({method,args})=>window.domHost[method](...args),{method,args});
@@ -246,6 +247,132 @@ test('OSR-277 mounted scene break insert and keyboard deletion preserve a neighb
   expect(docEvents(afterDelete)).toHaveLength(2);
   expect(afterDelete.failures).toEqual([]);
   await expect(host.locator('hr.editor-scene-break')).toHaveCount(0);
+});
+
+function approvedMedia(caseId) {
+  const family = caseId === 'DOC-022' ? 'mixed' : 'positive';
+  const corpus = JSON.parse(readFileSync(`contracts/kwdj/v1/fixtures/${family}.json`, 'utf8'));
+  const fixture = corpus.fixtures.find(item => item.id === caseId).cases[0];
+  const media = fixture.kwdj.content.find(node => node.type === 'media_image');
+  expect(fixture.input.identity_state.existing_media_ids).toContain(media.attrs.media_asset_id);
+  return media;
+}
+
+test('OSR-141 mounted media retains its accessible name and caption during keyboard delete and Undo', async ({ page }) => {
+  // DOC-013 supplies authored alt and a caption, DOC-022 supplies escaping-sensitive alt.
+  const media = approvedMedia('DOC-013');
+  const escapedMedia = approvedMedia('DOC-022');
+  const decorative = approvedMedia('DOC-027');
+  delete decorative.attrs.alt;
+  decorative.attrs.decorative = true;
+  const paragraph = text => ({ type: 'paragraph', content: [{ type: 'text', text }] });
+  const doc = content => canonicalizeRaw(JSON.stringify({ schema: 'klenwriter.document', schema_version: 1, profile: 'prose', content }));
+  const left = paragraph('Before');
+  const right = paragraph('After');
+  const source = doc([left, media, right, escapedMedia, decorative]);
+  const removed = doc([left, right, escapedMedia, decorative]);
+  const mediaIds = [...new Set([media, escapedMedia, decorative].map(block => block.attrs.media_asset_id))];
+  const contentRequests = [];
+  page.on('request', request => {
+    if (['fetch', 'xhr', 'image'].includes(request.resourceType())
+      && new URL(request.url()).pathname !== '/favicon.ico') contentRequests.push(request.url());
+  });
+  const { id, ready, diagnostic, nativeResponse } = await call(page, 'mount', { source, mediaIds });
+  expect(ready, JSON.stringify({ diagnostic, nativeResponse })).toBe('ready');
+
+  const host = page.locator(`#${id}`);
+  const roots = host.locator(':scope > [data-editor-node]');
+  const placeholders = host.locator('.editor-media-placeholder');
+  const namedPlaceholder = host.getByRole('group');
+  await expect(placeholders).toHaveCount(3);
+  await expect(namedPlaceholder).toHaveCount(2);
+  await expect(namedPlaceholder.nth(0)).toHaveAccessibleName(media.attrs.alt);
+  await expect(namedPlaceholder.nth(1)).toHaveAccessibleName(escapedMedia.attrs.alt);
+  expect(await placeholders.nth(2).getAttribute('aria-label')).toBeNull();
+  expect(await placeholders.evaluateAll(elements => elements.map(element => {
+    const style = getComputedStyle(element, '::before');
+    return [style.display, style.borderTopStyle];
+  }))).toEqual([['block', 'dashed'], ['block', 'dashed'], ['block', 'dashed']]);
+  const caption = media.content[0].content.map(leaf => leaf.text).join('');
+  await expect(roots.nth(1).locator('p')).toHaveText(caption);
+  expect(await roots.nth(1).locator('p').evaluate(element => element.isContentEditable)).toBe(true);
+  await expect(host.locator('img[src], picture, [srcset], [onerror]')).toHaveCount(0);
+
+  await call(page, 'select', id, '', 1, '', 2);
+  const selected = await checkpoint(page, id, 'whole media root offsets before trusted deletion');
+  expect(selected.canonical).toBe(source);
+  expect(selected.actualSelection).toMatchObject({ anchorOffset: 1, focusOffset: 2, inside: true });
+  const gap = index => ({ kind: 'child', parent: selected.state.root, index, affinity: 'after' });
+  expect(selected.state.selection).toEqual({ anchor: gap(1), focus: gap(2) });
+  const originalBlock = stateRow(selected, '/1');
+  const leftId = stateRow(selected, '/0').id;
+  const rightId = stateRow(selected, '/2').id;
+  expect(originalBlock.type_id).toBe('org.klenwriter.kwdj/media_image');
+  expect(originalBlock.attributes.media_asset_id.value).toBe(media.attrs.media_asset_id);
+  const deleteWithKeyboard = async () => {
+    await expect(host).toBeFocused();
+    await host.evaluate(element => {
+      element.mediaDeleteInput = null;
+      element.addEventListener('beforeinput', event => {
+        element.mediaDeleteInput = {
+          inputType: event.inputType, trusted: event.isTrusted, prevented: event.defaultPrevented,
+        };
+      }, { once: true });
+    });
+    await page.keyboard.press('Delete');
+    const input = await host.evaluate(element => element.mediaDeleteInput);
+    expect(input).toMatchObject({ trusted: true, prevented: true });
+    expect(['deleteContentForward', 'deleteContentBackward']).toContain(input.inputType);
+    return input;
+  };
+
+  observations.get(page).mediaDeleteInput = await deleteWithKeyboard();
+  const after = await checkpoint(page, id, 'trusted Delete published exactly one whole-media removal');
+  expect(after.canonical).toBe(removed);
+  expect(stateRow(after, '/0').id).toBe(leftId);
+  expect(stateRow(after, '/1').id).toBe(rightId);
+  history(after, 1, 0);
+  expect(docEvents(after)).toHaveLength(1);
+  expect(after.failures).toEqual([]);
+  await expect(namedPlaceholder).toHaveCount(1);
+
+  await recordHistoryKeys(page, id);
+  await page.keyboard.press('Meta+KeyZ');
+  const undone = await checkpoint(page, id, 'trusted Undo revived the original media and caption');
+  expect(undone.canonical).toBe(source);
+  expect(stateRow(undone, '/1').id).toBe(originalBlock.id);
+  expect(stateRow(undone, '/1').attributes).toEqual(originalBlock.attributes);
+  expect(await historyKeys(page, id)).toEqual([{
+    code: 'KeyZ', isTrusted: true, metaKey: true, ctrlKey: false, shiftKey: false, defaultPrevented: true,
+  }]);
+  history(undone, 0, 1);
+  expect(docEvents(undone)).toHaveLength(2);
+  expect(undone.failures).toEqual([]);
+  await expect(namedPlaceholder.nth(0)).toHaveAccessibleName(media.attrs.alt);
+  await expect(roots.nth(1).locator('p')).toHaveText(caption);
+
+  const editedMedia = structuredClone(media);
+  editedMedia.content[0].content[0].text = 'Ппись';
+  await call(page, 'select', id, '/1/0/0', 1, '/1/0/0', 3);
+  observations.get(page).captionDeleteInput = await deleteWithKeyboard();
+  const edited = await checkpoint(page, id, 'trusted Delete removed only the selected caption text');
+  expect(edited.canonical).toBe(doc([left, editedMedia, right, escapedMedia, decorative]));
+  expect(stateRow(edited, '/1').id).toBe(originalBlock.id);
+  expect(stateRow(edited, '/1').attributes).toEqual(originalBlock.attributes);
+  expect(edited.failures).toEqual([]);
+  history(edited, 1, 0);
+  expect(docEvents(edited)).toHaveLength(3);
+  await expect(roots.nth(1).locator('p')).toHaveText('Ппись');
+
+  await page.keyboard.press('Meta+KeyZ');
+  const captionUndone = await checkpoint(page, id, 'trusted Undo restored the selected caption text');
+  expect(captionUndone.canonical).toBe(source);
+  expect(captionUndone.failures).toEqual([]);
+  history(captionUndone, 0, 1);
+  expect(docEvents(captionUndone)).toHaveLength(4);
+  await expect(roots.nth(1).locator('p')).toHaveText(caption);
+  await expect(host.locator('img[src], picture, [srcset], [onerror]')).toHaveCount(0);
+  expect(contentRequests).toEqual([]);
 });
 
 test('T02 selected-empty join restores surviving DOM caret before the first structural mutation',async({page})=>{
@@ -516,8 +643,16 @@ test('closed payload coverage refuses unsupported targets, marks, recipes and ra
   const {id}=await call(page,'mount',{fixture:'D0'});await call(page,'select',id,'/0/2',2);await call(page,'command',id,{kind:'insert_text',text:'X'});await call(page,'mark',id,'P1','/0');const before=await checkpoint(page,id,'closed payload before');
   const command=(name,payload)=>({kind:'command',command:{id:`org.klenwriter.kwdj/command/${name}`,payload_json:JSON.stringify(payload)},history_hint:{kind:'isolated'}});
   const unknownMark={type_id:'org.example/unrendered_mark',attributes:{}};
+  const media = approvedMedia('DOC-013');
+  media.attrs.align = 'center';
+  const mediaFragment = JSON.stringify({
+    format_id: 'org.klenwriter.kwdj/clipboard-fragment/1', mode: 'prose',
+    source_profile: { profile_id: 'org.klenwriter.kwdj', profile_version: '1.0.0', codec_id: 'org.klenwriter.kwdj/json', wire_version: 1 },
+    kind: 'blocks', content: [media], open_start: false, open_end: false,
+  });
   const requests=[
     ['unsupported-target',command('insert-block',{kind:'insert_block',target:{kind:'media'}}),'dom.command_unsupported'],
+    ['native-only-media-fragment',command('insert-fragment',{kind:'insert_fragment',fragment_json:mediaFragment}),'dom.command_unsupported'],
     ['unsupported-mark',command('toggle-mark',{kind:'toggle_mark',mark:unknownMark}),'dom.command_unsupported'],
     ['closed-mark-attrs',command('toggle-mark',{kind:'toggle_mark',mark:{type_id:'org.klenwriter.kwdj/strong',attributes:{extra:{kind:'boolean',value:true}}}}),'dom.command_unsupported'],
     ['stored-marks',{kind:'set_stored_marks',marks:[unknownMark]},'dom.command_unsupported'],

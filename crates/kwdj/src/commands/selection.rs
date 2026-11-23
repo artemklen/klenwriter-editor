@@ -256,7 +256,10 @@ impl<I: Copy + Eq + Ord> Range<I> {
                 continue;
             }
             let n = v.node(r.id).ok_or(SelectionTextError::Invalid)?;
-            if !basic(n.type_id) {
+            let inside_caption = r.content_start <= self.lo && self.hi <= r.content_end;
+            let media_edit =
+                editing && local(n.type_id) == "media_image" && (self.whole(r) || inside_caption);
+            if !basic(n.type_id) && !media_edit {
                 return Err(SelectionTextError::Limit(
                     "selection_text.unsupported_context",
                 ));

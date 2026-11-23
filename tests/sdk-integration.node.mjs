@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createCommand, createEditor, loadSdk, loadSdkV2 } from '../packages/sdk/dist/index.js';
 import { kwdjCommand } from '../packages/kwdj/dist/index.js';
+import { canonicalizeRaw } from '../scripts/canonical-reference/reference.mjs';
 
 let modulePromise;
 const productionModule = () => modulePromise ??= loadSdk({ wasm: new Uint8Array(readFileSync(new URL('../packages/wasm/dist/editor_wasm_bg.wasm', import.meta.url))) });
@@ -197,6 +198,88 @@ test('packaged SDK2 preserves the scene break through insert, remove, clipboard 
       accepted(await reopened.ready);
       assert.equal(canonical(reopened), withScene);
       assert.equal(node(reopened, root(reopened).children[1]).primitive, 'block_atom');
+    } finally {
+      accepted(await settled(reopened.destroy()));
+    }
+  } finally {
+    accepted(await settled(editor.destroy()));
+    assert.deepEqual(counts(module), baseline);
+  }
+});
+
+test('OSR-141 packaged SDK2 preserves media identity and caption through move, clipboard, history and reopen', async () => {
+  const packet = JSON.parse(readFileSync(new URL('../artifacts/extensions/packet.json', import.meta.url)));
+  const corpus = JSON.parse(readFileSync(new URL('../contracts/kwdj/v1/fixtures/positive.json', import.meta.url)));
+  const fixture = corpus.fixtures.find(item => item.id === 'DOC-013').cases[0];
+  const media = fixture.kwdj.content.find(item => item.type === 'media_image');
+  const mediaId = media.attrs.media_asset_id;
+  assert(fixture.input.identity_state.existing_media_ids.includes(mediaId));
+  const wasm = readFileSync(new URL('../packages/wasm/dist/editor_wasm_bg.wasm', import.meta.url));
+  const module = await loadSdkV2({ wasm: new Uint8Array(wasm) });
+  const baseline = counts(module);
+  const options = {
+    abi: 'editor-sdk/2', build_id: module.manifest.build_id, profile: packet.kwdjProfile,
+    admission: 'validate', access: 'editable', registry_json: packet.kwdjRegistryJson,
+    profile_options_json: JSON.stringify({ identities: { media: [{ id: mediaId, status: 'exists' }], references: [] }, limits: null }),
+  };
+  const left = document('Before').content[0];
+  const right = document('After').content[0];
+  const expected = content => canonicalizeRaw(JSON.stringify({ ...document(''), content }));
+  const initial = expected([left, media, right]);
+  const moved = expected([left, right, media]);
+  const removed = expected([left, right]);
+  const make = input => createEditor({ input: new TextEncoder().encode(input), options, loader: async () => module });
+  const editor = make(initial);
+  const submit = request => accepted(completed(editor.submit({ stamp: editor.capture(), ...request })));
+  const execute = intent => assert.equal(accepted(completed(command(editor, intent))).effect, 'changed');
+  const history = (direction, bytes) => {
+    submit({ kind: 'history', direction });
+    assert.equal(canonical(editor), bytes);
+  };
+  try {
+    accepted(await editor.ready);
+    const parent = state(editor).root;
+    const [leftId, originalId, rightId] = root(editor).children;
+    const original = node(editor, originalId);
+    assert.equal(original.attributes.media_asset_id.value, mediaId);
+    const gap = index => ({ kind: 'child', parent, index, affinity: 'after' });
+    const selectMedia = (start, end) => submit({
+      kind: 'set_selection', selection: { anchor: gap(start), focus: gap(end) },
+    });
+
+    execute({ kind: 'move', node: originalId, parent, before_index: 3 });
+    assert.equal(canonical(editor), moved);
+    assert.deepEqual(root(editor).children, [leftId, rightId, originalId]);
+    history('undo', initial);
+    history('redo', moved);
+    history('undo', initial);
+
+    selectMedia(1, 2);
+    const stamp = editor.capture();
+    const { fragment_json: fragment } = accepted(editor.read({ kind: 'selection_fragment', stamp, max_bytes: 8192 }));
+    const copied = JSON.parse(fragment);
+    assert.deepEqual([copied.kind, copied.content, copied.open_start, copied.open_end], ['blocks', [media], false, false]);
+    assert.deepEqual(editor.capture(), stamp);
+    execute({ kind: 'delete_selection' });
+    assert.equal(canonical(editor), removed);
+    history('undo', initial);
+    assert.equal(root(editor).children[1], originalId);
+    history('redo', removed);
+
+    selectMedia(1, 1);
+    const paste = createCommand('org.klenwriter.kwdj/command/insert-fragment', { kind: 'insert_fragment', fragment_json: fragment });
+    assert.equal(submit({ kind: 'command', command: paste, history_hint: { kind: 'isolated' } }).effect, 'changed');
+    history('undo', removed);
+    history('redo', initial);
+    const pasted = root(editor).children[1];
+    assert.notEqual(pasted, originalId);
+    assert.deepEqual(node(editor, pasted).attributes, original.attributes);
+
+    const reopened = make(canonical(editor));
+    try {
+      accepted(await reopened.ready);
+      assert.equal(canonical(reopened), initial);
+      assert.deepEqual(node(reopened, root(reopened).children[1]).attributes, original.attributes);
     } finally {
       accepted(await settled(reopened.destroy()));
     }

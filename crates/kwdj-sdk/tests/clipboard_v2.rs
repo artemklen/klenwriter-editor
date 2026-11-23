@@ -22,7 +22,10 @@ fn open_with_limits(source: &Value, limits: Value) -> DistributionSession {
     open_bytes(source.to_string().as_bytes(), limits)
 }
 fn open_bytes(source: &[u8], limits: Value) -> DistributionSession {
-    let options = json!({"abi":"editor-sdk/2","build_id":BUILD,"profile":editor_kwdj_sdk::manifest().profiles[0],"admission":"validate","access":"editable","registry_json":serde_json::to_string(&editor_kwdj::registry::registry_descriptor()).unwrap(),"profile_options_json":json!({"identities":{"media":[],"references":[]},"limits":limits}).to_string()});
+    open_bytes_with_media(source, limits, json!([]))
+}
+fn open_bytes_with_media(source: &[u8], limits: Value, media: Value) -> DistributionSession {
+    let options = json!({"abi":"editor-sdk/2","build_id":BUILD,"profile":editor_kwdj_sdk::manifest().profiles[0],"admission":"validate","access":"editable","registry_json":serde_json::to_string(&editor_kwdj::registry::registry_descriptor()).unwrap(),"profile_options_json":json!({"identities":{"media":media,"references":[]},"limits":limits}).to_string()});
     let distribution = Distribution::new(BUILD, vec![Box::new(KwdjFactory)]).unwrap();
     let session = distribution.open(source, &options.to_string());
     assert!(matches!(
@@ -688,4 +691,182 @@ fn empty_open_paragraph_at_collapsed_caret_is_an_exact_internal_splice_noop() {
     assert_eq!(snapshot(&mut s), source);
     assert_eq!(role(&mut s, &[0]), block);
     assert_eq!(role(&mut s, &[0, 0]), leaf);
+}
+
+fn approved_media(case_id: &str) -> (Value, Value) {
+    let corpus = if case_id == "DOC-022" {
+        include_str!("../../../contracts/kwdj/v1/fixtures/mixed.json")
+    } else {
+        include_str!("../../../contracts/kwdj/v1/fixtures/positive.json")
+    };
+    let corpus: Value = serde_json::from_str(corpus).unwrap();
+    let case = corpus["fixtures"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|fixture| fixture["id"] == case_id)
+        .unwrap()["cases"][0]
+        .clone();
+    assert_eq!(case["expected"]["outcome"], "accepted");
+    let media = case["kwdj"]["content"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|node| node["type"] == "media_image")
+        .unwrap()
+        .clone();
+    let id = &media["attrs"]["media_asset_id"];
+    assert!(
+        case["input"]["identity_state"]["existing_media_ids"]
+            .as_array()
+            .unwrap()
+            .contains(id)
+    );
+    (case["kwdj"]["profile"].clone(), media)
+}
+
+#[test]
+fn osr141_media_fragment_reinsertion_move_and_history_preserve_canonical_bytes() {
+    for (case_id, decorative) in [
+        ("DOC-013", false),
+        ("DOC-027", false),
+        ("DOC-022", false),
+        ("DOC-027", true),
+    ] {
+        let (mode, mut media) = approved_media(case_id);
+        let mode = mode.as_str().unwrap();
+        if decorative {
+            let attrs = media["attrs"].as_object_mut().unwrap();
+            attrs.remove("alt");
+            attrs.insert("decorative".into(), json!(true));
+        }
+        let left = p("Before");
+        let right = p("After");
+        let initial = doc(mode, json!([left, media, right])).to_string();
+        let without_media = doc(mode, json!([left, right])).to_string();
+        let moved = doc(mode, json!([left, right, media])).to_string();
+        let facts = json!([{"id":media["attrs"]["media_asset_id"],"status":"exists"}]);
+        let mut session = open_bytes_with_media(initial.as_bytes(), Value::Null, facts.clone());
+        assert_eq!(canonical_snapshot(&mut session), initial, "{case_id}");
+        let root = state(&mut session)["root"].clone();
+        let media_id = role(&mut session, &[1]);
+        let projection = node(&mut session, &media_id);
+        assert_eq!(projection["primitive"], "container", "{case_id}");
+        assert_eq!(projection["type_id"], "org.klenwriter.kwdj/media_image");
+
+        select(&mut session, gap(root.clone(), 1), gap(root.clone(), 2));
+        let stamp = state(&mut session)["stamp"].clone();
+        let extracted = call(
+            &mut session,
+            json!({"kind":"selection_fragment","stamp":stamp,"max_bytes":8192}),
+        );
+        assert_eq!(extracted["status"], "ok", "{case_id}: {extracted}");
+        assert_eq!(extracted["value"]["empty"], false);
+        let clipboard = extracted["value"]["fragment_json"].as_str().unwrap();
+        assert_eq!(
+            serde_json::from_str::<Value>(clipboard).unwrap(),
+            fragment(mode, "blocks", json!([media]), false, false),
+            "{case_id}"
+        );
+        assert_eq!(state(&mut session)["stamp"], stamp);
+        assert_eq!(canonical_snapshot(&mut session), initial);
+
+        let move_reply = command(
+            &mut session,
+            "org.klenwriter.kwdj/command/move",
+            json!({"kind":"move","node":media_id,"parent":root,"before_index":3}),
+        );
+        assert_eq!(move_reply["value"]["effect"], "changed", "{move_reply}");
+        assert_eq!(canonical_snapshot(&mut session), moved);
+        assert_eq!(role(&mut session, &[2]), media_id);
+        undo(&mut session);
+        assert_eq!(canonical_snapshot(&mut session), initial);
+        history(&mut session, "redo");
+        assert_eq!(canonical_snapshot(&mut session), moved);
+        undo(&mut session);
+
+        let remove_reply = command(
+            &mut session,
+            "org.klenwriter.kwdj/command/remove",
+            json!({"kind":"remove","node":media_id}),
+        );
+        assert_eq!(remove_reply["value"]["effect"], "changed", "{remove_reply}");
+        assert_eq!(canonical_snapshot(&mut session), without_media);
+        select(&mut session, gap(root.clone(), 1), gap(root, 1));
+        let paste_reply = command(
+            &mut session,
+            COMMAND,
+            json!({"kind":"insert_fragment","fragment_json":clipboard}),
+        );
+        assert_eq!(paste_reply["value"]["effect"], "changed", "{paste_reply}");
+        assert_ne!(role(&mut session, &[1]), media_id);
+        assert_eq!(canonical_snapshot(&mut session), initial);
+        undo(&mut session);
+        assert_eq!(canonical_snapshot(&mut session), without_media);
+        history(&mut session, "redo");
+        let exported = canonical_snapshot(&mut session);
+        assert_eq!(exported, initial);
+        let mut reopened = open_bytes_with_media(exported.as_bytes(), Value::Null, facts);
+        assert_eq!(canonical_snapshot(&mut reopened), initial);
+    }
+}
+
+#[test]
+fn osr141_delete_selection_respects_media_and_caption_boundaries() {
+    let (_, media) = approved_media("DOC-013");
+    let left = p("Before");
+    let right = p("After");
+    let initial = doc("prose", json!([left, media, right])).to_string();
+    let removed = doc("prose", json!([left, right])).to_string();
+    let facts = json!([{"id":media["attrs"]["media_asset_id"],"status":"exists"}]);
+    let mut session = open_bytes_with_media(initial.as_bytes(), Value::Null, facts);
+    let root = state(&mut session)["root"].clone();
+    let exact_media = role(&mut session, &[1]);
+    let caption_leaf = role(&mut session, &[1, 0, 0]);
+
+    let mut edited_media = media.clone();
+    edited_media["content"][0]["content"][0]["text"] = json!("Ппись");
+    let edited = doc("prose", json!([left, edited_media, right])).to_string();
+    select(
+        &mut session,
+        text(caption_leaf.clone(), 1),
+        text(caption_leaf.clone(), 3),
+    );
+    let caption_edit = command(
+        &mut session,
+        "org.klenwriter.kwdj/command/delete-selection",
+        json!({"kind":"delete_selection"}),
+    );
+    assert_eq!(caption_edit["value"]["effect"], "changed", "{caption_edit}");
+    assert_eq!(canonical_snapshot(&mut session), edited);
+    assert_eq!(role(&mut session, &[1]), exact_media);
+    undo(&mut session);
+    assert_eq!(canonical_snapshot(&mut session), initial);
+
+    // A range outside the caption and ending inside it cannot remove the media.
+    select(&mut session, gap(root.clone(), 1), text(caption_leaf, 1));
+    let before_partial = state(&mut session);
+    let partial = command(
+        &mut session,
+        "org.klenwriter.kwdj/command/delete-selection",
+        json!({"kind":"delete_selection"}),
+    );
+    assert_eq!(partial["status"], "refused", "{partial}");
+    assert_eq!(state(&mut session), before_partial);
+    assert_eq!(canonical_snapshot(&mut session), initial);
+
+    select(&mut session, gap(root.clone(), 1), gap(root, 2));
+    let whole = command(
+        &mut session,
+        "org.klenwriter.kwdj/command/delete-selection",
+        json!({"kind":"delete_selection"}),
+    );
+    assert_eq!(whole["value"]["effect"], "changed", "{whole}");
+    assert_eq!(canonical_snapshot(&mut session), removed);
+    assert_eq!(state(&mut session)["history"]["undo_entries"], "1");
+    undo(&mut session);
+    assert_eq!(canonical_snapshot(&mut session), initial);
+    assert_eq!(role(&mut session, &[1]), exact_media);
+    history(&mut session, "redo");
+    assert_eq!(canonical_snapshot(&mut session), removed);
 }

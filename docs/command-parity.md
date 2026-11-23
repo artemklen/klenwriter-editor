@@ -44,3 +44,11 @@ literal mismatch, future provider, invalid mark/URL/identity, stale tokens,
 read-only and resource/journal/counter limits. `query_command` executes the same
 full preparation as execution; a row's UI owner is not replaced by a static hint.
 New public providers/descriptors must preserve this architecture in OSR-64.
+
+## Media block parity
+
+| Surface | Available behavior |
+| --- | --- |
+| Native and WASM SDK | Move, remove, whole-block KWDJ clipboard, Undo/Redo, and export/reopen preserve the media identity, alignment, accessibility attributes, and caption. |
+| Mounted KWDJ DOM | An offline placeholder has the authored accessible name for meaningful media. The caption remains editable. Keyboard deletion of a selected whole block and Undo preserve its attributes. |
+| Create media block | Unavailable in the library. Media selection and upload belong to a host picker. |

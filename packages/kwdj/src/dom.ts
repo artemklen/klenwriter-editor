@@ -80,6 +80,17 @@ const nodes: Record<string, NodeRendererDefinition> = {
       attributes: { title: checked.value ? 'Completed task' : 'Incomplete task' } } : refused(n.type_id, n);
   }),
   [`${prefix}scene_break`]: node('block_atom', [], () => ({ tag: 'hr', classes: ['editor-scene-break'], attributes: { role: 'separator', 'aria-label': 'Scene break' } })),
+  [`${prefix}media_image`]: node('container', ['align', 'alt', 'decorative', 'media_asset_id'], n => {
+    const { align, alt, decorative, media_asset_id } = n.attributes;
+    const alignment = attrString(align);
+    if (!attrString(media_asset_id) || !['none', 'center', 'wide'].includes(alignment ?? '')) return refused(n.type_id, n);
+    const classes = ['editor-media-placeholder'];
+    if (alignment === 'center' || alignment === 'wide') classes.push(`editor-media-${alignment}`);
+    if (alt === undefined && decorative?.kind === 'boolean' && decorative.value) return { tag: 'div', classes };
+    const name = attrString(alt);
+    if (!name || decorative !== undefined) return refused(n.type_id, n);
+    return { tag: 'div', classes, attributes: { role: 'group', 'aria-label': name.trim() ? name : 'Media placeholder' } };
+  }),
 };
 const marks: Record<string, MarkRendererDefinition> = {};
 for (const [name, tag] of [['strong', 'strong'], ['emphasis', 'em'], ['strike', 's'], ['code', 'code'], ['subscript', 'sub'], ['superscript', 'sup']] as const) {
@@ -125,6 +136,8 @@ function coveredClipboard(value: unknown): boolean {
   const visit = (node: unknown, depth: number): boolean => {
     if (++count > 8192 || depth > 64 || !object(node) || typeof node.type !== 'string'
       || Object.keys(node).some(k => !['type','attrs','text','marks','content'].includes(k))) return false;
+    // Media fragments belong to native clipboard and require an editing identity context.
+    if (node.type === 'media_image') return false;
     const renderer = Object.hasOwn(nodes, prefix + node.type) ? nodes[prefix + node.type] : null;
     if (!renderer) return false;
     const attrs = node.attrs === undefined ? {} : node.attrs;
