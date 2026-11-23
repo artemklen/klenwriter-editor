@@ -14,6 +14,7 @@ const importMap = JSON.stringify({ imports: {
   '@klenwriter/editor-wasm': '/packages/wasm/index.js',
   '@klenwriter/editor-sdk': '/packages/sdk/index.js',
   '@klenwriter/editor-dom': '/packages/dom/index.js',
+  '@klenwriter/editor-ui': '/packages/ui/index.js',
   '@klenwriter/editor-kwdj': '/packages/kwdj/index.js',
   '@klenwriter/editor-kwdj/dom': '/packages/kwdj/dom.js',
 } });
@@ -462,3 +463,102 @@ test('public vanilla stylesheet supports a host focus theme without remounting',
   expect(await documentCheckpoint(page)).toEqual(before);
   await disposeMode(page);
 });
+
+const addLabels = { ru: 'Добавить блок', en: 'Add block' };
+
+for (const [locale, nextLocale, destroyThrough] of [['ru', 'en', 'mounted'], ['en', 'ru', 'vanilla']]) {
+  test(`public vanilla locale ${locale} → ${nextLocale} preserves UI and tears it down via ${destroyThrough} destroy`, async ({ page }) => {
+    await page.addStyleTag({ url: '/ui-style.css' });
+    const initial = await page.evaluate(async locale => {
+      const api = await import('@klenwriter/editor');
+      const { options } = window.vanillaFixture;
+      const { element } = options;
+      const slots = Object.fromEntries(['toolbar', 'gutter', 'entry'].map(name => {
+        const slot = document.createElement('div');
+        slot.id = `vanilla-ui-${name}`;
+        element.after(slot);
+        return [name, slot];
+      }));
+      const slotListeners = [];
+      const capture = options => typeof options === 'boolean' ? options : Boolean(options?.capture);
+      for (const slot of Object.values(slots)) {
+        // Observe native registrations on these test-owned slots without replacing the listeners.
+        const add = slot.addEventListener.bind(slot);
+        const remove = slot.removeEventListener.bind(slot);
+        const find = (event, callback, capturing) => slotListeners.findIndex(listener =>
+          listener.slot === slot && listener.event === event && listener.callback === callback && listener.capturing === capturing);
+        slot.addEventListener = (event, callback, options) => {
+          add(event, callback, options);
+          const capturing = capture(options);
+          if (find(event, callback, capturing) === -1) slotListeners.push({ slot, event, callback, capturing });
+        };
+        slot.removeEventListener = (event, callback, options) => {
+          remove(event, callback, options);
+          const index = find(event, callback, capture(options));
+          if (index !== -1) slotListeners.splice(index, 1);
+        };
+      }
+      const editor = api.mount({
+        ...options,
+        locale,
+        ui: { slots, profile: () => ({ toolbar: [], insertions: [], blockActions: [], moves: () => [] }) },
+      });
+      const ready = await editor.ready;
+      const uiReady = await editor.uiReady;
+      const add = slots.entry.querySelector('[data-editor-ui-control="add"]');
+      window.vanillaMode = { api, editor, element, root: element.firstElementChild, slots, add, slotListeners };
+      return { ready, uiReady, slotListenerCount: slotListeners.length };
+    }, locale);
+    expect(initial.ready).toMatchObject({ status: 'ready' });
+    expect(initial.uiReady).toMatchObject({ status: 'ready' });
+    expect(initial.slotListenerCount).toBeGreaterThan(0);
+
+    const entry = page.locator('#vanilla-ui-entry');
+    const add = label => entry.getByRole('button', { name: label, exact: true });
+    await expect(add(addLabels[locale])).toBeVisible();
+    await expect(add(addLabels[locale])).toHaveText(addLabels[locale]);
+    const before = await documentCheckpoint(page);
+    expect(before).toMatchObject({
+      exported: { status: 'exported', canonicalJson: initialCanonical, revision: '0' },
+      sameRoot: true,
+    });
+
+    expect(await page.evaluate(locale => {
+      const { api, editor } = window.vanillaMode;
+      return api.update(editor, { locale });
+    }, nextLocale)).toEqual({ status: 'updated', locale: nextLocale });
+    await expect(add(addLabels[nextLocale])).toBeVisible();
+    await expect(add(addLabels[nextLocale])).toHaveText(addLabels[nextLocale]);
+    expect(await add(addLabels[nextLocale]).evaluate(button => button === window.vanillaMode.add)).toBe(true);
+    expect(await documentCheckpoint(page)).toEqual(before);
+
+    const cleanup = await page.evaluate(async destroyThrough => {
+      const { api, editor, element, slots, add, slotListeners } = window.vanillaMode;
+      const receipt = destroyThrough === 'mounted' ? editor.destroy() : api.destroy(editor);
+      const finished = receipt.sdk.status === 'queued' ? await receipt.sdk.completion : receipt.sdk.response;
+      const { sdk, dom } = editor.resources();
+      return {
+        finished,
+        lifecycle: editor.lifecycle,
+        emptyEditor: element.isConnected && element.childNodes.length === 0,
+        slots: Object.values(slots).map(slot => ({ connected: slot.isConnected, children: slot.childNodes.length })),
+        detachedAdd: !add.isConnected,
+        slotListenerCount: slotListeners.length,
+        sdkListeners: sdk.listeners,
+        domListeners: dom.listeners,
+        native: editor.nativeResources(),
+      };
+    }, destroyThrough);
+    expect(cleanup).toEqual({
+      finished: { status: 'ok', value: { kind: 'destroyed' } },
+      lifecycle: 'destroyed',
+      emptyEditor: true,
+      slots: Array.from({ length: 3 }, () => ({ connected: true, children: 0 })),
+      detachedAdd: true,
+      slotListenerCount: 0,
+      sdkListeners: 0,
+      domListeners: 0,
+      native: nativeEmpty,
+    });
+  });
+}

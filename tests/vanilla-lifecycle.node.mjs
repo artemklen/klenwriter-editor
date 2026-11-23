@@ -26,19 +26,20 @@ function exportDocument(editor, options) {
   return vanilla.export(editor, options);
 }
 
-test('the installed entry exposes lifecycle functions with editor-dom as its runtime dependency', async () => {
+test('the installed entry exposes lifecycle functions with declared DOM and UI runtime dependencies', async () => {
   for (const name of ['mount', 'update', 'subscribe', 'export', 'destroy']) {
     assert.equal(typeof vanilla[name], 'function', `Missing public lifecycle function ${name}`);
   }
   const entry = import.meta.resolve('@klenwriter/editor');
   const packageRoot = new URL('../', entry);
   const manifest = JSON.parse(await readFile(new URL('package.json', packageRoot), 'utf8'));
-  assert.deepEqual(Object.keys(manifest.dependencies), ['@klenwriter/editor-dom']);
+  const declared = ['@klenwriter/editor-dom', '@klenwriter/editor-ui'];
+  assert.deepEqual(Object.keys(manifest.dependencies).sort(), declared);
   for (const path of Object.values(manifest.exports['.'])) {
     const emitted = await readFile(new URL(path, packageRoot), 'utf8');
     const imports = emitted.matchAll(/(?:from\s+|import\s*(?:\(\s*)?)['"]([^'"]+)['"]/g);
     const dependencies = new Set(Array.from(imports, ([, specifier]) => specifier));
-    assert.deepEqual([...dependencies], ['@klenwriter/editor-dom'], path);
+    assert.deepEqual([...dependencies].sort(), declared, path);
   }
 });
 
@@ -200,4 +201,20 @@ test('the package exports the shared surface CSS and documents all of its hooks'
   const documented = Array.from(readme.matchAll(/^\|\s*`(--[\w-]+)`\s*\|/gm), ([, property]) => property).sort();
   assert.deepEqual(declared, ['--editor-focus-color']);
   assert.deepEqual(documented, declared);
+});
+
+test('locale options preserve a headless mount and refuse unsupported requests', () => {
+  const editor = {
+    lifecycle: 'ready',
+    setInteractionMode() { assert.fail('Locale changes must not change interaction mode'); },
+  };
+  assert.deepEqual(vanilla.update(editor, { locale: 'ru' }), {
+    status: 'ui_refused', code: 'ui.unavailable', action: null,
+  });
+  assert.deepEqual(vanilla.update(editor, { locale: 'fr' }), {
+    status: 'ui_refused', code: 'ui.invalid_options', action: null,
+  });
+  assert.deepEqual(vanilla.update(editor, { locale: 'en', disabled: true }), {
+    status: 'ui_refused', code: 'ui.invalid_options', action: null,
+  });
 });

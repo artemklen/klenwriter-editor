@@ -3,28 +3,46 @@ import { mountEditor } from '@klenwriter/editor-dom';
 import type {
   DomRefusal, InteractionMode, MountEditorOptions, MountedEditor, MountedMutation, MountedSubmission,
 } from '@klenwriter/editor-dom';
+import { createEditorUi } from '@klenwriter/editor-ui';
+import type { EditorUi, UiFailure, UiLocale } from '@klenwriter/editor-ui';
 
 export { artifactStage } from '@klenwriter/editor-dom';
-export type { MountedEditor as VanillaEditor } from '@klenwriter/editor-dom';
 
 export interface VanillaInteractionOptions {
   readonly readOnly?: boolean | undefined;
   readonly disabled?: boolean | undefined;
 }
-export type VanillaMountOptions = MountEditorOptions & VanillaInteractionOptions;
+export type VanillaUiOptions = Omit<Parameters<typeof createEditorUi>[0], 'editor' | 'editorElement' | 'locale'>;
+export type VanillaMountOptions = MountEditorOptions & VanillaInteractionOptions & {
+  readonly locale?: UiLocale | undefined;
+  readonly ui?: VanillaUiOptions | undefined;
+};
+export type VanillaEditor = MountedEditor & { readonly uiReady?: EditorUi['ready'] };
 export type VanillaInteractionUpdate =
-  | (VanillaInteractionOptions & { readonly readOnly: boolean })
-  | (VanillaInteractionOptions & { readonly disabled: boolean });
-export type VanillaUpdate = MountedMutation | VanillaInteractionUpdate;
+  (VanillaInteractionOptions & { readonly locale?: never }) &
+  ({ readonly readOnly: boolean } | { readonly disabled: boolean });
+export interface VanillaLocaleUpdate {
+  readonly locale: UiLocale;
+  readonly readOnly?: never;
+  readonly disabled?: never;
+}
+export type VanillaUpdate = MountedMutation | VanillaInteractionUpdate | VanillaLocaleUpdate;
 export type VanillaRevisionListener = Parameters<MountedEditor['subscribe']>[0];
 export interface VanillaExportOptions { readonly maxBytes?: number }
 
 type InteractionFlags = Readonly<{ readOnly: boolean; disabled: boolean }>;
 type InteractionResult = ReturnType<MountedEditor['setInteractionMode']>;
+type UiRefusal = Extract<UiFailure, { readonly status: 'ui_refused' }>;
+export type VanillaLocaleResult = { readonly status: 'updated'; readonly locale: UiLocale } | UiRefusal;
+interface AttachedUi {
+  readonly ui: EditorUi;
+  ready: boolean;
+}
 interface InteractionState {
   readonly setMode: MountedEditor['setInteractionMode'];
   flags: InteractionFlags;
   applying: boolean;
+  chrome?: AttachedUi;
 }
 const interactionByEditor = new WeakMap<MountedEditor, InteractionState>();
 const editableFlags: InteractionFlags = { readOnly: false, disabled: false };
@@ -38,11 +56,22 @@ export type VanillaExportResult =
   // A host can retry the original release through update() or destroy the mount.
   | { readonly status: 'export_failed'; readonly stage: 'release'; readonly response: ExportResponse; readonly snapshotHandle: string };
 
-function flag(descriptor: PropertyDescriptor | undefined): boolean | undefined {
+function optionValue(descriptor: PropertyDescriptor | undefined): unknown {
   if (descriptor === undefined) return undefined;
-  const valid = 'value' in descriptor && (descriptor.value === undefined || typeof descriptor.value === 'boolean');
-  if (!descriptor.enumerable || !valid) throw new TypeError('Invalid interaction option');
+  if (!descriptor.enumerable || !('value' in descriptor)) throw new TypeError('Invalid mount or update option');
   return descriptor.value;
+}
+
+function flag(descriptor: PropertyDescriptor | undefined): boolean | undefined {
+  const value = optionValue(descriptor);
+  if (value !== undefined && typeof value !== 'boolean') throw new TypeError('Invalid interaction option');
+  return value;
+}
+
+function localeOption(descriptor: PropertyDescriptor | undefined): UiLocale | undefined {
+  const value = optionValue(descriptor);
+  if (value !== undefined && value !== 'ru' && value !== 'en') throw new TypeError('Invalid locale');
+  return value;
 }
 
 function dataValue(input: unknown, key: string): unknown {
@@ -77,24 +106,40 @@ function applyMode(
   state.applying = true;
   try {
     const result = state.setMode(mode);
-    if (result.status === 'updated' && flags) state.flags = flags;
+    if (result.status === 'updated') {
+      if (flags) state.flags = flags;
+      state.chrome?.ui.refresh();
+    }
     return result;
   } finally {
     state.applying = false;
   }
 }
 
-function prepareMount(options: VanillaMountOptions): { options: MountEditorOptions; flags: InteractionFlags } {
-  const { readOnly: readOnlyOption, disabled: disabledOption, ...descriptors } = Object.getOwnPropertyDescriptors(options);
+interface PreparedMount {
+  readonly options: MountEditorOptions;
+  readonly flags: InteractionFlags;
+  readonly locale: UiLocale;
+  readonly ui: unknown;
+}
+
+function prepareMount(options: VanillaMountOptions): PreparedMount {
+  const {
+    readOnly: readOnlyOption, disabled: disabledOption, locale: localeDescriptor, ui: uiDescriptor, ...descriptors
+  } = Object.getOwnPropertyDescriptors(options);
   const readOnly = flag(readOnlyOption);
   const disabled = flag(disabledOption);
+  const locale = localeOption(localeDescriptor) ?? 'en';
+  const ui = optionValue(uiDescriptor);
   const mode = descriptors.mode?.value;
   const nativeOptions = dataValue(descriptors.editor?.value, 'options');
   const flags: InteractionFlags = {
     readOnly: readOnly ?? (mode === 'readOnly' || dataValue(nativeOptions, 'access') === 'read_only'),
     disabled: disabled ?? (mode === 'disabled'),
   };
-  if (!readOnlyOption && !disabledOption) return { options, flags };
+  if (!readOnlyOption && !disabledOption && !localeDescriptor && !uiDescriptor) {
+    return { options, flags, locale, ui };
+  }
 
   if (readOnly !== undefined || disabled !== undefined) {
     if (descriptors.mode && (!descriptors.mode.enumerable || !('value' in descriptors.mode)
@@ -104,11 +149,65 @@ function prepareMount(options: VanillaMountOptions): { options: MountEditorOptio
     descriptors.mode = { enumerable: true, value: interactionMode(flags) };
   }
   // Keep the original descriptors for the DOM owner's option validation.
-  return { options: Object.create(Object.getPrototypeOf(options), descriptors), flags };
+  return { options: Object.create(Object.getPrototypeOf(options), descriptors), flags, locale, ui };
 }
 
-export function mount(options: VanillaMountOptions): MountedEditor {
-  let prepared: ReturnType<typeof prepareMount>;
+function uiRefusal(code: UiRefusal['code']): UiRefusal {
+  return Object.freeze({ status: 'ui_refused', code, action: null });
+}
+
+function createChrome(editor: MountedEditor, prepared: PreparedMount): EditorUi | UiFailure {
+  try {
+    const descriptors = Object.getOwnPropertyDescriptors(prepared.ui);
+    if (Reflect.ownKeys(descriptors).some(key => key !== 'slots' && key !== 'profile' && key !== 'onResult')) {
+      return uiRefusal('ui.invalid_options');
+    }
+    return createEditorUi(Object.create(Object.getPrototypeOf(prepared.ui), {
+      ...descriptors,
+      editor: { enumerable: true, value: editor },
+      editorElement: { enumerable: true, value: dataValue(prepared.options, 'element') },
+      locale: { enumerable: true, value: prepared.locale },
+    }));
+  } catch {
+    return uiRefusal('ui.invalid_options');
+  }
+}
+
+function attachChrome(editor: MountedEditor, state: InteractionState, prepared: PreparedMount): void {
+  const ui = createChrome(editor, prepared);
+  if (!('ready' in ui)) {
+    Object.defineProperty(editor, 'uiReady', { value: Promise.resolve(ui) });
+    return;
+  }
+
+  const attachment: AttachedUi = { ui, ready: false };
+  state.chrome = attachment;
+  Object.defineProperty(editor, 'uiReady', {
+    value: ui.ready.then(result => {
+      attachment.ready = result.status === 'ready';
+      return result;
+    }),
+  });
+  const destroyEditor = editor.destroy.bind(editor);
+  Object.defineProperty(editor, 'destroy', {
+    configurable: true,
+    writable: true,
+    value(): ReturnType<MountedEditor['destroy']> {
+      const chrome = state.chrome;
+      delete state.chrome;
+      let receipt: ReturnType<MountedEditor['destroy']>;
+      try {
+        chrome?.ui.destroy();
+      } finally {
+        receipt = destroyEditor();
+      }
+      return receipt;
+    },
+  });
+}
+
+export function mount(options: VanillaMountOptions): VanillaEditor {
+  let prepared: PreparedMount;
   try {
     prepared = prepareMount(options);
   } catch {
@@ -127,6 +226,7 @@ export function mount(options: VanillaMountOptions): MountedEditor {
       });
     },
   });
+  if (prepared.ui !== undefined) attachChrome(editor, state, prepared);
   return editor;
 }
 
@@ -149,11 +249,29 @@ function updateInteraction(editor: MountedEditor, request: VanillaInteractionUpd
   return applyMode(editor, state, interactionMode(next), next);
 }
 
+function updateLocale(editor: MountedEditor, request: unknown): VanillaLocaleResult {
+  let locale: UiLocale | undefined;
+  try {
+    const options = Object.getOwnPropertyDescriptors(request);
+    if (Reflect.ownKeys(options).length === 1) locale = localeOption(options.locale);
+  } catch {
+    return uiRefusal('ui.invalid_options');
+  }
+  if (locale === undefined) return uiRefusal('ui.invalid_options');
+  if (editor.lifecycle === 'destroyed' || editor.lifecycle === 'disposing') return uiRefusal('ui.disposed');
+  const chrome = interactionByEditor.get(editor)?.chrome;
+  if (!chrome?.ready || editor.lifecycle !== 'ready') return uiRefusal('ui.unavailable');
+  chrome.ui.setLocale(locale);
+  return Object.freeze({ status: 'updated', locale });
+}
+
 export function update(editor: MountedEditor, request: MountedMutation): MountedSubmission;
 export function update(editor: MountedEditor, request: VanillaInteractionUpdate): InteractionResult;
-export function update(editor: MountedEditor, request: VanillaUpdate): MountedSubmission | InteractionResult;
-export function update(editor: MountedEditor, request: VanillaUpdate): MountedSubmission | InteractionResult {
+export function update(editor: MountedEditor, request: VanillaLocaleUpdate): VanillaLocaleResult;
+export function update(editor: MountedEditor, request: VanillaUpdate): MountedSubmission | InteractionResult | VanillaLocaleResult;
+export function update(editor: MountedEditor, request: VanillaUpdate): MountedSubmission | InteractionResult | VanillaLocaleResult {
   if (!request || typeof request !== 'object' || 'kind' in request) return editor.submit(request);
+  if ('locale' in request) return updateLocale(editor, request);
   return updateInteraction(editor, request);
 }
 
