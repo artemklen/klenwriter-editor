@@ -55,6 +55,12 @@ async function validateExport(page, canonical, descriptor, profileOptions) {
 
 const manifest = JSON.parse(readFileSync(join(example, 'package.json'), 'utf8'));
 assert.deepEqual(Object.keys(manifest).sort(), ['dependencies', 'name', 'private', 'type']);
+const profileSource = readFileSync(join(example, 'profile.mjs'), 'utf8');
+const notesSpecifiers = [...profileSource.matchAll(/['"](@example\/notes-extension[^'"\r\n]*)['"]/gu)]
+  .map(([, specifier]) => specifier).sort();
+assert.deepEqual(notesSpecifiers,
+  ['@example/notes-extension/d0.json', '@example/notes-extension/d1.json', '@example/notes-extension/dom']);
+assert.doesNotMatch(profileSource, /\.\.\/notes-extension\//u);
 const consumer = installAlphaConsumer(workspace, resolve(bundle), manifest.dependencies);
 let server;
 try {
@@ -64,7 +70,7 @@ try {
   const notesDirectory = join(consumer.directory, 'notes-extension');
   mkdirSync(notesDirectory);
   copyFileSync(notesDocumentPath, join(consumer.directory, 'notes-document.json'));
-  for (const member of ['dom.mjs', 'dom-inventory.mjs', 'd0.json']) {
+  for (const member of ['dom.mjs', 'dom-inventory.mjs', 'd0.json', 'd1.json']) {
     copyFileSync(join(notesSource, member), join(notesDirectory, member));
   }
   const entry = join(consumer.directory, 'app.mjs');
@@ -77,6 +83,7 @@ try {
     ['/notes-extension/dom.mjs', { type: 'text/javascript', file: join(notesDirectory, 'dom.mjs') }],
     ['/notes-extension/dom-inventory.mjs', { type: 'text/javascript', file: join(notesDirectory, 'dom-inventory.mjs') }],
     ['/notes-extension/d0.json', { type: 'application/json', file: join(notesDirectory, 'd0.json') }],
+    ['/notes-extension/d1.json', { type: 'application/json', file: join(notesDirectory, 'd1.json') }],
   ]);
   server = await serveAlphaConsumer(consumer,
     ({ importMap, imports }) => template
@@ -85,6 +92,7 @@ try {
     resources, {
       '@example/notes-extension/dom': '/notes-extension/dom.mjs',
       '@example/notes-extension/d0.json': '/notes-extension/d0.json',
+      '@example/notes-extension/d1.json': '/notes-extension/d1.json',
     });
 
   if (mode === '--serve') {
@@ -164,10 +172,34 @@ try {
         assert.equal(await canonical(), notesCanonical);
         await validateExport(page, await canonical(), notesDescriptor, notesOptions);
 
+        await press('Insert callout');
+        await waitForStatus('Callout inserted in the example copy');
+        const extensionOutput = page.locator('#extension-canonical');
+        const extended = JSON.parse(await extensionOutput.textContent());
+        const original = JSON.parse(notesCanonical);
+        assert.equal(extended.root.children.length, original.root.children.length + 1);
+        assert.deepEqual(extended.root.children[0], original.root.children[0]);
+        const [paragraph, callout] = extended.root.children;
+        assert.equal(paragraph.type, 'org.example.notes/paragraph');
+        assert.equal(callout.type, 'org.example.notes/callout');
+        assert.deepEqual(callout.attrs, { kind: 'warning', title: 'Review' });
+        assert.deepEqual(callout.children[0].children[0], {
+          type: 'org.example.notes/text', attrs: {}, children: [], text: 'Check this note',
+          marks: [{ type: 'org.example.notes/highlight', attrs: { color: 'mint' } }],
+        });
+        assert.equal(await extensionOutput.getAttribute('data-revision'), '1');
+        assert.equal(await canonical(), notesCanonical);
+        await press('Undo callout');
+        await waitForStatus('Undid the callout');
+        assert.equal(await extensionOutput.textContent(), notesCanonical);
+        assert.equal(await extensionOutput.getAttribute('data-revision'), '2');
+        assert.equal(await canonical(), notesCanonical);
+        await validateExport(page, await canonical(), notesDescriptor, notesOptions);
+
         assert.deepEqual(errors, []);
         results.push({
           engine, version: browser.version(),
-          editUndoRedoSaveReloadReopen: 'pass', profileSwitchAndValidation: 'pass',
+          editUndoRedoSaveReloadReopen: 'pass', profileSwitchAndValidation: 'pass', extensionAndUndo: 'pass',
         });
       } finally {
         await browser.close();

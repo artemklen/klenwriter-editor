@@ -25,6 +25,11 @@ button, select {
   padding: .375rem .75rem;
 }
 
+#notes-extension {
+  flex-basis: 100%;
+  min-width: 0;
+}
+
 #editor {
   border: 1px solid GrayText;
   min-height: 10rem;

@@ -18,6 +18,16 @@
     <button type="button" id="redo">Redo</button>
     <button type="button" id="save">Save</button>
     <button type="button" id="reopen">Reopen saved</button>
+    <section id="notes-extension" hidden>
+      <h2>Notes extension</h2>
+      <p>Run the D1 callout recipe on a copy of this note.</p>
+      <button type="button" id="insert-callout">Insert callout</button>
+      <button type="button" id="undo-callout" disabled>Undo callout</button>
+      <details>
+        <summary>Extension copy JSON</summary>
+        <pre id="extension-canonical"></pre>
+      </details>
+    </section>
   </fieldset>
   <p role="status"><span id="status">Loading editor</span></p>
   <div id="editor" role="textbox" aria-label="Document" aria-multiline="true"></div>

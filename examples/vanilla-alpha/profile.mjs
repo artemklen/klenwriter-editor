@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import { kwdjBasicRenderers } from '@klenwriter/editor-kwdj/dom';
-import { sdkAbiV2, sdkBuildId } from '@klenwriter/editor-sdk';
+import { createEditor, sdkAbiV2, sdkBuildId } from '@klenwriter/editor-sdk';
 import { notesD0Renderers } from '@example/notes-extension/dom';
 import registry from './kwdj-registry.json';
 import notesDocument from './notes-document.json';
@@ -41,3 +41,22 @@ export const profiles = {
     initialDocument: JSON.stringify(notesDocument),
   },
 };
+
+export async function createCalloutEditor(input, loader) {
+  const response = await fetch(import.meta.resolve('@example/notes-extension/d1.json'));
+  if (!response.ok) throw new Error('Could not load the Notes D1 registry');
+  const registryJson = await response.text();
+  const registryD1 = JSON.parse(registryJson);
+  return createEditor({
+    input,
+    loader,
+    options: {
+      ...profiles.notes.options,
+      profile: { ...profiles.notes.options.profile, extensions: registryD1.selected_extensions },
+      registry_json: registryJson,
+      profile_options_json: JSON.stringify({
+        root_blocks: ['org.example.notes/paragraph', 'org.example.notes/callout'], limits: null,
+      }),
+    },
+  });
+}
