@@ -781,7 +781,7 @@ test('packaged SDK2 deletes selected text wholly inside literary, warning and la
     ['spoiler', { label: 'Финал' }],
     ['disclosure', { label: 'Подробнее' }],
   ];
-  const intent = { kind: 'delete_selection' };
+  const intent = { kind: 'delete_selection', scope: 'profile_body' };
   const command = kwdjCommand(intent);
   for (const [type, attrs] of cases) {
     const blocks = text => [paragraph('Outside'), {
@@ -800,6 +800,7 @@ test('packaged SDK2 deletes selected text wholly inside literary, warning and la
       }
 
       osr185Select(editor, position(firstLeaf, 3), position(firstLeaf, 1));
+      osr183Denied(editor, command.id, { kind: 'delete_selection' }, initial, 'kwdj.command_unsupported_context', '/command');
       const result = osr183Wire(editor, command);
       assert.equal(accepted(result).effect, 'changed', JSON.stringify({ type, attrs }));
       assert.equal(canonical(editor), expected);

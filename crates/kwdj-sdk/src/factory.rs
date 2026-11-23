@@ -1567,7 +1567,7 @@ mod tests {
             ("disclosure", json!({"label":"Подробнее"})),
         ];
         let command = "org.klenwriter.kwdj/command/delete-selection";
-        let intent = json!({"kind":"delete_selection"});
+        let intent = json!({"kind":"delete_selection","scope":"profile_body"});
         let refusal = json!({"code":"kwdj.command_unsupported_context","path":"/command"});
         for (kind, attrs) in cases {
             let blocks = |text: &str| {
@@ -1603,6 +1603,13 @@ mod tests {
             }
 
             select(&mut session, point(&first, 3), point(&first, 1));
+            osr189_refused(
+                &mut session,
+                command,
+                json!({"kind":"delete_selection"}),
+                &refusal,
+                &initial,
+            );
             let result = osr183_command(&mut session, command, &intent, false);
             assert_eq!(
                 result["value"]["effect"], "changed",

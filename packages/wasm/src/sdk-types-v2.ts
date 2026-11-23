@@ -29,6 +29,10 @@ export type LabeledContainerKindV2 = "spoiler" | "disclosure";
 
 export type KwdjLabeledContainerIntentV2 = { "kind": "insert_block", target: LabeledContainerBlockTargetV2, } | { "kind": "set_container_label", node: string, label: string, } | { "kind": "wrap_labeled_container", container_kind: LabeledContainerKindV2, label: string, } | { "kind": "unwrap_labeled_container", node: string, };
 
+export type KwdjDeleteSelectionScopeV2 = "profile_body";
+
+export type KwdjScopedSelectionIntentV2 = { "kind": "delete_selection", scope: KwdjDeleteSelectionScopeV2, };
+
 export type KwdjTypingIntentV2 = { "kind": "insert_typed_text", text: string, origin: InputOriginV2, } | { "kind": "restore_typed_text", restore: RawInputRestoreV2, };
 
 export type KwdjTypingLocaleV2 = "ru" | "en";

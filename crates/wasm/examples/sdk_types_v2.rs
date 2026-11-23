@@ -31,6 +31,8 @@ fn main() {
         LabeledContainerBlockTargetV2,
         LabeledContainerKindV2,
         KwdjLabeledContainerIntentV2,
+        KwdjDeleteSelectionScopeV2,
+        KwdjScopedSelectionIntentV2,
         KwdjTypingIntentV2,
         KwdjTypingLocaleV2,
         KwdjTypingFeatureV2,

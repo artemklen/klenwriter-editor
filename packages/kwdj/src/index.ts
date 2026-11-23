@@ -2,11 +2,12 @@
 /** Profile-specific command construction; all semantic checks remain in Rust. */
 export { artifactStage } from '@klenwriter/editor-sdk';
 import { createCommand } from '@klenwriter/editor-sdk';
-import type { CommandDto, DeepReadonly, KwdjIntentDto, KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2, KwdjWarningIntentV2, RawInputRestoreV2 } from '@klenwriter/editor-sdk';
+import type { CommandDto, DeepReadonly, KwdjIntentDto, KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2, KwdjScopedSelectionIntentV2, KwdjWarningIntentV2, RawInputRestoreV2 } from '@klenwriter/editor-sdk';
 
-export type { KwdjIntentDto, KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2, KwdjWarningIntentV2, BlockTargetDto, ListKindDto, MarkDto } from '@klenwriter/editor-sdk';
+export type { KwdjIntentDto, KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2, KwdjScopedSelectionIntentV2, KwdjWarningIntentV2, BlockTargetDto, ListKindDto, MarkDto } from '@klenwriter/editor-sdk';
 
-type KwdjCommandIntent = KwdjIntentDto | KwdjLiteraryIntentV2 | KwdjWarningIntentV2 | KwdjLabeledContainerIntentV2;
+type KwdjCommandIntent = KwdjIntentDto | KwdjLiteraryIntentV2 | KwdjWarningIntentV2
+  | KwdjLabeledContainerIntentV2 | KwdjScopedSelectionIntentV2;
 const commandNames: Record<KwdjCommandIntent['kind'], string> = {
   enter: 'enter', shift_enter: 'shift-enter', toggle_mark: 'toggle-mark',
   set_link: 'set-link', unset_link: 'unset-link', insert_text: 'insert-text',

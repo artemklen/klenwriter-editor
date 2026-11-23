@@ -4,8 +4,8 @@ use crate::{
     convert::{diagnostic, profile_error},
     wire_v2::{
         KwdjClipboardIntentV2, KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2,
-        KwdjWarningIntentV2, LabeledContainerBlockTargetV2, LabeledContainerKindV2,
-        LiteraryBlockTargetV2, WarningBlockTargetV2, WarningKindV2,
+        KwdjScopedSelectionIntentV2, KwdjWarningIntentV2, LabeledContainerBlockTargetV2,
+        LabeledContainerKindV2, LiteraryBlockTargetV2, WarningBlockTargetV2, WarningKindV2,
     },
 };
 use editor_bridge::{BridgeAdapter, ClipboardContextData, SelectionFragmentData};
@@ -209,6 +209,11 @@ impl BridgeAdapter<KwdjProfile<'static>> for ClipboardAdapterV2 {
             }
         } else {
             match self.0.decode_command(key, command) {
+                Err(legacy) if command.id == KWDJ_COMMANDS[16].id => {
+                    editor_bridge::decode::<KwdjScopedSelectionIntentV2>(&command.payload_json)
+                        .map(|_| KwdjIntent::DeleteSelectionInProfileBody)
+                        .map_err(|_| legacy)
+                }
                 Err(legacy) if command.id == KWDJ_COMMANDS[9].id => {
                     match editor_bridge::decode(&command.payload_json) {
                         Ok(AdditionalInsertV2::InsertBlock { target }) => Ok(match target {

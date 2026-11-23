@@ -129,6 +129,7 @@ pub enum KwdjIntent<I> {
     DismissSlash,
     DeleteBackward,
     DeleteSelection,
+    DeleteSelectionInProfileBody,
     InsertFragment {
         fragment: clipboard::Fragment,
     },
@@ -313,7 +314,9 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::AcceptSlash { .. } => KWDJ_COMMANDS[13].id,
             KwdjIntent::DismissSlash => KWDJ_COMMANDS[14].id,
             KwdjIntent::DeleteBackward => KWDJ_COMMANDS[15].id,
-            KwdjIntent::DeleteSelection => KWDJ_COMMANDS[16].id,
+            KwdjIntent::DeleteSelection | KwdjIntent::DeleteSelectionInProfileBody => {
+                KWDJ_COMMANDS[16].id
+            }
             KwdjIntent::InsertFragment { .. } => CLIPBOARD_COMMAND_ID,
             KwdjIntent::InsertTypedText { .. } => TYPED_INPUT_COMMAND_ID,
             KwdjIntent::RestoreTypedText { .. } => RESTORE_INPUT_COMMAND_ID,
@@ -341,6 +344,7 @@ impl CommandProvider for KwdjProfile<'_> {
             | KwdjIntent::InsertLabeledContainer { .. }
             | KwdjIntent::WrapLabeledContainer { .. }
             | KwdjIntent::UnwrapLabeledContainer { .. }
+            | KwdjIntent::DeleteSelectionInProfileBody
                 if !self.clipboard_v2() =>
             {
                 return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());
@@ -355,8 +359,13 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::UnsetLink => inline::unset_link(view, state, plan)?,
             KwdjIntent::InsertText { text } => inline::insert_text(view, state, text, plan)?,
             KwdjIntent::DeleteBackward => delete::prepare(view, state, plan)?,
-            KwdjIntent::DeleteSelection => {
-                selection::prepare(view, state, self.clipboard_v2(), plan)?
+            KwdjIntent::DeleteSelection | KwdjIntent::DeleteSelectionInProfileBody => {
+                selection::prepare(
+                    view,
+                    state,
+                    matches!(intent, KwdjIntent::DeleteSelectionInProfileBody),
+                    plan,
+                )?
             }
             KwdjIntent::InsertFragment { fragment } => {
                 clipboard::prepare(self, *context, view, state, fragment, plan)?

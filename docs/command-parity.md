@@ -102,7 +102,8 @@ takes a container ID and keeps the child order and identities. KWDJ clipboard
 fragments preserve the label and body. The grammar refuses nesting either kind
 inside another of the same kind.
 
-SDK2 deletes selected text inside one text block in literary, warning, spoiler,
-and disclosure containers. The deletion preserves the enclosing container and
-its attributes. Selections crossing these container boundaries return a typed
-refusal.
+SDK2 accepts `{ kind: 'delete_selection', scope: 'profile_body' }` for text
+selected inside one text block in a literary, warning, spoiler, or disclosure
+container. KWDJ mounted input uses this scope. Deletion preserves the enclosing
+container and its attributes. Selections crossing container boundaries return
+a typed refusal. The unscoped command retains its existing selection contract.
