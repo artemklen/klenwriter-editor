@@ -4,7 +4,7 @@ import type { CreateEditorOptionsV2, DeepReadonly, EditorControllerV2, EventDto,
 import { admitCatalog, isRendererCatalog } from './catalog.js';
 import { domRefusal } from './refusal.js';
 import { fields, ownConfiguration, ownInput } from './ownership.js';
-import { createDomView } from './view.js';
+import { createDomView, domRegionLimits } from './view.js';
 import type { DomView } from './view.js';
 import { SelectionOwner } from './selection.js';
 import type { ResultFocusPermit } from './selection.js';
@@ -30,17 +30,32 @@ function inspectNodeTypes(controller: EditorControllerV2, allowed: ReadonlySet<s
   if (stateReply.value.kind !== 'state') return { failure: domRefusal('dom.presentation_unsupported', 'mount') };
 
   const { root, stamp } = stateReply.value.state;
-  const pending = [root];
+  const pending: { id: string; parent: string | null; depth: number }[] = [{ id: root, parent: null, depth: 0 }];
+  const visited = new Set<string>();
   const unsupported = new Set<string>();
   while (pending.length) {
-    const id = pending.pop()!;
-    const reply = controller.read({ kind: 'node', stamp, node: id });
+    const item = pending.pop()!;
+    if (item.depth > domRegionLimits.depth || visited.size >= domRegionLimits.nodes || visited.has(item.id)) {
+      return { failure: domRefusal('dom.reconcile_limit', 'mount', null, item.id) };
+    }
+    const reply = controller.read({ kind: 'node', stamp, node: item.id });
     if (reply.status !== 'ok') return { failure: reply };
     if (reply.value.kind !== 'node') return { failure: domRefusal('dom.presentation_unsupported', 'mount') };
-    const { type_id: type, children } = reply.value.node;
-    // The native synthetic root has no authored type.
-    if ((id !== root || type !== '') && !allowed.has(type)) unsupported.add(type);
-    for (const child of children) pending.push(child);
+    const node = reply.value.node;
+    const nodeStamp = node.stamp;
+    const matchesStamp = nodeStamp.session === stamp.session && nodeStamp.generation === stamp.generation
+      && nodeStamp.revision === stamp.revision && nodeStamp.selection_epoch === stamp.selection_epoch
+      && nodeStamp.history_epoch === stamp.history_epoch;
+    if (!matchesStamp || node.id !== item.id || node.parent !== item.parent
+        || item.parent === null && (node.primitive !== 'root' || node.type_id !== '')) {
+      return { failure: domRefusal('dom.presentation_unsupported', 'mount', null, item.id) };
+    }
+    visited.add(item.id);
+    if (item.parent !== null && !allowed.has(node.type_id)) unsupported.add(node.type_id);
+    if (node.children.length > domRegionLimits.nodes - visited.size - pending.length) {
+      return { failure: domRefusal('dom.reconcile_limit', 'mount', null, item.id) };
+    }
+    for (const child of node.children) pending.push({ id: child, parent: item.id, depth: item.depth + 1 });
   }
   return { unsupportedTypes: Object.freeze([...unsupported].sort()) };
 }

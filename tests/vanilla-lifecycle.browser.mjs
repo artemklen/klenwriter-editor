@@ -693,15 +693,16 @@ const tableFixture = JSON.parse(readFileSync(new URL('../contracts/kwdj/v1/fixtu
   .fixtures.find(fixture => fixture.id === 'DOC-010').cases.find(item => item.name === 'rectangular_table');
 const tableCanonical = canonicalizeRaw(JSON.stringify(tableFixture.kwdj));
 
-test('public vanilla alpha refuses DOC-010 before opening an editable session', async ({ page }) => {
-  const originalBytes = [...new TextEncoder().encode(tableCanonical)];
-  const actual = await page.evaluate(async originalBytes => {
+async function observeAlphaInput(page, canonical, duplicateRootChild = false) {
+  const originalBytes = [...new TextEncoder().encode(canonical)];
+  const actual = await page.evaluate(async ({ originalBytes, duplicateRootChild }) => {
     const api = await import('@klenwriter/editor');
     const { options, wasm } = window.vanillaFixture;
     const { element } = options;
     const constructors = [];
-    // Preserve the exact WASM module and its effects. Record the construction
-    // boundary and the original initialization response without replacing them.
+    let projectionOverrides = 0;
+    // Delegate to the packaged WASM. The controlled projection fault replaces
+    // one read-only response and leaves editable sessions untouched.
     class ObservedSession {
       constructor(bytes, configuration) {
         const { access, admission } = JSON.parse(configuration);
@@ -711,11 +712,23 @@ test('public vanilla alpha refuses DOC-010 before opening an editable session', 
       }
       initialization() {
         const wire = this.actual.initialization();
-        this.observation.initialization = JSON.parse(wire).status;
+        const reply = JSON.parse(wire);
+        this.observation.initialization = reply.status;
+        this.root = reply.value?.state?.root;
         return wire;
       }
       context() { return this.actual.context(); }
-      call(wire) { return this.actual.call(wire); }
+      call(wire) {
+        const result = this.actual.call(wire);
+        if (!duplicateRootChild || this.observation.access !== 'read_only') return result;
+        const request = JSON.parse(wire);
+        if (request.kind !== 'node' || request.node !== this.root) return result;
+        const reply = JSON.parse(result);
+        if (reply.status !== 'ok' || reply.value.kind !== 'node' || reply.value.node.children.length === 0) return result;
+        reply.value.node.children.push(reply.value.node.children[0]);
+        projectionOverrides++;
+        return JSON.stringify(reply);
+      }
       destroy() { this.actual.destroy(); }
       free() { this.actual.free(); }
     }
@@ -742,25 +755,19 @@ test('public vanilla alpha refuses DOC-010 before opening an editable session', 
       return {
         ready: { status: ready.status, diagnostic: ready.diagnostic, unsupportedTypes: ready.unsupportedTypes },
         reportedBytes, retainedBytes, retainedAfterMutation, callerBytes: Array.from(input),
-        constructors, afterRefusal, emptyAtRefusal, destroyed, afterDestroy: JSON.parse(wasm.resourceCounts()),
+        constructors, projectionOverrides, afterRefusal, emptyAtRefusal, destroyed, afterDestroy: JSON.parse(wasm.resourceCounts()),
         editableObserved: element.isContentEditable || mutations.some(record => record.oldValue === 'true'),
         emptyAfterDestroy: element.isConnected && element.childNodes.length === 0,
       };
     } finally {
       observer.disconnect();
     }
-  }, originalBytes);
+  }, { originalBytes, duplicateRootChild });
+  return { actual, originalBytes };
+}
+
+function expectAlphaOriginalAndCleanup({ actual, originalBytes }) {
   expect(actual.constructors).toEqual([{ access: 'read_only', admission: 'validate', initialization: 'ok' }]);
-  expect(actual.ready).toMatchObject({
-    status: 'dom_refused',
-    diagnostic: { code: 'dom.renderer_missing' },
-    unsupportedTypes: [
-      'org.klenwriter.kwdj/table',
-      'org.klenwriter.kwdj/table_cell',
-      'org.klenwriter.kwdj/table_header',
-      'org.klenwriter.kwdj/table_row',
-    ],
-  });
   for (const bytes of [actual.reportedBytes, actual.retainedBytes, actual.retainedAfterMutation, actual.callerBytes]) {
     expect(bytes).toEqual(originalBytes);
   }
@@ -770,6 +777,21 @@ test('public vanilla alpha refuses DOC-010 before opening an editable session', 
   expect(actual.destroyed).toEqual({ status: 'ok', value: { kind: 'destroyed' } });
   expect(actual.afterDestroy).toEqual(nativeEmpty);
   expect(actual.emptyAfterDestroy).toBe(true);
+}
+
+test('public vanilla alpha refuses DOC-010 before opening an editable session', async ({ page }) => {
+  const observation = await observeAlphaInput(page, tableCanonical);
+  expectAlphaOriginalAndCleanup(observation);
+  expect(observation.actual.ready).toMatchObject({
+    status: 'dom_refused',
+    diagnostic: { code: 'dom.renderer_missing' },
+    unsupportedTypes: [
+      'org.klenwriter.kwdj/table',
+      'org.klenwriter.kwdj/table_cell',
+      'org.klenwriter.kwdj/table_header',
+      'org.klenwriter.kwdj/table_row',
+    ],
+  });
 });
 
 const alphaDocuments = [
@@ -784,6 +806,16 @@ const alphaDocuments = [
     canonical: readFileSync(new URL('../contracts/dom/v1/expected/Notes-D0.canonical.json', import.meta.url), 'utf8'),
   },
 ];
+
+test('public vanilla alpha refuses a duplicate DOC-002 child in the native probe', async ({ page }) => {
+  const source = alphaDocuments.find(document => document.id === 'DOC-002');
+  const observation = await observeAlphaInput(page, source.canonical, true);
+  expect(observation.actual.projectionOverrides).toBe(1);
+  expect.soft(observation.actual.ready).toMatchObject({
+    status: 'dom_refused', diagnostic: { code: 'dom.reconcile_limit' },
+  });
+  expectAlphaOriginalAndCleanup(observation);
+});
 
 for (const { id, profile, canonical } of alphaDocuments) {
   test(`public vanilla alpha mounts, edits and re-exports ${id}`, async ({ page }) => {

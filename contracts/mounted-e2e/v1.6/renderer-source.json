@@ -77,8 +77,8 @@
     },
     {
       "path": "packages/dom/dist/mounted.js",
-      "bytes": 54215,
-      "sha256": "006b65114b21931e64b287d580a40f7f4fdd4d9c033801b77ed7dd9fc49f0405"
+      "bytes": 55323,
+      "sha256": "a24fe5ddbf876b3274dd3bf13102954bebfaaff9920c24353d27325429670573"
     },
     {
       "path": "packages/dom/dist/ownership.js",
@@ -553,8 +553,8 @@
     },
     {
       "path": "packages/dom/src/mounted.ts",
-      "bytes": 52588,
-      "sha256": "909689682388e7ed4b44864ed688d2b5dd38b6693079421570220b376193f2f2"
+      "bytes": 53692,
+      "sha256": "5f80c5da41be3103f73504addc57565a45a75c56670e4ffac1a1f0e27cb0d86d"
     },
     {
       "path": "packages/dom/src/text-fragments.ts",
