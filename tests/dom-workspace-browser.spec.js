@@ -198,6 +198,56 @@ test('T02 actual keyboard end split/join and six literal history/identity checkp
   expect(await call(page,'sameIdentity',id,'P2','/1')).toBe(true);expect(await call(page,'nativeSelectionMatches',id,'/0/2',2)).toBe(true);
 });
 
+test('OSR-277 mounted scene break insert and keyboard deletion preserve a neighboring caret', async ({ page }) => {
+  const left = { content: [{ text: 'До сцены', type: 'text' }], type: 'paragraph' };
+  const right = { content: [{ text: 'После сцены', type: 'text' }], type: 'paragraph' };
+  const documentBytes = content => JSON.stringify({ content, profile: 'prose', schema: 'klenwriter.document', schema_version: 1 });
+  const original = documentBytes([left, right]);
+  const inserted = documentBytes([left, { type: 'scene_break' }, right]);
+  const { id, ready } = await call(page, 'mount', { source: original });
+  expect(ready).toBe('ready');
+  await call(page, 'select', id, '', 1);
+  const before = await checkpoint(page, id, 'OSR-139 original document and root gap');
+  const leftLeaf = stateRow(before, '/0/0').id;
+  const rightLeaf = stateRow(before, '/1/0').id;
+  expect(before.canonical).toBe(original);
+  caret(before, before.state.root, 1, 'child');
+
+  const command = await call(page, 'command', id, { kind: 'insert_block', target: { kind: 'scene_break' } });
+  expect(command.response.status).toBe('ok');
+  const afterInsert = await checkpoint(page, id, 'OSR-139 exact inserted bytes and atom after edge');
+  expect(afterInsert.canonical).toBe(inserted);
+  const atom = stateRow(afterInsert, '/1').id;
+  const edge = { kind: 'edge', node: atom, side: 'after' };
+  expect(afterInsert.state.selection).toEqual({ anchor: edge, focus: edge });
+  const host = page.locator(`#${id}`);
+  await expect(host).toBeFocused();
+  await expect(host.locator('hr.editor-scene-break')).toHaveCount(1);
+  await host.evaluate(element => {
+    element.sceneBreakInput = null;
+    element.addEventListener('beforeinput', event => {
+      element.sceneBreakInput = {
+        inputType: event.inputType, trusted: event.isTrusted, prevented: event.defaultPrevented,
+      };
+    }, { once: true });
+  });
+
+  await page.keyboard.press('Backspace');
+  const input = await host.evaluate(element => element.sceneBreakInput);
+  expect(input).toEqual({ inputType: 'deleteContentBackward', trusted: true, prevented: true });
+  observations.get(page).sceneBreakInput = input;
+  const afterDelete = await checkpoint(page, id, 'keyboard deletion and caret at preceding text end');
+  expect(afterDelete.canonical).toBe(original);
+  expect(stateRow(afterDelete, '/0/0').id).toBe(leftLeaf);
+  expect(stateRow(afterDelete, '/1/0').id).toBe(rightLeaf);
+  caret(afterDelete, leftLeaf, 8);
+  expect(await call(page, 'nativeSelectionMatches', id, '/0/0', 8)).toBe(true);
+  expect(afterDelete.state.stamp.revision).toBe('2');
+  expect(docEvents(afterDelete)).toHaveLength(2);
+  expect(afterDelete.failures).toEqual([]);
+  await expect(host.locator('hr.editor-scene-break')).toHaveCount(0);
+});
+
 test('T02 selected-empty join restores surviving DOM caret before the first structural mutation',async({page})=>{
   const mounted=await call(page,'mount',{fixture:'D1-after-end-split'});expect(mounted.ready).toBe('ready');
   const id=mounted.id;await call(page,'select',id,'/1',0);

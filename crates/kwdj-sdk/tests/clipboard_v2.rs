@@ -371,6 +371,54 @@ fn prose_scene_break_survives_commands_clipboard_history_and_reopen() {
 }
 
 #[test]
+fn backspace_after_scene_break_preserves_a_valid_neighbor_caret() {
+    let scene = json!({"type":"scene_break"});
+    let command_id = "org.klenwriter.kwdj/command/delete-backward";
+    for (content, scene_index, remaining, text_offset) in [
+        (
+            json!([p("До сцены"), scene, p("После сцены")]),
+            1,
+            json!([p("До сцены"), p("После сцены")]),
+            Some(8),
+        ),
+        (
+            json!([scene, p("После сцены")]),
+            0,
+            json!([p("После сцены")]),
+            Some(0),
+        ),
+        (
+            json!([scene]),
+            0,
+            json!([{"type":"paragraph","content":[]}]),
+            None,
+        ),
+    ] {
+        let source = doc("prose", content);
+        let mut session = open(&source);
+        let atom = role(&mut session, &[scene_index]);
+        let after_atom = json!({"kind":"edge","node":atom,"side":"after"});
+        select(&mut session, after_atom.clone(), after_atom.clone());
+        let before = state(&mut session);
+        let response = command(&mut session, command_id, json!({"kind":"delete_backward"}));
+        assert_eq!(response["status"], "ok", "{response}");
+        assert_eq!(snapshot(&mut session), doc("prose", remaining));
+        let expected = match text_offset {
+            Some(offset) => text(role(&mut session, &[0, 0]), offset),
+            None => gap(role(&mut session, &[0]), 0),
+        };
+        assert_eq!(
+            state(&mut session)["selection"],
+            json!({"anchor":expected,"focus":expected})
+        );
+        assert_eq!(state(&mut session)["history"]["undo_entries"], "1");
+        undo(&mut session);
+        assert_eq!(snapshot(&mut session), source);
+        assert_eq!(state(&mut session)["selection"], before["selection"]);
+    }
+}
+
+#[test]
 fn invalid_source_mode_shape_and_stale_target_refuse_atomically() {
     let source = doc("prose", json!([p("e\u{301}x")]));
     let mut s = open(&source);

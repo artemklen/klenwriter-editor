@@ -1717,9 +1717,59 @@ fn needs_child(name: &str) -> bool {
             | "disclosure"
     )
 }
-fn remove<V: CandidateRead>(
+pub(super) enum RemovalCaret {
+    Gap,
+    AdjacentText,
+}
+
+fn adjacent_text_caret<V: CandidateRead>(
+    view: &V,
+    siblings: &[V::Id],
+    removed: usize,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<Option<Position<LocalRef<V::Id>>>, KwdjError> {
+    for (index, at_end) in [(removed.checked_sub(1), true), (Some(removed + 1), false)] {
+        let Some(&block) = index.and_then(|i| siblings.get(i)) else {
+            continue;
+        };
+        let node = get(view, block, plan)?;
+        if node.primitive != Primitive::TextBlock {
+            continue;
+        }
+        let edge = if at_end {
+            node.children.last()
+        } else {
+            node.children.first()
+        };
+        if let Some(&leaf) = edge
+            && let Some(text) = get(view, leaf, plan)?.text
+        {
+            let offset = if at_end {
+                unit(plan, text.len())?;
+                bytes(plan, text.len())?;
+                text.encode_utf16().count()
+            } else {
+                0
+            };
+            return Ok(Some(Position::Text {
+                leaf: leaf.into(),
+                utf16: Utf16Offset::new(offset),
+                affinity: Affinity::After,
+            }));
+        }
+        return Ok(Some(Position::Child {
+            parent: block.into(),
+            index: if at_end { node.children.len() } else { 0 },
+            affinity: Affinity::After,
+        }));
+    }
+    Ok(None)
+}
+
+pub(super) fn remove<V: CandidateRead>(
     view: &V,
     id: V::Id,
+    caret: RemovalCaret,
     plan: &mut PlanBuilder<'_, V::Id>,
 ) -> Result<(), KwdjError> {
     let mut target = id;
@@ -1751,13 +1801,17 @@ fn remove<V: CandidateRead>(
             },
         )?;
     } else {
+        let adjacent = match caret {
+            RemovalCaret::Gap => None,
+            RemovalCaret::AdjacentText => adjacent_text_caret(view, siblings, at, plan)?,
+        };
         set_caret(
             plan,
-            Position::Child {
+            adjacent.unwrap_or(Position::Child {
                 parent: parent.into(),
                 index: at.min(siblings.len() - 1),
                 affinity: Affinity::After,
-            },
+            }),
         )?;
     }
     push(
@@ -1856,7 +1910,7 @@ pub(super) fn prepare<V: CandidateRead>(
             Ok(CommandPresentation::default())
         }
         KwdjIntent::Remove { node } => {
-            remove(view, *node, plan)?;
+            remove(view, *node, RemovalCaret::Gap, plan)?;
             Ok(CommandPresentation::default())
         }
         _ => Err(refusal(KwdjErrorCode::CommandUnknown)),
