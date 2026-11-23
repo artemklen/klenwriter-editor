@@ -104,6 +104,13 @@ const nodes: Record<string, NodeRendererDefinition> = {
     const label = kind === undefined ? undefined : literaryLabels.get(kind);
     return label === undefined ? refused(n.type_id, n) : { tag: 'section', attributes: { role: 'group', 'aria-label': label } };
   }),
+  [`${prefix}warning`]: node('container', ['kind', 'label'], n => {
+    const kind = attrString(n.attributes.kind);
+    const label = attrString(n.attributes.label);
+    if ((kind !== 'general' && kind !== 'content') || (Object.hasOwn(n.attributes, 'label') && !label)) return refused(n.type_id, n);
+    const fallback = kind === 'general' ? 'Предупреждение' : 'Контент';
+    return { tag: 'section', attributes: { role: 'group', 'aria-label': label?.trim() ? label : fallback } };
+  }),
 };
 const marks: Record<string, MarkRendererDefinition> = {};
 for (const [name, tag] of [['strong', 'strong'], ['emphasis', 'em'], ['strike', 's'], ['code', 'code'], ['subscript', 'sub'], ['superscript', 'sup']] as const) {
@@ -150,7 +157,7 @@ function coveredClipboard(value: unknown): boolean {
     if (++count > 8192 || depth > 64 || !object(node) || typeof node.type !== 'string'
       || Object.keys(node).some(k => !['type','attrs','text','marks','content'].includes(k))) return false;
     // These renderers cover document readback. The mounted clipboard subset is separate.
-    if (node.type === 'media_image' || node.type === 'literary_block') return false;
+    if (node.type === 'media_image' || node.type === 'literary_block' || node.type === 'warning') return false;
     const renderer = Object.hasOwn(nodes, prefix + node.type) ? nodes[prefix + node.type] : null;
     if (!renderer) return false;
     const attrs = node.attrs === undefined ? {} : node.attrs;

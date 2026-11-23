@@ -1,6 +1,6 @@
 import {test,expect} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { literaryFixture } from './support/codec-fixtures.mjs';
+import { literaryFixture, warningFixture } from './support/codec-fixtures.mjs';
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {longDocumentFixtures} from './support/large-document-fixtures.mjs';
@@ -334,6 +334,19 @@ test('OSR-187 trusted first-literary-child Backspace preserves the OSR-185 nativ
     status: 'dom_refused', diagnostic: { code: 'dom.command_unsupported', phase: 'command', publication: 'none' },
   });
   expect(await call(page, 'nativeSelectionMatches', id, path, 0)).toBe(true);
+});
+
+test('OSR-188 mounted DOC-016 warning labels and body are readable without editing', async ({ page }) => {
+  const fixture = warningFixture();
+  const { id, ready, diagnostic } = await call(page, 'mount', { source: fixture.canonical, access: 'read_only' });
+  expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+  const host = page.locator(`#${id}`);
+  await expect(host).toHaveAttribute('contenteditable', 'false');
+  const general = host.getByRole('group', { name: 'Предупреждение', exact: true });
+  const content = host.getByRole('group', { name: 'Темы', exact: true });
+  await expect(general.locator('p')).toHaveText('Общее');
+  await expect(content.locator('p')).toHaveText('Контент');
+  expect((await checkpoint(page, id, 'read-only warnings and exact export')).canonical).toBe(fixture.canonical);
 });
 
 test('T09 keyboard Tab return preserves current native caret and every committed facet before and after deletion',async({page})=>{
@@ -828,10 +841,12 @@ test('closed payload coverage refuses unsupported targets, marks, recipes and ra
     kind: 'blocks', content, open_start: false, open_end: false,
   });
   const literary = JSON.parse(literaryFixture().canonical).content[0];
+  const warning = JSON.parse(warningFixture().canonical).content[0];
   const requests=[
     ['unsupported-target',command('insert-block',{kind:'insert_block',target:{kind:'media'}}),'dom.command_unsupported'],
     ['native-only-media-fragment',command('insert-fragment',{kind:'insert_fragment',fragment_json:fragment([media])}),'dom.command_unsupported'],
     ['unavailable-mounted-literary-fragment',command('insert-fragment',{kind:'insert_fragment',fragment_json:fragment([literary])}),'dom.command_unsupported'],
+    ['unavailable-mounted-warning-fragment',command('insert-fragment',{kind:'insert_fragment',fragment_json:fragment([warning])}),'dom.command_unsupported'],
     ['unsupported-mark',command('toggle-mark',{kind:'toggle_mark',mark:unknownMark}),'dom.command_unsupported'],
     ['closed-mark-attrs',command('toggle-mark',{kind:'toggle_mark',mark:{type_id:'org.klenwriter.kwdj/strong',attributes:{extra:{kind:'boolean',value:true}}}}),'dom.command_unsupported'],
     ['stored-marks',{kind:'set_stored_marks',marks:[unknownMark]},'dom.command_unsupported'],

@@ -102,7 +102,7 @@ test.beforeEach(async({page},info)=>{
   await page.addInitScript(()=>{window.typingStartup=[];window.typingPolicy=[];window.addEventListener('error',event=>window.typingStartup.push(event.message));window.addEventListener('unhandledrejection',event=>window.typingStartup.push(String(event.reason?.message??event.reason)));document.addEventListener('securitypolicyviolation',event=>window.typingPolicy.push({directive:event.violatedDirective,blocked:event.blockedURI}));});
   const response=await page.goto('/typing');record.csp=response.headers()['content-security-policy'];expect(record.csp).toContain("default-src 'none'");expect(record.csp).toContain("'wasm-unsafe-eval'");expect(record.csp).not.toMatch(/'unsafe-inline'|'unsafe-eval'/);
   await page.waitForFunction(()=>window.typingHostReady||window.typingStartup.length,null,{timeout:15000});expect(await page.evaluate(()=>window.typingStartup)).toEqual([]);
-  record.metadata=await call(page,'metadata');expect(record.metadata.typingCommands).toHaveLength(23);expect(record.metadata.baseCommands).toHaveLength(21);
+  record.metadata=await call(page,'metadata');expect(record.metadata.typingCommands).toHaveLength(24);expect(record.metadata.baseCommands).toHaveLength(22);
 });
 test.afterEach(async({page},info)=>{
   const record=observations.get(page);if(!record)return;

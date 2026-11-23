@@ -13,7 +13,7 @@ use editor_core::positions::{Affinity, Edge, Position, Selection, Utf16Offset, u
 use editor_core::transaction::Operation;
 
 use super::{BlockTarget, KWDJ_SLASH_CANDIDATES, KwdjIntent, ListKind, inline, refusal};
-use crate::{KwdjError, KwdjErrorCode, Profile};
+use crate::{KwdjError, KwdjErrorCode, Profile, model::WarningKind};
 
 const PREFIX: &str = "org.klenwriter.kwdj/";
 const AUTHOR_NOTE: &str = "author_note";
@@ -1664,7 +1664,7 @@ fn insert_block_node<V: CandidateRead>(
     {
         let is_atom = node.primitive == Primitive::BlockAtom;
         let caret_path = match kind(&node.type_id) {
-            "blockquote" | "literary_block" => &[0usize, 0][..],
+            "blockquote" | "literary_block" | "warning" => &[0usize, 0][..],
             "bullet_list" | "ordered_list" | "task_list" => &[0usize, 0, 0][..],
             _ => &[0usize][..],
         };
@@ -1790,6 +1790,53 @@ fn unwrap_literary_block<V: CandidateRead>(
         return Err(invalid());
     }
     unwrap_container(view, id, plan)?;
+    Ok(CommandPresentation::default())
+}
+
+fn warning_kind_value(warning_kind: WarningKind) -> &'static str {
+    match warning_kind {
+        WarningKind::General => "general",
+        WarningKind::Content => "content",
+    }
+}
+
+fn warning<I>(warning_kind: WarningKind, plan: &mut PlanBuilder<'_, I>) -> Result<Node, KwdjError> {
+    let attributes = Attributes::from([(
+        key("kind", plan)?,
+        Attribute::String(key(warning_kind_value(warning_kind), plan)?),
+    )]);
+    empty_node("warning", Primitive::Container, attributes, plan)
+}
+
+fn insert_warning<V: CandidateRead>(
+    view: &V,
+    state: CommandState<'_, V::Id>,
+    warning_kind: WarningKind,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let mut container = warning(warning_kind, plan)?;
+    let paragraph = empty_node("paragraph", Primitive::TextBlock, Attributes::new(), plan)?;
+    bytes(plan, size_of::<Node>())?;
+    container.children.push(paragraph);
+    insert_block_node(view, state, container, None, plan)
+}
+
+fn set_warning_kind<V: CandidateRead>(
+    view: &V,
+    id: V::Id,
+    warning_kind: WarningKind,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let node = get(view, id, plan)?;
+    if kind(node.type_id) != "warning" {
+        return Err(invalid());
+    }
+    let target = warning_kind_value(warning_kind);
+    if !matches!(node.attributes.get("kind"), Some(Attribute::String(current)) if current == target)
+    {
+        let value = Attribute::String(key(target, plan)?);
+        attr(plan, id.into(), "kind", Some(value))?;
+    }
     Ok(CommandPresentation::default())
 }
 
@@ -1980,6 +2027,12 @@ pub(super) fn prepare<V: CandidateRead>(
         KwdjIntent::SetLiteraryKind { node } => set_literary_kind(view, *node, plan),
         KwdjIntent::WrapLiteraryBlock => wrap_literary_block(view, state, plan),
         KwdjIntent::UnwrapLiteraryBlock { node } => unwrap_literary_block(view, *node, plan),
+        KwdjIntent::InsertWarning { warning_kind } => {
+            insert_warning(view, state, *warning_kind, plan)
+        }
+        KwdjIntent::SetWarningKind { node, warning_kind } => {
+            set_warning_kind(view, *node, *warning_kind, plan)
+        }
         KwdjIntent::AcceptSlash {
             target,
             range,

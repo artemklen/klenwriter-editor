@@ -2,11 +2,12 @@
 /** Profile-specific command construction; all semantic checks remain in Rust. */
 export { artifactStage } from '@klenwriter/editor-sdk';
 import { createCommand } from '@klenwriter/editor-sdk';
-import type { CommandDto, DeepReadonly, KwdjIntentDto, KwdjLiteraryIntentV2, RawInputRestoreV2 } from '@klenwriter/editor-sdk';
+import type { CommandDto, DeepReadonly, KwdjIntentDto, KwdjLiteraryIntentV2, KwdjWarningIntentV2, RawInputRestoreV2 } from '@klenwriter/editor-sdk';
 
-export type { KwdjIntentDto, KwdjLiteraryIntentV2, BlockTargetDto, ListKindDto, MarkDto } from '@klenwriter/editor-sdk';
+export type { KwdjIntentDto, KwdjLiteraryIntentV2, KwdjWarningIntentV2, BlockTargetDto, ListKindDto, MarkDto } from '@klenwriter/editor-sdk';
 
-const commandNames: Record<(KwdjIntentDto | KwdjLiteraryIntentV2)['kind'], string> = {
+type KwdjCommandIntent = KwdjIntentDto | KwdjLiteraryIntentV2 | KwdjWarningIntentV2;
+const commandNames: Record<KwdjCommandIntent['kind'], string> = {
   enter: 'enter', shift_enter: 'shift-enter', toggle_mark: 'toggle-mark',
   set_link: 'set-link', unset_link: 'unset-link', insert_text: 'insert-text',
   transform_block: 'transform-block', toggle_quote: 'toggle-quote', toggle_list: 'toggle-list',
@@ -17,10 +18,11 @@ const commandNames: Record<(KwdjIntentDto | KwdjLiteraryIntentV2)['kind'], strin
   set_literary_kind: 'set-literary-kind',
   wrap_literary_block: 'wrap-literary-block',
   unwrap_literary_block: 'unwrap-literary-block',
+  set_warning_kind: 'set-warning-kind',
 };
 
 /** Numeric metadata, revision/group tokens and ordered-list starts remain strings. */
-export function kwdjCommand(intent: KwdjIntentDto | KwdjLiteraryIntentV2): CommandDto {
+export function kwdjCommand(intent: KwdjCommandIntent): CommandDto {
   const kind = intent && typeof intent === 'object' ? Object.getOwnPropertyDescriptor(intent, 'kind') : undefined;
   if (!kind || !('value' in kind) || typeof kind.value !== 'string' || !Object.hasOwn(commandNames, kind.value)) {
     throw new TypeError('sdk.invalid_command_kind');

@@ -2,7 +2,10 @@
 use crate::{
     KwdjAdapter,
     convert::{diagnostic, profile_error},
-    wire_v2::{KwdjClipboardIntentV2, KwdjLiteraryIntentV2},
+    wire_v2::{
+        KwdjClipboardIntentV2, KwdjLiteraryIntentV2, KwdjWarningIntentV2, LiteraryBlockTargetV2,
+        WarningBlockTargetV2, WarningKindV2,
+    },
 };
 use editor_bridge::{BridgeAdapter, ClipboardContextData, SelectionFragmentData};
 use editor_core::{candidate::CandidateRead, positions::Selection, transaction::WorkMeter};
@@ -11,10 +14,34 @@ use editor_kwdj::{
     KwdjProfile, KwdjProfileError, Profile,
     commands::{
         CLIPBOARD_COMMAND_ID, KWDJ_COMMANDS, KwdjIntent, SET_LITERARY_KIND_COMMAND_ID,
-        UNWRAP_LITERARY_BLOCK_COMMAND_ID, WRAP_LITERARY_BLOCK_COMMAND_ID, clipboard,
+        SET_WARNING_KIND_COMMAND_ID, UNWRAP_LITERARY_BLOCK_COMMAND_ID,
+        WRAP_LITERARY_BLOCK_COMMAND_ID, clipboard,
     },
+    model::WarningKind,
 };
 use editor_protocol::{CommandDto, DiagnosticDto};
+
+#[derive(serde::Deserialize)]
+#[serde(untagged)]
+enum AdditionalBlockTargetV2 {
+    Literary(LiteraryBlockTargetV2),
+    Warning(WarningBlockTargetV2),
+}
+
+#[derive(serde::Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+enum AdditionalInsertV2 {
+    InsertBlock { target: AdditionalBlockTargetV2 },
+}
+
+impl From<WarningKindV2> for WarningKind {
+    fn from(value: WarningKindV2) -> Self {
+        match value {
+            WarningKindV2::General => Self::General,
+            WarningKindV2::Content => Self::Content,
+        }
+    }
+}
 
 pub(crate) struct ClipboardAdapterV2(pub(crate) KwdjAdapter);
 fn native(error: editor_kwdj::KwdjError) -> DiagnosticDto {
@@ -73,6 +100,10 @@ impl BridgeAdapter<KwdjProfile<'static>> for ClipboardAdapterV2 {
         key: SessionKey,
         command: &CommandDto,
     ) -> Result<KwdjIntent<NodeId>, DiagnosticDto> {
+        let parse_node = |node: &str| {
+            key.parse_node_token(node)
+                .map_err(|error| diagnostic(error.as_str(), "command.node"))
+        };
         if command.id == CLIPBOARD_COMMAND_ID {
             let KwdjClipboardIntentV2::InsertFragment { fragment_json } =
                 editor_bridge::decode(&command.payload_json)?;
@@ -85,10 +116,6 @@ impl BridgeAdapter<KwdjProfile<'static>> for ClipboardAdapterV2 {
                 | WRAP_LITERARY_BLOCK_COMMAND_ID
                 | UNWRAP_LITERARY_BLOCK_COMMAND_ID
         ) {
-            let parse_node = |node: &str| {
-                key.parse_node_token(node)
-                    .map_err(|error| diagnostic(error.as_str(), "command.node"))
-            };
             let intent = editor_bridge::decode(&command.payload_json)?;
             match (command.id.as_str(), intent) {
                 (
@@ -109,14 +136,31 @@ impl BridgeAdapter<KwdjProfile<'static>> for ClipboardAdapterV2 {
                 }),
                 _ => Err(diagnostic("sdk.invalid_dto", "command")),
             }
+        } else if command.id == SET_WARNING_KIND_COMMAND_ID {
+            let KwdjWarningIntentV2::SetWarningKind { node, warning_kind } =
+                editor_bridge::decode(&command.payload_json)?
+            else {
+                return Err(diagnostic("sdk.invalid_dto", "command"));
+            };
+            Ok(KwdjIntent::SetWarningKind {
+                node: parse_node(&node)?,
+                warning_kind: warning_kind.into(),
+            })
         } else {
             match self.0.decode_command(key, command) {
                 Err(legacy) if command.id == KWDJ_COMMANDS[9].id => {
                     match editor_bridge::decode(&command.payload_json) {
-                        Ok(KwdjLiteraryIntentV2::InsertBlock { .. }) => {
-                            Ok(KwdjIntent::InsertAuthorNote)
-                        }
-                        _ => Err(legacy),
+                        Ok(AdditionalInsertV2::InsertBlock { target }) => Ok(match target {
+                            AdditionalBlockTargetV2::Literary(
+                                LiteraryBlockTargetV2::LiteraryBlock { .. },
+                            ) => KwdjIntent::InsertAuthorNote,
+                            AdditionalBlockTargetV2::Warning(WarningBlockTargetV2::Warning {
+                                warning_kind,
+                            }) => KwdjIntent::InsertWarning {
+                                warning_kind: warning_kind.into(),
+                            },
+                        }),
+                        Err(_) => Err(legacy),
                     }
                 }
                 result => result,

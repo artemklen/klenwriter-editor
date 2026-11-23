@@ -25,6 +25,7 @@ const CATALOG_V2: &[&str] = &[
     "org.klenwriter.kwdj/command/remove",
     "org.klenwriter.kwdj/command/set-link",
     "org.klenwriter.kwdj/command/set-literary-kind",
+    "org.klenwriter.kwdj/command/set-warning-kind",
     "org.klenwriter.kwdj/command/shift-enter",
     "org.klenwriter.kwdj/command/toggle-list",
     "org.klenwriter.kwdj/command/toggle-mark",
@@ -186,7 +187,7 @@ fn split_join(v2: bool) {
     s.drain();
     let catalog = s.call(json!({"kind":"catalog"}));
     if v2 {
-        assert_eq!(CATALOG_V2.len(), 21);
+        assert_eq!(CATALOG_V2.len(), 22);
         assert_eq!(catalog["commands"], json!(CATALOG_V2));
     } else {
         assert_eq!(catalog["commands"].as_array().unwrap().len(), 17);

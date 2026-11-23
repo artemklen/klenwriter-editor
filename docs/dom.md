@@ -73,12 +73,13 @@ snapshot, вызовите `destroy()` и смонтируйте сохранё�
 
 KWDJ binding поддерживает `text`, `hard_break`, `paragraph`, `heading`,
 `code_block`, `blockquote`, `bullet_list`, `ordered_list`, `list_item`,
-`task_list`, `task_item`, `scene_break`, `media_image` и `literary_block`.
+`task_list`, `task_item`, `scene_break`, `media_image`, `literary_block` и `warning`.
 Девять marks включают strong, emphasis, strike, code, subscript, superscript,
 text_color, highlight и link. Для `media_image` binding показывает локальный
 CSS-плейсхолдер с именем из `alt`, если изображение содержательное. Подпись
 остаётся обычным редактируемым абзацем. Литературный контейнер имеет доступное
-имя по виду блока и сохраняет дочерние узлы. Для table, verse, остальных
+имя по виду блока и сохраняет дочерние узлы. Предупреждение использует `label`
+или стандартное имя своего вида. Для table, verse, остальных
 доменных блоков и reference_link требуются отдельные renderers. Неизвестные
 типы, marks и attrs дают явный отказ.
 

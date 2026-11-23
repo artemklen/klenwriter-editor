@@ -17,7 +17,7 @@ use editor_core::document::Mark;
 use editor_core::positions::Selection;
 use editor_core::transaction::WorkMeter;
 
-use crate::{KwdjError, KwdjErrorCode, KwdjProfile, KwdjProfileError};
+use crate::{KwdjError, KwdjErrorCode, KwdjProfile, KwdjProfileError, model::WarningKind};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BlockTarget {
@@ -75,6 +75,13 @@ pub enum KwdjIntent<I> {
     UnwrapLiteraryBlock {
         node: I,
     },
+    InsertWarning {
+        warning_kind: WarningKind,
+    },
+    SetWarningKind {
+        node: I,
+        warning_kind: WarningKind,
+    },
     Move {
         node: I,
         parent: I,
@@ -114,6 +121,7 @@ pub const WRAP_LITERARY_BLOCK_COMMAND_ID: &str = "org.klenwriter.kwdj/command/wr
 pub const UNWRAP_LITERARY_BLOCK_COMMAND_ID: &str =
     "org.klenwriter.kwdj/command/unwrap-literary-block";
 pub const TYPED_INPUT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-typed-text";
+pub const SET_WARNING_KIND_COMMAND_ID: &str = "org.klenwriter.kwdj/command/set-warning-kind";
 pub const RESTORE_INPUT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/restore-typed-text";
 
 pub const KWDJ_COMMANDS: &[CommandDescriptor] = &[
@@ -253,10 +261,13 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::TransformBlock { .. } => KWDJ_COMMANDS[6].id,
             KwdjIntent::ToggleQuote => KWDJ_COMMANDS[7].id,
             KwdjIntent::ToggleList { .. } => KWDJ_COMMANDS[8].id,
-            KwdjIntent::InsertBlock { .. } | KwdjIntent::InsertAuthorNote => KWDJ_COMMANDS[9].id,
+            KwdjIntent::InsertBlock { .. }
+            | KwdjIntent::InsertAuthorNote
+            | KwdjIntent::InsertWarning { .. } => KWDJ_COMMANDS[9].id,
             KwdjIntent::SetLiteraryKind { .. } => SET_LITERARY_KIND_COMMAND_ID,
             KwdjIntent::WrapLiteraryBlock => WRAP_LITERARY_BLOCK_COMMAND_ID,
             KwdjIntent::UnwrapLiteraryBlock { .. } => UNWRAP_LITERARY_BLOCK_COMMAND_ID,
+            KwdjIntent::SetWarningKind { .. } => SET_WARNING_KIND_COMMAND_ID,
             KwdjIntent::Move { .. } => KWDJ_COMMANDS[10].id,
             KwdjIntent::Duplicate { .. } => KWDJ_COMMANDS[11].id,
             KwdjIntent::Remove { .. } => KWDJ_COMMANDS[12].id,
@@ -283,6 +294,8 @@ impl CommandProvider for KwdjProfile<'_> {
             | KwdjIntent::SetLiteraryKind { .. }
             | KwdjIntent::WrapLiteraryBlock
             | KwdjIntent::UnwrapLiteraryBlock { .. }
+            | KwdjIntent::InsertWarning { .. }
+            | KwdjIntent::SetWarningKind { .. }
                 if !self.clipboard_v2() =>
             {
                 return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());

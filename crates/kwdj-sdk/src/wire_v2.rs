@@ -59,6 +59,43 @@ pub enum KwdjLiteraryIntentV2 {
     all(feature = "sdk-types", not(target_arch = "wasm32")),
     derive(ts_rs::TS)
 )]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum WarningKindV2 {
+    General,
+    Content,
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum WarningBlockTargetV2 {
+    Warning { warning_kind: WarningKindV2 },
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum KwdjWarningIntentV2 {
+    InsertBlock {
+        target: WarningBlockTargetV2,
+    },
+    SetWarningKind {
+        node: String,
+        warning_kind: WarningKindV2,
+    },
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub enum KwdjTypingIntentV2 {

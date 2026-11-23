@@ -260,6 +260,7 @@ const kwdjMandatoryCommands = Object.freeze([
   'org.klenwriter.kwdj/command/set-literary-kind',
   'org.klenwriter.kwdj/command/wrap-literary-block',
   'org.klenwriter.kwdj/command/unwrap-literary-block',
+  'org.klenwriter.kwdj/command/set-warning-kind',
 ].sort());
 
 export async function exerciseKwdj(port, packet) {

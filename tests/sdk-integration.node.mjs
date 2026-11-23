@@ -2,7 +2,7 @@
 // Actual packaged release WASM + public controller; no controlled/fake bridge.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { literaryFixture } from './support/codec-fixtures.mjs';
+import { literaryFixture, warningFixture } from './support/codec-fixtures.mjs';
 import { readFileSync } from 'node:fs';
 import { createCommand, createEditor, loadSdk, loadSdkV2 } from '../packages/sdk/dist/index.js';
 import { kwdjCommand } from '../packages/kwdj/dist/index.js';
@@ -523,6 +523,78 @@ test('OSR-186 packaged SDK2 preserves partial children and refuses illegal or re
         osr183Denied(editor, osr186InsertFragment, osr186Payload(captured), original, 'session.read_only', '');
       }
     }, [], access);
+  }
+});
+
+test('OSR-188 packaged SDK2 reads and reopens both DOC-016 warning kinds exactly', async () => {
+  const fixture = warningFixture();
+  let saved;
+  await withLiteraryCommandSession(fixture.canonical, editor => {
+    const kinds = root(editor).children.map(id => {
+      const row = node(editor, id);
+      assert.equal(row.type_id, 'org.klenwriter.kwdj/warning');
+      assert.equal(row.primitive, 'container');
+      const child = node(editor, row.children[0]);
+      return { kind: row.attributes.kind.value, label: row.attributes.label?.value, text: node(editor, child.children[0]).text };
+    });
+    assert.deepEqual(kinds, fixture.document.content.map(block => ({
+      kind: block.attrs.kind, label: block.attrs.label, text: block.content[0].content[0].text,
+    })));
+    saved = canonical(editor);
+    assert.equal(saved, fixture.canonical);
+  }, [], 'read_only');
+  await withLiteraryCommandSession(saved, editor => {
+    assert.equal(canonical(editor), fixture.canonical);
+  }, [], 'read_only');
+});
+
+test('OSR-188 packaged SDK2 root-gap creates both warnings with the legacy seed', async () => {
+  const [left, right] = ['Before', 'After'].map(text => ({ type: 'paragraph', content: [{ type: 'text', text }] }));
+  const original = osr183Doc([left, right]);
+  for (const kind of ['general', 'content']) {
+    const warning = { type: 'warning', attrs: { kind }, content: [{ type: 'paragraph', content: [] }] };
+    const expected = osr183Doc([left, warning, right]);
+    await withLiteraryCommandSession(original, editor => {
+      const oldRoots = root(editor).children;
+      osr185Select(editor, osr185Gap(state(editor).root, 1));
+      const payload = { kind: 'insert_block', target: { kind: 'warning', warning_kind: kind } };
+      const result = osr183Wire(editor, createCommand(osr183Insert, payload));
+      assert.equal(accepted(result).effect, 'changed');
+      assert.equal(canonical(editor), expected);
+      const [first, created, last] = root(editor).children;
+      assert.deepEqual([first, last], oldRoots);
+      const caret = osr185Gap(node(editor, created).children[0], 0);
+      assert.deepEqual(structuredClone(state(editor).selection), { anchor: caret, focus: caret });
+      osr183History(editor, 'undo', original);
+      osr183History(editor, 'redo', expected);
+    });
+  }
+});
+
+test('OSR-188 packaged SDK2 changes warning kind while preserving children and exact Undo', async () => {
+  const fixture = warningFixture();
+  for (const [index, kind] of [[0, 'content'], [1, 'general']]) {
+    const wanted = structuredClone(fixture.document);
+    wanted.content[index].attrs.kind = kind;
+    const expected = osr185Bytes(wanted);
+    await withLiteraryCommandSession(fixture.canonical, editor => {
+      const roots = root(editor).children;
+      const id = roots[index];
+      const before = node(editor, id);
+      const change = createCommand('org.klenwriter.kwdj/command/set-warning-kind', { kind: 'set_warning_kind', node: id, warning_kind: kind });
+      assert.equal(accepted(osr183Wire(editor, change)).effect, 'changed');
+      const after = node(editor, id);
+      assert.deepEqual(root(editor).children, roots);
+      assert.deepEqual(after.children, before.children);
+      assert.deepEqual(after.attributes.label, before.attributes.label);
+      assert.equal(canonical(editor), expected);
+      const settled = state(editor);
+      assert.equal(accepted(osr183Wire(editor, change)).effect, 'unchanged');
+      assert.deepEqual(state(editor), settled);
+      assert.equal(canonical(editor), expected);
+      osr183History(editor, 'undo', fixture.canonical);
+      osr183History(editor, 'redo', expected);
+    });
   }
 });
 

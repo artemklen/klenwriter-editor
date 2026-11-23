@@ -108,6 +108,14 @@ export const kwdjDomInventory = {
     },
     {
       "descriptor": {
+        "id": "org.klenwriter.kwdj/command/set-warning-kind",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/set-warning-kind",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
         "id": "org.klenwriter.kwdj/command/shift-enter",
         "kind": "compiled"
       },
@@ -192,6 +200,7 @@ export const kwdjDomInventory = {
       "org.klenwriter.kwdj/command/remove",
       "org.klenwriter.kwdj/command/set-link",
       "org.klenwriter.kwdj/command/set-literary-kind",
+      "org.klenwriter.kwdj/command/set-warning-kind",
       "org.klenwriter.kwdj/command/shift-enter",
       "org.klenwriter.kwdj/command/toggle-list",
       "org.klenwriter.kwdj/command/toggle-mark",
@@ -1455,5 +1464,5 @@ export const kwdjDomInventory = {
     "profile_version": "1.0.0",
     "wire_version": 1
   },
-  "registryDigest": "820f975066e4219fb29a0a3e3efdab4bfcef31436a697159eced02e08aa3cc66"
+  "registryDigest": "d9ca255384961274382f82ba225bd3c39df7372961b7c46301f2e071834688e9"
 } as const;

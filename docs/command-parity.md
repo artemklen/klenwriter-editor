@@ -74,3 +74,11 @@ its kind to `author_note`, preserving the container and its children.
 SDK2 `wrap_literary_block` wraps selected contiguous siblings in an
 `author_note`. `unwrap_literary_block` takes an `author_note` node ID and moves
 its children into the parent in the same order.
+
+## Warning block parity
+
+Both `general` and `content` are readable and render with their authored label
+or a name for the kind. Legacy CMS insertion supports both kinds. SDK2
+`insert_block` takes the `warning` target and a `warning_kind`. The new block
+has one empty paragraph and starts with the label omitted. `set_warning_kind`
+changes the kind of an existing warning and preserves any label and children.

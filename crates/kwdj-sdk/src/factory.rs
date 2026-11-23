@@ -348,7 +348,7 @@ mod tests {
         assert!(matches!(session.initialization(), SdkResponse::Ok { .. }));
         assert!(session.context().is_some());
         let catalog = call(&mut session, json!({"kind":"catalog"}));
-        assert_eq!(catalog["value"]["commands"].as_array().unwrap().len(), 22);
+        assert_eq!(catalog["value"]["commands"].as_array().unwrap().len(), 23);
         assert!(
             catalog["value"]["commands"]
                 .as_array()
@@ -568,6 +568,7 @@ mod tests {
                                 sorted.push(editor_kwdj::commands::WRAP_LITERARY_BLOCK_COMMAND_ID);
                                 sorted
                                     .push(editor_kwdj::commands::UNWRAP_LITERARY_BLOCK_COMMAND_ID);
+                                sorted.push(editor_kwdj::commands::SET_WARNING_KIND_COMMAND_ID);
                                 sorted.sort_unstable();
                                 assert_eq!(actual, sorted, "{id}: frozenV2catalog IDs");
                                 // ABI1 catalog order remains the original compiled order.
@@ -933,6 +934,140 @@ mod tests {
         assert_eq!(reply["diagnostic"]["code"], code, "{reply}");
         assert_eq!(state(session), before);
         assert_eq!(snapshot(session), canonical);
+    }
+
+    const OSR188_SET_KIND: &str = "org.klenwriter.kwdj/command/set-warning-kind";
+
+    fn osr188_case() -> Value {
+        let fixtures: Value = serde_json::from_str(include_str!(
+            "../../../contracts/kwdj/v1/fixtures/positive.json"
+        ))
+        .unwrap();
+        fixtures["fixtures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|fixture| fixture["id"] == "DOC-016")
+            .unwrap()["cases"][0]
+            .clone()
+    }
+
+    #[test]
+    fn osr188_doc016_reads_projects_and_reopens_both_warning_kinds() {
+        let case = osr188_case();
+        let document = &case["kwdj"];
+        let canonical = document.to_string();
+        let mut session = osr183_open(&canonical);
+        let root = state(&mut session)["root"].clone();
+        let warnings = osr183_node(&mut session, &root)["children"].clone();
+        assert_eq!(warnings.as_array().unwrap().len(), 2);
+        for index in 0..2 {
+            let expected = &document["content"][index];
+            let actual = osr183_node(&mut session, &warnings[index]);
+            assert_eq!(actual["type_id"], "org.klenwriter.kwdj/warning");
+            assert_eq!(actual["primitive"], "container");
+            assert_eq!(
+                actual["attributes"]["kind"]["value"],
+                expected["attrs"]["kind"]
+            );
+            assert_eq!(
+                actual["attributes"]["label"]["value"],
+                expected["attrs"]["label"]
+            );
+            let child = osr183_node(&mut session, &actual["children"][0]);
+            let leaf = osr183_node(&mut session, &child["children"][0]);
+            assert_eq!(leaf["text"], expected["content"][0]["content"][0]["text"]);
+        }
+        let saved = snapshot(&mut session);
+        assert_eq!(saved, canonical);
+        let mut reopened = osr183_open(&saved);
+        assert_eq!(snapshot(&mut reopened), canonical);
+        let facts = crate::FactStore(Default::default());
+        let parsed = editor_kwdj::validate_normalized_json(saved.as_bytes(), &facts).unwrap();
+        let projection = parsed.project_text().unwrap();
+        assert_eq!(
+            projection.full_text,
+            case["expected"]["full_text"].as_str().unwrap()
+        );
+        assert_eq!(
+            projection.search_index_text,
+            case["expected"]["search_index_text"].as_str().unwrap()
+        );
+        assert_eq!(
+            projection.public_snippet_text,
+            case["expected"]["public_snippet_text"].as_str().unwrap()
+        );
+    }
+
+    #[test]
+    fn osr188_root_gap_create_uses_both_legacy_warning_defaults() {
+        let left = json!({"type":"paragraph","content":[{"type":"text","text":"Before"}]});
+        let right = json!({"type":"paragraph","content":[{"type":"text","text":"After"}]});
+        let initial = osr183_literal(json!([left, right]));
+        for kind in ["general", "content"] {
+            let expected = osr183_literal(json!([
+                left,
+                {"type":"warning","attrs":{"kind":kind},"content":[{"type":"paragraph","content":[]}]},
+                right
+            ]));
+            let mut session = osr183_open(&initial);
+            let root = state(&mut session)["root"].clone();
+            let sides = osr183_node(&mut session, &root)["children"].clone();
+            let point = json!({"kind":"child","parent":root,"index":1,"affinity":"after"});
+            let stamp = state(&mut session)["stamp"].clone();
+            let selected = call(
+                &mut session,
+                json!({"kind":"set_selection","stamp":stamp,"selection":{"anchor":point,"focus":point}}),
+            );
+            assert_eq!(selected["status"], "ok", "{selected}");
+            let payload =
+                json!({"kind":"insert_block","target":{"kind":"warning","warning_kind":kind}});
+            let result = osr183_command(&mut session, OSR183_INSERT, &payload, false);
+            assert_eq!(result["value"]["effect"], "changed", "{kind}: {result}");
+            assert_eq!(snapshot(&mut session), expected);
+            let roots = osr183_node(&mut session, &root)["children"].clone();
+            assert_eq!(roots[0], sides[0]);
+            assert_eq!(roots[2], sides[1]);
+            let warning = osr183_node(&mut session, &roots[1]);
+            let caret = json!({"kind":"child","parent":warning["children"][0],"index":0,"affinity":"after"});
+            assert_eq!(
+                state(&mut session)["selection"],
+                json!({"anchor":caret,"focus":caret})
+            );
+            osr183_history(&mut session, "undo", &initial);
+            osr183_history(&mut session, "redo", &expected);
+        }
+    }
+
+    #[test]
+    fn osr188_set_warning_kind_keeps_warning_label_children_and_undo() {
+        let initial = osr188_case()["kwdj"].clone();
+        let original = initial.to_string();
+        for (index, kind) in [(0, "content"), (1, "general")] {
+            let mut expected = initial.clone();
+            expected["content"][index]["attrs"]["kind"] = json!(kind);
+            let expected = expected.to_string();
+            let mut session = osr183_open(&original);
+            let root = state(&mut session)["root"].clone();
+            let roots = osr183_node(&mut session, &root)["children"].clone();
+            let id = &roots[index];
+            let before = osr183_node(&mut session, id);
+            let payload = json!({"kind":"set_warning_kind","node":id,"warning_kind":kind});
+            let result = osr183_command(&mut session, OSR188_SET_KIND, &payload, false);
+            assert_eq!(result["value"]["effect"], "changed", "{kind}: {result}");
+            assert_eq!(snapshot(&mut session), expected);
+            let after = osr183_node(&mut session, id);
+            assert_eq!(after["children"], before["children"]);
+            assert_eq!(after["attributes"]["label"], before["attributes"]["label"]);
+            assert_eq!(osr183_node(&mut session, &root)["children"], roots);
+            let settled = state(&mut session);
+            let same = osr183_command(&mut session, OSR188_SET_KIND, &payload, false);
+            assert_eq!(same["value"]["effect"], "unchanged", "{same}");
+            assert_eq!(state(&mut session), settled);
+            assert_eq!(snapshot(&mut session), expected);
+            osr183_history(&mut session, "undo", &original);
+            osr183_history(&mut session, "redo", &expected);
+        }
     }
 
     #[test]
