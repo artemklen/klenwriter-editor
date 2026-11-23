@@ -349,6 +349,149 @@ test('OSR-188 mounted DOC-016 warning labels and body are readable without editi
   expect((await checkpoint(page, id, 'read-only warnings and exact export')).canonical).toBe(fixture.canonical);
 });
 
+const osr189WarningFixture = () => JSON.parse(readFileSync(new URL('./fixtures/osr-189-warning.json', import.meta.url), 'utf8'));
+
+test('OSR-190 mounted root-gap create matches both OSR-188 warning defaults', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const [left, right] = ['Before', 'After'].map(text => ({ type: 'paragraph', content: [{ type: 'text', text }] }));
+  const source = osr187Bytes([left, right]);
+  for (const [kind, name] of [['general', 'Предупреждение'], ['content', 'Контент']]) {
+    const warning = { type: 'warning', attrs: { kind }, content: [{ type: 'paragraph', content: [] }] };
+    const expected = osr187Bytes([left, warning, right]);
+    const { id, ready, diagnostic } = await call(page, 'mount', { source });
+    expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+    await call(page, 'select', id, '', 1);
+    const before = await checkpoint(page, id, 'OSR-188 ' + kind + ' before root-gap create');
+    expect(before.canonical).toBe(source);
+    caret(before, before.state.root, 1, 'child');
+
+    await osr187StructuralCommand(page, id, 'insert-block', {
+      kind: 'insert_block', target: { kind: 'warning', warning_kind: kind },
+    });
+    const after = await checkpoint(page, id, 'OSR-188 ' + kind + ' after root-gap create');
+    expect(after.canonical).toBe(expected);
+    const [first, , last] = stateRow(after, '').children;
+    expect([first, last]).toEqual(stateRow(before, '').children);
+    expect(stateRow(after, '/1').attributes).toEqual({ kind: { kind: 'string', value: kind } });
+    const seed = stateRow(after, '/1/0');
+    expect(seed.children).toEqual([]);
+    caret(after, seed.id, 0, 'child');
+    history(after, 1, 0);
+    expect(after.failures).toEqual([]);
+    const group = page.locator('#' + id).getByRole('group', { name, exact: true });
+    await expect(group).toBeVisible();
+    const paragraph = group.locator(':scope > p');
+    await expect(paragraph).toHaveCount(1);
+    expect(await paragraph.evaluate(element => element.isContentEditable)).toBe(true);
+    await call(page, 'dispose', id);
+  }
+});
+
+test('OSR-190 mounted warning wrap and unwrap retain OSR-189 children, bytes and history', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const fixture = osr189WarningFixture();
+  const source = osr187Bytes(fixture.initial);
+  const wrapped = osr187Bytes(fixture.wrapped);
+  const { id, ready, diagnostic } = await call(page, 'mount', { source });
+  expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+  await call(page, 'select', id, '', 4, '', 1);
+  const before = await checkpoint(page, id, 'OSR-189 initial warning wrap range');
+  expect(before.canonical).toBe(source);
+  const gap = index => ({ kind: 'child', parent: before.state.root, index, affinity: 'after' });
+  expect(before.state.selection).toEqual({ anchor: gap(4), focus: gap(1) });
+  expect(before.actualSelection).toMatchObject({ anchorOffset: 4, focusOffset: 1, inside: true });
+  const original = stateRow(before, '').children;
+  const body = original.slice(1, 4);
+
+  await osr187StructuralCommand(page, id, 'wrap-warning', { kind: 'wrap_warning', warning_kind: 'general' });
+  const afterWrap = await checkpoint(page, id, 'OSR-189 wrapped warning');
+  expect(afterWrap.canonical).toBe(wrapped);
+  const warning = stateRow(afterWrap, '/1');
+  expect(warning.children).toEqual(body);
+  const wrappedIds = [original[0], warning.id, original[4]];
+  expect(stateRow(afterWrap, '').children).toEqual(wrappedIds);
+  expect(stateRow(afterWrap, '/1/0').children).toEqual(stateRow(before, '/1').children);
+  history(afterWrap, 1, 0);
+  expect(afterWrap.failures).toEqual([]);
+  const group = page.locator('#' + id).getByRole('group', { name: 'Предупреждение', exact: true });
+  await expect(group).toBeVisible();
+  expect(await group.locator(':scope > [data-editor-node]').evaluateAll(elements => elements.map(el => el.tagName)))
+    .toEqual(['P', 'HR', 'BLOCKQUOTE']);
+  const axe = await new AxeBuilder({ page }).include('#' + id).analyze();
+  observations.get(page).axe = {
+    engine: axe.testEngine, scope: 'OSR-190 mounted wrapped warning',
+    violations: axe.violations, incomplete: axe.incomplete, passedRules: axe.passes.map(rule => rule.id),
+  };
+  expect(axe.violations).toEqual([]);
+  expect(axe.passes.length).toBeGreaterThan(0);
+
+  await osr187StructuralCommand(page, id, 'unwrap-warning', { kind: 'unwrap_warning', node: warning.id });
+  const afterUnwrap = await checkpoint(page, id, 'OSR-189 unwrapped warning');
+  expect(afterUnwrap.canonical).toBe(source);
+  expect(stateRow(afterUnwrap, '').children).toEqual(original);
+  expect(stateRow(afterUnwrap, '/1').children).toEqual(stateRow(before, '/1').children);
+  history(afterUnwrap, 2, 0);
+  expect(afterUnwrap.failures).toEqual([]);
+  await expect(group).toHaveCount(0);
+
+  for (const [direction, canonical, ids, undo, redo] of [
+    ['undo', wrapped, wrappedIds, 1, 1],
+    ['undo', source, original, 0, 2],
+    ['redo', wrapped, wrappedIds, 1, 1],
+    ['redo', source, original, 2, 0],
+  ]) {
+    expect((await call(page, 'history', id, direction)).response.status).toBe('ok');
+    const point = await checkpoint(page, id, direction + ' warning structure');
+    expect(point.canonical).toBe(canonical);
+    expect(stateRow(point, '').children).toEqual(ids);
+    if (canonical === wrapped) expect(stateRow(point, '/1').children).toEqual(body);
+    history(point, undo, redo);
+  }
+});
+
+test('OSR-190 trusted first-warning-child Backspace preserves the OSR-189 native result', async ({ page, browser }) => {
+  observations.get(page).browserVersion = browser.version();
+  const fixture = osr189WarningFixture();
+  const source = osr187Bytes(fixture.labeled);
+  const { id, ready, diagnostic } = await call(page, 'mount', { source });
+  expect(ready, JSON.stringify(diagnostic)).toBe('ready');
+  const path = '/1/0/0';
+  await call(page, 'select', id, path, 0);
+  const before = await checkpoint(page, id, 'OSR-189 warning first child at UTF-16 offset zero');
+  expect(before.canonical).toBe(source);
+  caret(before, stateRow(before, path).id, 0);
+  expect(await call(page, 'nativeSelectionMatches', id, path, 0)).toBe(true);
+  const availability = await call(page, 'queryCommand', id, { kind: 'delete_backward' });
+  expect(availability, JSON.stringify(availability)).toMatchObject({
+    status: 'ok', value: { available: false, diagnostic: fixture.refusals.first_child_backspace },
+  });
+
+  const host = page.locator('#' + id);
+  await expect(host).toBeFocused();
+  await host.evaluate(element => {
+    element.addEventListener('beforeinput', event => {
+      element.warningBackspace = { inputType: event.inputType, trusted: event.isTrusted, prevented: event.defaultPrevented };
+    }, { once: true });
+  });
+  await page.keyboard.press('Backspace');
+  const input = await host.evaluate(element => element.warningBackspace);
+  expect(input).toEqual({ inputType: 'deleteContentBackward', trusted: true, prevented: true });
+  observations.get(page).warningBackspace = { input, nativeAvailability: availability };
+
+  const after = await checkpoint(page, id, 'Trusted Backspace preserves all OSR-189 warning bytes');
+  expect(after.canonical).toBe(source);
+  expect(after.state).toEqual(before.state);
+  expect(after.rows).toEqual(before.rows);
+  expect(after.events).toEqual(before.events);
+  expect(after.actualSelection).toEqual(before.actualSelection);
+  expect(after.lifecycle).toBe('ready');
+  expect(after.failures).toHaveLength(before.failures.length + 1);
+  expect(after.failures.at(-1)).toMatchObject({
+    status: 'dom_refused', diagnostic: { code: 'dom.command_unsupported', phase: 'command', publication: 'none' },
+  });
+  expect(await call(page, 'nativeSelectionMatches', id, path, 0)).toBe(true);
+});
+
 test('T09 keyboard Tab return preserves current native caret and every committed facet before and after deletion',async({page})=>{
   const mounted=await call(page,'mount',{fixture:'D0'});expect(mounted.ready).toBe('ready');
   const id=mounted.id;await call(page,'select',id,'/0/2',2);

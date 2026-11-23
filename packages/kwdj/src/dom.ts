@@ -23,6 +23,7 @@ const object = (v: unknown): v is Record<string, unknown> => v !== null && typeo
 const closed = (v: unknown, keys: readonly string[]): v is Record<string, unknown> => object(v)
   && Object.keys(v).length === keys.length && keys.every(k => Object.hasOwn(v, k));
 const smallString = (v: unknown, maximum = 8192): v is string => typeof v === 'string' && v.length <= maximum;
+const warningKind = (v: unknown): v is 'general' | 'content' => v === 'general' || v === 'content';
 function refused(typeId: string | null = null, node: DeepReadonly<NodeViewDto> | null = null): DomRefusal {
   return { status: 'dom_refused', diagnostic: { code: 'dom.presentation_unsupported', phase: 'render',
     stamp: node?.stamp ?? null, node: node?.id ?? null, typeId, publication: 'none' } };
@@ -107,7 +108,7 @@ const nodes: Record<string, NodeRendererDefinition> = {
   [`${prefix}warning`]: node('container', ['kind', 'label'], n => {
     const kind = attrString(n.attributes.kind);
     const label = attrString(n.attributes.label);
-    if ((kind !== 'general' && kind !== 'content') || (Object.hasOwn(n.attributes, 'label') && !label)) return refused(n.type_id, n);
+    if (!warningKind(kind) || (Object.hasOwn(n.attributes, 'label') && !label)) return refused(n.type_id, n);
     const fallback = kind === 'general' ? 'Предупреждение' : 'Контент';
     return { tag: 'section', attributes: { role: 'group', 'aria-label': label?.trim() ? label : fallback } };
   }),
@@ -193,10 +194,13 @@ function coveredCommand(id: string, payload: Record<string, unknown>): boolean {
     }
     case 'insert-text': return closed(payload, ['kind', 'text']) && typeof payload.text === 'string';
     case 'wrap-literary-block': return closed(payload, ['kind', 'literary_kind']) && payload.literary_kind === 'author_note';
-    case 'unwrap-literary-block': return closed(payload, ['kind', 'node']) && typeof payload.node === 'string';
+    case 'wrap-warning': return closed(payload, ['kind', 'warning_kind']) && warningKind(payload.warning_kind);
+    case 'unwrap-literary-block': case 'unwrap-warning': return closed(payload, ['kind', 'node']) && typeof payload.node === 'string';
     case 'toggle-mark': return closed(payload, ['kind', 'mark']) && coveredMark(payload.mark);
     case 'set-link': return closed(payload, ['kind', 'href', 'title']) && safeHref(payload.href) && (payload.title === null || smallString(payload.title));
-    case 'transform-block': case 'insert-block': return closed(payload, ['kind', 'target']) && coveredTarget(payload.target);
+    case 'transform-block': return closed(payload, ['kind', 'target']) && coveredTarget(payload.target);
+    case 'insert-block': return closed(payload, ['kind', 'target']) && (coveredTarget(payload.target)
+      || closed(payload.target, ['kind', 'warning_kind']) && payload.target.kind === 'warning' && warningKind(payload.target.warning_kind));
     case 'toggle-list': return closed(payload, ['kind', 'list']) && coveredList(payload.list);
     case 'move': return closed(payload, ['kind', 'node', 'parent', 'before_index']);
     case 'duplicate': return closed(payload, ['kind', 'node', 'parent', 'index']);
