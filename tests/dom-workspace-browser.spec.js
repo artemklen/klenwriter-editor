@@ -1585,6 +1585,169 @@ test('OSR-141 mounted media retains its accessible name and caption during keybo
   expect(contentRequests).toEqual([]);
 });
 
+test.describe('OSR-199 mounted poetry', () => {
+  test.skip(({ browserName }) => browserName === 'firefox', 'Firefox poetry acceptance is tracked by OSR-201');
+
+  const json = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
+  const canonical = document => canonicalizeRaw(JSON.stringify(document));
+  const corpus = json('../contracts/kwdj/v1/fixtures/positive.json').fixtures;
+  const retained = id => corpus.find(fixture => fixture.id === id).cases[0];
+  const doc019 = retained('DOC-019');
+  const doc020 = retained('DOC-020');
+  const doc027 = retained('DOC-027');
+  const split = json('./fixtures/osr-194-verse-keys.json');
+  const middle = key => split.cases.find(row => row.key === key && row.position === 'middle');
+  const empty = json('./fixtures/osr-195-empty-verse-and-stanzas.json').keys
+    .find(row => row.id === 'terminal_blank_after_line');
+  const deletion = json('./fixtures/osr-196-verse-boundary-deletion.json');
+  const stanza = deletion.cases.find(row => row.id === 'stanza_right_backspace');
+  const clipboard = json('./fixtures/osr-197-poetry-clipboard.json');
+  const partial = clipboard.cases.find(row => row.id === 'open_verse_edges_into_closed_gap_refuse').capture;
+  const path = indices => '/' + indices.join('/');
+
+  const inserted = structuredClone(doc020.kwdj);
+  inserted.content[0].content[0].content[0].text = 'Сильная! строка';
+  const mixed = structuredClone(doc027.kwdj);
+  mixed.content[2].content.splice(1, 1);
+  const edits = [
+    {
+      name: 'DOC-020 trusted insertion retains poetry marks',
+      input: doc020.kwdj, expected: inserted,
+      from: ['/0/0/0', 7], to: ['/0/0/0', 8, 'text'],
+      inputType: 'insertText', text: '!',
+    },
+    {
+      name: 'DOC-019 middle Enter matches OSR-194',
+      input: split.input, expected: middle('Enter').expected,
+      from: ['/0/0/0', middle('Enter').offset], to: ['/0/1/0', middle('Enter').caret.offset, 'text'],
+      key: 'Enter', inputType: 'insertParagraph',
+    },
+    {
+      name: 'DOC-019 Shift+Enter writes the OSR-194 hard break',
+      input: split.input, expected: middle('Shift+Enter').expected,
+      from: ['/0/0/0', middle('Shift+Enter').offset], to: ['/0/0/1', 'after', 'edge'],
+      key: 'Shift+Enter', inputType: 'insertLineBreak',
+    },
+    {
+      name: 'DOC-019 empty-line Enter matches OSR-195',
+      input: empty.input, expected: empty.expected,
+      from: [path(empty.enter_at), 0], to: [path(empty.caret.path), empty.caret.offset, 'child'],
+      key: 'Enter', inputType: 'insertParagraph',
+    },
+    {
+      name: 'DOC-019 stanza Backspace matches OSR-196',
+      input: deletion.documents[stanza.input], expected: deletion.documents[stanza.expected],
+      from: [path([...stanza.selection.anchor.path, 0]), stanza.selection.anchor.offset],
+      to: [path(stanza.expected_selection.anchor.path), 0, 'child'],
+      key: 'Backspace', inputType: 'deleteContentBackward',
+    },
+    {
+      name: 'DOC-027 stanza Backspace preserves mixed poetry block order',
+      input: doc027.kwdj, expected: mixed, mediaIds: doc027.input.identity_state.existing_media_ids,
+      from: ['/2/2/0', 0], to: ['/2/1', 0, 'child'],
+      key: 'Backspace', inputType: 'deleteContentBackward',
+    },
+  ];
+
+  for (const row of edits) test(row.name, async ({ page }) => {
+    const source = canonical(row.input);
+    const mounted = await call(page, 'mount', { source, mediaIds: row.mediaIds ?? [] });
+    expect(mounted.ready, JSON.stringify(mounted.diagnostic)).toBe('ready');
+    const { id } = mounted;
+    const host = page.locator('#' + id);
+    await call(page, 'select', id, ...row.from);
+    await expect(host).toBeFocused();
+    expect((await checkpoint(page, id, 'before ' + row.name)).canonical).toBe(source);
+    await traceLargeInput(host);
+    const shifted = row.key === 'Shift+Enter';
+    if (shifted) await host.evaluate(element => {
+      element.poetryShift = [];
+      element.addEventListener('keydown', event => {
+        if (event.key === 'Enter') element.poetryShift.push({ shift: event.shiftKey, trusted: event.isTrusted });
+      });
+    });
+    if (row.key) await page.keyboard.press(row.key);
+    else await page.keyboard.insertText(row.text);
+
+    await expect.poll(() => call(page, 'snapshot', id)).toBe(canonical(row.expected));
+    const after = await checkpoint(page, id, 'after ' + row.name);
+    expect(after.failures).toEqual([]);
+    expect(after.state.stamp.revision).toBe('1');
+    expect(docEvents(after)).toHaveLength(1);
+    history(after, 1, 0);
+    const [target, offset, kind] = row.to;
+    const node = stateRow(after, target).id;
+    if (kind === 'edge') {
+      const point = { kind, node, side: offset };
+      expect(after.state.selection).toEqual({ anchor: point, focus: point });
+    } else {
+      caret(after, node, offset, kind);
+    }
+    expect(after.actualSelection).toMatchObject({ inside: true });
+    const inputTypes = shifted ? ['insertLineBreak', 'insertParagraph'] : [row.inputType];
+    const events = await host.evaluate(element => element.largeEvents);
+    const input = events.find(event => event.type === 'beforeinput' && inputTypes.includes(event.inputType));
+    expect(input).toMatchObject({ type: 'beforeinput', data: row.text ?? null, trusted: true, prevented: true });
+    if (shifted) {
+      const key = await host.evaluate(element => element.poetryShift);
+      expect(key).toEqual([{ shift: true, trusted: true }]);
+      observations.get(page).poetryShiftEnter = { key, input };
+    }
+  });
+
+  const copies = [
+    {
+      name: 'DOC-019 copy matches the full-text projection',
+      input: doc019.kwdj, anchor: ['/0/0/0', 0], focus: ['/0/3/0', 8],
+      text: doc019.expected.full_text,
+    },
+    {
+      name: 'OSR-197 partial reverse copy preserves three line feeds across the stanza',
+      input: clipboard.documents[partial.document],
+      anchor: [path(partial.focus.path), partial.focus.offset],
+      focus: [path(partial.anchor.path), partial.anchor.offset],
+      text: 'Строка 1\n\n\nСтр',
+    },
+  ];
+  for (const row of copies) test(row.name, async ({ page }) => {
+    const source = canonical(row.input);
+    const mounted = await call(page, 'mount', { source, observeClipboard: true });
+    expect(mounted.ready, JSON.stringify(mounted.diagnostic)).toBe('ready');
+    const { id } = mounted, host = page.locator('#' + id);
+    const initial = await checkpoint(page, id, 'before cross-line selection');
+    await host.focus();
+    const actual = await page.evaluate(({ id, anchor, focus }) => {
+      const a = window.domHost.leaf(id, anchor[0]), f = window.domHost.leaf(id, focus[0]);
+      const selection = document.getSelection();
+      selection.setBaseAndExtent(a, anchor[1], f, focus[1]);
+      return selection.anchorNode === a && selection.focusNode === f
+        && selection.anchorOffset === anchor[1] && selection.focusOffset === focus[1];
+    }, { id, anchor: row.anchor, focus: row.focus });
+    expect(actual).toBe(true);
+    const point = ([leaf, offset]) => ({ kind: 'text', node: stateRow(initial, leaf).id, offset, affinity: 'after' });
+    const selection = { anchor: point(row.anchor), focus: point(row.focus) };
+    await expect.poll(async () => (await call(page, 'read', id, { kind: 'state' })).value.state.selection).toEqual(selection);
+    const before = await checkpoint(page, id, 'before trusted copy');
+    const projection = await call(page, 'read', id, { kind: 'selection_text', max_bytes: 8192 });
+    await traceLargeInput(host);
+    await page.keyboard.press('ControlOrMeta+KeyC');
+    const observed = () => call(page, 'clipboardObservations', id);
+    await expect.poll(async () => (await observed()).results.length).toBe(1);
+    expect(projection).toMatchObject({ status: 'ok', value: { kind: 'selection_text', text: row.text, selection } });
+    expect(await observed()).toEqual({
+      writes: [row.text],
+      results: [{ action: 'copy', status: 'copied', clipboard: 'confirmed', failure: null, submission: null }],
+    });
+    expect(await host.evaluate(element => element.largeEvents)).toEqual([
+      { type: 'copy', inputType: null, data: null, trusted: true, prevented: true },
+    ]);
+    const after = await checkpoint(page, id, 'after trusted copy');
+    expect(after.canonical).toBe(source);
+    expect(after.state).toEqual(before.state);
+    expect(docEvents(after)).toEqual([]);
+  });
+});
+
 test('T02 selected-empty join restores surviving DOM caret before the first structural mutation',async({page})=>{
   const mounted=await call(page,'mount',{fixture:'D1-after-end-split'});expect(mounted.ready).toBe('ready');
   const id=mounted.id;await call(page,'select',id,'/1',0);

@@ -1431,6 +1431,124 @@ mod tests {
     const OSR184_WRAP: &str = "org.klenwriter.kwdj/command/wrap-literary-block";
     const OSR184_UNWRAP: &str = "org.klenwriter.kwdj/command/unwrap-literary-block";
 
+    #[test]
+    fn osr199_verse_selection_text_keeps_exact_separators_atoms_and_limits() {
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-199-poetry-selection.json"
+        ))
+        .unwrap();
+        let corpus: Value = serde_json::from_str(include_str!(
+            "../../../contracts/kwdj/v1/fixtures/positive.json"
+        ))
+        .unwrap();
+        let doc019 = &corpus["fixtures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|entry| entry["id"] == "DOC-019")
+            .unwrap()["cases"][0]["kwdj"];
+        let clipboard: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-197-poetry-clipboard.json"
+        ))
+        .unwrap();
+        let node_at = |session: &mut DistributionSession, path: &Value| {
+            let mut node = state(session)["root"].clone();
+            for index in path.as_array().unwrap() {
+                node = osr183_node(session, &node)["children"][index.as_u64().unwrap() as usize]
+                    .clone();
+            }
+            node
+        };
+        let point = |session: &mut DistributionSession, coordinate: &Value| {
+            let node = node_at(session, &coordinate["path"]);
+            if let Some(offset) = coordinate.get("offset") {
+                json!({"kind":"text","node":node,"offset":offset,"affinity":"after"})
+            } else {
+                json!({"kind":"child","parent":node,"index":coordinate["index"],"affinity":"after"})
+            }
+        };
+
+        for row in fixture["cases"].as_array().unwrap() {
+            let id = row["id"].as_str().unwrap();
+            let document = match row["document"].as_str().unwrap() {
+                "DOC-019" => doc019,
+                "OSR-197" => &clipboard["documents"]["source"],
+                name => &fixture["documents"][name],
+            };
+            let input = document
+                .as_str()
+                .map_or_else(|| document.to_string(), str::to_owned);
+            let mut session = osr183_open(&input);
+            let anchor = point(&mut session, &row["anchor"]);
+            let focus = point(&mut session, &row["focus"]);
+            let selection = json!({"anchor":anchor,"focus":focus});
+            let initial = state(&mut session);
+            let set = call(
+                &mut session,
+                json!({"kind":"set_selection","stamp":initial["stamp"],"selection":selection}),
+            );
+            if let Some(code) = row.get("set_diagnostic") {
+                assert_eq!(set["status"], "refused", "{id}: {set}");
+                assert_eq!(&set["diagnostic"]["code"], code, "{id}: {set}");
+                assert_eq!(state(&mut session), initial, "{id}");
+                assert_eq!(snapshot(&mut session), input, "{id}");
+                continue;
+            }
+            assert_eq!(set["status"], "ok", "{id}: {set}");
+            let before = state(&mut session);
+            assert_eq!(before["selection"], selection, "{id}");
+            let reply = call(
+                &mut session,
+                json!({"kind":"selection_text","stamp":before["stamp"],"max_bytes":row["max_bytes"]}),
+            );
+            if let Some(code) = row.get("diagnostic") {
+                assert_eq!(reply["status"], "refused", "{id}: {reply}");
+                assert_eq!(&reply["diagnostic"]["code"], code, "{id}: {reply}");
+                assert_eq!(reply["diagnostic"]["path"], "", "{id}");
+                assert_eq!(reply["diagnostic"]["may_have_committed"], false, "{id}");
+            } else {
+                let atoms: Vec<_> = row["atoms"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|path| node_at(&mut session, path))
+                    .collect();
+                assert_eq!(
+                    reply,
+                    json!({"status":"ok","value":{
+                        "kind":"selection_text","stamp":before["stamp"],"selection":selection,
+                        "projection_id":"org.klenwriter.kwdj/selection-text/1","text":row["text"],
+                        "empty":false,"selected_atoms":atoms
+                    }}),
+                    "{id}"
+                );
+            }
+            assert_eq!(state(&mut session), before, "{id}");
+            assert_eq!(snapshot(&mut session), input, "{id}");
+            if row["delete_guard"] == true {
+                for payload in [
+                    json!({"kind":"delete_selection"}),
+                    json!({"kind":"delete_selection","scope":"profile_body"}),
+                ] {
+                    let reply = osr183_command(
+                        &mut session,
+                        "org.klenwriter.kwdj/command/delete-selection",
+                        &payload,
+                        false,
+                    );
+                    assert_eq!(reply["status"], "refused", "{id}: {reply}");
+                    assert_eq!(
+                        reply["diagnostic"]["code"], "kwdj.command_unsupported_context",
+                        "{id}"
+                    );
+                    assert_eq!(reply["diagnostic"]["path"], "/command", "{id}");
+                    assert_eq!(state(&mut session), before, "{id}");
+                    assert_eq!(snapshot(&mut session), input, "{id}");
+                }
+            }
+        }
+    }
+
     fn osr194_run_cases(key: &str, command: &str, intent: &str) {
         let fixture: Value = serde_json::from_str(include_str!(
             "../../../tests/fixtures/osr-194-verse-keys.json"

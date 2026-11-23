@@ -6,10 +6,11 @@ import { domRefusal, isDomRefusal } from './refusal.js';
 const catalogs = new WeakSet<object>();
 const brand: unique symbol = Symbol('editor.rendererCatalog');
 const tags = new Set(['span', 'br', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre', 'code', 'blockquote', 'ul', 'ol', 'li', 'div', 'section', 'hr', 'strong', 'em', 's', 'sub', 'sup', 'a']);
-const attributes = new Set(['href', 'title', 'start', 'role', 'aria-label', 'aria-checked']);
+const attributes = new Set(['href', 'title', 'start', 'role', 'aria-label', 'aria-checked', 'data-verse-indent', 'data-blank-lines']);
 // Classes select static editor CSS only. Authored CSS and arbitrary selectors are absent.
 const classes = new Set(['editor-align-left', 'editor-align-center', 'editor-align-right', 'editor-align-justify',
   'editor-first-line-indent', 'editor-task-list', 'editor-task-item', 'editor-checked', 'editor-scene-break',
+  'editor-verse', 'editor-verse-line', 'editor-stanza-break',
   'editor-media-placeholder', 'editor-media-center', 'editor-media-wide',
   'editor-color-muted', 'editor-color-accent', 'editor-color-manuscript', 'editor-color-success', 'editor-color-warning', 'editor-color-danger',
   'editor-highlight-accent', 'editor-highlight-manuscript', 'editor-highlight-warning']);
@@ -106,6 +107,10 @@ function presentation(value: unknown): value is DomPresentation {
       if (!attributes.has(key) || typeof v !== 'string' || v.length > 65536 || (key === 'href' && (value.tag !== 'a' || !validHref(v)))
         || (key === 'start' && (value.tag !== 'ol' || !/^(0|[1-9][0-9]{0,9})$/.test(v) || BigInt(v) > 2147483647n))
         || (key === 'aria-checked' && v !== 'true' && v !== 'false')
+        || (key === 'data-verse-indent'
+          && (value.tag !== 'div' || !value.classes?.includes('editor-verse-line') || !/^[1-8]$/.test(v)))
+        || (key === 'data-blank-lines' && (value.tag !== 'div' || !value.classes?.includes('editor-stanza-break')
+          || !/^[1-9][0-9]{0,19}$/.test(v) || BigInt(v) > 18446744073709551615n))
         || (key === 'role' && !['group', 'separator', 'checkbox', 'list', 'listitem', 'document'].includes(v))) return false;
     }
   }

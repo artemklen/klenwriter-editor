@@ -1001,6 +1001,61 @@ test('OSR-197 packaged SDK2 preserves poetry clipboard structure and exact Undo'
   }
 });
 
+test('OSR-199 packaged SDK2 poetry selection text matches native delimiters, atoms and limits', async t => {
+  const read = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
+  const fixture = read('./fixtures/osr-199-poetry-selection.json');
+  const corpus = read('../contracts/kwdj/v1/fixtures/positive.json');
+  const documents = {
+    ...fixture.documents,
+    'DOC-019': corpus.fixtures.find(entry => entry.id === 'DOC-019').cases[0].kwdj,
+    'OSR-197': read('./fixtures/osr-197-poetry-clipboard.json').documents.source,
+  };
+  for (const row of fixture.cases) {
+    await t.test(row.id, async () => {
+      const document = documents[row.document];
+      const input = typeof document === 'string' ? document : osr185Bytes(document);
+      await withLiteraryCommandSession(input, editor => {
+        const nodeAt = path => path.reduce((id, index) => node(editor, id).children[index], state(editor).root);
+        const point = ({ path, offset, index }) => offset === undefined
+          ? osr185Gap(nodeAt(path), index) : position(nodeAt(path), offset);
+        const selection = { anchor: point(row.anchor), focus: point(row.focus) };
+        const initial = state(editor);
+        const set = completed(editor.submit({ kind: 'set_selection', stamp: editor.capture(), selection }));
+        if (row.set_diagnostic) {
+          assert.equal(refused(set).code, row.set_diagnostic);
+          assert.deepEqual(state(editor), initial);
+          assert.equal(canonical(editor), input);
+          return;
+        }
+        accepted(set);
+        const before = state(editor);
+        assert.deepEqual(structuredClone(before.selection), selection);
+        const projection = editor.read({ kind: 'selection_text', stamp: editor.capture(), max_bytes: row.max_bytes });
+        if (row.diagnostic) {
+          const diagnostic = refused(projection);
+          assert.equal(diagnostic.code, row.diagnostic);
+          assert.equal(diagnostic.path, '');
+          assert.equal(diagnostic.may_have_committed, false);
+        } else {
+          assert.deepEqual(structuredClone(accepted(projection)), {
+            kind: 'selection_text', stamp: structuredClone(before.stamp), selection,
+            projection_id: 'org.klenwriter.kwdj/selection-text/1',
+            text: row.text, empty: false, selected_atoms: row.atoms.map(nodeAt),
+          });
+        }
+        assert.deepEqual(state(editor), before);
+        assert.equal(canonical(editor), input);
+        if (row.delete_guard) {
+          for (const intent of [{ kind: 'delete_selection' }, { kind: 'delete_selection', scope: 'profile_body' }]) {
+            osr183Denied(editor, 'org.klenwriter.kwdj/command/delete-selection', intent,
+              input, 'kwdj.command_unsupported_context', '/command');
+          }
+        }
+      });
+    });
+  }
+});
+
 function osr186Capture(editor, kind, content) {
   const before = state(editor);
   const read = accepted(editor.read({ kind: 'selection_fragment', stamp: editor.capture(), max_bytes: 8192 }));
