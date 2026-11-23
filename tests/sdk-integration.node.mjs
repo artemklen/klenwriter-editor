@@ -335,14 +335,14 @@ const osr183Doc = content => canonicalizeRaw(JSON.stringify({
   schema: 'klenwriter.document', schema_version: 1, profile: 'prose', content,
 }));
 
-async function withLiteraryCommandSession(input, run, media = []) {
+async function withLiteraryCommandSession(input, run, media = [], access = 'editable') {
   const packet = JSON.parse(readFileSync(new URL('../artifacts/extensions/packet.json', import.meta.url)));
   const wasm = readFileSync(new URL('../packages/wasm/dist/editor_wasm_bg.wasm', import.meta.url));
   const module = await loadSdkV2({ wasm: new Uint8Array(wasm) });
   const baseline = counts(module);
   const options = {
     abi: 'editor-sdk/2', build_id: module.manifest.build_id, profile: packet.kwdjProfile,
-    admission: 'validate', access: 'editable', registry_json: packet.kwdjRegistryJson,
+    admission: 'validate', access, registry_json: packet.kwdjRegistryJson,
     profile_options_json: JSON.stringify({ identities: { media, references: [] }, limits: null }),
   };
   const editor = createEditor({ input: new TextEncoder().encode(input), options, loader: async () => module });
@@ -441,6 +441,89 @@ test('OSR-185 packaged SDK2 refuses literary boundaries and illegal parents with
       osr183Denied(editor, osr183Insert, osr185Insert, restricted, expected.code, expected.path);
     }
   }, media);
+});
+
+const osr186InsertFragment = 'org.klenwriter.kwdj/command/insert-fragment';
+const osr186Payload = fragment => ({ kind: 'insert_fragment', fragment_json: JSON.stringify(fragment) });
+function osr186Capture(editor, kind, content) {
+  const before = state(editor);
+  const read = accepted(editor.read({ kind: 'selection_fragment', stamp: editor.capture(), max_bytes: 8192 }));
+  assert.equal(read.empty, false);
+  assert.deepEqual(state(editor), before);
+  const captured = JSON.parse(read.fragment_json);
+  assert.deepEqual([captured.kind, captured.open_start, captured.open_end, captured.content], [kind, false, false, content]);
+  return captured;
+}
+function osr186PasteAndUndo(editor, captured, expected, original) {
+  const command = createCommand(osr186InsertFragment, osr186Payload(captured));
+  assert.equal(accepted(osr183Wire(editor, command)).effect, 'changed');
+  assert.equal(canonical(editor), osr185Bytes(expected));
+  assert.equal(state(editor).history.undo_entries, '1');
+  osr183History(editor, 'undo', original);
+}
+
+test('OSR-186 packaged SDK2 copies closed literary fragments for all kinds and nested children', async () => {
+  const { canonical: original } = literaryFixture();
+  const document = JSON.parse(original);
+  assert.equal(document.content.length, 6);
+  await withLiteraryCommandSession(original, editor => {
+    const parent = state(editor).root;
+    for (const [index, block] of document.content.entries()) {
+      osr185Select(editor, osr185Gap(parent, index), osr185Gap(parent, index + 1));
+      const captured = osr186Capture(editor, 'blocks', [block]);
+      osr185Select(editor, osr185Gap(parent, document.content.length));
+      osr186PasteAndUndo(editor, captured, { ...document, content: [...document.content, block] }, original);
+    }
+  });
+
+  const nested = osr185Fixture().nested;
+  const nestedBytes = osr185Bytes(nested);
+  await withLiteraryCommandSession(nestedBytes, editor => {
+    const parent = state(editor).root;
+    const wrapper = root(editor).children[1];
+    for (const [source, block] of [[parent, nested.content[1]], [wrapper, nested.content[1].content[1]]]) {
+      osr185Select(editor, osr185Gap(source, 1), osr185Gap(source, 2));
+      const captured = osr186Capture(editor, 'blocks', [block]);
+      osr185Select(editor, osr185Gap(wrapper, 2));
+      const expected = structuredClone(nested);
+      expected.content[1].content.push(block);
+      osr186PasteAndUndo(editor, captured, expected, nestedBytes);
+    }
+  });
+});
+
+test('OSR-186 packaged SDK2 preserves partial children and refuses illegal or read-only paste', async () => {
+  const document = osr185Fixture().nested;
+  document.content.push({ type: 'bullet_list', content: [{ type: 'list_item', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'List' }] }] }] });
+  const original = osr185Bytes(document);
+  await withLiteraryCommandSession(original, editor => {
+    const wrapper = root(editor).children[1];
+    const [sourceBlock, targetWrapper] = node(editor, wrapper).children;
+    const source = node(editor, sourceBlock).children[0];
+    osr185Select(editor, position(source, 1), position(source, 4));
+    const inline = [{ type: 'text', text: 'uth', marks: [{ type: 'emphasis' }] }];
+    const captured = osr186Capture(editor, 'inline', inline);
+    osr185Select(editor, osr185Gap(node(editor, targetWrapper).children[0], 0));
+    const expected = structuredClone(document);
+    expected.content[1].content[1].content[0].content = inline;
+    osr186PasteAndUndo(editor, captured, expected, original);
+    osr185Select(editor, osr185Gap(wrapper, 1));
+    osr183Denied(editor, osr186InsertFragment, osr186Payload(captured), original, 'kwdj.command_unsupported_context', '/clipboard');
+  });
+  for (const access of ['editable', 'read_only']) {
+    await withLiteraryCommandSession(original, editor => {
+      const parent = state(editor).root;
+      osr185Select(editor, osr185Gap(parent, 1), osr185Gap(parent, 2));
+      const captured = osr186Capture(editor, 'blocks', [document.content[1]]);
+      if (access === 'editable') {
+        osr185Select(editor, osr185Gap(root(editor).children[3], 1));
+        osr183Denied(editor, osr186InsertFragment, osr186Payload(captured), original, 'kwdj.invalid_profile_content', '/content/3/content/1');
+      } else {
+        osr185Select(editor, osr185Gap(parent, 4));
+        osr183Denied(editor, osr186InsertFragment, osr186Payload(captured), original, 'session.read_only', '');
+      }
+    }, [], access);
+  }
 });
 
 test('OSR-183 packaged SDK2 creates only an author note at the root gap', async () => {

@@ -25,7 +25,15 @@ fn open_bytes(source: &[u8], limits: Value) -> DistributionSession {
     open_bytes_with_media(source, limits, json!([]))
 }
 fn open_bytes_with_media(source: &[u8], limits: Value, media: Value) -> DistributionSession {
-    let options = json!({"abi":"editor-sdk/2","build_id":BUILD,"profile":editor_kwdj_sdk::manifest().profiles[0],"admission":"validate","access":"editable","registry_json":serde_json::to_string(&editor_kwdj::registry::registry_descriptor()).unwrap(),"profile_options_json":json!({"identities":{"media":media,"references":[]},"limits":limits}).to_string()});
+    open_bytes_with_access(source, limits, media, "editable")
+}
+fn open_bytes_with_access(
+    source: &[u8],
+    limits: Value,
+    media: Value,
+    access: &str,
+) -> DistributionSession {
+    let options = json!({"abi":"editor-sdk/2","build_id":BUILD,"profile":editor_kwdj_sdk::manifest().profiles[0],"admission":"validate","access":access,"registry_json":serde_json::to_string(&editor_kwdj::registry::registry_descriptor()).unwrap(),"profile_options_json":json!({"identities":{"media":media,"references":[]},"limits":limits}).to_string()});
     let distribution = Distribution::new(BUILD, vec![Box::new(KwdjFactory)]).unwrap();
     let session = distribution.open(source, &options.to_string());
     assert!(matches!(
@@ -993,6 +1001,163 @@ fn osr185_literary_boundaries_and_restricted_parents_refuse_atomically() {
             osr185_author_note_intent(),
             &restricted,
             &expected[test],
+        );
+    }
+}
+
+fn osr186_capture(session: &mut DistributionSession, expected: Value) -> Value {
+    let before = state(session);
+    let read = call(
+        session,
+        json!({"kind":"selection_fragment","stamp":before["stamp"],"max_bytes":8192}),
+    );
+    assert_eq!(read["status"], "ok", "{read}");
+    assert_eq!(read["value"]["empty"], false);
+    assert_eq!(state(session), before);
+    let captured: Value =
+        serde_json::from_str(read["value"]["fragment_json"].as_str().unwrap()).unwrap();
+    assert_eq!(captured, expected);
+    captured
+}
+
+fn osr186_paste_and_undo(
+    session: &mut DistributionSession,
+    captured: &Value,
+    expected: Value,
+    original: &str,
+) {
+    let reply = paste(session, captured);
+    assert_eq!(reply["value"]["effect"], "changed", "{reply}");
+    assert_eq!(canonical_snapshot(session), expected.to_string());
+    assert_eq!(state(session)["history"]["undo_entries"], "1");
+    undo(session);
+    assert_eq!(canonical_snapshot(session), original);
+}
+
+#[test]
+fn osr186_closed_literary_fragments_retain_all_kinds_and_nested_children() {
+    let fixtures: Value = serde_json::from_str(include_str!(
+        "../../../contracts/kwdj/v1/fixtures/positive.json"
+    ))
+    .unwrap();
+    let original = &fixtures["fixtures"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|row| row["id"] == "DOC-015")
+        .unwrap()["cases"][0]["kwdj"];
+    let blocks = original["content"].as_array().unwrap();
+    assert_eq!(blocks.len(), 6);
+    let mut session = open(original);
+    let root = role(&mut session, &[]);
+    for (index, block) in blocks.iter().enumerate() {
+        select(
+            &mut session,
+            gap(root.clone(), index),
+            gap(root.clone(), index + 1),
+        );
+        let captured = osr186_capture(
+            &mut session,
+            fragment("prose", "blocks", json!([block]), false, false),
+        );
+        let end = gap(root.clone(), blocks.len());
+        select(&mut session, end.clone(), end);
+        let mut expected = original.clone();
+        expected["content"]
+            .as_array_mut()
+            .unwrap()
+            .push(block.clone());
+        osr186_paste_and_undo(&mut session, &captured, expected, &original.to_string());
+    }
+
+    let original = &osr185_fixture()["nested"];
+    let mut session = open(original);
+    let root = role(&mut session, &[]);
+    let wrapper = role(&mut session, &[1]);
+    for (parent, start, block) in [
+        (root, 1, &original["content"][1]),
+        (wrapper.clone(), 1, &original["content"][1]["content"][1]),
+    ] {
+        select(
+            &mut session,
+            gap(parent.clone(), start),
+            gap(parent, start + 1),
+        );
+        let captured = osr186_capture(
+            &mut session,
+            fragment("prose", "blocks", json!([block]), false, false),
+        );
+        let target = gap(wrapper.clone(), 2);
+        select(&mut session, target.clone(), target);
+        let mut expected = original.clone();
+        expected["content"][1]["content"]
+            .as_array_mut()
+            .unwrap()
+            .push(block.clone());
+        osr186_paste_and_undo(&mut session, &captured, expected, &original.to_string());
+    }
+}
+
+#[test]
+fn osr186_inline_children_paste_exactly_and_invalid_or_read_only_targets_refuse() {
+    let mut original = osr185_fixture()["nested"].clone();
+    original["content"].as_array_mut().unwrap().push(json!({
+        "type":"bullet_list","content":[{"type":"list_item","content":[p("List")]}]
+    }));
+    let mut session = open(&original);
+    let source = role(&mut session, &[1, 0, 0]);
+    select(&mut session, text(source.clone(), 1), text(source, 4));
+    let inline = json!([{"type":"text","text":"uth","marks":[{"type":"emphasis"}]}]);
+    let captured = osr186_capture(
+        &mut session,
+        fragment("prose", "inline", inline.clone(), false, false),
+    );
+    let target = gap(role(&mut session, &[1, 1, 0]), 0);
+    select(&mut session, target.clone(), target);
+    let mut expected = original.clone();
+    expected["content"][1]["content"][1]["content"][0]["content"] = inline;
+    let original_bytes = original.to_string();
+    osr186_paste_and_undo(&mut session, &captured, expected, &original_bytes);
+
+    let target = gap(role(&mut session, &[1]), 1);
+    select(&mut session, target.clone(), target);
+    osr185_refusal(
+        &mut session,
+        COMMAND,
+        json!({"kind":"insert_fragment","fragment_json":captured.to_string()}),
+        &original_bytes,
+        &json!({"code":"kwdj.command_unsupported_context","path":"/clipboard"}),
+    );
+    for access in ["editable", "read_only"] {
+        let mut session =
+            open_bytes_with_access(original_bytes.as_bytes(), Value::Null, json!([]), access);
+        let root = role(&mut session, &[]);
+        select(&mut session, gap(root.clone(), 1), gap(root.clone(), 2));
+        let captured = osr186_capture(
+            &mut session,
+            fragment(
+                "prose",
+                "blocks",
+                json!([original["content"][1]]),
+                false,
+                false,
+            ),
+        );
+        let (target, refusal) = if access == "editable" {
+            (
+                gap(role(&mut session, &[3]), 1),
+                json!({"code":"kwdj.invalid_profile_content","path":"/content/3/content/1"}),
+            )
+        } else {
+            (gap(root, 4), json!({"code":"session.read_only","path":""}))
+        };
+        select(&mut session, target.clone(), target);
+        osr185_refusal(
+            &mut session,
+            COMMAND,
+            json!({"kind":"insert_fragment","fragment_json":captured.to_string()}),
+            &original_bytes,
+            &refusal,
         );
     }
 }
