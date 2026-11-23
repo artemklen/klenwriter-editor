@@ -14,13 +14,14 @@ export interface DomPoint { readonly node: Node; readonly offset: number }
 export interface DeletionScroll {
   readonly scroller: HTMLElement;
   readonly active: Element;
-  readonly revealsCaret: () => boolean;
+  readonly restore: (top: number, left: number) => void;
 }
 interface DeletionViewport {
   readonly leaf: string;
   readonly scroller: HTMLElement;
   readonly active: Element;
   readonly top: number;
+  readonly left: number;
 }
 export interface CapturedBlock {
   readonly id: string;
@@ -943,12 +944,12 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
       const clipTop = scroller.getBoundingClientRect().top + scroller.clientTop;
       const bounds = browser.getRangeAt(0).getBoundingClientRect();
       if (bounds.height <= 0 || bounds.top < clipTop || bounds.bottom > clipTop + scroller.clientHeight) return null;
-      const top = scroller.scrollTop;
-      return Number.isFinite(top) ? { leaf: id, scroller, top, active } : null;
+      const { scrollTop: top, scrollLeft: left } = scroller;
+      return Number.isFinite(top) && Number.isFinite(left) ? { leaf: id, scroller, top, left, active } : null;
     }
     return null;
   }
-  function preserveDeletionViewport({leaf, scroller, top, active}: DeletionViewport): DeletionScroll | null {
+  function preserveDeletionViewport({leaf, scroller, top, left, active}: DeletionViewport): DeletionScroll | null {
     const tail = rows.get(leaf)?.texts.at(-1);
     if (!tail || !tail.length) return null;
     // A child-gap Range has no caret rectangle. Its native reveal targets the
@@ -961,21 +962,39 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     };
     const rect = measureCaret(), box = scroller.getBoundingClientRect();
     const clipTop = box.top + scroller.clientTop;
+    const clipLeft = box.left + scroller.clientLeft;
     const height = scroller.clientHeight, width = scroller.clientWidth;
-    const limit = scroller.scrollHeight - height;
+    const limitY = scroller.scrollHeight - height, limitX = scroller.scrollWidth - width;
     const caretCenter = (rect.top + rect.bottom) / 2 - clipTop + scroller.scrollTop;
-    const expectedTop = Math.max(0, Math.min(limit, caretCenter - height / 2));
-    if (rect.height <= 0 || height <= 0 || expectedTop - top < height) return null;
-    const revealsCaret = () => {
+    const caretX = rect.left - clipLeft + scroller.scrollLeft;
+    const expectedTop = Math.max(0, Math.min(limitY, caretCenter - height / 2));
+    const expectedLeft = Math.max(0, Math.min(limitX, caretX - width / 2));
+    if (rect.height <= 0 || height <= 0 || width <= 0 || expectedTop - top < height) return null;
+    const restore = (savedTop: number, savedLeft: number) => {
+      // WebKit may center the line box rather than the Range's font bounds.
+      // Allow that difference in the reveal target, but require stable caret geometry.
       if (!host.contains(tail) || scroller.clientHeight !== height || scroller.clientWidth !== width
-          || scroller.scrollHeight - height !== limit || Math.abs(scroller.scrollTop - expectedTop) > 1) return false;
-      const currentClip = scroller.getBoundingClientRect().top + scroller.clientTop;
+          || scroller.scrollHeight - height !== limitY || scroller.scrollWidth - width !== limitX
+          || expectedTop - savedTop < height || Math.abs(scroller.scrollTop - expectedTop) > 4) return;
+      const currentBox = scroller.getBoundingClientRect();
+      const currentClipTop = currentBox.top + scroller.clientTop;
+      const currentClipLeft = currentBox.left + scroller.clientLeft;
       const current = measureCaret();
-      return current.height > 0 && current.top >= currentClip && current.bottom <= currentClip + height
-        && Math.abs((current.top + current.bottom) / 2 - currentClip + scroller.scrollTop - caretCenter) <= 1;
+      if (current.height <= 0 || current.top < currentClipTop || current.bottom > currentClipTop + height
+          || Math.abs((current.top + current.bottom) / 2 - currentClipTop + scroller.scrollTop - caretCenter) > 1) return;
+      // Restore the horizontal offset only when the same reveal also centered
+      // an offscreen caret horizontally. Preserve unrelated horizontal scroll.
+      if (limitX > 0 && (caretX < savedLeft || caretX > savedLeft + width)
+          && current.left >= currentClipLeft && current.left <= currentClipLeft + width
+          && Math.abs(scroller.scrollLeft - expectedLeft) <= 1
+          && Math.abs(current.left - currentClipLeft + scroller.scrollLeft - caretX) <= 1
+          && doc.defaultView?.getComputedStyle(scroller).direction === 'ltr') {
+        scroller.scrollLeft = savedLeft;
+      }
+      scroller.scrollTop = savedTop;
     };
-    if (revealsCaret()) scroller.scrollTop = top;
-    return { scroller, active, revealsCaret };
+    restore(top, left);
+    return { scroller, active, restore };
   }
   function patch(event: DeepReadonly<EventDto>, restore = true): DomRefusal | null {
     if (destroyed) return refusal('dom.disposed');

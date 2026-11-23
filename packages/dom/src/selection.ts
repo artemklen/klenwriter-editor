@@ -94,7 +94,7 @@ export class SelectionOwner {
         || !host.contains(anchor) || !host.contains(focus)) return;
     const anchorOffset = browser.anchorOffset, focusOffset = browser.focusOffset;
     const serial = this.#serial, focusSerial = this.#focusSerial;
-    const { scroller, active, revealsCaret } = scroll;
+    const { scroller, active, restore } = scroll;
     const valid = () => {
       const current = doc.getSelection();
       return this.intentAvailable() && this.#attached && this.#serial === serial && this.#focusSerial === focusSerial
@@ -114,12 +114,15 @@ export class SelectionOwner {
     // This synchronous call is made inside native publication. Apply the
     // selection owner's busy check once that publication has left the stack.
     if (!valid() || !matchesState() || !valid()) return;
-    let top = scroller.scrollTop;
+    let top = scroller.scrollTop, left = scroller.scrollLeft;
     const checkpoint = () => {
-      if (this.#deletionScroll === frame) top = scroller.scrollTop;
+      if (this.#deletionScroll === frame) {
+        top = scroller.scrollTop;
+        left = scroller.scrollLeft;
+      }
     };
     // Application subscribers and later input listeners can move the viewport
-    // before the browser reveals the new gap. Keep their latest observed offset.
+    // before the browser reveals the new gap. Keep their latest observed offsets.
     const onInput: EventListener = event => {
       if (event.isTrusted && event.defaultPrevented && event.composedPath().includes(host)) {
         checkpoint();
@@ -137,7 +140,7 @@ export class SelectionOwner {
       detach();
       if (this.#guard() || !valid() || !matchesState() || !valid()) return;
       try {
-        if (scroller.scrollTop !== top && revealsCaret()) scroller.scrollTop = top;
+        restore(top, left);
       } catch { this.configuration.report(this.#failure('dom.presentation_unsupported', 'alreadyPublished')); }
     }) };
     this.#deletionScroll = frame;

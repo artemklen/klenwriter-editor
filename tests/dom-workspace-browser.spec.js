@@ -1157,6 +1157,14 @@ for (const fixture of longDocumentFixtures()) {
 
     test(`${scenario} accessible full text, keyboard focus and semantic paragraphs`, async ({page}) => {
       const {id,host,seam,record} = await mountLargeDocument(page,fixture,mode,{scrollable:false});
+      // Text fields participate in keyboard navigation with the default macOS settings.
+      const fieldName = 'Document title';
+      await host.evaluate((element,name) => {
+        const field = document.createElement('input');
+        field.type = 'text';
+        field.setAttribute('aria-label',name);
+        element.before(field);
+      },fieldName);
       const initial = await readLargeDocument(page,id,fixture);
       const target = position(stateRow(initial,'/0/0').id,seam);
       await browserTextSelection(host,{offset:seam});
@@ -1171,9 +1179,9 @@ for (const fixture of longDocumentFixtures()) {
         complete:[...element.children].every(block => getComputedStyle(block).contentVisibility === 'visible'),
       }));
       expect(semantics).toEqual({tags:fixture.leaves.map(() => 'P'),hidden:0,complete:true});
-      const recovery = page.getByRole('button',{name:'Host recovery control'});
+      const title = page.getByRole('textbox',{name:fieldName,exact:true});
       await page.keyboard.press('Shift+Tab');
-      await expect(recovery).toBeFocused();
+      await expect(title).toBeFocused();
       await page.keyboard.press('Tab');
       await expect(host).toBeFocused();
       await assertLargeSelection(page,id,{anchor:target,focus:target});
