@@ -795,6 +795,25 @@ const tableColumnFixtures = () => JSON.parse(readFileSync(new URL('./fixtures/os
 const tableColumnPayload = (fixture, table) => ({ kind: fixture.command, table, column: fixture.column });
 const tableColumnWire = payload => createCommand(`org.klenwriter.kwdj/command/${payload.kind.replaceAll('_', '-')}`, payload);
 
+test('OSR-208 packaged SDK2 explicit table-column queries remain available with a directed rectangle', async () => {
+  const fixtures = JSON.parse(readFileSync(new URL('../contracts/kwdj/v1/fixtures/positive.json', import.meta.url), 'utf8')).fixtures;
+  const source = fixtures.find(doc => doc.id === 'DOC-011').cases.find(item => item.name === 'table_spans_alignment').kwdj;
+  await withLiteraryCommandSession(osr185Bytes(source), editor => {
+    const table = node(editor, root(editor).children[0]);
+    const selection = {
+      anchor: { kind: 'edge', node: node(editor, table.children[1]).children[1], side: 'before' },
+      focus: { kind: 'edge', node: node(editor, table.children[0]).children[0], side: 'after' },
+    };
+    accepted(completed(editor.submit({ kind: 'set_selection', stamp: editor.capture(), selection })));
+    const selected = state(editor);
+    assert.deepEqual(structuredClone(selected.selection), selection);
+    const column = kwdjCommand({ kind: 'insert_column_left', table: table.id, column: 0 });
+    const query = accepted(editor.query({ kind: 'query_command', stamp: selected.stamp, command: column }));
+    assert.equal(query.available, true);
+    assert.deepEqual(state(editor), selected);
+  });
+});
+
 test('OSR-206 packaged SDK2 columns preserve exact geometry, IDs and Undo/Redo', async t => {
   const read = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
   const corpus = ['positive', 'mixed']

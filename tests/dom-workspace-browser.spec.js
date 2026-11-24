@@ -114,6 +114,213 @@ test.describe('OSR-207 table keyboard navigation', () => {
   });
 });
 
+test.describe('OSR-208 rectangular table selection', () => {
+  const corpus=JSON.parse(readFileSync(new URL('../contracts/kwdj/v1/fixtures/positive.json',import.meta.url),'utf8')).fixtures;
+  const tables={
+    'DOC-011':{name:'table_spans_alignment',anchor:'/0/1/1',focus:'/0/0/0',selected:['AB','A','B1','B2']},
+    'DOC-010':{name:'rectangular_table',anchor:'/0/0/1',focus:'/0/1/1',initialOffset:1,selected:['B','2']},
+  };
+  const mark={kind:'toggle_mark',mark:{type_id:'org.klenwriter.kwdj/strong',attributes:{}}};
+  const highlights=editor=>editor.locator('[data-editor-table-cell-selected]');
+  async function mount(page,fixture) {
+    const item=tables[fixture];
+    const source=canonicalizeRaw(JSON.stringify(corpus.find(row=>row.id===fixture).cases.find(row=>row.name===item.name).kwdj));
+    const {id,ready,diagnostic}=await call(page,'mount',{source});
+    expect(ready,JSON.stringify(diagnostic)).toBe('ready');
+    await call(page,'select',id,item.anchor+'/0/0',item.initialOffset??0);
+    const before=await checkpoint(page,id,fixture+' initial table');
+    return {source,id,before,item,editor:page.locator('#'+id)};
+  }
+  function expected(record) {
+    return {
+      anchor:{kind:'edge',node:stateRow(record.before,record.item.anchor).id,side:'before'},
+      focus:{kind:'edge',node:stateRow(record.before,record.item.focus).id,side:'after'},
+    };
+  }
+  async function rectangle(page,record) {
+    const after=await checkpoint(page,record.id,'active rectangular selection');
+    expect(after.state.selection).toEqual(expected(record));
+    expect(await highlights(record.editor).allTextContents()).toEqual(record.item.selected);
+    await expect(highlights(record.editor).first()).toHaveCSS('outline-style','solid');
+    await expect(highlights(record.editor).first()).toHaveCSS('outline-width','2px');
+    expect(await call(page,'nativeSelectionMatches',record.id,record.item.focus+'/0/0',0)).toBe(true);
+    expect(after.canonical).toBe(record.source);
+    expect(after.state.stamp.revision).toBe(record.before.state.stamp.revision);
+    expect(after.state.dirty).toBe(record.before.state.dirty);
+    expect(docEvents(after)).toEqual([]);
+    expect(after.failures).toEqual([]);
+    history(after,0,0);
+    await expect(record.editor).toBeFocused();
+    expect((await new AxeBuilder({page}).include('#'+record.id).analyze()).violations).toEqual([]);
+  }
+  async function mouseDrag(page,editor,from,to) {
+    const text=label=>editor.getByText(label,{exact:true});
+    const start=await text(from).boundingBox(),end=await text(to).boundingBox();
+    expect(start).not.toBeNull();expect(end).not.toBeNull();
+    await page.mouse.move(start.x+start.width/2,start.y+start.height/2);
+    await page.mouse.down();
+    await page.mouse.move(end.x+end.width/2,end.y+end.height/2,{steps:5});
+    await page.mouse.up();
+  }
+  test('keyboard and mouse select the same expanded DOC-011 span rectangle',async({page})=>{
+    const record=await mount(page,'DOC-011');
+    await page.keyboard.press('Shift+ArrowUp');
+    await rectangle(page,record);
+    await page.keyboard.press('Escape');
+    await expect(highlights(record.editor)).toHaveCount(0);
+    await mouseDrag(page,record.editor,'B1','AB');
+    await rectangle(page,record);
+    await call(page,'dispose',record.id);
+    await expect(highlights(record.editor)).toHaveCount(0);
+  });
+  test('DOC-010 column rectangle leaves the other column clear and same-cell drag stays text',async({page})=>{
+    const record=await mount(page,'DOC-010');
+    await page.keyboard.press('Shift+ArrowDown');
+    await rectangle(page,record);
+    await mouseDrag(page,record.editor,'B','2');
+    await rectangle(page,record);
+    await record.editor.getByText('A',{exact:true}).click();
+    await expect(highlights(record.editor)).toHaveCount(0);
+    const text=record.editor.getByText('B',{exact:true});
+    const box=await text.boundingBox();
+    expect(box).not.toBeNull();
+    await page.mouse.move(box.x+1,box.y+box.height/2);
+    await page.mouse.down();
+    await page.mouse.move(box.x+15,box.y+box.height/2,{steps:3});
+    await page.mouse.up();
+    const selected=await checkpoint(page,record.id,'same-cell native text range');
+    const node=stateRow(record.before,record.item.anchor+'/0/0').id;
+    expect(selected.state.selection).toEqual({
+      anchor:{kind:'text',node,offset:0,affinity:'after'},
+      focus:{kind:'text',node,offset:1,affinity:'after'},
+    });
+    await expect(highlights(record.editor)).toHaveCount(0);
+  });
+  test('custom table-like markup retains ordinary selection and never publishes a table rectangle',async({page})=>{
+    const quote=content=>({type:'blockquote',content});
+    const rows=Array.from({length:2},(_,row)=>quote(Array.from({length:3},(_,column)=>quote([
+      {type:'paragraph',content:[{type:'text',text:`R${row}C${column}`}]},
+    ]))));
+    const source=canonicalizeRaw(JSON.stringify({
+      schema:'klenwriter.document',schema_version:1,profile:'prose',content:[quote(rows)],
+    }));
+    const mounted=await page.evaluate(async source=>{
+      const {loadSdkV2,sdkBuildId}=await import('/packages/sdk/index.js');
+      const {mountEditor,defineRendererCatalog}=await import('/packages/dom/index.js');
+      const {kwdjBasicRenderers}=await import('/packages/kwdj/dom.js');
+      const {kwdjCommand}=await import('/packages/kwdj/index.js');
+      const packet=await fetch('/extensions-packet.json').then(response=>response.json());
+      const sdk=await loadSdkV2();
+      const base=kwdjBasicRenderers.definition;
+      const type='org.klenwriter.kwdj/blockquote';
+      const renderers=defineRendererCatalog({...base,nodes:{...base.nodes,[type]:{
+        ...base.nodes[type],present:node=>({tag:({1:'td',2:'table',3:'tr'})[node.children.length]}),
+      }}});
+      const element=document.createElement('div');
+      element.setAttribute('aria-label','Custom blockquote presentation');
+      element.id='custom-table-like-blockquotes';
+      document.getElementById('mounts').append(element);
+      const editor=mountEditor({element,renderers,editor:{input:new TextEncoder().encode(source),loader:async()=>sdk,
+        options:{abi:'editor-sdk/2',build_id:sdkBuildId,profile:packet.kwdjProfile,admission:'validate',access:'editable',
+          registry_json:packet.kwdjRegistryJson,profile_options_json:'{"identities":{"media":[],"references":[]},"limits":null}'}}});
+      const ready=await editor.ready;
+      if(ready.status!=='ready') {editor.destroy();element.remove();return {ready};}
+      const state=()=>editor.read({kind:'state'}).value.state;
+      const node=id=>editor.read({kind:'node',stamp:editor.capture(),node:id}).value.node;
+      const wrapper=node(node(state().root).children[0]);
+      const first=node(node(wrapper.children[0]).children[0]);
+      const last=node(node(wrapper.children[1]).children[0]);
+      const leaf=node(node(first.children[0]).children[0]);
+      const point={kind:'text',node:leaf.id,offset:leaf.text.length,affinity:'after'};
+      const select=(anchor,focus)=>editor.submit({kind:'set_selection',stamp:editor.capture(),selection:{anchor,focus}});
+      const keys=[];
+      const postEditorKey=event=>{
+        if (!event.isTrusted || !['ArrowDown','Tab'].includes(event.key)) return;
+        keys.push({key:event.key,shift:event.shiftKey,claimed:event.defaultPrevented});
+        // Observe the document-bubble handler first, then suppress the UA default.
+        event.preventDefault();
+      };
+      window.addEventListener('keydown',postEditorKey);
+      element.focus();
+      select(point,point);
+      window.customTableLikeBlocks={
+        read:()=>({
+          keys,state:state(),highlighted:[...element.querySelectorAll('[data-editor-table-cell-selected]')].map(cell=>cell.textContent),
+          browserCollapsed:getSelection().isCollapsed,
+        }),
+        deletion:()=>editor.submit({kind:'command',stamp:editor.capture(),history_hint:{kind:'isolated'},
+          command:kwdjCommand({kind:'delete_selection'})}),
+        selectStructuralEdges:()=>select(
+          {kind:'edge',node:first.id,side:'before'},{kind:'edge',node:last.id,side:'after'},
+        ),
+        canonical:()=>{
+          const snap=editor.submit({kind:'snapshot',stamp:editor.capture(),max_bytes:8192}).response.value;
+          editor.submit({kind:'release_snapshot',handle:snap.handle});
+          return snap.canonical_json;
+        },
+        close:()=>{
+          window.removeEventListener('keydown',postEditorKey);
+          editor.destroy();
+          element.remove();
+          delete window.customTableLikeBlocks;
+        },
+      };
+      return {ready:ready.status,selection:state().selection,cellType:first.type_id};
+    },source);
+    expect(mounted).toMatchObject({ready:'ready',cellType:'org.klenwriter.kwdj/blockquote'});
+    const editor=page.locator('#custom-table-like-blockquotes');
+    const read=()=>page.evaluate(()=>window.customTableLikeBlocks.read());
+    try {
+      await expect(editor.locator('table tr td')).toHaveCount(6);
+      await page.keyboard.press('Shift+ArrowDown');
+      await page.keyboard.press('Tab');
+      expect(await read()).toMatchObject({
+        keys:[{key:'ArrowDown',shift:true,claimed:false},{key:'Tab',shift:false,claimed:false}],
+        state:{selection:mounted.selection,stamp:{revision:'0'},history:{undo_entries:'0'}},
+        highlighted:[],browserCollapsed:true,
+      });
+      expect(await page.evaluate(()=>window.customTableLikeBlocks.deletion())).toMatchObject({
+        status:'completed',response:{status:'ok',value:{effect:'unchanged'}},
+      });
+
+      await mouseDrag(page,editor,'R0C0','R1C0');
+      const dragged=await read();
+      expect(dragged.state.selection.anchor.kind).toBe('text');
+      expect(dragged.state.selection.focus.kind).toBe('text');
+      expect(dragged.state.selection.anchor.node).not.toBe(dragged.state.selection.focus.node);
+      expect(dragged.highlighted).toEqual([]);
+      expect(dragged.browserCollapsed).toBe(false);
+
+      expect(await page.evaluate(()=>window.customTableLikeBlocks.selectStructuralEdges())).toMatchObject({
+        status:'completed',response:{status:'ok'},
+      });
+      expect(await read()).toMatchObject({
+        state:{selection:{anchor:{kind:'edge',side:'before'},focus:{kind:'edge',side:'after'}},
+          stamp:{revision:'0'},history:{undo_entries:'0'}},
+        highlighted:[],browserCollapsed:false,
+      });
+      expect(await page.evaluate(()=>window.customTableLikeBlocks.canonical())).toBe(source);
+    } finally {await page.evaluate(()=>window.customTableLikeBlocks.close());}
+  });
+  test('structural rectangle refuses linear marks and permits an explicit block target',async({page})=>{
+    const record=await mount(page,'DOC-011');
+    const selection=expected(record);
+    expect((await call(page,'rawSelection',record.id,selection.anchor,selection.focus)).response.status).toBe('ok');
+    const availability=await call(page,'queryCommand',record.id,mark);
+    expect(availability).toMatchObject({status:'ok',value:{available:false,diagnostic:{code:'kwdj.command_unsupported_context'}}});
+    const refused=await call(page,'command',record.id,mark);
+    expect(refused.response.diagnostic?.code).toBe('kwdj.command_unsupported_context');
+    const table=stateRow(record.before,'/0').id;
+    const duplicate=await call(page,'queryCommand',record.id,{kind:'duplicate',node:table,parent:record.before.state.root,index:1});
+    expect(duplicate).toMatchObject({status:'ok',value:{available:true}});
+    const after=await checkpoint(page,record.id,'linear edit refusal preserves rectangle and document');
+    expect(after.state.selection).toEqual(selection);
+    expect(after.canonical).toBe(record.source);
+    expect(docEvents(after)).toEqual([]);
+    history(after,0,0);
+  });
+});
+
 async function recordHistoryKeys(page,id) {
   await page.locator(`#${id}`).evaluate(element=>{
     element.historyKeyTrace=[];

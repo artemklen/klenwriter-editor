@@ -4,6 +4,7 @@ import type { DomDiagnostic, DomLayoutPolicy, DomPatchPolicy, DomRefusal, DomTex
 import { prepareNode, type PreparedNode } from './catalog.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
 import { createLayoutPolicyOwner } from './layout-policy.js';
+import { tableSelectionCells, tableSelectionFocus } from './table-navigation.js';
 import { createCompositionCorrespondence, type CompositionWindow, type CompositionObservation, type CompositionTerminalTicket } from './composition-view.js';
 import {literalCompositionBytes,sameLiteralNode,verifyLiteralComposition,type LiteralCompositionSource} from './composition-literal.js';
 import {fragmentOffset, fragmentPoint, matchesTextFragments, planTextFragments, scalarBoundary} from './text-fragments.js';
@@ -97,6 +98,7 @@ function stampSame(a: DeepReadonly<StampDto>, b: DeepReadonly<StampDto>): boolea
     && a.selection_epoch === b.selection_epoch && a.history_epoch === b.history_epoch;
 }
 let mountSerial = 0;
+const selectedCellAttribute = 'data-editor-table-cell-selected';
 
 /** A read-only correspondence between native rows and actual owned DOM objects. */
 export function createDomView(options: { readonly element: HTMLElement; readonly catalog: RendererCatalog;
@@ -113,6 +115,8 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
   let nextDomId = 0, rows = new Map<string, Row>(), authority = new WeakMap<Node, string>();
   let rootId: string | null = null, currentStamp: DeepReadonly<StampDto> | null = null;
   let lastSelection: DeepReadonly<SelectionDto> | null = null, lastAnchor: DomPoint | null = null, lastFocus: DomPoint | null = null;
+  let lastTableSelection = false;
+  let selectedTableCells = new Set<HTMLElement>();
   let provisional: Provisional | null = null, destroyed = false;
   let placeholders = new WeakSet<Node>();
   let compositionGeneration: object = {};
@@ -191,6 +195,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     if(element.tagName.toLowerCase()!==p.tag)return false;
     const expected=new Map(Object.entries(p.attributes??{}));
     if(p.classes?.length)expected.set('class',p.classes.join(' '));
+    if(outer && selectedTableCells.has(element))expected.set(selectedCellAttribute,'');
     const actual=[...element.attributes].filter(a=>!outer||!['id','data-editor-node'].includes(a.name));
     return actual.length===expected.size&&actual.every(a=>expected.get(a.name)===a.value);
   }
@@ -490,12 +495,27 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     if (index < 0) return refusal('dom.presentation_unsupported', position.node);
     return { node: parent.content, offset: index + (position.side === 'after' ? 1 : 0) };
   }
+  // Selection appearance is changed only by mounted view publication or disposal.
+  function paintTableSelection(selection: DeepReadonly<SelectionDto> | null): void {
+    const next = new Set(tableSelectionCells({geometryRow}, selection));
+    for (const cell of selectedTableCells) if (!next.has(cell)) cell.removeAttribute(selectedCellAttribute);
+    for (const cell of next) if (!selectedTableCells.has(cell)) cell.setAttribute(selectedCellAttribute, '');
+    selectedTableCells = next;
+  }
+  function selectionPoints(selection: DeepReadonly<SelectionDto>) {
+    const tableFocus = tableSelectionFocus({geometryRow}, selection);
+    const focus = domPoint(tableFocus ?? selection.focus);
+    return {anchor:tableFocus ? focus : domPoint(selection.anchor),focus,table:tableFocus!==null};
+  }
+  function forgetSelection(): void {
+    lastSelection=null; lastAnchor=lastFocus=null; lastTableSelection=false;
+  }
   function restoreSelection(selection: DeepReadonly<SelectionDto> | null): DomRefusal | null {
     if (destroyed) return refusal('dom.disposed');
     if (provisional?.composing) return null;
     if (selection === null) {
       const layoutFailure = layout?.check(); if (layoutFailure) return layoutFailure;
-      lastSelection = null; lastAnchor = lastFocus = null;
+      forgetSelection();
       const browser = doc.getSelection();
       try {
         // Replacement can reparent an old range to the editing host itself.
@@ -508,7 +528,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         return null;
       } catch { return refusal('dom.presentation_unsupported'); }
     }
-    const anchor = domPoint(selection.anchor), focus = domPoint(selection.focus);
+    const {anchor,focus,table} = selectionPoints(selection);
     if (isDomRefusal(anchor)) return anchor; if (isDomRefusal(focus)) return focus;
     const layoutFailure = layout?.pin(anchor, focus); if (layoutFailure) return layoutFailure;
     const browser = doc.getSelection(); if (!browser) return refusal('dom.presentation_unsupported');
@@ -519,14 +539,14 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         || browser.focusNode !== focus.node || browser.focusOffset !== focus.offset) {
         browser.setBaseAndExtent(anchor.node, anchor.offset, focus.node, focus.offset);
       }
-      lastSelection = selection; lastAnchor = anchor; lastFocus = focus; return null;
+      lastSelection = selection; lastAnchor = anchor; lastFocus = focus; lastTableSelection = table; return null;
     } catch { return refusal('dom.presentation_unsupported'); }
   }
   function rememberSelection(selection: DeepReadonly<SelectionDto> | null): DomRefusal | null {
-    if(selection===null){lastSelection=null;lastAnchor=lastFocus=null;return null;}
-    const anchor=domPoint(selection.anchor),focus=domPoint(selection.focus);
+    if(selection===null){forgetSelection();return null;}
+    const {anchor,focus,table}=selectionPoints(selection);
     if(isDomRefusal(anchor))return anchor;if(isDomRefusal(focus))return focus;
-    lastSelection=selection;lastAnchor=anchor;lastFocus=focus;return null;
+    lastSelection=selection;lastAnchor=anchor;lastFocus=focus;lastTableSelection=table;return null;
   }
   function readSelection(): DeepReadonly<SelectionDto> | DomRefusal | null {
     if (destroyed) return refusal('dom.disposed');
@@ -535,9 +555,13 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     const anchor = positionAt(browser.anchorNode, browser.anchorOffset), focus = positionAt(browser.focusNode, browser.focusOffset);
     if (isDomRefusal(anchor)) return anchor; if (isDomRefusal(focus)) return focus;
     if (!anchor || !focus) return refusal('dom.presentation_unsupported');
-    const a = lastSelection && lastAnchor?.node === browser.anchorNode && lastAnchor.offset === browser.anchorOffset ? lastSelection.anchor : anchor;
-    const f = lastSelection && lastFocus?.node === browser.focusNode && lastFocus.offset === browser.focusOffset ? lastSelection.focus : focus;
-    return Object.freeze({ anchor: a, focus: f });
+    const sameAnchor = lastAnchor?.node === browser.anchorNode && lastAnchor.offset === browser.anchorOffset;
+    const sameFocus = lastFocus?.node === browser.focusNode && lastFocus.offset === browser.focusOffset;
+    if (lastTableSelection && lastSelection && sameAnchor && sameFocus && browser.rangeCount === 1) return lastSelection;
+    return Object.freeze({
+      anchor: !lastTableSelection && lastSelection && sameAnchor ? lastSelection.anchor : anchor,
+      focus: !lastTableSelection && lastSelection && sameFocus ? lastSelection.focus : focus,
+    });
   }
   interface TextBudget { nodes: number; units: number }
   function captureText(element: Node, budget: TextBudget): string | DomRefusal {
@@ -1148,6 +1172,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
       } catch { return refusal('dom.presentation_unsupported', null, publication); }
     }
     currentStamp = event.after;
+    if (!provisional?.composing) paintTableSelection(event.selection_after);
     const failure = provisional?.composing ? null : restore ? restoreSelection(event.selection_after) : rememberSelection(event.selection_after);
     if (failure) return failure;
 
@@ -1185,6 +1210,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
         }
         reconcileChildren(rootRow, fresh, freshPlaceholders);
         freshAuthority.set(host,state.root); rows = fresh; authority = freshAuthority; placeholders = freshPlaceholders; rootId = state.root; currentStamp = state.stamp; provisional = null; compositionGeneration = {};
+        paintTableSelection(state.selection);
         const selectionFailure = restoreSelection(state.selection);
         return selectionFailure ?? layout?.activate() ?? null;
       } catch { return refusal('dom.presentation_unsupported'); }
@@ -1215,11 +1241,12 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     destroy(destroyOptions = {}) {
       if (destroyed) return; destroyed = true;
       layout?.destroy();
+      paintTableSelection(null);
       if (!destroyOptions.retainRegion) {
         // Never inspect or clear an unbounded retained provisional subtree.
         for (const row of rows.values()) if (row.view.parent === rootId && row.outer.parentNode === host) row.outer.remove();
       }
-      rows.clear(); authority = new WeakMap(); provisional = null; lastSelection = null; lastAnchor = lastFocus = null; currentStamp = null; rootId = null; compositionGeneration = {};
+      rows.clear(); authority = new WeakMap(); provisional = null; forgetSelection(); currentStamp = null; rootId = null; compositionGeneration = {};
     }
   };
 }

@@ -5,10 +5,10 @@ import type { DeletionScroll, DomPoint, DomView } from './view.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
 import { fields } from './ownership.js';
 import { edgeGeometry, ownedCaretHit, visibleEdgeHit } from './selection-geometry.js';
-import { tableNavigation, type TableKey, type TableSlot } from './table-navigation.js';
+import { tableKeyboardSelection, tableSelectionBetween, tableSelectionFocus, type TableSelectionKey, type TableSlot } from './table-navigation.js';
 const same=(a:unknown,b:unknown)=>JSON.stringify(a)===JSON.stringify(b);
 const MAX_SERIAL=18446744073709551615n;
-const tableKeys = new Set<string>(['Tab','ArrowLeft','ArrowRight','ArrowUp','ArrowDown']);
+const tableKeys = new Set<string>(['Tab','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Escape']);
 interface Configuration {
   element(): HTMLElement|null; view(): DomView|null; capture(): DeepReadonly<StampDto>|null;
   context(): DeepReadonly<SessionContextV2>|null; read(request:ReadRequest): Response;
@@ -22,7 +22,7 @@ export interface ExactBookmark { readonly selection:DeepReadonly<SelectionDto>|n
 export interface ResultFocusPermit { readonly __resultFocusPermit:unique symbol }
 interface SubmissionFrame { readonly own:boolean; readonly eligible:boolean; readonly serial:bigint; readonly before:DeepReadonly<StampDto>|null; readonly context:DeepReadonly<SessionContextV2>|null; events:number; reentrant:boolean; foreign:boolean; publications:number; publication:DeepReadonly<EventDto>|null; knownInvalidations:number; ended:boolean }
 interface FocusEntry { readonly serial:bigint; readonly stamp:DeepReadonly<StampDto>; readonly selection:DeepReadonly<SelectionDto>|null; readonly context:DeepReadonly<SessionContextV2>; readonly publication:DomRefusal['diagnostic']['publication'] }
-interface PointerOwner { readonly id:number; x:number;y:number;anchor:DomPoint|null }
+interface PointerOwner { readonly id:number; x:number;y:number;anchor:DomPoint|null; tableEligible:boolean }
 type InputIntentObserver = (before:bigint,after:bigint,event:Event|null)=>void;
 type TableNavigationObserver = (stamp:DeepReadonly<StampDto>,exit?:TableNavigationExit)=>void;
 /** One per mount: identity, browser correspondence and intent, never document semantics. */
@@ -339,19 +339,19 @@ export class SelectionOwner {
   }
   #tableKey(event: KeyboardEvent): boolean {
     if (!tableKeys.has(event.key) || !event.isTrusted || !event.cancelable || event.defaultPrevented || event.isComposing
-      || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey && event.key !== 'Tab'
+      || event.altKey || event.ctrlKey || event.metaKey
       || !this.ownsFocus() || this.#retiredViewImport || this.#rangeWriting || this.#guard()) return false;
     const host=this.configuration.element(),view=this.configuration.view(),stamp=this.configuration.capture();
     if (!host?.ownerDocument.hasFocus() || !view || !stamp || !same(stamp,view.geometryStamp())) return false;
     const selection=view.readSelection();
-    if (!selection || isDomRefusal(selection) || !same(selection.anchor,selection.focus)) return false;
-    const route=tableNavigation(view,selection.focus,event.key as TableKey,event.shiftKey,this.#tableEntry);
-    if (!route || isDomRefusal(view.domPoint(route.point))) return false;
+    if (!selection || isDomRefusal(selection)) return false;
+    const route=tableKeyboardSelection(view,selection,event.key as TableSelectionKey,event.shiftKey,this.#tableEntry);
+    if (!route || isDomRefusal(view.domPoint(tableSelectionFocus(view,route.selection) ?? route.selection.focus))) return false;
     event.preventDefault();
     this.invalidate(false,event);
     this.cancel();
     if (view!==this.configuration.view() || !same(stamp,this.configuration.capture()) || !this.ownsFocus() || this.#guard()) return true;
-    const next={anchor:route.point,focus:route.point};
+    const next=route.selection;
     const result=this.#publish(next);
     if (isDomRefusal(result) || result.status!=='completed' || result.response.status!=='ok') return true;
     const reply=result.response.value;
@@ -410,7 +410,7 @@ export class SelectionOwner {
       this.cancel();if(!owned(pointer.target))return;this.invalidate(false,pointer);
       if(pointer.button===0 && pointer.isPrimary && pointer.pointerType==='mouse' && !this.#guard()){
         if(pointer.isTrusted && !pointer.defaultPrevented && doc.hasFocus())this.#retiredViewImport=false;
-        this.#pointer={id:pointer.pointerId,x:pointer.clientX,y:pointer.clientY,anchor:null};
+        this.#pointer={id:pointer.pointerId,x:pointer.clientX,y:pointer.clientY,anchor:null,tableEligible:pointer.isTrusted && !pointer.defaultPrevented};
       }
     });
     listen(doc,'mousedown',event=>{
@@ -428,11 +428,12 @@ export class SelectionOwner {
       mouse.preventDefault();host.focus({preventScroll:true});
       // Host focus callbacks may publish, replace, retarget or leave this mount.
       if(this.#pointer!==p || this.#serial!==serial || this.#focusSerial!==focusSerial || !same(stamp,this.configuration.capture()) || !same(context,this.configuration.context()) || this.#guard() || !this.ownsFocus() || !doc.hasFocus() || !host.contains(point.node)){this.cancel();return;}
+      p.tableEligible&&=mouse.isTrusted;
       p.anchor=point;this.#writePointerRange(p,point);
     });
     listen(doc,'pointermove',event=>{
       const e=event as PointerEvent,p=this.#pointer;if(!p || p.id!==e.pointerId)return;
-      if(!(e.buttons&1)){this.cancel();return;}p.x=e.clientX;p.y=e.clientY;
+      if(!(e.buttons&1)){this.cancel();return;}p.x=e.clientX;p.y=e.clientY;p.tableEligible&&=e.isTrusted && !e.defaultPrevented;
       if(!p.anchor)return; // The compatibility mousedown has not claimed it.
       const view=this.configuration.view(),geometry=edgeGeometry(host);
       if(!view || !geometry || this.#guard() || !this.ownsFocus() || !doc.hasFocus()){this.cancel();return;}
@@ -470,9 +471,34 @@ export class SelectionOwner {
     if(this.#raf!==null || !this.#pointer?.anchor)return;
     const win=this.configuration.element()?.ownerDocument.defaultView;if(win)this.#raf=win.requestAnimationFrame(()=>{this.#raf=null;this.#edgeTick();});
   }
+  #tablePointerRange(anchor: DomPoint, focus: DomPoint): boolean {
+    const view=this.configuration.view();
+    const cellOrigin=anchor.node.nodeType===1 ? anchor.node as Element : anchor.node.parentElement;
+    if (!view || !cellOrigin?.closest('td,th')) return false;
+    const a=view.textPosition(anchor.node,anchor.offset), f=view.textPosition(focus.node,focus.offset);
+    if (!a || !f || isDomRefusal(a) || isDomRefusal(f)) return false;
+    const rectangle=tableSelectionBetween(view,a,f);
+    if (!rectangle) {
+      if (anchor.node!==focus.node || anchor.offset!==focus.offset) return false;
+      const previous=view.readSelection();
+      if (!previous || isDomRefusal(previous) || !tableSelectionFocus(view,previous)) return false;
+    }
+    const selection=rectangle ?? {anchor:a,focus:f};
+    const state=this.#state();
+    if ('status' in state || !same(state.stamp,view.geometryStamp())) { this.cancel(); return true; }
+    if (same(selection,state.selection)) return true;
+    const pointer=this.#pointer;
+    this.invalidate();
+    if (this.#pointer!==pointer || view!==this.configuration.view() || !same(state.stamp,this.configuration.capture())
+      || !this.ownsFocus() || this.#guard()) { this.cancel(); return true; }
+    const result=this.#publish(selection);
+    if (isDomRefusal(result) || result.status!=='completed' || result.response.status!=='ok') this.cancel();
+    return true;
+  }
   #writePointerRange(pointer:PointerOwner,focus:DomPoint):void {
     const host=this.configuration.element(),anchor=pointer.anchor,browser=host?.ownerDocument.getSelection();
     if(this.#pointer!==pointer || !host || !anchor || !browser || !host.contains(anchor.node) || !host.contains(focus.node)){this.cancel();return;}
+    if (pointer.tableEligible && this.#tablePointerRange(anchor,focus)) return;
     this.#rangeWriting++;
     try{if(browser.anchorNode!==anchor.node || browser.anchorOffset!==anchor.offset || browser.focusNode!==focus.node || browser.focusOffset!==focus.offset)browser.setBaseAndExtent(anchor.node,anchor.offset,focus.node,focus.offset);}
     catch{this.cancel();this.configuration.report(this.#failure('dom.presentation_unsupported'));return;}

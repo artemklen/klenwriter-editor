@@ -17,7 +17,10 @@ use editor_core::document::Mark;
 use editor_core::positions::Selection;
 use editor_core::transaction::WorkMeter;
 
-use crate::{KwdjError, KwdjErrorCode, KwdjProfile, KwdjProfileError, model::WarningKind};
+use crate::{
+    KwdjError, KwdjErrorCode, KwdjProfile, KwdjProfileError, model::WarningKind,
+    table_geometry::table_selection,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BlockTarget {
@@ -302,6 +305,35 @@ pub(super) fn refusal(code: KwdjErrorCode) -> KwdjError {
     KwdjError::categorized(code, "", "command")
 }
 
+fn uses_linear_selection<I>(intent: &KwdjIntent<I>) -> bool {
+    matches!(
+        intent,
+        KwdjIntent::Enter
+            | KwdjIntent::ShiftEnter
+            | KwdjIntent::ToggleMark { .. }
+            | KwdjIntent::SetLink { .. }
+            | KwdjIntent::UnsetLink
+            | KwdjIntent::InsertText { .. }
+            | KwdjIntent::TransformBlock { .. }
+            | KwdjIntent::ToggleQuote
+            | KwdjIntent::ToggleList { .. }
+            | KwdjIntent::InsertBlock { .. }
+            | KwdjIntent::InsertAuthorNote
+            | KwdjIntent::WrapLiteraryBlock
+            | KwdjIntent::InsertWarning { .. }
+            | KwdjIntent::WrapWarning { .. }
+            | KwdjIntent::InsertLabeledContainer { .. }
+            | KwdjIntent::WrapLabeledContainer { .. }
+            | KwdjIntent::AcceptSlash { .. }
+            | KwdjIntent::DeleteBackward
+            | KwdjIntent::DeleteForward
+            | KwdjIntent::DeleteSelection
+            | KwdjIntent::DeleteSelectionInProfileBody
+            | KwdjIntent::DeleteSelectionAtPoetryBoundary
+            | KwdjIntent::InsertFragment { .. }
+    )
+}
+
 impl CommandProvider for KwdjProfile<'_> {
     type Intent<I: Copy + Eq + Ord> = KwdjIntent<I>;
     const COMMANDS: &'static [CommandDescriptor] = KWDJ_COMMANDS;
@@ -368,6 +400,12 @@ impl CommandProvider for KwdjProfile<'_> {
         intent: &KwdjIntent<V::Id>,
         plan: &mut PlanBuilder<'_, V::Id>,
     ) -> Result<CommandPresentation, Self::Error> {
+        if self.clipboard_v2()
+            && uses_linear_selection(intent)
+            && table_selection(view, state.selection.copied()).is_some()
+        {
+            return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());
+        }
         Ok(match intent {
             KwdjIntent::InsertAuthorNote
             | KwdjIntent::SetLiteraryKind { .. }
@@ -483,6 +521,9 @@ impl CommandProvider for KwdjProfile<'_> {
         policy: editor_core::commands::InputCommandPolicy,
         plan: &mut PlanBuilder<'_, V::Id>,
     ) -> Result<CommandPresentation, Self::Error> {
+        if table_selection(view, state.selection.copied()).is_some() {
+            return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());
+        }
         let rules = self
             .typing_rules()
             .ok_or_else(|| refusal(KwdjErrorCode::CommandUnsupportedContext))?;

@@ -5,6 +5,7 @@
 use editor_core::candidate::{BorrowedNode, CandidateRead};
 use editor_core::document::Attribute;
 use editor_core::limits::{LimitExceeded, check};
+use editor_core::positions::{Edge, Position, Selection};
 use editor_core::transaction::{WorkMeter, WorkPhase};
 
 use crate::model::Node;
@@ -34,6 +35,53 @@ pub(crate) struct CellPlacement {
     pub rowspan: usize,
     pub end_column: usize,
     pub header: bool,
+}
+
+/// Directed shape recorded with ordinary selections in the SDK2 state.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct TableSelection<I> {
+    pub table: I,
+    pub anchor: I,
+    pub focus: I,
+}
+
+pub(crate) fn table_selection<V: CandidateRead>(
+    view: &V,
+    selection: Option<Selection<V::Id>>,
+) -> Option<TableSelection<V::Id>> {
+    let Selection {
+        anchor: Position::Edge {
+            node: anchor,
+            side: Edge::Before,
+        },
+        focus: Position::Edge {
+            node: focus,
+            side: Edge::After,
+        },
+    } = selection?
+    else {
+        return None;
+    };
+    let table_of = |id| {
+        let cell = view.node(id)?;
+        if !matches!(
+            cell.type_id,
+            "org.klenwriter.kwdj/table_header" | "org.klenwriter.kwdj/table_cell"
+        ) {
+            return None;
+        }
+        let row = view.node(cell.parent)?;
+        (row.type_id == "org.klenwriter.kwdj/table_row").then_some(row.parent)
+    };
+    let marker = TableSelection {
+        table: table_of(anchor)?,
+        anchor,
+        focus,
+    };
+    (marker.anchor != marker.focus
+        && table_of(marker.focus)? == marker.table
+        && view.node(marker.table)?.type_id == "org.klenwriter.kwdj/table")
+        .then_some(marker)
 }
 
 struct CellShape {
