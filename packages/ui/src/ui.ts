@@ -147,7 +147,7 @@ class Ui implements EditorUi {
         const result: UiFailure = subscription.status === 'dom_refused' ? subscription : { status: 'sdk_failure', response: subscription };
         this.#show(result); return result;
       }
-      const detachTableChrome = configuration.editor.selection.observeTableNavigation?.(
+      const detachTableChrome = configuration.editor.selection?.observeTableNavigation?.(
         (stamp, exit) => this.#tableNavigation(stamp, exit),
       );
       this.#subscription = () => { detachTableChrome?.(); subscription(); };

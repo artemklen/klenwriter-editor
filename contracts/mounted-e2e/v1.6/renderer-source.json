@@ -257,8 +257,8 @@
     },
     {
       "path": "packages/ui/dist/ui.js",
-      "bytes": 77199,
-      "sha256": "5b8efee3b26ff26c75ebb0997588403625373ffc7a6a3c2e7a4a5996a1d31011"
+      "bytes": 77200,
+      "sha256": "a1ad76166c4680adfe17169dc5660e2ca2cb069a783cb8fc092f85fea38f39e0"
     },
     {
       "path": "packages/kwdj/dist/container-label.js",
