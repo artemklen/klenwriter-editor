@@ -378,6 +378,73 @@ function osr183Denied(editor, id, payload, expected, code, path) {
 
 const osr185Fixture = () => JSON.parse(readFileSync(new URL('./fixtures/osr-185-literary.json', import.meta.url)));
 const osr185Bytes = value => canonicalizeRaw(JSON.stringify(value));
+
+test('OSR-203 packaged SDK2 admits retained table variants and preserves refused source bytes', async t => {
+  const read = name => JSON.parse(readFileSync(new URL(name, import.meta.url), 'utf8'));
+  const packet = read('../artifacts/extensions/packet.json');
+  const wasm = new Uint8Array(readFileSync(new URL('../packages/wasm/dist/editor_wasm_bg.wasm', import.meta.url)));
+  const module = await loadSdkV2({ wasm });
+  const baseline = counts(module);
+  const encoder = new TextEncoder();
+  const cases = ['positive', 'mixed']
+    .flatMap(file => read(`../contracts/kwdj/v1/fixtures/${file}.json`).fixtures)
+    .filter(fixture => ['DOC-010', 'DOC-011', 'DOC-012'].includes(fixture.id))
+    .flatMap(fixture => fixture.cases);
+  assert.equal(cases.length, 6);
+  const refusalPaths = {
+    normalized_unit_spans_rejected: '/content/0/content/0/content/0/attrs/rowspan',
+    malformed_effective_grid: '/content/0',
+  };
+  const openCase = async (input, admission, verify) => {
+    const original = input.slice();
+    const options = {
+      abi: 'editor-sdk/2', build_id: module.manifest.build_id, profile: packet.kwdjProfile,
+      admission, access: 'read_only', registry_json: packet.kwdjRegistryJson,
+      profile_options_json: '{"identities":{"media":[],"references":[]},"limits":null}',
+    };
+    const editor = createEditor({ input, options, loader: async () => module });
+    try {
+      return verify(await editor.ready, editor, original);
+    } finally {
+      assert.deepEqual(input, original);
+      accepted(await settled(editor.destroy()));
+      assert.deepEqual(counts(module), baseline);
+    }
+  };
+  const checkExport = expected => (ready, editor) => {
+    accepted(ready);
+    const before = state(editor);
+    assert.equal(before.stamp.revision, '0');
+    assert.equal(before.history.undo_entries, '0');
+    assert.equal(before.dirty, false);
+    const exported = canonical(editor);
+    assert.equal(exported, expected);
+    assert.deepEqual(state(editor), before);
+    return exported;
+  };
+  for (const row of cases) {
+    await t.test(row.name, async () => {
+      const normalize = row.name === 'pre_normalized_unit_spans_removed';
+      const input = encoder.encode(JSON.stringify(normalize ? row.input.value : row.kwdj, null, 2));
+      if (Object.hasOwn(refusalPaths, row.name)) {
+        await openCase(input, 'validate', (ready, editor, original) => {
+          const diagnostic = refused(ready);
+          assert.equal(diagnostic.code, row.expected.diagnostic_codes[0]);
+          assert.equal(diagnostic.path, refusalPaths[row.name]);
+          assert.equal(diagnostic.may_have_committed, false);
+          assert.equal(editor.capture(), null);
+          assert.deepEqual(counts(module), baseline);
+          assert.deepEqual(editor.originalInput(), original);
+        });
+      } else {
+        const check = checkExport(osr185Bytes(row.kwdj));
+        const exported = await openCase(input, normalize ? 'normalize' : 'validate', check);
+        await openCase(encoder.encode(exported), 'validate', check);
+      }
+    });
+  }
+});
+
 const osr192Input = () => readFileSync(new URL('../tests/fixtures/osr-192-label-entry.input.json', import.meta.url), 'utf8');
 const osr192Entry = () => readFileSync(new URL('../tests/fixtures/osr-192-label-entry.canonical.json', import.meta.url), 'utf8');
 const osr192SetLabel = 'org.klenwriter.kwdj/command/set-container-label';
