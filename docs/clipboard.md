@@ -58,16 +58,18 @@ closed blocks retain their own structure. Partial cross-parent/list/cell shapes
 and incompatible open headers refuse. An empty fragment forest refuses without
 moving the caret; an explicit empty paragraph remains a real inserted block.
 
-Within one KWDJ table cell, ordinary inline copy and paste use the current
-text block. A rectangular cell selection can export a closed table fragment
-with its admitted spans. Paste that fragment at a valid closed-block target.
+The KWDJ SDK2 clipboard API uses the current text block for inline copy and
+paste within a table cell. It exports a rectangular cell selection as a
+closed table fragment with its admitted spans and accepts the fragment at
+a valid closed-block target.
 An insertion target spanning text blocks in different cells or selecting a
 cell rectangle returns `clipboard.invalid_context` and preserves the
 document and revision.
 
-The mounted KWDJ renderer gates insertion to its supported presentation subset.
-Native acceptance of a table/verse does not install a table/poetry provider.
-Unsupported mounted presentation preserves the raw capture for host recovery.
+The default mounted KWDJ clipboard handles ordinary text within a cell.
+Its insertion gate refuses rich table fragments and preserves the raw
+capture for host recovery. Other unsupported mounted fragments follow the
+same recovery path.
 Safe copy serialization emits escaped allowlisted HTML. Open heading edges
 refuse because external HTML cannot preserve partial heading openness; closed
 headings remain supported. A complete prose scene break uses a bare `<hr>` and

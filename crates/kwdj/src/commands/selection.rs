@@ -8,7 +8,7 @@ use crate::{
 use editor_core::{
     candidate::CandidateRead,
     commands::{CommandPresentation, CommandState, LocalRef, PlanBuilder, SelectionIntent},
-    document::{Attribute, Attributes, Document, Node, Primitive},
+    document::{Attribute, Attributes, Document, Mark, Node, Primitive},
     positions::{Affinity, Edge, Position, Selection, Utf16Offset, utf16_to_utf8},
     transaction::{Operation, WorkMeter},
 };
@@ -73,6 +73,34 @@ fn basic(s: &str) -> bool {
             | "scene_break"
     )
 }
+fn plain_text_kind(type_id: &str) -> bool {
+    basic(type_id) || matches!(local(type_id), "verse" | "verse_line" | "stanza_break")
+}
+
+fn guard_marks(marks: &[Mark], work: &mut WorkMeter) -> Result<(), SelectionTextError> {
+    unit(work, marks.len())?;
+    bytes(work, marks.iter().map(|mark| mark.type_id.len()).sum())?;
+    if marks.iter().any(|mark| {
+        !matches!(
+            mark.type_id.as_str(),
+            "org.klenwriter.kwdj/strong"
+                | "org.klenwriter.kwdj/emphasis"
+                | "org.klenwriter.kwdj/strike"
+                | "org.klenwriter.kwdj/code"
+                | "org.klenwriter.kwdj/subscript"
+                | "org.klenwriter.kwdj/superscript"
+                | "org.klenwriter.kwdj/text_color"
+                | "org.klenwriter.kwdj/highlight"
+                | "org.klenwriter.kwdj/link"
+        )
+    }) {
+        return Err(SelectionTextError::Limit(
+            "selection_text.unsupported_context",
+        ));
+    }
+    Ok(())
+}
+
 impl<I: Copy + Eq + Ord> Range<I> {
     fn point(
         &mut self,
@@ -287,35 +315,19 @@ impl<I: Copy + Eq + Ord> Range<I> {
                         name,
                         "literary_block" | "warning" | "spoiler" | "disclosure"
                     ));
-            let verse_read = matches!(purpose, SelectionPurpose::Read)
-                && matches!(name, "verse" | "verse_line" | "stanza_break");
+            let supported_kind = if editing {
+                basic(n.type_id)
+            } else {
+                plain_text_kind(n.type_id)
+            };
             needs_text_block |= profile_body || cell_read;
             inside_text_block |= inside_content && n.primitive == Primitive::TextBlock;
-            if !basic(n.type_id) && !media_edit && !profile_body && !verse_read && !cell_read {
+            if !supported_kind && !media_edit && !profile_body && !cell_read {
                 return Err(SelectionTextError::Limit(
                     "selection_text.unsupported_context",
                 ));
             }
-            unit(w, n.marks.len())?;
-            bytes(w, n.marks.iter().map(|m| m.type_id.len()).sum())?;
-            if n.marks.iter().any(|m| {
-                !matches!(
-                    m.type_id.as_str(),
-                    "org.klenwriter.kwdj/strong"
-                        | "org.klenwriter.kwdj/emphasis"
-                        | "org.klenwriter.kwdj/strike"
-                        | "org.klenwriter.kwdj/code"
-                        | "org.klenwriter.kwdj/subscript"
-                        | "org.klenwriter.kwdj/superscript"
-                        | "org.klenwriter.kwdj/text_color"
-                        | "org.klenwriter.kwdj/highlight"
-                        | "org.klenwriter.kwdj/link"
-                )
-            }) {
-                return Err(SelectionTextError::Limit(
-                    "selection_text.unsupported_context",
-                ));
-            }
+            guard_marks(n.marks, w)?;
             if editing && name == "code_block" {
                 code = Some(r.id);
             }
@@ -497,7 +509,20 @@ fn selected_table_text<V: CandidateRead>(
     for row in &rows {
         for id in row {
             let cell = v.node(*id).ok_or(SelectionTextError::Invalid)?;
+            let start = range.rows.len();
             range.node(v, *id, cell.parent, selection, 1, w)?;
+            // The outer cell provides the grid boundary. Its contents follow the
+            // same plain-text rules as an ordinary selection.
+            for row in &range.rows[start..] {
+                unit(w, 1)?;
+                let node = v.node(row.id).ok_or(SelectionTextError::Invalid)?;
+                if row.id != *id && !plain_text_kind(node.type_id) {
+                    return Err(SelectionTextError::Limit(
+                        "selection_text.unsupported_context",
+                    ));
+                }
+                guard_marks(node.marks, w)?;
+            }
         }
     }
     range.hi = range.cursor;

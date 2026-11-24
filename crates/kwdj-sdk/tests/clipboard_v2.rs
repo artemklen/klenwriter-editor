@@ -33,14 +33,27 @@ fn open_bytes_with_access(
     media: Value,
     access: &str,
 ) -> DistributionSession {
-    let options = json!({"abi":"editor-sdk/2","build_id":BUILD,"profile":editor_kwdj_sdk::manifest().profiles[0],"admission":"validate","access":access,"registry_json":serde_json::to_string(&editor_kwdj::registry::registry_descriptor()).unwrap(),"profile_options_json":json!({"identities":{"media":media,"references":[]},"limits":limits}).to_string()});
-    let distribution = Distribution::new(BUILD, vec![Box::new(KwdjFactory)]).unwrap();
-    let session = distribution.open(source, &options.to_string());
+    let session = open_bytes_with_facts(
+        source,
+        limits,
+        json!({"media":media,"references":[]}),
+        access,
+    );
     assert!(matches!(
         session.initialization(),
         editor_protocol::SdkResponse::Ok { .. }
     ));
     session
+}
+fn open_bytes_with_facts(
+    source: &[u8],
+    limits: Value,
+    identities: Value,
+    access: &str,
+) -> DistributionSession {
+    let options = json!({"abi":"editor-sdk/2","build_id":BUILD,"profile":editor_kwdj_sdk::manifest().profiles[0],"admission":"validate","access":access,"registry_json":serde_json::to_string(&editor_kwdj::registry::registry_descriptor()).unwrap(),"profile_options_json":json!({"identities":identities,"limits":limits}).to_string()});
+    let distribution = Distribution::new(BUILD, vec![Box::new(KwdjFactory)]).unwrap();
+    distribution.open(source, &options.to_string())
 }
 fn call(s: &mut DistributionSession, r: Value) -> Value {
     serde_json::from_str(&s.call_json(&r.to_string())).unwrap()
@@ -117,6 +130,120 @@ fn history(s: &mut DistributionSession, direction: &str) {
         json!({"kind":"history","stamp":stamp,"direction":direction}),
     );
     assert_eq!(r["status"], "ok", "{r}");
+}
+
+#[test]
+fn table_rectangle_plain_text_preserves_the_mark_boundary() {
+    let corpus: Value = serde_json::from_str(include_str!(
+        "../../../contracts/kwdj/v1/fixtures/positive.json"
+    ))
+    .unwrap();
+    let reference = corpus["fixtures"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|fixture| fixture["id"] == "DOC-006")
+        .unwrap()["cases"][0]["kwdj"]["content"][0]
+        .clone();
+    let id = reference["content"][0]["marks"][0]["attrs"]["reference_entity_id"]
+        .as_str()
+        .unwrap();
+    let strong = json!({"type":"paragraph","content":[{"type":"text","text":"Bold","marks":[{"type":"strong"}]}]});
+    for (paragraph, supported) in [(strong, true), (reference.clone(), false)] {
+        let table = json!({"type":"table","content":[{"type":"table_row","content":[
+            {"type":"table_cell","content":[paragraph]},
+            {"type":"table_cell","content":[p("other")]}
+        ]}]});
+        let source = doc("prose", json!([table]));
+        let canonical = source.to_string();
+        let facts = json!({"media":[],"references":[{"id":id,"status":"exists"}]});
+        let mut session =
+            open_bytes_with_facts(canonical.as_bytes(), Value::Null, facts, "editable");
+        let leaf = role(&mut session, &[0, 0, 0, 0, 0]);
+        let text_len = paragraph["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .encode_utf16()
+            .count();
+        let first = role(&mut session, &[0, 0, 0]);
+        let last = role(&mut session, &[0, 0, 1]);
+        let inline = (text(leaf.clone(), 0), text(leaf, text_len), "Bold");
+        let rectangle = (
+            json!({"kind":"edge","node":first,"side":"before"}),
+            json!({"kind":"edge","node":last,"side":"after"}),
+            "Bold\tother",
+        );
+        for (anchor, focus, expected) in [inline, rectangle] {
+            select(&mut session, anchor, focus);
+            let before = state(&mut session);
+            let result = call(
+                &mut session,
+                json!({"kind":"selection_text","stamp":before["stamp"],"max_bytes":8192}),
+            );
+            if supported {
+                assert_eq!(result["status"], "ok", "{result}");
+                assert_eq!(result["value"]["text"], expected);
+            } else {
+                assert_eq!(result["status"], "refused", "{result}");
+                assert_eq!(
+                    result["diagnostic"]["code"],
+                    "selection_text.unsupported_context"
+                );
+                assert_eq!(result["diagnostic"]["stamp"], before["stamp"]);
+                assert_eq!(result["diagnostic"]["may_have_committed"], false);
+            }
+            assert_eq!(state(&mut session), before);
+            assert_eq!(canonical_snapshot(&mut session), canonical);
+        }
+        let before = state(&mut session);
+        let result = call(
+            &mut session,
+            json!({"kind":"selection_fragment","stamp":before["stamp"],"max_bytes":8192}),
+        );
+        assert_eq!(result["status"], "ok", "{result}");
+        let rich =
+            serde_json::from_str::<Value>(result["value"]["fragment_json"].as_str().unwrap())
+                .unwrap();
+        assert_eq!(
+            rich,
+            fragment("prose", "blocks", source["content"].clone(), false, false)
+        );
+        assert_eq!(state(&mut session), before);
+        assert_eq!(canonical_snapshot(&mut session), canonical);
+    }
+
+    let warning = &corpus["fixtures"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|fixture| fixture["id"] == "DOC-016")
+        .unwrap()["cases"][0]["kwdj"]["content"][0];
+    assert_eq!(warning["type"], "warning");
+    let source = doc(
+        "prose",
+        json!([{"type":"table","content":[{"type":"table_row","content":[
+            {"type":"table_cell","content":[warning]}, {"type":"table_cell","content":[p("other")]}
+        ]}]}]),
+    )
+    .to_string();
+    let mut session = open_bytes_with_facts(
+        source.as_bytes(),
+        Value::Null,
+        json!({"media":[],"references":[]}),
+        "editable",
+    );
+    let ready = serde_json::to_value(session.initialization()).unwrap();
+    assert_eq!(ready["status"], "refused", "{ready}");
+    assert_eq!(ready["diagnostic"]["code"], "registry.grammar_mismatch");
+    assert_eq!(
+        ready["diagnostic"]["path"],
+        "/children/0/children/0/children/0/children/0/type"
+    );
+    assert!(session.context().is_none());
+    assert_eq!(
+        call(&mut session, json!({"kind":"state"}))["diagnostic"]["code"],
+        "sdk.disposed",
+    );
 }
 
 #[test]
