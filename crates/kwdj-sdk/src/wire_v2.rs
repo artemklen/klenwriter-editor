@@ -339,3 +339,25 @@ pub enum KwdjTableColumnIntentV2 {
     InsertColumnRight { table: String, column: u32 },
     DeleteColumn { table: String, column: u32 },
 }
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum TableCellAlignV2 {
+    Left,
+    Center,
+    Right,
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum KwdjTableCellAlignIntentV2 {
+    SetTableCellAlign { align: TableCellAlignV2 },
+}

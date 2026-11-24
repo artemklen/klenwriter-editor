@@ -33,6 +33,8 @@ fn main() {
         KwdjLabeledContainerIntentV2,
         KwdjForwardDeleteIntentV2,
         KwdjTableRowIntentV2,
+        TableCellAlignV2,
+        KwdjTableCellAlignIntentV2,
         KwdjTableColumnIntentV2,
         KwdjDeleteSelectionScopeV2,
         KwdjScopedSelectionIntentV2,

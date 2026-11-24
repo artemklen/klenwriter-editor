@@ -15,7 +15,10 @@ use editor_core::transaction::Operation;
 use super::{
     BlockTarget, KWDJ_SLASH_CANDIDATES, KwdjIntent, LabeledContainerKind, ListKind, inline, refusal,
 };
-use crate::{KwdjError, KwdjErrorCode, Profile, model::WarningKind};
+use crate::{
+    KwdjError, KwdjErrorCode, Profile,
+    model::{CellAlign, WarningKind},
+};
 
 const PREFIX: &str = "org.klenwriter.kwdj/";
 const AUTHOR_NOTE: &str = "author_note";
@@ -2191,6 +2194,52 @@ fn set_container_label<V: CandidateRead>(
     {
         let value = Attribute::String(key(label, plan)?);
         attr(plan, id.into(), "label", Some(value))?;
+    }
+    Ok(CommandPresentation::default())
+}
+
+fn containing_table_cell<V: CandidateRead>(
+    view: &V,
+    point: &Position<V::Id>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<V::Id, KwdjError> {
+    let mut current = match point {
+        Position::Text { leaf, .. } => *leaf,
+        Position::Child { parent, .. } => *parent,
+        Position::Edge { node, .. } => get(view, *node, plan)?.parent,
+    };
+    while current != view.root() {
+        let node = get(view, current, plan)?;
+        match kind(node.type_id) {
+            "table_cell" | "table_header" => return Ok(current),
+            "table" | "table_row" => break,
+            _ => current = node.parent,
+        }
+    }
+    Err(unsupported())
+}
+
+pub(super) fn set_table_cell_align<V: CandidateRead>(
+    view: &V,
+    state: CommandState<'_, V::Id>,
+    align: CellAlign,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let selection = state.selection.ok_or_else(unsupported)?;
+    let cell = containing_table_cell(view, &selection.anchor, plan)?;
+    if containing_table_cell(view, &selection.focus, plan)? != cell {
+        return Err(unsupported());
+    }
+    let node = get(view, cell, plan)?;
+    let align = match align {
+        CellAlign::Left => "left",
+        CellAlign::Center => "center",
+        CellAlign::Right => "right",
+    };
+    if !matches!(node.attributes.get("align"), Some(Attribute::String(current)) if current == align)
+    {
+        let value = Attribute::String(key(align, plan)?);
+        attr(plan, cell.into(), "align", Some(value))?;
     }
     Ok(CommandPresentation::default())
 }

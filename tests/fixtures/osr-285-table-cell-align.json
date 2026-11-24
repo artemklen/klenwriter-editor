@@ -1,0 +1,122 @@
+{
+  "source": "{\"content\":[{\"content\":[{\"content\":[{\"attrs\":{\"align\":\"center\",\"colspan\":2},\"content\":[{\"content\":[{\"text\":\"AB\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_header\"}],\"type\":\"table_row\"},{\"content\":[{\"attrs\":{\"align\":\"right\",\"rowspan\":2},\"content\":[{\"content\":[{\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_cell\"},{\"content\":[{\"content\":[{\"text\":\"B1\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_cell\"}],\"type\":\"table_row\"},{\"content\":[{\"content\":[{\"content\":[{\"text\":\"B2\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_cell\"}],\"type\":\"table_row\"}],\"type\":\"table\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}",
+  "cases": [
+    {
+      "id": "ordinary-rowspan-left",
+      "cellPath": [
+        0,
+        1,
+        0
+      ],
+      "point": {
+        "path": [
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        "range": [
+          0,
+          0
+        ]
+      },
+      "align": "left",
+      "expected": "{\"content\":[{\"content\":[{\"content\":[{\"attrs\":{\"align\":\"center\",\"colspan\":2},\"content\":[{\"content\":[{\"text\":\"AB\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_header\"}],\"type\":\"table_row\"},{\"content\":[{\"attrs\":{\"align\":\"left\",\"rowspan\":2},\"content\":[{\"content\":[{\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_cell\"},{\"content\":[{\"content\":[{\"text\":\"B1\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_cell\"}],\"type\":\"table_row\"},{\"content\":[{\"content\":[{\"content\":[{\"text\":\"B2\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_cell\"}],\"type\":\"table_row\"}],\"type\":\"table\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}"
+    },
+    {
+      "id": "ordinary-center",
+      "cellPath": [
+        0,
+        1,
+        1
+      ],
+      "point": {
+        "path": [
+          0,
+          1,
+          1,
+          0,
+          0
+        ],
+        "range": [
+          1,
+          1
+        ]
+      },
+      "align": "center",
+      "expected": "{\"content\":[{\"content\":[{\"content\":[{\"attrs\":{\"align\":\"center\",\"colspan\":2},\"content\":[{\"content\":[{\"text\":\"AB\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_header\"}],\"type\":\"table_row\"},{\"content\":[{\"attrs\":{\"align\":\"right\",\"rowspan\":2},\"content\":[{\"content\":[{\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_cell\"},{\"attrs\":{\"align\":\"center\"},\"content\":[{\"content\":[{\"text\":\"B1\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_cell\"}],\"type\":\"table_row\"},{\"content\":[{\"content\":[{\"content\":[{\"text\":\"B2\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_cell\"}],\"type\":\"table_row\"}],\"type\":\"table\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}"
+    },
+    {
+      "id": "header-colspan-right",
+      "cellPath": [
+        0,
+        0,
+        0
+      ],
+      "point": {
+        "path": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "range": [
+          0,
+          2
+        ]
+      },
+      "align": "right",
+      "expected": "{\"content\":[{\"content\":[{\"content\":[{\"attrs\":{\"align\":\"right\",\"colspan\":2},\"content\":[{\"content\":[{\"text\":\"AB\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_header\"}],\"type\":\"table_row\"},{\"content\":[{\"attrs\":{\"align\":\"right\",\"rowspan\":2},\"content\":[{\"content\":[{\"text\":\"A\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_cell\"},{\"content\":[{\"content\":[{\"text\":\"B1\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_cell\"}],\"type\":\"table_row\"},{\"content\":[{\"content\":[{\"content\":[{\"text\":\"B2\",\"type\":\"text\"}],\"type\":\"paragraph\"}],\"type\":\"table_cell\"}],\"type\":\"table_row\"}],\"type\":\"table\"}],\"profile\":\"prose\",\"schema\":\"klenwriter.document\",\"schema_version\":1}"
+    }
+  ],
+  "refusals": [
+    {
+      "id": "root-structural-gap",
+      "kind": "child",
+      "parent": [],
+      "index": 0
+    },
+    {
+      "id": "range-in-distinct-cells",
+      "kind": "text",
+      "anchor": {
+        "path": [
+          0,
+          1,
+          1,
+          0,
+          0
+        ],
+        "offset": 0
+      },
+      "focus": {
+        "path": [
+          0,
+          2,
+          0,
+          0,
+          0
+        ],
+        "offset": 1
+      }
+    },
+    {
+      "id": "multi-cell-rectangle",
+      "source": "exact OSR-208 marker",
+      "chosenCells": [
+        [
+          0,
+          1,
+          1
+        ],
+        [
+          0,
+          2,
+          0
+        ]
+      ]
+    }
+  ]
+}

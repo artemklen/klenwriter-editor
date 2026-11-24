@@ -1233,6 +1233,61 @@ test('OSR-189 packaged SDK2 distinguishes legal literary nesting from warning re
   });
 });
 
+test('OSR-285 sealed SDK2 aligns only one selected cell or header, with exact Undo', async () => {
+  const fixture = JSON.parse(readFileSync(new URL('./fixtures/osr-285-table-cell-align.json', import.meta.url)));
+  const resolve = (editor, path) => path.reduce((parent, index) => node(editor, parent.children[index]), root(editor)).id;
+  const set = (editor, selection) => accepted(completed(editor.submit({ kind: 'set_selection', stamp: editor.capture(), selection })));
+  for (const row of fixture.cases) await withLiteraryCommandSession(fixture.source, editor => {
+    const leaf = resolve(editor, row.point.path);
+    const cell = resolve(editor, row.cellPath);
+    set(editor, { anchor: position(leaf, row.point.range[0]), focus: position(leaf, row.point.range[1]) });
+    const before = state(editor);
+    const beforeCell = structuredClone(node(editor, cell));
+    const intent = kwdjCommand({ kind: 'set_table_cell_align', align: row.align });
+    assert.equal(intent.id, 'org.klenwriter.kwdj/command/set-table-cell-align');
+    assert.equal(accepted(editor.query({ kind: 'query_command', stamp: editor.capture(), command: intent })).available, true);
+    assert.equal(accepted(osr183Wire(editor, intent)).effect, 'changed');
+    assert.equal(canonical(editor), row.expected);
+    assert.deepEqual(state(editor).selection, before.selection);
+    assert.equal(state(editor).history.undo_entries, '1');
+    const afterCell = node(editor, cell);
+    assert.deepEqual(afterCell.children, beforeCell.children);
+    assert.deepEqual(structuredClone(afterCell.attributes), { ...beforeCell.attributes, align: { kind: 'string', value: row.align } });
+    const after = state(editor);
+    assert.equal(accepted(osr183Wire(editor, intent)).effect, 'unchanged');
+    assert.deepEqual(state(editor), after);
+    osr183History(editor, 'undo', fixture.source);
+    assert.deepEqual(state(editor).selection, before.selection);
+    assert.deepEqual(structuredClone(node(editor, cell).attributes), beforeCell.attributes);
+  });
+
+  await withLiteraryCommandSession(fixture.source, editor => {
+    const id = 'org.klenwriter.kwdj/command/set-table-cell-align';
+    for (const target of fixture.refusals) {
+      let selection;
+      if (target.kind === 'child') {
+        const point = { kind: 'child', parent: resolve(editor, target.parent), index: target.index, affinity: 'after' };
+        selection = { anchor: point, focus: point };
+      } else if (target.kind === 'text') {
+        const point = value => position(resolve(editor, value.path), value.offset);
+        selection = { anchor: point(target.anchor), focus: point(target.focus) };
+      } else {
+        selection = {
+          anchor: { kind: 'edge', node: resolve(editor, target.chosenCells[0]), side: 'before' },
+          focus: { kind: 'edge', node: resolve(editor, target.chosenCells[1]), side: 'after' },
+        };
+      }
+      set(editor, selection);
+      const payload = { kind: 'set_table_cell_align', align: 'left' };
+      const before = state(editor);
+      assert.equal(accepted(editor.query({ kind: 'query_command', stamp: editor.capture(), command: createCommand(id, payload) })).available, false);
+      assert.deepEqual(state(editor), before);
+      osr183Denied(editor, id, payload, fixture.source, 'kwdj.command_unsupported_context');
+    }
+    osr183Denied(editor, id, { kind: 'set_table_cell_align', align: 'justify' }, fixture.source, 'sdk.invalid_dto');
+  });
+});
+
 const osr144Fixture = () => JSON.parse(readFileSync(new URL('./fixtures/osr-144-verse-indent.json', import.meta.url)));
 const osr144Corpus = () => JSON.parse(readFileSync(new URL('../contracts/kwdj/v1/fixtures/positive.json', import.meta.url))).fixtures;
 const osr144Case = (corpus, id, name) => corpus.find(doc => doc.id === id).cases.find(item => item.name === name);

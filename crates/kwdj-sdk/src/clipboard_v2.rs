@@ -5,9 +5,9 @@ use crate::{
     wire_v2::{
         KwdjClipboardIntentV2, KwdjDeleteSelectionScopeV2, KwdjForwardDeleteIntentV2,
         KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2, KwdjScopedSelectionIntentV2,
-        KwdjTableColumnIntentV2, KwdjTableRowIntentV2, KwdjWarningIntentV2,
-        LabeledContainerBlockTargetV2, LabeledContainerKindV2, LiteraryBlockTargetV2,
-        WarningBlockTargetV2, WarningKindV2,
+        KwdjTableCellAlignIntentV2, KwdjTableColumnIntentV2, KwdjTableRowIntentV2,
+        KwdjWarningIntentV2, LabeledContainerBlockTargetV2, LabeledContainerKindV2,
+        LiteraryBlockTargetV2, TableCellAlignV2, WarningBlockTargetV2, WarningKindV2,
     },
 };
 use editor_bridge::{BridgeAdapter, ClipboardContextData, SelectionFragmentData};
@@ -20,12 +20,12 @@ use editor_kwdj::{
         DELETE_ROW_COMMAND_ID, INSERT_COLUMN_LEFT_COMMAND_ID, INSERT_COLUMN_RIGHT_COMMAND_ID,
         INSERT_ROW_ABOVE_COMMAND_ID, INSERT_ROW_BELOW_COMMAND_ID, KWDJ_COMMANDS, KwdjIntent,
         LabeledContainerKind, SET_CONTAINER_LABEL_COMMAND_ID, SET_LITERARY_KIND_COMMAND_ID,
-        SET_WARNING_KIND_COMMAND_ID, UNWRAP_LABELED_CONTAINER_COMMAND_ID,
-        UNWRAP_LITERARY_BLOCK_COMMAND_ID, UNWRAP_WARNING_COMMAND_ID,
-        WRAP_LABELED_CONTAINER_COMMAND_ID, WRAP_LITERARY_BLOCK_COMMAND_ID, WRAP_WARNING_COMMAND_ID,
-        clipboard,
+        SET_TABLE_CELL_ALIGN_COMMAND_ID, SET_WARNING_KIND_COMMAND_ID,
+        UNWRAP_LABELED_CONTAINER_COMMAND_ID, UNWRAP_LITERARY_BLOCK_COMMAND_ID,
+        UNWRAP_WARNING_COMMAND_ID, WRAP_LABELED_CONTAINER_COMMAND_ID,
+        WRAP_LITERARY_BLOCK_COMMAND_ID, WRAP_WARNING_COMMAND_ID, clipboard,
     },
-    model::WarningKind,
+    model::{CellAlign, WarningKind},
 };
 use editor_protocol::{CommandDto, DiagnosticDto};
 
@@ -241,6 +241,16 @@ impl BridgeAdapter<KwdjProfile<'static>> for ClipboardAdapterV2 {
                 }
                 _ => Err(diagnostic("sdk.invalid_dto", "command")),
             }
+        } else if command.id == SET_TABLE_CELL_ALIGN_COMMAND_ID {
+            let KwdjTableCellAlignIntentV2::SetTableCellAlign { align } =
+                editor_bridge::decode(&command.payload_json)?;
+            Ok(KwdjIntent::SetTableCellAlign {
+                align: match align {
+                    TableCellAlignV2::Left => CellAlign::Left,
+                    TableCellAlignV2::Center => CellAlign::Center,
+                    TableCellAlignV2::Right => CellAlign::Right,
+                },
+            })
         } else if matches!(
             command.id.as_str(),
             INSERT_COLUMN_LEFT_COMMAND_ID

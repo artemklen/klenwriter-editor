@@ -2,12 +2,12 @@
 /** Profile-specific command construction; all semantic checks remain in Rust. */
 export { artifactStage } from '@klenwriter/editor-sdk';
 import { createCommand } from '@klenwriter/editor-sdk';
-import type { CommandDto, DeepReadonly, KwdjForwardDeleteIntentV2, KwdjIntentDto, KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2, KwdjScopedSelectionIntentV2, KwdjTableColumnIntentV2, KwdjTableRowIntentV2, KwdjWarningIntentV2, RawInputRestoreV2 } from '@klenwriter/editor-sdk';
+import type { CommandDto, DeepReadonly, KwdjForwardDeleteIntentV2, KwdjIntentDto, KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2, KwdjScopedSelectionIntentV2, KwdjTableCellAlignIntentV2, KwdjTableColumnIntentV2, KwdjTableRowIntentV2, KwdjWarningIntentV2, RawInputRestoreV2 } from '@klenwriter/editor-sdk';
 
-export type { KwdjForwardDeleteIntentV2, KwdjIntentDto, KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2, KwdjScopedSelectionIntentV2, KwdjTableColumnIntentV2, KwdjTableRowIntentV2, KwdjWarningIntentV2, BlockTargetDto, ListKindDto, MarkDto } from '@klenwriter/editor-sdk';
+export type { KwdjForwardDeleteIntentV2, KwdjIntentDto, KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2, KwdjScopedSelectionIntentV2, KwdjTableCellAlignIntentV2, KwdjTableColumnIntentV2, KwdjTableRowIntentV2, KwdjWarningIntentV2, TableCellAlignV2, BlockTargetDto, ListKindDto, MarkDto } from '@klenwriter/editor-sdk';
 
 type KwdjCommandIntent = KwdjIntentDto | KwdjLiteraryIntentV2 | KwdjWarningIntentV2
-  | KwdjLabeledContainerIntentV2 | KwdjForwardDeleteIntentV2 | KwdjScopedSelectionIntentV2 | KwdjTableRowIntentV2 | KwdjTableColumnIntentV2;
+  | KwdjLabeledContainerIntentV2 | KwdjForwardDeleteIntentV2 | KwdjScopedSelectionIntentV2 | KwdjTableRowIntentV2 | KwdjTableColumnIntentV2 | KwdjTableCellAlignIntentV2;
 const commandNames: Record<KwdjCommandIntent['kind'], string> = {
   enter: 'enter', shift_enter: 'shift-enter', toggle_mark: 'toggle-mark',
   set_link: 'set-link', unset_link: 'unset-link', insert_text: 'insert-text',
@@ -18,6 +18,7 @@ const commandNames: Record<KwdjCommandIntent['kind'], string> = {
   delete_forward: 'delete-forward',
   insert_row_above: 'insert-row-above', insert_row_below: 'insert-row-below', delete_row: 'delete-row',
   insert_column_left: 'insert-column-left', insert_column_right: 'insert-column-right', delete_column: 'delete-column',
+  set_table_cell_align: 'set-table-cell-align',
   delete_selection: 'delete-selection',
   set_literary_kind: 'set-literary-kind',
   wrap_literary_block: 'wrap-literary-block',

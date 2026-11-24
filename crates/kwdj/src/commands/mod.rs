@@ -18,7 +18,8 @@ use editor_core::positions::Selection;
 use editor_core::transaction::WorkMeter;
 
 use crate::{
-    KwdjError, KwdjErrorCode, KwdjProfile, KwdjProfileError, model::WarningKind,
+    KwdjError, KwdjErrorCode, KwdjProfile, KwdjProfileError,
+    model::{CellAlign, WarningKind},
     table_geometry::table_selection,
 };
 
@@ -111,6 +112,9 @@ pub enum KwdjIntent<I> {
         node: I,
         label: String,
     },
+    SetTableCellAlign {
+        align: CellAlign,
+    },
     InsertRowAbove {
         row: I,
     },
@@ -172,6 +176,8 @@ pub const CLIPBOARD_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-fragm
 pub const INSERT_COLUMN_LEFT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-column-left";
 pub const INSERT_COLUMN_RIGHT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-column-right";
 pub const DELETE_COLUMN_COMMAND_ID: &str = "org.klenwriter.kwdj/command/delete-column";
+pub const SET_TABLE_CELL_ALIGN_COMMAND_ID: &str =
+    "org.klenwriter.kwdj/command/set-table-cell-align";
 pub const INSERT_ROW_ABOVE_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-row-above";
 pub const INSERT_ROW_BELOW_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-row-below";
 pub const DELETE_ROW_COMMAND_ID: &str = "org.klenwriter.kwdj/command/delete-row";
@@ -373,6 +379,7 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::InsertColumnLeft { .. } => INSERT_COLUMN_LEFT_COMMAND_ID,
             KwdjIntent::InsertColumnRight { .. } => INSERT_COLUMN_RIGHT_COMMAND_ID,
             KwdjIntent::DeleteColumn { .. } => DELETE_COLUMN_COMMAND_ID,
+            KwdjIntent::SetTableCellAlign { .. } => SET_TABLE_CELL_ALIGN_COMMAND_ID,
             KwdjIntent::InsertRowAbove { .. } => INSERT_ROW_ABOVE_COMMAND_ID,
             KwdjIntent::InsertRowBelow { .. } => INSERT_ROW_BELOW_COMMAND_ID,
             KwdjIntent::DeleteRow { .. } => DELETE_ROW_COMMAND_ID,
@@ -420,6 +427,7 @@ impl CommandProvider for KwdjProfile<'_> {
             | KwdjIntent::WrapLabeledContainer { .. }
             | KwdjIntent::UnwrapLabeledContainer { .. }
             | KwdjIntent::DeleteSelectionInProfileBody
+            | KwdjIntent::SetTableCellAlign { .. }
             | KwdjIntent::InsertRowAbove { .. }
             | KwdjIntent::InsertRowBelow { .. }
             | KwdjIntent::DeleteRow { .. }
@@ -472,6 +480,9 @@ impl CommandProvider for KwdjProfile<'_> {
             }
             KwdjIntent::InsertFragment { fragment } => {
                 clipboard::prepare(self, *context, view, state, fragment, plan)?
+            }
+            KwdjIntent::SetTableCellAlign { align } => {
+                block::set_table_cell_align(view, state, *align, plan)?
             }
             KwdjIntent::InsertRowAbove { row } => {
                 block::edit_table_row(view, *row, block::TableRowEdit::Above, self.limits(), plan)?

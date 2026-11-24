@@ -349,7 +349,7 @@ mod tests {
         assert!(session.context().is_some());
         let catalog = call(&mut session, json!({"kind":"catalog"}));
         let commands = catalog["value"]["commands"].as_array().unwrap();
-        assert_eq!(commands.len(), 35);
+        assert_eq!(commands.len(), 36);
         assert!(
             commands
                 .iter()
@@ -583,6 +583,7 @@ mod tests {
                                     editor_kwdj::commands::INSERT_ROW_ABOVE_COMMAND_ID,
                                     editor_kwdj::commands::INSERT_ROW_BELOW_COMMAND_ID,
                                     editor_kwdj::commands::DELETE_ROW_COMMAND_ID,
+                                    editor_kwdj::commands::SET_TABLE_CELL_ALIGN_COMMAND_ID,
                                     editor_kwdj::commands::INSERT_COLUMN_LEFT_COMMAND_ID,
                                     editor_kwdj::commands::INSERT_COLUMN_RIGHT_COMMAND_ID,
                                     editor_kwdj::commands::DELETE_COLUMN_COMMAND_ID,
@@ -1290,6 +1291,133 @@ mod tests {
             assert_eq!(redone["history"]["undo_entries"], "1", "{name}");
             assert_eq!(redone["history"]["redo_entries"], "0", "{name}");
         }
+    }
+
+    #[test]
+    fn osr285_aligns_only_the_selected_cell_and_preserves_the_grid() {
+        const ALIGN: &str = "org.klenwriter.kwdj/command/set-table-cell-align";
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-285-table-cell-align.json"
+        ))
+        .unwrap();
+        let source = fixture["source"].as_str().unwrap();
+        for case in fixture["cases"].as_array().unwrap() {
+            let mut session = osr183_open(source);
+            let initial = state(&mut session);
+            let tree = table_id_tree(&mut session, &initial["root"]);
+            let at = |path: &Value| {
+                path.as_array().unwrap().iter().fold(&tree, |node, index| {
+                    &node["children"][index.as_u64().unwrap() as usize]
+                })["id"]
+                    .clone()
+            };
+            let leaf = at(&case["point"]["path"]);
+            let point = |offset: &Value| {
+                json!({
+                    "kind":"text","node":leaf,"offset":offset,"affinity":"after"
+                })
+            };
+            let range = &case["point"]["range"];
+            let selected = json!({"anchor":point(&range[0]),"focus":point(&range[1])});
+            let selection = call(
+                &mut session,
+                json!({
+                    "kind":"set_selection","stamp":initial["stamp"],"selection":selected
+                }),
+            );
+            assert_eq!(selection["status"], "ok", "{selection}");
+            let before = state(&mut session);
+            let payload = json!({"kind":"set_table_cell_align","align":case["align"]});
+            let query = osr183_command(&mut session, ALIGN, &payload, true);
+            assert_eq!(query["value"]["available"], true, "{query}");
+            assert_eq!(state(&mut session), before);
+            let result = osr183_command(&mut session, ALIGN, &payload, false);
+            assert_eq!(result["value"]["effect"], "changed", "{result}");
+            let expected = case["expected"].as_str().unwrap();
+            assert_eq!(snapshot(&mut session), expected);
+            let exported = snapshot(&mut osr183_open(expected));
+            assert_eq!(exported, expected);
+            let after = state(&mut session);
+            assert_eq!(after["history"]["undo_entries"], "1");
+            assert_eq!(after["selection"], before["selection"]);
+            assert_eq!(table_id_tree(&mut session, &initial["root"]), tree);
+            let no_op = osr183_command(&mut session, ALIGN, &payload, false);
+            assert_eq!(no_op["value"]["effect"], "unchanged", "{no_op}");
+            assert_eq!(state(&mut session), after);
+            osr183_history(&mut session, "undo", source);
+            assert_eq!(table_id_tree(&mut session, &initial["root"]), tree);
+            assert_eq!(state(&mut session)["selection"], before["selection"]);
+        }
+    }
+
+    #[test]
+    fn osr285_unowned_alignment_targets_are_atomic_refusals() {
+        const ALIGN: &str = "org.klenwriter.kwdj/command/set-table-cell-align";
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-285-table-cell-align.json"
+        ))
+        .unwrap();
+        let source = fixture["source"].as_str().unwrap();
+        let mut session = osr183_open(source);
+        let original = state(&mut session);
+        let tree = table_id_tree(&mut session, &original["root"]);
+        let at = |path: &Value| {
+            path.as_array().unwrap().iter().fold(&tree, |node, index| {
+                &node["children"][index.as_u64().unwrap() as usize]
+            })["id"]
+                .clone()
+        };
+        for target in fixture["refusals"].as_array().unwrap() {
+            let selection = match target["id"].as_str().unwrap() {
+                "root-structural-gap" => {
+                    let point = json!({"kind":"child","parent":at(&target["parent"]),
+                        "index":target["index"],"affinity":"after"});
+                    json!({"anchor":point,"focus":point})
+                }
+                "range-in-distinct-cells" => {
+                    let point = |end: &str| {
+                        json!({
+                            "kind":"text","node":at(&target[end]["path"]),
+                            "offset":target[end]["offset"],"affinity":"after"
+                        })
+                    };
+                    json!({"anchor":point("anchor"),"focus":point("focus")})
+                }
+                "multi-cell-rectangle" => json!({
+                    "anchor":{"kind":"edge","node":at(&target["chosenCells"][0]),"side":"before"},
+                    "focus":{"kind":"edge","node":at(&target["chosenCells"][1]),"side":"after"}
+                }),
+                _ => unreachable!(),
+            };
+            let stamp = state(&mut session)["stamp"].clone();
+            let selected = call(
+                &mut session,
+                json!({
+                    "kind":"set_selection","stamp":stamp,"selection":selection
+                }),
+            );
+            assert_eq!(selected["status"], "ok", "{selected}");
+            let payload = json!({"kind":"set_table_cell_align","align":"left"});
+            let before = state(&mut session);
+            let query = osr183_command(&mut session, ALIGN, &payload, true);
+            assert_eq!(query["value"]["available"], false, "{query}");
+            assert_eq!(state(&mut session), before);
+            osr183_denied(
+                &mut session,
+                ALIGN,
+                payload,
+                source,
+                "kwdj.command_unsupported_context",
+            );
+            assert_eq!(table_id_tree(&mut session, &original["root"]), tree);
+        }
+        osr183_denied(
+            &mut session,
+            ALIGN,
+            json!({"kind":"set_table_cell_align","align":"justify"}),
+            source,
+            "sdk.invalid_dto",
+        );
     }
 
     #[test]

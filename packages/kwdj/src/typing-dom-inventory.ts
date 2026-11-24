@@ -188,6 +188,14 @@ export const kwdjTypingDomInventory = {
     },
     {
       "descriptor": {
+        "id": "org.klenwriter.kwdj/command/set-table-cell-align",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/set-table-cell-align",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
         "id": "org.klenwriter.kwdj/command/set-warning-kind",
         "kind": "compiled"
       },
@@ -326,6 +334,7 @@ export const kwdjTypingDomInventory = {
       "org.klenwriter.kwdj/command/set-container-label",
       "org.klenwriter.kwdj/command/set-link",
       "org.klenwriter.kwdj/command/set-literary-kind",
+      "org.klenwriter.kwdj/command/set-table-cell-align",
       "org.klenwriter.kwdj/command/set-warning-kind",
       "org.klenwriter.kwdj/command/shift-enter",
       "org.klenwriter.kwdj/command/toggle-list",
@@ -1609,5 +1618,5 @@ export const kwdjTypingDomInventory = {
     "profile_version": "1.0.0",
     "wire_version": 1
   },
-  "registryDigest": "cbb814a7e96decddb3c396e6a62d04f5cc2586e5d5b0311275b676da0dd3c737"
+  "registryDigest": "25110a1f6e78e97fd2a2d3509340cab34f64899956f116a2e1a8942078d77fe8"
 } as const;

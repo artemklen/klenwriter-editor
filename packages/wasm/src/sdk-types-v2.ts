@@ -33,6 +33,10 @@ export type KwdjForwardDeleteIntentV2 = { "kind": "delete_forward", };
 
 export type KwdjTableRowIntentV2 = { "kind": "insert_row_above", row: string, } | { "kind": "insert_row_below", row: string, } | { "kind": "delete_row", row: string, };
 
+export type TableCellAlignV2 = "left" | "center" | "right";
+
+export type KwdjTableCellAlignIntentV2 = { "kind": "set_table_cell_align", align: TableCellAlignV2, };
+
 export type KwdjTableColumnIntentV2 = { "kind": "insert_column_left", table: string, column: number, } | { "kind": "insert_column_right", table: string, column: number, } | { "kind": "delete_column", table: string, column: number, };
 
 export type KwdjDeleteSelectionScopeV2 = "profile_body" | "poetry_boundary";
