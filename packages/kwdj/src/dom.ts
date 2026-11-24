@@ -235,7 +235,7 @@ function coveredCommand(id: string, payload: Record<string, unknown>): boolean {
   const name = id.slice(`${prefix}command/`.length);
   if (!id.startsWith(`${prefix}command/`) || payload.kind !== name.replaceAll('-', '_')) return false;
   switch (name) {
-    case 'enter': case 'shift-enter': case 'delete-backward': case 'unset-link': case 'toggle-quote': case 'dismiss-slash':
+    case 'enter': case 'shift-enter': case 'delete-backward': case 'delete-forward': case 'unset-link': case 'toggle-quote': case 'dismiss-slash':
       return closed(payload, ['kind']);
     case 'delete-selection':
       return payload.scope === 'profile_body' ? closed(payload, ['kind', 'scope']) : closed(payload, ['kind']);
@@ -305,6 +305,7 @@ const result = defineRendererCatalog({
     enter: () => kwdjCommand({ kind: 'enter' }),
     lineBreak: () => kwdjCommand({ kind: 'shift_enter' }),
     deleteBackward: () => createCommand(`${prefix}command/delete-backward`, { kind: 'delete_backward' }),
+    deleteForward: () => kwdjCommand({ kind: 'delete_forward' }),
   },
 });
 if ('status' in result) throw new Error('Invalid shipped KWDJ renderer catalog');

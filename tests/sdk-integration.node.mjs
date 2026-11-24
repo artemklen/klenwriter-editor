@@ -963,6 +963,60 @@ test('OSR-206 column wire accepts only the matching SDK2 command and a u32 coord
   }
 });
 
+test('OSR-209 packaged SDK2 edits DOC-011 inside a cell and protects both borders', async t => {
+  const read = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
+  const fixture = read('./fixtures/osr-209-table-cell-edits.json');
+  const source = read('../contracts/kwdj/v1/fixtures/positive.json').fixtures.flatMap(f => f.cases)
+    .find(row => row.name === fixture.source).kwdj;
+  for (const row of [...fixture.cases, ...fixture.forward_regressions]) {
+    await t.test(row.id, async () => {
+      const path = row.leaf ?? fixture.leaf;
+      const document = structuredClone(source);
+      const paragraph = path.slice(0, -1).reduce((value, index) => value.content[index], document);
+      paragraph.content = row.source_inlines ?? [{type:'text', text:fixture.initial_text}];
+      const input = osr185Bytes(document);
+      let saved;
+      await withLiteraryCommandSession(input, editor => {
+        const leaf = path.reduce((id, index) => node(editor, id).children[index], state(editor).root);
+        const table = root(editor).children[0];
+        osr185Select(editor, position(leaf, row.range[0]), position(leaf, row.range[1]));
+        const before = state(editor), ids = tableIdTree(editor, table);
+        const payload = row.payload ?? {kind:'delete_forward'};
+        const command = createCommand(`org.klenwriter.kwdj/command/${payload.kind.replaceAll('_', '-')}`, payload);
+        const response = osr183Wire(editor, command);
+        if (row.diagnostic) {
+          const diagnostic = refused(response);
+          assert.equal(diagnostic.code, row.diagnostic);
+          assert.equal(diagnostic.path, '/command');
+          assert.equal(diagnostic.may_have_committed, false);
+          assert.deepEqual(state(editor), before);
+          assert.equal(canonical(editor), input);
+          assert.deepEqual(tableIdTree(editor, table), ids);
+          return;
+        }
+        assert.equal(accepted(response).effect, 'changed');
+        paragraph.content = row.expected_inlines ?? [{type:'text', text:row.text}];
+        saved = canonical(editor);
+        assert.equal(saved, osr185Bytes(document));
+        const after = state(editor);
+        assert.equal(after.stamp.revision, '1');
+        assert.equal(after.history.undo_entries, '1');
+        if (row.caret !== undefined) {
+          const caret = position(leaf, row.caret);
+          assert.deepEqual(structuredClone(after.selection), {anchor:caret, focus:caret});
+          assert.deepEqual(tableIdTree(editor, table), ids);
+        }
+        osr183History(editor, 'undo', input);
+        assert.deepEqual(state(editor).selection, before.selection);
+        assert.deepEqual(tableIdTree(editor, table), ids);
+        assert.equal(state(editor).history.undo_entries, '0');
+        assert.equal(state(editor).history.redo_entries, '1');
+      });
+      if (saved) await withLiteraryCommandSession(saved, editor => assert.equal(canonical(editor), saved));
+    });
+  }
+});
+
 test('OSR-196 packaged SDK2 matches CMS verse boundary bytes, selection and Undo', async t => {
   const fixture = JSON.parse(readFileSync(new URL('./fixtures/osr-196-verse-boundary-deletion.json', import.meta.url), 'utf8'));
   for (const row of [...fixture.cases, ...fixture.refusals]) {

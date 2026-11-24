@@ -1364,6 +1364,126 @@ mod tests {
         }
     }
 
+    #[test]
+    fn osr209_table_cell_edits_are_confined_to_one_textblock() {
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-209-table-cell-edits.json"
+        ))
+        .unwrap();
+        let retained: Value = serde_json::from_str(include_str!(
+            "../../../contracts/kwdj/v1/fixtures/positive.json"
+        ))
+        .unwrap();
+        let source = retained["fixtures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .flat_map(|fixture| fixture["cases"].as_array().unwrap())
+            .find(|case| case["name"] == fixture["source"])
+            .unwrap()["kwdj"]
+            .clone();
+        for (cases, forward_regression) in [
+            (&fixture["cases"], false),
+            (&fixture["forward_regressions"], true),
+        ] {
+            for case in cases.as_array().unwrap() {
+                let name = case["id"].as_str().unwrap();
+                let path = case["leaf"]
+                    .as_array()
+                    .unwrap_or_else(|| fixture["leaf"].as_array().unwrap());
+                let paragraph_pointer = path[..path.len() - 1]
+                    .iter()
+                    .map(|index| format!("/content/{}", index.as_u64().unwrap()))
+                    .collect::<String>();
+                let mut document = source.clone();
+                let paragraph = document.pointer_mut(&paragraph_pointer).unwrap();
+                paragraph["content"] = if forward_regression {
+                    case["source_inlines"].clone()
+                } else {
+                    json!([{"type":"text","text":fixture["initial_text"]}])
+                };
+                let input = document.to_string();
+                let mut session = osr183_open(&input);
+                let mut node = state(&mut session)["root"].clone();
+                let mut table = Value::Null;
+                for (depth, index) in path.iter().enumerate() {
+                    node = osr183_node(&mut session, &node)["children"]
+                        [index.as_u64().unwrap() as usize]
+                        .clone();
+                    if depth == 0 {
+                        table = node.clone();
+                    }
+                }
+                let selection =
+                    |offset| json!({"kind":"text","node":node,"offset":offset,"affinity":"after"});
+                let stamp = state(&mut session)["stamp"].clone();
+                let selected = call(
+                    &mut session,
+                    json!({
+                        "kind":"set_selection","stamp":stamp,
+                        "selection":{"anchor":selection(&case["range"][0]),"focus":selection(&case["range"][1])}
+                    }),
+                );
+                assert_eq!(selected["status"], "ok", "{name}: {selected}");
+                let before = state(&mut session);
+                let before_ids = table_id_tree(&mut session, &table);
+                let payload = if forward_regression {
+                    json!({"kind":"delete_forward"})
+                } else {
+                    case["payload"].clone()
+                };
+                let kind = payload["kind"].as_str().unwrap().replace('_', "-");
+                let response = osr183_command(
+                    &mut session,
+                    &format!("org.klenwriter.kwdj/command/{kind}"),
+                    &payload,
+                    false,
+                );
+                if case["diagnostic"].is_string() {
+                    assert_eq!(response["status"], "refused", "{name}: {response}");
+                    assert_eq!(response["diagnostic"]["code"], case["diagnostic"], "{name}");
+                    assert_eq!(response["diagnostic"]["path"], "/command", "{name}");
+                    assert_eq!(
+                        response["diagnostic"]["may_have_committed"], false,
+                        "{name}"
+                    );
+                    assert_eq!(state(&mut session), before, "{name}");
+                    assert_eq!(snapshot(&mut session), input, "{name}");
+                    assert_eq!(table_id_tree(&mut session, &table), before_ids, "{name}");
+                    continue;
+                }
+                assert_eq!(response["value"]["effect"], "changed", "{name}: {response}");
+                document.pointer_mut(&paragraph_pointer).unwrap()["content"] = if forward_regression
+                {
+                    case["expected_inlines"].clone()
+                } else {
+                    json!([{"type":"text","text":case["text"]}])
+                };
+                let exported = snapshot(&mut session);
+                assert_eq!(exported, document.to_string(), "{name}");
+                assert_eq!(snapshot(&mut osr183_open(&exported)), exported, "{name}");
+                let after = state(&mut session);
+                assert_eq!(after["stamp"]["revision"], "1", "{name}");
+                assert_eq!(after["history"]["undo_entries"], "1", "{name}");
+                if !forward_regression {
+                    assert_eq!(table_id_tree(&mut session, &table), before_ids, "{name}");
+                    let expected = selection(&case["caret"]);
+                    assert_eq!(
+                        after["selection"],
+                        json!({"anchor":expected,"focus":expected}),
+                        "{name}"
+                    );
+                }
+                osr183_history(&mut session, "undo", &input);
+                assert_eq!(table_id_tree(&mut session, &table), before_ids, "{name}");
+                let undone = state(&mut session);
+                assert_eq!(undone["selection"], before["selection"], "{name}");
+                assert_eq!(undone["history"]["undo_entries"], "0", "{name}");
+                assert_eq!(undone["history"]["redo_entries"], "1", "{name}");
+            }
+        }
+    }
+
     const OSR188_SET_KIND: &str = "org.klenwriter.kwdj/command/set-warning-kind";
 
     fn osr188_case() -> Value {

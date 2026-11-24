@@ -276,7 +276,14 @@ impl<I: Copy + Eq + Ord> Range<I> {
                 && inside_content
                 && matches!(
                     name,
-                    "literary_block" | "warning" | "spoiler" | "disclosure"
+                    "literary_block"
+                        | "warning"
+                        | "spoiler"
+                        | "disclosure"
+                        | "table"
+                        | "table_row"
+                        | "table_header"
+                        | "table_cell"
                 );
             let verse_read = matches!(purpose, SelectionPurpose::Read)
                 && matches!(name, "verse" | "verse_line" | "stanza_break");
@@ -593,6 +600,12 @@ pub(super) fn prepare<V: CandidateRead>(
         let _ = plan
             .charged_copy_attrs(rr.attributes)
             .map_err(KwdjError::operational)?;
+        if profile_containers
+            && a.block == b.block
+            && super::delete::in_table_cell(v, l.parent, plan)?
+        {
+            return super::delete::erase_cell_inline_range(v, selection, *a, plan);
+        }
         if a.block == b.block
             || (l.parent == rr.parent && l.type_id == rr.type_id && l.attributes == rr.attributes)
         {

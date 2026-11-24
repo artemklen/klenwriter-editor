@@ -1,0 +1,28 @@
+{
+  "source": "table_spans_alignment",
+  "leaf": [0, 1, 1, 0, 0],
+  "initial_text": "abcd",
+  "cases": [
+    {"id":"insert","key":null,"input_type":"insertText","payload":{"kind":"insert_text","text":"X"},"range":[2,2],"text":"abXcd","caret":3},
+    {"id":"backspace_inside","key":"Backspace","input_type":"deleteContentBackward","payload":{"kind":"delete_backward"},"range":[2,2],"text":"acd","caret":1},
+    {"id":"forward_delete_inside","key":"Delete","input_type":"deleteContentForward","payload":{"kind":"delete_forward"},"range":[2,2],"text":"abd","caret":2},
+    {"id":"delete_local_selection","key":"Delete","input_type":"deleteContentForward","payload":{"kind":"delete_selection","scope":"profile_body"},"range":[1,3],"text":"ad","caret":1},
+    {"id":"backspace_at_cell_start","key":"Backspace","input_type":"deleteContentBackward","payload":{"kind":"delete_backward"},"range":[0,0],"diagnostic":"kwdj.command_unsupported_context"},
+    {"id":"delete_at_cell_end","key":"Delete","input_type":"deleteContentForward","payload":{"kind":"delete_forward"},"range":[4,4],"diagnostic":"kwdj.command_unsupported_context"}
+  ],
+  "forward_regressions": [
+    {"id":"forward_in_header","leaf":[0,0,0,0,0],"range":[0,0],"source_inlines":[{"type":"text","text":"AB"}],"expected_inlines":[{"type":"text","text":"B"}]},
+    {
+      "id":"forward_removes_one_combining_cluster_across_styled_leaves",
+      "range":[1,1],
+      "source_inlines":[{"type":"text","text":"ae","marks":[{"type":"strong"}]},{"type":"text","text":"́x"}],
+      "expected_inlines":[{"type":"text","text":"a","marks":[{"type":"strong"}]},{"type":"text","text":"x"}]
+    },
+    {
+      "id":"forward_from_styled_text_leaf_end_targets_the_next_leaf",
+      "range":[1,1],
+      "source_inlines":[{"type":"text","text":"a","marks":[{"type":"strong"}]},{"type":"text","text":"😀x"}],
+      "expected_inlines":[{"type":"text","text":"a","marks":[{"type":"strong"}]},{"type":"text","text":"x"}]
+    }
+  ]
+}

@@ -82,6 +82,7 @@ boundary; середина surrogate pair не округляется. Scalar-re
 Owned Cmd/Ctrl+A публикует root Child0/After → Childlen/After; вне mounted host
 обычный browser Select All не перехватывается. Noncollapsed Backspace/Delete
 использует KWDJ DeleteSelection17; collapsed Backspace сохраняет DeleteBackward16.
+В нативной ячейке таблицы collapsed Delete вызывает KWDJ DeleteForward.
 Selection-only native effects не создают document revision/undo entry; selection
 epoch, stored marks и grouping barriers следуют настоящей native операции,
 а не восстанавливаются из JS bookmark.

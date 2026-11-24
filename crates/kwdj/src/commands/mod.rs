@@ -445,15 +445,22 @@ impl CommandProvider for KwdjProfile<'_> {
                 self.clipboard_v2() && *context == crate::model::Profile::Poetry,
                 plan,
             )?,
-            KwdjIntent::DeleteForward | KwdjIntent::DeleteSelectionAtPoetryBoundary => {
+            KwdjIntent::DeleteForward => {
+                if !self.clipboard_v2() {
+                    return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());
+                }
+                delete::prepare_forward(
+                    view,
+                    state,
+                    *context == crate::model::Profile::Poetry,
+                    plan,
+                )?
+            }
+            KwdjIntent::DeleteSelectionAtPoetryBoundary => {
                 if !self.clipboard_v2() || *context != crate::model::Profile::Poetry {
                     return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());
                 }
-                if matches!(intent, KwdjIntent::DeleteForward) {
-                    delete::prepare_forward(view, state, plan)?
-                } else {
-                    delete::prepare_poetry_selection(view, state, plan)?
-                }
+                delete::prepare_poetry_selection(view, state, plan)?
             }
             KwdjIntent::DeleteSelection | KwdjIntent::DeleteSelectionInProfileBody => {
                 selection::prepare(

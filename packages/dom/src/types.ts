@@ -64,7 +64,7 @@ export interface TrustedRegistryInventory { readonly nodes: readonly RegistryNod
 export interface NodeRendererDefinition { readonly layout?: 'plain-text-block'; readonly primitive: string; readonly attributes: readonly string[]; readonly present: (node: DeepReadonly<NodeViewDto>) => DomPresentation | DomRefusal }
 export interface MarkRendererDefinition { readonly attributes: readonly string[]; readonly present: (mark: DeepReadonly<MarkDto>) => DomPresentation | DomRefusal }
 /** Data-only command construction for browser gestures; semantics remain native. */
-export interface InputCommandBindings { readonly insertText?: (text: string) => CommandDto; readonly enter?: () => CommandDto; readonly lineBreak?: () => CommandDto; readonly deleteBackward?: () => CommandDto; readonly deleteSelection?: () => CommandDto;
+export interface InputCommandBindings { readonly insertText?: (text: string) => CommandDto; readonly enter?: () => CommandDto; readonly lineBreak?: () => CommandDto; readonly deleteBackward?: () => CommandDto; readonly deleteForward?: () => CommandDto; readonly deleteSelection?: () => CommandDto;
   readonly insertTypedText?:(data:Readonly<{text:string;origin:'ordinary_insert_text'|'composition_commit'}>)=>CommandDto;
   readonly restoreTypedText?:(data:DeepReadonly<RawInputRestoreV2>)=>CommandDto }
 export interface RendererCatalogDefinition {

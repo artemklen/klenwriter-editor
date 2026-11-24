@@ -79,7 +79,7 @@ function findCell(view: TableView, position: DeepReadonly<PositionDto>): Geometr
   return null;
 }
 
-function tableCell(view: TableView, position: DeepReadonly<PositionDto>) {
+export function tableCell(view: TableView, position: DeepReadonly<PositionDto>) {
   const cell = findCell(view, position);
   const row = cell?.view.parent ? view.geometryRow(cell.view.parent) : null;
   const table = row?.view.parent ? view.geometryRow(row.view.parent) : null;

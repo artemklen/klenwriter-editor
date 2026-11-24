@@ -190,25 +190,64 @@ pub(super) fn prepare<V: CandidateRead>(
     Ok(CommandPresentation::default())
 }
 
+pub(super) fn in_table_cell<V: CandidateRead>(
+    view: &V,
+    mut parent: V::Id,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<bool, KwdjError> {
+    for _ in 0..crate::MAX_TREE_DEPTH {
+        if parent == view.root() {
+            return Ok(false);
+        }
+        let ancestor = get(view, parent, plan)?;
+        if matches!(
+            ancestor.type_id,
+            "org.klenwriter.kwdj/table_cell" | "org.klenwriter.kwdj/table_header"
+        ) {
+            return Ok(true);
+        }
+        parent = ancestor.parent;
+    }
+    Err(invalid())
+}
+
 pub(super) fn prepare_forward<V: CandidateRead>(
     view: &V,
     state: CommandState<'_, V::Id>,
+    poetry: bool,
     plan: &mut PlanBuilder<'_, V::Id>,
 ) -> Result<CommandPresentation, KwdjError> {
-    let selection = state
-        .selection
-        .copied()
-        .ok_or_else(|| error(KwdjErrorCode::CommandSelectionRequired))?;
-    let focus = inline::text_point(view, selection.focus, plan.work())?;
-    let end = point_key(view, &focus, plan)?;
+    let outside_profile = || super::refusal(KwdjErrorCode::CommandUnsupportedContext);
+    let selection = state.selection.copied().ok_or_else(|| {
+        if poetry {
+            error(KwdjErrorCode::CommandSelectionRequired)
+        } else {
+            outside_profile()
+        }
+    })?;
+    let focus = match inline::text_point(view, selection.focus, plan.work()) {
+        Ok(point) => point,
+        Err(error) if !poetry && error.code != KwdjErrorCode::OperationalBudgetExceeded => {
+            return Err(outside_profile());
+        }
+        Err(error) => return Err(error),
+    };
+    let block = get(view, focus.block, plan)?;
+    let table_cell = eligible(block.type_id) && in_table_cell(view, block.parent, plan)?;
+    if !poetry && !table_cell {
+        return Err(outside_profile());
+    }
+    let point = point_key(view, &focus, plan)?;
     if selection.anchor != selection.focus {
         let anchor = inline::text_point(view, selection.anchor, plan.work())?;
-        if anchor.block != focus.block || point_key(view, &anchor, plan)? != end {
+        if anchor.block != focus.block || point_key(view, &anchor, plan)? != point {
             return Err(unsupported());
         }
     }
-    let block = get(view, focus.block, plan)?;
-    if end != PointKey::Gap(block.children.len())
+    if table_cell {
+        return delete_next_egc(view, focus, point, selection.focus, plan);
+    }
+    if point != PointKey::Gap(block.children.len())
         || !poetry::collapsed(view, focus.block, block, poetry::Direction::Forward, plan)?
     {
         return Err(unsupported());
@@ -237,19 +276,25 @@ struct RunLeaf<I> {
     length: usize,
 }
 
-fn delete_egc<V: CandidateRead>(
+struct TextRun<I> {
+    leaves: Vec<RunLeaf<I>>,
+    offset: usize,
+    boundaries: Vec<Utf16Offset>,
+}
+
+fn text_run<V: CandidateRead>(
     view: &V,
-    point: TextPoint<V::Id>,
-    original_end: Position<V::Id>,
+    block: V::Id,
+    target: usize,
+    target_offset: Option<usize>,
+    previous: bool,
     plan: &mut PlanBuilder<'_, V::Id>,
-) -> Result<(), KwdjError> {
-    let block = get(view, point.block, plan)?;
+) -> Result<TextRun<V::Id>, KwdjError> {
+    let block = get(view, block, plan)?;
     units(plan, block.children.len())?;
-    let target = if point.leaf.is_some() {
-        point.index
-    } else {
-        point.index.checked_sub(1).ok_or_else(unsupported)?
-    };
+    if target >= block.children.len() {
+        return Err(unsupported());
+    }
     let mut first = target;
     let mut last = target + 1;
     if get(view, block.children[target], plan)?.primitive != Primitive::Text {
@@ -283,11 +328,7 @@ fn delete_egc<V: CandidateRead>(
         if index == target {
             end = Some(
                 total
-                    .checked_add(if point.leaf.is_some() {
-                        point.utf16.get()
-                    } else {
-                        len
-                    })
+                    .checked_add(target_offset.unwrap_or(len))
                     .ok_or_else(invalid)?,
             );
         }
@@ -300,7 +341,7 @@ fn delete_egc<V: CandidateRead>(
         total = total.checked_add(len).ok_or_else(invalid)?;
     }
     let end = end.ok_or_else(invalid)?;
-    if end == 0 {
+    if previous && end == 0 {
         // The prior sibling is a hard break/atom, rather than a preceding EGC.
         return Err(unsupported());
     }
@@ -324,6 +365,97 @@ fn delete_egc<V: CandidateRead>(
     units(plan, text.len())?;
     let boundaries = grapheme_boundaries(&text).map_err(|_| invalid())?;
     units(plan, boundaries.len())?;
+    Ok(TextRun {
+        leaves,
+        offset: end,
+        boundaries,
+    })
+}
+
+fn delete_next_egc<V: CandidateRead>(
+    view: &V,
+    point: TextPoint<V::Id>,
+    offset: PointKey<V::Id>,
+    original_start: Position<V::Id>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let (target, local_offset) = match offset {
+        PointKey::Gap(index) => (index, 0),
+        PointKey::Text(_, offset) => (point.index, offset),
+    };
+    let run = text_run(view, point.block, target, Some(local_offset), false, plan)?;
+    let next = run
+        .boundaries
+        .iter()
+        .find(|offset| offset.get() > run.offset)
+        .ok_or_else(unsupported)?
+        .get();
+    units(plan, run.leaves.len())?;
+    let end = run
+        .leaves
+        .iter()
+        .find(|leaf| next <= leaf.start + leaf.length)
+        .ok_or_else(invalid)?;
+    let selection = Selection {
+        anchor: original_start,
+        focus: text_position(end.id, next - end.start),
+    };
+    erase_cell_inline_range(view, selection, point, plan)
+}
+
+pub(super) fn erase_cell_inline_range<V: CandidateRead>(
+    view: &V,
+    selection: Selection<V::Id>,
+    start: TextPoint<V::Id>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let block = get(view, start.block, plan)?;
+    if !eligible(block.type_id) {
+        return Err(unsupported());
+    }
+    // Keep a caret on the retained prefix when normalization rejoins the suffix.
+    // A child gap on its own could map to the end of that joined text.
+    let position = if let Some(leaf) = start.leaf
+        && start.utf16.get() > 0
+    {
+        text_position(leaf.into(), start.utf16.get())
+    } else if let Some(previous) = start.index.checked_sub(1)
+        && let Some(text) = get(view, block.children[previous], plan)?.text
+    {
+        text_position(block.children[previous].into(), length(text, plan)?)
+    } else {
+        Position::Child {
+            parent: start.block.into(),
+            index: start.index,
+            affinity: Affinity::After,
+        }
+    };
+    plan.push(Operation::ReplaceInlineRange {
+        range: inline::map_selection(selection),
+        inserted: None,
+    })
+    .map_err(KwdjError::operational)?;
+    caret(plan, position)?;
+    Ok(CommandPresentation::default())
+}
+
+fn delete_egc<V: CandidateRead>(
+    view: &V,
+    point: TextPoint<V::Id>,
+    original_end: Position<V::Id>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<(), KwdjError> {
+    let (target, target_offset) = if point.leaf.is_some() {
+        (point.index, Some(point.utf16.get()))
+    } else {
+        (point.index.checked_sub(1).ok_or_else(unsupported)?, None)
+    };
+    let TextRun {
+        leaves,
+        offset: end,
+        boundaries,
+    } = text_run(view, point.block, target, target_offset, true, plan)?;
+    let first = leaves.first().ok_or_else(invalid)?.index;
     let previous = boundaries
         .iter()
         .rfind(|offset| offset.get() < end)
