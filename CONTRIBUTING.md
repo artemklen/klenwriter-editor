@@ -13,13 +13,14 @@ build tools для Rust. CMS checkout, DB, private registry и секреты н
    Node 26 допускается для разработки, но acceptance lane использует Node 24.
 2. Установите rustup. `rust-toolchain.toml` закрепляет Rust **1.97.1**, rustfmt,
    clippy и `wasm32-unknown-unknown`. Release builder использует этот pin; native core/profile дополнительно
-   поддерживают Rust **1.89.0** и проверяются на нём в CI.
+   поддерживают Rust **1.89.0** и проверяются на нём локально.
 3. Выполните из корня:
 
 ```sh
 npm ci --ignore-scripts
 cargo install wasm-bindgen-cli --version 0.2.129 --locked --root .tools
 PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install chromium firefox webkit
+cargo +1.89.0 test --locked -p klenwriter-editor-core -p klenwriter-editor-kwdj
 npm run check
 npm test
 node scripts/summarize-evidence.mjs
@@ -30,11 +31,11 @@ node scripts/summarize-evidence.mjs
 Для локальных прогонов можно создать отдельный пустой каталог и передать
 `CFFIXED_USER_HOME=/absolute/path/to/test-browser-appdata` только тестовому процессу.
 Это изолирует app-data; browser build, CSP и assertions остаются прежними.
-CI macOS 15 использует обычный запуск.
 
 Linux дополнительно требует Playwright system dependencies (`npx playwright install --with-deps`).
-CI запускается на macOS 15 и выполняет ту же последовательность; OS browser input
-проверяется отдельными implementation gates, bootstrap smoke этого не доказывает.
+CI на macOS 15 собирает исходники командами `npm ci --ignore-scripts` и
+`npm run build`. Запускайте тесты локально на точном SHA перед отправкой ветки.
+OS browser input проверяется отдельными implementation gates.
 
 `npm run check` включает fmt/clippy/native tests, independent canonical JS/native
 reference vectors (`npm run test:canonical`, [ADR-004](docs/adr/004-canonical-json-v1.md)), native + wasm32 release build,
@@ -59,7 +60,8 @@ integrity, baseline/additive rules и stage-aware native/WASM projections;
 лицензии, заявленные зависимости MSRV, targets, размеры raw/gzip и SHA-256 сборки.
 `artifacts/package-inventory.json` и `artifacts/packages/*.tgz` доказывают содержимое
 упаковки. `artifacts/browser.json` — результаты Chrome-engine/Firefox/WebKit smoke,
-не установленного Safari. CI сохраняет эти файлы вместе с browser evidence.
+не установленного Safari. Сохраняйте browser evidence вместе с локальными
+результатами проверки.
 Lockfiles обязательны; `--locked` запрещает тихое разрешение новых Rust версий.
 Reproducible здесь означает чистую сборку одинакового pinned source/toolchain/lock,
 а не обещание идентичных native binaries на разных OS/CPU. Rust std/CLI и системный
