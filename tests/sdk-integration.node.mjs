@@ -2,7 +2,7 @@
 // Actual packaged release WASM + public controller; no controlled/fake bridge.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { literaryFixture, warningFixture } from './support/codec-fixtures.mjs';
+import { literaryFixture, referencePreservationFixture, warningFixture } from './support/codec-fixtures.mjs';
 import { readFileSync } from 'node:fs';
 import { isDeepStrictEqual } from 'node:util';
 import { createCommand, createEditor, loadSdk, loadSdkV2 } from '../packages/sdk/dist/index.js';
@@ -337,7 +337,7 @@ const osr183Doc = content => canonicalizeRaw(JSON.stringify({
   schema: 'klenwriter.document', schema_version: 1, profile: 'prose', content,
 }));
 
-async function withLiteraryCommandSession(input, run, media = [], access = 'editable') {
+async function withLiteraryCommandSession(input, run, media = [], access = 'editable', references = []) {
   const packet = JSON.parse(readFileSync(new URL('../artifacts/extensions/packet.json', import.meta.url)));
   const wasm = readFileSync(new URL('../packages/wasm/dist/editor_wasm_bg.wasm', import.meta.url));
   const module = await loadSdkV2({ wasm: new Uint8Array(wasm) });
@@ -345,7 +345,7 @@ async function withLiteraryCommandSession(input, run, media = [], access = 'edit
   const options = {
     abi: 'editor-sdk/2', build_id: module.manifest.build_id, profile: packet.kwdjProfile,
     admission: 'validate', access, registry_json: packet.kwdjRegistryJson,
-    profile_options_json: JSON.stringify({ identities: { media, references: [] }, limits: null }),
+    profile_options_json: JSON.stringify({ identities: { media, references }, limits: null }),
   };
   const editor = createEditor({ input: new TextEncoder().encode(input), options, loader: async () => module });
   try {
@@ -2596,6 +2596,55 @@ test('packaged SDK: pending hard cap128 and64-turn yielding settle actual stale 
     assert.deepEqual(JSON.parse(canonical(editor)), document('aXYbc'));
     assert.equal(editor.resources().pending_tickets, 0); assert.equal(context.callbackErrors.length, 0);
   } finally { context.close(); }
+});
+
+test('OSR-156 packaged SDK2 preserves DOC-006 reference markup and locks the article', async () => {
+  const fixture = referencePreservationFixture();
+  const references = [{id:fixture.id,status:'exists'}];
+  const readReference = (editor, index) => {
+    const row = textLeaf(editor, index);
+    assert.equal(row.text, fixture.label);
+    assert.deepEqual(structuredClone(row.marks), [{
+      type_id:'org.klenwriter.kwdj/reference_link',
+      attributes:{reference_entity_id:{kind:'string',value:fixture.id}},
+    }]);
+    return row.id;
+  };
+  const mutate = (editor, payload) => accepted(osr183Wire(editor, kwdjCommand(payload)));
+  await withLiteraryCommandSession(fixture.initial, editor => {
+    const reference = root(editor).children[1], referenceText = readReference(editor, 1);
+    for (const [index, text, offset] of [[0,fixture.left_append,fixture.before.length],[2,fixture.right_append,fixture.after.length]]) {
+      osr185Select(editor, position(textLeaf(editor, index).id, offset));
+      assert.equal(mutate(editor, {kind:'insert_text',text}).effect, 'changed');
+    }
+    assert.equal(canonical(editor), fixture.edited);
+    assert.equal(readReference(editor, 1), referenceText);
+    assert.equal(mutate(editor, {kind:'move',node:reference,parent:state(editor).root,before_index:fixture.move_before_index}).effect, 'changed');
+    assert.equal(canonical(editor), fixture.moved);
+    assert.equal(root(editor).children[2], reference);
+    assert.equal(readReference(editor, 2), referenceText);
+    assert.equal(mutate(editor, {kind:'remove',node:reference}).effect, 'changed');
+    assert.equal(canonical(editor), fixture.removed);
+  }, [], 'editable', references);
+  for (const [bytes,index] of [[fixture.edited,1],[fixture.moved,2]]) {
+    await withLiteraryCommandSession(bytes, editor => readReference(editor, index), [], 'editable', references);
+  }
+  await withLiteraryCommandSession(fixture.initial, editor => {
+    osr185Select(editor, position(readReference(editor, 1), fixture.locked_offset));
+    const before = state(editor), reference = root(editor).children[1], referenceText = readReference(editor, 1);
+    for (const payload of [{kind:'insert_text',text:'X'},{kind:'delete_backward'}]) {
+      osr183Denied(editor, kwdjCommand(payload).id, payload, fixture.initial, 'session.read_only', '');
+    }
+    const fragment = {
+      format_id:'org.klenwriter.kwdj/clipboard-fragment/1', mode:'prose',kind:'inline',
+      source_profile:{profile_id:'org.klenwriter.kwdj',profile_version:'1.0.0',codec_id:'org.klenwriter.kwdj/json',wire_version:1},
+      content:[{type:'text',text:fixture.paste_text}],open_start:false,open_end:false,
+    };
+    osr183Denied(editor, osr186InsertFragment, osr186Payload(fragment), fixture.initial, 'session.read_only', '');
+    assert.equal(root(editor).children[1], reference);
+    assert.equal(readReference(editor, 1), referenceText);
+    assert.deepEqual(state(editor), before);
+  }, [], 'read_only', references);
 });
 
 test('packaged SDK: current identity facts on untouched nodes are rechecked and retry succeeds', async () => {

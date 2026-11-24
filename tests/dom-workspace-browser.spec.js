@@ -1,6 +1,6 @@
 import {test,expect} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { literaryFixture, spoilerDisclosureFixture, warningFixture } from './support/codec-fixtures.mjs';
+import { literaryFixture, referencePreservationFixture, spoilerDisclosureFixture, warningFixture } from './support/codec-fixtures.mjs';
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {longDocumentFixtures} from './support/large-document-fixtures.mjs';
@@ -2183,6 +2183,147 @@ test.describe('OSR-209 mounted table cell edits', () => {
       expect(after.documents).toEqual([]);
       expect(after.failures).toEqual(['dom.command_unsupported']);
     } finally {await page.evaluate(()=>window.osr209Custom.close());}
+  });
+});
+
+test.describe('OSR-156 mounted reference preservation', () => {
+  test.skip(({browserName}) => browserName === 'firefox', 'OSR-156 requires Chromium and WebKit');
+  const fixture = referencePreservationFixture();
+  const referenceType = 'org.klenwriter.kwdj/reference_link';
+  const referenceMarks = [{type_id:referenceType,attributes:{reference_entity_id:{kind:'string',value:fixture.id}}}];
+  const mount = async (page, source, options = {}) => {
+    const mounted = await call(page,'mount',{source,referenceId:fixture.id,...options});
+    expect(mounted.ready, JSON.stringify(mounted.diagnostic)).toBe('ready');
+    return mounted.id;
+  };
+  const placeholder = (page,id) => page.locator(`#${id} .editor-reference-placeholder`);
+  async function reference(page,id,path) {
+    await expect(placeholder(page,id)).toHaveText(fixture.label);
+    await expect(page.locator(`#${id}`).getByRole('link')).toHaveCount(0);
+    expect(await placeholder(page,id).evaluate(element => ({
+      tag:element.tagName,href:element.getAttribute('href'),tabIndex:element.getAttribute('tabindex'),
+    }))).toEqual({tag:'SPAN',href:null,tabIndex:null});
+    const leaf = await call(page,'row',id,path);
+    expect(leaf.marks).toEqual(referenceMarks);
+    return leaf.id;
+  }
+
+  test('adjacent keys, exact reopen, and whole paragraph Move and Remove', async ({page}) => {
+    const id = await mount(page,fixture.initial);
+    const original = await checkpoint(page,id,'DOC-006 original UUID and surrounding paragraphs');
+    const leaf = await reference(page,id,'/1/0');
+    const paragraph = stateRow(original,'/1').id;
+    await call(page,'select',id,'/0/0',fixture.before.length);
+    await page.keyboard.insertText(fixture.left_append);
+    await call(page,'select',id,'/2/0',fixture.after.length);
+    await page.keyboard.insertText(fixture.right_append);
+    const edited = await checkpoint(page,id,'adjacent trusted input');
+    expect(edited.canonical).toBe(fixture.edited);
+    expect(docEvents(edited)).toHaveLength(2);
+    expect(await reference(page,id,'/1/0')).toBe(leaf);
+    const reopened = await mount(page,edited.canonical);
+    expect(await call(page,'snapshot',reopened)).toBe(fixture.edited);
+    await reference(page,reopened,'/1/0');
+
+    const move = await call(page,'command',id,{
+      kind:'move',node:paragraph,parent:original.state.root,before_index:fixture.move_before_index,
+    });
+    expect(move.response.value?.effect,JSON.stringify(move)).toBe('changed');
+    const moved = await checkpoint(page,id,'whole reference-containing paragraph moved');
+    expect(moved.canonical).toBe(fixture.moved);
+    expect(stateRow(moved,'/2').id).toBe(paragraph);
+    expect(await reference(page,id,'/2/0')).toBe(leaf);
+    const movedReopen = await mount(page,moved.canonical);
+    expect(await call(page,'snapshot',movedReopen)).toBe(fixture.moved);
+    await reference(page,movedReopen,'/2/0');
+    const remove = await call(page,'command',id,{kind:'remove',node:paragraph});
+    expect(remove.response.value?.effect,JSON.stringify(remove)).toBe('changed');
+    const removed = await checkpoint(page,id,'whole reference-containing paragraph removed');
+    expect(removed.canonical).toBe(fixture.removed);
+    expect(docEvents(removed)).toHaveLength(4);
+    await expect(placeholder(page,id)).toHaveCount(0);
+    await page.locator(`#${id}`).focus();
+    await page.keyboard.press('ControlOrMeta+KeyZ');
+    expect(await call(page,'snapshot',id)).toBe(fixture.moved);
+    expect(await reference(page,id,'/2/0')).toBe(leaf);
+
+    const toggle = await call(page,'command',id,{kind:'toggle_mark',mark:referenceMarks[0]});
+    expect(toggle).toMatchObject({status:'dom_refused',diagnostic:{code:'dom.command_unsupported'}});
+    const fragment = {
+      format_id:'org.klenwriter.kwdj/clipboard-fragment/1',mode:'prose',kind:'inline',
+      source_profile:{profile_id:'org.klenwriter.kwdj',profile_version:'1.0.0',codec_id:'org.klenwriter.kwdj/json',wire_version:1},
+      content:fixture.reference.content,open_start:false,open_end:false,
+    };
+    const paste = await call(page,'rawRequest',id,{kind:'command',history_hint:{kind:'isolated'},command:{
+      id:'org.klenwriter.kwdj/command/insert-fragment',
+      payload_json:JSON.stringify({kind:'insert_fragment',fragment_json:JSON.stringify(fragment)}),
+    }});
+    expect(paste).toMatchObject({status:'dom_refused',diagnostic:{code:'dom.command_unsupported'}});
+    expect(await call(page,'snapshot',id)).toBe(fixture.moved);
+  });
+
+  for (const mode of ['readOnly','disabled']) test(`locked article ${mode} preserves UUID after trusted input, Backspace and paste`, async ({page}) => {
+    const id = await mount(page,fixture.initial,{mode,access:'read_only'});
+    const host = page.locator(`#${id}`);
+    const originalLeaf = await reference(page,id,'/1/0');
+    await expect(host).toHaveAttribute('contenteditable','false');
+    await expect(host).toHaveAttribute('aria-readonly','true');
+    await expect(host).toHaveAttribute('aria-disabled',String(mode === 'disabled'));
+    await expect(host).toHaveAttribute('tabindex',mode === 'disabled' ? '-1' : '0');
+
+    // A trusted copy from an isolated fixture field seeds the same browser's clipboard.
+    await page.evaluate(text => {
+      const input = document.createElement('textarea');
+      input.id = 'osr156-clipboard-source'; input.value = text;
+      document.body.append(input); input.focus(); input.select();
+      input.addEventListener('copy',event => { input.copyTrusted = event.isTrusted; },{once:true});
+    },fixture.paste_text);
+    await page.keyboard.press('ControlOrMeta+KeyC');
+    expect(await page.locator('#osr156-clipboard-source').evaluate(input => input.copyTrusted)).toBe(true);
+    await call(page,'select',id,'/1/0',fixture.locked_offset);
+    await expect(host).toBeFocused();
+    await page.evaluate(() => document.querySelector('#osr156-clipboard-source').remove());
+    const native = await call(page,'command',id,{kind:'insert_text',text:'Rejected'});
+    expect(native.response).toMatchObject({status:'refused',diagnostic:{code:'session.read_only',may_have_committed:false}});
+    const before = await checkpoint(page,id,'locked reference article exact initial state');
+    expect(before.actualSelection).toMatchObject({
+      inside:true, anchorText:fixture.label, anchorOffset:fixture.locked_offset, focusOffset:fixture.locked_offset,
+    });
+    await host.evaluate(element => {
+      element.referenceAttempts = [];
+      element.addEventListener('keydown',event => {
+        element.referenceAttempts.push({kind:'key',key:event.key,trusted:event.isTrusted});
+      });
+      element.addEventListener('paste',event => {
+        element.referenceAttempts.push({kind:'paste',trusted:event.isTrusted,prevented:event.defaultPrevented,
+          text:event.clipboardData.getData('text/plain')});
+      });
+    });
+    await page.keyboard.press('x');
+    await page.keyboard.press('Backspace');
+    await page.keyboard.press('ControlOrMeta+KeyV');
+    const attempts = await host.evaluate(element => element.referenceAttempts);
+    expect(attempts).toContainEqual({kind:'key',key:'x',trusted:true});
+    expect(attempts).toContainEqual({kind:'key',key:'Backspace',trusted:true});
+    expect(attempts).toContainEqual({kind:'paste',trusted:true,prevented:true,text:fixture.paste_text});
+    const after = await checkpoint(page,id,'locked reference after trusted input, Backspace and paste');
+    expect(after.failures.slice(before.failures.length)).toContainEqual(expect.objectContaining({
+      status:'dom_refused',diagnostic:expect.objectContaining({code:'dom.native_read_only',phase:'clipboard',publication:'none'}),
+    }));
+    expect(after.state).toEqual(before.state);
+    expect(after.rows).toEqual(before.rows);
+    expect(after.canonical).toBe(fixture.initial);
+    expect(after.domText).toBe(before.domText);
+    expect(after.events).toEqual(before.events);
+    expect(await reference(page,id,'/1/0')).toBe(originalLeaf);
+    const axe = await new AxeBuilder({page}).include(`#${id}`).analyze();
+    observations.get(page).axe = {
+      engine:axe.testEngine,violations:axe.violations,incomplete:axe.incomplete,
+      passedRules:axe.passes.map(rule=>rule.id),
+    };
+    observations.get(page).referenceAttempts = attempts;
+    expect(axe.violations).toEqual([]);
+    expect(axe.passes.length).toBeGreaterThan(0);
   });
 });
 

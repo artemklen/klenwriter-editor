@@ -1,0 +1,10 @@
+{
+  "retained_case": "reference_slug_changed",
+  "before": "Before",
+  "after": "After",
+  "left_append": "!",
+  "right_append": "?",
+  "locked_offset": 1,
+  "paste_text": "Blocked paste",
+  "move_before_index": 3
+}

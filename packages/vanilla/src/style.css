@@ -46,6 +46,7 @@
 }
 .editor-surface .editor-media-center::before { margin-inline: auto; }
 .editor-surface .editor-media-wide::before { inline-size: 100%; }
+.editor-surface .editor-reference-placeholder { text-decoration: underline dotted; }
 .editor-surface .editor-color-muted { color: #595959; }
 .editor-surface .editor-color-accent { color: #275dad; }
 .editor-surface .editor-color-manuscript { color: #72472d; }

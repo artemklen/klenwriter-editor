@@ -16,6 +16,7 @@ export { runKwdjLinkDialog } from './link-host.js';
 export type { KwdjLinkDialogOptions } from './link-host.js';
 
 const prefix = 'org.klenwriter.kwdj/';
+const referenceLink = `${prefix}reference_link`;
 const colorTokens = ['muted', 'accent', 'manuscript', 'warning', 'success', 'danger'];
 const highlightTokens = ['accent', 'manuscript', 'warning'];
 const literaryLabels = new Map([
@@ -179,9 +180,17 @@ marks[`${prefix}link`] = { attributes: ['href', 'title'], present: m => {
   if (!safeHref(href) || (Object.hasOwn(m.attributes, 'title') && title === undefined)) return refused(m.type_id);
   return { tag: 'a', attributes: title === undefined ? { href } : { href, title } };
 } };
+marks[referenceLink] = { attributes: ['reference_entity_id'], present: mark => {
+  const id = attrString(mark.attributes.reference_entity_id);
+  return id && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(id)
+    ? { tag: 'span', classes: ['editor-reference-placeholder'] }
+    : refused(mark.type_id);
+} };
 
 function coveredMark(value: unknown): boolean {
   if (!closed(value, ['type_id', 'attributes']) || typeof value.type_id !== 'string' || !object(value.attributes)) return false;
+  // Rendering a stored reference does not enable mark or clipboard authoring.
+  if (value.type_id === referenceLink) return false;
   const renderer = Object.hasOwn(marks, value.type_id) ? marks[value.type_id] : undefined;
   if (!renderer || Object.keys(value.attributes).some(k => !renderer.attributes.includes(k))) return false;
   const result = renderer.present(value as unknown as DeepReadonly<MarkDto>);
