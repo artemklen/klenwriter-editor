@@ -55,8 +55,8 @@ export type MountedReady = { readonly status: 'ready'; readonly response: Respon
     readonly response: Response | null;
     readonly recovery: RecoveryPacket | null;
   });
-export type DomTag = 'span' | 'br' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'pre' | 'code' | 'blockquote' | 'ul' | 'ol' | 'li' | 'div' | 'section' | 'hr' | 'strong' | 'em' | 's' | 'sub' | 'sup' | 'a';
-export type DomAttribute = 'href' | 'title' | 'start' | 'role' | 'aria-label' | 'aria-checked' | 'data-verse-indent' | 'data-blank-lines';
+export type DomTag = 'span' | 'br' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'pre' | 'code' | 'blockquote' | 'ul' | 'ol' | 'li' | 'div' | 'section' | 'hr' | 'strong' | 'em' | 's' | 'sub' | 'sup' | 'a' | 'table' | 'tr' | 'th' | 'td';
+export type DomAttribute = 'href' | 'title' | 'start' | 'role' | 'aria-label' | 'aria-checked' | 'data-verse-indent' | 'data-blank-lines' | 'colspan' | 'rowspan';
 export interface DomPresentation { readonly tag: DomTag; readonly attributes?: Readonly<Partial<Record<DomAttribute, string>>>; readonly classes?: readonly string[]; readonly label?: string }
 export interface RegistryNodeWitness { readonly id: string; readonly owner: string; readonly primitive: string; readonly attributes: readonly string[] }
 export interface RegistryMarkWitness { readonly id: string; readonly owner: string; readonly attributes: readonly string[] }

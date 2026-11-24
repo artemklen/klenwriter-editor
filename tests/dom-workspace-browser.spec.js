@@ -3065,3 +3065,71 @@ test('OSR-131 destroy in the trusted deletion handler cancels the pending correc
   expect(review.postDestroyScroll).toEqual(review.requested);
   expect(review.final).toEqual(review.postDestroyScroll);
 });
+
+test.describe('OSR-204 mounted table rendering', () => {
+  test.skip(({ browserName }) => browserName === 'firefox', 'Table acceptance covers Chromium and WebKit');
+  const load = name => JSON.parse(readFileSync(new URL(`../contracts/kwdj/v1/fixtures/${name}.json`, import.meta.url), 'utf8')).fixtures;
+  const fixtures = [...load('positive'), ...load('mixed')];
+
+  for (const [doc, name] of [
+    ['DOC-010', 'rectangular_table'],
+    ['DOC-011', 'table_spans_alignment'],
+    ['DOC-012', 'valid_effective_grid'],
+    ['DOC-011', 'pre_normalized_unit_spans_removed'],
+  ]) test(`${doc}/${name}`, async ({ page }) => {
+    const fixture = fixtures.find(row => row.id === doc).cases.find(row => row.name === name);
+    expect(fixture.pipeline_stages).toContain('public_render');
+    const source = canonicalizeRaw(JSON.stringify(fixture.kwdj));
+    const mounted = await call(page, 'mount', { source, access: 'read_only' });
+    expect(mounted.ready, JSON.stringify(mounted.diagnostic)).toBe('ready');
+    const { id } = mounted;
+    const point = await checkpoint(page, id, 'Mounted table');
+    expect(point.canonical).toBe(source);
+    expect(point.failures).toEqual([]);
+    const table = page.locator('#' + id).getByRole('table');
+    await expect(table).toHaveCount(1);
+    const rows = fixture.kwdj.content[0].content;
+    await expect(table.getByRole('row')).toHaveCount(rows.length);
+    const rendered = await table.evaluate(element => ({
+      tag: element.localName,
+      rows: Array.from(element.rows, row => ({
+        tag: row.localName,
+        cells: Array.from(row.cells, cell => ({
+          tag: cell.localName,
+          text: cell.textContent,
+          colspan: cell.getAttribute('colspan'),
+          rowspan: cell.getAttribute('rowspan'),
+          colSpan: cell.colSpan,
+          rowSpan: cell.rowSpan,
+        })),
+      })),
+    }));
+    expect(rendered).toEqual({
+      tag: 'table',
+      rows: rows.map(row => ({
+        tag: 'tr',
+        cells: row.content.map(({ type, attrs, content }) => ({
+          tag: type === 'table_header' ? 'th' : 'td',
+          text: content[0].content[0].text,
+          colspan: attrs?.colspan === undefined ? null : String(attrs.colspan),
+          rowspan: attrs?.rowspan === undefined ? null : String(attrs.rowspan),
+          colSpan: attrs?.colspan ?? 1,
+          rowSpan: attrs?.rowspan ?? 1,
+        })),
+      })),
+    });
+    for (const [index, row] of rows.entries()) {
+      const cells = table.getByRole('row').nth(index).locator(':scope > th, :scope > td');
+      await expect(cells).toHaveCount(row.content.length);
+      for (const [cellIndex, cell] of row.content.entries()) {
+        if (cell.attrs?.align) {
+          await expect(cells.nth(cellIndex)).toHaveClass('editor-align-' + cell.attrs.align);
+          await expect(cells.nth(cellIndex)).toHaveCSS('text-align', cell.attrs.align);
+        }
+      }
+    }
+    const axe = await new AxeBuilder({ page }).include('#' + id).analyze();
+    observations.get(page).tableAxeViolations = axe.violations;
+    expect(axe.violations).toEqual([]);
+  });
+});

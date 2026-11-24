@@ -5,8 +5,8 @@ import { domRefusal, isDomRefusal } from './refusal.js';
 
 const catalogs = new WeakSet<object>();
 const brand: unique symbol = Symbol('editor.rendererCatalog');
-const tags = new Set(['span', 'br', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre', 'code', 'blockquote', 'ul', 'ol', 'li', 'div', 'section', 'hr', 'strong', 'em', 's', 'sub', 'sup', 'a']);
-const attributes = new Set(['href', 'title', 'start', 'role', 'aria-label', 'aria-checked', 'data-verse-indent', 'data-blank-lines']);
+const tags = new Set(['span', 'br', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre', 'code', 'blockquote', 'ul', 'ol', 'li', 'div', 'section', 'hr', 'strong', 'em', 's', 'sub', 'sup', 'a', 'table', 'tr', 'th', 'td']);
+const attributes = new Set(['href', 'title', 'start', 'role', 'aria-label', 'aria-checked', 'data-verse-indent', 'data-blank-lines', 'colspan', 'rowspan']);
 // Classes select static editor CSS only. Authored CSS and arbitrary selectors are absent.
 const classes = new Set(['editor-align-left', 'editor-align-center', 'editor-align-right', 'editor-align-justify',
   'editor-first-line-indent', 'editor-task-list', 'editor-task-item', 'editor-checked', 'editor-scene-break',
@@ -97,6 +97,10 @@ function validHref(value: string): boolean {
   if (/[\u0000-\u0020\u007f]/u.test(value) || value.length > 16384) return false;
   return /^https?:/i.test(value) || /^\/(?!\/)/.test(value);
 }
+function validTableSpan(value: string, maximum: number): boolean {
+  const span = Number(value);
+  return Number.isInteger(span) && span >= 2 && span <= maximum && String(span) === value;
+}
 function presentation(value: unknown): value is DomPresentation {
   if (!plain(value) || !closed(value, ['tag', 'attributes', 'classes', 'label']) || typeof value.tag !== 'string' || !tags.has(value.tag)) return false;
   if (value.label !== undefined && (typeof value.label !== 'string' || value.label.length > 65536)) return false;
@@ -106,6 +110,8 @@ function presentation(value: unknown): value is DomPresentation {
     for (const [key, v] of Object.entries(value.attributes)) {
       if (!attributes.has(key) || typeof v !== 'string' || v.length > 65536 || (key === 'href' && (value.tag !== 'a' || !validHref(v)))
         || (key === 'start' && (value.tag !== 'ol' || !/^(0|[1-9][0-9]{0,9})$/.test(v) || BigInt(v) > 2147483647n))
+        || ((key === 'colspan' || key === 'rowspan')
+          && ((value.tag !== 'th' && value.tag !== 'td') || !validTableSpan(v, key === 'colspan' ? 50 : 500)))
         || (key === 'aria-checked' && v !== 'true' && v !== 'false')
         || (key === 'data-verse-indent'
           && (value.tag !== 'div' || !value.classes?.includes('editor-verse-line') || !/^[1-8]$/.test(v)))

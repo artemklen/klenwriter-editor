@@ -62,6 +62,22 @@ function textBlock(node: DeepReadonly<NodeViewDto>, tag: DomPresentation['tag'])
   }
   return { tag, classes };
 }
+function tableCell(n: DeepReadonly<NodeViewDto>, tag: 'th' | 'td'): DomPresentation | DomRefusal {
+  const attributes: Partial<Record<'colspan' | 'rowspan', string>> = {};
+  for (const key of ['colspan', 'rowspan'] as const) {
+    const span = n.attributes[key];
+    if (span === undefined) continue;
+    if (span.kind !== 'number') return refused(n.type_id, n);
+    attributes[key] = span.value;
+  }
+  const classes: string[] = [];
+  if (Object.hasOwn(n.attributes, 'align')) {
+    const alignment = attrString(n.attributes.align);
+    if (alignment !== 'left' && alignment !== 'center' && alignment !== 'right') return refused(n.type_id, n);
+    classes.push(`editor-align-${alignment}`);
+  }
+  return { tag, attributes, classes };
+}
 const node = (primitive: string, attributes: readonly string[], present: NodeRendererDefinition['present']): NodeRendererDefinition => ({ primitive, attributes, present });
 function labeledContainer(fallback: string): NodeRendererDefinition {
   return node('container', ['label'], n => {
@@ -99,6 +115,10 @@ const nodes: Record<string, NodeRendererDefinition> = {
       attributes: { title: checked.value ? 'Completed task' : 'Incomplete task' } } : refused(n.type_id, n);
   }),
   [`${prefix}scene_break`]: node('block_atom', [], () => ({ tag: 'hr', classes: ['editor-scene-break'], attributes: { role: 'separator', 'aria-label': 'Scene break' } })),
+  [`${prefix}table`]: node('container', [], () => ({ tag: 'table' })),
+  [`${prefix}table_row`]: node('container', [], () => ({ tag: 'tr' })),
+  [`${prefix}table_header`]: node('container', ['align', 'colspan', 'rowspan'], n => tableCell(n, 'th')),
+  [`${prefix}table_cell`]: node('container', ['align', 'colspan', 'rowspan'], n => tableCell(n, 'td')),
   [`${prefix}verse`]: node('container', [], () => ({
     tag: 'div', classes: ['editor-verse'], attributes: { role: 'group', 'aria-label': 'Verse' },
   })),
@@ -186,7 +206,8 @@ function coveredClipboard(value: unknown): boolean {
       || Object.keys(node).some(k => !['type','attrs','text','marks','content'].includes(k))) return false;
     // These renderers cover document readback. The mounted clipboard subset is separate.
     if (node.type === 'media_image' || node.type === 'literary_block' || node.type === 'warning'
-      || node.type === 'spoiler' || node.type === 'disclosure') return false;
+      || node.type === 'spoiler' || node.type === 'disclosure'
+      || ['table', 'table_row', 'table_header', 'table_cell'].includes(node.type)) return false;
     const renderer = Object.hasOwn(nodes, prefix + node.type) ? nodes[prefix + node.type] : null;
     if (!renderer) return false;
     const attrs = node.attrs === undefined ? {} : node.attrs;

@@ -358,7 +358,7 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     if (isDomRefusal(result)) return result;
     const acceptedTags: Record<string, readonly string[]> = {
       root: ['div'], text: ['span'], hard_break: ['br'], text_block: ['p','h1','h2','h3','h4','h5','h6','pre','div'],
-      container: ['blockquote','ul','ol','li','div','section'], block_atom: ['hr','div','span'], inline_atom: ['span']
+      container: ['blockquote','ul','ol','li','div','section','table','tr','th','td'], block_atom: ['hr','div','span'], inline_atom: ['span']
     };
     if (!acceptedTags[view.primitive]?.includes(result.presentation.tag)
       || (result.presentation.label !== undefined && view.primitive !== 'block_atom' && view.primitive !== 'inline_atom')) {

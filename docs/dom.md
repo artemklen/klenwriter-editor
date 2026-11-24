@@ -74,7 +74,8 @@ snapshot, вызовите `destroy()` и смонтируйте сохранё�
 KWDJ binding поддерживает `text`, `hard_break`, `paragraph`, `heading`,
 `code_block`, `blockquote`, `bullet_list`, `ordered_list`, `list_item`,
 `task_list`, `task_item`, `scene_break`, `media_image`, `literary_block`, `warning`,
-`spoiler`, `disclosure`, `verse`, `verse_line` и `stanza_break`.
+`spoiler`, `disclosure`, `verse`, `verse_line`, `stanza_break`, `table`,
+`table_row`, `table_header` и `table_cell`.
 Девять marks включают strong, emphasis, strike, code, subscript, superscript,
 text_color, highlight и link. Для `media_image` binding показывает локальный
 CSS-плейсхолдер с именем из `alt`, если изображение содержательное. Подпись
@@ -84,8 +85,10 @@ CSS-плейсхолдер с именем из `alt`, если изображе
 `label` как доступное имя группы и сохраняют дочернее содержимое. Для
 метки из одних пробелов используется стандартное доступное имя, а исходная
 метка сохраняется при экспорте. Переносы строф сохраняют `blank_lines`,
-а `verse_line.attrs.indent` задаёт видимый отступ от 1 до 8 шагов. Для table, остальных
-доменных блоков и reference_link требуются отдельные renderers. Неизвестные
+а `verse_line.attrs.indent` задаёт видимый отступ от 1 до 8 шагов.
+Таблицы используют `table`, `tr`, `th` и `td`, сохраняют
+принятые `rowspan`, `colspan` и выравнивание ячеек. Для остальных доменных
+блоков и reference_link требуются отдельные renderers. Неизвестные
 типы, marks и attrs дают явный отказ.
 
 Native build-time producer проверяет полный inventory из реальных публичных
