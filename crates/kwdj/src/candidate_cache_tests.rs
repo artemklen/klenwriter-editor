@@ -310,6 +310,112 @@ fn local_text_counts_match_full_codec_across_unicode_escapes_and_repeated_sparse
 }
 
 #[test]
+fn verse_edge_trims_and_interior_merges_match_full_and_sparse_edit_normalization() {
+    use editor_core::document::{Attributes, Primitive};
+    use editor_core::transaction::Operation;
+
+    let first = json!({"type":"verse_line","attrs":{"indent":3},"content":[{"type":"text","text":"  Строка 1"}]});
+    let third = json!({"type":"verse_line","attrs":{"indent":8},"content":[{"type":"text","text":"Строка 3"}]});
+    let stanza = |count| json!({"type":"stanza_break","attrs":{"blank_lines":count}});
+    let profile = Profile::Poetry;
+    let before = source(
+        profile,
+        json!([{"type":"verse","content":[first,stanza(2),third]}]),
+    );
+    let verse = before.roots[0];
+    let [left, edge, right] = before.nodes[&verse].children[..] else {
+        panic!("expected two lines around the stanza break");
+    };
+    let cache = seed_view(profile, &before);
+    for removed in [vec![left], vec![right], vec![left, right]] {
+        let mut after = before.clone();
+        for id in &removed {
+            let line = after.nodes.remove(id).unwrap();
+            for leaf in line.children {
+                after.nodes.remove(&leaf).unwrap();
+            }
+            after
+                .nodes
+                .get_mut(&verse)
+                .unwrap()
+                .children
+                .retain(|child| child != id);
+        }
+        let changes = Changes::new(before.clone(), after);
+        let mut expected = vec![Operation::Remove { node: edge }];
+        if removed.len() == 2 {
+            expected.push(Operation::InsertFragment {
+                parent: verse,
+                index: 0,
+                fragment: Document {
+                    children: vec![CoreNode {
+                        type_id: "org.klenwriter.kwdj/verse_line".into(),
+                        primitive: Primitive::TextBlock,
+                        attributes: Attributes::new(),
+                        marks: Vec::new(),
+                        children: Vec::new(),
+                        text: None,
+                    }],
+                },
+            });
+        }
+        let mut work = WorkMeter::new(WorkLimits::default());
+        let scoped = normalize(
+            profile,
+            &changes,
+            &cache,
+            &Facts::default(),
+            Limits::default(),
+            AdmissionBudget::default(),
+            &mut work,
+        )
+        .unwrap();
+        assert_eq!(scoped, expected, "removed {removed:?}");
+        assert_eq!(work.trace().phase(WorkPhase::FullFallback).visits, 0);
+        assert_eq!(
+            normalize(
+                profile,
+                &changes,
+                &KwdjCache::default(),
+                &Facts::default(),
+                Limits::default(),
+                AdmissionBudget::default(),
+                &mut WorkMeter::new(WorkLimits::default()),
+            )
+            .unwrap(),
+            expected,
+        );
+    }
+
+    // An interior break can be at the edge of a sparse slice without being at
+    // the edge of the verse.
+    let mut after = before.clone();
+    after.nodes.get_mut(&left).unwrap().node.attributes.insert(
+        "indent".into(),
+        editor_core::document::Attribute::Number(1.into()),
+    );
+    let changes = Changes::new(before, after);
+    check(profile, &changes, &cache, &Facts::default());
+}
+
+#[test]
+fn verse_indent_counts_toward_sparse_canonical_bytes_after_text_edit() {
+    let before = source(
+        Profile::Poetry,
+        json!([{"type":"verse","content":[{
+            "type":"verse_line","attrs":{"indent":8},
+            "content":[{"type":"text","text":"  a"}]
+        }]}]),
+    );
+    let cache = seed_view(Profile::Poetry, &before);
+    let leaf = before.first_text();
+    let mut after = before.clone();
+    after.nodes.get_mut(&leaf).unwrap().node.text = Some("  abc".into());
+    let changes = Changes::new(before, after);
+    check(Profile::Poetry, &changes, &cache, &Facts::default());
+}
+
+#[test]
 fn wide_roots_quote_and_verse_do_not_scan_unchanged_siblings() {
     for kind in ["roots", "quote", "verse"] {
         let mut baseline = None;

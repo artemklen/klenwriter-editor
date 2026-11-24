@@ -1016,7 +1016,7 @@ pub(crate) fn normalize<V: CandidateChanges>(
 ) -> Result<Vec<editor_core::transaction::Operation<V::Id>>, KwdjError> {
     if !cache.matches(context, view, limits, budget) {
         work.note_phase(WorkPhase::FullFallback, 1, 0);
-        let ops = crate::edit_normalize::normalize_candidate(context, view, work)?;
+        let ops = crate::edit_normalize::normalize_changed_candidate(view, work)?;
         crate::candidate_validate::check_discarded_metadata(
             view, &ops, identities, limits, budget, work,
         )?;

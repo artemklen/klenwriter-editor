@@ -128,8 +128,10 @@ pub enum KwdjIntent<I> {
     },
     DismissSlash,
     DeleteBackward,
+    DeleteForward,
     DeleteSelection,
     DeleteSelectionInProfileBody,
+    DeleteSelectionAtPoetryBoundary,
     InsertFragment {
         fragment: clipboard::Fragment,
     },
@@ -143,6 +145,7 @@ pub enum KwdjIntent<I> {
 }
 
 pub const CLIPBOARD_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-fragment";
+pub const DELETE_FORWARD_COMMAND_ID: &str = "org.klenwriter.kwdj/command/delete-forward";
 pub const SET_LITERARY_KIND_COMMAND_ID: &str = "org.klenwriter.kwdj/command/set-literary-kind";
 pub const WRAP_LITERARY_BLOCK_COMMAND_ID: &str = "org.klenwriter.kwdj/command/wrap-literary-block";
 pub const UNWRAP_LITERARY_BLOCK_COMMAND_ID: &str =
@@ -314,9 +317,10 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::AcceptSlash { .. } => KWDJ_COMMANDS[13].id,
             KwdjIntent::DismissSlash => KWDJ_COMMANDS[14].id,
             KwdjIntent::DeleteBackward => KWDJ_COMMANDS[15].id,
-            KwdjIntent::DeleteSelection | KwdjIntent::DeleteSelectionInProfileBody => {
-                KWDJ_COMMANDS[16].id
-            }
+            KwdjIntent::DeleteForward => DELETE_FORWARD_COMMAND_ID,
+            KwdjIntent::DeleteSelection
+            | KwdjIntent::DeleteSelectionInProfileBody
+            | KwdjIntent::DeleteSelectionAtPoetryBoundary => KWDJ_COMMANDS[16].id,
             KwdjIntent::InsertFragment { .. } => CLIPBOARD_COMMAND_ID,
             KwdjIntent::InsertTypedText { .. } => TYPED_INPUT_COMMAND_ID,
             KwdjIntent::RestoreTypedText { .. } => RESTORE_INPUT_COMMAND_ID,
@@ -358,7 +362,22 @@ impl CommandProvider for KwdjProfile<'_> {
             }
             KwdjIntent::UnsetLink => inline::unset_link(view, state, plan)?,
             KwdjIntent::InsertText { text } => inline::insert_text(view, state, text, plan)?,
-            KwdjIntent::DeleteBackward => delete::prepare(view, state, plan)?,
+            KwdjIntent::DeleteBackward => delete::prepare(
+                view,
+                state,
+                self.clipboard_v2() && *context == crate::model::Profile::Poetry,
+                plan,
+            )?,
+            KwdjIntent::DeleteForward | KwdjIntent::DeleteSelectionAtPoetryBoundary => {
+                if !self.clipboard_v2() || *context != crate::model::Profile::Poetry {
+                    return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());
+                }
+                if matches!(intent, KwdjIntent::DeleteForward) {
+                    delete::prepare_forward(view, state, plan)?
+                } else {
+                    delete::prepare_poetry_selection(view, state, plan)?
+                }
+            }
             KwdjIntent::DeleteSelection | KwdjIntent::DeleteSelectionInProfileBody => {
                 selection::prepare(
                     view,

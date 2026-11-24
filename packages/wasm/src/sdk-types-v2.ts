@@ -29,7 +29,9 @@ export type LabeledContainerKindV2 = "spoiler" | "disclosure";
 
 export type KwdjLabeledContainerIntentV2 = { "kind": "insert_block", target: LabeledContainerBlockTargetV2, } | { "kind": "set_container_label", node: string, label: string, } | { "kind": "wrap_labeled_container", container_kind: LabeledContainerKindV2, label: string, } | { "kind": "unwrap_labeled_container", node: string, };
 
-export type KwdjDeleteSelectionScopeV2 = "profile_body";
+export type KwdjForwardDeleteIntentV2 = { "kind": "delete_forward", };
+
+export type KwdjDeleteSelectionScopeV2 = "profile_body" | "poetry_boundary";
 
 export type KwdjScopedSelectionIntentV2 = { "kind": "delete_selection", scope: KwdjDeleteSelectionScopeV2, };
 

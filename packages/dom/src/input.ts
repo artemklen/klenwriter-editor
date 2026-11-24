@@ -62,6 +62,7 @@ export function attachInput(options: InputConfiguration): InputOwner {
   const typed=new InputResultOwner({...options,changed:()=>options.onResources?.(resources())});
   // One held physical shortcut, not a native ticket or a retained DOM event.
   let historyKeyHeld: 'undo'|'redo'|null = null;
+  let shiftedEnter: KeyboardEvent | null = null;
   const failure = (code: DomRefusal['diagnostic']['code']) => domRefusal(code,'command',options.capture());
   const listen = (target: EventTarget,name: string,callback: EventListener,capture=false) => {
     target.addEventListener(name,callback,capture); removals.push(() => target.removeEventListener(name,callback,capture));
@@ -230,7 +231,7 @@ export function attachInput(options: InputConfiguration): InputOwner {
     }
     if(!p.ownedPermit&&!typed.owns(result))options.afterObservation?.(p.observation,result);
   }
-  function ordinaryBeforeInput(input:InputEvent,ownedPermit=false):InputSubmissionV2|DomRefusal|null {
+  function ordinaryBeforeInput(input:InputEvent,ownedPermit=false,inputType=input.inputType):InputSubmissionV2|DomRefusal|null {
     if(options.observationBusy?.()){if(input.cancelable)input.preventDefault();return failure('dom.busy');}
     options.selection.invalidate(false,input); options.selection.cancel();
     if (destroyed) return null;
@@ -258,11 +259,11 @@ export function attachInput(options: InputConfiguration): InputOwner {
     else if(input.inputType==='deleteContentBackward')preparedBefore=typed.restore(input,ownedPermit);
     if(isDomRefusal(preparedBefore)){if(input.cancelable)input.preventDefault();options.recover(preparedBefore,view.captureRegion());return preparedBefore;}
     const observation=ownedPermit?null:options.beforeObservation?.(input)??null;
-    let supported = preparedBefore!==null || input.inputType === 'historyUndo' || input.inputType === 'historyRedo';
-    try { supported ||= command(input.inputType,input.data) !== null; } catch { supported = false; }
+    let supported = preparedBefore!==null || inputType === 'historyUndo' || inputType === 'historyRedo';
+    try { supported ||= command(inputType,input.data) !== null; } catch { supported = false; }
     if (!supported) { if (input.cancelable) input.preventDefault(); return refused('dom.command_unsupported'); }
     if (input.cancelable) {
-      input.preventDefault(); const result = submit(input.inputType,input.data,undefined,ownedPermit,observation,input,preparedBefore);
+      input.preventDefault(); const result = submit(inputType,input.data,undefined,ownedPermit,observation,input,preparedBefore);
       if (!ownedPermit && !typed.owns(result) && !isDomRefusal(result) && result.status === 'completed' && result.response.status === 'refused') refused('dom.command_unsupported');
       if(!ownedPermit&&!typed.owns(result))options.afterObservation?.(observation,result);
       return result;
@@ -314,6 +315,8 @@ export function attachInput(options: InputConfiguration): InputOwner {
   listen(element,'beforeinput',event=>{
     const input=event as InputEvent;
     if(destroyed)return;
+    const key = shiftedEnter;
+    shiftedEnter = null;
     typed.beforeInput(input);
     if(historyKeyHeld!==null && input.inputType===(historyKeyHeld==='undo'?'historyUndo':'historyRedo')){
       if(input.cancelable)input.preventDefault();
@@ -330,22 +333,39 @@ export function attachInput(options: InputConfiguration): InputOwner {
       refused('dom.command_unsupported');return;
     }
     if(options.observationBusy?.()){typed.retire();if(input.cancelable)input.preventDefault();return;}
-    if(!composition.beforeInput(input))ordinaryBeforeInput(input);
+    if(!composition.beforeInput(input)){
+      // WebKit on macOS can transport a real Shift+Enter as insertParagraph.
+      // Consume the held key once and keep the original input event for observers.
+      const lineBreak = key && !key.defaultPrevented && input.isTrusted && !input.defaultPrevented
+        && input.cancelable && !input.isComposing && input.inputType==='insertParagraph'
+        && doc.hasFocus() && options.selection.ownsFocus();
+      ordinaryBeforeInput(input,false,lineBreak?'insertLineBreak':input.inputType);
+    }
   });
   listen(element,'input',event=>{const input=event as InputEvent;if(!destroyed && !composition.input(input))reconcile(input);});
-  listen(element,'compositionstart',event=>{historyKeyHeld=null;typed.retire();if(!destroyed)composition.start(event as CompositionEvent);});
+  listen(element,'compositionstart',event=>{historyKeyHeld=null;shiftedEnter=null;typed.retire();if(!destroyed)composition.start(event as CompositionEvent);});
   listen(element,'compositionupdate',event=>{if(!destroyed)composition.update(event as CompositionEvent);});
   listen(element,'compositionend',event=>{if(!destroyed)composition.end(event as CompositionEvent);});
-  listen(element,'keydown',event=>{if(!destroyed){typed.keydown(event as KeyboardEvent);composition.keydown(event as KeyboardEvent);typed.afterKeydown(event as KeyboardEvent);historyKeydown(event as KeyboardEvent);}});
-  listen(element,'keyup',event=>{if((event as KeyboardEvent).code==='KeyZ')historyKeyHeld=null;if(!destroyed){typed.keyup(event as KeyboardEvent);composition.keyup(event as KeyboardEvent);}});
-  listen(element,'pointerdown',()=>{historyKeyHeld=null;typed.retire();},true);
-  listen(element,'blur',event=>{historyKeyHeld=null;typed.retire();if(!destroyed)composition.blur(event);});
-  if(doc.defaultView?.addEventListener)listen(doc.defaultView,'blur',()=>{historyKeyHeld=null;typed.retire();});
+  listen(element,'keydown',event=>{
+    if(destroyed)return;
+    const key=event as KeyboardEvent;
+    shiftedEnter=null;
+    typed.keydown(key);composition.keydown(key);typed.afterKeydown(key);historyKeydown(key);
+    if(!destroyed && options.bindings.lineBreak && key.isTrusted && key.cancelable && !key.defaultPrevented
+      && key.key==='Enter' && key.shiftKey && !key.altKey && !key.ctrlKey && !key.metaKey
+      && !key.isComposing && key.keyCode!==229 && key.target && element.contains(key.target as Node)
+      && doc.hasFocus() && options.selection.ownsFocus())shiftedEnter=key;
+  });
+  listen(element,'keyup',event=>{shiftedEnter=null;if((event as KeyboardEvent).code==='KeyZ')historyKeyHeld=null;if(!destroyed){typed.keyup(event as KeyboardEvent);composition.keyup(event as KeyboardEvent);}});
+  listen(element,'pointerdown',()=>{historyKeyHeld=null;shiftedEnter=null;typed.retire();},true);
+  listen(element,'blur',event=>{historyKeyHeld=null;shiftedEnter=null;typed.retire();if(!destroyed)composition.blur(event);});
+  if(doc.defaultView?.addEventListener)listen(doc.defaultView,'blur',()=>{historyKeyHeld=null;shiftedEnter=null;typed.retire();});
   return {
-    destroy() { if (destroyed) return; destroyed=true;pending=null;historyKeyHeld=null;composition.destroy();typed.destroy();for(const remove of removals.splice(0))remove(); },
+    destroy() { if (destroyed) return; destroyed=true;pending=null;historyKeyHeld=null;shiftedEnter=null;composition.destroy();typed.destroy();for(const remove of removals.splice(0))remove(); },
     listeners:()=>removals.length,isProtected:()=>composition.isProtected(),isCommitting:()=>composition.isCommitting(),
     retained:reason=>composition.retained(reason),resources,
-    externalIntent:()=>typed.retire(),publication:event=>typed.publication(event),
+    externalIntent:()=>{shiftedEnter=null;typed.retire();},
+    publication:event=>{shiftedEnter=null;typed.publication(event);},
     takeTypedRecovery:()=>typed.takeRecovery(),
     externalSubmission:(request,result)=>composition.externalSubmission(request,result),
   };

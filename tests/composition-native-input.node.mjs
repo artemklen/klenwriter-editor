@@ -88,3 +88,16 @@ test('opt-in composition broker serves the complete nonce protocol module graph'
  const status=await request(new URL(config.base+'/host/status',config.origin));assert.equal(status.status,200);
  const state=await status.json();assert.equal(state.ready,null);assert.equal(state.commands,0);assert.equal(state.polls,0);
 });
+
+test('closed verse prepare admits only the three installed poetry rows', () => {
+  for (const args of [
+    ['en', 'ordinary-layout', 'verse'], ['ru', 'ordinary-layout', 'verse'],
+    ['en', 'plain-deadkey', 'verse'],
+  ]) assert.equal(validCall('prepare', args), true);
+  for (const args of [
+    ['ru', 'plain-deadkey', 'verse'], ['en', 'marked-deadkey', 'verse'],
+    ['en', 'ordinary-layout', 'poetry'], ['en', 'ordinary-layout', 'verse', 'extra'],
+    ['en', 'ordinary-layout', { variant: 'verse' }],
+  ]) assert.equal(validCall('prepare', args), false);
+  assert.equal(validCall('guard', ['ordinary-en', 'verse']), false);
+});

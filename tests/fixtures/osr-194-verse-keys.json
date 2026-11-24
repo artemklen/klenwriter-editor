@@ -1,0 +1,453 @@
+{
+  "cms": "54eaea583f7e64fa5fefb55c6cf025241c0ee848",
+  "corpus_case": "DOC-019/poetry_stanzas",
+  "input": {
+    "schema": "klenwriter.document",
+    "schema_version": 1,
+    "profile": "poetry",
+    "content": [
+      {
+        "type": "verse",
+        "content": [
+          {
+            "type": "verse_line",
+            "content": [
+              {
+                "type": "text",
+                "text": "  Строка 1"
+              }
+            ],
+            "attrs": {
+              "indent": 3
+            }
+          },
+          {
+            "type": "verse_line",
+            "content": [
+              {
+                "type": "text",
+                "text": "Строка 2"
+              }
+            ]
+          },
+          {
+            "type": "stanza_break",
+            "attrs": {
+              "blank_lines": 2
+            }
+          },
+          {
+            "type": "verse_line",
+            "content": [
+              {
+                "type": "text",
+                "text": "Строка 3"
+              }
+            ],
+            "attrs": {
+              "indent": 8
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "cases": [
+    {
+      "key": "Enter",
+      "position": "start",
+      "offset": 0,
+      "caret": {
+        "line": 1,
+        "offset": 0
+      },
+      "expected": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "poetry",
+        "content": [
+          {
+            "type": "verse",
+            "content": [
+              {
+                "type": "verse_line",
+                "attrs": {
+                  "indent": 3
+                },
+                "content": []
+              },
+              {
+                "type": "verse_line",
+                "attrs": {
+                  "indent": 3
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "  Строка 1"
+                  }
+                ]
+              },
+              {
+                "type": "verse_line",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Строка 2"
+                  }
+                ]
+              },
+              {
+                "type": "stanza_break",
+                "attrs": {
+                  "blank_lines": 2
+                }
+              },
+              {
+                "type": "verse_line",
+                "attrs": {
+                  "indent": 8
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Строка 3"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "Enter",
+      "position": "middle",
+      "offset": 8,
+      "caret": {
+        "line": 1,
+        "offset": 0
+      },
+      "expected": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "poetry",
+        "content": [
+          {
+            "type": "verse",
+            "content": [
+              {
+                "type": "verse_line",
+                "attrs": {
+                  "indent": 3
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "  Строка"
+                  }
+                ]
+              },
+              {
+                "type": "verse_line",
+                "attrs": {
+                  "indent": 3
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "text": " 1"
+                  }
+                ]
+              },
+              {
+                "type": "verse_line",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Строка 2"
+                  }
+                ]
+              },
+              {
+                "type": "stanza_break",
+                "attrs": {
+                  "blank_lines": 2
+                }
+              },
+              {
+                "type": "verse_line",
+                "attrs": {
+                  "indent": 8
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Строка 3"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "Enter",
+      "position": "end",
+      "offset": 10,
+      "caret": {
+        "line": 1,
+        "offset": 0
+      },
+      "expected": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "poetry",
+        "content": [
+          {
+            "type": "verse",
+            "content": [
+              {
+                "type": "verse_line",
+                "attrs": {
+                  "indent": 3
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "  Строка 1"
+                  }
+                ]
+              },
+              {
+                "type": "verse_line",
+                "content": []
+              },
+              {
+                "type": "verse_line",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Строка 2"
+                  }
+                ]
+              },
+              {
+                "type": "stanza_break",
+                "attrs": {
+                  "blank_lines": 2
+                }
+              },
+              {
+                "type": "verse_line",
+                "attrs": {
+                  "indent": 8
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Строка 3"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "Shift+Enter",
+      "position": "start",
+      "offset": 0,
+      "caret": {
+        "line": 0,
+        "offset": 1
+      },
+      "expected": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "poetry",
+        "content": [
+          {
+            "type": "verse",
+            "content": [
+              {
+                "type": "verse_line",
+                "attrs": {
+                  "indent": 3
+                },
+                "content": [
+                  {
+                    "type": "hard_break"
+                  },
+                  {
+                    "type": "text",
+                    "text": "  Строка 1"
+                  }
+                ]
+              },
+              {
+                "type": "verse_line",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Строка 2"
+                  }
+                ]
+              },
+              {
+                "type": "stanza_break",
+                "attrs": {
+                  "blank_lines": 2
+                }
+              },
+              {
+                "type": "verse_line",
+                "attrs": {
+                  "indent": 8
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Строка 3"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "Shift+Enter",
+      "position": "middle",
+      "offset": 8,
+      "caret": {
+        "line": 0,
+        "offset": 9
+      },
+      "expected": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "poetry",
+        "content": [
+          {
+            "type": "verse",
+            "content": [
+              {
+                "type": "verse_line",
+                "attrs": {
+                  "indent": 3
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "  Строка"
+                  },
+                  {
+                    "type": "hard_break"
+                  },
+                  {
+                    "type": "text",
+                    "text": " 1"
+                  }
+                ]
+              },
+              {
+                "type": "verse_line",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Строка 2"
+                  }
+                ]
+              },
+              {
+                "type": "stanza_break",
+                "attrs": {
+                  "blank_lines": 2
+                }
+              },
+              {
+                "type": "verse_line",
+                "attrs": {
+                  "indent": 8
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Строка 3"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "Shift+Enter",
+      "position": "end",
+      "offset": 10,
+      "caret": {
+        "line": 0,
+        "offset": 11
+      },
+      "expected": {
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "poetry",
+        "content": [
+          {
+            "type": "verse",
+            "content": [
+              {
+                "type": "verse_line",
+                "attrs": {
+                  "indent": 3
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "  Строка 1"
+                  },
+                  {
+                    "type": "hard_break"
+                  }
+                ]
+              },
+              {
+                "type": "verse_line",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Строка 2"
+                  }
+                ]
+              },
+              {
+                "type": "stanza_break",
+                "attrs": {
+                  "blank_lines": 2
+                }
+              },
+              {
+                "type": "verse_line",
+                "attrs": {
+                  "indent": 8
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Строка 3"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

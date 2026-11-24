@@ -348,18 +348,20 @@ mod tests {
         assert!(matches!(session.initialization(), SdkResponse::Ok { .. }));
         assert!(session.context().is_some());
         let catalog = call(&mut session, json!({"kind":"catalog"}));
-        assert_eq!(catalog["value"]["commands"].as_array().unwrap().len(), 28);
+        let commands = catalog["value"]["commands"].as_array().unwrap();
+        assert_eq!(commands.len(), 29);
         assert!(
-            catalog["value"]["commands"]
-                .as_array()
-                .unwrap()
+            commands
+                .iter()
+                .any(|v| v == "org.klenwriter.kwdj/command/delete-forward")
+        );
+        assert!(
+            commands
                 .iter()
                 .any(|v| v == "org.klenwriter.kwdj/command/delete-selection")
         );
         assert!(
-            catalog["value"]["commands"]
-                .as_array()
-                .unwrap()
+            commands
                 .iter()
                 .any(|x| x == "org.klenwriter.kwdj/command/insert-text")
         );
@@ -577,8 +579,9 @@ mod tests {
                                 sorted.push(editor_kwdj::commands::SET_WARNING_KIND_COMMAND_ID);
                                 sorted.push(editor_kwdj::commands::WRAP_WARNING_COMMAND_ID);
                                 sorted.push(editor_kwdj::commands::UNWRAP_WARNING_COMMAND_ID);
+                                sorted.push("org.klenwriter.kwdj/command/delete-forward");
                                 sorted.sort_unstable();
-                                assert_eq!(actual, sorted, "{id}: frozenV2catalog IDs");
+                                assert_eq!(actual, sorted, "{id}: exact additive SDK2 catalog");
                                 // ABI1 catalog order remains the original compiled order.
                                 let legacy_options = crate::wire::OpenOptions {
                                     abi: crate::wire::SDK_ABI.into(),
@@ -1428,6 +1431,181 @@ mod tests {
     const OSR184_WRAP: &str = "org.klenwriter.kwdj/command/wrap-literary-block";
     const OSR184_UNWRAP: &str = "org.klenwriter.kwdj/command/unwrap-literary-block";
 
+    #[test]
+    fn osr199_verse_selection_text_keeps_exact_separators_atoms_and_limits() {
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-199-poetry-selection.json"
+        ))
+        .unwrap();
+        let corpus: Value = serde_json::from_str(include_str!(
+            "../../../contracts/kwdj/v1/fixtures/positive.json"
+        ))
+        .unwrap();
+        let doc019 = &corpus["fixtures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|entry| entry["id"] == "DOC-019")
+            .unwrap()["cases"][0]["kwdj"];
+        let clipboard: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-197-poetry-clipboard.json"
+        ))
+        .unwrap();
+        let node_at = |session: &mut DistributionSession, path: &Value| {
+            let mut node = state(session)["root"].clone();
+            for index in path.as_array().unwrap() {
+                node = osr183_node(session, &node)["children"][index.as_u64().unwrap() as usize]
+                    .clone();
+            }
+            node
+        };
+        let point = |session: &mut DistributionSession, coordinate: &Value| {
+            let node = node_at(session, &coordinate["path"]);
+            if let Some(offset) = coordinate.get("offset") {
+                json!({"kind":"text","node":node,"offset":offset,"affinity":"after"})
+            } else {
+                json!({"kind":"child","parent":node,"index":coordinate["index"],"affinity":"after"})
+            }
+        };
+
+        for row in fixture["cases"].as_array().unwrap() {
+            let id = row["id"].as_str().unwrap();
+            let document = match row["document"].as_str().unwrap() {
+                "DOC-019" => doc019,
+                "OSR-197" => &clipboard["documents"]["source"],
+                name => &fixture["documents"][name],
+            };
+            let input = document
+                .as_str()
+                .map_or_else(|| document.to_string(), str::to_owned);
+            let mut session = osr183_open(&input);
+            let anchor = point(&mut session, &row["anchor"]);
+            let focus = point(&mut session, &row["focus"]);
+            let selection = json!({"anchor":anchor,"focus":focus});
+            let initial = state(&mut session);
+            let set = call(
+                &mut session,
+                json!({"kind":"set_selection","stamp":initial["stamp"],"selection":selection}),
+            );
+            if let Some(code) = row.get("set_diagnostic") {
+                assert_eq!(set["status"], "refused", "{id}: {set}");
+                assert_eq!(&set["diagnostic"]["code"], code, "{id}: {set}");
+                assert_eq!(state(&mut session), initial, "{id}");
+                assert_eq!(snapshot(&mut session), input, "{id}");
+                continue;
+            }
+            assert_eq!(set["status"], "ok", "{id}: {set}");
+            let before = state(&mut session);
+            assert_eq!(before["selection"], selection, "{id}");
+            let reply = call(
+                &mut session,
+                json!({"kind":"selection_text","stamp":before["stamp"],"max_bytes":row["max_bytes"]}),
+            );
+            if let Some(code) = row.get("diagnostic") {
+                assert_eq!(reply["status"], "refused", "{id}: {reply}");
+                assert_eq!(&reply["diagnostic"]["code"], code, "{id}: {reply}");
+                assert_eq!(reply["diagnostic"]["path"], "", "{id}");
+                assert_eq!(reply["diagnostic"]["may_have_committed"], false, "{id}");
+            } else {
+                let atoms: Vec<_> = row["atoms"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|path| node_at(&mut session, path))
+                    .collect();
+                assert_eq!(
+                    reply,
+                    json!({"status":"ok","value":{
+                        "kind":"selection_text","stamp":before["stamp"],"selection":selection,
+                        "projection_id":"org.klenwriter.kwdj/selection-text/1","text":row["text"],
+                        "empty":false,"selected_atoms":atoms
+                    }}),
+                    "{id}"
+                );
+            }
+            assert_eq!(state(&mut session), before, "{id}");
+            assert_eq!(snapshot(&mut session), input, "{id}");
+            if row["delete_guard"] == true {
+                for payload in [
+                    json!({"kind":"delete_selection"}),
+                    json!({"kind":"delete_selection","scope":"profile_body"}),
+                ] {
+                    let reply = osr183_command(
+                        &mut session,
+                        "org.klenwriter.kwdj/command/delete-selection",
+                        &payload,
+                        false,
+                    );
+                    assert_eq!(reply["status"], "refused", "{id}: {reply}");
+                    assert_eq!(
+                        reply["diagnostic"]["code"], "kwdj.command_unsupported_context",
+                        "{id}"
+                    );
+                    assert_eq!(reply["diagnostic"]["path"], "/command", "{id}");
+                    assert_eq!(state(&mut session), before, "{id}");
+                    assert_eq!(snapshot(&mut session), input, "{id}");
+                }
+            }
+        }
+    }
+
+    fn osr194_run_cases(key: &str, command: &str, intent: &str) {
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-194-verse-keys.json"
+        ))
+        .unwrap();
+        let input = fixture["input"].to_string();
+        let cases: Vec<_> = fixture["cases"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|case| case["key"] == key)
+            .collect();
+        assert_eq!(cases.len(), 3);
+        for case in cases {
+            let label = case["position"].as_str().unwrap();
+            let mut session = osr183_open(&input);
+            let root = state(&mut session)["root"].clone();
+            let verse = osr183_node(&mut session, &root)["children"][0].clone();
+            let line = osr183_node(&mut session, &verse)["children"][0].clone();
+            let text = osr183_node(&mut session, &line)["children"][0].clone();
+            let point =
+                json!({"kind":"text","node":text,"offset":case["offset"],"affinity":"after"});
+            let stamp = state(&mut session)["stamp"].clone();
+            let selected = call(
+                &mut session,
+                json!({"kind":"set_selection","stamp":stamp,"selection":{"anchor":point,"focus":point}}),
+            );
+            assert_eq!(selected["status"], "ok", "{key} {label}: {selected}");
+            let result = osr183_command(&mut session, command, &json!({"kind":intent}), false);
+            assert_eq!(
+                result["value"]["effect"], "changed",
+                "{key} {label}: {result}"
+            );
+            assert_eq!(
+                snapshot(&mut session),
+                case["expected"].to_string(),
+                "{key} {label}"
+            );
+            assert_eq!(state(&mut session)["history"]["undo_entries"], "1");
+            osr183_history(&mut session, "undo", &input);
+        }
+    }
+
+    #[test]
+    fn osr194_enter_uses_the_three_pinned_cms_verse_splits() {
+        osr194_run_cases("Enter", "org.klenwriter.kwdj/command/enter", "enter");
+    }
+
+    #[test]
+    fn osr194_shift_enter_uses_the_three_pinned_cms_hard_breaks() {
+        osr194_run_cases(
+            "Shift+Enter",
+            "org.klenwriter.kwdj/command/shift-enter",
+            "shift_enter",
+        );
+    }
+
     fn osr184_blocks() -> Value {
         json!([
             {"type":"paragraph","content":[{"type":"text","text":"Before"}]},
@@ -1835,6 +2013,317 @@ mod tests {
     const OSR189_WRAP: &str = "org.klenwriter.kwdj/command/wrap-warning";
     const OSR189_UNWRAP: &str = "org.klenwriter.kwdj/command/unwrap-warning";
 
+    fn osr195_fixture() -> Value {
+        serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-195-empty-verse-and-stanzas.json"
+        ))
+        .unwrap()
+    }
+
+    #[test]
+    fn osr195_admission_and_reopen_preserve_empty_verse_and_stanza_counts() {
+        let fixture = osr195_fixture();
+        let distribution = Distribution::new(BUILD, vec![Box::new(KwdjFactory)]).unwrap();
+        for case in fixture["candidates"].as_array().unwrap() {
+            let input = case["input"].to_string();
+            for (mode, expectation) in [("validate", "strict"), ("normalize", "normalize")] {
+                let mut settings = options(false);
+                settings["admission"] = json!(mode);
+                let mut session = distribution.open(input.as_bytes(), &settings.to_string());
+                let reply = serde_json::to_value(session.initialization()).unwrap();
+                let expected = &case[expectation];
+                let id = case["id"].as_str().unwrap();
+                if expected["status"] == "refused" {
+                    assert_eq!(reply["status"], "refused", "{id}/{mode}: {reply}");
+                    assert_eq!(
+                        reply["diagnostic"]["code"], expected["code"],
+                        "{id}/{mode}: {reply}"
+                    );
+                    assert_eq!(
+                        reply["diagnostic"]["path"], expected["path"],
+                        "{id}/{mode}: {reply}"
+                    );
+                } else {
+                    assert_eq!(reply["status"], "ok", "{id}/{mode}: {reply}");
+                    let saved = snapshot(&mut session);
+                    assert_eq!(saved, expected["exported"].to_string(), "{id}/{mode}");
+                    assert_eq!(snapshot(&mut osr183_open(&saved)), saved, "{id}/{mode}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn osr195_empty_verse_key_transitions_match_canonical_and_undo() {
+        let fixture = osr195_fixture();
+        let node_at = |session: &mut DistributionSession, path: &[Value]| {
+            let mut node = state(session)["root"].clone();
+            for index in path {
+                node = osr183_node(session, &node)["children"][index.as_u64().unwrap() as usize]
+                    .clone();
+            }
+            node
+        };
+        for case in fixture["keys"].as_array().unwrap() {
+            let id = case["id"].as_str().unwrap();
+            let input = case["input"].to_string();
+            let mut session = osr183_open(&input);
+            let line_path = case["enter_at"].as_array().unwrap();
+            let verse_path = &line_path[..line_path.len() - 1];
+            let verse = node_at(&mut session, verse_path);
+            let line = node_at(&mut session, line_path);
+            osr184_select(&mut session, &line, 0, &line, 0);
+            let before = state(&mut session);
+            let reply = osr183_command(
+                &mut session,
+                "org.klenwriter.kwdj/command/enter",
+                &json!({"kind":"enter"}),
+                false,
+            );
+            let changed = case["changed"].as_bool().unwrap();
+            let effect = if changed { "changed" } else { "unchanged" };
+            assert_eq!(reply["value"]["effect"], effect, "{id}: {reply}");
+            assert_eq!(snapshot(&mut session), case["expected"].to_string(), "{id}");
+            assert_eq!(node_at(&mut session, verse_path), verse, "{id}");
+            let caret = &case["caret"];
+            let block = node_at(&mut session, caret["path"].as_array().unwrap());
+            let header = osr183_node(&mut session, &block);
+            let text = header["children"]
+                .get(0)
+                .filter(|child| osr183_node(&mut session, child)["primitive"] == "text");
+            let point = if let Some(node) = text {
+                json!({"kind":"text","node":node,"offset":caret["offset"],"affinity":"after"})
+            } else {
+                json!({"kind":"child","parent":block,"index":caret["offset"],"affinity":"after"})
+            };
+            let after = state(&mut session);
+            assert_eq!(
+                after["selection"],
+                json!({"anchor":point,"focus":point}),
+                "{id}"
+            );
+            if changed {
+                assert_eq!(after["history"]["undo_entries"], "1");
+                osr183_history(&mut session, "undo", &input);
+                assert_eq!(
+                    state(&mut session)["selection"],
+                    before["selection"],
+                    "{id}"
+                );
+            } else {
+                assert_eq!(after, before, "{id}");
+            }
+        }
+    }
+
+    // CMS textblock offsets can resolve to either a text edge or the equivalent
+    // inline child gap. Whole sibling spans represent CMS node selections.
+    fn osr196_points(session: &mut DistributionSession, point: &Value) -> Vec<Value> {
+        let mut block = state(session)["root"].clone();
+        for index in point["path"].as_array().unwrap() {
+            block =
+                osr183_node(session, &block)["children"][index.as_u64().unwrap() as usize].clone();
+        }
+        let gap = |index| json!({"kind":"child","parent":block,"index":index,"affinity":"after"});
+        if point["kind"] == "child" {
+            return vec![gap(point["index"].as_u64().unwrap())];
+        }
+
+        let target = point["offset"].as_u64().unwrap();
+        let header = osr183_node(session, &block);
+        let children = header["children"].as_array().unwrap();
+        let mut offset = 0;
+        let mut points = Vec::new();
+        for (index, child) in children.iter().enumerate() {
+            let text = osr183_node(session, child);
+            let end = offset + text["text"].as_str().unwrap().encode_utf16().count() as u64;
+            if (offset..=end).contains(&target) {
+                points.push(
+                    json!({"kind":"text","node":child,"offset":target - offset,"affinity":"after"}),
+                );
+            }
+            if target == offset {
+                points.push(gap(index as u64));
+            }
+            offset = end;
+        }
+        if target == offset {
+            points.push(gap(children.len() as u64));
+        }
+        points
+    }
+
+    #[test]
+    fn osr196_verse_boundary_deletion_matches_cms_bytes_selection_and_undo() {
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-196-verse-boundary-deletion.json"
+        ))
+        .unwrap();
+        let mut refusals = Vec::new();
+        let cases = fixture["cases"].as_array().unwrap();
+        let refused_cases = fixture["refusals"].as_array().unwrap();
+        for case in cases.iter().chain(refused_cases) {
+            let id = case["id"].as_str().unwrap();
+            let bytes = |key| fixture["documents"][case[key].as_str().unwrap()].to_string();
+            let input = bytes("input");
+            let mut session = osr183_open(&input);
+            assert_eq!(snapshot(&mut session), input, "{id}");
+            let before_selection = &case["selection"];
+            let anchor = osr196_points(&mut session, &before_selection["anchor"]);
+            let focus = osr196_points(&mut session, &before_selection["focus"]);
+            let selection = json!({"anchor":anchor[0],"focus":focus[0]});
+            let stamp = state(&mut session)["stamp"].clone();
+            let set = call(
+                &mut session,
+                json!({"kind":"set_selection","stamp":stamp,"selection":selection}),
+            );
+            assert_eq!(set["status"], "ok", "{id}: {set}");
+            let before = state(&mut session);
+            assert_eq!(before["selection"], selection, "{id}");
+
+            let (command, payload) = if before_selection["anchor"] != before_selection["focus"] {
+                (
+                    "org.klenwriter.kwdj/command/delete-selection",
+                    json!({"kind":"delete_selection","scope":"poetry_boundary"}),
+                )
+            } else if case["key"] == "Backspace" {
+                (
+                    "org.klenwriter.kwdj/command/delete-backward",
+                    json!({"kind":"delete_backward"}),
+                )
+            } else {
+                (
+                    "org.klenwriter.kwdj/command/delete-forward",
+                    json!({"kind":"delete_forward"}),
+                )
+            };
+            let reply = osr183_command(&mut session, command, &payload, false);
+            if let Some(expected) = case.get("diagnostic") {
+                assert_eq!(reply["status"], "refused", "{id}: {reply}");
+                assert_eq!(
+                    reply["diagnostic"]["code"], expected["code"],
+                    "{id}: {reply}"
+                );
+                assert_eq!(
+                    reply["diagnostic"]["path"], expected["path"],
+                    "{id}: {reply}"
+                );
+                assert_eq!(
+                    reply["diagnostic"]["may_have_committed"], false,
+                    "{id}: {reply}"
+                );
+                assert_eq!(state(&mut session), before, "{id}");
+                assert_eq!(snapshot(&mut session), input, "{id}");
+                continue;
+            }
+            if reply["status"] != "ok" {
+                refusals.push(format!("{id}: {}", reply["diagnostic"]));
+                continue;
+            }
+            assert_eq!(reply["value"]["effect"], case["effect"], "{id}: {reply}");
+            let saved = snapshot(&mut session);
+            assert_eq!(saved, bytes("expected"), "{id}");
+            assert_eq!(snapshot(&mut osr183_open(&saved)), saved, "{id}: reopen");
+
+            let after = state(&mut session);
+            for side in ["anchor", "focus"] {
+                let mut actual = after["selection"][side].clone();
+                let expected = osr196_points(&mut session, &case["expected_selection"][side]);
+                actual["affinity"] = json!("after");
+                assert!(
+                    expected.contains(&actual),
+                    "{id}/{side}: {actual} ∉ {expected:?}"
+                );
+            }
+            let changed = case["effect"] == "changed";
+            let revision = before["stamp"]["revision"]
+                .as_str()
+                .unwrap()
+                .parse::<u64>()
+                .unwrap();
+            assert_eq!(
+                after["stamp"]["revision"],
+                (revision + u64::from(changed)).to_string(),
+                "{id}"
+            );
+            assert_eq!(
+                after["history"]["undo_entries"],
+                if changed { "1" } else { "0" },
+                "{id}"
+            );
+            assert_eq!(after["history"]["redo_entries"], "0", "{id}");
+            if changed {
+                osr183_history(&mut session, "undo", &input);
+                let undone = state(&mut session);
+                assert_eq!(undone["selection"], before["selection"], "{id}");
+                assert_eq!(undone["history"]["undo_entries"], "0", "{id}");
+                assert_eq!(undone["history"]["redo_entries"], "1", "{id}");
+            } else if case["effect"] == "state_changed" {
+                assert_ne!(
+                    after["stamp"]["selection_epoch"], before["stamp"]["selection_epoch"],
+                    "{id}"
+                );
+                assert_eq!(after["dirty"], before["dirty"], "{id}");
+            } else {
+                assert_eq!(after, before, "{id}");
+            }
+        }
+        assert!(refusals.is_empty(), "{}", refusals.join("\n"));
+    }
+
+    #[test]
+    fn osr198_moves_verse_and_stanza_without_losing_authored_structure() {
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-198-poetry-move.json"
+        ))
+        .unwrap();
+        for row in fixture["cases"].as_array().unwrap() {
+            let id = row["id"].as_str().unwrap();
+            let bytes = |key| fixture["documents"][row[key].as_str().unwrap()].to_string();
+            let input = bytes("input");
+            let mut session = osr183_open(&input);
+            assert_eq!(snapshot(&mut session), input, "{id}");
+            let at = |session: &mut DistributionSession, path: &Value| {
+                path.as_array()
+                    .unwrap()
+                    .iter()
+                    .fold(state(session)["root"].clone(), |id, index| {
+                        osr183_node(session, &id)["children"][index.as_u64().unwrap() as usize]
+                            .clone()
+                    })
+            };
+            let before = state(&mut session);
+            let moved = at(&mut session, &row["node"]);
+            let parent = at(&mut session, &row["parent"]);
+            let payload = json!({"kind":"move","node":moved,"parent":parent,"before_index":row["before_index"]});
+            let command = "org.klenwriter.kwdj/command/move";
+            let reply = osr183_command(&mut session, command, &payload, false);
+            if let Some(expected) = row.get("refusal") {
+                assert_eq!(reply["status"], "refused", "{id}: {reply}");
+                assert_eq!(reply["diagnostic"]["code"], expected["code"], "{id}");
+                assert_eq!(reply["diagnostic"]["path"], expected["path"], "{id}");
+                assert_eq!(reply["diagnostic"]["may_have_committed"], false, "{id}");
+                assert_eq!(state(&mut session), before, "{id}");
+                assert_eq!(snapshot(&mut session), input, "{id}");
+                continue;
+            }
+            let effect = row["effect"].as_str().unwrap_or("changed");
+            assert_eq!(reply["value"]["effect"], effect, "{id}: {reply}");
+            assert_eq!(snapshot(&mut session), bytes("expected"), "{id}");
+            assert_eq!(at(&mut session, &row["result_node"]), moved, "{id}");
+            if effect == "changed" {
+                let after = state(&mut session);
+                assert_eq!(after["stamp"]["revision"], "1", "{id}");
+                assert_eq!(after["history"]["undo_entries"], "1", "{id}");
+                osr183_history(&mut session, "undo", &input);
+                assert_eq!(at(&mut session, &row["node"]), moved, "{id}");
+                assert_eq!(state(&mut session)["history"]["undo_entries"], "0", "{id}");
+            } else {
+                assert_eq!(state(&mut session), before, "{id}");
+            }
+        }
+    }
+
     fn osr189_fixture() -> Value {
         serde_json::from_str(include_str!("../../../tests/fixtures/osr-189-warning.json")).unwrap()
     }
@@ -2007,5 +2496,319 @@ mod tests {
         assert_eq!(osr183_node(&mut session, allowed)["children"][1], *moved);
         osr183_history(&mut session, "undo", &input);
         assert_eq!(osr183_node(&mut session, &root)["children"], roots);
+    }
+
+    fn osr144_fixture() -> Value {
+        serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-144-verse-indent.json"
+        ))
+        .unwrap()
+    }
+
+    fn osr144_corpus() -> Value {
+        serde_json::from_str(include_str!(
+            "../../../contracts/kwdj/v1/fixtures/positive.json"
+        ))
+        .unwrap()
+    }
+
+    fn osr144_document(profile: &str, content: Value) -> String {
+        json!({
+            "schema":"klenwriter.document", "schema_version":1, "profile":profile, "content":content,
+        })
+        .to_string()
+    }
+
+    fn osr144_poem(lines: Value) -> String {
+        osr144_document("poetry", json!([{"type":"verse","content":lines}]))
+    }
+
+    fn osr144_diagnostic(reply: &Value, expected: &Value) {
+        assert_eq!(reply["status"], "refused", "{reply}");
+        assert_eq!(reply["diagnostic"]["code"], expected["code"], "{reply}");
+        assert_eq!(reply["diagnostic"]["path"], expected["path"], "{reply}");
+        assert_eq!(reply["diagnostic"]["may_have_committed"], false, "{reply}");
+    }
+
+    #[test]
+    fn osr144_poetry_corpus_admits_exports_and_reopens_unchanged() {
+        let fixture = osr144_fixture();
+        let corpus = osr144_corpus();
+        let distribution = Distribution::new(BUILD, vec![Box::new(KwdjFactory)]).unwrap();
+        for row in fixture["corpus"].as_array().unwrap() {
+            let document = corpus["fixtures"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|document| document["id"] == row[0])
+                .unwrap();
+            let case = document["cases"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|case| case["name"] == row[1])
+                .unwrap();
+            let media: Vec<_> = case["input"]["identity_state"]["existing_media_ids"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .map(|id| json!({"id":id,"status":"exists"}))
+                .collect();
+            let mut opts = options(false);
+            opts["profile_options_json"] = json!({
+                "identities":{"media":media,"references":[]},"limits":null,
+            })
+            .to_string()
+            .into();
+            let expected = case["kwdj"].to_string();
+            let mut session = distribution.open(expected.as_bytes(), &opts.to_string());
+            assert!(
+                matches!(session.initialization(), SdkResponse::Ok { .. }),
+                "{row}: {:?}",
+                session.initialization()
+            );
+            let saved = snapshot(&mut session);
+            assert_eq!(saved, expected, "{row}");
+            session.destroy();
+            let mut reopened = distribution.open(saved.as_bytes(), &opts.to_string());
+            assert!(
+                matches!(reopened.initialization(), SdkResponse::Ok { .. }),
+                "{row}: {:?}",
+                reopened.initialization()
+            );
+            assert_eq!(snapshot(&mut reopened), expected, "{row}");
+        }
+    }
+
+    #[test]
+    fn osr144_verse_indents_one_through_eight_and_leading_space_round_trip() {
+        let fixture = osr144_fixture();
+        let expected = osr144_poem(fixture["indented_lines"].clone());
+        let distribution = Distribution::new(BUILD, vec![Box::new(KwdjFactory)]).unwrap();
+        for mode in ["validate", "normalize"] {
+            let mut opts = options(false);
+            opts["admission"] = mode.into();
+            let mut session = distribution.open(expected.as_bytes(), &opts.to_string());
+            assert!(
+                matches!(session.initialization(), SdkResponse::Ok { .. }),
+                "{mode}: {:?}",
+                session.initialization()
+            );
+            assert_eq!(snapshot(&mut session), expected);
+            let root = state(&mut session)["root"].clone();
+            let verse = osr183_node(&mut session, &root)["children"][0].clone();
+            let lines = osr183_node(&mut session, &verse)["children"].clone();
+            for (index, line) in lines.as_array().unwrap().iter().enumerate() {
+                let line = osr183_node(&mut session, line);
+                assert_eq!(
+                    line["attributes"]["indent"],
+                    json!({"kind":"number","value":(index + 1).to_string()})
+                );
+            }
+            let leaf = osr183_node(&mut session, &lines[0])["children"][0].clone();
+            assert_eq!(
+                osr183_node(&mut session, &leaf)["text"],
+                "  Leading and indented"
+            );
+        }
+    }
+
+    #[test]
+    fn osr144_verse_indent_zero_normalizes_only_at_import_and_bad_tokens_refuse() {
+        let fixture = osr144_fixture();
+        let expected = osr144_poem(json!([fixture["plain_line"]]));
+        let mut raw_line = fixture["plain_line"].clone();
+        raw_line["attrs"] = json!({"indent":"OSR144-indent"});
+        let raw = osr144_poem(json!([raw_line]));
+        let insert = |token: &str| raw.replacen("\"OSR144-indent\"", token, 1);
+        let distribution = Distribution::new(BUILD, vec![Box::new(KwdjFactory)]).unwrap();
+        let mut opts = options(false);
+        let strict = distribution.open(insert("0").as_bytes(), &opts.to_string());
+        osr144_diagnostic(
+            &serde_json::to_value(strict.initialization()).unwrap(),
+            &fixture["refusals"]["zero_validate"],
+        );
+        for mode in ["validate", "normalize"] {
+            opts["admission"] = mode.into();
+            for attrs in fixture["invalid_attrs"].as_array().unwrap() {
+                let mut line = fixture["plain_line"].clone();
+                line["attrs"] = attrs.clone();
+                let refused =
+                    distribution.open(osr144_poem(json!([line])).as_bytes(), &opts.to_string());
+                osr144_diagnostic(
+                    &serde_json::to_value(refused.initialization()).unwrap(),
+                    &fixture["refusals"]["invalid_attrs"],
+                );
+                assert!(refused.context().is_none());
+                assert_eq!(refused.own_resource_counts().sessions, 0);
+            }
+            for token in fixture["invalid_indent_tokens"].as_array().unwrap() {
+                let refused = distribution.open(
+                    insert(token.as_str().unwrap()).as_bytes(),
+                    &opts.to_string(),
+                );
+                osr144_diagnostic(
+                    &serde_json::to_value(refused.initialization()).unwrap(),
+                    &fixture["refusals"]["invalid_indent"],
+                );
+                assert!(refused.context().is_none());
+                assert_eq!(refused.own_resource_counts().sessions, 0);
+            }
+        }
+        let mut imported = distribution.open(insert("0").as_bytes(), &opts.to_string());
+        assert!(
+            matches!(imported.initialization(), SdkResponse::Ok { .. }),
+            "{:?}",
+            imported.initialization()
+        );
+        let saved = snapshot(&mut imported);
+        assert_eq!(saved, expected);
+        imported.destroy();
+        opts["admission"] = "validate".into();
+        let mut reopened = distribution.open(saved.as_bytes(), &opts.to_string());
+        assert!(matches!(reopened.initialization(), SdkResponse::Ok { .. }));
+        assert_eq!(snapshot(&mut reopened), expected);
+    }
+
+    #[test]
+    fn osr144_poetry_only_admission_and_paste_leave_live_prose_atomic() {
+        let fixture = osr144_fixture();
+        let corpus = osr144_corpus();
+        let doc019 = corpus["fixtures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|document| document["id"] == "DOC-019")
+            .unwrap();
+        let verse = &doc019["cases"][0]["kwdj"]["content"][0];
+        let source = osr144_document(
+            "prose",
+            json!([{"type":"paragraph","content":[{"type":"text","text":"Prose"}]}]),
+        );
+        let mut session = osr183_open(&source);
+        let root = state(&mut session)["root"].clone();
+        osr184_select(&mut session, &root, 1, &root, 1);
+        let initial = state(&mut session);
+        let cfg = options(false);
+        let mut source_profile = cfg["profile"].clone();
+        source_profile.as_object_mut().unwrap().remove("extensions");
+        for node in [verse, &verse["content"][0], &verse["content"][2]] {
+            let raw = osr144_document("prose", json!([node]));
+            let reply = call(
+                &mut session,
+                json!({
+                    "kind":"remount","stamp":initial["stamp"],"input_json":raw,"admission":"validate",
+                }),
+            );
+            osr144_diagnostic(&reply, &fixture["refusals"]["prose_grammar"]);
+            assert_eq!(state(&mut session), initial);
+            assert_eq!(snapshot(&mut session), source);
+            for (mode, oracle) in [
+                ("poetry", "clipboard_poetry_mode"),
+                ("prose", "prose_grammar"),
+            ] {
+                let fragment = json!({
+                    "format_id":"org.klenwriter.kwdj/clipboard-fragment/1","source_profile":source_profile,
+                    "mode":mode,"kind":"blocks","open_start":false,"open_end":false,"content":[node],
+                });
+                let reply = osr183_command(
+                    &mut session,
+                    "org.klenwriter.kwdj/command/insert-fragment",
+                    &json!({"kind":"insert_fragment","fragment_json":fragment.to_string()}),
+                    false,
+                );
+                osr144_diagnostic(&reply, &fixture["refusals"][oracle]);
+                assert_eq!(state(&mut session), initial);
+                assert_eq!(snapshot(&mut session), source);
+            }
+        }
+    }
+
+    #[test]
+    fn osr283_verse_transform_matches_literal_grammar_and_undo() {
+        const TRANSFORM: &str = "org.klenwriter.kwdj/command/transform-block";
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-283-verse-transform.json"
+        ))
+        .unwrap();
+        for case in fixture["cases"].as_array().unwrap() {
+            let id = case["id"].as_str().unwrap();
+            let document = |key| fixture["documents"][case[key].as_str().unwrap()].to_string();
+            let original = document("input");
+            let mut session = osr183_open(&original);
+            assert_eq!(snapshot(&mut session), original, "{id}");
+            let node_at = |session: &mut DistributionSession, path: &Value| {
+                let mut block = state(session)["root"].clone();
+                for index in path.as_array().unwrap() {
+                    block = osr183_node(session, &block)["children"]
+                        [index.as_u64().unwrap() as usize]
+                        .clone();
+                }
+                block
+            };
+            let focus = node_at(&mut session, &case["path"]);
+            let focus = if let Some(side) = case.get("edge") {
+                json!({"kind":"edge","node":focus,"side":side})
+            } else {
+                let index = case["gap_index"].as_u64().unwrap_or(0);
+                json!({"kind":"child","parent":focus,"index":index,"affinity":"after"})
+            };
+            let anchor = case.get("anchor_path").map_or_else(
+                || focus.clone(),
+                |path| json!({"kind":"child","parent":node_at(&mut session,path),"index":0,"affinity":"after"}),
+            );
+            let stamp = state(&mut session)["stamp"].clone();
+            let selected = call(
+                &mut session,
+                json!({"kind":"set_selection","stamp":stamp,"selection":{"anchor":anchor,"focus":focus}}),
+            );
+            assert_eq!(selected["status"], "ok", "{id}: {selected}");
+            let before = state(&mut session);
+            let payload = json!({"kind":"transform_block","target":case["target"]});
+            let query = osr183_command(&mut session, TRANSFORM, &payload, true);
+            assert_eq!(query["status"], "ok", "{id}: {query}");
+            assert_eq!(state(&mut session), before, "{id}");
+            assert_eq!(snapshot(&mut session), original, "{id}");
+
+            let reply = osr183_command(&mut session, TRANSFORM, &payload, false);
+            if let Some(expected) = case.get("diagnostic") {
+                assert_eq!(query["value"]["available"], false, "{id}: {query}");
+                assert_eq!(reply["status"], "refused", "{id}: {reply}");
+                for key in ["code", "path"] {
+                    assert_eq!(query["value"]["diagnostic"][key], expected[key], "{id}");
+                    assert_eq!(reply["diagnostic"][key], expected[key], "{id}");
+                }
+                assert_eq!(reply["diagnostic"]["may_have_committed"], false, "{id}");
+                assert_eq!(state(&mut session), before, "{id}");
+                assert_eq!(snapshot(&mut session), original, "{id}");
+                continue;
+            }
+            let expected = document("expected");
+            let effect = &case["effect"];
+            assert_eq!(query["value"]["available"], true, "{id}: {query}");
+            assert_eq!(&query["value"]["effect"], effect, "{id}: {query}");
+            assert_eq!(&reply["value"]["effect"], effect, "{id}: {reply}");
+            assert_eq!(snapshot(&mut session), expected, "{id}");
+            assert_eq!(
+                snapshot(&mut osr183_open(&expected)),
+                expected,
+                "{id}: reopen"
+            );
+
+            let after = state(&mut session);
+            if effect == "changed" {
+                assert_eq!(after["stamp"]["revision"], "1", "{id}");
+                assert_eq!(after["history"]["undo_entries"], "1", "{id}");
+                osr183_history(&mut session, "undo", &original);
+                assert_eq!(
+                    state(&mut session)["selection"],
+                    before["selection"],
+                    "{id}"
+                );
+                osr183_history(&mut session, "redo", &expected);
+            } else {
+                assert_eq!(after, before, "{id}");
+            }
+        }
     }
 }

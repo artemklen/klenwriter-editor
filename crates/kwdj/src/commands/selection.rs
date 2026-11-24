@@ -278,9 +278,11 @@ impl<I: Copy + Eq + Ord> Range<I> {
                     name,
                     "literary_block" | "warning" | "spoiler" | "disclosure"
                 );
+            let verse_read = matches!(purpose, SelectionPurpose::Read)
+                && matches!(name, "verse" | "verse_line" | "stanza_break");
             needs_text_block |= profile_body;
             inside_text_block |= inside_content && n.primitive == Primitive::TextBlock;
-            if !basic(n.type_id) && !media_edit && !profile_body {
+            if !basic(n.type_id) && !media_edit && !profile_body && !verse_read {
                 return Err(SelectionTextError::Limit(
                     "selection_text.unsupported_context",
                 ));
@@ -329,18 +331,26 @@ impl<I: Copy + Eq + Ord> Range<I> {
         Ok(())
     }
 }
+fn reserve_output(
+    out: &mut String,
+    count: usize,
+    max: usize,
+    w: &mut WorkMeter,
+) -> Result<(), SelectionTextError> {
+    if out.len().checked_add(count).is_none_or(|n| n > max) {
+        return Err(SelectionTextError::Limit("selection_text.output_limit"));
+    }
+    bytes(w, count)?;
+    out.try_reserve(count)
+        .map_err(|_| SelectionTextError::Limit("selection_text.output_limit"))
+}
 fn append(
     out: &mut String,
     s: &str,
     max: usize,
     w: &mut WorkMeter,
 ) -> Result<(), SelectionTextError> {
-    if out.len().checked_add(s.len()).is_none_or(|n| n > max) {
-        return Err(SelectionTextError::Limit("selection_text.output_limit"));
-    }
-    bytes(w, s.len())?;
-    out.try_reserve(s.len())
-        .map_err(|_| SelectionTextError::Limit("selection_text.output_limit"))?;
+    reserve_output(out, s.len(), max, w)?;
     out.push_str(s);
     Ok(())
 }
@@ -408,7 +418,9 @@ fn project_node<V: CandidateRead>(
             }
             Ok(Some(out))
         }
-        Primitive::Container => project_children(v, r, n.children, max, atoms, w),
+        Primitive::Container => {
+            project_children(v, r, n.children, local(n.type_id) == "verse", max, atoms, w)
+        }
         _ => Err(SelectionTextError::Limit(
             "selection_text.unsupported_context",
         )),
@@ -418,19 +430,42 @@ fn project_children<V: CandidateRead>(
     v: &V,
     r: &Range<V::Id>,
     children: &[V::Id],
+    in_verse: bool,
     max: usize,
     atoms: &mut Vec<V::Id>,
     w: &mut WorkMeter,
 ) -> Result<Option<String>, SelectionTextError> {
     let mut out = None;
+    let mut blank_lines = 0u64;
     for child in children {
         if let Some(s) = project_node(v, r, *child, max, atoms, w)? {
+            if in_verse {
+                unit(w, 1)?;
+                let node = v.node(*child).ok_or(SelectionTextError::Invalid)?;
+                if local(node.type_id) == "stanza_break" {
+                    // The atom is already recorded. A stanza contributes
+                    // separators only between two projected verse lines.
+                    let Some(Attribute::Number(count)) = node.attributes.get("blank_lines") else {
+                        return Err(SelectionTextError::Invalid);
+                    };
+                    blank_lines = count.as_u64().ok_or(SelectionTextError::Invalid)?;
+                    continue;
+                }
+            }
             if let Some(out) = &mut out {
-                append(out, "\n", max, w)?;
+                let count = blank_lines
+                    .checked_add(1)
+                    .and_then(|count| usize::try_from(count).ok())
+                    .ok_or(SelectionTextError::Limit("selection_text.output_limit"))?;
+                reserve_output(out, count, max, w)?;
+                for _ in 0..count {
+                    out.push('\n');
+                }
             } else {
                 out = Some(String::new());
             }
             append(out.as_mut().expect("initialized"), &s, max, w)?;
+            blank_lines = 0;
         }
     }
     Ok(out)
@@ -454,8 +489,8 @@ pub fn selected_text<V: CandidateRead>(
     }
     r.guard(v, w, SelectionPurpose::Read)?;
     let mut atoms = Vec::new();
-    let text =
-        project_children(v, &r, v.roots(), max_bytes as usize, &mut atoms, w)?.unwrap_or_default();
+    let text = project_children(v, &r, v.roots(), false, max_bytes as usize, &mut atoms, w)?
+        .unwrap_or_default();
     Ok(SelectionText {
         text,
         empty: false,

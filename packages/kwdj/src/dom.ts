@@ -99,6 +99,21 @@ const nodes: Record<string, NodeRendererDefinition> = {
       attributes: { title: checked.value ? 'Completed task' : 'Incomplete task' } } : refused(n.type_id, n);
   }),
   [`${prefix}scene_break`]: node('block_atom', [], () => ({ tag: 'hr', classes: ['editor-scene-break'], attributes: { role: 'separator', 'aria-label': 'Scene break' } })),
+  [`${prefix}verse`]: node('container', [], () => ({
+    tag: 'div', classes: ['editor-verse'], attributes: { role: 'group', 'aria-label': 'Verse' },
+  })),
+  [`${prefix}verse_line`]: node('text_block', ['indent'], n => {
+    const indent = n.attributes.indent;
+    if (indent !== undefined && indent.kind !== 'number') return refused(n.type_id, n);
+    return { tag: 'div', classes: ['editor-verse-line'],
+      ...(indent === undefined ? {} : { attributes: { 'data-verse-indent': indent.value } }) };
+  }),
+  [`${prefix}stanza_break`]: node('block_atom', ['blank_lines'], n => {
+    const count = n.attributes.blank_lines;
+    if (count?.kind !== 'number') return refused(n.type_id, n);
+    return { tag: 'div', classes: ['editor-stanza-break'],
+      attributes: { role: 'separator', 'aria-label': 'Stanza break', 'data-blank-lines': count.value } };
+  }),
   [`${prefix}media_image`]: node('container', ['align', 'alt', 'decorative', 'media_asset_id'], n => {
     const { align, alt, decorative, media_asset_id } = n.attributes;
     const alignment = attrString(align);

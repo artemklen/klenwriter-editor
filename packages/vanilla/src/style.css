@@ -23,6 +23,13 @@
 .editor-surface .editor-task-item::before { content: '\2610'; position: absolute; inset-inline-start: -1.25em; }
 .editor-surface .editor-task-item.editor-checked::before { content: '\2611'; }
 .editor-surface .editor-scene-break { margin-block: 1.5em; border: 0; border-top: 1px solid currentColor; }
+.editor-surface .editor-verse-line {
+  padding-inline-start: calc(attr(data-verse-indent type(<number>), 0) * 2ch);
+}
+.editor-surface .editor-stanza-break {
+  block-size: 1lh;
+  block-size: min(100vh, calc(attr(data-blank-lines type(<number>), 1) * 1lh));
+}
 .editor-surface .editor-media-placeholder::before {
   content: '';
   display: block;

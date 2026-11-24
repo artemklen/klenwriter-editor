@@ -6,7 +6,7 @@ use editor_core::transaction::WorkMeter;
 use url::Url;
 use uuid::{Uuid, Variant};
 
-use super::model::{Document, Mark, Node, Profile, TableCellAttrs};
+use super::model::{Document, MAX_VERSE_LINE_INDENT, Mark, Node, Profile, TableCellAttrs};
 use super::{
     IdentityReference, IdentityResolver, IdentityStatus, KwdjError, KwdjErrorCode, Limits,
     index_path, key_path,
@@ -585,7 +585,15 @@ fn visit<V: ValidationView>(
                 state,
             )?;
         }
-        Node::VerseLine { .. } => {
+        Node::VerseLine { attrs, .. } => {
+            if let Some(attrs) = attrs
+                && !(1..=MAX_VERSE_LINE_INDENT).contains(&attrs.indent)
+            {
+                return Err(KwdjError::new(
+                    KwdjErrorCode::InvalidStructure,
+                    key_path(&key_path(path, "attrs"), "indent"),
+                ));
+            }
             visit_children(view, handle, path, depth, Expected::Inline, ancestry, state)?;
         }
         Node::StanzaBreak { attrs } => {

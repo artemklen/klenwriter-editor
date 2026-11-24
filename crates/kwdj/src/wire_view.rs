@@ -198,6 +198,9 @@ impl<V: ValidationView> Serialize for NodeWire<'_, V> {
             Node::Spoiler { attrs, .. } | Node::Disclosure { attrs, .. } => {
                 object.serialize_entry("attrs", attrs)?
             }
+            Node::VerseLine {
+                attrs: Some(attrs), ..
+            } => object.serialize_entry("attrs", attrs)?,
             Node::StanzaBreak { attrs } => object.serialize_entry("attrs", attrs)?,
             _ => {}
         }

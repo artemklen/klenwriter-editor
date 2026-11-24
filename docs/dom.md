@@ -74,7 +74,7 @@ snapshot, вызовите `destroy()` и смонтируйте сохранё�
 KWDJ binding поддерживает `text`, `hard_break`, `paragraph`, `heading`,
 `code_block`, `blockquote`, `bullet_list`, `ordered_list`, `list_item`,
 `task_list`, `task_item`, `scene_break`, `media_image`, `literary_block`, `warning`,
-`spoiler` и `disclosure`.
+`spoiler`, `disclosure`, `verse`, `verse_line` и `stanza_break`.
 Девять marks включают strong, emphasis, strike, code, subscript, superscript,
 text_color, highlight и link. Для `media_image` binding показывает локальный
 CSS-плейсхолдер с именем из `alt`, если изображение содержательное. Подпись
@@ -83,7 +83,8 @@ CSS-плейсхолдер с именем из `alt`, если изображе
 или стандартное имя своего вида. Спойлер и раскрываемый блок используют свой
 `label` как доступное имя группы и сохраняют дочернее содержимое. Для
 метки из одних пробелов используется стандартное доступное имя, а исходная
-метка сохраняется при экспорте. Для table, verse, остальных
+метка сохраняется при экспорте. Переносы строф сохраняют `blank_lines`,
+а `verse_line.attrs.indent` задаёт видимый отступ от 1 до 8 шагов. Для table, остальных
 доменных блоков и reference_link требуются отдельные renderers. Неизвестные
 типы, marks и attrs дают явный отказ.
 

@@ -236,6 +236,13 @@ export async function run() {
       runtimeBefore: await pin('renderer-source-runtime-before.json', runRoot), runtimeAfter: null };
     const sourcePins = json(await boundedFile(root, 'contracts/mounted-e2e/v1/source-pins.json', BUDGETS.observationBytes));
     const manifest = json(await boundedFile(root, 'contracts/mounted-e2e/v1/manifest.json', BUDGETS.observationBytes));
+    const readArtifact = (path, maximum) => boundedFile(path.startsWith('observations/') || path.startsWith('interactions/') ? runRoot : root, path, maximum);
+    const readHistoricalArtifact = continuation.historicalAuthorityReader(readArtifact);
+    const pinCorpusIndex = async () => {
+      const path = manifest.corpus.indexFile;
+      const bytes = await readHistoricalArtifact(path, BUDGETS.observationBytes);
+      return { path, bytes: bytes.length, sha256: sha(bytes) };
+    };
     // Reject source/transport incompatibility before launching a browser owner.
     ownBoundedData(json(await boundedFile(root, 'contracts/mounted-e2e/v1/interaction-literals.json', 65536)), 65536);
     interactionValidators(json(await boundedFile(root, 'contracts/mounted-e2e/v1/observation.schema.json', BUDGETS.observationBytes)), { resourceProfile });
@@ -268,7 +275,7 @@ export async function run() {
     }
     await writeJson(resolve(runRoot, 'preflight.json'), pre.receipts);
     const binding = { protocol: PROTOCOL_VERSION, runId, sourceSHA: receipt.sourceSHA, acceptedSource: ACCEPTED_SOURCE,
-      corpusIndex: await pin(manifest.corpus.indexFile), corpusPackageSha256: manifest.corpus.declaredContentSha256,
+      corpusIndex: await pinCorpusIndex(), corpusPackageSha256: manifest.corpus.declaredContentSha256,
       scenarioPins, build, environment: { nodeVersion: process.version, playwrightVersion: require('@playwright/test/package.json').version,
         os: { platform: os.platform(), release: os.release(), arch: os.arch() }, engines: pre.engines }, nativeBaselines: pre.nativeBaselines };
     await writeJson(resolve(runRoot, 'run-binding.json'), binding, BUDGETS.runBindingBytes);
@@ -281,14 +288,14 @@ export async function run() {
     } finally { await browserLog.close(); }
     receipt.browserLog = await pin('browser.log', runRoot);
     receipt.phase = 'collector';
-    const readArtifact = (path, maximum) => boundedFile(path.startsWith('observations/') || path.startsWith('interactions/') ? runRoot : root, path, maximum);
-    const contract = await loadContract({ readArtifact: continuation.historicalAuthorityReader(readArtifact), resourceProfile });
+    const contract = await loadContract({ readArtifact: readHistoricalArtifact, resourceProfile });
     const observations = await observationInventory(runRoot);
-    const baseReport = await collect({ contract, runBinding: binding, observations, readArtifact, sourceSHA: sourceSHA(), resourceProfile });
+    const baseReport = await collect({ contract, runBinding: binding, observations, readArtifact, readHistoricalArtifact,
+      sourceSHA: sourceSHA(), resourceProfile });
     await writeJson(resolve(runRoot, 'corpus-report.json'), baseReport);
     receipt.interactionPaths = await interactionInventory(runRoot);
     const interactions = await collectInteractions({ runBinding: binding, resourceProfile, readRuntimeArtifact: readArtifact,
-      readArtifact: continuation.historicalAuthorityReader(readArtifact) });
+      readArtifact: readHistoricalArtifact });
     await writeJson(resolve(runRoot, 'interactions-report.json'), interactions);
     const report = combineReport(baseReport, interactions);
     const schema = json(await boundedFile(root, 'contracts/mounted-e2e/v1/report.schema.json', BUDGETS.observationBytes));
@@ -296,9 +303,13 @@ export async function run() {
     if (!validate(report)) throw new Error(`Combined report violates frozen schema: ${JSON.stringify(validate.errors)}`);
     await writeJson(resolve(runRoot, 'report.json'), report);
     // Recheck all actual bytes after every browser owner has completed.
-    for (const expected of [...binding.scenarioPins, ...Object.values(build).filter(value => typeof value === 'object'), binding.corpusIndex]) {
+    for (const expected of [...binding.scenarioPins, ...Object.values(build).filter(value => typeof value === 'object')]) {
       const actual = await pin(expected.path);
       if (actual.bytes !== expected.bytes || actual.sha256 !== expected.sha256) throw new Error(`Run artifact changed: ${expected.path}`);
+    }
+    const finalCorpusIndex = await pinCorpusIndex();
+    if (finalCorpusIndex.bytes !== binding.corpusIndex.bytes || finalCorpusIndex.sha256 !== binding.corpusIndex.sha256) {
+      throw new Error(`Run artifact changed: ${binding.corpusIndex.path}`);
     }
     const continuationRuntimeAfter = await continuation.captureRuntimeInventory(sourceSHA());
     if (JSON.stringify(continuationRuntimeAfter) !== JSON.stringify(continuationRuntimeBefore)) throw new Error('Actual continuation runtime source inventory changed during run');

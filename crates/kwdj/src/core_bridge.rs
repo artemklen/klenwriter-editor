@@ -30,6 +30,7 @@ pub(crate) fn convert_node(node: &model::Node) -> Node {
         N::LiteraryBlock { attrs, .. } => attributes(attrs),
         N::Warning { attrs, .. } => attributes(attrs),
         N::Spoiler { attrs, .. } | N::Disclosure { attrs, .. } => attributes(attrs),
+        N::VerseLine { attrs, .. } => attrs.as_ref().map(attributes).unwrap_or_default(),
         N::StanzaBreak { attrs } => attributes(attrs),
         _ => Attributes::new(),
     };

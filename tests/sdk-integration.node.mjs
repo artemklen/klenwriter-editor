@@ -4,6 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { literaryFixture, warningFixture } from './support/codec-fixtures.mjs';
 import { readFileSync } from 'node:fs';
+import { isDeepStrictEqual } from 'node:util';
 import { createCommand, createEditor, loadSdk, loadSdkV2 } from '../packages/sdk/dist/index.js';
 import { kwdjCommand } from '../packages/kwdj/dist/index.js';
 import { canonicalizeRaw } from '../scripts/canonical-reference/reference.mjs';
@@ -493,6 +494,26 @@ test('OSR-185 packaged SDK2 keeps nested and empty literary blocks through histo
   }
 });
 
+test('OSR-194 packaged SDK2 matches six pinned CMS verse keys with exact Undo', async t => {
+  const fixture = JSON.parse(readFileSync(new URL('./fixtures/osr-194-verse-keys.json', import.meta.url), 'utf8'));
+  const input = osr185Bytes(fixture.input);
+  assert.equal(fixture.cases.length, 6);
+  for (const { key, position: name, offset, expected } of fixture.cases) {
+    await t.test(`${key} × ${name}`, async () => {
+      await withLiteraryCommandSession(input, editor => {
+        const verse = node(editor, root(editor).children[0]);
+        const line = node(editor, verse.children[0]);
+        osr185Select(editor, position(line.children[0], offset));
+        const command = kwdjCommand({ kind: key === 'Enter' ? 'enter' : 'shift_enter' });
+        assert.equal(accepted(osr183Wire(editor, command)).effect, 'changed');
+        assert.equal(canonical(editor), osr185Bytes(expected));
+        assert.equal(state(editor).history.undo_entries, '1');
+        osr183History(editor, 'undo', input);
+      });
+    });
+  }
+});
+
 test('OSR-185 packaged SDK2 refuses literary boundaries and illegal parents without committing', async () => {
   const fixture = osr185Fixture();
   const original = osr185Bytes(fixture.initial);
@@ -515,6 +536,193 @@ test('OSR-185 packaged SDK2 refuses literary boundaries and illegal parents with
       osr183Denied(editor, osr183Insert, osr185Insert, restricted, expected.code, expected.path);
     }
   }, media);
+});
+
+const osr195Fixture = () => JSON.parse(readFileSync(new URL('./fixtures/osr-195-empty-verse-and-stanzas.json', import.meta.url), 'utf8'));
+
+test('OSR-195 packaged WASM admits empty shells, normalizes adjacent breaks and reopens exact counts', async t => {
+  const codec = await import('../packages/wasm/dist/editor_wasm.js');
+  const { options } = await import('./support/codec-fixtures.mjs');
+  await codec.default({ module_or_path: readFileSync(new URL('../packages/wasm/dist/editor_wasm_bg.wasm', import.meta.url)) });
+  for (const row of osr195Fixture().candidates) {
+    await t.test(row.id, async () => {
+      const input = new TextEncoder().encode(osr185Bytes(row.input));
+      for (const [operation, expected] of [[codec.kwdjValidateV1, row.strict], [codec.kwdjNormalizeV1, row.normalize]]) {
+        const observed = JSON.parse(operation(input, options()));
+        assert.equal(observed.status, expected.status, JSON.stringify(observed));
+        if (expected.status === 'refused') {
+          assert.equal(observed.diagnostic.code, expected.code);
+          assert.equal(observed.diagnostic.path, expected.path);
+        } else {
+          const bytes = osr185Bytes(expected.exported);
+          assert.equal(observed.canonical_json, bytes);
+          await withLiteraryCommandSession(bytes, editor => assert.equal(canonical(editor), bytes));
+        }
+      }
+    });
+  }
+});
+
+test('OSR-195 packaged SDK2 matches empty verse and stanza transitions with exact Undo', async t => {
+  for (const row of osr195Fixture().keys) {
+    await t.test(row.id, async () => {
+      const input = osr185Bytes(row.input);
+      await withLiteraryCommandSession(input, editor => {
+        const nodeAt = path => path.reduce((id, index) => node(editor, id).children[index], state(editor).root);
+        const versePath = row.enter_at.slice(0, -1);
+        const verse = nodeAt(versePath);
+        osr185Select(editor, osr185Gap(nodeAt(row.enter_at), 0));
+        const before = state(editor);
+        const reply = accepted(osr183Wire(editor, kwdjCommand({ kind: 'enter' })));
+        assert.equal(reply.effect, row.changed ? 'changed' : 'unchanged');
+        assert.equal(canonical(editor), osr185Bytes(row.expected));
+        assert.equal(nodeAt(versePath), verse);
+        const block = nodeAt(row.caret.path);
+        const first = node(editor, block).children[0];
+        const point = first && node(editor, first).primitive === 'text'
+          ? position(first, row.caret.offset)
+          : osr185Gap(block, row.caret.offset);
+        const after = state(editor);
+        assert.deepEqual(structuredClone(after.selection), { anchor: point, focus: point });
+        if (row.changed) {
+          assert.equal(after.history.undo_entries, '1');
+          osr183History(editor, 'undo', input);
+          assert.deepEqual(state(editor).selection, before.selection);
+        } else {
+          assert.deepEqual(after, before);
+        }
+      });
+    });
+  }
+});
+
+function osr196Points(editor, point) {
+  const block = point.path.reduce((id, index) => node(editor, id).children[index], state(editor).root);
+  if (point.kind === 'child') return [osr185Gap(block, point.index)];
+
+  // Prefer a text point when setting selection, but accept the equivalent
+  // inline child gap at a text edge when checking the command's result.
+  const children = node(editor, block).children;
+  const points = [];
+  let offset = 0;
+  for (const [index, child] of children.entries()) {
+    const end = offset + node(editor, child).text.length;
+    if (point.offset >= offset && point.offset <= end) points.push(position(child, point.offset - offset));
+    if (point.offset === offset) points.push(osr185Gap(block, index));
+    offset = end;
+  }
+  if (point.offset === offset) points.push(osr185Gap(block, children.length));
+  return points;
+}
+
+test('OSR-196 packaged SDK2 matches CMS verse boundary bytes, selection and Undo', async t => {
+  const fixture = JSON.parse(readFileSync(new URL('./fixtures/osr-196-verse-boundary-deletion.json', import.meta.url), 'utf8'));
+  for (const row of [...fixture.cases, ...fixture.refusals]) {
+    await t.test(row.id, async () => {
+      const input = osr185Bytes(fixture.documents[row.input]);
+      let saved;
+      await withLiteraryCommandSession(input, editor => {
+        const [anchor] = osr196Points(editor, row.selection.anchor);
+        const [focus] = osr196Points(editor, row.selection.focus);
+        osr185Select(editor, anchor, focus);
+        const before = state(editor);
+        assert.deepEqual(structuredClone(before.selection), { anchor, focus });
+
+        let payload;
+        let id;
+        if (!isDeepStrictEqual(anchor, focus)) {
+          id = 'delete-selection';
+          payload = { kind: 'delete_selection', scope: 'poetry_boundary' };
+        } else if (row.key === 'Backspace') {
+          id = 'delete-backward';
+          payload = { kind: 'delete_backward' };
+        } else {
+          id = 'delete-forward';
+          payload = { kind: 'delete_forward' };
+        }
+        const command = kwdjCommand(payload);
+        assert.deepEqual(command, createCommand(`org.klenwriter.kwdj/command/${id}`, payload));
+        const response = osr183Wire(editor, command);
+        if (row.diagnostic) {
+          const diagnostic = refused(response);
+          assert.equal(diagnostic.code, row.diagnostic.code);
+          assert.equal(diagnostic.path, row.diagnostic.path);
+          assert.equal(diagnostic.may_have_committed, false);
+          assert.deepEqual(state(editor), before);
+          saved = canonical(editor);
+          assert.equal(saved, input);
+          return;
+        }
+        const reply = accepted(response);
+        assert.equal(reply.effect, row.effect);
+        saved = canonical(editor);
+        assert.equal(saved, osr185Bytes(fixture.documents[row.expected]));
+
+        const after = state(editor);
+        for (const side of ['anchor', 'focus']) {
+          const expected = osr196Points(editor, row.expected_selection[side]);
+          const actual = { ...after.selection[side], affinity: 'after' };
+          assert.ok(expected.some(point => isDeepStrictEqual(point, actual)),
+            `${side} ${JSON.stringify(actual)} outside ${JSON.stringify(expected)}`);
+        }
+        const changed = row.effect === 'changed';
+        assert.equal(after.stamp.revision, (BigInt(before.stamp.revision) + BigInt(changed)).toString());
+        assert.equal(after.history.undo_entries, changed ? '1' : '0');
+        assert.equal(after.history.redo_entries, '0');
+        if (changed) {
+          osr183History(editor, 'undo', input);
+          const undone = state(editor);
+          assert.deepEqual(undone.selection, before.selection);
+          assert.equal(undone.history.undo_entries, '0');
+          assert.equal(undone.history.redo_entries, '1');
+        } else if (row.effect === 'state_changed') {
+          assert.notEqual(after.stamp.selection_epoch, before.stamp.selection_epoch);
+          assert.equal(after.dirty, before.dirty);
+        } else {
+          assert.deepEqual(after, before);
+        }
+      });
+      await withLiteraryCommandSession(saved, editor => assert.equal(canonical(editor), saved));
+    });
+  }
+});
+
+test('OSR-198 packaged SDK2 moves verse and stanza without losing authored structure', async t => {
+  const fixture = JSON.parse(readFileSync(new URL('./fixtures/osr-198-poetry-move.json', import.meta.url), 'utf8'));
+  for (const row of fixture.cases) {
+    await t.test(row.id, async () => {
+      const input = osr185Bytes(fixture.documents[row.input]);
+      await withLiteraryCommandSession(input, editor => {
+        const at = path => path.reduce((id, index) => node(editor, id).children[index], state(editor).root);
+        const before = state(editor);
+        const moved = at(row.node);
+        const command = kwdjCommand({ kind: 'move', node: moved, parent: at(row.parent), before_index: row.before_index });
+        const result = osr183Wire(editor, command);
+        if (row.refusal) {
+          assert.equal(result.status, 'refused');
+          assert.equal(result.diagnostic.code, row.refusal.code);
+          assert.equal(result.diagnostic.path, row.refusal.path);
+          assert.equal(result.diagnostic.may_have_committed, false);
+          assert.deepEqual(state(editor), before);
+          assert.equal(canonical(editor), input);
+          return;
+        }
+        const effect = row.effect ?? 'changed';
+        assert.equal(accepted(result).effect, effect);
+        assert.equal(canonical(editor), osr185Bytes(fixture.documents[row.expected]));
+        assert.equal(at(row.result_node), moved);
+        if (effect === 'changed') {
+          assert.equal(state(editor).stamp.revision, '1');
+          assert.equal(state(editor).history.undo_entries, '1');
+          osr183History(editor, 'undo', input);
+          assert.equal(at(row.node), moved);
+          assert.equal(state(editor).history.undo_entries, '0');
+        } else {
+          assert.deepEqual(state(editor), before);
+        }
+      });
+    });
+  }
 });
 
 const osr189Fixture = () => JSON.parse(readFileSync(new URL('./fixtures/osr-189-warning.json', import.meta.url)));
@@ -623,8 +831,237 @@ test('OSR-189 packaged SDK2 distinguishes legal literary nesting from warning re
   });
 });
 
+const osr144Fixture = () => JSON.parse(readFileSync(new URL('./fixtures/osr-144-verse-indent.json', import.meta.url)));
+const osr144Corpus = () => JSON.parse(readFileSync(new URL('../contracts/kwdj/v1/fixtures/positive.json', import.meta.url))).fixtures;
+const osr144Case = (corpus, id, name) => corpus.find(doc => doc.id === id).cases.find(item => item.name === name);
+const osr144Document = (profile, content) => canonicalizeRaw(JSON.stringify({
+  schema: 'klenwriter.document', schema_version: 1, profile, content,
+}));
+const osr144Poem = lines => osr144Document('poetry', [{ type: 'verse', content: lines }]);
+const osr144Remount = (editor, input_json, admission) => completed(editor.submit({
+  kind: 'remount', stamp: editor.capture(), input_json, admission,
+}));
+function osr144Refused(response, expected) {
+  const diagnostic = refused(response);
+  assert.equal(diagnostic.code, expected.code, JSON.stringify(response));
+  assert.equal(diagnostic.path, expected.path, JSON.stringify(response));
+  assert.equal(diagnostic.may_have_committed, false);
+}
+
+test('OSR-144 packaged SDK2 admits and reopens the unchanged poetry corpus', async () => {
+  const fixture = osr144Fixture();
+  const corpus = osr144Corpus();
+  for (const [id, name] of fixture.corpus) {
+    const row = osr144Case(corpus, id, name);
+    const expected = canonicalizeRaw(JSON.stringify(row.kwdj));
+    const facts = row.input.identity_state ?? {};
+    const media = (facts.existing_media_ids ?? []).map(id => ({ id, status: 'exists' }));
+    let saved;
+    await withLiteraryCommandSession(expected, editor => {
+      saved = canonical(editor);
+      assert.equal(saved, expected);
+    }, media);
+    await withLiteraryCommandSession(saved, editor => {
+      assert.equal(canonical(editor), expected);
+    }, media);
+  }
+});
+
+test('OSR-144 packaged SDK2 preserves all eight indent values and authored leading spaces', async () => {
+  const fixture = osr144Fixture();
+  const expected = osr144Poem(fixture.indented_lines);
+  await withLiteraryCommandSession(expected, editor => {
+    const verse = node(editor, root(editor).children[0]);
+    assert.equal(verse.children.length, 8);
+    for (const [index, line] of verse.children.entries()) {
+      assert.deepEqual(structuredClone(node(editor, line).attributes.indent),
+        { kind: 'number', value: String(index + 1) });
+    }
+    assert.equal(node(editor, node(editor, verse.children[0]).children[0]).text, '  Leading and indented');
+    accepted(osr144Remount(editor, expected, 'normalize'));
+    assert.equal(canonical(editor), expected);
+  });
+});
+
+test('OSR-144 packaged SDK2 removes zero only on import and rejects non-integer and out-of-range indent', async () => {
+  const fixture = osr144Fixture();
+  const expected = osr144Poem([fixture.plain_line]);
+  const raw = osr144Poem([{ ...fixture.plain_line, attrs: { indent: 'OSR144-indent' } }]);
+  const insert = token => raw.replace('"OSR144-indent"', token);
+  let saved;
+  await withLiteraryCommandSession(expected, editor => {
+    const before = state(editor);
+    osr144Refused(osr144Remount(editor, insert('0'), 'validate'), fixture.refusals.zero_validate);
+    assert.deepEqual(state(editor), before);
+    assert.equal(canonical(editor), expected);
+    for (const mode of ['validate', 'normalize']) {
+      for (const attrs of fixture.invalid_attrs) {
+        const invalid = osr144Poem([{ ...fixture.plain_line, attrs }]);
+        osr144Refused(osr144Remount(editor, invalid, mode), fixture.refusals.invalid_attrs);
+        assert.deepEqual(state(editor), before);
+        assert.equal(canonical(editor), expected);
+      }
+      for (const token of fixture.invalid_indent_tokens) {
+        osr144Refused(osr144Remount(editor, insert(token), mode), fixture.refusals.invalid_indent);
+        assert.deepEqual(state(editor), before);
+        assert.equal(canonical(editor), expected);
+      }
+    }
+    accepted(osr144Remount(editor, insert('0'), 'normalize'));
+    saved = canonical(editor);
+    assert.equal(saved, expected);
+  });
+  await withLiteraryCommandSession(saved, editor => {
+    assert.equal(canonical(editor), expected);
+  });
+});
+
+test('OSR-144 packaged SDK2 refuses poetry-only admission and paste atomically in prose', async () => {
+  const fixture = osr144Fixture();
+  const doc = osr144Case(osr144Corpus(), 'DOC-019', 'poetry_stanzas').kwdj;
+  const verse = doc.content[0];
+  const initial = osr183Doc([{ type: 'paragraph', content: [{ type: 'text', text: 'Prose' }] }]);
+  const packet = JSON.parse(readFileSync(new URL('../artifacts/extensions/packet.json', import.meta.url)));
+  const sourceProfile = { ...packet.kwdjProfile };
+  delete sourceProfile.extensions;
+  await withLiteraryCommandSession(initial, editor => {
+    osr185Select(editor, osr185Gap(state(editor).root, 1));
+    const before = state(editor);
+    for (const block of [verse, verse.content[0], verse.content[2]]) {
+      osr144Refused(osr144Remount(editor, osr144Document('prose', [block]), 'validate'), fixture.refusals.prose_grammar);
+      assert.deepEqual(state(editor), before);
+      assert.equal(canonical(editor), initial);
+      for (const [mode, oracle] of [['poetry', 'clipboard_poetry_mode'], ['prose', 'prose_grammar']]) {
+        const fragment = {
+          format_id: 'org.klenwriter.kwdj/clipboard-fragment/1',
+          source_profile: sourceProfile, mode, kind: 'blocks', open_start: false, open_end: false,
+          content: [block],
+        };
+        const command = createCommand('org.klenwriter.kwdj/command/insert-fragment', {
+          kind: 'insert_fragment', fragment_json: JSON.stringify(fragment),
+        });
+        osr144Refused(osr183Wire(editor, command), fixture.refusals[oracle]);
+        assert.deepEqual(state(editor), before);
+        assert.equal(canonical(editor), initial);
+      }
+    }
+  });
+});
+
 const osr186InsertFragment = 'org.klenwriter.kwdj/command/insert-fragment';
 const osr186Payload = fragment => ({ kind: 'insert_fragment', fragment_json: JSON.stringify(fragment) });
+test('OSR-197 packaged SDK2 preserves poetry clipboard structure and exact Undo', async t => {
+  const fixture = JSON.parse(readFileSync(new URL('./fixtures/osr-197-poetry-clipboard.json', import.meta.url), 'utf8'));
+  const { decodeClipboard } = await import('../packages/kwdj/dist/clipboard-decode.js');
+  const binding = { profile_id: 'org.klenwriter.kwdj', profile_version: '1.0.0', codec_id: 'org.klenwriter.kwdj/json', wire_version: 1 };
+  const point = (editor, location) => {
+    const id = location.path.reduce((parent, index) => node(editor, parent).children[index], state(editor).root);
+    return 'offset' in location ? position(id, location.offset) : osr185Gap(id, location.index);
+  };
+  for (const row of fixture.cases) {
+    await t.test(row.id, async () => {
+      const original = fixture.documents[row.target.document];
+      const source = row.capture ? fixture.documents[row.capture.document] : original;
+      const expected = { format_id: 'org.klenwriter.kwdj/clipboard-fragment/1', source_profile: binding, mode: source.profile, ...row.fragment };
+      let payload;
+      if (row.capture) {
+        await withLiteraryCommandSession(osr185Bytes(source), editor => {
+          osr185Select(editor, point(editor, row.capture.anchor), point(editor, row.capture.focus));
+          const before = state(editor);
+          const fragment = accepted(editor.read({ kind: 'selection_fragment', stamp: editor.capture(), max_bytes: 8192 }));
+          assert.equal(fragment.empty, false);
+          payload = JSON.parse(fragment.fragment_json);
+          assert.deepEqual(payload, expected);
+          assert.deepEqual(state(editor), before);
+        });
+      }
+
+      const bytes = osr185Bytes(original);
+      await withLiteraryCommandSession(bytes, async editor => {
+        osr185Select(editor, point(editor, row.target.point));
+        const before = state(editor);
+        const read = accepted(editor.read({ kind: 'clipboard_context', stamp: editor.capture() }));
+        const context = JSON.parse(read.context_json);
+        assert.equal(context.insertion_context, row.target.context);
+        assert.equal(context.mode, original.profile);
+        assert.deepEqual(state(editor), before);
+        if (row.plain !== undefined) {
+          const decoded = await decodeClipboard({
+            source_profile: binding, mode: context.mode, insertion_context: context.insertion_context,
+            media: 'not_observed', plain: { status: 'complete_local', text: row.plain },
+            html: { status: 'unavailable', text: null },
+            url_policy: { allow_origin_relative: true, allowed_schemes: ['http', 'https'] },
+          });
+          assert.equal(decoded.status, 'candidate');
+          assert.deepEqual(decoded.diagnostics, []);
+          payload = decoded.fragment;
+          assert.deepEqual(payload, expected);
+        }
+        if (row.refusal) {
+          osr183Denied(editor, osr186InsertFragment, osr186Payload(payload), bytes, row.refusal.code, row.refusal.path);
+        } else {
+          osr186PasteAndUndo(editor, payload, row.expected, bytes);
+        }
+      });
+    });
+  }
+});
+
+test('OSR-199 packaged SDK2 poetry selection text matches native delimiters, atoms and limits', async t => {
+  const read = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
+  const fixture = read('./fixtures/osr-199-poetry-selection.json');
+  const corpus = read('../contracts/kwdj/v1/fixtures/positive.json');
+  const documents = {
+    ...fixture.documents,
+    'DOC-019': corpus.fixtures.find(entry => entry.id === 'DOC-019').cases[0].kwdj,
+    'OSR-197': read('./fixtures/osr-197-poetry-clipboard.json').documents.source,
+  };
+  for (const row of fixture.cases) {
+    await t.test(row.id, async () => {
+      const document = documents[row.document];
+      const input = typeof document === 'string' ? document : osr185Bytes(document);
+      await withLiteraryCommandSession(input, editor => {
+        const nodeAt = path => path.reduce((id, index) => node(editor, id).children[index], state(editor).root);
+        const point = ({ path, offset, index }) => offset === undefined
+          ? osr185Gap(nodeAt(path), index) : position(nodeAt(path), offset);
+        const selection = { anchor: point(row.anchor), focus: point(row.focus) };
+        const initial = state(editor);
+        const set = completed(editor.submit({ kind: 'set_selection', stamp: editor.capture(), selection }));
+        if (row.set_diagnostic) {
+          assert.equal(refused(set).code, row.set_diagnostic);
+          assert.deepEqual(state(editor), initial);
+          assert.equal(canonical(editor), input);
+          return;
+        }
+        accepted(set);
+        const before = state(editor);
+        assert.deepEqual(structuredClone(before.selection), selection);
+        const projection = editor.read({ kind: 'selection_text', stamp: editor.capture(), max_bytes: row.max_bytes });
+        if (row.diagnostic) {
+          const diagnostic = refused(projection);
+          assert.equal(diagnostic.code, row.diagnostic);
+          assert.equal(diagnostic.path, '');
+          assert.equal(diagnostic.may_have_committed, false);
+        } else {
+          assert.deepEqual(structuredClone(accepted(projection)), {
+            kind: 'selection_text', stamp: structuredClone(before.stamp), selection,
+            projection_id: 'org.klenwriter.kwdj/selection-text/1',
+            text: row.text, empty: false, selected_atoms: row.atoms.map(nodeAt),
+          });
+        }
+        assert.deepEqual(state(editor), before);
+        assert.equal(canonical(editor), input);
+        if (row.delete_guard) {
+          for (const intent of [{ kind: 'delete_selection' }, { kind: 'delete_selection', scope: 'profile_body' }]) {
+            osr183Denied(editor, 'org.klenwriter.kwdj/command/delete-selection', intent,
+              input, 'kwdj.command_unsupported_context', '/command');
+          }
+        }
+      });
+    });
+  }
+});
+
 function osr186Capture(editor, kind, content) {
   const before = state(editor);
   const read = accepted(editor.read({ kind: 'selection_fragment', stamp: editor.capture(), max_bytes: 8192 }));
@@ -1456,5 +1893,122 @@ test('packaged SDK: repeated complete lifecycle releases actual native and JS ow
       assert.equal(context.callbackErrors.length, 0);
     } finally { context.close(); }
     assert.deepEqual(counts(module), baseline);
+  }
+});
+
+test('OSR-280 packaged SDK2 trims edited stanza edges and the codec refuses imported edges', async t => {
+  const { input } = osr195Fixture().candidates.find(row => row.id === 'adjacent_breaks_merge');
+  const [first, stanza, , last] = input.content[0].content;
+  const poem = lines => ({ ...input, content: [{ type: 'verse', content: lines }] });
+  const original = osr185Bytes(poem([first, stanza, last]));
+  for (const [caseId, index, survivingLine] of [
+    ['cms_edit_trim_first', 0, last],
+    ['cms_edit_trim_last', 2, first],
+  ]) {
+    await t.test(caseId, () => withLiteraryCommandSession(original, editor => {
+      const verse = root(editor).children[0];
+      const originalIds = node(editor, verse).children;
+      const expected = osr185Bytes(poem([survivingLine]));
+      const reply = accepted(osr183Wire(editor, kwdjCommand({ kind: 'remove', node: originalIds[index] })));
+      assert.equal(reply.effect, 'changed');
+      assert.equal(canonical(editor), expected);
+      assert.deepEqual(node(editor, verse).children, [originalIds[2 - index]]);
+      assert.equal(state(editor).history.undo_entries, '1');
+      osr183History(editor, 'undo', original);
+      assert.deepEqual(node(editor, verse).children, originalIds);
+      osr183History(editor, 'redo', expected);
+    }));
+  }
+
+  const moveSource = osr185Bytes({ ...input, content: [
+    { type: 'verse', content: [first, stanza, last] },
+    { type: 'verse', content: [first, last] },
+  ] });
+  for (const [caseId, destination, beforeIndex] of [
+    ['same_leading', 0, 0],
+    ['same_trailing', 0, 3],
+    ['cross_leading', 1, 0],
+    ['cross_trailing', 1, 2],
+  ]) {
+    await t.test(caseId, () => withLiteraryCommandSession(moveSource, editor => {
+      const verses = root(editor).children;
+      const marker = node(editor, verses[0]).children[1];
+      const intent = { kind: 'move', node: marker, parent: verses[destination], before_index: beforeIndex };
+      const stamp = editor.capture();
+      const query = accepted(editor.query({ kind: 'query_command', stamp, command: kwdjCommand(intent) }));
+      const path = `/content/${destination}/content`;
+      assert.equal(query.available, false);
+      assert.equal(query.diagnostic.code, 'kwdj.invalid_verse');
+      assert.equal(query.diagnostic.path, path);
+      assert.deepEqual(editor.capture(), stamp);
+      osr183Denied(editor, 'org.klenwriter.kwdj/command/move', intent, moveSource, 'kwdj.invalid_verse', path);
+      assert.equal(node(editor, verses[0]).children[1], marker);
+    }));
+  }
+
+  const codec = await import('../packages/wasm/dist/editor_wasm.js');
+  const { options } = await import('./support/codec-fixtures.mjs');
+  await codec.default({ module_or_path: readFileSync(new URL('../packages/wasm/dist/editor_wasm_bg.wasm', import.meta.url)) });
+  const importLines = ['Строка 1', 'Строка 3'].map(text => ({
+    type: 'verse_line', content: [{ type: 'text', text }],
+  }));
+  for (const [caseId, lines] of [
+    ['leading_import_edge_refuses', [stanza, ...importLines]],
+    ['trailing_import_edge_refuses', [...importLines, stanza]],
+  ]) {
+    await t.test(caseId, () => {
+      const bytes = new TextEncoder().encode(osr185Bytes(poem(lines)));
+      for (const run of [codec.kwdjValidateV1, codec.kwdjNormalizeV1]) {
+        const result = JSON.parse(run(bytes, options()));
+        assert.equal(result.status, 'refused');
+        assert.equal(result.diagnostic.code, 'kwdj.invalid_verse');
+        assert.equal(result.diagnostic.path, '/content/0/content');
+      }
+    });
+  }
+});
+
+test('OSR-283 packaged SDK2 transforms root verse and paragraphs with exact Undo', async t => {
+  const fixture = JSON.parse(readFileSync(new URL('./fixtures/osr-283-verse-transform.json', import.meta.url)));
+  for (const row of fixture.cases) {
+    await t.test(row.id, () => withLiteraryCommandSession(osr185Bytes(fixture.documents[row.input]), editor => {
+      const original = canonical(editor);
+      const nodeAt = path => path.reduce((id, index) => node(editor, id).children[index], state(editor).root);
+      const focus = row.edge
+        ? { kind: 'edge', node: nodeAt(row.path), side: row.edge }
+        : osr185Gap(nodeAt(row.path), row.gap_index ?? 0);
+      const anchor = row.anchor_path ? osr185Gap(nodeAt(row.anchor_path), 0) : focus;
+      osr185Select(editor, anchor, focus);
+      const before = state(editor);
+      const id = 'org.klenwriter.kwdj/command/transform-block';
+      const intent = { kind: 'transform_block', target: row.target };
+      const command = kwdjCommand(intent);
+      assert.deepEqual(command, createCommand(id, intent));
+      const query = accepted(editor.query({ kind: 'query_command', stamp: editor.capture(), command }));
+      assert.deepEqual(state(editor), before);
+      assert.equal(canonical(editor), original);
+
+      if (row.diagnostic) {
+        assert.equal(query.available, false);
+        assert.equal(query.diagnostic.code, row.diagnostic.code);
+        assert.equal(query.diagnostic.path, row.diagnostic.path);
+        osr183Denied(editor, id, intent, original, row.diagnostic.code, row.diagnostic.path);
+        return;
+      }
+      const expected = osr185Bytes(fixture.documents[row.expected]);
+      assert.equal(query.available, true);
+      assert.equal(query.effect, row.effect);
+      assert.equal(accepted(osr183Wire(editor, command)).effect, row.effect);
+      assert.equal(canonical(editor), expected);
+      if (row.effect === 'changed') {
+        assert.equal(state(editor).stamp.revision, '1');
+        assert.equal(state(editor).history.undo_entries, '1');
+        osr183History(editor, 'undo', original);
+        assert.deepEqual(state(editor).selection, before.selection);
+        osr183History(editor, 'redo', expected);
+      } else {
+        assert.deepEqual(state(editor), before);
+      }
+    }));
   }
 });

@@ -20,6 +20,14 @@ export const kwdjDomInventory = {
     },
     {
       "descriptor": {
+        "id": "org.klenwriter.kwdj/command/delete-forward",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/delete-forward",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
         "id": "org.klenwriter.kwdj/command/delete-selection",
         "kind": "compiled"
       },
@@ -229,6 +237,7 @@ export const kwdjDomInventory = {
     "commands": [
       "org.klenwriter.kwdj/command/accept-slash",
       "org.klenwriter.kwdj/command/delete-backward",
+      "org.klenwriter.kwdj/command/delete-forward",
       "org.klenwriter.kwdj/command/delete-selection",
       "org.klenwriter.kwdj/command/dismiss-slash",
       "org.klenwriter.kwdj/command/duplicate",
@@ -1372,8 +1381,19 @@ export const kwdjDomInventory = {
       },
       {
         "allowedMarks": [],
-        "attributeSchemas": {},
-        "attributes": [],
+        "attributeSchemas": {
+          "indent": {
+            "required": false,
+            "value": {
+              "kind": "integer",
+              "max": "8",
+              "min": "1"
+            }
+          }
+        },
+        "attributes": [
+          "indent"
+        ],
         "children": {
           "item": {
             "items": [
@@ -1509,5 +1529,5 @@ export const kwdjDomInventory = {
     "profile_version": "1.0.0",
     "wire_version": 1
   },
-  "registryDigest": "d30c40a92ce59b08fdfaed77623057a01835f46de90e053f51ad45094d401c7b"
+  "registryDigest": "bd45ec10fc88615828ed4a6ab5e2c66d82946f29469a3e84865a2c442680e5ec"
 } as const;

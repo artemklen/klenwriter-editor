@@ -462,11 +462,15 @@ fn siblings<V: CandidateRead>(
     view: &V,
     left: V::Id,
     right: V::Id,
+    require_matching_attributes: bool,
     work: &mut WorkMeter,
 ) -> Result<(V::Id, usize, usize), KwdjError> {
     let a = view.node(left).ok_or_else(invalid)?;
     let b = view.node(right).ok_or_else(invalid)?;
-    if a.parent != b.parent || a.type_id != b.type_id || a.attributes != b.attributes {
+    if a.parent != b.parent
+        || a.type_id != b.type_id
+        || (require_matching_attributes && a.attributes != b.attributes)
+    {
         return Err(unsupported());
     }
     let children = if a.parent == view.root() {
@@ -521,13 +525,22 @@ pub fn extract<V: CandidateRead>(
         let range = inline::ordered_range(view, selection, work)?;
         let start = inline::text_point(view, range.start, work)?;
         let end = inline::text_point(view, range.end, work)?;
-        let _ = context(mode, view, selection, work)?;
+        let capture_context = context(mode, view, selection, work)?;
         if start.block == end.block {
             roots = clip_inline(view, start.block, Some(start), Some(end), work, budget)?;
             kind = FragmentKind::Inline;
             (open_start, open_end) = (false, false);
         } else {
-            let (parent, l, r) = siblings(view, start.block, end.block, work)?;
+            // Capture retains each verse line's header alongside its clipped text.
+            let require_matching_attributes =
+                capture_context.insertion_context != InsertionContext::Verse;
+            let (parent, l, r) = siblings(
+                view,
+                start.block,
+                end.block,
+                require_matching_attributes,
+                work,
+            )?;
             let children = if parent == view.root() {
                 view.roots()
             } else {
@@ -773,7 +786,7 @@ fn inline_across<V: CandidateRead>(
 ) -> Result<(), KwdjError> {
     let start = inline::text_point(view, ordered.start, plan.work())?;
     let end = inline::text_point(view, ordered.end, plan.work())?;
-    let (parent, l, r) = siblings(view, start.block, end.block, plan.work())?;
+    let (parent, l, r) = siblings(view, start.block, end.block, true, plan.work())?;
     let left = view.node(start.block).ok_or_else(invalid)?;
     let right_start = gap(end.block, 0);
     let mut cut = block::prepare_inline_cut(
@@ -933,7 +946,7 @@ pub(super) fn prepare<V: CandidateRead>(
         )?;
     }
     if start.block != end.block {
-        let (parent, l, r) = siblings(view, start.block, end.block, plan.work())?;
+        let (parent, l, r) = siblings(view, start.block, end.block, true, plan.work())?;
         let left = view.node(start.block).ok_or_else(invalid)?;
         let right = view.node(end.block).ok_or_else(invalid)?;
         let first = if open_start {
@@ -1008,7 +1021,7 @@ pub(super) fn prepare<V: CandidateRead>(
         set_caret(plan, caret)?;
     } else {
         let header = view.node(start.block).ok_or_else(invalid)?;
-        let (parent, index, _) = siblings(view, start.block, start.block, plan.work())?;
+        let (parent, index, _) = siblings(view, start.block, start.block, true, plan.work())?;
         let mut cut = block::prepare_inline_cut(
             view,
             Selection {

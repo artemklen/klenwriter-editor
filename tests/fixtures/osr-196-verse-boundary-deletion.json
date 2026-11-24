@@ -1,0 +1,2357 @@
+{
+  "retained_case": "DOC-019/poetry_stanzas",
+  "cms_source_sha": "54eaea583f7e64fa5fefb55c6cf025241c0ee848",
+  "observation_modes": {
+    "trusted_browser_rows": 45,
+    "mounted_cms_keydown_rows": 10
+  },
+  "documents": {
+    "stanza_right_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ],
+              "attrs": {
+                "indent": 3
+              }
+            },
+            {"type": "stanza_break", "attrs": {"blank_lines": 2}},
+            {
+              "type": "verse_line",
+              "content": [
+                {"type": "text", "text": "Строка 3"}
+              ],
+              "attrs": {
+                "indent": 8
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "stanza_right_backspace_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": [
+                {"type": "text", "text": "Строка 3"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "interior_blank_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ],
+              "attrs": {
+                "indent": 3
+              }
+            },
+            {"type": "stanza_break", "attrs": {"blank_lines": 1}},
+            {
+              "type": "verse_line",
+              "content": []
+            },
+            {"type": "stanza_break", "attrs": {"blank_lines": 2}},
+            {
+              "type": "verse_line",
+              "content": [
+                {"type": "text", "text": "Строка 3"}
+              ],
+              "attrs": {
+                "indent": 8
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "interior_blank_backspace_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            },
+            {"type": "stanza_break", "attrs": {"blank_lines": 3}},
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": [
+                {"type": "text", "text": "Строка 3"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "terminal_blank_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ],
+              "attrs": {
+                "indent": 3
+              }
+            },
+            {"type": "stanza_break", "attrs": {"blank_lines": 2}},
+            {
+              "type": "verse_line",
+              "content": []
+            }
+          ]
+        }
+      ]
+    },
+    "terminal_blank_backspace_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "terminal_stanza_delete_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            },
+            {
+              "type": "verse_line",
+              "content": []
+            }
+          ]
+        }
+      ]
+    },
+    "verse_start_after_prose_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {"type": "text", "text": "До стиха"}
+          ]
+        },
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ],
+              "attrs": {
+                "indent": 3
+              }
+            },
+            {"type": "stanza_break", "attrs": {"blank_lines": 2}},
+            {
+              "type": "verse_line",
+              "content": [
+                {"type": "text", "text": "Строка 3"}
+              ],
+              "attrs": {
+                "indent": 8
+              }
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {"type": "text", "text": "После стиха"}
+          ]
+        }
+      ]
+    },
+    "verse_end_before_prose_delete_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {"type": "text", "text": "До стиха"}
+          ]
+        },
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            },
+            {"type": "stanza_break", "attrs": {"blank_lines": 2}},
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": [
+                {"type": "text", "text": "Строка 3После стиха"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "exit_paragraph_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": []
+        }
+      ]
+    },
+    "adjacent_verses_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ],
+              "attrs": {
+                "indent": 3
+              }
+            },
+            {"type": "stanza_break", "attrs": {"blank_lines": 2}},
+            {
+              "type": "verse_line",
+              "content": [
+                {"type": "text", "text": "Строка 3"}
+              ],
+              "attrs": {
+                "indent": 8
+              }
+            }
+          ]
+        },
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ],
+              "attrs": {
+                "indent": 3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "adjacent_verses_backspace_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            },
+            {"type": "stanza_break", "attrs": {"blank_lines": 2}},
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": [
+                {"type": "text", "text": "Строка 3"}
+              ]
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "selected_stanza_boundary_delete_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1Строка 3"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "selected_prose_to_verse_delete_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {"type": "text", "text": "До стиха Строка 1"}
+          ]
+        },
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": [
+                {"type": "text", "text": "Строка 3"}
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {"type": "text", "text": "После стиха"}
+          ]
+        }
+      ]
+    },
+    "styled_prose_start_after_verse_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ],
+              "attrs": {
+                "indent": 3
+              }
+            },
+            {"type": "stanza_break", "attrs": {"blank_lines": 2}},
+            {
+              "type": "verse_line",
+              "content": [
+                {"type": "text", "text": "Строка 3"}
+              ],
+              "attrs": {
+                "indent": 8
+              }
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {"type": "text", "text": "После стиха", "marks": [{"type": "strong"}]}
+          ],
+          "attrs": {
+            "align": "center",
+            "first_line_indent": true
+          }
+        }
+      ]
+    },
+    "styled_prose_start_after_verse_backspace_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            },
+            {"type": "stanza_break", "attrs": {"blank_lines": 2}},
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": [
+                {"type": "text", "text": "Строка 3"},
+                {"type": "text", "text": "После стиха", "marks": [{"type": "strong"}]}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "empty_prose_before_verse_delete_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": []
+        },
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ],
+              "attrs": {
+                "indent": 3
+              }
+            },
+            {"type": "stanza_break", "attrs": {"blank_lines": 2}},
+            {
+              "type": "verse_line",
+              "content": [
+                {"type": "text", "text": "Строка 3"}
+              ],
+              "attrs": {
+                "indent": 8
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "same_indent_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "Строка 3"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "blank_left_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": []
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": [
+                {"type": "text", "text": "Строка 3"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "blank_left_backspace_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": [
+                {"type": "text", "text": "Строка 3"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "blank_right_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": []
+            }
+          ]
+        }
+      ]
+    },
+    "two_blank_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": []
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": []
+            }
+          ]
+        }
+      ]
+    },
+    "two_blank_backspace_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": []
+            }
+          ]
+        }
+      ]
+    },
+    "after_break_nonterminal_blank_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            },
+            {"type": "stanza_break", "attrs": {"blank_lines": 2}},
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 5
+              },
+              "content": []
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": [
+                {"type": "text", "text": "Строка 3"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "before_break_blank_with_prior_delete_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 5
+              },
+              "content": []
+            },
+            {"type": "stanza_break", "attrs": {"blank_lines": 2}},
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": [
+                {"type": "text", "text": "Строка 3"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "before_break_blank_without_prior_delete_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 5
+              },
+              "content": []
+            },
+            {"type": "stanza_break", "attrs": {"blank_lines": 2}},
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": [
+                {"type": "text", "text": "Строка 3"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "preceding_prose_selects_single_line_verse_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {"type": "text", "text": "До стиха"}
+          ]
+        },
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "preceding_prose_selects_single_line_verse_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {"type": "text", "text": "До стиха  Строка 1"}
+          ]
+        }
+      ]
+    },
+    "selected_prose_to_single_verse_line_partial_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {"type": "text", "text": "До стиха Строка 1"}
+          ]
+        }
+      ]
+    },
+    "selected_prose_to_single_verse_line_all_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {"type": "text", "text": "До стиха"}
+          ]
+        }
+      ]
+    },
+    "nested_near_heading_start_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "warning",
+          "attrs": {"kind": "general"},
+          "content": [
+            {
+              "type": "heading",
+              "attrs": {
+                "level": 2
+              },
+              "content": [
+                {"type": "text", "text": "Глава"}
+              ]
+            },
+            {
+              "type": "verse",
+              "content": [
+                {
+                  "type": "verse_line",
+                  "attrs": {
+                    "indent": 3
+                  },
+                  "content": [
+                    {"type": "text", "text": "  Строка 1"}
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "heading",
+              "attrs": {
+                "level": 2
+              },
+              "content": [
+                {"type": "text", "text": "Конец"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "nested_near_heading_start_backspace_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "warning",
+          "attrs": {"kind": "general"},
+          "content": [
+            {
+              "type": "heading",
+              "attrs": {
+                "level": 2
+              },
+              "content": [
+                {"type": "text", "text": "Глава  Строка 1"}
+              ]
+            },
+            {
+              "type": "heading",
+              "attrs": {
+                "level": 2
+              },
+              "content": [
+                {"type": "text", "text": "Конец"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "nested_near_heading_end_delete_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "warning",
+          "attrs": {"kind": "general"},
+          "content": [
+            {
+              "type": "heading",
+              "attrs": {
+                "level": 2
+              },
+              "content": [
+                {"type": "text", "text": "Глава"}
+              ]
+            },
+            {
+              "type": "verse",
+              "content": [
+                {
+                  "type": "verse_line",
+                  "attrs": {
+                    "indent": 3
+                  },
+                  "content": [
+                    {"type": "text", "text": "  Строка 1Конец"}
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "root_near_heading_start_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 2
+          },
+          "content": [
+            {"type": "text", "text": "Глава"}
+          ]
+        },
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 2
+          },
+          "content": [
+            {"type": "text", "text": "Конец"}
+          ]
+        }
+      ]
+    },
+    "root_near_heading_start_backspace_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 2
+          },
+          "content": [
+            {"type": "text", "text": "Глава  Строка 1"}
+          ]
+        },
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 2
+          },
+          "content": [
+            {"type": "text", "text": "Конец"}
+          ]
+        }
+      ]
+    },
+    "root_near_heading_end_delete_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 2
+          },
+          "content": [
+            {"type": "text", "text": "Глава"}
+          ]
+        },
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1Конец"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "one_blank_after_prose_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {"type": "text", "text": "До стиха"}
+          ]
+        },
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 5
+              },
+              "content": []
+            }
+          ]
+        }
+      ]
+    },
+    "one_line_after_empty_prose_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": []
+        },
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "one_line_after_empty_prose_backspace_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {"type": "text", "text": "  Строка 1"}
+          ]
+        }
+      ]
+    },
+    "one_blank_after_empty_prose_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": []
+        },
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 5
+              },
+              "content": []
+            }
+          ]
+        }
+      ]
+    },
+    "one_blank_after_empty_prose_backspace_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": []
+        }
+      ]
+    },
+    "multiple_lines_after_heading_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 2
+          },
+          "content": [
+            {"type": "text", "text": "Глава"}
+          ]
+        },
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            },
+            {"type": "stanza_break", "attrs": {"blank_lines": 2}},
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 8
+              },
+              "content": [
+                {"type": "text", "text": "Строка 3"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "heading_before_one_line_delete_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 2
+          },
+          "content": [
+            {"type": "text", "text": "Глава"}
+          ]
+        },
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "heading_before_one_line_delete_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 2
+          },
+          "content": [
+            {"type": "text", "text": "Глава  Строка 1"}
+          ]
+        }
+      ]
+    },
+    "terminal_blank_before_prose_delete_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 5
+              },
+              "content": []
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {"type": "text", "text": "После стиха"}
+          ]
+        }
+      ]
+    },
+    "terminal_blank_before_prose_delete_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 5
+              },
+              "content": [
+                {"type": "text", "text": "После стиха"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "terminal_blank_before_empty_prose_delete_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 5
+              },
+              "content": []
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": []
+        }
+      ]
+    },
+    "terminal_blank_before_empty_prose_delete_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "verse",
+          "content": [
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 3
+              },
+              "content": [
+                {"type": "text", "text": "  Строка 1"}
+              ]
+            },
+            {
+              "type": "verse_line",
+              "attrs": {
+                "indent": 5
+              },
+              "content": []
+            }
+          ]
+        }
+      ]
+    },
+    "warning_external_heading_start_backspace_input": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 2
+          },
+          "content": [
+            {"type": "text", "text": "Глава"}
+          ]
+        },
+        {
+          "type": "warning",
+          "attrs": {"kind": "general"},
+          "content": [
+            {
+              "type": "verse",
+              "content": [
+                {
+                  "type": "verse_line",
+                  "attrs": {
+                    "indent": 3
+                  },
+                  "content": [
+                    {"type": "text", "text": "  Строка 1"}
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 2
+          },
+          "content": [
+            {"type": "text", "text": "Конец"}
+          ]
+        }
+      ]
+    },
+    "warning_external_heading_end_delete_cms_result": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [
+        {
+          "type": "heading",
+          "attrs": {
+            "level": 2
+          },
+          "content": [
+            {"type": "text", "text": "Глава"}
+          ]
+        },
+        {
+          "type": "warning",
+          "attrs": {"kind": "general"},
+          "content": [
+            {
+              "type": "verse",
+              "content": [
+                {
+                  "type": "verse_line",
+                  "attrs": {
+                    "indent": 3
+                  },
+                  "content": [
+                    {"type": "text", "text": "  Строка 1"}
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "heading",
+              "attrs": {
+                "level": 2
+              },
+              "content": [
+                {"type": "text", "text": "Конец"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "id": "stanza_right_backspace",
+      "key": "Backspace",
+      "input": "stanza_right_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 2], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 2], "offset": 0}
+      },
+      "expected": "stanza_right_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 1], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 1], "offset": 0}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "stanza_left_delete",
+      "key": "Delete",
+      "input": "stanza_right_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 10}
+      },
+      "expected": "stanza_right_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 10}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "interior_blank_backspace",
+      "key": "Backspace",
+      "input": "interior_blank_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 2], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 2], "offset": 0}
+      },
+      "expected": "interior_blank_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "child", "path": [0], "index": 1},
+        "focus": {"kind": "child", "path": [0], "index": 2}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "interior_blank_delete",
+      "key": "Delete",
+      "input": "interior_blank_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 2], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 2], "offset": 0}
+      },
+      "expected": "interior_blank_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "child", "path": [0], "index": 1},
+        "focus": {"kind": "child", "path": [0], "index": 2}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "terminal_blank_backspace",
+      "key": "Backspace",
+      "input": "terminal_blank_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 2], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 2], "offset": 0}
+      },
+      "expected": "terminal_blank_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 10}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "terminal_stanza_delete",
+      "key": "Delete",
+      "input": "terminal_blank_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 10}
+      },
+      "expected": "terminal_stanza_delete_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 10}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "verse_start_after_prose_backspace",
+      "key": "Backspace",
+      "input": "verse_start_after_prose_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [1, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [1, 0], "offset": 0}
+      },
+      "expected": "verse_start_after_prose_backspace_input",
+      "expected_selection": {
+        "anchor": {"kind": "child", "path": [], "index": 0},
+        "focus": {"kind": "child", "path": [], "index": 1}
+      },
+      "effect": "state_changed"
+    },
+    {
+      "id": "prose_end_before_verse_delete",
+      "key": "Delete",
+      "input": "verse_start_after_prose_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 8},
+        "focus": {"kind": "text", "path": [0], "offset": 8}
+      },
+      "expected": "verse_start_after_prose_backspace_input",
+      "expected_selection": {
+        "anchor": {"kind": "child", "path": [], "index": 1},
+        "focus": {"kind": "child", "path": [], "index": 2}
+      },
+      "effect": "state_changed"
+    },
+    {
+      "id": "verse_end_before_prose_delete",
+      "key": "Delete",
+      "input": "verse_start_after_prose_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [1, 2], "offset": 8},
+        "focus": {"kind": "text", "path": [1, 2], "offset": 8}
+      },
+      "expected": "verse_end_before_prose_delete_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [1, 2], "offset": 8},
+        "focus": {"kind": "text", "path": [1, 2], "offset": 8}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "prose_start_after_verse_backspace",
+      "key": "Backspace",
+      "input": "verse_start_after_prose_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [2], "offset": 0},
+        "focus": {"kind": "text", "path": [2], "offset": 0}
+      },
+      "expected": "verse_end_before_prose_delete_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [1, 2], "offset": 8},
+        "focus": {"kind": "text", "path": [1, 2], "offset": 8}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "exit_paragraph_backspace",
+      "key": "Backspace",
+      "input": "exit_paragraph_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [1], "offset": 0},
+        "focus": {"kind": "text", "path": [1], "offset": 0}
+      },
+      "expected": "terminal_blank_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 10}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "verse_end_before_exit_paragraph_delete",
+      "key": "Delete",
+      "input": "exit_paragraph_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 10}
+      },
+      "expected": "terminal_blank_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 10}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "adjacent_verses_backspace",
+      "key": "Backspace",
+      "input": "adjacent_verses_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [1, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [1, 0], "offset": 0}
+      },
+      "expected": "adjacent_verses_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 3], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 3], "offset": 0}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "adjacent_verses_delete",
+      "key": "Delete",
+      "input": "adjacent_verses_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 2], "offset": 8},
+        "focus": {"kind": "text", "path": [0, 2], "offset": 8}
+      },
+      "expected": "adjacent_verses_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 2], "offset": 8},
+        "focus": {"kind": "text", "path": [0, 2], "offset": 8}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "outer_document_start_backspace",
+      "key": "Backspace",
+      "input": "stanza_right_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 0}
+      },
+      "expected": "stanza_right_backspace_input",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 0}
+      },
+      "effect": "unchanged"
+    },
+    {
+      "id": "outer_document_end_delete",
+      "key": "Delete",
+      "input": "stanza_right_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 2], "offset": 8},
+        "focus": {"kind": "text", "path": [0, 2], "offset": 8}
+      },
+      "expected": "stanza_right_backspace_input",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 2], "offset": 8},
+        "focus": {"kind": "text", "path": [0, 2], "offset": 8}
+      },
+      "effect": "unchanged"
+    },
+    {
+      "id": "selected_stanza_boundary_delete",
+      "key": "Delete",
+      "input": "stanza_right_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 2], "offset": 0}
+      },
+      "expected": "selected_stanza_boundary_delete_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 10}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "selected_prose_to_verse_delete",
+      "key": "Delete",
+      "input": "verse_start_after_prose_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 8},
+        "focus": {"kind": "text", "path": [1, 0], "offset": 1}
+      },
+      "expected": "selected_prose_to_verse_delete_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 8},
+        "focus": {"kind": "text", "path": [0], "offset": 8}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "styled_prose_start_after_verse_backspace",
+      "key": "Backspace",
+      "input": "styled_prose_start_after_verse_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [1], "offset": 0},
+        "focus": {"kind": "text", "path": [1], "offset": 0}
+      },
+      "expected": "styled_prose_start_after_verse_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 2], "offset": 8},
+        "focus": {"kind": "text", "path": [0, 2], "offset": 8}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "verse_end_before_styled_prose_delete",
+      "key": "Delete",
+      "input": "styled_prose_start_after_verse_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 2], "offset": 8},
+        "focus": {"kind": "text", "path": [0, 2], "offset": 8}
+      },
+      "expected": "styled_prose_start_after_verse_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 2], "offset": 8},
+        "focus": {"kind": "text", "path": [0, 2], "offset": 8}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "empty_prose_before_verse_delete",
+      "key": "Delete",
+      "input": "empty_prose_before_verse_delete_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 0},
+        "focus": {"kind": "text", "path": [0], "offset": 0}
+      },
+      "expected": "stanza_right_backspace_input",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 0}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "verse_start_after_empty_prose_backspace",
+      "key": "Backspace",
+      "input": "empty_prose_before_verse_delete_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [1, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [1, 0], "offset": 0}
+      },
+      "expected": "empty_prose_before_verse_delete_input",
+      "expected_selection": {
+        "anchor": {"kind": "child", "path": [], "index": 0},
+        "focus": {"kind": "child", "path": [], "index": 1}
+      },
+      "effect": "state_changed"
+    },
+    {
+      "id": "different_indent_backspace",
+      "key": "Backspace",
+      "input": "stanza_right_backspace_result",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 1], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 1], "offset": 0}
+      },
+      "expected": "selected_stanza_boundary_delete_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 10}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "different_indent_delete",
+      "key": "Delete",
+      "input": "stanza_right_backspace_result",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 10}
+      },
+      "expected": "selected_stanza_boundary_delete_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 10}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "same_indent_backspace",
+      "key": "Backspace",
+      "input": "same_indent_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 1], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 1], "offset": 0}
+      },
+      "expected": "selected_stanza_boundary_delete_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 10}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "same_indent_delete",
+      "key": "Delete",
+      "input": "same_indent_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 10}
+      },
+      "expected": "selected_stanza_boundary_delete_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 10}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "blank_left_backspace",
+      "key": "Backspace",
+      "input": "blank_left_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 1], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 1], "offset": 0}
+      },
+      "expected": "blank_left_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 0}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "blank_left_delete",
+      "key": "Delete",
+      "input": "blank_left_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 0}
+      },
+      "expected": "blank_left_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 0}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "blank_right_backspace",
+      "key": "Backspace",
+      "input": "blank_right_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 1], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 1], "offset": 0}
+      },
+      "expected": "terminal_blank_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 10}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "blank_right_delete",
+      "key": "Delete",
+      "input": "blank_right_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 10}
+      },
+      "expected": "terminal_blank_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 10}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "two_blank_backspace",
+      "key": "Backspace",
+      "input": "two_blank_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 1], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 1], "offset": 0}
+      },
+      "expected": "two_blank_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 0}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "two_blank_delete",
+      "key": "Delete",
+      "input": "two_blank_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 0}
+      },
+      "expected": "two_blank_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 0}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "after_break_nonterminal_blank_backspace",
+      "key": "Backspace",
+      "input": "after_break_nonterminal_blank_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 2], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 2], "offset": 0}
+      },
+      "expected": "stanza_right_backspace_input",
+      "expected_selection": {
+        "anchor": {"kind": "child", "path": [0], "index": 1},
+        "focus": {"kind": "child", "path": [0], "index": 2}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "before_break_blank_with_prior_delete",
+      "key": "Delete",
+      "input": "before_break_blank_with_prior_delete_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 1], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 1], "offset": 0}
+      },
+      "expected": "stanza_right_backspace_input",
+      "expected_selection": {
+        "anchor": {"kind": "child", "path": [0], "index": 1},
+        "focus": {"kind": "child", "path": [0], "index": 2}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "before_break_blank_without_prior_delete",
+      "key": "Delete",
+      "input": "before_break_blank_without_prior_delete_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 0}
+      },
+      "expected": "blank_left_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 0}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "preceding_prose_selects_single_line_verse",
+      "key": "Delete",
+      "input": "preceding_prose_selects_single_line_verse_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 8},
+        "focus": {"kind": "text", "path": [0], "offset": 8}
+      },
+      "expected": "preceding_prose_selects_single_line_verse_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 8},
+        "focus": {"kind": "text", "path": [0], "offset": 8}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "selected_prose_to_single_verse_line_partial",
+      "key": "Delete",
+      "input": "preceding_prose_selects_single_line_verse_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 8},
+        "focus": {"kind": "text", "path": [1, 0], "offset": 1}
+      },
+      "expected": "selected_prose_to_single_verse_line_partial_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 8},
+        "focus": {"kind": "text", "path": [0], "offset": 8}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "selected_prose_to_single_verse_line_all",
+      "key": "Delete",
+      "input": "preceding_prose_selects_single_line_verse_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 8},
+        "focus": {"kind": "text", "path": [1, 0], "offset": 10}
+      },
+      "expected": "selected_prose_to_single_verse_line_all_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 8},
+        "focus": {"kind": "text", "path": [0], "offset": 8}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "nested_near_heading_start_backspace",
+      "key": "Backspace",
+      "input": "nested_near_heading_start_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 1, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 1, 0], "offset": 0}
+      },
+      "expected": "nested_near_heading_start_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 0], "offset": 5},
+        "focus": {"kind": "text", "path": [0, 0], "offset": 5}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "nested_near_heading_end_delete",
+      "key": "Delete",
+      "input": "nested_near_heading_start_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 1, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 1, 0], "offset": 10}
+      },
+      "expected": "nested_near_heading_end_delete_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 1, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [0, 1, 0], "offset": 10}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "root_near_heading_start_backspace",
+      "key": "Backspace",
+      "input": "root_near_heading_start_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [1, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [1, 0], "offset": 0}
+      },
+      "expected": "root_near_heading_start_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 5},
+        "focus": {"kind": "text", "path": [0], "offset": 5}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "root_near_heading_end_delete",
+      "key": "Delete",
+      "input": "root_near_heading_start_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [1, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [1, 0], "offset": 10}
+      },
+      "expected": "root_near_heading_end_delete_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [1, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [1, 0], "offset": 10}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "one_line_after_prose_backspace",
+      "key": "Backspace",
+      "input": "preceding_prose_selects_single_line_verse_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [1, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [1, 0], "offset": 0}
+      },
+      "expected": "preceding_prose_selects_single_line_verse_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 8},
+        "focus": {"kind": "text", "path": [0], "offset": 8}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "one_blank_after_prose_backspace",
+      "key": "Backspace",
+      "input": "one_blank_after_prose_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [1, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [1, 0], "offset": 0}
+      },
+      "expected": "selected_prose_to_single_verse_line_all_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 8},
+        "focus": {"kind": "text", "path": [0], "offset": 8}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "one_line_after_empty_prose_backspace",
+      "key": "Backspace",
+      "input": "one_line_after_empty_prose_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [1, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [1, 0], "offset": 0}
+      },
+      "expected": "one_line_after_empty_prose_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 0},
+        "focus": {"kind": "text", "path": [0], "offset": 0}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "one_blank_after_empty_prose_backspace",
+      "key": "Backspace",
+      "input": "one_blank_after_empty_prose_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [1, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [1, 0], "offset": 0}
+      },
+      "expected": "one_blank_after_empty_prose_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 0},
+        "focus": {"kind": "text", "path": [0], "offset": 0}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "empty_prose_before_one_line_delete",
+      "key": "Delete",
+      "input": "one_line_after_empty_prose_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 0},
+        "focus": {"kind": "text", "path": [0], "offset": 0}
+      },
+      "expected": "one_line_after_empty_prose_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 0},
+        "focus": {"kind": "text", "path": [0], "offset": 0}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "empty_prose_before_one_blank_delete",
+      "key": "Delete",
+      "input": "one_blank_after_empty_prose_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 0},
+        "focus": {"kind": "text", "path": [0], "offset": 0}
+      },
+      "expected": "one_blank_after_empty_prose_backspace_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 0},
+        "focus": {"kind": "text", "path": [0], "offset": 0}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "multiple_lines_after_heading_backspace",
+      "key": "Backspace",
+      "input": "multiple_lines_after_heading_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [1, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [1, 0], "offset": 0}
+      },
+      "expected": "multiple_lines_after_heading_backspace_input",
+      "expected_selection": {
+        "anchor": {"kind": "child", "path": [], "index": 0},
+        "focus": {"kind": "child", "path": [], "index": 1}
+      },
+      "effect": "state_changed"
+    },
+    {
+      "id": "heading_before_one_line_delete",
+      "key": "Delete",
+      "input": "heading_before_one_line_delete_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 5},
+        "focus": {"kind": "text", "path": [0], "offset": 5}
+      },
+      "expected": "heading_before_one_line_delete_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 5},
+        "focus": {"kind": "text", "path": [0], "offset": 5}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "heading_before_multiple_lines_delete",
+      "key": "Delete",
+      "input": "multiple_lines_after_heading_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0], "offset": 5},
+        "focus": {"kind": "text", "path": [0], "offset": 5}
+      },
+      "expected": "multiple_lines_after_heading_backspace_input",
+      "expected_selection": {
+        "anchor": {"kind": "child", "path": [], "index": 1},
+        "focus": {"kind": "child", "path": [], "index": 2}
+      },
+      "effect": "state_changed"
+    },
+    {
+      "id": "terminal_blank_before_prose_delete",
+      "key": "Delete",
+      "input": "terminal_blank_before_prose_delete_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 1], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 1], "offset": 0}
+      },
+      "expected": "terminal_blank_before_prose_delete_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 1], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 1], "offset": 0}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "prose_after_terminal_blank_backspace",
+      "key": "Backspace",
+      "input": "terminal_blank_before_prose_delete_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [1], "offset": 0},
+        "focus": {"kind": "text", "path": [1], "offset": 0}
+      },
+      "expected": "terminal_blank_before_prose_delete_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 1], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 1], "offset": 0}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "terminal_blank_before_empty_prose_delete",
+      "key": "Delete",
+      "input": "terminal_blank_before_empty_prose_delete_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [0, 1], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 1], "offset": 0}
+      },
+      "expected": "terminal_blank_before_empty_prose_delete_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 1], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 1], "offset": 0}
+      },
+      "effect": "changed"
+    },
+    {
+      "id": "empty_prose_after_terminal_blank_backspace",
+      "key": "Backspace",
+      "input": "terminal_blank_before_empty_prose_delete_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [1], "offset": 0},
+        "focus": {"kind": "text", "path": [1], "offset": 0}
+      },
+      "expected": "terminal_blank_before_empty_prose_delete_result",
+      "expected_selection": {
+        "anchor": {"kind": "text", "path": [0, 1], "offset": 0},
+        "focus": {"kind": "text", "path": [0, 1], "offset": 0}
+      },
+      "effect": "changed"
+    }
+  ],
+  "refusals": [
+    {
+      "id": "warning_external_heading_start_backspace",
+      "key": "Backspace",
+      "input": "warning_external_heading_start_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [1, 0, 0], "offset": 0},
+        "focus": {"kind": "text", "path": [1, 0, 0], "offset": 0}
+      },
+      "diagnostic": {
+        "code": "kwdj.command_unsupported_context",
+        "path": "/command"
+      },
+      "cms_expected": {
+        "document": "root_near_heading_start_backspace_result",
+        "selection": {
+          "anchor": {"kind": "text", "path": [0], "offset": 5},
+          "focus": {"kind": "text", "path": [0], "offset": 5}
+        }
+      }
+    },
+    {
+      "id": "warning_external_heading_end_delete",
+      "key": "Delete",
+      "input": "warning_external_heading_start_backspace_input",
+      "selection": {
+        "anchor": {"kind": "text", "path": [1, 0, 0], "offset": 10},
+        "focus": {"kind": "text", "path": [1, 0, 0], "offset": 10}
+      },
+      "diagnostic": {
+        "code": "kwdj.command_unsupported_context",
+        "path": "/command"
+      },
+      "cms_expected": {
+        "document": "warning_external_heading_end_delete_cms_result",
+        "selection": {
+          "anchor": {"kind": "text", "path": [1, 0, 0], "offset": 10},
+          "focus": {"kind": "text", "path": [1, 0, 0], "offset": 10}
+        }
+      }
+    }
+  ]
+}

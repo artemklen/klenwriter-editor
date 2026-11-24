@@ -1059,6 +1059,88 @@ fn osr185_literary_boundaries_and_restricted_parents_refuse_atomically() {
     }
 }
 
+#[test]
+fn osr197_poetry_clipboard_has_fixed_exports_undo_and_atomic_refusals() {
+    fn position(session: &mut DistributionSession, point: &Value) -> Value {
+        let path: Vec<_> = point["path"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|part| part.as_u64().unwrap() as usize)
+            .collect();
+        let id = role(session, &path);
+        if let Some(offset) = point["offset"].as_u64() {
+            text(id, offset as usize)
+        } else {
+            gap(id, point["index"].as_u64().unwrap() as usize)
+        }
+    }
+    let fixture: Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/osr-197-poetry-clipboard.json"
+    ))
+    .unwrap();
+    for case in fixture["cases"].as_array().unwrap() {
+        let id = case["id"].as_str().unwrap();
+        let documents = &fixture["documents"];
+        let target = &case["target"];
+        let original = &documents[target["document"].as_str().unwrap()];
+        let capture = &case["capture"];
+        let model = &case["fragment"];
+        let source = if capture.is_null() {
+            original
+        } else {
+            &documents[capture["document"].as_str().unwrap()]
+        };
+        let expected_fragment = fragment(
+            source["profile"].as_str().unwrap(),
+            model["kind"].as_str().unwrap(),
+            model["content"].clone(),
+            model["open_start"].as_bool().unwrap(),
+            model["open_end"].as_bool().unwrap(),
+        );
+        let payload = if capture.is_null() {
+            expected_fragment
+        } else {
+            let mut session = open(source);
+            let anchor = position(&mut session, &capture["anchor"]);
+            let focus = position(&mut session, &capture["focus"]);
+            select(&mut session, anchor, focus);
+            osr186_capture(&mut session, expected_fragment)
+        };
+
+        let mut session = open(original);
+        let point = position(&mut session, &target["point"]);
+        select(&mut session, point.clone(), point);
+        let before = state(&mut session);
+        let response = call(
+            &mut session,
+            json!({"kind":"clipboard_context","stamp":before["stamp"]}),
+        );
+        assert_eq!(response["status"], "ok", "{id}: {response}");
+        let context: Value =
+            serde_json::from_str(response["value"]["context_json"].as_str().unwrap()).unwrap();
+        assert_eq!(context["insertion_context"], target["context"], "{id}");
+        assert_eq!(context["mode"], original["profile"], "{id}");
+        assert_eq!(state(&mut session), before, "{id}");
+        if case["refusal"].is_null() {
+            osr186_paste_and_undo(
+                &mut session,
+                &payload,
+                case["expected"].clone(),
+                &original.to_string(),
+            );
+        } else {
+            osr185_refusal(
+                &mut session,
+                COMMAND,
+                json!({"kind":"insert_fragment","fragment_json":payload.to_string()}),
+                &original.to_string(),
+                &case["refusal"],
+            );
+        }
+    }
+}
+
 fn osr186_capture(session: &mut DistributionSession, expected: Value) -> Value {
     let before = state(session);
     let read = call(

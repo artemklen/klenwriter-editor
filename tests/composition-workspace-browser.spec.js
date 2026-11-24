@@ -193,3 +193,46 @@ for(const locale of ['en','ru'])test(`installed fixture nontext focus topology $
     }
   }
 });
+
+// Mount the closed installed rows without generating any input.
+for (const [locale, caseId, family] of [
+  ['en', 'ordinary-layout', 'P01'],
+  ['ru', 'ordinary-layout', 'P02'],
+  ['en', 'plain-deadkey', 'P15'],
+]) test(`OSR-200 installed verse fixture setup ${locale}/${caseId}`, async ({page}) => {
+  const observations = records.get(page);
+  observations.scope = 'Packaged SDK2 and sealed WASM verse fixture setup and disposal.';
+  expect(await page.evaluate(async () => {
+    await import('/composition-native-host.js');
+    return window.compositionNativeReady;
+  })).toBe(true);
+  const prepared = await page.evaluate(({locale, caseId}) =>
+    window.compositionNative.prepare(locale, caseId, 'verse'), {locale, caseId});
+  try {
+    const {before} = prepared;
+    const literal = native.cases.find(row => row.id === family + '-forward');
+    const verse = JSON.parse(before.canonical).content[0];
+    expect(prepared).toMatchObject({fixture: 'verse', locale, caseId, family});
+    expect(verse).toMatchObject({type: 'verse', content: [{
+      type: 'verse_line', attrs: {indent: 3}, content: [{type: 'text', text: 'abcd'}],
+    }]});
+    expect(before.lifecycle).toBe('ready');
+    expect(before.state.selection).toEqual(selection(before.roles, literal.input.selection));
+    expect(before.uaComposition).toEqual({starts: 0, ends: 0, open: false});
+    expect(before.rawDom).toMatchObject({
+      inside: true,
+      anchor: {path: [0, 0, 0, 0], offset: 1},
+      focus: {path: [0, 0, 0, 0], offset: 3},
+    });
+    const wrapper = before.rows.find(row => row.path === '/0').node;
+    const line = before.rows.find(row => row.path === '/0/0').node;
+    expect(wrapper).toMatchObject({id: before.roles.V, type_id: 'org.klenwriter.kwdj/verse'});
+    expect(line).toMatchObject({
+      id: before.roles.P, type_id: 'org.klenwriter.kwdj/verse_line', parent: wrapper.id,
+      attributes: {indent: {kind: 'number', value: '3'}},
+    });
+    observations.checkpoints.push({label: 'Installed verse fixture setup', value: before});
+  } finally {
+    released(await page.evaluate(() => window.compositionNative.finish()));
+  }
+});

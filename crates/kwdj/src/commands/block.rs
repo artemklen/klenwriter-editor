@@ -532,23 +532,29 @@ fn enter<V: CandidateRead>(
     let start = inline::text_point(view, ordered.start, plan.work())?;
     let end = inline::text_point(view, ordered.end, plan.work())?;
     let header = get(view, start.block, plan)?;
-    if kind(header.type_id) == "code_block" {
+    let block_kind = kind(header.type_id);
+    if block_kind == "code_block" {
         if start.block != end.block {
             return cross_break(view, ordered.start, ordered.end, true, plan);
         }
         return inline::insert_text(view, state, "\n", plan);
     }
-    if kind(header.type_id) == "verse_line" {
-        return Err(refusal(KwdjErrorCode::CommandPoetryUnavailable));
+    if block_kind == "verse_line" {
+        if !ordered.is_empty {
+            return Err(refusal(KwdjErrorCode::CommandPoetryUnavailable));
+        }
+        if header.children.is_empty() {
+            return enter_empty_verse_line(view, start.block, header.parent, plan);
+        }
     }
-    if !matches!(kind(header.type_id), "paragraph" | "heading") {
+    if !matches!(block_kind, "paragraph" | "heading" | "verse_line") {
         return Err(unsupported());
     }
     if start.block != end.block {
         return enter_cross_blocks(view, ordered.start, ordered.end, plan);
     }
     let mut cut = prepare_inline_cut(view, selected, plan)?;
-    if kind(header.type_id) == "heading" && cut.at_start && cut.at_end {
+    if block_kind == "heading" && cut.at_start && cut.at_end {
         finish_inline_cut(&mut cut, plan)?;
         to_paragraph(cut.block, header, plan)?;
         set_caret(
@@ -579,7 +585,7 @@ fn enter<V: CandidateRead>(
         } else {
             split_item(view, parent, item, block_index, header, cut, plan)?;
         }
-    } else if kind(header.type_id) == "heading" && cut.at_start {
+    } else if block_kind == "heading" && cut.at_start {
         finish_inline_cut(&mut cut, plan)?;
         let at = index(view, parent, cut.block, plan)?;
         let attributes = paragraph_attrs(header, plan)?;
@@ -588,17 +594,73 @@ fn enter<V: CandidateRead>(
         caret_start(view, cut.block.into(), &cut.tail, plan)?;
     } else {
         let at = index(view, parent, cut.block, plan)? + 1;
-        let target = copy_header(
-            header,
-            kind(header.type_id) == "heading" && cut.at_end,
-            plan,
-        )?;
+        let target = if block_kind == "verse_line" && cut.at_end {
+            empty_node("verse_line", Primitive::TextBlock, Attributes::new(), plan)?
+        } else {
+            copy_header(header, block_kind == "heading" && cut.at_end, plan)?
+        };
         let inserted = fragment(plan, parent.into(), at, target)?;
         let next = created(inserted, &[0], plan)?;
         caret_start(view, copy_ref(&next, plan)?, &cut.tail, plan)?;
         move_tail(plan, std::mem::take(&mut cut.tail), next)?;
         finish_inline_cut(&mut cut, plan)?;
     }
+    plan.set_stored_marks(StoredMarksUpdate::Inherit)
+        .map_err(KwdjError::operational)?;
+    Ok(CommandPresentation::default())
+}
+
+fn enter_empty_verse_line<V: CandidateRead>(
+    view: &V,
+    line: V::Id,
+    verse_id: V::Id,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let verse = get(view, verse_id, plan)?;
+    let line_index = index(view, verse_id, line, plan)?;
+    let next = verse.children.get(line_index + 1).copied();
+    let mut following_line = None;
+    let (insert_kind, parent, insert_at) = if line_index == 0 {
+        ("verse_line", verse_id, 1)
+    } else {
+        let previous = verse.children[line_index - 1];
+        if kind(get(view, previous, plan)?.type_id) == "stanza_break" {
+            if next.is_some() {
+                return Ok(CommandPresentation::default());
+            }
+            push(plan, Operation::Remove { node: line.into() })?;
+            push(
+                plan,
+                Operation::Remove {
+                    node: previous.into(),
+                },
+            )?;
+            let verse_index = index(view, verse.parent, verse_id, plan)?;
+            ("paragraph", verse.parent, verse_index + 1)
+        } else {
+            let mut attributes = Attributes::new();
+            attributes.insert(key("blank_lines", plan)?, Attribute::Number(1u64.into()));
+            let stanza = empty_node("stanza_break", Primitive::BlockAtom, attributes, plan)?;
+            push(plan, Operation::Remove { node: line.into() })?;
+            fragment(plan, verse_id.into(), line_index, stanza)?;
+            if let Some(id) = next {
+                let header = get(view, id, plan)?;
+                if kind(header.type_id) == "verse_line" {
+                    let first = header.children.first().copied().map(LocalRef::Existing);
+                    following_line = Some((id.into(), first));
+                }
+            }
+            ("verse_line", verse_id, line_index + 1)
+        }
+    };
+    let (target, first) = if let Some(existing) = following_line {
+        existing
+    } else {
+        let block = empty_node(insert_kind, Primitive::TextBlock, Attributes::new(), plan)?;
+        let operation = fragment(plan, parent.into(), insert_at, block)?;
+        (created(operation, &[0], plan)?, None)
+    };
+    caret_start(view, target, first.as_slice(), plan)?;
     plan.set_stored_marks(StoredMarksUpdate::Inherit)
         .map_err(KwdjError::operational)?;
     Ok(CommandPresentation::default())
@@ -1112,12 +1174,250 @@ fn selected_blocks<V: CandidateRead>(
     Ok(range.blocks)
 }
 
+fn root_owner<V: CandidateRead>(
+    view: &V,
+    position: Position<V::Id>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<(V::Id, Option<usize>), KwdjError> {
+    let at_gap = |index| {
+        let roots = view.roots();
+        let id = roots
+            .get(index)
+            .or_else(|| roots.last())
+            .copied()
+            .ok_or_else(invalid)?;
+        Ok((id, Some(index)))
+    };
+    let (mut id, edge) = match position {
+        Position::Text { leaf, .. } => (leaf, None),
+        Position::Edge { node, side } => (node, Some(side)),
+        Position::Child { parent, index, .. } if parent == view.root() => {
+            unit(plan, 1)?;
+            return at_gap(index);
+        }
+        Position::Child { parent, .. } => (parent, None),
+    };
+    for depth in 0..=crate::MAX_TREE_DEPTH {
+        let node = get(view, id, plan)?;
+        if node.parent == view.root() {
+            // Text-block edges are inline positions. A structural root edge
+            // coincides with the corresponding gap in the document.
+            if let Some(side) = edge
+                && depth == 0
+                && node.primitive != Primitive::TextBlock
+            {
+                let index = index(view, view.root(), id, plan)?;
+                return at_gap(index + usize::from(side == Edge::After));
+            }
+            return Ok((id, None));
+        }
+        id = node.parent;
+    }
+    Err(invalid())
+}
+
+fn move_verse_inline<I: Copy>(
+    children: &[I],
+    parent: LocalRef<I>,
+    before_index: usize,
+    plan: &mut PlanBuilder<'_, I>,
+) -> Result<(), KwdjError> {
+    if !children.is_empty() {
+        unit(plan, children.len())?;
+        bytes(
+            plan,
+            children.len().saturating_mul(size_of::<LocalRef<I>>()),
+        )?;
+        push(
+            plan,
+            Operation::MoveInlineGroup {
+                nodes: children.iter().copied().map(LocalRef::Existing).collect(),
+                parent,
+                before_index,
+            },
+        )?;
+    }
+    Ok(())
+}
+
+fn verse_from_paragraph<V: CandidateRead>(
+    view: &V,
+    source: BorrowedNode<'_, V::Id>,
+    at: usize,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<(), KwdjError> {
+    if !source.attributes.is_empty() {
+        return Err(lossy());
+    }
+    let mut lines = Vec::new();
+    let mut start = 0;
+    for (index, child) in source.children.iter().enumerate() {
+        if get(view, *child, plan)?.primitive == Primitive::HardBreak {
+            bytes(plan, size_of::<&[V::Id]>() * 2)?;
+            lines.push(&source.children[start..index]);
+            start = index + 1;
+        }
+    }
+    bytes(plan, size_of::<&[V::Id]>() * 2)?;
+    lines.push(&source.children[start..]);
+
+    let mut verse = empty_node("verse", Primitive::Container, Attributes::new(), plan)?;
+    bytes(plan, lines.len().saturating_mul(size_of::<Node>()))?;
+    verse.children.reserve_exact(lines.len());
+    for _ in &lines {
+        verse.children.push(empty_node(
+            "verse_line",
+            Primitive::TextBlock,
+            Attributes::new(),
+            plan,
+        )?);
+    }
+    let operation = fragment(plan, view.root().into(), at, verse)?;
+    for (index, children) in lines.iter().enumerate() {
+        let line = created(operation, &[0, index], plan)?;
+        move_verse_inline(children, line, 0, plan)?;
+    }
+    let line = created(operation, &[0, 0], plan)?;
+    let first = lines[0].first().copied().map(LocalRef::Existing);
+    caret_start(view, line, first.as_slice(), plan)
+}
+
+fn paragraphs_from_verse<V: CandidateRead>(
+    view: &V,
+    source: BorrowedNode<'_, V::Id>,
+    at: usize,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<(), KwdjError> {
+    bytes(plan, size_of::<Vec<&[V::Id]>>() * 2)?;
+    let mut stanzas = vec![Vec::new()];
+    for child in source.children {
+        let node = get(view, *child, plan)?;
+        let stanza = stanzas.last_mut().expect("initial stanza");
+        match kind(node.type_id) {
+            "verse_line" => {
+                bytes(plan, size_of::<&[V::Id]>() * 2)?;
+                stanza.push(node.children);
+            }
+            "stanza_break" => {
+                if stanza.is_empty()
+                    || !matches!(node.attributes.get("blank_lines"),
+                        Some(Attribute::Number(value)) if value.as_u64() == Some(1))
+                {
+                    return Err(lossy());
+                }
+                bytes(plan, size_of::<Vec<&[V::Id]>>() * 2)?;
+                stanzas.push(Vec::new());
+            }
+            _ => return Err(unsupported()),
+        }
+    }
+    if stanzas.last().is_none_or(Vec::is_empty) {
+        return Err(lossy());
+    }
+    for (index, stanza) in stanzas.iter().enumerate() {
+        let mut paragraph = empty_node("paragraph", Primitive::TextBlock, Attributes::new(), plan)?;
+        let separator_count = stanza.len() - 1;
+        bytes(plan, separator_count.saturating_mul(size_of::<Node>()))?;
+        paragraph.children.reserve_exact(separator_count);
+        for _ in 0..separator_count {
+            paragraph.children.push(empty_node(
+                "hard_break",
+                Primitive::HardBreak,
+                Attributes::new(),
+                plan,
+            )?);
+        }
+        let operation = fragment(plan, view.root().into(), at + index, paragraph)?;
+        // Each preinserted hard break remains between the original line groups.
+        // Inserting from the end keeps each separator's earlier index stable.
+        for (line, children) in stanza.iter().enumerate().rev() {
+            let parent = created(operation, &[0], plan)?;
+            move_verse_inline(children, parent, line, plan)?;
+        }
+        if index == 0 {
+            let parent = created(operation, &[0], plan)?;
+            let first = stanza[0].first().copied().map(LocalRef::Existing);
+            caret_start(view, parent, first.as_slice(), plan)?;
+        }
+    }
+    Ok(())
+}
+
+fn transform_verse<V: CandidateRead>(
+    view: &V,
+    id: V::Id,
+    source: BorrowedNode<'_, V::Id>,
+    target: &BlockTarget,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let source_kind = kind(source.type_id);
+    if source_kind == "verse" && matches!(target, BlockTarget::Poetry) {
+        return Ok(CommandPresentation {
+            active: Some(ActiveState::On),
+        });
+    }
+    let at = index(view, view.root(), id, plan)?;
+    match (source_kind, target) {
+        ("paragraph", BlockTarget::Poetry) => verse_from_paragraph(view, source, at, plan)?,
+        ("verse", BlockTarget::Paragraph) => paragraphs_from_verse(view, source, at, plan)?,
+        _ => return Err(unsupported()),
+    }
+    push(plan, Operation::Remove { node: id.into() })?;
+    plan.set_stored_marks(StoredMarksUpdate::Inherit)
+        .map_err(KwdjError::operational)?;
+    Ok(CommandPresentation {
+        active: Some(ActiveState::Off),
+    })
+}
+
 fn transform<V: CandidateRead>(
+    context: Profile,
     view: &V,
     state: CommandState<'_, V::Id>,
     target: &BlockTarget,
     plan: &mut PlanBuilder<'_, V::Id>,
 ) -> Result<CommandPresentation, KwdjError> {
+    if matches!(target, BlockTarget::Table | BlockTarget::Media) {
+        target_node(target, plan)?;
+        unreachable!();
+    }
+    let poetry_target = matches!(target, BlockTarget::Poetry);
+    if poetry_target && context != Profile::Poetry {
+        return Err(refusal(KwdjErrorCode::CommandPoetryUnavailable));
+    }
+    if context == Profile::Poetry && (poetry_target || state.selection.is_some()) {
+        let selection = selection(state)?;
+        let (anchor, anchor_gap) = root_owner(view, selection.anchor, plan)?;
+        let (focus, focus_gap) = if selection.anchor == selection.focus {
+            (anchor, anchor_gap)
+        } else {
+            root_owner(view, selection.focus, plan)?
+        };
+        let active = if anchor == focus {
+            anchor
+        } else {
+            // The CMS uses the earlier endpoint's root owner for a selection.
+            unit(plan, view.roots().len())?;
+            view.roots()
+                .iter()
+                .copied()
+                .find(|id| *id == anchor || *id == focus)
+                .ok_or_else(invalid)?
+        };
+        let source = get(view, active, plan)?;
+        if poetry_target || kind(source.type_id) == "verse" {
+            return transform_verse(view, active, source, target, plan);
+        }
+        if anchor_gap.is_some()
+            && anchor_gap == focus_gap
+            && kind(source.type_id) == "paragraph"
+            && matches!(target, BlockTarget::Paragraph)
+        {
+            return Ok(CommandPresentation {
+                active: Some(ActiveState::On),
+            });
+        }
+    }
     if matches!(target, BlockTarget::Blockquote) {
         return toggle_quote(view, state, plan);
     }
@@ -1129,13 +1429,6 @@ fn transform<V: CandidateRead>(
     };
     if let Some(kind) = list {
         return toggle_list(view, state, kind, plan);
-    }
-    if matches!(
-        target,
-        BlockTarget::Table | BlockTarget::Poetry | BlockTarget::Media
-    ) {
-        target_node(target, plan)?;
-        unreachable!();
     }
     let blocks = selected_blocks(view, state, plan)?;
     let mut matching = 0;
@@ -2039,7 +2332,7 @@ pub(super) fn remove<V: CandidateRead>(
 }
 
 pub(super) fn prepare<V: CandidateRead>(
-    _context: Profile,
+    context: Profile,
     view: &V,
     state: CommandState<'_, V::Id>,
     intent: &KwdjIntent<V::Id>,
@@ -2081,7 +2374,7 @@ pub(super) fn prepare<V: CandidateRead>(
             )?;
             Ok(CommandPresentation::default())
         }
-        KwdjIntent::TransformBlock { target } => transform(view, state, target, plan),
+        KwdjIntent::TransformBlock { target } => transform(context, view, state, target, plan),
         KwdjIntent::ToggleQuote => toggle_quote(view, state, plan),
         KwdjIntent::ToggleList { kind } => toggle_list(view, state, *kind, plan),
         KwdjIntent::InsertBlock { target } => insert_block(view, state, target, None, plan),
@@ -2137,7 +2430,27 @@ pub(super) fn prepare<V: CandidateRead>(
             parent,
             before_index,
         } => {
-            structural(view, *node, plan)?;
+            let source = structural(view, *node, plan)?;
+            if kind(source.type_id) == "stanza_break" {
+                unit(plan, 1)?;
+                if let Some(target) = view.node(*parent) {
+                    bytes(plan, target.type_id.len())?;
+                    if kind(target.type_id) == "verse"
+                        && *before_index > 0
+                        && *before_index < target.children.len()
+                    {
+                        // A move preserves the authored marker. Adjacency would
+                        // normalize two independently authored counts into one.
+                        for &neighbor in &target.children[*before_index - 1..=*before_index] {
+                            if neighbor != *node
+                                && kind(get(view, neighbor, plan)?.type_id) == "stanza_break"
+                            {
+                                return Err(lossy());
+                            }
+                        }
+                    }
+                }
+            }
             push(
                 plan,
                 Operation::Move {

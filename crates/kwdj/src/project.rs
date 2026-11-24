@@ -301,7 +301,7 @@ fn project_verse(nodes: &[Node], mode: Mode, work: &mut Work) -> Projected {
     for node in nodes {
         work.visit()?;
         match node {
-            Node::VerseLine { content } => {
+            Node::VerseLine { content, .. } => {
                 let line = project_inline(content, mode, work)?;
                 if !out.is_empty() {
                     let count = pending_blank_lines
@@ -507,12 +507,14 @@ mod exhaustive_coverage {
             Node::Verse {
                 content: vec![
                     Node::VerseLine {
+                        attrs: None,
                         content: vec![text("v1", None)],
                     },
                     Node::StanzaBreak {
                         attrs: StanzaBreakAttrs { blank_lines: 1 },
                     },
                     Node::VerseLine {
+                        attrs: None,
                         content: vec![text("v2", None)],
                     },
                 ],

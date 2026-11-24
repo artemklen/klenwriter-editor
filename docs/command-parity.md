@@ -107,3 +107,21 @@ selected inside one text block in a literary, warning, spoiler, or disclosure
 container. KWDJ mounted input uses this scope. Deletion preserves the enclosing
 container and its attributes. Selections crossing container boundaries return
 a typed refusal. The unscoped command retains its existing selection contract.
+
+## Poetry admission and line editing
+
+The poetry profile admits `verse`, `verse_line`, and `stanza_break`. A
+verse line can carry an integer `attrs.indent` from 1 through 8. Import
+normalization omits an integer zero indent. Leading spaces in authored text
+and the `blank_lines` value on stanza breaks survive export and reopening.
+The prose profile refuses these node types at admission and paste.
+
+Enter splits a nonempty verse line at the caret. A split at the start or
+middle keeps the indent on both lines. At the end, the new empty line uses
+the default indent. Shift+Enter inserts a hard break within the same line.
+
+Enter on the first empty line inserts another empty line. An empty line after
+a verse line becomes a stanza break and moves the caret to the following line,
+creating one when needed. An empty line after a stanza break is a no-op when
+another child follows. At the end of the verse, Enter removes that break and
+empty line and opens a new paragraph after the verse in the same parent.

@@ -2,6 +2,7 @@
 // Derived from owner-controlled KlenWriter CMS source; see provenance/source-files.json.
 use serde_json::{Map, Value};
 
+use super::model::MAX_VERSE_LINE_INDENT;
 use super::{KwdjError, KwdjErrorCode, NormalizationEvent, index_path, key_path};
 
 pub(crate) fn normalize_value(
@@ -78,6 +79,14 @@ fn normalize_object(
         .get("type")
         .and_then(Value::as_str)
         .map(str::to_owned);
+    if node_type.as_deref() == Some("verse_line")
+        && object.get("attrs").is_some_and(|attrs| !attrs.is_object())
+    {
+        return Err(KwdjError::new(
+            KwdjErrorCode::InvalidStructure,
+            key_path(path, "attrs"),
+        ));
+    }
     if let Some(Value::Array(content)) = object.get_mut("content") {
         for (index, node) in content.iter_mut().enumerate() {
             normalize_value(node, &index_path(&key_path(path, "content"), index), events)?;
@@ -94,6 +103,23 @@ fn normalize_object(
             Some("ordered_list") if attrs.get("start").and_then(Value::as_u64) == Some(1) => {
                 attrs.remove("start");
                 push_event(events, NormalizationEvent::OrderedStartDefaultRemoved);
+            }
+            Some("verse_line") => {
+                if let Some(value) = attrs.get("indent") {
+                    let step = value
+                        .as_u64()
+                        .filter(|step| *step <= u64::from(MAX_VERSE_LINE_INDENT))
+                        .ok_or_else(|| {
+                            KwdjError::new(
+                                KwdjErrorCode::InvalidStructure,
+                                key_path(&key_path(path, "attrs"), "indent"),
+                            )
+                        })?;
+                    if step == 0 {
+                        attrs.remove("indent");
+                        push_event(events, NormalizationEvent::VerseIndentDefaultRemoved);
+                    }
+                }
             }
             Some("table_cell" | "table_header") => {
                 let mut removed = false;
@@ -113,7 +139,14 @@ fn normalize_object(
 
     let optional_attrs = matches!(
         node_type.as_deref(),
-        Some("paragraph" | "code_block" | "ordered_list" | "table_cell" | "table_header")
+        Some(
+            "paragraph"
+                | "code_block"
+                | "ordered_list"
+                | "table_cell"
+                | "table_header"
+                | "verse_line"
+        )
     );
     if optional_attrs
         && object

@@ -1,0 +1,118 @@
+{
+  "documents": {
+    "unicode": {
+      "schema": "klenwriter.document",
+      "schema_version": 1,
+      "profile": "poetry",
+      "content": [{
+        "type": "verse",
+        "content": [
+          {"type": "verse_line", "attrs": {"indent": 3}, "content": [
+            {"type": "text", "text": "  😀"}, {"type": "hard_break"}, {"type": "text", "text": "α"}
+          ]},
+          {"type": "stanza_break", "attrs": {"blank_lines": 2}},
+          {"type": "verse_line", "attrs": {"indent": 8}, "content": [{"type": "text", "text": "😀Б"}]}
+        ]
+      }]
+    },
+    "huge": "{\"content\":[{\"content\":[{\"content\":[{\"text\":\"a\",\"type\":\"text\"}],\"type\":\"verse_line\"},{\"attrs\":{\"blank_lines\":18446744073709551615},\"type\":\"stanza_break\"},{\"content\":[{\"text\":\"b\",\"type\":\"text\"}],\"type\":\"verse_line\"}],\"type\":\"verse\"}],\"profile\":\"poetry\",\"schema\":\"klenwriter.document\",\"schema_version\":1}"
+  },
+  "cases": [
+    {
+      "id": "retained_doc019_full",
+      "document": "DOC-019",
+      "anchor": {"path": [0, 0, 0], "offset": 0},
+      "focus": {"path": [0, 3, 0], "offset": 8},
+      "max_bytes": 8192,
+      "text": "Строка 1\nСтрока 2\n\n\nСтрока 3",
+      "atoms": [[0, 2]],
+      "delete_guard": true
+    },
+    {
+      "id": "osr197_partial_reversed",
+      "document": "OSR-197",
+      "anchor": {"path": [0, 2, 0], "offset": 3},
+      "focus": {"path": [0, 0, 0], "offset": 2},
+      "max_bytes": 8192,
+      "text": "Строка 1\n\n\nСтр",
+      "atoms": [[0, 1]]
+    },
+    {
+      "id": "osr197_full_preserves_leading_spaces",
+      "document": "OSR-197",
+      "anchor": {"path": [0, 0, 0], "offset": 0},
+      "focus": {"path": [0, 2, 0], "offset": 8},
+      "max_bytes": 8192,
+      "text": "  Строка 1\n\n\nСтрока 3",
+      "atoms": [[0, 1]]
+    },
+    {
+      "id": "utf16_hard_break_and_exact_utf8_budget",
+      "document": "unicode",
+      "anchor": {"path": [0, 0, 0], "offset": 1},
+      "focus": {"path": [0, 2, 0], "offset": 2},
+      "max_bytes": 15,
+      "text": " 😀\nα\n\n\n😀",
+      "atoms": [[0, 1]]
+    },
+    {
+      "id": "utf8_budget_one_byte_short",
+      "document": "unicode",
+      "anchor": {"path": [0, 0, 0], "offset": 1},
+      "focus": {"path": [0, 2, 0], "offset": 2},
+      "max_bytes": 14,
+      "diagnostic": "selection_text.output_limit"
+    },
+    {
+      "id": "utf16_half_surrogate_stays_invalid",
+      "document": "unicode",
+      "anchor": {"path": [0, 0, 0], "offset": 3},
+      "focus": {"path": [0, 2, 0], "offset": 2},
+      "set_diagnostic": "position.invalid"
+    },
+    {
+      "id": "line_edges_project_only_stanza_separators",
+      "document": "unicode",
+      "anchor": {"path": [0, 0, 2], "offset": 1},
+      "focus": {"path": [0, 2, 0], "offset": 0},
+      "max_bytes": 3,
+      "text": "\n\n\n",
+      "atoms": [[0, 1]]
+    },
+    {
+      "id": "stanza_at_selection_end_keeps_atom_without_trailing_separator",
+      "document": "unicode",
+      "anchor": {"path": [0, 0, 0], "offset": 0},
+      "focus": {"path": [0], "index": 2},
+      "max_bytes": 8192,
+      "text": "  😀\nα",
+      "atoms": [[0, 1]]
+    },
+    {
+      "id": "stanza_at_selection_start_keeps_atom_without_leading_separator",
+      "document": "unicode",
+      "anchor": {"path": [0], "index": 1},
+      "focus": {"path": [0, 2, 0], "offset": 2},
+      "max_bytes": 4,
+      "text": "😀",
+      "atoms": [[0, 1]]
+    },
+    {
+      "id": "huge_stanza_atom_only_is_nonempty_with_zero_bytes",
+      "document": "huge",
+      "anchor": {"path": [0], "index": 1},
+      "focus": {"path": [0], "index": 2},
+      "max_bytes": 0,
+      "text": "",
+      "atoms": [[0, 1]]
+    },
+    {
+      "id": "huge_stanza_between_lines_refuses_before_expansion",
+      "document": "huge",
+      "anchor": {"path": [0, 0, 0], "offset": 0},
+      "focus": {"path": [0, 2, 0], "offset": 1},
+      "max_bytes": 8192,
+      "diagnostic": "selection_text.output_limit"
+    }
+  ]
+}

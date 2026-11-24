@@ -963,7 +963,16 @@
     {
       "id": "org.klenwriter.kwdj/verse_line",
       "primitive": "text_block",
-      "attrs": {},
+      "attrs": {
+        "indent": {
+          "required": false,
+          "value": {
+            "kind": "integer",
+            "min": "1",
+            "max": "8"
+          }
+        }
+      },
       "children": {
         "op": "repeat",
         "item": {

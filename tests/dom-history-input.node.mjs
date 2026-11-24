@@ -18,7 +18,7 @@ function fixture(configuration={}) {
   const region=()=>({kind:'bounded',stamp:clone(state.stamp),originalText:'a',provisionalText:'a',affectedNodeIds:['P']});
   const view={hasProvisional:()=>provisional,readSelection:()=>clone(state.selection),domPoint:point=>({node:text,offset:point.offset}),ownedBlockAt:()=> 'P',captureRegion:region,captureComposition:region,
     beginComposition(stamp,range){provisional=true;return {stamp,selection:range,originalRegion:region(),affectedNodeIds:['P']};},observeComposition:window=>({region:region(),unchanged:true,replacement:'a',fingerprint:'a'}),restoreComposition:()=>null,restoreSelection:()=>null,endProvisional(){provisional=false;},setComposing(){}};
-  const owner=attachInput({element,view,selection,bindings:{},canEdit:()=>editable,canSelect:()=>true,busy:()=>busy,capture:()=>clone(state.stamp),context:()=>clone(context),readState(){const captured=clone(state);readHook();return captured;},
+  const owner=attachInput({element,view,selection,bindings:configuration.bindings??{},canEdit:()=>editable,canSelect:()=>true,busy:()=>busy,capture:()=>clone(state.stamp),context:()=>clone(context),readState(){const captured=clone(state);readHook();return captured;},
     submit(request,observation){requests.push({request:clone(request),observation});submitHook();return configuration.queued?{status:'queued',completion:{then(){throw Error('Shortcut must not replay/await a queued native submission');}}}:{status:'completed',response:{status:'ok',value:{kind:'mutation',effect:'changed',state:clone(state)}}};},
     beforeObservation(input){beforeObservations.push(input.type);return null;},afterObservation(){},observationBusy:()=>observationBusy,submitComposition(){throw Error('Shortcut cannot consume a composition capability');},report(value){reports.push(value);reportHook();},recover(){},composing(){},consumeRecords:()=>0});
   function fire(type,properties={}){const event={type,target:element,cancelable:true,defaultPrevented:false,isTrusted:true,isComposing:false,inputType:'',data:null,key:'z',code:'KeyZ',keyCode:0,ctrlKey:false,metaKey:true,altKey:false,shiftKey:false,repeat:false,getTargetRanges:()=>[],preventDefault(){this.defaultPrevented=true;},...properties};for(const callback of [...(registrations.get(type)??[])])callback(event);return event;}
@@ -73,4 +73,42 @@ test('fresh pointer/blur retires fence and destroy during original callback cann
   for(const type of ['pointerdown','blur']){const f=fixture();f.fire('keydown');f.fire(type,{code:'',metaKey:false});f.fire('beforeinput',{inputType:'historyUndo'});assert.equal(f.requests.length,2);f.close();}
   const w=fixture();w.fire('keydown');w.windowBlur();w.fire('keydown');assert.equal(w.requests.length,2);w.close();
   const f=fixture();f.onSync(()=>f.owner.destroy());f.fire('keydown');assert.equal(f.requests.length,0);f.close();
+});
+
+const enterKey = {key:'Enter',code:'Enter',metaKey:false,shiftKey:true};
+const breakBindings = {
+  enter:()=>({id:'enter',payload_json:'{}'}),
+  lineBreak:()=>({id:'shift-enter',payload_json:'{}'}),
+};
+
+test('trusted Shift+Enter maps one paragraph-shaped browser input to the line break command',()=>{
+  const f=fixture({bindings:breakBindings});
+  assert.equal(f.fire('keydown',enterKey).defaultPrevented,false);
+  assert.equal(f.fire('beforeinput',{inputType:'insertParagraph'}).defaultPrevented,true);
+  assert.equal(f.fire('beforeinput',{inputType:'insertParagraph'}).defaultPrevented,true);
+  assert.deepEqual(f.requests.map(value=>value.request.command.id),['shift-enter','enter']);
+  assert.equal(f.reports.length,0);
+  f.close();
+});
+
+test('prevented, released or untrusted Shift+Enter cannot retarget paragraph input',()=>{
+  for(const clear of [
+    (f,key)=>key.preventDefault(),
+    f=>f.fire('keyup',enterKey),
+    f=>f.fire('pointerdown'),
+    f=>f.fire('blur'),
+    f=>f.owner.externalIntent(),
+    f=>f.fire('keydown',{...enterKey,isTrusted:false}),
+  ]){
+    const f=fixture({bindings:breakBindings});
+    clear(f,f.fire('keydown',enterKey));
+    f.fire('beforeinput',{inputType:'insertParagraph'});
+    assert.deepEqual(f.requests.map(value=>value.request.command.id),['enter']);
+    f.close();
+  }
+  const f=fixture({bindings:breakBindings});
+  f.fire('keydown',enterKey);
+  f.fire('beforeinput',{inputType:'insertParagraph',isTrusted:false});
+  assert.deepEqual(f.requests.map(value=>value.request.command.id),['enter']);
+  f.close();
 });
