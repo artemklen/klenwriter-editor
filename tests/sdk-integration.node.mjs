@@ -2389,6 +2389,150 @@ test('packaged SDK: remount is deferred through old-generation read fence and ca
   } finally { context.close(); }
 });
 
+const osr153Paragraph = text => ({ type: 'paragraph', content: [{ type: 'text', text }] });
+const osr153Source = osr183Doc([osr153Paragraph('Before'), osr153Paragraph('After')]);
+const osr153Link = { kind: 'set_link', href: '/works/example', title: null };
+
+function osr153Hold(editor) {
+  const captured = editor.captureHostRequest();
+  assert.equal(captured.status, 'captured');
+  const host = Promise.withResolvers();
+  const completion = host.promise.then(intent => osr153Reply(editor, captured.request, intent));
+  return { request: captured.request, resolve: host.resolve, completion };
+}
+function osr153Reply(editor, request, intent) {
+  return settled(editor.completeHostRequest(request, {
+    kind: 'command', stamp: request.stamp,
+    command: kwdjCommand(intent), history_hint: { kind: 'isolated' },
+  }));
+}
+function osr153SelectInitial(editor) {
+  const leaf = textLeaf(editor).id;
+  osr185Select(editor, position(leaf, 0), position(leaf, 6));
+}
+function osr153Stale(reply) {
+  const diagnostic = refused(reply);
+  assert.equal(diagnostic.code, 'sdk.stale_request');
+  assert.equal(diagnostic.may_have_committed, false);
+}
+
+test('OSR-153 sealed SDK2 refuses late targeted replies after selection, revision, removal and remount', async () => {
+  for (const transition of ['selection', 'revision', 'removed target', 'generation']) {
+    await withLiteraryCommandSession(osr153Source, async editor => {
+      osr153SelectInitial(editor);
+      const target = root(editor).children[0];
+      const oldSelection = state(editor).selection;
+      const held = osr153Hold(editor);
+      assert.equal(editor.resources().host_requests, 1);
+      let expected = osr153Source;
+      if (transition === 'selection') {
+        const newTarget = textLeaf(editor, 1).id;
+        const next = position(newTarget, 2);
+        osr185Select(editor, next);
+        assert.deepEqual(structuredClone(state(editor).selection), { anchor: next, focus: next });
+        assert.notDeepEqual(state(editor).selection, oldSelection);
+        assert.equal(editor.capture().revision, held.request.stamp.revision);
+        assert.notEqual(editor.capture().selection_epoch, held.request.stamp.selection_epoch);
+      } else if (transition === 'revision') {
+        assert.equal(accepted(completed(command(editor, { kind: 'insert_text', text: 'Interim' }))).effect, 'changed');
+        expected = osr183Doc([osr153Paragraph('Interim'), osr153Paragraph('After')]);
+        assert.notEqual(editor.capture().revision, held.request.stamp.revision);
+      } else if (transition === 'removed target') {
+        assert.equal(accepted(completed(command(editor, { kind: 'remove', node: target }))).effect, 'changed');
+        expected = osr183Doc([osr153Paragraph('After')]);
+        assert.equal(root(editor).children.includes(target), false);
+        assert.notEqual(editor.capture().revision, held.request.stamp.revision);
+      } else {
+        expected = osr183Doc([osr153Paragraph('Fresh generation')]);
+        const reply = completed(editor.submit({
+          kind: 'remount', stamp: editor.capture(), input_json: expected, admission: 'validate',
+        }));
+        assert.equal(accepted(reply).effect, 'remounted');
+        assert.notEqual(editor.capture().generation, held.request.stamp.generation);
+        assert.equal(editor.capture().revision, held.request.stamp.revision);
+      }
+      const before = state(editor);
+      assert.equal(canonical(editor), expected, transition);
+      held.resolve(osr153Link);
+      osr153Stale(await held.completion);
+      assert.deepEqual(state(editor), before, transition);
+      assert.equal(canonical(editor), expected, transition);
+      assert.equal(editor.resources().host_requests, 0, transition);
+    });
+  }
+});
+
+test('OSR-153 sealed SDK2 release, foreign session and destroy retire late reply authority', async () => {
+  await withLiteraryCommandSession(osr153Source, async editor => {
+    osr153SelectInitial(editor);
+    const before = state(editor);
+    const cancelled = osr153Hold(editor);
+    assert.equal(editor.releaseHostRequest(cancelled.request), true);
+    assert.equal(editor.releaseHostRequest(cancelled.request), false);
+    cancelled.resolve(osr153Link);
+    osr153Stale(await cancelled.completion);
+    assert.deepEqual(state(editor), before);
+    assert.equal(canonical(editor), osr153Source);
+
+    const live = osr153Hold(editor);
+    const freshInput = osr183Doc([osr153Paragraph('Independent session')]);
+    await withLiteraryCommandSession(freshInput, async fresh => {
+      const spare = fresh.captureHostRequest();
+      assert.equal(spare.status, 'captured');
+      assert.equal(fresh.releaseHostRequest(spare.request), true);
+      const newCapture = fresh.captureHostRequest();
+      assert.equal(newCapture.status, 'captured');
+      assert.equal(newCapture.request.id, live.request.id, 'equal counters are not shared authority');
+      const freshBefore = state(fresh);
+      assert.notEqual(fresh.capture().session, live.request.stamp.session);
+      osr153Stale(await osr153Reply(fresh, live.request, osr153Link));
+      assert.deepEqual(state(fresh), freshBefore);
+      assert.equal(canonical(fresh), freshInput);
+      assert.equal(fresh.releaseHostRequest(newCapture.request), true);
+    });
+    assert.deepEqual(state(editor), before);
+    assert.equal(canonical(editor), osr153Source);
+    accepted(await settled(editor.destroy()));
+    assert.equal(editor.resources().host_requests, 0);
+    live.resolve(osr153Link);
+    osr153Stale(await live.completion);
+    assert.equal(editor.resources().host_requests, 0);
+    assert.equal(editor.releaseHostRequest(live.request), false);
+  });
+});
+
+test('OSR-153 sealed SDK2 completes one exact link edit, refuses replay and undoes it once', async () => {
+  await withLiteraryCommandSession(osr153Source, async editor => {
+    osr153SelectInitial(editor);
+    const before = state(editor);
+    const originalRoots = root(editor).children;
+    const held = osr153Hold(editor);
+    held.resolve(osr153Link);
+    assert.equal(accepted(await held.completion).effect, 'changed');
+    const changed = state(editor);
+    const expected = osr183Doc([
+      { type: 'paragraph', content: [
+        { type: 'text', text: 'Before', marks: [{ type: 'link', attrs: { href: '/works/example' } }] },
+      ] },
+      osr153Paragraph('After'),
+    ]);
+    assert.equal(canonical(editor), expected);
+    assert.equal(changed.stamp.revision, '1');
+    assert.equal(changed.history.undo_entries, '1');
+    assert.deepEqual(root(editor).children, originalRoots);
+    osr153Stale(await osr153Reply(editor, held.request, osr153Link));
+    assert.equal(editor.releaseHostRequest(held.request), false);
+    assert.equal(editor.resources().host_requests, 0);
+    assert.deepEqual(state(editor), changed);
+    assert.equal(canonical(editor), expected);
+    osr183History(editor, 'undo', osr153Source);
+    assert.deepEqual(root(editor).children, originalRoots);
+    assert.deepEqual(state(editor).selection, before.selection);
+    assert.equal(state(editor).history.undo_entries, '0');
+    assert.equal(state(editor).history.redo_entries, '1');
+  });
+});
+
 test('packaged SDK: async host completions refuse after each revision/selection/history/generation/lifecycle barrier', async () => {
   for (const change of ['revision', 'selection', 'history', 'remount', 'destroy']) {
     const context = await open(); const { editor } = context;

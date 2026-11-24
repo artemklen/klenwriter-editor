@@ -359,6 +359,28 @@ test('HR20/21 explicit lifecycle retirement does not revive when guard returns a
 test('HR22 context-only changes are swept and live-release proof fails',()=>{
   const h=harness(),request=h.capture();h.context.capability_digest='changed';assert.equal(h.owner.api.release(request),false);h.assertReleased();assert.equal(h.requests.length,0);
 });
+test('OSR-153 mounted context-only invalidation refuses a late reply without touching current focus or selection',async()=>{
+  const h=harness(),request=h.capture({focusScope:h.scope});
+  const pending=Promise.withResolvers();
+  const completion=pending.promise.then(payload=>h.owner.api.complete(request,payload));
+  h.context.capability_digest='changed-capability';
+  h.doc.activeElement=h.external;
+  const current=h.state();
+  assert.deepEqual(current.stamp,request.stamp,'no other stale-token condition changed');
+  assert.notDeepEqual(h.context,request.context);
+  pending.resolve(command);
+  const result=await completion;
+  assert.equal(result.status,'dom_refused');
+  assert.equal(result.diagnostic.code,'dom.stale_selection');
+  assert.deepEqual(h.state(),current);
+  assert.equal(h.doc.activeElement,h.external);
+  assert.equal(h.host.focusCalls,0);
+  assert.deepEqual(h.submittedSelections,[]);
+  assert.deepEqual(h.restoredRanges,[]);
+  assert.deepEqual(h.requests,[]);
+  assert.equal(h.owner.api.release(request),false);
+  h.assertReleased();
+});
 test('HR23 destroy retires genuine requests without retaining their SDK/bookmark authority',()=>{
   const h=harness(),request=h.capture();h.owner.destroy();h.assertReleased();assert.equal(h.owner.api.status().diagnostic.code,'dom.disposed');assert.equal(h.owner.api.complete(request,command,quiet).diagnostic.code,'dom.stale_host_request');assert.equal(h.requests.length,0);
 });
