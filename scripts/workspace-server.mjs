@@ -42,6 +42,7 @@ const routes = new Map([
   ['/composition-host.js', ['spikes/workspace/composition-host.js', 'text/javascript']],
   ['/composition-native-host.js', ['spikes/workspace/composition-native-host.js', 'text/javascript']],
   ['/composition-contract/verse-installed.json', ['tests/fixtures/osr-200-verse-composition.json', 'application/json']],
+  ['/composition-contract/table-cell-installed.json', ['tests/fixtures/osr-211-table-cell-composition.json', 'application/json']],
   ['/composition.css', ['spikes/workspace/composition.css', 'text/css']],
   ['/ui', ['spikes/workspace/ui.html', 'text/html']],
   ['/accessibility', ['spikes/workspace/accessibility-host.html', 'text/html']],

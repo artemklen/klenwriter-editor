@@ -9,7 +9,7 @@ export function validCall(method,args){
     const [locale,caseId,fixture]=args;
     if(!['en','ru'].includes(locale))return false;
     if(args.length===2)return caseIds.includes(caseId);
-    return args.length===3&&fixture==='verse'&&(caseId==='ordinary-layout'||locale==='en'&&caseId==='plain-deadkey');
+    return args.length===3&&['verse','table-cell'].includes(fixture)&&(caseId==='ordinary-layout'||locale==='en'&&caseId==='plain-deadkey');
   }
   if(method==='guard')return args.length===1&&actions.includes(args[0]);
   return ['inspect','checkpoint','settle','finish','focusControl','documentGuard','undo','redo'].includes(method)&&args.length===0;

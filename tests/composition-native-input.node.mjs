@@ -101,3 +101,16 @@ test('closed verse prepare admits only the three installed poetry rows', () => {
   ]) assert.equal(validCall('prepare', args), false);
   assert.equal(validCall('guard', ['ordinary-en', 'verse']), false);
 });
+
+test('closed table-cell prepare admits only the three installed table rows', () => {
+  for (const args of [
+    ['en', 'ordinary-layout', 'table-cell'], ['ru', 'ordinary-layout', 'table-cell'],
+    ['en', 'plain-deadkey', 'table-cell'],
+  ]) assert.equal(validCall('prepare', args), true);
+  for (const args of [
+    ['ru', 'plain-deadkey', 'table-cell'], ['en', 'scene-deadkey', 'table-cell'],
+    ['en', 'ordinary-layout', 'table'], ['en', 'ordinary-layout', 'table-cell', 'extra'],
+    ['en', 'ordinary-layout', { variant: 'table-cell' }],
+  ]) assert.equal(validCall('prepare', args), false);
+  assert.equal(validCall('guard', ['ordinary-en', 'table-cell']), false);
+});
