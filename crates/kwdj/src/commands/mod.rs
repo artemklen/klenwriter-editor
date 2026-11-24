@@ -306,6 +306,7 @@ pub(super) fn refusal(code: KwdjErrorCode) -> KwdjError {
 }
 
 fn uses_linear_selection<I>(intent: &KwdjIntent<I>) -> bool {
+    // Fragment insertion validates the destination through clipboard context.
     matches!(
         intent,
         KwdjIntent::Enter
@@ -330,7 +331,6 @@ fn uses_linear_selection<I>(intent: &KwdjIntent<I>) -> bool {
             | KwdjIntent::DeleteSelection
             | KwdjIntent::DeleteSelectionInProfileBody
             | KwdjIntent::DeleteSelectionAtPoetryBoundary
-            | KwdjIntent::InsertFragment { .. }
     )
 }
 

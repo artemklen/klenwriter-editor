@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 //! ID-free clipboard values and native, bounded range/fragment policies.
 use super::{block, inline};
-use crate::{KwdjError, KwdjErrorCode, KwdjProfile, Profile, model};
+use crate::{
+    KwdjError, KwdjErrorCode, KwdjProfile, Profile, model,
+    table_geometry::{TableSelection, rectangle_cells, table_selection},
+};
 use editor_core::{
     admission::{PreflightBudget, preflight_node_fields},
     candidate::CandidateRead,
@@ -163,12 +166,35 @@ fn structural<V: CandidateRead>(
         _ => Ok(None),
     }
 }
+
+fn containing_cell<V: CandidateRead>(
+    view: &V,
+    mut parent: V::Id,
+    work: &mut WorkMeter,
+) -> Result<Option<V::Id>, KwdjError> {
+    for _ in 0..crate::MAX_TREE_DEPTH {
+        if parent == view.root() {
+            return Ok(None);
+        }
+        unit(work, 1)?;
+        let node = view.node(parent).ok_or_else(invalid)?;
+        if matches!(local(node.type_id), "table_cell" | "table_header") {
+            return Ok(Some(parent));
+        }
+        parent = node.parent;
+    }
+    Err(invalid())
+}
+
 pub fn context<V: CandidateRead>(
     mode: Profile,
     view: &V,
     selection: Selection<V::Id>,
     work: &mut WorkMeter,
 ) -> Result<ClipboardContext, KwdjError> {
+    if table_selection(view, Some(selection)).is_some() {
+        return Err(error(KwdjErrorCode::ClipboardInvalidContext));
+    }
     let a = structural(view, selection.anchor, work)?;
     let b = structural(view, selection.focus, work)?;
     if let (Some((ap, _)), Some((bp, _))) = (a, b)
@@ -190,6 +216,16 @@ pub fn context<V: CandidateRead>(
     let a = view.node(left).ok_or_else(invalid)?;
     let b = view.node(right).ok_or_else(invalid)?;
     unit(work, 2)?;
+    if left != right
+        && a.parent != b.parent
+        && let (Some(left), Some(right)) = (
+            containing_cell(view, a.parent, work)?,
+            containing_cell(view, b.parent, work)?,
+        )
+        && left != right
+    {
+        return Err(error(KwdjErrorCode::ClipboardInvalidContext));
+    }
     if local(a.type_id) == "verse_line"
         && local(b.type_id) == "verse_line"
         && a.parent == b.parent
@@ -492,6 +528,36 @@ fn siblings<V: CandidateRead>(
     }
     Ok((a.parent, l, r))
 }
+
+fn copy_rectangle<V: CandidateRead>(
+    view: &V,
+    marker: TableSelection<V::Id>,
+    work: &mut WorkMeter,
+    budget: &mut CaptureBudget,
+) -> Result<Node, KwdjError> {
+    let rows =
+        rectangle_cells(view, marker, work).map_err(|error| error.diagnostic("/clipboard"))?;
+    let container = |type_id: &str, children| Node {
+        type_id: type_id.into(),
+        primitive: Primitive::Container,
+        attributes: Default::default(),
+        marks: Vec::new(),
+        text: None,
+        children,
+    };
+    bytes(work, (rows.len() + 1) * (std::mem::size_of::<Node>() + 64))?;
+    let mut body = Vec::with_capacity(rows.len());
+    for row in rows {
+        bytes(work, row.len() * std::mem::size_of::<Node>())?;
+        let mut cells = Vec::with_capacity(row.len());
+        for id in row {
+            cells.push(copy_node(view, id, work, 3, budget)?);
+        }
+        body.push(container("org.klenwriter.kwdj/table_row", cells));
+    }
+    Ok(container("org.klenwriter.kwdj/table", body))
+}
+
 pub fn extract<V: CandidateRead>(
     mode: Profile,
     view: &V,
@@ -503,7 +569,11 @@ pub fn extract<V: CandidateRead>(
     let kind;
     let (open_start, open_end);
     let budget = &mut CaptureBudget::new();
-    if let (Some((ap, a)), Some((bp, b))) = (
+    if let Some(marker) = table_selection(view, Some(selection)) {
+        roots.push(copy_rectangle(view, marker, work, budget)?);
+        kind = FragmentKind::Blocks;
+        (open_start, open_end) = (false, false);
+    } else if let (Some((ap, a)), Some((bp, b))) = (
         structural(view, selection.anchor, work)?,
         structural(view, selection.focus, work)?,
     ) {

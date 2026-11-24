@@ -1352,6 +1352,123 @@ test('OSR-144 packaged SDK2 refuses poetry-only admission and paste atomically i
 
 const osr186InsertFragment = 'org.klenwriter.kwdj/command/insert-fragment';
 const osr186Payload = fragment => ({ kind: 'insert_fragment', fragment_json: JSON.stringify(fragment) });
+test('OSR-210 packaged SDK2 pastes cell text and the actual selected table rectangle', async t => {
+  const read = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
+  const fixture = read('./fixtures/osr-210-table-clipboard.json');
+  const retained = read('../contracts/kwdj/v1/fixtures/positive.json').fixtures.flatMap(f => f.cases);
+  const at = (document, path) => path.reduce((value, index) => value.content[index], document);
+  const document = location => {
+    const setup = fixture.documents[location.document];
+    const value = structuredClone(retained.find(row => row.name === setup.retained).kwdj);
+    if (setup.leaf) at(value, setup.leaf).text = setup.text;
+    if (setup.additional_header) {
+      const cells = value.content[0].content[0].content;
+      delete cells[0].attrs.colspan;
+      cells.push({type:'table_header', content:[{type:'paragraph', content:[{type:'text', text:setup.additional_header}]}]});
+    }
+    assert.equal(value.profile, fixture.profile);
+    return value;
+  };
+  const choose = (editor, location) => {
+    const point = endpoint => {
+      const id = endpoint.path.reduce((parent, index) => node(editor, parent).children[index], state(editor).root);
+      if ('side' in endpoint) return {kind:'edge', node:id, side:endpoint.side};
+      return 'index' in endpoint ? osr185Gap(id, endpoint.index) : position(id, endpoint.offset);
+    };
+    osr185Select(editor, point(location.anchor), point(location.focus));
+  };
+  const sourceProfile = {
+    profile_id:'org.klenwriter.kwdj', profile_version:'1.0.0', codec_id:'org.klenwriter.kwdj/json', wire_version:1,
+  };
+  for (const row of fixture.cases) await t.test(row.id, async () => {
+    const source = document(row.source);
+    const input = osr185Bytes(source);
+    if (row.source_refusal) {
+      await withLiteraryCommandSession(input, editor => {
+        choose(editor, row.source);
+        const before = state(editor);
+        const stamp = editor.capture();
+        const plain = refused(editor.read({kind:'selection_text',stamp,max_bytes:8192}));
+        const rich = refused(editor.read({kind:'selection_fragment',stamp,max_bytes:8192}));
+        assert.equal(plain.code, row.source_refusal.plain);
+        assert.equal(rich.code, row.source_refusal.fragment);
+        assert.equal(rich.path, row.source_refusal.path);
+        assert.deepEqual(state(editor), before);
+        assert.equal(canonical(editor), input);
+      });
+      return;
+    }
+    const target = document(row.target);
+    const content = row.rows
+      ? [{type:'table', content:row.rows.map(item => ({
+        type:'table_row', content:item.cells.map(index => source.content[0].content[item.row].content[index]),
+      }))}]
+      : [{type:'text', text:row.plain}];
+    const kind = row.rows ? 'blocks' : 'inline';
+    const original = osr185Bytes(target);
+    let saved;
+    const paste = (editor, fragment_json) => {
+      choose(editor, row.target);
+      const before = state(editor);
+      const table = root(editor).children[0];
+      const ids = tableIdTree(editor, table);
+      const context = editor.read({kind:'clipboard_context',stamp:editor.capture()});
+      const result = osr183Wire(editor, createCommand(osr186InsertFragment, {kind:'insert_fragment',fragment_json}));
+      if (row.diagnostic) {
+        for (const failed of [context, result]) {
+          const diagnostic = refused(failed);
+          assert.equal(diagnostic.code, row.diagnostic);
+          assert.equal(diagnostic.path, '/clipboard');
+          assert.equal(diagnostic.may_have_committed, false);
+        }
+        assert.deepEqual(context, result);
+        assert.deepEqual(state(editor), before);
+        assert.deepEqual(tableIdTree(editor, table), ids);
+        assert.equal(canonical(editor), original);
+        return;
+      }
+      assert.equal(JSON.parse(accepted(context).context_json).insertion_context, row.rows ? 'root' : 'prose_block');
+      assert.equal(accepted(result).effect, 'changed');
+      const expected = structuredClone(target);
+      if (row.rows) expected.content.push(content[0]);
+      else at(expected, row.target.anchor.path).text = row.expected_text;
+      saved = canonical(editor);
+      assert.equal(saved, osr185Bytes(expected));
+      assert.deepEqual(tableIdTree(editor, table), ids);
+      assert.equal(state(editor).stamp.revision, '1');
+      assert.equal(state(editor).history.undo_entries, '1');
+      osr183History(editor, 'undo', original);
+      assert.deepEqual(state(editor).selection, before.selection);
+      assert.deepEqual(tableIdTree(editor, table), ids);
+      assert.equal(state(editor).history.undo_entries, '0');
+      assert.equal(state(editor).history.redo_entries, '1');
+    };
+    let copied;
+    await withLiteraryCommandSession(input, editor => {
+      choose(editor, row.source);
+      const before = state(editor);
+      const stamp = editor.capture();
+      const plain = accepted(editor.read({kind:'selection_text',stamp,max_bytes:8192}));
+      assert.equal(plain.text, row.plain);
+      assert.equal(plain.empty, false);
+      const rich = accepted(editor.read({kind:'selection_fragment',stamp,max_bytes:8192}));
+      assert.equal(rich.empty, false);
+      assert.deepEqual(JSON.parse(rich.fragment_json), {
+        format_id:'org.klenwriter.kwdj/clipboard-fragment/1', source_profile:sourceProfile,
+        mode:fixture.profile, kind, content, open_start:false, open_end:false,
+      });
+      const limited = refused(editor.read({kind:'selection_text',stamp,max_bytes:1}));
+      assert.equal(limited.code, 'selection_text.output_limit');
+      assert.deepEqual(state(editor), before);
+      assert.equal(canonical(editor), input);
+      copied = rich.fragment_json;
+      if (!row.rows) paste(editor, copied);
+    });
+    if (row.rows) await withLiteraryCommandSession(original, editor => paste(editor, copied));
+    if (saved) await withLiteraryCommandSession(saved, editor => assert.equal(canonical(editor), saved));
+  });
+});
+
 test('OSR-197 packaged SDK2 preserves poetry clipboard structure and exact Undo', async t => {
   const fixture = JSON.parse(readFileSync(new URL('./fixtures/osr-197-poetry-clipboard.json', import.meta.url), 'utf8'));
   const { decodeClipboard } = await import('../packages/kwdj/dist/clipboard-decode.js');

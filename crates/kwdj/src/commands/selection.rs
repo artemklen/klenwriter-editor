@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 //! Native selected-range order, bounded text projection and context-preserving erase.
 use super::inline;
-use crate::{KwdjError, KwdjErrorCode};
+use crate::{
+    KwdjError, KwdjErrorCode,
+    table_geometry::{GeometryError, TableSelection, rectangle_cells, table_selection},
+};
 use editor_core::{
     candidate::CandidateRead,
     commands::{CommandPresentation, CommandState, LocalRef, PlanBuilder, SelectionIntent},
@@ -209,12 +212,8 @@ impl<I: Copy + Eq + Ord> Range<I> {
         };
         Ok(())
     }
-    fn build<V: CandidateRead<Id = I>>(
-        v: &V,
-        selection: Selection<I>,
-        w: &mut WorkMeter,
-    ) -> Result<Self, SelectionTextError> {
-        let mut r = Self {
+    fn empty(selection: Selection<I>) -> Self {
+        Self {
             rows: Vec::new(),
             index: BTreeMap::new(),
             points: [None, None],
@@ -223,7 +222,14 @@ impl<I: Copy + Eq + Ord> Range<I> {
             hi: 0,
             start: selection.anchor,
             end: selection.focus,
-        };
+        }
+    }
+    fn build<V: CandidateRead<Id = I>>(
+        v: &V,
+        selection: Selection<I>,
+        w: &mut WorkMeter,
+    ) -> Result<Self, SelectionTextError> {
+        let mut r = Self::empty(selection);
         r.children(v, v.root(), v.roots(), selection, 1, w)?;
         let a = r.points[0].ok_or(SelectionTextError::Invalid)?;
         let b = r.points[1].ok_or(SelectionTextError::Invalid)?;
@@ -272,24 +278,20 @@ impl<I: Copy + Eq + Ord> Range<I> {
             let inside_content = r.content_start <= self.lo && self.hi <= r.content_end;
             let name = local(n.type_id);
             let media_edit = editing && name == "media_image" && (self.whole(r) || inside_content);
+            let table = matches!(name, "table" | "table_row" | "table_header" | "table_cell");
+            let cell_read = matches!(purpose, SelectionPurpose::Read) && inside_content && table;
             let profile_body = profile_containers
                 && inside_content
-                && matches!(
-                    name,
-                    "literary_block"
-                        | "warning"
-                        | "spoiler"
-                        | "disclosure"
-                        | "table"
-                        | "table_row"
-                        | "table_header"
-                        | "table_cell"
-                );
+                && (table
+                    || matches!(
+                        name,
+                        "literary_block" | "warning" | "spoiler" | "disclosure"
+                    ));
             let verse_read = matches!(purpose, SelectionPurpose::Read)
                 && matches!(name, "verse" | "verse_line" | "stanza_break");
-            needs_text_block |= profile_body;
+            needs_text_block |= profile_body || cell_read;
             inside_text_block |= inside_content && n.primitive == Primitive::TextBlock;
-            if !basic(n.type_id) && !media_edit && !profile_body && !verse_read {
+            if !basic(n.type_id) && !media_edit && !profile_body && !verse_read && !cell_read {
                 return Err(SelectionTextError::Limit(
                     "selection_text.unsupported_context",
                 ));
@@ -477,6 +479,50 @@ fn project_children<V: CandidateRead>(
     }
     Ok(out)
 }
+
+fn selected_table_text<V: CandidateRead>(
+    v: &V,
+    marker: TableSelection<V::Id>,
+    selection: Selection<V::Id>,
+    max: usize,
+    w: &mut WorkMeter,
+) -> Result<SelectionText<V::Id>, SelectionTextError> {
+    let rows = rectangle_cells(v, marker, w).map_err(|error| match error {
+        GeometryError::Work(limit) => SelectionTextError::Work(limit),
+        _ => SelectionTextError::Limit("selection_text.unsupported_context"),
+    })?;
+    // Index only the selected cell subtrees, so the general projector can retain
+    // authored inline text, hard breaks and selected atom IDs.
+    let mut range = Range::empty(selection);
+    for row in &rows {
+        for id in row {
+            let cell = v.node(*id).ok_or(SelectionTextError::Invalid)?;
+            range.node(v, *id, cell.parent, selection, 1, w)?;
+        }
+    }
+    range.hi = range.cursor;
+    let mut text = String::new();
+    let mut atoms = Vec::new();
+    for (index, row) in rows.iter().enumerate() {
+        if index > 0 {
+            append(&mut text, "\n", max, w)?;
+        }
+        for (index, id) in row.iter().enumerate() {
+            if index > 0 {
+                append(&mut text, "\t", max, w)?;
+            }
+            let cell = project_node(v, &range, *id, max, &mut atoms, w)?
+                .ok_or(SelectionTextError::Invalid)?;
+            append(&mut text, &cell, max, w)?;
+        }
+    }
+    Ok(SelectionText {
+        text,
+        empty: false,
+        selected_atoms: atoms,
+    })
+}
+
 pub fn selected_text<V: CandidateRead>(
     v: &V,
     selection: Selection<V::Id>,
@@ -485,6 +531,9 @@ pub fn selected_text<V: CandidateRead>(
 ) -> Result<SelectionText<V::Id>, SelectionTextError> {
     if max_bytes > 1_048_576 {
         return Err(SelectionTextError::Limit("selection_text.output_limit"));
+    }
+    if let Some(marker) = table_selection(v, Some(selection)) {
+        return selected_table_text(v, marker, selection, max_bytes as usize, w);
     }
     let r = Range::build(v, selection, w)?;
     if r.lo == r.hi {

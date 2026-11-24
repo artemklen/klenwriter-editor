@@ -1,0 +1,52 @@
+{
+  "profile": "prose",
+  "documents": {
+    "doc010": {"retained":"rectangular_table"},
+    "doc011": {"retained":"table_spans_alignment","leaf":[0,1,1,0,0],"text":"abcd"},
+    "doc011_with_unit_headers": {"retained":"table_spans_alignment","additional_header":"C"}
+  },
+  "cases": [
+    {
+      "id": "single_cell_copy_and_paste",
+      "source": {"document":"doc011","anchor":{"path":[0,1,1,0,0],"offset":1},"focus":{"path":[0,1,1,0,0],"offset":3}},
+      "plain": "bc",
+      "target": {"document":"doc011","anchor":{"path":[0,1,1,0,0],"offset":4},"focus":{"path":[0,1,1,0,0],"offset":4}},
+      "expected_text": "abcdbc"
+    },
+    {
+      "id": "right_column_pastes_at_root_gap",
+      "source": {"document":"doc010","anchor":{"path":[0,0,1],"side":"before"},"focus":{"path":[0,1,1],"side":"after"}},
+      "plain": "B\n2",
+      "rows": [{"row":0,"cells":[1]},{"row":1,"cells":[1]}],
+      "target": {"document":"doc010","anchor":{"path":[],"index":1},"focus":{"path":[],"index":1}}
+    },
+    {
+      "id": "right_column_refused_at_two_different_cell_textblocks",
+      "source": {"document":"doc010","anchor":{"path":[0,0,1],"side":"before"},"focus":{"path":[0,1,1],"side":"after"}},
+      "plain": "B\n2",
+      "rows": [{"row":0,"cells":[1]},{"row":1,"cells":[1]}],
+      "target": {"document":"doc011","anchor":{"path":[0,1,1,0,0],"offset":1},"focus":{"path":[0,2,0,0,0],"offset":1}},
+      "diagnostic": "clipboard.invalid_context"
+    },
+    {
+      "id": "right_column_refused_at_rectangular_selection",
+      "source": {"document":"doc010","anchor":{"path":[0,0,1],"side":"before"},"focus":{"path":[0,1,1],"side":"after"}},
+      "plain": "B\n2",
+      "rows": [{"row":0,"cells":[1]},{"row":1,"cells":[1]}],
+      "target": {"document":"doc010","anchor":{"path":[0,0,1],"side":"before"},"focus":{"path":[0,1,1],"side":"after"}},
+      "diagnostic": "clipboard.invalid_context"
+    },
+    {
+      "id": "reversed_rectangle_expands_spans_and_pastes_exactly",
+      "source": {"document":"doc011","anchor":{"path":[0,1,1],"side":"before"},"focus":{"path":[0,0,0],"side":"after"}},
+      "plain": "AB\nA\tabcd\nB2",
+      "rows": [{"row":0,"cells":[0]},{"row":1,"cells":[0,1]},{"row":2,"cells":[0]}],
+      "target": {"document":"doc011","anchor":{"path":[],"index":1},"focus":{"path":[],"index":1}}
+    },
+    {
+      "id": "rectangle_refuses_a_row_without_any_authored_origin",
+      "source": {"document":"doc011_with_unit_headers","anchor":{"path":[0,0,0],"side":"before"},"focus":{"path":[0,1,0],"side":"after"}},
+      "source_refusal": {"plain":"selection_text.unsupported_context","fragment":"kwdj.invalid_structure","path":"/clipboard/content"}
+    }
+  ]
+}

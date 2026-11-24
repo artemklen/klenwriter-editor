@@ -84,6 +84,117 @@ pub(crate) fn table_selection<V: CandidateRead>(
         .then_some(marker)
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+struct Rectangle {
+    top: usize,
+    bottom: usize,
+    left: usize,
+    right: usize,
+}
+
+impl Rectangle {
+    fn of(cell: &CellPlacement) -> Self {
+        Self {
+            top: cell.origin.at.row,
+            bottom: cell.origin.at.row + cell.rowspan,
+            left: cell.origin.at.column,
+            right: cell.end_column,
+        }
+    }
+
+    fn overlaps(self, other: Self) -> bool {
+        self.top < other.bottom
+            && other.top < self.bottom
+            && self.left < other.right
+            && other.left < self.right
+    }
+
+    fn union(self, other: Self) -> Self {
+        Self {
+            top: self.top.min(other.top),
+            bottom: self.bottom.max(other.bottom),
+            left: self.left.min(other.left),
+            right: self.right.max(other.right),
+        }
+    }
+}
+
+/// Select each authored origin exactly once after expanding across covered spans.
+pub(crate) fn rectangle_cells<V: CandidateRead>(
+    view: &V,
+    marker: TableSelection<V::Id>,
+    work: &mut WorkMeter,
+) -> Result<Vec<Vec<V::Id>>, GeometryError> {
+    let table = view.node(marker.table).ok_or(GeometryError::Empty)?;
+    let mut count = 0;
+    for (index, row) in table.children.iter().enumerate() {
+        work.charge_units(1).map_err(GeometryError::Work)?;
+        count += view
+            .children(*row)
+            .ok_or(GeometryError::InvalidRow { row: index })?
+            .len();
+    }
+    work.charge_bytes((count * std::mem::size_of::<CellPlacement>()) as u64)
+        .map_err(GeometryError::Work)?;
+    let mut placements = Vec::with_capacity(count);
+    // The source is already admitted under any stricter host limits.
+    inspect_table(view, table, Limits::default(), work, |cell| {
+        placements.push(cell);
+    })?;
+    let id = |placement: &CellPlacement| {
+        let row = table.children[placement.origin.at.row];
+        view.children(row)
+            .and_then(|children| children.get(placement.origin.index))
+            .copied()
+            .ok_or(GeometryError::InvalidCell(placement.origin))
+    };
+    work.charge_units(placements.len() as u64)
+        .map_err(GeometryError::Work)?;
+    let (mut anchor, mut focus) = (None, None);
+    for cell in &placements {
+        let cell_id = id(cell)?;
+        if cell_id == marker.anchor {
+            anchor = Some(Rectangle::of(cell));
+        } else if cell_id == marker.focus {
+            focus = Some(Rectangle::of(cell));
+        }
+    }
+    let mut rectangle = anchor
+        .ok_or(GeometryError::Empty)?
+        .union(focus.ok_or(GeometryError::Empty)?);
+    loop {
+        let before = rectangle;
+        work.charge_units(placements.len() as u64)
+            .map_err(GeometryError::Work)?;
+        for cell in &placements {
+            let bounds = Rectangle::of(cell);
+            if rectangle.overlaps(bounds) {
+                rectangle = rectangle.union(bounds);
+            }
+        }
+        if rectangle == before {
+            break;
+        }
+    }
+    let rows = rectangle.bottom - rectangle.top;
+    work.charge_units((rows + placements.len()) as u64)
+        .map_err(GeometryError::Work)?;
+    work.charge_bytes((rows * std::mem::size_of::<Vec<V::Id>>()) as u64)
+        .map_err(GeometryError::Work)?;
+    let mut cells = vec![Vec::new(); rows];
+    for cell in &placements {
+        if rectangle.overlaps(Rectangle::of(cell)) {
+            work.charge_bytes((4 * std::mem::size_of::<V::Id>()) as u64)
+                .map_err(GeometryError::Work)?;
+            cells[cell.origin.at.row - rectangle.top].push(id(cell)?);
+        }
+    }
+    if let Some(row) = cells.iter().position(Vec::is_empty) {
+        return Err(GeometryError::InvalidRow { row });
+    }
+    Ok(cells)
+}
+
 struct CellShape {
     colspan: u64,
     rowspan: u64,
