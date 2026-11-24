@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
+import type { MountedEditor } from '@klenwriter/editor-dom';
 /** Profile-specific command construction; all semantic checks remain in Rust. */
 export { artifactStage } from '@klenwriter/editor-sdk';
 import { createCommand } from '@klenwriter/editor-sdk';
@@ -39,6 +40,58 @@ export function kwdjCommand(intent: KwdjCommandIntent): CommandDto {
   }
   const name = commandNames[kind.value as keyof typeof commandNames];
   return createCommand(`org.klenwriter.kwdj/command/${name}`, intent);
+}
+
+type ToolbarStamp = NonNullable<ReturnType<MountedEditor['capture']>>;
+interface KwdjTableToolbarContext {
+  readonly state: { readonly stamp: ToolbarStamp };
+  readonly catalog: readonly string[];
+}
+type ToolbarLabel = Readonly<{ru:string;en:string}>;
+type ToolbarAction = {
+  readonly kind: 'command';
+  readonly id: string;
+  readonly label: ToolbarLabel;
+  readonly nativeDisabled: true;
+  readonly command: (captured: KwdjTableToolbarContext) => CommandDto | {
+    readonly status: 'unavailable'; readonly code: string; readonly message: ToolbarLabel;
+  };
+};
+const tableAlignmentLabels = {
+  center: {ru:'Выровнять ячейку по центру',en:'Center cell content'},
+  right: {ru:'Выровнять ячейку по правому краю',en:'Align cell content right'},
+  left: {ru:'Выровнять ячейку по левому краю',en:'Align cell content left'},
+} as const;
+
+/** Append these contextual actions to the existing KWDJ toolbar. */
+export function kwdjTableToolbar(editor: Pick<MountedEditor, 'selection'>, captured: KwdjTableToolbarContext): readonly ToolbarAction[] {
+  const target=editor.selection.tableCell?.();
+  if (!target) return [];
+  const {stamp,table,row,column}=target;
+  const matches=(value:ToolbarStamp) => value.session===stamp.session && value.generation===stamp.generation
+    && value.revision===stamp.revision && value.selection_epoch===stamp.selection_epoch && value.history_epoch===stamp.history_epoch;
+  if (!matches(captured.state.stamp)) return [];
+  const align=target.align==='center' ? 'right' : target.align==='right' ? 'left' : 'center';
+  const definitions: readonly [ToolbarLabel,KwdjCommandIntent][] = [
+    [{ru:'Добавить строку выше',en:'Add row above'},{kind:'insert_row_above',row}],
+    [{ru:'Добавить строку ниже',en:'Add row below'},{kind:'insert_row_below',row}],
+    [{ru:'Удалить текущую строку',en:'Delete current row'},{kind:'delete_row',row}],
+    [{ru:'Добавить колонку слева',en:'Add column left'},{kind:'insert_column_left',table,column}],
+    [{ru:'Добавить колонку справа',en:'Add column right'},{kind:'insert_column_right',table,column}],
+    [{ru:'Удалить текущую колонку',en:'Delete current column'},{kind:'delete_column',table,column}],
+    [tableAlignmentLabels[align],{kind:'set_table_cell_align',align}],
+  ];
+  return definitions.flatMap(([label,intent]): ToolbarAction[]=>{
+    const command=kwdjCommand(intent);
+    if (!captured.catalog.includes(command.id)) return [];
+    return [{
+      kind:'command',id:command.id.slice('org.klenwriter.kwdj/command/'.length),label,nativeDisabled:true,
+      command: current => matches(current.state.stamp) ? command : {
+        status:'unavailable',code:'kwdj.command_unsupported_context',
+        message:{ru:'Недоступно в этом документе.',en:'Unavailable in this document.'},
+      },
+    }];
+  });
 }
 
 /** Explicit ABI2 input route only; configuration and semantics belong to the native profile. */

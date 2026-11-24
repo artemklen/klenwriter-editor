@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import type { DeepReadonly, EventDto, InputSubmissionV2, PositionDto, ReadRequest, Response, SelectionDto, SessionContextV2, StampDto, StateDto, Submission } from '@klenwriter/editor-sdk';
-import type { BookmarkCapture, BookmarkRestore, DomRefusal, MountedMutation, MountedMutationV2, MountedSelectionController, SelectionBookmark, SelectionResourceCounts, TableNavigationExit } from './types.js';
+import type { BookmarkCapture, BookmarkRestore, DomRefusal, MountedMutation, MountedMutationV2, MountedSelectionController, SelectionBookmark, SelectionResourceCounts, SelectedTableCell, TableNavigationExit } from './types.js';
 import type { DeletionScroll, DomPoint, DomView } from './view.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
 import { fields } from './ownership.js';
@@ -41,7 +41,13 @@ export class SelectionOwner {
   #tableObserver:TableNavigationObserver|null=null;
   constructor(readonly configuration:Configuration) {
     this.api=Object.freeze({captureBookmark:()=>this.captureBookmark(),restoreBookmark:(bookmark:SelectionBookmark,options?:{readonly policy?:'exact'|'mapped';readonly focus?:boolean})=>this.restoreBookmark(bookmark,options),releaseBookmark:(bookmark:SelectionBookmark)=>this.releaseBookmark(bookmark),
-      observeTableNavigation:(observer:TableNavigationObserver)=>this.#observeTableNavigation(observer)});
+      observeTableNavigation:(observer:TableNavigationObserver)=>this.#observeTableNavigation(observer),
+      tableCell:()=>this.#selectedTableCell()});
+  }
+  #selectedTableCell(): Readonly<SelectedTableCell> | null {
+    if (this.#destroyed) return null;
+    const target=this.configuration.view()?.selectedTableCell();
+    return target && same(target.stamp,this.configuration.capture()) ? target : null;
   }
   #observeTableNavigation(observer:TableNavigationObserver):(()=>void)|null {
     if (this.#destroyed || this.#tableObserver || typeof observer!=='function') return null;

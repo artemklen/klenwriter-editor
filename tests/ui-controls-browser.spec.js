@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+import { canonicalizeRaw } from '../scripts/canonical-reference/reference.mjs';
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 
@@ -281,6 +283,34 @@ test('A03: Add Escape restores exact native range; unavailable insertion stays d
   const after=await checkpoint(page,id,'dismissed Add');unchanged(after,before);expect(after.insideEditor).toBe(true);expect(submitted(after)).toHaveLength(0);expect(after.uiResources.hostRequests).toBe(0);
   await add(page,id).click();const table=control(page,id,'table');await expect(table).toHaveAttribute('aria-disabled','true');await table.focus();await expect(table).toBeFocused();await page.keyboard.press('Enter');
   const refused=await checkpoint(page,id,'unsupported table entry');expect(refused.canonical).toBe(before.canonical);expect(submitted(refused)).toHaveLength(0);expect(documentEvents(refused)).toHaveLength(0);
+});
+
+for(const nativeDisabledAdd of ['first','all'])test(`OSR-212 Add focus with ${nativeDisabledAdd} native-disabled insertions`,async({page})=>{
+  const id=await mounted(page,{case:'V03-root-gap',nativeDisabledAdd});
+  await editorFocus(page,id);
+  const before=await checkpoint(page,id,'before opening Add with a native-disabled action');
+  await add(page,id).click();
+  const listbox=root(page,id).getByRole('listbox');
+  const unavailable=control(page,id,'unavailable-insertion');
+  await expect(listbox).toBeVisible();
+  await expect(unavailable).toBeDisabled();
+  await expect(unavailable).toHaveAttribute('aria-disabled','true');
+  await expect(unavailable).toHaveAttribute('tabindex','-1');
+  if(nativeDisabledAdd==='all')await expect(listbox).toBeFocused();
+  else {
+    await expect(control(page,id,'paragraph')).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await expect(control(page,id,'quote')).toBeFocused();
+    await page.keyboard.press('ArrowUp');
+    await expect(control(page,id,'paragraph')).toBeFocused();
+  }
+  await page.keyboard.press('Escape');
+  await expect(listbox).toBeHidden();
+  await expect(page.locator(`#${id}-editor`)).toBeFocused();
+  const after=await checkpoint(page,id,'after cancelling Add');
+  unchanged(after,before);
+  expect(submitted(after)).toHaveLength(0);
+  expect(after.uiResources.hostRequests).toBe(0);
 });
 
 for(const [caseId,choice,key]of [['V04-up','up','ArrowUp'],['V04-down','down','ArrowDown']])for(const method of ['menu','shortcut'])test(`M01 ${caseId} ${method}: exact pre-removal native destination and stable move control`,async({page})=>{
@@ -578,6 +608,129 @@ test('PP01 controlled NotesD0 held Title keeps its exact fallback point through 
   const held=await ppRaw(page,id);expect(held.active).toBe(true);await ppNoMutation(page,id,before,traceStart);rlBrowser(held.browser,down.browser);ppRect(held.titleRect,down.titleRect);expect(await page.evaluate(point=>document.elementFromPoint(point.x,point.y)===window.ppTitle,point)).toBe(true);
   await page.mouse.up();await rlFrames(page);const released=await ppRaw(page,id);expect(released.active).toBe(false);await ppNoMutation(page,id,before,traceStart);rlBrowser(released.browser,baseline.browser);ppFloating(released);ppRect(released.toolbarRect,baseline.toolbarRect);ppRect(released.titleRect,baseline.titleRect);
   const events=await page.evaluate(()=>window.ppEvents);(records.get(page).pressedPointerEvents??=[]).push(events);expect(events.map(e=>({event:e.event,sameTitle:e.sameTitle}))).toEqual([{event:'pointerdown',sameTitle:true},{event:'pointerup',sameTitle:true},{event:'click',sameTitle:true}]);expect(events[0].prevented).toBe(true);
+});
+
+test.describe('OSR-212 existing table toolbar', () => {
+  const json = path => JSON.parse(readFileSync(new URL(path,import.meta.url),'utf8'));
+  const corpus = ['positive','mixed'].flatMap(name=>json(`../contracts/kwdj/v1/fixtures/${name}.json`).fixtures).flatMap(doc=>doc.cases);
+  const rows = json('./fixtures/osr-205-table-rows.json').cases;
+  const columns = json('./fixtures/osr-206-table-columns.json').cases;
+  const alignFixture = json('./fixtures/osr-285-table-cell-align.json');
+  const source = name => corpus.find(item=>item.name===name).kwdj;
+  const ids = ['insert-row-above','insert-row-below','delete-row','insert-column-left','insert-column-right','delete-column','set-table-cell-align'];
+  const names = ['Add row above','Add row below','Delete current row','Add column left','Add column right','Delete current column','Center cell content'];
+  const action = (page,id,index) => control(page,id,ids[index]);
+  const mount = async (page,document,cell) => {
+    const point={kind:'text',node:'TARGET',offset:0,affinity:'after'};
+    const id=await mounted(page,{source:document,sourceRoles:{ROOT:[],TABLE:[0],ROW:cell.slice(0,2),CELL:cell,TARGET:[...cell,0,0]},
+      selection:{anchor:point,focus:point},nativeTrace:true});
+    await editorFocus(page,id);
+    return id;
+  };
+  const commands = async (page,id) => {
+    const traffic=await call(page,'nativeTrace',id);
+    expect(traffic.overflow).toBe(false);
+    return traffic.calls.map(call=>JSON.parse(call.requestJson)).filter(request=>request.kind==='command');
+  };
+  const expectCommand = (request,actionId,payload,stamp) => {
+    expect(request.stamp).toEqual(stamp);
+    expect(request.command.id).toBe('org.klenwriter.kwdj/command/'+actionId);
+    expect(JSON.parse(request.command.payload_json)).toEqual(payload);
+  };
+
+  for (const [index,fixture,cell] of [
+    [0,rows.find(row=>row.id==='above_first_body_row'),[0,1,0]],
+    [1,rows.find(row=>row.id==='below_completed_rowspan'),[0,2,0]],
+    [2,rows.find(row=>row.id==='delete_row_that_owns_a_colspan'),[0,0,0]],
+    [3,columns.find(row=>row.id==='left_keeps_header_roles'),[0,0,0]],
+    [4,columns.find(row=>row.id==='right_of_effective_grid'),[0,1,1]],
+    [5,columns.find(row=>row.id==='delete_second_unit_column'),[0,1,1]],
+  ]) test(names[index]+' executes exactly the retained '+fixture.id+' fixture',async({page})=>{
+    const original=source(fixture.source);
+    const id=await mount(page,original,cell);
+    const before=await checkpoint(page,id,'stamped table target');
+    if(index===1) {
+      // B2 is its row's first authored cell but owns effective column 1.
+      await expect(action(page,id,4)).toBeEnabled();
+      await root(page,id).getByText('A',{exact:true}).hover({timeout:3000});
+    }
+    const button=action(page,id,index);
+    await expect(button).toBeVisible({timeout:3000});
+    await expect(button).toHaveAccessibleName(names[index]);
+    await expect(button).toBeEnabled();
+    await button.click();
+    await waitSubmissions(page,id,1);
+    const after=await checkpoint(page,id,'exact native action result');
+    expect((await commands(page,id))).toHaveLength(1);
+    expectCommand((await commands(page,id))[0],ids[index],{
+      kind:fixture.command,...(index<3?{row:before.roles.ROW}:{table:before.roles.TABLE,column:fixture.column}),
+    },before.state.stamp);
+    const expected={...original,content:[{...original.content[0],content:fixture.expected_rows}]};
+    expect(after.canonical).toBe(canonicalizeRaw(JSON.stringify(expected)));
+    expect(after.state.stamp.revision).toBe('1');
+    expect(after.state.history.undo_entries).toBe('1');
+    expect(documentEvents(after)).toHaveLength(1);
+  });
+
+  test('one alignment control cycles center, right and left through the exact native target',async({page})=>{
+    const fixture=alignFixture.cases.find(item=>item.id==='ordinary-center');
+    const id=await mount(page,JSON.parse(alignFixture.source),fixture.cellPath);
+    const toolbar=root(page,id).getByRole('toolbar');
+    for(const [index,name] of names.entries()) await expect(action(page,id,index)).toHaveAccessibleName(name);
+    await expect(toolbar.locator('button')).toHaveCount(9);
+    await expect(toolbar.getByRole('button',{name:/merge|split|move.*cell/i})).toHaveCount(0);
+    expect((await new AxeBuilder({page}).include('#'+id).analyze()).violations).toEqual([]);
+
+    for(const [offset,align,name] of [[0,'center','Center cell content'],[1,'right','Align cell content right'],[2,'left','Align cell content left']]){
+      const before=await checkpoint(page,id,'before table alignment '+align);
+      const button=action(page,id,6);
+      await expect(button).toHaveAccessibleName(name);
+      await expect(button).toBeEnabled();
+      if(offset===1){await button.focus();await page.keyboard.press('Enter');}
+      else await button.click();
+      await waitSubmissions(page,id,offset+1);
+      const after=await checkpoint(page,id,'after table alignment '+align);
+      const expected=JSON.parse(fixture.expected);
+      expected.content[0].content[1].content[1].attrs.align=align;
+      expect(after.canonical).toBe(canonicalizeRaw(JSON.stringify(expected)));
+      expect(after.state.selection).toEqual(before.state.selection);
+      expect(after.state.stamp.revision).toBe(String(offset+1));
+      expect(after.state.history.undo_entries).toBe(String(offset+1));
+      expect(documentEvents(after)).toHaveLength(offset+1);
+      const calls=await commands(page,id);
+      expect(calls).toHaveLength(offset+1);
+      expectCommand(calls[offset],ids[6],{kind:'set_table_cell_align',align},before.state.stamp);
+    }
+    await call(page,'locale',id,'ru');
+    await expect(action(page,id,0)).toHaveAccessibleName('Добавить строку выше');
+    await expect(action(page,id,6)).toHaveAccessibleName('Выровнять ячейку по центру');
+  });
+
+  test('native span refusal uses real disabled state and roving skips the disabled controls',async({page})=>{
+    const id=await mount(page,source('valid_effective_grid'),[0,1,0]);
+    const before=await checkpoint(page,id,'DOC-012 bottom-left owning slot');
+    const disabled=action(page,id,4),left=action(page,id,3);
+    await expect(disabled).toBeDisabled();
+    await expect(disabled).toHaveAttribute('disabled','');
+    await expect(disabled).toHaveAttribute('aria-disabled','true');
+    await expect(disabled).toHaveAttribute('tabindex','-1');
+    const reason=await disabled.getAttribute('aria-describedby');
+    await expect(root(page,id).locator('#'+reason)).toContainText('kwdj.table_not_rectangular');
+    const box=await disabled.boundingBox();
+    await page.mouse.click(box.x+box.width/2,box.y+box.height/2);
+    await left.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(action(page,id,6)).toBeFocused();
+    await page.keyboard.press('ArrowLeft');
+    await expect(left).toBeFocused();
+    expect(await commands(page,id)).toEqual([]);
+    unchanged(await checkpoint(page,id,'disabled click and roving preserved native state'),before);
+    expect((await new AxeBuilder({page}).include('#'+id).analyze()).violations).toEqual([]);
+    const gap={kind:'child',parent:'ROOT',index:1,affinity:'after'};
+    expect((await call(page,'select',id,{anchor:gap,focus:gap},{focus:true})).response.status).toBe('ok');
+    await expect(disabled).toHaveCount(0);
+    await expect(root(page,id).getByRole('toolbar').locator('button')).toHaveCount(2);
+  });
 });
 
 test.describe('OSR-207 table exits to existing block chrome', () => {

@@ -3,7 +3,7 @@
 import { loadSdkV2, sdkBuildId, createCommand } from '@klenwriter/editor-sdk';
 import { mountEditor } from '@klenwriter/editor-dom';
 import { createEditorUi, defineUiHostAction } from '@klenwriter/editor-ui';
-import { kwdjCommand, kwdjSlashCandidates, kwdjSlashTextBlockTypes } from '@klenwriter/editor-kwdj';
+import { kwdjCommand, kwdjTableToolbar, kwdjSlashCandidates, kwdjSlashTextBlockTypes } from '@klenwriter/editor-kwdj';
 import { kwdjBasicRenderers } from '@klenwriter/editor-kwdj/dom';
 import { notesD0Renderers } from '/notes-dom.mjs';
 
@@ -64,7 +64,11 @@ function hostDialog(r){
 function profile(r){
   if(r.notes){const title=hostDialog(r);return ()=>({toolbar:[title],insertions:[],blockActions:[],moves:()=>unavailable('fixture.profile_has_no_move'),...(r.drag?{drag:{move:()=>unavailable('fixture.profile_has_no_move')}}:{})});}
   const action=(id,label,intent,kind='command')=>({id,label,kind,command:()=>kwdjCommand(intent)});
+  const insertions=[action('paragraph',text('Абзац','Paragraph'),{kind:'insert_block',target:{kind:'paragraph'}}),action('quote',text('Цитата','Quote'),{kind:'insert_block',target:{kind:'blockquote'}}),action('table',text('Таблица','Table'),{kind:'insert_block',target:{kind:'table'}})];
+  if(r.nativeDisabledAdd)insertions.unshift({id:'unavailable-insertion',label:text('Недоступно','Unavailable insertion'),
+    kind:'command',nativeDisabled:true,command:()=>unavailable('fixture.insertion_unavailable')});
   return ()=>({toolbar:[action('strong',text('Полужирный','Bold'),{kind:'toggle_mark',mark:{type_id:'org.klenwriter.kwdj/strong',attributes:{}}},'toggle'),action('emphasis',text('Курсив','Italic'),{kind:'toggle_mark',mark:{type_id:'org.klenwriter.kwdj/emphasis',attributes:{}}},'toggle')],
+    contextualToolbar: captured => kwdjTableToolbar(r.editor,captured),
     ...(r.slash?{slash:{textBlockTypes:kwdjSlashTextBlockTypes,choices:kwdjSlashCandidates.map(candidate=>{
       const description=slashCopy.choices.find(choice=>candidate.id===`org.klenwriter.kwdj/slash/${choice.id}`);assert(description,'Known source-authored localized candidate');
       return {id:candidate.id,label:description.label,keywords:description.keywords,command(captured,query){
@@ -88,7 +92,7 @@ function profile(r){
       assert(r.dragCommands.length<128,'Finite drag candidate observation');r.dragCommands.push({captured:copy(captured),destination:copy(destination),command:copy(command)});
       return command;
     }}}:{}),
-    insertions:[action('paragraph',text('Абзац','Paragraph'),{kind:'insert_block',target:{kind:'paragraph'}}),action('quote',text('Цитата','Quote'),{kind:'insert_block',target:{kind:'blockquote'}}),action('table',text('Таблица','Table'),{kind:'insert_block',target:{kind:'table'}})],blockActions:[],
+    insertions:r.nativeDisabledAdd==='all'?insertions.slice(0,1):insertions,blockActions:[],
     moves(captured){
       const {node,parent,index}=captured.block,read=id=>{const x=r.editor.read({kind:'node',stamp:captured.state.stamp,node:id});return x.status==='ok'&&x.value.kind==='node'?x.value.node:null;};
       const previous=index>0?read(parent.children[index-1]):null,grandparent=parent.parent?read(parent.parent):null;
@@ -157,7 +161,7 @@ export async function mount(config={}){
   element.id=`${id}-editor`;element.className='ui-fixture-editor';element.setAttribute('aria-label',config.locale==='ru'?'Документ':'Document');
   for(const [name,node]of Object.entries({toolbar,gutter,entry}))node.id=`${id}-${name}`;
   wrapper.append(toolbar,element,gutter,entry);document.querySelector('#ui-mounts').append(wrapper);
-  const r={id,wrapper,element,slots:{toolbar,gutter,entry},ids:new Map(),events:[],failures:[],results:[],focusResults:[],focusPromises:[],requests:new Map(),hostConnections:[],hostOpenCount:0,hostCloseReasons:[],locale:config.locale??'en',notes:selected.job.profile.profile_id==='org.example.notes',faultResponses:[],geometryProbeResults:[],mode:config.mode??'editable',modeResults:[],clipboardResults:[],recoveryResults:[],nativeCalls:[],nativeTraceEnabled:config.nativeTrace===true,nativeTraceBytes:0,nativeTraceOverflow:false,slash:config.slash===true,slashUnavailable:config.slashUnavailable??null,slashFactoryFault:null,slashFaultResults:[],slashFaultPending:[],drag:config.drag===true,dragCommands:[],dragFault:null,dragFaultResults:[]};records.set(id,r);
+  const r={id,wrapper,element,slots:{toolbar,gutter,entry},ids:new Map(),events:[],failures:[],results:[],focusResults:[],focusPromises:[],requests:new Map(),hostConnections:[],hostOpenCount:0,hostCloseReasons:[],locale:config.locale??'en',notes:selected.job.profile.profile_id==='org.example.notes',faultResponses:[],geometryProbeResults:[],mode:config.mode??'editable',modeResults:[],clipboardResults:[],recoveryResults:[],nativeCalls:[],nativeTraceEnabled:config.nativeTrace===true,nativeTraceBytes:0,nativeTraceOverflow:false,slash:config.slash===true,slashUnavailable:config.slashUnavailable??null,slashFactoryFault:null,slashFaultResults:[],drag:config.drag===true,dragCommands:[],dragFault:null,dragFaultResults:[],nativeDisabledAdd:config.nativeDisabledAdd};records.set(id,r);
   let job=copy(selected.job),rolePaths=selected.expected.rolesBefore;
   if(config.geometry){const f=geometry.fixtures[config.geometry];assert(f,'Closed geometry fixture');job.input=f.canonical_json;rolePaths=f.roles;job.selection=f.selection?resolve(r,f.selection):null;}
   if(config.source!==undefined)job.input=typeof config.source==='string'?config.source:JSON.stringify(config.source);

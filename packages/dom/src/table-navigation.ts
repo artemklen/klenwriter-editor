@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import type { DeepReadonly, PositionDto, SelectionDto } from '@klenwriter/editor-sdk';
 import type { DomView, GeometryRow } from './view.js';
-import type { TableNavigationExit } from './types.js';
+import type { SelectedTableCell, TableNavigationExit } from './types.js';
 
 type TableKey = 'Tab' | 'ArrowLeft' | 'ArrowRight' | 'ArrowUp' | 'ArrowDown';
 export type TableSelectionKey = TableKey | 'Escape';
@@ -139,6 +139,17 @@ function adjacentSlot(grid: TableGrid, cell: GeometryRow, key: TableArrow, entry
   const next = grid.slots[row]?.[column];
   if (!next || next === active) return null;
   return {cell:next.cell,slot:{table:next.table,cell:next.cell,row,column}} as const;
+}
+
+export function tableCellTarget(view: TableView, focus: DeepReadonly<PositionDto>): Omit<SelectedTableCell, 'stamp'> | null {
+  const owned=tableCell(view,focus);
+  if (!owned) return null;
+  const {cell,row,table}=owned;
+  const origin=tableGrid(view,table)?.cells.get(cell.view.id);
+  if (!origin) return null;
+  const value=cell.view.attributes.align;
+  const align=value?.kind==='string' && (value.value==='left' || value.value==='center' || value.value==='right') ? value.value : null;
+  return {table:table.view.id,row:row.view.id,column:origin.column,align};
 }
 
 function tableExit(view: TableView, table: GeometryRow, reverse: boolean): TableRoute|null {

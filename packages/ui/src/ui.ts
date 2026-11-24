@@ -37,9 +37,11 @@ function action(value: unknown): UiAction {
     if (!host(value as UiHostAction)) throw new UiError('ui.invalid_options');
     return value as UiHostAction;
   }
-  const f = fields(value, ['kind', 'id', 'label', 'command']);
-  if (f.kind !== 'command' && f.kind !== 'toggle' || typeof f.command !== 'function') throw new UiError('ui.invalid_options');
-  return Object.freeze({ kind: f.kind, id: id(f.id), label: text(f.label), command: f.command as UiCommandAction['command'] });
+  const f = fields(value, ['kind', 'id', 'label', 'command'], ['nativeDisabled']);
+  if (f.kind !== 'command' && f.kind !== 'toggle' || typeof f.command !== 'function'
+    || f.nativeDisabled !== undefined && f.nativeDisabled !== true) throw new UiError('ui.invalid_options');
+  return Object.freeze({ kind: f.kind, id: id(f.id), label: text(f.label), command: f.command as UiCommandAction['command'],
+    ...(f.nativeDisabled === true ? { nativeDisabled: true as const } : {}) });
 }
 function actions(value: unknown, allowed: 'all' | 'commands' | 'hosts'): readonly UiAction[] {
   const result = list(value).map(action), ids = new Set<string>();
@@ -51,8 +53,9 @@ function actions(value: unknown, allowed: 'all' | 'commands' | 'hosts'): readonl
 }
 function profile(value: unknown): UiProfile | UiUnavailable {
   const absent = unavailable(value); if (absent) return absent;
-  const f = fields(value, ['toolbar', 'insertions', 'blockActions', 'moves'], ['slash', 'drag']);
-  if (typeof f.moves !== 'function') throw new UiError('ui.invalid_options');
+  const f = fields(value, ['toolbar', 'insertions', 'blockActions', 'moves'], ['slash', 'drag', 'contextualToolbar']);
+  if (typeof f.moves !== 'function' || f.contextualToolbar !== undefined && typeof f.contextualToolbar !== 'function')
+    throw new UiError('ui.invalid_options');
   let drag: UiDragProfile | undefined;
   if (f.drag !== undefined) {
     const d = fields(f.drag, ['move']); if (typeof d.move !== 'function') throw new UiError('ui.invalid_options');
@@ -60,7 +63,8 @@ function profile(value: unknown): UiProfile | UiUnavailable {
   }
   return Object.freeze({ toolbar: actions(f.toolbar, 'all'), insertions: actions(f.insertions, 'commands') as readonly UiCommandAction[],
     blockActions: actions(f.blockActions, 'hosts') as readonly UiHostAction[], moves: f.moves as UiProfile['moves'],
-    ...(f.slash !== undefined ? {slash:slashProfile(f.slash)} : {}), ...(drag ? { drag } : {}) });
+    ...(f.slash !== undefined ? {slash:slashProfile(f.slash)} : {}), ...(drag ? { drag } : {}),
+    ...(f.contextualToolbar ? { contextualToolbar: f.contextualToolbar as NonNullable<UiProfile['contextualToolbar']> } : {}) });
 }
 function moves(value: unknown): readonly UiMoveChoice[] | UiUnavailable {
   const absent = unavailable(value); if (absent) return absent;
@@ -334,22 +338,24 @@ class Ui implements EditorUi {
     if (event.altKey || event.ctrlKey || event.metaKey) return;
     if (event.key === 'Escape' && this.#popup) { event.preventDefault(); this.#cancelPopup(true); return; }
     if (event.key === 'Tab' && this.#popup) { this.#cancelPopup(false); return; }
-    const controls = menuOwned ? this.#popup!.controls : this.#toolbar.contains(this.#document.activeElement) ? [...this.#toolbarControls.values()] : [];
+    const all = menuOwned ? this.#popup!.controls : this.#toolbar.contains(this.#document.activeElement) ? [...this.#toolbarControls.values()] : [];
+    const controls = all.filter(item => !item.button.disabled);
     const navigation = menuOwned ? ['ArrowUp', 'ArrowDown', 'Home', 'End'] : ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
     if (controls.length && navigation.includes(event.key)) {
       event.preventDefault(); const at = controls.findIndex(c => c.button === this.#document.activeElement);
       const next = event.key === 'Home' ? 0 : event.key === 'End' ? controls.length - 1
         : (Math.max(0, at) + (event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 1) + controls.length) % controls.length;
-      this.#rove(controls, controls[next]); controls[next]!.button.focus(); return;
+      this.#rove(all, controls[next]); controls[next]!.button.focus(); return;
     }
     if (control && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); if (!event.repeat) this.#activate(control, true); }
   }
-  #rove(controls: readonly Control[], active?: Control): void {
-    const selected = active ?? controls.find(c => c.button.tabIndex === 0) ?? controls[0];
+  #rove(controls: readonly Control[], active?: Control): Control | undefined {
+    const selected = active ?? controls.find(c => !c.button.disabled && c.button.tabIndex === 0) ?? controls.find(c => !c.button.disabled);
     for (const control of controls) {
       control.button.tabIndex = control === selected ? 0 : -1;
       if (control.button.hasAttribute('aria-selected')) control.button.setAttribute('aria-selected', String(control === selected));
     }
+    return selected;
   }
   #readNode(node: string, state: DeepReadonly<StateDto>): DeepReadonly<NodeViewDto> | UiFailure {
     const response = this.#options!.editor.read({ kind: 'node', stamp: state.stamp, node });
@@ -495,6 +501,8 @@ class Ui implements EditorUi {
     this.#drawAvailability(control);
   }
   #drawAvailability(control: Control): void {
+    const native = control.action && control.action.kind !== 'host' && control.action.nativeDisabled;
+    control.button.disabled = native === true && !control.availability.available;
     control.button.setAttribute('aria-disabled', String(!control.availability.available));
     if (control.reason.textContent !== control.availability.reason) {
       this.#resetReason(control); control.reason.textContent = control.availability.reason;
@@ -580,7 +588,15 @@ class Ui implements EditorUi {
         feedback:message=>this.#setStatus(message),schedule:()=>this.refresh(),
         beforeOpen:()=>{this.#releasePending('invalidated');this.#hidePopup();},
       },this.#profile!.slash,this.#locale);
-      this.#syncControls(this.#toolbarControls, this.#profile!.toolbar, this.#toolbar, 'toolbar', context);
+      const {toolbar,contextualToolbar}=this.#profile!;
+      let toolbarActions=toolbar;
+      if (contextualToolbar) {
+        const additional=actions(this.#callback(() => contextualToolbar(context)), 'commands');
+        if (this.#destroyed || !same(context.state.stamp, this.#options.editor.capture())
+          || !same(context.context, this.#options.editor.context())) return failure('ui.unavailable');
+        if (additional.length) toolbarActions=actions([...toolbar,...additional],'all');
+      }
+      this.#syncControls(this.#toolbarControls, toolbarActions, this.#toolbar, 'toolbar', context);
       this.#syncControls(this.#blockControls, this.#profile!.blockActions, this.#gutter, 'block', context);
       const status = this.#options.editor.hostRequests.status();
       this.#add.context = this.#move.context = context;
@@ -697,6 +713,7 @@ class Ui implements EditorUi {
     for (const control of [...this.#toolbarControls.values(), ...this.#blockControls.values(), this.#add, this.#move]) {
       control.availability = { available: false, active: null, failure: result, reason: this.#reason(result) }; this.#drawAvailability(control);
     }
+    this.#rove([...this.#toolbarControls.values()]);
     if (show) this.#setStatus(this.#reason(result), owner);
   }
   #setStatus(message: string, owner: 'loading' | 'availability' | 'feedback' = 'feedback'): void {
@@ -776,9 +793,16 @@ class Ui implements EditorUi {
     }
     if (!same(pending.context.state.stamp, this.#options!.editor.capture()) || !same(pending.context.context, this.#options!.editor.context())) { this.#releasePending('invalidated'); this.#showStale(); return; }
     for (const control of controls) { control.button.setAttribute('role', kind === 'add' ? 'option' : 'menuitem'); if (kind === 'add') control.button.setAttribute('aria-selected', 'false'); popup.append(control.button, control.reason); }
-    if (!controls.length) { const empty = this.#node('div', 'kw-ui-reason'); empty.textContent = label('empty', this.#locale); popup.append(empty); popup.tabIndex = 0; }
+    if (!controls.length) { const empty = this.#node('div', 'kw-ui-reason'); empty.textContent = label('empty', this.#locale); popup.append(empty); }
     this.#popup = { kind, element: popup, controls, pending, trigger }; popup.hidden = false; trigger.setAttribute('aria-expanded', 'true');
-    this.#rove(controls); (controls[0]?.button ?? popup).focus();
+    const initial = this.#rove(controls);
+    if (initial) {
+      popup.removeAttribute('tabindex');
+      initial.button.focus();
+    } else {
+      popup.tabIndex = controls.length ? -1 : 0;
+      popup.focus();
+    }
   }
   #shortcut(direction: UiMoveChoice['direction']): void {
     try {

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import type { DeepReadonly, EventDto, InputFinalRegionV2, NodeViewDto, PositionDto, Response, SelectionDto, StampDto, StateDto, TextReplacementResultV2 } from '@klenwriter/editor-sdk';
-import type { DomDiagnostic, DomLayoutPolicy, DomPatchPolicy, DomRefusal, DomTextRepresentation, MountedMutationV2, RecoveryRegion, RendererCatalog } from './types.js';
+import type { DomDiagnostic, DomLayoutPolicy, DomPatchPolicy, DomRefusal, DomTextRepresentation, MountedMutationV2, RecoveryRegion, RendererCatalog, SelectedTableCell } from './types.js';
 import { prepareNode, type PreparedNode } from './catalog.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
 import { createLayoutPolicyOwner } from './layout-policy.js';
-import { tableSelectionCells, tableSelectionFocus } from './table-navigation.js';
+import { tableCellTarget, tableSelectionCells, tableSelectionFocus } from './table-navigation.js';
 import { createCompositionCorrespondence, type CompositionWindow, type CompositionObservation, type CompositionTerminalTicket } from './composition-view.js';
 import {literalCompositionBytes,sameLiteralNode,verifyLiteralComposition,type LiteralCompositionSource} from './composition-literal.js';
 import {fragmentOffset, fragmentPoint, matchesTextFragments, planTextFragments, scalarBoundary} from './text-fragments.js';
@@ -57,6 +57,7 @@ export interface DomView {
   geometryRow(id: string): GeometryRow | null;
   geometryOwner(node: Node): GeometryRow | null;
   geometryStamp(): DeepReadonly<StampDto> | null;
+  selectedTableCell(): Readonly<SelectedTableCell> | null;
   /** Bounded generic final native text/mark/DOM correspondence, never rule matching. */
   checkInputRegion(region:DeepReadonly<InputFinalRegionV2>,stamp:DeepReadonly<StampDto>):DomRefusal|null;
   checkInputResult(result:DeepReadonly<TextReplacementResultV2>):DomRefusal|null;
@@ -1221,6 +1222,11 @@ export function createDomView(options: { readonly element: HTMLElement; readonly
     } : {}),
     patch, readSelection, restoreSelection, rememberSelection, ownedBlockAt, textPosition: positionAt, domPoint, geometryRow, geometryOwner,checkInputRegion,checkInputResult,captureLiteralComposition,checkLiteralComposition,checkLiteralCompositionWindow,
     geometryStamp: () => destroyed ? null : currentStamp,
+    selectedTableCell() {
+      if (destroyed || provisional?.composing || !currentStamp || !lastSelection) return null;
+      const target=tableCellTarget({geometryRow},lastSelection.focus);
+      return target && Object.freeze({...target,stamp:currentStamp});
+    },
     beginProvisional, beginComposition, observeComposition, captureTerminalDeletion, observeTerminalDeletion, captureTerminalInsertion, observeTerminalInsertion, releaseTerminal, terminalRetainedBytes, captureComposition, restoreComposition, endProvisional() { provisional = null; },
     setComposing(active) { if (provisional) provisional.composing = active; },
     hasProvisional: () => provisional !== null,

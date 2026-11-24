@@ -137,7 +137,16 @@ export interface SelectionReadFailure { readonly status: 'sdk_failure'; readonly
 export type BookmarkCapture = { readonly status: 'captured'; readonly bookmark: SelectionBookmark } | DomRefusal | SelectionReadFailure;
 export type BookmarkRestore = Submission | DomRefusal | SelectionReadFailure;
 export type TableNavigationExit = Readonly<{ kind: 'add' } | { kind: 'atom'; node: string }>;
+export interface SelectedTableCell {
+  readonly stamp: DeepReadonly<StampDto>;
+  readonly table: string;
+  readonly row: string;
+  readonly column: number;
+  readonly align: 'left' | 'center' | 'right' | null;
+}
 export interface MountedSelectionController {
+  /** Authored row and first effective column of the current native focus cell. */
+  tableCell?(): Readonly<SelectedTableCell> | null;
   captureBookmark(): BookmarkCapture;
   restoreBookmark(bookmark: SelectionBookmark, options?: { readonly policy?: 'exact' | 'mapped'; readonly focus?: boolean }): BookmarkRestore;
   releaseBookmark(bookmark: SelectionBookmark): boolean;

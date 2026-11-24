@@ -254,6 +254,13 @@ function coveredCommand(id: string, payload: Record<string, unknown>): boolean {
     case 'insert-block': return closed(payload, ['kind', 'target']) && (coveredTarget(payload.target)
       || closed(payload.target, ['kind', 'warning_kind']) && payload.target.kind === 'warning' && warningKind(payload.target.warning_kind));
     case 'toggle-list': return closed(payload, ['kind', 'list']) && coveredList(payload.list);
+    case 'insert-row-above': case 'insert-row-below': case 'delete-row':
+      return closed(payload, ['kind','row']) && typeof payload.row==='string';
+    case 'insert-column-left': case 'insert-column-right': case 'delete-column':
+      return closed(payload, ['kind','table','column']) && typeof payload.table==='string'
+        && typeof payload.column==='number' && Number.isSafeInteger(payload.column) && payload.column>=0 && payload.column<=0xffffffff;
+    case 'set-table-cell-align':
+      return closed(payload, ['kind','align']) && (payload.align==='left' || payload.align==='center' || payload.align==='right');
     case 'move': return closed(payload, ['kind', 'node', 'parent', 'before_index']);
     case 'duplicate': return closed(payload, ['kind', 'node', 'parent', 'index']);
     case 'remove': return closed(payload, ['kind', 'node']);
