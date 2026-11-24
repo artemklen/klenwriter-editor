@@ -2812,3 +2812,92 @@ test('OSR-283 packaged SDK2 transforms root verse and paragraphs with exact Undo
     }));
   }
 });
+
+test('OSR-154 packaged SDK2 media commands normalize and edit one block without disturbing its caption or history', async () => {
+  const packet = JSON.parse(readFileSync(new URL('../artifacts/extensions/packet.json', import.meta.url)));
+  const wasm = readFileSync(new URL('../packages/wasm/dist/editor_wasm_bg.wasm', import.meta.url));
+  const module = await loadSdkV2({ wasm });
+  const oldId = '41111111-1111-4111-8111-111111111111';
+  const picked = 'a2222222-2222-4222-8222-222222222222';
+  const missing = 'f3333333-3333-4333-8333-333333333333';
+  const identities = { media: [oldId, picked, missing].map(id => ({id,status:id === missing ? 'missing' : 'exists'})), references: [] };
+  const options = { abi: 'editor-sdk/2', build_id: module.manifest.build_id, profile: packet.kwdjProfile,
+    admission: 'validate', access: 'editable', registry_json: packet.kwdjRegistryJson,
+    profile_options_json: JSON.stringify({identities,limits:null}) };
+  const left = document('Before').content[0], right = document('After').content[0];
+  const caption = document('Caption').content[0];
+  const original = { type:'media_image', attrs:{align:'wide',alt:'Original',media_asset_id:oldId}, content:[caption] };
+  const expected = content => canonicalizeRaw(JSON.stringify({...document(''),content}));
+  const initial = expected([left,original,right]);
+  const make = input => createEditor({ input:new TextEncoder().encode(input), options, loader:async ()=>module });
+  const editor = make(initial);
+  const raw = intent => createCommand('org.klenwriter.kwdj/command/media',intent);
+  const submit = (kind, fields) => completed(editor.submit({ kind, stamp:editor.capture(), ...fields }));
+  const execute = intent => submit('command',{command:raw(intent),history_hint:{kind:'isolated'}});
+  const replace = (node, media_asset_id, accessibility, current_asset_id = oldId) => ({
+    kind:'replace_media',node,current_asset_id,media_asset_id,accessibility,
+  });
+  try {
+    accepted(await editor.ready);
+    const before = editor.capture();
+    const originalNode = node(editor, root(editor).children[1]);
+    const point = { kind:'child',parent:state(editor).root,index:1,affinity:'after' };
+    accepted(submit('set_selection',{selection:{anchor:point,focus:point}}));
+    const selected = structuredClone(state(editor));
+    assert.equal(refused(command(editor,{kind:'insert_block',target:{kind:'media'}}).response).code,'kwdj.command_host_required');
+    const insert = {kind:'insert_media',media_asset_id:picked,accessibility:{kind:'alt',alt:'Alt\r\nline'}};
+    const availability = accepted(editor.query({kind:'query_command',stamp:editor.capture(),command:raw(insert)}));
+    assert.equal(availability.available,true);
+    assert.deepEqual(structuredClone(state(editor)),selected);
+    assert.equal(accepted(execute(insert)).effect,'changed');
+    const inserted = {type:'media_image',attrs:{align:'none',alt:'Alt\nline',media_asset_id:picked}};
+    assert.equal(canonical(editor),expected([left,inserted,original,right]));
+    assert.equal(root(editor).children[2],originalNode.id);
+    assert.equal(editor.capture().revision,String(BigInt(before.revision)+1n));
+    assert.equal(state(editor).history.undo_entries,'1');
+    const reopened = make(canonical(editor));
+    try {
+      accepted(await reopened.ready);
+      assert.equal(canonical(reopened),expected([left,inserted,original,right]));
+      assert.equal(node(reopened,root(reopened).children[1]).attributes.media_asset_id.value,picked);
+    } finally { reopened.destroy(); }
+    accepted(submit('history',{direction:'undo'}));
+    assert.equal(canonical(editor),initial);
+    assert.deepEqual(structuredClone(state(editor).selection),selected.selection);
+
+    const targetState = structuredClone(state(editor));
+    for (const [intent, code] of [
+      [replace(originalNode.id,missing,{kind:'decorative'}),'kwdj.media_identity_unresolved'],
+      [replace(originalNode.id,'b9999999-9999-4999-8999-999999999999',{kind:'decorative'}),'kwdj.identity_resolution_failed'],
+      [replace(originalNode.id,picked,{kind:'decorative'},picked),'kwdj.command_invalid_target'],
+      [replace(root(editor).children[0],picked,{kind:'decorative'}),'kwdj.command_invalid_target'],
+      [replace(originalNode.id,picked,{kind:'alt',alt:''}),'kwdj.invalid_media_accessibility'],
+      [replace(originalNode.id,picked,{kind:'decorative',alt:'forbidden'}),'sdk.invalid_dto'],
+    ]) {
+      assert.equal(refused(execute(intent)).code,code,JSON.stringify(intent));
+      assert.equal(canonical(editor),initial);
+      assert.deepEqual(structuredClone(state(editor)),targetState);
+    }
+    assert.equal(accepted(execute(replace(originalNode.id,picked.toUpperCase(),{kind:'decorative'}))).effect,'changed');
+    const replaced = { ...original, attrs:{align:'wide',decorative:true,media_asset_id:picked} };
+    assert.equal(canonical(editor),expected([left,replaced,right]));
+    const replacement = node(editor,root(editor).children[1]);
+    assert.equal(replacement.id,originalNode.id);
+    assert.deepEqual(replacement.children,originalNode.children);
+    assert.equal(accepted(execute(replace(replacement.id,picked,{kind:'decorative'},picked))).effect,'unchanged');
+    assert.equal(state(editor).history.undo_entries,'1');
+    accepted(submit('history',{direction:'undo'}));
+    assert.equal(canonical(editor),initial);
+    assert.equal(root(editor).children[1],originalNode.id);
+  } finally { editor.destroy(); }
+
+  const legacy = await open(document('abc'));
+  try {
+    const {editor:old} = legacy;
+    assert.equal(accepted(old.read({kind:'catalog'})).commands.length,17);
+    const rawReply = completed(old.submit({kind:'command',stamp:old.capture(),command:raw({
+      kind:'insert_media',media_asset_id:picked,accessibility:{kind:'decorative'},
+    }),history_hint:{kind:'isolated'}}));
+    assert.equal(refused(rawReply).code,'sdk.invalid_dto');
+  } finally { legacy.close(); }
+});

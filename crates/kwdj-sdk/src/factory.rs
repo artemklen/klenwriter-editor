@@ -349,7 +349,12 @@ mod tests {
         assert!(session.context().is_some());
         let catalog = call(&mut session, json!({"kind":"catalog"}));
         let commands = catalog["value"]["commands"].as_array().unwrap();
-        assert_eq!(commands.len(), 39);
+        assert_eq!(commands.len(), 40);
+        assert!(
+            commands
+                .iter()
+                .any(|v| v == "org.klenwriter.kwdj/command/media")
+        );
         assert!(
             commands
                 .iter()
@@ -592,6 +597,7 @@ mod tests {
                                     editor_kwdj::commands::MOVE_CELL_COMMAND_ID,
                                 ]);
                                 sorted.push("org.klenwriter.kwdj/command/delete-forward");
+                                sorted.push(editor_kwdj::commands::MEDIA_COMMAND_ID);
                                 sorted.sort_unstable();
                                 assert_eq!(actual, sorted, "{id}: exact additive SDK2 catalog");
                                 // ABI1 catalog order remains the original compiled order.

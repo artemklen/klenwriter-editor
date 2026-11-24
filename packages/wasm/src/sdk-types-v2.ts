@@ -11,6 +11,10 @@ export type SessionContextV2 = { build_id: string, profile: ProfileDto, registry
 
 export type KwdjClipboardIntentV2 = { "kind": "insert_fragment", fragment_json: string, };
 
+export type KwdjMediaAccessibilityV2 = { "kind": "alt", alt: string, } | { "kind": "decorative", };
+
+export type KwdjMediaIntentV2 = { "kind": "insert_media", media_asset_id: string, accessibility: KwdjMediaAccessibilityV2, } | { "kind": "replace_media", node: string, current_asset_id: string, media_asset_id: string, accessibility: KwdjMediaAccessibilityV2, };
+
 export type LiteraryAuthoringKindV2 = "author_note";
 
 export type LiteraryBlockTargetV2 = { "kind": "literary_block", literary_kind: LiteraryAuthoringKindV2, };

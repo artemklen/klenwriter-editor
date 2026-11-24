@@ -51,7 +51,9 @@ New public providers/descriptors must preserve this architecture in OSR-64.
 | --- | --- |
 | Native and WASM SDK | Move, remove, whole-block KWDJ clipboard, Undo/Redo, and export/reopen preserve the media identity, alignment, accessibility attributes, and caption. |
 | Mounted KWDJ DOM | An offline placeholder has the authored accessible name for meaningful media. The caption remains editable. Keyboard deletion of a selected whole block and Undo preserve its attributes. |
-| Create media block | Unavailable in the library. Media selection and upload belong to a host picker. |
+| Insert or replace media | A host picker supplies the asset. The editor inserts an offline placeholder or updates the existing asset in one Undo step, preserving the caption and alignment on replacement. |
+
+`runKwdjMediaPicker` in `@klenwriter/editor-kwdj/dom` uses the active mounted selection and passes one `AbortSignal` to `pickMedia` and `mediaMetadata`. Provide a connected `focusScope` around the picker controls so a current request can restore editor focus. Metadata must identify the same asset and supply nonempty `alt` or explicit `decorative: true`. The asset must have status `exists` in the KWDJ profile’s active `identities.media` facts. The host owns the picker, lookup and asset availability.
 
 ## Literary block parity
 

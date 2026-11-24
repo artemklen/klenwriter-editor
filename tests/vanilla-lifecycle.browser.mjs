@@ -878,6 +878,89 @@ test('public vanilla alpha checks replacement before publishing to the live edit
   expect(observed.liveSessions).toBe(1);
 });
 
+test('public vanilla alpha saves and reopens media inserted by the mounted host picker', async ({ page }) => {
+  const assetId = 'a2222222-2222-4222-8222-222222222222';
+  const source = {
+    schema: 'klenwriter.document', schema_version: 1, profile: 'prose',
+    content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Media sample' }] }],
+  };
+  const expected = canonicalizeRaw(JSON.stringify({
+    ...source,
+    content: [...source.content, { type: 'media_image', attrs: { align: 'none', alt: 'Sample illustration', media_asset_id: assetId } }],
+  }));
+  const actual = await page.evaluate(async ({ source, assetId }) => {
+    const api = await import('@klenwriter/editor');
+    const { runKwdjMediaPicker } = await import('@klenwriter/editor-kwdj/dom');
+    const { options, wasm } = window.vanillaFixture;
+    const { element } = options;
+    const encode = input => new TextEncoder().encode(input);
+    const config = {
+      ...options,
+      editor: {
+        ...options.editor,
+        input: encode(JSON.stringify(source)),
+        options: { ...options.editor.options, profile_options_json: JSON.stringify({
+          identities: { media: [{ id: assetId, status: 'exists' }], references: [] }, limits: null,
+        }) },
+      },
+    };
+    const settle = ticket => ticket.status === 'queued' ? ticket.completion : ticket.response;
+    const calls = [];
+    const editor = api.mount(config);
+    let saved, replace, liveLabel;
+    try {
+      const ready = await editor.ready;
+      if (ready.status !== 'ready') throw new Error(JSON.stringify(ready));
+      element.focus();
+      const root = editor.read({ kind: 'state' }).value.state.root;
+      const point = { kind:'child', parent:root, index:1, affinity:'after' };
+      const selected = await settle(api.update(editor, { kind:'set_selection', stamp:editor.capture(), selection:{anchor:point,focus:point} }));
+      if (selected.status !== 'ok') throw new Error(JSON.stringify(selected));
+      const started = runKwdjMediaPicker(editor.hostRequests, {target:{kind:'insert'},services:{
+        async pickMedia(request, {signal}) {
+          calls.push({service:'picker',request,aborted:signal.aborted});
+          return {status:'ok',value:{assetId}};
+        },
+        async mediaMetadata(request, {signal}) {
+          calls.push({service:'metadata',request,aborted:signal.aborted});
+          return {status:'ok',value:{assetId,alt:'Sample illustration'}};
+        },
+      }});
+      if (started.status !== 'started') throw new Error(JSON.stringify(started));
+      const outcome = await started.completion;
+      if (outcome.status !== 'submitted' || (await settle(outcome.submission)).status !== 'ok') throw new Error(JSON.stringify(outcome));
+      saved = await api.export(editor);
+      liveLabel = element.querySelector('.editor-media-placeholder')?.getAttribute('aria-label');
+      replace = await editor.replace(encode(saved.canonicalJson));
+    } finally {
+      await settle(api.destroy(editor).sdk);
+    }
+    const reopened = api.mount({ ...config, editor:{...config.editor,input:encode(saved.canonicalJson)} });
+    let ready, exported, reopenedLabel;
+    try {
+      ready = await reopened.ready;
+      if (ready.status === 'ready') {
+        exported = await api.export(reopened);
+        reopenedLabel = element.querySelector('.editor-media-placeholder')?.getAttribute('aria-label');
+      }
+    } finally {
+      await settle(api.destroy(reopened).sdk);
+    }
+    return {calls,saved,replace,ready,exported,liveLabel,reopenedLabel,resources:JSON.parse(wasm.resourceCounts())};
+  }, { source, assetId });
+  expect(actual.calls).toEqual([
+    {service:'picker',request:{kind:'insert'},aborted:false},
+    {service:'metadata',request:{assetId},aborted:false},
+  ]);
+  expect(actual.saved).toMatchObject({status:'exported',canonicalJson:expected});
+  expect(actual.liveLabel).toBe('Sample illustration');
+  expect(actual.replace).toMatchObject({status:'completed',response:{status:'ok'}});
+  expect(actual.ready).toMatchObject({status:'ready'});
+  expect(actual.exported).toMatchObject({status:'exported',canonicalJson:expected});
+  expect(actual.reopenedLabel).toBe('Sample illustration');
+  expect(actual.resources).toEqual(nativeEmpty);
+});
+
 test('public vanilla alpha refuses a duplicate DOC-002 child in the native probe', async ({ page }) => {
   const source = alphaDocuments.find(document => document.id === 'DOC-002');
   const observation = await observeAlphaInput(page, source.canonical, true);

@@ -10,6 +10,8 @@ import { kwdjTypingDomInventory } from './typing-dom-inventory.js';
 
 export { bindKwdjContainerLabel } from './container-label.js';
 export type { KwdjContainerLabelOptions } from './container-label.js';
+export { runKwdjMediaPicker } from './media-host.js';
+export type { KwdjMediaPickerOptions, KwdjMediaTarget } from './media-host.js';
 
 const prefix = 'org.klenwriter.kwdj/';
 const colorTokens = ['muted', 'accent', 'manuscript', 'warning', 'success', 'danger'];
@@ -231,9 +233,19 @@ function coveredClipboard(value: unknown): boolean {
   };
   return value.content.every(n => visit(n, 1));
 }
+function coveredMedia(payload: Record<string, unknown>): boolean {
+  const accessibility = payload.accessibility;
+  if (!smallString(payload.media_asset_id, 64) || !(closed(accessibility, ['kind']) && accessibility.kind === 'decorative'
+    || closed(accessibility, ['kind', 'alt']) && accessibility.kind === 'alt' && smallString(accessibility.alt))) return false;
+  return payload.kind === 'insert_media' && closed(payload, ['kind', 'media_asset_id', 'accessibility'])
+    || payload.kind === 'replace_media' && closed(payload, ['kind', 'node', 'current_asset_id', 'media_asset_id', 'accessibility'])
+      && typeof payload.node === 'string' && smallString(payload.current_asset_id, 64);
+}
 function coveredCommand(id: string, payload: Record<string, unknown>): boolean {
   const name = id.slice(`${prefix}command/`.length);
-  if (!id.startsWith(`${prefix}command/`) || payload.kind !== name.replaceAll('-', '_')) return false;
+  if (!id.startsWith(`${prefix}command/`)) return false;
+  if (name === 'media') return coveredMedia(payload);
+  if (payload.kind !== name.replaceAll('-', '_')) return false;
   switch (name) {
     case 'enter': case 'shift-enter': case 'delete-backward': case 'delete-forward': case 'unset-link': case 'toggle-quote': case 'dismiss-slash':
       return closed(payload, ['kind']);

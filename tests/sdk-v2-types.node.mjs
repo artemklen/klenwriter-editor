@@ -11,10 +11,12 @@ test('generated V2 declarations stay separate and narrow controller requests wit
   try {
     const sdk = resolve('packages/sdk/dist/index.js').replaceAll('\\', '/');
     const dom = resolve('packages/dom/dist/index.js').replaceAll('\\', '/');
+    const kwdjDom = resolve('packages/kwdj/dist/dom.js').replaceAll('\\', '/');
     const source = `import { createEditor, loadSdkV2 } from ${JSON.stringify(sdk)};
-import type { CreateEditorOptions, OpenOptions, OpenOptionsV2, SessionContextV2, BridgeRequest, StampDto, LoadedSdkV1, LoadedSdkV2, HostMediaPickerRequest, HostServices } from ${JSON.stringify(sdk)};
+import type { CreateEditorOptions, OpenOptions, OpenOptionsV2, SessionContextV2, BridgeRequest, StampDto, LoadedSdkV1, LoadedSdkV2, HostMediaPickerRequest, HostServices, KwdjMediaIntentV2 } from ${JSON.stringify(sdk)};
 import { runMountedHostService } from ${JSON.stringify(dom)};
 import type { MountedHostRequests } from ${JSON.stringify(dom)};
+import { runKwdjMediaPicker } from ${JSON.stringify(kwdjDom)};
 interface LegacyHostOptions extends CreateEditorOptions { hostLabel:string }
 const profile={profile_id:'org.example.notes',profile_version:'1.0.0',codec_id:'org.example.notes/json',wire_version:1,extensions:[]};
 const options:OpenOptionsV2={abi:'editor-sdk/2',build_id:'sha256:fixture',profile,admission:'validate',access:'editable',registry_json:'{"bound":18446744073709551615}',profile_options_json:'{"root_blocks":[],"limits":null}'};
@@ -60,6 +62,16 @@ const run=runMountedHostService(mounted,{
   command(choice){return choice.kind==='set'?{id:'set',payload_json:JSON.stringify(choice.link)}:{id:'remove',payload_json:'{}'};},
 });
 if(run.status==='started'){run.cancel();void run.completion;}
+const media=runKwdjMediaPicker(mounted,{
+  target:{kind:'replace',node:'old-node',assetId:'old-asset'},
+  services:{...services,async mediaMetadata({assetId}){return {status:'ok',value:{assetId,decorative:true}};}},
+});
+if(media.status==='started'){media.cancel();void media.completion;}
+// @ts-expect-error A mounted replacement needs the original node token.
+runKwdjMediaPicker(mounted,{target:{kind:'replace',assetId:'old-asset'},services});
+// @ts-expect-error The closed native decorative branch cannot also carry alt text.
+const invalidAccessibility:KwdjMediaIntentV2={kind:'insert_media',media_asset_id:'asset',accessibility:{kind:'decorative',alt:'Example'}};
+void invalidAccessibility;
 // @ts-expect-error A replacement identifies the original asset.
 const noAsset:HostMediaPickerRequest={kind:'replace'};
 // @ts-expect-error Reference lookup is by an existing identity, with no create flow.

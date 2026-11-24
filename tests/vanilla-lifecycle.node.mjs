@@ -227,7 +227,6 @@ test('public alpha node types match the standalone subset of both renderer catal
   const kwdjNodesOutsideAlpha = [
     'org.klenwriter.kwdj/disclosure',
     'org.klenwriter.kwdj/literary_block',
-    'org.klenwriter.kwdj/media_image',
     'org.klenwriter.kwdj/spoiler',
     'org.klenwriter.kwdj/stanza_break',
     'org.klenwriter.kwdj/table',
@@ -242,7 +241,9 @@ test('public alpha node types match the standalone subset of both renderer catal
   assert.deepEqual(allKwdjNodes.filter(node => kwdjNodesOutsideAlpha.includes(node)).sort(), kwdjNodesOutsideAlpha);
   const rendered = Object.fromEntries(catalogs.map(({ definition }) => [
     definition.binding.profile.profile_id,
-    Object.keys(definition.nodes).filter(node => !kwdjNodesOutsideAlpha.includes(node)).sort(),
+    Object.keys(definition.nodes).filter(node =>
+      definition.binding.profile.profile_id !== 'org.klenwriter.kwdj' || !kwdjNodesOutsideAlpha.includes(node)
+    ).sort(),
   ]));
   assert.deepEqual(vanilla.alphaBlockTypes, rendered);
   assert.equal(Object.isFrozen(vanilla.alphaBlockTypes), true);

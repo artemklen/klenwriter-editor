@@ -4,11 +4,11 @@ use crate::{
     convert::{diagnostic, profile_error},
     wire_v2::{
         KwdjClipboardIntentV2, KwdjDeleteSelectionScopeV2, KwdjForwardDeleteIntentV2,
-        KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2, KwdjScopedSelectionIntentV2,
-        KwdjTableCellAlignIntentV2, KwdjTableCellIntentV2, KwdjTableColumnIntentV2,
-        KwdjTableRowIntentV2, KwdjWarningIntentV2, LabeledContainerBlockTargetV2,
-        LabeledContainerKindV2, LiteraryBlockTargetV2, TableCellAlignV2, WarningBlockTargetV2,
-        WarningKindV2,
+        KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2, KwdjMediaIntentV2,
+        KwdjScopedSelectionIntentV2, KwdjTableCellAlignIntentV2, KwdjTableCellIntentV2,
+        KwdjTableColumnIntentV2, KwdjTableRowIntentV2, KwdjWarningIntentV2,
+        LabeledContainerBlockTargetV2, LabeledContainerKindV2, LiteraryBlockTargetV2,
+        TableCellAlignV2, WarningBlockTargetV2, WarningKindV2,
     },
 };
 use editor_bridge::{BridgeAdapter, ClipboardContextData, SelectionFragmentData};
@@ -20,7 +20,7 @@ use editor_kwdj::{
         CLIPBOARD_COMMAND_ID, DELETE_COLUMN_COMMAND_ID, DELETE_FORWARD_COMMAND_ID,
         DELETE_ROW_COMMAND_ID, INSERT_COLUMN_LEFT_COMMAND_ID, INSERT_COLUMN_RIGHT_COMMAND_ID,
         INSERT_ROW_ABOVE_COMMAND_ID, INSERT_ROW_BELOW_COMMAND_ID, KWDJ_COMMANDS, KwdjIntent,
-        LabeledContainerKind, MERGE_CELLS_COMMAND_ID, MOVE_CELL_COMMAND_ID,
+        LabeledContainerKind, MEDIA_COMMAND_ID, MERGE_CELLS_COMMAND_ID, MOVE_CELL_COMMAND_ID,
         SET_CONTAINER_LABEL_COMMAND_ID, SET_LITERARY_KIND_COMMAND_ID,
         SET_TABLE_CELL_ALIGN_COMMAND_ID, SET_WARNING_KIND_COMMAND_ID, SPLIT_CELL_COMMAND_ID,
         UNWRAP_LABELED_CONTAINER_COMMAND_ID, UNWRAP_LITERARY_BLOCK_COMMAND_ID,
@@ -124,7 +124,28 @@ impl BridgeAdapter<KwdjProfile<'static>> for ClipboardAdapterV2 {
             key.parse_node_token(node)
                 .map_err(|error| diagnostic(error.as_str(), "command.node"))
         };
-        if command.id == CLIPBOARD_COMMAND_ID {
+        if command.id == MEDIA_COMMAND_ID {
+            Ok(match editor_bridge::decode(&command.payload_json)? {
+                KwdjMediaIntentV2::InsertMedia {
+                    media_asset_id,
+                    accessibility,
+                } => KwdjIntent::InsertMedia {
+                    asset_id: media_asset_id,
+                    alt: accessibility.into_alt(),
+                },
+                KwdjMediaIntentV2::ReplaceMedia {
+                    node,
+                    current_asset_id,
+                    media_asset_id,
+                    accessibility,
+                } => KwdjIntent::ReplaceMedia {
+                    node: parse_node(&node)?,
+                    current_asset_id,
+                    asset_id: media_asset_id,
+                    alt: accessibility.into_alt(),
+                },
+            })
+        } else if command.id == CLIPBOARD_COMMAND_ID {
             let KwdjClipboardIntentV2::InsertFragment { fragment_json } =
                 editor_bridge::decode(&command.payload_json)?;
             Ok(KwdjIntent::InsertFragment {

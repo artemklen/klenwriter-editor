@@ -24,6 +24,7 @@ export interface HostMediaIdentity {
 
 export interface HostMediaMetadata extends HostMediaIdentity {
   readonly alt?: string;
+  readonly decorative?: true;
 }
 
 export interface HostLink {
