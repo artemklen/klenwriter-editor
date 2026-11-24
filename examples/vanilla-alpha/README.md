@@ -38,3 +38,9 @@ node examples/vanilla-alpha/run.mjs /path/to/packages --check
 
 The command prints the checkout revision, the installed archive hashes, and
 the result of each scenario in both browsers.
+
+## Host services
+
+The KWDJ example includes a local media picker, link dialog and reference lookup. Insert media adds the sample image to the document, and Save and Reopen saved preserve its asset identity and alt text. Open reference sample loads a read-only document and shows its resolved label.
+
+The example takes one `hostServices` option. Import `startAlpha` from `app.mjs` and pass a host services object to use a different implementation. The normal entry uses the local mock. The browser check also starts the same example with a test adapter that returns different media metadata, link URL and reference label.

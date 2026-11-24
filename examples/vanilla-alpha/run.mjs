@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, readFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, webkit } from 'playwright';
 import { serveAlphaConsumer } from '../../scripts/vanilla-alpha/browser.mjs';
 import { buildConsumerModule, installAlphaConsumer } from '../../scripts/vanilla-alpha/consumer.mjs';
 import { checkLinkDialog } from './link-check.mjs';
+import { alternateEntry, checkAlternateHostServices, checkMockHostServices } from './host-check.mjs';
 
 const example = fileURLToPath(new URL('./', import.meta.url));
 const workspace = resolve(example, '../..');
@@ -65,7 +66,7 @@ assert.doesNotMatch(profileSource, /\.\.\/notes-extension\//u);
 const consumer = installAlphaConsumer(workspace, resolve(bundle), manifest.dependencies);
 let server;
 try {
-  for (const file of ['app.mjs', 'profile.mjs', 'link-action.mjs', 'kwdj-registry.json', 'index.html', 'example.css']) {
+  for (const file of ['entry.mjs', 'app.mjs', 'profile.mjs', 'link-action.mjs', 'host-services.mjs', 'reference-document.json', 'kwdj-registry.json', 'index.html', 'example.css']) {
     copyFileSync(join(example, file), join(consumer.directory, file));
   }
   const notesDirectory = join(consumer.directory, 'notes-extension');
@@ -74,7 +75,7 @@ try {
   for (const member of ['dom.mjs', 'dom-inventory.mjs', 'd0.json', 'd1.json']) {
     copyFileSync(join(notesSource, member), join(notesDirectory, member));
   }
-  const entry = join(consumer.directory, 'app.mjs');
+  const entry = join(consumer.directory, 'entry.mjs');
   const emitted = join(consumer.directory, 'dist', 'app.mjs');
   const build = buildConsumerModule(consumer, entry, emitted);
   const template = readFileSync(join(consumer.directory, 'index.html'), 'utf8');
@@ -105,6 +106,10 @@ try {
     });
   } else {
     const results = [];
+    const alternateSource = join(consumer.directory,'alternate-entry.mjs');
+    const alternateBuild = join(consumer.directory,'dist','alternate-entry.mjs');
+    writeFileSync(alternateSource,alternateEntry);
+    buildConsumerModule(consumer,alternateSource,alternateBuild);
     for (const [engine, driver] of Object.entries({ chromium, webkit })) {
       const browser = await driver.launch();
       try {
@@ -201,13 +206,23 @@ try {
         await profile.selectOption('kwdj');
         await waitForStatus('Opened KWDJ');
         const link = await checkLinkDialog(page);
+        const hostServices = await checkMockHostServices(page);
+        const alternate = await browser.newPage();
+        alternate.setDefaultTimeout(8_000);
+        alternate.on('pageerror', error => errors.push(error.message));
+        await alternate.route(new URL('/app.mjs',server.url).href,
+          route => route.fulfill({path:alternateBuild,contentType:'text/javascript'}));
+        await alternate.goto(server.url);
+        const alternateHostServices = await checkAlternateHostServices(alternate);
 
         assert.deepEqual(errors, []);
         results.push({
           engine, version: browser.version(),
           editUndoRedoSaveReloadReopen: 'pass', profileSwitchAndValidation: 'pass', extensionAndUndo: 'pass',
-          linkDialog: link,
+          linkDialog: link, hostServices, alternateHostServices,
         });
+      } catch (error) {
+        throw new Error(engine + ' alpha example check failed', {cause:error});
       } finally {
         await browser.close();
       }

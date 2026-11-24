@@ -31,7 +31,13 @@
     </section>
   </fieldset>
   <p role="status"><span id="status">Loading editor</span></p>
-  <div id="editor-toolbar"></div>
+  <div id="editor-toolbar">
+    <div id="host-controls" class="kw-ui-toolbar" role="group" aria-label="Host services" hidden>
+      <button type="button" class="kw-ui-button" id="edit-link" aria-haspopup="dialog" aria-controls="link-dialog">Link</button>
+      <button type="button" class="kw-ui-button" id="insert-media">Insert media</button>
+      <button type="button" class="kw-ui-button" id="open-reference">Open reference sample</button>
+    </div>
+  </div>
   <div id="editor" role="textbox" aria-label="Document" aria-multiline="true"></div>
   <div id="editor-gutter"></div>
   <div id="editor-entry"></div>

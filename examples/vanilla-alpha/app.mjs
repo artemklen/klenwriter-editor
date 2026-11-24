@@ -2,7 +2,9 @@
 import { destroy, export as exportDocument, mount, subscribe, update } from '@klenwriter/editor';
 import { createCommand, loadSdkV2 } from '@klenwriter/editor-sdk';
 import { createCalloutEditor, profiles } from './profile.mjs';
-import { createLinkAction } from './link-action.mjs';
+import { runKwdjLinkDialog, runKwdjMediaPicker } from '@klenwriter/editor-kwdj/dom';
+import { createMockHostServices, referenceEntityId } from './host-services.mjs';
+import referenceDocument from './reference-document.json';
 
 const editorElement = document.querySelector('#editor');
 const controls = document.querySelector('#controls');
@@ -14,23 +16,29 @@ const calloutOutput = document.querySelector('#extension-canonical');
 const calloutDetails = calloutOutput.parentElement;
 const insertCallout = document.querySelector('#insert-callout');
 const undoCallout = document.querySelector('#undo-callout');
-const link = createLinkAction(document.querySelector('#link-dialog'));
+const linkDialog = document.querySelector('#link-dialog');
+const hostControls = document.querySelector('#host-controls');
+const linkButton = document.querySelector('#edit-link');
+const mediaButton = document.querySelector('#insert-media');
 const kwdjUi = {
   slots: {
     toolbar: document.querySelector('#editor-toolbar'),
     gutter: document.querySelector('#editor-gutter'),
     entry: document.querySelector('#editor-entry'),
   },
-  profile: () => ({ toolbar: [link], insertions: [], blockActions: [], moves: () => [] }),
+  profile: () => ({ toolbar: [], insertions: [], blockActions: [], moves: () => [] }),
 };
 const encoder = new TextEncoder();
 const sdk = loadSdkV2();
 let editor;
 let calloutEditor;
 let currentProfile = profileSelect.value;
+let hostServices;
+let referenceOpen = false;
+let referenceLookup;
 
 function storageKey() {
-  return 'klenwriter-vanilla-alpha/' + currentProfile;
+  return 'klenwriter-vanilla-alpha/' + currentProfile + (referenceOpen ? '/reference' : '');
 }
 
 function responseValue(result, kind) {
@@ -82,8 +90,10 @@ async function showCalloutExport() {
   calloutDetails.open = true;
 }
 
-async function open(profile, input = profiles[profile].initialDocument) {
+async function open(profile, input = profiles[profile].initialDocument, { reference = false } = {}) {
   const { options, renderers } = profiles[profile];
+  referenceLookup?.abort();
+  referenceLookup = undefined;
   await closeCalloutEditor();
   calloutOutput.textContent = '';
   delete calloutOutput.dataset.revision;
@@ -95,7 +105,10 @@ async function open(profile, input = profiles[profile].initialDocument) {
   }
   const mounted = mount({
     element: editorElement,
-    editor: { input: encoder.encode(input), loader: () => sdk, options },
+    editor: {
+      input: encoder.encode(input), loader: () => sdk,
+      options: reference ? { ...options,access:'read_only' } : options,
+    },
     renderers,
     ui: profile === 'kwdj' ? kwdjUi : undefined,
   });
@@ -107,7 +120,11 @@ async function open(profile, input = profiles[profile].initialDocument) {
     if (ui.status !== 'ready') throw new Error(JSON.stringify(ui));
   }
   currentProfile = profile;
+  referenceOpen = reference;
   extensionPanel.hidden = profile !== 'notes';
+  hostControls.hidden = profile !== 'kwdj';
+  linkButton.disabled = mediaButton.disabled = reference;
+  document.querySelector('#undo').disabled = document.querySelector('#redo').disabled = reference;
 
   let pending = false;
   subscribe(mounted, event => {
@@ -125,7 +142,8 @@ function action(selector, perform, event = 'click') {
   document.querySelector(selector).addEventListener(event, async () => {
     controls.disabled = true;
     try {
-      status.textContent = await perform();
+      const message = await perform();
+      if (message !== undefined) status.textContent = message;
     } catch (error) {
       showError(error);
     } finally {
@@ -139,6 +157,62 @@ async function history(direction) {
   await snapshot();
   return direction === 'undo' ? 'Undone' : 'Redone';
 }
+
+async function hostResult(owner, started, label, applied) {
+  if (started.status !== 'started') return label + ' unavailable';
+  const outcome = await started.completion;
+  if (editor !== owner) return undefined;
+  if (outcome.status === 'submitted') {
+    const submission = outcome.submission;
+    const response = submission.status === 'queued' ? await submission.completion : submission.response;
+    await outcome.focus;
+    if (editor !== owner) return undefined;
+    return response.status === 'ok' ? applied : label + ' unavailable';
+  }
+  return label + (outcome.status === 'cancelled' ? ' cancelled' : ' unavailable');
+}
+
+for (const button of [linkButton, mediaButton]) {
+  // Keep the current editor selection through the pointer's focus default.
+  button.addEventListener('pointerdown', event => {
+    if (event.button === 0 && !event.altKey && !event.ctrlKey && !event.metaKey) event.preventDefault();
+  });
+}
+
+action('#edit-link', async () => {
+  if (!linkDialog.hidden) return undefined;
+  const owner = editor;
+  try {
+    return await hostResult(owner, runKwdjLinkDialog(owner.hostRequests, {
+      request: {kind:'create'}, services:hostServices, focusScope:linkDialog,
+    }), 'Link', 'Link applied');
+  } finally {
+    linkDialog.hidden = true;
+  }
+});
+
+action('#insert-media', async () => {
+  const owner = editor;
+  const started = runKwdjMediaPicker(owner.hostRequests, {
+    target: {kind:'insert'}, services:hostServices, focusScope:hostControls,
+  });
+  if (started.status === 'started') mediaButton.focus({preventScroll:true});
+  return hostResult(owner, started, 'Media', 'Media inserted');
+});
+
+action('#open-reference', async () => {
+  await open('kwdj', JSON.stringify(referenceDocument), {reference:true});
+  const owner = editor, lookup = new AbortController();
+  referenceLookup = lookup;
+  try {
+    const reply = await hostServices.lookupReference?.({entityId:referenceEntityId}, {signal:lookup.signal});
+    if (editor !== owner || lookup.signal.aborted) return undefined;
+    return reply?.status === 'ok' && reply.value.entityId === referenceEntityId
+      ? reply.value.label ?? 'Reference loaded' : 'Reference metadata unavailable';
+  } finally {
+    if (referenceLookup === lookup) referenceLookup = undefined;
+  }
+});
 
 action('#undo', () => history('undo'));
 action('#redo', () => history('redo'));
@@ -197,14 +271,18 @@ action('#save', async () => {
 action('#reopen', async () => {
   const saved = localStorage.getItem(storageKey());
   if (saved === null) return 'No saved document';
-  await open(currentProfile, saved);
+  await open(currentProfile, saved, {reference:referenceOpen});
   return 'Reopened saved document';
 });
 
-try {
-  await open(currentProfile);
-  status.textContent = 'Editor ready';
-  controls.disabled = false;
-} catch (error) {
-  showError(error);
+/** @param {{ hostServices?: import('@klenwriter/editor-sdk').HostServices }} [options] */
+export async function startAlpha({ hostServices: services = createMockHostServices(linkDialog) } = {}) {
+  hostServices = services;
+  try {
+    await open(currentProfile);
+    status.textContent = 'Editor ready';
+    controls.disabled = false;
+  } catch (error) {
+    showError(error);
+  }
 }
