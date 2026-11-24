@@ -1,12 +1,12 @@
 {
   "schema": 1,
   "package": "klenwriter-kwdj-contract",
-  "packageVersion": "1.0.0",
+  "packageVersion": "1.0.1",
   "kwdjSchemaVersion": 1,
   "canonicalRule": "klenwriter-canonical-json-v1",
   "authority": "https://github.com/artemklen/klenwriter-editor",
   "digestGrammar": "sorted UTF-8: path NUL sha256 NUL decimal-size LF; index excluded",
-  "contentSha256": "6b1ac30d9c629eb1396fc5e1b6e1917687468d7c3743b8a4924744312ba976bb",
+  "contentSha256": "273902cd6cb2c76df9bd1c79833d184f8538e7143ac3d7afa58fe567ecc40615",
   "files": [
     {
       "path": "LICENSE-APACHE",
@@ -71,12 +71,12 @@
     {
       "path": "manifest.json",
       "bytes": 4647,
-      "sha256": "987f6b0f12922d406a1e514c41ecd31c5c5187a762058d14d0eaf6472d892d5a"
+      "sha256": "b4bb47fdc4ca17d2e7d5237d961efc4146a459bd13d3319d3e732f6b82839c31"
     },
     {
       "path": "source-provenance.json",
       "bytes": 7032,
-      "sha256": "16101c5cfb76f793538da794bf09052f0c7f7071e9ad6c821c69a5206a0345d1"
+      "sha256": "9cd9acb8c29a239aa6c0160f2ed62f1d1a2fe800a75dfb3601c32755564e4663"
     }
   ]
 }

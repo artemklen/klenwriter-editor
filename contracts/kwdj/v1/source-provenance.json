@@ -14,7 +14,7 @@
       "license": "MIT OR Apache-2.0",
       "grant": "Owner D10/D11 approved rights/transfer2026-10-17",
       "review": "Owner-controlled contract/schema or synthetic fixture data. Reviewed technical grammar, metadata and fixed synthetic payloads; no third-party headers/user documents/secrets/production captures. Schema URI references are identifiers, not copied third-party payloads.",
-      "destinationSha256": "987f6b0f12922d406a1e514c41ecd31c5c5187a762058d14d0eaf6472d892d5a"
+      "destinationSha256": "b4bb47fdc4ca17d2e7d5237d961efc4146a459bd13d3319d3e732f6b82839c31"
     },
     {
       "source": "contracts/kwdj/v1/kwdj.schema.json",
