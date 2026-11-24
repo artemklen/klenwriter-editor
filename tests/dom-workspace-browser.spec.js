@@ -22,11 +22,25 @@ test.beforeEach(async({page},testInfo)=>{
   page.on('pageerror',error=>record.errors.push(error.message));
   page.on('request',request=>{if(!request.url().startsWith('http://127.0.0.1:4174/'))record.requests.push(request.url());});
   await page.addInitScript(()=>{window.domViolations=[];document.addEventListener('securitypolicyviolation',event=>window.domViolations.push({directive:event.violatedDirective,blocked:event.blockedURI}));});
-  const response=await page.goto('/dom');record.csp=response.headers()['content-security-policy'];
+  const singleHistoryEntry = testInfo.tags.includes('@single-history-entry');
+  let response;
+  if (singleHistoryEntry) {
+    // Mac WebKit uses Backspace for history navigation on noneditable elements.
+    // Start this document-protection fixture without a preceding page.
+    const target = new URL('/dom', testInfo.project.use.baseURL).href;
+    [response] = await Promise.all([
+      page.waitForResponse(candidate => candidate.url() === target && candidate.request().isNavigationRequest()),
+      page.evaluate(url => window.location.replace(url), target),
+    ]);
+  } else {
+    response = await page.goto('/dom');
+  }
+  record.csp=response.headers()['content-security-policy'];
   expect(record.csp).toContain("default-src 'none'");expect(record.csp).toContain("'wasm-unsafe-eval'");
   expect(record.csp).not.toContain("'unsafe-inline'");expect(record.csp).not.toMatch(/(?:^|\s)'unsafe-eval'/);
   expect(record.csp).toContain('img-src http://127.0.0.1:4174/favicon.ico;');
   await page.waitForFunction(()=>window.domHostReady===true);
+  if (singleHistoryEntry) expect(await page.evaluate(() => window.history.length)).toBe(1);
   record.metadata=await call(page,'metadata');
 });
 test.afterEach(async({page},testInfo)=>{
@@ -2262,7 +2276,7 @@ test.describe('OSR-156 mounted reference preservation', () => {
     expect(await call(page,'snapshot',id)).toBe(fixture.moved);
   });
 
-  for (const mode of ['readOnly','disabled']) test(`locked article ${mode} preserves UUID after trusted input, Backspace and paste`, async ({page}) => {
+  for (const mode of ['readOnly','disabled']) test(`locked article ${mode} preserves UUID after trusted input, Backspace and paste`, {tag:'@single-history-entry'}, async ({page}) => {
     const id = await mount(page,fixture.initial,{mode,access:'read_only'});
     const host = page.locator(`#${id}`);
     const originalLeaf = await reference(page,id,'/1/0');
