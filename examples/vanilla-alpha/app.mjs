@@ -36,6 +36,7 @@ let currentProfile = profileSelect.value;
 let hostServices;
 let referenceOpen = false;
 let referenceLookup;
+let activeAction;
 
 function storageKey() {
   return 'klenwriter-vanilla-alpha/' + currentProfile + (referenceOpen ? '/reference' : '');
@@ -140,14 +141,19 @@ async function open(profile, input = profiles[profile].initialDocument, { refere
 
 function action(selector, perform, event = 'click') {
   document.querySelector(selector).addEventListener(event, async () => {
+    const token = Symbol();
+    activeAction = token;
     controls.disabled = true;
     try {
       const message = await perform();
-      if (message !== undefined) status.textContent = message;
+      if (activeAction === token && message !== undefined) status.textContent = message;
     } catch (error) {
-      showError(error);
+      if (activeAction === token) showError(error);
     } finally {
-      controls.disabled = false;
+      if (activeAction === token) {
+        activeAction = undefined;
+        controls.disabled = false;
+      }
     }
   });
 }

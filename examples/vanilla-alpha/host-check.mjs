@@ -30,7 +30,15 @@ await startAlpha({
       return reply('media',request,signal,{assetId:${JSON.stringify(assetId)},alt:${JSON.stringify(stubMediaAlt)}});
     },
     async lookupReference(request,{signal}) {
-      return reply('reference',request,signal,{entityId:${JSON.stringify(referenceId)},label:${JSON.stringify(stubReferenceLabel)}});
+      const result = reply('reference',request,signal,{entityId:${JSON.stringify(referenceId)},label:${JSON.stringify(stubReferenceLabel)}});
+      const attempts = window.alphaReferenceAttempts;
+      if (!attempts) return result;
+      return new Promise((resolve,reject) => {
+        attempts.push({signal,resolve,reject});
+        if (attempts.length === 1) {
+          signal.addEventListener('abort', () => reject(signal.reason), {once:true});
+        }
+      });
     },
   },
 });
@@ -111,6 +119,81 @@ async function checkReference(page, label) {
   assert.equal(await editor(page).getAttribute('contenteditable'),'false');
 }
 
+async function checkReferenceLookupOwnership(page) {
+  const output = await canonical(page);
+  const beforeRevision = await revision(page);
+  const reference = button(page, 'Open reference sample');
+  const controls = page.locator('#controls');
+  const errors = [];
+  const errorText = 'Current reference lookup failed';
+  const recordError = message => {
+    if (message.type() === 'error' && /AbortError|Current reference lookup failed/.test(message.text())) {
+      errors.push(message.text());
+    }
+  };
+  await reference.evaluate(element => {
+    window.alphaReferenceAttempts = [];
+    window.alphaReferenceClicks = [];
+    element.addEventListener('click', event => window.alphaReferenceClicks.push(event.isTrusted));
+  });
+  const startLookup = async count => {
+    await reference.click();
+    await page.waitForFunction(expected => window.alphaReferenceAttempts.length === expected, count);
+  };
+  const pendingLookup = async (previous, current) => page.evaluate(([previous, current]) => ({
+    previousAborted: window.alphaReferenceAttempts[previous].signal.aborted,
+    currentAborted: window.alphaReferenceAttempts[current].signal.aborted,
+    controlsDisabled: document.querySelector('#controls').disabled,
+    status: document.querySelector('#status').textContent,
+  }), [previous, current]);
+  const assertLocked = async () => {
+    assert.equal(await canonical(page), output);
+    assert.equal(await revision(page), beforeRevision);
+    assert.equal(await editor(page).getAttribute('contenteditable'), 'false');
+  };
+  const completeLookup = (index, outcome) => page.evaluate(([index, outcome]) => {
+    window.alphaReferenceAttempts[index].resolve(outcome);
+  }, [index, outcome]);
+  const available = label => ({status:'ok', value:{entityId:referenceId,label}});
+
+  page.on('console', recordError);
+  try {
+    await startLookup(1);
+    await startLookup(2);
+    assert.deepEqual(await pendingLookup(0, 1), {
+      previousAborted:true, currentAborted:false, controlsDisabled:true, status:'Reopened saved document',
+    });
+    assert.deepEqual(errors, []);
+    await assertLocked();
+    await completeLookup(1, {status:'unavailable'});
+    await status(page, 'Reference metadata unavailable');
+    assert.equal(await controls.isDisabled(), false);
+
+    await startLookup(3);
+    await startLookup(4);
+    await completeLookup(2, available('Stale reference'));
+    await page.evaluate(() => new Promise(done => requestAnimationFrame(done)));
+    assert.deepEqual(await pendingLookup(2, 3), {
+      previousAborted:true, currentAborted:false, controlsDisabled:true, status:'Reference metadata unavailable',
+    });
+    await assertLocked();
+    await completeLookup(3, available('Newest reference'));
+    await status(page, 'Newest reference');
+    assert.equal(await controls.isDisabled(), false);
+
+    await startLookup(5);
+    await page.evaluate(message => window.alphaReferenceAttempts[4].reject(new Error(message)), errorText);
+    await status(page, 'Editor action failed');
+    assert.equal(await controls.isDisabled(), false);
+    assert.equal(errors.length, 1);
+    assert.match(errors[0], new RegExp(errorText));
+    assert.deepEqual(await page.evaluate(() => window.alphaReferenceClicks), [true,true,true,true,true]);
+    await assertLocked();
+  } finally {
+    page.off('console', recordError);
+  }
+}
+
 export async function checkMockHostServices(page) {
   const before = await canonical(page), beforeRevision = await revision(page);
   await selectText(page,true);
@@ -150,5 +233,6 @@ export async function checkAlternateHostServices(page) {
   assert.deepEqual(await page.evaluate(()=>window.alphaStubCalls),[
     {name:'reference',request:{entityId:referenceId}},
   ]);
-  return {link:'pass',media:'pass',reference:'pass'};
+  await checkReferenceLookupOwnership(page);
+  return {link:'pass',media:'pass',reference:'pass',referenceLookupOwnership:'pass'};
 }
