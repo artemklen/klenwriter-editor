@@ -349,7 +349,7 @@ mod tests {
         assert!(session.context().is_some());
         let catalog = call(&mut session, json!({"kind":"catalog"}));
         let commands = catalog["value"]["commands"].as_array().unwrap();
-        assert_eq!(commands.len(), 29);
+        assert_eq!(commands.len(), 32);
         assert!(
             commands
                 .iter()
@@ -579,6 +579,11 @@ mod tests {
                                 sorted.push(editor_kwdj::commands::SET_WARNING_KIND_COMMAND_ID);
                                 sorted.push(editor_kwdj::commands::WRAP_WARNING_COMMAND_ID);
                                 sorted.push(editor_kwdj::commands::UNWRAP_WARNING_COMMAND_ID);
+                                sorted.extend([
+                                    editor_kwdj::commands::INSERT_ROW_ABOVE_COMMAND_ID,
+                                    editor_kwdj::commands::INSERT_ROW_BELOW_COMMAND_ID,
+                                    editor_kwdj::commands::DELETE_ROW_COMMAND_ID,
+                                ]);
                                 sorted.push("org.klenwriter.kwdj/command/delete-forward");
                                 sorted.sort_unstable();
                                 assert_eq!(actual, sorted, "{id}: exact additive SDK2 catalog");
@@ -1067,6 +1072,106 @@ mod tests {
         assert_eq!(reply["diagnostic"]["code"], code, "{reply}");
         assert_eq!(state(session), before);
         assert_eq!(snapshot(session), canonical);
+    }
+
+    fn osr205_id_tree(session: &mut DistributionSession, id: &Value) -> Value {
+        let node = osr183_node(session, id);
+        let children: Vec<_> = node["children"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|child| osr205_id_tree(session, child))
+            .collect();
+        json!({"id":id,"children":children})
+    }
+
+    #[test]
+    fn osr205_named_table_row_commands_preserve_geometry_identity_and_history() {
+        let corpus = [
+            include_str!("../../../contracts/kwdj/v1/fixtures/positive.json"),
+            include_str!("../../../contracts/kwdj/v1/fixtures/mixed.json"),
+        ]
+        .map(|file| serde_json::from_str::<Value>(file).unwrap());
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-205-table-rows.json"
+        ))
+        .unwrap();
+        for case in fixture["cases"].as_array().unwrap() {
+            let name = case["id"].as_str().unwrap();
+            let source = corpus
+                .iter()
+                .flat_map(|file| file["fixtures"].as_array().unwrap())
+                .flat_map(|fixture| fixture["cases"].as_array().unwrap())
+                .find(|source| source["name"] == case["source"])
+                .unwrap()["kwdj"]
+                .clone();
+            let input = source.to_string();
+            let mut session = osr183_open(&input);
+            let before = state(&mut session);
+            let table = osr183_node(&mut session, &before["root"])["children"][0].clone();
+            let before_ids = osr205_id_tree(&mut session, &table);
+            let row_index = case["row"].as_u64().unwrap() as usize;
+            let row = &before_ids["children"][row_index];
+            let target = if case["cell_target"] == true {
+                &row["children"][0]["id"]
+            } else {
+                &row["id"]
+            };
+            let kind = case["command"].as_str().unwrap();
+            let command = format!("org.klenwriter.kwdj/command/{}", kind.replace('_', "-"));
+            let payload = json!({"kind":kind,"row":target});
+            let response = osr183_command(&mut session, &command, &payload, false);
+            if let Some(diagnostic) = case["diagnostic"].as_object() {
+                assert_eq!(response["status"], "refused", "{name}: {response}");
+                assert_eq!(response["diagnostic"]["code"], diagnostic["code"], "{name}");
+                assert_eq!(response["diagnostic"]["path"], diagnostic["path"], "{name}");
+                assert_eq!(
+                    response["diagnostic"]["may_have_committed"], false,
+                    "{name}"
+                );
+                assert_eq!(state(&mut session), before, "{name}");
+                assert_eq!(snapshot(&mut session), input, "{name}");
+                assert_eq!(osr205_id_tree(&mut session, &table), before_ids, "{name}");
+                continue;
+            }
+            assert_eq!(response["value"]["effect"], "changed", "{name}: {response}");
+            let mut expected = source;
+            expected["content"][0]["content"] = case["expected_rows"].clone();
+            let expected = expected.to_string();
+            let exported = snapshot(&mut session);
+            assert_eq!(exported, expected, "{name}");
+            let mut reopened = osr183_open(&exported);
+            assert_eq!(snapshot(&mut reopened), expected, "{name}");
+
+            let after = state(&mut session);
+            assert_eq!(after["stamp"]["revision"], "1", "{name}");
+            assert_eq!(after["history"]["undo_entries"], "1", "{name}");
+            assert_eq!(after["history"]["redo_entries"], "0", "{name}");
+            assert_eq!(
+                osr183_node(&mut session, &after["root"])["children"][0],
+                table
+            );
+            let after_ids = osr205_id_tree(&mut session, &table);
+            let mut retained_before = before_ids["children"].as_array().unwrap().clone();
+            let mut retained_after = after_ids["children"].as_array().unwrap().clone();
+            if let Some(inserted) = case["inserted"].as_u64() {
+                retained_after.remove(inserted as usize);
+            } else {
+                retained_before.remove(row_index);
+            }
+            assert_eq!(retained_after, retained_before, "{name}");
+
+            osr183_history(&mut session, "undo", &input);
+            assert_eq!(osr205_id_tree(&mut session, &table), before_ids, "{name}");
+            let undone = state(&mut session);
+            assert_eq!(undone["history"]["undo_entries"], "0", "{name}");
+            assert_eq!(undone["history"]["redo_entries"], "1", "{name}");
+            osr183_history(&mut session, "redo", &expected);
+            assert_eq!(osr205_id_tree(&mut session, &table), after_ids, "{name}");
+            let redone = state(&mut session);
+            assert_eq!(redone["history"]["undo_entries"], "1", "{name}");
+            assert_eq!(redone["history"]["redo_entries"], "0", "{name}");
+        }
     }
 
     const OSR188_SET_KIND: &str = "org.klenwriter.kwdj/command/set-warning-kind";

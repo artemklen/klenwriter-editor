@@ -2,6 +2,8 @@
 // Derived from owner-controlled KlenWriter CMS source; see provenance/source-files.json.
 //! Checked table dimensions for the full and indexed KWDJ validation lanes.
 
+use editor_core::candidate::{BorrowedNode, CandidateRead};
+use editor_core::document::Attribute;
 use editor_core::limits::{LimitExceeded, check};
 use editor_core::transaction::{WorkMeter, WorkPhase};
 
@@ -25,6 +27,19 @@ pub(crate) struct Slot {
 pub(crate) struct CellOrigin {
     pub at: Slot,
     pub index: usize,
+}
+
+pub(crate) struct CellPlacement {
+    pub origin: CellOrigin,
+    pub rowspan: usize,
+    pub end_column: usize,
+    pub header: bool,
+}
+
+struct CellShape {
+    colspan: u64,
+    rowspan: u64,
+    header: bool,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -128,10 +143,80 @@ pub(crate) fn check_table<V: ValidationView>(
     view: &V,
     table: V::Handle,
     limits: Limits,
+    work: Option<&mut WorkMeter>,
+) -> Result<TableGeometry, GeometryError> {
+    walk_table(
+        view.children_len(table),
+        |index| {
+            let row = view.child(table, index);
+            matches!(view.header(row), Node::TableRow { .. }).then(|| (row, view.children_len(row)))
+        },
+        |row, index| {
+            let node = view.header(view.child(row, index));
+            let attrs = match node {
+                Node::TableHeader { attrs, .. } | Node::TableCell { attrs, .. } => attrs.as_ref(),
+                _ => return None,
+            };
+            Some(CellShape {
+                colspan: attrs.and_then(|value| value.colspan).unwrap_or(1),
+                rowspan: attrs.and_then(|value| value.rowspan).unwrap_or(1),
+                header: matches!(node, Node::TableHeader { .. }),
+            })
+        },
+        limits,
+        work,
+        |_| {},
+    )
+}
+
+/// Inspect the same checked placements directly in an admitted command candidate.
+pub(crate) fn inspect_table<V: CandidateRead>(
+    view: &V,
+    table: BorrowedNode<'_, V::Id>,
+    limits: Limits,
+    work: &mut WorkMeter,
+    visit: impl FnMut(CellPlacement),
+) -> Result<TableGeometry, GeometryError> {
+    walk_table(
+        table.children.len(),
+        |index| {
+            let row = view.node(table.children[index])?;
+            (row.type_id == "org.klenwriter.kwdj/table_row")
+                .then_some((row.children, row.children.len()))
+        },
+        |row, index| {
+            let node = view.node(row[index])?;
+            let header = match node.type_id {
+                "org.klenwriter.kwdj/table_header" => true,
+                "org.klenwriter.kwdj/table_cell" => false,
+                _ => return None,
+            };
+            let span = |key| match node.attributes.get(key) {
+                Some(Attribute::Number(value)) => value.as_u64(),
+                None => Some(1),
+                _ => None,
+            };
+            Some(CellShape {
+                colspan: span("colspan")?,
+                rowspan: span("rowspan")?,
+                header,
+            })
+        },
+        limits,
+        Some(work),
+        visit,
+    )
+}
+
+fn walk_table<R: Copy>(
+    rows: usize,
+    row_at: impl Fn(usize) -> Option<(R, usize)>,
+    cell_at: impl Fn(R, usize) -> Option<CellShape>,
+    limits: Limits,
     mut work: Option<&mut WorkMeter>,
+    mut visit: impl FnMut(CellPlacement),
 ) -> Result<TableGeometry, GeometryError> {
     let limits = limits.effective();
-    let rows = view.children_len(table);
     let row_count = u64::try_from(rows).map_err(|_| {
         GeometryError::RowLimit(LimitExceeded {
             name: "table_rows",
@@ -148,23 +233,19 @@ pub(crate) fn check_table<V: ValidationView>(
     let mut width = None;
     for row_index in 0..rows {
         units(&mut work, 1)?;
-        let row = view.child(table, row_index);
         while occupancy.last() == Some(&0) {
             occupancy.pop();
         }
         if let Some(work) = &mut work {
             work.note_phase(WorkPhase::StaticValidation, 1, 0);
         }
-        let Node::TableRow { .. } = view.header(row) else {
-            return Err(GeometryError::InvalidRow { row: row_index });
-        };
+        let (row, cells) = row_at(row_index).ok_or(GeometryError::InvalidRow { row: row_index })?;
         let mut column = 0;
-        for cell_index in 0..view.children_len(row) {
+        for cell_index in 0..cells {
             units(&mut work, 1)?;
             if let Some(work) = &mut work {
                 work.note_phase(WorkPhase::StaticValidation, 1, 0);
             }
-            let cell = view.header(view.child(row, cell_index));
             while occupancy.get(column).copied().unwrap_or(0) > 0 {
                 column += 1;
             }
@@ -175,12 +256,11 @@ pub(crate) fn check_table<V: ValidationView>(
                 },
                 index: cell_index,
             };
-            let attrs = match cell {
-                Node::TableHeader { attrs, .. } | Node::TableCell { attrs, .. } => attrs.as_ref(),
-                _ => return Err(GeometryError::InvalidCell(origin)),
-            };
-            let colspan = attrs.and_then(|value| value.colspan).unwrap_or(1);
-            let rowspan = attrs.and_then(|value| value.rowspan).unwrap_or(1);
+            let CellShape {
+                colspan,
+                rowspan,
+                header,
+            } = cell_at(row, cell_index).ok_or(GeometryError::InvalidCell(origin))?;
             if colspan == 0 {
                 return Err(GeometryError::ZeroSpan {
                     origin,
@@ -242,6 +322,12 @@ pub(crate) fn check_table<V: ValidationView>(
                 });
             }
             occupancy[column..end].fill(rowspan);
+            visit(CellPlacement {
+                origin,
+                rowspan: rowspan as usize,
+                end_column: end,
+                header,
+            });
             column = end;
         }
         let row_width = occupancy.len();

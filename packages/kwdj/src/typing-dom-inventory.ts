@@ -28,6 +28,14 @@ export const kwdjTypingDomInventory = {
     },
     {
       "descriptor": {
+        "id": "org.klenwriter.kwdj/command/delete-row",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/delete-row",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
         "id": "org.klenwriter.kwdj/command/delete-selection",
         "kind": "compiled"
       },
@@ -72,6 +80,22 @@ export const kwdjTypingDomInventory = {
         "kind": "compiled"
       },
       "id": "org.klenwriter.kwdj/command/insert-fragment",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/insert-row-above",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/insert-row-above",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/insert-row-below",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/insert-row-below",
       "owner": "org.klenwriter.kwdj/base"
     },
     {
@@ -258,12 +282,15 @@ export const kwdjTypingDomInventory = {
       "org.klenwriter.kwdj/command/accept-slash",
       "org.klenwriter.kwdj/command/delete-backward",
       "org.klenwriter.kwdj/command/delete-forward",
+      "org.klenwriter.kwdj/command/delete-row",
       "org.klenwriter.kwdj/command/delete-selection",
       "org.klenwriter.kwdj/command/dismiss-slash",
       "org.klenwriter.kwdj/command/duplicate",
       "org.klenwriter.kwdj/command/enter",
       "org.klenwriter.kwdj/command/insert-block",
       "org.klenwriter.kwdj/command/insert-fragment",
+      "org.klenwriter.kwdj/command/insert-row-above",
+      "org.klenwriter.kwdj/command/insert-row-below",
       "org.klenwriter.kwdj/command/insert-text",
       "org.klenwriter.kwdj/command/insert-typed-text",
       "org.klenwriter.kwdj/command/move",
@@ -1555,5 +1582,5 @@ export const kwdjTypingDomInventory = {
     "profile_version": "1.0.0",
     "wire_version": 1
   },
-  "registryDigest": "2d6128e040e820938efdf8398f9e9703ca9aef8d9abd291dd1d977253b7b0121"
+  "registryDigest": "79fb21807af099658bfc2fe9df1de7fcaee010ebc0352901b1a1a0ae6b06bbd0"
 } as const;

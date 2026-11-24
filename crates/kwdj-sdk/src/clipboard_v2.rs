@@ -5,8 +5,8 @@ use crate::{
     wire_v2::{
         KwdjClipboardIntentV2, KwdjDeleteSelectionScopeV2, KwdjForwardDeleteIntentV2,
         KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2, KwdjScopedSelectionIntentV2,
-        KwdjWarningIntentV2, LabeledContainerBlockTargetV2, LabeledContainerKindV2,
-        LiteraryBlockTargetV2, WarningBlockTargetV2, WarningKindV2,
+        KwdjTableRowIntentV2, KwdjWarningIntentV2, LabeledContainerBlockTargetV2,
+        LabeledContainerKindV2, LiteraryBlockTargetV2, WarningBlockTargetV2, WarningKindV2,
     },
 };
 use editor_bridge::{BridgeAdapter, ClipboardContextData, SelectionFragmentData};
@@ -15,7 +15,8 @@ use editor_engine::{NodeId, SessionKey};
 use editor_kwdj::{
     KwdjProfile, KwdjProfileError, Profile,
     commands::{
-        CLIPBOARD_COMMAND_ID, DELETE_FORWARD_COMMAND_ID, KWDJ_COMMANDS, KwdjIntent,
+        CLIPBOARD_COMMAND_ID, DELETE_FORWARD_COMMAND_ID, DELETE_ROW_COMMAND_ID,
+        INSERT_ROW_ABOVE_COMMAND_ID, INSERT_ROW_BELOW_COMMAND_ID, KWDJ_COMMANDS, KwdjIntent,
         LabeledContainerKind, SET_CONTAINER_LABEL_COMMAND_ID, SET_LITERARY_KIND_COMMAND_ID,
         SET_WARNING_KIND_COMMAND_ID, UNWRAP_LABELED_CONTAINER_COMMAND_ID,
         UNWRAP_LITERARY_BLOCK_COMMAND_ID, UNWRAP_WARNING_COMMAND_ID,
@@ -207,6 +208,35 @@ impl BridgeAdapter<KwdjProfile<'static>> for ClipboardAdapterV2 {
                 ) => Ok(KwdjIntent::UnwrapLabeledContainer {
                     node: parse_node(&node)?,
                 }),
+                _ => Err(diagnostic("sdk.invalid_dto", "command")),
+            }
+        } else if matches!(
+            command.id.as_str(),
+            INSERT_ROW_ABOVE_COMMAND_ID | INSERT_ROW_BELOW_COMMAND_ID | DELETE_ROW_COMMAND_ID
+        ) {
+            let parse_row = |row: &str| {
+                key.parse_node_token(row)
+                    .map_err(|error| diagnostic(error.as_str(), "command.row"))
+            };
+            match (
+                command.id.as_str(),
+                editor_bridge::decode(&command.payload_json)?,
+            ) {
+                (INSERT_ROW_ABOVE_COMMAND_ID, KwdjTableRowIntentV2::InsertRowAbove { row }) => {
+                    Ok(KwdjIntent::InsertRowAbove {
+                        row: parse_row(&row)?,
+                    })
+                }
+                (INSERT_ROW_BELOW_COMMAND_ID, KwdjTableRowIntentV2::InsertRowBelow { row }) => {
+                    Ok(KwdjIntent::InsertRowBelow {
+                        row: parse_row(&row)?,
+                    })
+                }
+                (DELETE_ROW_COMMAND_ID, KwdjTableRowIntentV2::DeleteRow { row }) => {
+                    Ok(KwdjIntent::DeleteRow {
+                        row: parse_row(&row)?,
+                    })
+                }
                 _ => Err(diagnostic("sdk.invalid_dto", "command")),
             }
         } else if command.id == DELETE_FORWARD_COMMAND_ID {

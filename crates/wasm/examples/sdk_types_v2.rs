@@ -32,6 +32,7 @@ fn main() {
         LabeledContainerKindV2,
         KwdjLabeledContainerIntentV2,
         KwdjForwardDeleteIntentV2,
+        KwdjTableRowIntentV2,
         KwdjDeleteSelectionScopeV2,
         KwdjScopedSelectionIntentV2,
         KwdjTypingIntentV2,

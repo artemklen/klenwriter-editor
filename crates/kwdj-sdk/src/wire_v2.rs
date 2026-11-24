@@ -315,3 +315,15 @@ pub struct KwdjTypingLimitsV2 {
     #[cfg_attr(all(feature = "sdk-types", not(target_arch = "wasm32")), ts(optional))]
     pub restoration_bytes: Option<u32>,
 }
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum KwdjTableRowIntentV2 {
+    InsertRowAbove { row: String },
+    InsertRowBelow { row: String },
+    DeleteRow { row: String },
+}

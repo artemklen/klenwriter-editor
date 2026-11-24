@@ -31,6 +31,8 @@ export type KwdjLabeledContainerIntentV2 = { "kind": "insert_block", target: Lab
 
 export type KwdjForwardDeleteIntentV2 = { "kind": "delete_forward", };
 
+export type KwdjTableRowIntentV2 = { "kind": "insert_row_above", row: string, } | { "kind": "insert_row_below", row: string, } | { "kind": "delete_row", row: string, };
+
 export type KwdjDeleteSelectionScopeV2 = "profile_body" | "poetry_boundary";
 
 export type KwdjScopedSelectionIntentV2 = { "kind": "delete_selection", scope: KwdjDeleteSelectionScopeV2, };

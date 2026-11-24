@@ -2331,6 +2331,93 @@ pub(super) fn remove<V: CandidateRead>(
     Ok(())
 }
 
+#[derive(Clone, Copy)]
+pub(super) enum TableRowEdit {
+    Above,
+    Below,
+    Delete,
+}
+
+pub(super) fn edit_table_row<V: CandidateRead>(
+    view: &V,
+    row: V::Id,
+    edit: TableRowEdit,
+    limits: crate::Limits,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let command_error = |code| KwdjError::categorized(code, "/command", "command");
+    let row_node = get(view, row, plan)?;
+    if kind(row_node.type_id) != "table_row" {
+        return Err(command_error(KwdjErrorCode::CommandUnsupportedContext));
+    }
+    let table = row_node.parent;
+    let table_node = get(view, table, plan)?;
+    if kind(table_node.type_id) != "table" {
+        return Err(command_error(KwdjErrorCode::CommandUnsupportedContext));
+    }
+    let target = index(view, table, row, plan)?;
+    let deleting = matches!(edit, TableRowEdit::Delete);
+    if deleting && table_node.children.len() == 1 {
+        return Err(command_error(KwdjErrorCode::CommandUnsupportedContext));
+    }
+    let seam = target + usize::from(matches!(edit, TableRowEdit::Below));
+    let mut crosses_span = false;
+    let mut headers = [[false; crate::MAX_TABLE_EFFECTIVE_COLUMNS as usize]; 2];
+    let geometry =
+        crate::table_geometry::inspect_table(view, table_node, limits, plan.work(), |cell| {
+            let start = cell.origin.at.row;
+            let end = start + cell.rowspan;
+            if deleting {
+                crosses_span |= cell.rowspan > 1 && start <= target && target < end;
+            } else {
+                crosses_span |= start < seam && seam < end;
+                for (neighbor, header_slots) in [seam.checked_sub(1), Some(seam)]
+                    .into_iter()
+                    .zip(&mut headers)
+                {
+                    if cell.header && neighbor.is_some_and(|row| start <= row && row < end) {
+                        header_slots[cell.origin.at.column..cell.end_column].fill(true);
+                    }
+                }
+            }
+        })
+        .map_err(|error| error.diagnostic("/command"))?;
+    if crosses_span {
+        return Err(command_error(KwdjErrorCode::TableNotRectangular));
+    }
+    if deleting {
+        push(plan, Operation::Remove { node: row.into() })?;
+    } else {
+        let previous = &headers[0][..geometry.columns];
+        let next = &headers[1][..geometry.columns];
+        // A pure header row does not extend into the table's outer margin.
+        let reference = if seam > 0 && !previous.iter().all(|header| *header) {
+            Some(previous)
+        } else if seam < geometry.rows && (seam > 0 || !next.iter().all(|header| *header)) {
+            Some(next)
+        } else {
+            None
+        };
+        let mut row = empty_node("table_row", Primitive::Container, Attributes::new(), plan)?;
+        bytes(plan, geometry.columns * size_of::<Node>())?;
+        row.children.reserve_exact(geometry.columns);
+        for column in 0..geometry.columns {
+            let kind = if reference.is_some_and(|headers| headers[column]) {
+                "table_header"
+            } else {
+                "table_cell"
+            };
+            let mut cell = empty_node(kind, Primitive::Container, Attributes::new(), plan)?;
+            let paragraph = empty_node("paragraph", Primitive::TextBlock, Attributes::new(), plan)?;
+            bytes(plan, size_of::<Node>())?;
+            cell.children.push(paragraph);
+            row.children.push(cell);
+        }
+        fragment(plan, table.into(), seam, row)?;
+    }
+    Ok(CommandPresentation::default())
+}
+
 pub(super) fn prepare<V: CandidateRead>(
     context: Profile,
     view: &V,

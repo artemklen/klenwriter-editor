@@ -682,6 +682,115 @@ function osr196Points(editor, point) {
   return points;
 }
 
+test('OSR-205 packaged SDK2 row commands retain geometry, IDs and exact Undo/Redo', async t => {
+  const read = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
+  const corpus = ['positive', 'mixed']
+    .flatMap(file => read(`../contracts/kwdj/v1/fixtures/${file}.json`).fixtures)
+    .flatMap(fixture => fixture.cases);
+  for (const fixture of read('./fixtures/osr-205-table-rows.json').cases) {
+    await t.test(fixture.id, async () => {
+      const source = corpus.find(candidate => candidate.name === fixture.source).kwdj;
+      const input = osr185Bytes(source);
+      let exported;
+      await withLiteraryCommandSession(input, editor => {
+        const idTree = id => ({ id, children: node(editor, id).children.map(idTree) });
+        const table = root(editor).children[0];
+        const beforeIds = idTree(table);
+        const row = beforeIds.children[fixture.row];
+        select(editor, row.children[0].children[0].children[0].id, 0);
+        const before = state(editor);
+        const payload = { kind: fixture.command, row: fixture.cell_target ? row.children[0].id : row.id };
+        const id = `org.klenwriter.kwdj/command/${fixture.command.replaceAll('_', '-')}`;
+        const response = osr183Wire(editor, createCommand(id, payload));
+        if (fixture.diagnostic) {
+          const diagnostic = refused(response);
+          assert.equal(diagnostic.code, fixture.diagnostic.code);
+          assert.equal(diagnostic.path, fixture.diagnostic.path);
+          assert.equal(diagnostic.may_have_committed, false);
+          assert.deepEqual(state(editor), before);
+          assert.equal(canonical(editor), input);
+          assert.deepEqual(idTree(table), beforeIds);
+          assert.deepEqual(kwdjCommand(payload), createCommand(id, payload));
+          return;
+        }
+        assert.equal(accepted(response).effect, 'changed');
+        assert.deepEqual(kwdjCommand(payload), createCommand(id, payload));
+        const expected = structuredClone(source);
+        expected.content[0].content = fixture.expected_rows;
+        exported = canonical(editor);
+        assert.equal(exported, osr185Bytes(expected));
+        assert.equal(root(editor).children[0], table);
+        const afterIds = idTree(table);
+        const retainedBefore = beforeIds.children.slice();
+        const retainedAfter = afterIds.children.slice();
+        if (fixture.inserted === undefined) {
+          retainedBefore.splice(fixture.row, 1);
+        } else {
+          retainedAfter.splice(fixture.inserted, 1);
+        }
+        assert.deepEqual(retainedAfter, retainedBefore);
+        const after = state(editor);
+        assert.equal(after.stamp.revision, '1');
+        assert.equal(after.history.undo_entries, '1');
+        assert.equal(after.history.redo_entries, '0');
+        if (fixture.inserted !== undefined) assert.deepEqual(after.selection, before.selection);
+
+        osr183History(editor, 'undo', input);
+        assert.deepEqual(idTree(table), beforeIds);
+        assert.deepEqual(state(editor).selection, before.selection);
+        assert.equal(state(editor).history.undo_entries, '0');
+        assert.equal(state(editor).history.redo_entries, '1');
+        osr183History(editor, 'redo', exported);
+        assert.deepEqual(idTree(table), afterIds);
+        assert.deepEqual(state(editor).selection, after.selection);
+        assert.equal(state(editor).history.undo_entries, '1');
+        assert.equal(state(editor).history.redo_entries, '0');
+      });
+      if (exported) {
+        await withLiteraryCommandSession(exported, editor => assert.equal(canonical(editor), exported));
+      }
+    });
+  }
+});
+
+test('OSR-205 row command wire is closed and confined to SDK2', async () => {
+  const corpus = JSON.parse(readFileSync(new URL('../contracts/kwdj/v1/fixtures/positive.json', import.meta.url), 'utf8'));
+  const input = osr185Bytes(corpus.fixtures.find(fixture => fixture.id === 'DOC-010').cases[0].kwdj);
+  const insert = 'org.klenwriter.kwdj/command/insert-row-above';
+  const remove = 'org.klenwriter.kwdj/command/delete-row';
+  const target = editor => node(editor, root(editor).children[0]).children[0];
+  await withLiteraryCommandSession(input, editor => {
+    const before = state(editor);
+    const row = target(editor);
+    for (const command of [
+      createCommand(insert, { kind: 'insert_row_above', row, unexpected: true }),
+      createCommand(insert, { kind: 'insert_row_below', row }),
+      createCommand(remove, { kind: 'delete_row' }),
+    ]) {
+      const diagnostic = refused(osr183Wire(editor, command));
+      assert.equal(diagnostic.code, 'sdk.invalid_dto');
+      assert.equal(diagnostic.may_have_committed, false);
+      assert.deepEqual(state(editor), before);
+      assert.equal(canonical(editor), input);
+    }
+  });
+  const legacy = await open(input);
+  try {
+    const { editor } = legacy;
+    const before = state(editor);
+    const catalog = accepted(editor.read({ kind: 'catalog' })).commands;
+    assert.equal(catalog.length, 17);
+    assert(!catalog.includes(remove));
+    const diagnostic = refused(osr183Wire(editor, createCommand(remove, { kind: 'delete_row', row: target(editor) })));
+    assert.equal(diagnostic.code, 'sdk.invalid_dto');
+    assert.equal(diagnostic.may_have_committed, false);
+    assert.deepEqual(state(editor), before);
+    assert.equal(canonical(editor), input);
+  } finally {
+    legacy.close();
+  }
+});
+
 test('OSR-196 packaged SDK2 matches CMS verse boundary bytes, selection and Undo', async t => {
   const fixture = JSON.parse(readFileSync(new URL('./fixtures/osr-196-verse-boundary-deletion.json', import.meta.url), 'utf8'));
   for (const row of [...fixture.cases, ...fixture.refusals]) {

@@ -28,6 +28,14 @@ export const kwdjDomInventory = {
     },
     {
       "descriptor": {
+        "id": "org.klenwriter.kwdj/command/delete-row",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/delete-row",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
         "id": "org.klenwriter.kwdj/command/delete-selection",
         "kind": "compiled"
       },
@@ -72,6 +80,22 @@ export const kwdjDomInventory = {
         "kind": "compiled"
       },
       "id": "org.klenwriter.kwdj/command/insert-fragment",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/insert-row-above",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/insert-row-above",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/insert-row-below",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/insert-row-below",
       "owner": "org.klenwriter.kwdj/base"
     },
     {
@@ -238,12 +262,15 @@ export const kwdjDomInventory = {
       "org.klenwriter.kwdj/command/accept-slash",
       "org.klenwriter.kwdj/command/delete-backward",
       "org.klenwriter.kwdj/command/delete-forward",
+      "org.klenwriter.kwdj/command/delete-row",
       "org.klenwriter.kwdj/command/delete-selection",
       "org.klenwriter.kwdj/command/dismiss-slash",
       "org.klenwriter.kwdj/command/duplicate",
       "org.klenwriter.kwdj/command/enter",
       "org.klenwriter.kwdj/command/insert-block",
       "org.klenwriter.kwdj/command/insert-fragment",
+      "org.klenwriter.kwdj/command/insert-row-above",
+      "org.klenwriter.kwdj/command/insert-row-below",
       "org.klenwriter.kwdj/command/insert-text",
       "org.klenwriter.kwdj/command/move",
       "org.klenwriter.kwdj/command/remove",
@@ -1529,5 +1556,5 @@ export const kwdjDomInventory = {
     "profile_version": "1.0.0",
     "wire_version": 1
   },
-  "registryDigest": "bd45ec10fc88615828ed4a6ab5e2c66d82946f29469a3e84865a2c442680e5ec"
+  "registryDigest": "c21ef47ff8fbd2deef55fe17895447b55ac5ec7fb96d07f2096c12446d71f5b5"
 } as const;

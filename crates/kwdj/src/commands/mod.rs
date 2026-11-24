@@ -108,6 +108,15 @@ pub enum KwdjIntent<I> {
         node: I,
         label: String,
     },
+    InsertRowAbove {
+        row: I,
+    },
+    InsertRowBelow {
+        row: I,
+    },
+    DeleteRow {
+        row: I,
+    },
     Move {
         node: I,
         parent: I,
@@ -145,6 +154,9 @@ pub enum KwdjIntent<I> {
 }
 
 pub const CLIPBOARD_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-fragment";
+pub const INSERT_ROW_ABOVE_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-row-above";
+pub const INSERT_ROW_BELOW_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-row-below";
+pub const DELETE_ROW_COMMAND_ID: &str = "org.klenwriter.kwdj/command/delete-row";
 pub const DELETE_FORWARD_COMMAND_ID: &str = "org.klenwriter.kwdj/command/delete-forward";
 pub const SET_LITERARY_KIND_COMMAND_ID: &str = "org.klenwriter.kwdj/command/set-literary-kind";
 pub const WRAP_LITERARY_BLOCK_COMMAND_ID: &str = "org.klenwriter.kwdj/command/wrap-literary-block";
@@ -311,6 +323,9 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::SetContainerLabel { .. } => SET_CONTAINER_LABEL_COMMAND_ID,
             KwdjIntent::WrapLabeledContainer { .. } => WRAP_LABELED_CONTAINER_COMMAND_ID,
             KwdjIntent::UnwrapLabeledContainer { .. } => UNWRAP_LABELED_CONTAINER_COMMAND_ID,
+            KwdjIntent::InsertRowAbove { .. } => INSERT_ROW_ABOVE_COMMAND_ID,
+            KwdjIntent::InsertRowBelow { .. } => INSERT_ROW_BELOW_COMMAND_ID,
+            KwdjIntent::DeleteRow { .. } => DELETE_ROW_COMMAND_ID,
             KwdjIntent::Move { .. } => KWDJ_COMMANDS[10].id,
             KwdjIntent::Duplicate { .. } => KWDJ_COMMANDS[11].id,
             KwdjIntent::Remove { .. } => KWDJ_COMMANDS[12].id,
@@ -349,6 +364,9 @@ impl CommandProvider for KwdjProfile<'_> {
             | KwdjIntent::WrapLabeledContainer { .. }
             | KwdjIntent::UnwrapLabeledContainer { .. }
             | KwdjIntent::DeleteSelectionInProfileBody
+            | KwdjIntent::InsertRowAbove { .. }
+            | KwdjIntent::InsertRowBelow { .. }
+            | KwdjIntent::DeleteRow { .. }
                 if !self.clipboard_v2() =>
             {
                 return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());
@@ -388,6 +406,15 @@ impl CommandProvider for KwdjProfile<'_> {
             }
             KwdjIntent::InsertFragment { fragment } => {
                 clipboard::prepare(self, *context, view, state, fragment, plan)?
+            }
+            KwdjIntent::InsertRowAbove { row } => {
+                block::edit_table_row(view, *row, block::TableRowEdit::Above, self.limits(), plan)?
+            }
+            KwdjIntent::InsertRowBelow { row } => {
+                block::edit_table_row(view, *row, block::TableRowEdit::Below, self.limits(), plan)?
+            }
+            KwdjIntent::DeleteRow { row } => {
+                block::edit_table_row(view, *row, block::TableRowEdit::Delete, self.limits(), plan)?
             }
             KwdjIntent::DismissSlash => CommandPresentation { active: None },
             _ => block::prepare(*context, view, state, intent, plan)?,
