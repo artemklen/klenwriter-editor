@@ -1,6 +1,45 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 //! Additive ABI2 profile commands. The legacy KwdjIntentDto stays closed.
 use serde::{Deserialize, Serialize};
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum KwdjMediaAccessibilityV2 {
+    Alt { alt: String },
+    Decorative {},
+}
+
+impl KwdjMediaAccessibilityV2 {
+    pub(crate) fn into_alt(self) -> Option<String> {
+        match self {
+            Self::Alt { alt } => Some(alt),
+            Self::Decorative {} => None,
+        }
+    }
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum KwdjMediaIntentV2 {
+    InsertMedia {
+        media_asset_id: String,
+        accessibility: KwdjMediaAccessibilityV2,
+    },
+    ReplaceMedia {
+        node: String,
+        current_asset_id: String,
+        media_asset_id: String,
+        accessibility: KwdjMediaAccessibilityV2,
+    },
+}
 #[cfg_attr(
     all(feature = "sdk-types", not(target_arch = "wasm32")),
     derive(ts_rs::TS)

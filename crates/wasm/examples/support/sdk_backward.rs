@@ -203,12 +203,16 @@ fn split_join(v2: bool) {
     let catalog = s.call(json!({"kind":"catalog"}));
     if v2 {
         assert_eq!(CATALOG_V2.len(), 38);
-        assert_eq!(catalog["commands"], json!(CATALOG_V2));
+        let mut expected = CATALOG_V2.to_vec();
+        expected.push("org.klenwriter.kwdj/command/media");
+        expected.sort_unstable();
+        assert_eq!(catalog["commands"], json!(expected));
     } else {
         assert_eq!(catalog["commands"].as_array().unwrap().len(), 17);
         let v2_only = [
             "org.klenwriter.kwdj/command/insert-fragment",
             "org.klenwriter.kwdj/command/delete-forward",
+            "org.klenwriter.kwdj/command/media",
             "org.klenwriter.kwdj/command/merge-cells",
             "org.klenwriter.kwdj/command/split-cell",
             "org.klenwriter.kwdj/command/move-cell",

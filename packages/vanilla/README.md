@@ -30,6 +30,7 @@ The public `alphaBlockTypes` map lists the authored node types accepted at mount
 | `org.klenwriter.kwdj` | `org.klenwriter.kwdj/hard_break` |
 | `org.klenwriter.kwdj` | `org.klenwriter.kwdj/heading` |
 | `org.klenwriter.kwdj` | `org.klenwriter.kwdj/list_item` |
+| `org.klenwriter.kwdj` | `org.klenwriter.kwdj/media_image` |
 | `org.klenwriter.kwdj` | `org.klenwriter.kwdj/ordered_list` |
 | `org.klenwriter.kwdj` | `org.klenwriter.kwdj/paragraph` |
 | `org.klenwriter.kwdj` | `org.klenwriter.kwdj/scene_break` |

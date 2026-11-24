@@ -10,8 +10,13 @@ import { kwdjTypingDomInventory } from './typing-dom-inventory.js';
 
 export { bindKwdjContainerLabel } from './container-label.js';
 export type { KwdjContainerLabelOptions } from './container-label.js';
+export { runKwdjMediaPicker } from './media-host.js';
+export type { KwdjMediaPickerOptions, KwdjMediaTarget } from './media-host.js';
+export { runKwdjLinkDialog } from './link-host.js';
+export type { KwdjLinkDialogOptions } from './link-host.js';
 
 const prefix = 'org.klenwriter.kwdj/';
+const referenceLink = `${prefix}reference_link`;
 const colorTokens = ['muted', 'accent', 'manuscript', 'warning', 'success', 'danger'];
 const highlightTokens = ['accent', 'manuscript', 'warning'];
 const literaryLabels = new Map([
@@ -175,9 +180,17 @@ marks[`${prefix}link`] = { attributes: ['href', 'title'], present: m => {
   if (!safeHref(href) || (Object.hasOwn(m.attributes, 'title') && title === undefined)) return refused(m.type_id);
   return { tag: 'a', attributes: title === undefined ? { href } : { href, title } };
 } };
+marks[referenceLink] = { attributes: ['reference_entity_id'], present: mark => {
+  const id = attrString(mark.attributes.reference_entity_id);
+  return id && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(id)
+    ? { tag: 'span', classes: ['editor-reference-placeholder'] }
+    : refused(mark.type_id);
+} };
 
 function coveredMark(value: unknown): boolean {
   if (!closed(value, ['type_id', 'attributes']) || typeof value.type_id !== 'string' || !object(value.attributes)) return false;
+  // Rendering a stored reference does not enable mark or clipboard authoring.
+  if (value.type_id === referenceLink) return false;
   const renderer = Object.hasOwn(marks, value.type_id) ? marks[value.type_id] : undefined;
   if (!renderer || Object.keys(value.attributes).some(k => !renderer.attributes.includes(k))) return false;
   const result = renderer.present(value as unknown as DeepReadonly<MarkDto>);
@@ -231,9 +244,19 @@ function coveredClipboard(value: unknown): boolean {
   };
   return value.content.every(n => visit(n, 1));
 }
+function coveredMedia(payload: Record<string, unknown>): boolean {
+  const accessibility = payload.accessibility;
+  if (!smallString(payload.media_asset_id, 64) || !(closed(accessibility, ['kind']) && accessibility.kind === 'decorative'
+    || closed(accessibility, ['kind', 'alt']) && accessibility.kind === 'alt' && smallString(accessibility.alt))) return false;
+  return payload.kind === 'insert_media' && closed(payload, ['kind', 'media_asset_id', 'accessibility'])
+    || payload.kind === 'replace_media' && closed(payload, ['kind', 'node', 'current_asset_id', 'media_asset_id', 'accessibility'])
+      && typeof payload.node === 'string' && smallString(payload.current_asset_id, 64);
+}
 function coveredCommand(id: string, payload: Record<string, unknown>): boolean {
   const name = id.slice(`${prefix}command/`.length);
-  if (!id.startsWith(`${prefix}command/`) || payload.kind !== name.replaceAll('-', '_')) return false;
+  if (!id.startsWith(`${prefix}command/`)) return false;
+  if (name === 'media') return coveredMedia(payload);
+  if (payload.kind !== name.replaceAll('-', '_')) return false;
   switch (name) {
     case 'enter': case 'shift-enter': case 'delete-backward': case 'delete-forward': case 'unset-link': case 'toggle-quote': case 'dismiss-slash':
       return closed(payload, ['kind']);

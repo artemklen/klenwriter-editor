@@ -2,7 +2,7 @@
 // Actual packaged release WASM + public controller; no controlled/fake bridge.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { literaryFixture, warningFixture } from './support/codec-fixtures.mjs';
+import { literaryFixture, referencePreservationFixture, warningFixture } from './support/codec-fixtures.mjs';
 import { readFileSync } from 'node:fs';
 import { isDeepStrictEqual } from 'node:util';
 import { createCommand, createEditor, loadSdk, loadSdkV2 } from '../packages/sdk/dist/index.js';
@@ -337,7 +337,7 @@ const osr183Doc = content => canonicalizeRaw(JSON.stringify({
   schema: 'klenwriter.document', schema_version: 1, profile: 'prose', content,
 }));
 
-async function withLiteraryCommandSession(input, run, media = [], access = 'editable') {
+async function withLiteraryCommandSession(input, run, media = [], access = 'editable', references = []) {
   const packet = JSON.parse(readFileSync(new URL('../artifacts/extensions/packet.json', import.meta.url)));
   const wasm = readFileSync(new URL('../packages/wasm/dist/editor_wasm_bg.wasm', import.meta.url));
   const module = await loadSdkV2({ wasm: new Uint8Array(wasm) });
@@ -345,7 +345,7 @@ async function withLiteraryCommandSession(input, run, media = [], access = 'edit
   const options = {
     abi: 'editor-sdk/2', build_id: module.manifest.build_id, profile: packet.kwdjProfile,
     admission: 'validate', access, registry_json: packet.kwdjRegistryJson,
-    profile_options_json: JSON.stringify({ identities: { media, references: [] }, limits: null }),
+    profile_options_json: JSON.stringify({ identities: { media, references }, limits: null }),
   };
   const editor = createEditor({ input: new TextEncoder().encode(input), options, loader: async () => module });
   try {
@@ -2389,6 +2389,150 @@ test('packaged SDK: remount is deferred through old-generation read fence and ca
   } finally { context.close(); }
 });
 
+const osr153Paragraph = text => ({ type: 'paragraph', content: [{ type: 'text', text }] });
+const osr153Source = osr183Doc([osr153Paragraph('Before'), osr153Paragraph('After')]);
+const osr153Link = { kind: 'set_link', href: '/works/example', title: null };
+
+function osr153Hold(editor) {
+  const captured = editor.captureHostRequest();
+  assert.equal(captured.status, 'captured');
+  const host = Promise.withResolvers();
+  const completion = host.promise.then(intent => osr153Reply(editor, captured.request, intent));
+  return { request: captured.request, resolve: host.resolve, completion };
+}
+function osr153Reply(editor, request, intent) {
+  return settled(editor.completeHostRequest(request, {
+    kind: 'command', stamp: request.stamp,
+    command: kwdjCommand(intent), history_hint: { kind: 'isolated' },
+  }));
+}
+function osr153SelectInitial(editor) {
+  const leaf = textLeaf(editor).id;
+  osr185Select(editor, position(leaf, 0), position(leaf, 6));
+}
+function osr153Stale(reply) {
+  const diagnostic = refused(reply);
+  assert.equal(diagnostic.code, 'sdk.stale_request');
+  assert.equal(diagnostic.may_have_committed, false);
+}
+
+test('OSR-153 sealed SDK2 refuses late targeted replies after selection, revision, removal and remount', async () => {
+  for (const transition of ['selection', 'revision', 'removed target', 'generation']) {
+    await withLiteraryCommandSession(osr153Source, async editor => {
+      osr153SelectInitial(editor);
+      const target = root(editor).children[0];
+      const oldSelection = state(editor).selection;
+      const held = osr153Hold(editor);
+      assert.equal(editor.resources().host_requests, 1);
+      let expected = osr153Source;
+      if (transition === 'selection') {
+        const newTarget = textLeaf(editor, 1).id;
+        const next = position(newTarget, 2);
+        osr185Select(editor, next);
+        assert.deepEqual(structuredClone(state(editor).selection), { anchor: next, focus: next });
+        assert.notDeepEqual(state(editor).selection, oldSelection);
+        assert.equal(editor.capture().revision, held.request.stamp.revision);
+        assert.notEqual(editor.capture().selection_epoch, held.request.stamp.selection_epoch);
+      } else if (transition === 'revision') {
+        assert.equal(accepted(completed(command(editor, { kind: 'insert_text', text: 'Interim' }))).effect, 'changed');
+        expected = osr183Doc([osr153Paragraph('Interim'), osr153Paragraph('After')]);
+        assert.notEqual(editor.capture().revision, held.request.stamp.revision);
+      } else if (transition === 'removed target') {
+        assert.equal(accepted(completed(command(editor, { kind: 'remove', node: target }))).effect, 'changed');
+        expected = osr183Doc([osr153Paragraph('After')]);
+        assert.equal(root(editor).children.includes(target), false);
+        assert.notEqual(editor.capture().revision, held.request.stamp.revision);
+      } else {
+        expected = osr183Doc([osr153Paragraph('Fresh generation')]);
+        const reply = completed(editor.submit({
+          kind: 'remount', stamp: editor.capture(), input_json: expected, admission: 'validate',
+        }));
+        assert.equal(accepted(reply).effect, 'remounted');
+        assert.notEqual(editor.capture().generation, held.request.stamp.generation);
+        assert.equal(editor.capture().revision, held.request.stamp.revision);
+      }
+      const before = state(editor);
+      assert.equal(canonical(editor), expected, transition);
+      held.resolve(osr153Link);
+      osr153Stale(await held.completion);
+      assert.deepEqual(state(editor), before, transition);
+      assert.equal(canonical(editor), expected, transition);
+      assert.equal(editor.resources().host_requests, 0, transition);
+    });
+  }
+});
+
+test('OSR-153 sealed SDK2 release, foreign session and destroy retire late reply authority', async () => {
+  await withLiteraryCommandSession(osr153Source, async editor => {
+    osr153SelectInitial(editor);
+    const before = state(editor);
+    const cancelled = osr153Hold(editor);
+    assert.equal(editor.releaseHostRequest(cancelled.request), true);
+    assert.equal(editor.releaseHostRequest(cancelled.request), false);
+    cancelled.resolve(osr153Link);
+    osr153Stale(await cancelled.completion);
+    assert.deepEqual(state(editor), before);
+    assert.equal(canonical(editor), osr153Source);
+
+    const live = osr153Hold(editor);
+    const freshInput = osr183Doc([osr153Paragraph('Independent session')]);
+    await withLiteraryCommandSession(freshInput, async fresh => {
+      const spare = fresh.captureHostRequest();
+      assert.equal(spare.status, 'captured');
+      assert.equal(fresh.releaseHostRequest(spare.request), true);
+      const newCapture = fresh.captureHostRequest();
+      assert.equal(newCapture.status, 'captured');
+      assert.equal(newCapture.request.id, live.request.id, 'equal counters are not shared authority');
+      const freshBefore = state(fresh);
+      assert.notEqual(fresh.capture().session, live.request.stamp.session);
+      osr153Stale(await osr153Reply(fresh, live.request, osr153Link));
+      assert.deepEqual(state(fresh), freshBefore);
+      assert.equal(canonical(fresh), freshInput);
+      assert.equal(fresh.releaseHostRequest(newCapture.request), true);
+    });
+    assert.deepEqual(state(editor), before);
+    assert.equal(canonical(editor), osr153Source);
+    accepted(await settled(editor.destroy()));
+    assert.equal(editor.resources().host_requests, 0);
+    live.resolve(osr153Link);
+    osr153Stale(await live.completion);
+    assert.equal(editor.resources().host_requests, 0);
+    assert.equal(editor.releaseHostRequest(live.request), false);
+  });
+});
+
+test('OSR-153 sealed SDK2 completes one exact link edit, refuses replay and undoes it once', async () => {
+  await withLiteraryCommandSession(osr153Source, async editor => {
+    osr153SelectInitial(editor);
+    const before = state(editor);
+    const originalRoots = root(editor).children;
+    const held = osr153Hold(editor);
+    held.resolve(osr153Link);
+    assert.equal(accepted(await held.completion).effect, 'changed');
+    const changed = state(editor);
+    const expected = osr183Doc([
+      { type: 'paragraph', content: [
+        { type: 'text', text: 'Before', marks: [{ type: 'link', attrs: { href: '/works/example' } }] },
+      ] },
+      osr153Paragraph('After'),
+    ]);
+    assert.equal(canonical(editor), expected);
+    assert.equal(changed.stamp.revision, '1');
+    assert.equal(changed.history.undo_entries, '1');
+    assert.deepEqual(root(editor).children, originalRoots);
+    osr153Stale(await osr153Reply(editor, held.request, osr153Link));
+    assert.equal(editor.releaseHostRequest(held.request), false);
+    assert.equal(editor.resources().host_requests, 0);
+    assert.deepEqual(state(editor), changed);
+    assert.equal(canonical(editor), expected);
+    osr183History(editor, 'undo', osr153Source);
+    assert.deepEqual(root(editor).children, originalRoots);
+    assert.deepEqual(state(editor).selection, before.selection);
+    assert.equal(state(editor).history.undo_entries, '0');
+    assert.equal(state(editor).history.redo_entries, '1');
+  });
+});
+
 test('packaged SDK: async host completions refuse after each revision/selection/history/generation/lifecycle barrier', async () => {
   for (const change of ['revision', 'selection', 'history', 'remount', 'destroy']) {
     const context = await open(); const { editor } = context;
@@ -2452,6 +2596,55 @@ test('packaged SDK: pending hard cap128 and64-turn yielding settle actual stale 
     assert.deepEqual(JSON.parse(canonical(editor)), document('aXYbc'));
     assert.equal(editor.resources().pending_tickets, 0); assert.equal(context.callbackErrors.length, 0);
   } finally { context.close(); }
+});
+
+test('OSR-156 packaged SDK2 preserves DOC-006 reference markup and locks the article', async () => {
+  const fixture = referencePreservationFixture();
+  const references = [{id:fixture.id,status:'exists'}];
+  const readReference = (editor, index) => {
+    const row = textLeaf(editor, index);
+    assert.equal(row.text, fixture.label);
+    assert.deepEqual(structuredClone(row.marks), [{
+      type_id:'org.klenwriter.kwdj/reference_link',
+      attributes:{reference_entity_id:{kind:'string',value:fixture.id}},
+    }]);
+    return row.id;
+  };
+  const mutate = (editor, payload) => accepted(osr183Wire(editor, kwdjCommand(payload)));
+  await withLiteraryCommandSession(fixture.initial, editor => {
+    const reference = root(editor).children[1], referenceText = readReference(editor, 1);
+    for (const [index, text, offset] of [[0,fixture.left_append,fixture.before.length],[2,fixture.right_append,fixture.after.length]]) {
+      osr185Select(editor, position(textLeaf(editor, index).id, offset));
+      assert.equal(mutate(editor, {kind:'insert_text',text}).effect, 'changed');
+    }
+    assert.equal(canonical(editor), fixture.edited);
+    assert.equal(readReference(editor, 1), referenceText);
+    assert.equal(mutate(editor, {kind:'move',node:reference,parent:state(editor).root,before_index:fixture.move_before_index}).effect, 'changed');
+    assert.equal(canonical(editor), fixture.moved);
+    assert.equal(root(editor).children[2], reference);
+    assert.equal(readReference(editor, 2), referenceText);
+    assert.equal(mutate(editor, {kind:'remove',node:reference}).effect, 'changed');
+    assert.equal(canonical(editor), fixture.removed);
+  }, [], 'editable', references);
+  for (const [bytes,index] of [[fixture.edited,1],[fixture.moved,2]]) {
+    await withLiteraryCommandSession(bytes, editor => readReference(editor, index), [], 'editable', references);
+  }
+  await withLiteraryCommandSession(fixture.initial, editor => {
+    osr185Select(editor, position(readReference(editor, 1), fixture.locked_offset));
+    const before = state(editor), reference = root(editor).children[1], referenceText = readReference(editor, 1);
+    for (const payload of [{kind:'insert_text',text:'X'},{kind:'delete_backward'}]) {
+      osr183Denied(editor, kwdjCommand(payload).id, payload, fixture.initial, 'session.read_only', '');
+    }
+    const fragment = {
+      format_id:'org.klenwriter.kwdj/clipboard-fragment/1', mode:'prose',kind:'inline',
+      source_profile:{profile_id:'org.klenwriter.kwdj',profile_version:'1.0.0',codec_id:'org.klenwriter.kwdj/json',wire_version:1},
+      content:[{type:'text',text:fixture.paste_text}],open_start:false,open_end:false,
+    };
+    osr183Denied(editor, osr186InsertFragment, osr186Payload(fragment), fixture.initial, 'session.read_only', '');
+    assert.equal(root(editor).children[1], reference);
+    assert.equal(readReference(editor, 1), referenceText);
+    assert.deepEqual(state(editor), before);
+  }, [], 'read_only', references);
 });
 
 test('packaged SDK: current identity facts on untouched nodes are rechecked and retry succeeds', async () => {
@@ -2667,4 +2860,122 @@ test('OSR-283 packaged SDK2 transforms root verse and paragraphs with exact Undo
       }
     }));
   }
+});
+
+test('OSR-154 packaged SDK2 media commands normalize and edit one block without disturbing its caption or history', async () => {
+  const packet = JSON.parse(readFileSync(new URL('../artifacts/extensions/packet.json', import.meta.url)));
+  const wasm = readFileSync(new URL('../packages/wasm/dist/editor_wasm_bg.wasm', import.meta.url));
+  const module = await loadSdkV2({ wasm });
+  const oldId = '41111111-1111-4111-8111-111111111111';
+  const picked = 'a2222222-2222-4222-8222-222222222222';
+  const missing = 'f3333333-3333-4333-8333-333333333333';
+  const identities = { media: [oldId, picked, missing].map(id => ({id,status:id === missing ? 'missing' : 'exists'})), references: [] };
+  const options = { abi: 'editor-sdk/2', build_id: module.manifest.build_id, profile: packet.kwdjProfile,
+    admission: 'validate', access: 'editable', registry_json: packet.kwdjRegistryJson,
+    profile_options_json: JSON.stringify({identities,limits:null}) };
+  const left = document('Before').content[0], right = document('After').content[0];
+  const caption = document('Caption').content[0];
+  const original = { type:'media_image', attrs:{align:'wide',alt:'Original',media_asset_id:oldId}, content:[caption] };
+  const expected = content => canonicalizeRaw(JSON.stringify({...document(''),content}));
+  const initial = expected([left,original,right]);
+  const make = input => createEditor({ input:new TextEncoder().encode(input), options, loader:async ()=>module });
+  const editor = make(initial);
+  const raw = intent => createCommand('org.klenwriter.kwdj/command/media',intent);
+  const submit = (kind, fields) => completed(editor.submit({ kind, stamp:editor.capture(), ...fields }));
+  const execute = intent => submit('command',{command:raw(intent),history_hint:{kind:'isolated'}});
+  const replace = (node, media_asset_id, accessibility, current_asset_id = oldId) => ({
+    kind:'replace_media',node,current_asset_id,media_asset_id,accessibility,
+  });
+  try {
+    accepted(await editor.ready);
+    const before = editor.capture();
+    const originalNode = node(editor, root(editor).children[1]);
+    const point = { kind:'child',parent:state(editor).root,index:1,affinity:'after' };
+    accepted(submit('set_selection',{selection:{anchor:point,focus:point}}));
+    const selected = structuredClone(state(editor));
+    assert.equal(refused(command(editor,{kind:'insert_block',target:{kind:'media'}}).response).code,'kwdj.command_host_required');
+    const insert = {kind:'insert_media',media_asset_id:picked,accessibility:{kind:'alt',alt:'Alt\r\nline'}};
+    const availability = accepted(editor.query({kind:'query_command',stamp:editor.capture(),command:raw(insert)}));
+    assert.equal(availability.available,true);
+    assert.deepEqual(structuredClone(state(editor)),selected);
+    assert.equal(accepted(execute(insert)).effect,'changed');
+    const inserted = {type:'media_image',attrs:{align:'none',alt:'Alt\nline',media_asset_id:picked}};
+    assert.equal(canonical(editor),expected([left,inserted,original,right]));
+    assert.equal(root(editor).children[2],originalNode.id);
+    assert.equal(editor.capture().revision,String(BigInt(before.revision)+1n));
+    assert.equal(state(editor).history.undo_entries,'1');
+    const reopened = make(canonical(editor));
+    try {
+      accepted(await reopened.ready);
+      assert.equal(canonical(reopened),expected([left,inserted,original,right]));
+      assert.equal(node(reopened,root(reopened).children[1]).attributes.media_asset_id.value,picked);
+    } finally { reopened.destroy(); }
+    accepted(submit('history',{direction:'undo'}));
+    assert.equal(canonical(editor),initial);
+    assert.deepEqual(structuredClone(state(editor).selection),selected.selection);
+
+    const targetState = structuredClone(state(editor));
+    for (const [intent, code] of [
+      [replace(originalNode.id,missing,{kind:'decorative'}),'kwdj.media_identity_unresolved'],
+      [replace(originalNode.id,'b9999999-9999-4999-8999-999999999999',{kind:'decorative'}),'kwdj.identity_resolution_failed'],
+      [replace(originalNode.id,picked,{kind:'decorative'},picked),'kwdj.command_invalid_target'],
+      [replace(root(editor).children[0],picked,{kind:'decorative'}),'kwdj.command_invalid_target'],
+      [replace(originalNode.id,picked,{kind:'alt',alt:''}),'kwdj.invalid_media_accessibility'],
+      [replace(originalNode.id,picked,{kind:'decorative',alt:'forbidden'}),'sdk.invalid_dto'],
+    ]) {
+      assert.equal(refused(execute(intent)).code,code,JSON.stringify(intent));
+      assert.equal(canonical(editor),initial);
+      assert.deepEqual(structuredClone(state(editor)),targetState);
+    }
+    assert.equal(accepted(execute(replace(originalNode.id,picked.toUpperCase(),{kind:'decorative'}))).effect,'changed');
+    const replaced = { ...original, attrs:{align:'wide',decorative:true,media_asset_id:picked} };
+    assert.equal(canonical(editor),expected([left,replaced,right]));
+    const replacement = node(editor,root(editor).children[1]);
+    assert.equal(replacement.id,originalNode.id);
+    assert.deepEqual(replacement.children,originalNode.children);
+    assert.equal(accepted(execute(replace(replacement.id,picked,{kind:'decorative'},picked))).effect,'unchanged');
+    assert.equal(state(editor).history.undo_entries,'1');
+    accepted(submit('history',{direction:'undo'}));
+    assert.equal(canonical(editor),initial);
+    assert.equal(root(editor).children[1],originalNode.id);
+  } finally { editor.destroy(); }
+
+  const legacy = await open(document('abc'));
+  try {
+    const {editor:old} = legacy;
+    assert.equal(accepted(old.read({kind:'catalog'})).commands.length,17);
+    const rawReply = completed(old.submit({kind:'command',stamp:old.capture(),command:raw({
+      kind:'insert_media',media_asset_id:picked,accessibility:{kind:'decorative'},
+    }),history_hint:{kind:'isolated'}}));
+    assert.equal(refused(rawReply).code,'sdk.invalid_dto');
+  } finally { legacy.close(); }
+});
+
+test('OSR-155 packaged SDK2 checks existing canonical URL rules atomically before editing a selected link', async () => {
+  const input = canonicalizeRaw(JSON.stringify(document('Docs suffix')));
+  await withLiteraryCommandSession(input, async editor => {
+    const leaf = textLeaf(editor).id;
+    const selection = {anchor:position(leaf,4),focus:position(leaf,0)};
+    accepted(completed(editor.submit({kind:'set_selection',stamp:editor.capture(),selection})));
+    const before = structuredClone(state(editor)), original = canonical(editor), events = [];
+    const unsubscribe = editor.subscribe(event=>events.push(event));
+    try {
+      for (const href of ['/a/../b','/%2e%2e/b','//example.test/b','https://user:pass@example.test/b','javascript:void(0)']) {
+        const result = refused(completed(command(editor,{kind:'set_link',href,title:null})));
+        assert.equal(result.code,'kwdj.unsafe_url',href);
+        assert.equal(result.may_have_committed,false);
+        assert.deepEqual(structuredClone(state(editor)),before);
+        assert.equal(canonical(editor),original);
+      }
+      assert.deepEqual(events,[]);
+      const href = '/guide?search=%2e%2e#toc';
+      assert.equal(accepted(completed(command(editor,{kind:'set_link',href,title:'First\r\nsecond'}))).effect,'changed');
+      const exported = JSON.parse(canonical(editor));
+      assert.deepEqual(exported.content[0].content, [
+        {type:'text',text:'Docs',marks:[{type:'link',attrs:{href,title:'First\nsecond'}}]},
+        {type:'text',text:' suffix'},
+      ]);
+      assert.equal(events.length,1);
+    } finally { unsubscribe(); }
+  });
 });

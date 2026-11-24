@@ -29,6 +29,25 @@ export function warningFixture() {
   const { kwdj } = fixtures.find(fixture => fixture.id === 'DOC-016').cases.find(item => item.name === 'warning_kinds');
   return { document: kwdj, canonical: canonical(kwdj) };
 }
+export function referencePreservationFixture() {
+  const read = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
+  const spec = read('../fixtures/osr-156-reference-preservation.json');
+  const row = read('../../contracts/kwdj/v1/fixtures/positive.json').fixtures.find(item => item.id === 'DOC-006')
+    .cases.find(item => item.name === spec.retained_case);
+  const [reference] = row.kwdj.content;
+  const id = row.input.identity_state.existing_reference_ids[0];
+  const label = reference.content[0].text;
+  assert.equal(reference.content[0].marks[0].attrs.reference_entity_id, id);
+  const before = paragraph(spec.before), after = paragraph(spec.after);
+  const editedBefore = paragraph(spec.before + spec.left_append), editedAfter = paragraph(spec.after + spec.right_append);
+  return {
+    ...spec, id, label, reference,
+    initial: canonical(document([before, reference, after])),
+    edited: canonical(document([editedBefore, reference, editedAfter])),
+    moved: canonical(document([editedBefore, editedAfter, reference])),
+    removed: canonical(document([editedBefore, editedAfter])),
+  };
+}
 const measuredLimits = { document_bytes: 2097152, tree_depth: 32, node_count: 50000, text_length: 262144, table_rows: 500, table_effective_columns: 50, attribute_length: 8192 };
 
 // Independent adapter from the snapshot's resource recipes. Exact metric checks

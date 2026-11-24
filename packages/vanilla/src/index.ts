@@ -38,6 +38,7 @@ export const alphaBlockTypes = Object.freeze({
     'org.klenwriter.kwdj/hard_break',
     'org.klenwriter.kwdj/heading',
     'org.klenwriter.kwdj/list_item',
+    'org.klenwriter.kwdj/media_image',
     'org.klenwriter.kwdj/ordered_list',
     'org.klenwriter.kwdj/paragraph',
     'org.klenwriter.kwdj/scene_break',

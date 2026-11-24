@@ -140,6 +140,14 @@ export const kwdjTypingDomInventory = {
     },
     {
       "descriptor": {
+        "id": "org.klenwriter.kwdj/command/media",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/media",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
         "id": "org.klenwriter.kwdj/command/merge-cells",
         "kind": "compiled"
       },
@@ -352,6 +360,7 @@ export const kwdjTypingDomInventory = {
       "org.klenwriter.kwdj/command/insert-row-below",
       "org.klenwriter.kwdj/command/insert-text",
       "org.klenwriter.kwdj/command/insert-typed-text",
+      "org.klenwriter.kwdj/command/media",
       "org.klenwriter.kwdj/command/merge-cells",
       "org.klenwriter.kwdj/command/move",
       "org.klenwriter.kwdj/command/move-cell",
@@ -1645,5 +1654,5 @@ export const kwdjTypingDomInventory = {
     "profile_version": "1.0.0",
     "wire_version": 1
   },
-  "registryDigest": "9fcf72c4ca1dd09c8d45804eb96312f60a5d4b1821aef331318deeb8afbbde9b"
+  "registryDigest": "deaef2a8ee462898745f598fa41c36a52e990fbc4a36070cbf525f6bb19d0057"
 } as const;

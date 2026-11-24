@@ -380,7 +380,14 @@ for(const transition of ['selection','mode','replace'])test(`H02 ${transition}: 
   if(transition==='selection')await call(page,'select',id,{anchor:{kind:'text',node:'T',offset:0,affinity:'after'},focus:{kind:'text',node:'T',offset:0,affinity:'after'}});
   else if(transition==='mode')await call(page,'mode',id,'readOnly');
   else {const source=JSON.parse(before.canonical);source.root.attrs.title='replacement';await call(page,'replace',id,source);}
-  await page.locator('#ui-after').focus();const afterTransition=await checkpoint(page,id,'external transition before late host callback');await call(page,'lateAccept',id,0,{title:'late result'});
+  await page.locator('#ui-after').focus();const afterTransition=await checkpoint(page,id,'external transition before late host callback');
+  if(transition==='selection'){
+    expect(afterTransition.canonical).toBe(before.canonical);
+    expect(afterTransition.state.stamp.revision).toBe(before.state.stamp.revision);
+    expect(afterTransition.state.stamp.selection_epoch).not.toBe(before.state.stamp.selection_epoch);
+    expect(afterTransition.state.selection).not.toEqual(before.state.selection);
+  }
+  await call(page,'lateAccept',id,0,{title:'late result'});
   const after=await checkpoint(page,id,'late accept ignored');unchanged(after,afterTransition);expect(submitted(after)).toHaveLength(0);await expect(page.locator('#ui-after')).toBeFocused();expect(after.uiResources.hostRequests).toBe(0);expect(after.dialog.closeReasons).toHaveLength(1);
 });
 

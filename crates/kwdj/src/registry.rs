@@ -34,6 +34,7 @@ pub fn base_registration_v2() -> ExtensionDescriptor {
     registration.commands.extend(
         [
             crate::commands::CLIPBOARD_COMMAND_ID,
+            crate::commands::MEDIA_COMMAND_ID,
             crate::commands::SET_LITERARY_KIND_COMMAND_ID,
             crate::commands::WRAP_LITERARY_BLOCK_COMMAND_ID,
             crate::commands::UNWRAP_LITERARY_BLOCK_COMMAND_ID,

@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { HostRequestOwner } from '../packages/dom/dist/host-request.js';
 import { SelectionOwner } from '../packages/dom/dist/selection.js';
 import { domRefusal } from '../packages/dom/dist/refusal.js';
+import * as dom from '../packages/dom/dist/index.js';
 
 const copy=value=>JSON.parse(JSON.stringify(value));
 const command=Object.freeze({id:'org.klenwriter.kwdj/command/toggle-mark',payload_json:'{"kind":"toggle_mark","mark":{"type_id":"org.klenwriter.kwdj/strong","attributes":{}}}'});
@@ -13,7 +14,7 @@ const quiet={focus:'none'};
 function harness(){
   const context={build_id:'controlled-build',profile:{profile_id:'controlled',profile_version:'1',codec_id:'controlled/json',wire_version:1,extensions:[]},registry_digest:'controlled-registry',capability_digest:'controlled-capability'};
   let state={stamp:{session:'controlled-session',generation:'1',revision:'0',selection_epoch:'1',history_epoch:'0'},root:'R',selection:{anchor:{kind:'text',node:'T',offset:1,affinity:'after'},focus:{kind:'text',node:'T',offset:1,affinity:'after'}},stored_marks:null,dirty:false,saved_revision:'0',history:{undo_entries:'0',redo_entries:'0',retained_bytes:'0'}};
-  let owner,guardCode=null,behavior='changed',sdkFailure=null,beforeValidate=null,subscriber=null,pendingResolve=null;
+  let owner,guardCode=null,behavior='changed',sdkFailure=null,beforeValidate=null,subscriber=null,pendingResolve=null,duringRefusal=null;
   let browser=copy(state.selection),ids=0;
   const requests=[],submittedSelections=[],restoredRanges=[],reports=[],sdkLive=new Map(),released=[];
   class Element {
@@ -38,7 +39,7 @@ function harness(){
   };
   const config={element:()=>host,view:()=>view,controller:()=>controller,capture:()=>copy(state.stamp),context:()=>copy(context),selection,guard,
     report:failure=>{reports.push(failure);return failure;},
-    dispatch(request,handle,validate){
+    dispatch(request,handle,validate,refusalTarget){
       beforeValidate?.();const failure=validate();if(failure)return {result:failure,permit:null};
       const frame=selection.beginSubmission(request,false);
       assert.equal(sdkLive.get(handle.id),handle,'the exact SDK request is forwarded');sdkLive.delete(handle.id);requests.push(copy(request));
@@ -46,7 +47,8 @@ function harness(){
       if(behavior==='queued'){
         result=Object.freeze({status:'queued',completion:new Promise(resolve=>{pendingResolve=resolve;})});
       }else if(behavior==='refused' || behavior==='fatal'){
-        result=Object.freeze({status:'completed',response:{status:behavior,diagnostic:{code:'controlled.native_refusal',path:'/literal',category:'controlled',details:{literal:'retained'},stamp:copy(state.stamp),may_have_committed:behavior==='fatal'}}});
+        const diagnosticStamp=copy(state.stamp),uncertain=duringRefusal?.()===true;
+        result=Object.freeze({status:'completed',response:{status:behavior,diagnostic:{code:'controlled.native_refusal',path:'/literal',category:'controlled',details:{literal:'retained'},stamp:diagnosticStamp,may_have_committed:uncertain||behavior==='fatal'}}});
       }else{
         const before=copy(state.stamp);
         if(behavior==='changed'){
@@ -58,14 +60,25 @@ function harness(){
         subscriber?.();
         result=Object.freeze({status:'completed',response:{status:'ok',value:{kind:'mutation',effect:behavior==='changed'?'changed':behavior==='state'?'state_changed':'unchanged',state:copy(state),presentation:{active:'none'}}}});
       }
-      selection.endSubmission(frame,result);
-      return {result,permit:selection.resultFocusPermit(frame,result)};
+      selection.endSubmission(frame,result,refusalTarget);
+      return {result,permit:selection.resultFocusPermit(frame,result,refusalTarget)};
     },
   };
   owner=new HostRequestOwner(config);
   return {owner,selection,host,scope,external,doc,text,requests,submittedSelections,restoredRanges,reports,sdkLive,released,context,
     state:()=>copy(state),setBrowser:value=>{browser=value;},setGuard:code=>{guardCode=code;},behavior:value=>{behavior=value;},sdkFailure:value=>{sdkFailure=value;},beforeValidate:fn=>{beforeValidate=fn;},subscriber:fn=>{subscriber=fn;},
+    duringRefusal:fn=>{duringRefusal=fn;},
     bumpStamp(){state.stamp.revision=String(BigInt(state.stamp.revision)+1n);},
+    retarget() {
+      state.selection.anchor.offset = state.selection.focus.offset = 0;
+      state.stamp.selection_epoch = String(BigInt(state.stamp.selection_epoch)+1n);
+      browser = copy(state.selection);
+      owner.publication();
+    },
+    replaceGeneration() {
+      state.stamp.generation = String(BigInt(state.stamp.generation)+1n);
+      owner.publication();
+    },
     completeQueued(response={status:'ok',value:{kind:'mutation',effect:'unchanged',state:copy(state),presentation:{active:'none'}}}){assert.ok(pendingResolve);pendingResolve(response);},
     capture(options){const captured=owner.api.capture(options);assert.equal(captured.status,'captured');return captured.request;},
     assertReleased(){assert.equal(owner.resources().pending,0);assert.equal(selection.resources().bookmarks,0);assert.equal(sdkLive.size,0);},
@@ -76,6 +89,220 @@ test('HR01/02 controlled status is allocation/callback-free',()=>{
   const h=harness();h.setGuard('dom.not_ready');assert.equal(h.owner.api.status().diagnostic.code,'dom.not_ready');
   h.setGuard(null);const result=h.owner.api.status();assert.equal(result.status,'available');assert.deepEqual(result.stamp,h.state().stamp);assert.deepEqual(result.context,h.context);
   assert.equal(h.reports.length,0);h.assertReleased();assert.equal(h.released.length,0);
+});
+
+const nextTask = () => new Promise(resolve => setImmediate(resolve));
+const pendingService = () => {
+  const {promise, resolve, reject} = Promise.withResolvers();
+  let signal = null;
+  return {resolve, reject, get signal() { return signal; }, service(_request, context) {
+    signal = context.signal;
+    return promise;
+  }};
+};
+
+function startService(h, service, options = {}) {
+  assert.equal(typeof dom.runMountedHostService, 'function', 'the mounted async service entry point is public');
+  const result = dom.runMountedHostService(h.owner.api, {
+    request: { kind: 'create' },
+    service,
+    command: () => command,
+    focusScope: h.scope,
+    ...options,
+  });
+  assert.equal(result.status, 'started');
+  return result;
+}
+
+test('OSR-153 a service success uses the existing exact command handle and scoped focus', async () => {
+  const h = harness(), provider = pendingService();
+  const before = h.state();
+  const run = startService(h, provider.service);
+  assert.ok(provider.signal instanceof AbortSignal);
+  assert.equal(provider.signal.aborted, false);
+  assert.equal(h.owner.resources().pending, 1);
+  assert.equal(h.sdkLive.size, 1);
+  h.scope.focus();
+  provider.resolve({status: 'ok', value: {kind: 'set', link: {href: '/example'}}});
+  const outcome = await run.completion;
+  assert.equal(outcome.status, 'submitted');
+  assert.equal(outcome.submission.response.value.effect, 'changed');
+  assert.deepEqual(await outcome.focus, {status: 'restored', failure: null});
+  assert.deepEqual(h.requests.map(request => request.stamp), [before.stamp]);
+  assert.equal(h.doc.activeElement, h.host);
+  assert.equal(run.cancel(), false);
+  assert.equal(provider.signal.aborted, false);
+  h.assertReleased();
+});
+
+test('OSR-153 explicit cancellation aborts once and a late fulfillment has no effect', async () => {
+  const h = harness(), provider = pendingService();
+  const run = startService(h, provider.service);
+  const before = h.state();
+  let aborts = 0;
+  provider.signal.addEventListener('abort', () => { aborts++; });
+  h.scope.focus();
+  assert.equal(run.cancel(), true);
+  assert.equal(run.cancel(), false);
+  assert.equal((await run.completion).status, 'cancelled');
+  assert.equal(provider.signal.aborted, true);
+  assert.equal(h.doc.activeElement, h.host);
+  h.external.focus();
+  provider.resolve({status: 'ok', value: {kind: 'set', link: {href: '/late'}}});
+  await nextTask();
+  assert.deepEqual(h.state(), before);
+  assert.deepEqual(h.requests, []);
+  assert.equal(h.doc.activeElement, h.external);
+  assert.equal(aborts, 1);
+  h.assertReleased();
+});
+
+test('OSR-153 cancellation without an owned focus scope releases only that service', async () => {
+  const h = harness(), first = pendingService(), second = pendingService();
+  const a = startService(h, first.service), b = startService(h, second.service);
+  h.external.focus();
+  assert.equal(a.cancel(), true);
+  assert.deepEqual(await a.completion, {status:'cancelled',restore:null});
+  assert.equal(first.signal.aborted, true);
+  assert.equal(second.signal.aborted, false);
+  assert.equal(h.sdkLive.size, 1);
+  assert.deepEqual(h.submittedSelections, []);
+  second.resolve({status:'ok',value:{kind:'remove'}});
+  assert.equal((await b.completion).status, 'submitted');
+  assert.equal(h.doc.activeElement, h.external);
+  h.assertReleased();
+});
+
+test('OSR-153 a service without a focus target requests no focus after a valid command', async () => {
+  const h = harness();
+  h.external.focus();
+  const run = startService(h, async () => ({status:'ok',value:{kind:'remove'}}), {focusScope:undefined});
+  const outcome = await run.completion;
+  assert.equal(outcome.status, 'submitted');
+  assert.deepEqual(await outcome.focus, {status:'not_requested',failure:null});
+  assert.equal(h.doc.activeElement, h.external);
+  h.assertReleased();
+});
+
+for (const [changed, invalidate] of [
+  ['document revision', h => { h.bumpStamp(); h.owner.publication(); }],
+  ['selection in the same revision', h => h.retarget()],
+  ['generation in the same revision', h => h.replaceGeneration()],
+  ['intent', h => h.selection.invalidate()],
+  ['mount lifecycle', h => h.owner.destroy()],
+]) test(`OSR-153 changed ${changed} aborts and ignores a late rejection with foreign focus`, async () => {
+  const h = harness(), provider = pendingService();
+  const run = startService(h, provider.service);
+  const before = h.state();
+  h.external.focus();
+  invalidate(h);
+  const afterInvalidation = h.state();
+  if (changed === 'selection in the same revision') {
+    assert.equal(afterInvalidation.stamp.revision, before.stamp.revision);
+    assert.notEqual(afterInvalidation.stamp.selection_epoch, before.stamp.selection_epoch);
+    assert.notDeepEqual(afterInvalidation.selection, before.selection);
+  }
+  h.assertReleased();
+  assert.deepEqual(await run.completion, {status: 'retired'});
+  assert.equal(provider.signal.aborted, true);
+  provider.reject(new Error('late service failure'));
+  await nextTask();
+  assert.equal(run.cancel(), false);
+  assert.deepEqual(h.state(), afterInvalidation);
+  assert.deepEqual(h.requests, []);
+  assert.deepEqual(h.restoredRanges, []);
+  assert.equal(h.doc.activeElement, h.external);
+  h.assertReleased();
+});
+
+test('OSR-153 destroy retires authority before calling synchronous abort listeners', async () => {
+  const h = harness(), provider = pendingService();
+  const run = startService(h, provider.service);
+  let reentrant;
+  provider.signal.addEventListener('abort', () => {
+    reentrant = dom.runMountedHostService(h.owner.api, {
+      request: {kind: 'create'}, service: () => assert.fail('destroyed work ran'), command: () => command,
+    });
+  });
+  h.owner.destroy();
+  assert.deepEqual(await run.completion, {status: 'retired'});
+  assert.equal(reentrant.diagnostic.code, 'dom.disposed');
+  h.assertReleased();
+});
+
+for (const [reason, invalidate, expected] of [
+  ['cancel', (_h, run) => assert.equal(run.cancel(), true), 'cancelled'],
+  ['publication', h => h.retarget(), 'retired'],
+  ['destroy', h => h.owner.destroy(), 'retired'],
+]) test(`OSR-154 ${reason} revokes continuation before the deferred abort`, async () => {
+  const h = harness(), provider = pendingService();
+  let isCurrent;
+  const run = startService(h, (request, context, current) => {
+    isCurrent = current;
+    return provider.service(request, context);
+  });
+  assert.equal(isCurrent(), true);
+  invalidate(h, run);
+  assert.equal(isCurrent(), false);
+  assert.equal(provider.signal.aborted, false);
+  assert.equal((await run.completion).status, expected);
+  assert.equal(provider.signal.aborted, true);
+  assert.equal(isCurrent(), false);
+  provider.reject(new Error('late service result'));
+  await nextTask();
+  assert.deepEqual(h.requests, []);
+  h.assertReleased();
+});
+
+for (const [expected, service] of [
+  ['unavailable', async () => ({status: 'unavailable'})],
+  ['cancelled', async () => ({status: 'cancelled'})],
+  ['failed', async () => { throw new Error('rejected'); }],
+  ['failed', () => { throw new Error('synchronous failure'); }],
+]) test(`OSR-153 a settled ${expected} service releases authority without touching foreign focus`, async () => {
+  const h = harness();
+  h.external.focus();
+  const before = h.state();
+  const run = startService(h, service);
+  assert.equal((await run.completion).status, expected);
+  assert.deepEqual(h.state(), before);
+  assert.deepEqual(h.requests, []);
+  assert.deepEqual(h.restoredRanges, []);
+  assert.equal(h.doc.activeElement, h.external);
+  h.assertReleased();
+});
+
+test('OSR-153 returning a reply after reentrant command mapping changes intent cannot apply', async () => {
+  const h = harness();
+  const before = h.state();
+  const run = startService(h, async () => ({status: 'ok', value: {kind: 'set', link: {href: '/unused'}}}), {
+    command() {
+      h.external.focus();
+      h.selection.invalidate();
+      return command;
+    },
+  });
+  assert.deepEqual(await run.completion, {status: 'retired'});
+  assert.deepEqual(h.state(), before);
+  assert.deepEqual(h.requests, []);
+  assert.equal(h.doc.activeElement, h.external);
+  h.assertReleased();
+});
+
+for (const finish of ['reply','cancel']) test(`OSR-153 a ${finish} cannot use the old range while actual selectionchange is pending`, async () => {
+  const h = harness(), provider = pendingService();
+  const run = startService(h, provider.service);
+  const before = h.state(), browser = copy(before.selection);
+  browser.anchor.offset = browser.focus.offset = 0;
+  h.setBrowser(browser);
+  if (finish === 'reply') provider.resolve({status:'ok',value:{kind:'remove'}});
+  else assert.equal(run.cancel(), true);
+  assert.deepEqual(await run.completion, {status:'retired'});
+  assert.equal(provider.signal.aborted, true);
+  assert.deepEqual(h.state(), before);
+  assert.deepEqual(h.requests, []);
+  assert.deepEqual(h.restoredRanges, []);
+  h.assertReleased();
 });
 for(const code of ['dom.mode_blocked','dom.native_read_only','dom.composition_conflict','dom.busy'])test(`HR03–06 controlled user gate ${code} does not allocate`,()=>{
   const h=harness();h.setGuard(code);assert.equal(h.owner.api.status().diagnostic.code,code);assert.equal(h.owner.api.capture().diagnostic.code,code);h.assertReleased();assert.equal(h.requests.length,0);
@@ -158,6 +385,28 @@ test('HR20/21 explicit lifecycle retirement does not revive when guard returns a
 test('HR22 context-only changes are swept and live-release proof fails',()=>{
   const h=harness(),request=h.capture();h.context.capability_digest='changed';assert.equal(h.owner.api.release(request),false);h.assertReleased();assert.equal(h.requests.length,0);
 });
+test('OSR-153 mounted context-only invalidation refuses a late reply without touching current focus or selection',async()=>{
+  const h=harness(),request=h.capture({focusScope:h.scope});
+  const pending=Promise.withResolvers();
+  const completion=pending.promise.then(payload=>h.owner.api.complete(request,payload));
+  h.context.capability_digest='changed-capability';
+  h.doc.activeElement=h.external;
+  const current=h.state();
+  assert.deepEqual(current.stamp,request.stamp,'no other stale-token condition changed');
+  assert.notDeepEqual(h.context,request.context);
+  pending.resolve(command);
+  const result=await completion;
+  assert.equal(result.status,'dom_refused');
+  assert.equal(result.diagnostic.code,'dom.stale_selection');
+  assert.deepEqual(h.state(),current);
+  assert.equal(h.doc.activeElement,h.external);
+  assert.equal(h.host.focusCalls,0);
+  assert.deepEqual(h.submittedSelections,[]);
+  assert.deepEqual(h.restoredRanges,[]);
+  assert.deepEqual(h.requests,[]);
+  assert.equal(h.owner.api.release(request),false);
+  h.assertReleased();
+});
 test('HR23 destroy retires genuine requests without retaining their SDK/bookmark authority',()=>{
   const h=harness(),request=h.capture();h.owner.destroy();h.assertReleased();assert.equal(h.owner.api.status().diagnostic.code,'dom.disposed');assert.equal(h.owner.api.complete(request,command,quiet).diagnostic.code,'dom.stale_host_request');assert.equal(h.requests.length,0);
 });
@@ -217,3 +466,49 @@ for(const behavior of ['refused','fatal'])test(`HR32 original controlled native 
   const result=h.owner.api.complete(request,command);assert.equal(result.status,'submitted');const response=result.submission.response;assert.equal(response.status,behavior);assert.equal(response.diagnostic.details.literal,'retained');
   const focus=await result.focus;assert.equal(focus.status,'not_restored');assert.equal(focus.failure.response,response);assert.equal(h.requests.length,1);assert.equal(h.host.focusCalls,0);h.assertReleased();
 });
+
+test('OSR-155 typed service restores a clean native refusal without another SDK mutation', async () => {
+  const h = harness(), provider = pendingService(), before = h.state();
+  h.behavior('refused');
+  const run = startService(h, provider.service, {restoreRefusalFocus:true});
+  h.scope.focus();
+  provider.resolve({status:'ok',value:{kind:'set',link:{href:'/a/../b'}}});
+  const outcome = await run.completion;
+  assert.equal(outcome.status,'submitted');
+  assert.equal(outcome.submission.response.diagnostic.code,'controlled.native_refusal');
+  assert.deepEqual(await outcome.focus,{status:'restored',failure:null});
+  assert.deepEqual(h.state(),before);
+  assert.deepEqual(h.restoredRanges,[before.selection]);
+  assert.deepEqual(h.submittedSelections,[]);
+  assert.equal(h.doc.activeElement,h.host);
+  assert.equal(h.requests.length,1);
+  h.assertReleased();
+});
+
+for (const intervening of ['publication','remount','selection','uncertain','fatal','queued']) {
+  test(`OSR-155 typed service cannot restore a refused target after ${intervening}`, async () => {
+    const h = harness(), provider = pendingService();
+    h.behavior(intervening==='fatal' || intervening==='queued' ? intervening : 'refused');
+    const run = startService(h, provider.service, {restoreRefusalFocus:true});
+    h.scope.focus();
+    h.duringRefusal(() => {
+      if (intervening==='publication') {
+        const before = h.state().stamp;
+        h.bumpStamp();
+        h.selection.publication({before,after:h.state().stamp,change:{kind:'document'}});
+      } else if (intervening==='remount') h.replaceGeneration();
+      else if (intervening==='selection') h.retarget();
+      return intervening==='uncertain';
+    });
+    provider.resolve({status:'ok',value:{kind:'set',link:{href:'/a/../b'}}});
+    const outcome = await run.completion;
+    assert.equal(outcome.status,'submitted');
+    if (intervening==='queued') h.completeQueued({status:'refused',diagnostic:{may_have_committed:false}});
+    assert.equal((await outcome.focus).status,'not_restored');
+    assert.equal(h.host.focusCalls,0);
+    assert.deepEqual(h.restoredRanges,[]);
+    assert.deepEqual(h.submittedSelections,[]);
+    assert.equal(h.doc.activeElement,h.scope);
+    h.assertReleased();
+  });
+}

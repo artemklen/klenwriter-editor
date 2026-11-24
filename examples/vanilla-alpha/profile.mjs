@@ -4,6 +4,7 @@ import { createEditor, sdkAbiV2, sdkBuildId } from '@klenwriter/editor-sdk';
 import { notesD0Renderers } from '@example/notes-extension/dom';
 import registry from './kwdj-registry.json';
 import notesDocument from './notes-document.json';
+import { mediaAssetId, referenceEntityId } from './host-services.mjs';
 
 const descriptor = await fetch(import.meta.resolve('@example/notes-extension/d0.json'));
 if (!descriptor.ok) throw new Error('Could not load the Notes D0 registry');
@@ -25,7 +26,11 @@ export const profiles = {
     label: 'KWDJ',
     renderers: kwdjBasicRenderers,
     options: options(kwdjBasicRenderers, JSON.stringify(registry), {
-      identities: { media: [], references: [] }, limits: null,
+      identities: {
+        media: [{ id:mediaAssetId,status:'exists' }],
+        references: [{ id:referenceEntityId,status:'exists' }],
+      },
+      limits: null,
     }),
     initialDocument: JSON.stringify({
       schema: 'klenwriter.document', schema_version: 1, profile: 'prose',

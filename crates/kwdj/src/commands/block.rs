@@ -2010,6 +2010,66 @@ fn insert_block_node<V: CandidateRead>(
     Ok(CommandPresentation::default())
 }
 
+fn insert_media<V: CandidateRead>(
+    view: &V,
+    state: CommandState<'_, V::Id>,
+    asset_id: &str,
+    alt: Option<&str>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let mut attributes = Attributes::from([
+        (
+            key("media_asset_id", plan)?,
+            Attribute::String(key(asset_id, plan)?),
+        ),
+        (key("align", plan)?, Attribute::String(key("none", plan)?)),
+    ]);
+    let (name, value) = media_accessibility(alt, plan)?;
+    attributes.insert(key(name, plan)?, value);
+    let media = empty_node("media_image", Primitive::Container, attributes, plan)?;
+    insert_block_node(view, state, media, None, plan)
+}
+
+fn media_accessibility<I>(
+    alt: Option<&str>,
+    plan: &mut PlanBuilder<'_, I>,
+) -> Result<(&'static str, Attribute), KwdjError> {
+    match alt {
+        Some(value) => Ok(("alt", Attribute::String(key(value, plan)?))),
+        None => Ok(("decorative", Attribute::Boolean(true))),
+    }
+}
+
+fn replace_media<V: CandidateRead>(
+    view: &V,
+    id: V::Id,
+    current_asset_id: &str,
+    asset_id: &str,
+    alt: Option<&str>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let node = get(view, id, plan)?;
+    bytes(plan, current_asset_id.len().saturating_add(asset_id.len()))?;
+    if kind(node.type_id) != "media_image"
+        || !matches!(node.attributes.get("media_asset_id"), Some(Attribute::String(value)) if value == current_asset_id)
+    {
+        return Err(invalid());
+    }
+    if asset_id != current_asset_id {
+        let value = Attribute::String(key(asset_id, plan)?);
+        attr(plan, id.into(), "media_asset_id", Some(value))?;
+    }
+    let (name, value) = media_accessibility(alt, plan)?;
+    let other = if alt.is_some() { "decorative" } else { "alt" };
+    if node.attributes.contains_key(other) {
+        attr(plan, id.into(), other, None)?;
+    }
+    if node.attributes.get(name) != Some(&value) {
+        attr(plan, id.into(), name, Some(value))?;
+    }
+    Ok(CommandPresentation::default())
+}
+
 fn insert_author_note<V: CandidateRead>(
     view: &V,
     state: CommandState<'_, V::Id>,
@@ -2647,6 +2707,22 @@ pub(super) fn prepare<V: CandidateRead>(
         KwdjIntent::ToggleQuote => toggle_quote(view, state, plan),
         KwdjIntent::ToggleList { kind } => toggle_list(view, state, *kind, plan),
         KwdjIntent::InsertBlock { target } => insert_block(view, state, target, None, plan),
+        KwdjIntent::InsertMedia { asset_id, alt } => {
+            insert_media(view, state, asset_id, alt.as_deref(), plan)
+        }
+        KwdjIntent::ReplaceMedia {
+            node,
+            current_asset_id,
+            asset_id,
+            alt,
+        } => replace_media(
+            view,
+            *node,
+            current_asset_id,
+            asset_id,
+            alt.as_deref(),
+            plan,
+        ),
         KwdjIntent::InsertAuthorNote => insert_author_note(view, state, plan),
         KwdjIntent::SetLiteraryKind { node } => set_literary_kind(view, *node, plan),
         KwdjIntent::WrapLiteraryBlock => wrap_literary_block(view, state, plan),

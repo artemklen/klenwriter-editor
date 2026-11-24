@@ -247,6 +247,151 @@ fn table_rectangle_plain_text_preserves_the_mark_boundary() {
 }
 
 #[test]
+fn osr156_doc006_reference_survives_adjacent_edits_and_whole_block_operations() {
+    let spec: Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/osr-156-reference-preservation.json"
+    ))
+    .unwrap();
+    let corpus: Value = serde_json::from_str(include_str!(
+        "../../../contracts/kwdj/v1/fixtures/positive.json"
+    ))
+    .unwrap();
+    let row = corpus["fixtures"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|f| f["id"] == "DOC-006")
+        .unwrap()["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|f| f["name"] == spec["retained_case"])
+        .unwrap();
+    let reference = row["kwdj"]["content"][0].clone();
+    let entity = &row["input"]["identity_state"]["existing_reference_ids"][0];
+    assert_eq!(
+        reference["content"][0]["marks"][0]["attrs"]["reference_entity_id"],
+        *entity
+    );
+    let identities = json!({"media":[],"references":[{"id":entity,"status":"exists"}]});
+    let open_reference = |bytes: &str, access| {
+        let session =
+            open_bytes_with_facts(bytes.as_bytes(), Value::Null, identities.clone(), access);
+        assert!(matches!(
+            session.initialization(),
+            editor_protocol::SdkResponse::Ok { .. }
+        ));
+        session
+    };
+    let read_reference = |s: &mut DistributionSession, index| {
+        let id = role(s, &[index, 0]);
+        let view = node(s, &id);
+        assert_eq!(view["text"], reference["content"][0]["text"]);
+        assert_eq!(
+            view["marks"],
+            json!([{
+                "type_id":"org.klenwriter.kwdj/reference_link",
+                "attributes":{"reference_entity_id":{"kind":"string","value":entity}}
+            }])
+        );
+        id
+    };
+    let before = spec["before"].as_str().unwrap();
+    let after = spec["after"].as_str().unwrap();
+    let input = doc("prose", json!([p(before), reference, p(after)])).to_string();
+    let mut editor = open_reference(&input, "editable");
+    let paragraph = role(&mut editor, &[1]);
+    let leaf = read_reference(&mut editor, 1);
+    let left = spec["left_append"].as_str().unwrap();
+    let right = spec["right_append"].as_str().unwrap();
+    for (index, neighbor, append) in [(0, before, left), (2, after, right)] {
+        let point = text(
+            role(&mut editor, &[index, 0]),
+            neighbor.encode_utf16().count(),
+        );
+        select(&mut editor, point.clone(), point);
+        let response = command(
+            &mut editor,
+            "org.klenwriter.kwdj/command/insert-text",
+            json!({"kind":"insert_text","text":append}),
+        );
+        assert_eq!(response["value"]["effect"], "changed", "{response}");
+    }
+    let left = p(&format!("{before}{left}"));
+    let right = p(&format!("{after}{right}"));
+    let edited = doc("prose", json!([left, reference, right])).to_string();
+    assert_eq!(canonical_snapshot(&mut editor), edited);
+    assert_eq!(read_reference(&mut editor, 1), leaf);
+
+    let root = state(&mut editor)["root"].clone();
+    let response = command(
+        &mut editor,
+        "org.klenwriter.kwdj/command/move",
+        json!({"kind":"move","node":paragraph,"parent":root,"before_index":spec["move_before_index"]}),
+    );
+    assert_eq!(response["value"]["effect"], "changed", "{response}");
+    let moved = doc("prose", json!([left, right, reference])).to_string();
+    assert_eq!(canonical_snapshot(&mut editor), moved);
+    assert_eq!(role(&mut editor, &[2]), paragraph);
+    assert_eq!(read_reference(&mut editor, 2), leaf);
+    let response = command(
+        &mut editor,
+        "org.klenwriter.kwdj/command/remove",
+        json!({"kind":"remove","node":paragraph}),
+    );
+    assert_eq!(response["value"]["effect"], "changed", "{response}");
+    assert_eq!(
+        canonical_snapshot(&mut editor),
+        doc("prose", json!([left, right])).to_string()
+    );
+    for (expected, index) in [(&edited, 1), (&moved, 2)] {
+        let mut reopened = open_reference(expected, "editable");
+        assert_eq!(canonical_snapshot(&mut reopened), *expected);
+        read_reference(&mut reopened, index);
+    }
+
+    let mut locked = open_reference(&input, "read_only");
+    let original_leaf = read_reference(&mut locked, 1);
+    let point = text(
+        original_leaf.clone(),
+        spec["locked_offset"].as_u64().unwrap() as usize,
+    );
+    select(&mut locked, point.clone(), point);
+    let before = state(&mut locked);
+    let insert = fragment(
+        "prose",
+        "inline",
+        json!([{"type":"text","text":spec["paste_text"]}]),
+        false,
+        false,
+    );
+    for (id, payload) in [
+        (
+            "org.klenwriter.kwdj/command/insert-text",
+            json!({"kind":"insert_text","text":"X"}),
+        ),
+        (
+            "org.klenwriter.kwdj/command/delete-backward",
+            json!({"kind":"delete_backward"}),
+        ),
+        (
+            COMMAND,
+            json!({"kind":"insert_fragment","fragment_json":insert.to_string()}),
+        ),
+    ] {
+        let denied = command(&mut locked, id, payload);
+        assert_eq!(denied["status"], "refused", "{denied}");
+        assert_eq!(
+            denied["diagnostic"]["code"], "session.read_only",
+            "{denied}"
+        );
+        assert_eq!(denied["diagnostic"]["may_have_committed"], false);
+        assert_eq!(state(&mut locked), before);
+        assert_eq!(canonical_snapshot(&mut locked), input);
+        assert_eq!(read_reference(&mut locked, 1), original_leaf);
+    }
+}
+#[test]
 fn osr210_table_clipboard_matches_the_source_target_matrix() {
     let fixture: Value = serde_json::from_str(include_str!(
         "../../../tests/fixtures/osr-210-table-clipboard.json"

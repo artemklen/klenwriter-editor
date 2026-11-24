@@ -22,6 +22,8 @@ fn main() {
         OpenOptionsV2,
         SessionContextV2,
         KwdjClipboardIntentV2,
+        KwdjMediaAccessibilityV2,
+        KwdjMediaIntentV2,
         LiteraryAuthoringKindV2,
         LiteraryBlockTargetV2,
         KwdjLiteraryIntentV2,

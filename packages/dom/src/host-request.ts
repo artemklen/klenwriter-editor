@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-import type { CommandDto, DeepReadonly, EditorControllerV2, HostRequest, SessionContextV2, StampDto, Submission } from '@klenwriter/editor-sdk';
+import type { CommandDto, DeepReadonly, EditorControllerV2, HostRequest, HostServiceReply, SessionContextV2, StampDto, Submission } from '@klenwriter/editor-sdk';
 import { fields, ownConfiguration } from './ownership.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
 import type { ExactBookmark, ResultFocusPermit, SelectionOwner } from './selection.js';
-import type { DomRefusal, HostFocus, MountedHostCapture, MountedHostRequest, MountedHostRequests, MountedMutation, SelectionBookmark, SelectionReadFailure } from './types.js';
+import type { DomRefusal, HostFocus, MountedHostCapture, MountedHostRequest, MountedHostRequests, MountedHostServiceOptions, MountedHostServiceOutcome, MountedHostServiceStart, MountedMutation, SelectionBookmark, SelectionReadFailure } from './types.js';
 import type { DomView } from './view.js';
 
 const same=(a:unknown,b:unknown)=>JSON.stringify(a)===JSON.stringify(b);
@@ -19,7 +19,7 @@ interface Configuration {
   selection:SelectionOwner;
   guard():DomRefusal|null;
   report(failure:DomRefusal):DomRefusal;
-  dispatch(request:CommandRequest,handle:HostRequest,validate:()=>Failure|null):HostDispatch;
+  dispatch(request:CommandRequest,handle:HostRequest,validate:()=>Failure|null,refusalTarget?:ExactBookmark):HostDispatch;
 }
 interface Entry {
   readonly request:MountedHostRequest;
@@ -28,7 +28,40 @@ interface Entry {
   bookmark:SelectionBookmark|null;
   sdk:HostRequest|null;
   scope:HTMLElement|null;
+  retireService:(()=>void)|null;
 }
+type ServiceFailure = 'cancelled'|'unavailable'|'failed';
+interface ServiceReceiver<Value> {
+  receive: ((reply: HostServiceReply<Value>|null) => void)|null;
+  cancel: (() => boolean)|null;
+  current: (() => boolean)|null;
+}
+const hostOwners = new WeakMap<MountedHostRequests, HostRequestOwner>();
+
+function observeService<Value>(result: Promise<HostServiceReply<Value>>, receiver: ServiceReceiver<Value>): void {
+  void Promise.resolve(result).then(
+    reply => receiver.receive?.(reply),
+    () => receiver.receive?.(null),
+  );
+}
+
+function startedService<Value>(completion: Promise<MountedHostServiceOutcome>, receiver: ServiceReceiver<Value>): MountedHostServiceStart {
+  return Object.freeze({status:'started' as const, completion, cancel:() => receiver.cancel?.() ?? false});
+}
+
+function currentService<Value>(receiver: ServiceReceiver<Value>): () => boolean {
+  return () => receiver.current?.() ?? false;
+}
+
+/** Run host work against the mount's existing one-use selection capability. */
+export function runMountedHostService<Request, Value>(
+  requests: MountedHostRequests,
+  options: MountedHostServiceOptions<Request, Value>,
+): MountedHostServiceStart {
+  const owner = hostOwners.get(requests);
+  return owner ? owner.runService(options) : domRefusal('dom.invalid_options','host_request',null);
+}
+
 function queuedFocus(submission:Extract<Submission,{status:'queued'}>,counts:{focusContinuations:number},failure:DomRefusal):Promise<HostFocus>{
   counts.focusContinuations++;
   return submission.completion.then(response=>Object.freeze({status:'not_restored' as const,failure:response.status==='ok'?failure:{status:'sdk_failure' as const,response}}),()=>Object.freeze({status:'not_restored' as const,failure})).finally(()=>{counts.focusContinuations--;});
@@ -49,6 +82,7 @@ export class HostRequestOwner {
     this.api=Object.freeze({status:()=>this.status(),capture:(options?:{readonly focusScope?:HTMLElement})=>this.capture(options),
       complete:(request:MountedHostRequest,command:CommandDto,options?:{readonly focus?:'native_result'|'none'})=>this.complete(request,command,options),
       cancel:(request:MountedHostRequest,options?:{readonly focus?:boolean})=>this.cancel(request,options),release:(request:MountedHostRequest)=>this.release(request)});
+    hostOwners.set(this.api,this);
   }
   resources():Readonly<{pending:number;focusContinuations:number}>{return Object.freeze({pending:this.#live.size,focusContinuations:this.#counts.focusContinuations});}
   #failure(code:DomRefusal['diagnostic']['code'],publication:DomRefusal['diagnostic']['publication']='none'):DomRefusal {
@@ -57,10 +91,13 @@ export class HostRequestOwner {
   #phase(failure:DomRefusal):DomRefusal{return Object.freeze({...failure,diagnostic:Object.freeze({...failure.diagnostic,phase:'host_request' as const})});}
   #report(failure:DomRefusal):DomRefusal{return this.#configuration?.report(this.#phase(failure)) ?? this.#phase(failure);}
   #dispose(entry:Entry):void {
+    const retireService = entry.retireService;
+    entry.retireService = null;
     const c=this.#configuration;
     if(entry.sdk)c?.controller()?.releaseHostRequest(entry.sdk);
     if(entry.bookmark)c?.selection.releaseBookmark(entry.bookmark);
     entry.sdk=null;entry.bookmark=null;entry.scope=null;
+    retireService?.();
   }
   /** Called synchronously by the independent selection invalidation hook. */
   intentChanged():void {this.#retireLive();}
@@ -120,7 +157,7 @@ export class HostRequestOwner {
       if('status' in checked)return isDomRefusal(checked)?this.#report(checked):checked;
       if(this.#configuration!==c || !same(available.stamp,checked.stamp) || !same(available.context,checked.context) || !same(sdk.stamp,checked.stamp) || scope && (!c.element() || !this.#validScope(scope,c.element()!)))return this.#report(this.#failure('dom.stale_host_request'));
       const descriptor=Object.freeze({stamp:checked.stamp,context:checked.context,__mountedHostRequest:Symbol('mounted-host-request')}) as MountedHostRequest;
-      this.#live.set(descriptor,{request:descriptor,serial:checked.serial,epoch:this.#epoch,bookmark:captured.bookmark,sdk,scope});retained=true;
+      this.#live.set(descriptor,{request:descriptor,serial:checked.serial,epoch:this.#epoch,bookmark:captured.bookmark,sdk,scope,retireService:null});retained=true;
       return Object.freeze({status:'captured',request:descriptor});
     }finally{if(!retained){if(sdk)c.controller()?.releaseHostRequest(sdk);c.selection.releaseBookmark(captured.bookmark);}}
   }
@@ -138,15 +175,21 @@ export class HostRequestOwner {
     if(exact.serial!==entry.serial || !same(entry.request.stamp,exact.stamp) || !same(entry.request.context,exact.context) || !same(entry.sdk.stamp,exact.stamp))return this.#failure('dom.stale_host_request');
     return exact;
   }
-  #focus(entry:Entry,result:Submission,permit:ResultFocusPermit|null):HostFocus {
+  #focus(entry:Entry,result:Submission,permit:ResultFocusPermit|null,restoreRefusalFocus:boolean):HostFocus {
+    if(result.status!=='completed' || result.response.status==='fatal' || result.response.status==='refused' && (!restoreRefusalFocus || !permit))return Object.freeze({status:'not_restored',failure:result.status==='completed'?{status:'sdk_failure' as const,response:result.response}:this.#failure('dom.stale_host_request')});
+    const publication=result.response.status==='ok' && result.response.value.kind==='mutation' && result.response.value.effect!=='unchanged'?'alreadyPublished':'none';
+    return this.#applyFocus(entry,permit,publication);
+  }
+  #applyFocus(entry:Entry,permit:ResultFocusPermit|null,publication:DomRefusal['diagnostic']['publication']):HostFocus {
     const c=this.#configuration,scope=entry.scope;
-    if(result.status!=='completed' || result.response.status!=='ok')return Object.freeze({status:'not_restored',failure:result.status==='completed'?{status:'sdk_failure' as const,response:result.response}:this.#failure('dom.stale_host_request')});
-    const publication=result.response.value.kind==='mutation' && result.response.value.effect!=='unchanged'?'alreadyPublished':'none';
     if(!c || !scope || !permit || entry.epoch!==this.#epoch || !c.element() || !this.#validScope(scope,c.element()!))return Object.freeze({status:'not_restored',failure:this.#failure('dom.stale_host_request',publication)});
     const failure=c.selection.focusResult(permit,scope,()=>this.#configuration===c && entry.epoch===this.#epoch && entry.scope===scope && !!c.element() && this.#validScope(scope,c.element()!) && !c.guard());
     return failure?Object.freeze({status:'not_restored',failure:isDomRefusal(failure)?this.#phase(failure):failure}):Object.freeze({status:'restored',failure:null});
   }
   complete(request:MountedHostRequest,command:CommandDto,options:{readonly focus?:'native_result'|'none'}={}):ReturnType<MountedHostRequests['complete']>{
+    return this.#complete(request,command,options,false);
+  }
+  #complete(request:MountedHostRequest,command:CommandDto,options:{readonly focus?:'native_result'|'none'},restoreRefusalFocus:boolean):ReturnType<MountedHostRequests['complete']>{
     const entry=this.#claim(request);if(isDomRefusal(entry))return this.#report(entry);
     try{
       let owned:CommandDto,focus:'native_result'|'none';
@@ -158,11 +201,18 @@ export class HostRequestOwner {
       }catch{return this.#report(this.#failure('dom.invalid_options'));}
       const checked=this.#exact(entry);if('status' in checked)return isDomRefusal(checked)?this.#report(checked):checked;
       const c=this.#configuration!,handle=entry.sdk!;
-      const dispatched=c.dispatch({kind:'command',stamp:checked.stamp as StampDto,command:owned,history_hint:{kind:'isolated'}},handle,()=>{const exact=this.#exact(entry);return 'status' in exact?exact:null;});
-      if(isDomRefusal(dispatched.result) || dispatched.result.status==='sdk_failure')return dispatched.result;
+      const refusalTarget=restoreRefusalFocus && focus==='native_result'?checked:undefined;
+      const dispatched=c.dispatch({kind:'command',stamp:checked.stamp as StampDto,command:owned,history_hint:{kind:'isolated'}},handle,()=>{const exact=this.#exact(entry);return 'status' in exact?exact:null;},refusalTarget);
+      if(isDomRefusal(dispatched.result)){
+        if(refusalTarget && dispatched.result.diagnostic.publication==='none' && this.#ownsServiceFocus(entry) && this.#currentServiceTarget(entry)){
+          this.#applyFocus(entry,c.selection.bookmarkFocusPermit(entry.bookmark!),'none');
+        }
+        return dispatched.result;
+      }
+      if(dispatched.result.status==='sdk_failure')return dispatched.result;
       const submission=dispatched.result;let completion:Promise<HostFocus>;
       if(focus==='none')completion=Promise.resolve(Object.freeze({status:'not_requested',failure:null}));
-      else if(submission.status==='completed')completion=Promise.resolve(this.#focus(entry,submission,dispatched.permit));
+      else if(submission.status==='completed')completion=Promise.resolve(this.#focus(entry,submission,dispatched.permit,!!refusalTarget));
       else{
         completion=queuedFocus(submission,this.#counts,this.#failure('dom.stale_host_request'));
       }
@@ -188,5 +238,102 @@ export class HostRequestOwner {
     try{const valid=!('status' in this.#exact(entry));if(!valid)this.#retired.add(request);return valid;}
     finally{this.#active.delete(entry);this.#dispose(entry);}
   }
+
+  #ownsServiceFocus(entry: Entry): boolean {
+    const host = this.#configuration?.element(), scope = entry.scope;
+    if (!host || !scope || !this.#validScope(scope,host) || !host.ownerDocument.hasFocus()) return false;
+    const active = host.ownerDocument.activeElement;
+    return !!active && scope.contains(active);
+  }
+
+  #currentServiceTarget(entry: Entry): boolean {
+    const target = this.#exact(entry), configuration = this.#configuration;
+    if ('status' in target || !configuration) return false;
+    // An owned DOM range can already have changed when selectionchange has
+    // not yet delivered the new native selection epoch.
+    return !configuration.selection.ownsFocus()
+      || same(configuration.view()?.readSelection(),target.selection);
+  }
+
+  runService<Request, Value>(options: MountedHostServiceOptions<Request, Value>): MountedHostServiceStart {
+    if (!this.#configuration) return this.#failure('dom.disposed');
+    let owned: MountedHostServiceOptions<Request, Value>;
+    try {
+      const data = fields(options);
+      if (Object.keys(data).some(key => !['request','service','command','focusScope','restoreRefusalFocus'].includes(key))
+        || typeof data.service !== 'function' || typeof data.command !== 'function'
+        || data.restoreRefusalFocus !== undefined && typeof data.restoreRefusalFocus !== 'boolean') throw new TypeError();
+      owned = {...data,request:ownConfiguration(data.request)} as unknown as MountedHostServiceOptions<Request, Value>;
+    } catch { return this.#report(this.#failure('dom.invalid_options')); }
+
+    const {request:input,service,command,focusScope,restoreRefusalFocus=false} = owned;
+    const captured = this.capture(focusScope === undefined ? {} : {focusScope});
+    if (captured.status !== 'captured') return captured;
+    const request = captured.request, entry = this.#live.get(request)!;
+    const abort = new AbortController(), context = Object.freeze({signal:abort.signal});
+    const receiver: ServiceReceiver<Value> = {receive:null,cancel:null,current:null};
+    let settle!: (outcome: MountedHostServiceOutcome) => void;
+    const completion = new Promise<MountedHostServiceOutcome>(resolve => { settle = resolve; });
+    const finish = (outcome: MountedHostServiceOutcome, abortWork: boolean) => {
+      if (!abortWork) { settle(outcome); return; }
+      // Native retirement is synchronous. Invoke host abort listeners after
+      // the current publication or destruction has released its authority.
+      queueMicrotask(() => { abort.abort(); settle(outcome); });
+    };
+    const detach = () => {
+      if (!receiver.receive) return false;
+      receiver.receive = null; receiver.cancel = null; receiver.current = null; entry.retireService = null;
+      return true;
+    };
+    const cancel = (status: ServiceFailure): boolean => {
+      if (!receiver.receive) return false;
+      try {
+        if (!this.#currentServiceTarget(entry)) { this.release(request); return true; }
+        const focus = this.#ownsServiceFocus(entry);
+        if (!detach()) return false;
+        if (!focus) {
+          finish(this.release(request) ? {status,restore:null} : {status:'retired'},true);
+          return true;
+        }
+        const result = this.cancel(request,{focus:true});
+        finish(result.status === 'cancelled' ? {status,restore:result.restore} : result,true);
+      } catch {
+        if (detach()) this.release(request);
+        finish({status:'failed',restore:null},true);
+      }
+      return true;
+    };
+    receiver.cancel = () => cancel('cancelled');
+    receiver.current = () => this.#live.get(request) === entry && this.#currentServiceTarget(entry);
+    receiver.receive = reply => {
+      let next: CommandDto;
+      try {
+        if (!this.#currentServiceTarget(entry)) { this.release(request); return; }
+        if (reply === null) { cancel('failed'); return; }
+        const data = fields(reply);
+        if (Object.keys(data).length === 1 && (data.status === 'cancelled' || data.status === 'unavailable')) {
+          cancel(data.status);
+          return;
+        }
+        if (Object.keys(data).length !== 2 || data.status !== 'ok' || !Object.hasOwn(data,'value')) {
+          cancel('failed');
+          return;
+        }
+        next = ownConfiguration(command(ownConfiguration(data.value as Value)));
+        if (!this.#currentServiceTarget(entry)) { this.release(request); return; }
+      } catch { cancel('failed'); return; }
+      if (!detach()) return;
+      try { finish(this.#complete(request,next,{focus:focusScope === undefined ? 'none' : 'native_result'},restoreRefusalFocus),false); }
+      catch { finish({status:'failed',restore:null},true); }
+    };
+    entry.retireService = () => {
+      if (detach()) finish({status:'retired'},true);
+    };
+    const started = startedService(completion,receiver);
+    try { observeService(service(input,context,currentService(receiver)),receiver); }
+    catch { receiver.receive?.(null); }
+    return started;
+  }
+
   destroy():void {this.retire();this.#configuration=null;}
 }

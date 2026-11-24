@@ -26,12 +26,12 @@ function receiptSummary(receipt) {
   return {status:receipt.status,sdk:receipt.sdk.status,callbackFailure:receipt.callbackFailure,
     recovery:receipt.recovery ? {originalInput:receipt.recovery.originalInput ? Array.from(receipt.recovery.originalInput) : null,region:regionSummary(receipt.recovery.region)} : null};
 }
-async function options(profile, access = 'editable', registry = 'D0', admission = 'validate', mediaIds = []) {
+async function options(profile, access = 'editable', registry = 'D0', admission = 'validate', mediaIds = [], referenceId = null) {
   const [module,packet] = await Promise.all([modulePromise,packetPromise]);
   const notes = profile === 'notes', descriptor = packet.registries[registry];
   return {abi:'editor-sdk/2',build_id:sdkBuildId,profile:notes ? {profile_id:'org.example.notes',profile_version:'1.0.0',codec_id:'org.example.notes/json',wire_version:1,extensions:descriptor.selected_extensions} : packet.kwdjProfile,
     admission,access,registry_json:notes ? packet.registryJson[registry] : packet.kwdjRegistryJson,
-    profile_options_json:JSON.stringify(notes ? {root_blocks:registry === 'D0' ? ['org.example.notes/paragraph'] : ['org.example.notes/paragraph','org.example.notes/callout'],limits:null} : {identities:{media:mediaIds.map(id=>({id,status:'exists'})),references:[]},limits:null})};
+    profile_options_json:JSON.stringify(notes ? {root_blocks:registry === 'D0' ? ['org.example.notes/paragraph'] : ['org.example.notes/paragraph','org.example.notes/callout'],limits:null} : {identities:{media:mediaIds.map(id=>({id,status:'exists'})),references:referenceId === null ? [] : [{id:referenceId,status:'exists'}]},limits:null})};
 }
 function controlledFaultModule(module,kind,observations) {
   class ActualSessionWithControlledReply {
@@ -73,7 +73,7 @@ export async function mount(config = {}) {
   let resolveLoader,resolveTemporary,loaderCalls=0;
   const temporaryDelay=config.delayReplacement?new Promise(resolve=>{resolveTemporary=resolve;}):null;
   const delayed = config.delayed ? new Promise(resolve => {resolveLoader=resolve;}) : null;
-  const editor = mountEditor({element,...config.renderOptions,editor:{input:encode(source),options:await options(profile,config.access ?? 'editable',config.registry ?? 'D0',config.admission ?? 'validate',config.mediaIds),loader:() => {loaderCalls++;return config.failLoad ? Promise.reject(new Error('controlled loader rejection')) : config.delayReplacement&&loaderCalls===2 ? temporaryDelay : delayed ?? Promise.resolve(loaded);}},
+  const editor = mountEditor({element,...config.renderOptions,editor:{input:encode(source),options:await options(profile,config.access ?? 'editable',config.registry ?? 'D0',config.admission ?? 'validate',config.mediaIds,config.referenceId),loader:() => {loaderCalls++;return config.failLoad ? Promise.reject(new Error('controlled loader rejection')) : config.delayReplacement&&loaderCalls===2 ? temporaryDelay : delayed ?? Promise.resolve(loaded);}},
     renderers:config.badBinding ? defineRendererCatalog({...kwdjBasicRenderers.definition,binding:{...kwdjBasicRenderers.definition.binding,registryDigest:'0'.repeat(64)}}) : profile === 'notes' ? notesD0Renderers : kwdjBasicRenderers,
     ...(config.observeClipboard ? {clipboard:{
       writeText:async text => { clipboardWrites.push(text); },

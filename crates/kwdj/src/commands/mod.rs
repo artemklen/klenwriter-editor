@@ -77,6 +77,16 @@ pub enum KwdjIntent<I> {
     InsertBlock {
         target: BlockTarget,
     },
+    InsertMedia {
+        asset_id: String,
+        alt: Option<String>,
+    },
+    ReplaceMedia {
+        node: I,
+        current_asset_id: String,
+        asset_id: String,
+        alt: Option<String>,
+    },
     InsertAuthorNote,
     SetLiteraryKind {
         node: I,
@@ -183,6 +193,7 @@ pub enum KwdjIntent<I> {
     },
 }
 
+pub const MEDIA_COMMAND_ID: &str = "org.klenwriter.kwdj/command/media";
 pub const CLIPBOARD_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-fragment";
 pub const INSERT_COLUMN_LEFT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-column-left";
 pub const INSERT_COLUMN_RIGHT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-column-right";
@@ -339,6 +350,7 @@ fn uses_linear_selection<I>(intent: &KwdjIntent<I>) -> bool {
             | KwdjIntent::ToggleQuote
             | KwdjIntent::ToggleList { .. }
             | KwdjIntent::InsertBlock { .. }
+            | KwdjIntent::InsertMedia { .. }
             | KwdjIntent::InsertAuthorNote
             | KwdjIntent::WrapLiteraryBlock
             | KwdjIntent::InsertWarning { .. }
@@ -381,6 +393,7 @@ impl CommandProvider for KwdjProfile<'_> {
             | KwdjIntent::InsertAuthorNote
             | KwdjIntent::InsertWarning { .. }
             | KwdjIntent::InsertLabeledContainer { .. } => KWDJ_COMMANDS[9].id,
+            KwdjIntent::InsertMedia { .. } | KwdjIntent::ReplaceMedia { .. } => MEDIA_COMMAND_ID,
             KwdjIntent::SetLiteraryKind { .. } => SET_LITERARY_KIND_COMMAND_ID,
             KwdjIntent::WrapLiteraryBlock => WRAP_LITERARY_BLOCK_COMMAND_ID,
             KwdjIntent::UnwrapLiteraryBlock { .. } => UNWRAP_LITERARY_BLOCK_COMMAND_ID,
@@ -438,7 +451,9 @@ impl CommandProvider for KwdjProfile<'_> {
             return block::refuse_table_cell_operation(view, *node, None, plan).map_err(Into::into);
         }
         Ok(match intent {
-            KwdjIntent::InsertAuthorNote
+            KwdjIntent::InsertMedia { .. }
+            | KwdjIntent::ReplaceMedia { .. }
+            | KwdjIntent::InsertAuthorNote
             | KwdjIntent::SetLiteraryKind { .. }
             | KwdjIntent::WrapLiteraryBlock
             | KwdjIntent::UnwrapLiteraryBlock { .. }
