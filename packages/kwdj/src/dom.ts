@@ -12,6 +12,8 @@ export { bindKwdjContainerLabel } from './container-label.js';
 export type { KwdjContainerLabelOptions } from './container-label.js';
 export { runKwdjMediaPicker } from './media-host.js';
 export type { KwdjMediaPickerOptions, KwdjMediaTarget } from './media-host.js';
+export { runKwdjLinkDialog } from './link-host.js';
+export type { KwdjLinkDialogOptions } from './link-host.js';
 
 const prefix = 'org.klenwriter.kwdj/';
 const colorTokens = ['muted', 'accent', 'manuscript', 'warning', 'success', 'danger'];

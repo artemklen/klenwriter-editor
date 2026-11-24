@@ -2901,3 +2901,32 @@ test('OSR-154 packaged SDK2 media commands normalize and edit one block without 
     assert.equal(refused(rawReply).code,'sdk.invalid_dto');
   } finally { legacy.close(); }
 });
+
+test('OSR-155 packaged SDK2 checks existing canonical URL rules atomically before editing a selected link', async () => {
+  const input = canonicalizeRaw(JSON.stringify(document('Docs suffix')));
+  await withLiteraryCommandSession(input, async editor => {
+    const leaf = textLeaf(editor).id;
+    const selection = {anchor:position(leaf,4),focus:position(leaf,0)};
+    accepted(completed(editor.submit({kind:'set_selection',stamp:editor.capture(),selection})));
+    const before = structuredClone(state(editor)), original = canonical(editor), events = [];
+    const unsubscribe = editor.subscribe(event=>events.push(event));
+    try {
+      for (const href of ['/a/../b','/%2e%2e/b','//example.test/b','https://user:pass@example.test/b','javascript:void(0)']) {
+        const result = refused(completed(command(editor,{kind:'set_link',href,title:null})));
+        assert.equal(result.code,'kwdj.unsafe_url',href);
+        assert.equal(result.may_have_committed,false);
+        assert.deepEqual(structuredClone(state(editor)),before);
+        assert.equal(canonical(editor),original);
+      }
+      assert.deepEqual(events,[]);
+      const href = '/guide?search=%2e%2e#toc';
+      assert.equal(accepted(completed(command(editor,{kind:'set_link',href,title:'First\r\nsecond'}))).effect,'changed');
+      const exported = JSON.parse(canonical(editor));
+      assert.deepEqual(exported.content[0].content, [
+        {type:'text',text:'Docs',marks:[{type:'link',attrs:{href,title:'First\nsecond'}}]},
+        {type:'text',text:' suffix'},
+      ]);
+      assert.equal(events.length,1);
+    } finally { unsubscribe(); }
+  });
+});

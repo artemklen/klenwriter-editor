@@ -12,7 +12,7 @@ implemented authoring remain distinct.
 | Paragraph, H2/H3; preserve H1–H6/layout | Typed Paragraph/Heading transform; explicit valid heading level, compatible align/indent/inline payload retained | Toolbar/keyboard42/43, mounted45 |
 | Strong/emphasis and pressed state | Uniform range toggle, collapsed future typing, On/Off/Mixed presentation | DOM shortcuts/input41, bubble42/43 |
 | Strike/code/sub/super/text color/highlight preservation | Closed KWDJ mark validation and generic ToggleMark payload; incompatible code/mark combinations refuse whole action | Optional controls42/43; historical Angular exposed only strong/emphasis |
-| Ordinary link set/unset, safe URL/title, reference protection | Typed SetLink/UnsetLink, authoritative validators and protected reference refusal | Stable dialog capture/focus/Mod-k68; reference picker68 is new capability |
+| Ordinary link set/unset, safe URL/title, reference protection | Typed SetLink/UnsetLink, authoritative validators and protected reference refusal | Opt-in host dialog for the original selected range via `runKwdjLinkDialog`. The reference picker is tracked separately. |
 | Paragraph Enter selected/start/middle/end/empty | Atomic split with layout/marks and exact resulting caret | Native browser routing41/45 |
 | Heading Enter start/middle/end/empty | Empty paragraph before, split heading, terminal paragraph, or empty-heading conversion | Native browser routing41/45 |
 | Code Enter/Shift+Enter | Literal LF, language preserved | Native browser routing41/45 |

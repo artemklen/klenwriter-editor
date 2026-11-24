@@ -14,7 +14,7 @@ const quiet={focus:'none'};
 function harness(){
   const context={build_id:'controlled-build',profile:{profile_id:'controlled',profile_version:'1',codec_id:'controlled/json',wire_version:1,extensions:[]},registry_digest:'controlled-registry',capability_digest:'controlled-capability'};
   let state={stamp:{session:'controlled-session',generation:'1',revision:'0',selection_epoch:'1',history_epoch:'0'},root:'R',selection:{anchor:{kind:'text',node:'T',offset:1,affinity:'after'},focus:{kind:'text',node:'T',offset:1,affinity:'after'}},stored_marks:null,dirty:false,saved_revision:'0',history:{undo_entries:'0',redo_entries:'0',retained_bytes:'0'}};
-  let owner,guardCode=null,behavior='changed',sdkFailure=null,beforeValidate=null,subscriber=null,pendingResolve=null;
+  let owner,guardCode=null,behavior='changed',sdkFailure=null,beforeValidate=null,subscriber=null,pendingResolve=null,duringRefusal=null;
   let browser=copy(state.selection),ids=0;
   const requests=[],submittedSelections=[],restoredRanges=[],reports=[],sdkLive=new Map(),released=[];
   class Element {
@@ -39,7 +39,7 @@ function harness(){
   };
   const config={element:()=>host,view:()=>view,controller:()=>controller,capture:()=>copy(state.stamp),context:()=>copy(context),selection,guard,
     report:failure=>{reports.push(failure);return failure;},
-    dispatch(request,handle,validate){
+    dispatch(request,handle,validate,refusalTarget){
       beforeValidate?.();const failure=validate();if(failure)return {result:failure,permit:null};
       const frame=selection.beginSubmission(request,false);
       assert.equal(sdkLive.get(handle.id),handle,'the exact SDK request is forwarded');sdkLive.delete(handle.id);requests.push(copy(request));
@@ -47,7 +47,8 @@ function harness(){
       if(behavior==='queued'){
         result=Object.freeze({status:'queued',completion:new Promise(resolve=>{pendingResolve=resolve;})});
       }else if(behavior==='refused' || behavior==='fatal'){
-        result=Object.freeze({status:'completed',response:{status:behavior,diagnostic:{code:'controlled.native_refusal',path:'/literal',category:'controlled',details:{literal:'retained'},stamp:copy(state.stamp),may_have_committed:behavior==='fatal'}}});
+        const diagnosticStamp=copy(state.stamp),uncertain=duringRefusal?.()===true;
+        result=Object.freeze({status:'completed',response:{status:behavior,diagnostic:{code:'controlled.native_refusal',path:'/literal',category:'controlled',details:{literal:'retained'},stamp:diagnosticStamp,may_have_committed:uncertain||behavior==='fatal'}}});
       }else{
         const before=copy(state.stamp);
         if(behavior==='changed'){
@@ -59,13 +60,14 @@ function harness(){
         subscriber?.();
         result=Object.freeze({status:'completed',response:{status:'ok',value:{kind:'mutation',effect:behavior==='changed'?'changed':behavior==='state'?'state_changed':'unchanged',state:copy(state),presentation:{active:'none'}}}});
       }
-      selection.endSubmission(frame,result);
-      return {result,permit:selection.resultFocusPermit(frame,result)};
+      selection.endSubmission(frame,result,refusalTarget);
+      return {result,permit:selection.resultFocusPermit(frame,result,refusalTarget)};
     },
   };
   owner=new HostRequestOwner(config);
   return {owner,selection,host,scope,external,doc,text,requests,submittedSelections,restoredRanges,reports,sdkLive,released,context,
     state:()=>copy(state),setBrowser:value=>{browser=value;},setGuard:code=>{guardCode=code;},behavior:value=>{behavior=value;},sdkFailure:value=>{sdkFailure=value;},beforeValidate:fn=>{beforeValidate=fn;},subscriber:fn=>{subscriber=fn;},
+    duringRefusal:fn=>{duringRefusal=fn;},
     bumpStamp(){state.stamp.revision=String(BigInt(state.stamp.revision)+1n);},
     retarget() {
       state.selection.anchor.offset = state.selection.focus.offset = 0;
@@ -464,3 +466,49 @@ for(const behavior of ['refused','fatal'])test(`HR32 original controlled native 
   const result=h.owner.api.complete(request,command);assert.equal(result.status,'submitted');const response=result.submission.response;assert.equal(response.status,behavior);assert.equal(response.diagnostic.details.literal,'retained');
   const focus=await result.focus;assert.equal(focus.status,'not_restored');assert.equal(focus.failure.response,response);assert.equal(h.requests.length,1);assert.equal(h.host.focusCalls,0);h.assertReleased();
 });
+
+test('OSR-155 typed service restores a clean native refusal without another SDK mutation', async () => {
+  const h = harness(), provider = pendingService(), before = h.state();
+  h.behavior('refused');
+  const run = startService(h, provider.service, {restoreRefusalFocus:true});
+  h.scope.focus();
+  provider.resolve({status:'ok',value:{kind:'set',link:{href:'/a/../b'}}});
+  const outcome = await run.completion;
+  assert.equal(outcome.status,'submitted');
+  assert.equal(outcome.submission.response.diagnostic.code,'controlled.native_refusal');
+  assert.deepEqual(await outcome.focus,{status:'restored',failure:null});
+  assert.deepEqual(h.state(),before);
+  assert.deepEqual(h.restoredRanges,[before.selection]);
+  assert.deepEqual(h.submittedSelections,[]);
+  assert.equal(h.doc.activeElement,h.host);
+  assert.equal(h.requests.length,1);
+  h.assertReleased();
+});
+
+for (const intervening of ['publication','remount','selection','uncertain','fatal','queued']) {
+  test(`OSR-155 typed service cannot restore a refused target after ${intervening}`, async () => {
+    const h = harness(), provider = pendingService();
+    h.behavior(intervening==='fatal' || intervening==='queued' ? intervening : 'refused');
+    const run = startService(h, provider.service, {restoreRefusalFocus:true});
+    h.scope.focus();
+    h.duringRefusal(() => {
+      if (intervening==='publication') {
+        const before = h.state().stamp;
+        h.bumpStamp();
+        h.selection.publication({before,after:h.state().stamp,change:{kind:'document'}});
+      } else if (intervening==='remount') h.replaceGeneration();
+      else if (intervening==='selection') h.retarget();
+      return intervening==='uncertain';
+    });
+    provider.resolve({status:'ok',value:{kind:'set',link:{href:'/a/../b'}}});
+    const outcome = await run.completion;
+    assert.equal(outcome.status,'submitted');
+    if (intervening==='queued') h.completeQueued({status:'refused',diagnostic:{may_have_committed:false}});
+    assert.equal((await outcome.focus).status,'not_restored');
+    assert.equal(h.host.focusCalls,0);
+    assert.deepEqual(h.restoredRanges,[]);
+    assert.deepEqual(h.submittedSelections,[]);
+    assert.equal(h.doc.activeElement,h.scope);
+    h.assertReleased();
+  });
+}
