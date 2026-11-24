@@ -1,0 +1,22 @@
+{
+  "source": "table_spans_alignment",
+  "roles": {
+    "T": [0],
+    "R": [0, 1],
+    "AB": [0, 0, 0],
+    "A": [0, 1, 0],
+    "B1": [0, 1, 1],
+    "B2": [0, 2, 0],
+    "Body": [0, 1, 1, 0, 0]
+  },
+  "diagnostic": "kwdj.table_cell_operation_unsupported",
+  "status": {
+    "en": "Merging, splitting, and moving table cells are unavailable.",
+    "ru": "Объединение, разделение и перемещение ячеек таблицы недоступны."
+  },
+  "operations": [
+    {"name":"merge-cells","kind":"merge_cells","targets":{"anchor":"A","focus":"B1"}},
+    {"name":"split-cell","kind":"split_cell","targets":{"cell":"AB"}},
+    {"name":"move-cell","kind":"move_cell","targets":{"cell":"B1","target":"B2"}}
+  ]
+}

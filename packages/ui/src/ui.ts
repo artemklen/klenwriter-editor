@@ -30,6 +30,9 @@ type Task = { done: ((value: unknown) => void) | null; dispose: (() => void) | n
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 const failure = (code: Extract<UiFailure, { status: 'ui_refused' }>['code'], action: string | null = null): UiFailure => Object.freeze({ status: 'ui_refused', code, action });
 const unavailableAvailability = (): Availability => ({ available: false, reason: '', active: null, failure: null });
+const unsupportedCellOperation = 'kwdj.table_cell_operation_unsupported';
+const unavailableReason = (code: string, locale: UiLocale): string =>
+  `${label(code === unsupportedCellOperation ? 'tableCellOperationUnavailable' : 'unavailable', locale)} (${code.slice(0, 256)})`;
 let nextUi = 1;
 
 function action(value: unknown): UiAction {
@@ -470,7 +473,7 @@ class Ui implements EditorUi {
     }
     const active = query.value.presentation?.active ?? null;
     return { available: query.value.available && (!toggle || active === 'on' || active === 'off' || active === 'mixed'),
-      reason: query.value.diagnostic ? `${label('unavailable', this.#locale)} (${query.value.diagnostic.code.slice(0, 256)})`
+      reason: query.value.diagnostic ? unavailableReason(query.value.diagnostic.code, this.#locale)
         : query.value.available && (!toggle || ['on', 'off', 'mixed'].includes(active ?? '')) ? '' : label('unavailable', this.#locale), active, failure: null };
   }
   #commandAction(item: UiAction, context: UiActionContext): CommandDto | UiUnavailable | null {
@@ -725,6 +728,7 @@ class Ui implements EditorUi {
   #reason(result: UiFailure): string {
     const code = result.status === 'dom_refused' ? result.diagnostic.code : result.status === 'sdk_failure'
       ? result.response.status === 'ok' ? '' : result.response.diagnostic.code : result.code;
+    if (code === unsupportedCellOperation) return unavailableReason(code, this.#locale);
     const key = code.includes('composition') ? 'composing' : code === 'dom.mode_blocked' ? 'disabled'
       : code === 'dom.native_read_only' ? 'readonly' : code.includes('stale') || code.includes('bookmark') ? 'stale'
       : code === 'ui.callback_failed' ? 'callback' : 'unavailable';

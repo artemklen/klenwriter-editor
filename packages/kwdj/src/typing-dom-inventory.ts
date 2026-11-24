@@ -140,10 +140,26 @@ export const kwdjTypingDomInventory = {
     },
     {
       "descriptor": {
+        "id": "org.klenwriter.kwdj/command/merge-cells",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/merge-cells",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
         "id": "org.klenwriter.kwdj/command/move",
         "kind": "compiled"
       },
       "id": "org.klenwriter.kwdj/command/move",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/move-cell",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/move-cell",
       "owner": "org.klenwriter.kwdj/base"
     },
     {
@@ -208,6 +224,14 @@ export const kwdjTypingDomInventory = {
         "kind": "compiled"
       },
       "id": "org.klenwriter.kwdj/command/shift-enter",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/split-cell",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/split-cell",
       "owner": "org.klenwriter.kwdj/base"
     },
     {
@@ -328,7 +352,9 @@ export const kwdjTypingDomInventory = {
       "org.klenwriter.kwdj/command/insert-row-below",
       "org.klenwriter.kwdj/command/insert-text",
       "org.klenwriter.kwdj/command/insert-typed-text",
+      "org.klenwriter.kwdj/command/merge-cells",
       "org.klenwriter.kwdj/command/move",
+      "org.klenwriter.kwdj/command/move-cell",
       "org.klenwriter.kwdj/command/remove",
       "org.klenwriter.kwdj/command/restore-typed-text",
       "org.klenwriter.kwdj/command/set-container-label",
@@ -337,6 +363,7 @@ export const kwdjTypingDomInventory = {
       "org.klenwriter.kwdj/command/set-table-cell-align",
       "org.klenwriter.kwdj/command/set-warning-kind",
       "org.klenwriter.kwdj/command/shift-enter",
+      "org.klenwriter.kwdj/command/split-cell",
       "org.klenwriter.kwdj/command/toggle-list",
       "org.klenwriter.kwdj/command/toggle-mark",
       "org.klenwriter.kwdj/command/toggle-quote",
@@ -1618,5 +1645,5 @@ export const kwdjTypingDomInventory = {
     "profile_version": "1.0.0",
     "wire_version": 1
   },
-  "registryDigest": "25110a1f6e78e97fd2a2d3509340cab34f64899956f116a2e1a8942078d77fe8"
+  "registryDigest": "9fcf72c4ca1dd09c8d45804eb96312f60a5d4b1821aef331318deeb8afbbde9b"
 } as const;

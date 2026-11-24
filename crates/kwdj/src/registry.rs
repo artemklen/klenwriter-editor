@@ -51,6 +51,9 @@ pub fn base_registration_v2() -> ExtensionDescriptor {
             crate::commands::INSERT_COLUMN_LEFT_COMMAND_ID,
             crate::commands::INSERT_COLUMN_RIGHT_COMMAND_ID,
             crate::commands::DELETE_COLUMN_COMMAND_ID,
+            crate::commands::MERGE_CELLS_COMMAND_ID,
+            crate::commands::SPLIT_CELL_COMMAND_ID,
+            crate::commands::MOVE_CELL_COMMAND_ID,
         ]
         .map(|id| editor_registry::CommandDescriptor::Compiled { id: id.into() }),
     );

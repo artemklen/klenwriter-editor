@@ -783,3 +783,104 @@ test.describe('OSR-207 table exits to existing block chrome', () => {
     await expect(root(page,id).getByRole('status')).toHaveText('');
   });
 });
+
+const tableRefusalFixture = JSON.parse(readFileSync(new URL('./fixtures/osr-213-table-refusals.json', import.meta.url)));
+const tableCases = JSON.parse(readFileSync(new URL('../contracts/kwdj/v1/fixtures/positive.json', import.meta.url)))
+  .fixtures.flatMap(f => f.cases);
+const tableRefusalSource = tableCases.find(row => row.name === tableRefusalFixture.source).kwdj;
+
+test.describe('OSR-213 mounted table cell refusal', () => {
+  test.skip(({browserName}) => browserName === 'firefox', 'OSR-213 requires Chromium and WebKit');
+  const caret = {kind:'text',node:'Body',offset:1,affinity:'after'};
+  const setup = {source:tableRefusalSource, sourceRoles:tableRefusalFixture.roles, selection:{anchor:caret,focus:caret}};
+  test('default mount omits unavailable cell operations', async ({page}) => {
+    const id = await mounted(page, setup);
+    await expect(control(page,id,'table-request')).toHaveCount(0);
+    await expect(root(page,id).locator('[data-editor-ui-action="merge-cells"],[data-editor-ui-action="split-cell"],[data-editor-ui-action="move-cell"]')).toHaveCount(0);
+  });
+  for(const scenario of ['rectangle','hovered cell','hovered cell in another table'])test(`DOC-010 block Move refuses a ${scenario}`,async({page})=>{
+    const source=structuredClone(tableCases.find(row=>row.name==='rectangular_table').kwdj);
+    const double=scenario==='hovered cell in another table';
+    if(double)source.content.push(structuredClone(source.content[0]));
+    const sourceRoles={First:[0,1,0],Second:[0,1,1],Text:[0,1,0,0,0],...(double?{OtherFirst:[1,1,0]}:{})};
+    const textPoint={kind:'text',node:'Text',offset:0,affinity:'after'};
+    const selection=scenario==='hovered cell'?{anchor:textPoint,focus:textPoint}
+      :{anchor:{kind:'edge',node:'First',side:'before'},focus:{kind:'edge',node:'Second',side:'after'}};
+    const id=await mounted(page,{source,sourceRoles,selection,nativeTrace:true});
+    await editorFocus(page,id);
+    const before=await checkpoint(page,id,'DOC-010 before its block menu');
+    const cells=page.locator(`#${id}-editor td`);
+    if(scenario!=='rectangle'){
+      const box=await cells.nth(double?2:0).boundingBox();
+      const target=before.roles[double?'OtherFirst':'First'];
+      let picked=null;
+      for(const [x,y] of [[.5,.95],[.5,.85],[.95,.5],[.05,.8],[.5,.75],[.5,.4]]){
+        const point={x:box.x+box.width*x,y:box.y+box.height*y};
+        await page.mouse.move(point.x,point.y);
+        const hit=await call(page,'geometryRead',id,{kind:'block_at_point',...point});
+        if(hit.target?.node===target){picked=hit.target.node;break;}
+      }
+      expect(picked).toBe(target);
+      await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+    }
+    await move(page,id).click();
+    const option=control(page,id,scenario==='rectangle'?'up':'down');
+    await expect(option).toHaveAttribute('aria-disabled','true');
+    await option.focus();
+    await expect(option).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(root(page,id).getByRole('status')).toHaveText('Moving table cells is unavailable.');
+    expect(await cells.allTextContents()).toEqual(double?['1','2','1','2']:['1','2']);
+    const after=await checkpoint(page,id,'blocked move preserves the selected table');
+    unchanged(after,before);
+    expect(submitted(after)).toHaveLength(0);
+  });
+  for (const locale of ['en','ru']) for (const operation of tableRefusalFixture.operations) {
+    test(`${operation.name} ${locale} announces refused query without moving table focus`, async ({page}) => {
+      const id = await mounted(page, {...setup,locale,nativeTrace:true,tableRefusal:operation});
+      const host = page.locator(`#${id}-editor`);
+      const controlButton = control(page,id,'table-request');
+      await editorFocus(page,id);
+      await expect(controlButton).toHaveAttribute('aria-disabled','true');
+      const before = await checkpoint(page,id,'original table state');
+      const actualCaret = () => host.evaluate(element => {
+        const selection = element.ownerDocument.getSelection();
+        return {
+          focused:element.ownerDocument.activeElement === element,
+          cell:selection.anchorNode?.parentElement?.closest('td')?.textContent ?? null,
+          anchor:selection.anchorOffset,focus:selection.focusOffset,collapsed:selection.isCollapsed,
+        };
+      });
+      const initialCaret = {focused:true,cell:'B1',anchor:1,focus:1,collapsed:true};
+      expect(await actualCaret()).toEqual(initialCaret);
+      await controlButton.evaluate(button => {
+        button.closest('.ui-fixture').addEventListener('pointerdown', event => {
+          button.tableAttempt = {trusted:event.isTrusted, prevented:event.defaultPrevented};
+        }, {once:true});
+      });
+      await controlButton.click({force:true});
+      expect(await controlButton.evaluate(button => button.tableAttempt)).toEqual({trusted:true,prevented:true});
+      const reason = `${tableRefusalFixture.status[locale]} (${tableRefusalFixture.diagnostic})`;
+      const status = root(page,id).getByRole('status');
+      await expect(status).toHaveText(reason, {timeout:2000});
+      await expect(status).toHaveAttribute('aria-live','polite');
+      await expect(host).toBeFocused();
+      expect(await actualCaret()).toEqual(initialCaret);
+      const after = await checkpoint(page,id,'refusal leaves native and DOM state exact');
+      unchanged(after,before);
+      expect(submitted(after)).toHaveLength(0);
+      const {calls,overflow} = await call(page,'nativeTrace',id);
+      expect(overflow).toBe(false);
+      const requests = calls.map(entry => [JSON.parse(entry.requestJson), JSON.parse(entry.responseJson)])
+        .filter(([request]) => request.command?.id === `org.klenwriter.kwdj/command/${operation.name}`);
+      expect(requests.length).toBeGreaterThan(0);
+      for (const [request,response] of requests) {
+        expect(request.kind).toBe('query_command');
+        expect(response).toMatchObject({status:'ok',value:{available:false,effect:null,
+          diagnostic:{code:tableRefusalFixture.diagnostic,path:'/command',may_have_committed:false}}});
+      }
+      await expect(host.locator('th[colspan="2"]')).toHaveText('AB');
+      await expect(host.locator('td[rowspan="2"]')).toHaveText('A');
+    });
+  }
+});

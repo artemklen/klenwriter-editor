@@ -45,6 +45,21 @@ pub(crate) struct TableSelection<I> {
     pub focus: I,
 }
 
+/// The owner of an authored cell in an admitted KWDJ grid.
+pub(crate) fn table_of_cell<V: CandidateRead>(view: &V, id: V::Id) -> Option<V::Id> {
+    let cell = view.node(id)?;
+    if !matches!(
+        cell.type_id,
+        "org.klenwriter.kwdj/table_header" | "org.klenwriter.kwdj/table_cell"
+    ) {
+        return None;
+    }
+    let row = view.node(cell.parent)?;
+    (row.type_id == "org.klenwriter.kwdj/table_row"
+        && view.node(row.parent)?.type_id == "org.klenwriter.kwdj/table")
+        .then_some(row.parent)
+}
+
 pub(crate) fn table_selection<V: CandidateRead>(
     view: &V,
     selection: Option<Selection<V::Id>>,
@@ -62,25 +77,12 @@ pub(crate) fn table_selection<V: CandidateRead>(
     else {
         return None;
     };
-    let table_of = |id| {
-        let cell = view.node(id)?;
-        if !matches!(
-            cell.type_id,
-            "org.klenwriter.kwdj/table_header" | "org.klenwriter.kwdj/table_cell"
-        ) {
-            return None;
-        }
-        let row = view.node(cell.parent)?;
-        (row.type_id == "org.klenwriter.kwdj/table_row").then_some(row.parent)
-    };
     let marker = TableSelection {
-        table: table_of(anchor)?,
+        table: table_of_cell(view, anchor)?,
         anchor,
         focus,
     };
-    (marker.anchor != marker.focus
-        && table_of(marker.focus)? == marker.table
-        && view.node(marker.table)?.type_id == "org.klenwriter.kwdj/table")
+    (marker.anchor != marker.focus && table_of_cell(view, marker.focus)? == marker.table)
         .then_some(marker)
 }
 

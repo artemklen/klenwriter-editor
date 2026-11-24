@@ -36,6 +36,7 @@ fn main() {
         TableCellAlignV2,
         KwdjTableCellAlignIntentV2,
         KwdjTableColumnIntentV2,
+        KwdjTableCellIntentV2,
         KwdjDeleteSelectionScopeV2,
         KwdjScopedSelectionIntentV2,
         KwdjTypingIntentV2,

@@ -239,6 +239,11 @@ function coveredCommand(id: string, payload: Record<string, unknown>): boolean {
       return closed(payload, ['kind']);
     case 'delete-selection':
       return payload.scope === 'profile_body' ? closed(payload, ['kind', 'scope']) : closed(payload, ['kind']);
+    case 'merge-cells': return closed(payload, ['kind', 'anchor', 'focus'])
+      && smallString(payload.anchor, 128) && smallString(payload.focus, 128);
+    case 'split-cell': return closed(payload, ['kind', 'cell']) && smallString(payload.cell, 128);
+    case 'move-cell': return closed(payload, ['kind', 'cell', 'target'])
+      && smallString(payload.cell, 128) && smallString(payload.target, 128);
     case 'insert-fragment': {
       if (!closed(payload, ['kind','fragment_json']) || payload.kind !== 'insert_fragment' || typeof payload.fragment_json !== 'string' || payload.fragment_json.length > 2_097_152) return false;
       try { return coveredClipboard(JSON.parse(payload.fragment_json)); } catch { return false; }

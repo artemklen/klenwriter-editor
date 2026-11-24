@@ -963,6 +963,88 @@ test('OSR-206 column wire accepts only the matching SDK2 command and a u32 coord
   }
 });
 
+test('OSR-213 packaged SDK2 refuses only recognized cell targets and preserves the whole state', async () => {
+  const read = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
+  const fixture = read('./fixtures/osr-213-table-refusals.json');
+  const original = read('../contracts/kwdj/v1/fixtures/positive.json').fixtures.flatMap(f => f.cases)
+    .find(row => row.name === fixture.source).kwdj;
+  const document = structuredClone(original);
+  document.content.push(structuredClone(original.content[0]));
+  const input = osr185Bytes(document);
+  const at = (editor, path) => path.reduce((id, i) => node(editor, id).children[i], state(editor).root);
+  let foreign;
+  await withLiteraryCommandSession(input, editor => { foreign = at(editor, fixture.roles.B1); });
+  await withLiteraryCommandSession(input, editor => {
+    const ids = Object.fromEntries(Object.entries(fixture.roles).map(([role, path]) => [role, at(editor, path)]));
+    osr185Select(editor, position(ids.Body, 1));
+    const edit = accepted(osr183Wire(editor, kwdjCommand({kind:'insert_text',text:'!'})));
+    assert.equal(edit.effect, 'changed');
+    osr183History(editor, 'undo', input);
+    const before = state(editor), tree = tableIdTree(editor, before.root);
+    assert.equal(before.history.redo_entries, '1');
+    const check = (name, payload, code, path, prepared = true) => {
+      const command = createCommand(`org.klenwriter.kwdj/command/${name}`, payload);
+      const query = editor.query({kind:'query_command',stamp:editor.capture(),command});
+      let diagnostic;
+      if (prepared) {
+        const availability = accepted(query);
+        assert.equal(availability.available, false);
+        assert.equal(availability.effect, null);
+        diagnostic = availability.diagnostic;
+      } else diagnostic = refused(query);
+      const mutation = refused(osr183Wire(editor, command));
+      for (const value of [diagnostic, mutation]) {
+        assert.equal(value.code, code, name);
+        assert.equal(value.path, path, name);
+        assert.equal(value.may_have_committed, false, name);
+      }
+      assert.deepEqual(state(editor), before, name);
+      assert.deepEqual(tableIdTree(editor, before.root), tree, name);
+      assert.equal(canonical(editor), input, name);
+    };
+    for (const operation of fixture.operations) {
+      const payload = {kind:operation.kind, ...Object.fromEntries(
+        Object.entries(operation.targets).map(([key, role]) => [key, ids[role]]))};
+      check(operation.name, payload, fixture.diagnostic, '/command');
+      assert.deepEqual(kwdjCommand(payload), createCommand(`org.klenwriter.kwdj/command/${operation.name}`, payload));
+    }
+    const invalid = 'kwdj.command_invalid_target';
+    check('split-cell', {kind:'split_cell',cell:ids.T}, invalid, '/command');
+    check('merge-cells', {kind:'merge_cells',anchor:ids.B1,focus:ids.B1}, invalid, '/command');
+    check('move-cell', {kind:'move_cell',cell:ids.B1,target:at(editor,[1,0,0])}, invalid, '/command');
+    check('split-cell', {kind:'split_cell',cell:ids.B1.replace(/:[0-9]+$/, ':18446744073709551615')}, invalid, '/command');
+    check('move-cell', {kind:'move_cell',cell:ids.B1,target:foreign}, 'session.stale_session', 'command.target', false);
+    check('split-cell', {kind:'split_cell',cell:ids.B1,extra:false}, 'sdk.invalid_dto', '', false);
+    check('merge-cells', {kind:'split_cell',cell:ids.B1}, 'sdk.invalid_dto', 'command', false);
+  });
+});
+
+test('OSR-213 a generic block move cannot move a cell from an active table rectangle', async () => {
+  const corpus = JSON.parse(readFileSync(new URL('../contracts/kwdj/v1/fixtures/positive.json', import.meta.url), 'utf8'));
+  const original = corpus.fixtures.find(row => row.id === 'DOC-010').cases.find(row => row.name === 'rectangular_table').kwdj;
+  const input = osr185Bytes(original);
+  await withLiteraryCommandSession(input, editor => {
+    const table = node(editor, root(editor).children[0]);
+    const row = node(editor, table.children[1]);
+    const [first, second] = row.children;
+    const command = kwdjCommand({kind:'move',node:second,parent:row.id,before_index:0});
+    const query = () => accepted(editor.query({kind:'query_command',stamp:editor.capture(),command}));
+    assert.equal(query().available, true);
+    osr185Select(editor, {kind:'edge',node:first,side:'before'}, {kind:'edge',node:second,side:'after'});
+    const before = state(editor), tree = tableIdTree(editor, before.root);
+    const availability = query();
+    assert.equal(availability.available, false);
+    for (const result of [availability.diagnostic, refused(osr183Wire(editor, command))]) {
+      assert.equal(result.code, 'kwdj.table_cell_operation_unsupported');
+      assert.equal(result.path, '/command');
+      assert.equal(result.may_have_committed, false);
+    }
+    assert.deepEqual(state(editor), before);
+    assert.deepEqual(tableIdTree(editor, before.root), tree);
+    assert.equal(canonical(editor), input);
+  });
+});
+
 test('OSR-209 packaged SDK2 edits DOC-011 inside a cell and protects both borders', async t => {
   const read = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
   const fixture = read('./fixtures/osr-209-table-cell-edits.json');

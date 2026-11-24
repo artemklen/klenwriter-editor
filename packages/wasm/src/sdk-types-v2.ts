@@ -39,6 +39,8 @@ export type KwdjTableCellAlignIntentV2 = { "kind": "set_table_cell_align", align
 
 export type KwdjTableColumnIntentV2 = { "kind": "insert_column_left", table: string, column: number, } | { "kind": "insert_column_right", table: string, column: number, } | { "kind": "delete_column", table: string, column: number, };
 
+export type KwdjTableCellIntentV2 = { "kind": "merge_cells", anchor: string, focus: string, } | { "kind": "split_cell", cell: string, } | { "kind": "move_cell", cell: string, target: string, };
+
 export type KwdjDeleteSelectionScopeV2 = "profile_body" | "poetry_boundary";
 
 export type KwdjScopedSelectionIntentV2 = { "kind": "delete_selection", scope: KwdjDeleteSelectionScopeV2, };

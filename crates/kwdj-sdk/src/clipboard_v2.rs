@@ -5,9 +5,10 @@ use crate::{
     wire_v2::{
         KwdjClipboardIntentV2, KwdjDeleteSelectionScopeV2, KwdjForwardDeleteIntentV2,
         KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2, KwdjScopedSelectionIntentV2,
-        KwdjTableCellAlignIntentV2, KwdjTableColumnIntentV2, KwdjTableRowIntentV2,
-        KwdjWarningIntentV2, LabeledContainerBlockTargetV2, LabeledContainerKindV2,
-        LiteraryBlockTargetV2, TableCellAlignV2, WarningBlockTargetV2, WarningKindV2,
+        KwdjTableCellAlignIntentV2, KwdjTableCellIntentV2, KwdjTableColumnIntentV2,
+        KwdjTableRowIntentV2, KwdjWarningIntentV2, LabeledContainerBlockTargetV2,
+        LabeledContainerKindV2, LiteraryBlockTargetV2, TableCellAlignV2, WarningBlockTargetV2,
+        WarningKindV2,
     },
 };
 use editor_bridge::{BridgeAdapter, ClipboardContextData, SelectionFragmentData};
@@ -19,8 +20,9 @@ use editor_kwdj::{
         CLIPBOARD_COMMAND_ID, DELETE_COLUMN_COMMAND_ID, DELETE_FORWARD_COMMAND_ID,
         DELETE_ROW_COMMAND_ID, INSERT_COLUMN_LEFT_COMMAND_ID, INSERT_COLUMN_RIGHT_COMMAND_ID,
         INSERT_ROW_ABOVE_COMMAND_ID, INSERT_ROW_BELOW_COMMAND_ID, KWDJ_COMMANDS, KwdjIntent,
-        LabeledContainerKind, SET_CONTAINER_LABEL_COMMAND_ID, SET_LITERARY_KIND_COMMAND_ID,
-        SET_TABLE_CELL_ALIGN_COMMAND_ID, SET_WARNING_KIND_COMMAND_ID,
+        LabeledContainerKind, MERGE_CELLS_COMMAND_ID, MOVE_CELL_COMMAND_ID,
+        SET_CONTAINER_LABEL_COMMAND_ID, SET_LITERARY_KIND_COMMAND_ID,
+        SET_TABLE_CELL_ALIGN_COMMAND_ID, SET_WARNING_KIND_COMMAND_ID, SPLIT_CELL_COMMAND_ID,
         UNWRAP_LABELED_CONTAINER_COMMAND_ID, UNWRAP_LITERARY_BLOCK_COMMAND_ID,
         UNWRAP_WARNING_COMMAND_ID, WRAP_LABELED_CONTAINER_COMMAND_ID,
         WRAP_LITERARY_BLOCK_COMMAND_ID, WRAP_WARNING_COMMAND_ID, clipboard,
@@ -286,6 +288,37 @@ impl BridgeAdapter<KwdjProfile<'static>> for ClipboardAdapterV2 {
                     table: parse_table(&table)?,
                     column: column as usize,
                 }),
+                _ => Err(diagnostic("sdk.invalid_dto", "command")),
+            }
+        } else if matches!(
+            command.id.as_str(),
+            MERGE_CELLS_COMMAND_ID | SPLIT_CELL_COMMAND_ID | MOVE_CELL_COMMAND_ID
+        ) {
+            let parse_cell = |token: &str, path| {
+                key.parse_node_token(token)
+                    .map_err(|error| diagnostic(error.as_str(), path))
+            };
+            match (
+                command.id.as_str(),
+                editor_bridge::decode(&command.payload_json)?,
+            ) {
+                (MERGE_CELLS_COMMAND_ID, KwdjTableCellIntentV2::MergeCells { anchor, focus }) => {
+                    Ok(KwdjIntent::MergeCells {
+                        anchor: parse_cell(&anchor, "command.anchor")?,
+                        focus: parse_cell(&focus, "command.focus")?,
+                    })
+                }
+                (SPLIT_CELL_COMMAND_ID, KwdjTableCellIntentV2::SplitCell { cell }) => {
+                    Ok(KwdjIntent::SplitCell {
+                        cell: parse_cell(&cell, "command.cell")?,
+                    })
+                }
+                (MOVE_CELL_COMMAND_ID, KwdjTableCellIntentV2::MoveCell { cell, target }) => {
+                    Ok(KwdjIntent::MoveCell {
+                        cell: parse_cell(&cell, "command.cell")?,
+                        target: parse_cell(&target, "command.target")?,
+                    })
+                }
                 _ => Err(diagnostic("sdk.invalid_dto", "command")),
             }
         } else if command.id == DELETE_FORWARD_COMMAND_ID {

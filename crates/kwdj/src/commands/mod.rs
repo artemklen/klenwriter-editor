@@ -20,7 +20,7 @@ use editor_core::transaction::WorkMeter;
 use crate::{
     KwdjError, KwdjErrorCode, KwdjProfile, KwdjProfileError,
     model::{CellAlign, WarningKind},
-    table_geometry::table_selection,
+    table_geometry::{table_of_cell, table_selection},
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -136,6 +136,17 @@ pub enum KwdjIntent<I> {
         table: I,
         column: usize,
     },
+    MergeCells {
+        anchor: I,
+        focus: I,
+    },
+    SplitCell {
+        cell: I,
+    },
+    MoveCell {
+        cell: I,
+        target: I,
+    },
     Move {
         node: I,
         parent: I,
@@ -178,6 +189,9 @@ pub const INSERT_COLUMN_RIGHT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/in
 pub const DELETE_COLUMN_COMMAND_ID: &str = "org.klenwriter.kwdj/command/delete-column";
 pub const SET_TABLE_CELL_ALIGN_COMMAND_ID: &str =
     "org.klenwriter.kwdj/command/set-table-cell-align";
+pub const MERGE_CELLS_COMMAND_ID: &str = "org.klenwriter.kwdj/command/merge-cells";
+pub const SPLIT_CELL_COMMAND_ID: &str = "org.klenwriter.kwdj/command/split-cell";
+pub const MOVE_CELL_COMMAND_ID: &str = "org.klenwriter.kwdj/command/move-cell";
 pub const INSERT_ROW_ABOVE_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-row-above";
 pub const INSERT_ROW_BELOW_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-row-below";
 pub const DELETE_ROW_COMMAND_ID: &str = "org.klenwriter.kwdj/command/delete-row";
@@ -380,6 +394,9 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::InsertColumnRight { .. } => INSERT_COLUMN_RIGHT_COMMAND_ID,
             KwdjIntent::DeleteColumn { .. } => DELETE_COLUMN_COMMAND_ID,
             KwdjIntent::SetTableCellAlign { .. } => SET_TABLE_CELL_ALIGN_COMMAND_ID,
+            KwdjIntent::MergeCells { .. } => MERGE_CELLS_COMMAND_ID,
+            KwdjIntent::SplitCell { .. } => SPLIT_CELL_COMMAND_ID,
+            KwdjIntent::MoveCell { .. } => MOVE_CELL_COMMAND_ID,
             KwdjIntent::InsertRowAbove { .. } => INSERT_ROW_ABOVE_COMMAND_ID,
             KwdjIntent::InsertRowBelow { .. } => INSERT_ROW_BELOW_COMMAND_ID,
             KwdjIntent::DeleteRow { .. } => DELETE_ROW_COMMAND_ID,
@@ -413,6 +430,13 @@ impl CommandProvider for KwdjProfile<'_> {
         {
             return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());
         }
+        if self.clipboard_v2()
+            && let KwdjIntent::Move { node, .. } = intent
+            && let Some(rectangle) = table_selection(view, state.selection.copied())
+            && table_of_cell(view, *node) == Some(rectangle.table)
+        {
+            return block::refuse_table_cell_operation(view, *node, None, plan).map_err(Into::into);
+        }
         Ok(match intent {
             KwdjIntent::InsertAuthorNote
             | KwdjIntent::SetLiteraryKind { .. }
@@ -434,6 +458,9 @@ impl CommandProvider for KwdjProfile<'_> {
             | KwdjIntent::InsertColumnLeft { .. }
             | KwdjIntent::InsertColumnRight { .. }
             | KwdjIntent::DeleteColumn { .. }
+            | KwdjIntent::MergeCells { .. }
+            | KwdjIntent::SplitCell { .. }
+            | KwdjIntent::MoveCell { .. }
                 if !self.clipboard_v2() =>
             {
                 return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());
@@ -483,6 +510,14 @@ impl CommandProvider for KwdjProfile<'_> {
             }
             KwdjIntent::SetTableCellAlign { align } => {
                 block::set_table_cell_align(view, state, *align, plan)?
+            }
+            KwdjIntent::MergeCells { anchor, focus }
+            | KwdjIntent::MoveCell {
+                cell: anchor,
+                target: focus,
+            } => block::refuse_table_cell_operation(view, *anchor, Some(*focus), plan)?,
+            KwdjIntent::SplitCell { cell } => {
+                block::refuse_table_cell_operation(view, *cell, None, plan)?
             }
             KwdjIntent::InsertRowAbove { row } => {
                 block::edit_table_row(view, *row, block::TableRowEdit::Above, self.limits(), plan)?

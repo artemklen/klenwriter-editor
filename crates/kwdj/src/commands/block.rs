@@ -2384,6 +2384,25 @@ fn table_command_error(code: KwdjErrorCode) -> KwdjError {
     KwdjError::categorized(code, "/command", "command")
 }
 
+pub(super) fn refuse_table_cell_operation<V: CandidateRead>(
+    view: &V,
+    cell: V::Id,
+    target: Option<V::Id>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let invalid = || table_command_error(KwdjErrorCode::CommandInvalidTarget);
+    unit(plan, if target.is_some() { 6 } else { 3 })?;
+    let table = crate::table_geometry::table_of_cell(view, cell).ok_or_else(invalid)?;
+    if let Some(target) = target
+        && (target == cell || crate::table_geometry::table_of_cell(view, target) != Some(table))
+    {
+        return Err(invalid());
+    }
+    Err(table_command_error(
+        KwdjErrorCode::TableCellOperationUnsupported,
+    ))
+}
+
 fn empty_table_cell<I>(header: bool, plan: &mut PlanBuilder<'_, I>) -> Result<Node, KwdjError> {
     let kind = if header { "table_header" } else { "table_cell" };
     let mut cell = empty_node(kind, Primitive::Container, Attributes::new(), plan)?;
