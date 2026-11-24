@@ -21,6 +21,7 @@ mod project;
 pub mod registry;
 mod registry_guards;
 mod session_profile;
+mod table_geometry;
 mod validate;
 mod wire_view;
 

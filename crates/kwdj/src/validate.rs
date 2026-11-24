@@ -397,7 +397,13 @@ fn visit<V: ValidationView>(
             }
             require_nonempty(view.children_len(handle), path)?;
             if view.check_table(handle) {
-                validate_table(view, handle, path, state)?;
+                crate::table_geometry::check_table(
+                    view,
+                    handle,
+                    state.limits,
+                    state.work.as_deref_mut(),
+                )
+                .map_err(|error| error.diagnostic(path))?;
             }
             let mut nested = ancestry;
             nested.table = true;
@@ -969,131 +975,6 @@ fn validate_cell_attrs(attrs: Option<&TableCellAttrs>, path: &str) -> Result<(),
                 key_path(path, "attrs"),
             ));
         }
-    }
-    Ok(())
-}
-
-fn validate_table<V: ValidationView>(
-    view: &V,
-    table: V::Handle,
-    path: &str,
-    state: &mut State<'_>,
-) -> Result<(), KwdjError> {
-    let limits = state.limits;
-    let rows_len = view.children_len(table);
-    let row_count = u64::try_from(rows_len)
-        .map_err(|_| KwdjError::limit(path, "table_rows", limits.table_rows, u64::MAX))?;
-    check_limit(path, "table_rows", limits.table_rows, row_count)?;
-    let mut occupancy: Vec<u64> = Vec::new();
-    let mut width = None;
-    for row_index in 0..rows_len {
-        state.units(1)?;
-        let row = view.child(table, row_index);
-        let row_path = index_path(&key_path(path, "content"), row_index);
-        while occupancy.last() == Some(&0) {
-            occupancy.pop();
-        }
-        state.note_header();
-        let Node::TableRow { .. } = view.header(row) else {
-            return Err(KwdjError::new(
-                KwdjErrorCode::InvalidStructure,
-                key_path(path, "content"),
-            ));
-        };
-        let mut column = 0usize;
-        for cell_index in 0..view.children_len(row) {
-            state.units(1)?;
-            state.note_header();
-            let cell = view.header(view.child(row, cell_index));
-            let cell_path = index_path(&key_path(&row_path, "content"), cell_index);
-            while occupancy.get(column).copied().unwrap_or(0) > 0 {
-                column += 1;
-            }
-            let attrs = match cell {
-                Node::TableHeader { attrs, .. } | Node::TableCell { attrs, .. } => attrs.as_ref(),
-                _ => {
-                    return Err(KwdjError::new(
-                        KwdjErrorCode::InvalidStructure,
-                        key_path(&row_path, "content"),
-                    ));
-                }
-            };
-            let colspan = attrs.and_then(|value| value.colspan).unwrap_or(1);
-            let rowspan = attrs.and_then(|value| value.rowspan).unwrap_or(1);
-            if colspan == 0 {
-                return Err(KwdjError::new(
-                    KwdjErrorCode::InvalidStructure,
-                    key_path(&key_path(&cell_path, "attrs"), "colspan"),
-                ));
-            }
-            if rowspan == 0 {
-                return Err(KwdjError::new(
-                    KwdjErrorCode::InvalidStructure,
-                    key_path(&key_path(&cell_path, "attrs"), "rowspan"),
-                ));
-            }
-
-            let column_value = u64::try_from(column).map_err(|_| {
-                KwdjError::limit(
-                    &cell_path,
-                    "table_effective_columns",
-                    limits.table_effective_columns,
-                    u64::MAX,
-                )
-            })?;
-            let effective_end = column_value.saturating_add(colspan);
-            check_limit(
-                &key_path(&key_path(&cell_path, "attrs"), "colspan"),
-                "table_effective_columns",
-                limits.table_effective_columns,
-                effective_end,
-            )?;
-            let end = usize::try_from(effective_end).map_err(|_| {
-                KwdjError::limit(
-                    &cell_path,
-                    "table_effective_columns",
-                    limits.table_effective_columns,
-                    effective_end,
-                )
-            })?;
-
-            let remaining_rows = u64::try_from(rows_len - row_index)
-                .map_err(|_| KwdjError::new(KwdjErrorCode::TableNotRectangular, &cell_path))?;
-            if rowspan > remaining_rows {
-                return Err(KwdjError::new(
-                    KwdjErrorCode::TableNotRectangular,
-                    key_path(&key_path(&cell_path, "attrs"), "rowspan"),
-                ));
-            }
-
-            if occupancy.len() < end {
-                state.bytes(((end - occupancy.len()) * std::mem::size_of::<u64>()) as u64)?;
-                occupancy.resize(end, 0);
-            }
-            state.units((end - column) as u64)?;
-            if occupancy[column..end].iter().any(|value| *value > 0) {
-                return Err(KwdjError::new(KwdjErrorCode::TableNotRectangular, path));
-            }
-            occupancy[column..end].fill(rowspan);
-            column = end;
-        }
-        let row_width = occupancy.len();
-        if occupancy.contains(&0) {
-            return Err(KwdjError::new(KwdjErrorCode::TableNotRectangular, path));
-        }
-        if let Some(expected) = width {
-            if expected != row_width {
-                return Err(KwdjError::new(KwdjErrorCode::TableNotRectangular, path));
-            }
-        } else {
-            width = Some(row_width);
-        }
-        for value in &mut occupancy {
-            *value = value.saturating_sub(1);
-        }
-    }
-    if occupancy.iter().any(|value| *value > 0) {
-        return Err(KwdjError::new(KwdjErrorCode::TableNotRectangular, path));
     }
     Ok(())
 }
