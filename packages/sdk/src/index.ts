@@ -3,6 +3,7 @@ import type { CommandDto } from '@klenwriter/editor-wasm';
 import { ownData } from './data.js';
 export { artifactStage, loadSdk, loadSdkV2, sdkAbiV1, sdkAbiV2, sdkBuildId } from '@klenwriter/editor-wasm';
 export * from './controller.js';
+export type * from './host-services.js';
 export type * from '@klenwriter/editor-wasm';
 
 /** Own a data-only command payload before serialization; Rust owns its semantics. */

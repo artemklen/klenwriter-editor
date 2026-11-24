@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import type { ClipboardCapture } from './clipboard-capture.js';
 // OSR-40 adds selection/clipboard capabilities; the OSR-39 contract snapshot remains frozen.
-import type { CommandDto, CreateEditorOptionsV2, DeepReadonly, EditorControllerV2, EventDto, InputCommandRequestV2, InputSubmissionV2, MarkDto, MutationRequestV2, NodeViewDto, ProfileDto, QueryRequestV2, RawInputRestoreV2, ReadRequest, ReadRequestV2, Response, ResponseV2, SelectionDto, SelectionTextRequestV2, SessionContextV2, StampDto, Submission, TextWindowRequestV2, TextWindowReplyV2 } from '@klenwriter/editor-sdk';
+import type { CommandDto, CreateEditorOptionsV2, DeepReadonly, EditorControllerV2, EventDto, HostService, InputCommandRequestV2, InputSubmissionV2, MarkDto, MutationRequestV2, NodeViewDto, ProfileDto, QueryRequestV2, RawInputRestoreV2, ReadRequest, ReadRequestV2, Response, ResponseV2, SelectionDto, SelectionTextRequestV2, SessionContextV2, StampDto, Submission, TextWindowRequestV2, TextWindowReplyV2 } from '@klenwriter/editor-sdk';
 export type InteractionMode = 'editable' | 'readOnly' | 'disabled';
 export type OrdinaryInputType = 'insertText'|'insertReplacementText'|'insertParagraph'|'insertLineBreak'|'deleteContentBackward'|'deleteContentForward'|'historyUndo'|'historyRedo';
 export interface OrdinaryInputObservation {
@@ -309,4 +309,19 @@ export interface MountedHostRequests {
    | DomRefusal|SelectionReadFailure;
  release(request:MountedHostRequest):boolean;
 }
+
+export interface MountedHostServiceOptions<Request, Value> {
+  readonly request: Request;
+  readonly service: HostService<Request, Value>;
+  readonly command: (value: Readonly<Value>) => CommandDto;
+  readonly focusScope?: HTMLElement;
+}
+
+export type MountedHostServiceOutcome = ReturnType<MountedHostRequests['complete']>
+ | Readonly<{status:'cancelled'|'unavailable'|'failed';restore:BookmarkRestore|null}>
+ | Readonly<{status:'retired'}>;
+
+export type MountedHostServiceStart = Readonly<{
+  status:'started';completion:Promise<MountedHostServiceOutcome>;cancel():boolean;
+}> | DomRefusal | SelectionReadFailure;
 // MountedEditor adds readonly geometry and readonly hostRequests.
