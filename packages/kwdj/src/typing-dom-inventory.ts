@@ -20,6 +20,14 @@ export const kwdjTypingDomInventory = {
     },
     {
       "descriptor": {
+        "id": "org.klenwriter.kwdj/command/delete-column",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/delete-column",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
         "id": "org.klenwriter.kwdj/command/delete-forward",
         "kind": "compiled"
       },
@@ -72,6 +80,22 @@ export const kwdjTypingDomInventory = {
         "kind": "compiled"
       },
       "id": "org.klenwriter.kwdj/command/insert-block",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/insert-column-left",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/insert-column-left",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/insert-column-right",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/insert-column-right",
       "owner": "org.klenwriter.kwdj/base"
     },
     {
@@ -281,6 +305,7 @@ export const kwdjTypingDomInventory = {
     "commands": [
       "org.klenwriter.kwdj/command/accept-slash",
       "org.klenwriter.kwdj/command/delete-backward",
+      "org.klenwriter.kwdj/command/delete-column",
       "org.klenwriter.kwdj/command/delete-forward",
       "org.klenwriter.kwdj/command/delete-row",
       "org.klenwriter.kwdj/command/delete-selection",
@@ -288,6 +313,8 @@ export const kwdjTypingDomInventory = {
       "org.klenwriter.kwdj/command/duplicate",
       "org.klenwriter.kwdj/command/enter",
       "org.klenwriter.kwdj/command/insert-block",
+      "org.klenwriter.kwdj/command/insert-column-left",
+      "org.klenwriter.kwdj/command/insert-column-right",
       "org.klenwriter.kwdj/command/insert-fragment",
       "org.klenwriter.kwdj/command/insert-row-above",
       "org.klenwriter.kwdj/command/insert-row-below",
@@ -1582,5 +1609,5 @@ export const kwdjTypingDomInventory = {
     "profile_version": "1.0.0",
     "wire_version": 1
   },
-  "registryDigest": "79fb21807af099658bfc2fe9df1de7fcaee010ebc0352901b1a1a0ae6b06bbd0"
+  "registryDigest": "cbb814a7e96decddb3c396e6a62d04f5cc2586e5d5b0311275b676da0dd3c737"
 } as const;

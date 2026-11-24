@@ -117,6 +117,18 @@ pub enum KwdjIntent<I> {
     DeleteRow {
         row: I,
     },
+    InsertColumnLeft {
+        table: I,
+        column: usize,
+    },
+    InsertColumnRight {
+        table: I,
+        column: usize,
+    },
+    DeleteColumn {
+        table: I,
+        column: usize,
+    },
     Move {
         node: I,
         parent: I,
@@ -154,6 +166,9 @@ pub enum KwdjIntent<I> {
 }
 
 pub const CLIPBOARD_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-fragment";
+pub const INSERT_COLUMN_LEFT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-column-left";
+pub const INSERT_COLUMN_RIGHT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-column-right";
+pub const DELETE_COLUMN_COMMAND_ID: &str = "org.klenwriter.kwdj/command/delete-column";
 pub const INSERT_ROW_ABOVE_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-row-above";
 pub const INSERT_ROW_BELOW_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-row-below";
 pub const DELETE_ROW_COMMAND_ID: &str = "org.klenwriter.kwdj/command/delete-row";
@@ -323,6 +338,9 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::SetContainerLabel { .. } => SET_CONTAINER_LABEL_COMMAND_ID,
             KwdjIntent::WrapLabeledContainer { .. } => WRAP_LABELED_CONTAINER_COMMAND_ID,
             KwdjIntent::UnwrapLabeledContainer { .. } => UNWRAP_LABELED_CONTAINER_COMMAND_ID,
+            KwdjIntent::InsertColumnLeft { .. } => INSERT_COLUMN_LEFT_COMMAND_ID,
+            KwdjIntent::InsertColumnRight { .. } => INSERT_COLUMN_RIGHT_COMMAND_ID,
+            KwdjIntent::DeleteColumn { .. } => DELETE_COLUMN_COMMAND_ID,
             KwdjIntent::InsertRowAbove { .. } => INSERT_ROW_ABOVE_COMMAND_ID,
             KwdjIntent::InsertRowBelow { .. } => INSERT_ROW_BELOW_COMMAND_ID,
             KwdjIntent::DeleteRow { .. } => DELETE_ROW_COMMAND_ID,
@@ -367,6 +385,9 @@ impl CommandProvider for KwdjProfile<'_> {
             | KwdjIntent::InsertRowAbove { .. }
             | KwdjIntent::InsertRowBelow { .. }
             | KwdjIntent::DeleteRow { .. }
+            | KwdjIntent::InsertColumnLeft { .. }
+            | KwdjIntent::InsertColumnRight { .. }
+            | KwdjIntent::DeleteColumn { .. }
                 if !self.clipboard_v2() =>
             {
                 return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());
@@ -416,6 +437,30 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::DeleteRow { row } => {
                 block::edit_table_row(view, *row, block::TableRowEdit::Delete, self.limits(), plan)?
             }
+            KwdjIntent::InsertColumnLeft { table, column } => block::edit_table_column(
+                view,
+                *table,
+                *column,
+                block::TableColumnEdit::Left,
+                self.limits(),
+                plan,
+            )?,
+            KwdjIntent::InsertColumnRight { table, column } => block::edit_table_column(
+                view,
+                *table,
+                *column,
+                block::TableColumnEdit::Right,
+                self.limits(),
+                plan,
+            )?,
+            KwdjIntent::DeleteColumn { table, column } => block::edit_table_column(
+                view,
+                *table,
+                *column,
+                block::TableColumnEdit::Delete,
+                self.limits(),
+                plan,
+            )?,
             KwdjIntent::DismissSlash => CommandPresentation { active: None },
             _ => block::prepare(*context, view, state, intent, plan)?,
         })

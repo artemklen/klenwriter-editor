@@ -102,7 +102,7 @@ test.beforeEach(async({page},info)=>{
   await page.addInitScript(()=>{window.typingStartup=[];window.typingPolicy=[];window.addEventListener('error',event=>window.typingStartup.push(event.message));window.addEventListener('unhandledrejection',event=>window.typingStartup.push(String(event.reason?.message??event.reason)));document.addEventListener('securitypolicyviolation',event=>window.typingPolicy.push({directive:event.violatedDirective,blocked:event.blockedURI}));});
   const response=await page.goto('/typing');record.csp=response.headers()['content-security-policy'];expect(record.csp).toContain("default-src 'none'");expect(record.csp).toContain("'wasm-unsafe-eval'");expect(record.csp).not.toMatch(/'unsafe-inline'|'unsafe-eval'/);
   await page.waitForFunction(()=>window.typingHostReady||window.typingStartup.length,null,{timeout:15000});expect(await page.evaluate(()=>window.typingStartup)).toEqual([]);
-  record.metadata=await call(page,'metadata');expect(record.metadata.typingCommands).toHaveLength(33);expect(record.metadata.baseCommands).toHaveLength(31);
+  record.metadata=await call(page,'metadata');expect(record.metadata.typingCommands).toHaveLength(36);expect(record.metadata.baseCommands).toHaveLength(34);
   const deleteForward = 'org.klenwriter.kwdj/command/delete-forward';
   expect(record.metadata.typingCommands).toContain(deleteForward);
   expect(record.metadata.baseCommands).toContain(deleteForward);

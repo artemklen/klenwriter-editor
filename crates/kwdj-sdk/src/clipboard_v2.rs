@@ -5,8 +5,9 @@ use crate::{
     wire_v2::{
         KwdjClipboardIntentV2, KwdjDeleteSelectionScopeV2, KwdjForwardDeleteIntentV2,
         KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2, KwdjScopedSelectionIntentV2,
-        KwdjTableRowIntentV2, KwdjWarningIntentV2, LabeledContainerBlockTargetV2,
-        LabeledContainerKindV2, LiteraryBlockTargetV2, WarningBlockTargetV2, WarningKindV2,
+        KwdjTableColumnIntentV2, KwdjTableRowIntentV2, KwdjWarningIntentV2,
+        LabeledContainerBlockTargetV2, LabeledContainerKindV2, LiteraryBlockTargetV2,
+        WarningBlockTargetV2, WarningKindV2,
     },
 };
 use editor_bridge::{BridgeAdapter, ClipboardContextData, SelectionFragmentData};
@@ -15,7 +16,8 @@ use editor_engine::{NodeId, SessionKey};
 use editor_kwdj::{
     KwdjProfile, KwdjProfileError, Profile,
     commands::{
-        CLIPBOARD_COMMAND_ID, DELETE_FORWARD_COMMAND_ID, DELETE_ROW_COMMAND_ID,
+        CLIPBOARD_COMMAND_ID, DELETE_COLUMN_COMMAND_ID, DELETE_FORWARD_COMMAND_ID,
+        DELETE_ROW_COMMAND_ID, INSERT_COLUMN_LEFT_COMMAND_ID, INSERT_COLUMN_RIGHT_COMMAND_ID,
         INSERT_ROW_ABOVE_COMMAND_ID, INSERT_ROW_BELOW_COMMAND_ID, KWDJ_COMMANDS, KwdjIntent,
         LabeledContainerKind, SET_CONTAINER_LABEL_COMMAND_ID, SET_LITERARY_KIND_COMMAND_ID,
         SET_WARNING_KIND_COMMAND_ID, UNWRAP_LABELED_CONTAINER_COMMAND_ID,
@@ -237,6 +239,43 @@ impl BridgeAdapter<KwdjProfile<'static>> for ClipboardAdapterV2 {
                         row: parse_row(&row)?,
                     })
                 }
+                _ => Err(diagnostic("sdk.invalid_dto", "command")),
+            }
+        } else if matches!(
+            command.id.as_str(),
+            INSERT_COLUMN_LEFT_COMMAND_ID
+                | INSERT_COLUMN_RIGHT_COMMAND_ID
+                | DELETE_COLUMN_COMMAND_ID
+        ) {
+            let parse_table = |table: &str| {
+                key.parse_node_token(table)
+                    .map_err(|error| diagnostic(error.as_str(), "command.table"))
+            };
+            match (
+                command.id.as_str(),
+                editor_bridge::decode(&command.payload_json)?,
+            ) {
+                (
+                    INSERT_COLUMN_LEFT_COMMAND_ID,
+                    KwdjTableColumnIntentV2::InsertColumnLeft { table, column },
+                ) => Ok(KwdjIntent::InsertColumnLeft {
+                    table: parse_table(&table)?,
+                    column: column as usize,
+                }),
+                (
+                    INSERT_COLUMN_RIGHT_COMMAND_ID,
+                    KwdjTableColumnIntentV2::InsertColumnRight { table, column },
+                ) => Ok(KwdjIntent::InsertColumnRight {
+                    table: parse_table(&table)?,
+                    column: column as usize,
+                }),
+                (
+                    DELETE_COLUMN_COMMAND_ID,
+                    KwdjTableColumnIntentV2::DeleteColumn { table, column },
+                ) => Ok(KwdjIntent::DeleteColumn {
+                    table: parse_table(&table)?,
+                    column: column as usize,
+                }),
                 _ => Err(diagnostic("sdk.invalid_dto", "command")),
             }
         } else if command.id == DELETE_FORWARD_COMMAND_ID {

@@ -682,6 +682,7 @@ function osr196Points(editor, point) {
   return points;
 }
 
+const tableIdTree = (editor, id) => ({ id, children: node(editor, id).children.map(child => tableIdTree(editor, child)) });
 test('OSR-205 packaged SDK2 row commands retain geometry, IDs and exact Undo/Redo', async t => {
   const read = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
   const corpus = ['positive', 'mixed']
@@ -693,9 +694,8 @@ test('OSR-205 packaged SDK2 row commands retain geometry, IDs and exact Undo/Red
       const input = osr185Bytes(source);
       let exported;
       await withLiteraryCommandSession(input, editor => {
-        const idTree = id => ({ id, children: node(editor, id).children.map(idTree) });
         const table = root(editor).children[0];
-        const beforeIds = idTree(table);
+        const beforeIds = tableIdTree(editor, table);
         const row = beforeIds.children[fixture.row];
         select(editor, row.children[0].children[0].children[0].id, 0);
         const before = state(editor);
@@ -709,7 +709,7 @@ test('OSR-205 packaged SDK2 row commands retain geometry, IDs and exact Undo/Red
           assert.equal(diagnostic.may_have_committed, false);
           assert.deepEqual(state(editor), before);
           assert.equal(canonical(editor), input);
-          assert.deepEqual(idTree(table), beforeIds);
+          assert.deepEqual(tableIdTree(editor, table), beforeIds);
           assert.deepEqual(kwdjCommand(payload), createCommand(id, payload));
           return;
         }
@@ -720,7 +720,7 @@ test('OSR-205 packaged SDK2 row commands retain geometry, IDs and exact Undo/Red
         exported = canonical(editor);
         assert.equal(exported, osr185Bytes(expected));
         assert.equal(root(editor).children[0], table);
-        const afterIds = idTree(table);
+        const afterIds = tableIdTree(editor, table);
         const retainedBefore = beforeIds.children.slice();
         const retainedAfter = afterIds.children.slice();
         if (fixture.inserted === undefined) {
@@ -736,12 +736,12 @@ test('OSR-205 packaged SDK2 row commands retain geometry, IDs and exact Undo/Red
         if (fixture.inserted !== undefined) assert.deepEqual(after.selection, before.selection);
 
         osr183History(editor, 'undo', input);
-        assert.deepEqual(idTree(table), beforeIds);
+        assert.deepEqual(tableIdTree(editor, table), beforeIds);
         assert.deepEqual(state(editor).selection, before.selection);
         assert.equal(state(editor).history.undo_entries, '0');
         assert.equal(state(editor).history.redo_entries, '1');
         osr183History(editor, 'redo', exported);
-        assert.deepEqual(idTree(table), afterIds);
+        assert.deepEqual(tableIdTree(editor, table), afterIds);
         assert.deepEqual(state(editor).selection, after.selection);
         assert.equal(state(editor).history.undo_entries, '1');
         assert.equal(state(editor).history.redo_entries, '0');
@@ -784,6 +784,159 @@ test('OSR-205 row command wire is closed and confined to SDK2', async () => {
     const diagnostic = refused(osr183Wire(editor, createCommand(remove, { kind: 'delete_row', row: target(editor) })));
     assert.equal(diagnostic.code, 'sdk.invalid_dto');
     assert.equal(diagnostic.may_have_committed, false);
+    assert.deepEqual(state(editor), before);
+    assert.equal(canonical(editor), input);
+  } finally {
+    legacy.close();
+  }
+});
+
+const tableColumnFixtures = () => JSON.parse(readFileSync(new URL('./fixtures/osr-206-table-columns.json', import.meta.url), 'utf8'));
+const tableColumnPayload = (fixture, table) => ({ kind: fixture.command, table, column: fixture.column });
+const tableColumnWire = payload => createCommand(`org.klenwriter.kwdj/command/${payload.kind.replaceAll('_', '-')}`, payload);
+
+test('OSR-206 packaged SDK2 columns preserve exact geometry, IDs and Undo/Redo', async t => {
+  const read = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
+  const corpus = ['positive', 'mixed']
+    .flatMap(file => read(`../contracts/kwdj/v1/fixtures/${file}.json`).fixtures)
+    .flatMap(fixture => fixture.cases);
+  for (const fixture of tableColumnFixtures().cases) {
+    await t.test(fixture.id, async () => {
+      const source = structuredClone(corpus.find(candidate => candidate.name === fixture.source).kwdj);
+      if (fixture.header_override) source.content[0].content[0] = fixture.header_override;
+      const input = osr185Bytes(source);
+      let exported;
+      await withLiteraryCommandSession(input, editor => {
+        const table = root(editor).children[0];
+        const beforeIds = tableIdTree(editor, table);
+        select(editor, beforeIds.children[0].children[0].children[0].children[0].id, 0);
+        const before = state(editor);
+        const payload = tableColumnPayload(fixture, fixture.row_target ? beforeIds.children[0].id : table);
+        const command = tableColumnWire(payload);
+        const preview = accepted(editor.query({ kind: 'query_command', stamp: editor.capture(), command }));
+        assert.equal(preview.available, !fixture.diagnostic);
+        assert.deepEqual(state(editor), before);
+        const response = osr183Wire(editor, command);
+        if (fixture.diagnostic) {
+          const diagnostic = refused(response);
+          assert.equal(diagnostic.code, fixture.diagnostic.code);
+          assert.equal(diagnostic.path, fixture.diagnostic.path);
+          assert.equal(preview.diagnostic.code, diagnostic.code);
+          assert.equal(preview.diagnostic.path, diagnostic.path);
+          assert.equal(diagnostic.may_have_committed, false);
+          assert.deepEqual(state(editor), before);
+          assert.equal(canonical(editor), input);
+          assert.deepEqual(tableIdTree(editor, table), beforeIds);
+          assert.deepEqual(kwdjCommand(payload), command);
+          return;
+        }
+        assert.equal(accepted(response).effect, 'changed');
+        assert.deepEqual(kwdjCommand(payload), command);
+        source.content[0].content = fixture.expected_rows;
+        exported = canonical(editor);
+        assert.equal(exported, osr185Bytes(source));
+        assert.equal(root(editor).children[0], table);
+        const afterIds = tableIdTree(editor, table);
+        const retainedBefore = structuredClone(beforeIds), retainedAfter = structuredClone(afterIds);
+        const retained = fixture.command === 'delete_column' ? retainedBefore : retainedAfter;
+        fixture.changed_indices.forEach((index, row) => {
+          if (index !== null) retained.children[row].children.splice(index, 1);
+        });
+        assert.deepEqual(retainedAfter, retainedBefore);
+        const after = state(editor);
+        assert.equal(after.stamp.revision, '1');
+        assert.equal(after.history.undo_entries, '1');
+        assert.equal(after.history.redo_entries, '0');
+        if (fixture.command !== 'delete_column') assert.deepEqual(after.selection, before.selection);
+        osr183History(editor, 'undo', input);
+        assert.deepEqual(tableIdTree(editor, table), beforeIds);
+        assert.deepEqual(state(editor).selection, before.selection);
+        assert.equal(state(editor).history.undo_entries, '0');
+        assert.equal(state(editor).history.redo_entries, '1');
+        osr183History(editor, 'redo', exported);
+        assert.deepEqual(tableIdTree(editor, table), afterIds);
+        assert.deepEqual(state(editor).selection, after.selection);
+        assert.equal(state(editor).history.undo_entries, '1');
+        assert.equal(state(editor).history.redo_entries, '0');
+      });
+      if (exported) await withLiteraryCommandSession(exported, editor => assert.equal(canonical(editor), exported));
+    });
+  }
+});
+
+test('OSR-206 packaged SDK2 column operation budget is atomic', async t => {
+  const cell = {type:'table_cell', content:[{type:'paragraph', content:[]}]};
+  const grid = (rows, columns, verticalFirstColumn = false) => osr183Doc([{
+    type:'table', content:Array.from({length:rows}, (_, row) => ({
+      type:'table_row',
+      content: verticalFirstColumn
+        ? row % 2 === 0 ? [{ ...cell, attrs:{rowspan:2} }, cell] : [cell]
+        : Array.from({length:columns}, () => cell),
+    })),
+  }]);
+  for (const fixture of tableColumnFixtures().bounded) {
+    await t.test(fixture.id, async () => {
+      const input = grid(fixture.rows, 2, fixture.vertical_first_column);
+      await withLiteraryCommandSession(input, editor => {
+        const table = root(editor).children[0];
+        const before = state(editor), rowIds = node(editor, table).children;
+        const result = osr183Wire(editor, tableColumnWire(tableColumnPayload(fixture, table)));
+        if (fixture.expected_columns) {
+          assert.equal(accepted(result).effect, 'changed');
+          const expected = grid(fixture.rows, fixture.expected_columns);
+          assert.equal(canonical(editor), expected);
+          assert.deepEqual(node(editor, table).children, rowIds);
+          assert.equal(state(editor).history.undo_entries, '1');
+          osr183History(editor, 'undo', input);
+          osr183History(editor, 'redo', expected);
+        } else {
+          const diagnostic = refused(result);
+          assert.equal(diagnostic.code, 'kwdj.admission_budget_exceeded');
+          assert.deepEqual(structuredClone(diagnostic.details), { limit:'command_operations', maximum:'256', observed:'257' });
+          assert.equal(diagnostic.may_have_committed, false);
+          assert.deepEqual(state(editor), before);
+          assert.equal(canonical(editor), input);
+          assert.deepEqual(node(editor, table).children, rowIds);
+        }
+      });
+    });
+  }
+});
+
+test('OSR-206 column wire accepts only the matching SDK2 command and a u32 coordinate', async () => {
+  const corpus = JSON.parse(readFileSync(new URL('../contracts/kwdj/v1/fixtures/positive.json', import.meta.url), 'utf8'));
+  const input = osr185Bytes(corpus.fixtures.find(fixture => fixture.id === 'DOC-010').cases[0].kwdj);
+  const id = 'org.klenwriter.kwdj/command/delete-column';
+  await withLiteraryCommandSession(input, editor => {
+    const before = state(editor);
+    const table = root(editor).children[0];
+    assert.throws(() => createCommand(id, {kind:'delete_column', table, column:1.5}), /sdk.invalid_integer/);
+    for (const body of [
+      {kind:'delete_column', table},
+      {kind:'delete_column', table, column:-1},
+      {kind:'delete_column', table, column:1.5},
+      {kind:'delete_column', table, column:'1'},
+      {kind:'delete_column', table, column:0x100000000},
+      {kind:'delete_column', table, column:1, extra:true},
+      {kind:'insert_column_left', table, column:1},
+    ]) {
+      const diagnostic = refused(osr183Wire(editor, { id, payload_json: JSON.stringify(body) }));
+      assert.equal(diagnostic.code, 'sdk.invalid_dto');
+      assert.equal(diagnostic.may_have_committed, false);
+      assert.deepEqual(state(editor), before);
+    }
+    const max = refused(osr183Wire(editor, createCommand(id, {kind:'delete_column', table, column:0xffffffff})));
+    assert.equal(max.code, 'kwdj.command_invalid_target');
+    assert.deepEqual(state(editor), before);
+    assert.equal(canonical(editor), input);
+  });
+  const legacy = await open(input);
+  try {
+    const { editor } = legacy;
+    const before = state(editor);
+    assert.equal(accepted(editor.read({ kind: 'catalog' })).commands.length, 17);
+    const diagnostic = refused(osr183Wire(editor, createCommand(id, {kind:'delete_column', table:root(editor).children[0], column:1})));
+    assert.equal(diagnostic.code, 'sdk.invalid_dto');
     assert.deepEqual(state(editor), before);
     assert.equal(canonical(editor), input);
   } finally {

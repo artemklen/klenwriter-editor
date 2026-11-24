@@ -327,3 +327,15 @@ pub enum KwdjTableRowIntentV2 {
     InsertRowBelow { row: String },
     DeleteRow { row: String },
 }
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum KwdjTableColumnIntentV2 {
+    InsertColumnLeft { table: String, column: u32 },
+    InsertColumnRight { table: String, column: u32 },
+    DeleteColumn { table: String, column: u32 },
+}

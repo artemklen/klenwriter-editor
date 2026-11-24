@@ -2331,6 +2331,19 @@ pub(super) fn remove<V: CandidateRead>(
     Ok(())
 }
 
+fn table_command_error(code: KwdjErrorCode) -> KwdjError {
+    KwdjError::categorized(code, "/command", "command")
+}
+
+fn empty_table_cell<I>(header: bool, plan: &mut PlanBuilder<'_, I>) -> Result<Node, KwdjError> {
+    let kind = if header { "table_header" } else { "table_cell" };
+    let mut cell = empty_node(kind, Primitive::Container, Attributes::new(), plan)?;
+    let paragraph = empty_node("paragraph", Primitive::TextBlock, Attributes::new(), plan)?;
+    bytes(plan, size_of::<Node>())?;
+    cell.children.push(paragraph);
+    Ok(cell)
+}
+
 #[derive(Clone, Copy)]
 pub(super) enum TableRowEdit {
     Above,
@@ -2345,20 +2358,25 @@ pub(super) fn edit_table_row<V: CandidateRead>(
     limits: crate::Limits,
     plan: &mut PlanBuilder<'_, V::Id>,
 ) -> Result<CommandPresentation, KwdjError> {
-    let command_error = |code| KwdjError::categorized(code, "/command", "command");
     let row_node = get(view, row, plan)?;
     if kind(row_node.type_id) != "table_row" {
-        return Err(command_error(KwdjErrorCode::CommandUnsupportedContext));
+        return Err(table_command_error(
+            KwdjErrorCode::CommandUnsupportedContext,
+        ));
     }
     let table = row_node.parent;
     let table_node = get(view, table, plan)?;
     if kind(table_node.type_id) != "table" {
-        return Err(command_error(KwdjErrorCode::CommandUnsupportedContext));
+        return Err(table_command_error(
+            KwdjErrorCode::CommandUnsupportedContext,
+        ));
     }
     let target = index(view, table, row, plan)?;
     let deleting = matches!(edit, TableRowEdit::Delete);
     if deleting && table_node.children.len() == 1 {
-        return Err(command_error(KwdjErrorCode::CommandUnsupportedContext));
+        return Err(table_command_error(
+            KwdjErrorCode::CommandUnsupportedContext,
+        ));
     }
     let seam = target + usize::from(matches!(edit, TableRowEdit::Below));
     let mut crosses_span = false;
@@ -2383,7 +2401,7 @@ pub(super) fn edit_table_row<V: CandidateRead>(
         })
         .map_err(|error| error.diagnostic("/command"))?;
     if crosses_span {
-        return Err(command_error(KwdjErrorCode::TableNotRectangular));
+        return Err(table_command_error(KwdjErrorCode::TableNotRectangular));
     }
     if deleting {
         push(plan, Operation::Remove { node: row.into() })?;
@@ -2402,18 +2420,114 @@ pub(super) fn edit_table_row<V: CandidateRead>(
         bytes(plan, geometry.columns * size_of::<Node>())?;
         row.children.reserve_exact(geometry.columns);
         for column in 0..geometry.columns {
-            let kind = if reference.is_some_and(|headers| headers[column]) {
-                "table_header"
-            } else {
-                "table_cell"
-            };
-            let mut cell = empty_node(kind, Primitive::Container, Attributes::new(), plan)?;
-            let paragraph = empty_node("paragraph", Primitive::TextBlock, Attributes::new(), plan)?;
-            bytes(plan, size_of::<Node>())?;
-            cell.children.push(paragraph);
-            row.children.push(cell);
+            row.children.push(empty_table_cell(
+                reference.is_some_and(|headers| headers[column]),
+                plan,
+            )?);
         }
         fragment(plan, table.into(), seam, row)?;
+    }
+    Ok(CommandPresentation::default())
+}
+
+#[derive(Clone, Copy)]
+pub(super) enum TableColumnEdit {
+    Left,
+    Right,
+    Delete,
+}
+
+#[derive(Clone, Copy, Default)]
+struct ColumnRowEdit {
+    index: Option<usize>,
+    headers: [bool; 2],
+}
+
+pub(super) fn edit_table_column<V: CandidateRead>(
+    view: &V,
+    table: V::Id,
+    column: usize,
+    edit: TableColumnEdit,
+    limits: crate::Limits,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let table_node = get(view, table, plan)?;
+    if kind(table_node.type_id) != "table" {
+        return Err(table_command_error(
+            KwdjErrorCode::CommandUnsupportedContext,
+        ));
+    }
+    if column >= crate::MAX_TABLE_EFFECTIVE_COLUMNS as usize {
+        return Err(table_command_error(KwdjErrorCode::CommandInvalidTarget));
+    }
+    let row_ids = table_node.children;
+    let deleting = matches!(edit, TableColumnEdit::Delete);
+    let seam = column + usize::from(matches!(edit, TableColumnEdit::Right));
+    let neighbor_columns = [seam.checked_sub(1), Some(seam)];
+    let row_count = row_ids.len().min(crate::MAX_TABLE_ROWS as usize);
+    unit(plan, row_count)?;
+    bytes(plan, row_count * size_of::<ColumnRowEdit>())?;
+    let mut edits = vec![ColumnRowEdit::default(); row_count];
+    let mut crosses_span = false;
+    let geometry =
+        crate::table_geometry::inspect_table(view, table_node, limits, plan.work(), |cell| {
+            let origin = cell.origin;
+            let start = origin.at.column;
+            let end = cell.end_column;
+            if deleting {
+                if start <= column && column < end {
+                    crosses_span |= end - start > 1;
+                    edits[origin.at.row].index = Some(origin.index);
+                }
+            } else {
+                crosses_span |= start < seam && seam < end;
+                if start < seam {
+                    edits[origin.at.row].index = Some(origin.index + 1);
+                }
+                if cell.header {
+                    for (side, neighbor) in neighbor_columns.into_iter().enumerate() {
+                        if neighbor.is_some_and(|column| start <= column && column < end) {
+                            for row in &mut edits[origin.at.row..origin.at.row + cell.rowspan] {
+                                row.headers[side] = true;
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        .map_err(|error| error.diagnostic("/command"))?;
+    if column >= geometry.columns {
+        return Err(table_command_error(KwdjErrorCode::CommandInvalidTarget));
+    }
+    if deleting && geometry.columns == 1 {
+        return Err(table_command_error(
+            KwdjErrorCode::CommandUnsupportedContext,
+        ));
+    }
+    if crosses_span {
+        return Err(table_command_error(KwdjErrorCode::TableNotRectangular));
+    }
+    if deleting {
+        for (&row, edit) in row_ids.iter().zip(edits) {
+            if let Some(index) = edit.index {
+                let cell = get(view, row, plan)?.children[index];
+                push(plan, Operation::Remove { node: cell.into() })?;
+            }
+        }
+    } else {
+        // Use the neighboring effective cell roles. A header-only outer edge
+        // seeds data cells, as in the legacy table command.
+        let reference = if seam > 0 && edits.iter().any(|row| !row.headers[0]) {
+            Some(0)
+        } else if seam < geometry.columns && (seam > 0 || edits.iter().any(|row| !row.headers[1])) {
+            Some(1)
+        } else {
+            None
+        };
+        for (&row, edit) in row_ids.iter().zip(edits) {
+            let cell = empty_table_cell(reference.is_some_and(|side| edit.headers[side]), plan)?;
+            fragment(plan, row.into(), edit.index.unwrap_or(0), cell)?;
+        }
     }
     Ok(CommandPresentation::default())
 }
