@@ -16,7 +16,7 @@ const rendererBytes = read('contracts/failure-states/v1/dom-assets-renderer-addi
 const base = JSON.parse(baseBytes), renderer = JSON.parse(rendererBytes);
 assert.equal(base.files.length, 52);
 assert.equal(renderer.format, 'osr67-ac1-current-renderer-assets/1');
-assert.equal(renderer.files.length, 4);
+assert.equal(renderer.files.length, 6);
 const descriptors = [...base.files, ...renderer.files];
 assert.equal(new Set(descriptors.map(file => file.url)).size, descriptors.length);
 export const domAssetPolicy = { origin: base.origin, optionalResponses: base.optionalResponses, files: descriptors };
