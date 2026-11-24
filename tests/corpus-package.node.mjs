@@ -51,8 +51,11 @@ test('new cases require a version bump while preserving every original expectati
     editJson(root, 'fixtures/positive.json', p => { p.fixtures[0].cases.push({ ...structuredClone(p.fixtures[0].cases[0]), name: 'additive_empty_prose' }); });
     editJson(root, 'manifest.json', p => { p.fixture_case_count = 60; });
     rebuildIndex(root); assert.throws(() => validateCorpus(root), /version bump/);
-    editJson(root, 'manifest.json', p => { p.package_version = '1.0.1'; });
-    editJson(root, indexFile, p => { p.packageVersion = '1.0.1'; });
+    const version = verifyCorpus(root).packageVersion.split('.');
+    version[2] = String(Number(version[2]) + 1);
+    const nextVersion = version.join('.');
+    editJson(root, 'manifest.json', p => { p.package_version = nextVersion; });
+    editJson(root, indexFile, p => { p.packageVersion = nextVersion; });
     rebuildIndex(root); assert.equal(validateCorpus(root).cases.length, 60);
   });
 });
@@ -65,7 +68,7 @@ test('unknown stages and unsafe number tokens fail closed instead of silently ro
   assert.deepEqual(parseFixture('{"x":9007199254740991}'), { x: 9007199254740991 });
 });
 
-test('rebuilding the index cannot silently reuse 1.0.0 for a non-case data change', () => {
+test('rebuilding the index cannot silently reuse the sealed package version for a non-case data change', () => {
   temporary(root => {
     writeFileSync(join(root, 'README.md'), readFileSync(join(root, 'README.md'), 'utf8') + '\nEdited metadata.\n');
     rebuildIndex(root); assert.throws(() => validateCorpus(root), /version bump/);

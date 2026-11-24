@@ -146,7 +146,7 @@ Hardening74/75, invalid-field77 and extension dispositions have separate reports
 The frozen M0 descriptor reference executes once inside this lane; it does not
 claim the production extension registry or notes profile (OSR-64).
 
-The data-only `artifacts/kwdj-corpus-1.0.0.json.gz` bundle contains the index and
+The data-only `artifacts/kwdj-corpus-1.0.1.json.gz` bundle contains the index and
 its exact indexed bytes. `scripts/export-corpus.mjs` verifies the committed
 index before exporting. `scripts/build-corpus-package.mjs` is an explicit
 authoring step, never an automatic CI repair. See the corpus README for digest,
