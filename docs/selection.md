@@ -86,6 +86,12 @@ Selection-only native effects не создают document revision/undo entry; 
 epoch, stored marks и grouping barriers следуют настоящей native операции,
 а не восстанавливаются из JS bookmark.
 
+В таблицах KWDJ `Tab` и `Shift+Tab` перемещают каретку по ячейкам.
+Стрелки на границе ячейки используют эффективную сетку с учётом spans.
+При выходе из таблицы редактор сохраняет позицию в соседнем блоке или
+в границе вставки. Подключённый UI передаёт фокус соответствующему
+контролу Add или атомарного блока.
+
 Edge autoscroll принадлежит одному primary left-mouse pointer и одному RAF.
 Сдвиг ограничен24CSSpx/frame; поддерживаются axis-aligned rectangular clipping,
 ближайший vertical scroll owner и viewport, максимум32 ancestors. Transforms,

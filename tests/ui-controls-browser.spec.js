@@ -579,3 +579,54 @@ test('PP01 controlled NotesD0 held Title keeps its exact fallback point through 
   await page.mouse.up();await rlFrames(page);const released=await ppRaw(page,id);expect(released.active).toBe(false);await ppNoMutation(page,id,before,traceStart);rlBrowser(released.browser,baseline.browser);ppFloating(released);ppRect(released.toolbarRect,baseline.toolbarRect);ppRect(released.titleRect,baseline.titleRect);
   const events=await page.evaluate(()=>window.ppEvents);(records.get(page).pressedPointerEvents??=[]).push(events);expect(events.map(e=>({event:e.event,sameTitle:e.sameTitle}))).toEqual([{event:'pointerdown',sameTitle:true},{event:'pointerup',sameTitle:true},{event:'click',sameTitle:true}]);expect(events[0].prevented).toBe(true);
 });
+
+test.describe('OSR-207 table exits to existing block chrome', () => {
+  const retained = JSON.parse(readFileSync(new URL('../contracts/kwdj/v1/fixtures/positive.json',import.meta.url),'utf8'))
+    .fixtures.find(row=>row.id==='DOC-011').cases.find(row=>row.name==='table_spans_alignment').kwdj;
+  const sourceRoles={ROOT:[],AB:[0,0,0,0,0],B1:[0,1,1,0,0],B2:[0,2,0,0,0]};
+  const collapsed = point => ({anchor:point,focus:point});
+  const textPosition = (node,offset) => ({kind:'text',node,offset,affinity:'after'});
+
+  for (const { edge, node, offset, keys, index } of [
+    {edge:'first',node:'AB',offset:0,keys:['Shift+Tab'],index:0},
+    {edge:'last',node:'B1',offset:2,keys:['Tab','Tab'],index:1},
+  ]) test(`${edge} Tab focuses Add and preserves the adjacent insertion bookmark`, async ({page}) => {
+    const id=await mounted(page,{source:retained,sourceRoles,selection:collapsed(textPosition(node,offset))});
+    await editorFocus(page,id);
+    const before=await checkpoint(page,id,'original table');
+    for (const key of keys) await page.keyboard.press(key);
+    await expect(add(page,id)).toBeFocused();
+    const gap=await checkpoint(page,id,'table exit to Add');
+    expect(gap.state.selection).toEqual(collapsed({kind:'child',parent:before.roles.ROOT,index,affinity:'after'}));
+    expect(gap.canonical).toBe(before.canonical);
+    expect(gap.state.stamp.revision).toBe(before.state.stamp.revision);
+    expect(gap.state.history).toEqual(before.state.history);
+    expect(gap.state.dirty).toBe(before.state.dirty);
+    expect(documentEvents(gap)).toEqual([]);
+    await expect(root(page,id).getByRole('status')).toHaveText('');
+    await page.keyboard.press('Enter');
+    await expect(control(page,id,'paragraph')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await waitSubmissions(page,id,1);
+    const inserted=await checkpoint(page,id,'Add used the adjoining table bookmark');
+    const content=[...retained.content];
+    content.splice(index,0,{type:'paragraph',content:[]});
+    expect(JSON.parse(inserted.canonical)).toEqual({...retained,content});
+    expect(documentEvents(inserted)).toHaveLength(1);
+  });
+
+  test('last-row ArrowDown focuses the adjacent atom action', async ({page}) => {
+    const source={...retained,content:[...retained.content,{type:'scene_break'}]};
+    const id=await mounted(page,{source,sourceRoles:{...sourceRoles,ATOM:[1]},selection:collapsed(textPosition('B2',2))});
+    await editorFocus(page,id);
+    const before=await checkpoint(page,id,'table and next scene break');
+    await page.keyboard.press('ArrowDown');
+    await expect(move(page,id)).toBeFocused({timeout:3000});
+    const after=await checkpoint(page,id,'table exit to atom action');
+    expect(after.state.selection).toEqual(collapsed({kind:'edge',node:before.roles.ATOM,side:'before'}));
+    expect(after.canonical).toBe(before.canonical);
+    expect(after.state.stamp.revision).toBe(before.state.stamp.revision);
+    expect(documentEvents(after)).toEqual([]);
+    await expect(root(page,id).getByRole('status')).toHaveText('');
+  });
+});

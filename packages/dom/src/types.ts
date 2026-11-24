@@ -136,10 +136,13 @@ export interface SelectionBookmark {
 export interface SelectionReadFailure { readonly status: 'sdk_failure'; readonly response: Response }
 export type BookmarkCapture = { readonly status: 'captured'; readonly bookmark: SelectionBookmark } | DomRefusal | SelectionReadFailure;
 export type BookmarkRestore = Submission | DomRefusal | SelectionReadFailure;
+export type TableNavigationExit = Readonly<{ kind: 'add' } | { kind: 'atom'; node: string }>;
 export interface MountedSelectionController {
   captureBookmark(): BookmarkCapture;
   restoreBookmark(bookmark: SelectionBookmark, options?: { readonly policy?: 'exact' | 'mapped'; readonly focus?: boolean }): BookmarkRestore;
   releaseBookmark(bookmark: SelectionBookmark): boolean;
+  /** One mounted chrome observer, called only after a synchronous owned table move. */
+  observeTableNavigation?(listener: (stamp: DeepReadonly<StampDto>, exit?: TableNavigationExit) => void): (() => void) | null;
 }
 export interface SelectionResourceCounts {
   readonly bookmarks: number;

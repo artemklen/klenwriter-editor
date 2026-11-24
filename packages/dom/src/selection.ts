@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import type { DeepReadonly, EventDto, InputSubmissionV2, PositionDto, ReadRequest, Response, SelectionDto, SessionContextV2, StampDto, StateDto, Submission } from '@klenwriter/editor-sdk';
-import type { BookmarkCapture, BookmarkRestore, DomRefusal, MountedMutation, MountedMutationV2, MountedSelectionController, SelectionBookmark, SelectionResourceCounts } from './types.js';
+import type { BookmarkCapture, BookmarkRestore, DomRefusal, MountedMutation, MountedMutationV2, MountedSelectionController, SelectionBookmark, SelectionResourceCounts, TableNavigationExit } from './types.js';
 import type { DeletionScroll, DomPoint, DomView } from './view.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
 import { fields } from './ownership.js';
 import { edgeGeometry, ownedCaretHit, visibleEdgeHit } from './selection-geometry.js';
+import { tableNavigation, type TableKey, type TableSlot } from './table-navigation.js';
 const same=(a:unknown,b:unknown)=>JSON.stringify(a)===JSON.stringify(b);
 const MAX_SERIAL=18446744073709551615n;
+const tableKeys = new Set<string>(['Tab','ArrowLeft','ArrowRight','ArrowUp','ArrowDown']);
 interface Configuration {
   element(): HTMLElement|null; view(): DomView|null; capture(): DeepReadonly<StampDto>|null;
   context(): DeepReadonly<SessionContextV2>|null; read(request:ReadRequest): Response;
@@ -22,6 +24,7 @@ interface SubmissionFrame { readonly own:boolean; readonly eligible:boolean; rea
 interface FocusEntry { readonly serial:bigint; readonly stamp:DeepReadonly<StampDto>; readonly selection:DeepReadonly<SelectionDto>|null; readonly context:DeepReadonly<SessionContextV2>; readonly publication:DomRefusal['diagnostic']['publication'] }
 interface PointerOwner { readonly id:number; x:number;y:number;anchor:DomPoint|null }
 type InputIntentObserver = (before:bigint,after:bigint,event:Event|null)=>void;
+type TableNavigationObserver = (stamp:DeepReadonly<StampDto>,exit?:TableNavigationExit)=>void;
 /** One per mount: identity, browser correspondence and intent, never document semantics. */
 export class SelectionOwner {
   readonly api:MountedSelectionController;
@@ -34,8 +37,16 @@ export class SelectionOwner {
   #inputIntentObserver:InputIntentObserver|null=null;
   #knownInvalidation:SubmissionFrame|null=null;
   #focusPermits=new WeakMap<ResultFocusPermit,FocusEntry>();
+  #tableEntry:TableSlot|undefined;
+  #tableObserver:TableNavigationObserver|null=null;
   constructor(readonly configuration:Configuration) {
-    this.api=Object.freeze({captureBookmark:()=>this.captureBookmark(),restoreBookmark:(bookmark:SelectionBookmark,options?:{readonly policy?:'exact'|'mapped';readonly focus?:boolean})=>this.restoreBookmark(bookmark,options),releaseBookmark:(bookmark:SelectionBookmark)=>this.releaseBookmark(bookmark)});
+    this.api=Object.freeze({captureBookmark:()=>this.captureBookmark(),restoreBookmark:(bookmark:SelectionBookmark,options?:{readonly policy?:'exact'|'mapped';readonly focus?:boolean})=>this.restoreBookmark(bookmark,options),releaseBookmark:(bookmark:SelectionBookmark)=>this.releaseBookmark(bookmark),
+      observeTableNavigation:(observer:TableNavigationObserver)=>this.#observeTableNavigation(observer)});
+  }
+  #observeTableNavigation(observer:TableNavigationObserver):(()=>void)|null {
+    if (this.#destroyed || this.#tableObserver || typeof observer!=='function') return null;
+    this.#tableObserver=observer;
+    return ()=>{if(this.#tableObserver===observer)this.#tableObserver=null;};
   }
   intent():bigint { return this.#serial; }
   intentAvailable():boolean { return !this.#exhausted && !this.#destroyed; }
@@ -54,6 +65,7 @@ export class SelectionOwner {
   #guard():DomRefusal|null { if(this.#destroyed)return this.#failure('dom.disposed');if(this.#exhausted)return this.#failure('dom.selection_limit');return this.configuration.guard() ?? (this.#restoreTickets || this.configuration.busy()?this.#failure('dom.busy'):null); }
   invalidate(clear=false,event:Event|null=null):void {
     this.#cancelDeletionScroll();
+    this.#tableEntry=undefined;
     for(const frame of this.#frames)if(frame!==this.#knownInvalidation)frame.foreign=true;
     const before=this.#serial;
     if(this.#serial===MAX_SERIAL)this.#exhausted=true;else this.#serial++;
@@ -325,6 +337,32 @@ export class SelectionOwner {
     if(freshInput)this.#retiredViewImport=false;
     return selection;
   }
+  #tableKey(event: KeyboardEvent): boolean {
+    if (!tableKeys.has(event.key) || !event.isTrusted || !event.cancelable || event.defaultPrevented || event.isComposing
+      || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey && event.key !== 'Tab'
+      || !this.ownsFocus() || this.#retiredViewImport || this.#rangeWriting || this.#guard()) return false;
+    const host=this.configuration.element(),view=this.configuration.view(),stamp=this.configuration.capture();
+    if (!host?.ownerDocument.hasFocus() || !view || !stamp || !same(stamp,view.geometryStamp())) return false;
+    const selection=view.readSelection();
+    if (!selection || isDomRefusal(selection) || !same(selection.anchor,selection.focus)) return false;
+    const route=tableNavigation(view,selection.focus,event.key as TableKey,event.shiftKey,this.#tableEntry);
+    if (!route || isDomRefusal(view.domPoint(route.point))) return false;
+    event.preventDefault();
+    this.invalidate(false,event);
+    this.cancel();
+    if (view!==this.configuration.view() || !same(stamp,this.configuration.capture()) || !this.ownsFocus() || this.#guard()) return true;
+    const next={anchor:route.point,focus:route.point};
+    const result=this.#publish(next);
+    if (isDomRefusal(result) || result.status!=='completed' || result.response.status!=='ok') return true;
+    const reply=result.response.value;
+    if (reply.kind!=='mutation' || view!==this.configuration.view() || !this.ownsFocus()
+      || !same(reply.state.stamp,this.configuration.capture()) || !same(reply.state.stamp,view.geometryStamp())
+      || !same(next,view.readSelection())) return true;
+    this.#tableEntry=route.slot;
+    try { this.#tableObserver?.(reply.state.stamp,route.exit); }
+    catch { this.configuration.report(this.#failure('dom.presentation_unsupported')); }
+    return true;
+  }
   attach():void {
     if(this.#attached || this.#destroyed)return;
     const host=this.configuration.element(),doc=host?.ownerDocument,win=doc?.defaultView;if(!host || !doc || !win)return;this.#attached=true;
@@ -356,6 +394,7 @@ export class SelectionOwner {
       const key=event as KeyboardEvent;
       this.#tabEntry=key.key==='Tab' && !key.altKey && !key.ctrlKey && !key.metaKey && !owned(key.target);
       if(!owned(key.target))return;
+      if(this.#tableKey(key))return;
       if((key.metaKey||key.ctrlKey) && !key.altKey && key.key.toLowerCase()==='a'){
         if(this.#guard())return;key.preventDefault();this.invalidate(false,key);this.cancel();const state=this.#state();if('status' in state)return;
         const root=this.configuration.read({kind:'node',stamp:state.stamp as StampDto,node:state.root});
@@ -454,5 +493,5 @@ export class SelectionOwner {
     this.#writePointerRange(p,focus);
     if(this.#pointer && geometry.scroller.scrollTop!==previous)this.#schedule();
   }
-  destroy():void {if(this.#destroyed)return;this.cancel();this.#heldMouse=null;this.#retiredViewImport=false;this.invalidate(true);this.#destroyed=true;for(const remove of this.#removals.splice(0))remove();}
+  destroy():void {if(this.#destroyed)return;this.cancel();this.#heldMouse=null;this.#retiredViewImport=false;this.#tableObserver=null;this.invalidate(true);this.#destroyed=true;for(const remove of this.#removals.splice(0))remove();}
 }

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-import type { CommandDto, DeepReadonly, NodeViewDto, SessionContextV2, StateDto } from '@klenwriter/editor-sdk';
-import type { HostFocus, InteractionMode, MountedEditor, MountedHostRequest } from '@klenwriter/editor-dom';
+import type { CommandDto, DeepReadonly, NodeViewDto, SessionContextV2, StampDto, StateDto } from '@klenwriter/editor-sdk';
+import type { HostFocus, InteractionMode, MountedEditor, MountedHostRequest, TableNavigationExit } from '@klenwriter/editor-dom';
 import type { EditorUi, UiAction, UiActionContext, UiBlockContext, UiCloseReason, UiCommandAction, UiDragProfile, UiFailure, UiHostAction, UiJson, UiLocale, UiMoveChoice, UiProfile, UiResult, UiText, UiUnavailable } from './types.js';
 import { command, element, fields, host, id, json, list, text, UiError, unavailable } from './data.js';
 import { label } from './strings.js';
@@ -140,7 +140,10 @@ class Ui implements EditorUi {
         const result: UiFailure = subscription.status === 'dom_refused' ? subscription : { status: 'sdk_failure', response: subscription };
         this.#show(result); return result;
       }
-      this.#subscription = subscription;
+      const detachTableChrome = configuration.editor.selection.observeTableNavigation?.(
+        (stamp, exit) => this.#tableNavigation(stamp, exit),
+      );
+      this.#subscription = () => { detachTableChrome?.(); subscription(); };
       const result = this.#update();
       return result ?? Object.freeze({ status: 'ready' as const });
     }, () => { const result = failure('ui.callback_failed'); this.#show(result); return result; });
@@ -353,6 +356,34 @@ class Ui implements EditorUi {
     if (response.status === 'dom_refused') return response;
     if (response.status !== 'ok' || response.value.kind !== 'node') return { status: 'sdk_failure', response };
     return response.value.node;
+  }
+  #tableNavigation(stamp: DeepReadonly<StampDto>, exit?: TableNavigationExit): void {
+    const configuration = this.#options;
+    if (!configuration || !this.#ownedFocus(configuration.editorElement)
+      || this.#tasks.size || !same(stamp, configuration.editor.capture())) return;
+    // An admitted table Tab supersedes the editor's ordinary Tab capture.
+    this.#releasePending('invalidated');
+    this.#hidePopup();
+    if (!exit) return;
+
+    const scope = exit.kind === 'add' ? configuration.slots.entry : configuration.slots.gutter;
+    const pending = this.#capture(scope, true);
+    if (!pending) return;
+    if (exit.kind === 'atom' && pending.context.block?.node.id !== exit.node) {
+      this.#releasePending('invalidated');
+      return;
+    }
+    if (this.#update() || this.#pending !== pending) return;
+    const control = exit.kind === 'add' ? this.#add
+      : [...this.#blockControls.values()].find(item => item.availability.available) ?? this.#move;
+    const button = control.button;
+    if (!control.availability.available || !button.isConnected || button.ownerDocument !== this.#document
+      || !scope.contains(button) || !this.#ownedFocus(configuration.editorElement)
+      || !same(stamp, configuration.editor.capture())) {
+      this.#releasePending('invalidated');
+      return;
+    }
+    button.focus({preventScroll: true});
   }
   #snapshot(preferSelection = false): UiActionContext | UiFailure {
     const editor = this.#options!.editor, context = editor.context(), stamp = editor.capture();

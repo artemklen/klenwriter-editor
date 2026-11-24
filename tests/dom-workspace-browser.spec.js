@@ -43,6 +43,77 @@ test.afterEach(async({page},testInfo)=>{
 });
 async function checkpoint(page,id,label) {const point=await call(page,'inspect',id);observations.get(page).checkpoints.push({label,...point});return point;}
 
+test.describe('OSR-207 table keyboard navigation', () => {
+  const retained = JSON.parse(readFileSync(new URL('../contracts/kwdj/v1/fixtures/positive.json', import.meta.url), 'utf8'))
+    .fixtures.find(row => row.id === 'DOC-011').cases.find(row => row.name === 'table_spans_alignment').kwdj;
+  const paragraph = text => ({type:'paragraph',content:[{type:'text',text}]});
+  const source = canonicalizeRaw(JSON.stringify({...retained, content:[paragraph('before'), ...retained.content, paragraph('after')]}));
+  const paths = {
+    before:'/0/0', AB:'/1/0/0/0/0', A:'/1/1/0/0/0',
+    B1:'/1/1/1/0/0', B2:'/1/2/0/0/0', after:'/2/0',
+  };
+  async function mounted(page) {
+    const {id,ready,diagnostic}=await call(page,'mount',{source});
+    expect(ready,JSON.stringify(diagnostic)).toBe('ready');
+    const before=await checkpoint(page,id,'original DOC-011 table');
+    return {id,before};
+  }
+  async function step(page,record,key,destination,offset) {
+    await page.keyboard.press(key);
+    const {id,before}=record;
+    const point=await checkpoint(page,id,key+' to '+destination);
+    caret(point,stateRow(before,paths[destination]).id,offset);
+    expect(point.actualSelection).toMatchObject({inside:true});
+    expect(await call(page,'nativeSelectionMatches',id,paths[destination],offset)).toBe(true);
+    await expect(page.locator('#'+id)).toBeFocused();
+    expect(point.canonical).toBe(source);
+    expect(point.state.stamp.revision).toBe(before.state.stamp.revision);
+    expect(point.state.dirty).toBe(before.state.dirty);
+    expect(docEvents(point)).toEqual([]);
+    history(point,0,0);
+  }
+  test('owned Tab follows authored cells and leaves the table on both edges', async ({page}) => {
+    const record=await mounted(page);
+    await call(page,'select',record.id,paths.AB,1);
+    for (const destination of ['A','B1','B2','after']) await step(page,record,'Tab',destination,0);
+    await call(page,'select',record.id,paths.B2,0);
+    for (const [destination,offset] of [['B1',2],['A',1],['AB',2],['before',6]]) {
+      await step(page,record,'Shift+Tab',destination,offset);
+    }
+  });
+  test('owned arrows use effective faces, retain an entry slot and exit the last row', async ({page}) => {
+    const record=await mounted(page);
+    await call(page,'select',record.id,paths.B2,0);
+    await step(page,record,'ArrowLeft','A',1);
+    await step(page,record,'ArrowRight','B2',0);
+    await call(page,'select',record.id,paths.B1,0);
+    await step(page,record,'ArrowUp','AB',2);
+    await step(page,record,'ArrowDown','B1',0);
+    await call(page,'select',record.id,paths.B1,2);
+    await step(page,record,'ArrowDown','B2',0);
+    await call(page,'select',record.id,paths.B2,2);
+    await step(page,record,'ArrowDown','after',0);
+    await call(page,'select',record.id,paths.A,1);
+    await step(page,record,'ArrowDown','after',0);
+  });
+  test('untrusted or host-canceled keys keep the original cell selection', async ({page}) => {
+    const record=await mounted(page);
+    await call(page,'select',record.id,paths.A,1);
+    const initial=await checkpoint(page,record.id,'A right face');
+    const editor=page.locator('#'+record.id);
+    const syntheticUnprevented=await editor.evaluate(element=>element.dispatchEvent(
+      new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true,cancelable:true}),
+    ));
+    expect(syntheticUnprevented).toBe(true);
+    expect((await checkpoint(page,record.id,'untrusted ArrowRight')).state).toEqual(initial.state);
+    await editor.evaluate(element=>element.addEventListener('keydown',event=>event.preventDefault(),{once:true}));
+    await page.keyboard.press('ArrowRight');
+    expect((await checkpoint(page,record.id,'host-canceled ArrowRight')).state).toEqual(initial.state);
+    expect(await call(page,'nativeSelectionMatches',record.id,paths.A,1)).toBe(true);
+    await step(page,record,'ArrowRight','B1',0);
+  });
+});
+
 async function recordHistoryKeys(page,id) {
   await page.locator(`#${id}`).evaluate(element=>{
     element.historyKeyTrace=[];
@@ -1183,6 +1254,84 @@ test('OSR-193 nested bound labels return to the field that entered their shared 
     record.checkpoints.push({ label: 'both nested fields keep independent keyboard routes', ...after });
   } finally {
     await osr193Cleanup(page);
+  }
+});
+
+test.describe('OSR-207 tables in bound label containers', () => {
+  const retained = JSON.parse(readFileSync(new URL('../contracts/kwdj/v1/fixtures/positive.json', import.meta.url), 'utf8'))
+    .fixtures.find(row => row.id === 'DOC-011').cases.find(row => row.name === 'table_spans_alignment').kwdj;
+  const paths = { table:'/0/0', AB:'/0/0/0/0/0/0', A:'/0/0/1/0/0/0', B1:'/0/0/1/1/0/0', B2:'/0/0/2/0/0/0', next:'/1/0' };
+  const owned = ['/0', ...Object.values(paths)];
+
+  for (const [type, key, path, offset] of [
+    ['spoiler', 'Tab', paths.B2, 0],
+    ['disclosure', 'Shift+Tab', paths.A, 1],
+  ]) {
+    test(`${type} yields its trusted ${key} to the interior cell route`, async ({ page }) => {
+      const label = `${type} label`;
+      const source = canonicalizeRaw(JSON.stringify({...retained,content:[
+        {type,attrs:{label},content:retained.content},
+        {type:'paragraph',content:[{type:'text',text:'after table container'}]},
+      ]}));
+      await osr193Mount(page,paths.B1,source,[{type,index:0,control:label}]);
+      try {
+        await osr193At(page,paths.B1,0);
+        const original = await osr193Inspect(page,owned);
+        await page.keyboard.press(key);
+        await osr193At(page,path,offset);
+        await expect(page.getByRole('textbox',{name:label,exact:true})).not.toBeFocused();
+
+        const beforeCancel = await osr193Inspect(page,owned);
+        await page.locator('#osr193-editor').evaluate(root => {
+          function cancelTab(event) {
+            if (event.key !== 'Tab') return;
+            event.preventDefault();
+            root.removeEventListener('keydown',cancelTab);
+          }
+          root.addEventListener('keydown',cancelTab);
+        });
+        await page.keyboard.press(type === 'spoiler' ? 'Tab' : 'Shift+Tab');
+        await osr193At(page,path,offset);
+        expect((await osr193Inspect(page,owned)).state).toEqual(beforeCancel.state);
+
+        if (type === 'spoiler') {
+          await page.keyboard.press('Tab');
+          await expect.poll(() => page.evaluate(() => window.osr193Mounted.atChildGap('/0',1))).toBe(true);
+          await page.keyboard.press('Tab');
+          await osr193At(page,paths.next,0);
+          await page.keyboard.press('Shift+Tab');
+          await osr193At(page,paths.AB,0);
+        } else {
+          await page.keyboard.press('Shift+Tab');
+          await osr193At(page,paths.AB,2);
+          await page.keyboard.press('Shift+Tab');
+          await expect.poll(() => page.evaluate(() => window.osr193Mounted.atChildGap('/0',0))).toBe(true);
+          await page.keyboard.press('Shift+Tab');
+          const field = page.getByRole('textbox',{name:label,exact:true});
+          await expect(field).toBeFocused();
+          await page.keyboard.press('Tab');
+          await osr193At(page,paths.AB,0);
+          // The table has no left-hand neighbor here, so the label can handle its own boundary.
+          await page.keyboard.press('ArrowLeft');
+          await expect(field).toBeFocused();
+          await page.keyboard.press('ArrowRight');
+          await osr193At(page,paths.AB,0);
+        }
+
+        await page.evaluate(() => window.osr193Mounted.disposeLabels());
+        await page.keyboard.press('Tab');
+        await osr193At(page,paths.A,0);
+        const after = await osr193Inspect(page,owned);
+        expect(after.canonical).toBe(source);
+        expect(after.stableIds).toEqual(original.stableIds);
+        expect(after.state.stamp.revision).toBe(original.state.stamp.revision);
+        expect(after.state.history).toEqual(original.state.history);
+        expect(after.state.dirty).toBe(original.state.dirty);
+        expect(after.events).toEqual([]);
+      } finally {
+        await osr193Cleanup(page);
+      }
+    });
   }
 });
 
