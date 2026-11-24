@@ -52,7 +52,8 @@
       "license": "MIT OR Apache-2.0",
       "thirdPartyHeaders": [],
       "sourcePayload": "Rust source; no user documents or production captures",
-      "adaptations": "Namespace/read-only model seam and generic core helpers; domain semantic rules preserved and checked differentially"
+      "adaptations": "Namespace/read-only model seam and generic core helpers; domain semantic rules preserved and checked differentially",
+      "additionalDestination": "crates/kwdj/src/table_geometry.rs (effective table grid validation, source lines 515–623)"
     },
     {
       "source": "crates/klenwriter_domain/src/kwdj/mod.rs",

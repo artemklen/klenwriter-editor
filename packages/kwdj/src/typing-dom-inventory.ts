@@ -20,10 +20,26 @@ export const kwdjTypingDomInventory = {
     },
     {
       "descriptor": {
+        "id": "org.klenwriter.kwdj/command/delete-column",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/delete-column",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
         "id": "org.klenwriter.kwdj/command/delete-forward",
         "kind": "compiled"
       },
       "id": "org.klenwriter.kwdj/command/delete-forward",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/delete-row",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/delete-row",
       "owner": "org.klenwriter.kwdj/base"
     },
     {
@@ -68,10 +84,42 @@ export const kwdjTypingDomInventory = {
     },
     {
       "descriptor": {
+        "id": "org.klenwriter.kwdj/command/insert-column-left",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/insert-column-left",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/insert-column-right",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/insert-column-right",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
         "id": "org.klenwriter.kwdj/command/insert-fragment",
         "kind": "compiled"
       },
       "id": "org.klenwriter.kwdj/command/insert-fragment",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/insert-row-above",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/insert-row-above",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/insert-row-below",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/insert-row-below",
       "owner": "org.klenwriter.kwdj/base"
     },
     {
@@ -92,10 +140,26 @@ export const kwdjTypingDomInventory = {
     },
     {
       "descriptor": {
+        "id": "org.klenwriter.kwdj/command/merge-cells",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/merge-cells",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
         "id": "org.klenwriter.kwdj/command/move",
         "kind": "compiled"
       },
       "id": "org.klenwriter.kwdj/command/move",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/move-cell",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/move-cell",
       "owner": "org.klenwriter.kwdj/base"
     },
     {
@@ -140,6 +204,14 @@ export const kwdjTypingDomInventory = {
     },
     {
       "descriptor": {
+        "id": "org.klenwriter.kwdj/command/set-table-cell-align",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/set-table-cell-align",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
         "id": "org.klenwriter.kwdj/command/set-warning-kind",
         "kind": "compiled"
       },
@@ -152,6 +224,14 @@ export const kwdjTypingDomInventory = {
         "kind": "compiled"
       },
       "id": "org.klenwriter.kwdj/command/shift-enter",
+      "owner": "org.klenwriter.kwdj/base"
+    },
+    {
+      "descriptor": {
+        "id": "org.klenwriter.kwdj/command/split-cell",
+        "kind": "compiled"
+      },
+      "id": "org.klenwriter.kwdj/command/split-cell",
       "owner": "org.klenwriter.kwdj/base"
     },
     {
@@ -257,23 +337,33 @@ export const kwdjTypingDomInventory = {
     "commands": [
       "org.klenwriter.kwdj/command/accept-slash",
       "org.klenwriter.kwdj/command/delete-backward",
+      "org.klenwriter.kwdj/command/delete-column",
       "org.klenwriter.kwdj/command/delete-forward",
+      "org.klenwriter.kwdj/command/delete-row",
       "org.klenwriter.kwdj/command/delete-selection",
       "org.klenwriter.kwdj/command/dismiss-slash",
       "org.klenwriter.kwdj/command/duplicate",
       "org.klenwriter.kwdj/command/enter",
       "org.klenwriter.kwdj/command/insert-block",
+      "org.klenwriter.kwdj/command/insert-column-left",
+      "org.klenwriter.kwdj/command/insert-column-right",
       "org.klenwriter.kwdj/command/insert-fragment",
+      "org.klenwriter.kwdj/command/insert-row-above",
+      "org.klenwriter.kwdj/command/insert-row-below",
       "org.klenwriter.kwdj/command/insert-text",
       "org.klenwriter.kwdj/command/insert-typed-text",
+      "org.klenwriter.kwdj/command/merge-cells",
       "org.klenwriter.kwdj/command/move",
+      "org.klenwriter.kwdj/command/move-cell",
       "org.klenwriter.kwdj/command/remove",
       "org.klenwriter.kwdj/command/restore-typed-text",
       "org.klenwriter.kwdj/command/set-container-label",
       "org.klenwriter.kwdj/command/set-link",
       "org.klenwriter.kwdj/command/set-literary-kind",
+      "org.klenwriter.kwdj/command/set-table-cell-align",
       "org.klenwriter.kwdj/command/set-warning-kind",
       "org.klenwriter.kwdj/command/shift-enter",
+      "org.klenwriter.kwdj/command/split-cell",
       "org.klenwriter.kwdj/command/toggle-list",
       "org.klenwriter.kwdj/command/toggle-mark",
       "org.klenwriter.kwdj/command/toggle-quote",
@@ -1555,5 +1645,5 @@ export const kwdjTypingDomInventory = {
     "profile_version": "1.0.0",
     "wire_version": 1
   },
-  "registryDigest": "2d6128e040e820938efdf8398f9e9703ca9aef8d9abd291dd1d977253b7b0121"
+  "registryDigest": "9fcf72c4ca1dd09c8d45804eb96312f60a5d4b1821aef331318deeb8afbbde9b"
 } as const;

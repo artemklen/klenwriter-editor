@@ -8,6 +8,7 @@ const copy = {
   readonly: ['Только чтение', 'Read-only'], disabled: ['Редактор временно недоступен', 'Editor temporarily unavailable'],
   composing: ['Завершите ввод, чтобы применить действие.', 'Finish typing to use this action.'],
   unavailable: ['Недоступно в этом документе.', 'Unavailable in this document.'],
+  tableCellOperationUnavailable: ['Объединение, разделение и перемещение ячеек таблицы недоступны.', 'Merging, splitting, and moving table cells are unavailable.'],
   stale: ['Выделение изменилось. Выберите текст снова.', 'The selection changed. Select the text again.'],
   staleDialog: ['Документ изменился. Откройте окно заново.', 'The document changed. Open the dialog again.'],
   callback: ['Не удалось применить действие.', 'Could not apply the action.'],

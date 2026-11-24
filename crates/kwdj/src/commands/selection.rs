@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 //! Native selected-range order, bounded text projection and context-preserving erase.
 use super::inline;
-use crate::{KwdjError, KwdjErrorCode};
+use crate::{
+    KwdjError, KwdjErrorCode,
+    table_geometry::{GeometryError, TableSelection, rectangle_cells, table_selection},
+};
 use editor_core::{
     candidate::CandidateRead,
     commands::{CommandPresentation, CommandState, LocalRef, PlanBuilder, SelectionIntent},
-    document::{Attribute, Attributes, Document, Node, Primitive},
+    document::{Attribute, Attributes, Document, Mark, Node, Primitive},
     positions::{Affinity, Edge, Position, Selection, Utf16Offset, utf16_to_utf8},
     transaction::{Operation, WorkMeter},
 };
@@ -70,6 +73,34 @@ fn basic(s: &str) -> bool {
             | "scene_break"
     )
 }
+fn plain_text_kind(type_id: &str) -> bool {
+    basic(type_id) || matches!(local(type_id), "verse" | "verse_line" | "stanza_break")
+}
+
+fn guard_marks(marks: &[Mark], work: &mut WorkMeter) -> Result<(), SelectionTextError> {
+    unit(work, marks.len())?;
+    bytes(work, marks.iter().map(|mark| mark.type_id.len()).sum())?;
+    if marks.iter().any(|mark| {
+        !matches!(
+            mark.type_id.as_str(),
+            "org.klenwriter.kwdj/strong"
+                | "org.klenwriter.kwdj/emphasis"
+                | "org.klenwriter.kwdj/strike"
+                | "org.klenwriter.kwdj/code"
+                | "org.klenwriter.kwdj/subscript"
+                | "org.klenwriter.kwdj/superscript"
+                | "org.klenwriter.kwdj/text_color"
+                | "org.klenwriter.kwdj/highlight"
+                | "org.klenwriter.kwdj/link"
+        )
+    }) {
+        return Err(SelectionTextError::Limit(
+            "selection_text.unsupported_context",
+        ));
+    }
+    Ok(())
+}
+
 impl<I: Copy + Eq + Ord> Range<I> {
     fn point(
         &mut self,
@@ -209,12 +240,8 @@ impl<I: Copy + Eq + Ord> Range<I> {
         };
         Ok(())
     }
-    fn build<V: CandidateRead<Id = I>>(
-        v: &V,
-        selection: Selection<I>,
-        w: &mut WorkMeter,
-    ) -> Result<Self, SelectionTextError> {
-        let mut r = Self {
+    fn empty(selection: Selection<I>) -> Self {
+        Self {
             rows: Vec::new(),
             index: BTreeMap::new(),
             points: [None, None],
@@ -223,7 +250,14 @@ impl<I: Copy + Eq + Ord> Range<I> {
             hi: 0,
             start: selection.anchor,
             end: selection.focus,
-        };
+        }
+    }
+    fn build<V: CandidateRead<Id = I>>(
+        v: &V,
+        selection: Selection<I>,
+        w: &mut WorkMeter,
+    ) -> Result<Self, SelectionTextError> {
+        let mut r = Self::empty(selection);
         r.children(v, v.root(), v.roots(), selection, 1, w)?;
         let a = r.points[0].ok_or(SelectionTextError::Invalid)?;
         let b = r.points[1].ok_or(SelectionTextError::Invalid)?;
@@ -272,41 +306,28 @@ impl<I: Copy + Eq + Ord> Range<I> {
             let inside_content = r.content_start <= self.lo && self.hi <= r.content_end;
             let name = local(n.type_id);
             let media_edit = editing && name == "media_image" && (self.whole(r) || inside_content);
+            let table = matches!(name, "table" | "table_row" | "table_header" | "table_cell");
+            let cell_read = matches!(purpose, SelectionPurpose::Read) && inside_content && table;
             let profile_body = profile_containers
                 && inside_content
-                && matches!(
-                    name,
-                    "literary_block" | "warning" | "spoiler" | "disclosure"
-                );
-            let verse_read = matches!(purpose, SelectionPurpose::Read)
-                && matches!(name, "verse" | "verse_line" | "stanza_break");
-            needs_text_block |= profile_body;
+                && (table
+                    || matches!(
+                        name,
+                        "literary_block" | "warning" | "spoiler" | "disclosure"
+                    ));
+            let supported_kind = if editing {
+                basic(n.type_id)
+            } else {
+                plain_text_kind(n.type_id)
+            };
+            needs_text_block |= profile_body || cell_read;
             inside_text_block |= inside_content && n.primitive == Primitive::TextBlock;
-            if !basic(n.type_id) && !media_edit && !profile_body && !verse_read {
+            if !supported_kind && !media_edit && !profile_body && !cell_read {
                 return Err(SelectionTextError::Limit(
                     "selection_text.unsupported_context",
                 ));
             }
-            unit(w, n.marks.len())?;
-            bytes(w, n.marks.iter().map(|m| m.type_id.len()).sum())?;
-            if n.marks.iter().any(|m| {
-                !matches!(
-                    m.type_id.as_str(),
-                    "org.klenwriter.kwdj/strong"
-                        | "org.klenwriter.kwdj/emphasis"
-                        | "org.klenwriter.kwdj/strike"
-                        | "org.klenwriter.kwdj/code"
-                        | "org.klenwriter.kwdj/subscript"
-                        | "org.klenwriter.kwdj/superscript"
-                        | "org.klenwriter.kwdj/text_color"
-                        | "org.klenwriter.kwdj/highlight"
-                        | "org.klenwriter.kwdj/link"
-                )
-            }) {
-                return Err(SelectionTextError::Limit(
-                    "selection_text.unsupported_context",
-                ));
-            }
+            guard_marks(n.marks, w)?;
             if editing && name == "code_block" {
                 code = Some(r.id);
             }
@@ -470,6 +491,63 @@ fn project_children<V: CandidateRead>(
     }
     Ok(out)
 }
+
+fn selected_table_text<V: CandidateRead>(
+    v: &V,
+    marker: TableSelection<V::Id>,
+    selection: Selection<V::Id>,
+    max: usize,
+    w: &mut WorkMeter,
+) -> Result<SelectionText<V::Id>, SelectionTextError> {
+    let rows = rectangle_cells(v, marker, w).map_err(|error| match error {
+        GeometryError::Work(limit) => SelectionTextError::Work(limit),
+        _ => SelectionTextError::Limit("selection_text.unsupported_context"),
+    })?;
+    // Index only the selected cell subtrees, so the general projector can retain
+    // authored inline text, hard breaks and selected atom IDs.
+    let mut range = Range::empty(selection);
+    for row in &rows {
+        for id in row {
+            let cell = v.node(*id).ok_or(SelectionTextError::Invalid)?;
+            let start = range.rows.len();
+            range.node(v, *id, cell.parent, selection, 1, w)?;
+            // The outer cell provides the grid boundary. Its contents follow the
+            // same plain-text rules as an ordinary selection.
+            for row in &range.rows[start..] {
+                unit(w, 1)?;
+                let node = v.node(row.id).ok_or(SelectionTextError::Invalid)?;
+                if row.id != *id && !plain_text_kind(node.type_id) {
+                    return Err(SelectionTextError::Limit(
+                        "selection_text.unsupported_context",
+                    ));
+                }
+                guard_marks(node.marks, w)?;
+            }
+        }
+    }
+    range.hi = range.cursor;
+    let mut text = String::new();
+    let mut atoms = Vec::new();
+    for (index, row) in rows.iter().enumerate() {
+        if index > 0 {
+            append(&mut text, "\n", max, w)?;
+        }
+        for (index, id) in row.iter().enumerate() {
+            if index > 0 {
+                append(&mut text, "\t", max, w)?;
+            }
+            let cell = project_node(v, &range, *id, max, &mut atoms, w)?
+                .ok_or(SelectionTextError::Invalid)?;
+            append(&mut text, &cell, max, w)?;
+        }
+    }
+    Ok(SelectionText {
+        text,
+        empty: false,
+        selected_atoms: atoms,
+    })
+}
+
 pub fn selected_text<V: CandidateRead>(
     v: &V,
     selection: Selection<V::Id>,
@@ -478,6 +556,9 @@ pub fn selected_text<V: CandidateRead>(
 ) -> Result<SelectionText<V::Id>, SelectionTextError> {
     if max_bytes > 1_048_576 {
         return Err(SelectionTextError::Limit("selection_text.output_limit"));
+    }
+    if let Some(marker) = table_selection(v, Some(selection)) {
+        return selected_table_text(v, marker, selection, max_bytes as usize, w);
     }
     let r = Range::build(v, selection, w)?;
     if r.lo == r.hi {
@@ -593,6 +674,12 @@ pub(super) fn prepare<V: CandidateRead>(
         let _ = plan
             .charged_copy_attrs(rr.attributes)
             .map_err(KwdjError::operational)?;
+        if profile_containers
+            && a.block == b.block
+            && super::delete::in_table_cell(v, l.parent, plan)?
+        {
+            return super::delete::erase_cell_inline_range(v, selection, *a, plan);
+        }
         if a.block == b.block
             || (l.parent == rr.parent && l.type_id == rr.type_id && l.attributes == rr.attributes)
         {

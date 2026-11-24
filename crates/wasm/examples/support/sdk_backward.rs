@@ -13,21 +13,31 @@ const C1: &str =
 const CATALOG_V2: &[&str] = &[
     "org.klenwriter.kwdj/command/accept-slash",
     "org.klenwriter.kwdj/command/delete-backward",
+    "org.klenwriter.kwdj/command/delete-column",
     "org.klenwriter.kwdj/command/delete-forward",
+    "org.klenwriter.kwdj/command/delete-row",
     "org.klenwriter.kwdj/command/delete-selection",
     "org.klenwriter.kwdj/command/dismiss-slash",
     "org.klenwriter.kwdj/command/duplicate",
     "org.klenwriter.kwdj/command/enter",
     "org.klenwriter.kwdj/command/insert-block",
+    "org.klenwriter.kwdj/command/insert-column-left",
+    "org.klenwriter.kwdj/command/insert-column-right",
     "org.klenwriter.kwdj/command/insert-fragment",
+    "org.klenwriter.kwdj/command/insert-row-above",
+    "org.klenwriter.kwdj/command/insert-row-below",
     "org.klenwriter.kwdj/command/insert-text",
+    "org.klenwriter.kwdj/command/merge-cells",
     "org.klenwriter.kwdj/command/move",
+    "org.klenwriter.kwdj/command/move-cell",
     "org.klenwriter.kwdj/command/remove",
     "org.klenwriter.kwdj/command/set-container-label",
     "org.klenwriter.kwdj/command/set-link",
     "org.klenwriter.kwdj/command/set-literary-kind",
+    "org.klenwriter.kwdj/command/set-table-cell-align",
     "org.klenwriter.kwdj/command/set-warning-kind",
     "org.klenwriter.kwdj/command/shift-enter",
+    "org.klenwriter.kwdj/command/split-cell",
     "org.klenwriter.kwdj/command/toggle-list",
     "org.klenwriter.kwdj/command/toggle-mark",
     "org.klenwriter.kwdj/command/toggle-quote",
@@ -192,17 +202,23 @@ fn split_join(v2: bool) {
     s.drain();
     let catalog = s.call(json!({"kind":"catalog"}));
     if v2 {
-        assert_eq!(CATALOG_V2.len(), 28);
+        assert_eq!(CATALOG_V2.len(), 38);
         assert_eq!(catalog["commands"], json!(CATALOG_V2));
     } else {
         assert_eq!(catalog["commands"].as_array().unwrap().len(), 17);
+        let v2_only = [
+            "org.klenwriter.kwdj/command/insert-fragment",
+            "org.klenwriter.kwdj/command/delete-forward",
+            "org.klenwriter.kwdj/command/merge-cells",
+            "org.klenwriter.kwdj/command/split-cell",
+            "org.klenwriter.kwdj/command/move-cell",
+        ];
         assert!(
             !catalog["commands"]
                 .as_array()
                 .unwrap()
                 .iter()
-                .any(|id| id == "org.klenwriter.kwdj/command/insert-fragment"
-                    || id == "org.klenwriter.kwdj/command/delete-forward")
+                .any(|id| id.as_str().is_some_and(|id| v2_only.contains(&id)))
         );
     }
     assert!(

@@ -33,14 +33,27 @@ fn open_bytes_with_access(
     media: Value,
     access: &str,
 ) -> DistributionSession {
-    let options = json!({"abi":"editor-sdk/2","build_id":BUILD,"profile":editor_kwdj_sdk::manifest().profiles[0],"admission":"validate","access":access,"registry_json":serde_json::to_string(&editor_kwdj::registry::registry_descriptor()).unwrap(),"profile_options_json":json!({"identities":{"media":media,"references":[]},"limits":limits}).to_string()});
-    let distribution = Distribution::new(BUILD, vec![Box::new(KwdjFactory)]).unwrap();
-    let session = distribution.open(source, &options.to_string());
+    let session = open_bytes_with_facts(
+        source,
+        limits,
+        json!({"media":media,"references":[]}),
+        access,
+    );
     assert!(matches!(
         session.initialization(),
         editor_protocol::SdkResponse::Ok { .. }
     ));
     session
+}
+fn open_bytes_with_facts(
+    source: &[u8],
+    limits: Value,
+    identities: Value,
+    access: &str,
+) -> DistributionSession {
+    let options = json!({"abi":"editor-sdk/2","build_id":BUILD,"profile":editor_kwdj_sdk::manifest().profiles[0],"admission":"validate","access":access,"registry_json":serde_json::to_string(&editor_kwdj::registry::registry_descriptor()).unwrap(),"profile_options_json":json!({"identities":identities,"limits":limits}).to_string()});
+    let distribution = Distribution::new(BUILD, vec![Box::new(KwdjFactory)]).unwrap();
+    distribution.open(source, &options.to_string())
 }
 fn call(s: &mut DistributionSession, r: Value) -> Value {
     serde_json::from_str(&s.call_json(&r.to_string())).unwrap()
@@ -117,6 +130,337 @@ fn history(s: &mut DistributionSession, direction: &str) {
         json!({"kind":"history","stamp":stamp,"direction":direction}),
     );
     assert_eq!(r["status"], "ok", "{r}");
+}
+
+#[test]
+fn table_rectangle_plain_text_preserves_the_mark_boundary() {
+    let corpus: Value = serde_json::from_str(include_str!(
+        "../../../contracts/kwdj/v1/fixtures/positive.json"
+    ))
+    .unwrap();
+    let reference = corpus["fixtures"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|fixture| fixture["id"] == "DOC-006")
+        .unwrap()["cases"][0]["kwdj"]["content"][0]
+        .clone();
+    let id = reference["content"][0]["marks"][0]["attrs"]["reference_entity_id"]
+        .as_str()
+        .unwrap();
+    let strong = json!({"type":"paragraph","content":[{"type":"text","text":"Bold","marks":[{"type":"strong"}]}]});
+    for (paragraph, supported) in [(strong, true), (reference.clone(), false)] {
+        let table = json!({"type":"table","content":[{"type":"table_row","content":[
+            {"type":"table_cell","content":[paragraph]},
+            {"type":"table_cell","content":[p("other")]}
+        ]}]});
+        let source = doc("prose", json!([table]));
+        let canonical = source.to_string();
+        let facts = json!({"media":[],"references":[{"id":id,"status":"exists"}]});
+        let mut session =
+            open_bytes_with_facts(canonical.as_bytes(), Value::Null, facts, "editable");
+        let leaf = role(&mut session, &[0, 0, 0, 0, 0]);
+        let text_len = paragraph["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .encode_utf16()
+            .count();
+        let first = role(&mut session, &[0, 0, 0]);
+        let last = role(&mut session, &[0, 0, 1]);
+        let inline = (text(leaf.clone(), 0), text(leaf, text_len), "Bold");
+        let rectangle = (
+            json!({"kind":"edge","node":first,"side":"before"}),
+            json!({"kind":"edge","node":last,"side":"after"}),
+            "Bold\tother",
+        );
+        for (anchor, focus, expected) in [inline, rectangle] {
+            select(&mut session, anchor, focus);
+            let before = state(&mut session);
+            let result = call(
+                &mut session,
+                json!({"kind":"selection_text","stamp":before["stamp"],"max_bytes":8192}),
+            );
+            if supported {
+                assert_eq!(result["status"], "ok", "{result}");
+                assert_eq!(result["value"]["text"], expected);
+            } else {
+                assert_eq!(result["status"], "refused", "{result}");
+                assert_eq!(
+                    result["diagnostic"]["code"],
+                    "selection_text.unsupported_context"
+                );
+                assert_eq!(result["diagnostic"]["stamp"], before["stamp"]);
+                assert_eq!(result["diagnostic"]["may_have_committed"], false);
+            }
+            assert_eq!(state(&mut session), before);
+            assert_eq!(canonical_snapshot(&mut session), canonical);
+        }
+        let before = state(&mut session);
+        let result = call(
+            &mut session,
+            json!({"kind":"selection_fragment","stamp":before["stamp"],"max_bytes":8192}),
+        );
+        assert_eq!(result["status"], "ok", "{result}");
+        let rich =
+            serde_json::from_str::<Value>(result["value"]["fragment_json"].as_str().unwrap())
+                .unwrap();
+        assert_eq!(
+            rich,
+            fragment("prose", "blocks", source["content"].clone(), false, false)
+        );
+        assert_eq!(state(&mut session), before);
+        assert_eq!(canonical_snapshot(&mut session), canonical);
+    }
+
+    let warning = &corpus["fixtures"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|fixture| fixture["id"] == "DOC-016")
+        .unwrap()["cases"][0]["kwdj"]["content"][0];
+    assert_eq!(warning["type"], "warning");
+    let source = doc(
+        "prose",
+        json!([{"type":"table","content":[{"type":"table_row","content":[
+            {"type":"table_cell","content":[warning]}, {"type":"table_cell","content":[p("other")]}
+        ]}]}]),
+    )
+    .to_string();
+    let mut session = open_bytes_with_facts(
+        source.as_bytes(),
+        Value::Null,
+        json!({"media":[],"references":[]}),
+        "editable",
+    );
+    let ready = serde_json::to_value(session.initialization()).unwrap();
+    assert_eq!(ready["status"], "refused", "{ready}");
+    assert_eq!(ready["diagnostic"]["code"], "registry.grammar_mismatch");
+    assert_eq!(
+        ready["diagnostic"]["path"],
+        "/children/0/children/0/children/0/children/0/type"
+    );
+    assert!(session.context().is_none());
+    assert_eq!(
+        call(&mut session, json!({"kind":"state"}))["diagnostic"]["code"],
+        "sdk.disposed",
+    );
+}
+
+#[test]
+fn osr210_table_clipboard_matches_the_source_target_matrix() {
+    let fixture: Value = serde_json::from_str(include_str!(
+        "../../../tests/fixtures/osr-210-table-clipboard.json"
+    ))
+    .unwrap();
+    let corpus: Value = serde_json::from_str(include_str!(
+        "../../../contracts/kwdj/v1/fixtures/positive.json"
+    ))
+    .unwrap();
+    let indices = |v: &Value| -> Vec<usize> {
+        v.as_array()
+            .unwrap()
+            .iter()
+            .map(|n| n.as_u64().unwrap() as usize)
+            .collect()
+    };
+    let leaf_pointer = |path: &Value| {
+        indices(path)
+            .into_iter()
+            .map(|index| format!("/content/{index}"))
+            .collect::<String>()
+    };
+    let document = |location: &Value| {
+        let setup = &fixture["documents"][location["document"].as_str().unwrap()];
+        let mut value = corpus["fixtures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .flat_map(|f| f["cases"].as_array().unwrap())
+            .find(|c| c["name"] == setup["retained"])
+            .unwrap()["kwdj"]
+            .clone();
+        if let Some(replacement) = setup["leaf"].as_array() {
+            value
+                .pointer_mut(&leaf_pointer(&json!(replacement)))
+                .unwrap()["text"] = setup["text"].clone();
+        }
+        if let Some(header) = setup["additional_header"].as_str() {
+            let cells = value["content"][0]["content"][0]["content"]
+                .as_array_mut()
+                .unwrap();
+            cells[0]["attrs"].as_object_mut().unwrap().remove("colspan");
+            cells.push(json!({"type":"table_header","content":[p(header)]}));
+        }
+        assert_eq!(value["profile"], fixture["profile"]);
+        value
+    };
+    let choose = |session: &mut DistributionSession, location: &Value| {
+        let point = |session: &mut DistributionSession, endpoint: &Value| {
+            let id = role(session, &indices(&endpoint["path"]));
+            if let Some(side) = endpoint["side"].as_str() {
+                json!({"kind":"edge","node":id,"side":side})
+            } else if let Some(index) = endpoint["index"].as_u64() {
+                gap(id, index as usize)
+            } else {
+                text(id, endpoint["offset"].as_u64().unwrap() as usize)
+            }
+        };
+        let anchor = point(session, &location["anchor"]);
+        let focus = point(session, &location["focus"]);
+        select(session, anchor, focus);
+    };
+    for row in fixture["cases"].as_array().unwrap() {
+        let name = row["id"].as_str().unwrap();
+        let source = document(&row["source"]);
+        let mut origin = open(&source);
+        choose(&mut origin, &row["source"]);
+        let before_copy = state(&mut origin);
+        let plain = call(
+            &mut origin,
+            json!({"kind":"selection_text","stamp":before_copy["stamp"],"max_bytes":8192}),
+        );
+        let rich = call(
+            &mut origin,
+            json!({"kind":"selection_fragment","stamp":before_copy["stamp"],"max_bytes":8192}),
+        );
+        if let Some(refusal) = row.get("source_refusal") {
+            assert_eq!(plain["status"], "refused", "{name}: {plain}");
+            assert_eq!(plain["diagnostic"]["code"], refusal["plain"], "{name}");
+            assert_eq!(rich["status"], "refused", "{name}: {rich}");
+            assert_eq!(rich["diagnostic"]["code"], refusal["fragment"], "{name}");
+            assert_eq!(rich["diagnostic"]["path"], refusal["path"], "{name}");
+            assert_eq!(state(&mut origin), before_copy, "{name}");
+            assert_eq!(
+                canonical_snapshot(&mut origin),
+                source.to_string(),
+                "{name}"
+            );
+            continue;
+        }
+        assert_eq!(plain["status"], "ok", "{name}: {plain}");
+        assert_eq!(plain["value"]["text"], row["plain"], "{name}");
+        assert_eq!(plain["value"]["empty"], false, "{name}");
+        assert_eq!(rich["status"], "ok", "{name}: {rich}");
+        assert_eq!(rich["value"]["empty"], false, "{name}");
+        let captured: Value =
+            serde_json::from_str(rich["value"]["fragment_json"].as_str().unwrap()).unwrap();
+        let (kind, content) = if let Some(rows) = row["rows"].as_array() {
+            let authored = &source["content"][0]["content"];
+            let rows = rows
+                .iter()
+                .map(|r| {
+                    let original = &authored[r["row"].as_u64().unwrap() as usize]["content"];
+                    let selected: Vec<_> = indices(&r["cells"])
+                        .into_iter()
+                        .map(|index| &original[index])
+                        .collect();
+                    json!({"type":"table_row","content":selected})
+                })
+                .collect::<Vec<_>>();
+            ("blocks", json!([{"type":"table","content":rows}]))
+        } else {
+            ("inline", json!([{"type":"text","text":row["plain"]}]))
+        };
+        assert_eq!(
+            captured,
+            fragment("prose", kind, content.clone(), false, false),
+            "{name}"
+        );
+        let limited = call(
+            &mut origin,
+            json!({"kind":"selection_text","stamp":before_copy["stamp"],"max_bytes":1}),
+        );
+        assert_eq!(
+            limited["diagnostic"]["code"], "selection_text.output_limit",
+            "{name}"
+        );
+        assert_eq!(state(&mut origin), before_copy, "{name}");
+        assert_eq!(
+            canonical_snapshot(&mut origin),
+            source.to_string(),
+            "{name}"
+        );
+
+        let target = document(&row["target"]);
+        let mut destination = if kind == "inline" {
+            origin
+        } else {
+            open(&target)
+        };
+        choose(&mut destination, &row["target"]);
+        let before = state(&mut destination);
+        let context = call(
+            &mut destination,
+            json!({"kind":"clipboard_context","stamp":before["stamp"]}),
+        );
+        let result = paste(&mut destination, &captured);
+        if let Some(code) = row["diagnostic"].as_str() {
+            for refusal in [&context, &result] {
+                assert_eq!(refusal["status"], "refused", "{name}: {refusal}");
+                assert_eq!(refusal["diagnostic"]["code"], code, "{name}");
+                assert_eq!(refusal["diagnostic"]["path"], "/clipboard", "{name}");
+                assert_eq!(refusal["diagnostic"]["may_have_committed"], false, "{name}");
+            }
+            assert_eq!(context, result, "{name}");
+            assert_eq!(state(&mut destination), before, "{name}");
+            assert_eq!(
+                canonical_snapshot(&mut destination),
+                target.to_string(),
+                "{name}"
+            );
+            continue;
+        }
+        assert_eq!(context["status"], "ok", "{name}: {context}");
+        let context: Value =
+            serde_json::from_str(context["value"]["context_json"].as_str().unwrap()).unwrap();
+        assert_eq!(
+            context["insertion_context"],
+            if kind == "inline" {
+                "prose_block"
+            } else {
+                "root"
+            }
+        );
+        assert_eq!(result["value"]["effect"], "changed", "{name}: {result}");
+        let mut expected = target.clone();
+        if kind == "inline" {
+            expected
+                .pointer_mut(&leaf_pointer(&row["target"]["anchor"]["path"]))
+                .unwrap()["text"] = row["expected_text"].clone();
+        } else {
+            expected["content"]
+                .as_array_mut()
+                .unwrap()
+                .push(content[0].clone());
+        }
+        let exported = canonical_snapshot(&mut destination);
+        assert_eq!(exported, expected.to_string(), "{name}");
+        assert_eq!(canonical_snapshot(&mut open(&expected)), exported, "{name}");
+        let changed = state(&mut destination);
+        assert_eq!(changed["stamp"]["revision"], "1", "{name}");
+        assert_eq!(changed["history"]["undo_entries"], "1", "{name}");
+        undo(&mut destination);
+        assert_eq!(
+            canonical_snapshot(&mut destination),
+            target.to_string(),
+            "{name}"
+        );
+        assert_eq!(
+            state(&mut destination)["selection"],
+            before["selection"],
+            "{name}"
+        );
+        assert_eq!(
+            state(&mut destination)["history"]["undo_entries"],
+            "0",
+            "{name}"
+        );
+        assert_eq!(
+            state(&mut destination)["history"]["redo_entries"],
+            "1",
+            "{name}"
+        );
+    }
 }
 fn rich() -> Value {
     json!([{"type":"text","text":"X","marks":[{"type":"strong"}]},{"type":"hard_break"},{"type":"text","text":"Y","marks":[{"type":"emphasis"}]}])

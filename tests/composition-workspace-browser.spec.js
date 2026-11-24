@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import {test,expect} from '@playwright/test';
-import {mkdirSync,writeFileSync} from 'node:fs';
+import {mkdirSync,readFileSync,writeFileSync} from 'node:fs';
 import {loadCompositionContract} from '../scripts/composition-contract-data.mjs';
 const {dom,native,events,errata,pins}=loadCompositionContract();
 const call=(page,method,...args)=>page.evaluate(({method,args})=>window.compositionHost[method](...args),{method,args});
@@ -232,6 +232,47 @@ for (const [locale, caseId, family] of [
       attributes: {indent: {kind: 'number', value: '3'}},
     });
     observations.checkpoints.push({label: 'Installed verse fixture setup', value: before});
+  } finally {
+    released(await page.evaluate(() => window.compositionNative.finish()));
+  }
+});
+
+const tableCellComposition = JSON.parse(readFileSync(
+  new URL('./fixtures/osr-211-table-cell-composition.json', import.meta.url), 'utf8'));
+for (const [locale, caseId, family] of [
+  ['en', 'ordinary-layout', 'P01'],
+  ['ru', 'ordinary-layout', 'P02'],
+  ['en', 'plain-deadkey', 'P15'],
+]) test(`OSR-211 installed table-cell fixture setup ${locale}/${caseId}`, async ({page}) => {
+  const observations = records.get(page);
+  observations.scope = 'Packaged SDK2 and sealed WASM table-cell fixture setup and disposal.';
+  expect(await page.evaluate(async () => {
+    await import('/composition-native-host.js');
+    return window.compositionNativeReady;
+  })).toBe(true);
+  const prepared = await page.evaluate(({locale, caseId}) =>
+    window.compositionNative.prepare(locale, caseId, 'table-cell'), {locale, caseId});
+  try {
+    const {before} = prepared;
+    const literal = native.cases.find(row => row.id === family + '-forward');
+    expect(prepared).toMatchObject({fixture: 'table-cell', locale, caseId, family});
+    expect(before.canonical).toBe(tableCellComposition.input.canonical_json);
+    expect(before.lifecycle).toBe('ready');
+    expect(before.state.selection).toEqual(selection(before.roles, literal.input.selection));
+    expect(before.uaComposition).toEqual({starts: 0, ends: 0, open: false});
+    expect(before.rawDom).toMatchObject({
+      inside: true,
+      anchor: {path: [0, 1, 1, 0, 0, 0], offset: 1},
+      focus: {path: [0, 1, 1, 0, 0, 0], offset: 3},
+    });
+    expect(before.dom).toHaveLength(tableCellComposition.fixture.before.length);
+    before.dom.forEach((row, index) => literalTree(row, tableCellComposition.fixture.before[index]));
+    const target = before.rows.find(row => row.path === '/0/1/1').node;
+    expect(target).toMatchObject({
+      id: before.roles.CELL, type_id: 'org.klenwriter.kwdj/table_cell', parent: before.roles.ROW1,
+      children: [before.roles.P],
+    });
+    observations.checkpoints.push({label: 'Installed table-cell fixture setup', value: before});
   } finally {
     released(await page.evaluate(() => window.compositionNative.finish()));
   }

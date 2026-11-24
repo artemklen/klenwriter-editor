@@ -55,8 +55,8 @@ export type MountedReady = { readonly status: 'ready'; readonly response: Respon
     readonly response: Response | null;
     readonly recovery: RecoveryPacket | null;
   });
-export type DomTag = 'span' | 'br' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'pre' | 'code' | 'blockquote' | 'ul' | 'ol' | 'li' | 'div' | 'section' | 'hr' | 'strong' | 'em' | 's' | 'sub' | 'sup' | 'a';
-export type DomAttribute = 'href' | 'title' | 'start' | 'role' | 'aria-label' | 'aria-checked' | 'data-verse-indent' | 'data-blank-lines';
+export type DomTag = 'span' | 'br' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'pre' | 'code' | 'blockquote' | 'ul' | 'ol' | 'li' | 'div' | 'section' | 'hr' | 'strong' | 'em' | 's' | 'sub' | 'sup' | 'a' | 'table' | 'tr' | 'th' | 'td';
+export type DomAttribute = 'href' | 'title' | 'start' | 'role' | 'aria-label' | 'aria-checked' | 'data-verse-indent' | 'data-blank-lines' | 'colspan' | 'rowspan';
 export interface DomPresentation { readonly tag: DomTag; readonly attributes?: Readonly<Partial<Record<DomAttribute, string>>>; readonly classes?: readonly string[]; readonly label?: string }
 export interface RegistryNodeWitness { readonly id: string; readonly owner: string; readonly primitive: string; readonly attributes: readonly string[] }
 export interface RegistryMarkWitness { readonly id: string; readonly owner: string; readonly attributes: readonly string[] }
@@ -64,7 +64,7 @@ export interface TrustedRegistryInventory { readonly nodes: readonly RegistryNod
 export interface NodeRendererDefinition { readonly layout?: 'plain-text-block'; readonly primitive: string; readonly attributes: readonly string[]; readonly present: (node: DeepReadonly<NodeViewDto>) => DomPresentation | DomRefusal }
 export interface MarkRendererDefinition { readonly attributes: readonly string[]; readonly present: (mark: DeepReadonly<MarkDto>) => DomPresentation | DomRefusal }
 /** Data-only command construction for browser gestures; semantics remain native. */
-export interface InputCommandBindings { readonly insertText?: (text: string) => CommandDto; readonly enter?: () => CommandDto; readonly lineBreak?: () => CommandDto; readonly deleteBackward?: () => CommandDto; readonly deleteSelection?: () => CommandDto;
+export interface InputCommandBindings { readonly insertText?: (text: string) => CommandDto; readonly enter?: () => CommandDto; readonly lineBreak?: () => CommandDto; readonly deleteBackward?: () => CommandDto; readonly deleteForward?: () => CommandDto; readonly deleteSelection?: () => CommandDto;
   readonly insertTypedText?:(data:Readonly<{text:string;origin:'ordinary_insert_text'|'composition_commit'}>)=>CommandDto;
   readonly restoreTypedText?:(data:DeepReadonly<RawInputRestoreV2>)=>CommandDto }
 export interface RendererCatalogDefinition {
@@ -136,10 +136,22 @@ export interface SelectionBookmark {
 export interface SelectionReadFailure { readonly status: 'sdk_failure'; readonly response: Response }
 export type BookmarkCapture = { readonly status: 'captured'; readonly bookmark: SelectionBookmark } | DomRefusal | SelectionReadFailure;
 export type BookmarkRestore = Submission | DomRefusal | SelectionReadFailure;
+export type TableNavigationExit = Readonly<{ kind: 'add' } | { kind: 'atom'; node: string }>;
+export interface SelectedTableCell {
+  readonly stamp: DeepReadonly<StampDto>;
+  readonly table: string;
+  readonly row: string;
+  readonly column: number;
+  readonly align: 'left' | 'center' | 'right' | null;
+}
 export interface MountedSelectionController {
+  /** Authored row and first effective column of the current native focus cell. */
+  tableCell?(): Readonly<SelectedTableCell> | null;
   captureBookmark(): BookmarkCapture;
   restoreBookmark(bookmark: SelectionBookmark, options?: { readonly policy?: 'exact' | 'mapped'; readonly focus?: boolean }): BookmarkRestore;
   releaseBookmark(bookmark: SelectionBookmark): boolean;
+  /** One mounted chrome observer, called only after a synchronous owned table move. */
+  observeTableNavigation?(listener: (stamp: DeepReadonly<StampDto>, exit?: TableNavigationExit) => void): (() => void) | null;
 }
 export interface SelectionResourceCounts {
   readonly bookmarks: number;

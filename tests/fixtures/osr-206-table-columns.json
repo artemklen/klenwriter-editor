@@ -1,0 +1,127 @@
+{
+  "cases": [
+    {
+      "id": "left_keeps_header_roles",
+      "source": "rectangular_table",
+      "command": "insert_column_left",
+      "column": 0,
+      "changed_indices": [0,0],
+      "expected_rows": [
+        {"type":"table_row","content":[{"type":"table_header","content":[{"type":"paragraph","content":[]}]},{"type":"table_header","content":[{"type":"paragraph","content":[{"type":"text","text":"A"}]}]},{"type":"table_header","content":[{"type":"paragraph","content":[{"type":"text","text":"B"}]}]}]},
+        {"type":"table_row","content":[{"type":"table_cell","content":[{"type":"paragraph","content":[]}]},{"type":"table_cell","content":[{"type":"paragraph","content":[{"type":"text","text":"1"}]}]},{"type":"table_cell","content":[{"type":"paragraph","content":[{"type":"text","text":"2"}]}]}]}
+      ]
+    },
+    {
+      "id": "right_of_effective_grid",
+      "source": "valid_effective_grid",
+      "command": "insert_column_right",
+      "column": 1,
+      "changed_indices": [1,2],
+      "expected_rows": [
+        {"type":"table_row","content":[{"type":"table_cell","attrs":{"colspan":2},"content":[{"type":"paragraph","content":[{"type":"text","text":"AB"}]}]},{"type":"table_cell","content":[{"type":"paragraph","content":[]}]}]},
+        {"type":"table_row","content":[{"type":"table_cell","content":[{"type":"paragraph","content":[{"type":"text","text":"A"}]}]},{"type":"table_cell","content":[{"type":"paragraph","content":[{"type":"text","text":"B"}]}]},{"type":"table_cell","content":[{"type":"paragraph","content":[]}]}]}
+      ]
+    },
+    {
+      "id": "delete_second_unit_column",
+      "source": "rectangular_table",
+      "command": "delete_column",
+      "column": 1,
+      "changed_indices": [1,1],
+      "expected_rows": [
+        {"type":"table_row","content":[{"type":"table_header","content":[{"type":"paragraph","content":[{"type":"text","text":"A"}]}]}]},
+        {"type":"table_row","content":[{"type":"table_cell","content":[{"type":"paragraph","content":[{"type":"text","text":"1"}]}]}]}
+      ]
+    },
+    {
+      "id": "insert_in_front_of_carried_rowspan",
+      "source": "table_spans_alignment",
+      "command": "insert_column_left",
+      "column": 0,
+      "changed_indices": [0,0,0],
+      "expected_rows": [
+        {"type":"table_row","content":[{"type":"table_header","content":[{"type":"paragraph","content":[]}]},{"type":"table_header","attrs":{"colspan":2,"align":"center"},"content":[{"type":"paragraph","content":[{"type":"text","text":"AB"}]}]}]},
+        {"type":"table_row","content":[{"type":"table_cell","content":[{"type":"paragraph","content":[]}]},{"type":"table_cell","attrs":{"rowspan":2,"align":"right"},"content":[{"type":"paragraph","content":[{"type":"text","text":"A"}]}]},{"type":"table_cell","content":[{"type":"paragraph","content":[{"type":"text","text":"B1"}]}]}]},
+        {"type":"table_row","content":[{"type":"table_cell","content":[{"type":"paragraph","content":[]}]},{"type":"table_cell","content":[{"type":"paragraph","content":[{"type":"text","text":"B2"}]}]}]}
+      ]
+    },
+    {
+      "id": "remove_vertical_origin_once",
+      "source": "table_spans_alignment",
+      "command": "delete_column",
+      "column": 0,
+      "changed_indices": [0,0,null],
+      "header_override": {"type":"table_row","content":[{"type":"table_header","content":[{"type":"paragraph","content":[{"type":"text","text":"A"}]}]},{"type":"table_header","content":[{"type":"paragraph","content":[{"type":"text","text":"B"}]}]}]},
+      "expected_rows": [
+        {"type":"table_row","content":[{"type":"table_header","content":[{"type":"paragraph","content":[{"type":"text","text":"B"}]}]}]},
+        {"type":"table_row","content":[{"type":"table_cell","content":[{"type":"paragraph","content":[{"type":"text","text":"B1"}]}]}]},
+        {"type":"table_row","content":[{"type":"table_cell","content":[{"type":"paragraph","content":[{"type":"text","text":"B2"}]}]}]}
+      ]
+    },
+    {
+      "id": "insert_after_carried_rowspan",
+      "source": "table_spans_alignment",
+      "command": "insert_column_right",
+      "column": 0,
+      "changed_indices": [1,1,0],
+      "header_override": {"type":"table_row","content":[{"type":"table_header","content":[{"type":"paragraph","content":[{"type":"text","text":"A"}]}]},{"type":"table_header","content":[{"type":"paragraph","content":[{"type":"text","text":"B"}]}]}]},
+      "expected_rows": [
+        {"type":"table_row","content":[{"type":"table_header","content":[{"type":"paragraph","content":[{"type":"text","text":"A"}]}]},{"type":"table_header","content":[{"type":"paragraph","content":[]}]},{"type":"table_header","content":[{"type":"paragraph","content":[{"type":"text","text":"B"}]}]}]},
+        {"type":"table_row","content":[{"type":"table_cell","attrs":{"rowspan":2,"align":"right"},"content":[{"type":"paragraph","content":[{"type":"text","text":"A"}]}]},{"type":"table_cell","content":[{"type":"paragraph","content":[]}]},{"type":"table_cell","content":[{"type":"paragraph","content":[{"type":"text","text":"B1"}]}]}]},
+        {"type":"table_row","content":[{"type":"table_cell","content":[{"type":"paragraph","content":[]}]},{"type":"table_cell","content":[{"type":"paragraph","content":[{"type":"text","text":"B2"}]}]}]}
+      ]
+    },
+    {
+      "id": "left_through_colspan",
+      "source": "valid_effective_grid",
+      "command": "insert_column_left",
+      "column": 1,
+      "diagnostic": {"code":"kwdj.table_not_rectangular","path":"/command"}
+    },
+    {
+      "id": "right_through_colspan",
+      "source": "valid_effective_grid",
+      "command": "insert_column_right",
+      "column": 0,
+      "diagnostic": {"code":"kwdj.table_not_rectangular","path":"/command"}
+    },
+    {
+      "id": "delete_partial_colspan",
+      "source": "valid_effective_grid",
+      "command": "delete_column",
+      "column": 1,
+      "diagnostic": {"code":"kwdj.table_not_rectangular","path":"/command"}
+    },
+    {
+      "id": "refuse_row_as_table_target",
+      "source": "rectangular_table",
+      "command": "insert_column_left",
+      "column": 0,
+      "row_target": true,
+      "diagnostic": {"code":"kwdj.command_unsupported_context","path":"/command"}
+    },
+    {
+      "id": "refuse_index_outside_effective_grid",
+      "source": "valid_effective_grid",
+      "command": "insert_column_right",
+      "column": 2,
+      "diagnostic": {"code":"kwdj.command_invalid_target","path":"/command"}
+    },
+    {
+      "id": "remove_would_leave_an_unauthored_row",
+      "source": "table_spans_alignment",
+      "command": "delete_column",
+      "column": 1,
+      "header_override": {"type":"table_row","content":[{"type":"table_header","content":[{"type":"paragraph","content":[{"type":"text","text":"A"}]}]},{"type":"table_header","content":[{"type":"paragraph","content":[{"type":"text","text":"B"}]}]}]},
+      "diagnostic": {"code":"kwdj.invalid_structure","path":"/content/0/content/2/content"}
+    }
+  ],
+  "bounded": [
+    {"id":"exactly_256_row_inserts","rows":256,"command":"insert_column_right","column":1,"expected_columns":3},
+    {"id":"257_row_insert_left","rows":257,"command":"insert_column_left","column":0},
+    {"id":"257_row_insert_right","rows":257,"command":"insert_column_right","column":1},
+    {"id":"257_row_deletions","rows":257,"command":"delete_column","column":1},
+    {"id":"500_admitted_rows","rows":500,"command":"delete_column","column":1},
+    {"id":"500_rows_with_250_vertical_origins","rows":500,"command":"delete_column","column":0,"vertical_first_column":true,"expected_columns":1}
+  ]
+}

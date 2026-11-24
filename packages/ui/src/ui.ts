@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-import type { CommandDto, DeepReadonly, NodeViewDto, SessionContextV2, StateDto } from '@klenwriter/editor-sdk';
-import type { HostFocus, InteractionMode, MountedEditor, MountedHostRequest } from '@klenwriter/editor-dom';
+import type { CommandDto, DeepReadonly, NodeViewDto, SessionContextV2, StampDto, StateDto } from '@klenwriter/editor-sdk';
+import type { HostFocus, InteractionMode, MountedEditor, MountedHostRequest, TableNavigationExit } from '@klenwriter/editor-dom';
 import type { EditorUi, UiAction, UiActionContext, UiBlockContext, UiCloseReason, UiCommandAction, UiDragProfile, UiFailure, UiHostAction, UiJson, UiLocale, UiMoveChoice, UiProfile, UiResult, UiText, UiUnavailable } from './types.js';
 import { command, element, fields, host, id, json, list, text, UiError, unavailable } from './data.js';
 import { label } from './strings.js';
@@ -30,6 +30,9 @@ type Task = { done: ((value: unknown) => void) | null; dispose: (() => void) | n
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 const failure = (code: Extract<UiFailure, { status: 'ui_refused' }>['code'], action: string | null = null): UiFailure => Object.freeze({ status: 'ui_refused', code, action });
 const unavailableAvailability = (): Availability => ({ available: false, reason: '', active: null, failure: null });
+const unsupportedCellOperation = 'kwdj.table_cell_operation_unsupported';
+const unavailableReason = (code: string, locale: UiLocale): string =>
+  `${label(code === unsupportedCellOperation ? 'tableCellOperationUnavailable' : 'unavailable', locale)} (${code.slice(0, 256)})`;
 let nextUi = 1;
 
 function action(value: unknown): UiAction {
@@ -37,9 +40,11 @@ function action(value: unknown): UiAction {
     if (!host(value as UiHostAction)) throw new UiError('ui.invalid_options');
     return value as UiHostAction;
   }
-  const f = fields(value, ['kind', 'id', 'label', 'command']);
-  if (f.kind !== 'command' && f.kind !== 'toggle' || typeof f.command !== 'function') throw new UiError('ui.invalid_options');
-  return Object.freeze({ kind: f.kind, id: id(f.id), label: text(f.label), command: f.command as UiCommandAction['command'] });
+  const f = fields(value, ['kind', 'id', 'label', 'command'], ['nativeDisabled']);
+  if (f.kind !== 'command' && f.kind !== 'toggle' || typeof f.command !== 'function'
+    || f.nativeDisabled !== undefined && f.nativeDisabled !== true) throw new UiError('ui.invalid_options');
+  return Object.freeze({ kind: f.kind, id: id(f.id), label: text(f.label), command: f.command as UiCommandAction['command'],
+    ...(f.nativeDisabled === true ? { nativeDisabled: true as const } : {}) });
 }
 function actions(value: unknown, allowed: 'all' | 'commands' | 'hosts'): readonly UiAction[] {
   const result = list(value).map(action), ids = new Set<string>();
@@ -51,8 +56,9 @@ function actions(value: unknown, allowed: 'all' | 'commands' | 'hosts'): readonl
 }
 function profile(value: unknown): UiProfile | UiUnavailable {
   const absent = unavailable(value); if (absent) return absent;
-  const f = fields(value, ['toolbar', 'insertions', 'blockActions', 'moves'], ['slash', 'drag']);
-  if (typeof f.moves !== 'function') throw new UiError('ui.invalid_options');
+  const f = fields(value, ['toolbar', 'insertions', 'blockActions', 'moves'], ['slash', 'drag', 'contextualToolbar']);
+  if (typeof f.moves !== 'function' || f.contextualToolbar !== undefined && typeof f.contextualToolbar !== 'function')
+    throw new UiError('ui.invalid_options');
   let drag: UiDragProfile | undefined;
   if (f.drag !== undefined) {
     const d = fields(f.drag, ['move']); if (typeof d.move !== 'function') throw new UiError('ui.invalid_options');
@@ -60,7 +66,8 @@ function profile(value: unknown): UiProfile | UiUnavailable {
   }
   return Object.freeze({ toolbar: actions(f.toolbar, 'all'), insertions: actions(f.insertions, 'commands') as readonly UiCommandAction[],
     blockActions: actions(f.blockActions, 'hosts') as readonly UiHostAction[], moves: f.moves as UiProfile['moves'],
-    ...(f.slash !== undefined ? {slash:slashProfile(f.slash)} : {}), ...(drag ? { drag } : {}) });
+    ...(f.slash !== undefined ? {slash:slashProfile(f.slash)} : {}), ...(drag ? { drag } : {}),
+    ...(f.contextualToolbar ? { contextualToolbar: f.contextualToolbar as NonNullable<UiProfile['contextualToolbar']> } : {}) });
 }
 function moves(value: unknown): readonly UiMoveChoice[] | UiUnavailable {
   const absent = unavailable(value); if (absent) return absent;
@@ -140,7 +147,10 @@ class Ui implements EditorUi {
         const result: UiFailure = subscription.status === 'dom_refused' ? subscription : { status: 'sdk_failure', response: subscription };
         this.#show(result); return result;
       }
-      this.#subscription = subscription;
+      const detachTableChrome = configuration.editor.selection?.observeTableNavigation?.(
+        (stamp, exit) => this.#tableNavigation(stamp, exit),
+      );
+      this.#subscription = () => { detachTableChrome?.(); subscription(); };
       const result = this.#update();
       return result ?? Object.freeze({ status: 'ready' as const });
     }, () => { const result = failure('ui.callback_failed'); this.#show(result); return result; });
@@ -331,28 +341,58 @@ class Ui implements EditorUi {
     if (event.altKey || event.ctrlKey || event.metaKey) return;
     if (event.key === 'Escape' && this.#popup) { event.preventDefault(); this.#cancelPopup(true); return; }
     if (event.key === 'Tab' && this.#popup) { this.#cancelPopup(false); return; }
-    const controls = menuOwned ? this.#popup!.controls : this.#toolbar.contains(this.#document.activeElement) ? [...this.#toolbarControls.values()] : [];
+    const all = menuOwned ? this.#popup!.controls : this.#toolbar.contains(this.#document.activeElement) ? [...this.#toolbarControls.values()] : [];
+    const controls = all.filter(item => !item.button.disabled);
     const navigation = menuOwned ? ['ArrowUp', 'ArrowDown', 'Home', 'End'] : ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
     if (controls.length && navigation.includes(event.key)) {
       event.preventDefault(); const at = controls.findIndex(c => c.button === this.#document.activeElement);
       const next = event.key === 'Home' ? 0 : event.key === 'End' ? controls.length - 1
         : (Math.max(0, at) + (event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 1) + controls.length) % controls.length;
-      this.#rove(controls, controls[next]); controls[next]!.button.focus(); return;
+      this.#rove(all, controls[next]); controls[next]!.button.focus(); return;
     }
     if (control && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); if (!event.repeat) this.#activate(control, true); }
   }
-  #rove(controls: readonly Control[], active?: Control): void {
-    const selected = active ?? controls.find(c => c.button.tabIndex === 0) ?? controls[0];
+  #rove(controls: readonly Control[], active?: Control): Control | undefined {
+    const selected = active ?? controls.find(c => !c.button.disabled && c.button.tabIndex === 0) ?? controls.find(c => !c.button.disabled);
     for (const control of controls) {
       control.button.tabIndex = control === selected ? 0 : -1;
       if (control.button.hasAttribute('aria-selected')) control.button.setAttribute('aria-selected', String(control === selected));
     }
+    return selected;
   }
   #readNode(node: string, state: DeepReadonly<StateDto>): DeepReadonly<NodeViewDto> | UiFailure {
     const response = this.#options!.editor.read({ kind: 'node', stamp: state.stamp, node });
     if (response.status === 'dom_refused') return response;
     if (response.status !== 'ok' || response.value.kind !== 'node') return { status: 'sdk_failure', response };
     return response.value.node;
+  }
+  #tableNavigation(stamp: DeepReadonly<StampDto>, exit?: TableNavigationExit): void {
+    const configuration = this.#options;
+    if (!configuration || !this.#ownedFocus(configuration.editorElement)
+      || this.#tasks.size || !same(stamp, configuration.editor.capture())) return;
+    // An admitted table Tab supersedes the editor's ordinary Tab capture.
+    this.#releasePending('invalidated');
+    this.#hidePopup();
+    if (!exit) return;
+
+    const scope = exit.kind === 'add' ? configuration.slots.entry : configuration.slots.gutter;
+    const pending = this.#capture(scope, true);
+    if (!pending) return;
+    if (exit.kind === 'atom' && pending.context.block?.node.id !== exit.node) {
+      this.#releasePending('invalidated');
+      return;
+    }
+    if (this.#update() || this.#pending !== pending) return;
+    const control = exit.kind === 'add' ? this.#add
+      : [...this.#blockControls.values()].find(item => item.availability.available) ?? this.#move;
+    const button = control.button;
+    if (!control.availability.available || !button.isConnected || button.ownerDocument !== this.#document
+      || !scope.contains(button) || !this.#ownedFocus(configuration.editorElement)
+      || !same(stamp, configuration.editor.capture())) {
+      this.#releasePending('invalidated');
+      return;
+    }
+    button.focus({preventScroll: true});
   }
   #snapshot(preferSelection = false): UiActionContext | UiFailure {
     const editor = this.#options!.editor, context = editor.context(), stamp = editor.capture();
@@ -433,7 +473,7 @@ class Ui implements EditorUi {
     }
     const active = query.value.presentation?.active ?? null;
     return { available: query.value.available && (!toggle || active === 'on' || active === 'off' || active === 'mixed'),
-      reason: query.value.diagnostic ? `${label('unavailable', this.#locale)} (${query.value.diagnostic.code.slice(0, 256)})`
+      reason: query.value.diagnostic ? unavailableReason(query.value.diagnostic.code, this.#locale)
         : query.value.available && (!toggle || ['on', 'off', 'mixed'].includes(active ?? '')) ? '' : label('unavailable', this.#locale), active, failure: null };
   }
   #commandAction(item: UiAction, context: UiActionContext): CommandDto | UiUnavailable | null {
@@ -464,6 +504,8 @@ class Ui implements EditorUi {
     this.#drawAvailability(control);
   }
   #drawAvailability(control: Control): void {
+    const native = control.action && control.action.kind !== 'host' && control.action.nativeDisabled;
+    control.button.disabled = native === true && !control.availability.available;
     control.button.setAttribute('aria-disabled', String(!control.availability.available));
     if (control.reason.textContent !== control.availability.reason) {
       this.#resetReason(control); control.reason.textContent = control.availability.reason;
@@ -549,7 +591,15 @@ class Ui implements EditorUi {
         feedback:message=>this.#setStatus(message),schedule:()=>this.refresh(),
         beforeOpen:()=>{this.#releasePending('invalidated');this.#hidePopup();},
       },this.#profile!.slash,this.#locale);
-      this.#syncControls(this.#toolbarControls, this.#profile!.toolbar, this.#toolbar, 'toolbar', context);
+      const {toolbar,contextualToolbar}=this.#profile!;
+      let toolbarActions=toolbar;
+      if (contextualToolbar) {
+        const additional=actions(this.#callback(() => contextualToolbar(context)), 'commands');
+        if (this.#destroyed || !same(context.state.stamp, this.#options.editor.capture())
+          || !same(context.context, this.#options.editor.context())) return failure('ui.unavailable');
+        if (additional.length) toolbarActions=actions([...toolbar,...additional],'all');
+      }
+      this.#syncControls(this.#toolbarControls, toolbarActions, this.#toolbar, 'toolbar', context);
       this.#syncControls(this.#blockControls, this.#profile!.blockActions, this.#gutter, 'block', context);
       const status = this.#options.editor.hostRequests.status();
       this.#add.context = this.#move.context = context;
@@ -666,6 +716,7 @@ class Ui implements EditorUi {
     for (const control of [...this.#toolbarControls.values(), ...this.#blockControls.values(), this.#add, this.#move]) {
       control.availability = { available: false, active: null, failure: result, reason: this.#reason(result) }; this.#drawAvailability(control);
     }
+    this.#rove([...this.#toolbarControls.values()]);
     if (show) this.#setStatus(this.#reason(result), owner);
   }
   #setStatus(message: string, owner: 'loading' | 'availability' | 'feedback' = 'feedback'): void {
@@ -677,6 +728,7 @@ class Ui implements EditorUi {
   #reason(result: UiFailure): string {
     const code = result.status === 'dom_refused' ? result.diagnostic.code : result.status === 'sdk_failure'
       ? result.response.status === 'ok' ? '' : result.response.diagnostic.code : result.code;
+    if (code === unsupportedCellOperation) return unavailableReason(code, this.#locale);
     const key = code.includes('composition') ? 'composing' : code === 'dom.mode_blocked' ? 'disabled'
       : code === 'dom.native_read_only' ? 'readonly' : code.includes('stale') || code.includes('bookmark') ? 'stale'
       : code === 'ui.callback_failed' ? 'callback' : 'unavailable';
@@ -745,9 +797,16 @@ class Ui implements EditorUi {
     }
     if (!same(pending.context.state.stamp, this.#options!.editor.capture()) || !same(pending.context.context, this.#options!.editor.context())) { this.#releasePending('invalidated'); this.#showStale(); return; }
     for (const control of controls) { control.button.setAttribute('role', kind === 'add' ? 'option' : 'menuitem'); if (kind === 'add') control.button.setAttribute('aria-selected', 'false'); popup.append(control.button, control.reason); }
-    if (!controls.length) { const empty = this.#node('div', 'kw-ui-reason'); empty.textContent = label('empty', this.#locale); popup.append(empty); popup.tabIndex = 0; }
+    if (!controls.length) { const empty = this.#node('div', 'kw-ui-reason'); empty.textContent = label('empty', this.#locale); popup.append(empty); }
     this.#popup = { kind, element: popup, controls, pending, trigger }; popup.hidden = false; trigger.setAttribute('aria-expanded', 'true');
-    this.#rove(controls); (controls[0]?.button ?? popup).focus();
+    const initial = this.#rove(controls);
+    if (initial) {
+      popup.removeAttribute('tabindex');
+      initial.button.focus();
+    } else {
+      popup.tabIndex = controls.length ? -1 : 0;
+      popup.focus();
+    }
   }
   #shortcut(direction: UiMoveChoice['direction']): void {
     try {

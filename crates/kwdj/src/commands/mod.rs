@@ -17,7 +17,11 @@ use editor_core::document::Mark;
 use editor_core::positions::Selection;
 use editor_core::transaction::WorkMeter;
 
-use crate::{KwdjError, KwdjErrorCode, KwdjProfile, KwdjProfileError, model::WarningKind};
+use crate::{
+    KwdjError, KwdjErrorCode, KwdjProfile, KwdjProfileError,
+    model::{CellAlign, WarningKind},
+    table_geometry::{table_of_cell, table_selection},
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BlockTarget {
@@ -108,6 +112,41 @@ pub enum KwdjIntent<I> {
         node: I,
         label: String,
     },
+    SetTableCellAlign {
+        align: CellAlign,
+    },
+    InsertRowAbove {
+        row: I,
+    },
+    InsertRowBelow {
+        row: I,
+    },
+    DeleteRow {
+        row: I,
+    },
+    InsertColumnLeft {
+        table: I,
+        column: usize,
+    },
+    InsertColumnRight {
+        table: I,
+        column: usize,
+    },
+    DeleteColumn {
+        table: I,
+        column: usize,
+    },
+    MergeCells {
+        anchor: I,
+        focus: I,
+    },
+    SplitCell {
+        cell: I,
+    },
+    MoveCell {
+        cell: I,
+        target: I,
+    },
     Move {
         node: I,
         parent: I,
@@ -145,6 +184,17 @@ pub enum KwdjIntent<I> {
 }
 
 pub const CLIPBOARD_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-fragment";
+pub const INSERT_COLUMN_LEFT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-column-left";
+pub const INSERT_COLUMN_RIGHT_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-column-right";
+pub const DELETE_COLUMN_COMMAND_ID: &str = "org.klenwriter.kwdj/command/delete-column";
+pub const SET_TABLE_CELL_ALIGN_COMMAND_ID: &str =
+    "org.klenwriter.kwdj/command/set-table-cell-align";
+pub const MERGE_CELLS_COMMAND_ID: &str = "org.klenwriter.kwdj/command/merge-cells";
+pub const SPLIT_CELL_COMMAND_ID: &str = "org.klenwriter.kwdj/command/split-cell";
+pub const MOVE_CELL_COMMAND_ID: &str = "org.klenwriter.kwdj/command/move-cell";
+pub const INSERT_ROW_ABOVE_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-row-above";
+pub const INSERT_ROW_BELOW_COMMAND_ID: &str = "org.klenwriter.kwdj/command/insert-row-below";
+pub const DELETE_ROW_COMMAND_ID: &str = "org.klenwriter.kwdj/command/delete-row";
 pub const DELETE_FORWARD_COMMAND_ID: &str = "org.klenwriter.kwdj/command/delete-forward";
 pub const SET_LITERARY_KIND_COMMAND_ID: &str = "org.klenwriter.kwdj/command/set-literary-kind";
 pub const WRAP_LITERARY_BLOCK_COMMAND_ID: &str = "org.klenwriter.kwdj/command/wrap-literary-block";
@@ -275,6 +325,35 @@ pub(super) fn refusal(code: KwdjErrorCode) -> KwdjError {
     KwdjError::categorized(code, "", "command")
 }
 
+fn uses_linear_selection<I>(intent: &KwdjIntent<I>) -> bool {
+    // Fragment insertion validates the destination through clipboard context.
+    matches!(
+        intent,
+        KwdjIntent::Enter
+            | KwdjIntent::ShiftEnter
+            | KwdjIntent::ToggleMark { .. }
+            | KwdjIntent::SetLink { .. }
+            | KwdjIntent::UnsetLink
+            | KwdjIntent::InsertText { .. }
+            | KwdjIntent::TransformBlock { .. }
+            | KwdjIntent::ToggleQuote
+            | KwdjIntent::ToggleList { .. }
+            | KwdjIntent::InsertBlock { .. }
+            | KwdjIntent::InsertAuthorNote
+            | KwdjIntent::WrapLiteraryBlock
+            | KwdjIntent::InsertWarning { .. }
+            | KwdjIntent::WrapWarning { .. }
+            | KwdjIntent::InsertLabeledContainer { .. }
+            | KwdjIntent::WrapLabeledContainer { .. }
+            | KwdjIntent::AcceptSlash { .. }
+            | KwdjIntent::DeleteBackward
+            | KwdjIntent::DeleteForward
+            | KwdjIntent::DeleteSelection
+            | KwdjIntent::DeleteSelectionInProfileBody
+            | KwdjIntent::DeleteSelectionAtPoetryBoundary
+    )
+}
+
 impl CommandProvider for KwdjProfile<'_> {
     type Intent<I: Copy + Eq + Ord> = KwdjIntent<I>;
     const COMMANDS: &'static [CommandDescriptor] = KWDJ_COMMANDS;
@@ -311,6 +390,16 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::SetContainerLabel { .. } => SET_CONTAINER_LABEL_COMMAND_ID,
             KwdjIntent::WrapLabeledContainer { .. } => WRAP_LABELED_CONTAINER_COMMAND_ID,
             KwdjIntent::UnwrapLabeledContainer { .. } => UNWRAP_LABELED_CONTAINER_COMMAND_ID,
+            KwdjIntent::InsertColumnLeft { .. } => INSERT_COLUMN_LEFT_COMMAND_ID,
+            KwdjIntent::InsertColumnRight { .. } => INSERT_COLUMN_RIGHT_COMMAND_ID,
+            KwdjIntent::DeleteColumn { .. } => DELETE_COLUMN_COMMAND_ID,
+            KwdjIntent::SetTableCellAlign { .. } => SET_TABLE_CELL_ALIGN_COMMAND_ID,
+            KwdjIntent::MergeCells { .. } => MERGE_CELLS_COMMAND_ID,
+            KwdjIntent::SplitCell { .. } => SPLIT_CELL_COMMAND_ID,
+            KwdjIntent::MoveCell { .. } => MOVE_CELL_COMMAND_ID,
+            KwdjIntent::InsertRowAbove { .. } => INSERT_ROW_ABOVE_COMMAND_ID,
+            KwdjIntent::InsertRowBelow { .. } => INSERT_ROW_BELOW_COMMAND_ID,
+            KwdjIntent::DeleteRow { .. } => DELETE_ROW_COMMAND_ID,
             KwdjIntent::Move { .. } => KWDJ_COMMANDS[10].id,
             KwdjIntent::Duplicate { .. } => KWDJ_COMMANDS[11].id,
             KwdjIntent::Remove { .. } => KWDJ_COMMANDS[12].id,
@@ -335,6 +424,19 @@ impl CommandProvider for KwdjProfile<'_> {
         intent: &KwdjIntent<V::Id>,
         plan: &mut PlanBuilder<'_, V::Id>,
     ) -> Result<CommandPresentation, Self::Error> {
+        if self.clipboard_v2()
+            && uses_linear_selection(intent)
+            && table_selection(view, state.selection.copied()).is_some()
+        {
+            return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());
+        }
+        if self.clipboard_v2()
+            && let KwdjIntent::Move { node, .. } = intent
+            && let Some(rectangle) = table_selection(view, state.selection.copied())
+            && table_of_cell(view, *node) == Some(rectangle.table)
+        {
+            return block::refuse_table_cell_operation(view, *node, None, plan).map_err(Into::into);
+        }
         Ok(match intent {
             KwdjIntent::InsertAuthorNote
             | KwdjIntent::SetLiteraryKind { .. }
@@ -349,6 +451,16 @@ impl CommandProvider for KwdjProfile<'_> {
             | KwdjIntent::WrapLabeledContainer { .. }
             | KwdjIntent::UnwrapLabeledContainer { .. }
             | KwdjIntent::DeleteSelectionInProfileBody
+            | KwdjIntent::SetTableCellAlign { .. }
+            | KwdjIntent::InsertRowAbove { .. }
+            | KwdjIntent::InsertRowBelow { .. }
+            | KwdjIntent::DeleteRow { .. }
+            | KwdjIntent::InsertColumnLeft { .. }
+            | KwdjIntent::InsertColumnRight { .. }
+            | KwdjIntent::DeleteColumn { .. }
+            | KwdjIntent::MergeCells { .. }
+            | KwdjIntent::SplitCell { .. }
+            | KwdjIntent::MoveCell { .. }
                 if !self.clipboard_v2() =>
             {
                 return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());
@@ -368,15 +480,22 @@ impl CommandProvider for KwdjProfile<'_> {
                 self.clipboard_v2() && *context == crate::model::Profile::Poetry,
                 plan,
             )?,
-            KwdjIntent::DeleteForward | KwdjIntent::DeleteSelectionAtPoetryBoundary => {
+            KwdjIntent::DeleteForward => {
+                if !self.clipboard_v2() {
+                    return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());
+                }
+                delete::prepare_forward(
+                    view,
+                    state,
+                    *context == crate::model::Profile::Poetry,
+                    plan,
+                )?
+            }
+            KwdjIntent::DeleteSelectionAtPoetryBoundary => {
                 if !self.clipboard_v2() || *context != crate::model::Profile::Poetry {
                     return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());
                 }
-                if matches!(intent, KwdjIntent::DeleteForward) {
-                    delete::prepare_forward(view, state, plan)?
-                } else {
-                    delete::prepare_poetry_selection(view, state, plan)?
-                }
+                delete::prepare_poetry_selection(view, state, plan)?
             }
             KwdjIntent::DeleteSelection | KwdjIntent::DeleteSelectionInProfileBody => {
                 selection::prepare(
@@ -389,6 +508,50 @@ impl CommandProvider for KwdjProfile<'_> {
             KwdjIntent::InsertFragment { fragment } => {
                 clipboard::prepare(self, *context, view, state, fragment, plan)?
             }
+            KwdjIntent::SetTableCellAlign { align } => {
+                block::set_table_cell_align(view, state, *align, plan)?
+            }
+            KwdjIntent::MergeCells { anchor, focus }
+            | KwdjIntent::MoveCell {
+                cell: anchor,
+                target: focus,
+            } => block::refuse_table_cell_operation(view, *anchor, Some(*focus), plan)?,
+            KwdjIntent::SplitCell { cell } => {
+                block::refuse_table_cell_operation(view, *cell, None, plan)?
+            }
+            KwdjIntent::InsertRowAbove { row } => {
+                block::edit_table_row(view, *row, block::TableRowEdit::Above, self.limits(), plan)?
+            }
+            KwdjIntent::InsertRowBelow { row } => {
+                block::edit_table_row(view, *row, block::TableRowEdit::Below, self.limits(), plan)?
+            }
+            KwdjIntent::DeleteRow { row } => {
+                block::edit_table_row(view, *row, block::TableRowEdit::Delete, self.limits(), plan)?
+            }
+            KwdjIntent::InsertColumnLeft { table, column } => block::edit_table_column(
+                view,
+                *table,
+                *column,
+                block::TableColumnEdit::Left,
+                self.limits(),
+                plan,
+            )?,
+            KwdjIntent::InsertColumnRight { table, column } => block::edit_table_column(
+                view,
+                *table,
+                *column,
+                block::TableColumnEdit::Right,
+                self.limits(),
+                plan,
+            )?,
+            KwdjIntent::DeleteColumn { table, column } => block::edit_table_column(
+                view,
+                *table,
+                *column,
+                block::TableColumnEdit::Delete,
+                self.limits(),
+                plan,
+            )?,
             KwdjIntent::DismissSlash => CommandPresentation { active: None },
             _ => block::prepare(*context, view, state, intent, plan)?,
         })
@@ -411,6 +574,9 @@ impl CommandProvider for KwdjProfile<'_> {
         policy: editor_core::commands::InputCommandPolicy,
         plan: &mut PlanBuilder<'_, V::Id>,
     ) -> Result<CommandPresentation, Self::Error> {
+        if table_selection(view, state.selection.copied()).is_some() {
+            return Err(refusal(KwdjErrorCode::CommandUnsupportedContext).into());
+        }
         let rules = self
             .typing_rules()
             .ok_or_else(|| refusal(KwdjErrorCode::CommandUnsupportedContext))?;

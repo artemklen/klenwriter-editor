@@ -21,6 +21,7 @@ mod project;
 pub mod registry;
 mod registry_guards;
 mod session_profile;
+mod table_geometry;
 mod validate;
 mod wire_view;
 
@@ -295,6 +296,8 @@ pub enum KwdjErrorCode {
     OperationalBudgetExceeded,
     CommandSelectionRequired,
     CommandUnsupportedContext,
+    ClipboardInvalidContext,
+    TableCellOperationUnsupported,
     CommandUnknown,
     CommandPoetryUnavailable,
     CommandTableUnavailable,
@@ -340,6 +343,8 @@ impl KwdjErrorCode {
             Self::OperationalBudgetExceeded => "kwdj.admission_budget_exceeded",
             Self::CommandSelectionRequired => "kwdj.command_selection_required",
             Self::CommandUnsupportedContext => "kwdj.command_unsupported_context",
+            Self::ClipboardInvalidContext => "clipboard.invalid_context",
+            Self::TableCellOperationUnsupported => "kwdj.table_cell_operation_unsupported",
             Self::CommandUnknown => "kwdj.command_unknown",
             Self::CommandPoetryUnavailable => "kwdj.command_poetry_unavailable",
             Self::CommandTableUnavailable => "kwdj.command_table_unavailable",

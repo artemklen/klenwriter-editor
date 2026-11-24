@@ -995,3 +995,52 @@ fn u64_max_geometry_and_unknown_payload_preserve_exact_full_diagnostics() {
 
 #[path = "registry_guards_tests.rs"]
 mod registry_guards_tests;
+
+#[test]
+fn changed_spans_keep_full_and_sparse_overlap_diagnostics() {
+    let before = source(
+        Profile::Prose,
+        json!([{"type":"table","content":[
+            {"type":"table_row","content":[
+                {"type":"table_cell","content":[paragraph("A")]},
+                {"type":"table_cell","attrs":{"rowspan":2},"content":[paragraph("B")]},
+                {"type":"table_cell","content":[paragraph("C")]}
+            ]},
+            {"type":"table_row","content":[
+                {"type":"table_cell","content":[paragraph("D")]},
+                {"type":"table_cell","content":[paragraph("E")]}
+            ]}
+        ]}]),
+    );
+    let cache = seed_view(Profile::Prose, &before);
+    let mut after = before.clone();
+    let table = after.roots[0];
+    let row = after.nodes[&table].children[1];
+    let cell = after.nodes[&row].children[0];
+    after.nodes.get_mut(&cell).unwrap().node.attributes.insert(
+        "colspan".into(),
+        editor_core::document::Attribute::Number(2.into()),
+    );
+    let changes = Changes::new(before, after);
+    let expected = KwdjError::new(KwdjErrorCode::TableNotRectangular, "/content/0");
+    let full = crate::admit_core_document(
+        &changes.after.snapshot(),
+        Profile::Prose,
+        &Facts::default(),
+        Limits::default(),
+    )
+    .unwrap_err();
+    let sparse = validate(
+        Profile::Prose,
+        &changes,
+        &cache,
+        &Facts::default(),
+        Limits::default(),
+        AdmissionBudget::default(),
+        &mut WorkMeter::new(WorkLimits::default()),
+    )
+    .err()
+    .expect("dirty table geometry must be rechecked");
+    assert_eq!(full, expected);
+    assert_eq!(sparse, expected);
+}

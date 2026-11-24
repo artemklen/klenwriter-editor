@@ -15,7 +15,10 @@ use editor_core::transaction::Operation;
 use super::{
     BlockTarget, KWDJ_SLASH_CANDIDATES, KwdjIntent, LabeledContainerKind, ListKind, inline, refusal,
 };
-use crate::{KwdjError, KwdjErrorCode, Profile, model::WarningKind};
+use crate::{
+    KwdjError, KwdjErrorCode, Profile,
+    model::{CellAlign, WarningKind},
+};
 
 const PREFIX: &str = "org.klenwriter.kwdj/";
 const AUTHOR_NOTE: &str = "author_note";
@@ -2195,6 +2198,52 @@ fn set_container_label<V: CandidateRead>(
     Ok(CommandPresentation::default())
 }
 
+fn containing_table_cell<V: CandidateRead>(
+    view: &V,
+    point: &Position<V::Id>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<V::Id, KwdjError> {
+    let mut current = match point {
+        Position::Text { leaf, .. } => *leaf,
+        Position::Child { parent, .. } => *parent,
+        Position::Edge { node, .. } => get(view, *node, plan)?.parent,
+    };
+    while current != view.root() {
+        let node = get(view, current, plan)?;
+        match kind(node.type_id) {
+            "table_cell" | "table_header" => return Ok(current),
+            "table" | "table_row" => break,
+            _ => current = node.parent,
+        }
+    }
+    Err(unsupported())
+}
+
+pub(super) fn set_table_cell_align<V: CandidateRead>(
+    view: &V,
+    state: CommandState<'_, V::Id>,
+    align: CellAlign,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let selection = state.selection.ok_or_else(unsupported)?;
+    let cell = containing_table_cell(view, &selection.anchor, plan)?;
+    if containing_table_cell(view, &selection.focus, plan)? != cell {
+        return Err(unsupported());
+    }
+    let node = get(view, cell, plan)?;
+    let align = match align {
+        CellAlign::Left => "left",
+        CellAlign::Center => "center",
+        CellAlign::Right => "right",
+    };
+    if !matches!(node.attributes.get("align"), Some(Attribute::String(current)) if current == align)
+    {
+        let value = Attribute::String(key(align, plan)?);
+        attr(plan, cell.into(), "align", Some(value))?;
+    }
+    Ok(CommandPresentation::default())
+}
+
 fn structural<'a, V: CandidateRead>(
     view: &'a V,
     id: V::Id,
@@ -2329,6 +2378,226 @@ pub(super) fn remove<V: CandidateRead>(
     plan.set_stored_marks(StoredMarksUpdate::Inherit)
         .map_err(KwdjError::operational)?;
     Ok(())
+}
+
+fn table_command_error(code: KwdjErrorCode) -> KwdjError {
+    KwdjError::categorized(code, "/command", "command")
+}
+
+pub(super) fn refuse_table_cell_operation<V: CandidateRead>(
+    view: &V,
+    cell: V::Id,
+    target: Option<V::Id>,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let invalid = || table_command_error(KwdjErrorCode::CommandInvalidTarget);
+    unit(plan, if target.is_some() { 6 } else { 3 })?;
+    let table = crate::table_geometry::table_of_cell(view, cell).ok_or_else(invalid)?;
+    if let Some(target) = target
+        && (target == cell || crate::table_geometry::table_of_cell(view, target) != Some(table))
+    {
+        return Err(invalid());
+    }
+    Err(table_command_error(
+        KwdjErrorCode::TableCellOperationUnsupported,
+    ))
+}
+
+fn empty_table_cell<I>(header: bool, plan: &mut PlanBuilder<'_, I>) -> Result<Node, KwdjError> {
+    let kind = if header { "table_header" } else { "table_cell" };
+    let mut cell = empty_node(kind, Primitive::Container, Attributes::new(), plan)?;
+    let paragraph = empty_node("paragraph", Primitive::TextBlock, Attributes::new(), plan)?;
+    bytes(plan, size_of::<Node>())?;
+    cell.children.push(paragraph);
+    Ok(cell)
+}
+
+#[derive(Clone, Copy)]
+pub(super) enum TableRowEdit {
+    Above,
+    Below,
+    Delete,
+}
+
+pub(super) fn edit_table_row<V: CandidateRead>(
+    view: &V,
+    row: V::Id,
+    edit: TableRowEdit,
+    limits: crate::Limits,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let row_node = get(view, row, plan)?;
+    if kind(row_node.type_id) != "table_row" {
+        return Err(table_command_error(
+            KwdjErrorCode::CommandUnsupportedContext,
+        ));
+    }
+    let table = row_node.parent;
+    let table_node = get(view, table, plan)?;
+    if kind(table_node.type_id) != "table" {
+        return Err(table_command_error(
+            KwdjErrorCode::CommandUnsupportedContext,
+        ));
+    }
+    let target = index(view, table, row, plan)?;
+    let deleting = matches!(edit, TableRowEdit::Delete);
+    if deleting && table_node.children.len() == 1 {
+        return Err(table_command_error(
+            KwdjErrorCode::CommandUnsupportedContext,
+        ));
+    }
+    let seam = target + usize::from(matches!(edit, TableRowEdit::Below));
+    let mut crosses_span = false;
+    let mut headers = [[false; crate::MAX_TABLE_EFFECTIVE_COLUMNS as usize]; 2];
+    let geometry =
+        crate::table_geometry::inspect_table(view, table_node, limits, plan.work(), |cell| {
+            let start = cell.origin.at.row;
+            let end = start + cell.rowspan;
+            if deleting {
+                crosses_span |= cell.rowspan > 1 && start <= target && target < end;
+            } else {
+                crosses_span |= start < seam && seam < end;
+                for (neighbor, header_slots) in [seam.checked_sub(1), Some(seam)]
+                    .into_iter()
+                    .zip(&mut headers)
+                {
+                    if cell.header && neighbor.is_some_and(|row| start <= row && row < end) {
+                        header_slots[cell.origin.at.column..cell.end_column].fill(true);
+                    }
+                }
+            }
+        })
+        .map_err(|error| error.diagnostic("/command"))?;
+    if crosses_span {
+        return Err(table_command_error(KwdjErrorCode::TableNotRectangular));
+    }
+    if deleting {
+        push(plan, Operation::Remove { node: row.into() })?;
+    } else {
+        let previous = &headers[0][..geometry.columns];
+        let next = &headers[1][..geometry.columns];
+        // A pure header row does not extend into the table's outer margin.
+        let reference = if seam > 0 && !previous.iter().all(|header| *header) {
+            Some(previous)
+        } else if seam < geometry.rows && (seam > 0 || !next.iter().all(|header| *header)) {
+            Some(next)
+        } else {
+            None
+        };
+        let mut row = empty_node("table_row", Primitive::Container, Attributes::new(), plan)?;
+        bytes(plan, geometry.columns * size_of::<Node>())?;
+        row.children.reserve_exact(geometry.columns);
+        for column in 0..geometry.columns {
+            row.children.push(empty_table_cell(
+                reference.is_some_and(|headers| headers[column]),
+                plan,
+            )?);
+        }
+        fragment(plan, table.into(), seam, row)?;
+    }
+    Ok(CommandPresentation::default())
+}
+
+#[derive(Clone, Copy)]
+pub(super) enum TableColumnEdit {
+    Left,
+    Right,
+    Delete,
+}
+
+#[derive(Clone, Copy, Default)]
+struct ColumnRowEdit {
+    index: Option<usize>,
+    headers: [bool; 2],
+}
+
+pub(super) fn edit_table_column<V: CandidateRead>(
+    view: &V,
+    table: V::Id,
+    column: usize,
+    edit: TableColumnEdit,
+    limits: crate::Limits,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<CommandPresentation, KwdjError> {
+    let table_node = get(view, table, plan)?;
+    if kind(table_node.type_id) != "table" {
+        return Err(table_command_error(
+            KwdjErrorCode::CommandUnsupportedContext,
+        ));
+    }
+    if column >= crate::MAX_TABLE_EFFECTIVE_COLUMNS as usize {
+        return Err(table_command_error(KwdjErrorCode::CommandInvalidTarget));
+    }
+    let row_ids = table_node.children;
+    let deleting = matches!(edit, TableColumnEdit::Delete);
+    let seam = column + usize::from(matches!(edit, TableColumnEdit::Right));
+    let neighbor_columns = [seam.checked_sub(1), Some(seam)];
+    let row_count = row_ids.len().min(crate::MAX_TABLE_ROWS as usize);
+    unit(plan, row_count)?;
+    bytes(plan, row_count * size_of::<ColumnRowEdit>())?;
+    let mut edits = vec![ColumnRowEdit::default(); row_count];
+    let mut crosses_span = false;
+    let geometry =
+        crate::table_geometry::inspect_table(view, table_node, limits, plan.work(), |cell| {
+            let origin = cell.origin;
+            let start = origin.at.column;
+            let end = cell.end_column;
+            if deleting {
+                if start <= column && column < end {
+                    crosses_span |= end - start > 1;
+                    edits[origin.at.row].index = Some(origin.index);
+                }
+            } else {
+                crosses_span |= start < seam && seam < end;
+                if start < seam {
+                    edits[origin.at.row].index = Some(origin.index + 1);
+                }
+                if cell.header {
+                    for (side, neighbor) in neighbor_columns.into_iter().enumerate() {
+                        if neighbor.is_some_and(|column| start <= column && column < end) {
+                            for row in &mut edits[origin.at.row..origin.at.row + cell.rowspan] {
+                                row.headers[side] = true;
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        .map_err(|error| error.diagnostic("/command"))?;
+    if column >= geometry.columns {
+        return Err(table_command_error(KwdjErrorCode::CommandInvalidTarget));
+    }
+    if deleting && geometry.columns == 1 {
+        return Err(table_command_error(
+            KwdjErrorCode::CommandUnsupportedContext,
+        ));
+    }
+    if crosses_span {
+        return Err(table_command_error(KwdjErrorCode::TableNotRectangular));
+    }
+    if deleting {
+        for (&row, edit) in row_ids.iter().zip(edits) {
+            if let Some(index) = edit.index {
+                let cell = get(view, row, plan)?.children[index];
+                push(plan, Operation::Remove { node: cell.into() })?;
+            }
+        }
+    } else {
+        // Use the neighboring effective cell roles. A header-only outer edge
+        // seeds data cells, as in the legacy table command.
+        let reference = if seam > 0 && edits.iter().any(|row| !row.headers[0]) {
+            Some(0)
+        } else if seam < geometry.columns && (seam > 0 || edits.iter().any(|row| !row.headers[1])) {
+            Some(1)
+        } else {
+            None
+        };
+        for (&row, edit) in row_ids.iter().zip(edits) {
+            let cell = empty_table_cell(reference.is_some_and(|side| edit.headers[side]), plan)?;
+            fragment(plan, row.into(), edit.index.unwrap_or(0), cell)?;
+        }
+    }
+    Ok(CommandPresentation::default())
 }
 
 pub(super) fn prepare<V: CandidateRead>(

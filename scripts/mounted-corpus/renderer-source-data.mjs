@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import {createHash} from 'node:crypto';
 export const descriptorPath = 'contracts/mounted-e2e/v1.6/renderer-source.json';
-export const descriptorPin = Object.freeze({path:descriptorPath,bytes:279657,sha256:'c2e9a2a4a5af31997148826ed785b1fb62b41941aa4ae02b4af5ecf012fb0a4f'});
+export const descriptorPin = Object.freeze({path:descriptorPath,bytes:295644,sha256:'c85463e170ea0954a55f28ff1adf6740337b8f74764efbc6fab70b031f55dcac'});
 export const selfPath = 'scripts/mounted-corpus/renderer-source-data.mjs';
 export const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 export function requireSource(ok, message) {

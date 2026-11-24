@@ -62,6 +62,22 @@ function textBlock(node: DeepReadonly<NodeViewDto>, tag: DomPresentation['tag'])
   }
   return { tag, classes };
 }
+function tableCell(n: DeepReadonly<NodeViewDto>, tag: 'th' | 'td'): DomPresentation | DomRefusal {
+  const attributes: Partial<Record<'colspan' | 'rowspan', string>> = {};
+  for (const key of ['colspan', 'rowspan'] as const) {
+    const span = n.attributes[key];
+    if (span === undefined) continue;
+    if (span.kind !== 'number') return refused(n.type_id, n);
+    attributes[key] = span.value;
+  }
+  const classes: string[] = [];
+  if (Object.hasOwn(n.attributes, 'align')) {
+    const alignment = attrString(n.attributes.align);
+    if (alignment !== 'left' && alignment !== 'center' && alignment !== 'right') return refused(n.type_id, n);
+    classes.push(`editor-align-${alignment}`);
+  }
+  return { tag, attributes, classes };
+}
 const node = (primitive: string, attributes: readonly string[], present: NodeRendererDefinition['present']): NodeRendererDefinition => ({ primitive, attributes, present });
 function labeledContainer(fallback: string): NodeRendererDefinition {
   return node('container', ['label'], n => {
@@ -99,6 +115,10 @@ const nodes: Record<string, NodeRendererDefinition> = {
       attributes: { title: checked.value ? 'Completed task' : 'Incomplete task' } } : refused(n.type_id, n);
   }),
   [`${prefix}scene_break`]: node('block_atom', [], () => ({ tag: 'hr', classes: ['editor-scene-break'], attributes: { role: 'separator', 'aria-label': 'Scene break' } })),
+  [`${prefix}table`]: node('container', [], () => ({ tag: 'table' })),
+  [`${prefix}table_row`]: node('container', [], () => ({ tag: 'tr' })),
+  [`${prefix}table_header`]: node('container', ['align', 'colspan', 'rowspan'], n => tableCell(n, 'th')),
+  [`${prefix}table_cell`]: node('container', ['align', 'colspan', 'rowspan'], n => tableCell(n, 'td')),
   [`${prefix}verse`]: node('container', [], () => ({
     tag: 'div', classes: ['editor-verse'], attributes: { role: 'group', 'aria-label': 'Verse' },
   })),
@@ -186,7 +206,8 @@ function coveredClipboard(value: unknown): boolean {
       || Object.keys(node).some(k => !['type','attrs','text','marks','content'].includes(k))) return false;
     // These renderers cover document readback. The mounted clipboard subset is separate.
     if (node.type === 'media_image' || node.type === 'literary_block' || node.type === 'warning'
-      || node.type === 'spoiler' || node.type === 'disclosure') return false;
+      || node.type === 'spoiler' || node.type === 'disclosure'
+      || ['table', 'table_row', 'table_header', 'table_cell'].includes(node.type)) return false;
     const renderer = Object.hasOwn(nodes, prefix + node.type) ? nodes[prefix + node.type] : null;
     if (!renderer) return false;
     const attrs = node.attrs === undefined ? {} : node.attrs;
@@ -214,10 +235,15 @@ function coveredCommand(id: string, payload: Record<string, unknown>): boolean {
   const name = id.slice(`${prefix}command/`.length);
   if (!id.startsWith(`${prefix}command/`) || payload.kind !== name.replaceAll('-', '_')) return false;
   switch (name) {
-    case 'enter': case 'shift-enter': case 'delete-backward': case 'unset-link': case 'toggle-quote': case 'dismiss-slash':
+    case 'enter': case 'shift-enter': case 'delete-backward': case 'delete-forward': case 'unset-link': case 'toggle-quote': case 'dismiss-slash':
       return closed(payload, ['kind']);
     case 'delete-selection':
       return payload.scope === 'profile_body' ? closed(payload, ['kind', 'scope']) : closed(payload, ['kind']);
+    case 'merge-cells': return closed(payload, ['kind', 'anchor', 'focus'])
+      && smallString(payload.anchor, 128) && smallString(payload.focus, 128);
+    case 'split-cell': return closed(payload, ['kind', 'cell']) && smallString(payload.cell, 128);
+    case 'move-cell': return closed(payload, ['kind', 'cell', 'target'])
+      && smallString(payload.cell, 128) && smallString(payload.target, 128);
     case 'insert-fragment': {
       if (!closed(payload, ['kind','fragment_json']) || payload.kind !== 'insert_fragment' || typeof payload.fragment_json !== 'string' || payload.fragment_json.length > 2_097_152) return false;
       try { return coveredClipboard(JSON.parse(payload.fragment_json)); } catch { return false; }
@@ -233,6 +259,13 @@ function coveredCommand(id: string, payload: Record<string, unknown>): boolean {
     case 'insert-block': return closed(payload, ['kind', 'target']) && (coveredTarget(payload.target)
       || closed(payload.target, ['kind', 'warning_kind']) && payload.target.kind === 'warning' && warningKind(payload.target.warning_kind));
     case 'toggle-list': return closed(payload, ['kind', 'list']) && coveredList(payload.list);
+    case 'insert-row-above': case 'insert-row-below': case 'delete-row':
+      return closed(payload, ['kind','row']) && typeof payload.row==='string';
+    case 'insert-column-left': case 'insert-column-right': case 'delete-column':
+      return closed(payload, ['kind','table','column']) && typeof payload.table==='string'
+        && typeof payload.column==='number' && Number.isSafeInteger(payload.column) && payload.column>=0 && payload.column<=0xffffffff;
+    case 'set-table-cell-align':
+      return closed(payload, ['kind','align']) && (payload.align==='left' || payload.align==='center' || payload.align==='right');
     case 'move': return closed(payload, ['kind', 'node', 'parent', 'before_index']);
     case 'duplicate': return closed(payload, ['kind', 'node', 'parent', 'index']);
     case 'remove': return closed(payload, ['kind', 'node']);
@@ -284,6 +317,7 @@ const result = defineRendererCatalog({
     enter: () => kwdjCommand({ kind: 'enter' }),
     lineBreak: () => kwdjCommand({ kind: 'shift_enter' }),
     deleteBackward: () => createCommand(`${prefix}command/delete-backward`, { kind: 'delete_backward' }),
+    deleteForward: () => kwdjCommand({ kind: 'delete_forward' }),
   },
 });
 if ('status' in result) throw new Error('Invalid shipped KWDJ renderer catalog');

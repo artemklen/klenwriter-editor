@@ -15,7 +15,7 @@ export interface UiActionContext {readonly context:DeepReadonly<SessionContextV2
  readonly block:UiBlockContext|null}
 export type UiCommandFactory=(captured:UiActionContext)=>CommandDto|UiUnavailable;
 export interface UiCommandAction {readonly kind:'command'|'toggle';readonly id:string;
- readonly label:UiText;readonly command:UiCommandFactory}
+ readonly label:UiText;readonly command:UiCommandFactory;readonly nativeDisabled?:true}
 export interface UiHostAction {readonly kind:'host';readonly id:string;
  readonly label:UiText;readonly __uiHostAction:unique symbol}
 export type UiAction=UiCommandAction|UiHostAction;
@@ -33,6 +33,7 @@ export interface UiDragContext {readonly context:DeepReadonly<SessionContextV2>;
 export type UiDragFactory=(captured:UiDragContext,destination:DragDestination)=>CommandDto|UiUnavailable;
 export interface UiDragProfile {readonly move:UiDragFactory}
 export interface UiProfile {readonly toolbar:readonly UiAction[];
+ readonly contextualToolbar?:(captured:UiActionContext)=>readonly UiCommandAction[];
  readonly insertions:readonly UiCommandAction[];
  readonly blockActions:readonly UiHostAction[];
  readonly slash?:UiSlashProfile;

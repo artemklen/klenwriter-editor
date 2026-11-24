@@ -184,6 +184,7 @@ function completedOk(result: ReturnType<MountedEditor['selection']['restoreBookm
 }
 
 class LabelOwner {
+  readonly #document: Document;
   readonly #bindings = new Map<string, Binding>();
   readonly #observer: MutationObserver;
   readonly #unsubscribe: () => void;
@@ -191,6 +192,7 @@ class LabelOwner {
   #bodyBinding: Binding | null = null;
 
   constructor(readonly editor: MountedEditor, readonly root: HTMLElement) {
+    this.#document = root.ownerDocument;
     const unsubscribe = editor.subscribe(event => {
       const point = collapsed(event.selection_after);
       if (!point || !this.#continuation || !samePoint(point, this.#continuation.next)
@@ -212,7 +214,8 @@ class LabelOwner {
       }
     });
     this.#observer.observe(root, { childList: true, attributes: true, attributeFilter: ['contenteditable', 'aria-disabled'] });
-    root.addEventListener('keydown', this.#rootKey);
+    // A ready editor already owns document-bubble navigation inside its tables.
+    this.#document.addEventListener('keydown', this.#rootKey);
     root.addEventListener('focusout', this.#resetRoute);
     root.addEventListener('pointerdown', this.#resetRoute);
   }
@@ -299,7 +302,7 @@ class LabelOwner {
         if (this.#bindings.size === 0) {
           this.#observer.disconnect();
           this.#unsubscribe();
-          this.root.removeEventListener('keydown', this.#rootKey);
+          this.#document.removeEventListener('keydown', this.#rootKey);
           this.root.removeEventListener('focusout', this.#resetRoute);
           this.root.removeEventListener('pointerdown', this.#resetRoute);
           owners.delete(this.editor);
@@ -423,7 +426,8 @@ class LabelOwner {
   }
 
   #rootKey = (event: KeyboardEvent): void => {
-    if (!routedKey(event) || this.root.ownerDocument.activeElement !== this.root) return;
+    if (!routedKey(event) || this.#document.activeElement !== this.root
+      || !event.composedPath().includes(this.root)) return;
     const state = readState(this.editor);
     const point = state ? collapsed(state.selection) : null;
     if (!state || !point) return;

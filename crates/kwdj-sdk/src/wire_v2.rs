@@ -315,3 +315,61 @@ pub struct KwdjTypingLimitsV2 {
     #[cfg_attr(all(feature = "sdk-types", not(target_arch = "wasm32")), ts(optional))]
     pub restoration_bytes: Option<u32>,
 }
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum KwdjTableRowIntentV2 {
+    InsertRowAbove { row: String },
+    InsertRowBelow { row: String },
+    DeleteRow { row: String },
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum KwdjTableColumnIntentV2 {
+    InsertColumnLeft { table: String, column: u32 },
+    InsertColumnRight { table: String, column: u32 },
+    DeleteColumn { table: String, column: u32 },
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum TableCellAlignV2 {
+    Left,
+    Center,
+    Right,
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum KwdjTableCellAlignIntentV2 {
+    SetTableCellAlign { align: TableCellAlignV2 },
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum KwdjTableCellIntentV2 {
+    MergeCells { anchor: String, focus: String },
+    SplitCell { cell: String },
+    MoveCell { cell: String, target: String },
+}

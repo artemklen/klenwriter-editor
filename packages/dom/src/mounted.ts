@@ -15,6 +15,7 @@ import { attachInput } from './input.js';
 import type { InputOwner, InputResources } from './input.js';
 import { InputObservationOwner } from './input-observations.js';
 import { PopupPresentationOwner } from './popup-presentation.js';
+import { unprojectableTableSelection } from './table-navigation.js';
 import type { ClipboardOutcome, CompositionRecovery, MountedClipboardController, DestroyReceipt, DomDiagnostic, DomLayoutPolicy, DomPatchPolicy, DomRefusal, DomTextRepresentation, InteractionMode, MountedEditor, MountedLifecycle, MountedMutation, MountedMutationV2, MountedReady, MountedResourceCounts, MountEditorOptions, RecoveryPacket, RecoveryRegion, RendererCatalog, SelectionReadFailure, TypedInputRecovery } from './types.js';
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 const isFailure = (value: unknown): value is DomRefusal => !!value && (value as DomRefusal).status === 'dom_refused';
@@ -576,6 +577,15 @@ class MountedOwner implements MountedEditor {
     try { capability = this.#catalog!.definition.commandGate(request); }
     catch { capability = this.#failure('dom.command_unsupported'); }
     if (capability) return this.#report(capability);
+    if (!input && request.kind === 'set_selection' && this.#view && request.stamp && Object.keys(request).length === 3) {
+      const current = this.#controller?.capture(), presented = this.#view.geometryStamp();
+      const keys = Object.keys(current ?? {}) as (keyof StampDto)[];
+      if (current && presented && keys.length === Object.keys(request.stamp).length
+        && keys.every(key => current[key] === request.stamp[key] && current[key] === presented[key])
+        && unprojectableTableSelection(this.#view,request.selection)) {
+        return this.#report(this.#failure('dom.presentation_unsupported','selection'));
+      }
+    }
     const layoutFailure = request.kind === 'set_selection' ? this.#view?.prepareLayoutSelection?.(request.selection)
       : kind === 'command' || kind === 'input_command' || kind === 'history' ? this.#view?.retireLayout?.() : null;
     if (layoutFailure) return layoutFailure.diagnostic.publication === 'unknown' ? layoutFailure : this.#report(layoutFailure);

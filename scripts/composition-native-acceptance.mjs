@@ -18,10 +18,11 @@ process.chdir(root);
 const args=process.argv.slice(2),option=name=>{const at=args.indexOf(name);return at<0?null:args[at+1];};
 const browserName=option('--browser'),output=option('--output'),brokerPath=option('--broker');
 const names=args.filter((_,index)=>index%2===0);
-const verse=option('--fixture')==='verse';
-const usage='Usage: node scripts/composition-native-acceptance.mjs --browser chrome --output /absolute/fresh/report.json [--fixture verse] OR --browser safari --output /absolute/fresh/report.json --broker /absolute/fresh/broker/config.json [--fixture verse]';
+const fixtureName=option('--fixture');
+const verse=fixtureName==='verse',tableCell=fixtureName==='table-cell',scoped=verse||tableCell;
+const usage='Usage: node scripts/composition-native-acceptance.mjs --browser chrome --output /absolute/fresh/report.json [--fixture verse|table-cell] OR --browser safari --output /absolute/fresh/report.json --broker /absolute/fresh/broker/config.json [--fixture verse|table-cell]';
 const required=browserName==='chrome'?['--browser','--output']:browserName==='safari'?['--browser','--output','--broker']:[];
-if(verse)required.push('--fixture');
+if(scoped)required.push('--fixture');
 if(args.length!==required.length*2||new Set(names).size!==required.length||!names.every(name=>required.includes(name))||!['chrome','safari'].includes(browserName)||!output?.startsWith('/'))throw Error(usage);
 const outside=path=>{const actual=resolve(path);if(actual===root||actual.startsWith(root+'/'))throw Error('Installed evidence and broker config must be outside checkout');return actual;};
 const outputPath=outside(output);
@@ -32,14 +33,14 @@ const pin=path=>{const bytes=readFileSync(resolve(root,path));return {path,bytes
 const helperPin=path=>{const bytes=readFileSync(path);return {path,bytes:bytes.length,sha256:hash(bytes),mode:(statSync(path).mode&0o7777).toString(8).padStart(4,'0')};};
 const walk=path=>readdirSync(path,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()?walk(`${path}/${entry.name}`):entry.isFile()?[`${path}/${entry.name}`]:[]);
 const {native,dom}=loadCompositionContract();
-const verseFixturePath='tests/fixtures/osr-200-verse-composition.json';
-const verseFixture=verse?JSON.parse(readFileSync(verseFixturePath,'utf8')):null;
-if(verse)assert.equal(verseFixture.format,'kwdj-installed-verse-composition/1');
+const fixturePath=tableCell?'tests/fixtures/osr-211-table-cell-composition.json':'tests/fixtures/osr-200-verse-composition.json';
+const installedFixture=scoped?JSON.parse(readFileSync(fixturePath,'utf8')):null;
+if(scoped)assert.equal(installedFixture.format,`kwdj-installed-${fixtureName}-composition/1`);
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const monotonic=()=>performance.now();
-const report={format:verse?'klenwriter-editor-installed-verse-composition/1':'klenwriter-editor-installed-composition-native/1',browser:browserName,status:'NOT_RUN',startedAt:new Date().toISOString(),
+const report={format:scoped?`klenwriter-editor-installed-${fixtureName}-composition/1`:'klenwriter-editor-installed-composition-native/1',browser:browserName,status:'NOT_RUN',startedAt:new Date().toISOString(),
   locales:[],setup:[],physicalActions:[],restoration:null,
-  scope:verse?'Installed Chrome or Safari in one authored verse line: separate US/Russian ordinary input and one US Option+E/E preedit and exactly-once commit, with guarded physical keys, exact model, one Undo and input-source restoration.':
+  scope:scoped?`Installed Chrome or Safari in one authored ${tableCell?'table cell':'verse line'}: separate US/Russian ordinary input and one US Option+E/E preedit and exactly-once commit, with guarded physical keys, exact model, one Undo and input-source restoration.`:
     'Actual installed macOS Chrome/Safari composition41: guarded System Events keys, US OptionE/E actual UA traces, packaged SDK2/sealed WASM, exact source-authored model/history/undo and object/recovery observations. Conditional Escape/blur dispositions are explicit. Not hardware-device, CJK/mobile/AT or independent-review evidence.'};
 const save=()=>writeFileSync(outputPath,JSON.stringify(report,null,2)+'\n');
 function run(command,argv,{fullStdout=false,timeout=30000,maxBuffer=1024*1024}={}){
@@ -152,19 +153,19 @@ function keyAck(value,action,code,{alt=false,shift=false}={}){assert.equal(value
 function literalTree(actual,literal){assert.equal(actual.nodeType,literal.nodeType);if(literal.nodeType===3){assert.equal(actual.data,literal.data);return;}assert.equal(actual.tag,literal.tag);for(const [key,value]of Object.entries(literal.attributes))assert.equal(actual.attributes[key],value,'Literal DOM attribute '+key);assert.equal(actual.children.length,literal.children.length);actual.children.forEach((child,i)=>literalTree(child,literal.children[i]));}
 function literalDom(actual,literal){assert.equal(actual.length,literal.length);actual.forEach((node,i)=>literalTree(node,literal[i]));}
 function presentation(family){const id=family+'-forward',installed=dom.installedLiteralBranches.find(x=>x.nativeCase===id);if(installed)return {dom:installed.expectedCommittedDom,selection:installed.finalDomSelection,outside:installed.outsideActualObjectsUnchanged};const controlled=dom.cases.find(x=>x.nativeCase===id&&x.expected?.committedDom);assert.ok(controlled,'Frozen presentation required for '+family);return {dom:controlled.expected.committedDom,selection:controlled.expected.finalDomSelection,outside:controlled.expected.outsideActualObjectsUnchanged};}
-async function committed(entry,prepared,family){const literal=byId(family+'-forward'),after=await checkpoint(entry,'committed');assert.equal(after.canonical,verse?verseFixture.committed[family].canonical_json:literal.after_canonical_json);expectedState(after.state,literal.after_state,prepared.before.roles);assert.equal(after.events.filter(x=>x.change.kind==='document').length-prepared.before.events.filter(x=>x.change.kind==='document').length,1,'Exactly one native document publication');
-  for(const role of verse?['V',...literal.identity.retained_live]:literal.identity.retained_live){const id=prepared.before.roles[role];assert.ok(after.rows.some(x=>x.node.id===id),'Retained native '+role);}for(const role of literal.identity.retired_old)assert.ok(!after.rows.some(x=>x.node.id===prepared.before.roles[role]),'Retired native '+role);
-  for(const role of verse?verseFixture.nativeOutside:literal.identity.unchanged_outside_roles??[]){const id=prepared.before.roles[role],a=after.rows.find(x=>x.node.id===id).node,b=prepared.before.rows.find(x=>x.node.id===id).node;for(const key of ['id','type_id','attributes','marks','text','children'])assert.deepEqual(a[key],b[key],'Outside native '+role+'/'+key);}
+async function committed(entry,prepared,family){const literal=byId(family+'-forward'),after=await checkpoint(entry,'committed');assert.equal(after.canonical,scoped?installedFixture.committed[family].canonical_json:literal.after_canonical_json);expectedState(after.state,literal.after_state,prepared.before.roles);assert.equal(after.events.filter(x=>x.change.kind==='document').length-prepared.before.events.filter(x=>x.change.kind==='document').length,1,'Exactly one native document publication');
+  for(const role of scoped?[...installedFixture.nativeOutside,...literal.identity.retained_live]:literal.identity.retained_live){const id=prepared.before.roles[role];assert.ok(after.rows.some(x=>x.node.id===id),'Retained native '+role);}for(const role of literal.identity.retired_old)assert.ok(!after.rows.some(x=>x.node.id===prepared.before.roles[role]),'Retired native '+role);
+  for(const role of scoped?installedFixture.nativeOutside:literal.identity.unchanged_outside_roles??[]){const id=prepared.before.roles[role],a=after.rows.find(x=>x.node.id===id).node,b=prepared.before.rows.find(x=>x.node.id===id).node;for(const key of ['id','type_id','attributes','marks','text','children'])assert.deepEqual(a[key],b[key],'Outside native '+role+'/'+key);}
   assert.equal(after.lifecycle,'ready');assert.equal(after.recovery,null);assert.deepEqual(after.errors,[]);assert.equal(after.traceOverflow,false);
-  const rendered=verse?{dom:verseFixture.committed[family].dom,selection:verseFixture.finalDomSelection,outside:verseFixture.domOutside}:presentation(family);
+  const rendered=scoped?{dom:installedFixture.committed[family].dom,selection:installedFixture.finalDomSelection,outside:installedFixture.domOutside}:presentation(family);
   literalDom(after.dom,rendered.dom);
   for(const role of rendered.outside){assert.equal(after.objects[role]?.connected,true,'Actual outside object '+role);assert.deepEqual(after.objects[role].attributes,prepared.before.objects[role].attributes);assert.equal(after.objects[role].text,prepared.before.objects[role].text);}
   assert.equal(after.rawDom.inside,true);for(const edge of ['anchor','focus']){const expected=rendered.selection[edge];assert.deepEqual(after.rawDom[edge].path,expected.path);assert.equal(after.rawDom[edge].nodeType,expected.nodeType);assert.equal(after.rawDom[edge].offset,expected.offsetUtf16);}
   if(family==='P17')for(const role of ['P','T_outer','T_mark','BR','C_outer','C_mark','C_text'])assert.equal(after.objects[role]?.connected,true,'Marked/hardbreak object '+role);
   assert.equal(after.trace.filter(x=>x.kind==='dom-write'&&x.writer==='adapter'&&x.phase==='composing'&&x.insideWindow).length,0,'No adapter writes into active UA subtree');
-  assert.equal((await adapter.call('undo')).response?.status,'ok');const undo=await checkpoint(entry,'undo');assert.equal(undo.canonical,verse?verseFixture.input.canonical_json:literal.undo.canonical_json);expectedState(undo.state,literal.undo.state,prepared.before.roles);assert.deepEqual(new Set(undo.rows.map(x=>x.node.id)),new Set(prepared.before.rows.map(x=>x.node.id)),'Undo exact historical IDs');
-  if(verse){
-    literalDom(undo.dom,verseFixture.fixture.before);
+  assert.equal((await adapter.call('undo')).response?.status,'ok');const undo=await checkpoint(entry,'undo');assert.equal(undo.canonical,scoped?installedFixture.input.canonical_json:literal.undo.canonical_json);expectedState(undo.state,literal.undo.state,prepared.before.roles);assert.deepEqual(new Set(undo.rows.map(x=>x.node.id)),new Set(prepared.before.rows.map(x=>x.node.id)),'Undo exact historical IDs');
+  if(scoped){
+    literalDom(undo.dom,installedFixture.fixture.before);
     assert.equal(undo.events.filter(x=>x.change.kind==='document').length,after.events.filter(x=>x.change.kind==='document').length+1,'Exactly one Undo document publication');
     return after;
   }
@@ -173,7 +174,7 @@ async function committed(entry,prepared,family){const literal=byId(family+'-forw
 function checkPreparedVerse(prepared){
   assert.equal(prepared.fixture,'verse');
   const {before}=prepared;
-  assert.equal(before.canonical,verseFixture.input.canonical_json);
+  assert.equal(before.canonical,installedFixture.input.canonical_json);
   const wrapper=before.rows.find(row=>row.path==='/0').node,line=before.rows.find(row=>row.path==='/0/0').node;
   assert.equal(wrapper.id,before.roles.V);
   assert.equal(wrapper.type_id,'org.klenwriter.kwdj/verse');
@@ -182,17 +183,31 @@ function checkPreparedVerse(prepared){
   assert.equal(line.parent,wrapper.id);
   assert.deepEqual(line.attributes.indent,{kind:'number',value:'3'});
 }
+function checkPreparedTableCell(prepared){
+  assert.equal(prepared.fixture,'table-cell');
+  const {before}=prepared;
+  assert.equal(before.canonical,installedFixture.input.canonical_json);
+  for(const [role,kind,parent] of [
+    ['TABLE','table','ROOT'],['ROW1','table_row','TABLE'],['CELL','table_cell','ROW1'],
+    ['P','paragraph','CELL'],['T','text','P'],
+  ]){
+    const node=before.rows.find(row=>row.node.id===before.roles[role])?.node;
+    assert.equal(node?.type_id,`org.klenwriter.kwdj/${kind}`);
+    assert.equal(node.parent,before.roles[parent]);
+  }
+}
 async function performCase(entry,prepared){
   if(verse)checkPreparedVerse(prepared);
+  if(tableCell)checkPreparedTableCell(prepared);
   if(entry.caseId==='ordinary-layout'){
     const action=await physical(entry.locale==='en'?'ordinary-en':'ordinary-ru',entry);const after=await adapter.call('settle');
     keyAck(after,action,'KeyZ',{shift:entry.locale==='en'});
-    if(verse)assert.deepEqual(after.uaComposition,{starts:0,ends:0,open:false},'Ordinary layout input has no composition cycle');
+    if(scoped)assert.deepEqual(after.uaComposition,{starts:0,ends:0,open:false},'Ordinary layout input has no composition cycle');
     entry.disposition='ordinary_layout_not_IME';await committed(entry,prepared,entry.locale==='en'?'P01':'P02');return;
   }
   const start=await physical('deadkey-acute',entry),preedit=await checkpoint(entry,'actual US OptionE preedit');keyAck(preedit,start,'KeyE',{alt:true});assert.ok(preedit.inputTrace.slice(start.inputTraceBefore).some(x=>x.event==='compositionstart'&&x.isTrusted),'Actual UA compositionstart required');
   assert.equal(preedit.lifecycle,'ready','Preedit must remain admitted before further physical input');assert.equal(preedit.recovery,null,'No further physical input after provisional recovery');
-  if(verse){
+  if(scoped){
     assert.equal(preedit.uaComposition.open,true,'Composition must be open before physical completion');
     assert.equal(preedit.canonical,prepared.before.canonical);
     assert.equal(preedit.state.stamp.revision,prepared.before.state.stamp.revision);
@@ -204,7 +219,7 @@ async function performCase(entry,prepared){
     keyAck(final,action,'KeyE');
     const completion=final.inputTrace.slice(action.inputTraceBefore);
     assert.ok(completion.some(x=>x.event==='compositionend'),'Actual UA compositionend required');
-    if(verse){
+    if(scoped){
       assert.ok(completion.some(x=>x.event==='input'&&x.isTrusted),'Trusted completion input required');
       assert.equal(final.uaComposition.open,false);
     }
@@ -227,17 +242,18 @@ async function performCase(entry,prepared){
 try{
   assert.equal(process.platform,'darwin','Installed native acceptance requires macOS');assert.equal(process.version,'v24.22.0','Pinned acceptance Node');report.nodeVersion=process.version;
   report.os={productVersion:run('/usr/bin/sw_vers',['-productVersion']).stdout.trim(),buildVersion:run('/usr/bin/sw_vers',['-buildVersion']).stdout.trim()};
-  if(verse)assert.ok(!process.env.CFFIXED_USER_HOME,'Run installed verse acceptance in the real user environment');
+  if(scoped)assert.ok(!process.env.CFFIXED_USER_HOME,`Run installed ${fixtureName} acceptance in the real user environment`);
   const identity=computeSdkBuildIdentity(),built=JSON.parse(readFileSync('artifacts/sdk-build-identity.json','utf8'));assert.equal(built.buildId,identity.buildId,'Build exact current production source before installed input');assert.deepEqual(built.sourceHashes,identity.sourceHashes);
   report.buildId=identity.buildId;
   const paths=[...new Set([...Object.keys(identity.sourceHashes),...walk('contracts/composition'),...walk('scripts/composition-native'),
     ...walk('packages/wasm/dist'),...walk('packages/sdk/dist'),...walk('packages/dom/dist'),...walk('packages/kwdj/dist'),
-    ...(verse?[verseFixturePath,'artifacts/extensions/packet.json']:[]),
+    ...(scoped?[fixturePath,'artifacts/extensions/packet.json']:[]),
+    ...(tableCell?['contracts/kwdj/v1/fixtures/positive.json']:[]),
     'scripts/composition-native-acceptance.mjs','scripts/composition-native-input.swift','scripts/dom-native-input-source.swift','spikes/workspace/composition-native-host.js',
     'spikes/workspace/composition-host.js','spikes/workspace/composition.css','spikes/workspace/composition.html','scripts/workspace-server.mjs','artifacts/sdk-build-identity.json',
     'scripts/composition-contract-data.mjs','scripts/composition-csp-policy.mjs','scripts/selection-native/protocol.mjs','artifacts/sdk-native-manifest.json','artifacts/sdk-native-manifest-v2.json','artifacts/sdk-wasm-seal.json'])].sort();
   report.source={head:run('git',['rev-parse','HEAD']).stdout.trim(),trackedDirty:run('git',['status','--porcelain','--untracked-files=no']).stdout.trim(),pins:paths.map(pin)};
-  if(verse)assert.equal(report.source.trackedDirty,'','Installed verse acceptance requires exact clean tracked source');
+  if(scoped)assert.equal(report.source.trackedDirty,'',`Installed ${fixtureName} acceptance requires exact clean tracked source`);
   const seal=JSON.parse(readFileSync('artifacts/sdk-wasm-seal.json','utf8'));assert.equal(seal.build_id,identity.buildId);assert.equal(seal.sealed_sha256,pin('packages/wasm/dist/editor_wasm_bg.wasm').sha256);
   const bundle=browserName==='chrome'?'/Applications/Google Chrome.app/Contents/Info.plist':'/Applications/Safari.app/Contents/Info.plist';
   assert.ok(existsSync(bundle),'Installed browser bundle required');report.bundleVersion=run('/usr/libexec/PlistBuddy',['-c','Print :CFBundleShortVersionString',bundle]).stdout.trim();report.bundleBuild=run('/usr/libexec/PlistBuddy',['-c','Print :CFBundleVersion',bundle]).stdout.trim();
@@ -255,16 +271,16 @@ try{
   const russian='com.apple.keylayout.Russian';assert.ok(initial.sources.some(row=>row.id===russian&&row.enabled&&row.selectable),'Frozen installed matrix requires existing enabled/selectable Russian source');
   adapter=await(browserName==='chrome'?chrome():createSafariAdapter({config,report,run,outputPath,inputHelper,keyScriptPath}));await adapter.navigate();
 
-  if(verse)assert.equal(report.browserVersion,report.bundleVersion,'Installed verse browser matches the selected bundle');
+  if(scoped)assert.equal(report.browserVersion,report.bundleVersion,`Installed ${fixtureName} browser matches the selected bundle`);
   else assert.equal(report.bundleVersion,browserName==='chrome'?'155.0.8059.85':'27.0.1','Pinned installed browser version');
   let blocked=false;
   for(const [locale,inputSourceId]of [['en','com.apple.keylayout.US'],['ru',russian]]){
     const lane={locale,inputSourceId,status:'NOT_RUN',cases:[]};report.locales.push(lane);
     if(!blocked){await adapter.focus();await selectSource(inputSourceId);}
-    const laneCases=verse?(locale==='en'?['ordinary-layout','plain-deadkey']:['ordinary-layout']):caseIds;
+    const laneCases=scoped?(locale==='en'?['ordinary-layout','plain-deadkey']:['ordinary-layout']):caseIds;
     for(const caseId of laneCases){const entry={locale,caseId,status:'NOT_RUN',checkpoints:[],startedAt:new Date().toISOString()};lane.cases.push(entry);save();if(blocked){entry.reason='Earlier failure disables physical input';continue;}
       let prepared=null,prepareAttempted=false,priorLayout=null;
-      try{priorLayout=source().current.id;if(caseId!=='ordinary-layout')await selectSource('com.apple.keylayout.US');prepareAttempted=true;prepared=await adapter.call('prepare',locale,caseId,...(verse?['verse']:[]));entry.prepared=prepared;assert.equal(prepared.before.context.build_id,identity.buildId);await performCase(entry,prepared);entry.status='PASSED';}
+      try{priorLayout=source().current.id;if(caseId!=='ordinary-layout')await selectSource('com.apple.keylayout.US');prepareAttempted=true;prepared=await adapter.call('prepare',locale,caseId,...(scoped?[fixtureName]:[]));entry.prepared=prepared;assert.equal(prepared.before.context.build_id,identity.buildId);await performCase(entry,prepared);entry.status='PASSED';}
       catch(error){entry.status=prepared?'FAILED':'NOT_RUN';entry.error={message:error.message,stack:error.stack,execution:error.execution??null};blocked=true;}
       finally{if(adapter.keysPending){try{entry.failedOwnedKeyCleanup=await adapter.releaseOwnedKeys();}catch(error){entry.keyCleanupError=error.message;}entry.status='FAILED';blocked=true;}
         if(prepareAttempted){if(entry.status!=='PASSED')try{entry.failedCaseEvidence=await adapter.call('checkpoint');}catch(error){entry.failedEvidenceError=error.message;}try{entry.finish=await adapter.call('finish');released(entry.finish);}catch(error){entry.finishError=error.message;entry.status='FAILED';blocked=true;}}

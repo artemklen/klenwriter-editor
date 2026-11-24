@@ -23,6 +23,10 @@
 .editor-surface .editor-task-item::before { content: '\2610'; position: absolute; inset-inline-start: -1.25em; }
 .editor-surface .editor-task-item.editor-checked::before { content: '\2611'; }
 .editor-surface .editor-scene-break { margin-block: 1.5em; border: 0; border-top: 1px solid currentColor; }
+.editor-surface [data-editor-table-cell-selected] {
+  outline: 2px solid var(--editor-focus-color);
+  outline-offset: -2px;
+}
 .editor-surface .editor-verse-line {
   padding-inline-start: calc(attr(data-verse-indent type(<number>), 0) * 2ch);
 }

@@ -8,6 +8,7 @@ import { domRefusal, isDomRefusal } from './refusal.js';
 import { CompositionOwner } from './composition.js';
 import type { OrdinaryInputCapture } from './input-observations.js';
 import { InputResultOwner, type PreparedInput, type TypingResources } from './input-result.js';
+import { tableCell } from './table-navigation.js';
 export interface InputResources { readonly continuations:number; readonly retainedInputBytes:number; readonly retainedRecoveryRegions:number; readonly typing?:TypingResources }
 export interface InputOwner {
   destroy(): void; listeners(): number;
@@ -75,7 +76,15 @@ export function attachInput(options: InputConfiguration): InputOwner {
       case 'insertParagraph': return options.bindings.enter?.() ?? null;
       case 'insertLineBreak': return options.bindings.lineBreak?.() ?? null;
       case 'deleteContentBackward': return noncollapsed ? options.bindings.deleteSelection?.() ?? null : options.bindings.deleteBackward?.() ?? null;
-      case 'deleteContentForward': return noncollapsed ? options.bindings.deleteSelection?.() ?? null : null;
+      case 'deleteContentForward': {
+        if (noncollapsed) return options.bindings.deleteSelection?.() ?? null;
+        const selection = view.readSelection();
+        if (!selection || isDomRefusal(selection)) return null;
+        const cell = tableCell(view, selection.focus)?.cell.outer;
+        const focus = doc.getSelection()?.focusNode;
+        return focus && cell && element.contains(cell) && cell.contains(focus)
+          ? options.bindings.deleteForward?.() ?? null : null;
+      }
       default: return null;
     }
   }

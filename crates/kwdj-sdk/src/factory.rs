@@ -349,7 +349,7 @@ mod tests {
         assert!(session.context().is_some());
         let catalog = call(&mut session, json!({"kind":"catalog"}));
         let commands = catalog["value"]["commands"].as_array().unwrap();
-        assert_eq!(commands.len(), 29);
+        assert_eq!(commands.len(), 39);
         assert!(
             commands
                 .iter()
@@ -579,6 +579,18 @@ mod tests {
                                 sorted.push(editor_kwdj::commands::SET_WARNING_KIND_COMMAND_ID);
                                 sorted.push(editor_kwdj::commands::WRAP_WARNING_COMMAND_ID);
                                 sorted.push(editor_kwdj::commands::UNWRAP_WARNING_COMMAND_ID);
+                                sorted.extend([
+                                    editor_kwdj::commands::INSERT_ROW_ABOVE_COMMAND_ID,
+                                    editor_kwdj::commands::INSERT_ROW_BELOW_COMMAND_ID,
+                                    editor_kwdj::commands::DELETE_ROW_COMMAND_ID,
+                                    editor_kwdj::commands::SET_TABLE_CELL_ALIGN_COMMAND_ID,
+                                    editor_kwdj::commands::INSERT_COLUMN_LEFT_COMMAND_ID,
+                                    editor_kwdj::commands::INSERT_COLUMN_RIGHT_COMMAND_ID,
+                                    editor_kwdj::commands::DELETE_COLUMN_COMMAND_ID,
+                                    editor_kwdj::commands::MERGE_CELLS_COMMAND_ID,
+                                    editor_kwdj::commands::SPLIT_CELL_COMMAND_ID,
+                                    editor_kwdj::commands::MOVE_CELL_COMMAND_ID,
+                                ]);
                                 sorted.push("org.klenwriter.kwdj/command/delete-forward");
                                 sorted.sort_unstable();
                                 assert_eq!(actual, sorted, "{id}: exact additive SDK2 catalog");
@@ -1067,6 +1079,692 @@ mod tests {
         assert_eq!(reply["diagnostic"]["code"], code, "{reply}");
         assert_eq!(state(session), before);
         assert_eq!(snapshot(session), canonical);
+    }
+
+    fn table_id_tree(session: &mut DistributionSession, id: &Value) -> Value {
+        let node = osr183_node(session, id);
+        let children: Vec<_> = node["children"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|child| table_id_tree(session, child))
+            .collect();
+        json!({"id":id,"children":children})
+    }
+
+    #[test]
+    fn osr213_table_cell_operations_refuse_without_publication() {
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-213-table-refusals.json"
+        ))
+        .unwrap();
+        let corpus: Value = serde_json::from_str(include_str!(
+            "../../../contracts/kwdj/v1/fixtures/positive.json"
+        ))
+        .unwrap();
+        let mut document = corpus["fixtures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .flat_map(|f| f["cases"].as_array().unwrap())
+            .find(|c| c["name"] == fixture["source"])
+            .unwrap()["kwdj"]
+            .clone();
+        let second = document["content"][0].clone();
+        document["content"].as_array_mut().unwrap().push(second);
+        let input = document.to_string();
+        let mut session = osr183_open(&input);
+        let id = |session: &mut DistributionSession, path: &Value| {
+            let mut id = state(session)["root"].clone();
+            for step in path.as_array().unwrap() {
+                id = osr183_node(session, &id)["children"][step.as_u64().unwrap() as usize].clone();
+            }
+            id
+        };
+        let body = id(&mut session, &fixture["roles"]["Body"]);
+        let point = json!({"kind":"text","node":body,"offset":1,"affinity":"after"});
+        let stamp = state(&mut session)["stamp"].clone();
+        assert_eq!(
+            call(
+                &mut session,
+                json!({
+                    "kind":"set_selection","stamp":stamp,"selection":{"anchor":point,"focus":point}
+                })
+            )["status"],
+            "ok"
+        );
+        let edit = osr183_command(
+            &mut session,
+            "org.klenwriter.kwdj/command/insert-text",
+            &json!({"kind":"insert_text","text":"!"}),
+            false,
+        );
+        assert_eq!(edit["value"]["effect"], "changed", "{edit}");
+        osr183_history(&mut session, "undo", &input);
+        let before = state(&mut session);
+        assert_eq!(before["history"]["redo_entries"], "1");
+        let tree = table_id_tree(&mut session, &before["root"]);
+        let check = |session: &mut DistributionSession,
+                     name: &str,
+                     payload: &Value,
+                     code: &str,
+                     path: &str,
+                     prepared: bool| {
+            let command = format!("org.klenwriter.kwdj/command/{name}");
+            for query in [true, false] {
+                let reply = osr183_command(session, &command, payload, query);
+                let diagnostic = if query && prepared {
+                    assert_eq!(reply["status"], "ok", "{name}: {reply}");
+                    assert_eq!(reply["value"]["available"], false, "{name}: {reply}");
+                    assert_eq!(reply["value"]["effect"], Value::Null, "{name}: {reply}");
+                    &reply["value"]["diagnostic"]
+                } else {
+                    assert_eq!(reply["status"], "refused", "{name}: {reply}");
+                    &reply["diagnostic"]
+                };
+                assert_eq!(diagnostic["code"], code, "{name}: {reply}");
+                assert_eq!(diagnostic["path"], path, "{name}: {reply}");
+                assert_eq!(diagnostic["may_have_committed"], false, "{name}: {reply}");
+                assert_eq!(state(session), before, "{name}");
+                assert_eq!(snapshot(session), input, "{name}");
+                assert_eq!(table_id_tree(session, &before["root"]), tree, "{name}");
+            }
+        };
+        for operation in fixture["operations"].as_array().unwrap() {
+            let mut payload = json!({"kind":operation["kind"]});
+            for (key, role) in operation["targets"].as_object().unwrap() {
+                payload[key] = id(&mut session, &fixture["roles"][role.as_str().unwrap()]);
+            }
+            check(
+                &mut session,
+                operation["name"].as_str().unwrap(),
+                &payload,
+                fixture["diagnostic"].as_str().unwrap(),
+                "/command",
+                true,
+            );
+        }
+        let cell = id(&mut session, &fixture["roles"]["B1"]);
+        let other_table = id(&mut session, &json!([1, 0, 0]));
+        let table = id(&mut session, &fixture["roles"]["T"]);
+        let foreign = id(&mut osr183_open(&input), &fixture["roles"]["B1"]);
+        let own_realm = cell.as_str().unwrap().rsplit_once(':').unwrap().0;
+        for (name, payload, code, path, prepared) in [
+            (
+                "split-cell",
+                json!({"kind":"split_cell","cell":table}),
+                "kwdj.command_invalid_target",
+                "/command",
+                true,
+            ),
+            (
+                "merge-cells",
+                json!({"kind":"merge_cells","anchor":cell,"focus":cell}),
+                "kwdj.command_invalid_target",
+                "/command",
+                true,
+            ),
+            (
+                "move-cell",
+                json!({"kind":"move_cell","cell":cell,"target":other_table}),
+                "kwdj.command_invalid_target",
+                "/command",
+                true,
+            ),
+            (
+                "split-cell",
+                json!({"kind":"split_cell","cell":format!("{own_realm}:18446744073709551615")}),
+                "kwdj.command_invalid_target",
+                "/command",
+                true,
+            ),
+            (
+                "move-cell",
+                json!({"kind":"move_cell","cell":cell,"target":foreign}),
+                "session.stale_session",
+                "command.target",
+                false,
+            ),
+            (
+                "split-cell",
+                json!({"kind":"split_cell","cell":cell,"extra":false}),
+                "sdk.invalid_dto",
+                "",
+                false,
+            ),
+            (
+                "merge-cells",
+                json!({"kind":"split_cell","cell":cell}),
+                "sdk.invalid_dto",
+                "command",
+                false,
+            ),
+        ] {
+            check(&mut session, name, &payload, code, path, prepared);
+        }
+    }
+
+    #[test]
+    fn osr205_named_table_row_commands_preserve_geometry_identity_and_history() {
+        let corpus = [
+            include_str!("../../../contracts/kwdj/v1/fixtures/positive.json"),
+            include_str!("../../../contracts/kwdj/v1/fixtures/mixed.json"),
+        ]
+        .map(|file| serde_json::from_str::<Value>(file).unwrap());
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-205-table-rows.json"
+        ))
+        .unwrap();
+        for case in fixture["cases"].as_array().unwrap() {
+            let name = case["id"].as_str().unwrap();
+            let source = corpus
+                .iter()
+                .flat_map(|file| file["fixtures"].as_array().unwrap())
+                .flat_map(|fixture| fixture["cases"].as_array().unwrap())
+                .find(|source| source["name"] == case["source"])
+                .unwrap()["kwdj"]
+                .clone();
+            let input = source.to_string();
+            let mut session = osr183_open(&input);
+            let before = state(&mut session);
+            let table = osr183_node(&mut session, &before["root"])["children"][0].clone();
+            let before_ids = table_id_tree(&mut session, &table);
+            let row_index = case["row"].as_u64().unwrap() as usize;
+            let row = &before_ids["children"][row_index];
+            let target = if case["cell_target"] == true {
+                &row["children"][0]["id"]
+            } else {
+                &row["id"]
+            };
+            let kind = case["command"].as_str().unwrap();
+            let command = format!("org.klenwriter.kwdj/command/{}", kind.replace('_', "-"));
+            let payload = json!({"kind":kind,"row":target});
+            let response = osr183_command(&mut session, &command, &payload, false);
+            if let Some(diagnostic) = case["diagnostic"].as_object() {
+                assert_eq!(response["status"], "refused", "{name}: {response}");
+                assert_eq!(response["diagnostic"]["code"], diagnostic["code"], "{name}");
+                assert_eq!(response["diagnostic"]["path"], diagnostic["path"], "{name}");
+                assert_eq!(
+                    response["diagnostic"]["may_have_committed"], false,
+                    "{name}"
+                );
+                assert_eq!(state(&mut session), before, "{name}");
+                assert_eq!(snapshot(&mut session), input, "{name}");
+                assert_eq!(table_id_tree(&mut session, &table), before_ids, "{name}");
+                continue;
+            }
+            assert_eq!(response["value"]["effect"], "changed", "{name}: {response}");
+            let mut expected = source;
+            expected["content"][0]["content"] = case["expected_rows"].clone();
+            let expected = expected.to_string();
+            let exported = snapshot(&mut session);
+            assert_eq!(exported, expected, "{name}");
+            let mut reopened = osr183_open(&exported);
+            assert_eq!(snapshot(&mut reopened), expected, "{name}");
+
+            let after = state(&mut session);
+            assert_eq!(after["stamp"]["revision"], "1", "{name}");
+            assert_eq!(after["history"]["undo_entries"], "1", "{name}");
+            assert_eq!(after["history"]["redo_entries"], "0", "{name}");
+            assert_eq!(
+                osr183_node(&mut session, &after["root"])["children"][0],
+                table
+            );
+            let after_ids = table_id_tree(&mut session, &table);
+            let mut retained_before = before_ids["children"].as_array().unwrap().clone();
+            let mut retained_after = after_ids["children"].as_array().unwrap().clone();
+            if let Some(inserted) = case["inserted"].as_u64() {
+                retained_after.remove(inserted as usize);
+            } else {
+                retained_before.remove(row_index);
+            }
+            assert_eq!(retained_after, retained_before, "{name}");
+
+            osr183_history(&mut session, "undo", &input);
+            assert_eq!(table_id_tree(&mut session, &table), before_ids, "{name}");
+            let undone = state(&mut session);
+            assert_eq!(undone["history"]["undo_entries"], "0", "{name}");
+            assert_eq!(undone["history"]["redo_entries"], "1", "{name}");
+            osr183_history(&mut session, "redo", &expected);
+            assert_eq!(table_id_tree(&mut session, &table), after_ids, "{name}");
+            let redone = state(&mut session);
+            assert_eq!(redone["history"]["undo_entries"], "1", "{name}");
+            assert_eq!(redone["history"]["redo_entries"], "0", "{name}");
+        }
+    }
+
+    const COLUMN_FIXTURES: &str =
+        include_str!("../../../tests/fixtures/osr-206-table-columns.json");
+
+    fn table_column_command(
+        session: &mut DistributionSession,
+        case: &Value,
+        table: &Value,
+    ) -> Value {
+        let kind = case["command"].as_str().unwrap();
+        let command = format!("org.klenwriter.kwdj/command/{}", kind.replace('_', "-"));
+        let payload = json!({"kind":kind,"table":table,"column":case["column"]});
+        osr183_command(session, &command, &payload, false)
+    }
+
+    #[test]
+    fn osr206_named_columns_preserve_geometry_identity_and_history() {
+        let corpus = [
+            include_str!("../../../contracts/kwdj/v1/fixtures/positive.json"),
+            include_str!("../../../contracts/kwdj/v1/fixtures/mixed.json"),
+        ]
+        .map(|file| serde_json::from_str::<Value>(file).unwrap());
+        let fixtures: Value = serde_json::from_str(COLUMN_FIXTURES).unwrap();
+        for case in fixtures["cases"].as_array().unwrap() {
+            let name = case["id"].as_str().unwrap();
+            let mut source = corpus
+                .iter()
+                .flat_map(|file| file["fixtures"].as_array().unwrap())
+                .flat_map(|fixture| fixture["cases"].as_array().unwrap())
+                .find(|source| source["name"] == case["source"])
+                .unwrap()["kwdj"]
+                .clone();
+            if case["header_override"].is_object() {
+                source["content"][0]["content"][0] = case["header_override"].clone();
+            }
+            let input = source.to_string();
+            let mut session = osr183_open(&input);
+            let before = state(&mut session);
+            let table = osr183_node(&mut session, &before["root"])["children"][0].clone();
+            let before_ids = table_id_tree(&mut session, &table);
+            let target = if case["row_target"] == true {
+                &before_ids["children"][0]["id"]
+            } else {
+                &table
+            };
+            let response = table_column_command(&mut session, case, target);
+            if case["diagnostic"].is_object() {
+                assert_eq!(response["status"], "refused", "{name}: {response}");
+                assert_eq!(
+                    response["diagnostic"]["code"], case["diagnostic"]["code"],
+                    "{name}: {response}"
+                );
+                assert_eq!(
+                    response["diagnostic"]["path"], case["diagnostic"]["path"],
+                    "{name}: {response}"
+                );
+                assert_eq!(
+                    response["diagnostic"]["may_have_committed"], false,
+                    "{name}"
+                );
+                assert_eq!(state(&mut session), before, "{name}");
+                assert_eq!(snapshot(&mut session), input, "{name}");
+                assert_eq!(table_id_tree(&mut session, &table), before_ids, "{name}");
+                continue;
+            }
+            assert_eq!(response["value"]["effect"], "changed", "{name}: {response}");
+            source["content"][0]["content"] = case["expected_rows"].clone();
+            let expected = source.to_string();
+            let exported = snapshot(&mut session);
+            assert_eq!(exported, expected, "{name}");
+            assert_eq!(snapshot(&mut osr183_open(&exported)), expected, "{name}");
+
+            let after = state(&mut session);
+            assert_eq!(after["stamp"]["revision"], "1", "{name}");
+            assert_eq!(after["history"]["undo_entries"], "1", "{name}");
+            assert_eq!(after["history"]["redo_entries"], "0", "{name}");
+            assert_eq!(
+                osr183_node(&mut session, &after["root"])["children"][0],
+                table
+            );
+            let after_ids = table_id_tree(&mut session, &table);
+            let mut retained_before = before_ids.clone();
+            let mut retained_after = after_ids.clone();
+            for (row, index) in case["changed_indices"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .enumerate()
+            {
+                if let Some(index) = index.as_u64() {
+                    let retained = if case["command"] == "delete_column" {
+                        &mut retained_before
+                    } else {
+                        &mut retained_after
+                    };
+                    retained["children"][row]["children"]
+                        .as_array_mut()
+                        .unwrap()
+                        .remove(index as usize);
+                }
+            }
+            assert_eq!(retained_after, retained_before, "{name}");
+
+            osr183_history(&mut session, "undo", &input);
+            assert_eq!(table_id_tree(&mut session, &table), before_ids, "{name}");
+            let undone = state(&mut session);
+            assert_eq!(undone["history"]["undo_entries"], "0", "{name}");
+            assert_eq!(undone["history"]["redo_entries"], "1", "{name}");
+            osr183_history(&mut session, "redo", &expected);
+            assert_eq!(table_id_tree(&mut session, &table), after_ids, "{name}");
+            let redone = state(&mut session);
+            assert_eq!(redone["history"]["undo_entries"], "1", "{name}");
+            assert_eq!(redone["history"]["redo_entries"], "0", "{name}");
+        }
+    }
+
+    #[test]
+    fn osr285_aligns_only_the_selected_cell_and_preserves_the_grid() {
+        const ALIGN: &str = "org.klenwriter.kwdj/command/set-table-cell-align";
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-285-table-cell-align.json"
+        ))
+        .unwrap();
+        let source = fixture["source"].as_str().unwrap();
+        for case in fixture["cases"].as_array().unwrap() {
+            let mut session = osr183_open(source);
+            let initial = state(&mut session);
+            let tree = table_id_tree(&mut session, &initial["root"]);
+            let at = |path: &Value| {
+                path.as_array().unwrap().iter().fold(&tree, |node, index| {
+                    &node["children"][index.as_u64().unwrap() as usize]
+                })["id"]
+                    .clone()
+            };
+            let leaf = at(&case["point"]["path"]);
+            let point = |offset: &Value| {
+                json!({
+                    "kind":"text","node":leaf,"offset":offset,"affinity":"after"
+                })
+            };
+            let range = &case["point"]["range"];
+            let selected = json!({"anchor":point(&range[0]),"focus":point(&range[1])});
+            let selection = call(
+                &mut session,
+                json!({
+                    "kind":"set_selection","stamp":initial["stamp"],"selection":selected
+                }),
+            );
+            assert_eq!(selection["status"], "ok", "{selection}");
+            let before = state(&mut session);
+            let payload = json!({"kind":"set_table_cell_align","align":case["align"]});
+            let query = osr183_command(&mut session, ALIGN, &payload, true);
+            assert_eq!(query["value"]["available"], true, "{query}");
+            assert_eq!(state(&mut session), before);
+            let result = osr183_command(&mut session, ALIGN, &payload, false);
+            assert_eq!(result["value"]["effect"], "changed", "{result}");
+            let expected = case["expected"].as_str().unwrap();
+            assert_eq!(snapshot(&mut session), expected);
+            let exported = snapshot(&mut osr183_open(expected));
+            assert_eq!(exported, expected);
+            let after = state(&mut session);
+            assert_eq!(after["history"]["undo_entries"], "1");
+            assert_eq!(after["selection"], before["selection"]);
+            assert_eq!(table_id_tree(&mut session, &initial["root"]), tree);
+            let no_op = osr183_command(&mut session, ALIGN, &payload, false);
+            assert_eq!(no_op["value"]["effect"], "unchanged", "{no_op}");
+            assert_eq!(state(&mut session), after);
+            osr183_history(&mut session, "undo", source);
+            assert_eq!(table_id_tree(&mut session, &initial["root"]), tree);
+            assert_eq!(state(&mut session)["selection"], before["selection"]);
+        }
+    }
+
+    #[test]
+    fn osr285_unowned_alignment_targets_are_atomic_refusals() {
+        const ALIGN: &str = "org.klenwriter.kwdj/command/set-table-cell-align";
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-285-table-cell-align.json"
+        ))
+        .unwrap();
+        let source = fixture["source"].as_str().unwrap();
+        let mut session = osr183_open(source);
+        let original = state(&mut session);
+        let tree = table_id_tree(&mut session, &original["root"]);
+        let at = |path: &Value| {
+            path.as_array().unwrap().iter().fold(&tree, |node, index| {
+                &node["children"][index.as_u64().unwrap() as usize]
+            })["id"]
+                .clone()
+        };
+        for target in fixture["refusals"].as_array().unwrap() {
+            let selection = match target["id"].as_str().unwrap() {
+                "root-structural-gap" => {
+                    let point = json!({"kind":"child","parent":at(&target["parent"]),
+                        "index":target["index"],"affinity":"after"});
+                    json!({"anchor":point,"focus":point})
+                }
+                "range-in-distinct-cells" => {
+                    let point = |end: &str| {
+                        json!({
+                            "kind":"text","node":at(&target[end]["path"]),
+                            "offset":target[end]["offset"],"affinity":"after"
+                        })
+                    };
+                    json!({"anchor":point("anchor"),"focus":point("focus")})
+                }
+                "multi-cell-rectangle" => json!({
+                    "anchor":{"kind":"edge","node":at(&target["chosenCells"][0]),"side":"before"},
+                    "focus":{"kind":"edge","node":at(&target["chosenCells"][1]),"side":"after"}
+                }),
+                _ => unreachable!(),
+            };
+            let stamp = state(&mut session)["stamp"].clone();
+            let selected = call(
+                &mut session,
+                json!({
+                    "kind":"set_selection","stamp":stamp,"selection":selection
+                }),
+            );
+            assert_eq!(selected["status"], "ok", "{selected}");
+            let payload = json!({"kind":"set_table_cell_align","align":"left"});
+            let before = state(&mut session);
+            let query = osr183_command(&mut session, ALIGN, &payload, true);
+            assert_eq!(query["value"]["available"], false, "{query}");
+            assert_eq!(state(&mut session), before);
+            osr183_denied(
+                &mut session,
+                ALIGN,
+                payload,
+                source,
+                "kwdj.command_unsupported_context",
+            );
+            assert_eq!(table_id_tree(&mut session, &original["root"]), tree);
+        }
+        osr183_denied(
+            &mut session,
+            ALIGN,
+            json!({"kind":"set_table_cell_align","align":"justify"}),
+            source,
+            "sdk.invalid_dto",
+        );
+    }
+
+    #[test]
+    fn osr206_column_operations_respect_the_existing_atomic_plan_limit() {
+        fn grid(rows: usize, columns: usize, vertical_first_column: bool) -> String {
+            let cell = json!({"type":"table_cell","content":[{"type":"paragraph","content":[]}]});
+            let mut spanning = cell.clone();
+            spanning["attrs"] = json!({"rowspan":2});
+            let content: Vec<_> = (0..rows)
+                .map(|row| {
+                    let cells = if vertical_first_column {
+                        if row % 2 == 0 {
+                            vec![spanning.clone(), cell.clone()]
+                        } else {
+                            vec![cell.clone()]
+                        }
+                    } else {
+                        vec![cell.clone(); columns]
+                    };
+                    json!({"type":"table_row","content":cells})
+                })
+                .collect();
+            osr183_literal(json!([{"type":"table","content":content}]))
+        }
+        let fixtures: Value = serde_json::from_str(COLUMN_FIXTURES).unwrap();
+        for case in fixtures["bounded"].as_array().unwrap() {
+            let row_count = case["rows"].as_u64().unwrap() as usize;
+            let name = case["id"].as_str().unwrap();
+            let input = grid(row_count, 2, case["vertical_first_column"] == true);
+            let mut session = osr183_open(&input);
+            let before = state(&mut session);
+            let table = osr183_node(&mut session, &before["root"])["children"][0].clone();
+            let row_ids = osr183_node(&mut session, &table)["children"].clone();
+            let response = table_column_command(&mut session, case, &table);
+            if let Some(columns) = case["expected_columns"].as_u64() {
+                assert_eq!(response["value"]["effect"], "changed", "{name}: {response}");
+                let expected = grid(row_count, columns as usize, false);
+                assert_eq!(snapshot(&mut session), expected, "{name}");
+                assert_eq!(
+                    state(&mut session)["history"]["undo_entries"],
+                    "1",
+                    "{name}"
+                );
+                assert_eq!(
+                    osr183_node(&mut session, &table)["children"],
+                    row_ids,
+                    "{name}"
+                );
+                osr183_history(&mut session, "undo", &input);
+                osr183_history(&mut session, "redo", &expected);
+            } else {
+                let diagnostic = &response["diagnostic"];
+                assert_eq!(response["status"], "refused", "{name}: {response}");
+                assert_eq!(
+                    diagnostic["code"], "kwdj.admission_budget_exceeded",
+                    "{name}: {response}"
+                );
+                assert_eq!(
+                    diagnostic["details"],
+                    json!({"limit":"command_operations","maximum":"256","observed":"257"}),
+                    "{name}"
+                );
+                assert_eq!(diagnostic["may_have_committed"], false, "{name}");
+                assert_eq!(state(&mut session), before, "{name}");
+                assert_eq!(snapshot(&mut session), input, "{name}");
+                assert_eq!(
+                    osr183_node(&mut session, &table)["children"],
+                    row_ids,
+                    "{name}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn osr209_table_cell_edits_are_confined_to_one_textblock() {
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../../tests/fixtures/osr-209-table-cell-edits.json"
+        ))
+        .unwrap();
+        let retained: Value = serde_json::from_str(include_str!(
+            "../../../contracts/kwdj/v1/fixtures/positive.json"
+        ))
+        .unwrap();
+        let source = retained["fixtures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .flat_map(|fixture| fixture["cases"].as_array().unwrap())
+            .find(|case| case["name"] == fixture["source"])
+            .unwrap()["kwdj"]
+            .clone();
+        for (cases, forward_regression) in [
+            (&fixture["cases"], false),
+            (&fixture["forward_regressions"], true),
+        ] {
+            for case in cases.as_array().unwrap() {
+                let name = case["id"].as_str().unwrap();
+                let path = case["leaf"]
+                    .as_array()
+                    .unwrap_or_else(|| fixture["leaf"].as_array().unwrap());
+                let paragraph_pointer = path[..path.len() - 1]
+                    .iter()
+                    .map(|index| format!("/content/{}", index.as_u64().unwrap()))
+                    .collect::<String>();
+                let mut document = source.clone();
+                let paragraph = document.pointer_mut(&paragraph_pointer).unwrap();
+                paragraph["content"] = if forward_regression {
+                    case["source_inlines"].clone()
+                } else {
+                    json!([{"type":"text","text":fixture["initial_text"]}])
+                };
+                let input = document.to_string();
+                let mut session = osr183_open(&input);
+                let mut node = state(&mut session)["root"].clone();
+                let mut table = Value::Null;
+                for (depth, index) in path.iter().enumerate() {
+                    node = osr183_node(&mut session, &node)["children"]
+                        [index.as_u64().unwrap() as usize]
+                        .clone();
+                    if depth == 0 {
+                        table = node.clone();
+                    }
+                }
+                let selection =
+                    |offset| json!({"kind":"text","node":node,"offset":offset,"affinity":"after"});
+                let stamp = state(&mut session)["stamp"].clone();
+                let selected = call(
+                    &mut session,
+                    json!({
+                        "kind":"set_selection","stamp":stamp,
+                        "selection":{"anchor":selection(&case["range"][0]),"focus":selection(&case["range"][1])}
+                    }),
+                );
+                assert_eq!(selected["status"], "ok", "{name}: {selected}");
+                let before = state(&mut session);
+                let before_ids = table_id_tree(&mut session, &table);
+                let payload = if forward_regression {
+                    json!({"kind":"delete_forward"})
+                } else {
+                    case["payload"].clone()
+                };
+                let kind = payload["kind"].as_str().unwrap().replace('_', "-");
+                let response = osr183_command(
+                    &mut session,
+                    &format!("org.klenwriter.kwdj/command/{kind}"),
+                    &payload,
+                    false,
+                );
+                if case["diagnostic"].is_string() {
+                    assert_eq!(response["status"], "refused", "{name}: {response}");
+                    assert_eq!(response["diagnostic"]["code"], case["diagnostic"], "{name}");
+                    assert_eq!(response["diagnostic"]["path"], "/command", "{name}");
+                    assert_eq!(
+                        response["diagnostic"]["may_have_committed"], false,
+                        "{name}"
+                    );
+                    assert_eq!(state(&mut session), before, "{name}");
+                    assert_eq!(snapshot(&mut session), input, "{name}");
+                    assert_eq!(table_id_tree(&mut session, &table), before_ids, "{name}");
+                    continue;
+                }
+                assert_eq!(response["value"]["effect"], "changed", "{name}: {response}");
+                document.pointer_mut(&paragraph_pointer).unwrap()["content"] = if forward_regression
+                {
+                    case["expected_inlines"].clone()
+                } else {
+                    json!([{"type":"text","text":case["text"]}])
+                };
+                let exported = snapshot(&mut session);
+                assert_eq!(exported, document.to_string(), "{name}");
+                assert_eq!(snapshot(&mut osr183_open(&exported)), exported, "{name}");
+                let after = state(&mut session);
+                assert_eq!(after["stamp"]["revision"], "1", "{name}");
+                assert_eq!(after["history"]["undo_entries"], "1", "{name}");
+                if !forward_regression {
+                    assert_eq!(table_id_tree(&mut session, &table), before_ids, "{name}");
+                    let expected = selection(&case["caret"]);
+                    assert_eq!(
+                        after["selection"],
+                        json!({"anchor":expected,"focus":expected}),
+                        "{name}"
+                    );
+                }
+                osr183_history(&mut session, "undo", &input);
+                assert_eq!(table_id_tree(&mut session, &table), before_ids, "{name}");
+                let undone = state(&mut session);
+                assert_eq!(undone["selection"], before["selection"], "{name}");
+                assert_eq!(undone["history"]["undo_entries"], "0", "{name}");
+                assert_eq!(undone["history"]["redo_entries"], "1", "{name}");
+            }
+        }
     }
 
     const OSR188_SET_KIND: &str = "org.klenwriter.kwdj/command/set-warning-kind";
