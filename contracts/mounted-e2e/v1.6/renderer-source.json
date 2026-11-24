@@ -77,8 +77,8 @@
     },
     {
       "path": "packages/dom/dist/mounted.js",
-      "bytes": 56289,
-      "sha256": "0d9369c83254e73580ceb535cbca5bd487680e70b8118b4e78b7d1fa0ef8ef79"
+      "bytes": 57035,
+      "sha256": "2c5dc317ad2dc4abb227c72369fb0c0805dc0329d0d4d9724d5dc19c67ff6dcd"
     },
     {
       "path": "packages/dom/dist/ownership.js",
@@ -267,8 +267,8 @@
     },
     {
       "path": "packages/dom/dist/table-navigation.js",
-      "bytes": 13790,
-      "sha256": "0c14841f7a9ed915935cf7e77522184c2e565c92ee09c7a128b14e9d4547ced3"
+      "bytes": 15856,
+      "sha256": "ff6a436c879a79f233522d44570835a58cce6eee7f5ee7842c776bdd895b3648"
     }
   ],
   "format": "mounted-corpus-renderer-source/1",
@@ -682,8 +682,8 @@
     },
     {
       "path": "packages/dom/src/mounted.ts",
-      "bytes": 54603,
-      "sha256": "c39bac33b18d54a6282ba15e72f0c52dfda527a61634846818292f2fc9a76007"
+      "bytes": 55313,
+      "sha256": "ef0bad5042168d4c4a3a94485ffb2198add411affcd3e800cdc30dfa059fb10a"
     },
     {
       "path": "packages/dom/src/text-fragments.ts",
@@ -767,8 +767,8 @@
     },
     {
       "path": "packages/dom/src/table-navigation.ts",
-      "bytes": 15107,
-      "sha256": "e7cbd5ee2b68f2486a996646a2c4145f7c92d55aa656f84b83a8fe385eb8cc48"
+      "bytes": 17153,
+      "sha256": "6d8c448ff38bb5792cf491023bce3e79e894961016b15cd0dc0b0ca58a85d12b"
     }
   ]
 }

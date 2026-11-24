@@ -90,8 +90,9 @@ export function tableCell(view: TableView, position: DeepReadonly<PositionDto>) 
 
 function span(cell: GeometryRow, key: 'rowspan'|'colspan', maximum: number): number {
   const attribute = cell.view.attributes[key];
-  if (attribute === undefined) return 1;
-  if (attribute.kind !== 'number') return 0;
+  const rendered = cell.outer.getAttribute(key);
+  if (attribute === undefined) return rendered === null ? 1 : 0;
+  if (attribute.kind !== 'number' || rendered !== attribute.value) return 0;
   const size = Number(attribute.value);
   return Number.isInteger(size) && size >= 2 && size <= maximum && String(size) === attribute.value ? size : 0;
 }
@@ -206,13 +207,52 @@ function tableNavigation(view: TableView, position: DeepReadonly<PositionDto>, k
 
 type TableRange = { readonly anchor: string; readonly focus: string };
 
+function markerRange(selection: DeepReadonly<SelectionDto> | null): TableRange | null {
+  if (!selection || Object.keys(selection).length !== 2) return null;
+  const {anchor, focus} = selection;
+  if (anchor?.kind !== 'edge' || anchor.side !== 'before' || typeof anchor.node !== 'string' || Object.keys(anchor).length !== 3
+    || focus?.kind !== 'edge' || focus.side !== 'after' || typeof focus.node !== 'string' || Object.keys(focus).length !== 3
+    || anchor.node === focus.node) return null;
+  return {anchor:anchor.node,focus:focus.node};
+}
+
 function tableMarker(view: TableView, selection: DeepReadonly<SelectionDto> | null) {
-  const anchor = selection?.anchor, focus = selection?.focus;
-  if (anchor?.kind !== 'edge' || anchor.side !== 'before'
-    || focus?.kind !== 'edge' || focus.side !== 'after' || anchor.node === focus.node) return null;
-  const first = tableCell(view, anchor), last = tableCell(view, focus);
-  return first && last && first.cell.view.id === anchor.node && last.cell.view.id === focus.node
+  const range=markerRange(selection);
+  if (!range) return null;
+  const first = tableCell(view,{kind:'edge',node:range.anchor,side:'before'});
+  const last = tableCell(view,{kind:'edge',node:range.focus,side:'after'});
+  return first && last && first.cell.view.id === range.anchor && last.cell.view.id === range.focus
     && first.table.view.id === last.table.view.id ? {first, last} : null;
+}
+
+function nativeCellTable(view: TableView, id: string): GeometryRow | null {
+  const cell = view.geometryRow(id);
+  const tag = cell && mountedTableTags.get(cell.view.type_id);
+  if (!cell?.view.parent || (tag !== 'td' && tag !== 'th')) return null;
+  const row = view.geometryRow(cell.view.parent);
+  if (!row?.view.parent || mountedTableTags.get(row.view.type_id) !== 'tr') return null;
+  const table = view.geometryRow(row.view.parent);
+  return table && mountedTableTags.get(table.view.type_id) === 'table' ? table : null;
+}
+
+/** Native markers retain their meaning even when a custom mount cannot present them. */
+export function unprojectableTableSelection(view: TableView, selection: DeepReadonly<SelectionDto> | null): boolean {
+  const range = markerRange(selection);
+  if (!range) return false;
+  const table = nativeCellTable(view, range.anchor);
+  if (!table?.outer.isConnected || nativeCellTable(view, range.focus)?.view.id !== table.view.id) return false;
+  let unavailable = false;
+  const materialized: TableView = {
+    geometryRow(id) {
+      const row = view.geometryRow(id);
+      if (row?.outer.isConnected) return row;
+      unavailable = true;
+      return null;
+    },
+  };
+  const grid = tableGrid(materialized, table);
+  const supported = grid?.cells.has(range.anchor) && grid.cells.has(range.focus) && tableSelectionFocus(materialized,selection);
+  return !unavailable && !supported;
 }
 
 function cellRange({anchor, focus}: TableRange): SelectionDto {
@@ -227,6 +267,7 @@ export function tableSelectionFocus(view: TableView, selection: DeepReadonly<Sel
 export function tableSelectionBetween(view: TableView, anchor: DeepReadonly<PositionDto>, focus: DeepReadonly<PositionDto>): SelectionDto | null {
   const first = tableCell(view, anchor), last = tableCell(view, focus);
   if (!first || !last || first.table.view.id !== last.table.view.id || first.cell.view.id === last.cell.view.id) return null;
+  if (!tableGrid(view, first.table)) return null;
   return cellRange({anchor:first.cell.view.id,focus:last.cell.view.id});
 }
 

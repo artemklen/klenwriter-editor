@@ -302,6 +302,104 @@ test.describe('OSR-208 rectangular table selection', () => {
       expect(await page.evaluate(()=>window.customTableLikeBlocks.canonical())).toBe(source);
     } finally {await page.evaluate(()=>window.customTableLikeBlocks.close());}
   });
+  for (const alteration of ['middle cell tag', 'header span']) {
+    test(`mixed table projection falls back to text selection when the ${alteration} differs`, async ({page}) => {
+      const paragraph = text => ({type:'paragraph',content:[{type:'text',text}]});
+      const cell = text => ({type:'table_cell',content:[paragraph(text)]});
+      const row = content => ({type:'table_row',content});
+      const table = alteration === 'middle cell tag'
+        ? [row([cell('First'),{...cell('Middle'),attrs:{align:'right'}},cell('Last')])]
+        : [row([{type:'table_header',attrs:{colspan:2},content:[paragraph('First')]}]),row([cell('Middle'),cell('Last')])];
+      const source=canonicalizeRaw(JSON.stringify({
+        schema:'klenwriter.document',schema_version:1,profile:'prose',content:[{type:'table',content:table}],
+      }));
+      const ready=await page.evaluate(async ({alteration,source})=>{
+        const {loadSdkV2,sdkBuildId}=await import('/packages/sdk/index.js');
+        const {mountEditor,defineRendererCatalog}=await import('/packages/dom/index.js');
+        const {kwdjBasicRenderers}=await import('/packages/kwdj/dom.js');
+        const packet=await fetch('/extensions-packet.json').then(response=>response.json());
+        const sdk=await loadSdkV2(), base=kwdjBasicRenderers.definition;
+        const type='org.klenwriter.kwdj/'+(alteration==='middle cell tag'?'table_cell':'table_header');
+        const renderers=defineRendererCatalog({...base,nodes:{...base.nodes,[type]:{
+          ...base.nodes[type],
+          present:node=>alteration==='header span'?{tag:'th'}
+            : node.attributes.align?.value==='right'?{tag:'div'}:base.nodes[type].present(node),
+        }}});
+        const element=document.createElement('div');
+        element.id='mixed-table-projection';
+        document.getElementById('mounts').append(element);
+        const editor=mountEditor({element,renderers,editor:{input:new TextEncoder().encode(source),loader:async()=>sdk,
+          options:{abi:'editor-sdk/2',build_id:sdkBuildId,profile:packet.kwdjProfile,admission:'validate',access:'editable',
+            registry_json:packet.kwdjRegistryJson,profile_options_json:'{"identities":{"media":[],"references":[]},"limits":null}'}}});
+        const ready=await editor.ready;
+        if(ready.status!=='ready') {editor.destroy();element.remove();return ready;}
+        const node=id=>editor.read({kind:'node',stamp:editor.capture(),node:id}).value.node;
+        const model=editor.read({kind:'state'}).value.state;
+        const rows=node(node(model.root).children[0]).children.map(node);
+        const first=rows[0].children[0],last=rows.at(-1).children.at(-1);
+        const setSelection=(selection,stamp=editor.capture())=>editor.submit({kind:'set_selection',stamp,selection});
+        const textPoint=(id,offset)=>({kind:'text',node:node(node(id).children[0]).children[0],offset,affinity:'after'});
+        window.mixedTableProjection={
+          inspect:()=>{
+            const stamp=editor.capture(), state=editor.read({kind:'state'}).value.state;
+            const snap=editor.submit({kind:'snapshot',stamp,max_bytes:8192}).response.value;
+            editor.submit({kind:'release_snapshot',handle:snap.handle});
+            const fragment=editor.read({kind:'selection_fragment',stamp,max_bytes:8192});
+            const browser=getSelection();
+            return {state,canonical:snap.canonical_json,fragment,collapsed:browser.isCollapsed,focused:document.activeElement===element,
+              browser:[browser.anchorNode?.textContent,browser.anchorOffset,browser.focusNode?.textContent,browser.focusOffset]};
+          },
+          selectText:()=>setSelection({anchor:textPoint(first,0),focus:textPoint(last,1)}),
+          selectRectangle:(stamp=editor.capture(),open)=>{
+            const request={kind:'set_selection',stamp,selection:{
+              anchor:{kind:'edge',node:first,side:'before'},focus:{kind:'edge',node:last,side:'after'},
+            }};
+            if(open==='request') request.extra=true;
+            if(open==='selection') request.selection.extra=true;
+            if(open==='edge') request.selection.anchor.extra=true;
+            return editor.submit(request);
+          },
+          close:()=>{editor.destroy();element.remove();delete window.mixedTableProjection;},
+        };
+        return ready.status;
+      },{alteration,source});
+      expect(ready).toBe('ready');
+      const editor=page.locator('#mixed-table-projection');
+      try {
+        if(alteration==='middle cell tag') await expect(editor.locator('tr > div')).toHaveText('Middle');
+        else await expect(editor.locator('th')).not.toHaveAttribute('colspan');
+        await mouseDrag(page,editor,'First','Last');
+        const after=await page.evaluate(()=>window.mixedTableProjection.inspect());
+        expect(after.state.selection).toMatchObject({anchor:{kind:'text'},focus:{kind:'text'}});
+        expect(after.state.selection.anchor.node).not.toBe(after.state.selection.focus.node);
+        expect(after.collapsed).toBe(false);
+        expect(after.fragment).toMatchObject({status:'refused',diagnostic:{code:'clipboard.invalid_context',path:'/clipboard'}});
+        expect(after.state).toMatchObject({stamp:{revision:'0'},history:{undo_entries:'0'}});
+        expect(after.canonical).toBe(source);
+        await expect(highlights(editor)).toHaveCount(0);
+        await test.step('an explicit rectangle refuses while an ordinary text range can publish', async () => {
+          expect(await page.evaluate(()=>window.mixedTableProjection.selectText())).toMatchObject({
+            status:'completed',response:{status:'ok',value:{effect:'state_changed'}},
+          });
+          const before=await page.evaluate(()=>window.mixedTableProjection.inspect());
+          expect(before).toMatchObject({focused:true,browser:['First',0,'Last',1]});
+          expect(await page.evaluate(stamp=>window.mixedTableProjection.selectRectangle(stamp),after.state.stamp)).toMatchObject({
+            status:'completed',response:{status:'refused',diagnostic:{code:'session.stale_selection_epoch',may_have_committed:false}},
+          });
+          for (const open of ['request','selection','edge']) {
+            expect(await page.evaluate(open=>window.mixedTableProjection.selectRectangle(undefined,open),open)).toMatchObject({
+              status:'completed',response:{status:'refused',diagnostic:{code:'sdk.invalid_dto',may_have_committed:false}},
+            });
+          }
+          expect(await page.evaluate(()=>window.mixedTableProjection.selectRectangle())).toMatchObject({
+            status:'dom_refused',diagnostic:{code:'dom.presentation_unsupported',publication:'none'},
+          });
+          expect(await page.evaluate(()=>window.mixedTableProjection.inspect())).toEqual(before);
+          await expect(highlights(editor)).toHaveCount(0);
+        });
+      } finally {await page.evaluate(()=>window.mixedTableProjection.close());}
+    });
+  }
   test('structural rectangle refuses linear marks and permits an explicit block target',async({page})=>{
     const record=await mount(page,'DOC-011');
     const selection=expected(record);
