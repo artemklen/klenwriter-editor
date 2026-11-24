@@ -228,6 +228,30 @@ test('OSR-153 destroy retires authority before calling synchronous abort listene
   h.assertReleased();
 });
 
+for (const [reason, invalidate, expected] of [
+  ['cancel', (_h, run) => assert.equal(run.cancel(), true), 'cancelled'],
+  ['publication', h => h.retarget(), 'retired'],
+  ['destroy', h => h.owner.destroy(), 'retired'],
+]) test(`OSR-154 ${reason} revokes continuation before the deferred abort`, async () => {
+  const h = harness(), provider = pendingService();
+  let isCurrent;
+  const run = startService(h, (request, context, current) => {
+    isCurrent = current;
+    return provider.service(request, context);
+  });
+  assert.equal(isCurrent(), true);
+  invalidate(h, run);
+  assert.equal(isCurrent(), false);
+  assert.equal(provider.signal.aborted, false);
+  assert.equal((await run.completion).status, expected);
+  assert.equal(provider.signal.aborted, true);
+  assert.equal(isCurrent(), false);
+  provider.reject(new Error('late service result'));
+  await nextTask();
+  assert.deepEqual(h.requests, []);
+  h.assertReleased();
+});
+
 for (const [expected, service] of [
   ['unavailable', async () => ({status: 'unavailable'})],
   ['cancelled', async () => ({status: 'cancelled'})],

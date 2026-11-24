@@ -46,13 +46,15 @@ export function runKwdjMediaPicker(requests: MountedHostRequests, options: KwdjM
   return runMountedHostService<HostMediaPickerRequest, MediaChoice>(requests, {
     request: input,
     ...(focusScope === undefined ? {} : {focusScope}),
-    async service(request, context) {
+    restoreRefusalFocus: true,
+    async service(request, context, isCurrent) {
       if (!pickMedia || !mediaMetadata) return { status: 'unavailable' };
       const picked = replyValue(await pickMedia(request, context));
       if (context.signal.aborted) return { status: 'cancelled' };
       if (picked.status !== 'ok') return picked;
       const assetId = ownField(picked.value, 'assetId');
       if (typeof assetId !== 'string' || !assetId) throw new TypeError('Invalid picked media identity');
+      if (!isCurrent()) return { status: 'cancelled' };
       const metadata = replyValue(await mediaMetadata(Object.freeze({ assetId }), context));
       if (context.signal.aborted) return { status: 'cancelled' };
       if (metadata.status !== 'ok') return metadata;

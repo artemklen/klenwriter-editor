@@ -7,7 +7,7 @@ import { fields, ownConfiguration, ownInput } from './ownership.js';
 import { createDomView, domRegionLimits } from './view.js';
 import type { DomView } from './view.js';
 import { SelectionOwner } from './selection.js';
-import type { ResultFocusPermit } from './selection.js';
+import type { ExactBookmark, ResultFocusPermit } from './selection.js';
 import { HostRequestOwner } from './host-request.js';
 import { createMountedGeometry } from './geometry.js';
 import { attachClipboard, type ClipboardOwner } from './clipboard.js';
@@ -127,9 +127,9 @@ class MountedOwner implements MountedEditor {
   #hostOwner = new HostRequestOwner({element:()=>this.#element,view:()=>this.#view,controller:()=>this.#controller,
     capture:()=>this.#controller?.capture() ?? null,context:()=>this.#controller?.context() ?? null,selection:this.#selectionOwner,
     guard:()=>this.#userActionGuard(),report:failure=>this.#report(failure),
-    dispatch:(request,handle,validate)=>{
+    dispatch:(request,handle,validate,refusalTarget)=>{
       let permit:ResultFocusPermit|null=null;
-      const result=this.#forward(request,false,false,owned=>this.#controller!.completeHostRequest(handle,owned),validate,value=>{permit=value;});
+      const result=this.#forward(request,false,false,owned=>this.#controller!.completeHostRequest(handle,owned),validate,value=>{permit=value;},refusalTarget);
       return {result,permit};
     }});
   readonly hostRequests=this.#hostOwner.api;
@@ -549,11 +549,11 @@ class MountedOwner implements MountedEditor {
     return this.#forward(request,input,compositionClaim,owned=>this.#controller!.submit(owned),validate) as InputSubmissionV2|DomRefusal;
   }
   #forward<T extends MountedMutation>(request:T,input:boolean,compositionClaim:boolean,dispatch:(request:T)=>Submission,
-    validate?:()=>DomRefusal|SelectionReadFailure|null,prospective?:(permit:ResultFocusPermit|null)=>void):Submission|DomRefusal|SelectionReadFailure;
+    validate?:()=>DomRefusal|SelectionReadFailure|null,prospective?:(permit:ResultFocusPermit|null)=>void,refusalTarget?:ExactBookmark):Submission|DomRefusal|SelectionReadFailure;
   #forward<T extends MountedMutationV2>(request:T,input:boolean,compositionClaim:boolean,dispatch:(request:T)=>InputSubmissionV2,
-    validate?:()=>DomRefusal|SelectionReadFailure|null,prospective?:(permit:ResultFocusPermit|null)=>void):InputSubmissionV2|DomRefusal|SelectionReadFailure;
+    validate?:()=>DomRefusal|SelectionReadFailure|null,prospective?:(permit:ResultFocusPermit|null)=>void,refusalTarget?:ExactBookmark):InputSubmissionV2|DomRefusal|SelectionReadFailure;
   #forward<T extends MountedMutationV2>(request:T,input:boolean,compositionClaim:boolean,dispatch:(request:T)=>InputSubmissionV2,
-    validate?:()=>DomRefusal|SelectionReadFailure|null,prospective?:(permit:ResultFocusPermit|null)=>void):InputSubmissionV2|DomRefusal|SelectionReadFailure {
+    validate?:()=>DomRefusal|SelectionReadFailure|null,prospective?:(permit:ResultFocusPermit|null)=>void,refusalTarget?:ExactBookmark):InputSubmissionV2|DomRefusal|SelectionReadFailure {
     if(!input){
       let harmless=false;
       try{harmless=['snapshot','release_snapshot'].includes(Object.getOwnPropertyDescriptor(request,'kind')?.value);}catch{/* Invalid host input still retires edit lineage. */}
@@ -594,8 +594,8 @@ class MountedOwner implements MountedEditor {
     this.#forwarding++;
     try {
       const result = dispatch(request);
-      this.#selectionOwner.endSubmission(selectionFrame,result);
-      prospective?.(this.#selectionOwner.resultFocusPermit(selectionFrame,result));
+      this.#selectionOwner.endSubmission(selectionFrame,result,refusalTarget);
+      prospective?.(this.#selectionOwner.resultFocusPermit(selectionFrame,result,refusalTarget));
       const terminal = (response: ResponseV2) => { if (response.status === 'fatal') this.#reflectFatal(response,compositionClaim?result:undefined); };
       if (result.status === 'completed') terminal(result.response); else void result.completion.then(terminal);
       if(!compositionClaim)this.#input?.externalSubmission(request,result);

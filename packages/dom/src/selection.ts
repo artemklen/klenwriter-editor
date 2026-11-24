@@ -8,6 +8,9 @@ import { edgeGeometry, ownedCaretHit, visibleEdgeHit } from './selection-geometr
 import { tableKeyboardSelection, tableSelectionBetween, tableSelectionFocus, type TableSelectionKey, type TableSlot } from './table-navigation.js';
 const same=(a:unknown,b:unknown)=>JSON.stringify(a)===JSON.stringify(b);
 const MAX_SERIAL=18446744073709551615n;
+function refusedWithoutPublication(result:InputSubmissionV2|DomRefusal):boolean {
+  return result.status==='completed' && result.response.status==='refused' && !result.response.diagnostic.may_have_committed;
+}
 const tableKeys = new Set<string>(['Tab','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Escape']);
 interface Configuration {
   element(): HTMLElement|null; view(): DomView|null; capture(): DeepReadonly<StampDto>|null;
@@ -180,13 +183,14 @@ export class SelectionOwner {
     if(!own && !eligible && !harmless)this.invalidate();
     const frame:SubmissionFrame={own,eligible,serial:this.#serial,before:this.configuration.capture(),context:this.configuration.context(),events:0,reentrant:false,foreign:false,publications:0,publication:null,knownInvalidations:0,ended:false};this.#frames.push(frame);return frame;
   }
-  endSubmission(frame:SubmissionFrame,result:InputSubmissionV2|DomRefusal):void {
+  endSubmission(frame:SubmissionFrame,result:InputSubmissionV2|DomRefusal,refusalTarget?:ExactBookmark):void {
     const current=this.#frames.pop();
     if(current!==frame){this.invalidate();this.#frames=[];return;}
     if(frame.eligible && (frame.reentrant || frame.events!==1 || frame.serial!==this.#serial || isDomRefusal(result) || result.status!=='completed' || result.response.status!=='ok')){
       // Preserve old bookmark invalidations. Only this ORIGINAL frame may later
       // recognize its own deterministic invalidation for prospective focus.
-      if(!frame.reentrant && !frame.foreign && !isDomRefusal(result) && result.status==='completed' && result.response.status==='ok')this.#invalidateFrame(frame);
+      const cleanRefusal=refusalTarget && !frame.publications && !frame.events && frame.serial===this.#serial && refusedWithoutPublication(result);
+      if(!frame.reentrant && !frame.foreign && (cleanRefusal || result.status==='completed' && result.response.status==='ok'))this.#invalidateFrame(frame);
       else this.invalidate();
     }
     frame.ended=true;
@@ -221,14 +225,34 @@ export class SelectionOwner {
     return Object.freeze({selection:bookmark.selection,stamp:state.stamp,context,serial});
   }
   /** Only an original synchronous frame can mint this private, one-use permit. */
-  resultFocusPermit(frame:SubmissionFrame,result:InputSubmissionV2|DomRefusal):ResultFocusPermit|null {
-    if(!frame.ended || !frame.eligible || frame.reentrant || frame.foreign || !this.intentAvailable() || isDomRefusal(result) || result.status!=='completed' || result.response.status!=='ok' || result.response.value.kind!=='mutation')return null;
-    const state=result.response.value.state,expected=frame.serial+BigInt(frame.knownInvalidations);
+  resultFocusPermit(frame:SubmissionFrame,result:InputSubmissionV2|DomRefusal,refusalTarget?:ExactBookmark):ResultFocusPermit|null {
+    if(!frame.ended || !frame.eligible || frame.reentrant || frame.foreign || !this.intentAvailable() || result.status!=='completed')return null;
+    const expected=frame.serial+BigInt(frame.knownInvalidations);
+    if(result.response.status==='refused' && refusalTarget){
+      // Admission left the model untouched. Only this original frame can
+      // recognize its own intent invalidation without reviving the bookmark.
+      if(result.response.diagnostic.may_have_committed || frame.events || frame.publications || frame.knownInvalidations!==1
+        || refusalTarget.serial!==frame.serial || expected>MAX_SERIAL || this.#serial!==expected
+        || !same(refusalTarget.stamp,frame.before) || !same(refusalTarget.stamp,result.response.diagnostic.stamp)
+        || !same(refusalTarget.stamp,this.configuration.capture()) || !same(refusalTarget.context,frame.context)
+        || !same(refusalTarget.context,this.configuration.context()))return null;
+      return this.#focusPermit({...refusalTarget,serial:expected,publication:'none'});
+    }
+    if(result.response.status!=='ok' || result.response.value.kind!=='mutation')return null;
+    const state=result.response.value.state;
     if(expected>MAX_SERIAL || this.#serial!==expected || !same(frame.context,this.configuration.context()) || !frame.context || !same(state.stamp,this.configuration.capture()))return null;
     if(frame.publications===0){if(result.response.value.effect!=='unchanged' || !same(frame.before,state.stamp))return null;}
     else if(frame.publications!==1 || !frame.publication || !same(frame.before,frame.publication.before) || !same(state.stamp,frame.publication.after))return null;
+    return this.#focusPermit({serial:expected,stamp:state.stamp,selection:state.selection,context:frame.context,publication:result.response.value.effect==='unchanged'?'none':'alreadyPublished'});
+  }
+  /** A policy refusal before dispatch can still use the exact captured range. */
+  bookmarkFocusPermit(bookmark:SelectionBookmark):ResultFocusPermit|null {
+    const exact=this.validateExact(bookmark);
+    return 'status' in exact?null:this.#focusPermit({...exact,publication:'none'});
+  }
+  #focusPermit(entry:FocusEntry):ResultFocusPermit {
     const permit=Object.freeze({__resultFocusPermit:Symbol('result-focus')}) as ResultFocusPermit;
-    this.#focusPermits.set(permit,{serial:expected,stamp:state.stamp,selection:state.selection,context:frame.context,publication:result.response.value.effect==='unchanged'?'none':'alreadyPublished'});
+    this.#focusPermits.set(permit,entry);
     return permit;
   }
   /** Presentation-only RESULT range restoration; never another set_selection. */

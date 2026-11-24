@@ -64,6 +64,42 @@ async function run(page, scenario) {
         return started;
       };
       const choice={status:'ok',value:{assetId:pickedId}}, available={status:'ok',value:{assetId:pickedId,alt:'New alt\r\nline'}};
+      if(scenario==='resolve-cancel'||scenario==='resolve-remove'){
+        let resolvePicker,metadataCalls=0,pickerSignal;
+        const pending=start({kind:'replace',node:original.id,assetId:originalId},{
+          pickMedia:(_request,{signal})=>{
+            pickerSignal=signal;done.focus();
+            return new Promise(resolve=>{resolvePicker=resolve;});
+          },
+          mediaMetadata:()=>{
+            metadataCalls++;
+            return Promise.resolve(available);
+          },
+        });
+        // Resolve and revoke in one JS turn so the picker reaction runs before the deferred abort.
+        resolvePicker(choice);
+        const cancelled=scenario==='resolve-cancel';
+        if(cancelled){if(!pending.cancel())throw Error('Cancellation did not consume the live request');}
+        else await submit({kind:'command',command:kwdj.kwdjCommand({kind:'remove',node:original.id}),history_hint:{kind:'isolated'}});
+        const result=await pending.completion;
+        await Promise.resolve();
+        unobserve();
+        return {before,after:await checkpoint(),status:result.status,metadataCalls,
+          aborted:pickerSignal.aborted,events,expected:cancelled?initial:source([left,right])};
+      }
+      if(scenario==='unresolved-identity'){
+        const unknown='c3333333-3333-4333-8333-333333333333';
+        const pending=start({kind:'insert'},{
+          pickMedia:async()=>{done.focus();return {status:'ok',value:{assetId:unknown}};},
+          mediaMetadata:async()=>({status:'ok',value:{assetId:unknown,alt:'An image no longer available'}}),
+        });
+        const result=await pending.completion;
+        const response=result.status==='submitted'?(result.submission.status==='completed'
+          ?result.submission.response:await result.submission.completion):null;
+        const focus=result.status==='submitted'?await result.focus:null;
+        unobserve();
+        return {before,after:await checkpoint(),status:result.status,response,focus,events};
+      }
       if(scenario==='success'){
         const trace=[]; let pickerSignal;
         const services={pickMedia:async(request,{signal})=>{
@@ -201,4 +237,33 @@ test('OSR-154 media host drops a picker reply after its target block is deleted'
   expect(r.whenDeleted.canonical).toBe(r.expected);expect(r.after.canonical).toBe(r.expected);
   expect(r.whenDeleted.state).toEqual(r.after.state);expect(r.after.focus).toBe('outside');expect(r.after.pending).toBe(0);
   expect(r.events.filter(kind=>kind==='document')).toHaveLength(1);
+});
+
+for (const [scenario,name,status,documentEvents] of [
+  ['resolve-cancel','cancellation','cancelled',0],
+  ['resolve-remove','target removal','retired',1],
+]) {
+  test('OSR-154 media host skips metadata after same-turn '+name,async({page})=>{
+    const out=await run(page,scenario);
+    expect(out.after.canonical).toBe(out.expected);
+    expect(out.after.pending).toBe(0);
+    expect(out.aborted).toBe(true);
+    expect(out.status).toBe(status);
+    expect(out.metadataCalls).toBe(0);
+    expect(out.events.filter(kind=>kind==='document')).toHaveLength(documentEvents);
+  });
+}
+
+test('OSR-154 media host restores the owned caret after native identity refusal',async({page})=>{
+  const out=await run(page,'unresolved-identity');
+  expect(out.response).toMatchObject({status:'refused',diagnostic:{
+    code:'kwdj.identity_resolution_failed',path:'/content/1/attrs/media_asset_id',may_have_committed:false,
+  }});
+  expect(out.after.canonical).toBe(out.before.canonical);
+  expect(out.after.state).toEqual(out.before.state);
+  expect(out.after.pending).toBe(0);
+  expect(out.events.filter(kind=>kind==='document')).toEqual([]);
+  expect(out.focus).toEqual({status:'restored',failure:null});
+  expect(out.after).toMatchObject({focus:'editor',ownedDomCaret:true,
+    domCaretText:out.before.domCaretText,domCaretOffset:out.before.domCaretOffset});
 });
