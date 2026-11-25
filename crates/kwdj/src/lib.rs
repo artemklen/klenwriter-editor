@@ -482,13 +482,7 @@ fn decode_checked_value(
     budget: AdmissionBudget,
 ) -> Result<CandidateDocument, KwdjError> {
     preflight(&value)?;
-    candidate_validate::check_original_headers(
-        &value,
-        budget.effective().preflight,
-        &mut editor_core::transaction::WorkMeter::new(
-            editor_core::transaction::WorkLimits::default(),
-        ),
-    )?;
+    candidate_validate::check_original_headers(&value, budget.effective().preflight)?;
     let mut probe = value.clone();
     let mut ignored = Vec::new();
     normalize::normalize_value(&mut probe, "", &mut ignored)?;
