@@ -144,7 +144,7 @@ pub(crate) fn decode_header(value: Value, path: &str) -> Result<Node, KwdjError>
     envelope.insert("schema_version".into(), Value::Number(1.into()));
     envelope.insert("profile".into(), Value::String("prose".into()));
     envelope.insert("content".into(), Value::Array(vec![value]));
-    let mut document = crate::decode_document(Value::Object(envelope)).map_err(|mut error| {
+    let mut document = crate::decode_document(&Value::Object(envelope)).map_err(|mut error| {
         if let Some(suffix) = error.path.strip_prefix("/content/0") {
             error.path = format!("{native_root}{suffix}");
         }
@@ -319,7 +319,7 @@ pub(crate) fn check_original_headers(
             .expect("copied object header")
             .insert("marks".into(), marks);
     }
-    crate::decode_document_shape(envelope)?;
+    crate::decode_document_shape(&envelope)?;
     fn walk(
         value: &Value,
         path: &str,

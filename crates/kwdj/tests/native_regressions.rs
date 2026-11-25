@@ -4,7 +4,8 @@ use std::cell::Cell;
 
 use klenwriter_editor_kwdj::{
     IdentityResolver, IdentityResolverError, IdentityStatus, KwdjErrorCode,
-    MAX_TABLE_EFFECTIVE_COLUMNS, decode_normalize_validate, validate_normalized_json,
+    MAX_TABLE_EFFECTIVE_COLUMNS, decode_candidate_value, decode_normalize_validate,
+    validate_normalized_json,
 };
 use serde_json::{Value, json};
 use uuid::Uuid;
@@ -63,6 +64,102 @@ fn resolve(outcome: Resolution) -> Result<IdentityStatus, IdentityResolverError>
         Resolution::Exists => Ok(IdentityStatus::Exists),
         Resolution::Missing => Ok(IdentityStatus::Missing),
         Resolution::Unavailable => Err(IdentityResolverError::Unavailable),
+    }
+}
+
+#[test]
+fn explicit_null_does_not_replace_an_absent_optional_document_field() {
+    let mut decorative_media = media_document();
+    let attrs = decorative_media["content"][0]["attrs"]
+        .as_object_mut()
+        .unwrap();
+    attrs.remove("alt");
+    attrs.insert("decorative".into(), json!(true));
+    let cases = [
+        (link_document("/example"), "/content/0/attrs"),
+        (
+            link_document("/example"),
+            "/content/0/content/0/marks/0/attrs/title",
+        ),
+        (media_document(), "/content/0/attrs/decorative"),
+        (decorative_media, "/content/0/attrs/alt"),
+        (
+            json!({"schema":"klenwriter.document","schema_version":1,"profile":"prose",
+            "content":[{"type":"paragraph","content":[{"type":"text","text":"x"}]}]}),
+            "/content/0/content/0/marks",
+        ),
+    ];
+
+    let mut mismatches = Vec::new();
+    for (mut document, path) in cases {
+        let control = encoded(document.clone());
+        validate_normalized_json(&control, &AllowIdentities).unwrap();
+        decode_normalize_validate(&control, &AllowIdentities).unwrap();
+        decode_candidate_value(&document).unwrap();
+
+        let (parent, key) = path.rsplit_once('/').unwrap();
+        assert!(
+            document
+                .pointer_mut(parent)
+                .unwrap()
+                .as_object_mut()
+                .unwrap()
+                .insert(key.into(), Value::Null)
+                .is_none(),
+            "fixture must start with the field absent"
+        );
+        let input = encoded(document.clone());
+        let actual = [
+            (
+                "raw strict",
+                validate_normalized_json(&input, &AllowIdentities).map(|_| ()),
+            ),
+            (
+                "raw normalize",
+                decode_normalize_validate(&input, &AllowIdentities).map(|_| ()),
+            ),
+            ("borrowed", decode_candidate_value(&document).map(|_| ())),
+        ];
+        for (entry, result) in actual {
+            match result {
+                Err(error)
+                    if error.code == KwdjErrorCode::InvalidStructure && error.path == path => {}
+                other => mismatches.push(format!("{entry} at {path}: {other:?}")),
+            }
+        }
+    }
+    assert!(
+        mismatches.is_empty(),
+        "explicit null must be refused at its wire field:\n{}",
+        mismatches.join("\n")
+    );
+}
+
+#[test]
+fn explicit_null_preserves_envelope_and_unknown_attribute_refusals() {
+    let mut document = link_document("/example");
+    document["attrs"] = Value::Null;
+    for (schema, code, path) in [
+        (
+            "other.document",
+            KwdjErrorCode::UnsupportedSchema,
+            "/schema",
+        ),
+        (
+            "klenwriter.document",
+            KwdjErrorCode::UnknownAttribute,
+            "/attrs/attrs",
+        ),
+    ] {
+        document["schema"] = json!(schema);
+        let input = encoded(document.clone());
+        for error in [
+            validate_normalized_json(&input, &AllowIdentities).unwrap_err(),
+            decode_normalize_validate(&input, &AllowIdentities).unwrap_err(),
+            decode_candidate_value(&document).unwrap_err(),
+        ] {
+            assert_eq!((error.code, error.path.as_str()), (code, path));
+        }
     }
 }
 

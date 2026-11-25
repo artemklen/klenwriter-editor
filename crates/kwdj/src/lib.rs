@@ -450,8 +450,8 @@ pub fn decode_candidate_with_limits_and_budget(
     budget: AdmissionBudget,
 ) -> Result<CandidateDocument, KwdjError> {
     let value = admission::parse_raw(input, budget)?;
-    admission::check_value(&value, budget)?;
-    decode_checked_value(value, limits, budget)
+    check_candidate_shape(&value, budget)?;
+    decode_checked_value(value, limits)
 }
 
 /// Admit an already-parsed borrowed value without serializing and parsing it
@@ -470,24 +470,25 @@ pub fn decode_candidate_value_with_limits_and_budget(
     limits: Limits,
     budget: AdmissionBudget,
 ) -> Result<CandidateDocument, KwdjError> {
-    admission::check_value(input, budget)?;
-    preflight(input)?;
-    decode_checked_value(input.clone(), limits, budget)
+    check_candidate_shape(input, budget)?;
+    decode_checked_value(input.clone(), limits)
 }
 
-// Value is owned and has already passed the borrowed operational preflight.
+fn check_candidate_shape(value: &Value, budget: AdmissionBudget) -> Result<(), KwdjError> {
+    admission::check_value(value, budget)?;
+    preflight(value)?;
+    let null_path = explicit_null_path(value);
+    candidate_validate::check_original_headers(value, budget.effective().preflight)?;
+    reject_explicit_null(null_path)
+}
+
 // Opaque candidates cannot be constructed or mutated outside this module.
-fn decode_checked_value(
-    value: Value,
-    limits: Limits,
-    budget: AdmissionBudget,
-) -> Result<CandidateDocument, KwdjError> {
-    preflight(&value)?;
-    candidate_validate::check_original_headers(&value, budget.effective().preflight)?;
+fn decode_checked_value(value: Value, limits: Limits) -> Result<CandidateDocument, KwdjError> {
     let mut probe = value.clone();
     let mut ignored = Vec::new();
     normalize::normalize_value(&mut probe, "", &mut ignored)?;
-    decode_document(probe)?;
+    decode_document(&probe)?;
+    drop(probe);
     Ok(CandidateDocument {
         value,
         limits: limits.effective(),
@@ -502,7 +503,8 @@ pub fn normalize_and_validate(
     let mut value = candidate.value;
     let mut events = Vec::new();
     normalize::normalize_value(&mut value, "", &mut events)?;
-    let document = decode_document(value)?;
+    let document = decode_document(&value)?;
+    drop(value);
     finish_validation(document, events, identities, candidate.limits)
 }
 
@@ -571,8 +573,11 @@ pub(crate) fn validate_normalized_value(
 ) -> Result<ValidatedDocument, KwdjError> {
     admission::check_value(&value, budget)?;
     preflight(&value)?;
+    let null_path = explicit_null_path(&value);
     normalize::ensure_normalized(&value, "")?;
-    let document = decode_document(value)?;
+    let document = decode_document(&value)?;
+    reject_explicit_null(null_path)?;
+    drop(value);
     finish_validation(document, Vec::new(), identities, limits.effective())
 }
 
@@ -625,16 +630,56 @@ fn preflight(value: &Value) -> Result<(), KwdjError> {
     }
 }
 
-fn decode_document(value: Value) -> Result<Document, KwdjError> {
-    scan_known_types(&value, "")?;
+enum NullPathSegment<'a> {
+    Field(&'a str),
+    Index(usize),
+}
+
+// Resource preflight bounds this walk. Inspect the original wire values before
+// normalization or Serde can erase them. Existing shape diagnostics retain
+// precedence, so the diagnostic pointer is built only if the null is refused.
+fn explicit_null_path(value: &Value) -> Option<Vec<NullPathSegment<'_>>> {
+    match value {
+        Value::Null => Some(Vec::new()),
+        Value::Array(values) => values.iter().enumerate().find_map(|(index, value)| {
+            let mut path = explicit_null_path(value)?;
+            path.push(NullPathSegment::Index(index));
+            Some(path)
+        }),
+        Value::Object(fields) => fields.iter().find_map(|(key, value)| {
+            let mut path = explicit_null_path(value)?;
+            path.push(NullPathSegment::Field(key));
+            Some(path)
+        }),
+        _ => None,
+    }
+}
+
+fn reject_explicit_null(path: Option<Vec<NullPathSegment<'_>>>) -> Result<(), KwdjError> {
+    if let Some(path) = path {
+        let mut pointer = String::new();
+        for segment in path.into_iter().rev() {
+            pointer.push('/');
+            match segment {
+                NullPathSegment::Field(key) => pointer.push_str(&pointer_escape(key)),
+                NullPathSegment::Index(index) => pointer.push_str(&index.to_string()),
+            }
+        }
+        return Err(KwdjError::new(KwdjErrorCode::InvalidStructure, pointer));
+    }
+    Ok(())
+}
+
+fn decode_document(value: &Value) -> Result<Document, KwdjError> {
+    scan_known_types(value, "")?;
     decode_document_shape(value)
 }
 
 // Shared closed Document authority. A shallow original envelope has no child
 // payload to scan and must refuse its own unknown fields before interpreting
 // their contents as node metadata.
-fn decode_document_shape(value: Value) -> Result<Document, KwdjError> {
-    let bytes = serde_json::to_vec(&value)
+fn decode_document_shape(value: &Value) -> Result<Document, KwdjError> {
+    let bytes = serde_json::to_vec(value)
         .map_err(|_| KwdjError::new(KwdjErrorCode::InvalidStructure, ""))?;
     let mut deserializer = serde_json::Deserializer::from_slice(&bytes);
     serde_path_to_error::deserialize(&mut deserializer).map_err(|error| {
