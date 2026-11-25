@@ -15,8 +15,8 @@ import type { LazyWasmLoaderV2 } from '@klenwriter/editor-sdk';
 @Component({
   imports: [KlenwriterEditorDirective],
   template: `
-    <div id="editor" aria-label="Angular editor" [kwEditor]="options()" [kwEditorMode]="mode()"
-         (editorReady)="onReady($event)" (editorModeResult)="onMode($event)"
+    <div #editor id="editor" aria-label="Angular editor" [kwEditor]="options()" [kwEditorMode]="mode()"
+         (editorReady)="onReady($event, editor)" (editorModeResult)="onMode($event)"
          (editorRevision)="onRevision($event)"></div>
     <output id="ready">{{ ready()?.status }}</output>
     <output id="mode">{{ modeResult() }}</output>
@@ -32,9 +32,11 @@ class AngularEditorHost {
   readonly revisions: KlenwriterEditorRevision[] = [];
   readonly readyResult = deferred<MountedReady>();
   readyEvents = 0;
+  modeOnReady: string | null = null;
 
-  onReady(result: MountedReady): void {
+  onReady(result: MountedReady, element: HTMLElement): void {
     this.readyEvents += 1;
+    this.modeOnReady = element.getAttribute('aria-disabled');
     this.ready.set(result);
     this.readyResult.resolve(result);
   }
@@ -83,7 +85,10 @@ export async function runAngularBindingProbe(load: LazyWasmLoaderV2 = () => load
       input: documentBytes('Angular'),
       loader: () => mountLoader,
       options: {
-        abi: 'editor-sdk/2', build_id: sdkBuildId, profile: kwdjBasicRenderers.definition.binding.profile,
+        abi: 'editor-sdk/2', build_id: sdkBuildId, profile: {
+          ...kwdjBasicRenderers.definition.binding.profile,
+          extensions: [...kwdjBasicRenderers.definition.binding.profile.extensions],
+        },
         registry_json: registryJson, admission: 'validate', access: 'editable',
         profile_options_json: '{"identities":{"media":[],"references":[]},"limits":null}',
       },
@@ -110,6 +115,8 @@ export async function runAngularBindingProbe(load: LazyWasmLoaderV2 = () => load
       check(binding.mounted() === null, 'The binding exposed a handle during the native load');
       check(host.ready() === null && nativeSessions() === 0, 'A session opened before the loader settled');
 
+      host.mode.set('disabled');
+      await fixture.whenStable();
       releaseMount(wasm);
       await host.readyResult.promise;
       await fixture.whenStable();
@@ -117,6 +124,7 @@ export async function runAngularBindingProbe(load: LazyWasmLoaderV2 = () => load
       check(mounted, 'The binding did not expose the ready native handle');
       check(host.ready() === await mounted.ready && root.querySelector('#ready')?.textContent === 'ready',
         'Angular did not render the original native readiness in the zoneless template');
+      check(host.modeOnReady === 'true', 'Angular exposed readiness before applying the latest bound mode');
       check(surface.textContent?.toString() === 'Angular' && surface.getAttribute('contenteditable') === 'false',
         'Native mounting did not render the document with the initial read-only mode');
       check(mounted.resources().sdk.sessions === 1 && nativeSessions() === 1,
@@ -168,6 +176,22 @@ export async function runAngularBindingProbe(load: LazyWasmLoaderV2 = () => load
       } finally {
         unsubscribe();
       }
+
+      surface.focus();
+      surface.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }));
+      host.mode.set('disabled');
+      await fixture.whenStable();
+      check(host.modeResult() === 'dom.composition_conflict', 'The binding hid the native mode refusal');
+      surface.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true }));
+      for (let frame = 0; frame < 20 && host.modeResult() !== 'disabled'; frame += 1) {
+        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+      }
+      await fixture.whenStable();
+      check(surface.getAttribute('contenteditable') === 'false' && host.modeResult() === 'disabled',
+        `The binding did not apply the disabled mode after composition settled (${host.modeResult()})`);
+      host.mode.set('editable');
+      await fixture.whenStable();
+      check(surface.getAttribute('contenteditable') === 'true', 'The binding failed to restore editable mode');
     } finally {
       fixture.destroy();
     }
@@ -198,8 +222,21 @@ export async function runAngularBindingProbe(load: LazyWasmLoaderV2 = () => load
     await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
     check(retiredHost.readyEvents === 0 && nativeSessions() === 0, 'A retired directive published a late ready result or opened a session');
 
+    const reentrant = TestBed.createComponent(AngularEditorHost);
+    const reentrantHost = reentrant.componentInstance;
+    const destroyedInLoader = deferred<void>();
+    reentrantHost.options.set({ ...options, editor: { ...options.editor, loader: () => {
+      reentrant.destroy();
+      destroyedInLoader.resolve();
+      return Promise.resolve(wasm);
+    } } });
+    await destroyedInLoader.promise;
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    check(reentrantHost.readyEvents === 0 && nativeSessions() === 0, 'A loader that retired its view leaked a native session');
+
     return { ready: true, mode: 'editable', revision: revision.after.revision, lifecycle: mounted.lifecycle,
-      mountedSessions: released.sdk.sessions, nativeSessions: nativeSessions(), retiredWhileLoading: true };
+      mountedSessions: released.sdk.sessions, nativeSessions: nativeSessions(),
+      retiredWhileLoading: true, retiredInsideLoader: true, modeBeforeReady: true, modeAfterComposition: true };
   } finally {
     TestBed.resetTestingModule();
     TestBed.resetTestEnvironment();
