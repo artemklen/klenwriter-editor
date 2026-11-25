@@ -30,7 +30,8 @@
     "./clipboard": {
       "types": "./dist/clipboard.d.ts",
       "import": "./dist/clipboard.js"
-    }
+    },
+    "./registry.json": "./dist/registry.json"
   },
   "dependencies": {
     "@klenwriter/editor-dom": "0.0.0",

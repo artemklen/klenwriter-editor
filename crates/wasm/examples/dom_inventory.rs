@@ -90,8 +90,9 @@ fn inventory(
 
 #[cfg(not(target_arch = "wasm32"))]
 fn main() {
+    let kwdj_descriptor = editor_kwdj::registry::registry_descriptor();
     let kwdj = inventory(
-        &editor_kwdj::registry::registry_descriptor(),
+        &kwdj_descriptor,
         &[editor_kwdj::registry::base_registration_v2()],
     );
     let typing_descriptor = editor_kwdj::registry::typing_registry_descriptor();
@@ -143,7 +144,7 @@ fn main() {
     );
     serde_json::to_writer_pretty(
         std::io::stdout(),
-        &serde_json::json!({"format": "klenwriter-editor-dom-inventory/1", "kwdj": kwdj, "kwdjTyping": kwdj_typing, "kwdjTypingRegistry": typing_descriptor, "notesD0": notes, "kwdjInsertions": {"candidates": insertions, "textBlockTypes": text_types}}),
+        &serde_json::json!({"format": "klenwriter-editor-dom-inventory/1", "kwdj": kwdj, "kwdjRegistry": kwdj_descriptor, "kwdjTyping": kwdj_typing, "kwdjTypingRegistry": typing_descriptor, "notesD0": notes, "kwdjInsertions": {"candidates": insertions, "textBlockTypes": text_types}}),
     )
     .unwrap();
     println!();

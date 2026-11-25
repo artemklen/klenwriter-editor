@@ -59,6 +59,8 @@ export function generateDomInventory({ check = false, locked = true } = {}) {
   } else writeFileSync(resolve(root, catalogPath), catalogSource);
   files.push({path: catalogPath, sha256: digest(catalogSource), bytes: Buffer.byteLength(catalogSource), registryDigest: native.kwdj.registryDigest});
   mkdirSync(resolve(root, 'artifacts'), { recursive: true });
+  if (!native.kwdjRegistry) throw new Error('Missing native KWDJ registry');
+  writeFileSync(resolve(root, 'artifacts/kwdj-registry.json'), JSON.stringify(native.kwdjRegistry) + '\n');
   if (!native.kwdjTypingRegistry || !native.kwdjTyping?.profile) throw new Error('Missing native optional typing profile');
   writeFileSync(resolve(root, 'artifacts/typography-profile.json'), JSON.stringify({
     format: 'klenwriter-editor-typography-profile/1',

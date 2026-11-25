@@ -2,7 +2,7 @@
   "name": "@klenwriter/editor-angular",
   "version": "0.0.0",
   "private": true,
-  "description": "KlenWriter Editor: angular editor binding boundary; unpublished bootstrap",
+  "description": "KlenWriter Editor: standalone Angular binding",
   "type": "module",
   "license": "MIT OR Apache-2.0",
   "repository": {
@@ -25,7 +25,10 @@
     }
   },
   "dependencies": {
-    "@klenwriter/editor": "0.0.0"
+    "@klenwriter/editor-dom": "0.0.0"
+  },
+  "peerDependencies": {
+    "@angular/core": "22.0.8"
   },
   "klenwriterEditor": {
     "role": "angular",

@@ -31,7 +31,8 @@ export function computeSdkBuildIdentity() {
   };
   for (const path of ['Cargo.toml', 'Cargo.lock', 'rust-toolchain.toml', 'package.json', 'package-lock.json',
     'package-map.json', 'tsconfig.base.json', 'tsconfig.json', 'scripts/generate-sdk-types.mjs',
-    'scripts/build-workspace.mjs', 'scripts/build-failure-runtime.mjs', 'scripts/build-clipboard-parser.mjs', 'scripts/generate-dom-inventory.mjs', 'scripts/build-extensions-consumers.mjs', 'scripts/dependency-notices.mjs', 'scripts/package-identity.mjs', 'scripts/seal-sdk-wasm.mjs', 'scripts/sdk-distribution.mjs',
+    'scripts/build-workspace.mjs', 'scripts/build-angular.mjs', 'scripts/angular-build/package.json', 'scripts/angular-build/package-lock.json',
+    'scripts/build-failure-runtime.mjs', 'scripts/build-clipboard-parser.mjs', 'scripts/generate-dom-inventory.mjs', 'scripts/build-extensions-consumers.mjs', 'scripts/dependency-notices.mjs', 'scripts/package-identity.mjs', 'scripts/seal-sdk-wasm.mjs', 'scripts/sdk-distribution.mjs',
     'provenance/licenses/ts-rs-12.0.1-MIT.txt', 'provenance/licenses/sdk-generator-license-sources.json']) add(path);
   // Every workspace library contributes, including original extension modules
   // and semantic JSON registrations. A new crate cannot escape build identity
@@ -49,7 +50,7 @@ export function computeSdkBuildIdentity() {
   add('crates/wasm/examples/sdk_types_v2.rs');
   add('crates/wasm/examples/sdk_manifest.rs');
   add('crates/wasm/examples/sdk_manifest_v2.rs');
-  for (const name of ['wasm', 'sdk', 'dom', 'kwdj', 'ui']) {
+  for (const name of ['wasm', 'sdk', 'dom', 'kwdj', 'ui', 'angular']) {
     add(`packages/${name}/package.json`); add(`packages/${name}/tsconfig.json`);
     walk(`packages/${name}/src`, /\.(?:ts|js|css)$/);
   }
@@ -71,7 +72,7 @@ export function writeSdkBuildIdentity(identity = computeSdkBuildIdentity()) {
   writeFileSync(resolve(root, 'artifacts/sdk-build-identity.json'), JSON.stringify({
     format: 'klenwriter-editor-sdk-build/1', ...identity,
     exclusions: [...excluded],
-    scope: 'Production Rust, SDK/DOM/profile/optional UI TS/CSS, locked metadata and build/generator inputs. Generated outputs/artifacts/provenance excluded to avoid a file hash cycle.',
+    scope: 'Production Rust, SDK/DOM/profile/UI/Angular TS/CSS, locked metadata and build/generator inputs. Generated outputs/artifacts/provenance excluded to avoid a file hash cycle.',
   }, null, 2) + '\n');
   return identity;
 }

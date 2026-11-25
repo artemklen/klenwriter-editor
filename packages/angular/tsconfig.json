@@ -1,15 +1,14 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "composite": false,
+    "experimentalDecorators": true,
     "rootDir": "src",
     "outDir": "dist"
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "references": [
-    {
-      "path": "../vanilla"
-    }
-  ]
+  "angularCompilerOptions": {
+    "compilationMode": "partial",
+    "strictTemplates": true
+  },
+  "include": ["src/**/*.ts"]
 }

@@ -41,11 +41,13 @@ test('all packed JS boundaries install in an external project with no checkout/t
   try {
     const inventory = JSON.parse(readFileSync('artifacts/package-inventory.json', 'utf8'));
     const paths = inventory.map(pkg => resolve('artifacts/packages', pkg.filename));
-    const install = spawnSync('npm', ['install', '--prefix', dir, '--ignore-scripts', '--no-audit', '--no-fund', ...paths], { encoding: 'utf8' });
+    const install = spawnSync('npm', ['install', '--prefix', dir, '--ignore-scripts', '--no-audit', '--no-fund',
+      '@angular/core@22.0.8', '@angular/compiler@22.0.8', ...paths], { encoding: 'utf8' });
     assert.equal(install.status, 0, install.stderr);
     const program = `
       import assert from 'node:assert/strict';
       import { readFileSync } from 'node:fs';
+      import '@angular/compiler';
       for (const name of ${JSON.stringify(['sdk','dom','kwdj','vanilla','angular','ui'].map(id => identity.web[id].name))}) {
         const pkg = await import(name);
         assert.equal(pkg.artifactStage, 'workspace-bootstrap');
@@ -58,6 +60,11 @@ test('all packed JS boundaries install in an external project with no checkout/t
       const ui = await import('@klenwriter/editor-ui');
       assert.equal(typeof ui.createEditorUi, 'function');
       assert.equal(typeof ui.defineUiHostAction, 'function');
+      const angular = await import('@klenwriter/editor-angular');
+      assert.equal(typeof angular.KlenwriterEditorDirective, 'function');
+      const registry = JSON.parse(readFileSync(new URL(import.meta.resolve('@klenwriter/editor-kwdj/registry.json')), 'utf8'));
+      const { kwdjBasicRenderers } = await import('@klenwriter/editor-kwdj/dom');
+      assert.equal(registry.profile.id, kwdjBasicRenderers.definition.binding.profile.profile_id);
     `;
     const consumer = join(dir, 'consumer.mjs');
     writeFileSync(consumer, program);
