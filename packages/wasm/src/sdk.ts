@@ -1,3 +1,4 @@
+import type { CodecResponseV1, KwdjTextStatsResponseV1 } from './codec.js';
 import { sdkBuildId } from './sdk-build-id.js';
 import type { SdkManifest } from './sdk-types.js';
 import type { SdkManifestV2 } from './sdk-types-v2.js';
@@ -5,6 +6,7 @@ import type { SdkManifestV2 } from './sdk-types-v2.js';
 export { sdkBuildId } from './sdk-build-id.js';
 export const sdkAbiV1 = 'editor-sdk/1' as const;
 export const sdkAbiV2 = 'editor-sdk/2' as const;
+export const kwdjToolsAbiV1 = 'kwdj-tools/1' as const;
 
 /** Low-level Rust ownership. Controllers must destroy and free exactly once. */
 export interface RawSdkSessionV1 {
@@ -28,6 +30,19 @@ export interface LoadedSdkV2 {
   readonly resourceCounts: () => string;
 }
 export type LazyWasmLoaderV2 = () => Promise<LoadedSdkV2>;
+
+/** Structural browser tooling. Identity existence is resolved on server save. */
+export interface KwdjToolsV1 {
+  readonly abi: typeof kwdjToolsAbiV1;
+  readonly admit: (input: Uint8Array) => CodecResponseV1;
+  readonly normalize: (input: Uint8Array) => CodecResponseV1;
+  readonly projectTextStats: (input: Uint8Array) => KwdjTextStatsResponseV1;
+}
+export interface LoadedSdkV2WithKwdjTools {
+  readonly sdk: LoadedSdkV2;
+  readonly kwdj: KwdjToolsV1;
+}
+
 export type SdkWasmInput = Uint8Array | ArrayBuffer | Response | Request | URL | string;
 export interface SdkLoadOptions {
   readonly wasm?: SdkWasmInput;
@@ -150,11 +165,16 @@ type Glue = {
   sdkManifestV2?: () => string;
   SdkSessionV2?: LoadedSdkV2['Session'];
   sdkResourceCountsV2?: () => string;
+  kwdjAdmitStructurallyV1?: (input: Uint8Array) => string;
+  kwdjNormalizeStructurallyV1?: (input: Uint8Array) => string;
+  kwdjProjectTextStatsV1?: (input: Uint8Array) => string;
 };
 type OwnedInput = { key: string | Response; source: Exclude<SdkWasmInput, Uint8Array> | Uint8Array };
 type Abi = typeof sdkAbiV1 | typeof sdkAbiV2;
 type VerifiedModule = { bytes: Uint8Array<ArrayBuffer>; abi: Abi };
-type ModuleBundle = { abi: Abi; glue: Glue; v1?: LoadedSdkV1; v2?: LoadedSdkV2 };
+type ModuleBundle = {
+  abi: Abi; glue: Glue; v1?: LoadedSdkV1; v2?: LoadedSdkV2; v2WithKwdjTools?: LoadedSdkV2WithKwdjTools;
+};
 type ModuleLoad = {
   key: OwnedInput['key']; verified?: Promise<VerifiedModule>; initialized?: Promise<ModuleBundle>;
   readers: number; abort: AbortController; bodyReader?: ReadableStreamDefaultReader<Uint8Array>;
@@ -641,4 +661,26 @@ export async function loadSdk(options: SdkLoadOptions = {}): Promise<LoadedSdkV1
 }
 export async function loadSdkV2(options: SdkLoadOptions = {}): Promise<LoadedSdkV2> {
   return projectionV2(await loadBundle(options, sdkAbiV2));
+}
+
+/** Load the verified SDK and hosted KWDJ tools from the same Wasm instance. */
+export async function loadSdkV2WithKwdjTools(options: SdkLoadOptions = {}): Promise<LoadedSdkV2WithKwdjTools> {
+  const bundle = await loadBundle(options, sdkAbiV2);
+  const sdk = projectionV2(bundle);
+  if (bundle.v2WithKwdjTools) return bundle.v2WithKwdjTools;
+  const { kwdjAdmitStructurallyV1, kwdjNormalizeStructurallyV1, kwdjProjectTextStatsV1 } = bundle.glue;
+  if (typeof kwdjAdmitStructurallyV1 !== 'function'
+    || typeof kwdjNormalizeStructurallyV1 !== 'function'
+    || typeof kwdjProjectTextStatsV1 !== 'function') {
+    throw new SdkLoadError('sdk.module_invalid', 'kwdj_tools_exports');
+  }
+  const decode = <T>(call: () => string): T => JSON.parse(invokeRuntime(call)) as T;
+  const kwdj: KwdjToolsV1 = {
+    abi: kwdjToolsAbiV1,
+    admit: (input) => decode(() => kwdjAdmitStructurallyV1(input)),
+    normalize: (input) => decode(() => kwdjNormalizeStructurallyV1(input)),
+    projectTextStats: (input) => decode(() => kwdjProjectTextStatsV1(input)),
+  };
+  bundle.v2WithKwdjTools = Object.freeze({ sdk, kwdj: Object.freeze(kwdj) });
+  return bundle.v2WithKwdjTools;
 }

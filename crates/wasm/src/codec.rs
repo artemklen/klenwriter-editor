@@ -157,6 +157,17 @@ fn facts(values: Vec<Fact>) -> Result<BTreeMap<Uuid, Status>, Refusal> {
 }
 
 impl Context {
+    #[cfg(target_arch = "wasm32")]
+    pub(crate) fn hosted() -> Self {
+        Self {
+            limits: Limits::default(),
+            budget: AdmissionBudget::default(),
+            media: BTreeMap::new(),
+            references: BTreeMap::new(),
+            identity_calls: Cell::new(0),
+        }
+    }
+
     pub fn parse(options: &str) -> Result<Self, Refusal> {
         // The browser checks borrowed JS string length before marshalling it.
         // Native callers have the same UTF-16 bound and a cheap byte bound first.
@@ -226,26 +237,16 @@ impl Context {
     }
 
     pub fn run(&self, operation: Operation, input: &[u8]) -> Response {
-        if let Err(error) = self.admit_length(input.len() as u64) {
-            return Response::refused(operation, error);
-        }
-        let result = match operation {
-            Operation::Normalize => editor_kwdj::decode_normalize_validate_with_limits_and_budget(
-                input,
-                self,
-                self.limits,
-                self.budget,
-            ),
-            Operation::Validate | Operation::Canonical => {
-                editor_kwdj::validate_normalized_json_with_limits_and_budget(
-                    input,
-                    self,
-                    self.limits,
-                    self.budget,
-                )
-            }
-        };
-        match result {
+        self.run_with_identities(operation, input, self)
+    }
+
+    pub(crate) fn run_with_identities(
+        &self,
+        operation: Operation,
+        input: &[u8],
+        identities: &dyn IdentityResolver,
+    ) -> Response {
+        match self.admit(operation, input, identities) {
             Ok(value) => Response::Accepted {
                 abi: ABI,
                 operation,
@@ -273,18 +274,43 @@ impl Context {
                     })
                     .collect(),
             },
-            Err(error) => Response::refused(
-                operation,
-                Box::new(Diagnostic {
-                    code: error.code.as_str().into(),
-                    path: error.path,
-                    category: error.context.category.map(str::to_owned),
-                    limit: error.context.limit.map(str::to_owned),
-                    maximum: error.context.maximum.map(|x| x.to_string()),
-                    observed: error.context.observed.map(|x| x.to_string()),
-                }),
-            ),
+            Err(error) => Response::refused(operation, error),
         }
+    }
+
+    pub(crate) fn admit(
+        &self,
+        operation: Operation,
+        input: &[u8],
+        identities: &dyn IdentityResolver,
+    ) -> Result<editor_kwdj::ValidatedDocument, Refusal> {
+        self.admit_length(input.len() as u64)?;
+        let document = match operation {
+            Operation::Normalize => editor_kwdj::decode_normalize_validate_with_limits_and_budget(
+                input,
+                identities,
+                self.limits,
+                self.budget,
+            ),
+            Operation::Validate | Operation::Canonical => {
+                editor_kwdj::validate_normalized_json_with_limits_and_budget(
+                    input,
+                    identities,
+                    self.limits,
+                    self.budget,
+                )
+            }
+        };
+        document.map_err(|error| {
+            Box::new(Diagnostic {
+                code: error.code.as_str().into(),
+                path: error.path,
+                category: error.context.category.map(str::to_owned),
+                limit: error.context.limit.map(str::to_owned),
+                maximum: error.context.maximum.map(|x| x.to_string()),
+                observed: error.context.observed.map(|x| x.to_string()),
+            })
+        })
     }
 }
 

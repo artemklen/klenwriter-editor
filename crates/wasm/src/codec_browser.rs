@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 //! Borrow handles first, admit length, then explicitly copy bounded bytes.
 use crate::codec::{self, Context, Operation, Response};
+use editor_kwdj::{IdentityResolver, IdentityResolverError, IdentityStatus, text_stats};
+use serde::Serialize;
+use uuid::Uuid;
 use wasm_bindgen::prelude::*;
 
 // Intrinsic getters do not trust shadowable .length/.buffer properties or
@@ -43,6 +46,19 @@ extern "C" {
     fn copy_input(value: &JsValue, target: &mut [u8]) -> Result<(), JsValue>;
 }
 
+fn copy_admitted(
+    context: &Context,
+    input: &JsValue,
+    length: f64,
+) -> Result<Vec<u8>, Box<codec::Diagnostic>> {
+    context.copy_admitted(length as u64, || {
+        let mut bytes = vec![0; length as usize];
+        copy_input(input, &mut bytes)
+            .map_err(|_| codec::transport("codec.input_unavailable", "/input"))?;
+        Ok(bytes)
+    })
+}
+
 fn run(operation: Operation, input: &JsValue, options: &JsValue) -> String {
     // An alias of this module's memory could detach when options/Vec allocate.
     // Refuse it before any such allocation, preserving host-owned inputs.
@@ -77,12 +93,7 @@ fn run(operation: Operation, input: &JsValue, options: &JsValue) -> String {
         Ok(value) => value,
         Err(error) => return Response::refused(operation, error).json(),
     };
-    let input = match context.copy_admitted(length as u64, || {
-        let mut bytes = vec![0; length as usize];
-        copy_input(input, &mut bytes)
-            .map_err(|_| codec::transport("codec.input_unavailable", "/input"))?;
-        Ok(bytes)
-    }) {
+    let input = match copy_admitted(&context, input, length) {
         Ok(bytes) => bytes,
         Err(error) => return Response::refused(operation, error).json(),
     };
@@ -100,4 +111,83 @@ pub fn normalize(input: &JsValue, options: &JsValue) -> String {
 #[wasm_bindgen(js_name = kwdjCanonicalV1)]
 pub fn canonical(input: &JsValue, options: &JsValue) -> String {
     run(Operation::Canonical, input, options)
+}
+
+// KWDJ has already parsed each authored identifier as a UUID at this boundary.
+// Hosted tools check the document's structure. The server resolves identities
+// against its own store when it accepts a save.
+struct StructuralIdentities;
+
+impl IdentityResolver for StructuralIdentities {
+    fn resolve_media(&self, _: &Uuid) -> Result<IdentityStatus, IdentityResolverError> {
+        Ok(IdentityStatus::Exists)
+    }
+
+    fn resolve_reference(&self, _: &Uuid) -> Result<IdentityStatus, IdentityResolverError> {
+        Ok(IdentityStatus::Exists)
+    }
+}
+
+fn with_structural_input<T>(
+    input: &JsValue,
+    run: impl FnOnce(&Context, &[u8]) -> T,
+) -> Result<T, Box<codec::Diagnostic>> {
+    let length = input_length(input, &wasm_bindgen::memory());
+    if length < 0.0 {
+        return Err(codec::transport("codec.invalid_input_type", "/input"));
+    }
+    let context = Context::hosted();
+    let input = copy_admitted(&context, input, length)?;
+    Ok(run(&context, &input))
+}
+
+fn run_structural(operation: Operation, input: &JsValue) -> String {
+    with_structural_input(input, |context, bytes| {
+        context.run_with_identities(operation, bytes, &StructuralIdentities)
+    })
+    .unwrap_or_else(|error| Response::refused(operation, error))
+    .json()
+}
+
+#[wasm_bindgen(js_name = kwdjAdmitStructurallyV1)]
+pub fn admit_structurally(input: &JsValue) -> String {
+    run_structural(Operation::Validate, input)
+}
+
+#[wasm_bindgen(js_name = kwdjNormalizeStructurallyV1)]
+pub fn normalize_structurally(input: &JsValue) -> String {
+    run_structural(Operation::Normalize, input)
+}
+
+#[derive(Serialize)]
+#[serde(tag = "status", rename_all = "snake_case")]
+enum TextStatsResponse {
+    Accepted {
+        full_text: String,
+        word_count: u32,
+        character_count: u32,
+    },
+    Refused {
+        diagnostic: Box<codec::Diagnostic>,
+    },
+}
+
+#[wasm_bindgen(js_name = kwdjProjectTextStatsV1)]
+pub fn project_text_stats(input: &JsValue) -> String {
+    let result = with_structural_input(input, |context, bytes| {
+        let document = context.admit(Operation::Validate, bytes, &StructuralIdentities)?;
+        let projected = document
+            .project_text()
+            .map_err(|error| codec::transport(error.code(), ""))?;
+        let full_text = projected.full_text;
+        Ok(TextStatsResponse::Accepted {
+            word_count: text_stats::word_count(&full_text),
+            character_count: text_stats::character_count(&full_text),
+            full_text,
+        })
+    });
+    let response = result
+        .and_then(|response| response)
+        .unwrap_or_else(|diagnostic| TextStatsResponse::Refused { diagnostic });
+    serde_json::to_string(&response).expect("text statistics transport contains serializable DTOs")
 }

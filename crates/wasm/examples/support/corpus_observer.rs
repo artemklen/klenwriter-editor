@@ -56,7 +56,9 @@ pub fn observe(request: &str) -> String {
                 match admitted.project_text() {
                     Ok(value) => json!({"status":"accepted", "full_text":value.full_text,
                         "search_index_text":value.search_index_text,
-                        "public_snippet_text":value.public_snippet_text}),
+                        "public_snippet_text":value.public_snippet_text,
+                        "word_count":profile::text_stats::word_count(&value.full_text),
+                        "character_count":profile::text_stats::character_count(&value.full_text)}),
                     Err(error) => {
                         let (budget, maximum) = match error {
                             profile::ProjectionError::BudgetExceeded { budget, limit } => (
