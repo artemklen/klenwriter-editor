@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
@@ -42,8 +42,13 @@ const routes = new Map([
   ['/', ['text/html', '<!doctype html><meta charset="utf-8"><title>Angular binding test</title><script type="module" src="/probe.js"></script>']],
   ['/probe.js', ['text/javascript', fixture.outputFiles[0].contents]],
   ['/kwdj-registry.json', ['application/json', await readFile(new URL('packages/kwdj/dist/registry.json', root))]],
+  ['/editor_wasm.js', ['text/javascript', await readFile(new URL('packages/wasm/dist/editor_wasm.js', root))]],
   ['/editor_wasm_bg.wasm', ['application/wasm', await readFile(new URL('packages/wasm/dist/editor_wasm_bg.wasm', root))]],
 ]);
+const snippets = new URL('packages/wasm/dist/snippets/', root);
+for (const path of await readdir(snippets, { recursive: true })) {
+  if (path.endsWith('.js')) routes.set(`/snippets/${path}`, ['text/javascript', await readFile(new URL(path, snippets))]);
+}
 const server = createServer(({ method, url }, response) => {
   const route = method === 'GET' && routes.get(url);
   if (!route) { response.writeHead(404).end(); return; }
