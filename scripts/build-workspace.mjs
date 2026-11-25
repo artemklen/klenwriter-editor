@@ -100,6 +100,7 @@ for (const name of packages) {
   rmSync(`packages/${name}/tsconfig.tsbuildinfo`, { force: true });
 }
 run(process.execPath, ['node_modules/typescript/bin/tsc', '-b', '--force']);
+run(process.execPath, ['scripts/build-angular.mjs']);
 await buildClipboardParser();
 run(bindgen, [`target/wasm32-unknown-unknown/release/${identity.rust.wasm.name.replaceAll('-', '_')}.wasm`,
   '--target', 'web', '--out-dir', 'packages/wasm/dist', '--out-name', 'editor_wasm']);
@@ -143,6 +144,7 @@ copyFileSync('artifacts/sdk-native-manifest.json', 'artifacts/sdk-distribution/s
 copyFileSync('artifacts/sdk-native-manifest-v2.json', 'artifacts/sdk-distribution/sdk-native-manifest-v2.json');
 copyFileSync('packages/dom/src/style.css', 'packages/dom/dist/style.css');
 copyFileSync('packages/ui/src/style.css', 'packages/ui/dist/style.css');
+copyFileSync('artifacts/kwdj-registry.json', 'packages/kwdj/dist/registry.json');
 mkdirSync('artifacts', { recursive: true });
 // Input to a separate native/WASM agreement check; not a semantic parity claim.
 run('cargo', ['run', '--locked', '--quiet', '-p', identity.rust.wasm.name, '--example', 'build_info']);
