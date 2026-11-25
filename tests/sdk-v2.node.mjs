@@ -3,15 +3,39 @@
 // conformance is a separate lane; the empty module below contains no editor.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { copyFileSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createEditor } from '../packages/sdk/dist/index.js';
-import { sdkBuildId, verifyLoadedSdkV2, SdkLoadError } from '../packages/wasm/dist/index.js';
+import * as editorWasm from '../packages/wasm/dist/index.js';
 import { encodeSdkWasmSeal } from '../scripts/seal-sdk-wasm.mjs';
 import { deferred, fakeModule, mutation, options, result } from './helpers/sdk-fake.mjs';
 import { fakeV2Module, v2Options, v2Profile } from './helpers/sdk-v2-fake.mjs';
+
+const { sdkBuildId, verifyLoadedSdkV2, SdkLoadError } = editorWasm;
+
+test('packaged V2 KWDJ tools share the verified SDK initialization and exact operations', async () => {
+  assert.equal(typeof editorWasm.loadSdkV2WithKwdjTools, 'function');
+  const wasm = new Response(readFileSync(new URL('../packages/wasm/dist/editor_wasm_bg.wasm', import.meta.url)), {
+    headers: { 'Content-Type': 'application/wasm' },
+  });
+  const [sdk, combined] = await Promise.all([
+    editorWasm.loadSdkV2({ wasm }), editorWasm.loadSdkV2WithKwdjTools({ wasm }),
+  ]);
+  assert.equal(combined.sdk, sdk);
+  assert.equal(combined.kwdj.abi, 'kwdj-tools/1');
+  assert(Object.isFrozen(combined.kwdj));
+  const encode = text => new TextEncoder().encode(text);
+  const good = encode('{"schema":"klenwriter.document","schema_version":1,"profile":"prose","content":[{"type":"paragraph","content":[{"type":"text","text":"word"}]}]}');
+  const invalid = combined.kwdj.admit(encode('{}'));
+  assert.equal(invalid.status, 'refused');
+  assert.equal(combined.kwdj.admit(good).status, 'accepted');
+  assert.equal(combined.kwdj.normalize(good).status, 'accepted');
+  assert.deepEqual(combined.kwdj.projectTextStats(good), {
+    status: 'accepted', full_text: 'word', word_count: 1, character_count: 4,
+  });
+});
 
 const tick = () => new Promise(resolve => setTimeout(resolve, 5));
 async function open(hooks = {}, extra = {}) {
@@ -127,7 +151,7 @@ test('V2 manifest guard: closed identities, optional compiled profiles and exact
   }
 });
 
-async function controlledLoader({ v2 = true, wrongV2 = false } = {}) {
+async function controlledLoader({ v2 = true, wrongV2 = false, tools = false } = {}) {
   const directory = mkdtempSync(join(tmpdir(), 'editor-sdk-v2-loader-'));
   writeFileSync(join(directory, 'package.json'), '{"type":"module"}');
   for (const file of ['sdk.js', 'sdk-build-id.js']) copyFileSync(new URL(`../packages/wasm/dist/${file}`, import.meta.url), join(directory, file));
@@ -143,12 +167,27 @@ export const sdkResourceCountsV1=()=>'{"sessions":0}';
 ${v2 ? `export const sdkManifestV2=()=>JSON.stringify(${JSON.stringify(v2Manifest)});
 export class SdkSessionV2{constructor(){counts.opened++;}}
 export const sdkResourceCountsV2=()=>'{"sessions":0}';` : ''}
+${tools ? `export const kwdjAdmitStructurallyV1=()=>{throw new WebAssembly.RuntimeError('controlled tool trap');};
+export const kwdjNormalizeStructurallyV1=()=>'{}';
+export const kwdjProjectTextStatsV1=()=>'{}';` : ''}
 `);
   const loader = await import(pathToFileURL(join(directory, 'sdk.js')).href);
   const raw = Uint8Array.of(0, 97, 115, 109, 1, 0, 0, 0);
   return { loader, counts: globalThis[key], bytes: abi => encodeSdkWasmSeal(raw, { abi, build_id: sdkBuildId }).bytes,
     close() { delete globalThis[key]; rmSync(directory, { recursive: true, force: true }); } };
 }
+
+test('V2 controlled KWDJ tool trap retires the shared SDK runtime', async () => {
+  const fixture = await controlledLoader({ tools: true });
+  try {
+    const wasm = fixture.bytes('editor-sdk/2');
+    const { sdk, kwdj } = await fixture.loader.loadSdkV2WithKwdjTools({ wasm });
+    assert.throws(() => kwdj.admit(new Uint8Array()), WebAssembly.RuntimeError);
+    assert.throws(() => sdk.resourceCounts(), error => error.code === 'sdk.runtime_retired');
+    assert.throws(() => kwdj.normalize(new Uint8Array()), error => error.code === 'sdk.runtime_retired');
+    assert.deepEqual(fixture.counts, { imported: 1, initialized: 1, opened: 0 });
+  } finally { fixture.close(); }
+});
 
 test('V2 controlled loader: both projections and concurrent calls share exactly one glue initialization', async () => {
   for (const order of ['v1_first', 'v2_first', 'concurrent']) {

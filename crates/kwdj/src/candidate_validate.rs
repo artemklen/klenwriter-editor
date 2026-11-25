@@ -10,7 +10,7 @@ use editor_core::admission::{
 };
 use editor_core::candidate::{BorrowedNode, CandidateRead};
 use editor_core::document::TreeNode;
-use editor_core::transaction::{Operation, ValidationStats, WorkMeter};
+use editor_core::transaction::{Operation, ValidationStats, WorkLimits, WorkMeter};
 use serde_json::{Map, Value};
 
 use crate::core_bridge::{encode_attributes, local_name};
@@ -144,7 +144,7 @@ pub(crate) fn decode_header(value: Value, path: &str) -> Result<Node, KwdjError>
     envelope.insert("schema_version".into(), Value::Number(1.into()));
     envelope.insert("profile".into(), Value::String("prose".into()));
     envelope.insert("content".into(), Value::Array(vec![value]));
-    let mut document = crate::decode_document(Value::Object(envelope)).map_err(|mut error| {
+    let mut document = crate::decode_document(&Value::Object(envelope)).map_err(|mut error| {
         if let Some(suffix) = error.path.strip_prefix("/content/0") {
             error.path = format!("{native_root}{suffix}");
         }
@@ -294,12 +294,22 @@ pub(crate) fn original_header(
 pub(crate) fn check_original_headers(
     value: &Value,
     budget: PreflightBudget,
-    work: &mut WorkMeter,
 ) -> Result<(), KwdjError> {
+    fn checked_header(
+        value: &Value,
+        path: &str,
+        budget: PreflightBudget,
+    ) -> Result<Value, KwdjError> {
+        // Whole-input preflight bounds the walk before admission reaches this
+        // pass. A shallow copy is discarded before we visit its descendants.
+        let mut work = WorkMeter::new(WorkLimits::default());
+        original_header(value, path, budget, &mut work)
+    }
+
     // Normalization's generic marks handling must not grant node fields to the
     // Document envelope. Preserve that original field while canonicalizing
     // known profile/default spellings, then use the unchanged closed model.
-    let mut envelope = original_header(value, "", budget, work)?;
+    let mut envelope = checked_header(value, "", budget)?;
     let fields = envelope.as_object_mut().expect("copied object header");
     let marks = fields.remove("marks");
     crate::normalize::normalize_value(&mut envelope, "", &mut Vec::new())?;
@@ -309,32 +319,24 @@ pub(crate) fn check_original_headers(
             .expect("copied object header")
             .insert("marks".into(), marks);
     }
-    crate::decode_document_shape(envelope)?;
+    crate::decode_document_shape(&envelope)?;
     fn walk(
         value: &Value,
         path: &str,
         depth: u64,
         budget: PreflightBudget,
-        work: &mut WorkMeter,
     ) -> Result<(), KwdjError> {
-        work.charge_units(1).map_err(KwdjError::operational)?;
         if depth > budget.depth.min(128) {
             return Err(KwdjError::new(KwdjErrorCode::InvalidStructure, path));
         }
-        normalizable_raw_header(original_header(value, path, budget, work)?, path)?;
+        normalizable_raw_header(checked_header(value, path, budget)?, path)?;
         if let Some(children) = value.get("content").and_then(Value::as_array) {
-            work.charge_units(children.len() as u64)
-                .map_err(KwdjError::operational)?;
             for (index, child) in children.iter().enumerate() {
-                work.charge_units(1).map_err(KwdjError::operational)?;
-                work.charge_bytes((path.len() + 48) as u64)
-                    .map_err(KwdjError::operational)?;
                 walk(
                     child,
                     &index_path(&key_path(path, "content"), index),
                     depth + 1,
                     budget,
-                    work,
                 )?;
             }
         }
@@ -342,9 +344,7 @@ pub(crate) fn check_original_headers(
     }
     if let Some(roots) = value.get("content").and_then(Value::as_array) {
         for (index, node) in roots.iter().enumerate() {
-            work.charge_units(1).map_err(KwdjError::operational)?;
-            work.charge_bytes(48).map_err(KwdjError::operational)?;
-            walk(node, &index_path("/content", index), 1, budget, work)?;
+            walk(node, &index_path("/content", index), 1, budget)?;
         }
     }
     Ok(())

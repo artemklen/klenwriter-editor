@@ -7,12 +7,13 @@ import { corpus, options, document } from './support/codec-fixtures.mjs';
 import { validateCorpus } from '../scripts/validate-corpus.mjs';
 import { sha256 } from '../scripts/corpus-package.mjs';
 import initProbe, { observeCorpusCase } from '../artifacts/corpus-observer/probe.js';
-import initProduction, { kwdjValidateV1, kwdjNormalizeV1, kwdjCanonicalV1 } from '../packages/wasm/dist/editor_wasm.js';
+import initProduction, { kwdjValidateV1, kwdjNormalizeV1, kwdjCanonicalV1, kwdjProjectTextStatsV1 } from '../packages/wasm/dist/editor_wasm.js';
 
 await initProbe({ module_or_path: readFileSync('artifacts/corpus-observer/probe_bg.wasm') });
 await initProduction({ module_or_path: readFileSync('packages/wasm/dist/editor_wasm_bg.wasm') });
 const production = { validate: kwdjValidateV1, normalize: kwdjNormalizeV1, canonical: kwdjCanonicalV1 };
 const encode = text => new TextEncoder().encode(text);
+const hostedTextStats = canonical => JSON.parse(kwdjProjectTextStatsV1(encode(canonical)));
 const runtimeHashes = Object.fromEntries([
   'packages/wasm/dist/editor_wasm_bg.wasm', 'artifacts/corpus-observer/probe_bg.wasm',
   'crates/wasm/examples/support/corpus_observer.rs', 'tests/corpus.node.mjs',
@@ -50,7 +51,7 @@ test('every declared corpus stage has an explicit runtime result; supported nati
   const tree = validateCorpus(), source = corpus();
   const byId = new Map(tree.cases.map(c => [c.id, c]));
   const requests = source.inputs.map(input => ({ ...codecRequests(input), projection: byId.get(input.caseId).case.pipeline_stages.includes('plain_text_projection') }));
-  const observations = [], byCase = new Map();
+  const observations = [], hostedProjection = [], byCase = new Map();
   for (let start = 0; start < requests.length; start += 4) {
     const batch = requests.slice(start, start + 4), expected = native(batch);
     for (let i = 0; i < batch.length; i++) {
@@ -65,6 +66,12 @@ test('every declared corpus stage has an explicit runtime result; supported nati
         if (request.projection) {
           assert.equal(observed.projection.status, 'accepted');
           for (const key of ['full_text', 'search_index_text', 'public_snippet_text']) assert.equal(observed.projection[key], entry.case.expected[key], `${input.id}/${key}`);
+          const hosted = hostedTextStats(observed.codec.canonical_json);
+          const expectedStats = expected[i].projection;
+          assert.deepEqual(hosted, { status: 'accepted', full_text: expectedStats.full_text,
+            word_count: expectedStats.word_count, character_count: expectedStats.character_count }, `${input.id}: production hosted text parity`);
+          hostedProjection.push({ id: input.id, fullTextSha256: sha256(hosted.full_text),
+            wordCount: hosted.word_count, characterCount: hosted.character_count });
         }
       } else {
         for (const key of ['canonical_json', 'media_manifest', 'reference_manifest', 'normalization_events']) assert.equal(Object.hasOwn(observed.codec, key), false, 'Refusal exposed a partial artifact');
@@ -77,6 +84,7 @@ test('every declared corpus stage has an explicit runtime result; supported nati
     }
   }
   assert.equal(observations.length, 60);
+  assert.equal(hostedProjection.length, 29);
   // Fresh native repeats are checked independently of the WASM repeat above.
   for (let start = 0; start < requests.length; start += 4) {
     const repeated = native(requests.slice(start, start + 4));
@@ -111,6 +119,7 @@ test('every declared corpus stage has an explicit runtime result; supported nati
     baseline: { fixtureIds: 34, namedCases: 59, stageMemberships: 277, expandedCodecInputs: 60 },
     actualPublicCodec: { abi: 'kwdj-codec/1', primaryComparisons: 60, note: 'Separate test:codec also compares all three public operations (180) and boundary cases.' },
     projectionTransport: 'Trusted test-only observer; never installed or claimed as the public byte-admission API',
+    hostedProjection: { abi: 'kwdj-tools/1', nativeComparisons: hostedProjection.length, observations: hostedProjection },
     counts: { byResult: count('result'), byRuntime: count('runtime'), primaryAccepted: observations.filter(o => o.status === 'accepted').length, primaryRefused: observations.filter(o => o.status === 'refused').length,
       deferredCases: tree.cases.filter(c => c.case.expected.outcome === 'deferred').map(c => c.id),
       noCandidateCases: tree.cases.filter(c => c.case.expected.outcome !== 'deferred' && !byCase.has(c.id)).map(c => c.id) },
@@ -187,5 +196,9 @@ test('u64MAX remains valid storage while projection refusal is typed and canonic
   const actual = wasm(request); assert.deepEqual(actual, native([request])[0]); assert.deepEqual(actualProduction(request), actual.codec);
   assert.equal(actual.codec.status, 'accepted'); assert.match(actual.codec.canonical_json, /18446744073709551615/);
   assert.deepEqual(actual.projection, { status: 'refused', code: 'kwdj.projection_arithmetic_overflow', budget: null, maximum: null });
+  const hosted = hostedTextStats(actual.codec.canonical_json);
+  assert.equal(hosted.status, 'refused');
+  assert.equal(hosted.diagnostic.code, actual.projection.code);
+  assert.equal(Object.hasOwn(hosted, 'word_count'), false);
   writeFileSync('artifacts/corpus-projection-refusal.json', JSON.stringify({ schema: 1, nativeWasmEqual: true, classification: 'valid stored bytes, operational projection refusal', canonicalSha256: sha256(actual.codec.canonical_json), projection: actual.projection }, null, 2) + '\n');
 });

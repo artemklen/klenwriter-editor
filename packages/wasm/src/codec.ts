@@ -44,3 +44,13 @@ export interface CodecExportsV1 {
   kwdjNormalizeV1(input: Uint8Array, optionsJson: string): string;
   kwdjCanonicalV1(input: Uint8Array, optionsJson: string): string;
 }
+
+export type KwdjTextStatsResponseV1 = {
+  readonly status: 'accepted';
+  readonly full_text: string;
+  readonly word_count: number;
+  readonly character_count: number;
+} | {
+  readonly status: 'refused';
+  readonly diagnostic: CodecDiagnosticV1;
+};

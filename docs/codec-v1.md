@@ -1,9 +1,8 @@
 # Unstable KWDJ codec ABI 1
 
-OSR-76 exposes `kwdj-codec/1` for native/Node-WASM conformance before the
-editing engine exists. This is **not the stable SDK**: OSR-63 may replace or
-absorb it. No session, editing, DOM, import adapter, projection, CMS delivery,
-database, network or package publication is provided here.
+`kwdj-codec/1` exposes native and Node/WASM admission, normalization and
+canonicalization. The SDK owns editor sessions and offers a separate hosted
+KWDJ tools capability for projection and statistics.
 
 Initialize `@klenwriter/editor-wasm/artifact` with the matched prebuilt WASM,
 then call one of its synchronous exports:
@@ -107,8 +106,8 @@ path and limit context, rather than being reinterpreted by JS.
 ## Verification and versioned corpus
 
 `npm run build && npm run test:codec` builds the real WASM artifact and runs
-four Node tests. `npm run check` includes this lane after building. The
-native example `codec` is a JSONL test transport, not an installed SDK API.
+the Node codec tests. `npm run check` includes this lane after building. The
+native example `codec` provides the JSONL transport for parity tests.
 
 The single versioned corpus authority is [contracts/kwdj/v1](../contracts/kwdj/v1/README.md).
 [Provenance](../provenance/kwdj-corpus.json) records the original CMS source,
@@ -151,3 +150,22 @@ its exact indexed bytes. `scripts/export-corpus.mjs` verifies the committed
 index before exporting. `scripts/build-corpus-package.mjs` is an explicit
 authoring step, never an automatic CI repair. See the corpus README for digest,
 licensing, additive-change and CMS pin rules.
+
+## Hosted SDK tools
+
+`loadSdkV2WithKwdjTools` returns the SDK2 instance and a `kwdj-tools/1`
+capability from the same verified WebAssembly initialization. `admit` checks
+canonical structure and `normalize` accepts candidates. These operations check
+the shape of authored UUIDs. The host verifies referenced identities when it
+accepts a save. The identity-resolving codec above still requires explicit facts.
+
+`projectTextStats` accepts canonical document bytes and returns full text with
+word and character counts. It uses the KWDJ projection budget and Unicode 16
+word policy shared with the native consumer. A refused projection returns a
+structured diagnostic without a partial count. Admission and projection have
+separate results.
+
+Supply raw UTF-8 document bytes and keep the returned `canonical_json` exact.
+Authored integers can exceed the safe range of JavaScript `Number`. An ordinary
+document refusal leaves the tools available for further calls. A WebAssembly
+runtime trap retires the same shared instance used for the session API.

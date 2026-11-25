@@ -2,7 +2,8 @@
 //! Independent original-header copy-budget regression, authored before repair.
 use klenwriter_editor_kwdj::{
     AdmissionBudget, IdentityResolver, IdentityResolverError, IdentityStatus, KwdjErrorCode,
-    Limits, decode_normalize_validate_with_limits_and_budget,
+    Limits, decode_candidate_value_with_limits_and_budget,
+    decode_normalize_validate_with_limits_and_budget, normalize_and_validate,
 };
 use serde_json::{Map, Value, json};
 use uuid::Uuid;
@@ -56,4 +57,76 @@ fn original_unknown_header_key_is_charged_before_copying_or_escaping() {
     .expect_err("small unknown field must remain a closed-shape refusal");
     assert_eq!(error.code, KwdjErrorCode::UnknownAttribute);
     assert!(error.path.ends_with("/small~0key"));
+}
+
+#[test]
+fn large_rich_document_preserves_candidate_admission() {
+    let paragraph = json!({
+        "type": "paragraph",
+        "content": [{"type": "text", "text": "x", "marks": [{"type": "strong"}]}],
+    });
+    let document = json!({
+        "schema": "klenwriter.document",
+        "schema_version": 1,
+        "profile": "prose",
+        "content": vec![paragraph; 23_500],
+    });
+    let raw = serde_json::to_vec(&document).unwrap();
+    let budget = AdmissionBudget::default();
+    let candidate =
+        decode_candidate_value_with_limits_and_budget(&document, Limits::default(), budget)
+            .expect("large valid rich prose must stay admissible as a borrowed document");
+    let borrowed = normalize_and_validate(candidate, &NoIdentities).unwrap();
+    let decoded = decode_normalize_validate_with_limits_and_budget(
+        &raw,
+        &NoIdentities,
+        Limits::default(),
+        budget,
+    )
+    .expect("large valid rich prose must stay admissible at the raw codec boundary");
+    assert_eq!(borrowed.canonical_json(), decoded.canonical_json());
+    assert_eq!(
+        serde_json::from_slice::<Value>(decoded.canonical_json()).unwrap(),
+        document
+    );
+}
+
+#[test]
+fn independently_checked_headers_can_collapse_into_one_canonical_text_leaf() {
+    let nested_list = |content: Vec<Value>| {
+        let mut block = json!({"type": "paragraph", "content": content});
+        for _ in 0..14 {
+            block = json!({"type": "bullet_list", "content": [
+                {"type": "list_item", "content": [block]},
+            ]});
+        }
+        json!({
+            "schema": "klenwriter.document",
+            "schema_version": 1,
+            "profile": "prose",
+            "content": [block],
+        })
+    };
+    let document = nested_list(vec![json!({"type": "text", "text": "x"}); 110_000]);
+    let expected = nested_list(vec![json!({"type": "text", "text": "x".repeat(110_000)})]);
+    let raw = serde_json::to_vec(&document).unwrap();
+    // Leave room in the 3 MiB CMS save request for its surrounding envelope.
+    assert!(raw.len() < 3_000_000);
+    let budget = AdmissionBudget::default();
+    let candidate =
+        decode_candidate_value_with_limits_and_budget(&document, Limits::default(), budget)
+            .expect("each original header is small and the whole input is within preflight limits");
+    let borrowed = normalize_and_validate(candidate, &NoIdentities).unwrap();
+    let decoded = decode_normalize_validate_with_limits_and_budget(
+        &raw,
+        &NoIdentities,
+        Limits::default(),
+        budget,
+    )
+    .expect("the raw boundary must normalize the same admitted candidate");
+    assert_eq!(borrowed.canonical_json(), decoded.canonical_json());
+    assert_eq!(
+        serde_json::from_slice::<Value>(decoded.canonical_json()).unwrap(),
+        expected
+    );
 }

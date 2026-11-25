@@ -5,9 +5,10 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { corpus, options, document } from './support/codec-fixtures.mjs';
-import init, { kwdjValidateV1, kwdjNormalizeV1, kwdjCanonicalV1 } from '../packages/wasm/dist/editor_wasm.js';
+import * as wasmCodec from '../packages/wasm/dist/editor_wasm.js';
 import { codecAbiV1 } from '../packages/wasm/dist/index.js';
 
+const { default: init, kwdjValidateV1, kwdjNormalizeV1, kwdjCanonicalV1 } = wasmCodec;
 const wasm = await init({ module_or_path: readFileSync('packages/wasm/dist/editor_wasm_bg.wasm') });
 const functions = { validate: kwdjValidateV1, normalize: kwdjNormalizeV1, canonical: kwdjCanonicalV1 };
 const encode = text => new TextEncoder().encode(text);
@@ -132,6 +133,52 @@ test('u64 stays exact, normalization differs from strict validation, and identit
     if (status !== 'exists') assert.equal(actual.diagnostic.code, status === 'missing' ? 'kwdj.media_identity_unresolved' : 'kwdj.identity_resolution_failed');
     assert.deepEqual(actual, native([{ operation: 'normalize', input: new TextDecoder().decode(rawMedia), options: opts }])[0]);
   }
+});
+
+test('hosted structure tools preserve known media syntax without changing identity-resolving codec', () => {
+  assert.equal(typeof wasmCodec.kwdjAdmitStructurallyV1, 'function');
+  assert.equal(typeof wasmCodec.kwdjNormalizeStructurallyV1, 'function');
+  const image = (id) => document([{
+    type: 'media_image', attrs: { media_asset_id: id, alt: 'synthetic', align: 'center' },
+    content: [{ type: 'paragraph', content: [] }],
+  }]);
+  const bytes = encode(JSON.stringify(image('550e8400-e29b-41d4-a716-446655440013')));
+  assert.equal(invoke('normalize', bytes).diagnostic.code, 'kwdj.identity_resolution_failed');
+  const normalized = JSON.parse(wasmCodec.kwdjNormalizeStructurallyV1(bytes));
+  assert.equal(normalized.status, 'accepted');
+  const admitted = JSON.parse(wasmCodec.kwdjAdmitStructurallyV1(encode(normalized.canonical_json)));
+  assert.equal(admitted.status, 'accepted');
+  assert.equal(admitted.canonical_json, normalized.canonical_json);
+  assert.equal(JSON.parse(wasmCodec.kwdjNormalizeStructurallyV1(encode(JSON.stringify(image('invalid-id'))))).status, 'refused');
+  assert.equal(JSON.parse(wasmCodec.kwdjAdmitStructurallyV1(new DataView(bytes.buffer))).diagnostic.code, 'codec.invalid_input_type');
+  const referenceId = '550e8400-e29b-41d4-a716-446655440006';
+  const reference = encode(JSON.stringify(document([{
+    type: 'paragraph', content: [{ type: 'text', text: 'Имя', marks: [
+      { type: 'reference_link', attrs: { reference_entity_id: referenceId } },
+    ] }],
+  }])));
+  assert.equal(invoke('validate', reference).diagnostic.code, 'kwdj.identity_resolution_failed');
+  const hostedReference = JSON.parse(wasmCodec.kwdjAdmitStructurallyV1(reference));
+  assert.equal(hostedReference.status, 'accepted');
+  assert.deepEqual(hostedReference.reference_manifest, [{ id: referenceId, path: '/content/0/content/0/marks/0' }]);
+});
+
+test('hosted text tools count projected Unicode scalars and keep projection refusal separate', () => {
+  assert.equal(typeof wasmCodec.kwdjProjectTextStatsV1, 'function');
+  const preciseText = 'за́мок сло\u00adво';
+  const paragraph = encode(JSON.stringify(document([{ type: 'paragraph', content: [{ type: 'text', text: preciseText }] }])));
+  const project = (bytes) => JSON.parse(wasmCodec.kwdjProjectTextStatsV1(bytes));
+  assert.deepEqual(project(paragraph), {
+    status: 'accepted', full_text: preciseText, word_count: 2, character_count: 12,
+  });
+  const largeStanza = encode('{"schema":"klenwriter.document","schema_version":1,"profile":"poetry","content":[{"type":"verse","content":[{"type":"verse_line","content":[{"type":"text","text":"a"}]},{"type":"stanza_break","attrs":{"blank_lines":18446744073709551615}},{"type":"verse_line","content":[{"type":"text","text":"b"}]}]}]}');
+  const admitted = JSON.parse(wasmCodec.kwdjAdmitStructurallyV1(largeStanza));
+  assert.equal(admitted.status, 'accepted');
+  assert.match(admitted.canonical_json, /"blank_lines":18446744073709551615/);
+  const refused = project(largeStanza);
+  assert.equal(refused.status, 'refused');
+  assert.match(refused.diagnostic.code, /^kwdj\.projection_/);
+  assert.equal(Object.hasOwn(refused, 'word_count'), false);
 });
 
 test('identity catalogs are bounded, explicit, closed and reject duplicate UUID aliases', () => {
