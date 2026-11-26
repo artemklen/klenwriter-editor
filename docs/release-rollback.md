@@ -34,8 +34,8 @@ crate=klenwriter-editor-core
 npm_registry=https://registry.npmjs.org
 
 npm view "$npm_pkg@$affected" version dist.integrity dist.tarball deprecated \
-  --json --prefer-online --registry "$npm_registry"
-npm dist-tag ls "$npm_pkg" --registry "$npm_registry"
+  --json --prefer-online --registry "$npm_registry" "--@klenwriter:registry=$npm_registry"
+npm dist-tag ls "$npm_pkg" --registry "$npm_registry" "--@klenwriter:registry=$npm_registry"
 curl -fsS -A 'KlenWriter-release-readback/1.0' \
   "https://crates.io/api/v1/crates/$crate/$affected" |
   jq -e --arg version "$affected" \
@@ -77,11 +77,11 @@ approved public message. Repeat only for entries the inventory shows are
 affected and published.
 
 ```sh
-npm dist-tag add "$npm_pkg@$stable" latest --registry "$npm_registry"
-npm deprecate "$npm_pkg@$affected" "$notice" --registry "$npm_registry"
-npm dist-tag ls "$npm_pkg" --registry "$npm_registry"
+npm dist-tag add "$npm_pkg@$stable" latest --registry "$npm_registry" "--@klenwriter:registry=$npm_registry"
+npm deprecate "$npm_pkg@$affected" "$notice" --registry "$npm_registry" "--@klenwriter:registry=$npm_registry"
+npm dist-tag ls "$npm_pkg" --registry "$npm_registry" "--@klenwriter:registry=$npm_registry"
 npm view "$npm_pkg@$affected" deprecated --json --prefer-online \
-  --registry "$npm_registry"
+  --registry "$npm_registry" "--@klenwriter:registry=$npm_registry"
 ```
 
 For the first release there is no previous stable version. Leave unpromoted
@@ -96,17 +96,17 @@ in the notice. Only a verified published stable family qualifies as a
 replacement for `latest`.
 
 ```sh
-npm deprecate "$npm_pkg@$affected" "$notice" --registry "$npm_registry"
-npm dist-tag rm "$npm_pkg" "$affected_tag" --registry "$npm_registry"
-npm dist-tag ls "$npm_pkg" --registry "$npm_registry"
+npm deprecate "$npm_pkg@$affected" "$notice" --registry "$npm_registry" "--@klenwriter:registry=$npm_registry"
+npm dist-tag rm "$npm_pkg" "$affected_tag" --registry "$npm_registry" "--@klenwriter:registry=$npm_registry"
+npm dist-tag ls "$npm_pkg" --registry "$npm_registry" "--@klenwriter:registry=$npm_registry"
 npm view "$npm_pkg@$affected" deprecated --json --prefer-online \
-  --registry "$npm_registry"
+  --registry "$npm_registry" "--@klenwriter:registry=$npm_registry"
 ```
 
 Set `affected_tag` only after confirming it currently selects `affected`.
 Deprecation leaves exact versions downloadable and warns during installation.
 An erroneous deprecation can be reversed by the authorized publisher with
-`npm deprecate "$npm_pkg@$affected" "" --registry "$npm_registry"`.
+`npm deprecate "$npm_pkg@$affected" "" --registry "$npm_registry" "--@klenwriter:registry=$npm_registry"`.
 Unpublishing is an exceptional, separately approved action subject to npm's
 current policy. It removes the version for downstream users and is
 irreversible. npm does not permit reusing a name/version pair after removal.

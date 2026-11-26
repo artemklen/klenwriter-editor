@@ -12,7 +12,8 @@ const nameOfManifest = 'release-manifest.json';
 function checkFile(directory, record) {
   const { path, bytes, sha256: expected } = record;
   assert.equal(typeof path, 'string');
-  assert(!isAbsolute(path) && relative(directory, resolve(directory, path)) === path, 'Invalid bundle path');
+  assert(!isAbsolute(path) && !path.split('/').includes('..') &&
+    relative(directory, resolve(directory, path)) === path, 'Invalid bundle path');
   assert.match(expected, /^[a-f0-9]{64}$/);
   const resolved = join(directory, path);
   assert(lstatSync(resolved).isFile() && realpathSync(resolved) === resolved, 'Expected a regular bundle file');

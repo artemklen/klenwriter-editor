@@ -48,11 +48,12 @@ function npmCommand(cli, args, cwd) {
   });
 }
 
-function npmArchive(candidateRoot, artifact) {
-  const archive = join(candidateRoot, artifact.path);
-  const bytes = readFileSync(archive);
+function npmArchive(candidateRoot, artifact, scratch) {
+  const bytes = readFileSync(join(candidateRoot, artifact.path));
   assert.equal(bytes.length, artifact.bytes);
   assert.equal(createHash('sha256').update(bytes).digest('hex'), artifact.sha256);
+  const archive = join(scratch, basename(artifact.path));
+  writeFileSync(archive, bytes, { flag: 'wx', mode: 0o400 });
   const pkg = JSON.parse(execFileSync('tar', ['-xOzf', archive, 'package/package.json'], { encoding: 'utf8' }));
   assert.equal(pkg.name, artifact.name);
   assert.equal(pkg.version, artifact.version);
@@ -63,6 +64,14 @@ function npmArchive(candidateRoot, artifact) {
 
 function assertUsable(row) {
   assert(!row.yanked && !row.deprecated, 'The registry marks the accepted version as withdrawn: ' + row.name);
+}
+
+function failedObservation(artifact, error) {
+  return {
+    name: artifact.name, kind: artifact.kind, version: artifact.version, status: 'unavailable',
+    ...error.observation, diagnostic: { code: error.code ?? null, message: error.message,
+      ...(error.retryAfter ? { retryAfter: error.retryAfter } : {}) },
+  };
 }
 
 const [input, version, approvedHash, output, operation = 'check', ...extra] = process.argv.slice(2);
@@ -89,9 +98,13 @@ try {
     if (operation !== 'check') receipt.canonical = mergedSource(manifest.source);
     for (const artifact of registryArtifacts) {
       receipt.current = artifact.name;
-      receipt.registry.push(await readRegistryArtifact(artifact));
+      try { receipt.registry.push(await readRegistryArtifact(artifact)); }
+      catch (error) { receipt.registry.push(failedObservation(artifact, error)); }
       saveReceipt();
     }
+    delete receipt.current;
+    assert(receipt.registry.every(row => ['absent', 'verified'].includes(row.status)),
+      'Resolve public registry conflicts or unavailable observations before publication');
     if (operation === 'check') {
       receipt.status = receipt.registry.every(row => row.status === 'verified') ? 'verified' : 'incomplete';
     } else {
@@ -101,7 +114,8 @@ try {
       const pending = registryArtifacts.filter((_, index) => receipt.registry[index].status === 'absent');
       const crateArchives = new Map(pending.filter(row => row.kind === 'crate').map(row =>
         [row.name, prepareCrateUpload(candidate, row, manifest.tools.rust)]));
-      const npmArchives = new Map(pending.filter(row => row.kind === 'npm').map(row => [row.name, npmArchive(candidate, row)]));
+      const npmArchives = new Map(pending.filter(row => row.kind === 'npm').map(row =>
+        [row.name, npmArchive(candidate, row, receiptScratch)]));
       const token = process.env.CARGO_REGISTRY_TOKEN;
       assert(!crateArchives.size || token, 'Configure the authorized crates.io token in the publisher environment');
       const { cli } = pinnedNpmCli(root);
@@ -140,6 +154,8 @@ try {
     delete receipt.current;
     saveReceipt();
   } catch (error) {
+    const index = registryArtifacts.findIndex(row => row.name === receipt.current);
+    if (index !== -1 && error.observation) receipt.registry[index] = failedObservation(registryArtifacts[index], error);
     receipt.status = 'stopped';
     receipt.failure = error.message;
     saveReceipt();

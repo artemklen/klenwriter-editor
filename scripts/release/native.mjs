@@ -6,7 +6,7 @@ import {
   rmSync, statSync, writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 
 const registrySource = 'registry+https://github.com/rust-lang/crates.io-index';
 const licenseFiles = ['LICENSE-MIT', 'LICENSE-APACHE', 'NOTICE', 'SOURCE-PROVENANCE.json'];
@@ -89,7 +89,68 @@ function registryLocks(text) {
   });
 }
 
-function inspectArchive(scratch, pkg, archive, unpacked, locked, packageMap) {
+function inside(parent, path) {
+  const child = relative(parent, path);
+  return child !== '' && child !== '..' && !child.startsWith('..' + sep) && !isAbsolute(child);
+}
+
+function stageFixtures(source, manifestPath, readSharedRust) {
+  const crate = dirname(manifestPath);
+  const fixtures = new Map();
+  function copyFixture(from, to) {
+    const filename = relative(crate, to);
+    if (fixtures.has(filename)) return;
+    assert.equal(realpathSync(from), from, 'Expected a regular public fixture path');
+    if (statSync(from).isDirectory()) {
+      for (const entry of readdirSync(from, { withFileTypes: true })) {
+        if (entry.isDirectory() || entry.name.endsWith('.json')) copyFixture(join(from, entry.name), join(to, entry.name));
+      }
+      return;
+    }
+    assert(statSync(from).isFile(), 'Expected a regular fixture');
+    mkdirSync(dirname(to), { recursive: true });
+    fixtures.set(filename, to);
+    if (from.endsWith('.rs')) {
+      const original = readSharedRust(relative(source, from).split(sep).join('/'));
+      writeFileSync(to, relocateReferences(original, from, to));
+    } else {
+      assert(from.endsWith('.json'), 'Expected a JSON fixture');
+      copyFileSync(from, to);
+    }
+  }
+  function relocate(originalBase, packagedBase, input) {
+    const from = resolve(originalBase, input);
+    if (inside(crate, from) && originalBase === packagedBase) return input;
+    assert(inside(source, from), 'Crate fixture escaped the source snapshot');
+    const repoPath = relative(source, from).split(sep).join('/');
+    assert(/^(?:contracts\/|evidence\/osr-59\/|examples\/notes-extension\/|tests\/fixtures\/|crates\/[^/]+\/tests\/support\/)/.test(repoPath),
+      'Unexpected public crate fixture: ' + repoPath);
+    const to = join(crate, 'release-fixtures', repoPath);
+    copyFixture(from, to);
+    return relative(packagedBase, to).split(sep).join('/') + (input.endsWith('/') ? '/' : '');
+  }
+  function relocateReferences(contents, original, packaged) {
+    const filePath = (_match, prefix, path) => prefix + relocate(dirname(original), dirname(packaged), path) + '"';
+    return contents.replace(/(include_(?:str|bytes)!\(\s*(?:concat!\(\s*)?")([^"\n]+)"/gu, filePath)
+      .replace(/(#\[path\s*=\s*")([^"\n]+)"/gu, filePath)
+      .replace(/(env!\("CARGO_MANIFEST_DIR"\)\)\s*\.join\(\s*")(\.\.\/[^"\n]+)"/gu,
+        (_match, prefix, file) => prefix + relocate(crate, crate, file) + '"');
+  }
+  const visit = directory => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const path = join(directory, entry.name);
+      if (entry.isDirectory()) visit(path);
+      if (!entry.isFile() || !entry.name.endsWith('.rs')) continue;
+      const contents = readFileSync(path, 'utf8');
+      const packaged = relocateReferences(contents, path, path);
+      if (packaged !== contents) writeFileSync(path, packaged);
+    }
+  };
+  visit(crate);
+  return fixtures;
+}
+
+function inspectArchive(scratch, pkg, archive, unpacked, locked, packageMap, fixtures) {
   const members = run(scratch, 'tar', ['-tzf', archive]).trimEnd().split('\n');
   const prefix = pkg.name + '-' + pkg.version;
   assert(members.length > 0 && new Set(members).size === members.length, 'Duplicate archive member');
@@ -120,6 +181,10 @@ function inspectArchive(scratch, pkg, archive, unpacked, locked, packageMap) {
     assert(statSync(path).isFile() && realpathSync(path) === path, pkg.name + ' must contain regular ' + filename);
     assert(readFileSync(path).equals(readFileSync(join(dirname(pkg.manifest_path), filename))),
       pkg.name + ' changed the tracked bytes of ' + filename);
+  }
+  for (const [filename, fixture] of fixtures) {
+    assert(readFileSync(join(root, filename)).equals(readFileSync(fixture)),
+      pkg.name + ' changed the staged fixture bytes of ' + filename);
   }
   return root;
 }
@@ -156,6 +221,7 @@ export function packRustRelease({ sourceRoot, outputDirectory, packageMap }) {
     checkCatalogue(source, packageMap, packages);
     const patched = new Map();
     const rows = packageOrder(packages).map(({ pkg, dependencies }) => {
+      const fixtures = stageFixtures(source, pkg.manifest_path, path => run(root, 'git', ['show', `${revision}:${path}`]));
       const patches = dependencies.flatMap(name => [
         '--config', 'patch.crates-io.' + name + '.path=' + JSON.stringify(patched.get(name)),
       ]);
@@ -174,7 +240,7 @@ export function packRustRelease({ sourceRoot, outputDirectory, packageMap }) {
       writeFileSync(lockPath, lock);
       const filename = name + '-' + version + '.crate';
       const archive = join(target, 'package', filename);
-      patched.set(name, inspectArchive(scratch, pkg, archive, unpacked, locked, packageMap));
+      patched.set(name, inspectArchive(scratch, pkg, archive, unpacked, locked, packageMap, fixtures));
       return { name, version, filename };
     });
     assert(sha(root) === revision && isClean(root), 'Source changed while packaging Rust releases');

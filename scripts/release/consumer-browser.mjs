@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 import assert from 'node:assert/strict';
-import { spawn, spawnSync } from 'node:child_process';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { copyFile, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { basename, dirname, join, relative, sep } from 'node:path';
+import { basename, join, relative, sep } from 'node:path';
 import { chromium, expect } from '@playwright/test';
 import { pinnedNpmCli } from '../vanilla-alpha/pack.mjs';
 
@@ -16,8 +16,9 @@ const readJson = async path => JSON.parse(await readFile(path, 'utf8'));
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 
 async function stageExample({ sourceRoot, candidateRoot, manifest, directory, name }) {
-  const template = join(sourceRoot, 'examples', name);
-  const packageJson = await readJson(join(template, 'package.json'));
+  const sourceFile = file => execFileSync('git', ['show', `${manifest.source.commit}:examples/${name}/${file}`],
+    { cwd: sourceRoot });
+  const packageJson = JSON.parse(sourceFile('package.json'));
   const packs = manifest.artifacts.filter(artifact => artifact.kind === 'npm');
   const installed = packs.filter(artifact => Object.hasOwn(packageJson.dependencies, artifact.name));
   assert.equal(installed.length, Object.keys(packageJson.dependencies).filter(key => key.startsWith('@klenwriter/')).length);
@@ -27,7 +28,7 @@ async function stageExample({ sourceRoot, candidateRoot, manifest, directory, na
     await copyFile(join(candidateRoot, artifact.path), join(directory, 'vendor', file));
     packageJson.dependencies[artifact.name] = 'file:./vendor/' + file;
   }
-  await Promise.all(examples[name].map(file => copyFile(join(template, file), join(directory, file))));
+  await Promise.all(examples[name].map(file => writeFile(join(directory, file), sourceFile(file))));
   await writeFile(join(directory, 'package.json'), JSON.stringify(packageJson, null, 2) + '\n');
   if (name === 'vanilla-quickstart') {
     await copyFile(join(candidateRoot, manifest.kwdjProfile.path), join(directory, 'kwdj-registry.json'));
@@ -165,13 +166,16 @@ export async function runBrowserConsumers({ sourceRoot, candidateRoot, manifest 
   const relation = relative(sourceRoot, parent);
   assert(relation === '..' || relation.startsWith('..' + sep), 'Consumer directory must be outside the checkout');
   const directory = await mkdtemp(join(parent, 'editor-candidate-web-'));
-  const env = { ...process.env, PATH: dirname(process.execPath), NG_CLI_ANALYTICS: 'false',
+  const bin = join(directory, 'bin');
+  const env = { ...process.env, PATH: bin, NG_CLI_ANALYTICS: 'false',
     KLENWRITER_EXAMPLE_PORT: '0', npm_config_userconfig: join(directory, 'user.npmrc'),
     npm_config_globalconfig: join(directory, 'global.npmrc'), npm_config_script_shell: '/bin/sh' };
   delete env.NODE_PATH;
   delete env.NODE_OPTIONS;
   let browser;
   try {
+    await mkdir(bin);
+    await symlink(process.execPath, join(bin, 'node'));
     for (const tool of ['cargo', 'rustc']) {
       assert.equal(spawnSync(tool, ['--version'], { cwd: directory, env }).error?.code, 'ENOENT');
     }

@@ -2,10 +2,10 @@
 
 This matrix covers the desktop targets for the coordinated `1.0.0`
 distribution. Install matching editor packages from the same manifest. The
-native and Angular quickstarts and the extension tutorial use `1.0.0`
-artifacts. The [vanilla preview](../examples/vanilla-alpha/README.md) documents
-the historical `0.1.0-alpha.1` distribution, and the archived Angular preview
-documents its `0.0.0` bootstrap. [Package map](../package-map.json),
+native, vanilla and Angular quickstarts and the extension tutorial use
+`1.0.0` artifacts. The historical [vanilla playground](../examples/vanilla-alpha/README.md)
+uses `0.1.0-alpha.1`. The archived Angular quickstart uses `0.0.0`
+bootstrap artifacts. [Package map](../package-map.json),
 [release manifests and acceptance records](https://github.com/artemklen/klenwriter-editor/releases)
 
 | Environment | v1 tier | Release qualification |

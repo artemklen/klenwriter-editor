@@ -187,19 +187,16 @@ function requireVersion(page, version) {
   assert(read(page).includes(token), page + ' must state the example version ' + version);
 }
 
-function webEvidence(path, roles, version, page, checksums = false) {
+function webEvidence(path, roles, version, page) {
   const dependencies = json(path).dependencies;
   const declared = Object.keys(dependencies).filter(name => name.startsWith('@klenwriter/editor')).sort();
   const packages = roles.map(role => identity.web[role].name);
   assert.deepEqual(declared, packages.toSorted(), path + ' has a different editor package closure');
   requireVersion(page, version);
-  const content = read(page);
   const archives = packages.map(name => {
     const archive = name.slice(1).replace('/', '-') + '-' + version + '.tgz';
     assert.equal(dependencies[name], 'file:./vendor/' + archive, path + ' has an incorrect version for ' + name);
-    const digest = checksums && content.split('\n').find(line => line.endsWith('  vendor/' + archive))?.split(' ')[0];
-    if (checksums) assert.match(digest ?? '', /^[a-f0-9]{64}$/, page + ' must pin the archive digest for ' + name);
-    return { name, version, ...(digest ? { archive, sha256: digest } : {}) };
+    return { name, version };
   });
   return { manifest: path, version, packages: archives };
 }
@@ -232,8 +229,8 @@ function versions() {
     packageMap: 'package-map.json',
     candidate,
     bootstrap,
-    vanilla: webEvidence('examples/vanilla-quickstart/package.json', vanillaRoles, alphaVersion,
-      'docs/quickstart-vanilla.md', true),
+    vanilla: webEvidence('examples/vanilla-quickstart/package.json', vanillaRoles, candidate,
+      'docs/quickstart-vanilla.md'),
     playground: webEvidence('examples/vanilla-alpha/package.json', vanillaRoles, alphaVersion,
       'examples/vanilla-alpha/README.md'),
     angular: { angularVersion: identity.versions.angularPeer,

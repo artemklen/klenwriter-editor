@@ -20,6 +20,8 @@ node scripts/release/verify-candidate.mjs "$output_parent/candidate"
 The builder records the pinned language tools and build platform. It sets the
 archive epoch from the source commit and normalizes Rust source paths during
 compilation. Package manifests are staged in scratch space for archive creation.
+Rust archive staging also copies referenced public test fixtures and adjusts
+their paths so the packaged tests and examples can run outside the checkout.
 
 For reproducibility, run the same commands from two independent clean checkouts
 of the exact revision on the same build platform. Verify both output directories

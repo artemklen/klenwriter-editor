@@ -48,14 +48,7 @@ async function publicJson(url) {
   return response === null ? null : response.json();
 }
 
-function matchVisibility(first, second, name) {
-  if (Boolean(first) !== Boolean(second)) {
-    throw registryError('REGISTRY_PROPAGATION', 'Registry metadata sources disagree about availability for ' + name);
-  }
-  return Boolean(first);
-}
-
-async function verifyDownload(url, artifact) {
+async function readDownload(url, artifact) {
   const response = await fetchPublic(url, 'application/octet-stream');
   if (response === null) {
     throw registryError('REGISTRY_PROPAGATION', 'Registry metadata exists but the archive is unavailable for ' + artifact.name);
@@ -66,14 +59,44 @@ async function verifyDownload(url, artifact) {
   let bytes = 0;
   for await (const chunk of response.body) {
     bytes += chunk.length;
-    assert(bytes <= artifact.bytes, 'Registry archive exceeds the accepted size for ' + artifact.name);
     sha256.update(chunk);
     sha512?.update(chunk);
   }
-  assert.equal(bytes, artifact.bytes, 'Registry archive size differs for ' + artifact.name);
-  assert.equal(sha256.digest('hex'), artifact.sha256, 'Registry archive checksum differs for ' + artifact.name);
-  if (sha512) assert.equal('sha512-' + sha512.digest('base64'), artifact.integrity,
-    'Registry archive integrity differs for ' + artifact.name);
+  return { bytes, sha256: sha256.digest('hex'), ...(sha512 ? { integrity: 'sha512-' + sha512.digest('base64') } : {}) };
+}
+
+function observation(artifact, links, metadata) {
+  const expected = { bytes: artifact.bytes, sha256: artifact.sha256,
+    ...(artifact.integrity ? { integrity: artifact.integrity } : {}) };
+  const { name, kind, version } = artifact;
+  return { name, kind, version, links, expected, observed: { metadata, archive: null } };
+}
+
+function matchVisibility(artifact, links, metadata) {
+  const found = Object.values(metadata).filter(Boolean).length;
+  if (found === 0) return false;
+  if (found === Object.keys(metadata).length) return true;
+  throw Object.assign(registryError('REGISTRY_PROPAGATION',
+    'Registry metadata sources disagree about availability for ' + artifact.name), {
+    observation: { ...observation(artifact, links, metadata), status: 'unavailable' },
+  });
+}
+
+async function observeArchive(artifact, links, metadata) {
+  const record = observation(artifact, links, metadata);
+  const expectedDigest = record.expected.integrity ?? record.expected.sha256;
+  const digestsMatch = Object.values(metadata).every(row => row.digest === expectedDigest);
+  try {
+    record.observed.archive = await readDownload(links.archive, artifact);
+  } catch (error) {
+    error.observation = { ...record, status: digestsMatch ? 'unavailable' : 'conflict' };
+    throw error;
+  }
+  if (!digestsMatch || Object.entries(record.expected).some(([key, value]) => record.observed.archive[key] !== value)) {
+    throw Object.assign(new Error('Registry archive or metadata differs for ' + artifact.name), {
+      code: 'REGISTRY_CONFLICT', observation: { ...record, status: 'conflict' },
+    });
+  }
 }
 
 async function readNpm(artifact) {
@@ -92,9 +115,13 @@ async function readNpm(artifact) {
     if (metadata == null) continue;
     assert.equal(metadata.name, name, 'Unexpected npm package name');
     assert.equal(metadata.version, version, 'Unexpected npm package version');
-    assert.equal(metadata.dist?.integrity, integrity, 'npm integrity differs for ' + name);
+    assert.equal(typeof metadata.dist?.integrity, 'string', 'Missing npm integrity for ' + name);
   }
-  if (!matchVisibility(exact, listed, name)) return { status: 'absent', links };
+  const metadata = {
+    exact: exact && { version: exact.version, digest: exact.dist.integrity },
+    packument: listed ? { version: listed.version, digest: listed.dist.integrity } : null,
+  };
+  if (!matchVisibility(artifact, links, metadata)) return { status: 'absent', links };
   assert(exact.dist.tarball === listed.dist.tarball, 'npm metadata disagrees about the archive URL for ' + name);
   assert(URL.canParse(exact.dist.tarball), 'Invalid npm archive URL for ' + name);
   const canonical = new URL(exact.dist.tarball);
@@ -102,12 +129,13 @@ async function readNpm(artifact) {
   assert(canonical.origin === npmRegistry && !canonical.username && !canonical.password && !canonical.search &&
     !canonical.hash && decodeURIComponent(canonical.pathname) === '/' + name + '/-/' + basename + '-' + version + '.tgz',
     'Unexpected npm archive URL for ' + name);
-  await verifyDownload(canonical.href, artifact);
+  const archiveLinks = { ...links, archive: canonical.href, packageMetadata: packageUrl };
+  await observeArchive(artifact, archiveLinks, metadata);
   return {
     status: 'verified', bytes: artifact.bytes, sha256: artifact.sha256, integrity,
     deprecated: exact.deprecated ?? listed.deprecated ?? null,
     distTags: packument['dist-tags'] ?? {},
-    links: { ...links, archive: canonical.href, packageMetadata: packageUrl },
+    links: archiveLinks,
   };
 }
 
@@ -133,19 +161,24 @@ async function readCrate(artifact) {
   if (metadata !== null) {
     assert.equal(metadata.version?.crate, name, 'Unexpected crates.io package name');
     assert.equal(metadata.version.num, version, 'Unexpected crates.io package version');
-    assert.equal(metadata.version.checksum, sha256, 'crates.io metadata checksum differs for ' + name);
+    assert.match(metadata.version.checksum, /^[a-f0-9]{64}$/, 'Missing crates.io checksum for ' + name);
     assert.equal(typeof metadata.version.yanked, 'boolean', 'Missing crates.io yanked state');
   }
   if (versions.length > 0) {
-    assert.equal(versions[0].cksum, sha256, 'Sparse index checksum differs for ' + name);
+    assert.match(versions[0].cksum, /^[a-f0-9]{64}$/, 'Missing sparse index checksum for ' + name);
     assert.equal(typeof versions[0].yanked, 'boolean', 'Missing sparse index yanked state');
   }
-  if (!matchVisibility(metadata, versions[0], name)) return { status: 'absent', links };
+  const archived = {
+    api: metadata && { version: metadata.version.num, digest: metadata.version.checksum },
+    sparse: versions[0] ? { version: versions[0].vers, digest: versions[0].cksum } : null,
+  };
+  if (!matchVisibility(artifact, links, archived)) return { status: 'absent', links };
   if (metadata.version.yanked !== versions[0].yanked) {
     throw registryError('REGISTRY_PROPAGATION', 'Registry metadata sources disagree about yanked state for ' + name);
   }
-  await verifyDownload(archive, artifact);
-  return { status: 'verified', bytes: artifact.bytes, sha256, yanked: versions[0].yanked, links: { ...links, archive } };
+  const archiveLinks = { ...links, archive };
+  await observeArchive(artifact, archiveLinks, archived);
+  return { status: 'verified', bytes: artifact.bytes, sha256, yanked: versions[0].yanked, links: archiveLinks };
 }
 
 /** Check the published version and exact archive bytes through public registry endpoints. */

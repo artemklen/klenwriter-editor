@@ -2,16 +2,13 @@
 
 ## Supported releases
 
-KlenWriter Editor is preparing its first `1.0.0` release. While registry
-packages are unpublished, the quickstarts describe how to install and verify
-local archives. The [compatibility matrix](support.md) records the covered
-environments, release evidence and known limitations.
+Maintenance and security fixes target the latest stable release listed in the
+[compatibility matrix](support.md). The matrix records covered environments,
+release evidence, known limitations and any maintained earlier release line.
 
-Once packages are published, maintenance and security fixes target the latest
-stable release listed in the compatibility matrix. Any maintained earlier
-release line will be listed there explicitly. Match your Rust or npm packages
-to the version and archive set for your release. Use the
-[public issue chooser](https://github.com/artemklen/klenwriter-editor/issues/new/choose)
+Match your Rust or npm packages to the version and archive set for your
+release. The quickstarts describe how to verify and install local archives.
+Use the [public issue chooser](https://github.com/artemklen/klenwriter-editor/issues/new/choose)
 for integration help and bug reports or the [security policy](../SECURITY.md)
 for potential vulnerabilities.
 

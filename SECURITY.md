@@ -21,7 +21,6 @@ for ordinary bugs and the [code of conduct](CODE_OF_CONDUCT.md) for misconduct.
 
 ## Versions
 
-The `1.0.0` candidate is under preparation and the npm and crates.io packages
-are unpublished. For a report about a local build or archive, identify its
-source commit or archive checksum. Once releases are available, maintenance
-coverage follows the [support and deprecation policy](docs/support-policy.md).
+For a report about a local build or archive, identify its source commit or
+archive checksum. Security fix coverage follows the
+[support and deprecation policy](docs/support-policy.md).
