@@ -129,6 +129,50 @@ test('V2 media owner refuses stale, wrong-identity, and over-capacity requests b
   controller.destroy();
 });
 
+test('V2 media owner restores existing context and capacity after a refused command', async () => {
+  const initial = Array.from({ length: 255 }, (_, index) => ({
+    id: `a2222222-2222-4222-8222-${index.toString(16).padStart(12, '0')}`, status: 'exists',
+  }));
+  let refuse = true;
+  const media = await openMediaEditor((request, raw) => {
+    if (request.kind === 'update_facts') return factReceipt(raw);
+    if (request.kind === 'command' && refuse) {
+      refuse = false;
+      return raw.refused('kwdj.command_unsupported_context');
+    }
+  }, initial);
+  const { controller, fixture, profileOptions } = media;
+  const seen = [];
+  controller.subscribe(event => seen.push(event));
+  const first = controller.captureHostRequest().request;
+  const refusal = media.completeHostMediaRequest(first, mediaCommand(first), pickedAsset).response;
+  assert.equal(refusal.diagnostic.code, 'kwdj.command_unsupported_context');
+  assert.deepEqual(controller.capture(), first.stamp);
+  assert.deepEqual(JSON.parse(media.profileOptionsJson()), profileOptions);
+  assert.deepEqual(seen, []);
+
+  const next = controller.captureHostRequest().request;
+  assert.equal(media.completeHostMediaRequest(next, mediaCommand(next, existingAsset), existingAsset).response.status, 'ok');
+  const updates = fixture.log.filter(row => row.kind === 'update_facts');
+  assert.deepEqual(updates.map(row => row.identities.media.at(-1).id), [pickedAsset, initial.at(-1).id, existingAsset]);
+  assert(updates.every(row => row.identities.references[0].id === existingReference));
+  assert.equal(seen.length, 1);
+  controller.destroy();
+});
+
+test('V2 media owner upgrades an existing negative fact on fresh authority without duplicating its ID', async () => {
+  for (const previous of ['missing', 'unavailable']) {
+    const media = await openMediaEditor((request, raw) => request.kind === 'update_facts' ? factReceipt(raw) : undefined,
+      [{ id: pickedAsset, status: previous }, { id: existingAsset, status: 'exists' }]);
+    const { controller, fixture } = media;
+    const request = controller.captureHostRequest().request;
+    assert.equal(media.completeHostMediaRequest(request, mediaCommand(request), pickedAsset).response.status, 'ok');
+    const update = fixture.log.find(row => row.kind === 'update_facts');
+    assert.deepEqual(update.identities.media, [{ id: pickedAsset, status: 'exists' }, { id: existingAsset, status: 'exists' }]);
+    controller.destroy();
+  }
+});
+
 test('V2 media owner disposes a facts receipt that changes session state or publishes an event', async () => {
   for (const breach of ['changed baseline', 'published event']) {
     let refreshed = false;

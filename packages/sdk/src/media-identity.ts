@@ -25,12 +25,16 @@ export function nextKwdjMediaFacts(profileOptionsJson: string, assetId: string, 
   const options = JSON.parse(profileOptionsJson) as { identities: IdentityFactsDto };
   const previous = options.identities.media.find(fact => fact.id === assetId);
   if (previous?.status === 'exists') return null;
-  if (previous) throw new DataError('sdk.invalid_identity');
-  if (options.identities.media.length >= maxMediaFacts) throw new DataError('sdk.identity_limit');
+  if (!previous && options.identities.media.length >= maxMediaFacts) throw new DataError('sdk.identity_limit');
 
-  const identities: IdentityFactsDto = { media: [...options.identities.media, { id: assetId, status: 'exists' }], references: options.identities.references };
+  const verified = { id: assetId, status: 'exists' as const };
+  const media = previous
+    ? options.identities.media.map(fact => fact === previous ? verified : fact)
+    : [...options.identities.media, verified];
+  const identities: IdentityFactsDto = { media, references: options.identities.references };
   return {
     requestJson: ownData({ kind: 'update_facts', stamp, identities }, requestBytes).json,
+    rollbackJson: ownData({ kind: 'update_facts', stamp, identities: options.identities }, requestBytes).json,
     profileOptionsJson: JSON.stringify({ ...options, identities }),
   };
 }

@@ -53,7 +53,9 @@ New public providers/descriptors must preserve this architecture in OSR-64.
 | Mounted KWDJ DOM | An offline placeholder has the authored accessible name for meaningful media. The caption remains editable. Keyboard deletion of a selected whole block and Undo preserve its attributes. |
 | Insert or replace media | A host picker supplies the asset. The editor inserts an offline placeholder or updates the existing asset in one Undo step, preserving the caption and alignment on replacement. |
 
-`runKwdjMediaPicker` in `@klenwriter/editor-kwdj/dom` uses the active mounted selection and passes one `AbortSignal` to `pickMedia` and `mediaMetadata`. Provide a connected `focusScope` around the picker controls so a current request can restore editor focus. Metadata must identify the same asset and supply nonempty `alt` or explicit `decorative: true`. The asset must have status `exists` in the KWDJ profile’s active `identities.media` facts. The host owns the picker, lookup and asset availability.
+`runKwdjMediaPicker` in `@klenwriter/editor-kwdj/dom` uses the active mounted selection and passes one `AbortSignal` to `pickMedia` and `mediaMetadata`. Provide a connected `focusScope` around the picker controls so a current request can restore editor focus. Metadata identifies the same asset and supplies nonempty `alt` or explicit `decorative: true`. Insert metadata can also carry plain-text `caption` and `align` (`none`, `center` or `wide`). To place a whole image after a root block, pass its current node ID as `placement: { kind: 'after_root_block', node }`. A successful insertion restores the caret at the resulting root gap, which can anchor another image.
+
+The KWDJ profile consumes `exists` media facts. A host can supply `authorizeMediaIdentity` at mount and confirm a newly verified ID for the same active request and signal. A refused command restores the preceding facts and keeps the document and history intact. The host owns the picker, lookup and asset availability.
 
 ## Literary block parity
 

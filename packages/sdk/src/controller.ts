@@ -258,26 +258,23 @@ export class EditorController {
         return this.#completed(this.#refusal('sdk.busy'));
       }
 
+      this.#hostRequests.delete(entry.id);
       this.#processing = true;
       processing = true;
       if (update) {
-        const response = this.#wire(update.requestJson, true);
-        if (response.status === 'fatal') return this.#completed(response);
-        if (response.status === 'refused') {
-          return this.#completed(response.diagnostic.may_have_committed ? this.#fatal('sdk.invalid_response', true) : response);
-        }
-        if (response.value.kind !== 'mutation' || response.value.effect !== 'context_updated' || response.value.presentation !== null
-          || JSON.stringify(response.value.state) !== JSON.stringify(this.#state)) {
-          return this.#completed(this.#fatal('sdk.invalid_response', true));
-        }
-        const failure = this.#deliver(true);
+        const failure = this.#applyKwdjMediaFacts(update.requestJson);
         if (failure) return this.#completed(failure);
         if (this.#destroyRequested || this.#lifecycle !== 'ready') return this.#completed(this.#unavailable());
         this.#kwdjProfileOptionsJson = update.profileOptionsJson;
       }
-      if (this.#hostRequests.get(entry.id) !== entry) return this.#completed(this.#refusal('sdk.stale_request'));
-      this.#hostRequests.delete(entry.id);
-      return this.#completed(this.#execute(owned));
+      const result = this.#execute(owned);
+      if (update && result.status === 'refused') {
+        if (result.diagnostic.may_have_committed) return this.#completed(this.#fatal('sdk.invalid_response', true));
+        const failure = this.#applyKwdjMediaFacts(update.rollbackJson);
+        if (failure) return this.#completed(failure.status === 'fatal' ? failure : this.#fatal('sdk.invalid_response', true));
+        this.#kwdjProfileOptionsJson = optionsJson;
+      }
+      return this.#completed(result);
     } catch (error) {
       return this.#completed(processing ? this.#transportFailure(error, true)
         : this.#refusal(error instanceof DataError ? error.code : 'sdk.invalid_input'));
@@ -285,6 +282,19 @@ export class EditorController {
       this.#hostRequests.delete(entry.id);
       if (processing) this.#drain(63);
     }
+  }
+
+  #applyKwdjMediaFacts(requestJson: string): Response | null {
+    const response = this.#wire(requestJson, true);
+    if (response.status === 'fatal') return response;
+    if (response.status === 'refused') {
+      return response.diagnostic.may_have_committed ? this.#fatal('sdk.invalid_response', true) : response;
+    }
+    if (response.value.kind !== 'mutation' || response.value.effect !== 'context_updated' || response.value.presentation !== null
+      || JSON.stringify(response.value.state) !== JSON.stringify(this.#state)) {
+      return this.#fatal('sdk.invalid_response', true);
+    }
+    return this.#deliver(true);
   }
 
   destroy(): Submission {
