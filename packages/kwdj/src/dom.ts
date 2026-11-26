@@ -254,7 +254,7 @@ function coveredMedia(payload: Record<string, unknown>): boolean {
       && (placement === undefined || closed(placement, ['kind', 'node'])
         && placement.kind === 'after_root_block' && smallString(placement.node, 128))
       && (align === undefined || align === 'none' || align === 'center' || align === 'wide')
-      && (caption === undefined || smallString(caption));
+      && (caption === undefined || typeof caption === 'string');
   }
   return payload.kind === 'replace_media' && closed(payload, ['kind', 'node', 'current_asset_id', 'media_asset_id', 'accessibility'])
     && typeof payload.node === 'string' && smallString(payload.current_asset_id, 64);
