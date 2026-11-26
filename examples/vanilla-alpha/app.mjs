@@ -20,6 +20,8 @@ const linkDialog = document.querySelector('#link-dialog');
 const hostControls = document.querySelector('#host-controls');
 const linkButton = document.querySelector('#edit-link');
 const mediaButton = document.querySelector('#insert-media');
+const importInput = document.querySelector('#import-json');
+const maxDocumentBytes = 16 * 1024 * 1024;
 const kwdjUi = {
   slots: {
     toolbar: document.querySelector('#editor-toolbar'),
@@ -125,6 +127,7 @@ async function open(profile, input = profiles[profile].initialDocument, { refere
   extensionPanel.hidden = profile !== 'notes';
   hostControls.hidden = profile !== 'kwdj';
   linkButton.disabled = mediaButton.disabled = reference;
+  importInput.disabled = reference;
   document.querySelector('#undo').disabled = document.querySelector('#redo').disabled = reference;
 
   let pending = false;
@@ -279,6 +282,32 @@ action('#reopen', async () => {
   if (saved === null) return 'No saved document';
   await open(currentProfile, saved, {reference:referenceOpen});
   return 'Reopened saved document';
+});
+action('#import-json', async () => {
+  const file = importInput.files[0];
+  importInput.value = '';
+  if (!file) return;
+  if (file.size > maxDocumentBytes) return 'Import refused (file.too_large)';
+
+  const result = await editor.replace(new Uint8Array(await file.arrayBuffer()));
+  const response = result.status === 'queued' ? await result.completion : result.response ?? result;
+  if (response.status !== 'ok') return 'Import refused (' + (response.diagnostic?.code ?? response.status) + ')';
+  if (editor.lifecycle !== 'ready') return 'Import needs editor recovery';
+  await snapshot();
+  return 'Imported ' + profiles[currentProfile].label;
+}, 'change');
+action('#export-json', async () => {
+  const bytes = await snapshot();
+  const url = URL.createObjectURL(new Blob([bytes], { type: 'application/json' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = currentProfile + '.json';
+  try {
+    link.click();
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+  return 'Exported ' + profiles[currentProfile].label;
 });
 
 /** @param {{ hostServices?: import('@klenwriter/editor-sdk').HostServices }} [options] */
