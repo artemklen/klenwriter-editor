@@ -647,3 +647,7 @@ pub(crate) fn prepare_result<A: Allocation>(
         raw_restore,
     })
 }
+
+#[cfg(test)]
+#[path = "input_result_tests.rs"]
+mod tests;

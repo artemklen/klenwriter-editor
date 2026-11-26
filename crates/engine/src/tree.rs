@@ -2690,44 +2690,6 @@ mod command_range_tests {
     }
 
     #[test]
-    fn input_correspondence_rejects_non_text_atoms_root_and_foreign_break_edges() {
-        let atom = |primitive| Node {
-            type_id: format!("org.example/{primitive:?}"),
-            primitive,
-            attributes: Attributes::new(),
-            marks: vec![],
-            text: None,
-            children: vec![],
-        };
-        let base = AddressTree::from_document(
-            SessionKey::allocate().unwrap(),
-            Document {
-                children: vec![
-                    block(vec![atom(Primitive::InlineAtom)]),
-                    atom(Primitive::BlockAtom),
-                    block(vec![atom(Primitive::HardBreak)]),
-                ],
-            },
-        )
-        .unwrap();
-        let root = base.root();
-        let [paragraph, block_atom, other_block] = base.node(root).unwrap().children() else {
-            panic!("fixture blocks")
-        };
-        let inline_atom = base.node(*paragraph).unwrap().children()[0];
-        let other_break = base.node(*other_block).unwrap().children()[0];
-        let draft = base.prepare();
-        for id in [root, *block_atom, inline_atom, other_break] {
-            for side in [Edge::Before, Edge::After] {
-                assert!(
-                    crate::input_result::point(&draft, edge(id, side), *paragraph, &mut meter())
-                        .is_err()
-                );
-            }
-        }
-    }
-
-    #[test]
     fn preview_allocation_is_pure_for_split_fragment_duplicate_and_exhaustion() {
         let base = tree(vec![text("abcd", vec![])]);
         let (parent, _) = parents(&base);
