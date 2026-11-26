@@ -2,7 +2,7 @@
 export { artifactStage } from '@klenwriter/editor-sdk';
 export { defineRendererCatalog } from './catalog.js';
 export { mountEditor } from './mounted.js';
-export { runMountedHostService } from './host-request.js';
+export { runMountedHostService, runMountedMediaHostService } from './host-request.js';
 export type * from './types.js';
 
 export type { ClipboardCapture, ClipboardRepresentationCapture, ClipboardMetadataCapture } from './clipboard-capture.js';

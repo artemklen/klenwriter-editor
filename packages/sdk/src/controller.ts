@@ -5,6 +5,7 @@ import { copyInput, DataError, freezeData, HARD_REQUEST_BYTES, ownData, plainFie
 import type { OwnedData } from './data.js';
 import { decodeResponse, decodeResponseV2 } from './response.js';
 import { decodeSessionContext } from './context.js';
+import { nextKwdjMediaFacts, verifyKwdjMediaCommand } from './media-identity.js';
 
 export type DeepReadonly<T> = T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]> } : T;
 export type Response = DeepReadonly<SdkResponse>;
@@ -44,6 +45,14 @@ export interface CreateEditorOptionsV2 extends ControllerConfiguration {
 type AnyCreateEditorOptions = CreateEditorOptions | CreateEditorOptionsV2;
 export interface HostRequest { readonly id: string; readonly stamp: DeepReadonly<StampDto> }
 export type HostCapture = { readonly status: 'captured'; readonly request: HostRequest } | { readonly status: 'refused'; readonly response: Response };
+type MediaCommandRequest = Extract<StampedMutationV2, { kind: 'command' }>;
+/** Opt-in owner capability. The caller verifies the media ID before completing the request. */
+export interface KwdjMediaIdentityEditor {
+  readonly controller: EditorControllerV2;
+  readonly completeHostMediaRequest: (request: HostRequest, mutation: MediaCommandRequest, verifiedAssetId: string) => Submission;
+  /** Current owned profile options for a temporary admission using the same facts. */
+  readonly profileOptionsJson: () => string | null;
+}
 type Listener = (event: DeepReadonly<EventDto>) => void;
 type Pending = { owned: OwnedData<OwnedMutation>; resolve: (result: ResponseV2) => void };
 const READS = new Set(['state', 'catalog', 'node', 'map_position', 'resources']);
@@ -63,6 +72,8 @@ export class EditorController {
   #abi: 'editor-sdk/1' | 'editor-sdk/2' = 'editor-sdk/1';
   #context: SessionContextV2 | null = null;
   #state: DeepReadonly<StateDto> | null = null;
+  #allowKwdjMediaIdentityRefresh = false;
+  #kwdjProfileOptionsJson: string | null = null;
   #original: Uint8Array | null = null;
   #pending: Pending[] = [];
   #queuedBytes = 0;
@@ -113,12 +124,22 @@ export class EditorController {
       if (typeof loader !== 'function') throw new DataError('sdk.invalid_input');
       this.#loadingDeadline = entered + timeout;
       this.#armLoading();
-      void this.#initialize(loader, options.json, options.value.profile);
+      void this.#initialize(loader, options);
     } catch (error) {
       this.#onCallbackError = undefined;
       this.#lifecycle = 'destroyed';
       this.#settleReady(this.#refusal(error instanceof DataError ? error.code : 'sdk.invalid_input'));
     }
+  }
+
+  /** Mint the optional media capability alongside a newly owned editable Session. */
+  static createWithKwdjMediaIdentityRefresh(configuration: CreateEditorOptionsV2): KwdjMediaIdentityEditor {
+    const controller = new EditorController(configuration);
+    controller.#allowKwdjMediaIdentityRefresh = true;
+    const media: KwdjMediaIdentityEditor = { controller: controller as unknown as EditorControllerV2,
+      completeHostMediaRequest: (request, mutation, verifiedAssetId) => controller.#completeHostMediaRequest(request, mutation, verifiedAssetId),
+      profileOptionsJson: () => controller.#kwdjProfileOptionsJson };
+    return Object.freeze(media);
   }
 
   get lifecycle(): Lifecycle { return this.#lifecycle; }
@@ -213,6 +234,59 @@ export class EditorController {
     } catch (error) { return this.#completed(this.#refusal(error instanceof DataError ? error.code : 'sdk.invalid_input')); }
   }
 
+  #completeHostMediaRequest(request: HostRequest, mutation: MediaCommandRequest, assetId: string): Submission {
+    const entry = this.#hostRequest(request);
+    if (!entry) return this.#completed(this.#refusal('sdk.stale_request'));
+    let processing = false;
+    try {
+      const current = this.capture();
+      if (!current || this.#destroyRequested || !stampEqual(current, entry.stamp)) {
+        return this.#completed(this.#refusal('sdk.stale_request'));
+      }
+      if (this.#processing || this.#continuation !== null || this.#pending.length) return this.#completed(this.#refusal('sdk.busy'));
+      const optionsJson = this.#kwdjProfileOptionsJson;
+      if (optionsJson === null) return this.#completed(this.#refusal('sdk.invalid_request_kind'));
+      const owned = ownData(mutation, this.#limits.requestBytes);
+      verifyKwdjMediaCommand(owned.value, assetId);
+      if (!stampEqual(owned.value.stamp, entry.stamp)) return this.#completed(this.#refusal('sdk.stale_request'));
+      const update = nextKwdjMediaFacts(optionsJson, assetId, owned.value.stamp, this.#limits.requestBytes);
+      const prepared = this.capture();
+      if (!prepared || this.#destroyRequested || this.#hostRequests.get(entry.id) !== entry || !stampEqual(prepared, entry.stamp)) {
+        return this.#completed(this.#refusal('sdk.stale_request'));
+      }
+      if (this.#processing || this.#continuation !== null || this.#pending.length || optionsJson !== this.#kwdjProfileOptionsJson) {
+        return this.#completed(this.#refusal('sdk.busy'));
+      }
+
+      this.#processing = true;
+      processing = true;
+      if (update) {
+        const response = this.#wire(update.requestJson, true);
+        if (response.status === 'fatal') return this.#completed(response);
+        if (response.status === 'refused') {
+          return this.#completed(response.diagnostic.may_have_committed ? this.#fatal('sdk.invalid_response', true) : response);
+        }
+        if (response.value.kind !== 'mutation' || response.value.effect !== 'context_updated' || response.value.presentation !== null
+          || JSON.stringify(response.value.state) !== JSON.stringify(this.#state)) {
+          return this.#completed(this.#fatal('sdk.invalid_response', true));
+        }
+        const failure = this.#deliver(true);
+        if (failure) return this.#completed(failure);
+        if (this.#destroyRequested || this.#lifecycle !== 'ready') return this.#completed(this.#unavailable());
+        this.#kwdjProfileOptionsJson = update.profileOptionsJson;
+      }
+      if (this.#hostRequests.get(entry.id) !== entry) return this.#completed(this.#refusal('sdk.stale_request'));
+      this.#hostRequests.delete(entry.id);
+      return this.#completed(this.#execute(owned));
+    } catch (error) {
+      return this.#completed(processing ? this.#transportFailure(error, true)
+        : this.#refusal(error instanceof DataError ? error.code : 'sdk.invalid_input'));
+    } finally {
+      this.#hostRequests.delete(entry.id);
+      if (processing) this.#drain(63);
+    }
+  }
+
   destroy(): Submission {
     this.#onCallbackError = undefined;
     if (this.#lifecycle === 'destroyed' || this.#lifecycle === 'fatal') { this.#original = null; return this.#completed(destroyed()); }
@@ -248,7 +322,7 @@ export class EditorController {
     try { return freezeData(JSON.parse(this.#module.resourceCounts())); } catch { return null; }
   }
 
-  async #initialize(loader: LazyWasmLoader | LazyWasmLoaderV2, optionsJson: string, profile: ProfileDto): Promise<void> {
+  async #initialize(loader: LazyWasmLoader | LazyWasmLoaderV2, options: OwnedData<OpenOptions | OpenOptionsV2>): Promise<void> {
     let opening = false;
     try {
       if (this.#expireLoading()) return;
@@ -259,7 +333,7 @@ export class EditorController {
       // Loading has ended; synchronous Session admission cannot be preempted.
       this.#clearLoading();
       this.#module = module; opening = true;
-      const raw = new module.Session(this.#original!, optionsJson);
+      const raw = new module.Session(this.#original!, options.json);
       if (this.#lifecycle !== 'loading' || this.#destroyRequested) { this.#freeRaw(raw); return; }
       this.#raw = raw;
       const result = decodeResponse(raw.initialization());
@@ -268,7 +342,11 @@ export class EditorController {
         this.#dispose(result.status === 'fatal' ? 'fatal' : 'destroyed', true);
         this.#settleReady(result); return;
       }
-      if (this.#abi === 'editor-sdk/2') this.#context = decodeSessionContext((raw as RawSdkSessionV2).context(), module.manifest.build_id, profile);
+      if (this.#abi === 'editor-sdk/2') this.#context = decodeSessionContext((raw as RawSdkSessionV2).context(), module.manifest.build_id, options.value.profile);
+      if (this.#allowKwdjMediaIdentityRefresh && this.#context?.profile.profile_id === 'org.klenwriter.kwdj'
+        && options.value.access === 'editable' && 'profile_options_json' in options.value) {
+        this.#kwdjProfileOptionsJson = options.value.profile_options_json;
+      }
       this.#state = result.value.state; this.#original = null; this.#lifecycle = 'ready';
       this.#settleReady(result);
     } catch (error) {
@@ -387,6 +465,8 @@ export class EditorController {
     this.#pending.push({ owned, resolve }); this.#queuedBytes += owned.bytes;
     return Object.freeze({ status: 'queued', completion });
   }
+  #execute(owned: OwnedData<MutationRequest>): Response;
+  #execute(owned: OwnedData<OwnedMutation>): ResponseV2;
   #execute(owned: OwnedData<OwnedMutation>): ResponseV2 {
     if (owned.value.kind === 'destroy') { this.#dispose('destroyed'); return destroyed(); }
     if (this.#destroyRequested || this.#lifecycle !== 'ready') return this.#unavailable();
@@ -410,11 +490,12 @@ export class EditorController {
     if (this.#lifecycle === 'ready') { const failure = this.#deliver(); if (failure) return failure; }
     return response;
   }
-  #deliver(): Response | null {
+  #deliver(expectEmpty = false): Response | null {
     const batch = this.#wire('{"kind":"events"}', true);
     if (batch.status !== 'ok') return batch.status === 'fatal' ? this.#deliveryFatal(batch) : this.#fatal('sdk.event_delivery_failure', true);
     if (batch.value.kind !== 'events' || batch.value.gap) return this.#fatal('sdk.event_gap', true);
     if (!batch.value.events.length) return null;
+    if (expectEmpty) return this.#fatal('sdk.invalid_event_order', true);
     for (const event of batch.value.events) {
       if (BigInt(event.sequence) !== this.#lastSequence + 1n || !this.#state || !stampEqual(event.after, this.#state.stamp)) return this.#fatal('sdk.invalid_event_order', true);
       this.#lastSequence = BigInt(event.sequence);
@@ -474,6 +555,7 @@ export class EditorController {
     this.#clearLoading();
     this.#lifecycle = 'disposing'; this.#listeners.clear(); this.#hostRequests.clear(); this.#onCallbackError = undefined;
     this.#context = null;
+    this.#kwdjProfileOptionsJson = null;
     this.#callbackErrors = [];
     if (this.#continuation !== null) { clearTimeout(this.#continuation); this.#continuation = null; }
     const raw = this.#raw; this.#raw = null; if (raw) this.#freeRaw(raw);

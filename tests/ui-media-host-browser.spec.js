@@ -23,14 +23,22 @@ async function run(page, scenario) {
     const left = para('Before'), caption = para('Caption'), right = para('After');
     const initialMedia = {attrs:{align:'wide',alt:'Original',media_asset_id:originalId}, content:[caption],type:'media_image'};
     const initial = source([left,initialMedia,right]);
+    const liveFacts = scenario === 'live-facts';
     const options = {abi:'editor-sdk/2',build_id:model.manifest.build_id,profile:packet.kwdjProfile,
       admission:'validate',access:'editable',registry_json:packet.kwdjRegistryJson,
-      profile_options_json:JSON.stringify({identities:{media:[originalId,pickedId].map(id=>({id,status:'exists'})),references:[]},limits:null})};
+      profile_options_json:JSON.stringify({identities:{media:(liveFacts?[originalId]:[originalId,pickedId]).map(id=>({id,status:'exists'})),references:[]},limits:null})};
     const element=document.createElement('div'), scope=document.createElement('div');
     const done=document.createElement('button'), external=document.createElement('button');
     done.textContent='Picker'; external.textContent='Other control'; scope.append(done);
     document.body.append(element,scope,external);
-    const editor=dom.mountEditor({element,editor:{input:new TextEncoder().encode(initial),options,loader:async()=>model},renderers:kwdjDom.kwdjBasicRenderers});
+    let approval = null;
+    const authorizeMediaIdentity = ({assetId}, {signal}) => {
+      const allowed = approval?.assetId === assetId && approval.signal === signal && !signal.aborted;
+      approval = null;
+      return allowed;
+    };
+    const editor=dom.mountEditor({element,editor:{input:new TextEncoder().encode(initial),options,loader:async()=>model},renderers:kwdjDom.kwdjBasicRenderers,
+      ...(liveFacts?{authorizeMediaIdentity}:{})});
     const ok=reply=>{if(reply.status!=='ok')throw Error(JSON.stringify(reply));return reply.value;};
     const submit=async request=>{
       const result=editor.submit(request.kind==='release_snapshot'?request:{stamp:editor.capture(),...request});
@@ -64,6 +72,34 @@ async function run(page, scenario) {
         return started;
       };
       const choice={status:'ok',value:{assetId:pickedId}}, available={status:'ok',value:{assetId:pickedId,alt:'New alt\r\nline'}};
+      if (liveFacts) {
+        await submit({kind:'command',command:kwdj.kwdjCommand({kind:'insert_text',text:'X'}),history_hint:{kind:'isolated'}});
+        events.length=0;
+        const held=await submit({kind:'snapshot',max_bytes:8192});
+        const originalStamp=editor.capture(), originalContext=editor.context();
+        const pending=start({kind:'insert'}, {
+          pickMedia:async()=>{done.focus();return choice;},
+          mediaMetadata:async({assetId},{signal})=>{approval={assetId,signal};return available;},
+        });
+        const result=await pending.completion;
+        if(result.status!=='submitted'||result.submission.response?.status!=='ok')throw Error(JSON.stringify(result));
+        const focus=await result.focus;
+        const inserted=await checkpoint();
+        const sameContext=JSON.stringify(originalContext)===JSON.stringify(editor.context());
+        const heldCount=editor.nativeResources().snapshot_handles;
+        await submit({kind:'release_snapshot',handle:held.handle});
+        const releasedCount=editor.nativeResources().snapshot_handles;
+        await submit({kind:'history',direction:'undo'});
+        const undone=await canonical();
+        await submit({kind:'history',direction:'redo'});
+        const redone=await canonical();
+        const replaced=await editor.replace(new TextEncoder().encode(redone));
+        const afterReplace=await canonical();
+        unobserve();
+        return {focus,originalStamp,inserted,sameContext,heldCount,releasedCount,undone,redone,afterReplace,
+          prior:held.canonical_json,replaced,events,hostRequests:editor.resources().hostRequests.pending,
+          expected:source([para('BeX'),{attrs:{align:'none',alt:'New alt\nline',media_asset_id:pickedId},type:'media_image'},para('fore'),initialMedia,right])};
+      }
       if(scenario==='resolve-cancel'||scenario==='resolve-remove'){
         let resolvePicker,metadataCalls=0,pickerSignal;
         const pending=start({kind:'replace',node:original.id,assetId:originalId},{
@@ -213,6 +249,25 @@ test('OSR-154 media host success inserts, reopens and replaces through one comma
   expect(r.trace).toEqual([{picker:{kind:'insert'}},{metadata:{assetId:r.pickedId},sameSignal:true,aborted:false},
     {picker:{kind:'replace',assetId:r.originalId}},{metadata:{assetId:r.pickedId},sameSignal:true,aborted:false}]);
   expect(r.events.filter(kind=>kind==='document')).toHaveLength(4);
+});
+
+test('a verified late media identity preserves pre-existing history and snapshot handles and admits replace preflight', async ({page}) => {
+  const result=await run(page,'live-facts');
+  expect(result.focus.status).toBe('restored');
+  expect(result.inserted.canonical).toBe(result.expected);
+  expect(result.inserted.state.stamp.session).toBe(result.originalStamp.session);
+  expect(result.inserted.state.stamp.generation).toBe(result.originalStamp.generation);
+  expect(result.inserted.state.stamp.revision).toBe('2');
+  expect(result.inserted.state.history.undo_entries).toBe('2');
+  expect(result.sameContext).toBe(true);
+  expect(result.heldCount).toBe(1);
+  expect(result.releasedCount).toBe(0);
+  expect(result.undone).toBe(result.prior);
+  expect(result.redone).toBe(result.expected);
+  expect(result.replaced.response.status).toBe('ok');
+  expect(result.afterReplace).toBe(result.expected);
+  expect(result.events).toEqual(['document','document','document']);
+  expect(result.hostRequests).toBe(0);
 });
 
 test('OSR-154 media host dismissals restore only valid scoped focus without changing the document', async ({page}) => {
