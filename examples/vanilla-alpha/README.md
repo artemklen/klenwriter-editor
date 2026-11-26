@@ -7,8 +7,10 @@ page, choose the same profile and use **Reopen saved** to open those bytes in
 a fresh editor session.
 
 Use **Import JSON file** with a local file for the selected profile. An invalid
-file displays a typed refusal and leaves the current document open. Files are
-limited to 16 MiB. **Export JSON** downloads the current canonical bytes.
+file displays a typed refusal and leaves the current document open. If you edit
+while the file is being read, the newer edit stays open and the import is refused.
+Opening a new note clears the previous note's extension copy. Files are limited
+to 16 MiB. **Export JSON** downloads the current canonical bytes.
 Import and export use local browser data. The local server supplies the app,
 WASM and demo fixtures. See [compatibility and limitations](../../docs/support.md).
 

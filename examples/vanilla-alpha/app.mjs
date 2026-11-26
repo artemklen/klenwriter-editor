@@ -81,6 +81,13 @@ async function closeCalloutEditor() {
   undoCallout.disabled = true;
 }
 
+async function resetCalloutCopy() {
+  await closeCalloutEditor();
+  calloutOutput.textContent = '';
+  delete calloutOutput.dataset.revision;
+  calloutDetails.open = false;
+}
+
 async function showCalloutExport() {
   const snapshot = await accepted(calloutEditor.submit({
     kind: 'snapshot', stamp: calloutEditor.capture(), max_bytes: 1_048_576,
@@ -97,10 +104,7 @@ async function open(profile, input = profiles[profile].initialDocument, { refere
   const { options, renderers } = profiles[profile];
   referenceLookup?.abort();
   referenceLookup = undefined;
-  await closeCalloutEditor();
-  calloutOutput.textContent = '';
-  delete calloutOutput.dataset.revision;
-  calloutDetails.open = false;
+  await resetCalloutCopy();
   if (editor) {
     const previous = editor;
     editor = undefined;
@@ -289,11 +293,23 @@ action('#import-json', async () => {
   if (!file) return;
   if (file.size > maxDocumentBytes) return 'Import refused (file.too_large)';
 
-  const result = await editor.replace(new Uint8Array(await file.arrayBuffer()));
+  const owner = editor;
+  const token = activeAction;
+  const beforeRead = owner.capture();
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  if (activeAction !== token || editor !== owner) return;
+  const current = owner.capture();
+  if (!beforeRead || !current || beforeRead.session !== current.session ||
+    beforeRead.generation !== current.generation || beforeRead.revision !== current.revision) {
+    return 'Import refused (file.stale_document)';
+  }
+  const result = await owner.replace(bytes);
   const response = result.status === 'queued' ? await result.completion : result.response ?? result;
+  if (activeAction !== token || editor !== owner) return;
   if (response.status !== 'ok') return 'Import refused (' + (response.diagnostic?.code ?? response.status) + ')';
-  if (editor.lifecycle !== 'ready') return 'Import needs editor recovery';
-  await snapshot();
+  if (owner.lifecycle !== 'ready') return 'Import needs editor recovery';
+  await resetCalloutCopy();
+  await snapshot(owner);
   return 'Imported ' + profiles[currentProfile].label;
 }, 'change');
 action('#export-json', async () => {
