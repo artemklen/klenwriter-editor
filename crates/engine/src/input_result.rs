@@ -138,7 +138,15 @@ pub(crate) fn point<A: Allocation>(
         )),
         Position::Edge { node, side } => {
             let (parent, index) = draft.input_ordinal(node)?;
-            need(parent == block && draft.node(node)?.text().is_some())?;
+            // A DOM caret beside a hard break addresses its edge. It occupies
+            // one inline slot, just like the equivalent child boundary.
+            need(
+                parent == block
+                    && matches!(
+                        draft.node(node)?.primitive(),
+                        Some(Primitive::Text | Primitive::HardBreak)
+                    ),
+            )?;
             Ok(PointKey(index + usize::from(side == Edge::After), 0))
         }
     }
@@ -639,3 +647,7 @@ pub(crate) fn prepare_result<A: Allocation>(
         raw_restore,
     })
 }
+
+#[cfg(test)]
+#[path = "input_result_tests.rs"]
+mod tests;

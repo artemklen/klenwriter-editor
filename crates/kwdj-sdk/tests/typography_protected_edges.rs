@@ -282,3 +282,48 @@ fn highlighted_published_restore_round_trips_through_public_wire() {
     }
     clean(&mut s);
 }
+
+#[test]
+fn typed_quote_at_either_hard_break_edge_keeps_the_break_and_undo_selection() {
+    let hard_break = json!({"type":"hard_break"});
+    let document = |content: Value| {
+        json!({"content":[{"type":"paragraph","content":content}],"profile":"prose",
+            "schema":"klenwriter.document","schema_version":1})
+    };
+    let original = document(json!([hard_break]));
+    for side in ["before", "after"] {
+        let mut session = open(&json!({"identities":{"media":[],"references":[]},
+            "beforeCanonical":original.to_string()}));
+        let paragraph = block(&mut session);
+        let break_id = leaf(&mut session, &paragraph, 0);
+        let edge = json!({"kind":"edge","node":break_id,"side":side});
+        select(&mut session, edge.clone());
+        let expected = |text: &str| {
+            let run = json!({"type":"text","text":text});
+            if side == "before" {
+                document(json!([run, hard_break]))
+            } else {
+                document(json!([hard_break, run]))
+            }
+        };
+
+        let cooked = quote(&mut session);
+        assert_eq!(cooked["effect"], "changed");
+        assert_eq!(snapshot(&mut session), expected("«").to_string());
+        ok(restore(
+            &mut session,
+            cooked["result"]["raw_restore"].clone(),
+        ));
+        assert_eq!(snapshot(&mut session), expected("\"").to_string());
+        history(&mut session, "undo");
+        assert_eq!(snapshot(&mut session), expected("«").to_string());
+        history(&mut session, "undo");
+        assert_eq!(snapshot(&mut session), original.to_string());
+        assert_eq!(leaf(&mut session, &paragraph, 0), break_id);
+        assert_eq!(
+            state(&mut session)["selection"],
+            json!({"anchor":edge,"focus":edge})
+        );
+        clean(&mut session);
+    }
+}
