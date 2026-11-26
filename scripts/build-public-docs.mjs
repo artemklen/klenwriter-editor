@@ -22,6 +22,7 @@ const sources = [
   'docs/migrate-to-1.0.md',
   'docs/support-policy.md',
   'docs/release-rollback.md',
+  'docs/release-candidate.md',
   'CHANGELOG.md',
   'SECURITY.md',
   'CODE_OF_CONDUCT.md',
