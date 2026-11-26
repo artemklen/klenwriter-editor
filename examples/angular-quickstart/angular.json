@@ -1,0 +1,33 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": { "analytics": false },
+  "projects": {
+    "quickstart": {
+      "projectType": "application",
+      "root": "",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "dist/quickstart",
+            "browser": "main.ts",
+            "index": "index.html",
+            "tsConfig": "tsconfig.json",
+            "assets": [
+              {
+                "glob": "{editor_wasm.js,editor_wasm_bg.wasm,snippets/**/*.js}",
+                "input": "node_modules/@klenwriter/editor-wasm/dist",
+                "output": "/"
+              }
+            ]
+          }
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": { "buildTarget": "quickstart:build" }
+        }
+      }
+    }
+  }
+}

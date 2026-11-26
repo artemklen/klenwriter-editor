@@ -1,0 +1,22 @@
+{
+  "name": "klenwriter-vanilla-quickstart",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node serve.mjs"
+  },
+  "dependencies": {
+    "@klenwriter/editor": "file:./vendor/klenwriter-editor-0.1.0-alpha.1.tgz",
+    "@klenwriter/editor-dom": "file:./vendor/klenwriter-editor-dom-0.1.0-alpha.1.tgz",
+    "@klenwriter/editor-kwdj": "file:./vendor/klenwriter-editor-kwdj-0.1.0-alpha.1.tgz",
+    "@klenwriter/editor-sdk": "file:./vendor/klenwriter-editor-sdk-0.1.0-alpha.1.tgz",
+    "@klenwriter/editor-ui": "file:./vendor/klenwriter-editor-ui-0.1.0-alpha.1.tgz",
+    "@klenwriter/editor-wasm": "file:./vendor/klenwriter-editor-wasm-0.1.0-alpha.1.tgz"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  },
+  "overrides": {
+    "entities": "8.1.0"
+  }
+}
