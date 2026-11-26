@@ -19,7 +19,7 @@ use editor_core::transaction::WorkMeter;
 
 use crate::{
     KwdjError, KwdjErrorCode, KwdjProfile, KwdjProfileError,
-    model::{CellAlign, WarningKind},
+    model::{CellAlign, MediaAlign, WarningKind},
     table_geometry::{table_of_cell, table_selection},
 };
 
@@ -51,6 +51,13 @@ pub enum LabeledContainerKind {
     Disclosure,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MediaUsage<I> {
+    pub after_root_block: Option<I>,
+    pub align: MediaAlign,
+    pub caption: Option<String>,
+}
+
 /// Native bootstrap intents; public transport/descriptor compatibility is63/64.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum KwdjIntent<I> {
@@ -80,6 +87,11 @@ pub enum KwdjIntent<I> {
     InsertMedia {
         asset_id: String,
         alt: Option<String>,
+    },
+    InsertMediaWithUsage {
+        asset_id: String,
+        alt: Option<String>,
+        usage: MediaUsage<I>,
     },
     ReplaceMedia {
         node: I,
@@ -351,6 +363,7 @@ fn uses_linear_selection<I>(intent: &KwdjIntent<I>) -> bool {
             | KwdjIntent::ToggleList { .. }
             | KwdjIntent::InsertBlock { .. }
             | KwdjIntent::InsertMedia { .. }
+            | KwdjIntent::InsertMediaWithUsage { .. }
             | KwdjIntent::InsertAuthorNote
             | KwdjIntent::WrapLiteraryBlock
             | KwdjIntent::InsertWarning { .. }
@@ -393,7 +406,9 @@ impl CommandProvider for KwdjProfile<'_> {
             | KwdjIntent::InsertAuthorNote
             | KwdjIntent::InsertWarning { .. }
             | KwdjIntent::InsertLabeledContainer { .. } => KWDJ_COMMANDS[9].id,
-            KwdjIntent::InsertMedia { .. } | KwdjIntent::ReplaceMedia { .. } => MEDIA_COMMAND_ID,
+            KwdjIntent::InsertMedia { .. }
+            | KwdjIntent::InsertMediaWithUsage { .. }
+            | KwdjIntent::ReplaceMedia { .. } => MEDIA_COMMAND_ID,
             KwdjIntent::SetLiteraryKind { .. } => SET_LITERARY_KIND_COMMAND_ID,
             KwdjIntent::WrapLiteraryBlock => WRAP_LITERARY_BLOCK_COMMAND_ID,
             KwdjIntent::UnwrapLiteraryBlock { .. } => UNWRAP_LITERARY_BLOCK_COMMAND_ID,
@@ -452,6 +467,7 @@ impl CommandProvider for KwdjProfile<'_> {
         }
         Ok(match intent {
             KwdjIntent::InsertMedia { .. }
+            | KwdjIntent::InsertMediaWithUsage { .. }
             | KwdjIntent::ReplaceMedia { .. }
             | KwdjIntent::InsertAuthorNote
             | KwdjIntent::SetLiteraryKind { .. }

@@ -23,6 +23,8 @@ fn main() {
         SessionContextV2,
         KwdjClipboardIntentV2,
         KwdjMediaAccessibilityV2,
+        KwdjMediaAlignV2,
+        KwdjMediaPlacementV2,
         KwdjMediaIntentV2,
         LiteraryAuthoringKindV2,
         LiteraryBlockTargetV2,
