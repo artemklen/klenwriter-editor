@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-import { createEditor } from '@klenwriter/editor-sdk';
-import type { CreateEditorOptionsV2, DeepReadonly, EditorControllerV2, EventDto, HostRequest, InputCommandRequestV2, InputSubmissionV2, MutationRequestV2, QueryRequestV2, ReadRequest, ReadRequestV2, Response, ResponseV2, SelectionTextRequestV2, SessionContextV2, StampDto, StateDto, Submission, TextWindowRequestV2 } from '@klenwriter/editor-sdk';
+import { createEditor, EditorController } from '@klenwriter/editor-sdk';
+import type { CreateEditorOptionsV2, DeepReadonly, EditorControllerV2, EventDto, HostRequest, InputCommandRequestV2, InputSubmissionV2, KwdjMediaIdentityEditor, MutationRequestV2, QueryRequestV2, ReadRequest, ReadRequestV2, Response, ResponseV2, SelectionTextRequestV2, SessionContextV2, StampDto, StateDto, Submission, TextWindowRequestV2 } from '@klenwriter/editor-sdk';
 import { admitCatalog, isRendererCatalog } from './catalog.js';
 import { domRefusal } from './refusal.js';
 import { fields, ownConfiguration, ownInput } from './ownership.js';
@@ -116,6 +116,8 @@ class MountedOwner implements MountedEditor {
   #receipt: DestroyReceipt | null = null;
   #onRecovery: MountEditorOptions['onRecovery'];
   #onRefusal: MountEditorOptions['onRefusal'];
+  #authorizeMediaIdentity: MountEditorOptions['authorizeMediaIdentity'];
+  #mediaIdentityEditor: KwdjMediaIdentityEditor | null = null;
   #attributes = new Map<string, string | null>();
   #hadClass = false;
   #clipboardOwner: ClipboardOwner | null = null;
@@ -127,9 +129,12 @@ class MountedOwner implements MountedEditor {
   #hostOwner = new HostRequestOwner({element:()=>this.#element,view:()=>this.#view,controller:()=>this.#controller,
     capture:()=>this.#controller?.capture() ?? null,context:()=>this.#controller?.context() ?? null,selection:this.#selectionOwner,
     guard:()=>this.#userActionGuard(),report:failure=>this.#report(failure),
-    dispatch:(request,handle,validate,refusalTarget)=>{
+    mediaIdentityAuthority:()=>this.#authorizeMediaIdentity,
+    dispatch:(request,handle,validate,refusalTarget,verifiedAssetId)=>{
       let permit:ResultFocusPermit|null=null;
-      const result=this.#forward(request,false,false,owned=>this.#controller!.completeHostRequest(handle,owned),validate,value=>{permit=value;},refusalTarget);
+      const result=this.#forward(request,false,false,owned=>verifiedAssetId === undefined
+        ? this.#controller!.completeHostRequest(handle,owned)
+        : this.#mediaIdentityEditor!.completeHostMediaRequest(handle,owned,verifiedAssetId),validate,value=>{permit=value;},refusalTarget);
       return {result,permit};
     }});
   readonly hostRequests=this.#hostOwner.api;
@@ -209,7 +214,7 @@ class MountedOwner implements MountedEditor {
     this.ready = new Promise(resolve => { this.#resolve = resolve; });
     try {
       const options = fields(configuration);
-      if (Object.keys(options).some(key => !['element','editor','renderers','mode','onRecovery','onRefusal','clipboard','textRepresentation','patchPolicy','layoutPolicy'].includes(key))) throw new TypeError();
+      if (Object.keys(options).some(key => !['element','editor','renderers','mode','onRecovery','onRefusal','authorizeMediaIdentity','clipboard','textRepresentation','patchPolicy','layoutPolicy'].includes(key))) throw new TypeError();
       this.#renderOptions = resolveRenderOptions(options);
       const element = options.element as HTMLElement;
       if (!element?.ownerDocument?.defaultView || !(element instanceof element.ownerDocument.defaultView.HTMLElement) || element.childNodes.length !== 0 || mountedHosts.has(element)) throw new TypeError();
@@ -224,7 +229,7 @@ class MountedOwner implements MountedEditor {
         throw new TypeError();
       }
       if (editor.loader !== undefined && typeof editor.loader !== 'function' || editor.onCallbackError !== undefined && typeof editor.onCallbackError !== 'function') throw new TypeError();
-      for (const callback of ['onRecovery','onRefusal']) if (options[callback] !== undefined && typeof options[callback] !== 'function') throw new TypeError();
+      for (const callback of ['onRecovery','onRefusal','authorizeMediaIdentity']) if (options[callback] !== undefined && typeof options[callback] !== 'function') throw new TypeError();
       if(options.clipboard!==undefined){
         const clipboard=fields(options.clipboard);
         if(Object.keys(clipboard).some(key=>!['writeText','write','onResult','onPasteResult','codec'].includes(key)))throw new TypeError();
@@ -239,6 +244,7 @@ class MountedOwner implements MountedEditor {
       }
       this.#onRecovery = options.onRecovery as MountEditorOptions['onRecovery'];
       this.#onRefusal = options.onRefusal as MountEditorOptions['onRefusal'];
+      this.#authorizeMediaIdentity = options.authorizeMediaIdentity as MountEditorOptions['authorizeMediaIdentity'];
       this.#configuration = { input: this.#original, options: nativeOptions,
         ...(editor.loadTimeoutMs !== undefined ? { loadTimeoutMs: editor.loadTimeoutMs as number } : {}),
         ...(editor.loader ? { loader: editor.loader as CreateEditorOptionsV2['loader'] } : {}),
@@ -256,7 +262,7 @@ class MountedOwner implements MountedEditor {
       element.setAttribute('aria-multiline','true');
       element.setAttribute('aria-busy','true');
       if (allowed === undefined) {
-        this.#controller = createEditor(this.#configuration);
+        this.#controller = this.#openController(this.#configuration);
         void this.#initialize();
       } else {
         this.#allowedNodeTypes = new Set(allowed);
@@ -268,6 +274,11 @@ class MountedOwner implements MountedEditor {
       const failure = domRefusal('dom.invalid_options','mount');
       this.#settle({ ...failure, response: null, recovery: this.#packet() });
     }
+  }
+  #openController(configuration: CreateEditorOptionsV2): EditorControllerV2 {
+    if (!this.#authorizeMediaIdentity) return createEditor(configuration);
+    this.#mediaIdentityEditor = EditorController.createWithKwdjMediaIdentityRefresh(configuration);
+    return this.#mediaIdentityEditor.controller;
   }
   get lifecycle(): MountedLifecycle { return this.#lifecycle; }
   capture() { return this.#lifecycle === 'ready' ? this.#controller?.capture() ?? null : null; }
@@ -341,6 +352,7 @@ class MountedOwner implements MountedEditor {
   #reflectFatal<T extends ResponseV2>(response: T, compositionSubmission?:InputSubmissionV2): T {
     if (this.#lifecycle === 'disposing' || this.#lifecycle === 'destroyed') return response;
     if (response.status === 'fatal') {
+      this.#authorizeMediaIdentity = undefined; this.#mediaIdentityEditor = null;
       this.#inputObservations.destroy();this.#popupPresentation.destroy();
       this.#hostOwner.destroy();
       this.#retainInput('native_fatal');
@@ -408,7 +420,7 @@ class MountedOwner implements MountedEditor {
       return;
     }
 
-    this.#controller = createEditor(shared);
+    this.#controller = this.#openController(shared);
     await this.#initialize();
   }
   async #initialize() {
@@ -651,7 +663,9 @@ class MountedOwner implements MountedEditor {
     try {
       const configuration = this.#configuration!;
       const allowed = this.#allowedNodeTypes;
-      const options = allowed ? { ...configuration.options, access: 'read_only' as const } : configuration.options;
+      const profileOptionsJson = this.#mediaIdentityEditor?.profileOptionsJson() ?? configuration.options.profile_options_json;
+      const options = { ...configuration.options, profile_options_json: profileOptionsJson,
+        ...(allowed ? { access: 'read_only' as const } : {}) };
       temporary = createEditor({ ...configuration, input: owned, options }); this.#temporary = temporary;
       const response = await temporary.ready;
       if (this.#lifecycle !== 'ready') return this.#report(this.#failure('dom.disposed','replace'));
@@ -739,7 +753,7 @@ class MountedOwner implements MountedEditor {
       ...(clipboardRecovery && (clipboardRecovery.status==='pending'||clipboardRecovery.recovery) ? {clipboardRecovery} : {})};
     this.#receipt = receipt;
     const callback = this.#onRecovery;
-    this.#onRecovery = undefined; this.#onRefusal = undefined;
+    this.#onRecovery = undefined; this.#onRefusal = undefined; this.#authorizeMediaIdentity = undefined; this.#mediaIdentityEditor = null;
     let callbackFailure: DomRefusal | null = null;
     if (packet && callback && !this.#recoveryNotified) { this.#recoveryNotified=true; try { callback(this.#packet()!); } catch { callbackFailure = this.#failure('dom.recovery_callback_failed','destroy'); } }
     this.#view?.destroy({retainRegion:packet?.region?.kind === 'retained_dom'}); this.#view = null;

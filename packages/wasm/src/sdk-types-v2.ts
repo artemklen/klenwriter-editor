@@ -13,7 +13,11 @@ export type KwdjClipboardIntentV2 = { "kind": "insert_fragment", fragment_json: 
 
 export type KwdjMediaAccessibilityV2 = { "kind": "alt", alt: string, } | { "kind": "decorative", };
 
-export type KwdjMediaIntentV2 = { "kind": "insert_media", media_asset_id: string, accessibility: KwdjMediaAccessibilityV2, } | { "kind": "replace_media", node: string, current_asset_id: string, media_asset_id: string, accessibility: KwdjMediaAccessibilityV2, };
+export type KwdjMediaAlignV2 = "none" | "center" | "wide";
+
+export type KwdjMediaPlacementV2 = { "kind": "after_root_block", node: string, };
+
+export type KwdjMediaIntentV2 = { "kind": "insert_media", media_asset_id: string, accessibility: KwdjMediaAccessibilityV2, placement?: KwdjMediaPlacementV2, align?: KwdjMediaAlignV2, caption?: string, } | { "kind": "replace_media", node: string, current_asset_id: string, media_asset_id: string, accessibility: KwdjMediaAccessibilityV2, };
 
 export type LiteraryAuthoringKindV2 = "author_note";
 

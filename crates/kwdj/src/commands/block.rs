@@ -13,11 +13,12 @@ use editor_core::positions::{Affinity, Edge, Position, Selection, Utf16Offset, u
 use editor_core::transaction::Operation;
 
 use super::{
-    BlockTarget, KWDJ_SLASH_CANDIDATES, KwdjIntent, LabeledContainerKind, ListKind, inline, refusal,
+    BlockTarget, KWDJ_SLASH_CANDIDATES, KwdjIntent, LabeledContainerKind, ListKind, MediaUsage,
+    inline, refusal,
 };
 use crate::{
     KwdjError, KwdjErrorCode, Profile,
-    model::{CellAlign, WarningKind},
+    model::{CellAlign, MediaAlign, WarningKind},
 };
 
 const PREFIX: &str = "org.klenwriter.kwdj/";
@@ -2015,19 +2016,90 @@ fn insert_media<V: CandidateRead>(
     state: CommandState<'_, V::Id>,
     asset_id: &str,
     alt: Option<&str>,
+    usage: Option<&MediaUsage<V::Id>>,
     plan: &mut PlanBuilder<'_, V::Id>,
 ) -> Result<CommandPresentation, KwdjError> {
+    let at = usage
+        .and_then(|usage| usage.after_root_block)
+        .map(|after| media_root_insertion_index(view, state, after, plan))
+        .transpose()?;
+    let align = match usage.map(|usage| usage.align).unwrap_or(MediaAlign::None) {
+        MediaAlign::None => "none",
+        MediaAlign::Center => "center",
+        MediaAlign::Wide => "wide",
+    };
     let mut attributes = Attributes::from([
         (
             key("media_asset_id", plan)?,
             Attribute::String(key(asset_id, plan)?),
         ),
-        (key("align", plan)?, Attribute::String(key("none", plan)?)),
+        (key("align", plan)?, Attribute::String(key(align, plan)?)),
     ]);
     let (name, value) = media_accessibility(alt, plan)?;
     attributes.insert(key(name, plan)?, value);
-    let media = empty_node("media_image", Primitive::Container, attributes, plan)?;
-    insert_block_node(view, state, media, None, plan)
+    let mut media = empty_node("media_image", Primitive::Container, attributes, plan)?;
+    if let Some(caption) = usage.and_then(|usage| usage.caption.as_deref())
+        && !caption.is_empty()
+    {
+        let mut paragraph = empty_node("paragraph", Primitive::TextBlock, Attributes::new(), plan)?;
+        let mut text = empty_node("text", Primitive::Text, Attributes::new(), plan)?;
+        text.text = Some(key(caption, plan)?);
+        bytes(plan, 2 * size_of::<Node>())?;
+        paragraph.children.push(text);
+        media.children.push(paragraph);
+    }
+    let Some(at) = at else {
+        return insert_block_node(view, state, media, None, plan);
+    };
+    fragment(plan, view.root().into(), at, media)?;
+    set_caret(
+        plan,
+        Position::Child {
+            parent: view.root().into(),
+            index: at + 1,
+            affinity: Affinity::After,
+        },
+    )?;
+    plan.set_stored_marks(StoredMarksUpdate::Inherit)
+        .map_err(KwdjError::operational)?;
+    Ok(CommandPresentation::default())
+}
+
+fn media_root_insertion_index<V: CandidateRead>(
+    view: &V,
+    state: CommandState<'_, V::Id>,
+    after: V::Id,
+    plan: &mut PlanBuilder<'_, V::Id>,
+) -> Result<usize, KwdjError> {
+    let selected = selection(state)?;
+    let root = view.root();
+    let after_node = get(view, after, plan)?;
+    if selected.anchor != selected.focus || after_node.parent != root {
+        return Err(unsupported());
+    }
+    let at = index(view, root, after, plan)? + 1;
+    let caret = selected.focus;
+    let eligible = match kind(after_node.type_id) {
+        "paragraph" | "heading" => inline::text_point(view, caret, plan.work())?.block == after,
+        "verse" => {
+            let block = inline::text_point(view, caret, plan.work())?.block;
+            let line = get(view, block, plan)?;
+            line.parent == after && kind(line.type_id) == "verse_line"
+        }
+        "media_image" => match caret {
+            Position::Child { parent, index, .. } => parent == root && index == at,
+            Position::Edge {
+                node,
+                side: Edge::After,
+            } => node == after,
+            _ => false,
+        },
+        _ => false,
+    };
+    if !eligible {
+        return Err(unsupported());
+    }
+    Ok(at)
 }
 
 fn media_accessibility<I>(
@@ -2708,8 +2780,13 @@ pub(super) fn prepare<V: CandidateRead>(
         KwdjIntent::ToggleList { kind } => toggle_list(view, state, *kind, plan),
         KwdjIntent::InsertBlock { target } => insert_block(view, state, target, None, plan),
         KwdjIntent::InsertMedia { asset_id, alt } => {
-            insert_media(view, state, asset_id, alt.as_deref(), plan)
+            insert_media(view, state, asset_id, alt.as_deref(), None, plan)
         }
+        KwdjIntent::InsertMediaWithUsage {
+            asset_id,
+            alt,
+            usage,
+        } => insert_media(view, state, asset_id, alt.as_deref(), Some(usage), plan),
         KwdjIntent::ReplaceMedia {
             node,
             current_asset_id,

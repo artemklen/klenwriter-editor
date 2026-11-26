@@ -4,9 +4,9 @@ use crate::{
     convert::{diagnostic, profile_error},
     wire_v2::{
         KwdjClipboardIntentV2, KwdjDeleteSelectionScopeV2, KwdjForwardDeleteIntentV2,
-        KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2, KwdjMediaIntentV2,
-        KwdjScopedSelectionIntentV2, KwdjTableCellAlignIntentV2, KwdjTableCellIntentV2,
-        KwdjTableColumnIntentV2, KwdjTableRowIntentV2, KwdjWarningIntentV2,
+        KwdjLabeledContainerIntentV2, KwdjLiteraryIntentV2, KwdjMediaAlignV2, KwdjMediaIntentV2,
+        KwdjMediaPlacementV2, KwdjScopedSelectionIntentV2, KwdjTableCellAlignIntentV2,
+        KwdjTableCellIntentV2, KwdjTableColumnIntentV2, KwdjTableRowIntentV2, KwdjWarningIntentV2,
         LabeledContainerBlockTargetV2, LabeledContainerKindV2, LiteraryBlockTargetV2,
         TableCellAlignV2, WarningBlockTargetV2, WarningKindV2,
     },
@@ -21,13 +21,13 @@ use editor_kwdj::{
         DELETE_ROW_COMMAND_ID, INSERT_COLUMN_LEFT_COMMAND_ID, INSERT_COLUMN_RIGHT_COMMAND_ID,
         INSERT_ROW_ABOVE_COMMAND_ID, INSERT_ROW_BELOW_COMMAND_ID, KWDJ_COMMANDS, KwdjIntent,
         LabeledContainerKind, MEDIA_COMMAND_ID, MERGE_CELLS_COMMAND_ID, MOVE_CELL_COMMAND_ID,
-        SET_CONTAINER_LABEL_COMMAND_ID, SET_LITERARY_KIND_COMMAND_ID,
+        MediaUsage, SET_CONTAINER_LABEL_COMMAND_ID, SET_LITERARY_KIND_COMMAND_ID,
         SET_TABLE_CELL_ALIGN_COMMAND_ID, SET_WARNING_KIND_COMMAND_ID, SPLIT_CELL_COMMAND_ID,
         UNWRAP_LABELED_CONTAINER_COMMAND_ID, UNWRAP_LITERARY_BLOCK_COMMAND_ID,
         UNWRAP_WARNING_COMMAND_ID, WRAP_LABELED_CONTAINER_COMMAND_ID,
         WRAP_LITERARY_BLOCK_COMMAND_ID, WRAP_WARNING_COMMAND_ID, clipboard,
     },
-    model::{CellAlign, WarningKind},
+    model::{CellAlign, MediaAlign, WarningKind},
 };
 use editor_protocol::{CommandDto, DiagnosticDto};
 
@@ -50,6 +50,16 @@ impl From<WarningKindV2> for WarningKind {
         match value {
             WarningKindV2::General => Self::General,
             WarningKindV2::Content => Self::Content,
+        }
+    }
+}
+
+impl From<KwdjMediaAlignV2> for MediaAlign {
+    fn from(value: KwdjMediaAlignV2) -> Self {
+        match value {
+            KwdjMediaAlignV2::None => Self::None,
+            KwdjMediaAlignV2::Center => Self::Center,
+            KwdjMediaAlignV2::Wide => Self::Wide,
         }
     }
 }
@@ -129,9 +139,29 @@ impl BridgeAdapter<KwdjProfile<'static>> for ClipboardAdapterV2 {
                 KwdjMediaIntentV2::InsertMedia {
                     media_asset_id,
                     accessibility,
+                    placement: None,
+                    align: None,
+                    caption: None,
                 } => KwdjIntent::InsertMedia {
                     asset_id: media_asset_id,
                     alt: accessibility.into_alt(),
+                },
+                KwdjMediaIntentV2::InsertMedia {
+                    media_asset_id,
+                    accessibility,
+                    placement,
+                    align,
+                    caption,
+                } => KwdjIntent::InsertMediaWithUsage {
+                    asset_id: media_asset_id,
+                    alt: accessibility.into_alt(),
+                    usage: MediaUsage {
+                        after_root_block: placement
+                            .map(|KwdjMediaPlacementV2::AfterRootBlock { node }| parse_node(&node))
+                            .transpose()?,
+                        align: align.map(MediaAlign::from).unwrap_or(MediaAlign::None),
+                        caption,
+                    },
                 },
                 KwdjMediaIntentV2::ReplaceMedia {
                     node,

@@ -7,7 +7,7 @@ import { copyFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from '
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { createEditor } from '../packages/sdk/dist/index.js';
+import { createEditor, EditorController } from '../packages/sdk/dist/index.js';
 import * as editorWasm from '../packages/wasm/dist/index.js';
 import { encodeSdkWasmSeal } from '../scripts/seal-sdk-wasm.mjs';
 import { deferred, fakeModule, mutation, options, result } from './helpers/sdk-fake.mjs';
@@ -65,6 +65,142 @@ test('V2 controller-only: owns exact raw descriptor strings and separate immutab
   assert.equal(editor.submit({ kind: 'update_facts', stamp: before, identities: { media: [], references: [] } }).response.diagnostic.code, 'sdk.invalid_request_kind');
   assert.equal(fixture.log.some(request => request.kind === 'update_facts'), false);
   editor.destroy(); assert.equal(editor.context(), null); assert.deepEqual(fixture.counts(), { live: 0, destroyed: 1, freed: 1 });
+});
+
+const existingAsset = '41111111-1111-4111-8111-111111111111';
+const pickedAsset = 'a2222222-2222-4222-8222-222222222222';
+const existingReference = 'c3333333-3333-4333-8333-333333333333';
+
+async function openMediaEditor(call, initialMedia = [{ id: existingAsset, status: 'exists' }]) {
+  const fixture = fakeV2Module({ call });
+  const config = v2Options();
+  config.profile.profile_id = 'org.klenwriter.kwdj';
+  fixture.module.manifest.profiles[0].profile_id = config.profile.profile_id;
+  const profileOptions = { identities: { media: initialMedia, references: [{ id: existingReference, status: 'exists' }] }, limits: null };
+  config.profile_options_json = JSON.stringify(profileOptions);
+  const media = EditorController.createWithKwdjMediaIdentityRefresh({ input: Uint8Array.of(65), options: config, loader: async () => fixture.module });
+  assert.equal((await media.controller.ready).status, 'ok');
+  return { ...media, fixture, profileOptions };
+}
+
+const mediaCommand = (request, id = pickedAsset) => ({ kind: 'command', stamp: request.stamp,
+  command: { id: 'org.klenwriter.kwdj/command/media', payload_json: JSON.stringify({ kind: 'insert_media', media_asset_id: id, accessibility: { kind: 'decorative' } }) },
+  history_hint: { kind: 'isolated' } });
+const factReceipt = (raw, state = raw.state) => JSON.stringify({ status: 'ok', value: { kind: 'mutation', effect: 'context_updated', state, presentation: null } });
+
+test('V2 media owner appends one fact with the exact host request and retains the owned replacement options', async () => {
+  const media = await openMediaEditor((request, raw) => request.kind === 'update_facts' ? factReceipt(raw) : undefined);
+  const { controller, fixture, profileOptions } = media;
+  const seen = [];
+  controller.subscribe(event => seen.push(event));
+  const request = controller.captureHostRequest().request;
+  const rawUpdate = { kind: 'update_facts', stamp: request.stamp, identities: { media: [], references: [] } };
+  assert.equal(controller.submit(rawUpdate).response.diagnostic.code, 'sdk.invalid_request_kind');
+  assert.equal(controller.completeHostRequest(controller.captureHostRequest().request, rawUpdate).response.diagnostic.code, 'sdk.invalid_request_kind');
+  assert.equal(media.completeHostMediaRequest(request, mediaCommand(request), pickedAsset).response.status, 'ok');
+  const expectedFacts = { media: [...profileOptions.identities.media, { id: pickedAsset, status: 'exists' }], references: profileOptions.identities.references };
+  assert.deepEqual(fixture.log.filter(row => row.kind === 'update_facts'), [{ kind: 'update_facts', stamp: structuredClone(request.stamp), identities: expectedFacts }]);
+  assert.deepEqual(JSON.parse(media.profileOptionsJson()), { ...profileOptions, identities: expectedFacts });
+  assert.equal(seen.length, 1);
+  assert.deepEqual(seen[0].before, request.stamp);
+  assert.equal(seen[0].change.kind, 'document');
+  assert.equal(controller.resources().host_requests, 0);
+  assert.equal(media.completeHostMediaRequest(request, mediaCommand(request), pickedAsset).response.diagnostic.code, 'sdk.stale_request');
+  controller.destroy();
+});
+
+test('V2 media owner refuses stale, wrong-identity, and over-capacity requests before changing facts', async () => {
+  const full = Array.from({ length: 256 }, (_, index) => ({ id: `a2222222-2222-4222-8222-${index.toString(16).padStart(12, '0')}`, status: 'exists' }));
+  const media = await openMediaEditor((request, raw) => request.kind === 'update_facts' ? factReceipt(raw) : undefined, full);
+  const { controller, fixture, profileOptions } = media;
+  const stale = controller.captureHostRequest().request;
+  assert.equal(controller.submit(mutation(controller)).response.status, 'ok');
+  assert.equal(media.completeHostMediaRequest(stale, mediaCommand(stale), pickedAsset).response.diagnostic.code, 'sdk.stale_request');
+  const wrong = controller.captureHostRequest().request;
+  assert.equal(media.completeHostMediaRequest(wrong, mediaCommand(wrong, existingAsset), pickedAsset).response.diagnostic.code, 'sdk.invalid_input');
+  const current = controller.captureHostRequest().request;
+  const refusal = media.completeHostMediaRequest(current, mediaCommand(current), pickedAsset).response;
+  assert.equal(refusal.diagnostic.code, 'sdk.identity_limit');
+  assert.equal(refusal.diagnostic.may_have_committed, false);
+  assert.equal(fixture.log.filter(row => row.kind === 'command').length, 1);
+  assert.equal(fixture.log.some(row => row.kind === 'update_facts'), false);
+  assert.deepEqual(JSON.parse(media.profileOptionsJson()), profileOptions);
+  assert.equal(controller.resources().host_requests, 0);
+  controller.destroy();
+});
+
+test('V2 media owner restores existing context and capacity after a refused command', async () => {
+  const initial = Array.from({ length: 255 }, (_, index) => ({
+    id: `a2222222-2222-4222-8222-${index.toString(16).padStart(12, '0')}`, status: 'exists',
+  }));
+  let refuse = true;
+  const media = await openMediaEditor((request, raw) => {
+    if (request.kind === 'update_facts') return factReceipt(raw);
+    if (request.kind === 'command' && refuse) {
+      refuse = false;
+      return raw.refused('kwdj.command_unsupported_context');
+    }
+  }, initial);
+  const { controller, fixture, profileOptions } = media;
+  const seen = [];
+  controller.subscribe(event => seen.push(event));
+  const first = controller.captureHostRequest().request;
+  const refusal = media.completeHostMediaRequest(first, mediaCommand(first), pickedAsset).response;
+  assert.equal(refusal.diagnostic.code, 'kwdj.command_unsupported_context');
+  assert.deepEqual(controller.capture(), first.stamp);
+  assert.deepEqual(JSON.parse(media.profileOptionsJson()), profileOptions);
+  assert.deepEqual(seen, []);
+
+  const next = controller.captureHostRequest().request;
+  assert.equal(media.completeHostMediaRequest(next, mediaCommand(next, existingAsset), existingAsset).response.status, 'ok');
+  const updates = fixture.log.filter(row => row.kind === 'update_facts');
+  assert.deepEqual(updates.map(row => row.identities.media.at(-1).id), [pickedAsset, initial.at(-1).id, existingAsset]);
+  assert(updates.every(row => row.identities.references[0].id === existingReference));
+  assert.equal(seen.length, 1);
+  controller.destroy();
+});
+
+test('V2 media owner upgrades an existing negative fact on fresh authority without duplicating its ID', async () => {
+  for (const previous of ['missing', 'unavailable']) {
+    const media = await openMediaEditor((request, raw) => request.kind === 'update_facts' ? factReceipt(raw) : undefined,
+      [{ id: pickedAsset, status: previous }, { id: existingAsset, status: 'exists' }]);
+    const { controller, fixture } = media;
+    const request = controller.captureHostRequest().request;
+    assert.equal(media.completeHostMediaRequest(request, mediaCommand(request), pickedAsset).response.status, 'ok');
+    const update = fixture.log.find(row => row.kind === 'update_facts');
+    assert.deepEqual(update.identities.media, [{ id: pickedAsset, status: 'exists' }, { id: existingAsset, status: 'exists' }]);
+    controller.destroy();
+  }
+});
+
+test('V2 media owner disposes a facts receipt that changes session state or publishes an event', async () => {
+  for (const breach of ['changed baseline', 'published event']) {
+    let refreshed = false;
+    const media = await openMediaEditor((request, raw) => {
+      if (request.kind === 'update_facts') {
+        refreshed = true;
+        return factReceipt(raw, breach === 'changed baseline' ? { ...raw.state, dirty: true } : raw.state);
+      }
+      if (breach === 'published event' && refreshed && request.kind === 'events') {
+        const state = raw.state;
+        return JSON.stringify({ status: 'ok', value: { kind: 'events', events: [{ sequence: '1', before: state.stamp, after: state.stamp,
+          selection_before: null, selection_after: null, stored_marks_before: null, stored_marks_after: null, dirty_before: false, dirty_after: false,
+          history: state.history, change: { kind: 'state', selection_changed: false, stored_marks_changed: false, history_changed: false, baseline_changed: false } }], cursor: '1', gap: false } });
+      }
+    });
+    const { controller, fixture } = media;
+    const seen = [];
+    controller.subscribe(event => seen.push(event));
+    const request = controller.captureHostRequest().request;
+    const ticket = media.completeHostMediaRequest(request, mediaCommand(request), pickedAsset);
+    assert.equal(ticket.response.status, 'fatal');
+    assert.equal(ticket.response.diagnostic.may_have_committed, true);
+    assert.equal(controller.lifecycle, 'fatal');
+    assert.equal(controller.resources().host_requests, 0);
+    assert.equal(fixture.log.some(row => row.kind === 'command'), false);
+    assert.deepEqual(seen, []);
+    assert.deepEqual(fixture.counts(), { live: 0, destroyed: 1, freed: 1 });
+  }
 });
 
 test('V2 controller-only: malformed native contexts are fatal before ready with recovery bytes and cleanup', async () => {

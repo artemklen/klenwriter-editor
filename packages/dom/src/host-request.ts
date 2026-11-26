@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
-import type { CommandDto, DeepReadonly, EditorControllerV2, HostRequest, HostServiceReply, SessionContextV2, StampDto, Submission } from '@klenwriter/editor-sdk';
+import type { CommandDto, DeepReadonly, EditorControllerV2, HostMediaIdentity, HostRequest, HostServiceReply, SessionContextV2, StampDto, Submission } from '@klenwriter/editor-sdk';
 import { fields, ownConfiguration } from './ownership.js';
 import { domRefusal, isDomRefusal } from './refusal.js';
 import type { ExactBookmark, ResultFocusPermit, SelectionOwner } from './selection.js';
-import type { DomRefusal, HostFocus, MountedHostCapture, MountedHostRequest, MountedHostRequests, MountedHostServiceOptions, MountedHostServiceOutcome, MountedHostServiceStart, MountedMutation, SelectionBookmark, SelectionReadFailure } from './types.js';
+import type { DomRefusal, HostFocus, MountEditorOptions, MountedHostCapture, MountedHostRequest, MountedHostRequests, MountedHostServiceOptions, MountedHostServiceOutcome, MountedHostServiceStart, MountedMutation, SelectionBookmark, SelectionReadFailure } from './types.js';
 import type { DomView } from './view.js';
 
 const same=(a:unknown,b:unknown)=>JSON.stringify(a)===JSON.stringify(b);
@@ -19,7 +19,8 @@ interface Configuration {
   selection:SelectionOwner;
   guard():DomRefusal|null;
   report(failure:DomRefusal):DomRefusal;
-  dispatch(request:CommandRequest,handle:HostRequest,validate:()=>Failure|null,refusalTarget?:ExactBookmark):HostDispatch;
+  mediaIdentityAuthority?():MountEditorOptions['authorizeMediaIdentity'];
+  dispatch(request:CommandRequest,handle:HostRequest,validate:()=>Failure|null,refusalTarget?:ExactBookmark,verifiedAssetId?:string):HostDispatch;
 }
 interface Entry {
   readonly request:MountedHostRequest;
@@ -60,6 +61,15 @@ export function runMountedHostService<Request, Value>(
 ): MountedHostServiceStart {
   const owner = hostOwners.get(requests);
   return owner ? owner.runService(options) : domRefusal('dom.invalid_options','host_request',null);
+}
+
+/** Complete the media command with mount-authorized facts under the original request. */
+export function runMountedMediaHostService<Request, Value extends HostMediaIdentity>(
+  requests: MountedHostRequests,
+  options: MountedHostServiceOptions<Request, Value>,
+): MountedHostServiceStart {
+  const owner = hostOwners.get(requests);
+  return owner ? owner.runService(options, true) : domRefusal('dom.invalid_options','host_request',null);
 }
 
 function queuedFocus(submission:Extract<Submission,{status:'queued'}>,counts:{focusContinuations:number},failure:DomRefusal):Promise<HostFocus>{
@@ -189,7 +199,7 @@ export class HostRequestOwner {
   complete(request:MountedHostRequest,command:CommandDto,options:{readonly focus?:'native_result'|'none'}={}):ReturnType<MountedHostRequests['complete']>{
     return this.#complete(request,command,options,false);
   }
-  #complete(request:MountedHostRequest,command:CommandDto,options:{readonly focus?:'native_result'|'none'},restoreRefusalFocus:boolean):ReturnType<MountedHostRequests['complete']>{
+  #complete(request:MountedHostRequest,command:CommandDto,options:{readonly focus?:'native_result'|'none'},restoreRefusalFocus:boolean,verifiedAssetId?:string):ReturnType<MountedHostRequests['complete']>{
     const entry=this.#claim(request);if(isDomRefusal(entry))return this.#report(entry);
     try{
       let owned:CommandDto,focus:'native_result'|'none';
@@ -202,7 +212,7 @@ export class HostRequestOwner {
       const checked=this.#exact(entry);if('status' in checked)return isDomRefusal(checked)?this.#report(checked):checked;
       const c=this.#configuration!,handle=entry.sdk!;
       const refusalTarget=restoreRefusalFocus && focus==='native_result'?checked:undefined;
-      const dispatched=c.dispatch({kind:'command',stamp:checked.stamp as StampDto,command:owned,history_hint:{kind:'isolated'}},handle,()=>{const exact=this.#exact(entry);return 'status' in exact?exact:null;},refusalTarget);
+      const dispatched=c.dispatch({kind:'command',stamp:checked.stamp as StampDto,command:owned,history_hint:{kind:'isolated'}},handle,()=>{const exact=this.#exact(entry);return 'status' in exact?exact:null;},refusalTarget,verifiedAssetId);
       if(isDomRefusal(dispatched.result)){
         if(refusalTarget && dispatched.result.diagnostic.publication==='none' && this.#ownsServiceFocus(entry) && this.#currentServiceTarget(entry)){
           this.#applyFocus(entry,c.selection.bookmarkFocusPermit(entry.bookmark!),'none');
@@ -255,7 +265,7 @@ export class HostRequestOwner {
       || same(configuration.view()?.readSelection(),target.selection);
   }
 
-  runService<Request, Value>(options: MountedHostServiceOptions<Request, Value>): MountedHostServiceStart {
+  runService<Request, Value>(options: MountedHostServiceOptions<Request, Value>, media = false): MountedHostServiceStart {
     if (!this.#configuration) return this.#failure('dom.disposed');
     let owned: MountedHostServiceOptions<Request, Value>;
     try {
@@ -307,6 +317,7 @@ export class HostRequestOwner {
     receiver.current = () => this.#live.get(request) === entry && this.#currentServiceTarget(entry);
     receiver.receive = reply => {
       let next: CommandDto;
+      let verifiedAssetId: string | undefined;
       try {
         if (!this.#currentServiceTarget(entry)) { this.release(request); return; }
         if (reply === null) { cancel('failed'); return; }
@@ -319,11 +330,21 @@ export class HostRequestOwner {
           cancel('failed');
           return;
         }
-        next = ownConfiguration(command(ownConfiguration(data.value as Value)));
+        const value = ownConfiguration(data.value as Value);
+        next = ownConfiguration(command(value));
         if (!this.#currentServiceTarget(entry)) { this.release(request); return; }
+        const authorizeMediaIdentity = media ? this.#configuration?.mediaIdentityAuthority?.() : undefined;
+        if (authorizeMediaIdentity) {
+          const { assetId } = fields(value);
+          if (typeof assetId !== 'string' || !assetId || assetId.length > 64) { cancel('failed'); return; }
+          const authorized = authorizeMediaIdentity(Object.freeze({ assetId }), context);
+          if (!receiver.current?.()) { this.release(request); return; }
+          if (authorized !== true) { cancel('unavailable'); return; }
+          verifiedAssetId = assetId;
+        }
       } catch { cancel('failed'); return; }
       if (!detach()) return;
-      try { finish(this.#complete(request,next,{focus:focusScope === undefined ? 'none' : 'native_result'},restoreRefusalFocus),false); }
+      try { finish(this.#complete(request,next,{focus:focusScope === undefined ? 'none' : 'native_result'},restoreRefusalFocus,verifiedAssetId),false); }
       catch { finish({status:'failed',restore:null},true); }
     };
     entry.retireService = () => {

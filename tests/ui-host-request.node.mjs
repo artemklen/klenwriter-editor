@@ -11,12 +11,12 @@ import * as dom from '../packages/dom/dist/index.js';
 const copy=value=>JSON.parse(JSON.stringify(value));
 const command=Object.freeze({id:'org.klenwriter.kwdj/command/toggle-mark',payload_json:'{"kind":"toggle_mark","mark":{"type_id":"org.klenwriter.kwdj/strong","attributes":{}}}'});
 const quiet={focus:'none'};
-function harness(){
+function harness(authorizeMediaIdentity){
   const context={build_id:'controlled-build',profile:{profile_id:'controlled',profile_version:'1',codec_id:'controlled/json',wire_version:1,extensions:[]},registry_digest:'controlled-registry',capability_digest:'controlled-capability'};
   let state={stamp:{session:'controlled-session',generation:'1',revision:'0',selection_epoch:'1',history_epoch:'0'},root:'R',selection:{anchor:{kind:'text',node:'T',offset:1,affinity:'after'},focus:{kind:'text',node:'T',offset:1,affinity:'after'}},stored_marks:null,dirty:false,saved_revision:'0',history:{undo_entries:'0',redo_entries:'0',retained_bytes:'0'}};
   let owner,guardCode=null,behavior='changed',sdkFailure=null,beforeValidate=null,subscriber=null,pendingResolve=null,duringRefusal=null;
   let browser=copy(state.selection),ids=0;
-  const requests=[],submittedSelections=[],restoredRanges=[],reports=[],sdkLive=new Map(),released=[];
+  const requests=[],submittedSelections=[],restoredRanges=[],reports=[],sdkLive=new Map(),released=[],authorizedMedia=[];
   class Element {
     constructor(name){this.name=name;this.ownerDocument=doc;this.isConnected=true;this.children=new Set();this.focusCalls=0;this.onFocus=null;}
     contains(value){return value===this || this.children.has(value);}
@@ -39,10 +39,12 @@ function harness(){
   };
   const config={element:()=>host,view:()=>view,controller:()=>controller,capture:()=>copy(state.stamp),context:()=>copy(context),selection,guard,
     report:failure=>{reports.push(failure);return failure;},
-    dispatch(request,handle,validate,refusalTarget){
+    mediaIdentityAuthority: () => authorizeMediaIdentity,
+    dispatch(request,handle,validate,refusalTarget,verifiedAssetId){
       beforeValidate?.();const failure=validate();if(failure)return {result:failure,permit:null};
       const frame=selection.beginSubmission(request,false);
       assert.equal(sdkLive.get(handle.id),handle,'the exact SDK request is forwarded');sdkLive.delete(handle.id);requests.push(copy(request));
+      authorizedMedia.push(verifiedAssetId);
       let result;
       if(behavior==='queued'){
         result=Object.freeze({status:'queued',completion:new Promise(resolve=>{pendingResolve=resolve;})});
@@ -65,7 +67,7 @@ function harness(){
     },
   };
   owner=new HostRequestOwner(config);
-  return {owner,selection,host,scope,external,doc,text,requests,submittedSelections,restoredRanges,reports,sdkLive,released,context,
+  return {owner,selection,host,scope,external,doc,text,requests,submittedSelections,restoredRanges,reports,sdkLive,released,context,authorizedMedia,
     state:()=>copy(state),setBrowser:value=>{browser=value;},setGuard:code=>{guardCode=code;},behavior:value=>{behavior=value;},sdkFailure:value=>{sdkFailure=value;},beforeValidate:fn=>{beforeValidate=fn;},subscriber:fn=>{subscriber=fn;},
     duringRefusal:fn=>{duringRefusal=fn;},
     bumpStamp(){state.stamp.revision=String(BigInt(state.stamp.revision)+1n);},
@@ -132,6 +134,52 @@ test('OSR-153 a service success uses the existing exact command handle and scope
   assert.equal(h.doc.activeElement, h.host);
   assert.equal(run.cancel(), false);
   assert.equal(provider.signal.aborted, false);
+  h.assertReleased();
+});
+
+test('only the scoped media service can apply approval from its own live signal', async () => {
+  const assetId = 'a2222222-2222-4222-8222-222222222222';
+  const provider = pendingService();
+  let approved = true, calls = 0;
+  const h = harness((identity, context) => {
+    calls++;
+    assert.deepEqual(identity, { assetId });
+    assert.equal(context.signal, provider.signal);
+    return approved;
+  });
+  const options = { request: { kind: 'insert' }, service: provider.service, command: () => command, focusScope: h.scope };
+  const run = dom.runMountedMediaHostService(h.owner.api, options);
+  h.scope.focus();
+  provider.resolve({ status: 'ok', value: { assetId, alt: 'Example' } });
+  assert.equal((await run.completion).status, 'submitted');
+  assert.deepEqual(h.authorizedMedia, [assetId]);
+  h.assertReleased();
+
+  approved = false;
+  const denied = dom.runMountedMediaHostService(h.owner.api, options);
+  h.scope.focus();
+  assert.equal((await denied.completion).status, 'unavailable');
+  assert.equal(provider.signal.aborted, true);
+  assert.deepEqual(h.authorizedMedia, [assetId]);
+  h.assertReleased();
+
+  const ordinary = dom.runMountedHostService(h.owner.api, options);
+  assert.equal((await ordinary.completion).status, 'submitted');
+  assert.deepEqual(h.authorizedMedia, [assetId, undefined]);
+  assert.equal(calls, 2);
+  h.assertReleased();
+});
+
+test('media approval that retires its selection cannot dispatch or restore focus', async () => {
+  const provider = pendingService();
+  const h = harness(() => { h.retarget(); return true; });
+  const run = dom.runMountedMediaHostService(h.owner.api, { request: { kind: 'insert' }, service: provider.service, command: () => command, focusScope: h.scope });
+  h.scope.focus();
+  provider.resolve({ status: 'ok', value: { assetId: 'a2222222-2222-4222-8222-222222222222' } });
+  assert.equal((await run.completion).status, 'retired');
+  assert.deepEqual(h.requests, []);
+  assert.equal(h.doc.activeElement, h.scope);
+  assert.equal(provider.signal.aborted, true);
   h.assertReleased();
 });
 

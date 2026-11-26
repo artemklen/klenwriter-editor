@@ -26,12 +26,61 @@ impl KwdjMediaAccessibilityV2 {
     all(feature = "sdk-types", not(target_arch = "wasm32")),
     derive(ts_rs::TS)
 )]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum KwdjMediaAlignV2 {
+    None,
+    Center,
+    Wide,
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum KwdjMediaPlacementV2 {
+    AfterRootBlock { node: String },
+}
+
+fn present_media_value<'de, T: Deserialize<'de>, D: serde::Deserializer<'de>>(
+    d: D,
+) -> Result<Option<T>, D::Error> {
+    T::deserialize(d).map(Some)
+}
+
+#[cfg_attr(
+    all(feature = "sdk-types", not(target_arch = "wasm32")),
+    derive(ts_rs::TS)
+)]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub enum KwdjMediaIntentV2 {
     InsertMedia {
         media_asset_id: String,
         accessibility: KwdjMediaAccessibilityV2,
+        #[serde(
+            default,
+            deserialize_with = "present_media_value",
+            skip_serializing_if = "Option::is_none"
+        )]
+        #[cfg_attr(all(feature = "sdk-types", not(target_arch = "wasm32")), ts(optional))]
+        placement: Option<KwdjMediaPlacementV2>,
+        #[serde(
+            default,
+            deserialize_with = "present_media_value",
+            skip_serializing_if = "Option::is_none"
+        )]
+        #[cfg_attr(all(feature = "sdk-types", not(target_arch = "wasm32")), ts(optional))]
+        align: Option<KwdjMediaAlignV2>,
+        #[serde(
+            default,
+            deserialize_with = "present_media_value",
+            skip_serializing_if = "Option::is_none"
+        )]
+        #[cfg_attr(all(feature = "sdk-types", not(target_arch = "wasm32")), ts(optional))]
+        caption: Option<String>,
     },
     ReplaceMedia {
         node: String,

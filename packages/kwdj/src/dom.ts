@@ -11,7 +11,7 @@ import { kwdjTypingDomInventory } from './typing-dom-inventory.js';
 export { bindKwdjContainerLabel } from './container-label.js';
 export type { KwdjContainerLabelOptions } from './container-label.js';
 export { runKwdjMediaPicker } from './media-host.js';
-export type { KwdjMediaPickerOptions, KwdjMediaTarget } from './media-host.js';
+export type { KwdjMediaMetadata, KwdjMediaPickerOptions, KwdjMediaTarget } from './media-host.js';
 export { runKwdjLinkDialog } from './link-host.js';
 export type { KwdjLinkDialogOptions } from './link-host.js';
 
@@ -248,9 +248,16 @@ function coveredMedia(payload: Record<string, unknown>): boolean {
   const accessibility = payload.accessibility;
   if (!smallString(payload.media_asset_id, 64) || !(closed(accessibility, ['kind']) && accessibility.kind === 'decorative'
     || closed(accessibility, ['kind', 'alt']) && accessibility.kind === 'alt' && smallString(accessibility.alt))) return false;
-  return payload.kind === 'insert_media' && closed(payload, ['kind', 'media_asset_id', 'accessibility'])
-    || payload.kind === 'replace_media' && closed(payload, ['kind', 'node', 'current_asset_id', 'media_asset_id', 'accessibility'])
-      && typeof payload.node === 'string' && smallString(payload.current_asset_id, 64);
+  if (payload.kind === 'insert_media') {
+    const { placement, align, caption } = payload;
+    return Object.keys(payload).every(key => ['kind', 'media_asset_id', 'accessibility', 'placement', 'align', 'caption'].includes(key))
+      && (placement === undefined || closed(placement, ['kind', 'node'])
+        && placement.kind === 'after_root_block' && smallString(placement.node, 128))
+      && (align === undefined || align === 'none' || align === 'center' || align === 'wide')
+      && (caption === undefined || typeof caption === 'string');
+  }
+  return payload.kind === 'replace_media' && closed(payload, ['kind', 'node', 'current_asset_id', 'media_asset_id', 'accessibility'])
+    && typeof payload.node === 'string' && smallString(payload.current_asset_id, 64);
 }
 function coveredCommand(id: string, payload: Record<string, unknown>): boolean {
   const name = id.slice(`${prefix}command/`.length);
