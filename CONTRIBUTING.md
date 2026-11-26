@@ -103,6 +103,11 @@ tests и test-evidence upload из CI удалены.
 соответствующее evidence; неизменённый SHA можно не перепроверять. Тесты и assertions
 не удалять и не ослаблять; новых тестов ради галочки не добавлять.
 
+Для публичного комплекта запустите `node scripts/build-public-docs.mjs`.
+Сборка проверяет ссылки и версии примеров и записывает страницы с манифестом
+в `artifacts/public-docs/`. Отдельный workflow Public docs build собирает этот
+же комплект из проверяемого коммита.
+
 `npm run check` включает fmt/clippy/native tests, independent canonical JS/native
 reference vectors (`npm run test:canonical`, [ADR-004](docs/adr/004-canonical-json-v1.md)), native + wasm32 release build,
 TypeScript project references, generated web glue, transitive architecture closure,

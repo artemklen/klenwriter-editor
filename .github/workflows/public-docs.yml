@@ -1,0 +1,45 @@
+name: Public docs build
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/public-docs.yml"
+      - ".node-version"
+      - "package-map.json"
+      - "scripts/build-public-docs.mjs"
+      - "scripts/vanilla-alpha/**"
+      - "CONTRIBUTING.md"
+      - "docs/**"
+      - "contracts/**"
+      - "examples/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/public-docs.yml"
+      - ".node-version"
+      - "package-map.json"
+      - "scripts/build-public-docs.mjs"
+      - "scripts/vanilla-alpha/**"
+      - "CONTRIBUTING.md"
+      - "docs/**"
+      - "contracts/**"
+      - "examples/**"
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+      - run: node scripts/build-public-docs.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: public-docs
+          path: artifacts/public-docs/
+          if-no-files-found: error
+          retention-days: 14
