@@ -173,6 +173,25 @@ for(const [fixture,data,resultKey]of [['quote','"','quote'],['dash',' ','dash'],
   }
   expect(typed(after)).toHaveLength(1);expect(mutations(after)).toHaveLength(1);if(resultKey)checkResult(typed(after)[0].response.value.result,resultKey,before);
 });
+test('typed quote immediately after a keyboard hard break preserves the break through Undo', async ({ page }) => {
+  const { id } = await call(page, 'mount', { fixture: 'quote' });
+  await page.keyboard.press('Shift+Enter');
+  const split = await checkpoint(page, id, 'keyboard hard break');
+  const block = JSON.parse(split.canonical).content[0];
+  expect(block.content.at(-1)).toEqual({ type: 'hard_break' });
+  await page.keyboard.type('"');
+  const cooked = await checkpoint(page, id, 'typed quote at the break edge');
+  expect(cooked.lifecycle).toBe('ready');
+  expect(cooked.failures).toEqual([]);
+  expect(cooked.recovery).toBeNull();
+  expect(JSON.parse(cooked.canonical).content[0].content).toEqual([...block.content, { type: 'text', text: '«' }]);
+  expect(documentEvents(cooked)).toHaveLength(documentEvents(split).length + 1);
+  expect(cooked.inputTrace.some(e => e.event === 'beforeinput' && e.isTrusted && e.data === '"')).toBe(true);
+  await page.keyboard.press('Meta+KeyZ');
+  const undone = await checkpoint(page, id, 'Undo only the typed quote');
+  expect(undone.canonical).toBe(split.canonical);
+  expect(undone.dom).toEqual(split.dom);
+});
 test('B48-browser-history: trusted keyboard Undo/Redo never rearms the immediate reversal slot',async({page})=>{
   const {id,before}=await call(page,'mount');await page.keyboard.type('"');checkState(await checkpoint(page,id,'cooked'),authority.states.quote_cooked,before);
   await page.keyboard.press('Meta+KeyZ');checkState(await checkpoint(page,id,'browser Undo'),authority.states.quote_undo_direct,before);
