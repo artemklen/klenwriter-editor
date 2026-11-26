@@ -11,6 +11,7 @@
     "kwdjSchemaVersion": 1,
     "kwdjProfileId": "org.klenwriter.kwdj",
     "wasmBindgenAbi": "0.2.129",
+    "angularPeer": "22.3.0",
     "supportedPublicHostApiRevisions": [
       1,
       2

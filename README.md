@@ -18,9 +18,11 @@ The distribution name is **KlenWriter Editor**. It uses
 versions are recorded in the [package map](package-map.json).
 [Distribution identity](docs/identity.md).
 
-The project is preparing its first `1.0.0` release. The npm and crates.io
-packages are currently unpublished. Use the local archives and versions
-described in the quickstarts below.
+The coordinated `1.0.0` distribution pairs the web packages, native crates,
+prebuilt WASM and KWDJ corpus with one manifest. Use the verified archives in
+the quickstarts below. Public releases carry the manifest and registry checksums.
+[Build a release candidate](docs/release-candidate.md),
+[GitHub releases](https://github.com/artemklen/klenwriter-editor/releases)
 
 The headless SDK supports compatible ABI1 and explicit ABI2 in one prebuilt
 WASM. [Extension authors](docs/extensions.md) can supply bounded runtime JSON

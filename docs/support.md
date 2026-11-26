@@ -1,19 +1,18 @@
 # Compatibility and limitations
 
-This matrix covers the standalone preview documented by this checkout. Package
-identities and the workspace version are in the [package map](../package-map.json).
-The [vanilla local build](../examples/vanilla-alpha/README.md) uses the
-`0.1.0-alpha.1` distribution. The Angular preview quickstart uses the
-`0.0.0` bootstrap artifacts. The native quickstart and extension tutorial
-use `1.0.0` workspace artifacts. The 1.0 release matrix will record the actual
-OS and browser versions checked with its coordinated release artifacts.
-Use the archive checksums from each quickstart to select its producer. Install
-its editor packages together as one bundle.
+This matrix covers the desktop targets for the coordinated `1.0.0`
+distribution. Install matching editor packages from the same manifest. The
+native and Angular quickstarts and the extension tutorial use `1.0.0`
+artifacts. The [vanilla preview](../examples/vanilla-alpha/README.md) documents
+the historical `0.1.0-alpha.1` distribution, and the archived Angular preview
+documents its `0.0.0` bootstrap. [Package map](../package-map.json),
+[release manifests and acceptance records](https://github.com/artemklen/klenwriter-editor/releases)
 
-| Environment | v1 tier | Acceptance scope |
+| Environment | v1 tier | Release qualification |
 | --- | --- | --- |
-| Desktop Chrome stable on macOS and Windows 11 | Required | Installed-browser editing, RU/EN input and ordinary dead keys, keyboard, focus and semantics. |
-| Desktop Safari stable on supported macOS | Required | The same installed-browser scope on Safari. |
+| Desktop Chrome stable on macOS | Supported | Chrome 158.0.8127.88 on macOS 27.0.1. Installed-browser editing, RU/EN input and ordinary dead keys, keyboard, focus and semantics. |
+| Desktop Chrome stable on Windows 11 | Supported | Chrome 158.0.8127.89 on Windows 11 Pro 26H2. The same installed-browser scope on Windows. |
+| Desktop Safari stable on macOS | Supported | Safari 27.0.1 on macOS 27.0.1. The same installed-browser scope on Safari. |
 | Desktop Firefox | Experimental | Three-engine observation includes Firefox. Supported status requires installed Firefox qualification on the production adapter. |
 | Desktop Chrome on Linux | Experimental | A separate environment qualification is required for supported status. |
 | Mobile editing, CJK input and real assistive technology | Deferred | Unicode document storage is available. Touch, CJK composition and real screen-reader acceptance are outside the v1 input and accessibility scope. |

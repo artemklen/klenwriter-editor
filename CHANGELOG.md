@@ -20,7 +20,7 @@ starts at the [local vanilla 0.1.0-alpha.1 source revision](https://github.com/a
 
 - The standalone Angular directive mounts the editor, forwards native document
   revisions and releases the session when Angular destroys the directive. The
-  binding targets `@angular/core` `22.0.8` and supports zoneless applications.
+  binding targets `@angular/core` `22.3.0` and supports zoneless applications.
 - The mounted KWDJ catalog adds literary blocks, warnings, labeled containers,
   verse and table cells. Table authoring supports row and column operations and
   cell alignment within the admitted geometry. The vanilla mount retains its

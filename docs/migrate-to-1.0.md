@@ -88,7 +88,7 @@ same interface. The newer KWDJ media and link host helpers are optional.
 
 The Angular binding was delivered separately as an unpublished `0.0.0`
 bootstrap package. For a zoneless app, pin its matching editor archives and
-`@angular/core` `22.0.8`, use `KlenwriterEditorDirective` and wait for the
+`@angular/core` `22.3.0`, use `KlenwriterEditorDirective` and wait for the
 `editorReady` result before accessing the SDK handle. Follow the release
 manifest for the packaged versions. The linked walkthroughs show the public
 API and identify their respective archive inputs. [Rust quickstart](quickstart-rust.md), [Vanilla quickstart](quickstart-vanilla.md), [Angular quickstart](quickstart-angular.md), [Extension tutorial](extension-tutorial.md), [Compatibility matrix](support.md)

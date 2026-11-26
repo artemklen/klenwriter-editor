@@ -6,22 +6,22 @@
     "start": "ng serve --host 127.0.0.1 --port 0"
   },
   "dependencies": {
-    "@angular/common": "22.0.8",
-    "@angular/core": "22.0.8",
-    "@angular/platform-browser": "22.0.8",
-    "@klenwriter/editor-angular": "file:./vendor/klenwriter-editor-angular-0.0.0.tgz",
-    "@klenwriter/editor-dom": "file:./vendor/klenwriter-editor-dom-0.0.0.tgz",
-    "@klenwriter/editor-kwdj": "file:./vendor/klenwriter-editor-kwdj-0.0.0.tgz",
-    "@klenwriter/editor-sdk": "file:./vendor/klenwriter-editor-sdk-0.0.0.tgz",
-    "@klenwriter/editor-wasm": "file:./vendor/klenwriter-editor-wasm-0.0.0.tgz",
+    "@angular/common": "22.3.0",
+    "@angular/core": "22.3.0",
+    "@angular/platform-browser": "22.3.0",
+    "@klenwriter/editor-angular": "file:./vendor/klenwriter-editor-angular-1.0.0.tgz",
+    "@klenwriter/editor-dom": "file:./vendor/klenwriter-editor-dom-1.0.0.tgz",
+    "@klenwriter/editor-kwdj": "file:./vendor/klenwriter-editor-kwdj-1.0.0.tgz",
+    "@klenwriter/editor-sdk": "file:./vendor/klenwriter-editor-sdk-1.0.0.tgz",
+    "@klenwriter/editor-wasm": "file:./vendor/klenwriter-editor-wasm-1.0.0.tgz",
     "rxjs": "7.8.2",
     "tslib": "2.8.1"
   },
   "devDependencies": {
-    "@angular/build": "22.0.8",
-    "@angular/cli": "22.0.8",
-    "@angular/compiler": "22.0.8",
-    "@angular/compiler-cli": "22.0.8",
+    "@angular/build": "22.3.0",
+    "@angular/cli": "22.3.0",
+    "@angular/compiler": "22.3.0",
+    "@angular/compiler-cli": "22.3.0",
     "typescript": "6.0.2"
   }
 }

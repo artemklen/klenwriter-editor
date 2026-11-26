@@ -219,6 +219,14 @@ function versions() {
   requireVersion('docs/support.md', candidate);
   requireVersion('docs/support.md', bootstrap);
   requireVersion('docs/support.md', alphaVersion);
+  const angular = 'examples/angular-quickstart/package.json';
+  const angularManifest = json(angular);
+  const angularDependencies = { ...angularManifest.dependencies, ...angularManifest.devDependencies };
+  assert.equal(angularDependencies['@angular/core'], identity.versions.angularPeer);
+  for (const [name, version] of Object.entries(angularDependencies).filter(([name]) => name.startsWith('@angular/'))) {
+    assert.equal(version, identity.versions.angularPeer, angular + ' has a mismatched pin for ' + name);
+  }
+  requireVersion('docs/quickstart-angular.md', identity.versions.angularPeer);
   const vanillaRoles = ['vanilla', 'dom', 'kwdj', 'sdk', 'ui', 'wasm'];
   return {
     packageMap: 'package-map.json',
@@ -228,8 +236,8 @@ function versions() {
       'docs/quickstart-vanilla.md', true),
     playground: webEvidence('examples/vanilla-alpha/package.json', vanillaRoles, alphaVersion,
       'examples/vanilla-alpha/README.md'),
-    angular: webEvidence('examples/angular-quickstart/package.json', ['angular', 'dom', 'kwdj', 'sdk', 'wasm'],
-      bootstrap, 'docs/quickstart-angular.md', true),
+    angular: { angularVersion: identity.versions.angularPeer,
+      ...webEvidence(angular, ['angular', 'dom', 'kwdj', 'sdk', 'wasm'], candidate, 'docs/quickstart-angular.md') },
     rust: { manifest: rustManifest, version: candidate, packages: rustNames.map(name => ({ name, version: candidate })) },
   };
 }

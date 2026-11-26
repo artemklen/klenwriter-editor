@@ -28,7 +28,7 @@
     "@klenwriter/editor-dom": "1.0.0"
   },
   "peerDependencies": {
-    "@angular/core": "22.0.8"
+    "@angular/core": "22.3.0"
   },
   "klenwriterEditor": {
     "role": "angular",

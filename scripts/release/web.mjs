@@ -70,7 +70,8 @@ function readWebGraph(root, packageMap, lock, semver) {
   }
   assert.equal(packages.size, 7, 'Release requires all seven web packages');
   const angular = packages.get(packageMap.web.angular.name);
-  assert.match(angular.manifest.peerDependencies?.['@angular/core'] ?? '', versionPattern, 'Angular core peer must be exact');
+  assert.match(packageMap.versions.angularPeer ?? '', versionPattern, 'Angular core peer must be exact');
+  assert.equal(angular.manifest.peerDependencies?.['@angular/core'], packageMap.versions.angularPeer);
 
   const ordered = new Map();
   const visiting = new Set();
