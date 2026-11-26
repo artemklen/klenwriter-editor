@@ -1,6 +1,6 @@
 {
   "name": "@klenwriter/editor-angular",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "description": "KlenWriter Editor: standalone Angular binding",
   "type": "module",
@@ -25,7 +25,7 @@
     }
   },
   "dependencies": {
-    "@klenwriter/editor-dom": "0.0.0"
+    "@klenwriter/editor-dom": "1.0.0"
   },
   "peerDependencies": {
     "@angular/core": "22.0.8"
@@ -33,6 +33,6 @@
   "klenwriterEditor": {
     "role": "angular",
     "sourceProvenance": "SOURCE-PROVENANCE.json",
-    "publicApiStability": "bootstrap"
+    "publicApiStability": "stable"
   }
 }

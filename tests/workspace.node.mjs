@@ -92,6 +92,6 @@ klenwriter-editor-kwdj = { path = ${JSON.stringify(resolve('crates/kwdj'))} }
       cwd: dir, encoding: 'utf8', env: { ...process.env, CARGO_TARGET_DIR: join(dir, 'target') },
     });
     assert.equal(result.status, 0, result.stderr);
-    assert.equal(result.stdout.trim(), '0.0.0 org.klenwriter.kwdj');
+    assert.equal(result.stdout.trim(), `${identity.versions.packageSemver} ${identity.versions.kwdjProfileId}`);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });

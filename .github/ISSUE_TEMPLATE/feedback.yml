@@ -1,0 +1,17 @@
+name: Feature request, documentation or integration question
+description: Suggest a change or ask about using the public editor packages.
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: What are you trying to do?
+      description: Include the relevant package, API or documentation page.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: What would help?
+      description: Describe the expected outcome, proposed change or question.
+    validations:
+      required: true

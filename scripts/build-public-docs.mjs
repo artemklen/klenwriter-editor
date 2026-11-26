@@ -18,6 +18,13 @@ const sources = [
   'docs/support.md',
   'docs/corpus-contributor.md',
   'docs/roadmap.md',
+  'docs/versioning.md',
+  'docs/migrate-to-1.0.md',
+  'docs/support-policy.md',
+  'docs/release-rollback.md',
+  'CHANGELOG.md',
+  'SECURITY.md',
+  'CODE_OF_CONDUCT.md',
   'examples/vanilla-alpha/README.md',
 ];
 const inputs = new Set(['scripts/build-public-docs.mjs', 'scripts/vanilla-alpha/pack.mjs']);
@@ -197,21 +204,24 @@ function webEvidence(path, roles, version, page, checksums = false) {
 }
 
 function versions() {
-  const bootstrap = identity.versions.packageSemver;
+  const candidate = identity.versions.packageSemver;
+  const bootstrap = identity.versions.previewBootstrapSemver;
   const rustManifest = 'examples/native-quickstart/Cargo.toml';
   const native = read(rustManifest);
   const rustNames = ['core', 'engine', 'kwdj'].map(role => identity.rust[role].name);
   const nativePins = new Map(Array.from(native.matchAll(/^(klenwriter-editor-[\w-]+)\s*=\s*"=([^"]+)"$/gm),
     match => [match[1], match[2]]));
   assert.deepEqual([...nativePins.keys()].sort(), rustNames.toSorted(), rustManifest + ' has a different editor crate set');
-  for (const name of rustNames) assert.equal(nativePins.get(name), bootstrap, rustManifest + ' version mismatch for ' + name);
-  requireVersion('docs/quickstart-rust.md', bootstrap);
-  requireVersion('docs/extension-tutorial.md', bootstrap);
+  for (const name of rustNames) assert.equal(nativePins.get(name), candidate, rustManifest + ' version mismatch for ' + name);
+  requireVersion('docs/quickstart-rust.md', candidate);
+  requireVersion('docs/extension-tutorial.md', candidate);
+  requireVersion('docs/support.md', candidate);
   requireVersion('docs/support.md', bootstrap);
   requireVersion('docs/support.md', alphaVersion);
   const vanillaRoles = ['vanilla', 'dom', 'kwdj', 'sdk', 'ui', 'wasm'];
   return {
     packageMap: 'package-map.json',
+    candidate,
     bootstrap,
     vanilla: webEvidence('examples/vanilla-quickstart/package.json', vanillaRoles, alphaVersion,
       'docs/quickstart-vanilla.md', true),
@@ -219,7 +229,7 @@ function versions() {
       'examples/vanilla-alpha/README.md'),
     angular: webEvidence('examples/angular-quickstart/package.json', ['angular', 'dom', 'kwdj', 'sdk', 'wasm'],
       bootstrap, 'docs/quickstart-angular.md', true),
-    rust: { manifest: rustManifest, version: bootstrap, packages: rustNames.map(name => ({ name, version: bootstrap })) },
+    rust: { manifest: rustManifest, version: candidate, packages: rustNames.map(name => ({ name, version: candidate })) },
   };
 }
 

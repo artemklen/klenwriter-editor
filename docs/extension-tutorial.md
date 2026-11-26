@@ -1,6 +1,6 @@
 # Run and save a public extension
 
-Use the authored Generic Notes D1 descriptor to add a callout and highlight to a note. Save the canonical JSON and reopen it in a fresh session with the same D1 descriptor. This headless example uses the prebuilt SDK2 WASM and local bootstrap packages at version `0.0.0`.
+Use the authored Generic Notes D1 descriptor to add a callout and highlight to a note. Save the canonical JSON and reopen it in a fresh session with the same D1 descriptor. This headless example uses the prebuilt SDK2 WASM and local workspace packages at version `1.0.0`.
 
 ## Run the tutorial
 

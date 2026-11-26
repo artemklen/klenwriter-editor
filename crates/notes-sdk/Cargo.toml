@@ -16,13 +16,13 @@ editor_core.workspace = true
 editor_engine.workspace = true
 editor_notes.workspace = true
 editor_registry.workspace = true
-editor_bridge = { package = "klenwriter-editor-bridge", path = "../bridge", version = "=0.0.0" }
-editor_protocol = { package = "klenwriter-editor-protocol", path = "../protocol", version = "=0.0.0" }
-editor_extensions = { package = "klenwriter-editor-extensions", path = "../extensions", version = "=0.0.0" }
+editor_bridge = { package = "klenwriter-editor-bridge", path = "../bridge", version = "=1.0.0" }
+editor_protocol = { package = "klenwriter-editor-protocol", path = "../protocol", version = "=1.0.0" }
+editor_extensions = { package = "klenwriter-editor-extensions", path = "../extensions", version = "=1.0.0" }
 serde.workspace = true
 serde_json.workspace = true
 
 [package.metadata.klenwriter-editor]
 role = "notes-sdk"
 source-provenance = "SOURCE-PROVENANCE.json"
-public-api-stability = "bootstrap"
+public-api-stability = "stable"

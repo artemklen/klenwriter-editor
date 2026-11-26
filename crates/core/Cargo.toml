@@ -11,7 +11,7 @@ description = "KlenWriter Editor generic semantic primitives; pre-alpha bootstra
 [package.metadata.klenwriter-editor]
 role = "core"
 source-provenance = "SOURCE-PROVENANCE.json"
-public-api-stability = "bootstrap"
+public-api-stability = "stable"
 
 [lints]
 workspace = true

@@ -1,0 +1,31 @@
+name: Bug report
+description: Report unexpected behavior in KlenWriter Editor.
+body:
+  - type: markdown
+    attributes:
+      value: Use the private vulnerability route in the issue chooser for security reports. Use synthetic documents and remove personal data and credentials from attachments.
+  - type: input
+    id: version
+    attributes:
+      label: Package version or source commit
+      description: Include the affected package name when using an installed archive.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Include your OS and the relevant browser, JavaScript runtime or Rust version.
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Give the shortest steps or a link to a minimal public example.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected and observed behavior
+    validations:
+      required: true

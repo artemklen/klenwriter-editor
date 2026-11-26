@@ -1,5 +1,6 @@
 [package]
 name = "klenwriter-editor-bridge"
+description = "Profile-independent session bridge for KlenWriter Editor"
 version.workspace = true
 edition.workspace = true
 rust-version = "1.97.1"
@@ -15,7 +16,7 @@ editor_core.workspace = true
 editor_engine.workspace = true
 editor_registry.workspace = true
 editor_extensions.workspace = true
-editor_protocol = { package = "klenwriter-editor-protocol", path = "../protocol", version = "=0.0.0" }
+editor_protocol = { package = "klenwriter-editor-protocol", path = "../protocol", version = "=1.0.0" }
 serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
@@ -23,4 +24,4 @@ sha2.workspace = true
 [package.metadata.klenwriter-editor]
 role = "bridge"
 source-provenance = "SOURCE-PROVENANCE.json"
-public-api-stability = "bootstrap"
+public-api-stability = "stable"

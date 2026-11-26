@@ -3,9 +3,9 @@
   "productName": "KlenWriter Editor",
   "license": "MIT OR Apache-2.0",
   "repository": "https://github.com/artemklen/klenwriter-editor",
-  "stage": "unpublished-bootstrap",
+  "stage": "release-candidate",
   "versions": {
-    "packageSemver": "0.0.0",
+    "packageSemver": "1.0.0",
     "publicHostApiRevision": 1,
     "nativeWireProtocolRevision": null,
     "kwdjSchemaVersion": 1,
@@ -14,7 +14,8 @@
     "supportedPublicHostApiRevisions": [
       1,
       2
-    ]
+    ],
+    "previewBootstrapSemver": "0.0.0"
   },
   "publishingGate": "OSR-71",
   "rust": {

@@ -3,9 +3,10 @@
 This matrix covers the standalone preview documented by this checkout. Package
 identities and the workspace version are in the [package map](../package-map.json).
 The [vanilla local build](../examples/vanilla-alpha/README.md) uses the
-`0.1.0-alpha.1` distribution. The native and Angular quickstarts use workspace
-artifacts at `0.0.0`. The 1.0 release matrix will record the actual OS and browser
-versions checked with its release artifacts.
+`0.1.0-alpha.1` distribution. The Angular preview quickstart uses the
+`0.0.0` bootstrap artifacts. The native quickstart and extension tutorial
+use `1.0.0` workspace artifacts. The 1.0 release matrix will record the actual
+OS and browser versions checked with its coordinated release artifacts.
 Use the archive checksums from each quickstart to select its producer. Install
 its editor packages together as one bundle.
 
