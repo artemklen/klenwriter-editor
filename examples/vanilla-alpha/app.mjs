@@ -20,6 +20,8 @@ const linkDialog = document.querySelector('#link-dialog');
 const hostControls = document.querySelector('#host-controls');
 const linkButton = document.querySelector('#edit-link');
 const mediaButton = document.querySelector('#insert-media');
+const importInput = document.querySelector('#import-json');
+const maxDocumentBytes = 16 * 1024 * 1024;
 const kwdjUi = {
   slots: {
     toolbar: document.querySelector('#editor-toolbar'),
@@ -79,6 +81,13 @@ async function closeCalloutEditor() {
   undoCallout.disabled = true;
 }
 
+async function resetCalloutCopy() {
+  await closeCalloutEditor();
+  calloutOutput.textContent = '';
+  delete calloutOutput.dataset.revision;
+  calloutDetails.open = false;
+}
+
 async function showCalloutExport() {
   const snapshot = await accepted(calloutEditor.submit({
     kind: 'snapshot', stamp: calloutEditor.capture(), max_bytes: 1_048_576,
@@ -95,10 +104,7 @@ async function open(profile, input = profiles[profile].initialDocument, { refere
   const { options, renderers } = profiles[profile];
   referenceLookup?.abort();
   referenceLookup = undefined;
-  await closeCalloutEditor();
-  calloutOutput.textContent = '';
-  delete calloutOutput.dataset.revision;
-  calloutDetails.open = false;
+  await resetCalloutCopy();
   if (editor) {
     const previous = editor;
     editor = undefined;
@@ -125,6 +131,7 @@ async function open(profile, input = profiles[profile].initialDocument, { refere
   extensionPanel.hidden = profile !== 'notes';
   hostControls.hidden = profile !== 'kwdj';
   linkButton.disabled = mediaButton.disabled = reference;
+  importInput.disabled = reference;
   document.querySelector('#undo').disabled = document.querySelector('#redo').disabled = reference;
 
   let pending = false;
@@ -279,6 +286,44 @@ action('#reopen', async () => {
   if (saved === null) return 'No saved document';
   await open(currentProfile, saved, {reference:referenceOpen});
   return 'Reopened saved document';
+});
+action('#import-json', async () => {
+  const file = importInput.files[0];
+  importInput.value = '';
+  if (!file) return;
+  if (file.size > maxDocumentBytes) return 'Import refused (file.too_large)';
+
+  const owner = editor;
+  const token = activeAction;
+  const beforeRead = owner.capture();
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  if (activeAction !== token || editor !== owner) return;
+  const current = owner.capture();
+  if (!beforeRead || !current || beforeRead.session !== current.session ||
+    beforeRead.generation !== current.generation || beforeRead.revision !== current.revision) {
+    return 'Import refused (file.stale_document)';
+  }
+  const result = await owner.replace(bytes);
+  const response = result.status === 'queued' ? await result.completion : result.response ?? result;
+  if (activeAction !== token || editor !== owner) return;
+  if (response.status !== 'ok') return 'Import refused (' + (response.diagnostic?.code ?? response.status) + ')';
+  if (owner.lifecycle !== 'ready') return 'Import needs editor recovery';
+  await resetCalloutCopy();
+  await snapshot(owner);
+  return 'Imported ' + profiles[currentProfile].label;
+}, 'change');
+action('#export-json', async () => {
+  const bytes = await snapshot();
+  const url = URL.createObjectURL(new Blob([bytes], { type: 'application/json' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = currentProfile + '.json';
+  try {
+    link.click();
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+  return 'Exported ' + profiles[currentProfile].label;
 });
 
 /** @param {{ hostServices?: import('@klenwriter/editor-sdk').HostServices }} [options] */

@@ -9,6 +9,7 @@ import { serveAlphaConsumer } from '../../scripts/vanilla-alpha/browser.mjs';
 import { buildConsumerModule, installAlphaConsumer } from '../../scripts/vanilla-alpha/consumer.mjs';
 import { checkLinkDialog } from './link-check.mjs';
 import { alternateEntry, checkAlternateHostServices, checkMockHostServices } from './host-check.mjs';
+import { checkPlayground } from './import-export-check.mjs';
 
 const example = fileURLToPath(new URL('./', import.meta.url));
 const workspace = resolve(example, '../..');
@@ -215,11 +216,16 @@ try {
         await alternate.goto(server.url);
         const alternateHostServices = await checkAlternateHostServices(alternate);
 
+        const playground = await browser.newPage({ acceptDownloads: true });
+        playground.setDefaultTimeout(8_000);
+        playground.on('pageerror', error => errors.push(error.message));
+        const playgroundResult = await checkPlayground(playground, server.url);
+
         assert.deepEqual(errors, []);
         results.push({
           engine, version: browser.version(),
           editUndoRedoSaveReloadReopen: 'pass', profileSwitchAndValidation: 'pass', extensionAndUndo: 'pass',
-          linkDialog: link, hostServices, alternateHostServices,
+          linkDialog: link, hostServices, alternateHostServices, playground: playgroundResult,
         });
       } catch (error) {
         throw new Error(engine + ' alpha example check failed', {cause:error});

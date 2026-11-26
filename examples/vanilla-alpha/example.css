@@ -25,6 +25,11 @@ button, select {
   padding: .375rem .75rem;
 }
 
+#import-json {
+  font: inherit;
+  max-inline-size: 100%;
+}
+
 #notes-extension {
   flex-basis: 100%;
   min-width: 0;

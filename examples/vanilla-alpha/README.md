@@ -6,6 +6,14 @@ its canonical JSON to this browser's local storage. After reloading the same
 page, choose the same profile and use **Reopen saved** to open those bytes in
 a fresh editor session.
 
+Use **Import JSON file** with a local file for the selected profile. An invalid
+file displays a typed refusal and leaves the current document open. If you edit
+while the file is being read, the newer edit stays open and the import is refused.
+Opening a new note clears the previous note's extension copy. Files are limited
+to 16 MiB. **Export JSON** downloads the current canonical bytes.
+Import and export use local browser data. The local server supplies the app,
+WASM and demo fixtures. See [compatibility and limitations](../../docs/support.md).
+
 In Generic Notes, **Insert callout** uses the public Notes D1 descriptor
 and the SDK to run its existing extension command on a copy of the open
 document. **Extension copy JSON** shows the result. **Undo callout** restores
@@ -30,7 +38,9 @@ Open the printed URL. Keep the server running while you reload so the origin
 stays the same. Run the following command with Playwright Chromium and WebKit
 installed to verify editing, save and reopen, and strict validation of exports
 after switching profiles. The run also checks the D1 command and byte-for-byte
-Undo and both outcomes of the KWDJ link dialog in each browser.
+Undo, both outcomes of the KWDJ link dialog, and local import, edit, export and
+refusal in each profile. The import/export check observes network requests
+while manipulating the document.
 
 ```sh
 node examples/vanilla-alpha/run.mjs /path/to/packages --check

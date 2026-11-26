@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vanilla quickstart</title>
+  <link rel="stylesheet" href="./app.css">
+</head>
+<body>
+  <main>
+    <h1>Vanilla quickstart</h1>
+    <div id="editor" class="editor-surface" role="textbox" aria-label="Document" aria-multiline="true"></div>
+    <fieldset id="actions" disabled>
+      <button id="save" type="button">Save</button>
+      <button id="reopen" type="button">Reopen saved</button>
+    </fieldset>
+    <p id="status" role="status">Opening editor</p>
+    <details>
+      <summary>Canonical JSON</summary>
+      <pre id="canonical"></pre>
+    </details>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

@@ -2,7 +2,10 @@
 
 Rust/WASM editor: a general core with extensions, with KWDJ as the first CMS profile.
 
-M0 architecture is accepted; M1 supplies the workspace foundation and extracted native document semantics. There is no production editor or published package yet. Desktop Chrome and Safari are the v1 support target. Firefox remains an experimental compatibility lane with recorded results, not a v1 release guarantee; its acceptance gate is separate. Mobile input and collaboration are later work.
+The standalone workspace builds native Rust crates, prebuilt WASM and packages
+for vanilla and Angular applications. Start with the
+[compatibility matrix](docs/support.md) for browser targets, known behavior and
+local document handling.
 
 GitHub is the canonical repository. No GitLab mirror is configured or planned.
 
@@ -18,20 +21,26 @@ WASM. [Extension authors](docs/extensions.md) can supply bounded runtime JSON
 packages or compile independent native/WASM profile modules through public Rust
 crates. The notes profile and KWDJ use the same composition API.
 
-The [mounted DOM boundary](docs/dom.md) adds a basic editable SDK2 surface,
-explicit profile renderers and bounded input reconciliation. Its
-[selection controller](docs/selection.md) adds guarded bookmarks, owned selection
-gestures, bounded edge autoscroll and minimal plaintext copy/cut. The
-[composition owner](docs/composition.md) adds bounded settlement, isolated native
-replacement and retained recovery; browser and installed evidence is versioned
-separately. The optional [block chrome](docs/ui.md) adds profile-supplied toolbar,
-Add/move controls, geometry and host-owned dialogs. Paste/HTML clipboard handling,
-slash/physical drag, complete accessibility and installable vanilla alpha retain
-separate gates; this is not a published editor release.
+The [mounted DOM boundary](docs/dom.md) provides an editable SDK2 surface,
+explicit profile renderers and bounded input reconciliation. The
+[selection controller](docs/selection.md), [composition owner](docs/composition.md)
+and optional [block chrome](docs/ui.md) define the corresponding input,
+recovery and host integration behavior.
 
 KWDJ consumers can explicitly enable [RU/EN typography](docs/typography-integration.md)
 with a separate renderer catalog and immutable native configuration. It is off
 by default; literal insertion and clipboard keep their existing semantics.
+
+## Use the local packages
+
+- [Vanilla quickstart](docs/quickstart-vanilla.md)
+- [Native Rust quickstart](docs/quickstart-rust.md)
+- [Zoneless Angular quickstart](docs/quickstart-angular.md)
+- [Standalone playground](examples/vanilla-alpha/README.md)
+- [Extension tutorial](docs/extension-tutorial.md)
+
+Start contributing with the [public corpus](docs/corpus-contributor.md) and see
+the [roadmap](docs/roadmap.md) for planned and deferred work.
 
 ## Build the standalone workspace
 
