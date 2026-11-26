@@ -41,8 +41,9 @@ test('all packed JS boundaries install in an external project with no checkout/t
   try {
     const inventory = JSON.parse(readFileSync('artifacts/package-inventory.json', 'utf8'));
     const paths = inventory.map(pkg => resolve('artifacts/packages', pkg.filename));
+    const { angularPeer } = identity.versions;
     const install = spawnSync('npm', ['install', '--prefix', dir, '--ignore-scripts', '--no-audit', '--no-fund',
-      '@angular/core@22.0.8', '@angular/compiler@22.0.8', ...paths], { encoding: 'utf8' });
+      `@angular/core@${angularPeer}`, `@angular/compiler@${angularPeer}`, ...paths], { encoding: 'utf8' });
     assert.equal(install.status, 0, install.stderr);
     const program = `
       import assert from 'node:assert/strict';
