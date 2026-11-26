@@ -18,12 +18,20 @@ async function run(page, scenario) {
     const model = await sdk.loadSdkV2();
     const originalId = '41111111-1111-4111-8111-111111111111';
     const pickedId = 'a2222222-2222-4222-8222-222222222222';
+    const galleryId = 'b3333333-3333-4333-8333-333333333333';
     const para = text => ({content:[{text,type:'text'}],type:'paragraph'});
-    const source = content => JSON.stringify({content,profile:'prose',schema:'klenwriter.document',schema_version:1});
-    const left = para('Before'), caption = para('Caption'), right = para('After');
+    const profile = scenario === 'rich-poetry' ? 'poetry' : 'prose';
+    const richGallery = scenario === 'rich-prose' || scenario === 'rich-poetry';
+    const source = content => JSON.stringify({content,profile,schema:'klenwriter.document',schema_version:1});
+    const left = profile === 'poetry' ? {content:[
+      {attrs:{indent:3},content:[{text:'First verse line',type:'text'}],type:'verse_line'},
+      {attrs:{blank_lines:2},type:'stanza_break'},
+      {content:[{text:'Second verse line',type:'text'}],type:'verse_line'},
+    ],type:'verse'} : para('Before');
+    const caption = para('Caption'), right = para('After');
     const initialMedia = {attrs:{align:'wide',alt:'Original',media_asset_id:originalId}, content:[caption],type:'media_image'};
     const initial = source([left,initialMedia,right]);
-    const liveFacts = scenario === 'live-facts';
+    const liveFacts = scenario === 'live-facts' || richGallery;
     const options = {abi:'editor-sdk/2',build_id:model.manifest.build_id,profile:packet.kwdjProfile,
       admission:'validate',access:'editable',registry_json:packet.kwdjRegistryJson,
       profile_options_json:JSON.stringify({identities:{media:(liveFacts?[originalId]:[originalId,pickedId]).map(id=>({id,status:'exists'})),references:[]},limits:null})};
@@ -47,7 +55,7 @@ async function run(page, scenario) {
     const state=()=>ok(editor.read({kind:'state'})).state;
     const read=id=>ok(editor.read({kind:'node',stamp:editor.capture(),node:id})).node;
     const canonical=async()=>{
-      const value=await submit({kind:'snapshot',max_bytes:8192});
+      const value=await submit({kind:'snapshot',max_bytes:richGallery ? 32768 : 8192});
       await submit({kind:'release_snapshot',handle:value.handle});
       return value.canonical_json;
     };
@@ -61,7 +69,9 @@ async function run(page, scenario) {
     try {
       if((await editor.ready).status!=='ready')throw Error('Mounted KWDJ failed to open');
       const root=read(state().root), original=read(root.children[1]), originalValues=getValues(original);
-      const point={kind:'text',node:read(root.children[0]).children[0],offset:2,affinity:'after'};
+      const firstBlock=read(root.children[0]);
+      const firstTextBlock=profile==='poetry'?read(firstBlock.children[0]):firstBlock;
+      const point={kind:'text',node:firstTextBlock.children[0],offset:2,affinity:'after'};
       const putCaret=async()=>{element.focus();await submit({kind:'set_selection',selection:{anchor:point,focus:point}});};
       await putCaret();
       const before=await checkpoint();
@@ -72,6 +82,46 @@ async function run(page, scenario) {
         return started;
       };
       const choice={status:'ok',value:{assetId:pickedId}}, available={status:'ok',value:{assetId:pickedId,alt:'New alt\r\nline'}};
+      if (richGallery) {
+        const longCaption = `Primary caption: ${'x'.repeat(8193)}`;
+        const allowedMedia = new Map([
+          [pickedId, {assetId:pickedId, alt:'Manuscript', align:'wide', caption:longCaption}],
+          [galleryId, {assetId:galleryId, decorative:true, align:'center', caption:'Gallery caption'}],
+        ]);
+        const insertAfter = async (node, assetId) => {
+          const pending = start({kind:'insert', placement:{kind:'after_root_block',node}}, {
+            pickMedia:async()=>{done.focus();return {status:'ok',value:{assetId}};},
+            mediaMetadata:async({assetId},{signal})=>{
+              const value = allowedMedia.get(assetId);
+              if (!value) return {status:'unavailable'};
+              approval = {assetId,signal};
+              return {status:'ok',value};
+            },
+          });
+          const result = await pending.completion;
+          if (result.status !== 'submitted') throw Error(JSON.stringify(result));
+          const receipt = result.submission.status === 'completed' ? result.submission.response : await result.submission.completion;
+          ok(receipt);
+          const focus = await result.focus;
+          const selection = window.getSelection();
+          return {
+            ...await checkpoint(),
+            focusResult:focus.status,
+            domCaretOnRoot:selection.anchorNode===element && selection.focusNode===element,
+            rootChildren:read(state().root).children,
+            eventCount:events.length,
+          };
+        };
+        const inserted = await insertAfter(firstBlock.id, pickedId);
+        const gallery = await insertAfter(inserted.rootChildren[1], galleryId);
+        unobserve();
+        const firstImage = {attrs:{align:'wide',alt:'Manuscript',media_asset_id:pickedId},
+          content:[para(longCaption)],type:'media_image'};
+        const secondImage = {attrs:{align:'center',decorative:true,media_asset_id:galleryId},
+          content:[para('Gallery caption')],type:'media_image'};
+        return {inserted,gallery,root,events,expectedInsert:source([left,firstImage,initialMedia,right]),
+          expectedGallery:source([left,firstImage,secondImage,initialMedia,right])};
+      }
       if (liveFacts) {
         await submit({kind:'command',command:kwdj.kwdjCommand({kind:'insert_text',text:'X'}),history_hint:{kind:'isolated'}});
         events.length=0;
@@ -269,6 +319,26 @@ test('a verified late media identity preserves pre-existing history and snapshot
   expect(result.events).toEqual(['document','document','document']);
   expect(result.hostRequests).toBe(0);
 });
+
+for (const profile of ['prose','poetry']) {
+  test(`OSR-292 inserts rich media after the whole ${profile} block and continues the gallery from the restored caret`, async ({page}) => {
+    const {inserted,gallery,root,events,expectedInsert,expectedGallery}=await run(page,`rich-${profile}`);
+    expect(inserted.canonical).toBe(expectedInsert);
+    expect(gallery.canonical).toBe(expectedGallery);
+    expect(inserted.rootChildren[0]).toBe(root.children[0]);
+    expect(gallery.rootChildren.slice(0,2)).toEqual(inserted.rootChildren.slice(0,2));
+    const expectCaret = (checkpoint, index, commands) => {
+      const gap = {kind:'child',parent:root.id,index,affinity:'after'};
+      expect(checkpoint.state.selection).toEqual({anchor:gap,focus:gap});
+      expect(checkpoint).toMatchObject({focus:'editor',focusResult:'restored',ownedDomCaret:true,
+        domCaretOnRoot:true,domCaretOffset:index,eventCount:commands,pending:0});
+      expect(checkpoint.state.history.undo_entries).toBe(String(commands));
+    };
+    expectCaret(inserted, 2, 1);
+    expectCaret(gallery, 3, 2);
+    expect(events).toEqual(['document','document']);
+  });
+}
 
 test('OSR-154 media host dismissals restore only valid scoped focus without changing the document', async ({page}) => {
   const {before,results,events}=await run(page,'dismissals');
