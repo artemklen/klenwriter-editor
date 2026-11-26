@@ -37,11 +37,11 @@ account ADMIN. npm CLI returned ENEEDAUTH; public npm scope/profile pages return
 403 to the reader. npm scope ownership and crates.io publisher authorization are
 unverified. No registry write, account signup, token creation or publish occurred.
 
-Public publishing is OSR-71. It must recheck availability and actual authenticated
-publisher rights before a write; the date-bound observation cannot authorize it.
-All Rust crates retain `publish = false`, all web packages `private: true`, and
-versions remain `0.0.0`. The installed-tarball smoke is a development proof, not a
-registry release or the standalone editor alpha of OSR-65.
+The checked-in Rust manifests use `publish = false` and the JavaScript workspace
+packages use `private: true`. The coordinated candidate archives use version
+`1.0.0` and have a release manifest with their source and checksums. The
+[release workflow](release-rollback.md) requires version-specific authorization
+and a fresh publisher rights and availability check before registry writes.
 
 OSR-42 adds the optional `@klenwriter/editor-ui` package. Its separate
 [registry observation](../evidence/osr-42/package-name-availability.json) records
@@ -50,8 +50,9 @@ This additional observation also makes no reservation or publishing claim.
 
 ## Independent version namespaces
 
-- Package SemVer describes a particular distribution's API/artifact release.
-  Current packages are unpublished bootstrap `0.0.0`.
+- Package SemVer describes a distribution's API and artifacts. The
+  [versioning policy](versioning.md) explains how each coordinated package
+  release is related to the independent ABI and stored profile versions.
 - The host/session API uses `editor-sdk/1` (OSR-63), with `publicHostApiRevision: 1`.
   Generated Rust DTO declarations, exact profile/extension manifests and an actual
   source build identity belong to this ABI. General registry composition remains

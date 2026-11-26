@@ -1,14 +1,23 @@
 # Angular zoneless quickstart
 
-Install the supplied `@klenwriter/editor-angular` bootstrap tarball and open a KWDJ document with an Angular standalone component. The example uses Angular and Angular CLI 22.0.8, TypeScript 6.0.2, RxJS 7.8.2, Node.js 24.22.0 and npm 11.14.0. The prebuilt editor uses no Rust toolchain, CMS or source checkout. Obtain the matching unpublished `0.0.0` bundle before starting.
+Install `@klenwriter/editor-angular` from the coordinated `1.0.0` bundle and
+open a KWDJ document in an Angular standalone component. The example uses
+Angular and Angular CLI `22.3.0`, TypeScript 6.0.2, RxJS 7.8.2, Node.js 24.22.0
+and npm 11.14.0. The prebuilt editor uses no Rust toolchain, CMS or source
+checkout. Obtain the candidate bundle and its approved manifest SHA-256. The
+commands below use `jq` to read the verified manifest.
 
 ## Install in a clean directory
 
-Set `bundle` to the absolute path of your supplied tarballs. `revision` selects the public repository revision containing this page and example.
+Set `bundle` to the absolute path of the candidate directory and verify the
+manifest. The source revision in that manifest selects the matching public
+example files.
 
 ```sh
-bundle=/absolute/path/to/angular-bootstrap-tarballs
-revision=main
+bundle=/absolute/path/to/editor-candidate
+manifest_sha256=REPLACE_WITH_APPROVED_MANIFEST_SHA256
+printf '%s  %s\n' "$manifest_sha256" "$bundle/release-manifest.json" | shasum -a 256 -c - || exit 1
+revision=$(jq -er '.source.commit' "$bundle/release-manifest.json") || exit 1
 source=https://raw.githubusercontent.com/artemklen/klenwriter-editor
 
 mkdir angular-quickstart && cd angular-quickstart && mkdir vendor || exit 1
@@ -18,16 +27,13 @@ for file in package.json angular.json tsconfig.json index.html main.ts; do
 done
 
 for name in editor-angular editor-dom editor-kwdj editor-sdk editor-wasm; do
-  cp "$bundle/klenwriter-$name-0.0.0.tgz" vendor/ || exit 1
+  archive="klenwriter-$name-1.0.0.tgz"
+  digest=$(jq -er --arg path "npm/$archive" \
+    '.artifacts[] | select(.kind == "npm" and .path == $path) | .sha256' \
+    "$bundle/release-manifest.json") || exit 1
+  cp "$bundle/npm/$archive" vendor/ || exit 1
+  printf '%s  vendor/%s\n' "$digest" "$archive" | shasum -a 256 -c - || exit 1
 done
-
-shasum -a 256 -c <<'SHA256' || exit 1
-c722be7a03400c2d8c80ec117d3fe5922a7ad5903b5b8c1b7dcb529bd7be535c  vendor/klenwriter-editor-angular-0.0.0.tgz
-9afb85fc7e18f7b20c9dd44c47ecc370c5466ca669dc2e447f0e3e3bb045c352  vendor/klenwriter-editor-dom-0.0.0.tgz
-245e52133ef52ccfebc80143d619479748db413adb52ffb79f95ae20ed3345da  vendor/klenwriter-editor-kwdj-0.0.0.tgz
-a29bad5c69f0855009fa93f4d1216b435bc05176298c90e712d49751ec17ce8a  vendor/klenwriter-editor-sdk-0.0.0.tgz
-a893f825351c1cbae77c5fb32d76ae41d2d3fcf9c02b1afec23c177ccb65fff2  vendor/klenwriter-editor-wasm-0.0.0.tgz
-SHA256
 
 npm install --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org || exit 1
 npm run build || exit 1
@@ -42,4 +48,5 @@ npm start
 
 The standalone component bootstraps with `provideZonelessChangeDetection()` and imports `KlenwriterEditorDirective`. The `[kwEditor]` input supplies the initial document, renderer and SDK configuration. The `(editorRevision)` output publishes native document revisions. Save uses `snapshot` and `release_snapshot` on the ready editor handle. Reopen passes the saved bytes to `replace`, which validates the document before replacing the view. Angular destroys the editor when it removes the directive. The Angular build serves the prebuilt WASM, glue and snippets next to the application bundle.
 
-The archive source is `0811798579cbbedc44b70c2395dca1a06f3ac232` with SDK build `sha256:792405543241726d0cb7aa9174ac48bf124b63e61a8119373e622a4c9bf0e935`.
+The original `0.0.0` bootstrap archive pins are in the archived quickstart.
+[Bootstrap quickstart](https://github.com/artemklen/klenwriter-editor/blob/6843463a05969cb44466e72e06501a140ec140d0/docs/quickstart-angular.md)

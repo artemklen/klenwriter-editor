@@ -1,6 +1,6 @@
 {
   "name": "@klenwriter/editor-dom",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "description": "KlenWriter Editor: generic dom/input adapter boundary; unpublished bootstrap",
   "type": "module",
@@ -26,11 +26,11 @@
     "./style.css": "./dist/style.css"
   },
   "dependencies": {
-    "@klenwriter/editor-sdk": "0.0.0"
+    "@klenwriter/editor-sdk": "1.0.0"
   },
   "klenwriterEditor": {
     "role": "dom",
     "sourceProvenance": "SOURCE-PROVENANCE.json",
-    "publicApiStability": "bootstrap"
+    "publicApiStability": "stable"
   }
 }

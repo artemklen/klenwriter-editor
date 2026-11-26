@@ -20,4 +20,4 @@ sha2.workspace = true
 [package.metadata.klenwriter-editor]
 role = "registry"
 source-provenance = "SOURCE-PROVENANCE.json"
-public-api-stability = "bootstrap"
+public-api-stability = "stable"

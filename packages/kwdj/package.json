@@ -1,6 +1,6 @@
 {
   "name": "@klenwriter/editor-kwdj",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "description": "KlenWriter Editor: optional kwdj profile boundary; unpublished bootstrap",
   "type": "module",
@@ -34,14 +34,14 @@
     "./registry.json": "./dist/registry.json"
   },
   "dependencies": {
-    "@klenwriter/editor-dom": "0.0.0",
-    "@klenwriter/editor-sdk": "0.0.0",
+    "@klenwriter/editor-dom": "1.0.0",
+    "@klenwriter/editor-sdk": "1.0.0",
     "parse5": "8.0.1"
   },
   "klenwriterEditor": {
     "role": "kwdj",
     "sourceProvenance": "SOURCE-PROVENANCE.json",
-    "publicApiStability": "bootstrap",
+    "publicApiStability": "stable",
     "profileId": "org.klenwriter.kwdj",
     "storedSchemaVersion": 1
   }

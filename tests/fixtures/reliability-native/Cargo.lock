@@ -440,7 +440,7 @@ dependencies = [
 
 [[package]]
 name = "klenwriter-editor-bridge"
-version = "0.0.0"
+version = "1.0.0"
 dependencies = [
  "klenwriter-editor-core",
  "klenwriter-editor-engine",
@@ -454,7 +454,7 @@ dependencies = [
 
 [[package]]
 name = "klenwriter-editor-core"
-version = "0.0.0"
+version = "1.0.0"
 dependencies = [
  "serde_json",
  "unicode-segmentation",
@@ -462,14 +462,14 @@ dependencies = [
 
 [[package]]
 name = "klenwriter-editor-engine"
-version = "0.0.0"
+version = "1.0.0"
 dependencies = [
  "klenwriter-editor-core",
 ]
 
 [[package]]
 name = "klenwriter-editor-extensions"
-version = "0.0.0"
+version = "1.0.0"
 dependencies = [
  "klenwriter-editor-core",
  "klenwriter-editor-registry",
@@ -478,7 +478,7 @@ dependencies = [
 
 [[package]]
 name = "klenwriter-editor-kwdj"
-version = "0.0.0"
+version = "1.0.0"
 dependencies = [
  "klenwriter-editor-core",
  "klenwriter-editor-registry",
@@ -493,7 +493,7 @@ dependencies = [
 
 [[package]]
 name = "klenwriter-editor-kwdj-sdk"
-version = "0.0.0"
+version = "1.0.0"
 dependencies = [
  "klenwriter-editor-bridge",
  "klenwriter-editor-core",
@@ -509,7 +509,7 @@ dependencies = [
 
 [[package]]
 name = "klenwriter-editor-notes"
-version = "0.0.0"
+version = "1.0.0"
 dependencies = [
  "klenwriter-editor-core",
  "klenwriter-editor-registry",
@@ -519,7 +519,7 @@ dependencies = [
 
 [[package]]
 name = "klenwriter-editor-notes-sdk"
-version = "0.0.0"
+version = "1.0.0"
 dependencies = [
  "klenwriter-editor-bridge",
  "klenwriter-editor-core",
@@ -534,7 +534,7 @@ dependencies = [
 
 [[package]]
 name = "klenwriter-editor-protocol"
-version = "0.0.0"
+version = "1.0.0"
 dependencies = [
  "klenwriter-editor-core",
  "serde",
@@ -542,7 +542,7 @@ dependencies = [
 
 [[package]]
 name = "klenwriter-editor-registry"
-version = "0.0.0"
+version = "1.0.0"
 dependencies = [
  "klenwriter-editor-core",
  "serde",

@@ -8,7 +8,7 @@ publish = false
 [workspace]
 
 [dependencies]
-klenwriter-editor-core = "=0.0.0"
-klenwriter-editor-engine = "=0.0.0"
-klenwriter-editor-kwdj = "=0.0.0"
+klenwriter-editor-core = "=1.0.0"
+klenwriter-editor-engine = "=1.0.0"
+klenwriter-editor-kwdj = "=1.0.0"
 uuid = { version = "=1.23.3", default-features = false }

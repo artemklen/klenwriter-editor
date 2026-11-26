@@ -23,4 +23,4 @@ editor_engine.workspace = true
 [package.metadata.klenwriter-editor]
 role = "notes"
 source-provenance = "SOURCE-PROVENANCE.json"
-public-api-stability = "bootstrap"
+public-api-stability = "stable"

@@ -11,7 +11,7 @@ description = "KlenWriter Editor generic engine boundary; pre-alpha bootstrap"
 [package.metadata.klenwriter-editor]
 role = "engine"
 source-provenance = "SOURCE-PROVENANCE.json"
-public-api-stability = "bootstrap"
+public-api-stability = "stable"
 
 [lints]
 workspace = true

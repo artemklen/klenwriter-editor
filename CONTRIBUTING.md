@@ -1,5 +1,27 @@
 # Разработка
 
+## Reporting issues and contributing
+
+Use the [GitHub issue chooser](https://github.com/artemklen/klenwriter-editor/issues/new/choose)
+for bugs, documentation feedback, integration questions and feature requests.
+For a bug, include the package version or source commit, browser and OS if
+applicable, expected and observed behavior, and the shortest reproducible steps.
+Use synthetic documents and remove credentials and personal data from any
+attachments. For a reproducible editor case, see the
+[public corpus contribution guide](docs/corpus-contributor.md).
+
+Use the [security policy](SECURITY.md) for suspected vulnerabilities and the
+[code of conduct](CODE_OF_CONDUCT.md) for reporting misconduct. The
+[support policy](docs/support-policy.md) explains how versions and deprecations
+are handled.
+
+Start a focused branch from `main` and open a pull request against `main`.
+Link the issue when one exists. Describe the observable change and record the
+exact revision, environment, applicable check commands and results. The local
+checks for this workspace are listed below.
+
+## Архитектура и проверки
+
 Это библиотека с headless Session SDK и [basic mounted DOM adapter](docs/dom.md).
 [Mounted selection](docs/selection.md), bookmarks, edge autoscroll и минимальные
 plaintext copy/cut реализованы поверх SDK2. [Composition41](docs/composition.md)

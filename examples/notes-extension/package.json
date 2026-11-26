@@ -10,7 +10,7 @@
     "./dom": "./dom.mjs"
   },
   "dependencies": {
-    "@klenwriter/editor-dom": "0.0.0",
-    "@klenwriter/editor-sdk": "0.0.0"
+    "@klenwriter/editor-dom": "1.0.0",
+    "@klenwriter/editor-sdk": "1.0.0"
   }
 }

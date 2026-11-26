@@ -90,7 +90,7 @@ for (const [name, allowed] of Object.entries(packageGraph)) {
   const runtime = [...allowed.map(name => identity.web[name].name), ...(name === 'kwdj' ? ['parse5'] : [])];
   assert.deepEqual(Object.keys(manifest.dependencies).sort(), runtime.sort(),
     `${name}: review a changed runtime dependency boundary against the ADR`);
-  assert.deepEqual(manifest.peerDependencies ?? {}, name === 'angular' ? { '@angular/core': '22.0.8' } : {},
+  assert.deepEqual(manifest.peerDependencies ?? {}, name === 'angular' ? { '@angular/core': identity.versions.angularPeer } : {},
     `${name}: unexpected peer dependency`);
 }
 const clipboardParser = verifyClipboardParserBuild();

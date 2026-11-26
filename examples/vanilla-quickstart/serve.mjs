@@ -19,7 +19,8 @@ const build = await context({
   entryPoints: ['app.mjs'], bundle: true, format: 'esm', outfile: join(output, 'app.js'),
 });
 try {
-  const { hosts, port } = await build.serve({ servedir: output, host: '127.0.0.1', port: 4173 });
+  const listenPort = Number(process.env.KLENWRITER_EXAMPLE_PORT ?? 4173);
+  const { hosts, port } = await build.serve({ servedir: output, host: '127.0.0.1', port: listenPort });
   console.log(`Open http://${hosts[0]}:${port}/`);
   await new Promise(resolve => {
     process.once('SIGINT', resolve);

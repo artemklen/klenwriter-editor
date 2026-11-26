@@ -1,6 +1,6 @@
 # Run and save a public extension
 
-Use the authored Generic Notes D1 descriptor to add a callout and highlight to a note. Save the canonical JSON and reopen it in a fresh session with the same D1 descriptor. This headless example uses the prebuilt SDK2 WASM and local bootstrap packages at version `0.0.0`.
+Use the authored Generic Notes D1 descriptor to add a callout and highlight to a note. Save the canonical JSON and reopen it in a fresh session with the same D1 descriptor. This headless example uses the prebuilt SDK2 WASM and local workspace packages at version `1.0.0`.
 
 ## Run the tutorial
 
@@ -13,6 +13,21 @@ node examples/notes-extension/run-save-reopen.mjs
 ```
 
 If the checked archives and their inventory already exist, start with the last command. The runner packs the existing Notes fixture and installs it with SDK, WASM and DOM archives in a separate npm project. It checks the installed archive versions and digests and resolves the public entry points from that project's `node_modules`. The example and the [author testkit](../examples/notes-extension/testkit.mjs) execute there.
+
+### Use an existing release candidate
+
+With a release candidate bundle and a checkout of its production sources, run
+the same example directly against the bundle.
+
+```sh
+node examples/notes-extension/run-save-reopen.mjs /path/to/candidate
+```
+
+The runner verifies the bundle against its release manifest and installs the
+exact SDK, WASM and DOM tarballs offline. The Notes sample has its own version
+`0.0.0`. The receipt includes the candidate source commit and tree, the manifest
+SHA-256 and the tutorial checkout commit. It checks the executed WASM against
+the candidate build ID and the digest of its standalone WASM.
 
 ## Follow the document through Save and Reopen
 

@@ -1,6 +1,6 @@
 {
   "name": "@klenwriter/editor-wasm",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "description": "KlenWriter Editor: prebuilt generic wasm artifact and glue; unpublished bootstrap",
   "type": "module",
@@ -34,6 +34,6 @@
   "klenwriterEditor": {
     "role": "wasm",
     "sourceProvenance": "SOURCE-PROVENANCE.json",
-    "publicApiStability": "bootstrap"
+    "publicApiStability": "stable"
   }
 }

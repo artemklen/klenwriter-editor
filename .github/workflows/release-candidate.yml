@@ -1,0 +1,41 @@
+name: Release candidate build
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/release-candidate.yml"
+      - "package-map.json"
+      - "scripts/release/**"
+
+permissions:
+  contents: read
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+          cache: npm
+      - run: npm install --global npm@11.14.0 --ignore-scripts
+      - run: rustup toolchain install 1.97.1 --profile minimal --component rustfmt,clippy --target wasm32-unknown-unknown
+      - run: cargo install wasm-bindgen-cli --version 0.2.129 --locked --root .tools
+      - run: cargo fetch --locked
+      - run: npm ci --ignore-scripts
+      - name: Assemble candidate and verify archive notices
+        run: node scripts/release/build-candidate.mjs "$RUNNER_TEMP/editor-candidate"
+        env:
+          CARGO_BUILD_JOBS: "2"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: editor-release-candidate
+          path: ${{ runner.temp }}/editor-candidate/
+          if-no-files-found: error
+          retention-days: 14

@@ -2,7 +2,7 @@
 
 Open a KWDJ document, insert a character through the typed editor command, and export canonical JSON. The same example checks the typed refusal for an unsupported schema.
 
-This walkthrough uses unpublished KlenWriter Editor bootstrap crates at version `0.0.0`. Use Rust `1.97.1` for the editing engine and Python 3.12 or later for the archive helper. Prepare the locked public Cargo dependencies once with `cargo +1.97.1 fetch --locked` from the repository root. The commands below use Cargo's offline mode.
+This walkthrough uses local KlenWriter Editor workspace crates at version `1.0.0`. Use Rust `1.97.1` for the editing engine and Python 3.12 or later for the archive helper. Prepare the locked public Cargo dependencies once with `cargo +1.97.1 fetch --locked` from the repository root. The commands below use Cargo's offline mode.
 
 ## Package and run
 

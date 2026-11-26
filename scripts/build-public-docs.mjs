@@ -18,6 +18,14 @@ const sources = [
   'docs/support.md',
   'docs/corpus-contributor.md',
   'docs/roadmap.md',
+  'docs/versioning.md',
+  'docs/migrate-to-1.0.md',
+  'docs/support-policy.md',
+  'docs/release-rollback.md',
+  'docs/release-candidate.md',
+  'CHANGELOG.md',
+  'SECURITY.md',
+  'CODE_OF_CONDUCT.md',
   'examples/vanilla-alpha/README.md',
 ];
 const inputs = new Set(['scripts/build-public-docs.mjs', 'scripts/vanilla-alpha/pack.mjs']);
@@ -179,47 +187,55 @@ function requireVersion(page, version) {
   assert(read(page).includes(token), page + ' must state the example version ' + version);
 }
 
-function webEvidence(path, roles, version, page, checksums = false) {
+function webEvidence(path, roles, version, page) {
   const dependencies = json(path).dependencies;
   const declared = Object.keys(dependencies).filter(name => name.startsWith('@klenwriter/editor')).sort();
   const packages = roles.map(role => identity.web[role].name);
   assert.deepEqual(declared, packages.toSorted(), path + ' has a different editor package closure');
   requireVersion(page, version);
-  const content = read(page);
   const archives = packages.map(name => {
     const archive = name.slice(1).replace('/', '-') + '-' + version + '.tgz';
     assert.equal(dependencies[name], 'file:./vendor/' + archive, path + ' has an incorrect version for ' + name);
-    const digest = checksums && content.split('\n').find(line => line.endsWith('  vendor/' + archive))?.split(' ')[0];
-    if (checksums) assert.match(digest ?? '', /^[a-f0-9]{64}$/, page + ' must pin the archive digest for ' + name);
-    return { name, version, ...(digest ? { archive, sha256: digest } : {}) };
+    return { name, version };
   });
   return { manifest: path, version, packages: archives };
 }
 
 function versions() {
-  const bootstrap = identity.versions.packageSemver;
+  const candidate = identity.versions.packageSemver;
+  const bootstrap = identity.versions.previewBootstrapSemver;
   const rustManifest = 'examples/native-quickstart/Cargo.toml';
   const native = read(rustManifest);
   const rustNames = ['core', 'engine', 'kwdj'].map(role => identity.rust[role].name);
   const nativePins = new Map(Array.from(native.matchAll(/^(klenwriter-editor-[\w-]+)\s*=\s*"=([^"]+)"$/gm),
     match => [match[1], match[2]]));
   assert.deepEqual([...nativePins.keys()].sort(), rustNames.toSorted(), rustManifest + ' has a different editor crate set');
-  for (const name of rustNames) assert.equal(nativePins.get(name), bootstrap, rustManifest + ' version mismatch for ' + name);
-  requireVersion('docs/quickstart-rust.md', bootstrap);
-  requireVersion('docs/extension-tutorial.md', bootstrap);
+  for (const name of rustNames) assert.equal(nativePins.get(name), candidate, rustManifest + ' version mismatch for ' + name);
+  requireVersion('docs/quickstart-rust.md', candidate);
+  requireVersion('docs/extension-tutorial.md', candidate);
+  requireVersion('docs/support.md', candidate);
   requireVersion('docs/support.md', bootstrap);
   requireVersion('docs/support.md', alphaVersion);
+  const angular = 'examples/angular-quickstart/package.json';
+  const angularManifest = json(angular);
+  const angularDependencies = { ...angularManifest.dependencies, ...angularManifest.devDependencies };
+  assert.equal(angularDependencies['@angular/core'], identity.versions.angularPeer);
+  for (const [name, version] of Object.entries(angularDependencies).filter(([name]) => name.startsWith('@angular/'))) {
+    assert.equal(version, identity.versions.angularPeer, angular + ' has a mismatched pin for ' + name);
+  }
+  requireVersion('docs/quickstart-angular.md', identity.versions.angularPeer);
   const vanillaRoles = ['vanilla', 'dom', 'kwdj', 'sdk', 'ui', 'wasm'];
   return {
     packageMap: 'package-map.json',
+    candidate,
     bootstrap,
-    vanilla: webEvidence('examples/vanilla-quickstart/package.json', vanillaRoles, alphaVersion,
-      'docs/quickstart-vanilla.md', true),
+    vanilla: webEvidence('examples/vanilla-quickstart/package.json', vanillaRoles, candidate,
+      'docs/quickstart-vanilla.md'),
     playground: webEvidence('examples/vanilla-alpha/package.json', vanillaRoles, alphaVersion,
       'examples/vanilla-alpha/README.md'),
-    angular: webEvidence('examples/angular-quickstart/package.json', ['angular', 'dom', 'kwdj', 'sdk', 'wasm'],
-      bootstrap, 'docs/quickstart-angular.md', true),
-    rust: { manifest: rustManifest, version: bootstrap, packages: rustNames.map(name => ({ name, version: bootstrap })) },
+    angular: { angularVersion: identity.versions.angularPeer,
+      ...webEvidence(angular, ['angular', 'dom', 'kwdj', 'sdk', 'wasm'], candidate, 'docs/quickstart-angular.md') },
+    rust: { manifest: rustManifest, version: candidate, packages: rustNames.map(name => ({ name, version: candidate })) },
   };
 }
 

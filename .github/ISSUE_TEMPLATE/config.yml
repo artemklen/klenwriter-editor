@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a vulnerability privately
+    url: https://github.com/artemklen/klenwriter-editor/security/advisories/new
+    about: Send a private security report to the repository maintainers.
+  - name: Report misconduct
+    url: https://docs.github.com/en/communities/maintaining-your-safety-on-github/reporting-abuse-or-spam
+    about: Use GitHub's reporting controls for harassment, abuse or other misconduct.
+  - name: Check compatibility and known limitations
+    url: https://github.com/artemklen/klenwriter-editor/blob/main/docs/support.md
+    about: Check which environments and versions the project covers.

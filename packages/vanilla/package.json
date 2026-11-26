@@ -1,6 +1,6 @@
 {
   "name": "@klenwriter/editor",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "description": "KlenWriter Editor: framework-free editor binding boundary; unpublished bootstrap",
   "type": "module",
@@ -26,12 +26,12 @@
     "./style.css": "./src/style.css"
   },
   "dependencies": {
-    "@klenwriter/editor-dom": "0.0.0",
-    "@klenwriter/editor-ui": "0.0.0"
+    "@klenwriter/editor-dom": "1.0.0",
+    "@klenwriter/editor-ui": "1.0.0"
   },
   "klenwriterEditor": {
     "role": "vanilla",
     "sourceProvenance": "SOURCE-PROVENANCE.json",
-    "publicApiStability": "bootstrap"
+    "publicApiStability": "stable"
   }
 }

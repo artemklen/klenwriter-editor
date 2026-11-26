@@ -10,7 +10,7 @@ const cargo = JSON.parse(result.stdout);
 const root = readJson('package.json');
 assert.equal(identity.productName, 'KlenWriter Editor');
 assert.equal(identity.license, 'MIT OR Apache-2.0');
-assert.equal(identity.stage, 'unpublished-bootstrap');
+assert.equal(identity.stage, 'release-candidate');
 assert.equal(identity.publishingGate, 'OSR-71');
 assert.equal(root.version, identity.versions.packageSemver);
 assert.equal(root.private, true);
@@ -42,13 +42,14 @@ for (const [kind, entries] of Object.entries({ rust: identity.rust, web: identit
       const pkg = cargo.packages.find(pkg => pkg.name === entry.name);
       assert(pkg, `Cargo package missing: ${entry.name}`);
       assert.equal(pkg.version, identity.versions.packageSemver);
+      assert(pkg.description?.trim(), `Cargo package description missing: ${entry.name}`);
       assert.equal(pkg.license, identity.license);
       assert.equal(pkg.repository, identity.repository);
       assert.deepEqual(pkg.publish, [], 'Registry publication needs OSR-71');
       const policy = pkg.metadata['klenwriter-editor'];
       assert.equal(policy.role, id);
       assert.equal(policy['source-provenance'], 'SOURCE-PROVENANCE.json');
-      assert.equal(policy['public-api-stability'], 'bootstrap');
+      assert.equal(policy['public-api-stability'], 'stable');
       assert.equal(policy['stored-schema-version'], id === 'kwdj' ? 1 : undefined);
       assert.equal(policy['profile-id'], id === 'kwdj' ? identity.versions.kwdjProfileId : undefined);
       const listing = spawnSync('cargo', ['package', '--list', '--allow-dirty', '--offline', '--locked', '-p', entry.name], { encoding: 'utf8' });
@@ -69,7 +70,7 @@ for (const [kind, entries] of Object.entries({ rust: identity.rust, web: identit
       assert(pkg.files.includes('SOURCE-PROVENANCE.json'));
       assert.equal(pkg.klenwriterEditor.role, id);
       assert.equal(pkg.klenwriterEditor.sourceProvenance, 'SOURCE-PROVENANCE.json');
-      assert.equal(pkg.klenwriterEditor.publicApiStability, 'bootstrap');
+      assert.equal(pkg.klenwriterEditor.publicApiStability, 'stable');
       assert.equal(pkg.klenwriterEditor.storedSchemaVersion, id === 'kwdj' ? 1 : undefined);
       assert.equal(pkg.klenwriterEditor.profileId, id === 'kwdj' ? identity.versions.kwdjProfileId : undefined);
     }

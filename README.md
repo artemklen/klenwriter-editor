@@ -9,12 +9,20 @@ local document handling.
 
 GitHub is the canonical repository. No GitLab mirror is configured or planned.
 
-Original code and documentation are licensed under **MIT OR Apache-2.0**, at your option. See [license and provenance](docs/m0/licensing.md). No npm/crates package is published yet.
+Original code and documentation are licensed under **MIT OR Apache-2.0**, at
+your option. The contributor code of conduct has its own license.
+[License and provenance](docs/m0/licensing.md).
 
-The owner-confirmed [distribution identity](docs/identity.md) is **KlenWriter Editor**:
+The distribution name is **KlenWriter Editor**. It uses
 `klenwriter-editor-*` Rust crates and `@klenwriter/editor*` web packages. Names and
-versions are recorded in [package-map.json](package-map.json). The packages remain
-unpublished bootstrap artifacts; registry observations do not reserve names.
+versions are recorded in the [package map](package-map.json).
+[Distribution identity](docs/identity.md).
+
+The coordinated `1.0.0` distribution pairs the web packages, native crates,
+prebuilt WASM and KWDJ corpus with one manifest. Use the verified archives in
+the quickstarts below. Public releases carry the manifest and registry checksums.
+[Build a release candidate](docs/release-candidate.md),
+[GitHub releases](https://github.com/artemklen/klenwriter-editor/releases)
 
 The headless SDK supports compatible ABI1 and explicit ABI2 in one prebuilt
 WASM. [Extension authors](docs/extensions.md) can supply bounded runtime JSON
@@ -39,8 +47,15 @@ by default; literal insertion and clipboard keep their existing semantics.
 - [Standalone playground](examples/vanilla-alpha/README.md)
 - [Extension tutorial](docs/extension-tutorial.md)
 
-Start contributing with the [public corpus](docs/corpus-contributor.md) and see
-the [roadmap](docs/roadmap.md) for planned and deferred work.
+## Support and contributing
+
+- Check release maintenance and deprecation in the [support policy](docs/support-policy.md).
+- File a public issue or send a patch using the [contribution guide](CONTRIBUTING.md).
+- Report a suspected vulnerability privately using the [security policy](SECURITY.md).
+- Follow the [code of conduct](CODE_OF_CONDUCT.md) when participating.
+
+The [public corpus](docs/corpus-contributor.md) shows how to contribute an
+editor case. The [roadmap](docs/roadmap.md) tracks planned and deferred work.
 
 ## Build the standalone workspace
 
