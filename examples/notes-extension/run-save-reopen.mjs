@@ -4,9 +4,10 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { computeSdkBuildIdentity } from '../../scripts/generate-sdk-types.mjs';
+import { verifyCandidate } from '../../scripts/release/verify-candidate.mjs';
 import { publicAssets } from '../../scripts/vanilla-alpha/consumer.mjs';
 import { pinnedNpmCli } from '../../scripts/vanilla-alpha/pack.mjs';
 
@@ -38,9 +39,17 @@ function notesPacket() {
   };
 }
 
-assert.equal(process.argv.length, 2, 'Run this example after npm run check:packages');
-const { versions, web } = json(join(root, 'package-map.json'));
-const inventory = json(join(root, 'artifacts/package-inventory.json'));
+const [candidatePath, ...rest] = process.argv.slice(2);
+assert.equal(rest.length, 0, 'Usage: node examples/notes-extension/run-save-reopen.mjs [candidate-directory]');
+const packageMap = json(join(root, 'package-map.json'));
+const { versions, web } = packageMap;
+const candidateDirectory = candidatePath ? realpathSync(candidatePath) : undefined;
+const candidate = candidateDirectory ? verifyCandidate(candidateDirectory, packageMap) : undefined;
+const expectedBuildId = computeSdkBuildIdentity().buildId;
+if (candidate) assert.equal(candidate.manifest.editorBuildId, expectedBuildId, 'Candidate must match the production inputs');
+const inventory = candidate ? candidate.manifest.artifacts.filter(artifact => artifact.kind === 'npm')
+  : json(join(root, 'artifacts/package-inventory.json'));
+const examplePackage = json(join(example, 'package.json'));
 const directory = realpathSync(mkdtempSync(join(tmpdir(), 'kwe-extension-consumer-')));
 assert(!directory.startsWith(realpathSync(root) + '/'));
 const npm = pinnedNpmCli(root);
@@ -57,21 +66,28 @@ try {
     copyFileSync(join(example, name), join(notes, name));
   }
   const [extension] = JSON.parse(npmCommand(notes, ['pack', '--offline', '--ignore-scripts', '--json', '--pack-destination', vendor]));
+  assert.equal(extension.name, examplePackage.name);
+  assert.equal(extension.version, examplePackage.version);
   const editorPackages = ['wasm', 'sdk', 'dom'].map(role => {
     const name = web[role].name;
     const record = inventory.find(pack => pack.name === name);
     assert(record, 'Missing checked package archive for ' + name);
-    copyFileSync(join(root, 'artifacts/packages', record.filename), join(vendor, record.filename));
-    return record;
+    assert.equal(record.version, versions.packageSemver);
+    const filename = candidate ? basename(record.path) : record.filename;
+    assert.equal(basename(filename), filename);
+    const source = candidate ? join(candidateDirectory, record.path) : join(root, 'artifacts/packages', filename);
+    copyFileSync(source, join(vendor, filename));
+    return { ...record, filename };
   });
   const archives = [...editorPackages, extension].map(pack => {
     const file = join(vendor, pack.filename);
     const bytes = readFileSync(file);
-    assert.equal(pack.version, versions.packageSemver);
+    const sha256 = sha(bytes);
+    if (pack.sha256 !== undefined) assert.equal(sha256, pack.sha256);
+    if (pack.bytes !== undefined) assert.equal(bytes.length, pack.bytes);
     assert.equal(sri(bytes), pack.integrity);
-    return { name: pack.name, version: pack.version, file, sha256: sha(bytes), integrity: pack.integrity };
+    return { name: pack.name, version: pack.version, file, sha256, integrity: pack.integrity };
   });
-  assert.equal(extension.name, '@example/notes-extension');
 
   writeFileSync(join(directory, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
   npmCommand(directory, ['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', ...archives.map(pack => pack.file)]);
@@ -80,6 +96,8 @@ try {
   for (const pack of archives) {
     const installed = join(directory, 'node_modules', pack.name);
     assert.equal(realpathSync(installed), installed);
+    const installedPackage = json(join(installed, 'package.json'));
+    assert.deepEqual([installedPackage.name, installedPackage.version], [pack.name, pack.version]);
     const entry = lock.packages['node_modules/' + pack.name];
     assert.equal(entry.version, pack.version);
     assert.equal(entry.integrity, pack.integrity);
@@ -90,7 +108,7 @@ try {
   for (const name of ['save-reopen.mjs', 'testkit.mjs']) copyFileSync(join(example, name), join(directory, name));
   writeFileSync(join(directory, 'packet.json'), JSON.stringify(notesPacket()));
   const usedExports = [
-    '@klenwriter/editor-sdk', '@klenwriter/editor-wasm/artifact.wasm',
+    '@klenwriter/editor-sdk', '@klenwriter/editor-dom', '@klenwriter/editor-wasm/artifact.wasm',
     '@example/notes-extension/d0.json', '@example/notes-extension/d1.json',
   ];
   const publicImports = Object.keys(publicAssets({ directory, environment }, usedExports));
@@ -98,10 +116,17 @@ try {
     cwd: directory, env: environment, stdio: ['ignore', 'pipe', 'inherit'], encoding: 'utf8',
   }));
   assert.equal(exampleResult.result, 'PASS');
-  assert.equal(exampleResult.buildId, computeSdkBuildIdentity().buildId, 'Packages must match the production inputs');
-  const source = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
+  assert.equal(exampleResult.buildId, expectedBuildId, 'Packages must match the production inputs');
+  const tutorialSource = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
+  if (candidate) {
+    const wasm = candidate.manifest.artifacts.find(artifact => artifact.kind === 'wasm');
+    assert.equal(exampleResult.wasmSha256, wasm.sha256, 'Installed WASM differs from the standalone candidate artifact');
+  }
   console.log(JSON.stringify({
-    source,
+    source: candidate?.manifest.source.commit ?? tutorialSource,
+    ...(candidate && {
+      tutorialSource, sourceTree: candidate.manifest.source.tree, manifestSha256: candidate.manifestSha256,
+    }),
     npm: npm.version,
     node: process.version,
     imports: publicImports,

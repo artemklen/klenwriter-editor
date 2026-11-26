@@ -33,3 +33,20 @@ This verifies every file against its recorded bytes and compares the two
 manifests. Record the manifest SHA-256 with the candidate's local checks and
 independent review. The GitHub candidate workflow provides the archives from the
 pull request's exact head. [Versioning policy](versioning.md)
+
+## Install and exercise the candidate
+
+Prepare the pinned toolchain, the Playwright Chromium browser and the npm
+cache for the two web quickstarts. The check uses separate scratch projects
+and installs only the candidate's editor archives. The browser projects run
+without Cargo, workspace packages or a CMS.
+
+```sh
+npx playwright install chromium
+node scripts/release/check-consumers.mjs "$output_parent/candidate"
+```
+
+The JSON receipt records Rust installation and typed admission, Vanilla JS
+and Angular edit/save/reopen, and the WASM bytes loaded by each browser
+example. The Angular example also runs its production build. Installed
+browser qualification has its own checks in the [support matrix](support.md).

@@ -14,6 +14,21 @@ node examples/notes-extension/run-save-reopen.mjs
 
 If the checked archives and their inventory already exist, start with the last command. The runner packs the existing Notes fixture and installs it with SDK, WASM and DOM archives in a separate npm project. It checks the installed archive versions and digests and resolves the public entry points from that project's `node_modules`. The example and the [author testkit](../examples/notes-extension/testkit.mjs) execute there.
 
+### Use an existing release candidate
+
+With a release candidate bundle and a checkout of its production sources, run
+the same example directly against the bundle.
+
+```sh
+node examples/notes-extension/run-save-reopen.mjs /path/to/candidate
+```
+
+The runner verifies the bundle against its release manifest and installs the
+exact SDK, WASM and DOM tarballs offline. The Notes sample has its own version
+`0.0.0`. The receipt includes the candidate source commit and tree, the manifest
+SHA-256 and the tutorial checkout commit. It checks the executed WASM against
+the candidate build ID and the digest of its standalone WASM.
+
 ## Follow the document through Save and Reopen
 
 1. Read D1 through the public `@example/notes-extension/d1.json` export and pass its original registry text to SDK2. The descriptor selects the Notes base, callout and highlight extensions, with the exact versions shown in the descriptor.
