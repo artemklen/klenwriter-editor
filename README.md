@@ -2,6 +2,9 @@
 
 Rust/WASM editor: a general core with extensions, with KWDJ as the first CMS profile.
 
+- **npm** — [Vanilla editor](https://www.npmjs.com/package/@klenwriter/editor) · [Angular bindings](https://www.npmjs.com/package/@klenwriter/editor-angular)
+- **crates.io** — [Editor engine](https://crates.io/crates/klenwriter-editor-engine) · [KWDJ profile and codec](https://crates.io/crates/klenwriter-editor-kwdj)
+
 The standalone workspace builds native Rust crates, prebuilt WASM and packages
 for vanilla and Angular applications. Start with the
 [compatibility matrix](docs/support.md) for browser targets, known behavior and
